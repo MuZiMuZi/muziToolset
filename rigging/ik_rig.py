@@ -13,13 +13,11 @@ ik_spine_rig：创建IKspine链的控制器绑定（脊椎，脖子）
 """
 
 import maya.cmds as cmds
-
-import muziToolset.core.hierarchyUtils as hierarchyUtils
-import muziToolset.core.pipelineUtils as pipelineUtils
-
 import muziToolset.core.controlUtils as controlUtils
-import muziToolset.core.nameUtils as nameUtils
+import muziToolset.core.hierarchyUtils as hierarchyUtils
 import muziToolset.core.jointUtils as jointUtils
+import muziToolset.core.nameUtils as nameUtils
+import muziToolset.core.pipelineUtils as pipelineUtils
 import muziToolset.core.snapUtils as snapUtils
 
 reload(pipelineUtils)
@@ -27,8 +25,6 @@ reload(jointUtils)
 reload(snapUtils)
 
 import base_rig
-
-reload(base_rig)
 
 
 class IK_Rig(base_rig.Base_Rig):
@@ -121,6 +117,7 @@ class IK_Rig(base_rig.Base_Rig):
 
         cmds.setAttr(ikpv_curve_shape + '.overrideEnabled', 1)
         cmds.setAttr(ikpv_curve_shape + '.overrideDisplayType', 2)
+        cmds.setAttr(ikpv_curve + '.inheritsTransform', 0)
 
         #
         # 创建IKhandle控制
@@ -135,6 +132,56 @@ class IK_Rig(base_rig.Base_Rig):
         cmds.parent(startIK_zero, midIK_pv_zero, endIK_zero, ikpv_curve, ik_ctrl_grp)
         if control_parent:
             hierarchyUtils.Hierarchy.parent(child_node = ik_ctrl_grp, parent_node = control_parent)
+
+        # 添加IK链的拉伸功能
+        # 创建末端关节控制器的定位loctor
+        endIK_pos_loc = cmds.spaceLocator(name = endIK_ctrl.replace('ctrl_', 'loc_'))[0]
+        cmds.parentConstraint(endIK_ctrl, endIK_pos_loc, mo = False)
+        cmds.parent( endIK_pos_loc,endIK_ctrl)
+
+        # 创建计算距离的distween节点，来首端关节到末端控制器的距离
+        disBtw_node = cmds.createNode('distanceBetween', name = endIK_pos_loc.replace('loc_', 'disBtw_'))
+        cmds.connectAttr(startIK_jnt + '.translate', disBtw_node + '.point1')
+        cmds.connectAttr(endIK_pos_loc + '.translate', disBtw_node + '.point2')
+
+        # 计算原本关节的距离值
+        midIK_jnt_value = cmds.getAttr(midIK_jnt + '.translateX')
+        endIK_jnt_value = cmds.getAttr(endIK_jnt + '.translateX')
+        distance_value = midIK_jnt_value + endIK_jnt_value
+
+        # 将现有的关节距离减去原本关节的距离得到拉伸的距离
+        reduce_node = cmds.createNode('addDoubleLinear', name = startIK_jnt.replace('jnt_', 'reduce_'))
+        cmds.connectAttr(disBtw_node + '.distance', reduce_node + '.input1')
+        cmds.setAttr(reduce_node + '.input2', distance_value * -1)
+
+        # 将变化的数值除以二，均匀分配给对应的拉伸关节
+        mult_node = cmds.createNode('multDoubleLinear',name = startIK_jnt.replace('jnt_', 'mult_'))
+        cmds.connectAttr(reduce_node + '.output', mult_node + '.input1')
+        cmds.setAttr(mult_node + '.input2',0.5)
+
+        # 将变化的数值连接给对应的拉伸关节
+        add_midIK_jnt_node = cmds.createNode('addDoubleLinear', name = midIK_jnt.replace('jnt_', 'add_'))
+        add_endIK_jnt_node = cmds.createNode('addDoubleLinear', name = endIK_jnt.replace('jnt_', 'add_'))
+
+        cmds.connectAttr(mult_node + '.output', add_midIK_jnt_node + '.input1')
+        cmds.setAttr(add_midIK_jnt_node + '.input2',midIK_jnt_value)
+
+        cmds.connectAttr(mult_node + '.output', add_endIK_jnt_node + '.input1')
+        cmds.setAttr(add_endIK_jnt_node + '.input2', endIK_jnt_value)
+
+        # 创建一个判断节点，当变化的数值大于0时才进行拉伸
+        cond_node = cmds.createNode('condition',name = startIK_jnt.replace('jnt_', 'cond_'))
+        cmds.setAttr(cond_node + '.operation',2)
+        cmds.connectAttr(mult_node + '.output',cond_node + '.firstTerm')
+        cmds.connectAttr(add_midIK_jnt_node + '.output',cond_node + '.colorIfTrueR')
+        cmds.connectAttr(add_endIK_jnt_node + '.output', cond_node + '.colorIfTrueG')
+
+        cmds.setAttr(cond_node + '.colorIfFalseR',midIK_jnt_value)
+        cmds.setAttr(cond_node + '.colorIfFalseG', endIK_jnt_value)
+        cmds.connectAttr(cond_node + '.outColorR',midIK_jnt + '.translateX')
+        cmds.connectAttr(cond_node + '.outColorG', endIK_jnt + '.translateX')
+
+
 
     def ik_spine_rig(self, ik_chain, control_parent):
         u"""
@@ -238,5 +285,28 @@ class IK_Rig(base_rig.Base_Rig):
         hierarchyUtils.Hierarchy.parent(child_node = spine_ikhandle_node, parent_node = self.RigNodes_Local)
         hierarchyUtils.Hierarchy.parent(child_node = ik_chain_crv, parent_node = self.RigNodes_World)
 
-    def ik_chain_stretch(self):
-        pass
+        # 添加拉伸效果
+        # 获取ikspine曲线的形状节点
+        ik_chain_crv_shape  = cmds.listRelatives(ik_chain_crv,shapes = True)[0]
+
+        # 创建curveinfo节点来获取ikspine曲线的长度
+        curveInfo_node = cmds.createNode('curveInfo',name = ik_chain_crv.replace('crv_','crvInfo_'))
+        cmds.connectAttr(ik_chain_crv_shape + '.worldSpace',  curveInfo_node + '.inputCurve')
+        ik_chain_crv_value = cmds.getAttr(curveInfo_node + '.arcLength')
+
+        # 创建一个相加节点来获取ikspine曲线变换的数值
+        add_curveInfo_node = cmds.createNode('addDoubleLinear',name = ik_chain_crv.replace('crv_','add_'))
+        cmds.connectAttr(curveInfo_node + 'arcLength',add_curveInfo_node + '.input1')
+        cmds.setAttr(add_curveInfo_node + '.input2', ik_chain_crv_value * -1)
+
+        # 创建一个相乘节点，来将变换的数值平均分配给每个关节
+        mult_curveInfo_node = cmds.createNode('multDoubleLinear',name = ik_chain_crv.replace('crv_','mult_'))
+        cmds.connectAttr(add_curveInfo_node + '.output',mult_curveInfo_node + 'input1' )
+        cmds.setAttr(mult_curveInfo_node + '.input2',0.25 )
+
+        # 根据对应的关节创建对应的相加节点，将变换后的数值连接到对应的关节上
+        for jnt in ik_chain[1:-1]:
+            add_node = cmds.createNode('addDoubleLinear',name = jnt.replace('jnt_','add_'))
+            cmds.connectAttr(mult_curveInfo_node + '.output',add_node + '.input1')
+            cmds.setAttr(add_node + 'input2',cmds.getAttr(jnt + '.translateX'))
+            cmds.connectAttr(add_node + '.output',jnt + '.translateX')

@@ -24,8 +24,7 @@ import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.nameUtils as nameUtils
 import muziToolset.core.jointUtils as jointUtils
 
-reload(pipelineUtils)
-reload(jointUtils)
+
 
 skeletonPath = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton'
 
@@ -45,6 +44,7 @@ modular_rig = [arm_rig, hand_rig, leg_rig, foot_rig, neck_rig, spine_rig]
 class Base_Rig(object):
 
     def __init__(self):
+        super(Base_Rig, self).__init__()
         self.rig_top_grp = 'Group'
         if not cmds.objExists(self.rig_top_grp):
             self.default_grp()
@@ -87,12 +87,12 @@ class Base_Rig(object):
         self.modular_rig_list = [self.arm_rig, self.hand_rig, self.leg_rig, self.foot_rig, self.neck_rig,
                                  self.spine_rig]
 
-        # 定义绑定模块的bp定位关节
-        self.arm_bp_joints = self.get_modular_bp_joints(self.arm_rig)
-        self.leg_bp_joints = self.get_modular_bp_joints(self.leg_rig)
-        self.neck_bp_joints = self.get_modular_bp_joints(self.neck_rig)
-        self.spine_bp_joints = self.get_modular_bp_joints(self.spine_rig)
-        self.foot_bp_joints = self.get_modular_bp_joints(self.foot_rig)
+        # # 定义绑定模块的bp定位关节
+        # self.arm_bp_joints = self.get_modular_bp_joints(self.arm_rig)
+        # self.leg_bp_joints = self.get_modular_bp_joints(self.leg_rig)
+        # self.neck_bp_joints = self.get_modular_bp_joints(self.neck_rig)
+        # self.spine_bp_joints = self.get_modular_bp_joints(self.spine_rig)
+        # self.foot_bp_joints = self.get_modular_bp_joints(self.foot_rig)
 
     def get_modular_bp_joints(self, modular):
         u"""
@@ -231,6 +231,205 @@ class Base_Rig(object):
         # self.rigNodes_Local_grp = cmds.group(name = main_obj.name.replace('RigModule', 'RigNodesLocal'), em = True, parent = 'RigNodesLocal')
         # self.rigNodes_World_grp = cmds.group(name = main_obj.name.replace('RigModule', 'RigNodesWorld'), em = True, parent = 'RigNodesWorld')
 
+    def create_ribbon(self,bp_joints,joint_number = 5):
+        """
+        创建ribbon绑定系统
+
+        Args:
+            bp_joints： 摆放关节的名称
+            side (str): ribbon's side
+            description (str): ribbon's description
+            index (int): ribbon's index
+            joint_number (int): how many joints need to be attached to the ribbon, default is 9
+        """
+        bp_joints_obj = nameUtils.Name(name  = bp_joints[0])
+
+        # 根据关节的边来获取偏移值
+        if bp_joints_obj.side != 'r':
+            offset_val = 1
+        else:
+            offset_val = -1
+
+        # create groups
+        ribbon_grp = cmds.createNode('transform', name = 'grp_{}_{}Ribbon_{:03d}'.format(bp_joints_obj.side, bp_joints.description, bp_joints.index))
+        ribbon_ctrl_grp = cmds.createNode('transform',
+                                          name = 'grp_{}_{}RibbonCtrls_{:03d}'.format(bp_joints_obj.side, bp_joints.description, bp_joints.index),
+                                          parent = ribbon_grp)
+        ribbon_jnt_grp = cmds.createNode('transform',
+                                         name = 'grp_{}_{}RibbonJnts_{:03d}'.format(bp_joints_obj.side, bp_joints.description, bp_joints.index),
+                                         parent = ribbon_grp)
+        nodes_local_grp = cmds.createNode('transform',
+                                          name = 'grp_{}_{}RibbonNodesLocal_{:03d}'.format(bp_joints_obj.side, bp_joints.description, bp_joints.index),
+                                          parent = ribbon_grp)
+        nodes_world_grp = cmds.createNode('transform',
+                                          name = 'grp_{}_{}RibbonNodesWorld_{:03d}'.format(bp_joints_obj.side, bp_joints.description, bp_joints.index),
+                                          parent = ribbon_grp)
+        cmds.setAttr(nodes_world_grp + '.inheritsTransform', 0)
+
+        cmds.setAttr(nodes_local_grp + '.visibility', 0)
+        cmds.setAttr(nodes_world_grp + '.visibility', 0)
+
+        # create temp curve to generate nurbs surface
+        temp_curve = cmds.curve(point = [[-5 * offset_val, 0, 0], [5 * offset_val, 0, 0]], knot = [0, 1], degree = 1)
+        # rebuild curve base on joints number
+        cmds.rebuildCurve(temp_curve, degree = 3, replaceOriginal = True, rebuildType = 0, endKnots = 1, keepRange = 0,
+                          keepControlPoints = False, keepEndPoints = True, keepTangents = False,
+                          spans = joint_number + 1)
+        # duplicate the curve
+        temp_curve_02 = cmds.duplicate(temp_curve)[0]
+        # offset curves so we can loft later
+        cmds.setAttr(temp_curve + '.translateZ', 1)
+        cmds.setAttr(temp_curve_02 + '.translateZ', -1)
+
+        # loft surface
+        surf = \
+        cmds.loft(temp_curve_02, temp_curve, constructionHistory = False, uniform = True, degree = 3, sectionSpans = 1,
+                  range = False, polygon = 0, name = 'surf_{}_{}Ribbon_{:03d}'.format(bp_joints_obj.side, bp_joints.description, bp_joints.index))[0]
+        cmds.parent(surf, nodes_local_grp)
+
+        # get surface shapes node
+        surf_shape = cmds.listRelatives(surf, shapes = True)[0]
+
+        # delete temps curves
+        cmds.delete(temp_curve, temp_curve_02)
+
+        # create joints and attach to surface
+        fol_grp = cmds.createNode('transform',
+                                  name = 'grp_{}_{}RibbonFollicles_{:03d}'.format(bp_joints_obj.side, bp_joints.description, bp_joints.index),
+                                  parent = nodes_world_grp)
+
+        for i in range(joint_number):
+            # create follicle
+            fol_shape = cmds.createNode('follicle',
+                                        name = 'fol_{}_{}Ribbon{:03d}_{:03d}Shape'.format(bp_joints_obj.side, bp_joints.description, i + 1,
+                                                                                          bp_joints.index))
+            # rename transform node
+            fol = cmds.listRelatives(fol_shape, parent = True)[0]
+            fol = cmds.rename(fol, fol_shape[:-5])
+            # parent to follicle group
+            cmds.parent(fol, fol_grp)
+            # connect follicle
+            cmds.connectAttr(surf_shape + '.worldSpace[0]', fol_shape + '.inputSurface')
+            # connect follicle shape to transform
+            cmds.connectAttr(fol_shape + '.outTranslate', fol + '.translate')
+            cmds.connectAttr(fol_shape + '.outRotate', fol + '.rotate')
+            # set uv value
+            cmds.setAttr(fol_shape + '.parameterU', 0.5)
+            cmds.setAttr(fol_shape + '.parameterV', float(i) / (joint_number - 1))
+
+            # create joint
+            jnt = cmds.createNode('joint',
+                                  name = 'jnt_{}_{}Ribbon{:03d}_{:03d}'.format(bp_joints_obj.side, bp_joints.description, i + 1,
+                                                                                          bp_joints.index))
+            parent_grp = ribbon_jnt_grp
+            grp_nodes = []
+            for node_type in ['zero', 'offset']:
+                grp = cmds.createNode('transform', name = jnt.replace('jnt', node_type), parent = parent_grp)
+                grp_nodes.append(grp)
+                parent_grp = grp
+
+            cmds.parent(jnt, grp_nodes[-1])
+            # constraint joint with follicle
+            cmds.parentConstraint(fol, grp_nodes[0], maintainOffset = False)
+            # set offset group orientation back to zero
+            cmds.xform(grp_nodes[1], rotation = [0, 0, 0], worldSpace = True)
+
+        # create controller
+        ctrls = []
+        for pos in ['start', 'end', 'mid']:
+            ctrl = create_ctrl(description + pos.title(),
+                               side,
+                               index,
+                               shape = 'Square',
+                               shape_scale = 1.5,
+                               cvs_pos = None,
+                               axis = 'Z+',
+                               pos = jnt,
+                               lock_attrs = [],
+                               parent = None,
+                               animation_set = 'body_Ctrls_Set')
+            ctrls.append(ctrl)
+            ctrl_zero = nameUtils.Name(name = ctrl)
+            ctrl_zero.type = 'zero'
+            cmds.parent(ctrl_zero.name, ribbon_ctrl_grp)
+        # place controllers
+        cmds.setAttr(ctrls[0].replace('ctrl', 'zero') + '.translateX', -5 * offset_val)
+        cmds.setAttr(ctrls[1].replace('ctrl', 'zero') + '.translateX', 5 * offset_val)
+        cmds.setAttr(ctrls[0].replace('ctrl', 'zero') + '.visibility', 0)
+        cmds.setAttr(ctrls[1].replace('ctrl', 'zero') + '.visibility', 0)
+
+        # constraint mid control
+        cmds.pointConstraint(ctrls[0], ctrls[1], ctrls[-1].replace('ctrl', 'driven'), maintainOffset = False)
+
+        # add twist
+        cmds.addAttr(ctrls[0], longName = 'twist', attributeType = 'float', keyable = True)
+        cmds.addAttr(ctrls[1], longName = 'twist', attributeType = 'float', keyable = True)
+        # twist deformer
+        twist_node, twist_hnd = cmds.nonLinear(surf, type = 'twist', name = surf.replace('surf', 'twist'))
+        cmds.parent(twist_hnd, nodes_local_grp)
+        cmds.setAttr(twist_hnd + '.rotate', 0, 0, 90)
+        scale_val = cmds.getAttr(twist_hnd + '.scaleX')
+        cmds.setAttr(twist_hnd + '.scale', scale_val * offset_val, scale_val * offset_val, scale_val * offset_val)
+        # connect twist attr
+        twist_hnd_shape = cmds.listRelatives(twist_hnd, shapes = True)[0]
+        cmds.connectAttr(ctrls[0] + '.twist', twist_node + '.endAngle')
+        cmds.connectAttr(ctrls[1] + '.twist', twist_node + '.startAngle')
+
+        # add sine
+        cmds.addAttr(ctrls[-1], longName = 'sineDivider', niceName = 'SINE ----------', attributeType = 'enum',
+                     enumName = ' ', keyable = False)
+        cmds.setAttr(ctrls[-1] + '.sineDivider', channelBox = True, lock = True)
+        cmds.addAttr(ctrls[-1], longName = 'amplitude', attributeType = 'float', keyable = True, minValue = 0)
+        cmds.addAttr(ctrls[-1], longName = 'wavelength', attributeType = 'float', keyable = True, minValue = 0.1,
+                     defaultValue = 2)
+        cmds.addAttr(ctrls[-1], longName = 'offset', attributeType = 'float', keyable = True)
+        cmds.addAttr(ctrls[-1], longName = 'sineRotation', attributeType = 'float', keyable = True)
+        # sine deformer
+        sine_node, sine_hnd = cmds.nonLinear(surf, type = 'sine', name = surf.replace('surf', 'sine'))
+        cmds.parent(sine_hnd, nodes_local_grp)
+        cmds.setAttr(sine_hnd + '.rotate', 0, 0, 90)
+        scale_val = cmds.getAttr(sine_hnd + '.scaleX')
+        cmds.setAttr(sine_hnd + '.scale', scale_val * offset_val, scale_val * offset_val, scale_val * offset_val)
+        cmds.setAttr(sine_node + '.dropoff', 1)
+        # connect sine attr
+        sine_hnd_shape = cmds.listRelatives(sine_hnd, shapes = True)[0]
+        cmds.connectAttr(ctrls[-1] + '.amplitude', sine_node + '.amplitude')
+        cmds.connectAttr(ctrls[-1] + '.wavelength', sine_node + '.wavelength')
+        cmds.connectAttr(ctrls[-1] + '.offset', sine_node + '.offset')
+        cmds.connectAttr(ctrls[-1] + '.sineRotation', sine_hnd + '.rotateY')
+
+        # wire deformer
+        # create curve
+        wire_curve = cmds.curve(point = [[-5 * offset_val, 0, 0], [0, 0, 0], [5 * offset_val, 0, 0]],
+                                knot = [0, 0, 1, 1],
+                                degree = 2, name = 'crv_{}_{}RibbonWire_{:03d}'.format(side, description, index))
+        wire_curve_shape = cmds.listRelatives(wire_curve, shapes = True)[0]
+        cmds.rename(wire_curve_shape, wire_curve + 'Shape')
+        cmds.parent(wire_curve, nodes_world_grp)
+
+        # create clusters
+        for ctrl, i in zip(ctrls, [0, 2, 1]):
+            cls_node, cls_hnd = cmds.cluster('{}.cv[{}]'.format(wire_curve, i), name = ctrl.replace('ctrl', 'cls'))
+            cmds.parent(cls_hnd, nodes_world_grp)
+            cmds.pointConstraint(ctrl, cls_hnd, maintainOffset = False)
+
+        # create wire deformer
+        wire_node = surf.replace('surf', 'wire')
+        cmds.wire(surf, wire = wire_curve, name = wire_node)
+        cmds.setAttr(wire_node + '.dropoffDistance[0]', 200)
+        cmds.parent(wire_curve + 'BaseWire', nodes_local_grp)
+
+        Controls = 'Controls'
+        Joints = 'Joints'
+        RigNodes_Local = 'RigNodesLocal'
+        RigNodes_World = 'RigNodesWorld'
+        cmds.parent(ribbon_ctrl_grp, Controls)
+        cmds.parent(ribbon_jnt_grp, Joints)
+        cmds.parent(nodes_local_grp, RigNodes_Local)
+        cmds.parent(nodes_world_grp, RigNodes_World)
+        cmds.delete(ribbon_grp)
+
+        return ribbon_grp, ribbon_ctrl_grp, ribbon_jnt_grp, nodes_local_grp, nodes_world_grp
     # class test:
     #     def __init__(self, ikfk):
     #         self.ikfk = ikfk

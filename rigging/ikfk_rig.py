@@ -26,20 +26,22 @@ import base_rig
 import ik_rig
 import fk_rig
 
-reload(pipelineUtils)
-reload(jointUtils)
-reload(hierarchyUtils)
-reload(fk_rig)
-reload(ik_rig)
+
+
+
 reload(base_rig)
+reload(ik_rig)
+reload(fk_rig)
+
 
 
 class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
     def __init__(self, bp_joints = None, joint_parent = None, control_parent = None, mirror = True):
-        super(IKFK_Rig, self).__init__(bp_joints = bp_joints, joint_parent = joint_parent,
-                                       control_parent = control_parent)
+        super(IKFK_Rig, self).__init__(bp_joints = bp_joints, joint_parent=joint_parent,control_parent = control_parent)
         self.mirror = mirror
-        self.bp_joints = bp_joints
+        # self.bp_joints = bp_joints
+        # self.joint_parent = joint_parent
+        # self.control_parent = control_parent
 
     def create_ikfk_chain_rig(self):
         u"""
@@ -176,3 +178,30 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
         self.ikfk_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'Bind',
                                                         joint_parent = self.jnt_grp)
         self.ikfk_chain_rig(self.fk_chain, self.ik_chain, self.ikfk_chain, self.control_grp)
+
+    def ribbon_Rig(self):
+        upper_part = nameUtils.Name(name = bind_chain[0])
+        lower_part = nameUtils.Name(name = bind_chain[1])
+        # Create ribbon and twist deformation joints
+        controllerUtils.create_ribbon(upper_part.side, upper_part.description, upper_part.index, joint_number = 5)
+        controllerUtils.create_ribbon(lower_part.side, lower_part.description, lower_part.index, joint_number = 5)
+
+        # Organize the hierarchy of ribbon controllers and joints
+        Ribbon_ctrl_grp = cmds.ls('grp_{}_*{}RibbonCtrls_001'.format(upper_part.side, upper_part.description))
+        Ribbon_jnt_grp = cmds.ls('grp_{}_*{}RibbonJnts_001'.format(upper_part.side, upper_part.description))
+        # Position and rotation of the adsorption ribbon controller group
+        ribbon_upper_start_driven = 'driven_{}_{}Start_001'.format(upper_part.side, upper_part.description)
+        ribbon_upper_Mid_driven = 'driven_{}_{}Mid_001'.format(upper_part.side, upper_part.description)
+        ribbon_upper_End_driven = 'driven_{}_{}End_001'.format(upper_part.side, upper_part.description)
+
+        ribbon_lower_start_driven = 'driven_{}_{}Start_001'.format(lower_part.side, lower_part.description)
+        ribbon_lower_Mid_driven = 'driven_{}_{}Mid_001'.format(lower_part.side, lower_part.description)
+        ribbon_lower_End_driven = 'driven_{}_{}End_001'.format(lower_part.side, lower_part.description)
+
+        cmds.parentConstraint(bind_chain[0], ribbon_upper_start_driven, maintainOffset = False)
+        cmds.orientConstraint(bind_chain[0], ribbon_upper_Mid_driven, maintainOffset = False)
+        cmds.pointConstraint(bind_chain[1], ribbon_upper_End_driven, maintainOffset = False)
+
+        cmds.parentConstraint(bind_chain[1], ribbon_lower_start_driven, maintainOffset = False)
+        cmds.orientConstraint(bind_chain[1], ribbon_lower_Mid_driven, maintainOffset = False)
+        cmds.pointConstraint(bind_chain[-1], ribbon_lower_End_driven, maintainOffset = False)

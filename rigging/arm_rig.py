@@ -24,7 +24,7 @@ reload(pipelineUtils)
 reload(jointUtils)
 
 import ikfk_rig
-reload(ikfk_rig)
+
 
 arm_bp_joints = ['bpjnt_l_shoulder_001', 'bpjnt_l_elbow_001',' bpjnt_l_wrist_001']
 

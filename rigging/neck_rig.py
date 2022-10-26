@@ -22,7 +22,7 @@ reload(pipelineUtils)
 reload(jointUtils)
 
 import ikfk_rig
-reload(ikfk_rig)
+
 
 neck_bp_joints = ['bpjnt_m_neck_001', 'bpjnt_m_neck_002',' bpjnt_m_neck_003','bpjnt_m_neck_004','bpjnt_m_neck_005']
 bpcrv = 'bpcrv_m_neck_001'

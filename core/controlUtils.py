@@ -388,23 +388,30 @@ class Control(object):
         else:
             ctrl = Control(n= name_obj.name, s = shape ,r= radius )
             ctrl_transform = '{}'.format(ctrl.transform)
-            if axis == 'X+':
-                ctrl.set_rotateX(rx = 90)
-            elif axis == 'X-':
-                ctrl.set_rotateX(rx= -90)
-            elif axis == 'Y+':
-                ctrl.set_rotateY(ry= 90)
-            elif axis == 'Y-':
-                ctrl.set_rotateY(ry= -90)
-            elif axis == 'Z+':
-                ctrl.set_rotateZ(rz= 90)
-            elif axis == 'Z-':
-                ctrl.set_rotateZ(rz= -90)
             # 复制ctrl作为次级控制器
             sub_obj  =  nameUtils.Name(name = name)
             sub_obj.description = sub_obj.description + 'Sub'
-            sub_ctrl = Control(n=sub_obj.name, s=shape)
+            sub_ctrl = Control(n=sub_obj.name, s=shape,r = radius * 0.7)
             sub_ctrl.set_parent(ctrl.transform)
+            # 设置控制器形状方向
+            if axis == 'X+':
+                ctrl.set_rotateX(rx = 90)
+                sub_ctrl.set_rotateX(rx = 90)
+            elif axis == 'X-':
+                ctrl.set_rotateX(rx= -90)
+                sub_ctrl.set_rotateX(rx = -90)
+            elif axis == 'Y+':
+                ctrl.set_rotateY(ry= 90)
+                sub_ctrl.set_rotateY(ry = 90)
+            elif axis == 'Y-':
+                ctrl.set_rotateY(ry= -90)
+                sub_ctrl.set_rotateY(ry = -90)
+            elif axis == 'Z+':
+                ctrl.set_rotateZ(rz= 90)
+                sub_ctrl.set_rotateZ(rz = 90)
+            elif axis == 'Z-':
+                ctrl.set_rotateZ(rz= -90)
+                sub_ctrl.set_rotateZ(rz = -90)
             # 设置颜色
             ctrl.set(c = ctrl_color)
             sub_ctrl.set(c = sub_color)

@@ -18,11 +18,9 @@ import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.nameUtils as nameUtils
 import muziToolset.core.jointUtils as jointUtils
 
-reload(pipelineUtils)
-reload(jointUtils)
+
 
 import ikfk_rig
-reload(ikfk_rig)
 
 # leg_bp_joints = ['bpjnt_l_hip_001', 'bpjnt_l_knee_001',' bpjnt_l_ankle_001','bpjnt_l_ball_001','bpjnt_l_toe_001']
 

@@ -24,7 +24,7 @@ import muziToolset.core.jointUtils as jointUtils
 reload(pipelineUtils)
 reload(jointUtils)
 import base_rig
-reload(base_rig)
+
 
 class FK_Rig(base_rig.Base_Rig):
     def __init__(self, bp_joints = None , joint_parent = None, control_parent = None):

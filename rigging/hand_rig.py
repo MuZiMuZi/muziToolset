@@ -27,10 +27,7 @@ import arm_rig
 reload(pipelineUtils)
 reload(jointUtils)
 reload(hierarchyUtils)
-reload(fk_rig)
-reload(ik_rig)
-reload(base_rig)
-reload(arm_rig)
+
 
 
 class Hand_Rig(arm_rig.Arm_Rig):
