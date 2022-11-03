@@ -137,12 +137,17 @@ class IK_Rig(base_rig.Base_Rig):
         # 创建末端关节控制器的定位loctor
         endIK_pos_loc = cmds.spaceLocator(name = endIK_ctrl.replace('ctrl_', 'loc_'))[0]
         cmds.parentConstraint(endIK_ctrl, endIK_pos_loc, mo = False)
-        cmds.parent( endIK_pos_loc,endIK_ctrl)
 
-        # 创建计算距离的distween节点，来首端关节到末端控制器的距离
+
+        # 创建计算距离的distween节点，来计算首端关节到末端控制器的距离
         disBtw_node = cmds.createNode('distanceBetween', name = endIK_pos_loc.replace('loc_', 'disBtw_'))
         cmds.connectAttr(startIK_jnt + '.translate', disBtw_node + '.point1')
         cmds.connectAttr(endIK_pos_loc + '.translate', disBtw_node + '.point2')
+        disBtw_value_node = cmds.createNode('transform',name = disBtw_node.replace('disBtw_','disBtw_value_'))
+        cmds.connectAttr(disBtw_node +'.distance',disBtw_value_node + '.translateX')
+        cmds.disconnectAttr(disBtw_node +'.distance',disBtw_value_node + '.translateX')
+        disBtw_value = cmds.getAttr(disBtw_value_node + '.translateX')
+        cmds.delete(disBtw_value_node)
 
         # 计算原本关节的距离值
         midIK_jnt_value = cmds.getAttr(midIK_jnt + '.translateX')
@@ -152,7 +157,7 @@ class IK_Rig(base_rig.Base_Rig):
         # 将现有的关节距离减去原本关节的距离得到拉伸的距离
         reduce_node = cmds.createNode('addDoubleLinear', name = startIK_jnt.replace('jnt_', 'reduce_'))
         cmds.connectAttr(disBtw_node + '.distance', reduce_node + '.input1')
-        cmds.setAttr(reduce_node + '.input2', distance_value * -1)
+        cmds.setAttr(reduce_node + '.input2', disBtw_value * -1)
 
         # 将变化的数值除以二，均匀分配给对应的拉伸关节
         mult_node = cmds.createNode('multDoubleLinear',name = startIK_jnt.replace('jnt_', 'mult_'))
@@ -181,7 +186,7 @@ class IK_Rig(base_rig.Base_Rig):
         cmds.connectAttr(cond_node + '.outColorR',midIK_jnt + '.translateX')
         cmds.connectAttr(cond_node + '.outColorG', endIK_jnt + '.translateX')
 
-
+        hierarchyUtils.Hierarchy.parent(child_node = endIK_pos_loc, parent_node = ik_ctrl_grp)
 
     def ik_spine_rig(self, ik_chain, control_parent):
         u"""
@@ -217,6 +222,7 @@ class IK_Rig(base_rig.Base_Rig):
             cv = '{}.cv[{}]'.format(ik_chain_crv, i)
             # 设置cv点的位置
             cmds.xform(cv, translation = jnt_pos, worldSpace = True)
+        cmds.setAttr(ik_chain_crv + '.visibility', 0)
 
         # 创建开始的IK控制器
         startIK_jnt = ik_chain[0]
@@ -276,6 +282,7 @@ class IK_Rig(base_rig.Base_Rig):
         cmds.setAttr(spine_ikhandle_node + '.dWorldUpType', 4)
         cmds.connectAttr(startIK_loc + '.worldMatrix[0]', spine_ikhandle_node + '.dWorldUpMatrix')
         cmds.connectAttr(endIK_loc + '.worldMatrix[0]', spine_ikhandle_node + '.dWorldUpMatrixEnd')
+        cmds.setAttr(spine_ikhandle_node + '.visibility', 0)
 
         # 整理层级结构
         ik_ctrl_grp = cmds.createNode('transform', name = ik_chain[0].replace('jnt', 'grp'))
@@ -296,17 +303,17 @@ class IK_Rig(base_rig.Base_Rig):
 
         # 创建一个相加节点来获取ikspine曲线变换的数值
         add_curveInfo_node = cmds.createNode('addDoubleLinear',name = ik_chain_crv.replace('crv_','add_'))
-        cmds.connectAttr(curveInfo_node + 'arcLength',add_curveInfo_node + '.input1')
+        cmds.connectAttr(curveInfo_node + '.arcLength',add_curveInfo_node + '.input1')
         cmds.setAttr(add_curveInfo_node + '.input2', ik_chain_crv_value * -1)
 
         # 创建一个相乘节点，来将变换的数值平均分配给每个关节
         mult_curveInfo_node = cmds.createNode('multDoubleLinear',name = ik_chain_crv.replace('crv_','mult_'))
-        cmds.connectAttr(add_curveInfo_node + '.output',mult_curveInfo_node + 'input1' )
+        cmds.connectAttr(add_curveInfo_node + '.output',mult_curveInfo_node + '.input1' )
         cmds.setAttr(mult_curveInfo_node + '.input2',0.25 )
 
         # 根据对应的关节创建对应的相加节点，将变换后的数值连接到对应的关节上
         for jnt in ik_chain[1:-1]:
             add_node = cmds.createNode('addDoubleLinear',name = jnt.replace('jnt_','add_'))
             cmds.connectAttr(mult_curveInfo_node + '.output',add_node + '.input1')
-            cmds.setAttr(add_node + 'input2',cmds.getAttr(jnt + '.translateX'))
+            cmds.setAttr(add_node + '.input2',cmds.getAttr(jnt + '.translateX'))
             cmds.connectAttr(add_node + '.output',jnt + '.translateX')
