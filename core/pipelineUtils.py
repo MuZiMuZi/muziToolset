@@ -24,9 +24,7 @@ import maya.mel as mel
 
 import muziToolset.core.attrUtils as attrUtils
 import muziToolset.core.controlUtils as controlUtils
-
-reload(attrUtils)
-reload(controlUtils)
+import muziToolset.core.hierarchyUtils as hierarchyUtils
 
 
 class Pipeline(object):
@@ -229,19 +227,26 @@ class Pipeline(object):
         选择物体，批量制作约束
         """
         geos = cmds.ls(sl = True)
-
         cmds.undoInfo(openChunk = True)  # 批量撤销的开头
         for geo in geos:
-            ctrl = cmds.circle(name = 'ctrl_' + geo)[0]
-            connect = cmds.createNode('transform', name = ctrl.replace('ctrl_', 'connect'))
-            driven = cmds.createNode('transform', name = ctrl.replace('ctrl_', 'driven_'))
-            zero = cmds.createNode('transform', name = ctrl.replace('ctrl_', 'zero_'))
-            cmds.parent(ctrl, connect)
-            cmds.parent(connect, driven)
-            cmds.parent(driven, zero)
-            cmds.matchTransform(zero, geo)
-            cmds.parentConstraint(ctrl, geo)
-            cmds.scaleConstraint(ctrl, geo)
+            ctrl = controlUtils.Control(n= 'ctrl_' + geo, s = 'cube' ,r= 1 )
+            ctrl_transform = '{}'.format(ctrl.transform)
+            sub_ctrl = controlUtils.Control(n = 'ctrlSub_' + geo, s = 'cube', r = 1 * 0.7)
+            sub_ctrl.set_parent(ctrl.transform)
+            sub_ctrl_transform = '{}'.format(ctrl.transform)
+            # 添加上层层级组
+            offset_grp = hierarchyUtils.Hierarchy.add_extra_group(
+                obj = ctrl_transform, grp_name = '{}'.format(ctrl_transform.replace('ctrl', 'offset')), world_orient = False)
+            connect_grp = hierarchyUtils.Hierarchy.add_extra_group(
+                obj = offset_grp, grp_name = offset_grp.replace('offset', 'connect'), world_orient = False)
+            driven_grp = hierarchyUtils.Hierarchy.add_extra_group(
+                obj = connect_grp, grp_name = connect_grp.replace('connect', 'driven'), world_orient = False)
+            zero_grp = hierarchyUtils.Hierarchy.add_extra_group(
+                obj = driven_grp, grp_name = driven_grp.replace('driven', 'zero'), world_orient = False)
+
+            cmds.matchTransform(zero_grp, geo)
+            cmds.parentConstraint(sub_ctrl_transform, geo,mo = True)
+            cmds.scaleConstraint(sub_ctrl_transform, geo,mo = True)
 
         cmds.undoInfo(openChunk = False)  # 批量撤销的开头
 
