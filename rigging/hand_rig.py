@@ -42,12 +42,17 @@ class Hand_Rig(arm_rig.Arm_Rig):
         u"""
         创建手指的FK绑定控制系统
         """
+        hand_jnt = 'jnt_l_wristBind_001'
+        hand_jnt_mirror = 'jnt_r_wristBind_001'
         hand_ctrl_grp = cmds.createNode('transform',name = 'grp_l_handCtrl_001')
         hand_jnt_grp = cmds.createNode('transform',name = 'grp_l_handJnt_001')
         hand_ctrl_grp_mirror = cmds.createNode('transform', name = 'grp_r_handCtrl_001')
         hand_jnt_grp_mirror = cmds.createNode('transform', name = 'grp_r_handJnt_001')
         cmds.parent(hand_jnt_grp,hand_jnt_grp_mirror,self.Joints)
         cmds.parent(hand_ctrl_grp,hand_ctrl_grp_mirror,self.cog_ctrl)
+        cmds.parentConstraint(hand_jnt,hand_ctrl_grp)
+        cmds.parentConstraint(hand_jnt_mirror, hand_ctrl_grp_mirror)
+
         # 获取手指各模块的bp关节
         thumbHand_bp_joints = self.get_modular_bp_joints('thumbHand_rig')
         indexHand_bp_joints = self.get_modular_bp_joints('indexHand_rig')
