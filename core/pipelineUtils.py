@@ -233,7 +233,7 @@ class Pipeline(object):
             ctrl_transform = '{}'.format(ctrl.transform)
             sub_ctrl = controlUtils.Control(n = 'ctrlSub_' + geo, s = 'cube', r = 1 * 0.7)
             sub_ctrl.set_parent(ctrl.transform)
-            sub_ctrl_transform = '{}'.format(ctrl.transform)
+            sub_ctrl_transform = '{}'.format(sub_ctrl.transform)
             # 添加上层层级组
             offset_grp = hierarchyUtils.Hierarchy.add_extra_group(
                 obj = ctrl_transform, grp_name = '{}'.format(ctrl_transform.replace('ctrl', 'offset')), world_orient = False)
