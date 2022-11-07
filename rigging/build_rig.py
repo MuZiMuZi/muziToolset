@@ -20,13 +20,7 @@ import muziToolset.rigging.hand_rig as hand_rig
 
 import maya.cmds as cmds
 
-# reload(base_rig)
-# reload(arm_rig)
-# reload(foot_rig)
-# reload(neck_rig)
-# reload(spine_rig)
-# reload(leg_rig)
-# reload(hand_rig)
+
 
 class Build_Rig(base_rig.Base_Rig):
     def __init__(self):

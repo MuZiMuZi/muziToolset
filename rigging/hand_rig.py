@@ -96,11 +96,11 @@ class Hand_Rig(arm_rig.Arm_Rig):
         pose_ctrl_obj = controlUtils.Control.create_ctrl('ctrl_{}_handPose_001'.format('l'), shape = 'pPlatonic',
                                                          radius = 10,
                                                          axis = 'X+',
-                                                         pos = thumbHand_fk_chain[0], parent = self.cog_ctrl)
+                                                         pos = thumbHand_fk_chain[0], parent =hand_ctrl_grp)
         pose_ctrl_mirror_obj = controlUtils.Control.create_ctrl('ctrl_{}_handPose_001'.format('r'), shape = 'pPlatonic',
                                                          radius = 10,
                                                          axis = 'X+',
-                                                         pos = thumbHand_fk_chain_mirror[0], parent = self.cog_ctrl)
+                                                         pos = thumbHand_fk_chain_mirror[0], parent = hand_ctrl_grp_mirror)
 
         self.fingerCurlRig()
 
@@ -149,3 +149,4 @@ class Hand_Rig(arm_rig.Arm_Rig):
 
                         # 将输出连接到偏移组的rotateZ
                         cmds.connectAttr(mult_node + '.output', offset_name + '.rotateZ')
+
