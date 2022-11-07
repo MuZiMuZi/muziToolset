@@ -325,9 +325,22 @@ class IK_Rig(base_rig.Base_Rig):
         cmds.connectAttr(add_curveInfo_node + '.output', mult_curveInfo_node + '.input1')
         cmds.setAttr(mult_curveInfo_node + '.input2', 0.25)
 
+        # 给控制器创建一个拉伸的属性，动画师根据需要可以选择是否拉伸
+        cmds.addAttr(endIK_ctrl, longName = 'stretch', attributeType = 'double',
+                     niceName = u'拉伸', minValue = 0, maxValue = 1, defaultValue = 0, keyable = 1)
+
         # 根据对应的关节创建对应的相加节点，将变换后的数值连接到对应的关节上
         for jnt in ik_chain[1:-1]:
             add_node = cmds.createNode('addDoubleLinear', name = jnt.replace('jnt_', 'add_'))
             cmds.connectAttr(mult_curveInfo_node + '.output', add_node + '.input1')
             cmds.setAttr(add_node + '.input2', cmds.getAttr(jnt + '.translateX'))
-            cmds.connectAttr(add_node + '.output', jnt + '.translateX')
+            # 创建blendcolor节点用来承载拉伸的设置
+            blend_node = cmds.createNode('blendColors', name = jnt.replace('jnt_', 'blend_'))
+            cmds.connectAttr(endIK_ctrl + '.stretch', blend_node + '.blender')
+            # 设置blendcolor节点混合值为0的时候，也就是没有拉伸的时候，color2R 的值是原关节的长度
+            cmds.setAttr(blend_node + '.color2R', cmds.getAttr(jnt + '.translateX'))
+            # 连接拉伸后的关节长度
+            cmds.connectAttr(add_node + '.output', blend_node + '.color1R')
+            # 把混合后的关节长度连接给原关节
+            cmds.connectAttr(blend_node + '.outputR', jnt + '.translateX')
+
