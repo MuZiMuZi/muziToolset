@@ -191,7 +191,7 @@ class IK_Rig(base_rig.Base_Rig):
 
         # 创建blendcolor节点用来承载拉伸的设置
         blend_node = cmds.createNode('blendColors', name = endIK_ctrl.replace('ctrl_', 'blend_'))
-        cmds.connectAttr(endIK_ctrl + '.stretch', blend_node + '.blend')
+        cmds.connectAttr(endIK_ctrl + '.stretch', blend_node + '.blender')
         # 设置blendcolor节点混合值为0的时候，也就是没有拉伸的时候，color2R 和 color2G 的值是原关节的长度
         cmds.setAttr(blend_node + '.color2R', midIK_jnt_value)
         cmds.setAttr(blend_node + '.color2G', endIK_jnt_value)
