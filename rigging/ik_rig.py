@@ -138,14 +138,13 @@ class IK_Rig(base_rig.Base_Rig):
         endIK_pos_loc = cmds.spaceLocator(name = endIK_ctrl.replace('ctrl_', 'loc_'))[0]
         cmds.parentConstraint(endIK_ctrl, endIK_pos_loc, mo = False)
 
-
         # 创建计算距离的distween节点，来计算首端关节到末端控制器的距离
         disBtw_node = cmds.createNode('distanceBetween', name = endIK_pos_loc.replace('loc_', 'disBtw_'))
         cmds.connectAttr(startIK_jnt + '.translate', disBtw_node + '.point1')
         cmds.connectAttr(endIK_pos_loc + '.translate', disBtw_node + '.point2')
-        disBtw_value_node = cmds.createNode('transform',name = disBtw_node.replace('disBtw_','disBtw_value_'))
-        cmds.connectAttr(disBtw_node +'.distance',disBtw_value_node + '.translateX')
-        cmds.disconnectAttr(disBtw_node +'.distance',disBtw_value_node + '.translateX')
+        disBtw_value_node = cmds.createNode('transform', name = disBtw_node.replace('disBtw_', 'disBtw_value_'))
+        cmds.connectAttr(disBtw_node + '.distance', disBtw_value_node + '.translateX')
+        cmds.disconnectAttr(disBtw_node + '.distance', disBtw_value_node + '.translateX')
         disBtw_value = cmds.getAttr(disBtw_value_node + '.translateX')
         cmds.delete(disBtw_value_node)
 
@@ -160,33 +159,48 @@ class IK_Rig(base_rig.Base_Rig):
         cmds.setAttr(reduce_node + '.input2', disBtw_value * -1)
 
         # 将变化的数值除以二，均匀分配给对应的拉伸关节
-        mult_node = cmds.createNode('multDoubleLinear',name = startIK_jnt.replace('jnt_', 'mult_'))
+        mult_node = cmds.createNode('multDoubleLinear', name = startIK_jnt.replace('jnt_', 'mult_'))
         cmds.connectAttr(reduce_node + '.output', mult_node + '.input1')
-        cmds.setAttr(mult_node + '.input2',0.5)
+        cmds.setAttr(mult_node + '.input2', 0.5)
 
         # 将变化的数值连接给对应的拉伸关节
         add_midIK_jnt_node = cmds.createNode('addDoubleLinear', name = midIK_jnt.replace('jnt_', 'add_'))
         add_endIK_jnt_node = cmds.createNode('addDoubleLinear', name = endIK_jnt.replace('jnt_', 'add_'))
 
         cmds.connectAttr(mult_node + '.output', add_midIK_jnt_node + '.input1')
-        cmds.setAttr(add_midIK_jnt_node + '.input2',midIK_jnt_value)
+        cmds.setAttr(add_midIK_jnt_node + '.input2', midIK_jnt_value)
 
         cmds.connectAttr(mult_node + '.output', add_endIK_jnt_node + '.input1')
         cmds.setAttr(add_endIK_jnt_node + '.input2', endIK_jnt_value)
 
         # 创建一个判断节点，当变化的数值大于0时才进行拉伸
-        cond_node = cmds.createNode('condition',name = startIK_jnt.replace('jnt_', 'cond_'))
-        cmds.setAttr(cond_node + '.operation',2)
-        cmds.connectAttr(mult_node + '.output',cond_node + '.firstTerm')
-        cmds.connectAttr(add_midIK_jnt_node + '.output',cond_node + '.colorIfTrueR')
+        cond_node = cmds.createNode('condition', name = startIK_jnt.replace('jnt_', 'cond_'))
+        cmds.setAttr(cond_node + '.operation', 2)
+        cmds.connectAttr(mult_node + '.output', cond_node + '.firstTerm')
+        cmds.connectAttr(add_midIK_jnt_node + '.output', cond_node + '.colorIfTrueR')
         cmds.connectAttr(add_endIK_jnt_node + '.output', cond_node + '.colorIfTrueG')
 
-        cmds.setAttr(cond_node + '.colorIfFalseR',midIK_jnt_value)
+        cmds.setAttr(cond_node + '.colorIfFalseR', midIK_jnt_value)
         cmds.setAttr(cond_node + '.colorIfFalseG', endIK_jnt_value)
-        cmds.connectAttr(cond_node + '.outColorR',midIK_jnt + '.translateX')
-        cmds.connectAttr(cond_node + '.outColorG', endIK_jnt + '.translateX')
 
         hierarchyUtils.Hierarchy.parent(child_node = endIK_pos_loc, parent_node = ik_ctrl_grp)
+
+        # 给控制器创建一个拉伸的属性，动画师根据需要可以选择是否拉伸
+        cmds.addAttr(endIK_ctrl, longName = 'stretch', attributeType = 'double',
+                     niceName = u'拉伸', minValue = 0, maxValue = 1, defaultValue = 0, keyable = 1)
+
+        # 创建blendcolor节点用来承载拉伸的设置
+        blend_node = cmds.createNode('blendColors', name = endIK_ctrl.replace('ctrl_', 'blend_'))
+        cmds.connectAttr(endIK_ctrl + '.stretch', blend_node + '.blend')
+        # 设置blendcolor节点混合值为0的时候，也就是没有拉伸的时候，color2R 和 color2G 的值是原关节的长度
+        cmds.setAttr(blend_node + '.color2R', midIK_jnt_value)
+        cmds.setAttr(blend_node + '.color2G', endIK_jnt_value)
+        # 连接拉伸后的关节长度
+        cmds.connectAttr(cond_node + '.outColorR', blend_node + '.color1R')
+        cmds.connectAttr(cond_node + '.outColorG', blend_node + '.color1G')
+        # 把混合后的关节长度连接给原关节
+        cmds.connectAttr(blend_node + '.outputR', midIK_jnt + '.translateX')
+        cmds.connectAttr(blend_node + '.outputG', endIK_jnt + '.translateX')
 
     def ik_spine_rig(self, ik_chain, control_parent):
         u"""
@@ -294,26 +308,26 @@ class IK_Rig(base_rig.Base_Rig):
 
         # 添加拉伸效果
         # 获取ikspine曲线的形状节点
-        ik_chain_crv_shape  = cmds.listRelatives(ik_chain_crv,shapes = True)[0]
+        ik_chain_crv_shape = cmds.listRelatives(ik_chain_crv, shapes = True)[0]
 
         # 创建curveinfo节点来获取ikspine曲线的长度
-        curveInfo_node = cmds.createNode('curveInfo',name = ik_chain_crv.replace('crv_','crvInfo_'))
-        cmds.connectAttr(ik_chain_crv_shape + '.worldSpace',  curveInfo_node + '.inputCurve')
+        curveInfo_node = cmds.createNode('curveInfo', name = ik_chain_crv.replace('crv_', 'crvInfo_'))
+        cmds.connectAttr(ik_chain_crv_shape + '.worldSpace', curveInfo_node + '.inputCurve')
         ik_chain_crv_value = cmds.getAttr(curveInfo_node + '.arcLength')
 
         # 创建一个相加节点来获取ikspine曲线变换的数值
-        add_curveInfo_node = cmds.createNode('addDoubleLinear',name = ik_chain_crv.replace('crv_','add_'))
-        cmds.connectAttr(curveInfo_node + '.arcLength',add_curveInfo_node + '.input1')
+        add_curveInfo_node = cmds.createNode('addDoubleLinear', name = ik_chain_crv.replace('crv_', 'add_'))
+        cmds.connectAttr(curveInfo_node + '.arcLength', add_curveInfo_node + '.input1')
         cmds.setAttr(add_curveInfo_node + '.input2', ik_chain_crv_value * -1)
 
         # 创建一个相乘节点，来将变换的数值平均分配给每个关节
-        mult_curveInfo_node = cmds.createNode('multDoubleLinear',name = ik_chain_crv.replace('crv_','mult_'))
-        cmds.connectAttr(add_curveInfo_node + '.output',mult_curveInfo_node + '.input1' )
-        cmds.setAttr(mult_curveInfo_node + '.input2',0.25 )
+        mult_curveInfo_node = cmds.createNode('multDoubleLinear', name = ik_chain_crv.replace('crv_', 'mult_'))
+        cmds.connectAttr(add_curveInfo_node + '.output', mult_curveInfo_node + '.input1')
+        cmds.setAttr(mult_curveInfo_node + '.input2', 0.25)
 
         # 根据对应的关节创建对应的相加节点，将变换后的数值连接到对应的关节上
         for jnt in ik_chain[1:-1]:
-            add_node = cmds.createNode('addDoubleLinear',name = jnt.replace('jnt_','add_'))
-            cmds.connectAttr(mult_curveInfo_node + '.output',add_node + '.input1')
-            cmds.setAttr(add_node + '.input2',cmds.getAttr(jnt + '.translateX'))
-            cmds.connectAttr(add_node + '.output',jnt + '.translateX')
+            add_node = cmds.createNode('addDoubleLinear', name = jnt.replace('jnt_', 'add_'))
+            cmds.connectAttr(mult_curveInfo_node + '.output', add_node + '.input1')
+            cmds.setAttr(add_node + '.input2', cmds.getAttr(jnt + '.translateX'))
+            cmds.connectAttr(add_node + '.output', jnt + '.translateX')
