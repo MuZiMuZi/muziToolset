@@ -411,6 +411,11 @@ class Control(object):
                 sub_ctrl.set_rotateZ(rz = 90)
             elif axis == 'Z-':
                 ctrl.set_rotateZ(rz= -90)
+            # 复制ctrl作为次级控制器
+            sub_obj  =  nameUtils.Name(name = name)
+            sub_obj.description = sub_obj.description + 'Sub'
+            sub_ctrl = Control(n=sub_obj.name, s=shape)
+            sub_ctrl.set_parent(ctrl.transform)
                 sub_ctrl.set_rotateZ(rz = -90)
             # 设置颜色
             ctrl.set(c = ctrl_color)
@@ -548,3 +553,210 @@ class Control(object):
         """
         for s in args:
             cls.delete_shape(s)
+
+    @staticmethod
+    def create_ribbon(name, joint_number = 5):
+        """
+        创建ribbon控制器，给动画师更细致的动画效果
+        思路：通过给定关节的名称来创建ribbon控制，通过曲线来生成曲面制作ribbon绑定，然后让生成的关节绑定在曲面上
+        采用的变形器有twist，sine和wire变形器，通过这些变形器影响曲面，从而带动曲面上的关节
+
+        Args:
+            ribbon.side (str): ribbon's ribbon.side
+            ribbon.description (str): ribbon's ribbon.description
+            ribbon.index (int): ribbon's ribbon.index
+            joint_number (int): how many joints need to be attached to the ribbon, default is 9
+
+        """
+        # 从名称中获取ribbon控制器的边，描述，和编号
+        ribbon = nameUtils.Name(name = name)
+
+        # 从ribbon控制器中的边获取偏移值
+        if ribbon.ribbon.side != 'r':
+            offset_val = 1
+        else:
+            offset_val = -1
+
+        # 创建ribbon控制器对应的层级组
+        ribbon_grp = cmds.createNode('transform',
+                                     name = 'grp_{}_{}Ribbon_{:03d}'.format(ribbon.side, ribbon.description,
+                                                                            ribbon.index))
+        ribbon_ctrl_grp = cmds.createNode('transform',
+                                          name = 'grp_{}_{}RibbonCtrls_{:03d}'.format(ribbon.side, ribbon.description,
+                                                                                      ribbon.index),
+                                          parent = ribbon_grp)
+        ribbon_jnt_grp = cmds.createNode('transform',
+                                         name = 'grp_{}_{}RibbonJnts_{:03d}'.format(ribbon.side, ribbon.description,
+                                                                                    ribbon.index),
+                                         parent = ribbon_grp)
+        nodes_local_grp = cmds.createNode('transform',
+                                          name = 'grp_{}_{}RibbonNodesLocal_{:03d}'.format(ribbon.side,
+                                                                                           ribbon.description,
+                                                                                           ribbon.index),
+                                          parent = ribbon_grp)
+        nodes_world_grp = cmds.createNode('transform',
+                                          name = 'grp_{}_{}RibbonNodesWorld_{:03d}'.format(ribbon.side,
+                                                                                           ribbon.description,
+                                                                                           ribbon.index),
+                                          parent = ribbon_grp)
+        cmds.setAttr(nodes_world_grp + '.inheritsTransform', 0)
+
+        cmds.setAttr(nodes_local_grp + '.visibility', 0)
+        cmds.setAttr(nodes_world_grp + '.visibility', 0)
+
+        # 创建对应的曲线以生成nurbs曲面
+        temp_curve = cmds.curve(point = [[-5 * offset_val, 0, 0], [5 * offset_val, 0, 0]], knot = [0, 1], degree = 1)
+        # 根据关节数重建曲线
+        cmds.rebuildCurve(temp_curve, degree = 3, replaceOriginal = True, rebuildType = 0, endKnots = 1, keepRange = 0,
+                          keepControlPoints = False, keepEndPoints = True, keepTangents = False,
+                          spans = joint_number + 1)
+        # 复制这条曲线
+        temp_curve_02 = cmds.duplicate(temp_curve)[0]
+        # 移动两条曲线的位置来制作曲面
+        cmds.setAttr(temp_curve + '.translateZ', 1)
+        cmds.setAttr(temp_curve_02 + '.translateZ', -1)
+
+        # 通过两条曲线来放样制作曲面
+        surf = cmds.loft(temp_curve_02, temp_curve, constructionHistory = False, uniform = True, degree = 3, sectionSpans = 1,
+                      range = False, polygon = 0,
+                      name = 'surf_{}_{}Ribbon_{:03d}'.format(ribbon.side, ribbon.description, ribbon.index))[0]
+        cmds.parent(surf, nodes_local_grp)
+
+        # 获得曲面的形状节点
+        surf_shape = cmds.listRelatives(surf, shapes = True)[0]
+
+        # 删除用来放样曲面的曲线
+        cmds.delete(temp_curve, temp_curve_02)
+
+        # 创建关节并附着到曲面
+        fol_grp = cmds.createNode('transform',
+                                  name = 'grp_{}_{}RibbonFollicles_{:03d}'.format(ribbon.side, ribbon.description,
+                                                                                  ribbon.index),
+                                  parent = nodes_world_grp)
+
+
+        for i in range(joint_number):
+            # 创建毛囊
+            fol_shape = cmds.createNode('follicle', name = 'fol_{}_{}Ribbon{:03d}_{:03d}Shape'.format(ribbon.side,
+                                                                                                      ribbon.description,
+                                                                                                      i + 1,
+                                                                                                      ribbon.index))
+            # 重命名毛囊的tran节点名称
+            fol = cmds.listRelatives(fol_shape, parent = True)[0]
+            fol = cmds.rename(fol, fol_shape[:-5])
+            # 把毛囊放入对应的层级组
+            cmds.parent(fol, fol_grp)
+            # 连接毛囊属性
+            cmds.connectAttr(surf_shape + '.worldSpace[0]', fol_shape + '.inputSurface')
+            # 连接毛囊的形状节点以进行变换
+            cmds.connectAttr(fol_shape + '.outTranslate', fol + '.translate')
+            cmds.connectAttr(fol_shape + '.outRotate', fol + '.rotate')
+            # 设置uv值
+            cmds.setAttr(fol_shape + '.parameterU', 0.5)
+            cmds.setAttr(fol_shape + '.parameterV', float(i) / (joint_number - 1))
+
+            # 创建关节
+            jnt = cmds.createNode('joint',
+                                  name = 'jnt_{}_{}Ribbon{:03d}_{:03d}'.format(ribbon.side, ribbon.description, i + 1,
+                                                                               ribbon.index))
+            parent_grp = ribbon_jnt_grp
+            grp_nodes = []
+            for node_type in ['zero', 'offset']:
+                grp = cmds.createNode('transform', name = jnt.replace('jnt', node_type), parent = parent_grp)
+                grp_nodes.append(grp)
+                parent_grp = grp
+
+            cmds.parent(jnt, grp_nodes[-1])
+            # 让对应的毛囊约束对应的关节点
+            cmds.parentConstraint(fol, grp_nodes[0], maintainOffset = False)
+            # 将偏移组的旋转设置为零
+            cmds.xform(grp_nodes[1], rotation = [0, 0, 0], worldSpace = True)
+
+        # 创建控制器
+        ctrls = []
+        for pos in ['start',  'mid','end']:
+            ctrl_name ='ctrl_{}_{}{}_{}'.format(ribbon.side,ribbon.description,pos.title(),ribbon.index)
+            ctrl = controlUtils.Control.create_ctrl(ctrl_name, shape = 'square', radius = 8,
+                                                                 axis = 'X+',
+                                                                 pos = jnt, parent = ribbon_ctrl_grp)
+
+            ctrls.append(ctrl.transform)
+        # 放置控制器
+        cmds.setAttr(ctrls[0].replace('ctrl', 'zero') + '.translateX', -5 * offset_val)
+        cmds.setAttr(ctrls[1].replace('ctrl', 'zero') + '.translateX', 5 * offset_val)
+        cmds.setAttr(ctrls[0].replace('ctrl', 'zero') + '.visibility', 0)
+        cmds.setAttr(ctrls[1].replace('ctrl', 'zero') + '.visibility', 0)
+
+        # 约束中间的控制器
+        cmds.pointConstraint(ctrls[0], ctrls[1], ctrls[-1].replace('ctrl', 'driven'), maintainOffset = False)
+
+        # 添加twist的控制属性在第一个控制器和最后一个控制器上,'start'和 'end'
+        cmds.addAttr(ctrls[0], longName = 'twist',niceName = u'扭曲' ,attributeType = 'float', keyable = True)
+        cmds.addAttr(ctrls[-1], longName = 'twist',niceName = u'扭曲', attributeType = 'float', keyable = True)
+        # 创建twist变形器
+        twist_node, twist_hnd = cmds.nonLinear(surf, type = 'twist', name = surf.replace('surf', 'twist'))
+        cmds.parent(twist_hnd, nodes_local_grp)
+        cmds.setAttr(twist_hnd + '.rotate', 0, 0, 90)
+        scale_val = cmds.getAttr(twist_hnd + '.scaleX')
+        cmds.setAttr(twist_hnd + '.scale', scale_val * offset_val, scale_val * offset_val, scale_val * offset_val)
+        # 连接twist变形器的属性到控制器上
+        twist_hnd_shape = cmds.listRelatives(twist_hnd, shapes = True)[0]
+        cmds.connectAttr(ctrls[0] + '.twist', twist_node + '.endAngle')
+        cmds.connectAttr(ctrls[1] + '.twist', twist_node + '.startAngle')
+
+        # 添加sine的控制属性在中间的控制器上,'mid'
+        cmds.addAttr(ctrls[1], longName = 'sineDivider', niceName = u'sine变形器属性设置 ----------', attributeType = 'enum',
+                     enumName = ' ', keyable = False)
+        cmds.setAttr(ctrls[1] + '.sineDivider', channelBox = True, lock = True)
+        cmds.addAttr(ctrls[1], longName = 'amplitude',niceName = u'振幅', attributeType = 'float', keyable = True, minValue = 0)
+        cmds.addAttr(ctrls[-1], longName = 'wavelength',niceName = u'波长', attributeType = 'float', keyable = True, minValue = 0.1,
+                     defaultValue = 2)
+        cmds.addAttr(ctrls[1], longName = 'offset',niceName = u'偏移', attributeType = 'float', keyable = True)
+        cmds.addAttr(ctrls[1], longName = 'sineRotation', niceName = u'正弦旋转',attributeType = 'float', keyable = True)
+        # 创建sine变形器
+        sine_node, sine_hnd = cmds.nonLinear(surf, type = 'sine', name = surf.replace('surf', 'sine'))
+        cmds.parent(sine_hnd, nodes_local_grp)
+        cmds.setAttr(sine_hnd + '.rotate', 0, 0, 90)
+        scale_val = cmds.getAttr(sine_hnd + '.scaleX')
+        cmds.setAttr(sine_hnd + '.scale', scale_val * offset_val, scale_val * offset_val, scale_val * offset_val)
+        cmds.setAttr(sine_node + '.dropoff', 1)
+        # 连接sine变形器的属性到控制器上
+        sine_hnd_shape = cmds.listRelatives(sine_hnd, shapes = True)[0]
+        cmds.connectAttr(ctrls[-1] + '.amplitude', sine_node + '.amplitude')
+        cmds.connectAttr(ctrls[-1] + '.wavelength', sine_node + '.wavelength')
+        cmds.connectAttr(ctrls[-1] + '.offset', sine_node + '.offset')
+        cmds.connectAttr(ctrls[-1] + '.sineRotation', sine_hnd + '.rotateY')
+
+        # 创建wire变形器
+        # 创建wire变形器需要的曲线
+        wire_curve = cmds.curve(point = [[-5 * offset_val, 0, 0], [0, 0, 0], [5 * offset_val, 0, 0]],
+                                knot = [0, 0, 1, 1],
+                                degree = 2, name = 'crv_{}_{}RibbonWire_{:03d}'.format(ribbon.side, ribbon.description,
+                                                                                       ribbon.index))
+        wire_curve_shape = cmds.listRelatives(wire_curve, shapes = True)[0]
+        cmds.rename(wire_curve_shape, wire_curve + 'Shape')
+        cmds.parent(wire_curve, nodes_world_grp)
+
+        # 创建cluster 变形器，用控制器来约束cluster变形器的变化
+        for ctrl, i in zip(ctrls, [0, 2, 1]):
+            cls_node, cls_hnd = cmds.cluster('{}.cv[{}]'.format(wire_curve, i), name = ctrl.replace('ctrl', 'cls'))
+            cmds.parent(cls_hnd, nodes_world_grp)
+            cmds.pointConstraint(ctrl, cls_hnd, maintainOffset = False)
+
+        # 创建wire变形器
+        wire_node = surf.replace('surf', 'wire')
+        cmds.wire(surf, wire = wire_curve, name = wire_node)
+        cmds.setAttr(wire_node + '.dropoffDistance[0]', 200)
+        cmds.parent(wire_curve + 'BaseWire', nodes_local_grp)
+
+        Controls = 'Controls'
+        Joints = 'Joints'
+        RigNodes_Local = 'RigNodesLocal'
+        RigNodes_World = 'RigNodesWorld'
+        cmds.parent(ribbon_ctrl_grp, Controls)
+        cmds.parent(ribbon_jnt_grp, Joints)
+        cmds.parent(nodes_local_grp, RigNodes_Local)
+        cmds.parent(nodes_world_grp, RigNodes_World)
+        cmds.delete(ribbon_grp)
+
+        return ribbon_grp, ribbon_ctrl_grp, ribbon_jnt_grp, nodes_local_grp, nodes_world_grp

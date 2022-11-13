@@ -12,6 +12,9 @@ ikfk_chain_rig：创建混合IKFk链的bind链控制器绑定
 
 ikfk_spine_rig： 创建IK样条曲线（脊椎和脖子的绑定）和FK关节链的混合绑定
 
+ribbon_Rig ： 创建ribbon关节的绑定
+
+
 """
 
 import maya.cmds as cmds
@@ -28,7 +31,7 @@ import fk_rig
 
 
 
-
+reload(controlUtils)
 reload(base_rig)
 reload(ik_rig)
 reload(fk_rig)
@@ -179,17 +182,20 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
                                                         joint_parent = self.jnt_grp)
         self.ikfk_chain_rig(self.fk_chain, self.ik_chain, self.ikfk_chain, self.control_grp)
 
-    def ribbon_Rig(self):
-        upper_part = nameUtils.Name(name = bind_chain[0])
-        lower_part = nameUtils.Name(name = bind_chain[1])
-        # Create ribbon and twist deformation joints
-        controllerUtils.create_ribbon(upper_part.side, upper_part.description, upper_part.index, joint_number = 5)
-        controllerUtils.create_ribbon(lower_part.side, lower_part.description, lower_part.index, joint_number = 5)
+    def ribbon_Rig(self,ikfk_chain,joint_number):
+        u"""
+              创建Iribbon关节的绑定
+              """
+        upper_part = nameUtils.Name(name = ikfk_chain[0])
+        lower_part = nameUtils.Name(name = ikfk_chain[1])
+        # 创建ribbon关节和twist关节
+        controllerUtils.Control.create_ribbon(upper_part.side, upper_part.description, upper_part.index, joint_number = joint_number)
+        controllerUtils.Control.create_ribbon(lower_part.side, lower_part.description, lower_part.index, joint_number = joint_number)
 
-        # Organize the hierarchy of ribbon controllers and joints
+        # 整理ribbon控制器和关节的层次
         Ribbon_ctrl_grp = cmds.ls('grp_{}_*{}RibbonCtrls_001'.format(upper_part.side, upper_part.description))
         Ribbon_jnt_grp = cmds.ls('grp_{}_*{}RibbonJnts_001'.format(upper_part.side, upper_part.description))
-        # Position and rotation of the adsorption ribbon controller group
+        # 吸附带控制器组的位置和旋转
         ribbon_upper_start_driven = 'driven_{}_{}Start_001'.format(upper_part.side, upper_part.description)
         ribbon_upper_Mid_driven = 'driven_{}_{}Mid_001'.format(upper_part.side, upper_part.description)
         ribbon_upper_End_driven = 'driven_{}_{}End_001'.format(upper_part.side, upper_part.description)
