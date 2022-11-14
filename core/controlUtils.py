@@ -24,14 +24,14 @@ from __future__ import print_function
 import json
 import os
 
-
-import pymel.core as pm
-import  maya.cmds as cmds
-import nameUtils
-import muziToolset.core.hierarchyUtils as hierarchyUtils
+import maya.cmds as cmds
 import muziToolset.core.attrUtils as attrUtils
+import muziToolset.core.hierarchyUtils as hierarchyUtils
+import nameUtils
+import pymel.core as pm
 
 reload(attrUtils)
+
 
 class Control(object):
     u"""
@@ -45,16 +45,17 @@ class Control(object):
         kwargs – -ro -rotate [float, float,float] 旋转
         kwargs – -o -offset [float, float,float] 偏移
     """
-    def __init__(self,*args,**kwargs):
+
+    def __init__(self, *args, **kwargs):
         self.cv = None
         self.transform = None
-        self.set_transform(*args,**kwargs)
+        self.set_transform(*args, **kwargs)
         self.set(**kwargs)
 
     def __repr__(self):
-        return "{m}.{c}.(t = {t})".format(m = __name__,c = self.__class__.__name__,t = self.get_transform().name())
+        return "{m}.{c}.(t = {t})".format(m = __name__, c = self.__class__.__name__, t = self.get_transform().name())
 
-    def set(self,**kwargs):
+    def set(self, **kwargs):
         self.set_parent(**kwargs)
         self.set_shape(**kwargs)
         self.set_name(**kwargs)
@@ -63,15 +64,15 @@ class Control(object):
         self.set_offset(**kwargs)
         self.set_locked(**kwargs)
 
-    def set_transform(self,*args,**kwargs):
+    def set_transform(self, *args, **kwargs):
         u"""
         设置控制器的transform节点
         -t -transform string/node/Control 控制器节点
         """
-        t = kwargs.get("t",kwargs.get("transform",self.get_arg(args)))
+        t = kwargs.get("t", kwargs.get("transform", self.get_arg(args)))
         # 如果没有给定t（transform）的值，或者选择的物体没有transform节点，则创建一个transform节点
         if t is None:
-            self.transform = pm.group(em=1)
+            self.transform = pm.group(em = 1)
         # 如果给定了t(transfrom) 的值
         elif isinstance(t, (str, unicode)):
             # 如果t(transfrom) ，不存在于该场景
@@ -79,7 +80,7 @@ class Control(object):
                 pm.warning("没有与名称符合的物体 " + t)
                 self.set_transform()
             else:
-                transforms = pm.ls(t, type="transform")
+                transforms = pm.ls(t, type = "transform")
                 # 如果t(transfrom)，该场景存在多个重名的物体
                 if len(transforms) != 1:
                     pm.warning("有多个名称相同的物体 " + t)
@@ -93,7 +94,7 @@ class Control(object):
         elif hasattr(t, "nodeType") and t.nodeType() == "transform":
             self.transform = t
 
-    def set_parent(self,*args,**kwargs):
+    def set_parent(self, *args, **kwargs):
         u"""
         设置控制器的父对象
         -p -parent string/node 父对象
@@ -109,7 +110,7 @@ class Control(object):
             except (RuntimeError, UnicodeEncodeError):
                 pass
 
-    def set_shape(self,*args,**kwargs):
+    def set_shape(self, *args, **kwargs):
         u"""
         设置控制器的形状
         -s -shape data/name 形态
@@ -127,22 +128,22 @@ class Control(object):
                 p = [[data["points"][i + j] for j in range(3)] for i in range(0, len(data["points"]), 3)]
                 if data["periodic"]:
                     p = p + p[:data["degree"]]
-                curve = pm.curve(degree=data["degree"],
-                                 knot=data["knot"],
-                                 periodic=data["periodic"],
-                                 p=p)
-                curve.getShape().setParent(self.get_transform(), s=1, add=1)
+                curve = pm.curve(degree = data["degree"],
+                                 knot = data["knot"],
+                                 periodic = data["periodic"],
+                                 p = p)
+                curve.getShape().setParent(self.get_transform(), s = 1, add = 1)
                 curve.getShape().rename(self.get_transform().name().split("|")[-1] + "Shape")
                 pm.delete(curve)
             self.set_color(color)
             self.set_radius(radius)
         elif isinstance(shape, (str, unicode)):
-            data_file = os.path.abspath(__file__ + "/../../res/image/{s}.json".format(s=shape))
+            data_file = os.path.abspath(__file__ + "/../../res/image/{s}.json".format(s = shape))
             if not os.path.isfile(data_file):
                 pm.warning(u"找不到这个文件 " + data_file)
                 return
             with open(data_file, "r") as fp:
-                self.set_shape(s=json.load(fp))
+                self.set_shape(s = json.load(fp))
 
     def set_name(self, *args, **kwargs):
         u"""
@@ -153,9 +154,9 @@ class Control(object):
             return
         self.get_transform().rename(n)
         for s in self.get_transform().getShapes():
-            s.rename(n+"Shape")
+            s.rename(n + "Shape")
 
-    def set_color(self,*args,**kwargs):
+    def set_color(self, *args, **kwargs):
         u"""
         设置控制器的颜色
         -c -color int 颜色
@@ -170,12 +171,12 @@ class Control(object):
             shape.overrideEnabled.set(True)
             shape.overrideColor.set(color)
 
-    def set_radius(self,*args,**kwargs):
+    def set_radius(self, *args, **kwargs):
         u"""
         设置控制器的半径
         -r -radius (float) :半径
         """
-        radius = kwargs.get('r',kwargs.get('radius',self.get_arg(args)))
+        radius = kwargs.get('r', kwargs.get('radius', self.get_arg(args)))
         if radius is None:
             return
         points = [self.get_curve_shape_points(shape) for shape in self.get_transform().getShapes()]
@@ -185,27 +186,27 @@ class Control(object):
         scale = radius / origin_radius
         for shape, ps in zip(self.get_transform().getShapes(), points):
             for p, cv in zip(ps, shape.cv):
-                pm.xform(cv, t=[xyz * scale for xyz in p])
+                pm.xform(cv, t = [xyz * scale for xyz in p])
 
-    def set_rotateX(self,**kwargs):
+    def set_rotateX(self, **kwargs):
         rotateX = kwargs.get('rx', kwargs.get('rotateX', 0))  # type: int
-        shape_node = cmds.listRelatives('{}'.format(self.get_transform()), shapes=True)[0]
-        points = '{}'.format(shape_node) +".cv[0:700000]"
-        cmds.rotate(rotateX,0,0,points)
-
-    def set_rotateY(self,**kwargs):
-        rotateY = kwargs.get('ry', kwargs.get('rotateY', 0))  # type: int
-        shape_node = cmds.listRelatives('{}'.format(self.get_transform()), shapes=True)[0]
+        shape_node = cmds.listRelatives('{}'.format(self.get_transform()), shapes = True)[0]
         points = '{}'.format(shape_node) + ".cv[0:700000]"
-        cmds.rotate(0,rotateY,0,points)
+        cmds.rotate(rotateX, 0, 0, points)
 
-    def set_rotateZ(self,**kwargs):
+    def set_rotateY(self, **kwargs):
+        rotateY = kwargs.get('ry', kwargs.get('rotateY', 0))  # type: int
+        shape_node = cmds.listRelatives('{}'.format(self.get_transform()), shapes = True)[0]
+        points = '{}'.format(shape_node) + ".cv[0:700000]"
+        cmds.rotate(0, rotateY, 0, points)
+
+    def set_rotateZ(self, **kwargs):
         rotateZ = kwargs.get('rz', kwargs.get('rotateZ', 0))  # type: int
-        shape_node = cmds.listRelatives('{}'.format(self.get_transform()), shapes=True)[0]
+        shape_node = cmds.listRelatives('{}'.format(self.get_transform()), shapes = True)[0]
         points = '{}'.format(shape_node) + ".cv[0:700000]"
         cmds.rotate(0, 0, rotateZ, points)
 
-    def set_offset(self, *args,**kwargs):
+    def set_offset(self, *args, **kwargs):
         u"""
         设置偏移
         kwargs – -o -offset [float, float,float] 偏移
@@ -217,9 +218,9 @@ class Control(object):
         points = [[[ps[i + j] for j in range(3)] for i in range(0, len(ps), 3)] for ps in points]
         for shape, ps in zip(self.get_transform().getShapes(), points):
             for p, cv in zip(ps, shape.cv):
-                pm.xform(cv, t=[p_xyz + o_xyz for p_xyz, o_xyz in zip(p, offset)])
+                pm.xform(cv, t = [p_xyz + o_xyz for p_xyz, o_xyz in zip(p, offset)])
 
-    def set_locked(self,*args,**kwargs):
+    def set_locked(self, *args, **kwargs):
         pass
 
     def upload(self):
@@ -230,34 +231,34 @@ class Control(object):
         if not os.path.isdir(data_path):
             pm.warning(u"没有找到这个路径" + data_path)
             return
-        data_file = os.path.join(data_path,self.get_transform().name().split("|")[-1] + ".json")
+        data_file = os.path.join(data_path, self.get_transform().name().split("|")[-1] + ".json")
         # 打开并写入带有形状信息的date_file文件，open函数的参数有file_name，access_mode 和 buffering
         ##file_name：file_name变量是一个包含了你要访问的文件名称的字符串值。
         ##access_mode：access_mode决定了打开文件的模式：只读，写入，追加等。所有可取值见如下的完全列表。这个参数是非强制的，
         ## 默认文件访问模式为只读(r)。写入为(w)
         ##buffering:如果buffering的值被设为0，就不会有寄存。如果buffering的值取1，访问文件时会寄存行。
         ##如果将buffering的值设为大于1的整数，表明了这就是的寄存区的缓冲大小。如果取负值，寄存区的缓冲大小则为系统默认。
-        with open(data_file,'w') as fp:
-            json.dump(self.get_shape(),fp,indent=4)
+        with open(data_file, 'w') as fp:
+            json.dump(self.get_shape(), fp, indent = 4)
 
         # 在视图面板中隐藏所有场景信息
-        for hud in pm.headsUpDisplay(listHeadsUpDisplays=1):
-            pm.headsUpDisplay(hud, edit=1, vis=False)
+        for hud in pm.headsUpDisplay(listHeadsUpDisplays = 1):
+            pm.headsUpDisplay(hud, edit = 1, vis = False)
 
         # 创建一个撕下副本的面板用于截图控制器形状，如果创建的撕下副本的面板存在则关闭后重新开启
         panel = 'control_model_panel'
-        if not pm.modelPanel(panel, exists=True):
-            pm.modelPanel(panel, tearOff = True, tearOffCopy= 1)
+        if not pm.modelPanel(panel, exists = True):
+            pm.modelPanel(panel, tearOff = True, tearOffCopy = 1)
 
         # 关闭撕下副本视图中所有对象的显示，打开撕下副本视图的 nurbs 曲线显示，关闭撕下副本视图的网格显示。
-        pm.modelEditor(panel, edit=1, allObjects=0, nurbsCurves=1, grid=0)
+        pm.modelEditor(panel, edit = 1, allObjects = 0, nurbsCurves = 1, grid = 0)
 
         # 调整撕下副本视图的焦距，按键F
         pm.setFocus(panel)
 
         # 复制一个临时的用于截图的控制器，控制器的位置在原点中心
         temp = Control()
-        temp.set_shape(s=self.get_shape())
+        temp.set_shape(s = self.get_shape())
         pm.select(temp.get_transform())
 
         # 设置用来截图的摄影机的拍摄角度，将摄影机移动到选定对象的中心，指定应设置摄影机位置之间的过渡动画。
@@ -265,39 +266,40 @@ class Control(object):
         pm.viewFit('persp', animate = 0)
 
         # 撕下副本面板开启隔离选择模式，将刚刚选择的需要截图的控制器添加到要显示的对象集中
-        pm.isolateSelect(panel, state=1)
-        pm.isolateSelect(panel, addSelected=True)
+        pm.isolateSelect(panel, state = 1)
+        pm.isolateSelect(panel, addSelected = True)
 
         # 设定拍屏截图的文件名称和文件路径和拍屏的参数设置
         jpg_path = os.path.join(data_path, self.get_transform().split("|")[-1])
-        file_name = pm.playblast(format="image", filename=jpg_path, c = "jpg", widthHeight=[256, 256],
-                                 startTime=0, endTime=0, viewer=False, percent=100, quality=100, framePadding=1)
+        file_name = pm.playblast(format = "image", filename = jpg_path, c = "jpg", widthHeight = [256, 256],
+                                 startTime = 0, endTime = 0, viewer = False, percent = 100, quality = 100,
+                                 framePadding = 1)
 
         # 修改拍屏截图后的保存的文件名称，如果有相同名称的文件存在则删除过去的截图文件
-        if os.path.isfile(file_name.replace("####","0")):
-            if os.path.isfile(file_name.replace("####.","")):
-                os.remove(file_name.replace("####.",""))
-            os.rename(file_name.replace("####","0"),file_name.replace("####.",""))
+        if os.path.isfile(file_name.replace("####", "0")):
+            if os.path.isfile(file_name.replace("####.", "")):
+                os.remove(file_name.replace("####.", ""))
+            os.rename(file_name.replace("####", "0"), file_name.replace("####.", ""))
 
         # 关闭撕下副本面板
-        if pm.modelPanel(panel,ex = 1):
-            pm.deleteUI(panel, panel=True)
+        if pm.modelPanel(panel, ex = 1):
+            pm.deleteUI(panel, panel = True)
 
         # 删除用来截图的控制器
         pm.delete(temp.get_transform())
 
-    def mirror(self,other):
+    def mirror(self, other):
         u"""
         镜像控制器
         :param other: 镜像控制器的目标
         :return:
         """
-        self.set_shape(s=other.get_shape())
+        self.set_shape(s = other.get_shape())
         for src_shape, dst_shape in zip(self.get_transform().getShapes(), other.get_transform().getShapes()):
             for src_cv, dst_cv in zip(src_shape.cv, dst_shape.cv):
-                point = pm.xform(dst_cv, q=1, t=1, ws=1)
+                point = pm.xform(dst_cv, q = 1, t = 1, ws = 1)
                 point[0] = -point[0]
-                pm.xform(src_cv, t=point, ws=1)
+                pm.xform(src_cv, t = point, ws = 1)
 
     def get_shape(self):
         u"""
@@ -345,7 +347,7 @@ class Control(object):
         return radius
 
     @staticmethod
-    def create_ctrl(name, shape, radius , axis, pos, parent = None):
+    def create_ctrl(name, shape, radius, axis, pos, parent = None):
         u"""基于参数ctrl_side_name_index创建控制器
 
         Args:
@@ -386,86 +388,83 @@ class Control(object):
         if cmds.objExists(name_obj.name):
             raise ValueError(u'{} 在场景中已存在'.format(name_obj.name))
         else:
-            ctrl = Control(n= name_obj.name, s = shape ,r= radius )
+            ctrl = Control(n = name_obj.name, s = shape, r = radius)
             ctrl_transform = '{}'.format(ctrl.transform)
             # 复制ctrl作为次级控制器
-            sub_obj  =  nameUtils.Name(name = name)
+            sub_obj = nameUtils.Name(name = name)
             sub_obj.description = sub_obj.description + 'Sub'
-            sub_ctrl = Control(n=sub_obj.name, s=shape,r = radius * 0.7)
+            sub_ctrl = Control(n = sub_obj.name, s = shape, r = radius * 0.7)
             sub_ctrl.set_parent(ctrl.transform)
             # 设置控制器形状方向
             if axis == 'X+':
                 ctrl.set_rotateX(rx = 90)
                 sub_ctrl.set_rotateX(rx = 90)
             elif axis == 'X-':
-                ctrl.set_rotateX(rx= -90)
+                ctrl.set_rotateX(rx = -90)
                 sub_ctrl.set_rotateX(rx = -90)
             elif axis == 'Y+':
-                ctrl.set_rotateY(ry= 90)
+                ctrl.set_rotateY(ry = 90)
                 sub_ctrl.set_rotateY(ry = 90)
             elif axis == 'Y-':
-                ctrl.set_rotateY(ry= -90)
+                ctrl.set_rotateY(ry = -90)
                 sub_ctrl.set_rotateY(ry = -90)
             elif axis == 'Z+':
-                ctrl.set_rotateZ(rz= 90)
+                ctrl.set_rotateZ(rz = 90)
                 sub_ctrl.set_rotateZ(rz = 90)
             elif axis == 'Z-':
-                ctrl.set_rotateZ(rz= -90)
-            # 复制ctrl作为次级控制器
-            sub_obj  =  nameUtils.Name(name = name)
-            sub_obj.description = sub_obj.description + 'Sub'
-            sub_ctrl = Control(n=sub_obj.name, s=shape)
-            sub_ctrl.set_parent(ctrl.transform)
+                ctrl.set_rotateZ(rz = -90)
                 sub_ctrl.set_rotateZ(rz = -90)
+
             # 设置颜色
             ctrl.set(c = ctrl_color)
             sub_ctrl.set(c = sub_color)
-        # 添加上层层级组
-        offset_grp = hierarchyUtils.Hierarchy.add_extra_group(
-            obj = ctrl_transform, grp_name='{}'.format(name.replace('ctrl', 'offset')), world_orient=False)
-        connect_grp = hierarchyUtils.Hierarchy.add_extra_group(
-            obj=offset_grp, grp_name=offset_grp.replace('offset', 'connect'), world_orient=False)
-        driven_grp = hierarchyUtils.Hierarchy.add_extra_group (
-            obj=connect_grp, grp_name=connect_grp.replace('connect', 'driven'), world_orient=False)
-        zero_grp = hierarchyUtils.Hierarchy.add_extra_group (
-            obj=driven_grp, grp_name=driven_grp.replace('driven', 'zero'), world_orient=False)
+            # 添加上层层级组
+            offset_grp = hierarchyUtils.Hierarchy.add_extra_group(
+                obj = ctrl_transform, grp_name = '{}'.format(name.replace('ctrl', 'offset')), world_orient = False)
+            connect_grp = hierarchyUtils.Hierarchy.add_extra_group(
+                obj = offset_grp, grp_name = offset_grp.replace('offset', 'connect'), world_orient = False)
+            driven_grp = hierarchyUtils.Hierarchy.add_extra_group(
+                obj = connect_grp, grp_name = connect_grp.replace('connect', 'driven'), world_orient = False)
+            zero_grp = hierarchyUtils.Hierarchy.add_extra_group(
+                obj = driven_grp, grp_name = driven_grp.replace('driven', 'zero'), world_orient = False)
 
-        # 创建output层级组
-        output = cmds.createNode('transform', name=name.replace('ctrl_', 'output_'), parent = ctrl_transform)
+            # 创建output层级组
+            output = cmds.createNode('transform', name = name.replace('ctrl_', 'output_'), parent = ctrl_transform)
 
-        # 连接次级控制器的属性
-        cmds.connectAttr(sub_ctrl.transform + '.translate', output + '.translate')
-        cmds.connectAttr(sub_ctrl.transform  + '.rotate', output + '.rotate')
-        cmds.connectAttr(sub_ctrl.transform + '.scale', output + '.scale')
-        cmds.connectAttr(sub_ctrl.transform  + '.rotateOrder', output + '.rotateOrder')
+            # 连接次级控制器的属性
+            cmds.connectAttr(sub_ctrl.transform + '.translate', output + '.translate')
+            cmds.connectAttr(sub_ctrl.transform + '.rotate', output + '.rotate')
+            cmds.connectAttr(sub_ctrl.transform + '.scale', output + '.scale')
+            cmds.connectAttr(sub_ctrl.transform + '.rotateOrder', output + '.rotateOrder')
 
-        # # 添加次级控制器的属性控制在控制器上
-        cmds.addAttr(ctrl_transform, longName='subCtrlVis', attributeType='bool')
-        cmds.setAttr(ctrl_transform + '.subCtrlVis', channelBox=True)
+            # # 添加次级控制器的属性控制在控制器上
+            cmds.addAttr(ctrl_transform, longName = 'subCtrlVis', attributeType = 'bool')
+            cmds.setAttr(ctrl_transform + '.subCtrlVis', channelBox = True)
 
-        # 连接次级控制器的显示
-        cmds.connectAttr(ctrl_transform + '.subCtrlVis', sub_ctrl.transform + '.visibility')
+            # 连接次级控制器的显示
+            cmds.connectAttr(ctrl_transform + '.subCtrlVis', sub_ctrl.transform + '.visibility')
 
-        # 锁定并且隐藏不需要的属性
-        attrUtils.Attr.lock_and_hide_attrs(obj = ctrl_transform, attrs_list=['rotateOrder'], lock=False, hide=False)
-        # attrUtils.Attr.lock_and_hide_attrs(obj = ctrl_transform, attrs_list = attrs_list, lock = True, hide = True)
+            # 锁定并且隐藏不需要的属性
+            attrUtils.Attr.lock_and_hide_attrs(obj = ctrl_transform, attrs_list = ['rotateOrder'], lock = False,
+                                               hide = False)
+            # attrUtils.Attr.lock_and_hide_attrs(obj = ctrl_transform, attrs_list = attrs_list, lock = True, hide = True)
 
-        # 吸附到对应的位置
-        if pos:
-            cmds.matchTransform(zero_grp, pos, position=True, rotation=True, scale=True)
-        #
-        # 做父子层级
-        if parent:
-            hierarchyUtils.Hierarchy.parent(child_node = zero_grp , parent_node = parent )
+            # 吸附到对应的位置
+            if pos:
+                cmds.matchTransform(zero_grp, pos, position = True, rotation = True, scale = True)
+            #
+            # 做父子层级
+            if parent:
+                hierarchyUtils.Hierarchy.parent(child_node = zero_grp, parent_node = parent)
 
-        #
-        # 将控制器添加到对应的选择集
-        animation_ctrls_set = 'ctrl_set'
-        if not cmds.objExists(animation_ctrls_set) or cmds.nodeType(animation_ctrls_set) != 'objectSet':
-            animation_ctrls_set = cmds.sets(name = animation_ctrls_set, empty=True)
-            cmds.sets('{}'.format(ctrl.transform), edit=True, forceElement=animation_ctrls_set)
-        else:
-            cmds.sets('{}'.format(ctrl.transform), edit=True, forceElement=animation_ctrls_set)
+            #
+            # 将控制器添加到对应的选择集
+            animation_ctrls_set = 'ctrl_set'
+            if not cmds.objExists(animation_ctrls_set) or cmds.nodeType(animation_ctrls_set) != 'objectSet':
+                animation_ctrls_set = cmds.sets(name = animation_ctrls_set, empty = True)
+                cmds.sets('{}'.format(ctrl.transform), edit = True, forceElement = animation_ctrls_set)
+            else:
+                cmds.sets('{}'.format(ctrl.transform), edit = True, forceElement = animation_ctrls_set)
 
     @staticmethod
     def get_arg(args):
@@ -475,7 +474,7 @@ class Control(object):
 
     @staticmethod
     def get_curve_shape_points(shape):
-        return pm.xform(shape.cv, q=1, t=1)
+        return pm.xform(shape.cv, q = 1, t = 1)
 
     @staticmethod
     def get_soft_radius():
@@ -483,7 +482,7 @@ class Control(object):
         ssd (float): 衰减半径
         return:返回软选择的范围
         """
-        return pm.softSelect(query=1, ssd=1)
+        return pm.softSelect(query = 1, ssd = 1)
 
     @staticmethod
     def get_length(point1, point2):
@@ -504,7 +503,7 @@ class Control(object):
          [Control(), ]
         选择的控制器
         """
-        return [cls(t=t) for t in pm.selected(type="transform")]
+        return [cls(t = t) for t in pm.selected(type = "transform")]
 
     @classmethod
     def set_selected(cls, **kwargs):
@@ -538,10 +537,10 @@ class Control(object):
         s = kwargs.get("s", kwargs.get("shape", cls.get_arg(args)))
         if s is None:
             return
-        json_path = os.path.abspath(__file__ + "/../../res/image/{s}.json".format(s=s))
+        json_path = os.path.abspath(__file__ + "/../../res/image/{s}.json".format(s = s))
         if os.path.isfile(json_path):
             os.remove(json_path)
-        jpg_path = os.path.abspath(__file__ + "/../../res/image/{s}.jpg".format(s=s))
+        jpg_path = os.path.abspath(__file__ + "/../../res/image/{s}.jpg".format(s = s))
         if os.path.isfile(jpg_path):
             os.remove(jpg_path)
 
@@ -572,7 +571,7 @@ class Control(object):
         ribbon = nameUtils.Name(name = name)
 
         # 从ribbon控制器中的边获取偏移值
-        if ribbon.ribbon.side != 'r':
+        if ribbon.side != 'r':
             offset_val = 1
         else:
             offset_val = -1
@@ -617,9 +616,10 @@ class Control(object):
         cmds.setAttr(temp_curve_02 + '.translateZ', -1)
 
         # 通过两条曲线来放样制作曲面
-        surf = cmds.loft(temp_curve_02, temp_curve, constructionHistory = False, uniform = True, degree = 3, sectionSpans = 1,
-                      range = False, polygon = 0,
-                      name = 'surf_{}_{}Ribbon_{:03d}'.format(ribbon.side, ribbon.description, ribbon.index))[0]
+        surf = \
+        cmds.loft(temp_curve_02, temp_curve, constructionHistory = False, uniform = True, degree = 3, sectionSpans = 1,
+                  range = False, polygon = 0,
+                  name = 'surf_{}_{}Ribbon_{:03d}'.format(ribbon.side, ribbon.description, ribbon.index))[0]
         cmds.parent(surf, nodes_local_grp)
 
         # 获得曲面的形状节点
@@ -633,7 +633,6 @@ class Control(object):
                                   name = 'grp_{}_{}RibbonFollicles_{:03d}'.format(ribbon.side, ribbon.description,
                                                                                   ribbon.index),
                                   parent = nodes_world_grp)
-
 
         for i in range(joint_number):
             # 创建毛囊
@@ -674,27 +673,25 @@ class Control(object):
 
         # 创建控制器
         ctrls = []
-        for pos in ['start',  'mid','end']:
-            ctrl_name ='ctrl_{}_{}{}_{}'.format(ribbon.side,ribbon.description,pos.title(),ribbon.index)
-            ctrl = controlUtils.Control.create_ctrl(ctrl_name, shape = 'square', radius = 8,
-                                                                 axis = 'X+',
-                                                                 pos = jnt, parent = ribbon_ctrl_grp)
+        for pos in ['start', 'mid', 'end']:
+            ctrl_name = 'ctrl_{}_{}{}_{:03d}'.format(ribbon.side, ribbon.description, pos.title(), ribbon.index)
+            ctrl = Control.create_ctrl(ctrl_name, shape = 'hexagon', radius = 5,
+                                       axis = 'Z+',
+                                       pos = jnt, parent = ribbon_ctrl_grp)
 
-            ctrls.append(ctrl.transform)
+            ctrls.append(ctrl_name)
         # 放置控制器
         cmds.setAttr(ctrls[0].replace('ctrl', 'zero') + '.translateX', -5 * offset_val)
         cmds.setAttr(ctrls[1].replace('ctrl', 'zero') + '.translateX', 5 * offset_val)
-        cmds.setAttr(ctrls[0].replace('ctrl', 'zero') + '.visibility', 0)
-        cmds.setAttr(ctrls[1].replace('ctrl', 'zero') + '.visibility', 0)
 
         # 约束中间的控制器
-        cmds.pointConstraint(ctrls[0], ctrls[1], ctrls[-1].replace('ctrl', 'driven'), maintainOffset = False)
+        cmds.parentConstraint(ctrls[0], ctrls[-1], ctrls[1].replace('ctrl', 'driven'), maintainOffset = False)
 
         # 添加twist的控制属性在第一个控制器和最后一个控制器上,'start'和 'end'
-        cmds.addAttr(ctrls[0], longName = 'twist',niceName = u'扭曲' ,attributeType = 'float', keyable = True)
-        cmds.addAttr(ctrls[-1], longName = 'twist',niceName = u'扭曲', attributeType = 'float', keyable = True)
+        cmds.addAttr(ctrls[0], longName = 'twist', niceName = u'扭曲', attributeType = 'float', keyable = True)
+        cmds.addAttr(ctrls[-1], longName = 'twist', niceName = u'扭曲', attributeType = 'float', keyable = True)
         # 创建twist变形器
-        twist_node, twist_hnd = cmds.nonLinear(surf, type = 'twist', name = surf.replace('surf', 'twist'))
+        twist_node, twist_hnd = cmds.nonLinear(surf, type = 'twist', name = surf.replace('surf_', 'twist_'))
         cmds.parent(twist_hnd, nodes_local_grp)
         cmds.setAttr(twist_hnd + '.rotate', 0, 0, 90)
         scale_val = cmds.getAttr(twist_hnd + '.scaleX')
@@ -702,19 +699,23 @@ class Control(object):
         # 连接twist变形器的属性到控制器上
         twist_hnd_shape = cmds.listRelatives(twist_hnd, shapes = True)[0]
         cmds.connectAttr(ctrls[0] + '.twist', twist_node + '.endAngle')
-        cmds.connectAttr(ctrls[1] + '.twist', twist_node + '.startAngle')
+        cmds.connectAttr(ctrls[-1] + '.twist', twist_node + '.startAngle')
 
         # 添加sine的控制属性在中间的控制器上,'mid'
-        cmds.addAttr(ctrls[1], longName = 'sineDivider', niceName = u'sine变形器属性设置 ----------', attributeType = 'enum',
+        cmds.addAttr(ctrls[1], longName = 'sineDivider', niceName = u'sine变形器属性设置 ----------',
+                     attributeType = 'enum',
                      enumName = ' ', keyable = False)
         cmds.setAttr(ctrls[1] + '.sineDivider', channelBox = True, lock = True)
-        cmds.addAttr(ctrls[1], longName = 'amplitude',niceName = u'振幅', attributeType = 'float', keyable = True, minValue = 0)
-        cmds.addAttr(ctrls[-1], longName = 'wavelength',niceName = u'波长', attributeType = 'float', keyable = True, minValue = 0.1,
+        cmds.addAttr(ctrls[1], longName = 'amplitude', niceName = u'振幅', attributeType = 'float', keyable = True,
+                     minValue = 0)
+        cmds.addAttr(ctrls[1], longName = 'wavelength', niceName = u'波长', attributeType = 'float', keyable = True,
+                     minValue = 0.1,
                      defaultValue = 2)
-        cmds.addAttr(ctrls[1], longName = 'offset',niceName = u'偏移', attributeType = 'float', keyable = True)
-        cmds.addAttr(ctrls[1], longName = 'sineRotation', niceName = u'正弦旋转',attributeType = 'float', keyable = True)
+        cmds.addAttr(ctrls[1], longName = 'offset', niceName = u'偏移', attributeType = 'float', keyable = True)
+        cmds.addAttr(ctrls[1], longName = 'sineRotation', niceName = u'正弦旋转', attributeType = 'float',
+                     keyable = True)
         # 创建sine变形器
-        sine_node, sine_hnd = cmds.nonLinear(surf, type = 'sine', name = surf.replace('surf', 'sine'))
+        sine_node, sine_hnd = cmds.nonLinear(surf, type = 'sine', name = surf.replace('surf_', 'sine_'))
         cmds.parent(sine_hnd, nodes_local_grp)
         cmds.setAttr(sine_hnd + '.rotate', 0, 0, 90)
         scale_val = cmds.getAttr(sine_hnd + '.scaleX')
@@ -722,10 +723,10 @@ class Control(object):
         cmds.setAttr(sine_node + '.dropoff', 1)
         # 连接sine变形器的属性到控制器上
         sine_hnd_shape = cmds.listRelatives(sine_hnd, shapes = True)[0]
-        cmds.connectAttr(ctrls[-1] + '.amplitude', sine_node + '.amplitude')
-        cmds.connectAttr(ctrls[-1] + '.wavelength', sine_node + '.wavelength')
-        cmds.connectAttr(ctrls[-1] + '.offset', sine_node + '.offset')
-        cmds.connectAttr(ctrls[-1] + '.sineRotation', sine_hnd + '.rotateY')
+        cmds.connectAttr(ctrls[1] + '.amplitude', sine_node + '.amplitude')
+        cmds.connectAttr(ctrls[1] + '.wavelength', sine_node + '.wavelength')
+        cmds.connectAttr(ctrls[1] + '.offset', sine_node + '.offset')
+        cmds.connectAttr(ctrls[1] + '.sineRotation', sine_hnd + '.rotateY')
 
         # 创建wire变形器
         # 创建wire变形器需要的曲线
@@ -738,7 +739,7 @@ class Control(object):
         cmds.parent(wire_curve, nodes_world_grp)
 
         # 创建cluster 变形器，用控制器来约束cluster变形器的变化
-        for ctrl, i in zip(ctrls, [0, 2, 1]):
+        for ctrl, i in zip(ctrls, [0, 1, 2]):
             cls_node, cls_hnd = cmds.cluster('{}.cv[{}]'.format(wire_curve, i), name = ctrl.replace('ctrl', 'cls'))
             cmds.parent(cls_hnd, nodes_world_grp)
             cmds.pointConstraint(ctrl, cls_hnd, maintainOffset = False)
@@ -749,7 +750,7 @@ class Control(object):
         cmds.setAttr(wire_node + '.dropoffDistance[0]', 200)
         cmds.parent(wire_curve + 'BaseWire', nodes_local_grp)
 
-        Controls = 'Controls'
+        Controls = 'Control'
         Joints = 'Joints'
         RigNodes_Local = 'RigNodesLocal'
         RigNodes_World = 'RigNodesWorld'
