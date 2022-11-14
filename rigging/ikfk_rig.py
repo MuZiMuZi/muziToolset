@@ -184,17 +184,14 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
 
     def ribbon_Rig(self,ikfk_chain,joint_number):
         u"""
-              创建Iribbon关节的绑定
+              创建ribbon关节的绑定
               """
         upper_part = nameUtils.Name(name = ikfk_chain[0])
         lower_part = nameUtils.Name(name = ikfk_chain[1])
         # 创建ribbon关节和twist关节
-        controllerUtils.Control.create_ribbon(upper_part.side, upper_part.description, upper_part.index, joint_number = joint_number)
-        controllerUtils.Control.create_ribbon(lower_part.side, lower_part.description, lower_part.index, joint_number = joint_number)
+        controlUtils.Control.create_ribbon(upper_part.name, joint_number = joint_number)
+        controlUtils.Control.create_ribbon(lower_part.name ,joint_number = joint_number)
 
-        # 整理ribbon控制器和关节的层次
-        Ribbon_ctrl_grp = cmds.ls('grp_{}_*{}RibbonCtrls_001'.format(upper_part.side, upper_part.description))
-        Ribbon_jnt_grp = cmds.ls('grp_{}_*{}RibbonJnts_001'.format(upper_part.side, upper_part.description))
         # 吸附带控制器组的位置和旋转
         ribbon_upper_start_driven = 'driven_{}_{}Start_001'.format(upper_part.side, upper_part.description)
         ribbon_upper_Mid_driven = 'driven_{}_{}Mid_001'.format(upper_part.side, upper_part.description)
@@ -204,10 +201,10 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
         ribbon_lower_Mid_driven = 'driven_{}_{}Mid_001'.format(lower_part.side, lower_part.description)
         ribbon_lower_End_driven = 'driven_{}_{}End_001'.format(lower_part.side, lower_part.description)
 
-        cmds.parentConstraint(bind_chain[0], ribbon_upper_start_driven, maintainOffset = False)
-        cmds.orientConstraint(bind_chain[0], ribbon_upper_Mid_driven, maintainOffset = False)
-        cmds.pointConstraint(bind_chain[1], ribbon_upper_End_driven, maintainOffset = False)
+        # 关节约束对应的控制器组
 
-        cmds.parentConstraint(bind_chain[1], ribbon_lower_start_driven, maintainOffset = False)
-        cmds.orientConstraint(bind_chain[1], ribbon_lower_Mid_driven, maintainOffset = False)
-        cmds.pointConstraint(bind_chain[-1], ribbon_lower_End_driven, maintainOffset = False)
+        cmds.parentConstraint(ikfk_chain[0], ribbon_upper_start_driven, maintainOffset = False)
+        cmds.parentConstraint(ikfk_chain[1], ribbon_upper_End_driven, maintainOffset = False)
+
+        cmds.parentConstraint(ikfk_chain[1], ribbon_lower_End_driven, maintainOffset = False)
+        cmds.parentConstraint(ikfk_chain[-1], ribbon_lower_start_driven, maintainOffset = False)
