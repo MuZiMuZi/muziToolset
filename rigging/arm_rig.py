@@ -29,13 +29,17 @@ import ikfk_rig
 arm_bp_joints = ['bpjnt_l_shoulder_001', 'bpjnt_l_elbow_001',' bpjnt_l_wrist_001']
 
 class Arm_Rig(ikfk_rig.IKFK_Rig):
-    def __init__(self, bp_joints = None , joint_parent = None, control_parent = None,mirror = True):
+    def __init__(self, bp_joints = None , joint_parent = None, control_parent = None,mirror = True,ribbon = True,joint_number = 5):
         super(Arm_Rig, self).__init__(bp_joints = bp_joints, joint_parent=joint_parent,control_parent = control_parent)
         self.mirror = mirror
         self.arm_bp_joints = self.get_modular_bp_joints(self.arm_rig)
         self.bp_joints = self.arm_bp_joints
-
+        self.ribbon = ribbon
+        self.joint_number = joint_number
 
 
     def create_arm_rig(self):
         self.create_ikfk_chain_rig()
+        if self.ribbon  == True:
+            self.ribbon_Rig(self.ikfk_chain, self.joint_number)
+            self.ribbon_Rig(self.ikfk_chain_mirror,  self.joint_number)
