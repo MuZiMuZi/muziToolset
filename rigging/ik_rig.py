@@ -303,8 +303,8 @@ class IK_Rig(base_rig.Base_Rig):
         cmds.parent(startIK_zero, midIK_zero, endIK_zero, ik_ctrl_grp)
         if control_parent:
             hierarchyUtils.Hierarchy.parent(child_node = ik_ctrl_grp, parent_node = control_parent)
-        hierarchyUtils.Hierarchy.parent(child_node = spine_ikhandle_node, parent_node = self.RigNodes_Local)
-        hierarchyUtils.Hierarchy.parent(child_node = ik_chain_crv, parent_node = self.RigNodes_World)
+        hierarchyUtils.Hierarchy.parent(child_node = spine_ikhandle_node, parent_node = self.rigNode_Local)
+        hierarchyUtils.Hierarchy.parent(child_node = ik_chain_crv, parent_node = self.rigNode_World)
 
         # 添加拉伸效果
         # 获取ikspine曲线的形状节点

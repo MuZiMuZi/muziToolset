@@ -33,7 +33,6 @@ class Spine_Rig(ikfk_rig.IKFK_Rig):
         self.mirror = mirror
         self.spine_bp_joints = self.get_modular_bp_joints(self.spine_rig)
         self.bp_joints = self.spine_bp_joints
-        # self.create_spine_rig()
 
 
     def create_spine_rig(self):

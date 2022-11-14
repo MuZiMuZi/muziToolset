@@ -554,7 +554,7 @@ class Control(object):
             cls.delete_shape(s)
 
     @staticmethod
-    def create_ribbon(name, joint_number = 5):
+    def create_ribbon(name,control_parent, joint_number = 5):
         """
         创建ribbon控制器，给动画师更细致的动画效果
         思路：通过给定关节的名称来创建ribbon控制，通过曲线来生成曲面制作ribbon绑定，然后让生成的关节绑定在曲面上
@@ -565,6 +565,7 @@ class Control(object):
             ribbon.description (str): ribbon's ribbon.description
             ribbon.index (int): ribbon's ribbon.index
             joint_number (int): how many joints need to be attached to the ribbon, default is 9
+            control_parent:
 
         """
         # 从名称中获取ribbon控制器的边，描述，和编号
@@ -605,6 +606,7 @@ class Control(object):
 
         # 创建对应的曲线以生成nurbs曲面
         temp_curve = cmds.curve(point = [[-5 * offset_val, 0, 0], [5 * offset_val, 0, 0]], knot = [0, 1], degree = 1)
+        print(joint_number)
         # 根据关节数重建曲线
         cmds.rebuildCurve(temp_curve, degree = 3, replaceOriginal = True, rebuildType = 0, endKnots = 1, keepRange = 0,
                           keepControlPoints = False, keepEndPoints = True, keepTangents = False,
@@ -685,7 +687,7 @@ class Control(object):
         cmds.setAttr(ctrls[1].replace('ctrl', 'zero') + '.translateX', 5 * offset_val)
 
         # 约束中间的控制器
-        cmds.parentConstraint(ctrls[0], ctrls[-1], ctrls[1].replace('ctrl', 'driven'), maintainOffset = False)
+        cmds.pointConstraint(ctrls[0], ctrls[-1], ctrls[1].replace('ctrl', 'driven'), maintainOffset = False)
 
         # 添加twist的控制属性在第一个控制器和最后一个控制器上,'start'和 'end'
         cmds.addAttr(ctrls[0], longName = 'twist', niceName = u'扭曲', attributeType = 'float', keyable = True)
@@ -750,14 +752,15 @@ class Control(object):
         cmds.setAttr(wire_node + '.dropoffDistance[0]', 200)
         cmds.parent(wire_curve + 'BaseWire', nodes_local_grp)
 
-        Controls = 'Control'
-        Joints = 'Joints'
-        RigNodes_Local = 'RigNodesLocal'
-        RigNodes_World = 'RigNodesWorld'
-        cmds.parent(ribbon_ctrl_grp, Controls)
-        cmds.parent(ribbon_jnt_grp, Joints)
-        cmds.parent(nodes_local_grp, RigNodes_Local)
-        cmds.parent(nodes_world_grp, RigNodes_World)
+
+        control = 'control'
+        joint = 'joint'
+        rigNode_Local = 'rigNode_Local'
+        rigNode_World = 'rigNode_World'
+        cmds.parent(ribbon_ctrl_grp, control_parent)
+        cmds.parent(ribbon_jnt_grp, joint)
+        cmds.parent(nodes_local_grp, rigNode_Local)
+        cmds.parent(nodes_world_grp, rigNode_World)
         cmds.delete(ribbon_grp)
 
         return ribbon_grp, ribbon_ctrl_grp, ribbon_jnt_grp, nodes_local_grp, nodes_world_grp

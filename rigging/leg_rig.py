@@ -36,6 +36,6 @@ class Leg_Rig(ikfk_rig.IKFK_Rig):
     def create_leg_rig(self):
         self.create_ikfk_chain_rig()
         if self.ribbon  == True:
-            self.ribbon_Rig(self.ikfk_chain, self.joint_number)
-            self.ribbon_Rig(self.ikfk_chain_mirror,  self.joint_number)
+            self.ribbon_Rig(self.ikfk_chain,self.control_parent, self.joint_number)
+            self.ribbon_Rig(self.ikfk_chain_mirror, self.control_parent_mirror, self.joint_number)
 

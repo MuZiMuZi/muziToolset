@@ -42,9 +42,6 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
     def __init__(self, bp_joints = None, joint_parent = None, control_parent = None, mirror = True):
         super(IKFK_Rig, self).__init__(bp_joints = bp_joints, joint_parent=joint_parent,control_parent = control_parent)
         self.mirror = mirror
-        # self.bp_joints = bp_joints
-        # self.joint_parent = joint_parent
-        # self.control_parent = control_parent
 
     def create_ikfk_chain_rig(self):
         u"""
@@ -182,15 +179,15 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
                                                         joint_parent = self.jnt_grp)
         self.ikfk_chain_rig(self.fk_chain, self.ik_chain, self.ikfk_chain, self.control_grp)
 
-    def ribbon_Rig(self,ikfk_chain,joint_number):
+    def ribbon_Rig(self,ikfk_chain,control_parent,joint_number):
         u"""
               创建ribbon关节的绑定
               """
         upper_part = nameUtils.Name(name = ikfk_chain[0])
         lower_part = nameUtils.Name(name = ikfk_chain[1])
         # 创建ribbon关节和twist关节
-        controlUtils.Control.create_ribbon(upper_part.name, joint_number = joint_number)
-        controlUtils.Control.create_ribbon(lower_part.name ,joint_number = joint_number)
+        controlUtils.Control.create_ribbon(upper_part.name, control_parent,joint_number = joint_number)
+        controlUtils.Control.create_ribbon(lower_part.name ,control_parent,joint_number = joint_number)
 
         # 吸附带控制器组的位置和旋转
         ribbon_upper_start_driven = 'driven_{}_{}Start_001'.format(upper_part.side, upper_part.description)
@@ -207,4 +204,4 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
         cmds.parentConstraint(ikfk_chain[1], ribbon_upper_End_driven, maintainOffset = False)
 
         cmds.parentConstraint(ikfk_chain[1], ribbon_lower_End_driven, maintainOffset = False)
-        cmds.parentConstraint(ikfk_chain[-1], ribbon_lower_start_driven, maintainOffset = False)
+        cmds.parentConstraint(ikfk_chain[2], ribbon_lower_start_driven, maintainOffset = False)

@@ -48,7 +48,7 @@ class Hand_Rig(arm_rig.Arm_Rig):
         hand_jnt_grp = cmds.createNode('transform',name = 'grp_l_handJnt_001')
         hand_ctrl_grp_mirror = cmds.createNode('transform', name = 'grp_r_handCtrl_001')
         hand_jnt_grp_mirror = cmds.createNode('transform', name = 'grp_r_handJnt_001')
-        cmds.parent(hand_jnt_grp,hand_jnt_grp_mirror,self.Joints)
+        cmds.parent(hand_jnt_grp,hand_jnt_grp_mirror,self.joint)
         cmds.parent(hand_ctrl_grp,hand_ctrl_grp_mirror,self.cog_ctrl)
         cmds.parentConstraint(hand_jnt,hand_ctrl_grp)
         cmds.parentConstraint(hand_jnt_mirror, hand_ctrl_grp_mirror)
