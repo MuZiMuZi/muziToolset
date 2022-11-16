@@ -78,7 +78,7 @@ class IK_Rig(base_rig.Base_Rig):
         midIK_pv_ctrl_obj = nameUtils.Name(name = midIK_jnt)
         midIK_pv_ctrl_obj.type = 'ctrl'
         midIK_pv_ctrl_obj.description = midIK_pv_ctrl_obj.description + 'Pv'
-        midIK_pv_ctrl_obj2 = controlUtils.Control.create_ctrl(midIK_pv_ctrl_obj.name, shape = 'Cube',
+        controlUtils.Control.create_ctrl(midIK_pv_ctrl_obj.name, shape = 'Cube',
                                                               radius = 8,
                                                               axis = 'Y+', pos = midIK_jnt, parent = None)
         midIK_pv_ctrl = midIK_pv_ctrl_obj.name
@@ -134,13 +134,19 @@ class IK_Rig(base_rig.Base_Rig):
             hierarchyUtils.Hierarchy.parent(child_node = ik_ctrl_grp, parent_node = control_parent)
 
         # 添加IK链的拉伸功能
+        # 创建起始端关节控制器的定位loctor
+        startIK_pos_loc = cmds.spaceLocator(name = endIK_ctrl.replace('ctrl_', 'loc_'))[0]
+        cmds.parentConstraint(startIK_ctrl, startIK_pos_loc, mo = False)
+
         # 创建末端关节控制器的定位loctor
         endIK_pos_loc = cmds.spaceLocator(name = endIK_ctrl.replace('ctrl_', 'loc_'))[0]
         cmds.parentConstraint(endIK_ctrl, endIK_pos_loc, mo = False)
 
+
+
         # 创建计算距离的distween节点，来计算首端关节到末端控制器的距离
         disBtw_node = cmds.createNode('distanceBetween', name = endIK_pos_loc.replace('loc_', 'disBtw_'))
-        cmds.connectAttr(startIK_jnt + '.translate', disBtw_node + '.point1')
+        cmds.connectAttr(startIK_pos_loc + '.translate', disBtw_node + '.point1')
         cmds.connectAttr(endIK_pos_loc + '.translate', disBtw_node + '.point2')
         disBtw_value_node = cmds.createNode('transform', name = disBtw_node.replace('disBtw_', 'disBtw_value_'))
         cmds.connectAttr(disBtw_node + '.distance', disBtw_value_node + '.translateX')
@@ -201,6 +207,20 @@ class IK_Rig(base_rig.Base_Rig):
         # 把混合后的关节长度连接给原关节
         cmds.connectAttr(blend_node + '.outputR', midIK_jnt + '.translateX')
         cmds.connectAttr(blend_node + '.outputG', endIK_jnt + '.translateX')
+
+        # 给控制器创建一个极向量锁定的属性，动画师根据需要可以选择是否进行极向量锁定
+        cmds.addAttr(endIK_ctrl, longName = 'PvLock', attributeType = 'double',
+                     niceName = u'极向量锁定', minValue = 0, maxValue = 1, defaultValue = 0, keyable = 1)
+
+        # 创建blendcolor节点用来承载极向量锁定的设置
+        blend_node = cmds.createNode('blendColors', name = midIK_pv_ctrl.replace('ctrl_', 'blend_'))
+        cmds.connectAttr(endIK_ctrl + '.PvLock', blend_node + '.blender')
+
+
+        # 获取起始控制器，极向量控制器，末端控制器层级下用来定位位置的loc.(startIK_pos_loc,midIK_pv_loc,endIK_pos_loc)
+        # upper_dist
+
+
 
     def ik_spine_rig(self, ik_chain, control_parent):
         u"""

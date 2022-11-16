@@ -459,7 +459,7 @@ class Control(object):
 
             #
             # 将控制器添加到对应的选择集
-            animation_ctrls_set = 'ctrl_set'
+            animation_ctrls_set = 'set_ctrl'
             if not cmds.objExists(animation_ctrls_set) or cmds.nodeType(animation_ctrls_set) != 'objectSet':
                 animation_ctrls_set = cmds.sets(name = animation_ctrls_set, empty = True)
                 cmds.sets('{}'.format(ctrl.transform), edit = True, forceElement = animation_ctrls_set)
@@ -606,7 +606,6 @@ class Control(object):
 
         # 创建对应的曲线以生成nurbs曲面
         temp_curve = cmds.curve(point = [[-5 * offset_val, 0, 0], [5 * offset_val, 0, 0]], knot = [0, 1], degree = 1)
-        print(joint_number)
         # 根据关节数重建曲线
         cmds.rebuildCurve(temp_curve, degree = 3, replaceOriginal = True, rebuildType = 0, endKnots = 1, keepRange = 0,
                           keepControlPoints = False, keepEndPoints = True, keepTangents = False,
@@ -635,6 +634,16 @@ class Control(object):
                                   name = 'grp_{}_{}RibbonFollicles_{:03d}'.format(ribbon.side, ribbon.description,
                                                                                   ribbon.index),
                                   parent = nodes_world_grp)
+
+        # 创建ribbon关节的集合
+        ribbon_jnt_set = 'set_ribbonJnt'
+        make_ribbon_jnt_set = 'set_' + ribbon.side + '_' + ribbon.description + 'Jnt'
+        make_ribbon_jnt_set = cmds.sets(name = make_ribbon_jnt_set, empty = True)
+        if not cmds.objExists(ribbon_jnt_set) or cmds.nodeType(ribbon_jnt_set) != 'objectSet':
+            ribbon_jnt_set = cmds.sets(name = ribbon_jnt_set, empty = True)
+            cmds.sets(make_ribbon_jnt_set, edit = True, forceElement = ribbon_jnt_set)
+        else:
+            cmds.sets(make_ribbon_jnt_set, edit = True, forceElement = ribbon_jnt_set)
 
         for i in range(joint_number):
             # 创建毛囊
@@ -672,6 +681,9 @@ class Control(object):
             cmds.parentConstraint(fol, grp_nodes[0], maintainOffset = False)
             # 将偏移组的旋转设置为零
             cmds.xform(grp_nodes[1], rotation = [0, 0, 0], worldSpace = True)
+
+            # 将生成的ribbon关节放在对应的集里方便选择
+            cmds.sets(jnt, edit = True, forceElement = make_ribbon_jnt_set)
 
         # 创建控制器
         ctrls = []
@@ -753,14 +765,14 @@ class Control(object):
         cmds.parent(wire_curve + 'BaseWire', nodes_local_grp)
 
 
-        control = 'control'
-        joint = 'joint'
-        rigNode_Local = 'rigNode_Local'
-        rigNode_World = 'rigNode_World'
+        # control = 'control'
+        # joint = 'joint'
+        # rigNode_Local = 'rigNode_Local'
+        # rigNode_World = 'rigNode_World'
         cmds.parent(ribbon_ctrl_grp, control_parent)
-        cmds.parent(ribbon_jnt_grp, joint)
-        cmds.parent(nodes_local_grp, rigNode_Local)
-        cmds.parent(nodes_world_grp, rigNode_World)
-        cmds.delete(ribbon_grp)
+        # cmds.parent(ribbon_jnt_grp, joint)
+        # cmds.parent(nodes_local_grp, rigNode_Local)
+        # cmds.parent(nodes_world_grp, rigNode_World)
+        # cmds.delete(ribbon_grp)
 
         return ribbon_grp, ribbon_ctrl_grp, ribbon_jnt_grp, nodes_local_grp, nodes_world_grp
