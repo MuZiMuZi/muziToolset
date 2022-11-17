@@ -80,8 +80,9 @@ class Base_Rig(object):
         self.foot_rig = 'foot_rig'
         self.neck_rig = 'neck_rig'
         self.spine_rig = 'spine_rig'
+        self.chest_rig = 'chest_rig'
         self.modular_rig_list = [self.arm_rig, self.hand_rig, self.leg_rig, self.foot_rig, self.neck_rig,
-                                 self.spine_rig]
+                                 self.spine_rig,self.chest_rig ]
 
         # # 定义绑定模块的bp定位关节
         # self.arm_bp_joints = self.get_modular_bp_joints(self.arm_rig)
