@@ -31,7 +31,7 @@ class Build_Rig(base_rig.Base_Rig):
         根据导入的对应模块，生成绑定系统
         '''
         if self.arm_rig:
-            arm = arm_rig.Arm_Rig(bp_joints = None, joint_parent = None, control_parent = None, mirror = cmds.getAttr(self.arm_rig + '.mirror'),
+            arm = arm_rig.Arm_Rig(bp_joints = None, joint_parent = None, control_parent = 'output_l_scapula_001', mirror = cmds.getAttr(self.arm_rig + '.mirror'),
                                   ribbon =  cmds.getAttr(self.arm_rig + '.ribbonRig'),joint_number = cmds.getAttr(self.arm_rig + '.ribbonJntNumber'))
             arm.create_arm_rig()
         if self.leg_rig:
