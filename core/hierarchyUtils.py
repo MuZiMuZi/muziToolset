@@ -10,6 +10,7 @@ parent：查找子物体和父物体之间是否有父子层级关系
 chain_parent：
 add_extra_group：在对象上方添加一个额外的组.
 control_hierarchy:打组
+get_child_object:获取对象的所有子物体包括对象本身
 """
 
 class Hierarchy(object):
@@ -146,3 +147,15 @@ class Hierarchy(object):
                 # set color
                 # cmds.setAttr(shape_node + '.overrideEnabled', 1)
                 # cmds.setAttr(shape_node + '.overrideColor', col_idx)
+
+    @staticmethod
+    def get_child_object(object):
+        u'''
+        获取对象的所有子物体包括对象本身
+        :param object: 需要获取所有子物体的对象
+        :return: 所有子物体的名称列表
+        '''
+        object_lsit = cmds.listRelatives(object, children = True, allDescendents = True)
+        object_lsit.append(object)
+        object_lsit.reverse()
+        return object_lsit
