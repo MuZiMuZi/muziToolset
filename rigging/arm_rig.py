@@ -48,7 +48,7 @@ class Arm_Rig(ikfk_rig.IKFK_Rig):
         # 创建锁骨的控制器
         clavicle_ctrl = self.clavicle_jnt.replace('jnt_','ctrl_')
         clavicle_ctrl_obj = controlUtils.Control.create_ctrl(clavicle_ctrl, shape = 'clavicle', radius = 13, axis = 'Z+',
-                                                            pos = self.clavicle_jnt, parent =self.cog_ctrl.replace('ctrl_','output_'))
+                                                            pos = self.clavicle_jnt, parent ='output_m_chest_001')
         # 创建肩胛骨的控制器
         scapula_ctrl = self.scapula_jnt.replace('jnt_', 'ctrl_')
         scapula_ctrl_obj = controlUtils.Control.create_ctrl(scapula_ctrl,
@@ -67,7 +67,7 @@ class Arm_Rig(ikfk_rig.IKFK_Rig):
         # 创建镜像锁骨的控制器
         clavicle_ctrl_mirror = clavicle_ctrl.replace('_l_','_r_')
         clavicle_ctrl_mirror_obj = controlUtils.Control.create_ctrl(clavicle_ctrl_mirror, shape = 'clavicle', radius = 13, axis = 'Z+',
-                                                            pos = self.clavicle_jnt.replace('_l_','_r_'), parent = self.cog_ctrl.replace('ctrl_','output_'))
+                                                            pos = self.clavicle_jnt.replace('_l_','_r_'), parent = 'output_m_chest_001')
         cmds.setAttr(clavicle_ctrl_mirror.replace('ctrl_','offset_') + '.scaleX',-1)
         cmds.setAttr(clavicle_ctrl_mirror.replace('ctrl_', 'offset_') + '.scaleY', -1)
         cmds.setAttr(clavicle_ctrl_mirror.replace('ctrl_', 'offset_') + '.scaleZ', -1)

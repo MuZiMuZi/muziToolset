@@ -1,6 +1,6 @@
 //Maya ASCII 2018ff09 scene
 //Name: arm_rig.ma
-//Last modified: Fri, Nov 18, 2022 03:29:52 PM
+//Last modified: Mon, Nov 21, 2022 02:33:29 PM
 //Codeset: 936
 requires maya "2018ff09";
 requires "stereoCamera" "10.0";
@@ -78,6 +78,17 @@ createNode camera -s -n "sideShape" -p "side";
 	setAttr ".ai_translator" -type "string" "orthographic";
 createNode transform -n "arm_rig";
 	rename -uid "DE29A4CA-4A10-C571-4B79-C7BFE9F51861";
+	addAttr -ci true -sn "presetProperties" -ln "presetProperties" -nn "预设属性值——————" 
+		-min 0 -max 1 -at "double";
+	addAttr -ci true -sn "mirror" -ln "mirror" -nn "镜像" -min 0 -max 1 -at "bool";
+	addAttr -ci true -sn "ribbonRig" -ln "ribbonRig" -nn "Ribbon控制" -min 0 -max 1 
+		-at "bool";
+	addAttr -ci true -sn "ribbonJntNumber" -ln "ribbonJntNumber" -nn "Ribbon关节数量" 
+		-dv 5 -min 0 -at "long";
+	setAttr -cb on ".presetProperties";
+	setAttr -k on ".mirror" yes;
+	setAttr -k on ".ribbonRig" yes;
+	setAttr -k on ".ribbonJntNumber";
 createNode joint -n "jnt_l_clavicle_001" -p "arm_rig";
 	rename -uid "80EBA75F-4FFE-83A3-369B-A799888C2A97";
 	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
@@ -185,19 +196,19 @@ createNode joint -n "bpjnt_l_wrist_001" -p "bpjnt_l_elbow_001";
 		 61.550752155959941 127.25162879096378 -5.4898258144305796 1;
 	setAttr ".radi" 1.4;
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "2EB4A624-4F52-91A7-C630-E5AD5B2DDC9E";
+	rename -uid "AB81A45D-405C-767B-2E91-30BD02C35F8B";
 	setAttr -s 2 ".lnk";
 	setAttr -s 2 ".slnk";
 createNode shapeEditorManager -n "shapeEditorManager";
-	rename -uid "20EA7107-4AD3-00A6-94D0-5F9A6419AB08";
+	rename -uid "7F9B9A4D-407E-493D-5CAF-558245D6F838";
 createNode poseInterpolatorManager -n "poseInterpolatorManager";
-	rename -uid "6ACDF863-4C10-2CCA-C92B-A7ADFF38E7DD";
+	rename -uid "440D60B6-45E9-3B80-84BC-339A398286B8";
 createNode displayLayerManager -n "layerManager";
-	rename -uid "73FFEBC3-41E1-2DCD-9D7B-D79F5993662D";
+	rename -uid "D75E6068-4ED0-CDA0-C453-9AB2863BB391";
 createNode displayLayer -n "defaultLayer";
 	rename -uid "BB75B70B-425B-A750-277D-3885C848AFF8";
 createNode renderLayerManager -n "renderLayerManager";
-	rename -uid "DFE52F7D-4359-FCA1-633B-1E889BBCAD16";
+	rename -uid "C8CDBF6F-42FF-7234-59C7-B2B90A31C388";
 createNode renderLayer -n "defaultRenderLayer";
 	rename -uid "BA26B470-49A3-3E3E-5797-B9A56614C7D4";
 	setAttr ".g" yes;
@@ -211,6 +222,11 @@ createNode script -n "sceneConfigurationScriptNode";
 	rename -uid "679802B8-4965-E664-9F0D-DD886599BE14";
 	setAttr ".b" -type "string" "playbackOptions -min 1 -max 120 -ast 1 -aet 200 ";
 	setAttr ".st" 6;
+createNode nodeGraphEditorInfo -n "MayaNodeEditorSavedTabsInfo";
+	rename -uid "9E46AD39-4575-C4DF-45C6-57807F6ECAFA";
+	setAttr ".tgi[0].tn" -type "string" "无标题_1";
+	setAttr ".tgi[0].vl" -type "double2" -611.90473758985229 -447.61902983226548 ;
+	setAttr ".tgi[0].vh" -type "double2" 611.90473758985229 447.61902983226548 ;
 select -ne :time1;
 	setAttr -av -k on ".cch";
 	setAttr -k on ".fzn";
@@ -352,11 +368,16 @@ select -ne :initialShadingGroup;
 	setAttr -cb on ".ai_volume_shaderb";
 select -ne :initialParticleSE;
 	setAttr -av -k on ".cch";
+	setAttr -k on ".fzn";
 	setAttr -cb on ".ihi";
 	setAttr -av -k on ".nds";
 	setAttr -cb on ".bnm";
+	setAttr -k on ".bbx";
+	setAttr -k on ".vwm";
+	setAttr -k on ".tpv";
+	setAttr -k on ".uit";
 	setAttr -k on ".mwc";
-	setAttr -cb on ".an";
+	setAttr -av -cb on ".an";
 	setAttr -cb on ".il";
 	setAttr -cb on ".vo";
 	setAttr -cb on ".eo";
