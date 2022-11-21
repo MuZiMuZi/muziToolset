@@ -15,6 +15,7 @@ import muziToolset.rigging.arm_rig as arm_rig
 import muziToolset.rigging.foot_rig as foot_rig
 import muziToolset.rigging.neck_rig as neck_rig
 import muziToolset.rigging.spine_rig as spine_rig
+import muziToolset.rigging.chest_rig as chest_rig
 import muziToolset.rigging.leg_rig as leg_rig
 import muziToolset.rigging.hand_rig as hand_rig
 
@@ -30,6 +31,10 @@ class Build_Rig(base_rig.Base_Rig):
         u'''
         根据导入的对应模块，生成绑定系统
         '''
+        if self.chest_rig:
+            chest = chest_rig.Chest_Rig(bp_joints = None, joint_parent = None, control_parent = None)
+            chest.create_chest_rig()
+
         if self.arm_rig:
             arm = arm_rig.Arm_Rig(bp_joints = None, joint_parent = None, control_parent = 'output_l_scapula_001', mirror = cmds.getAttr(self.arm_rig + '.mirror'),
                                   ribbon =  cmds.getAttr(self.arm_rig + '.ribbonRig'),joint_number = cmds.getAttr(self.arm_rig + '.ribbonJntNumber'))

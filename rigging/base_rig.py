@@ -31,8 +31,9 @@ leg_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/le
 foot_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/foot_rig.ma'
 neck_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/neck_rig.ma'
 spine_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/spine_rig.ma'
+chest_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/chest_rig.ma'
 
-modular_rig = [arm_rig, hand_rig, leg_rig, foot_rig, neck_rig, spine_rig]
+modular_rig = [arm_rig, hand_rig, leg_rig, foot_rig, neck_rig, spine_rig,chest_rig]
 
 
 class Base_Rig(object):
