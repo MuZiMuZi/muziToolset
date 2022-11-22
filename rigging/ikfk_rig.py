@@ -34,9 +34,9 @@ reload(fk_rig)
 
 
 class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
-    def __init__(self, bp_joints = None, joint_parent = None, control_parent = None, mirror = True):
+    def __init__(self, bp_joints = None, joint_parent = None, control_parent = None, mirror = True,space_list = None):
         super(IKFK_Rig, self).__init__(bp_joints = bp_joints, joint_parent = joint_parent,
-                                       control_parent = control_parent)
+                                       control_parent = control_parent,space_list = space_list)
         self.mirror = mirror
 
     def create_ikfk_chain_rig(self):
@@ -64,7 +64,7 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
             self.fk_chain_rig(self.fk_chain, self.control_parent)
             self.ik_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'IK',
                                                           joint_parent = self.jnt_grp)
-            self.ik_chain_rig(self.ik_chain, self.control_parent)
+            self.ik_chain_rig(self.ik_chain, self.control_parent,self.space_list)
             self.ikfk_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'Bind',
                                                             joint_parent = self.jnt_grp)
             self.ikfk_chain_rig(self.fk_chain, self.ik_chain, self.ikfk_chain, self.control_parent)
@@ -75,7 +75,7 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
             self.fk_chain_rig(self.fk_chain_mirror, self.control_parent_mirror)
             self.ik_chain_mirror = jointUtils.Joint.create_chain(self.bp_joints_mirror, suffix = 'IK',
                                                                  joint_parent = self.jnt_grp)
-            self.ik_chain_rig(self.ik_chain_mirror, self.control_parent_mirror)
+            self.ik_chain_rig(self.ik_chain_mirror, self.control_parent_mirror,self.space_list)
             self.ikfk_chain_mirror = jointUtils.Joint.create_chain(self.bp_joints_mirror, suffix = 'Bind',
                                                                    joint_parent = self.joint_parent_mirror)
 
@@ -88,28 +88,26 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
             self.fk_chain_rig(self.fk_chain, self.control_parent)
             self.ik_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'IK',
                                                           joint_parent = self.jnt_grp)
-            self.ik_chain_rig(self.ik_chain, self.control_parent)
+            self.ik_chain_rig(self.ik_chain, self.control_parent,self.space_list)
             self.ikfk_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'Bind',
                                                             joint_parent = self.jnt_grp)
             self.ikfk_chain_rig(self.fk_chain, self.ik_chain, self.ikfk_chain, self.control_parent)
 
-    def create_ribbon_Rig(self, ikfk_chain, control_parent, joint_number):
+    def create_ribbon_Rig(self, ikfk_chain, control_parent,joint_parent ,joint_number):
         u"""
               创建ribbon关节的绑定
               """
         upper_part = nameUtils.Name(name = ikfk_chain[0])
         lower_part = nameUtils.Name(name = ikfk_chain[1])
         # 创建ribbon关节和twist关节
-        self.ribbon_rig(upper_part.name, control_parent, joint_number = joint_number)
-        self.ribbon_rig(lower_part.name, control_parent, joint_number = joint_number)
+        self.ribbon_rig(upper_part.name, control_parent,joint_parent, joint_number = joint_number)
+        self.ribbon_rig(lower_part.name, control_parent, joint_parent,joint_number = joint_number)
 
         # 吸附带控制器组的位置和旋转
         ribbon_upper_start_driven = 'driven_{}_{}Start_001'.format(upper_part.side, upper_part.description)
-        ribbon_upper_Mid_driven = 'driven_{}_{}Mid_001'.format(upper_part.side, upper_part.description)
         ribbon_upper_End_driven = 'driven_{}_{}End_001'.format(upper_part.side, upper_part.description)
 
         ribbon_lower_start_driven = 'driven_{}_{}Start_001'.format(lower_part.side, lower_part.description)
-        ribbon_lower_Mid_driven = 'driven_{}_{}Mid_001'.format(lower_part.side, lower_part.description)
         ribbon_lower_End_driven = 'driven_{}_{}End_001'.format(lower_part.side, lower_part.description)
 
         # 关节约束对应的控制器组
@@ -202,7 +200,7 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
                                                         joint_parent = self.jnt_grp)
         self.ikfk_chain_rig(self.fk_chain, self.ik_chain, self.ikfk_chain, self.control_grp)
 
-    def ribbon_rig(self, name, control_parent, joint_number = 5):
+    def ribbon_rig(self, name, control_parent,joint_parent, joint_number = 5):
         """
         创建ribbon控制器，给动画师更细致的动画效果
         思路：通过给定关节的名称来创建ribbon控制，通过曲线来生成曲面制作ribbon绑定，然后让生成的关节绑定在曲面上
@@ -233,7 +231,7 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
         ribbon_jnt_grp = cmds.createNode('transform',
                                          name = 'grp_{}_{}RibbonJnts_{:03d}'.format(ribbon.side, ribbon.description,
                                                                                     ribbon.index),
-                                         parent = self.joint)
+                                         parent = joint_parent)
         nodes_local_grp = cmds.createNode('transform',
                                           name = 'grp_{}_{}RibbonNodesLocal_{:03d}'.format(ribbon.side,
                                                                                            ribbon.description,
@@ -244,13 +242,14 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
                                                                                            ribbon.description,
                                                                                            ribbon.index),
                                           parent = self.rigNode_World)
+        cmds.setAttr(ribbon_ctrl_grp+ '.inheritsTransform', 0)
         cmds.setAttr(nodes_world_grp + '.inheritsTransform', 0)
 
         cmds.setAttr(nodes_local_grp + '.visibility', 0)
         cmds.setAttr(nodes_world_grp + '.visibility', 0)
 
         # 创建对应的曲线以生成nurbs曲面
-        temp_curve = cmds.curve(point = [[-5 * offset_val, 0, 0], [5 * offset_val, 0, 0]], knot = [0, 1], degree = 1)
+        temp_curve = cmds.curve(point = [[5 * offset_val, 0, 0], [-5 * offset_val, 0, 0]], knot = [0, 1], degree = 1)
         # 根据关节数重建曲线
         cmds.rebuildCurve(temp_curve, degree = 3, replaceOriginal = True, rebuildType = 0, endKnots = 1, keepRange = 0,
                           keepControlPoints = False, keepEndPoints = True, keepTangents = False,
@@ -337,12 +336,12 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
             ctrl_name = 'ctrl_{}_{}{}_{:03d}'.format(ribbon.side, ribbon.description, pos.title(), ribbon.index)
             ctrl = controlUtils.Control.create_ctrl(ctrl_name, shape = 'hexagon', radius = 5,
                                                     axis = 'Z+',
-                                                    pos = jnt, parent = ribbon_ctrl_grp)
+                                                    pos = None, parent = ribbon_ctrl_grp)
 
             ctrls.append(ctrl_name)
         # 放置控制器
         cmds.setAttr(ctrls[0].replace('ctrl', 'zero') + '.translateX', -5 * offset_val)
-        cmds.setAttr(ctrls[1].replace('ctrl', 'zero') + '.translateX', 5 * offset_val)
+        cmds.setAttr(ctrls[2].replace('ctrl', 'zero') + '.translateX', 5 * offset_val)
 
         # 约束中间的控制器
         cmds.parentConstraint(ctrls[0], ctrls[-1], ctrls[1].replace('ctrl', 'driven'), maintainOffset = False)
@@ -403,7 +402,7 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
             cls_node, cls_hnd = cmds.cluster('{}.cv[{}]'.format(wire_curve, i), name = ctrl.replace('ctrl', 'cls'))
             cmds.parent(cls_hnd, nodes_world_grp)
             cmds.pointConstraint(ctrl, cls_hnd, maintainOffset = False)
-
+        #
         # 创建wire变形器
         wire_node = surf.replace('surf', 'wire')
         cmds.wire(surf, wire = wire_curve, name = wire_node)

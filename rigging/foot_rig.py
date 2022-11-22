@@ -28,8 +28,8 @@ import ikfk_rig
 # leg_bp_joints = ['bpjnt_l_hip_001', 'bpjnt_l_knee_001',' bpjnt_l_ankle_001','bpjnt_l_ball_001','bpjnt_l_toe_001']
 
 class Foot_Rig(leg_rig.Leg_Rig):
-    def __init__(self, bp_joints = None , joint_parent = None, control_parent = None,mirror = True):
-        super(Foot_Rig, self).__init__(bp_joints = bp_joints, joint_parent=joint_parent,control_parent = control_parent)
+    def __init__(self, bp_joints = None, joint_parent = None, control_parent = None, mirror = True,space_list = None):
+        super(Foot_Rig, self).__init__(bp_joints = bp_joints, joint_parent=joint_parent,control_parent = control_parent,space_list = space_list)
         self.mirror = mirror
         self.foot_bp_joints = self.get_modular_bp_joints(self.foot_rig)
         self.bp_joints = self.foot_bp_joints

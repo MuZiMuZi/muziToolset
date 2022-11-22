@@ -26,11 +26,10 @@ reload(jointUtils)
 import ikfk_rig
 
 
-arm_bp_joints = ['jnt_l_shoulder_001', 'jnt_l_elbow_001',' jnt_l_wrist_001']
 
 class Arm_Rig(ikfk_rig.IKFK_Rig):
-    def __init__(self, bp_joints = None , joint_parent = None, control_parent = None,mirror = True,ribbon = True,joint_number = 5):
-        super(Arm_Rig, self).__init__(bp_joints = bp_joints, joint_parent=joint_parent,control_parent = control_parent)
+    def __init__(self, bp_joints = None , joint_parent = None, control_parent = None,mirror = True,ribbon = True,joint_number = 5,space_list = None):
+        super(Arm_Rig, self).__init__(bp_joints = bp_joints, joint_parent=joint_parent,control_parent = control_parent,space_list =space_list)
         self.mirror = mirror
         self.arm_bp_joints = ['bpjnt_l_shoulder_001', 'bpjnt_l_elbow_001',' bpjnt_l_wrist_001']
         self.bp_joints = self.arm_bp_joints
@@ -59,8 +58,8 @@ class Arm_Rig(ikfk_rig.IKFK_Rig):
         # 创建肩膀耸肩的控制器
         shrug_ctrl = self.shrug_jnt.replace('jnt_', 'ctrl_')
         shrug_ctrl_obj = controlUtils.Control.create_ctrl(shrug_ctrl,
-                                                         shape = 'shrug', radius = 6, axis = 'X+',
-                                                         pos = None, parent =self.cog_ctrl)
+                                                         shape = 'shrug', radius = 8, axis = 'X+',
+                                                         pos = None, parent ='output_m_chest_001')
 
         cmds.matchTransform(shrug_ctrl.replace('ctrl_','zero_'),self.shrug_jnt,position = True)
 
@@ -81,8 +80,8 @@ class Arm_Rig(ikfk_rig.IKFK_Rig):
         # 创建镜像肩膀耸肩的控制器
         shrug_ctrl_mirror = shrug_ctrl.replace('_l_','_r_')
         shrug_ctrl_mirror_obj = controlUtils.Control.create_ctrl(shrug_ctrl_mirror,
-                                                         shape = 'shrug', radius = 6, axis = 'X+',
-                                                         pos = None, parent = self.cog_ctrl)
+                                                         shape = 'shrug', radius = 8, axis = 'X+',
+                                                         pos = None, parent = 'output_m_chest_001')
 
         cmds.matchTransform(shrug_ctrl_mirror.replace('ctrl_','zero_'),self.shrug_jnt.replace('_l_','_r_'),position = True)
 
@@ -92,11 +91,14 @@ class Arm_Rig(ikfk_rig.IKFK_Rig):
             cmds.parentConstraint(ctrl,ctrl.replace('ctrl_','jnt_'),mo = True)
 
         # 创建肩膀耸肩的目标约束
-        cmds.aimConstraint(shrug_ctrl,clavicle_ctrl.replace('ctrl_','driven_'),mo = True)
-        cmds.aimConstraint(shrug_ctrl_mirror, clavicle_ctrl_mirror.replace('ctrl_', 'driven_'), mo = True)
+        cmds.aimConstraint(shrug_ctrl, clavicle_ctrl.replace('ctrl_','driven_'), worldUpType = 2, aimVector = (1, 0, 0),
+                           worldUpObject = shrug_ctrl.replace('ctrl_','zero_'), maintainOffset = True)
+        cmds.aimConstraint(shrug_ctrl_mirror, clavicle_ctrl_mirror.replace('ctrl_', 'driven_'), worldUpType = 2,
+                           aimVector = (-1, 0, 0),
+                           worldUpObject = shrug_ctrl_mirror.replace('ctrl_', 'zero_'), maintainOffset = True)
 
 
         self.create_ikfk_chain_rig()
         if self.ribbon  == True:
-            self.create_ribbon_Rig(self.ikfk_chain,self.control_parent, self.joint_number)
-            self.create_ribbon_Rig(self.ikfk_chain_mirror, self.control_parent_mirror, self.joint_number)
+            self.create_ribbon_Rig(self.ikfk_chain,self.control_parent, self.joint_parent,self.joint_number)
+            self.create_ribbon_Rig(self.ikfk_chain_mirror, self.control_parent_mirror, self.joint_parent_mirror,self.joint_number)

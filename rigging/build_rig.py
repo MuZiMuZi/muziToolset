@@ -34,19 +34,21 @@ class Build_Rig(base_rig.Base_Rig):
         if self.chest_rig:
             chest = chest_rig.Chest_Rig(bp_joints = None, joint_parent = None, control_parent = None)
             chest.create_chest_rig()
-
-        if self.arm_rig:
-            arm = arm_rig.Arm_Rig(bp_joints = None, joint_parent = None, control_parent = 'output_l_scapula_001', mirror = cmds.getAttr(self.arm_rig + '.mirror'),
-                                  ribbon =  cmds.getAttr(self.arm_rig + '.ribbonRig'),joint_number = cmds.getAttr(self.arm_rig + '.ribbonJntNumber'))
-            arm.create_arm_rig()
-        if self.leg_rig:
-            leg = leg_rig.Leg_Rig(bp_joints = None, joint_parent = None, control_parent = None, mirror = cmds.getAttr(self.leg_rig + '.mirror'),
-                                  ribbon =  cmds.getAttr(self.leg_rig + '.ribbonRig'),joint_number = cmds.getAttr(self.leg_rig + '.ribbonJntNumber'))
-            leg.create_leg_rig()
-
         if self.spine_rig:
             spine = spine_rig.Spine_Rig(bp_joints = None, joint_parent = None, control_parent = None, mirror = False)
             spine.create_spine_rig()
+
+        if self.arm_rig:
+            arm = arm_rig.Arm_Rig(bp_joints = None, joint_parent = None, control_parent = 'output_l_scapula_001', mirror = cmds.getAttr(self.arm_rig + '.mirror'),
+                                  ribbon =  cmds.getAttr(self.arm_rig + '.ribbonRig'),joint_number = cmds.getAttr(self.arm_rig + '.ribbonJntNumber'),
+                                  space_list = ['world', 'cog', 'chest'] )
+            arm.create_arm_rig()
+
+        if self.leg_rig:
+            leg = leg_rig.Leg_Rig(bp_joints = None, joint_parent = None, control_parent = None, mirror = cmds.getAttr(self.leg_rig + '.mirror'),
+                                  ribbon =  cmds.getAttr(self.leg_rig + '.ribbonRig'),joint_number = cmds.getAttr(self.leg_rig + '.ribbonJntNumber'),
+                                  space_list = ['world', 'cog', 'spine'])
+            leg.create_leg_rig()
 
         if self.neck_rig:
             neck = neck_rig.Neck_Rig(bp_joints = None, joint_parent = None, control_parent = None, mirror = False)
@@ -62,4 +64,4 @@ class Build_Rig(base_rig.Base_Rig):
             hand.create_hand_rig()
 
         for modular in self.modular_rig_list:
-            cmds.parent(modular, self.modular_rig)
+            cmds.delete(modular, self.modular_rig)

@@ -423,8 +423,10 @@ class Control(object):
                 obj = ctrl_transform, grp_name = '{}'.format(name.replace('ctrl', 'offset')), world_orient = False)
             connect_grp = hierarchyUtils.Hierarchy.add_extra_group(
                 obj = offset_grp, grp_name = offset_grp.replace('offset', 'connect'), world_orient = False)
+            sapce_grp = hierarchyUtils.Hierarchy.add_extra_group(
+                obj = connect_grp, grp_name = offset_grp.replace('offset', 'space'), world_orient = False)
             driven_grp = hierarchyUtils.Hierarchy.add_extra_group(
-                obj = connect_grp, grp_name = connect_grp.replace('connect', 'driven'), world_orient = False)
+                obj = sapce_grp, grp_name = connect_grp.replace('connect', 'driven'), world_orient = False)
             zero_grp = hierarchyUtils.Hierarchy.add_extra_group(
                 obj = driven_grp, grp_name = driven_grp.replace('driven', 'zero'), world_orient = False)
 

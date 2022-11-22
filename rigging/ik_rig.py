@@ -28,13 +28,13 @@ import base_rig
 
 
 class IK_Rig(base_rig.Base_Rig):
-    def __init__(self, bp_joints = None, joint_parent = None, control_parent = None):
+    def __init__(self, bp_joints = None, joint_parent = None, control_parent = None,space_list = None):
         super(IK_Rig, self).__init__()
         self.bp_joints = bp_joints
         self.joint_parent = joint_parent
         self.control_parent = control_parent
-
-    def ik_chain_rig(self, ik_chain, control_parent):
+        self.space_list = space_list
+    def ik_chain_rig(self, ik_chain, control_parent,space_list):
         u"""
         创建IK链的控制器绑定
         Args:
@@ -270,6 +270,11 @@ class IK_Rig(base_rig.Base_Rig):
         cmds.connectAttr(pvLock_blend_node + '.outputR', midIK_jnt + '.translateX')
         cmds.connectAttr(pvLock_blend_node + '.outputG', endIK_jnt + '.translateX')
 
+        #添加空间切换
+        if space_list:
+            for ctrl in [midIK_pv_ctrl,endIK_ctrl]:
+                self.add_spaceSwitch(ctrl,space_list)
+
     def ik_spine_rig(self, ik_chain, control_parent):
         u"""
         创建IKspine链的控制器绑定
@@ -411,3 +416,5 @@ class IK_Rig(base_rig.Base_Rig):
             cmds.connectAttr(add_node + '.output', blend_node + '.color1R')
             # 把混合后的关节长度连接给原关节
             cmds.connectAttr(blend_node + '.outputR', jnt + '.translateX')
+
+

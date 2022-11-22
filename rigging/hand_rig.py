@@ -31,9 +31,9 @@ reload(hierarchyUtils)
 
 
 class Hand_Rig(arm_rig.Arm_Rig):
-    def __init__(self, bp_joints = None, joint_parent = None, control_parent = None, mirror = True):
+    def __init__(self, bp_joints = None, joint_parent = None, control_parent = None, mirror = True,space_list = None):
         super(Hand_Rig, self).__init__(bp_joints = bp_joints, joint_parent = joint_parent,
-                                       control_parent = control_parent)
+                                       control_parent = control_parent,space_list = space_list)
         self.mirror = mirror
         self.bp_joints = bp_joints
         self.control_parent = control_parent

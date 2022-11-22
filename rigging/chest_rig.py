@@ -24,9 +24,10 @@ chest_bp_joints = ['bpjnt_l_shoulder_001', 'bpjnt_l_elbow_001', ' bpjnt_l_wrist_
 
 
 class Chest_Rig(ikfk_rig.IKFK_Rig):
-    def __init__(self, bp_joints = None, joint_parent = None, control_parent = None):
+    def __init__(self, bp_joints = None, joint_parent = None, control_parent = None, mirror = False,space_list = None):
         super(Chest_Rig, self).__init__(bp_joints = bp_joints, joint_parent = joint_parent,
-                                        control_parent = control_parent)
+                                        control_parent = control_parent,space_list = space_list)
+
         self.chest_jnt = 'jnt_m_chest_001'
         self.sternumPlvot_jnt = 'jnt_m_sternumPlvot_001'
         self.ribA_jnt = 'jnt_l_ribA_001'
@@ -40,16 +41,14 @@ class Chest_Rig(ikfk_rig.IKFK_Rig):
         self.ribB_jnt_grp = hierarchyUtils.Hierarchy.get_child_object(self.ribB_jnt)
         self.ribA_jnt_grp_mirror = hierarchyUtils.Hierarchy.get_child_object(self.ribA_jnt_mirror)
         self.ribB_jnt_grp_mirror = hierarchyUtils.Hierarchy.get_child_object(self.ribB_jnt_mirror)
+        self.chest_jnt_grp = ['jnt_m_chest_001']
+        self.make(self.chest_jnt_grp)
 
     def create_chest_rig(self):
-        # 整理层级结构
-        chest_ctrl_grp = cmds.createNode('transform',name = 'grp_m_chestCtrls_001')
-        cmds.parent(chest_ctrl_grp,self.cog_ctrl.replace('ctrl_','output_'))
-
         # 创建胸腔的控制器
         chest_ctrl_obj = controlUtils.Control.create_ctrl(self.chest_ctrl, shape = 'ball', radius = 13, axis = 'Z+',
                                                           pos = self.chest_jnt,
-                                                          parent =chest_ctrl_grp)
+                                                          parent =self.control_grp)
 
         # 设置胸腔控制器的极限值为-2到2，-2和2是呼吸的极限值，默认的吸气呼气应该是1和-1
         cmds.transformLimits(self.chest_ctrl, translationX = (-2, 2), enableTranslationX = (True, True))

@@ -15,10 +15,10 @@ make： 根据给定的bp_joints关节的名称来创建对应的模块组
 
 """
 
-import maya.cmds as cmds
-
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.nameUtils as nameUtils
+
+import maya.cmds as cmds
 
 skeletonPath = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton'
 
@@ -33,7 +33,7 @@ neck_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/n
 spine_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/spine_rig.ma'
 chest_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/chest_rig.ma'
 
-modular_rig = [arm_rig, hand_rig, leg_rig, foot_rig, neck_rig, spine_rig,chest_rig]
+modular_rig = [arm_rig, hand_rig, leg_rig, foot_rig, neck_rig, spine_rig, chest_rig]
 
 
 class Base_Rig(object):
@@ -68,7 +68,7 @@ class Base_Rig(object):
         self.mid_modle_grp = 'grp_m_mid_modle_001'
         self.high_modle_grp = 'grp_m_high_modle_001'
 
-        self.rig_ctrl = [self.character_ctrl, self.cog_ctrl, self.custom_ctrl]
+        self.rig_ctrl = [self.character_ctrl, self.world_ctrl, self.cog_ctrl, self.custom_ctrl]
         self.rig_hierarchy_grp = [self.group, self.geometry, self.control, self.custom, self.rigNode, self.joint,
                                   self.rigNode_Local, self.rigNode_World, self.nCloth,
                                   self.modular_rig, self.low_modle_grp, self.mid_modle_grp, self.high_modle_grp]
@@ -83,7 +83,7 @@ class Base_Rig(object):
         self.spine_rig = 'spine_rig'
         self.chest_rig = 'chest_rig'
         self.modular_rig_list = [self.arm_rig, self.hand_rig, self.leg_rig, self.foot_rig, self.neck_rig,
-                                 self.spine_rig,self.chest_rig ]
+                                 self.spine_rig, self.chest_rig]
 
         # # 定义绑定模块的bp定位关节
         # self.arm_bp_joints = self.get_modular_bp_joints(self.arm_rig)
@@ -112,7 +112,6 @@ class Base_Rig(object):
         for transform in self.rig_hierarchy_grp:
             cmds.createNode('transform', name = transform)
 
-
         # 制作层级关系
         cmds.parent(self.geometry, self.custom, self.control, self.group)
 
@@ -127,28 +126,27 @@ class Base_Rig(object):
                       '.scaleZ', '.visibility', '.rotateOrder', '.subCtrlVis']
         # 创建总控制器Character
         controlUtils.Control.create_ctrl(self.character_ctrl, shape = 'circle', radius = 40,
-                                                              axis = 'X+',
-                                                              pos = None,
-                                                              parent = self.control)
+                                         axis = 'X+',
+                                         pos = None,
+                                         parent = self.control)
         cmds.addAttr(self.character_ctrl, longName = 'RigScale', niceName = u'绑定缩放', at = 'double', dv = 1,
                      keyable = True)
         for attr in ['.scaleX', '.scaleY', '.scaleZ']:
             cmds.connectAttr(self.character_ctrl + '.RigScale', self.character_ctrl + attr)
             cmds.setAttr(self.character_ctrl + attr, lock = True, keyable = False, channelBox = False)
 
-
         # 创建世界控制器
         controlUtils.Control.create_ctrl(self.world_ctrl, shape = 'local', radius = 35, axis = 'Z-',
-                                                          pos = None,
-                                                          parent = self.character_ctrl.replace('ctrl_','output_'))
+                                         pos = None,
+                                         parent = self.character_ctrl.replace('ctrl_', 'output_'))
 
         controlUtils.Control.create_ctrl(self.cog_ctrl, shape = 'circle', radius = 20, axis = 'X+',
-                                                        pos = None,
-                                                        parent = self.world_ctrl.replace('ctrl_','output_'))
+                                         pos = None,
+                                         parent = self.world_ctrl.replace('ctrl_', 'output_'))
         # 创建一个自定义的控制器，用来承载自定义的属性
         controlUtils.Control.create_ctrl(self.custom_ctrl, shape = 'cross', radius = 3, axis = 'X+',
-                                                         pos = None,
-                                                         parent = self.custom)
+                                         pos = None,
+                                         parent = self.custom)
         cmds.parentConstraint(self.character_ctrl, self.custom_ctrl, mo = True)
         cmds.scaleConstraint(self.character_ctrl, self.custom_ctrl, mo = True)
 
@@ -176,17 +174,25 @@ class Base_Rig(object):
                          keyable = True)
 
         # 连接各个组的显示属性
-        custom_ctrl_attrs = ['.GeometryVis','.ControlsVis','.RigNodesVis','.JointsVis']
-        hierarchy_grp = [self.geometry,self.control,self.rigNode,self.joint]
-        for attrs ,grp in zip(custom_ctrl_attrs,hierarchy_grp):
-            cmds.connectAttr(self.custom_ctrl+ '{}'.format(attrs), '{}.visibility'.format(grp))
+        custom_ctrl_attrs = ['.GeometryVis', '.ControlsVis', '.RigNodesVis', '.JointsVis']
+        hierarchy_grp = [self.geometry, self.control, self.rigNode, self.joint]
+        for attrs, grp in zip(custom_ctrl_attrs, hierarchy_grp):
+            cmds.connectAttr(self.custom_ctrl + '{}'.format(attrs), '{}.visibility'.format(grp))
         # 连接模型的可编辑属性
         cmds.setAttr(self.geometry + '.overrideDisplayType', 2)
-        cmds.connectAttr('{}.GeometryDisplayType'.format(self.custom_ctrl), self.geometry + '.overrideEnabled', f = True)
+        cmds.connectAttr('{}.GeometryDisplayType'.format(self.custom_ctrl), self.geometry + '.overrideEnabled',
+                         f = True)
 
         # 显示和隐藏属性
         for attr in attrs_list:
             cmds.setAttr(self.custom_ctrl + attr, l = True, k = False, cb = False)
+
+        # 创建用于空间切换的组
+        for ctrl in self.rig_ctrl:
+            ctrl_obj = nameUtils.Name(name = ctrl)
+            space_grp = cmds.createNode('transform', name = 'grp_m_{}Space_001'.format(ctrl_obj.description))
+            cmds.parent(space_grp, ctrl)
+            cmds.setAttr(space_grp + '.visibility', 0)
 
     def setup(self):
         u'''
@@ -211,8 +217,51 @@ class Base_Rig(object):
         main_obj.description = main_obj.description + 'RigModule'
         main_obj.type = 'grp'
         self.control_grp = cmds.group(name = main_obj.name.replace('RigModule', 'Ctrl'), em = True,
-                                      parent = self.cog_ctrl.replace('ctrl_','output_'))
+                                      parent = self.cog_ctrl.replace('ctrl_', 'output_'))
         self.jnt_grp = cmds.group(name = main_obj.name.replace('RigModule', 'Jnt'), em = True,
                                   parent = self.joint)
-        # self.rigNodes_Local_grp = cmds.group(name = main_obj.name.replace('RigModule', 'RigNodesLocal'), em = True, parent = 'RigNodesLocal')
-        # self.rigNodes_World_grp = cmds.group(name = main_obj.name.replace('RigModule', 'RigNodesWorld'), em = True, parent = 'RigNodesWorld')
+        self.rigNodes_Local_grp = cmds.group(name = main_obj.name.replace('RigModule', 'RigNodesLocal'), em = True,
+                                             parent = self.rigNode_Local)
+        self.rigNodes_World_grp = cmds.group(name = main_obj.name.replace('RigModule', 'RigNodesWorld'), em = True,
+                                             parent = self.rigNode_World)
+        self.space_grp = cmds.group(name = main_obj.name.replace('RigModule', 'Space'), em = True,
+                                    parent = self.control_grp)
+        # 设置组的可见性
+        cmds.setAttr(self.space_grp + '.visibility', 0)
+
+    @staticmethod
+    def add_spaceSwitch(object, space_list):
+        u"""
+        添加空间切换
+        :param object: 需要添加空间切换的对象
+        :param space_list(list): 添加空间切换的空间
+        :return:
+        """
+
+        # 在对象上添加空间切换的属性控制
+        cmds.addAttr(object, longName = 'spaceSwitch', niceName = u'空间切换', attributeType = 'enum',
+                     en = ":".join(space_list), keyable = True)
+
+        for space_name in space_list:
+            # 创建用于空间切换的定位器
+            object_obj = nameUtils.Name(name = object)
+            object_obj.type = 'loc'
+            object_obj.description = object_obj.description + 'Space' + space_name
+            loc_node = cmds.spaceLocator(name = object_obj.name)[0]
+            # 创建定位器上层的组并吸附到添加空间切换的对象的位置
+            loc_zero = cmds.createNode('transform', name = loc_node.replace('loc_', 'zero_'))
+            cmds.parent(loc_node, loc_zero)
+            cmds.matchTransform(loc_zero, object, position = True, rotation = True, scale = True)
+            # 定位器对添加空间切换的对象上层的组做父子约束，并且整理层级
+            cmds.parentConstraint(loc_node, object.replace('ctrl_', 'space_'), mo = False)
+            cmds.parent(loc_zero, 'grp_m_{}Space_001'.format(space_name))
+            # 创建用于空间切换的判断节点
+            space_cond_node = cmds.createNode('condition', name = loc_node.replace('loc_', 'cond_'))
+            cmds.setAttr(space_cond_node + '.colorIfTrueR', 1)
+            cmds.setAttr(space_cond_node + '.colorIfFalseR', 0)
+            cmds.connectAttr(object + '.spaceSwitch', space_cond_node + '.firstTerm')
+            cmds.setAttr(space_cond_node + '.secondTerm', space_list.index(space_name))
+            # 连接约束节点
+            constraint_node = object.replace('ctrl_', 'space_') + '_parentConstraint1'
+            cmds.connectAttr(space_cond_node + '.outColorR',
+                             constraint_node + '.{}W{}'.format(loc_node, space_list.index(space_name)))
