@@ -26,8 +26,33 @@ import maya.cmds as cmds
 class Build_Rig(base_rig.Base_Rig):
     def __init__(self):
         super(Build_Rig, self).__init__()
-        self.setup()
-    def build(self):
+        # 定义各个绑定模块的路径
+        skeletonPath = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton'
+
+        troll_model = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/model/troll_model.ma'
+        biped_skeleton = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/biped_skeleton.ma'
+
+        arm_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/arm_rig.ma'
+        hand_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/hand_rig.ma'
+        leg_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/leg_rig.ma'
+        foot_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/foot_rig.ma'
+        neck_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/neck_rig.ma'
+        spine_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/spine_rig.ma'
+        chest_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/chest_rig.ma'
+
+        self.modular_rig_list = [arm_rig, hand_rig, leg_rig, foot_rig, neck_rig, spine_rig, chest_rig]
+    def import_modular (self):
+        u'''
+        绑定生成的预设步骤，导入对应的模型和关节结构
+        '''
+        # 导入模块结构
+        for modular in self.modular_rig_list:
+            cmds.file(modular, i = True)
+
+    def delete_modular(self):
+        cmds.delete(self.chest_rig, self.spine_rig, self.arm_rig, self.leg_rig, self.neck_rig, self.foot_rig,
+                    self.hand_rig)
+    def build_rig(self):
         u'''
         根据导入的对应模块，生成绑定系统
         '''
@@ -63,5 +88,4 @@ class Build_Rig(base_rig.Base_Rig):
             hand = hand_rig.Hand_Rig(bp_joints = None, joint_parent = None, control_parent = None, mirror = True)
             hand.create_hand_rig()
 
-        for modular in self.modular_rig_list:
-            cmds.delete(modular, self.modular_rig)
+        self.delete_modular()
