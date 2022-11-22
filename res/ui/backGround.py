@@ -39,3 +39,7 @@ class BackGround(QWidget):
         p.drawRect(self.rect())
         p.end()
 
+    def get_maya_window(self):
+        maya_window_ptr = OpenMayaUI.MQtUtil.mainWindow()
+        maya_window_widget = wrapInstance(long(maya_window_ptr), QWidget)
+        return maya_window_widget
