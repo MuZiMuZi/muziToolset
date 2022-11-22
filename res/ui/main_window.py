@@ -140,11 +140,11 @@ class functionWidget(QWidget,pipelineUtils.Pipeline):
         self.control_hierarchy_button = QPushButton("自动打组(自用)")
         self.control_hierarchy_button.clicked.connect(self.control_hierarchy)
 
-        self.save_SkinWeights_button = QPushButton("导出权重")
-        self.save_SkinWeights_button.clicked.connect(self.save_SkinWeights)
+        self.save_skinWeights_button = QPushButton("导出权重")
+        self.save_skinWeights_button.clicked.connect(self.save_skinWeights)
 
-        self.load_SkinWeights_button = QPushButton("导入权重")
-        self.load_SkinWeights_button.clicked.connect(self.load_SkinWeights)
+        self.load_skinWeights_button = QPushButton("导入权重")
+        self.load_skinWeights_button.clicked.connect(self.load_skinWeights)
 
         # 添加按钮
         self.main_layout.addWidget(self.clear_keys_button,1,1)
@@ -154,8 +154,8 @@ class functionWidget(QWidget,pipelineUtils.Pipeline):
         self.main_layout.addWidget(self.create_joints_on_curve_button,2,1)
         self.main_layout.addWidget(self.create_joints_on_curve_rigging_button, 2, 2)
         self.main_layout.addWidget(self.control_hierarchy_button,2,3)
-        self.main_layout.addWidget(self.save_SkinWeights_button, 2, 4)
-        self.main_layout.addWidget(self.load_SkinWeights_button, 3, 1)
+        self.main_layout.addWidget(self.save_skinWeights_button, 2, 4)
+        self.main_layout.addWidget(self.load_skinWeights_button, 3, 1)
 
     def clear_keys(self):
         pipelineUtils.Pipeline.clear_keys()
@@ -178,17 +178,17 @@ class functionWidget(QWidget,pipelineUtils.Pipeline):
     def control_hierarchy(self):
         hierarchyUtils.Hierarchy.control_hierarchy()
 
-    def save_SkinWeights(self):
+    def save_skinWeights(self):
         geos = cmds.ls(sl =True)
         for geo in geos:
             obj = weightsUtils.Weights(geo)
-            obj.save_SkinWeights()
+            obj.save_skinWeights()
 
-    def load_SkinWeights(self):
+    def load_skinWeights(self):
         geos = cmds.ls(sl = True)
         for geo in geos:
             obj = weightsUtils.Weights(geo)
-            obj.load_SkinWeights()
+            obj.load_skinWeights()
 
 
 class MainWindow(QWidget):
