@@ -20,22 +20,6 @@ import muziToolset.core.nameUtils as nameUtils
 
 import maya.cmds as cmds
 
-skeletonPath = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton'
-
-troll_model = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/model/troll_model.ma'
-biped_skeleton = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/biped_skeleton.ma'
-
-arm_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/arm_rig.ma'
-hand_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/hand_rig.ma'
-leg_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/leg_rig.ma'
-foot_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/foot_rig.ma'
-neck_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/neck_rig.ma'
-spine_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/spine_rig.ma'
-chest_rig = 'C:/Users/lixin/Documents/maya/scripts/muziToolset/rigging/skeleton/chest_rig.ma'
-
-modular_rig = [arm_rig, hand_rig, leg_rig, foot_rig, neck_rig, spine_rig, chest_rig]
-
-
 class Base_Rig(object):
 
     def __init__(self):
@@ -193,21 +177,6 @@ class Base_Rig(object):
             space_grp = cmds.createNode('transform', name = 'grp_m_{}Space_001'.format(ctrl_obj.description))
             cmds.parent(space_grp, ctrl)
             cmds.setAttr(space_grp + '.visibility', 0)
-
-    def setup(self):
-        u'''
-        绑定生成的预设步骤，导入对应的模型和关节结构
-        '''
-        # 导入模型
-        # cmds.file(troll_model, i = True)
-
-        # 导入关节结构
-        for modular in modular_rig:
-            cmds.file(modular, i = True)
-
-        # 整理导入进来的关节结构和模型层级
-        # rootJnt = 'root1_jnt'
-        # cmds.parent(rootJnt, self.Joints)
 
     def make(self, bp_joints):
         u"""
