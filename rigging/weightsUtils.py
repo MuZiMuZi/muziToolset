@@ -5,7 +5,7 @@ u"""
 
 目前已有的功能：
 
- save_SkinWeights：       将蒙皮几何体对象的权重保存到给定权重文件夹，权重将保存在对象短名称下，并附加存储其蒙皮影响的文件
+ save_skinWeights：       将蒙皮几何体对象的权重保存到给定权重文件夹，权重将保存在对象短名称下，并附加存储其蒙皮影响的文件
  ik_chain_rig：创建ik链的控制器绑定
 
 bind_chain_rig:创建混合IKFk链的bind链控制器绑定
@@ -34,7 +34,7 @@ class Weights(object):
         self.influences_FileName = 'sc_' + self.geo + self.influencesFileExt
         self.influences_Path = os.path.join(self.skinWeights_Path, self.influences_FileName)
 
-    def save_SkinWeights(self):
+    def save_skinWeights(self):
         u'''
        将蒙皮几何体对象的权重保存到给定权重文件夹，权重将保存在对象短名称下，并附加存储其蒙皮影响的文件
         :return:
@@ -56,7 +56,7 @@ class Weights(object):
             json.dump(influences, influences_file, sort_keys = True, indent = 4, separators = (',', ': '))
 
 
-    def load_SkinWeights(self):
+    def load_skinWeights(self):
         u'''
        从给定权重文件夹加载蒙皮几何体对象的权重将从与对象短名称匹配的文件名加载权重，并添加其他文件以获取其影响
         :return:
