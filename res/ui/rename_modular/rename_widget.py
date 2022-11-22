@@ -40,28 +40,28 @@ class AddNamePrefixWidget(backGround.BackGround):
 
         # 创建添加前缀的部件
         self.prefix = QLineEdit()
-        self.prefix_bn = QPushButton("添加")
-        self.prefix_bn.clicked.connect(self.add_prefix)
+        self.prefix_button = QPushButton("添加")
+        self.prefix_button.clicked.connect(self.add_prefix)
 
         # 创建添加层级前缀的部件
         self.hierarchy_prefix = QLineEdit()
-        self.hierarchy_prefix_bn = QPushButton("添加")
-        self.hierarchy_prefix_bn.clicked.connect(self.add_hierarchy_prefix)
+        self.hierarchy_prefix_button = QPushButton("添加")
+        self.hierarchy_prefix_button.clicked.connect(self.add_hierarchy_prefix)
 
         # 创建添加后缀的部件
         self.suffix = QLineEdit()
-        self.suffix_bn = QPushButton("添加")
-        self.suffix_bn.clicked.connect(self.add_suffix)
+        self.suffix_button = QPushButton("添加")
+        self.suffix_button.clicked.connect(self.add_suffix)
 
         # 创建添加层级后缀的部件
         self.hierarchy_suffix = QLineEdit()
-        self.hierarchy_suffix_bn = QPushButton("添加")
-        self.hierarchy_suffix_bn.clicked.connect(self.add_hierarchy_suffix)
+        self.hierarchy_suffix_button = QPushButton("添加")
+        self.hierarchy_suffix_button.clicked.connect(self.add_hierarchy_suffix)
 
         # 创建重命名的部件
         self.rename = QLineEdit()
-        self.rename_bn = QPushButton("替换")
-        self.rename_bn.clicked.connect(self.set_rename)
+        self.rename_button = QPushButton("替换")
+        self.rename_button.clicked.connect(self.set_rename)
 
         # 添加主布局的小部件
         self.main_layout.addLayout(self.body_layout)
@@ -70,23 +70,23 @@ class AddNamePrefixWidget(backGround.BackGround):
         # 添加子布局的小部件
         self.body_layout.addWidget(QLabel("添加前缀"))
         self.body_layout.addWidget(self.prefix)
-        self.body_layout.addWidget(self.prefix_bn)
+        self.body_layout.addWidget(self.prefix_button)
 
         self.body_layout.addWidget(QLabel("添加后缀"))
         self.body_layout.addWidget(self.suffix )
-        self.body_layout.addWidget(self.suffix_bn)
+        self.body_layout.addWidget(self.suffix_button)
 
         self.body_layout.addWidget(QLabel("添加层级前缀"))
         self.body_layout.addWidget(self.hierarchy_prefix)
-        self.body_layout.addWidget(self.hierarchy_prefix_bn)
+        self.body_layout.addWidget(self.hierarchy_prefix_button)
 
         self.body_layout.addWidget(QLabel("添加层级后缀"))
         self.body_layout.addWidget(self.hierarchy_suffix)
-        self.body_layout.addWidget(self.hierarchy_suffix_bn)
+        self.body_layout.addWidget(self.hierarchy_suffix_button)
 
         self.body_layout.addWidget(QLabel("重命名"))
         self.body_layout.addWidget(self.rename)
-        self.body_layout.addWidget(self.rename_bn)
+        self.body_layout.addWidget(self.rename_button)
 
     def add_prefix(self):
         """
@@ -159,18 +159,18 @@ class ReplaceNameWidget(backGround.BackGround):
         self.replace_layout.addWidget(self.replace)
 
         # 创建按钮布局
-        self.do_bn_layout = QHBoxLayout()
+        self.do_button_layout = QHBoxLayout()
 
-        self.search_replace_bn = QPushButton("搜索替换")
-        self.search_replace_bn.clicked.connect(self.search_replace_name)
+        self.search_replace_button = QPushButton("搜索替换")
+        self.search_replace_button.clicked.connect(self.search_replace_name)
 
-        self.do_bn_layout.addWidget(self.search_replace_bn)
+        self.do_button_layout.addWidget(self.search_replace_button)
 
        # 添加主布局部件
         self.main_layout.addWidget(QLabel("搜索替换名称：  "))
         self.main_layout.addLayout(self.search_layout)
         self.main_layout.addLayout(self.replace_layout)
-        self.main_layout.addLayout(self.do_bn_layout)
+        self.main_layout.addLayout(self.do_button_layout)
         self.main_layout.addStretch(0)
 
     def search_replace_name(self):

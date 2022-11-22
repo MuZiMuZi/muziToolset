@@ -41,47 +41,47 @@ class NodeWidget(backGround.BackGround):
         self.node_layout.addWidget(QLabel("创建常用节点:    "))
 
         # 创建常用节点页面布局的小部件
-        self.transform_bn = QPushButton("空组_transform")
-        self.joint_bn = QPushButton("关节_joint")
-        self.loc_bn = QPushButton("定位器_locator")
-        self.transform_bn.clicked.connect(lambda: self.create(self.transform_bn))
-        self.joint_bn.clicked.connect(lambda: self.create(self.joint_bn))
-        self.loc_bn.clicked.connect(self.create_locator)
+        self.transform_button = QPushButton("空组_transform")
+        self.joint_button = QPushButton("关节_joint")
+        self.loc_button = QPushButton("定位器_locator")
+        self.transform_button.clicked.connect(lambda: self.create(self.transform_button))
+        self.joint_button.clicked.connect(lambda: self.create(self.joint_button))
+        self.loc_button.clicked.connect(self.create_locator)
 
         # 添加常用节点页面布局的小部件
-        self.node_layout.addWidget(self.transform_bn)
-        self.node_layout.addWidget(self.joint_bn,1,1)
-        self.node_layout.addWidget(self.loc_bn, 1, 2)
+        self.node_layout.addWidget(self.transform_button)
+        self.node_layout.addWidget(self.joint_button,1,1)
+        self.node_layout.addWidget(self.loc_button, 1, 2)
 
         # 创建数学节点页面布局
         self.math_node_layout = QGridLayout(self)
         self.math_node_layout.addWidget(QLabel("创建数学节点:    "))
 
         # 创建数学节点页面的小部件
-        self.add_node_bn = QPushButton("加减节点_addDoubleLinear")
-        self.add_node_bn.clicked.connect(lambda: self.create(self.add_node_bn))
+        self.add_node_button = QPushButton("加减节点_addDoubleLinear")
+        self.add_node_button.clicked.connect(lambda: self.create(self.add_node_button))
 
 
-        self.mult_node_bn = QPushButton("乘除节点_multDoubleLinear")
-        self.mult_node_bn.clicked.connect(lambda: self.create(self.mult_node_bn))
+        self.mult_node_button = QPushButton("乘除节点_multDoubleLinear")
+        self.mult_node_button.clicked.connect(lambda: self.create(self.mult_node_button))
 
 
-        self.plusMi_node_bn = QPushButton("加减平均节点_plusMinusAverage")
-        self.plusMi_node_bn.clicked.connect(lambda: self.create(self.plusMi_node_bn))
+        self.plusMi_node_button = QPushButton("加减平均节点_plusMinusAverage")
+        self.plusMi_node_button.clicked.connect(lambda: self.create(self.plusMi_node_button))
 
-        self.multDiv_node_bn = QPushButton("乘除平均节点_multiplyDivide")
-        self.multDiv_node_bn.clicked.connect(lambda: self.create(self.multDiv_node_bn))
+        self.multDiv_node_button = QPushButton("乘除平均节点_multiplyDivide")
+        self.multDiv_node_button.clicked.connect(lambda: self.create(self.multDiv_node_button))
 
-        self.dis_node_bn = QPushButton("距离节点_distanceBetween")
-        self.dis_node_bn.clicked.connect(lambda: self.create(self.dis_node_bn))
+        self.dis_node_button = QPushButton("距离节点_distanceBetween")
+        self.dis_node_button.clicked.connect(lambda: self.create(self.dis_node_button))
 
 
         # 添加数学节点页面的小部件
-        self.math_node_layout.addWidget(self.add_node_bn,1,0)
-        self.math_node_layout.addWidget(self.plusMi_node_bn,1,1)
-        self.math_node_layout.addWidget(self.mult_node_bn,2,0)
-        self.math_node_layout.addWidget(self.multDiv_node_bn,2,1)
-        self.math_node_layout.addWidget(self.dis_node_bn,1,4)
+        self.math_node_layout.addWidget(self.add_node_button,1,0)
+        self.math_node_layout.addWidget(self.plusMi_node_button,1,1)
+        self.math_node_layout.addWidget(self.mult_node_button,2,0)
+        self.math_node_layout.addWidget(self.multDiv_node_button,2,1)
+        self.math_node_layout.addWidget(self.dis_node_button,1,4)
 
 
 
@@ -91,33 +91,33 @@ class NodeWidget(backGround.BackGround):
 
 
         # 创建流程节点页面小部件
-        self.cond_bn = QPushButton("判断节点_condition")
-        self.cond_bn.clicked.connect(lambda: self.create(self.cond_bn))
+        self.cond_button = QPushButton("判断节点_condition")
+        self.cond_button.clicked.connect(lambda: self.create(self.cond_button))
 
-        self.blend_bn = QPushButton("混合颜色节点_blendColors")
-        self.blend_bn.clicked.connect(lambda: self.create(self.blend_bn))
+        self.blend_button = QPushButton("混合颜色节点_blendColors")
+        self.blend_button.clicked.connect(lambda: self.create(self.blend_button))
 
-        self.clamp_bn = QPushButton("切割节点_clamp")
-        self.clamp_bn.clicked.connect(lambda: self.create(self.clamp_bn))
+        self.clamp_button = QPushButton("切割节点_clamp")
+        self.clamp_button.clicked.connect(lambda: self.create(self.clamp_button))
 
-        self.reverse_bn = QPushButton("反转节点_reverse")
-        self.reverse_bn.clicked.connect(lambda: self.create(self.reverse_bn))
+        self.reverse_button = QPushButton("反转节点_reverse")
+        self.reverse_button.clicked.connect(lambda: self.create(self.reverse_button))
 
-        self.remap_bn = QPushButton("重新映射节点_remapValue")
-        self.remap_bn.clicked.connect(lambda: self.create(self.remap_bn))
+        self.remap_button = QPushButton("重新映射节点_remapValue")
+        self.remap_button.clicked.connect(lambda: self.create(self.remap_button))
 
-        self.set_bn = QPushButton("设置范围节点_setRange")
-        self.set_bn.clicked.connect(lambda: self.create(self.set_bn))
+        self.set_button = QPushButton("设置范围节点_setRange")
+        self.set_button.clicked.connect(lambda: self.create(self.set_button))
 
 
         # 添加流程节点页面的小部件
-        self.process_node_layout.addWidget(self.cond_bn,1,0)
-        self.process_node_layout.addWidget(self.blend_bn,1,1)
-        self.process_node_layout.addWidget(self.clamp_bn,1,2)
+        self.process_node_layout.addWidget(self.cond_button,1,0)
+        self.process_node_layout.addWidget(self.blend_button,1,1)
+        self.process_node_layout.addWidget(self.clamp_button,1,2)
 
-        self.process_node_layout.addWidget(self.reverse_bn,2,0)
-        self.process_node_layout.addWidget(self.remap_bn,2,1)
-        self.process_node_layout.addWidget(self.set_bn, 2, 2)
+        self.process_node_layout.addWidget(self.reverse_button,2,0)
+        self.process_node_layout.addWidget(self.remap_button,2,1)
+        self.process_node_layout.addWidget(self.set_button, 2, 2)
 
 
 

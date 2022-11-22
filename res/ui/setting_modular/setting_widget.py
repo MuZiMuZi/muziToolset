@@ -34,13 +34,13 @@ class FontSettingWidget(backGround.BackGround):
 
         # 创建主页面布局小部件
         self.font = QLabel(self.font_setting())
-        self.font_setting_bn = QPushButton("设置")
-        self.font_setting_bn.clicked.connect(self.set_font_setting)
+        self.font_setting_button = QPushButton("设置")
+        self.font_setting_button.clicked.connect(self.set_font_setting)
 
         # 添加主页面布局的小部件
         self.main_layout.addWidget(QLabel("字体 ： "))
         self.main_layout.addWidget(self.font)
-        self.main_layout.addWidget(self.font_setting_bn)
+        self.main_layout.addWidget(self.font_setting_button)
 
     def font_setting(self):
         """

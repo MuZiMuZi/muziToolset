@@ -54,26 +54,26 @@ class toolWidget(QWidget):
         self.main_layout.addWidget(QLabel(u"工具:    "))
 
         # 创建模块按钮
-        self.control_widget_bn = QPushButton("控制器工具")
-        self.control_widget_bn.clicked.connect(self.control_widget)
-        self.snap_widget_bn = QPushButton("吸附工具")
-        self.snap_widget_bn.clicked.connect(self.snap_widget)
-        self.rename_widget_bn = QPushButton("命名工具")
-        self.rename_widget_bn.clicked.connect(self.rename_widget)
-        self.nodes_widget_bn = QPushButton("节点创建工具")
-        self.nodes_widget_bn.clicked.connect(self.nodes_widget)
-        self.setting_widget_bn = QPushButton("全局设置工具")
-        self.setting_widget_bn.clicked.connect(self.setting_widget)
+        self.control_widget_button = QPushButton("控制器工具")
+        self.control_widget_button.clicked.connect(self.control_widget)
+        self.snap_widget_button = QPushButton("吸附工具")
+        self.snap_widget_button.clicked.connect(self.snap_widget)
+        self.rename_widget_button = QPushButton("命名工具")
+        self.rename_widget_button.clicked.connect(self.rename_widget)
+        self.nodes_widget_button = QPushButton("节点创建工具")
+        self.nodes_widget_button.clicked.connect(self.nodes_widget)
+        self.setting_widget_button = QPushButton("全局设置工具")
+        self.setting_widget_button.clicked.connect(self.setting_widget)
 
         # 应用设置
         self.setting()
 
         # 添加按钮
-        self.main_layout.addWidget(self.control_widget_bn,1,1)
-        self.main_layout.addWidget(self.snap_widget_bn,1,2)
-        self.main_layout.addWidget(self.rename_widget_bn,1,3)
-        self.main_layout.addWidget(self.nodes_widget_bn,2,1)
-        self.main_layout.addWidget(self.setting_widget_bn,2,2)
+        self.main_layout.addWidget(self.control_widget_button,1,1)
+        self.main_layout.addWidget(self.snap_widget_button,1,2)
+        self.main_layout.addWidget(self.rename_widget_button,1,3)
+        self.main_layout.addWidget(self.nodes_widget_button,2,1)
+        self.main_layout.addWidget(self.setting_widget_button,2,2)
 
     def control_widget(self):
         control_widget.show()
@@ -119,43 +119,43 @@ class functionWidget(QWidget,pipelineUtils.Pipeline):
         self.main_layout.addWidget(QLabel(u"功能:    "))
 
         # 创建模块按钮
-        self.clear_keys_bn = QPushButton("删除关键帧")
-        self.clear_keys_bn.clicked.connect(self.clear_keys)
+        self.clear_keys_button = QPushButton("删除关键帧")
+        self.clear_keys_button.clicked.connect(self.clear_keys)
 
-        self.reset_control_bn = QPushButton("重置控制器")
-        self.reset_control_bn.clicked.connect(self.reset_control)
+        self.reset_control_button = QPushButton("重置控制器")
+        self.reset_control_button.clicked.connect(self.reset_control)
 
-        self.batch_Constraints_bn = QPushButton("批量约束")
-        self.batch_Constraints_bn.clicked.connect(self.batch_Constraints)
+        self.batch_Constraints_button = QPushButton("批量约束")
+        self.batch_Constraints_button.clicked.connect(self.batch_Constraints)
 
-        self.default_grp_bn = QPushButton("绑定层级组")
-        self.default_grp_bn.clicked.connect(self.default_grp)
+        self.default_grp_button = QPushButton("绑定层级组")
+        self.default_grp_button.clicked.connect(self.default_grp)
 
-        self.create_joints_on_curve_bn = QPushButton("曲线上点创建关节(通用)")
-        self.create_joints_on_curve_bn.clicked.connect(self.create_joints_on_curve)
+        self.create_joints_on_curve_button = QPushButton("曲线上点创建关节(通用)")
+        self.create_joints_on_curve_button.clicked.connect(self.create_joints_on_curve)
 
-        self.create_joints_on_curve_rigging_bn = QPushButton("曲线上点创建关节(自用)")
-        self.create_joints_on_curve_rigging_bn.clicked.connect(self.create_joints_on_curve_rigging)
+        self.create_joints_on_curve_rigging_button = QPushButton("曲线上点创建关节(自用)")
+        self.create_joints_on_curve_rigging_button.clicked.connect(self.create_joints_on_curve_rigging)
 
-        self.control_hierarchy_bn = QPushButton("自动打组(自用)")
-        self.control_hierarchy_bn.clicked.connect(self.control_hierarchy)
+        self.control_hierarchy_button = QPushButton("自动打组(自用)")
+        self.control_hierarchy_button.clicked.connect(self.control_hierarchy)
 
-        self.save_SkinWeights_bn = QPushButton("导出权重")
-        self.save_SkinWeights_bn.clicked.connect(self.save_SkinWeights)
+        self.save_SkinWeights_button = QPushButton("导出权重")
+        self.save_SkinWeights_button.clicked.connect(self.save_SkinWeights)
 
-        self.load_SkinWeights_bn = QPushButton("导入权重")
-        self.load_SkinWeights_bn.clicked.connect(self.load_SkinWeights)
+        self.load_SkinWeights_button = QPushButton("导入权重")
+        self.load_SkinWeights_button.clicked.connect(self.load_SkinWeights)
 
         # 添加按钮
-        self.main_layout.addWidget(self.clear_keys_bn,1,1)
-        self.main_layout.addWidget(self.reset_control_bn,1,2)
-        self.main_layout.addWidget(self.batch_Constraints_bn,1,3)
-        self.main_layout.addWidget(self.default_grp_bn,1,4)
-        self.main_layout.addWidget(self.create_joints_on_curve_bn,2,1)
-        self.main_layout.addWidget(self.create_joints_on_curve_rigging_bn, 2, 2)
-        self.main_layout.addWidget(self.control_hierarchy_bn,2,3)
-        self.main_layout.addWidget(self.save_SkinWeights_bn, 2, 4)
-        self.main_layout.addWidget(self.load_SkinWeights_bn, 3, 1)
+        self.main_layout.addWidget(self.clear_keys_button,1,1)
+        self.main_layout.addWidget(self.reset_control_button,1,2)
+        self.main_layout.addWidget(self.batch_Constraints_button,1,3)
+        self.main_layout.addWidget(self.default_grp_button,1,4)
+        self.main_layout.addWidget(self.create_joints_on_curve_button,2,1)
+        self.main_layout.addWidget(self.create_joints_on_curve_rigging_button, 2, 2)
+        self.main_layout.addWidget(self.control_hierarchy_button,2,3)
+        self.main_layout.addWidget(self.save_SkinWeights_button, 2, 4)
+        self.main_layout.addWidget(self.load_SkinWeights_button, 3, 1)
 
     def clear_keys(self):
         pipelineUtils.Pipeline.clear_keys()

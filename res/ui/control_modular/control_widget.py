@@ -181,40 +181,40 @@ class ControlsWidget(QWidget):
         #创建旋转角度的输入框
         self.rotate_text = QLineEdit()
 
-        self.rotate_bn_layout = QHBoxLayout(self)
+        self.rotate_button_layout = QHBoxLayout(self)
         self.rotate_rx_cb = QCheckBox("旋转x轴")
 
         self.rotate_ry_cb =QCheckBox("旋转y轴")
         self.rotate_rz_cb = QCheckBox("旋转z轴")
 
-        self.rotate_bn = QPushButton("旋转")
-        self.rotate_bn.clicked.connect(self.rotate_control)
+        self.rotate_button = QPushButton("旋转")
+        self.rotate_button.clicked.connect(self.rotate_control)
 
         # 添加旋转控制器页面布局的小部件
         self.rotate_layout.addWidget(self.rotate_text)
-        self.rotate_bn_layout.addWidget(self.rotate_rx_cb)
-        self.rotate_bn_layout.addWidget(self.rotate_ry_cb)
-        self.rotate_bn_layout.addWidget(self.rotate_rz_cb)
+        self.rotate_button_layout.addWidget(self.rotate_rx_cb)
+        self.rotate_button_layout.addWidget(self.rotate_ry_cb)
+        self.rotate_button_layout.addWidget(self.rotate_rz_cb)
 
-        self.rotate_layout.addLayout(self.rotate_bn_layout)
-        self.rotate_layout.addWidget(self.rotate_bn)
+        self.rotate_layout.addLayout(self.rotate_button_layout)
+        self.rotate_layout.addWidget(self.rotate_button)
 
 
         # 创建控制器按钮页面布局
         self.button_layout = QHBoxLayout(self)
-        self.scale_bn = QPushButton("缩放(按B键调整大小)")
-        self.scale_bn.clicked.connect(self.scale_control)
+        self.scale_button = QPushButton("缩放(按B键调整大小)")
+        self.scale_button.clicked.connect(self.scale_control)
 
-        self.mirror_bn = QPushButton("镜像")
-        self.mirror_bn.clicked.connect(self.mirror_control)
+        self.mirror_button = QPushButton("镜像")
+        self.mirror_button.clicked.connect(self.mirror_control)
 
-        self.replace_bn = QPushButton("替换")
-        self.replace_bn.clicked.connect(self.replace_control)
+        self.replace_button = QPushButton("替换")
+        self.replace_button.clicked.connect(self.replace_control)
 
         # 添加控制器按钮页面布局的小部件
-        self.button_layout.addWidget(self.scale_bn)
-        self.button_layout.addWidget(self.mirror_bn)
-        self.button_layout.addWidget(self.replace_bn)
+        self.button_layout.addWidget(self.scale_button)
+        self.button_layout.addWidget(self.mirror_button)
+        self.button_layout.addWidget(self.replace_button)
 
 
         # 添加主页面布局的小部件

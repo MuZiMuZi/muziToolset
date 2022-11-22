@@ -60,17 +60,17 @@ class SnapWindow(backGround.BackGround):
         self.push_button = QPushButton("吸附")
         self.push_button.clicked.connect(self.push_snip)
 
-        self.create_locator_bn = QPushButton("创建定位器")
-        self.create_locator_bn.clicked.connect(self.create_locator)
+        self.create_locator_button = QPushButton("创建定位器")
+        self.create_locator_button.clicked.connect(self.create_locator)
 
-        self.create_joint_bn = QPushButton("创建关节")
-        self.create_joint_bn.clicked.connect(self.create_joint)
+        self.create_joint_button = QPushButton("创建关节")
+        self.create_joint_button.clicked.connect(self.create_joint)
 
         # 添加主页面布局小部件到主页面布局
         self.main_layout.addWidget(self.combo_box)
         self.main_layout.addWidget(self.push_button)
-        self.main_layout.addWidget(self.create_locator_bn)
-        self.main_layout.addWidget(self.create_joint_bn)
+        self.main_layout.addWidget(self.create_locator_button)
+        self.main_layout.addWidget(self.create_joint_button)
         self.main_layout.addStretch(0)
 
     def show_combo_selection(self):
