@@ -54,10 +54,56 @@ class RiggingWindow(QWidget):
         file = QFile(currentDir + "/rigging.ui")  # 这个方法要使用绝对路径
         self.ui = loader.load(file, parentWidget=self)  # 初始化
 
+        # 连接ui文件的部件
+        # 连接模版的listview
+        self.Template_listView = self.ui.Template_listView
+        #连接模块的listview
+        self.modular_listView = self.ui.modular_listView
+        #连接导入按钮
+        self.import_button = self.ui.import_button
+        #连接关节方向的设置
+        self.jointDirection_label = self.ui.jointDirection_label
+        self.jointDirection_true_radioButton = self.ui.jointDirection_true_radioButton
+        self.jointDirection_false_radioButton = self.ui.jointDirection_false_radioButton
+
+        #连接关节大小的设置
+        self.jointSize_label = self.ui.jointSize_label
+        self.jointSize_slider = self.ui.jointSize_slider
+
+        #连接清除的设置
+        self.clear_button = self.ui.clear_button
+
+        #连接属性的lsitview
+        self.property_listWidget = self.ui.property_listWidget
+
+        #连接关节显示的设置
+        self.jointVis_label = self.ui.jointVis_label
+        self.jointVis_true_radioButton = self.ui.jointVis_true_radioButton
+        self.jointVis_false_radioButton = self.ui.jointVis_false_radioButton
+
+        #连接模型显示的设置
+        self.modleVis_label = self.ui.modleVis_label
+        self.modleVis_true_radioButton = self.ui.modleVis_true_radioButton
+        self.modleVis_false_radioButton = self.ui.modleVis_false_radioButton
+
+        #连接控制器显示的设置
+        self.ctrlVis_label = self.ui.ctrlVis_label
+        self.ctrlVis_true_radioButton = self.ui.ctrlVis_true_radioButton
+        self.ctrlVis_false_radioButton = self.ui.ctrlVis_false_radioButton
+
+        #连接控制器重置的设置
+        self.reset_button = self.ui.reset_button
+
+        #连接创建绑定的设置
+        self.build_button = self.ui.build_button
 
 
 
 
+
+
+
+#
 def show():
     global win
     try:
