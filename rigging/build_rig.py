@@ -49,8 +49,8 @@ class Build_Rig(base_rig.Base_Rig):
         for modular in self.modular_rig_list:
             cmds.file(modular, i = True)
 
-    def delete_modular(self):
-        cmds.delete(self.chest_rig, self.spine_rig, self.arm_rig, self.leg_rig, self.neck_rig, self.foot_rig,
+    def claer_modular(self):
+        cmds.delete(self.group,self.chest_rig, self.spine_rig, self.arm_rig, self.leg_rig, self.neck_rig, self.foot_rig,
                     self.hand_rig)
     def build_rig(self):
         u'''
@@ -88,4 +88,5 @@ class Build_Rig(base_rig.Base_Rig):
             hand = hand_rig.Hand_Rig(bp_joints = None, joint_parent = None, control_parent = None, mirror = True)
             hand.create_hand_rig()
 
-        self.delete_modular()
+        cmds.delete( self.chest_rig, self.spine_rig, self.arm_rig, self.leg_rig, self.neck_rig,self.foot_rig,
+                    self.hand_rig)

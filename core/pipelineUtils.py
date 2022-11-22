@@ -162,9 +162,9 @@ class Pipeline(object):
                     cmds.setAttr(ctrl + '.{}'.format(scale_attr), 1)
                 else:
                     pass
-        ctrl_IKFKblend = cmds.ls('ctrl_?_*IKFKblend_???')
+        ctrl_IKFKblend = cmds.ls('ctrl_?_*IKFKBend_???')
         for IKFKblend in ctrl_IKFKblend:
-            cmds.setAttr(IKFKblend + '.IKFKBlend', 1)
+            cmds.setAttr(IKFKblend + '.IkFkBend', 1)
 
     @staticmethod
     def list_operation(list_a, list_b, operation = '|'):

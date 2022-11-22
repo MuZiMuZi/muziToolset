@@ -113,10 +113,10 @@ class Base_Rig(object):
                                          axis = 'X+',
                                          pos = None,
                                          parent = self.control)
-        cmds.addAttr(self.character_ctrl, longName = 'RigScale', niceName = u'绑定缩放', at = 'double', dv = 1,
+        cmds.addAttr(self.character_ctrl, longName = 'rigScale', niceName = u'绑定缩放', at = 'double', dv = 1,
                      keyable = True)
         for attr in ['.scaleX', '.scaleY', '.scaleZ']:
-            cmds.connectAttr(self.character_ctrl + '.RigScale', self.character_ctrl + attr)
+            cmds.connectAttr(self.character_ctrl + '.rigScale', self.character_ctrl + attr)
             cmds.setAttr(self.character_ctrl + attr, lock = True, keyable = False, channelBox = False)
 
         # 创建世界控制器
@@ -135,36 +135,36 @@ class Base_Rig(object):
         cmds.scaleConstraint(self.character_ctrl, self.custom_ctrl, mo = True)
 
         # 创建自定义的控制器属性
-        for attr in ['GeometryVis', 'ControlsVis', 'RigNodesVis', 'JointsVis']:
+        for attr in ['geometryVis', 'controlsVis', 'rigNodesVis', 'jointsVis']:
             if not cmds.objExists('{}.{}'.format(self.custom_ctrl, attr)):
                 cmds.addAttr(self.custom_ctrl, ln = attr, at = 'bool', dv = 1, keyable = True)
 
         # 添加精度切换的属性
-        if not cmds.objExists('{}.Resolution'.format(self.custom_ctrl)):
-            cmds.addAttr(self.custom_ctrl, ln = 'Resolution', at = 'enum', en = 'low:mid:high', keyable = True)
+        if not cmds.objExists('{}.resolution'.format(self.custom_ctrl)):
+            cmds.addAttr(self.custom_ctrl, ln = 'resolution', at = 'enum', en = 'low:mid:high', keyable = True)
             for idx, res in {0: 'low', 1: 'mid', 2: 'high'}.items():
                 cnd_node = 'resolution_{}_conditionNode'.format(res)
                 if not cmds.objExists(cnd_node):
                     cnd_node = cmds.createNode('condition', n = cnd_node)
-                cmds.connectAttr('{}.Resolution'.format(self.custom_ctrl), '{}.firstTerm'.format(cnd_node), f = True)
+                cmds.connectAttr('{}.resolution'.format(self.custom_ctrl), '{}.firstTerm'.format(cnd_node), f = True)
                 cmds.setAttr('{}.secondTerm'.format(cnd_node), idx)
                 cmds.setAttr('{}.colorIfTrueR'.format(cnd_node), 1)
                 cmds.setAttr('{}.colorIfFalseR'.format(cnd_node), 0)
                 cmds.connectAttr('{}.outColorR'.format(cnd_node), 'grp_m_{}_modle_001.visibility'.format(res), f = True)
 
         # 添加模型显示方式的属性
-        if not cmds.objExists('{}.GeometryDisplayType'.format(self.character_ctrl)):
-            cmds.addAttr(self.custom_ctrl, ln = 'GeometryDisplayType', at = 'enum', en = 'Normal:Template:Reference',
+        if not cmds.objExists('{}.geometryDisplayType'.format(self.character_ctrl)):
+            cmds.addAttr(self.custom_ctrl, ln = 'geometryDisplayType', at = 'enum', en = 'Normal:Template:Reference',
                          keyable = True)
 
         # 连接各个组的显示属性
-        custom_ctrl_attrs = ['.GeometryVis', '.ControlsVis', '.RigNodesVis', '.JointsVis']
+        custom_ctrl_attrs = ['.geometryVis', '.controlsVis', '.rigNodesVis', '.jointsVis']
         hierarchy_grp = [self.geometry, self.control, self.rigNode, self.joint]
         for attrs, grp in zip(custom_ctrl_attrs, hierarchy_grp):
             cmds.connectAttr(self.custom_ctrl + '{}'.format(attrs), '{}.visibility'.format(grp))
         # 连接模型的可编辑属性
         cmds.setAttr(self.geometry + '.overrideDisplayType', 2)
-        cmds.connectAttr('{}.GeometryDisplayType'.format(self.custom_ctrl), self.geometry + '.overrideEnabled',
+        cmds.connectAttr('{}.geometryDisplayType'.format(self.custom_ctrl), self.geometry + '.overrideEnabled',
                          f = True)
 
         # 显示和隐藏属性

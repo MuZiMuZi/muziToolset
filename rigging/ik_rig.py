@@ -219,8 +219,8 @@ class IK_Rig(base_rig.Base_Rig):
         cmds.setAttr(stretch_divBtw_node + '.input1X',midIK_jnt_value)
         cmds.setAttr(stretch_divBtw_node + '.input1Y', endIK_jnt_value)
 
-        cmds.connectAttr(self.character_ctrl + '.RigScale', stretch_divBtw_node + '.input2X')
-        cmds.connectAttr(self.character_ctrl + '.RigScale', stretch_divBtw_node + '.input2Y')
+        cmds.connectAttr(self.character_ctrl + '.rigScale', stretch_divBtw_node + '.input2X')
+        cmds.connectAttr(self.character_ctrl + '.rigScale', stretch_divBtw_node + '.input2Y')
 
         # 连接拉伸后的关节长度
         cmds.connectAttr(stretch_divBtw_node + '.outputX', stretch_blend_node + '.color2R')
@@ -252,8 +252,8 @@ class IK_Rig(base_rig.Base_Rig):
         div_divBtw_node = cmds.createNode('multiplyDivide', name = midIK_pv_loc.replace('loc_', 'div_'))
         cmds.connectAttr(upper_disBtw_node + '.distance', div_divBtw_node + '.input1X')
         cmds.connectAttr(lower_disBtw_node + '.distance', div_divBtw_node + '.input1Y')
-        cmds.connectAttr(self.character_ctrl + '.RigScale', div_divBtw_node + '.input2X')
-        cmds.connectAttr(self.character_ctrl + '.RigScale', div_divBtw_node + '.input2Y')
+        cmds.connectAttr(self.character_ctrl + '.rigScale', div_divBtw_node + '.input2X')
+        cmds.connectAttr(self.character_ctrl + '.rigScale', div_divBtw_node + '.input2Y')
         cmds.setAttr(div_divBtw_node + '.operation', 0)
 
         # 将真实的距离连接给极向量锁定的blendcolor节点
