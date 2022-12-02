@@ -172,12 +172,12 @@ class IK_Rig(base_rig.Base_Rig):
         # 计算原本关节的距离值
         midIK_jnt_value = cmds.getAttr(midIK_jnt + '.translateX')
         endIK_jnt_value = cmds.getAttr(endIK_jnt + '.translateX')
-        distance_value = midIK_jnt_value + endIK_jnt_value
+        distance_value = (midIK_jnt_value + endIK_jnt_value)*side_value
 
         # 将现有的关节距离减去原本关节的距离得到拉伸的距离
         reduce_node = cmds.createNode('addDoubleLinear', name = startIK_jnt.replace('jnt_', 'reduce_'))
         cmds.connectAttr(disBtw_node + '.distance', reduce_node + '.input1')
-        cmds.setAttr(reduce_node + '.input2', disBtw_value * -1)
+        cmds.setAttr(reduce_node + '.input2', distance_value * -1)
 
         # 将变化的数值除以二，均匀分配给对应的拉伸关节
         mult_node = cmds.createNode('multDoubleLinear', name = startIK_jnt.replace('jnt_', 'mult_'))
@@ -250,6 +250,9 @@ class IK_Rig(base_rig.Base_Rig):
 
         # 因为绑定有自定义的缩放比例，因此实际的距离值需要除以绑定缩放的比例才能得到真实的距离
         div_divBtw_node = cmds.createNode('multiplyDivide', name = midIK_pv_loc.replace('loc_', 'div_'))
+        # mult_divBtw_node  = cmds.createNode('multDoubleLinear', name = midIK_pv_loc.replace('loc_', 'mult_'))
+        # cmds.connectAttr(self.character_ctrl + '.rigScale', mult_divBtw_node + '.input1')
+        # cmds.setAttr(mult_divBtw_node + '.input2',side_value)
         cmds.connectAttr(upper_disBtw_node + '.distance', div_divBtw_node + '.input1X')
         cmds.connectAttr(lower_disBtw_node + '.distance', div_divBtw_node + '.input1Y')
         cmds.connectAttr(self.character_ctrl + '.rigScale', div_divBtw_node + '.input2X')

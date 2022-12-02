@@ -1,6 +1,6 @@
 //Maya ASCII 2018ff09 scene
 //Name: leg_rig.ma
-//Last modified: Mon, Nov 21, 2022 02:14:11 PM
+//Last modified: Fri, Nov 25, 2022 01:57:31 PM
 //Codeset: 936
 requires maya "2018ff09";
 requires "stereoCamera" "10.0";
@@ -45,7 +45,6 @@ createNode joint -n "bpjnt_l_knee_001" -p "bpjnt_l_hip_001";
 	setAttr ".t" -type "double3" 65.310427980304596 -1.7610452647321883e-14 -1.4720598318555789e-15 ;
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
 	setAttr ".mxrl" -type "double3" 360 360 360 ;
-	setAttr ".jo" -type "double3" 0 0 -5.3565921900305167 ;
 	setAttr ".bps" -type "matrix" 0.11108050858490008 -0.97788691626921942 -0.17719565345119842 0
 		 0.019506194807855697 -0.17611941028031541 0.98417552382013251 0 -0.99361996204617309 -0.11277913065807485 -0.00048858097680972974 0
 		 14.484698882570138 56.692194341136826 2.5276253297698879 1;
@@ -56,11 +55,11 @@ createNode joint -n "bpjnt_l_knee_001" -p "bpjnt_l_hip_001";
 createNode joint -n "bpjnt_l_ankle_001" -p "bpjnt_l_knee_001";
 	rename -uid "BD2C1BBD-4B37-9BF3-6F70-7E8A0FB85AF1";
 	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
-	setAttr ".t" -type "double3" 56.487364717903219 -3.5527136788005009e-15 1.4210854715202004e-14 ;
+	setAttr ".t" -type "double3" 56.487364717903205 -3.5527136788005009e-15 1.0658141036401503e-14 ;
 	setAttr ".s" -type "double3" 1.0000000000000002 1.0000000000000002 1 ;
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
 	setAttr ".mxrl" -type "double3" 360 360 360 ;
-	setAttr ".jo" -type "double3" -5.0307925576030321 9.6623375982320567 77.121952345784038 ;
+	setAttr ".jo" -type "double3" 0 0 66.037682782913791 ;
 	setAttr ".bps" -type "matrix" 0.17275222881254587 -0.39746855660585689 0.90120775293489108 0
 		 0.074828465076820297 0.91761579460557208 0.3903613125101319 0 -0.98211881575222115 2.0608913241237925e-07 0.18826213571882297 0
 		 19.754884573743805 10.296193527928359 -5.8794764655522886 1;
@@ -71,7 +70,7 @@ createNode joint -n "bpjnt_l_ankle_001" -p "bpjnt_l_knee_001";
 createNode joint -n "bpjnt_l_ball_001" -p "bpjnt_l_ankle_001";
 	rename -uid "B5D40562-441B-494E-776E-EBAF2EA73640";
 	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
-	setAttr ".t" -type "double3" 16.500487189238591 8.8817841970012523e-16 1.7763568394002505e-15 ;
+	setAttr ".t" -type "double3" 4.8432280410071336 -1.3322676295501878e-14 7.1054273576010019e-15 ;
 	setAttr ".s" -type "double3" 0.99999999999999978 0.99999999999999967 0.99999999999999933 ;
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
 	setAttr ".mxrl" -type "double3" 360 360 360 ;
@@ -85,7 +84,7 @@ createNode joint -n "bpjnt_l_ball_001" -p "bpjnt_l_ankle_001";
 createNode joint -n "bpjnt_l_toe_001" -p "bpjnt_l_ball_001";
 	rename -uid "DB5E8794-42BB-D069-6AD1-419BCED9AF4A";
 	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
-	setAttr ".t" -type "double3" 16.500487189238619 9.7699626167013776e-15 -2.2204460492503131e-15 ;
+	setAttr ".t" -type "double3" 16.500487189238619 7.9936057773011271e-15 -3.5527136788005009e-15 ;
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
 	setAttr ".mxrl" -type "double3" 360 360 360 ;
 	setAttr ".jot" -type "string" "none";
@@ -99,13 +98,13 @@ createNode joint -n "bpjnt_l_toe_001" -p "bpjnt_l_ball_001";
 createNode transform -s -n "persp";
 	rename -uid "94C59821-42C9-E400-1B4E-44968D5B0F9D";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" 64.245788071467516 45.986651437824747 58.086504728972315 ;
-	setAttr ".r" -type "double3" -27.938352729602379 44.999999999999972 -5.172681101354183e-14 ;
+	setAttr ".t" -type "double3" 582.90593491195909 273.16340063550615 231.48295063762981 ;
+	setAttr ".r" -type "double3" -18.338352729598999 67.799999999999628 0 ;
 createNode camera -s -n "perspShape" -p "persp";
 	rename -uid "810C4CC3-4F5A-7E91-5585-DAA0F73F3578";
 	setAttr -k off ".v" no;
 	setAttr ".fl" 34.999999999999993;
-	setAttr ".coi" 97.966102523528008;
+	setAttr ".coi" 675.04164608299868;
 	setAttr ".imn" -type "string" "persp";
 	setAttr ".den" -type "string" "persp_depth";
 	setAttr ".man" -type "string" "persp_mask";
@@ -162,19 +161,19 @@ createNode camera -s -n "sideShape" -p "side";
 	setAttr ".o" yes;
 	setAttr ".ai_translator" -type "string" "orthographic";
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "F38A03BA-487F-39D1-E2B3-158DD852121D";
+	rename -uid "F754BF39-4786-0A0B-B2C9-4488D6B4D11E";
 	setAttr -s 2 ".lnk";
 	setAttr -s 2 ".slnk";
 createNode shapeEditorManager -n "shapeEditorManager";
-	rename -uid "098FE6D1-4058-F5B9-9148-36AB958ACA82";
+	rename -uid "8347ABC6-4B32-D08A-4F4E-1EA02A4D6BAA";
 createNode poseInterpolatorManager -n "poseInterpolatorManager";
-	rename -uid "2E6DC2B5-499D-F038-0538-0C99E526837C";
+	rename -uid "7FDB2FB8-4AFA-E3FB-C466-2EA916485EB8";
 createNode displayLayerManager -n "layerManager";
-	rename -uid "BAA2586E-4DC0-12B9-1D35-20925875EA3B";
+	rename -uid "828A8F8B-4AD1-708F-9577-D48D51D26A25";
 createNode displayLayer -n "defaultLayer";
 	rename -uid "3048C0BF-48EE-1FB2-ABC6-0E866EFFF29B";
 createNode renderLayerManager -n "renderLayerManager";
-	rename -uid "95B2737F-482B-85AB-B8DB-0A826F3A1E64";
+	rename -uid "B11526DC-445B-63A8-F81E-5ABC87AA84DB";
 createNode renderLayer -n "defaultRenderLayer";
 	rename -uid "11E0F262-4BB2-A7D6-B355-EF8DA69BC1F0";
 	setAttr ".g" yes;

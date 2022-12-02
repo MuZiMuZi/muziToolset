@@ -35,6 +35,10 @@ class Leg_Rig(ikfk_rig.IKFK_Rig):
 
     def create_leg_rig(self):
         self.create_ikfk_chain_rig()
+        # shoulder_value = cmds.getAttr('reduce_r_shoulderIK_001' + '.input2')
+        # cmds.setAttr('reduce_r_shoulderIK_001' + '.input2', shoulder_value * -1)
+        # # hip_value = cmds.getAttr('reduce_r_hipIK_001' + '.input2')
+        # # cmds.setAttr('reduce_r_hipIK_001' + '.input2', hip_value * -1)
         if self.ribbon  == True:
             self.create_ribbon_Rig(self.ikfk_chain,self.control_parent,self.joint_parent, self.joint_number)
             self.create_ribbon_Rig(self.ikfk_chain_mirror, self.control_parent_mirror, self.joint_parent_mirror,self.joint_number)
