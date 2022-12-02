@@ -128,23 +128,32 @@ class functionWidget(QWidget,pipelineUtils.Pipeline):
         self.batch_Constraints_button = QPushButton("批量约束")
         self.batch_Constraints_button.clicked.connect(self.batch_Constraints)
 
-        self.default_grp_button = QPushButton("绑定层级组")
+        self.default_grp_button = QPushButton(u"绑定层级组")
         self.default_grp_button.clicked.connect(self.default_grp)
 
-        self.create_joints_on_curve_button = QPushButton("曲线上点创建关节(通用)")
+        self.create_joints_on_curve_button = QPushButton(u"曲线上点创建关节(通用)")
         self.create_joints_on_curve_button.clicked.connect(self.create_joints_on_curve)
 
-        self.create_joints_on_curve_rigging_button = QPushButton("曲线上点创建关节(自用)")
+        self.create_joints_on_curve_rigging_button = QPushButton(u"曲线上点创建关节(自用)")
         self.create_joints_on_curve_rigging_button.clicked.connect(self.create_joints_on_curve_rigging)
 
-        self.control_hierarchy_button = QPushButton("自动打组(自用)")
+        self.control_hierarchy_button = QPushButton(u"自动打组(自用)")
         self.control_hierarchy_button.clicked.connect(self.control_hierarchy)
 
-        self.save_skinWeights_button = QPushButton("导出权重")
+        self.save_skinWeights_button = QPushButton(u"导出权重")
         self.save_skinWeights_button.clicked.connect(self.save_skinWeights)
 
-        self.load_skinWeights_button = QPushButton("导入权重")
+        self.load_skinWeights_button = QPushButton(u"导入权重")
         self.load_skinWeights_button.clicked.connect(self.load_skinWeights)
+
+        self.create_constraints_button = QPushButton(u"快速约束")
+        self.create_constraints_button.clicked.connect(self.create_constraints)
+
+        self.delete_constraints_button = QPushButton("删除约束")
+        self.delete_constraints_button.clicked.connect(self.delete_constraints)
+
+        self.select_sub_objects_button = QPushButton("快速选择子物体")
+        self.select_sub_objects_button.clicked.connect(self.select_sub_objects)
 
         # 添加按钮
         self.main_layout.addWidget(self.clear_keys_button,1,1)
@@ -156,6 +165,11 @@ class functionWidget(QWidget,pipelineUtils.Pipeline):
         self.main_layout.addWidget(self.control_hierarchy_button,2,3)
         self.main_layout.addWidget(self.save_skinWeights_button, 2, 4)
         self.main_layout.addWidget(self.load_skinWeights_button, 3, 1)
+
+        self.main_layout.addWidget(self.create_constraints_button, 3, 2)
+        self.main_layout.addWidget(self.delete_constraints_button, 3, 3)
+        self.main_layout.addWidget(self.select_sub_objects_button, 3, 4)
+
 
     def clear_keys(self):
         pipelineUtils.Pipeline.clear_keys()
@@ -189,6 +203,15 @@ class functionWidget(QWidget,pipelineUtils.Pipeline):
         for geo in geos:
             obj = weightsUtils.Weights(geo)
             obj.load_skinWeights()
+
+    def create_constraints(self):
+        pipelineUtils.Pipeline.create_constraints()
+
+    def delete_constraints(self):
+        pipelineUtils.Pipeline.delete_constraints()
+
+    def select_sub_objects(self):
+        pipelineUtils.Pipeline.select_sub_objects()
 
 
 class MainWindow(QWidget):

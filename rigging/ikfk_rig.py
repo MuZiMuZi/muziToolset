@@ -27,71 +27,26 @@ import base_rig
 import fk_rig
 import ik_rig
 
-reload(controlUtils)
-reload(base_rig)
-reload(ik_rig)
-reload(fk_rig)
 
 
 class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
-    def __init__(self, bp_joints = None, joint_parent = None, control_parent = None, mirror = True,space_list = None):
+    def __init__(self, bp_joints = None, joint_parent = None, control_parent = None,space_list = None):
         super(IKFK_Rig, self).__init__(bp_joints = bp_joints, joint_parent = joint_parent,
                                        control_parent = control_parent,space_list = space_list)
-        self.mirror = mirror
 
     def create_ikfk_chain_rig(self):
         u"""
         创建ikfk关节链混合的绑定
         """
-        jnt_name = nameUtils.Name(name = self.bp_joints[0])
-        if self.mirror and jnt_name.side == 'l':
-            self.make(self.bp_joints)
-            self.bp_joints_mirror = cmds.mirrorJoint(self.bp_joints[0], mirrorYZ = True, mirrorBehavior = True,
-                                                     searchReplace = ['_l_', '_r_'])
-            if self.joint_parent:
-                self.joint_parent_mirror = self.joint_parent.replace('_l_', '_r_')
-            else:
-                self.joint_parent = self.jnt_grp
-                self.joint_parent_mirror = self.jnt_grp.replace('_l_', '_r_')
-            if self.control_parent:
-                self.control_parent_mirror = self.control_parent.replace('_l_', '_r_')
-            else:
-                self.control_parent = self.control_grp
-                self.control_parent_mirror = self.control_grp.replace('_l_', '_r_')
-            # 创建_l_边的手臂的fk，ik，ikfk融合的绑定
-            self.fk_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'FK',
-                                                          joint_parent = self.jnt_grp)
-            self.fk_chain_rig(self.fk_chain, self.control_parent)
-            self.ik_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'IK',
-                                                          joint_parent = self.jnt_grp)
-            self.ik_chain_rig(self.ik_chain, self.control_parent,self.space_list)
-            self.ikfk_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'Bind',
-                                                            joint_parent = self.jnt_grp)
-            self.ikfk_chain_rig(self.fk_chain, self.ik_chain, self.ikfk_chain, self.control_parent)
-            # 创建_r_边的手臂的fk，ik，ikfk融合的绑定
-            self.make(self.bp_joints_mirror)
-            self.fk_chain_mirror = jointUtils.Joint.create_chain(self.bp_joints_mirror, suffix = 'FK',
-                                                                 joint_parent = self.jnt_grp)
-            self.fk_chain_rig(self.fk_chain_mirror, self.control_parent_mirror)
-            self.ik_chain_mirror = jointUtils.Joint.create_chain(self.bp_joints_mirror, suffix = 'IK',
-                                                                 joint_parent = self.jnt_grp)
-            self.ik_chain_rig(self.ik_chain_mirror, self.control_parent_mirror,self.space_list)
-            self.ikfk_chain_mirror = jointUtils.Joint.create_chain(self.bp_joints_mirror, suffix = 'Bind',
-                                                                   joint_parent = self.joint_parent_mirror)
-
-            self.ikfk_chain_rig(self.fk_chain_mirror, self.ik_chain_mirror, self.ikfk_chain_mirror,
-                                self.control_parent_mirror)
-        else:
-            self.make(self.bp_joints)
-            self.fk_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'FK',
-                                                          joint_parent = self.jnt_grp)
-            self.fk_chain_rig(self.fk_chain, self.control_parent)
-            self.ik_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'IK',
-                                                          joint_parent = self.jnt_grp)
-            self.ik_chain_rig(self.ik_chain, self.control_parent,self.space_list)
-            self.ikfk_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'Bind',
-                                                            joint_parent = self.jnt_grp)
-            self.ikfk_chain_rig(self.fk_chain, self.ik_chain, self.ikfk_chain, self.control_parent)
+        self.fk_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'FK',
+                                                      joint_parent = self.jnt_grp)
+        self.fk_chain_rig(self.fk_chain, self.control_parent)
+        self.ik_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'IK',
+                                                      joint_parent = self.jnt_grp)
+        self.ik_chain_rig(self.ik_chain, self.control_parent,self.space_list,stretch = True)
+        self.ikfk_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'Bind',
+                                                        joint_parent = self.jnt_grp)
+        self.ikfk_chain_rig(self.fk_chain, self.ik_chain, self.ikfk_chain, self.control_parent)
 
     def create_ribbon_Rig(self, ikfk_chain, control_parent,joint_parent ,joint_number):
         u"""
@@ -195,7 +150,7 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
         self.fk_chain_rig(self.fk_chain, self.control_grp)
         self.ik_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'IK',
                                                       joint_parent = self.jnt_grp)
-        self.ik_spine_rig(self.ik_chain, self.control_grp)
+        self.ik_spine_rig(self.ik_chain, self.control_grp,stretch = True)
         self.ikfk_chain = jointUtils.Joint.create_chain(self.bp_joints, suffix = 'Bind',
                                                         joint_parent = self.jnt_grp)
         self.ikfk_chain_rig(self.fk_chain, self.ik_chain, self.ikfk_chain, self.control_grp)
@@ -207,11 +162,10 @@ class IKFK_Rig(ik_rig.IK_Rig, fk_rig.FK_Rig):
         采用的变形器有twist，sine和wire变形器，通过这些变形器影响曲面，从而带动曲面上的关节
 
         Args:
-            ribbon.side (str): ribbon's ribbon.side
-            ribbon.description (str): ribbon's ribbon.description
-            ribbon.index (int): ribbon's ribbon.index
-            joint_number (int): how many joints need to be attached to the ribbon, default is 9
-            control_parent:
+            name(object):创建ribbon关节控制的名称
+            control_parent:控制器组的父层级
+            joint_parent:ribbon关节组的父层级
+            joint_number (int): 需要创建的ribbon关节数量
 
         """
         # 从名称中获取ribbon控制器的边，描述，和编号

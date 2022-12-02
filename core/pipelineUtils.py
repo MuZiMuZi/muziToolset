@@ -16,13 +16,14 @@ list_operation：将两个列表的并集/差分/交集/对称_差分部分作�
 tag_joint：对选择的关节添加关节标签
 batch_Constraints：选中多个物体，批量对物体进行约束
 default_grp： 添加绑定的初始层级组，并隐藏连接对应的属性
+create_constraints：快速创建约束
+delete_constraints：删除所选择物体的所有约束节点
+select_sub_objects：快速选择所选物体的所有子物体
 """
 import math
 
 import maya.cmds as cmds
 import maya.mel as mel
-
-import muziToolset.core.attrUtils as attrUtils
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils
 
@@ -227,16 +228,17 @@ class Pipeline(object):
         选择物体，批量制作约束
         """
         geos = cmds.ls(sl = True)
-        cmds.undoInfo(openChunk = True)  # 批量撤销的开头
         for geo in geos:
-            ctrl = controlUtils.Control(n= 'ctrl_' + geo, s = 'cube' ,r= 1 )
+            cmds.undoInfo(openChunk = True)  # 批量撤销的开头
+            ctrl = controlUtils.Control(n = 'ctrl_' + geo, s = 'cube', r = 1)
             ctrl_transform = '{}'.format(ctrl.transform)
             sub_ctrl = controlUtils.Control(n = 'ctrlSub_' + geo, s = 'cube', r = 1 * 0.7)
             sub_ctrl.set_parent(ctrl.transform)
             sub_ctrl_transform = '{}'.format(sub_ctrl.transform)
             # 添加上层层级组
             offset_grp = hierarchyUtils.Hierarchy.add_extra_group(
-                obj = ctrl_transform, grp_name = '{}'.format(ctrl_transform.replace('ctrl', 'offset')), world_orient = False)
+                obj = ctrl_transform, grp_name = '{}'.format(ctrl_transform.replace('ctrl', 'offset')),
+                world_orient = False)
             connect_grp = hierarchyUtils.Hierarchy.add_extra_group(
                 obj = offset_grp, grp_name = offset_grp.replace('offset', 'connect'), world_orient = False)
             driven_grp = hierarchyUtils.Hierarchy.add_extra_group(
@@ -244,11 +246,11 @@ class Pipeline(object):
             zero_grp = hierarchyUtils.Hierarchy.add_extra_group(
                 obj = driven_grp, grp_name = driven_grp.replace('driven', 'zero'), world_orient = False)
 
-            cmds.matchTransform(zero_grp, geo)
-            cmds.parentConstraint(sub_ctrl_transform, geo,mo = True)
-            cmds.scaleConstraint(sub_ctrl_transform, geo,mo = True)
-
-        cmds.undoInfo(openChunk = False)  # 批量撤销的开头
+            cmds.parentConstraint(sub_ctrl_transform, geo, mo = True)
+            cmds.scaleConstraint(sub_ctrl_transform, geo, mo = True)
+            cmds.addAttr(ctrl_transform,attributeType = 'bool', longName = 'subCtrlVis',niceName = U'次级控制器显示',keyable = True)
+            cmds.connectAttr(ctrl_transform + '.subCtrlVis', sub_ctrl_transform + '.visibility')
+            cmds.undoInfo(openChunk = False)  # 批量撤销的开头
 
     @staticmethod
     def default_grp():
@@ -364,3 +366,54 @@ class Pipeline(object):
             'RigNodes_World': RigNodes_World,
             'nCloth_geo_grp': nCloth_geo_grp
         }
+
+    @staticmethod
+    def create_constraints():
+        u"""
+        快速创建约束.
+        用法：先选择需要约束的物体，在选择被约束的物体
+        """
+        sel = cmds.ls(sl = True)
+        driver_obj = sel[-1]
+        driven_obj = sel[0:-1]
+        cmds.pointConstraint(driver_obj, driven_obj, mo = True)
+        cmds.orientConstraint(driver_obj, driven_obj, mo = True)
+        cmds.scaleConstraint(driver_obj, driven_obj, mo = True)
+
+    @staticmethod
+    def delete_constraints():
+        u'''
+        快速删除选择物体的约束节点
+        '''
+        sel = cmds.ls(sl = True)
+        for obj in sel:
+            const = cmds.listConnections(obj, type = 'constraint')
+            if const:
+                cmds.delete(const)
+
+    @staticmethod
+    def select_sub_objects():
+        u'''
+        快速选择所选择物体的所有子对象
+        '''
+        selection = cmds.ls(sl = True)  # 获取选择的所有对象
+        for obj in selection:
+            cmds.select(cmds.listRelatives(obj, allDescendents = True, type = 'transform'), add = True)
+
+    # def change_duplicate_node
+    # # 定义一个计数器
+    # count = 0
+    #
+    # # 获取当前场景下的所有节点
+    # nodes = cmds.ls()
+    #
+    # # 遍历场景中的所有节点
+    # for node in nodes:
+    #     # 如果节点名字中包含“myNode”
+    #     if 'myNode' in node:
+    #         # 将计数器加1
+    #         count += 1
+    #         # 让新的节点名字加上计数器
+    #         newName = node + str(count)
+    #         # 重命名节点
+    #         cmds.rename(node, newName)

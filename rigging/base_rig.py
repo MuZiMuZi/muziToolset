@@ -19,7 +19,7 @@ import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.nameUtils as nameUtils
 
 import maya.cmds as cmds
-
+import pymel.core as pm
 class Base_Rig(object):
 
     def __init__(self):
@@ -141,3 +141,57 @@ class Base_Rig(object):
             constraint_node = object.replace('ctrl_', 'space_') + '_parentConstraint1'
             cmds.connectAttr(space_cond_node + '.outColorR',
                              constraint_node + '.{}W{}'.format(loc_node, space_list.index(space_name)))
+
+
+    def mirror_bp_joint(self):
+        u"""
+        镜像关节。
+        关节镜像的规律：
+        首端关节平移X*-1
+        关节方向x，y，z*-1
+
+        中端及末端的关节x*-1
+
+        :param bpjnt_list: 默认摆放定位的关节
+        :return:
+        """
+        import pymel.core as pm
+        #获取场景内所有需要镜像的绑定模块
+        bpjnt_lists = pm.ls('l_*_rig')
+        #获取各个绑定模块的关节列表
+        for bpjnt_list in bpjnt_lists:
+            bpjnt_list_jnts = cmds.listRelatives('{}'.format(bpjnt_list), ad = True, c = True)
+            bpjnt_list_jnts.reverse()
+            #对关节列表的所有关节的位移和关节方向进行设置
+            for jnt in bpjnt_list_jnts:
+                if pm.objectType(jnt) == 'joint':
+                    mirror_jnt = jnt.replace('_l_', '_r_')
+                    cmds.setAttr(mirror_jnt + '.translateX', cmds.getAttr(jnt + '.translateX') * -1)
+                    for axis in ['X', 'Y', 'Z']:
+                        cmds.setAttr(mirror_jnt + '.jointOrient' + axis, cmds.getAttr(jnt + '.jointOrient' + axis))
+            #对关节列表的初始关节设置位移和关节方向
+            mirror_start_jnt = bpjnt_list_jnts[0].replace('_l_', '_r_')
+            if pm.objectType(bpjnt_list_jnts[0]) == 'joint':
+                cmds.setAttr(mirror_start_jnt + '.jointOrient' + 'X',
+                             cmds.getAttr(bpjnt_list_jnts[0] + '.jointOrient' + 'X') - 180)
+                for axis in ['Y', 'Z']:
+                    cmds.setAttr(mirror_start_jnt + '.jointOrient' + axis,
+                                 cmds.getAttr(bpjnt_list_jnts[0] + '.jointOrient' + axis) * -1)
+            #对关节列表的最后一个关节清空关节定向
+            if pm.objectType(bpjnt_list_jnts[-1]) == 'joint':
+                for axis in ['X', 'Y', 'Z']:
+                    cmds.setAttr(bpjnt_list_jnts[-1] + '.jointOrient' + axis, 0)
+
+        # 单独设置锁骨关节的关节方向
+        if cmds.objExists('bpjnt_l_clavicle_001'):
+            bp_clavicle_jnt = 'bpjnt_l_clavicle_001'
+            mirror_clavicle_jnt = bp_clavicle_jnt.replace('_l_', '_r_')
+            cmds.setAttr(mirror_clavicle_jnt + '.jointOrient' + 'X',
+                             cmds.getAttr(bp_clavicle_jnt + '.jointOrient' + 'X') - 180)
+        # 单独设置手腕关节的关节方向
+        if cmds.objExists('bpjnt_l_wrist_001'):
+            bp_wrist_jnt = 'bpjnt_l_wrist_001'
+            mirror_wrist_jnt = bp_wrist_jnt.replace('_l_', '_r_')
+            for axis in ['X', 'Y', 'Z']:
+                cmds.setAttr(bp_wrist_jnt + '.jointOrient' + axis, 0)
+                cmds.setAttr(mirror_wrist_jnt + '.jointOrient' + axis, 0)

@@ -1,6 +1,6 @@
 //Maya ASCII 2018ff09 scene
-//Name: leg_rig.ma
-//Last modified: Fri, Nov 25, 2022 01:57:31 PM
+//Name: neck_rig.ma
+//Last modified: Fri, Dec 02, 2022 02:21:19 PM
 //Codeset: 936
 requires maya "2018ff09";
 requires "stereoCamera" "10.0";
@@ -11,181 +11,89 @@ fileInfo "product" "Maya 2018";
 fileInfo "version" "2018";
 fileInfo "cutIdentifier" "201903222215-65bada0e52";
 fileInfo "osv" "Microsoft Windows 8 , 64-bit  (Build 9200)\n";
-createNode transform -n "leg_rig";
-	rename -uid "7CDAE6E0-478E-60A5-F54D-30994DEA16FD";
+createNode transform -n "neck_rig";
+	rename -uid "79E62F2E-4029-AD16-A548-DA98DD32F34E";
 	addAttr -ci true -k true -sn "presetProperties" -ln "presetProperties" -nn "预设属性值——————" 
 		-min 0 -max 1 -at "bool";
-	addAttr -ci true -k true -sn "mirror" -ln "mirror" -nn "镜像" -min 0 -max 1 -at "bool";
-	addAttr -ci true -k true -sn "ribbonRig" -ln "ribbonRig" -nn "Ribbon 控制" -min 
-		0 -max 1 -at "bool";
-	addAttr -ci true -sn "ribbonJntNumber" -ln "ribbonJntNumber" -nn "Ribbon关节数量" 
-		-dv 5 -min 0 -at "long";
 	setAttr -l on -k on ".presetProperties";
-	setAttr -k on ".mirror" yes;
-	setAttr -k on ".ribbonRig" yes;
-	setAttr -k on ".ribbonJntNumber";
-createNode joint -n "bpjnt_l_hip_001" -p "leg_rig";
-	rename -uid "7952D77D-4FDD-0ADE-AFB7-C9ACE802283B";
+createNode joint -n "bpjnt_side_neck_001" -p "neck_rig";
+	rename -uid "367B0C33-47B9-D755-CD63-069811C7F033";
 	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
-	setAttr ".t" -type "double3" 13.664376360344816 135.16946090361523 -7.6361828670186398 ;
+	setAttr ".oc" 6;
+	setAttr ".t" -type "double3" 0 210.61073307014266 -12.805680366078978 ;
+	setAttr -cb on ".ro";
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
 	setAttr ".mxrl" -type "double3" 360 360 360 ;
-	setAttr ".jo" -type "double3" 90 0.89315158094610214 -88.363054696371975 ;
-	setAttr ".pa" -type "double3" 0.00042207211725204554 0 0 ;
-	setAttr ".bps" -type "matrix" 0.11243917845607826 -0.99094286341327242 0.073414389586968276 0
-		 -0.0087637418792137368 0.072891070187666676 0.99730140314509308 0 -0.99361996154284116 -0.11277913520328849 -0.00048855542331732542 0
-		 9.7234100000000012 98.653800000000004 -0.58113399999999871 1;
-	setAttr ".sd" 1;
-	setAttr ".typ" 18;
-	setAttr ".otp" -type "string" "upperLeg001";
-	setAttr ".radi" 2.65;
-createNode joint -n "bpjnt_l_knee_001" -p "bpjnt_l_hip_001";
-	rename -uid "9BA685A6-4E12-262A-1754-EBB81D8DCA4D";
+	setAttr ".jo" -type "double3" 90.000000000000028 -42.135323985831214 90.000000000000028 ;
+	setAttr -cb on ".jox";
+	setAttr -cb on ".joy";
+	setAttr -cb on ".joz";
+	setAttr ".bps" -type "matrix" 1.1285331605222278e-16 0.99668286172651643 -0.081383494276431406 0
+		 -1.652981303562494e-16 -0.081383494276431434 -0.99668286172651643 0 -1 1.6653345369377348e-16 1.1102230246251565e-16 0
+		 -3.593173923039111e-12 210.61073307014266 -12.805680366078978 1;
+	setAttr ".radi" 2.8;
+createNode joint -n "bpjnt_side_neck_002" -p "bpjnt_side_neck_001";
+	rename -uid "A529E79E-479B-383E-7E9B-958AC2FD2C08";
 	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
-	setAttr ".t" -type "double3" 65.310427980304596 -1.7610452647321883e-14 -1.4720598318555789e-15 ;
+	setAttr ".oc" 7;
+	setAttr ".t" -type "double3" 6.2715234377378355 -9.1339739591564778e-15 2.7851158880211508e-15 ;
+	setAttr -cb on ".ro";
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
 	setAttr ".mxrl" -type "double3" 360 360 360 ;
-	setAttr ".bps" -type "matrix" 0.11108050858490008 -0.97788691626921942 -0.17719565345119842 0
-		 0.019506194807855697 -0.17611941028031541 0.98417552382013251 0 -0.99361996204617309 -0.11277913065807485 -0.00048858097680972974 0
-		 14.484698882570138 56.692194341136826 2.5276253297698879 1;
-	setAttr ".sd" 1;
-	setAttr ".typ" 18;
-	setAttr ".otp" -type "string" "knee001";
-	setAttr ".radi" 2.65;
-createNode joint -n "bpjnt_l_ankle_001" -p "bpjnt_l_knee_001";
-	rename -uid "BD2C1BBD-4B37-9BF3-6F70-7E8A0FB85AF1";
+	setAttr ".jo" -type "double3" 0 0 -11.570357189607179 ;
+	setAttr -cb on ".jox";
+	setAttr -cb on ".joy";
+	setAttr -cb on ".joz";
+	setAttr ".bps" -type "matrix" 1.9322276677953901e-16 0.810111935483256 0.58627523569358897 0
+		 -5.2194877539030385e-17 0.58627523569358897 -0.81011193548325588 0 -1 1.6653345369377348e-16 1.1102230246251565e-16 0
+		 -8.3847919317664575e-12 210.61074089099884 -12.805376164898465 1;
+	setAttr ".radi" 1.4;
+createNode joint -n "bpjnt_side_neck_003" -p "bpjnt_side_neck_002";
+	rename -uid "E465A56C-4A80-CC4A-A48F-05BA268CB37A";
 	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
-	setAttr ".t" -type "double3" 56.487364717903205 -3.5527136788005009e-15 1.0658141036401503e-14 ;
-	setAttr ".s" -type "double3" 1.0000000000000002 1.0000000000000002 1 ;
+	setAttr ".t" -type "double3" 6.0792346458206259 5.6853414371599666e-15 -3.4049255023825164e-15 ;
+	setAttr -cb on ".ro";
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
 	setAttr ".mxrl" -type "double3" 360 360 360 ;
-	setAttr ".jo" -type "double3" 0 0 66.037682782913791 ;
-	setAttr ".bps" -type "matrix" 0.17275222881254587 -0.39746855660585689 0.90120775293489108 0
-		 0.074828465076820297 0.91761579460557208 0.3903613125101319 0 -0.98211881575222115 2.0608913241237925e-07 0.18826213571882297 0
-		 19.754884573743805 10.296193527928359 -5.8794764655522886 1;
-	setAttr ".sd" 1;
-	setAttr ".typ" 18;
-	setAttr ".otp" -type "string" "ankle001";
-	setAttr ".radi" 2;
-createNode joint -n "bpjnt_l_ball_001" -p "bpjnt_l_ankle_001";
-	rename -uid "B5D40562-441B-494E-776E-EBAF2EA73640";
+	setAttr ".jo" -type "double3" 0 0 -4.9089075408940079 ;
+	setAttr -cb on ".jox";
+	setAttr -cb on ".joy";
+	setAttr -cb on ".joz";
+	setAttr ".bps" -type "matrix" 1.9157266588886203e-16 0.82730924649563464 0.5617467495792261 0
+		 -5.7959093570284124e-17 0.5617467495792261 -0.82730924649563453 0 -1 1.6653345369377348e-16 1.1102230246251565e-16 0
+		 -1.3167449618463002e-11 216.71705017380592 -8.3856011398110013 1;
+	setAttr ".radi" 1.4;
+createNode joint -n "bpjnt_side_neck_004" -p "bpjnt_side_neck_003";
+	rename -uid "AB2CB237-4FAC-C50E-A0EF-C7B297BE5444";
 	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
-	setAttr ".t" -type "double3" 4.8432280410071336 -1.3322676295501878e-14 7.1054273576010019e-15 ;
-	setAttr ".s" -type "double3" 0.99999999999999978 0.99999999999999967 0.99999999999999933 ;
+	setAttr ".oc" 1;
+	setAttr ".t" -type "double3" 6.0747188707999857 -9.7313845774271096e-15 9.3856965265580803e-30 ;
+	setAttr -cb on ".ro";
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
 	setAttr ".mxrl" -type "double3" 360 360 360 ;
-	setAttr ".bps" -type "matrix" 0.18138470396811496 -0.26782107000323735 0.94624070068282351 0
-		 0.050420761639234951 0.96346866812693399 0.26303207472365703 0 -0.98211879931203738 1.8181460193608615e-07 0.18826222148335561 0
-		 22.12448855971229 4.8442055419882326 6.4821902881511857 1;
-	setAttr ".sd" 1;
-	setAttr ".typ" 18;
-	setAttr ".otp" -type "string" "ball001";
-	setAttr ".radi" 2;
-createNode joint -n "bpjnt_l_toe_001" -p "bpjnt_l_ball_001";
-	rename -uid "DB5E8794-42BB-D069-6AD1-419BCED9AF4A";
+	setAttr ".jo" -type "double3" 0 0 -13.487438709340767 ;
+	setAttr -cb on ".jox";
+	setAttr -cb on ".joy";
+	setAttr -cb on ".joz";
+	setAttr ".bps" -type "matrix" 1.5472952275176273e-16 0.97943352712727683 0.2017671081693504 0
+		 -1.2695714880331178e-16 0.20176710816935034 -0.97943352712727672 0 -1 1.6653345369377348e-16 1.1102230246251565e-16 0
+		 -1.4880459517880638e-09 223.58295649734532 -3.723619448562058 1;
+	setAttr ".radi" 1.4;
+createNode joint -n "bpjnt_side_neck_005" -p "bpjnt_side_neck_004";
+	rename -uid "C7FDD35B-4807-5F57-7227-998CFC19A62E";
 	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
-	setAttr ".t" -type "double3" 16.500487189238619 7.9936057773011271e-15 -3.5527136788005009e-15 ;
+	setAttr ".oc" 2;
+	setAttr ".t" -type "double3" 6.2986464903295589 -2.0154821719109563e-14 -1.1639586901156408e-17 ;
+	setAttr -cb on ".ro";
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
 	setAttr ".mxrl" -type "double3" 360 360 360 ;
-	setAttr ".jot" -type "string" "none";
-	setAttr ".bps" -type "matrix" 0.98211880598205437 -2.4098575153815522e-07 -0.18826218668741265 0
-		 0.050420752469133009 0.96346875057839654 0.26303177446717563 0 0.18138467040196832 -0.2678207733893071 0.946240791069759 0
-		 23.749829420009313 2.4443333632864461 14.96120959399866 1;
-	setAttr ".sd" 1;
-	setAttr ".typ" 18;
-	setAttr ".otp" -type "string" "toe001";
-	setAttr ".radi" 2;
-createNode transform -s -n "persp";
-	rename -uid "94C59821-42C9-E400-1B4E-44968D5B0F9D";
-	setAttr ".v" no;
-	setAttr ".t" -type "double3" 582.90593491195909 273.16340063550615 231.48295063762981 ;
-	setAttr ".r" -type "double3" -18.338352729598999 67.799999999999628 0 ;
-createNode camera -s -n "perspShape" -p "persp";
-	rename -uid "810C4CC3-4F5A-7E91-5585-DAA0F73F3578";
-	setAttr -k off ".v" no;
-	setAttr ".fl" 34.999999999999993;
-	setAttr ".coi" 675.04164608299868;
-	setAttr ".imn" -type "string" "persp";
-	setAttr ".den" -type "string" "persp_depth";
-	setAttr ".man" -type "string" "persp_mask";
-	setAttr ".hc" -type "string" "viewSet -p %camera";
-	setAttr ".ai_translator" -type "string" "perspective";
-createNode transform -s -n "top";
-	rename -uid "EA243CC9-4DDB-9324-C369-348B60595D5A";
-	setAttr ".v" no;
-	setAttr ".t" -type "double3" 0 1000.1 0 ;
-	setAttr ".r" -type "double3" -89.999999999999986 0 0 ;
-createNode camera -s -n "topShape" -p "top";
-	rename -uid "A524A7BF-4C7D-7D1C-C578-F5A8B4E46187";
-	setAttr -k off ".v" no;
-	setAttr ".rnd" no;
-	setAttr ".coi" 1000.1;
-	setAttr ".ow" 30;
-	setAttr ".imn" -type "string" "top";
-	setAttr ".den" -type "string" "top_depth";
-	setAttr ".man" -type "string" "top_mask";
-	setAttr ".hc" -type "string" "viewSet -t %camera";
-	setAttr ".o" yes;
-	setAttr ".ai_translator" -type "string" "orthographic";
-createNode transform -s -n "front";
-	rename -uid "64F185B1-4BF7-DCC0-C5E5-CD9DB2F912D0";
-	setAttr ".v" no;
-	setAttr ".t" -type "double3" 0 0 1000.1 ;
-createNode camera -s -n "frontShape" -p "front";
-	rename -uid "C9120226-430A-932E-8E13-30B4708938B7";
-	setAttr -k off ".v" no;
-	setAttr ".rnd" no;
-	setAttr ".coi" 1000.1;
-	setAttr ".ow" 30;
-	setAttr ".imn" -type "string" "front";
-	setAttr ".den" -type "string" "front_depth";
-	setAttr ".man" -type "string" "front_mask";
-	setAttr ".hc" -type "string" "viewSet -f %camera";
-	setAttr ".o" yes;
-	setAttr ".ai_translator" -type "string" "orthographic";
-createNode transform -s -n "side";
-	rename -uid "B58E59A7-4618-10C4-0DB6-8CA278463D29";
-	setAttr ".v" no;
-	setAttr ".t" -type "double3" 1000.1 0 0 ;
-	setAttr ".r" -type "double3" 0 89.999999999999986 0 ;
-createNode camera -s -n "sideShape" -p "side";
-	rename -uid "DBF3499B-4AC4-DAC7-CD30-EDAFA4536A1A";
-	setAttr -k off ".v" no;
-	setAttr ".rnd" no;
-	setAttr ".coi" 1000.1;
-	setAttr ".ow" 30;
-	setAttr ".imn" -type "string" "side";
-	setAttr ".den" -type "string" "side_depth";
-	setAttr ".man" -type "string" "side_mask";
-	setAttr ".hc" -type "string" "viewSet -s %camera";
-	setAttr ".o" yes;
-	setAttr ".ai_translator" -type "string" "orthographic";
-createNode lightLinker -s -n "lightLinker1";
-	rename -uid "F754BF39-4786-0A0B-B2C9-4488D6B4D11E";
-	setAttr -s 2 ".lnk";
-	setAttr -s 2 ".slnk";
-createNode shapeEditorManager -n "shapeEditorManager";
-	rename -uid "8347ABC6-4B32-D08A-4F4E-1EA02A4D6BAA";
-createNode poseInterpolatorManager -n "poseInterpolatorManager";
-	rename -uid "7FDB2FB8-4AFA-E3FB-C466-2EA916485EB8";
-createNode displayLayerManager -n "layerManager";
-	rename -uid "828A8F8B-4AD1-708F-9577-D48D51D26A25";
-createNode displayLayer -n "defaultLayer";
-	rename -uid "3048C0BF-48EE-1FB2-ABC6-0E866EFFF29B";
-createNode renderLayerManager -n "renderLayerManager";
-	rename -uid "B11526DC-445B-63A8-F81E-5ABC87AA84DB";
-createNode renderLayer -n "defaultRenderLayer";
-	rename -uid "11E0F262-4BB2-A7D6-B355-EF8DA69BC1F0";
-	setAttr ".g" yes;
-createNode script -n "sceneConfigurationScriptNode";
-	rename -uid "6A784AD2-4526-EA86-72E3-ECA80DE70FC8";
-	setAttr ".b" -type "string" "playbackOptions -min 1 -max 120 -ast 1 -aet 200 ";
-	setAttr ".st" 6;
-createNode nodeGraphEditorInfo -n "MayaNodeEditorSavedTabsInfo";
-	rename -uid "A7B6F149-476B-4333-8790-5C8D5551C31A";
-	setAttr ".tgi[0].tn" -type "string" "无标题_1";
-	setAttr ".tgi[0].vl" -type "double2" -1133.3332882987147 -549.99997814496453 ;
-	setAttr ".tgi[0].vh" -type "double2" 1133.3332882987147 549.99997814496453 ;
+	setAttr -cb on ".jox";
+	setAttr -cb on ".joy";
+	setAttr -cb on ".joz";
+	setAttr ".bps" -type "matrix" 1.4579910008510683e-11 -0.99201404822223416 0.12612742814207861 0
+		 -1.7020649539054763e-16 -0.1261274281420787 -0.99201404822223416 0 1 1.4463413480602786e-11 -1.8390508560369919e-12 0
+		 -3.042903475310261e-08 230.97953681318722 -2.2002028629317385 1;
+	setAttr ".radi" 2.8;
 select -ne :time1;
 	setAttr -av -k on ".cch";
 	setAttr -k on ".fzn";
@@ -509,15 +417,8 @@ select -ne :hardwareRenderGlobals;
 	setAttr -av -k on ".bswa";
 	setAttr -av -k on ".shml";
 	setAttr -av -k on ".hwel";
-connectAttr "bpjnt_l_hip_001.s" "bpjnt_l_knee_001.is";
-connectAttr "bpjnt_l_knee_001.s" "bpjnt_l_ankle_001.is";
-connectAttr "bpjnt_l_ankle_001.s" "bpjnt_l_ball_001.is";
-connectAttr "bpjnt_l_ball_001.s" "bpjnt_l_toe_001.is";
-relationship "link" ":lightLinker1" ":initialShadingGroup.message" ":defaultLightSet.message";
-relationship "link" ":lightLinker1" ":initialParticleSE.message" ":defaultLightSet.message";
-relationship "shadowLink" ":lightLinker1" ":initialShadingGroup.message" ":defaultLightSet.message";
-relationship "shadowLink" ":lightLinker1" ":initialParticleSE.message" ":defaultLightSet.message";
-connectAttr "layerManager.dli[0]" "defaultLayer.id";
-connectAttr "renderLayerManager.rlmi[0]" "defaultRenderLayer.rlid";
-connectAttr "defaultRenderLayer.msg" ":defaultRenderingList1.r" -na;
-// End of leg_rig.ma
+connectAttr "bpjnt_side_neck_001.s" "bpjnt_side_neck_002.is";
+connectAttr "bpjnt_side_neck_002.s" "bpjnt_side_neck_003.is";
+connectAttr "bpjnt_side_neck_003.s" "bpjnt_side_neck_004.is";
+connectAttr "bpjnt_side_neck_004.s" "bpjnt_side_neck_005.is";
+// End of neck_rig.ma

@@ -165,3 +165,4 @@ class Joint(object):
         cmds.setAttr(bp_joints[0] + '.visibility',0)
         return joints_chain
 
+
