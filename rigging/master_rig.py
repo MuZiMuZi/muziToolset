@@ -18,7 +18,7 @@ import maya.cmds as cmds
 import base_rig
 
 
-class Master_Rig(base_rig):
+class Master_Rig(base_rig.Base_Rig):
 
     def __init__(self):
         super(Master_Rig, self).__init__()
