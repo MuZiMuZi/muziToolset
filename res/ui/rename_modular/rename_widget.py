@@ -7,7 +7,7 @@ try:
     from PySide2.QtCore import *
     from PySide2.QtGui import *
     from PySide2.QtWidgets import *
-    from PySide2 import __version__
+    from PySide2 import __version__, QtCore, QtGui
     from shiboken2 import wrapInstance
 
 except ImportError:
@@ -37,29 +37,37 @@ class AddNamePrefixWidget(backGround.BackGround):
         # 创建子布局（重新命名）
         self.body_layout = QVBoxLayout(self)
 
+        ## 限制以下特殊符号在lineEdit中的输入
+        rx = QtCore.QRegExp("[^\\\\/:*?\"<>| ]*")
+        validator = QtGui.QRegExpValidator(rx)
 
         # 创建添加前缀的部件
-        self.prefix = QLineEdit()
+        self.prefix_lineEdit = QLineEdit()
+        self.prefix_lineEdit.setValidator(validator)
         self.prefix_button = QPushButton("添加")
         self.prefix_button.clicked.connect(self.add_prefix)
 
         # 创建添加层级前缀的部件
-        self.hierarchy_prefix = QLineEdit()
+        self.hierarchy_prefix_lineEdit = QLineEdit()
+        self.hierarchy_prefix_lineEdit.setValidator(validator)
         self.hierarchy_prefix_button = QPushButton("添加")
         self.hierarchy_prefix_button.clicked.connect(self.add_hierarchy_prefix)
 
         # 创建添加后缀的部件
-        self.suffix = QLineEdit()
+        self.suffix_lineEdit = QLineEdit()
+        self.suffix_lineEdit.setValidator(validator)
         self.suffix_button = QPushButton("添加")
         self.suffix_button.clicked.connect(self.add_suffix)
 
         # 创建添加层级后缀的部件
-        self.hierarchy_suffix = QLineEdit()
+        self.hierarchy_suffix_lineEdit = QLineEdit()
+        self.hierarchy_suffix_lineEdit.setValidator(validator)
         self.hierarchy_suffix_button = QPushButton("添加")
         self.hierarchy_suffix_button.clicked.connect(self.add_hierarchy_suffix)
 
         # 创建重命名的部件
-        self.rename = QLineEdit()
+        self.rename_lineEdit = QLineEdit()
+        self.rename_lineEdit.setValidator(validator)
         self.rename_button = QPushButton("替换")
         self.rename_button.clicked.connect(self.set_rename)
 
@@ -69,23 +77,23 @@ class AddNamePrefixWidget(backGround.BackGround):
 
         # 添加子布局的小部件
         self.body_layout.addWidget(QLabel("添加前缀"))
-        self.body_layout.addWidget(self.prefix)
+        self.body_layout.addWidget(self.prefix_lineEdit)
         self.body_layout.addWidget(self.prefix_button)
 
         self.body_layout.addWidget(QLabel("添加后缀"))
-        self.body_layout.addWidget(self.suffix )
+        self.body_layout.addWidget(self.suffix_lineEdit )
         self.body_layout.addWidget(self.suffix_button)
 
         self.body_layout.addWidget(QLabel("添加层级前缀"))
-        self.body_layout.addWidget(self.hierarchy_prefix)
+        self.body_layout.addWidget(self.hierarchy_prefix_lineEdit)
         self.body_layout.addWidget(self.hierarchy_prefix_button)
 
         self.body_layout.addWidget(QLabel("添加层级后缀"))
-        self.body_layout.addWidget(self.hierarchy_suffix)
+        self.body_layout.addWidget(self.hierarchy_suffix_lineEdit)
         self.body_layout.addWidget(self.hierarchy_suffix_button)
 
         self.body_layout.addWidget(QLabel("重命名"))
-        self.body_layout.addWidget(self.rename)
+        self.body_layout.addWidget(self.rename_lineEdit)
         self.body_layout.addWidget(self.rename_button)
 
     def add_prefix(self):
@@ -95,7 +103,7 @@ class AddNamePrefixWidget(backGround.BackGround):
 
         """
         name = nameUtils.Name()
-        name.add_prefix(self.prefix.text())
+        name.add_prefix(self.prefix_lineEdit.text())
 
     def add_hierarchy_prefix(self):
         """
@@ -104,7 +112,7 @@ class AddNamePrefixWidget(backGround.BackGround):
 
         """
         name = nameUtils.Name()
-        name.add_hierarchy_prefix(self.hierarchy_prefix.text())
+        name.add_hierarchy_prefix(self.hierarchy_prefix_lineEdit.text())
 
     def add_suffix(self):
         """
@@ -113,7 +121,7 @@ class AddNamePrefixWidget(backGround.BackGround):
 
         """
         name = nameUtils.Name()
-        name.add_suffix(self.suffix.text())
+        name.add_suffix(self.suffix_lineEdit.text())
 
     def add_hierarchy_suffix(self):
         """
@@ -122,7 +130,7 @@ class AddNamePrefixWidget(backGround.BackGround):
 
         """
         name = nameUtils.Name()
-        name.add_hierarchy_suffix(self.hierarchy_suffix.text())
+        name.add_hierarchy_suffix(self.hierarchy_suffix_lineEdit.text())
 
     def set_rename(self):
         """
@@ -131,7 +139,7 @@ class AddNamePrefixWidget(backGround.BackGround):
 
         """
         name = nameUtils.Name()
-        name.set_rename(self.rename.text())
+        name.set_rename(self.rename_lineEdit.text())
 
 
 class ReplaceNameWidget(backGround.BackGround):

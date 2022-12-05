@@ -25,12 +25,13 @@ import json
 import os
 
 import maya.cmds as cmds
-import muziToolset.core.attrUtils as attrUtils
-import muziToolset.core.hierarchyUtils as hierarchyUtils
+import attrUtils
+import hierarchyUtils
+# import pipelineUtils
 import nameUtils
 import pymel.core as pm
 
-reload(attrUtils)
+
 
 
 class Control(object):
@@ -55,6 +56,7 @@ class Control(object):
     def __repr__(self):
         return "{m}.{c}.(t = {t})".format(m = __name__, c = self.__class__.__name__, t = self.get_transform().name())
 
+
     def set(self, **kwargs):
         self.set_parent(**kwargs)
         self.set_shape(**kwargs)
@@ -63,6 +65,7 @@ class Control(object):
         self.set_radius(**kwargs)
         self.set_offset(**kwargs)
         self.set_locked(**kwargs)
+
 
     def set_transform(self, *args, **kwargs):
         u"""
@@ -94,6 +97,7 @@ class Control(object):
         elif hasattr(t, "nodeType") and t.nodeType() == "transform":
             self.transform = t
 
+
     def set_parent(self, *args, **kwargs):
         u"""
         设置控制器的父对象
@@ -109,6 +113,7 @@ class Control(object):
                 self.get_transform().s.set(1, 1, 1)
             except (RuntimeError, UnicodeEncodeError):
                 pass
+
 
     def set_shape(self, *args, **kwargs):
         u"""
@@ -145,6 +150,7 @@ class Control(object):
             with open(data_file, "r") as fp:
                 self.set_shape(s = json.load(fp))
 
+
     def set_name(self, *args, **kwargs):
         u"""
         设置名字
@@ -155,6 +161,7 @@ class Control(object):
         self.get_transform().rename(n)
         for s in self.get_transform().getShapes():
             s.rename(n + "Shape")
+
 
     def set_color(self, *args, **kwargs):
         u"""
@@ -170,6 +177,7 @@ class Control(object):
                 continue
             shape.overrideEnabled.set(True)
             shape.overrideColor.set(color)
+
 
     def set_radius(self, *args, **kwargs):
         u"""
@@ -188,11 +196,13 @@ class Control(object):
             for p, cv in zip(ps, shape.cv):
                 pm.xform(cv, t = [xyz * scale for xyz in p])
 
+
     def set_rotateX(self, **kwargs):
         rotateX = kwargs.get('rx', kwargs.get('rotateX', 0))  # type: int
         shape_node = cmds.listRelatives('{}'.format(self.get_transform()), shapes = True)[0]
         points = '{}'.format(shape_node) + ".cv[0:700000]"
         cmds.rotate(rotateX, 0, 0, points)
+
 
     def set_rotateY(self, **kwargs):
         rotateY = kwargs.get('ry', kwargs.get('rotateY', 0))  # type: int
@@ -200,11 +210,13 @@ class Control(object):
         points = '{}'.format(shape_node) + ".cv[0:700000]"
         cmds.rotate(0, rotateY, 0, points)
 
+
     def set_rotateZ(self, **kwargs):
         rotateZ = kwargs.get('rz', kwargs.get('rotateZ', 0))  # type: int
         shape_node = cmds.listRelatives('{}'.format(self.get_transform()), shapes = True)[0]
         points = '{}'.format(shape_node) + ".cv[0:700000]"
         cmds.rotate(0, 0, rotateZ, points)
+
 
     def set_offset(self, *args, **kwargs):
         u"""
@@ -219,6 +231,7 @@ class Control(object):
         for shape, ps in zip(self.get_transform().getShapes(), points):
             for p, cv in zip(ps, shape.cv):
                 pm.xform(cv, t = [p_xyz + o_xyz for p_xyz, o_xyz in zip(p, offset)])
+
 
     def set_locked(self, *args, **kwargs):
         pass

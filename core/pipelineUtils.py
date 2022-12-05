@@ -21,13 +21,13 @@ delete_constraints：删除所选择物体的所有约束节点
 select_sub_objects：快速选择所选物体的所有子物体
 """
 import math
-
+from functools import wraps
 import maya.cmds as cmds
 import maya.mel as mel
-import muziToolset.core.controlUtils as controlUtils
-import muziToolset.core.hierarchyUtils as hierarchyUtils
 
-1
+
+import hierarchyUtils
+import controlUtils
 class Pipeline(object):
     def __init__(self):
         pass
@@ -399,21 +399,16 @@ class Pipeline(object):
         selection = cmds.ls(sl = True)  # 获取选择的所有对象
         for obj in selection:
             cmds.select(cmds.listRelatives(obj, allDescendents = True, type = 'transform'), add = True)
+    @staticmethod
+    def make_undo(func):
+        u'''
+        一键撤销的解释器
+        '''
+        @wraps(func)
+        def wrap(*args, **kwargs):
+            cmds.undoInfo(openChunk = True)
+            result = func(*args, **kwargs)
+            cmds.undoInfo(closeChunk = True)
+            return result
 
-    # def change_duplicate_node
-    # # 定义一个计数器
-    # count = 0
-    #
-    # # 获取当前场景下的所有节点
-    # nodes = cmds.ls()
-    #
-    # # 遍历场景中的所有节点
-    # for node in nodes:
-    #     # 如果节点名字中包含“myNode”
-    #     if 'myNode' in node:
-    #         # 将计数器加1
-    #         count += 1
-    #         # 让新的节点名字加上计数器
-    #         newName = node + str(count)
-    #         # 重命名节点
-    #         cmds.rename(node, newName)
+        return wrap

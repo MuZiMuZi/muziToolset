@@ -15,18 +15,23 @@ u"""
 添加层级后缀：add_hierarchy_suffix
 根据关键字搜索替换名称：search_replace_name
 根据正则表达式搜索替换名称：regex_search_replace_name
+检查并列出场景里所有重名的物体：print_duplicate_object
+检查并修改场景里所有重名的物体：rename_duplicate_object
 
 """
 from __future__ import print_function
 
-import maya.cmds as cmds
 import re
+
+import maya.cmds as cmds
+
 
 class Name(object):
     """
     This is a docstring
     """
-    def __init__(self, name=None, type=None, side=None, resolution=None, description=None, index=None):
+
+    def __init__(self, name = None, type = None, side = None, resolution = None, description = None, index = None):
         """
 
         Returns:
@@ -118,12 +123,13 @@ class Name(object):
         elif self._side == 'r':
             self._side = 'l'
 
-    def set_rename(self,new_name):
-        self.nodes = cmds.ls(sl =True)
-        for node in self.nodes:
-            cmds.rename(node, new_name)
+    def set_rename(self, new_name):
+        names = cmds.ls(sl = True)
+        for self._name in names:
+            self._name = self._name.split("|")[-1]
+            cmds.rename(self._name, new_name)
 
-    def add_prefix(self,prefix):
+    def add_prefix(self, prefix):
         """
         添加前缀名称
         Args:
@@ -132,37 +138,45 @@ class Name(object):
         Returns:
 
         """
-        names = cmds.ls(sl =True)
+        names = cmds.ls(sl = True)
         for self._name in names:
-            cmds.rename(self._name, '{}'.format(prefix) + self._name)
+            # 让新的节点名字加上前缀
+            object_name = self._name.split("|")[-1]
+            new_object_name = prefix+object_name
+            # 重命名节点
+            cmds.rename(self._name, new_object_name)
 
-    def add_suffix(self,suffix):
+
+    def add_suffix(self, suffix):
         """
-        Add suffixes names to object
+        添加后缀名称
         Args:
-            suffix(str): suffix names
+            suffix(str): 后缀名称
 
         Returns:
             Object name after modification
         """
-        names = cmds.ls(sl=True)
+        names = cmds.ls(sl = True)
         for self._name in names:
-            cmds.rename(self._name,   self._name + '{}'.format(suffix))
+            # 让新的节点名字加上前缀
+            object_name = self._name.split("|")[-1]
+            new_object_name = object_name+suffix
+            # 重命名节点
+            cmds.rename(self._name, new_object_name)
 
     def _selection_list_nodes(self):
         """
         Returns: 返回选择的物体下所有的子层级的节点命名
 
         """
-        selected  = cmds.ls(sl=True)
+        selected = cmds.ls(sl = True)
         self.nodes = self.nodes + selected
         for select in selected:
-            self.nodes = self.nodes + cmds.listRelatives(select, allDescendents=True, children=True)
+            self.nodes = self.nodes + cmds.listRelatives(select, allDescendents = True, children = True)
 
         return self.nodes
 
-
-    def add_hierarchy_prefix(self,prefix):
+    def add_hierarchy_prefix(self, prefix):
         """
         添加层级前缀名称
         Args:
@@ -175,7 +189,7 @@ class Name(object):
         for node in self.nodes:
             cmds.rename(node, prefix + node)
 
-    def add_hierarchy_suffix(self,suffix):
+    def add_hierarchy_suffix(self, suffix):
         """
         添加层级后缀名称
         Args:
@@ -188,7 +202,7 @@ class Name(object):
         for node in self.nodes:
             cmds.rename(node, node + suffix)
 
-    def search_replace_name(self,search, replace):
+    def search_replace_name(self, search, replace):
         """
             搜索替换对应的名称
         Args:
@@ -198,14 +212,48 @@ class Name(object):
         Returns:
 
         """
-        names = cmds.ls(sl=True)
+        names = cmds.ls(sl = True)
         for self._name in names:
             search_name = self._name.split("|")[-1]
             cmds.rename(search_name, search_name.replace(search, replace))
 
-    def regex_search_replace_name(self,search, replace):
+    def regex_search_replace_name(self, search, replace):
         re_o = re.compile(search)
         for uid in self._selection_list_nodes():
-            self._name= cmds.ls(uid)[0]
+            self._name = cmds.ls(uid)[0]
             search_name = self._name.split("|")[-1]
             cmds.rename(self._name, re_o.sub(replace, search_name))
+
+    @staticmethod
+    def print_duplicate_object():
+        u'''
+        检查并列出场景里重名的物体
+        '''
+        all_object = cmds.ls(visible = 1)
+        duplicate_object_list = []
+        for i in all_object:
+            if '|' in i:
+                if i.count('|')>1:
+                    duplicate_object_list.append(i)
+                    cmds.warning(u'场景里有重名的物体{}'.format(i))
+        if len(duplicate_object_list) == 0:
+            cmds.warning(u'场景里没有重名的物体')
+        return duplicate_object_list
+
+    @staticmethod
+    def rename_duplicate_object():
+        u'''
+        检查并重命名场景内所有重名的物体
+        '''
+        duplicate_object_list = Name.print_duplicate_object()
+        # 定义一个计数器
+        count = 0
+        for duplicate_object in duplicate_object_list:
+            # 将计数器加1
+            count += 1
+            # 让新的节点名字加上计数器
+            object_name = duplicate_object.split("|")[-1]
+            new_object_name = object_name + '_{:03d}'.format(count)
+            # 重命名节点
+            cmds.rename(duplicate_object, new_object_name)
+

@@ -70,13 +70,14 @@ class ShapeWidget(QListWidget):
 
     @staticmethod
     def clicked(item):
+        pm.undoInfo(openChunk = 1)
         s = item.text()
         selected = controlUtils.Control.selected()
         if selected:
             controlUtils.Control.set_selected(s=s, r = controlUtils.Control.get_soft_radius())
         else:
             controlUtils.Control(n=s, s=s, r= controlUtils.Control.get_soft_radius())
-
+        pm.undoInfo(closeChunk = 1)
     def update_control(self):
         pm.undoInfo(openChunk=1)
         for control in controlUtils.Control.selected():
