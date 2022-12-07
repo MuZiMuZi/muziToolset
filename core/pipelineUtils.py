@@ -25,7 +25,6 @@ from functools import wraps
 import maya.cmds as cmds
 import maya.mel as mel
 
-
 import hierarchyUtils
 import controlUtils
 class Pipeline(object):
@@ -412,3 +411,4 @@ class Pipeline(object):
             return result
 
         return wrap
+

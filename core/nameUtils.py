@@ -24,6 +24,7 @@ from __future__ import print_function
 import re
 
 import maya.cmds as cmds
+import muziToolset.core.pipelineUtils as pipelineUtils
 
 
 class Name(object):
@@ -123,12 +124,14 @@ class Name(object):
         elif self._side == 'r':
             self._side = 'l'
 
+    @pipelineUtils.Pipeline.make_undo
     def set_rename(self, new_name):
         names = cmds.ls(sl = True)
         for self._name in names:
             self._name = self._name.split("|")[-1]
             cmds.rename(self._name, new_name)
 
+    @pipelineUtils.Pipeline.make_undo
     def add_prefix(self, prefix):
         """
         添加前缀名称
@@ -142,11 +145,11 @@ class Name(object):
         for self._name in names:
             # 让新的节点名字加上前缀
             object_name = self._name.split("|")[-1]
-            new_object_name = prefix+object_name
+            new_object_name = prefix + object_name
             # 重命名节点
             cmds.rename(self._name, new_object_name)
 
-
+    @pipelineUtils.Pipeline.make_undo
     def add_suffix(self, suffix):
         """
         添加后缀名称
@@ -160,7 +163,7 @@ class Name(object):
         for self._name in names:
             # 让新的节点名字加上前缀
             object_name = self._name.split("|")[-1]
-            new_object_name = object_name+suffix
+            new_object_name = object_name + suffix
             # 重命名节点
             cmds.rename(self._name, new_object_name)
 
@@ -176,6 +179,7 @@ class Name(object):
 
         return self.nodes
 
+    @pipelineUtils.Pipeline.make_undo
     def add_hierarchy_prefix(self, prefix):
         """
         添加层级前缀名称
@@ -187,8 +191,13 @@ class Name(object):
         """
         self.nodes = self._selection_list_nodes()
         for node in self.nodes:
-            cmds.rename(node, prefix + node)
+            # 让新的节点名字加上前缀
+            object_name = node.split("|")[-1]
+            new_object_name = prefix + object_name
+            # 重命名节点
+            cmds.rename(node, new_object_name)
 
+    @pipelineUtils.Pipeline.make_undo
     def add_hierarchy_suffix(self, suffix):
         """
         添加层级后缀名称
@@ -200,8 +209,13 @@ class Name(object):
         """
         self.nodes = self._selection_list_nodes()
         for node in self.nodes:
-            cmds.rename(node, node + suffix)
+            # 让新的节点名字加上前缀
+            object_name = node.split("|")[-1]
+            new_object_name = object_name + suffix
+            # 重命名节点
+            cmds.rename(node, new_object_name)
 
+    @pipelineUtils.Pipeline.make_undo
     def search_replace_name(self, search, replace):
         """
             搜索替换对应的名称
@@ -232,10 +246,9 @@ class Name(object):
         all_object = cmds.ls(visible = 1)
         duplicate_object_list = []
         for i in all_object:
-            if '|' in i:
-                if i.count('|')>1:
-                    duplicate_object_list.append(i)
-                    cmds.warning(u'场景里有重名的物体{}'.format(i))
+            if len(i.split('|')) >1:
+                duplicate_object_list.append(i)
+                cmds.warning(u'场景里有重名的物体{}'.format(i))
         if len(duplicate_object_list) == 0:
             cmds.warning(u'场景里没有重名的物体')
         return duplicate_object_list
@@ -254,6 +267,6 @@ class Name(object):
             # 让新的节点名字加上计数器
             object_name = duplicate_object.split("|")[-1]
             new_object_name = object_name + '_{:03d}'.format(count)
+            uuid_name = cmds.ls()
             # 重命名节点
             cmds.rename(duplicate_object, new_object_name)
-

@@ -20,6 +20,7 @@ except ImportError:
 import muziToolset.res.ui.backGround as backGround
 
 import  muziToolset.core.nameUtils as nameUtils
+import  muziToolset.core.pipelineUtils as pipelineUtils
 
 reload(nameUtils)
 

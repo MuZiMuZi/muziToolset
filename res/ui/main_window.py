@@ -26,18 +26,10 @@ import muziToolset.conf.setting as setting
 import muziToolset.core.pipelineUtils as pipelineUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils
 import muziToolset.core.jointUtils as jointUtils
+import muziToolset.core.nameUtils as nameUtils
 import muziToolset.rigging.weightsUtils as weightsUtils
 
-reload(weightsUtils)
-reload(rename_widget)
-reload(nodes_widget)
-reload(setting_widget)
-reload(snap_widget)
-reload(control_widget)
-reload(pipelineUtils)
-reload(jointUtils)
-reload(hierarchyUtils)
-
+reload(nameUtils)
 
 
 class toolWidget(QWidget):
@@ -155,6 +147,12 @@ class functionWidget(QWidget,pipelineUtils.Pipeline):
         self.select_sub_objects_button = QPushButton("快速选择子物体")
         self.select_sub_objects_button.clicked.connect(self.select_sub_objects)
 
+        self.print_duplicate_object_button = QPushButton("检查并列出重名节点")
+        self.print_duplicate_object_button.clicked.connect(self.print_duplicate_object)
+
+        self.rename_duplicate_object_button = QPushButton("检查并重命名重名节点")
+        self.rename_duplicate_object_button.clicked.connect(self.rename_duplicate_object)
+
         # 添加按钮
         self.main_layout.addWidget(self.clear_keys_button,1,1)
         self.main_layout.addWidget(self.reset_control_button,1,2)
@@ -164,11 +162,14 @@ class functionWidget(QWidget,pipelineUtils.Pipeline):
         self.main_layout.addWidget(self.create_joints_on_curve_rigging_button, 2, 2)
         self.main_layout.addWidget(self.control_hierarchy_button,2,3)
         self.main_layout.addWidget(self.save_skinWeights_button, 2, 4)
-        self.main_layout.addWidget(self.load_skinWeights_button, 3, 1)
 
+        self.main_layout.addWidget(self.load_skinWeights_button, 3, 1)
         self.main_layout.addWidget(self.create_constraints_button, 3, 2)
         self.main_layout.addWidget(self.delete_constraints_button, 3, 3)
         self.main_layout.addWidget(self.select_sub_objects_button, 3, 4)
+
+        self.main_layout.addWidget(self.print_duplicate_object_button, 4, 1)
+        self.main_layout.addWidget(self.rename_duplicate_object_button, 4, 2)
 
 
     def clear_keys(self):
@@ -212,6 +213,13 @@ class functionWidget(QWidget,pipelineUtils.Pipeline):
 
     def select_sub_objects(self):
         pipelineUtils.Pipeline.select_sub_objects()
+
+    def print_duplicate_object(self):
+        nameUtils.Name.print_duplicate_object()
+
+    def rename_duplicate_object(self):
+        nameUtils.Name.rename_duplicate_object()
+
 
 
 class MainWindow(QWidget):
