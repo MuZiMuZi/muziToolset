@@ -30,7 +30,7 @@ import muziToolset.core.nameUtils as nameUtils
 import muziToolset.rigging.weightsUtils as weightsUtils
 
 reload(nameUtils)
-
+reload(hierarchyUtils)
 
 class toolWidget(QWidget):
     def __init__(self):

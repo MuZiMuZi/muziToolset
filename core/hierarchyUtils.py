@@ -128,6 +128,7 @@ class Hierarchy(object):
             # connect attrs
             cmds.connectAttr(sub + '.translate', output + '.translate')
             cmds.connectAttr(sub + '.rotate', output + '.rotate')
+            cmds.connectAttr(sub + '.scale', output + '.scale')
             cmds.connectAttr(sub + '.rotateOrder', output + '.rotateOrder')
 
             # show rotate order

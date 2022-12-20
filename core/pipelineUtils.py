@@ -245,10 +245,22 @@ class Pipeline(object):
             zero_grp = hierarchyUtils.Hierarchy.add_extra_group(
                 obj = driven_grp, grp_name = driven_grp.replace('driven', 'zero'), world_orient = False)
 
+            # 创建output层级组
+            output = cmds.createNode('transform', name = ctrl_transform.replace('ctrl_', 'output_'), parent = ctrl_transform)
+
+            # 连接次级控制器的属性
+            cmds.connectAttr(sub_ctrl.transform + '.translate', output + '.translate')
+            cmds.connectAttr(sub_ctrl.transform + '.rotate', output + '.rotate')
+            cmds.connectAttr(sub_ctrl.transform + '.scale', output + '.scale')
+            cmds.connectAttr(sub_ctrl.transform + '.rotateOrder', output + '.rotateOrder')
+            cmds.addAttr(ctrl_transform, attributeType = 'bool', longName = 'subCtrlVis', niceName = U'次级控制器显示',
+                         keyable = True)
+            cmds.connectAttr(ctrl_transform + '.subCtrlVis', sub_ctrl_transform + '.visibility')
+
+
+            cmds.matchTransform(zero_grp,geo)
             cmds.parentConstraint(sub_ctrl_transform, geo, mo = True)
             cmds.scaleConstraint(sub_ctrl_transform, geo, mo = True)
-            cmds.addAttr(ctrl_transform,attributeType = 'bool', longName = 'subCtrlVis',niceName = U'次级控制器显示',keyable = True)
-            cmds.connectAttr(ctrl_transform + '.subCtrlVis', sub_ctrl_transform + '.visibility')
             cmds.undoInfo(openChunk = False)  # 批量撤销的开头
 
     @staticmethod
