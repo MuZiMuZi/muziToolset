@@ -11,12 +11,12 @@ create_neck_rig：创建脖子的控制器绑定
 
 """
 import maya.cmds as cmds
+import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils
+import muziToolset.core.jointUtils as jointUtils
+import muziToolset.core.nameUtils as nameUtils
 import muziToolset.core.pipelineUtils as pipelineUtils
 
-import muziToolset.core.controlUtils as controlUtils
-import muziToolset.core.nameUtils as nameUtils
-import muziToolset.core.jointUtils as jointUtils
 
 reload(pipelineUtils)
 reload(jointUtils)
@@ -24,17 +24,23 @@ reload(jointUtils)
 import ikfk_rig
 
 
-neck_bp_joints = ['bpjnt_m_neck_001', 'bpjnt_m_neck_002',' bpjnt_m_neck_003','bpjnt_m_neck_004','bpjnt_m_neck_005']
+neck_bp_joints = ['bpjnt_m_neck_001' , 'bpjnt_m_neck_002' , ' bpjnt_m_neck_003' , 'bpjnt_m_neck_004' ,
+                  'bpjnt_m_neck_005']
 bpcrv = 'bpcrv_m_neck_001'
 
-class Neck_Rig(ikfk_rig.IKFK_Rig):
-    def __init__(self, bp_joints = None, joint_parent = None, control_parent = None, mirror = True,space_list = None):
-        super(Neck_Rig, self).__init__(bp_joints = bp_joints, joint_parent=joint_parent,control_parent = control_parent,space_list = space_list)
+
+class Neck_Rig(ikfk_rig.IKFK_Rig) :
+
+
+    def __init__(self , bp_joints = None , joint_parent = None , control_parent = None , mirror = True ,
+                 space_list = None) :
+        super(Neck_Rig , self).__init__(bp_joints = bp_joints , joint_parent = joint_parent ,
+                                        control_parent = control_parent , space_list = space_list)
         self.mirror = mirror
         self.neck_bp_joints = self.get_modular_bp_joints(self.neck_rig)
         self.bp_joints = self.neck_bp_joints
         # self.create_spine_rig()
 
 
-    def create_neck_rig(self):
+    def create_neck_rig(self) :
         self.ikfk_spine_rig()
