@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Maya2023_connection" type="MAYACHARM_RUN_CONFIGURATION" factoryName="MAYACHARM_RUN_CONFIGURATION">
+    <option name="executionType" value="FILE" />
+    <option name="mayaSdkPath" value="C:\Program Files\Autodesk\Maya2023\bin\mayapy.exe" />
+    <option name="scriptCodeText" value="" />
+    <option name="scriptFilePath" value="C:\Users\lixin\Documents\maya\scripts\muziToolset\ta\week_06\MayaPython03_UI.py" />
+    <method v="2" />
+  </configuration>
+</component>

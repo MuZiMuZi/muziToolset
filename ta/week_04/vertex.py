@@ -44,7 +44,7 @@ def import_vertex(mesh,file_name):
     return  file_path
 
 
-
+print('zz')
 # # 用法
 # export_vertex(pm.selected(flatten = True),'vetex_01')
 # import_vertex(pm.selected()[0],'vetex_01')
