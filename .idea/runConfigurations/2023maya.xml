@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="2023maya" type="MAYACHARM_RUN_CONFIGURATION" factoryName="MAYACHARM_RUN_CONFIGURATION">
+    <option name="executionType" value="FILE" />
+    <option name="mayaSdkPath" value="C:\Program Files\Autodesk\Maya2023\bin\mayapy.exe" />
+    <option name="scriptCodeText" value="" />
+    <option name="scriptFilePath" value="D:\pythonProject\maya_pythonProject\muziToolset\rigging\mateHumanRigging\main.py" />
+    <method v="2" />
+  </configuration>
+</component>
