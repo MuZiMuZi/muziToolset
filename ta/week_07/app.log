@@ -1,0 +1,10 @@
+2023-02-10 10:35:19,378  - my_custom_logger  - DEBUG  - 1
+2023-02-10 10:35:19,378  - my_custom_logger  - INFO  - 2
+2023-02-10 10:35:19,378  - my_custom_logger  - WARNING  - 3
+2023-02-10 10:35:19,378  - my_custom_logger  - ERROR  - 4
+2023-02-10 10:35:19,378  - my_custom_logger  - CRITICAL  - 5
+2023-02-10 10:35:19,378  - my_custom_logger  - ERROR  - division by zero
+Traceback (most recent call last):
+  File "C:\Users\lixin\Documents\maya\scripts\muziToolset\ta\week_07\logging_test.py", line 30, in <module>
+    1/0
+ZeroDivisionError: division by zero
