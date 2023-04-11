@@ -16,8 +16,8 @@ make： 根据给定的bp_joints关节的名称来创建对应的模块组
 """
 
 import maya.cmds as cmds
-import muziToolset.core.controlUtils as controlUtils
-import muziToolset.core.nameUtils as nameUtils
+# import muziToolset.core.controlUtils as controlUtils
+# import muziToolset.core.nameUtils as nameUtils
 import pymel.core as pm
 
 
@@ -108,7 +108,7 @@ class Base_Rig(object) :
                                     self.pinky_metacarpal_finger_l : 'pinky_metacarpal_l_drv' ,
                                     self.pinky_finger_l : ['pinky_01_l_drv' , 'pinky_02_l_drv' , 'pinky_03_l_drv'] ,
                                     self.thumb_metacarpal_finger_l : 'thumb_metacarpal_l_drv' ,
-                                    self.thumb_finger_l : ['thumb_01_l_drv' , 'thumb_02_l_drv' , 'thumb_03_l_drv']
+                                    self.thumb_finger_l : ['thumb_01_l_drv' , 'thumb_02_l_drv' , 'thumb_03_l_drv'],
 
                                     self.clavicle_r : 'clavicle_r_drv' ,
                                     self.upperarm_r : 'upperarm_r_drv' ,
