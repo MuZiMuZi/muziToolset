@@ -28,8 +28,8 @@ class Base_Rig(object) :
 
     def __init__(self) :
         super(Base_Rig , self).__init__()
-        # 定义mateHuman的关节层级
-        self.mateHuman_joint_set()
+        # # 定义mateHuman的关节层级
+        # self.mateHuman_joint_set()
         self.side = None
         if self.side == 'l' :
             self.side_value = 1
