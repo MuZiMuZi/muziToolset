@@ -1,6 +1,7 @@
-import test
-import muziToolset.rigging.mateHumanRigging.matehuman_base_rig
-#
-# base = Base_Rig()
-#
-# base.get_modular_mateHuman_joints('mateHuman_joint_trunk', 'root_drv')
+import muziToolset.rigging.mateHumanRigging.Master_Rig as Master_Rig
+from importlib import reload
+reload(Master_Rig)
+
+base = Master_Rig.Master()
+
+

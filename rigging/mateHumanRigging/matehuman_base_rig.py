@@ -16,8 +16,8 @@ make： 根据给定的bp_joints关节的名称来创建对应的模块组
 """
 
 import maya.cmds as cmds
-# import muziToolset.core.controlUtils as controlUtils
-# import muziToolset.core.nameUtils as nameUtils
+import muziToolset.core.controlUtils as controlUtils
+import muziToolset.core.nameUtils as nameUtils
 import pymel.core as pm
 
 
@@ -28,6 +28,8 @@ class Base_Rig(object) :
 
     def __init__(self) :
         super(Base_Rig , self).__init__()
+        #定义mateHuman的关节层级
+        self.mateHuman_joint_set()
         self.side = None
         if self.side == 'l' :
             self.side_value = 1
@@ -73,12 +75,12 @@ class Base_Rig(object) :
         self.modular_rig_list = [self.arm_rig , self.hand_rig , self.leg_rig , self.foot_rig , self.neck_rig ,
                                  self.spine_rig , self.chest_rig]
 
-        # # 定义绑定模块的bp定位关节
-        # self.arm_bp_joints = self.get_modular_bp_joints(self.arm_rig)
-        # self.leg_bp_joints = self.get_modular_bp_joints(self.leg_rig)
-        # self.neck_bp_joints = self.get_modular_bp_joints(self.neck_rig)
-        # self.spine_bp_joints = self.get_modular_bp_joints(self.spine_rig)
-        # self.foot_bp_joints = self.get_modular_bp_joints(self.foot_rig)
+        # # # 定义绑定模块的bp定位关节
+        # self.arm_bp_joints = self.get_modular_mateHuman_joints(self.arm_rig)
+        # # self.leg_bp_joints = self.get_modular_bp_joints(self.leg_rig)
+        # # self.neck_bp_joints = self.get_modular_bp_joints(self.neck_rig)
+        # # self.spine_bp_joints = self.get_modular_bp_joints(self.spine_rig)
+        # # self.foot_bp_joints = self.get_modular_bp_joints(self.foot_rig)
 
 
 
@@ -87,99 +89,117 @@ class Base_Rig(object) :
         定义matehuman的骨架结构
         '''
 
-        self.mateHuman_joint_trunk = {self.root : 'root_drv' ,
-                                      self.pelvis : 'pelvis_drv' ,
-                                      self.spine : ['spine_01_drv' , 'spine_02_drv' , 'spine_03_drv' , 'spine_04_drv' ,
-                                                    'spine_05_drv'] ,
-                                      self.neck : ['neck_01_drv' , 'neck_02_drv'] ,
-                                      self.head : 'head_drv'}
+        mateHuman_joint_trunk = {'root' : 'root_drv' ,
+                                 'pelvis' : 'pelvis_drv' ,
+                                 'spine' : ['spine_01_drv' , 'spine_02_drv' , 'spine_03_drv' , 'spine_04_drv' ,
+                                            'spine_05_drv'] ,
+                                 ' neck' : ['neck_01_drv' , 'neck_02_drv'] ,
+                                 'head ' : 'head_drv'}
 
-        self.mateHuman_joint_arm = {self.clavicle_l : 'clavicle_l_drv' ,
-                                    self.upperarm_l : 'upperarm_l_drv' ,
-                                    self.lowerarm_l : 'lowerarm_l_drv' ,
+        mateHuman_joint_arm = {'clavicle_l' : 'clavicle_l_drv' ,
+                               'upperarm_l ' : 'upperarm_l_drv' ,
+                               ' lowerarm_l' : 'lowerarm_l_drv' ,
 
-                                    self.hand_l : 'hand_l_drv' ,
-                                    self.index_metacarpal_finger_l : 'index_metacarpal_l_drv' ,
-                                    self.index_finger_l : ['index_01_l_drv' , 'index_02_l_drv' , 'index_03_l_drv'] ,
-                                    self.middle_metacarpal_finger_l : 'middle_metacarpal_l_drv' ,
-                                    self.middle_finger_l : ['middle_01_l_drv' , 'middle_02_l_drv' , 'middle_03_l_drv'] ,
-                                    self.ring_metacarpal_finger_l : 'ring_metacarpal_l_drv' ,
-                                    self.ring_finger_l : ['ring_01_l_drv' , 'ring_02_l_drv' , 'ring_03_l_drv'] ,
-                                    self.pinky_metacarpal_finger_l : 'pinky_metacarpal_l_drv' ,
-                                    self.pinky_finger_l : ['pinky_01_l_drv' , 'pinky_02_l_drv' , 'pinky_03_l_drv'] ,
-                                    self.thumb_metacarpal_finger_l : 'thumb_metacarpal_l_drv' ,
-                                    self.thumb_finger_l : ['thumb_01_l_drv' , 'thumb_02_l_drv' , 'thumb_03_l_drv'],
+                               'hand_l' : 'hand_l_drv' ,
+                               'index_metacarpal_finger_l' : 'index_metacarpal_l_drv' ,
+                               'index_finger_l' : ['index_01_l_drv' , 'index_02_l_drv' , 'index_03_l_drv'] ,
+                               ' middle_metacarpal_finger_l' : 'middle_metacarpal_l_drv' ,
+                               ' middle_finger_l' : ['middle_01_l_drv' , 'middle_02_l_drv' , 'middle_03_l_drv'] ,
+                               'ring_metacarpal_finger_l ' : 'ring_metacarpal_l_drv' ,
+                               'ring_finger_l ' : ['ring_01_l_drv' , 'ring_02_l_drv' , 'ring_03_l_drv'] ,
+                               ' pinky_metacarpal_finger_l' : 'pinky_metacarpal_l_drv' ,
+                               ' pinky_finger_l ' : ['pinky_01_l_drv' , 'pinky_02_l_drv' , 'pinky_03_l_drv'] ,
+                               ' thumb_metacarpal_finger_l' : 'thumb_metacarpal_l_drv' ,
+                               ' thumb_finger_l ' : ['thumb_01_l_drv' , 'thumb_02_l_drv' , 'thumb_03_l_drv'] ,
 
-                                    self.clavicle_r : 'clavicle_r_drv' ,
-                                    self.upperarm_r : 'upperarm_r_drv' ,
-                                    self.lowerarm_r : 'lowerarm_r_drv' ,
+                               ' clavicle_r' : 'clavicle_r_drv' ,
+                               ' upperarm_r ' : 'upperarm_r_drv' ,
+                               ' lowerarm_r ' : 'lowerarm_r_drv' ,
 
-                                    self.hand_r : 'hand_r_drv' ,
-                                    self.index_metacarpal_finger_r : 'index_metacarpal_r_drv' ,
-                                    self.index_finger_r : ['index_01_r_drv' , 'index_02_r_drv' , 'index_03_r_drv'] ,
-                                    self.middle_metacarpal_finger_r : 'middle_metacarpal_r_drv' ,
-                                    self.middle_finger_r : ['middle_01_r_drv' , 'middle_02_r_drv' , 'middle_03_r_drv'] ,
-                                    self.ring_metacarpal_finger_r : 'ring_metacarpal_r_drv' ,
-                                    self.ring_finger_r : ['ring_01_r_drv' , 'ring_02_r_drv' , 'ring_03_r_drv'] ,
-                                    self.pinky_metacarpal_finger_r : 'pinky_metacarpal_r_drv' ,
-                                    self.pinky_finger_r : ['pinky_01_r_drv' , 'pinky_02_r_drv' , 'pinky_03_r_drv'] ,
-                                    self.thumb_metacarpal_finger_r : 'thumb_metacarpal_r_drv' ,
-                                    self.thumb_finger_r : ['thumb_01_r_drv' , 'thumb_02_r_drv' , 'thumb_03_r_drv']
-                                    }
+                               '  hand_r ' : 'hand_r_drv' ,
+                               ' index_metacarpal_finger_r' : 'index_metacarpal_r_drv' ,
+                               '  index_finger_r' : ['index_01_r_drv' , 'index_02_r_drv' , 'index_03_r_drv'] ,
+                               ' middle_metacarpal_finger_r' : 'middle_metacarpal_r_drv' ,
+                               ' middle_finger_r' : ['middle_01_r_drv' , 'middle_02_r_drv' , 'middle_03_r_drv'] ,
+                               ' ring_metacarpal_finger_r ' : 'ring_metacarpal_r_drv' ,
+                               ' ring_finger_r' : ['ring_01_r_drv' , 'ring_02_r_drv' , 'ring_03_r_drv'] ,
+                               ' pinky_metacarpal_finger_r' : 'pinky_metacarpal_r_drv' ,
+                               ' pinky_finger_r ' : ['pinky_01_r_drv' , 'pinky_02_r_drv' , 'pinky_03_r_drv'] ,
+                               'thumb_metacarpal_finger_r' : 'thumb_metacarpal_r_drv' ,
+                               ' thumb_finger_r' : ['thumb_01_r_drv' , 'thumb_02_r_drv' , 'thumb_03_r_drv']
+                               }
 
-        self.mateHuman_joint_leg = {self.thigh_l : 'thigh_l_drv' ,
-                                    self.calf_l : 'calf_l_drv' ,
-                                    self.foot_l : 'foot_l_drv' ,
-                                    self.ball_l : 'ball_l_drv' ,
+        mateHuman_joint_leg = {'thigh_l' : 'thigh_l_drv' ,
+                               'calf_l' : 'calf_l_drv' ,
+                               'foot_l' : 'foot_l_drv' ,
+                               ' ball_l ' : 'ball_l_drv' ,
 
-                                    self.bigtoe_l : ['bigtoe_01_l_drv' , 'bigtoe_02_l_drv'] ,
-                                    self.indextoe_l : ['indextoe_01_l_drv' , 'indextoe_02_l_drv'] ,
-                                    self.middletoe_l : ['middletoe_01_l_drv' , 'middletoe_02_l_drv'] ,
-                                    self.littletoe_l : ['littletoe_01_l_drv' , 'littletoe_02_l_drv'] ,
-                                    self.ringtoe_l : ['ringtoe_01_l_drv' , 'ringtoe_02_l_drv'] ,
+                               'bigtoe_l' : ['bigtoe_01_l_drv' , 'bigtoe_02_l_drv'] ,
+                               'indextoe_l' : ['indextoe_01_l_drv' , 'indextoe_02_l_drv'] ,
+                               'middletoe_l' : ['middletoe_01_l_drv' , 'middletoe_02_l_drv'] ,
+                               'littletoe_l' : ['littletoe_01_l_drv' , 'littletoe_02_l_drv'] ,
+                               'ringtoe_l' : ['ringtoe_01_l_drv' , 'ringtoe_02_l_drv'] ,
 
-                                    self.thigh_r : 'thigh_r_drv' ,
-                                    self.calf_r : 'calf_r_drv' ,
-                                    self.foot_r : 'foot_r_drv' ,
-                                    self.ball_r : 'ball_r_drv' ,
+                               ' thigh_r' : 'thigh_r_drv' ,
+                               'calf_r' : 'calf_r_drv' ,
+                               'foot_r' : 'foot_r_drv' ,
+                               'ball_r ' : 'ball_r_drv' ,
 
-                                    self.bigtoe_r : ['bigtoe_01_r_drv' , 'bigtoe_02_r_drv'] ,
-                                    self.indextoe_r : ['indextoe_01_r_drv' , 'indextoe_02_r_drv'] ,
-                                    self.middletoe_r : ['middletoe_01_r_drv' , 'middletoe_02_r_drv'] ,
-                                    self.littletoe_r : ['littletoe_01_r_drv' , 'littletoe_02_r_drv'] ,
-                                    self.ringtoe_r : ['ringtoe_01_r_drv' , 'ringtoe_02_r_drv']
-                                    }
+                               ' bigtoe_r' : ['bigtoe_01_r_drv' , 'bigtoe_02_r_drv'] ,
+                               'indextoe_r ' : ['indextoe_01_r_drv' , 'indextoe_02_r_drv'] ,
+                               'middletoe_r' : ['middletoe_01_r_drv' , 'middletoe_02_r_drv'] ,
+                               'littletoe_r' : ['littletoe_01_r_drv' , 'littletoe_02_r_drv'] ,
+                               'ringtoe_r ' : ['ringtoe_01_r_drv' , 'ringtoe_02_r_drv']
+                               }
 
-    def get_modular_mateHuman_joints(self , mateHuman_joint_modular , mateHuman_joint) :
+
+
+    def get_modular_mateHuman_joints(self , mateHuman_joint_modular , mateHuman_modular) :
         u'''
-        根据给定的mateHuman关节名称来查找matehuman的骨架结构，查询对应的模块名称
+        根据给定的mateHuman关节名称来查找matehuman的骨架结构，根据给定的对应的模块名称查找对应的关节
         mateHuman_joint_modular:给定的关节集合
-        mateHuman_joint:给定的关节名称
+        mateHuman_modular:给定的对应的模块名称
 
         '''
 
-        modular_name = get(mateHuman_joint_modular[mateHuman_joint])
-        print(modular_name)
-        return modular_name
+        joint_list = mateHuman_joint_modular[''.format(mateHuman_modular)]
+        return joint_list
 
 
 
-    def make(self , bp_joints) :
+    def mateHuman_decompose(self , joint) :
+        u'''
+        拆分mateHuman的关节名称
+        '''
+        name_parts = joint.split('_')
+        if len(name_parts) == 3:
+            self.modular = name_parts[0]
+            if self.modular in ['root','pelvis','spine','neck']:
+                self.side = name_parts[1]
+            else:
+                self.index = name_parts[1]
+        if len(name_parts) == 2:
+            self.modular = name_parts[0]
+
+
+
+
+    def make(self , joint) :
         u"""
         根据给定的bp_joints关节的名称来创建对应的模块组
+        mateHuman_modular:给定的对应的模块名称
         """
-        main_obj = nameUtils.Name(name = bp_joints[0])
-        main_obj.description = main_obj.description + 'RigModule'
-        main_obj.type = 'grp'
-        self.control_grp = cmds.group(name = main_obj.name.replace('RigModule' , 'Ctrl') , em = True ,
+        main_obj = self.mateHuman_decompose(joint)
+        main_obj.name = 'RigModule_'+ joint
+        self.control_grp = cmds.group(name = main_obj.name.replace('RigModule_' , 'Ctrl_') , em = True ,
                                       parent = self.cog_ctrl.replace('ctrl_' , 'output_'))
-        self.jnt_grp = cmds.group(name = main_obj.name.replace('RigModule' , 'Jnt') , em = True ,
+        self.jnt_grp = cmds.group(name = main_obj.name.replace('RigModule_' , 'Jnt_') , em = True ,
                                   parent = self.joint)
-        self.rigNodes_Local_grp = cmds.group(name = main_obj.name.replace('RigModule' , 'RigNodesLocal') , em = True ,
+        self.rigNodes_Local_grp = cmds.group(name = main_obj.name.replace('RigModule_' , 'RigNodesLocal_') , em = True ,
                                              parent = self.rigNode_Local)
-        self.rigNodes_World_grp = cmds.group(name = main_obj.name.replace('RigModule' , 'RigNodesWorld') , em = True ,
+        self.rigNodes_World_grp = cmds.group(name = main_obj.name.replace('RigModule_' , 'RigNodesWorld_') , em = True ,
                                              parent = self.rigNode_World)
-        self.space_grp = cmds.group(name = main_obj.name.replace('RigModule' , 'Space') , em = True ,
+        self.space_grp = cmds.group(name = main_obj.name.replace('RigModule_' , 'Space_') , em = True ,
                                     parent = self.control_grp)
         # 设置组的可见性
         cmds.setAttr(self.space_grp + '.visibility' , 0)
@@ -224,59 +244,3 @@ class Base_Rig(object) :
                              constraint_node + '.{}W{}'.format(loc_node , space_list.index(space_name)))
 
 
-
-    def mirror_bp_joint(self) :
-        u"""
-        镜像关节。
-        关节镜像的规律：
-        首端关节平移X*-1
-        关节方向x，y，z*-1
-
-        中端及末端的关节x*-1
-
-        :param bpjnt_list: 默认摆放定位的关节
-        :return:
-        """
-        import pymel.core as pm
-
-
-
-        # 获取场景内所有需要镜像的绑定模块
-        bpjnt_lists = pm.ls('l_*_rig')
-        # 获取各个绑定模块的关节列表
-        for bpjnt_list in bpjnt_lists :
-            bpjnt_list_jnts = cmds.listRelatives('{}'.format(bpjnt_list) , ad = True , c = True)
-            bpjnt_list_jnts.reverse()
-            # 对关节列表的所有关节的位移和关节方向进行设置
-            for jnt in bpjnt_list_jnts :
-                if pm.objectType(jnt) == 'joint' :
-                    mirror_jnt = jnt.replace('_l_' , '_r_')
-                    cmds.setAttr(mirror_jnt + '.translateX' , cmds.getAttr(jnt + '.translateX') * -1)
-                    for axis in ['X' , 'Y' , 'Z'] :
-                        cmds.setAttr(mirror_jnt + '.jointOrient' + axis , cmds.getAttr(jnt + '.jointOrient' + axis))
-            # 对关节列表的初始关节设置位移和关节方向
-            mirror_start_jnt = bpjnt_list_jnts[0].replace('_l_' , '_r_')
-            if pm.objectType(bpjnt_list_jnts[0]) == 'joint' :
-                cmds.setAttr(mirror_start_jnt + '.jointOrient' + 'X' ,
-                             cmds.getAttr(bpjnt_list_jnts[0] + '.jointOrient' + 'X') - 180)
-                for axis in ['Y' , 'Z'] :
-                    cmds.setAttr(mirror_start_jnt + '.jointOrient' + axis ,
-                                 cmds.getAttr(bpjnt_list_jnts[0] + '.jointOrient' + axis) * -1)
-            # 对关节列表的最后一个关节清空关节定向
-            if pm.objectType(bpjnt_list_jnts[-1]) == 'joint' :
-                for axis in ['X' , 'Y' , 'Z'] :
-                    cmds.setAttr(bpjnt_list_jnts[-1] + '.jointOrient' + axis , 0)
-
-        # 单独设置锁骨关节的关节方向
-        if cmds.objExists('bpjnt_l_clavicle_001') :
-            bp_clavicle_jnt = 'bpjnt_l_clavicle_001'
-            mirror_clavicle_jnt = bp_clavicle_jnt.replace('_l_' , '_r_')
-            cmds.setAttr(mirror_clavicle_jnt + '.jointOrient' + 'X' ,
-                         cmds.getAttr(bp_clavicle_jnt + '.jointOrient' + 'X') - 180)
-        # 单独设置手腕关节的关节方向
-        if cmds.objExists('bpjnt_l_wrist_001') :
-            bp_wrist_jnt = 'bpjnt_l_wrist_001'
-            mirror_wrist_jnt = bp_wrist_jnt.replace('_l_' , '_r_')
-            for axis in ['X' , 'Y' , 'Z'] :
-                cmds.setAttr(bp_wrist_jnt + '.jointOrient' + axis , 0)
-                cmds.setAttr(mirror_wrist_jnt + '.jointOrient' + axis , 0)
