@@ -1,7 +1,7 @@
 # coding=utf-8
 
 u"""
-这是一个用来编写自动绑定系统的基础类，之后的绑定都会在这个类的基础上逐级继承下去
+这是一个用来编写mateHuman自动绑定系统的基础类，之后的绑定都会在这个类的基础上逐级继承下去
 
 目前已有的功能：
 
@@ -21,7 +21,9 @@ import muziToolset.core.nameUtils as nameUtils
 import pymel.core as pm
 
 
+
 class Base_Rig(object) :
+
 
 
     def __init__(self) :
@@ -79,13 +81,87 @@ class Base_Rig(object) :
         # self.foot_bp_joints = self.get_modular_bp_joints(self.foot_rig)
 
 
-    def get_modular_bp_joints(self , modular) :
-        u"""
-        根据给定关节模块的名称来获取对应的模块组关节的名称
-        """
-        modular_bp_joints = cmds.listRelatives(modular , ad = True , c = True)
-        modular_bp_joints.reverse()
-        return modular_bp_joints
+
+    def mateHuman_joint_set(self) :
+        u'''
+        定义matehuman的骨架结构
+        '''
+
+        self.mateHuman_joint_trunk = {self.root : 'root_drv' ,
+                                      self.pelvis : 'pelvis_drv' ,
+                                      self.spine : ['spine_01_drv' , 'spine_02_drv' , 'spine_03_drv' , 'spine_04_drv' ,
+                                                    'spine_05_drv'] ,
+                                      self.neck : ['neck_01_drv' , 'neck_02_drv'] ,
+                                      self.head : 'head_drv'}
+
+        self.mateHuman_joint_arm = {self.clavicle_l : 'clavicle_l_drv' ,
+                                    self.upperarm_l : 'upperarm_l_drv' ,
+                                    self.lowerarm_l : 'lowerarm_l_drv' ,
+
+                                    self.hand_l : 'hand_l_drv' ,
+                                    self.index_metacarpal_finger_l : 'index_metacarpal_l_drv' ,
+                                    self.index_finger_l : ['index_01_l_drv' , 'index_02_l_drv' , 'index_03_l_drv'] ,
+                                    self.middle_metacarpal_finger_l : 'middle_metacarpal_l_drv' ,
+                                    self.middle_finger_l : ['middle_01_l_drv' , 'middle_02_l_drv' , 'middle_03_l_drv'] ,
+                                    self.ring_metacarpal_finger_l : 'ring_metacarpal_l_drv' ,
+                                    self.ring_finger_l : ['ring_01_l_drv' , 'ring_02_l_drv' , 'ring_03_l_drv'] ,
+                                    self.pinky_metacarpal_finger_l : 'pinky_metacarpal_l_drv' ,
+                                    self.pinky_finger_l : ['pinky_01_l_drv' , 'pinky_02_l_drv' , 'pinky_03_l_drv'] ,
+                                    self.thumb_metacarpal_finger_l : 'thumb_metacarpal_l_drv' ,
+                                    self.thumb_finger_l : ['thumb_01_l_drv' , 'thumb_02_l_drv' , 'thumb_03_l_drv']
+
+                                    self.clavicle_r : 'clavicle_r_drv' ,
+                                    self.upperarm_r : 'upperarm_r_drv' ,
+                                    self.lowerarm_r : 'lowerarm_r_drv' ,
+
+                                    self.hand_r : 'hand_r_drv' ,
+                                    self.index_metacarpal_finger_r : 'index_metacarpal_r_drv' ,
+                                    self.index_finger_r : ['index_01_r_drv' , 'index_02_r_drv' , 'index_03_r_drv'] ,
+                                    self.middle_metacarpal_finger_r : 'middle_metacarpal_r_drv' ,
+                                    self.middle_finger_r : ['middle_01_r_drv' , 'middle_02_r_drv' , 'middle_03_r_drv'] ,
+                                    self.ring_metacarpal_finger_r : 'ring_metacarpal_r_drv' ,
+                                    self.ring_finger_r : ['ring_01_r_drv' , 'ring_02_r_drv' , 'ring_03_r_drv'] ,
+                                    self.pinky_metacarpal_finger_r : 'pinky_metacarpal_r_drv' ,
+                                    self.pinky_finger_r : ['pinky_01_r_drv' , 'pinky_02_r_drv' , 'pinky_03_r_drv'] ,
+                                    self.thumb_metacarpal_finger_r : 'thumb_metacarpal_r_drv' ,
+                                    self.thumb_finger_r : ['thumb_01_r_drv' , 'thumb_02_r_drv' , 'thumb_03_r_drv']
+                                    }
+
+        self.mateHuman_joint_leg = {self.thigh_l : 'thigh_l_drv' ,
+                                    self.calf_l : 'calf_l_drv' ,
+                                    self.foot_l : 'foot_l_drv' ,
+                                    self.ball_l : 'ball_l_drv' ,
+
+                                    self.bigtoe_l : ['bigtoe_01_l_drv' , 'bigtoe_02_l_drv'] ,
+                                    self.indextoe_l : ['indextoe_01_l_drv' , 'indextoe_02_l_drv'] ,
+                                    self.middletoe_l : ['middletoe_01_l_drv' , 'middletoe_02_l_drv'] ,
+                                    self.littletoe_l : ['littletoe_01_l_drv' , 'littletoe_02_l_drv'] ,
+                                    self.ringtoe_l : ['ringtoe_01_l_drv' , 'ringtoe_02_l_drv'] ,
+
+                                    self.thigh_r : 'thigh_r_drv' ,
+                                    self.calf_r : 'calf_r_drv' ,
+                                    self.foot_r : 'foot_r_drv' ,
+                                    self.ball_r : 'ball_r_drv' ,
+
+                                    self.bigtoe_r : ['bigtoe_01_r_drv' , 'bigtoe_02_r_drv'] ,
+                                    self.indextoe_r : ['indextoe_01_r_drv' , 'indextoe_02_r_drv'] ,
+                                    self.middletoe_r : ['middletoe_01_r_drv' , 'middletoe_02_r_drv'] ,
+                                    self.littletoe_r : ['littletoe_01_r_drv' , 'littletoe_02_r_drv'] ,
+                                    self.ringtoe_r : ['ringtoe_01_r_drv' , 'ringtoe_02_r_drv']
+                                    }
+
+    def get_modular_mateHuman_joints(self , mateHuman_joint_modular , mateHuman_joint) :
+        u'''
+        根据给定的mateHuman关节名称来查找matehuman的骨架结构，查询对应的模块名称
+        mateHuman_joint_modular:给定的关节集合
+        mateHuman_joint:给定的关节名称
+
+        '''
+
+        modular_name = get(mateHuman_joint_modular[mateHuman_joint])
+        print(modular_name)
+        return modular_name
+
 
 
     def make(self , bp_joints) :
@@ -107,6 +183,7 @@ class Base_Rig(object) :
                                     parent = self.control_grp)
         # 设置组的可见性
         cmds.setAttr(self.space_grp + '.visibility' , 0)
+
 
 
     @staticmethod
@@ -147,6 +224,7 @@ class Base_Rig(object) :
                              constraint_node + '.{}W{}'.format(loc_node , space_list.index(space_name)))
 
 
+
     def mirror_bp_joint(self) :
         u"""
         镜像关节。
@@ -160,6 +238,7 @@ class Base_Rig(object) :
         :return:
         """
         import pymel.core as pm
+
 
 
         # 获取场景内所有需要镜像的绑定模块
