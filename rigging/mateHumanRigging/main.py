@@ -1,7 +1,8 @@
-import muziToolset.rigging.mateHumanRigging.Master_Rig as Master_Rig
+import muziToolset.rigging.mateHumanRigging.matehuman_base_rig as matehuman_base_rig
+import muziToolset.rigging.mateHumanRigging.matehuman_master_rig as matehuman_master_rig
 from importlib import reload
-reload(Master_Rig)
+reload(matehuman_master_rig)
 
-base = Master_Rig.Master()
+base = matehuman_master_rig.Master_Rig()
 
 

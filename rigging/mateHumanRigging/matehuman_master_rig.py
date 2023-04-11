@@ -10,14 +10,14 @@ create_master_grp：创建绑定的初始层级组，并隐藏连接对应的属
 
 """
 
-import base_rig
+import muziToolset.rigging.mateHumanRigging.matehuman_base_rig as matehuman_base_rig
 import maya.cmds as cmds
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils
 import muziToolset.core.nameUtils as nameUtils
 
 
-class Master_Rig(base_rig.Base_Rig) :
+class Master_Rig(matehuman_base_rig.Base_Rig) :
 
 
     def __init__(self) :

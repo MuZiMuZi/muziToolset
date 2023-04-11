@@ -28,7 +28,7 @@ class Base_Rig(object) :
 
     def __init__(self) :
         super(Base_Rig , self).__init__()
-        #定义mateHuman的关节层级
+        # 定义mateHuman的关节层级
         self.mateHuman_joint_set()
         self.side = None
         if self.side == 'l' :
@@ -88,7 +88,6 @@ class Base_Rig(object) :
         u'''
         定义matehuman的骨架结构
         '''
-
         mateHuman_joint_trunk = {'root' : 'root_drv' ,
                                  'pelvis' : 'pelvis_drv' ,
                                  'spine' : ['spine_01_drv' , 'spine_02_drv' , 'spine_03_drv' , 'spine_04_drv' ,
@@ -172,16 +171,12 @@ class Base_Rig(object) :
         拆分mateHuman的关节名称
         '''
         name_parts = joint.split('_')
-        if len(name_parts) == 3:
-            self.modular = name_parts[0]
-            if self.modular in ['root','pelvis','spine','neck']:
-                self.side = name_parts[1]
-            else:
-                self.index = name_parts[1]
-        if len(name_parts) == 2:
-            self.modular = name_parts[0]
-
-
+        self.modular = name_parts[0]
+        # if len(name_parts) == 3 :
+        #     if self.modular in ['root' , 'pelvis' , 'spine' , 'neck'] :
+        #         self.side = name_parts[1]
+        #     else :
+        #         self.index = name_parts[1]
 
 
     def make(self , joint) :
@@ -190,7 +185,7 @@ class Base_Rig(object) :
         mateHuman_modular:给定的对应的模块名称
         """
         main_obj = self.mateHuman_decompose(joint)
-        main_obj.name = 'RigModule_'+ joint
+        main_obj.name = 'RigModule_' + joint
         self.control_grp = cmds.group(name = main_obj.name.replace('RigModule_' , 'Ctrl_') , em = True ,
                                       parent = self.cog_ctrl.replace('ctrl_' , 'output_'))
         self.jnt_grp = cmds.group(name = main_obj.name.replace('RigModule_' , 'Jnt_') , em = True ,
@@ -242,5 +237,3 @@ class Base_Rig(object) :
             constraint_node = object.replace('ctrl_' , 'space_') + '_parentConstraint1'
             cmds.connectAttr(space_cond_node + '.outColorR' ,
                              constraint_node + '.{}W{}'.format(loc_node , space_list.index(space_name)))
-
-

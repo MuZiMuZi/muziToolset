@@ -28,8 +28,8 @@ import maya.cmds as cmds
 import maya.mel as mel
 import re
 
-import hierarchyUtils
-import controlUtils
+from . import hierarchyUtils
+from . import controlUtils
 class Pipeline(object):
     def __init__(self):
         pass

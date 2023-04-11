@@ -24,11 +24,11 @@ from __future__ import print_function
 import json
 import os
 
-import attrUtils
-import hierarchyUtils
+from . import attrUtils
+from . import hierarchyUtils
 import maya.cmds as cmds
 # import pipelineUtils
-import nameUtils
+from . import nameUtils
 import pymel.core as pm
 
 
