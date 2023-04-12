@@ -5,7 +5,7 @@ u"""
 
 目前已有的功能：
 
-get_modular_bp_joints：根据给定关节模块的名称来获取对应的模块组关节的名称
+get_description_bp_joints：根据给定关节模块的名称来获取对应的模块组关节的名称
 
 default_grp：创建绑定的初始层级组，并隐藏连接对应的属性
 
@@ -21,7 +21,21 @@ import muziToolset.core.nameUtils as nameUtils
 import pymel.core as pm
 
 
+
 class Base_Rig(object) :
+
+
+
+    # # 规定一下命名规范
+    # drv关节链: root_drv , spine_01_drv, thigh_r_drv
+
+    # fk关节链:'fkjnt' + drv关节链
+    # fk控制器：'fkctrl_边_模块_编号'
+    #fk次级控制器：'fkctrlSub_边_模块_编号'
+
+    # ik关节链：'ikjnt' + drv关节链
+    # ik控制器：'ikctrl_边_模块_编号'
+    # ik次级控制器：'ikctrlSub_边_模块_编号'
 
 
 
@@ -51,7 +65,7 @@ class Base_Rig(object) :
         self.rigNode_Local = 'rigNode_Local'
         self.rigNode_World = 'rigNode_World'
         self.nCloth = 'nCloth'
-        self.modular_rig = 'modular_rig'
+        self.description_rig = 'description_rig'
 
         self.low_modle_grp = 'grp_m_low_modle_001'
         self.mid_modle_grp = 'grp_m_mid_modle_001'
@@ -60,7 +74,7 @@ class Base_Rig(object) :
         self.rig_ctrl = [self.character_ctrl , self.world_ctrl , self.cog_ctrl , self.custom_ctrl]
         self.rig_hierarchy_grp = [self.group , self.geometry , self.control , self.custom , self.rigNode , self.joint ,
                                   self.rigNode_Local , self.rigNode_World , self.nCloth ,
-                                  self.modular_rig , self.low_modle_grp , self.mid_modle_grp , self.high_modle_grp]
+                                  self.description_rig , self.low_modle_grp , self.mid_modle_grp , self.high_modle_grp]
 
         # 定义绑定模块
 
@@ -71,19 +85,20 @@ class Base_Rig(object) :
         self.neck_rig = 'neck_rig'
         self.spine_rig = 'spine_rig'
         self.chest_rig = 'chest_rig'
-        self.modular_rig_list = [self.arm_rig , self.hand_rig , self.leg_rig , self.foot_rig , self.neck_rig ,
-                                 self.spine_rig , self.chest_rig]
+        self.description_rig_list = [self.arm_rig , self.hand_rig , self.leg_rig , self.foot_rig , self.neck_rig ,
+                                     self.spine_rig , self.chest_rig]
 
         # # # 定义绑定模块的bp定位关节
-        # self.arm_bp_joints = self.get_modular_mateHuman_joints(self.arm_rig)
-        # # self.leg_bp_joints = self.get_modular_bp_joints(self.leg_rig)
-        # # self.neck_bp_joints = self.get_modular_bp_joints(self.neck_rig)
-        # # self.spine_bp_joints = self.get_modular_bp_joints(self.spine_rig)
-        # # self.foot_bp_joints = self.get_modular_bp_joints(self.foot_rig)
+        # self.arm_bp_joints = self.get_description_mateHuman_joints(self.arm_rig)
+        # # self.leg_bp_joints = self.get_description_bp_joints(self.leg_rig)
+        # # self.neck_bp_joints = self.get_description_bp_joints(self.neck_rig)
+        # # self.spine_bp_joints = self.get_description_bp_joints(self.spine_rig)
+        # # self.foot_bp_joints = self.get_description_bp_joints(self.foot_rig)
 
         # 设置matehuman导入maya的轴向
-        cmds.setAttr('root_drv' + '.rotateX',-90)
+        cmds.setAttr('root_drv' + '.rotateX' , -90)
         cmds.setAttr('headRig_grp' + '.rotateX' , -90)
+
 
 
     def mateHuman_joint_set(self) :
@@ -155,36 +170,23 @@ class Base_Rig(object) :
 
 
 
-    def get_modular_mateHuman_joints(self , mateHuman_joint_modular , mateHuman_modular) :
+    def get_description_mateHuman_joints(self , mateHuman_joint_description , mateHuman_description) :
         u'''
         根据给定的mateHuman关节名称来查找matehuman的骨架结构，根据给定的对应的模块名称查找对应的关节
-        mateHuman_joint_modular:给定的关节集合
-        mateHuman_modular:给定的对应的模块名称
+        mateHuman_joint_description:给定的关节集合
+        mateHuman_description:给定的对应的模块名称
 
         '''
 
-        joint_list = mateHuman_joint_modular[''.format(mateHuman_modular)]
+        joint_list = mateHuman_joint_description[''.format(mateHuman_description)]
         return joint_list
 
-
-
-    def mateHuman_decompose(self , joint) :
-        u'''
-        拆分mateHuman的关节名称
-        '''
-        name_parts = joint.split('_')
-        self.modular = name_parts[0]
-        # if len(name_parts) == 3 :
-        #     if self.modular in ['root' , 'pelvis' , 'spine' , 'neck'] :
-        #         self.side = name_parts[1]
-        #     else :
-        #         self.index = name_parts[1]
 
 
     def make(self , joint) :
         u"""
         根据给定的bp_joints关节的名称来创建对应的模块组
-        mateHuman_modular:给定的对应的模块名称
+        mateHuman_description:给定的对应的模块名称
         """
         main_obj = self.mateHuman_decompose(joint)
         main_obj.name = 'RigModule_' + joint
