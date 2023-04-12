@@ -21,7 +21,6 @@ import muziToolset.core.nameUtils as nameUtils
 import pymel.core as pm
 
 
-
 class Base_Rig(object) :
 
 
@@ -82,6 +81,9 @@ class Base_Rig(object) :
         # # self.spine_bp_joints = self.get_modular_bp_joints(self.spine_rig)
         # # self.foot_bp_joints = self.get_modular_bp_joints(self.foot_rig)
 
+        # 设置matehuman导入maya的轴向
+        cmds.setAttr('root_drv' + '.rotateX',-90)
+        cmds.setAttr('headRig_grp' + '.rotateX' , -90)
 
 
     def mateHuman_joint_set(self) :

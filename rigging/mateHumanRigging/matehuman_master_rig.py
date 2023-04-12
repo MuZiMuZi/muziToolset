@@ -16,11 +16,17 @@ import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils
 import muziToolset.core.nameUtils as nameUtils
 
+from importlib import reload
+
+
+reload(matehuman_base_rig)
+reload(controlUtils)
+reload(nameUtils)
 
 class Master_Rig(matehuman_base_rig.Base_Rig) :
 
     def __init__(self) :
-        super().__init__()
+        super(Master_Rig,self).__init__()
         self.rig_top_grp = 'group'
         if not cmds.objExists(self.rig_top_grp) :
             self.create_master_grp()
@@ -61,9 +67,9 @@ class Master_Rig(matehuman_base_rig.Base_Rig) :
         controlUtils.Control.create_ctrl(self.world_ctrl , shape = 'local' , radius = 35 , axis = 'Z-' ,
                                          pos = None ,
                                          parent = self.character_ctrl.replace('ctrl_' , 'output_'))
-
-        controlUtils.Control.create_ctrl(self.cog_ctrl , shape = 'circle' , radius = 20 , axis = 'X+' ,
-                                         pos = None ,
+        #创建重心控制器
+        controlUtils.Control.create_ctrl(self.cog_ctrl , shape = 'circle' , radius = 28 , axis = 'Y-' ,
+                                         pos = 'pelvis_drv' ,
                                          parent = self.world_ctrl.replace('ctrl_' , 'output_'))
         # 创建一个自定义的控制器，用来承载自定义的属性
         controlUtils.Control.create_ctrl(self.custom_ctrl , shape = 'cross' , radius = 3 , axis = 'X+' ,

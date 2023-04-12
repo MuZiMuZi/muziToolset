@@ -142,7 +142,8 @@ class Control(object) :
                 pm.delete(curve)
             self.set_color(color)
             self.set_radius(radius)
-        elif isinstance(shape , (str , unicode)) :
+        elif isinstance(shape , (str , bool)):
+        # elif isinstance(shape , (str , unicode)) :
             data_file = os.path.abspath(__file__ + "/../../res/image/{s}.json".format(s = shape))
             if not os.path.isfile(data_file) :
                 pm.warning(u"找不到这个文件 " + data_file)
