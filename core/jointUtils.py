@@ -182,28 +182,26 @@ class Joint(object) :
 
 
     @staticmethod
-    def create_mateHuman_chain(bp_joints , suffix , joint_parent = None) :
+    def create_mateHuman_chain(drv_jnts , prefix , joint_parent = None) :
         '''创建mateHuman的IK,FK 的关节链
 
-        bp_joints(list): 用于放置模板的关节列表。
-        suffix(str):要添加到关节的后缀.
+        drv_jnts(list): 用于放置模板的关节列表。mateHuman的drv_jnts
+        prefix(str):要添加到关节的前缀.
         joint_parent(str):关节的父层级物体.
 
         :return(list):生成的关节列表.
         '''
         # 创建关节
         joints_chain = []
-        for jnt in bp_joints :
+        for jnt in drv_jnts :
             jnt_new = jnt
-            jnt_new_name = nameUtils.Name(name = jnt_new)
-            jnt_new_name.type = 'jnt'
-            jnt_new_name.description = '{}{}'.format(jnt_new_name.description , suffix)
-            jnt_new = cmds.createNode('joint' , name = jnt_new_name.name)
+            jnt_new_name = prefix + jnt_new
+            jnt_new = cmds.createNode('joint' , name = jnt_new_name)
             cmds.matchTransform(jnt_new , jnt , position = True , rotation = True)
             cmds.makeIdentity(jnt_new , apply = True , translate = True , rotate = True , scale = True)
             if joint_parent :
                 cmds.parent(jnt_new , joint_parent)
             joint_parent = jnt_new
             joints_chain.append(jnt_new)
-        cmds.setAttr(bp_joints[0] + '.visibility' , 0)
+        cmds.setAttr(joints_chain[0] + '.visibility' , 0)
         return joints_chain

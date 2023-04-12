@@ -145,6 +145,7 @@ class Name(object):
         else:
             self.side = 'm'
             self.index = '1'
+        return self._name
 
     def flip(self):
         if self._side == 'l':
