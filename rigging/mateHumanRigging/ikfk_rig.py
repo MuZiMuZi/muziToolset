@@ -2,6 +2,7 @@
 from importlib import reload
 
 from . import matehuman_base_rig
+
 import maya.cmds as cmds
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils
@@ -15,7 +16,6 @@ import muziToolset.core.snapUtils as snapUtils
 reload(controlUtils)
 reload(pipelineUtils)
 reload(jointUtils)
-
 
 
 
@@ -70,14 +70,14 @@ class FK_Rig(matehuman_base_rig.Base_Rig) :
                                                                  parent = None)
             zero = fk_ctrl.replace('ctrl' , 'zero')
             output = fk_ctrl.replace('ctrl' , 'output')
-            cmds.parentConstraint(output , fk_jnt , maintainOffset = True)
-            cmds.scaleConstraint(output , fk_jnt , maintainOffset = True)
+            cmds.parentConstraint(output , 'fkjnt_' + jnt , maintainOffset = True)
+            cmds.scaleConstraint(output , 'fkjnt_' + jnt , maintainOffset = True)
             if parent :
                 cmds.parent(zero , parent)
             parent = output
         # 创建fk控制器的总组，整理fk控制器的层级结构
-        fk_ctrl_grp = cmds.createNode('transform' , name = 'fkgrp' + fk_chain[0])
-        fk_chain_zero = 'fkzero' + fk_chain[0]
+        fk_ctrl_grp = cmds.createNode('transform' , name = 'fkgrp_' + self.drv_jnts[0])
+        fk_chain_zero = 'fkzero_' + self.drv_jnts[0]
         cmds.parent(fk_chain_zero , fk_ctrl_grp)
         if self.control_parent :
             hierarchyUtils.Hierarchy.parent(child_node = fk_ctrl_grp , parent_node = self.control_parent)

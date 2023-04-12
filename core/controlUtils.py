@@ -27,6 +27,7 @@ import os
 import maya.cmds as cmds
 import pymel.core as pm
 
+from . import matehumanUtils
 from . import attrUtils
 from . import hierarchyUtils
 from . import pipelineUtils
@@ -34,6 +35,7 @@ from . import nameUtils
 
 
 reload(nameUtils)
+reload(matehumanUtils)
 
 class Control(object) :
     u"""
@@ -543,11 +545,8 @@ class Control(object) :
             str: 控制器的名称
 
         """
-        print(10)
-        name_obj = nameUtils.Name(name = jnt_name)
-        print(15)
-        name_obj.mateHuman_decompose()
-        print(20)
+
+        name_obj = matehumanUtils.MateHuman(name = jnt_name)
         # 获得控制器边的参数
         if name_obj.side == 'l' :
             ctrl_color = 6
@@ -558,14 +557,14 @@ class Control(object) :
         elif name_obj.side == 'm' :
             ctrl_color = 17
             sub_color = 22
-
-        if cmds.objExists(name_obj.name) :
-            raise ValueError(u'{} 在场景中已存在'.format(name_obj.name))
+        ctrl_name = type + '_' + name_obj.name
+        if cmds.objExists(ctrl_name) :
+            raise ValueError(u'{} 在场景中已存在'.format(ctrl_name))
         else :
-            ctrl = Control(n = type + '_' + name_obj.name , s = shape , r = radius)
+            ctrl = Control(n = ctrl_name , s = shape , r = radius)
             ctrl_transform = '{}'.format(ctrl.transform)
             # 制作次级控制器
-            sub_ctrl_name = type + 'Sub' + name_obj.name
+            sub_ctrl_name = type + 'sub_' + name_obj.name
             sub_ctrl = Control(n = sub_ctrl_name , s = shape , r = radius * 0.7)
             sub_ctrl.set_parent(ctrl.transform)
             # 设置控制器形状方向
@@ -593,7 +592,7 @@ class Control(object) :
             sub_ctrl.set(c = sub_color)
             # 添加上层层级组
             offset_grp = hierarchyUtils.Hierarchy.add_extra_group(
-                    obj = ctrl_transform , grp_name = '{}'.format(name.replace('ctrl' , 'offset')) ,
+                    obj = ctrl_transform , grp_name = '{}'.format(ctrl_name.replace('ctrl' , 'offset')) ,
                     world_orient = False)
             connect_grp = hierarchyUtils.Hierarchy.add_extra_group(
                     obj = offset_grp , grp_name = offset_grp.replace('offset' , 'connect') , world_orient = False)
@@ -605,7 +604,7 @@ class Control(object) :
                     obj = driven_grp , grp_name = driven_grp.replace('driven' , 'zero') , world_orient = False)
 
             # 创建output层级组
-            output = cmds.createNode('transform' , name = name.replace('Ctrl' , 'Output') , parent = ctrl_transform)
+            output = cmds.createNode('transform' , name = ctrl_name.replace('ctrl' , 'output') , parent = ctrl_transform)
 
             # 连接次级控制器的属性
             cmds.connectAttr(sub_ctrl.transform + '.translate' , output + '.translate')
