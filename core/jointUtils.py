@@ -13,13 +13,11 @@ u"""
 """
 
 import maya.cmds as cmds
-import muziToolset.core.nameUtils as nameUtils
+from . import nameUtils
 
-import controlUtils
+from .import controlUtils
 
 
-
-reload(controlUtils)
 
 
 
@@ -205,3 +203,7 @@ class Joint(object) :
             joints_chain.append(jnt_new)
         cmds.setAttr(joints_chain[0] + '.visibility' , 0)
         return joints_chain
+
+
+
+

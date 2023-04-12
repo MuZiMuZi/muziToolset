@@ -140,11 +140,11 @@ class Name(object):
             #当关节为clavicle_l_drv类型的关节
             else :
                 self.side = name_parts[1]
-                self.index = '1'
+                self.index = 1
         #剩余的情况为关节为root，pelvis，head的drv关节
         else:
             self.side = 'm'
-            self.index = '1'
+            self.index = 1
         return self._name
 
     def flip(self):

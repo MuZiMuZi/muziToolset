@@ -1,10 +1,14 @@
-# import matehuman_base_rig
-# import matehuman_master_rig
+import muziToolset.rigging.mateHumanRigging.ikfk_rig as ikfk_rig
 from importlib import reload
 
 
 
-reload(matehuman_master_rig)
-reload(matehuman_base_rig)
+reload(ikfk_rig)
+drv_jnts = ['upperarm_l_drv' , 'lowerarm_l_drv' , 'hand_l_drv']
+joint_parent = None
+control_parent = None
 
-base = matehuman_master_rig.Master_Rig()
+master = ikfk_rig.FK_Rig(drv_jnts , joint_parent , control_parent)
+
+master.create_fk_chain()
+master.fk_chain_rig()

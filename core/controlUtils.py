@@ -20,18 +20,20 @@ create_ctrl: 创建绑定用的控制器层级组
 
 """
 from __future__ import print_function
-
+from importlib import reload
 import json
 import os
 
-from . import attrUtils
-from . import hierarchyUtils
 import maya.cmds as cmds
-# import pipelineUtils
-from . import nameUtils
 import pymel.core as pm
 
+from . import attrUtils
+from . import hierarchyUtils
+from . import pipelineUtils
+from . import nameUtils
 
+
+reload(nameUtils)
 
 class Control(object) :
     u"""
@@ -541,8 +543,11 @@ class Control(object) :
             str: 控制器的名称
 
         """
-
-        name_obj = nameUtils.Name.mateHuman_decompose(jnt_name)
+        print(10)
+        name_obj = nameUtils.Name(name = jnt_name)
+        print(15)
+        name_obj.mateHuman_decompose()
+        print(20)
         # 获得控制器边的参数
         if name_obj.side == 'l' :
             ctrl_color = 6

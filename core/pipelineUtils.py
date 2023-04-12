@@ -493,3 +493,19 @@ class Pipeline(object):
                 myDrv(SDK2, -20, 40, ctrl[-1])
 
 
+
+    @staticmethod
+    def create_node(node_type, node_name, match = False,match_node = None) :
+        u'''
+        根据给定的节点类型，在给定的位置生成新的节点。
+        node_type；创建的新的节点类型
+        node_name:创建的新的节点名称
+        match:是否吸附对应的位置
+        match_node:吸附对应的位置
+        '''
+        new_node = cmds.createNode(node_type , name = node_name)
+        if match:
+            cmds.matchTransform(new_node , match_node , position = True , rotation = True , scale = True)
+
+        return new_node
+
