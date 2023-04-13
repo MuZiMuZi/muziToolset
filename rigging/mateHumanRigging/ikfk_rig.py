@@ -124,6 +124,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
                                                                   radius = 13 ,
                                                                   axis = 'Y+' ,
                                                                   pos = self.drv_jnts[0] , parent = None)
+
         startIK_ctrl_output = startIK_ctrl.replace('ctrl' , 'output')
         startIK_zero = startIK_ctrl.replace('ctrl' , 'zero')
         cmds.pointConstraint(startIK_ctrl_output , startIK_jnt , maintainOffset = True)
@@ -168,13 +169,10 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
         #创建pv控制器的loc来记录位置
         midIK_pv_loc = cmds.spaceLocator( name = midIK_jnt.replace('jnt' , 'locPv'))[0]
         cmds.matchTransform(midIK_pv_loc , midIK_pv_zero , position = True , rotation = True , scale = True)
-        print(midIK_pv_loc)
-        print(10)
-        print(midIK_pv_ctrl)
         cmds.parent(midIK_pv_loc , midIK_pv_ctrl)
         cmds.setAttr(midIK_pv_loc + '.visibility' , 0)
         # 创建pvjnt的loc来记录位置
-        midIK_pv_loc = cmds.spaceLocator( name = midIK_jnt.replace('jnt' , 'locJnt'))[0]
+        midIK_jnt_loc = cmds.spaceLocator( name = midIK_pv_loc.replace('locPv' , 'locJnt'))[0]
         cmds.matchTransform(midIK_jnt_loc , midIK_jnt , position = True , rotation = True , scale = True)
         cmds.parent(midIK_jnt_loc , midIK_jnt)
         cmds.setAttr(midIK_jnt_loc + '.visibility' , 0)
@@ -209,9 +207,11 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
             hierarchyUtils.Hierarchy.parent(child_node = ik_ctrl_grp , parent_node = self.control_parent)
 
         # 添加空间切换
-        if space_list :
+        if self.space_list :
             for ctrl in [midIK_pv_ctrl , endIK_ctrl] :
                 self.add_spaceSwitch(ctrl , space_list)
+        else:
+            pass
 
         # 添加IK链的拉伸功能
         # 创建起始端关节控制器的定位loctor
@@ -335,6 +335,8 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
             # 把混合后的关节长度连接给原关节
             cmds.connectAttr(pvLock_blend_node + '.outputR' , midIK_jnt + '.translateX')
             cmds.connectAttr(pvLock_blend_node + '.outputG' , endIK_jnt + '.translateX')
+        else:
+            pass
 
 
 
@@ -351,8 +353,8 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
         """
 
         # 根据ik_chain的关节数量生成曲线
-        ik_chain_crv = cmds.curve(degree = 3 , name = ik_chain[0].replace('ikjnt' , 'crv') ,
-                                  p = [(0 , 0 , 0) * len(ik_chain)])
+        ik_chain_crv = cmds.curve(degree = 3 , name = self.ik_chain[0].replace('ikjnt' , 'crv') ,
+                                  p = [(0 , 0 , 0) , (0 , 0 , 0), (0 , 0 , 0), (0 , 0 , 0), (0 , 0 , 0)])
 
         # 获取节点的曲线形状
         curve_shape = cmds.listRelatives(ik_chain_crv , shapes = True)[0]
@@ -366,7 +368,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 
         # 将曲线点吸附到关节上
         for i in range(cv_num) :
-            jnt = ik_chain[i]
+            jnt = self.ik_chain[i]
             # 获取jnt位置
             jnt_pos = cmds.xform(jnt , query = True , translation = True ,
                                  worldSpace = True)
@@ -377,11 +379,11 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
         cmds.setAttr(ik_chain_crv + '.visibility' , 0)
 
         # 创建开始的IK控制器
-        startIK_jnt = ik_chain[0]
-        startIK_crv_jnt = pipelineUtils.create_node('joint' , startIK_jnt.replace('jnt' , 'crvjnt') , match = True ,
+        startIK_jnt = self.ik_chain[0]
+        startIK_crv_jnt = pipelineUtils.Pipeline.create_node('joint' , startIK_jnt.replace('jnt' , 'crvjnt') , match = True ,
                                                     match_node = startIK_jnt)
         startIK_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.drv_jnts[0] , 'ikctrl' , shape = 'Cube' ,
-                                                                  radius = 20 , axis = 'Y+' ,
+                                                                  radius = 25 , axis = 'Y+' ,
                                                                   pos = startIK_jnt , parent = None)
         startIK_ctrl_output = startIK_ctrl.replace('ctrl' , 'output')
         startIK_zero = startIK_ctrl.replace('ctrl' , 'zero')
@@ -389,11 +391,11 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
         cmds.setAttr(startIK_crv_jnt + '.visibility' , 0)
 
         # 创建尾端的ik控制器
-        endIK_jnt = ik_chain[-1]
-        endIK_crv_jnt = pipelineUtils.create_node('joint' , endIK_jnt.replace('jnt' , 'crvjnt') , match = True ,
+        endIK_jnt = self.ik_chain[-1]
+        endIK_crv_jnt = pipelineUtils.Pipeline.create_node('joint' , endIK_jnt.replace('jnt' , 'crvjnt') , match = True ,
                                                   match_node = endIK_jnt)
         endIK_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.drv_jnts[-1] , 'ikctrl' , shape = 'Cube' ,
-                                                                radius = 20 ,
+                                                                radius = 25 ,
                                                                 axis = 'Y+' ,
                                                                 pos = endIK_jnt , parent = None)
         endIK_ctrl_output = endIK_ctrl.replace('ctrl' , 'output')
@@ -403,12 +405,12 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 
         #
         # 创建中间的ik控制器
-        midIK_jnt = ik_chain[2]
-        midIK_crv_jnt = pipelineUtils.create_node('joint' , midIK_jnt.replace('jnt' , 'crvjnt') , match = True ,
+        midIK_jnt = self.ik_chain[2]
+        midIK_crv_jnt = pipelineUtils.Pipeline.create_node('joint' , midIK_jnt.replace('jnt' , 'crvjnt') , match = True ,
                                                   match_node = midIK_jnt)
 
         midIK_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.drv_jnts[2] , 'ikctrl' ,
-                                                                shape = 'Cube' , radius = 15 , axis = 'Y+' ,
+                                                                shape = 'Cube' , radius = 20 , axis = 'Y+' ,
                                                                 pos = midIK_jnt , parent = None)
         midIK_ctrl_output = midIK_ctrl.replace('ctrl' , 'output')
         cmds.parent(midIK_crv_jnt , midIK_ctrl_output)
@@ -420,7 +422,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 
         # 曲线对ik关节做ik样条线手柄
         spine_ikhandle_node = \
-            cmds.ikHandle(curve = ik_chain_crv , startJoint = ik_chain[0] , endEffector = ik_chain[4] ,
+            cmds.ikHandle(curve = ik_chain_crv , startJoint = self.ik_chain[0] , endEffector = self.ik_chain[4] ,
                           solver = 'ikSplineSolver' , createCurve = 0 ,
                           name = startIK_jnt.replace('jnt' , 'ikhandle'))[0]
         # 创建loc来制作ikhandle的横向旋转
@@ -440,7 +442,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
         cmds.setAttr(spine_ikhandle_node + '.visibility' , 0)
 
         # 整理层级结构
-        ik_ctrl_grp = cmds.createNode('transform' , name = ik_chain[0].replace('jnt' , 'grp'))
+        ik_ctrl_grp = cmds.createNode('transform' , name = self.ik_chain[0].replace('jnt' , 'grp'))
         cmds.parent(startIK_zero , midIK_zero , endIK_zero , ik_ctrl_grp)
         if self.control_parent :
             hierarchyUtils.Hierarchy.parent(child_node = ik_ctrl_grp , parent_node = self.control_parent)
@@ -471,7 +473,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
                          niceName = u'拉伸' , minValue = 0 , maxValue = 1 , defaultValue = 0 , keyable = 1)
 
             # 根据对应的关节创建对应的相加节点，将变换后的数值连接到对应的关节上
-            for jnt in ik_chain[1 :-1] :
+            for jnt in self.ik_chain[1 :-1] :
                 add_node = cmds.createNode('addDoubleLinear' , name = jnt.replace('jnt' , 'add'))
             cmds.connectAttr(mult_curveInfo_node + '.output' , add_node + '.input1')
             cmds.setAttr(add_node + '.input2' , cmds.getAttr(jnt + '.translateX'))

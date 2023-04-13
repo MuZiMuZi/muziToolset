@@ -641,7 +641,7 @@ class Control(object) :
             else :
                 cmds.sets('{}'.format(ctrl.transform) , edit = True , forceElement = animation_ctrls_set)
 
-        return ctrl.transform
+        return ctrl_name
 
     @staticmethod
     def get_arg(args) :
