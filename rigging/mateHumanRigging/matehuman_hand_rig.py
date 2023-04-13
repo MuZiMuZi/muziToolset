@@ -22,13 +22,14 @@ import muziToolset.core.hierarchyUtils as hierarchyUtils
 import muziToolset.core.jointUtils as jointUtils
 import muziToolset.core.nameUtils as nameUtils
 import muziToolset.core.pipelineUtils as pipelineUtils
+import muziToolset.core.matehumanUtils as matehumanUtils
 
 
 
 reload(pipelineUtils)
 reload(jointUtils)
 reload(hierarchyUtils)
-
+reload(matehumanUtils)
 
 
 class Hand_Rig(matehuman_base_rig.Base_Rig) :
@@ -51,10 +52,10 @@ class Hand_Rig(matehuman_base_rig.Base_Rig) :
         创建手指的FK绑定控制系统
         """
         #创建控制器的层级组
-        hand_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('hand_{}'.format(side))
-        hand_ctrl_grp = pipelineUtils.Pipeline.create_node('transform' , 'ctrlgrp_' + hand_drv,
-                                                             match = True ,
-                                                             match_node = hand_drv)
+        hand_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('hand_{}'.format(self.side))
+        hand_ctrl_grp = cmds.createNode('transform' , name = 'ctrlgrp_' + hand_drv )
+        print(hand_ctrl_grp)
+        cmds.matchTransform(hand_ctrl_grp , hand_drv , position = True , rotation = True , scale = True)
 
         # 获取手指各模块的drv关节
         self.thumbHand_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('thumb_finger_{}'.format(self.side))
@@ -64,8 +65,11 @@ class Hand_Rig(matehuman_base_rig.Base_Rig) :
         self.pinkyHand_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('pinky_finger_{}'.format(self.side))
 
         # 创建手指各模块的FK关节链
+        print(self.thumbHand_drv)
         thumbHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.thumbHand_drv, self.joint_parent, hand_ctrl_grp)
-        thumbHand_fk_system.create_fk_chain()
+        print(1)
+        fk_chain = thumbHand_fk_system.create_fk_chain()
+        fk_chain_rig =thumbHand_fk_system.fk_chain_rig()
 
         indexHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.indexHand_drv , self.joint_parent , hand_ctrl_grp)
         indexHand_fk_system.create_fk_chain()

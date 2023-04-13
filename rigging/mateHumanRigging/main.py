@@ -1,15 +1,15 @@
-import muziToolset.rigging.mateHumanRigging.ikfk_rig as ikfk_rig
+import muziToolset.rigging.mateHumanRigging.matehuman_ikfk_rig as matehuman_ikfk_rig
+import muziToolset.rigging.mateHumanRigging.matehuman_hand_rig as matehuman_hand_rig
 from importlib import reload
 
 
 
-reload(ikfk_rig)
-drv_jnts = ['spine_01_drv' , 'spine_02_drv' , 'spine_03_drv','spine_04_drv','spine_05_drv']
+reload(matehuman_hand_rig)
 joint_parent = None
 control_parent = None
 space_list = None
+side = 'l'
 
-master = ikfk_rig.IK_Rig(drv_jnts , joint_parent , control_parent, space_list)
+master = matehuman_hand_rig.Hand_Rig(joint_parent , control_parent , side)
 
-master.create_ik_chain()
-master.ik_spine_rig(stretch = True)
+master.create_hand_rig()
