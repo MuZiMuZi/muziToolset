@@ -28,14 +28,10 @@ class MateHuman() :
                                     ' lowerarm_l' : 'lowerarm_l_drv' ,
 
                                     'hand_l' : 'hand_l_drv' ,
-                                    'index_metacarpal_finger_l' : 'index_metacarpal_l_drv' ,
-                                    'index_finger_l' : ['index_01_l_drv' , 'index_02_l_drv' , 'index_03_l_drv'] ,
-                                    ' middle_metacarpal_finger_l' : 'middle_metacarpal_l_drv' ,
-                                    ' middle_finger_l' : ['middle_01_l_drv' , 'middle_02_l_drv' , 'middle_03_l_drv'] ,
-                                    'ring_metacarpal_finger_l ' : 'ring_metacarpal_l_drv' ,
-                                    'ring_finger_l ' : ['ring_01_l_drv' , 'ring_02_l_drv' , 'ring_03_l_drv'] ,
-                                    ' pinky_metacarpal_finger_l' : 'pinky_metacarpal_l_drv' ,
-                                    ' pinky_finger_l ' : ['pinky_01_l_drv' , 'pinky_02_l_drv' , 'pinky_03_l_drv'] ,
+                                    'index_finger_l' : ['index_metacarpal_l_drv','index_01_l_drv' , 'index_02_l_drv' , 'index_03_l_drv'] ,
+                                    ' middle_finger_l' : ['middle_metacarpal_l_drv','middle_01_l_drv' , 'middle_02_l_drv' , 'middle_03_l_drv'] ,
+                                    'ring_finger_l ' : ['ring_metacarpal_l_drv' ,'ring_01_l_drv' , 'ring_02_l_drv' , 'ring_03_l_drv'] ,
+                                    ' pinky_finger_l ' : ['pinky_metacarpal_l_drv' ,'pinky_01_l_drv' , 'pinky_02_l_drv' , 'pinky_03_l_drv'] ,
                                     ' thumb_finger_l ' : ['thumb_01_l_drv' , 'thumb_02_l_drv' , 'thumb_03_l_drv'] ,
 
                                     ' clavicle_r' : 'clavicle_r_drv' ,
@@ -43,16 +39,15 @@ class MateHuman() :
                                     ' lowerarm_r ' : 'lowerarm_r_drv' ,
 
                                     '  hand_r ' : 'hand_r_drv' ,
-                                    ' index_metacarpal_finger_r' : 'index_metacarpal_r_drv' ,
-                                    '  index_finger_r' : ['index_01_r_drv' , 'index_02_r_drv' , 'index_03_r_drv'] ,
-                                    ' middle_metacarpal_finger_r' : 'middle_metacarpal_r_drv' ,
-                                    ' middle_finger_r' : ['middle_01_r_drv' , 'middle_02_r_drv' , 'middle_03_r_drv'] ,
-                                    ' ring_metacarpal_finger_r ' : 'ring_metacarpal_r_drv' ,
-                                    ' ring_finger_r' : ['ring_01_r_drv' , 'ring_02_r_drv' , 'ring_03_r_drv'] ,
-                                    ' pinky_metacarpal_finger_r' : 'pinky_metacarpal_r_drv' ,
-                                    ' pinky_finger_r ' : ['pinky_01_r_drv' , 'pinky_02_r_drv' , 'pinky_03_r_drv'] ,
-                                    'thumb_metacarpal_finger_r' : 'thumb_metacarpal_r_drv' ,
-                                    ' thumb_finger_r' : ['thumb_01_r_drv' , 'thumb_02_r_drv' , 'thumb_03_r_drv']
+                                    'index_finger_r' : ['index_metacarpal_r_drv' , 'index_01_r_drv' , 'index_02_r_drv' ,
+                                                        'index_03_r_drv'] ,
+                                    ' middle_finger_r' : ['middle_metacarpal_r_drv' , 'middle_01_r_drv' ,
+                                                          'middle_02_r_drv' , 'middle_03_r_drv'] ,
+                                    'ring_finger_r ' : ['ring_metacarpal_r_drv' , 'ring_01_r_drv' , 'ring_02_r_drv' ,
+                                                        'ring_03_r_drv'] ,
+                                    ' pinky_finger_r ' : ['pinky_metacarpal_r_drv' , 'pinky_01_r_drv' ,
+                                                          'pinky_02_r_drv' , 'pinky_03_r_drv'] ,
+                                    ' thumb_finger_r ' : ['thumb_01_r_drv' , 'thumb_02_r_drv' , 'thumb_03_r_drv']
                                     }
 
         mateHuman_joint_leg_dict = {'thigh_l' : 'thigh_l_drv' ,
