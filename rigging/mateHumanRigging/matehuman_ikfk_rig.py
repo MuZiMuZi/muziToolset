@@ -65,7 +65,7 @@ class FK_Rig(matehuman_base_rig.Base_Rig) :
         # 创建控制器
         parent = None
         for jnt in self.drv_jnts :
-            fk_ctrl = controlUtils.Control.create_mateHuman_ctrl(jnt , 'fkctrl' , shape = 'circle' , radius = 8 ,
+            fk_ctrl = controlUtils.Control.create_mateHuman_ctrl(jnt , 'fkctrl' , shape = 'circle' , radius = 20 ,
                                                                  axis = 'Y+' ,
                                                                  pos = jnt ,
                                                                  parent = None)
@@ -89,12 +89,13 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 
 
 
-    def __init__(self , drv_jnts , joint_parent , control_parent , space_list) :
+    def __init__(self , drv_jnts , joint_parent , control_parent , space_list , stretch = True) :
         super(IK_Rig , self).__init__()
         self.drv_jnts = drv_jnts
         self.joint_parent = joint_parent
         self.control_parent = control_parent
         self.space_list = space_list
+        self.stretch = stretch
 
 
 
@@ -106,7 +107,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 
 
 
-    def ik_chain_rig(self , stretch = True) :
+    def ik_chain_rig(self) :
         u"""
         创建IK链的控制器绑定
         Args:
@@ -154,7 +155,6 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
         midIK_pv_zero = midIK_pv_ctrl.replace('ctrl' , 'zero')
         cmds.matchTransform(midIK_pv_zero , midIK_jnt , position = True , rotation = True , scale = True)
 
-
         # 获取midIK_jnt的边
         midIK_jnt_mate = matehumanUtils.MateHuman(self.drv_jnts[1])
         if midIK_jnt_mate.side == 'r' :
@@ -166,13 +166,13 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
                   worldSpaceDistance = True)
 
         # 创建ik极向量控制器的曲线指示器
-        #创建pv控制器的loc来记录位置
-        midIK_pv_loc = cmds.spaceLocator( name = midIK_jnt.replace('jnt' , 'locPv'))[0]
+        # 创建pv控制器的loc来记录位置
+        midIK_pv_loc = cmds.spaceLocator(name = midIK_jnt.replace('jnt' , 'locPv'))[0]
         cmds.matchTransform(midIK_pv_loc , midIK_pv_zero , position = True , rotation = True , scale = True)
         cmds.parent(midIK_pv_loc , midIK_pv_ctrl)
         cmds.setAttr(midIK_pv_loc + '.visibility' , 0)
         # 创建pvjnt的loc来记录位置
-        midIK_jnt_loc = cmds.spaceLocator( name = midIK_pv_loc.replace('locPv' , 'locJnt'))[0]
+        midIK_jnt_loc = cmds.spaceLocator(name = midIK_pv_loc.replace('locPv' , 'locJnt'))[0]
         cmds.matchTransform(midIK_jnt_loc , midIK_jnt , position = True , rotation = True , scale = True)
         cmds.parent(midIK_jnt_loc , midIK_jnt)
         cmds.setAttr(midIK_jnt_loc + '.visibility' , 0)
@@ -210,12 +210,12 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
         if self.space_list :
             for ctrl in [midIK_pv_ctrl , endIK_ctrl] :
                 self.add_spaceSwitch(ctrl , space_list)
-        else:
+        else :
             pass
 
         # 添加IK链的拉伸功能
         # 创建起始端关节控制器的定位loctor
-        if stretch :
+        if self.stretch :
             startIK_pos_loc = cmds.spaceLocator(name = startIK_ctrl.replace('ctrl' , 'loc'))[0]
             startIK_pos_loc_shape = cmds.listRelatives(startIK_pos_loc , shapes = True)[0]
             cmds.matchTransform(startIK_pos_loc , startIK_ctrl)
@@ -227,7 +227,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
             cmds.matchTransform(endIK_pos_loc , endIK_ctrl)
             hierarchyUtils.Hierarchy.parent(child_node = endIK_pos_loc , parent_node = endIK_ctrl)
 
-            # 创建计算距离的distween节点，来计算首端关节到末端控制器的距离
+            # 创建计算距离的distween节点，来计算首端关节到中端控制器的距离
             disBtw_node = cmds.createNode('distanceBetween' , name = endIK_pos_loc.replace('loc' , 'disBtw'))
             cmds.connectAttr(startIK_pos_loc_shape + '.worldPosition' , disBtw_node + '.point1')
             cmds.connectAttr(endIK_pos_loc_shape + '.worldPosition' , disBtw_node + '.point2')
@@ -235,7 +235,8 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
             # 计算原本关节的距离值
             midIK_jnt_value = cmds.getAttr(midIK_jnt + '.translateX')
             endIK_jnt_value = cmds.getAttr(endIK_jnt + '.translateX')
-            distance_value = (midIK_jnt_value + endIK_jnt_value) * side_value
+            distance_value = midIK_jnt_value * side_value + endIK_jnt_value * side_value
+            print(distance_value)
 
             # 将现有的关节距离减去原本关节的距离得到拉伸的距离
             reduce_node = cmds.createNode('addDoubleLinear' , name = startIK_jnt.replace('jnt' , 'reduce'))
@@ -245,7 +246,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
             # 将变化的数值除以二，均匀分配给对应的拉伸关节
             mult_node = cmds.createNode('multDoubleLinear' , name = startIK_jnt.replace('jnt' , 'mult'))
             cmds.connectAttr(reduce_node + '.output' , mult_node + '.input1')
-            cmds.setAttr(mult_node + '.input2' , 0.5)
+            cmds.setAttr(mult_node + '.input2' , 0.5 * side_value)
 
             # 将变化的数值连接给对应的拉伸关节
             add_midIK_jnt_node = cmds.createNode('addDoubleLinear' , name = midIK_jnt.replace('jnt' , 'add'))
@@ -260,7 +261,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
             # 创建一个判断节点，当变化的数值大于0时才进行拉伸
             cond_node = cmds.createNode('condition' , name = startIK_jnt.replace('jnt' , 'cond'))
             cmds.setAttr(cond_node + '.operation' , 2)
-            cmds.connectAttr(mult_node + '.output' , cond_node + '.firstTerm')
+            cmds.connectAttr(reduce_node + '.output' , cond_node + '.firstTerm')
             cmds.connectAttr(add_midIK_jnt_node + '.output' , cond_node + '.colorIfTrueR')
             cmds.connectAttr(add_endIK_jnt_node + '.output' , cond_node + '.colorIfTrueG')
 
@@ -308,19 +309,30 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
             cmds.connectAttr(startIK_pos_loc_shape + '.worldPosition' , upper_disBtw_node + '.point1')
             cmds.connectAttr(midIK_pv_loc_shape + '.worldPosition' , upper_disBtw_node + '.point2')
 
+            # 创建一个相乘节点来连接
+            mult_upper_disBtw_node = cmds.createNode('multDoubleLinear' ,
+                                                     name = upper_disBtw_node.replace('disBtw_lower' , 'mult'))
+            cmds.connectAttr(upper_disBtw_node + '.distance' , mult_upper_disBtw_node + '.input1')
+            cmds.setAttr(mult_upper_disBtw_node + '.input2' , side_value)
+
             # 计算末端控制器到极向量控制器的距离
             lower_disBtw_node = cmds.createNode('distanceBetween' ,
                                                 name = startIK_pos_loc.replace('loc' , 'disBtw_lower'))
             cmds.connectAttr(midIK_pv_loc_shape + '.worldPosition' , lower_disBtw_node + '.point1')
             cmds.connectAttr(endIK_pos_loc_shape + '.worldPosition' , lower_disBtw_node + '.point2')
+            # 创建一个相乘节点来连接
+            mult_lower_disBtw_node = cmds.createNode('multDoubleLinear' ,
+                                                     name = lower_disBtw_node.replace('disBtw_lower' , 'mult'))
+            cmds.connectAttr(upper_disBtw_node + '.distance' , mult_lower_disBtw_node + '.input1')
+            cmds.setAttr(mult_lower_disBtw_node + '.input2' , side_value)
 
             # 因为绑定有自定义的缩放比例，因此实际的距离值需要除以绑定缩放的比例才能得到真实的距离
             div_divBtw_node = cmds.createNode('multiplyDivide' , name = midIK_pv_loc.replace('loc' , 'div'))
-            cmds.connectAttr(upper_disBtw_node + '.distance' , div_divBtw_node + '.input1X')
-            cmds.connectAttr(lower_disBtw_node + '.distance' , div_divBtw_node + '.input1Y')
+            cmds.connectAttr(mult_upper_disBtw_node + '.output' , div_divBtw_node + '.input1X')
+            cmds.connectAttr(mult_lower_disBtw_node + '.output' , div_divBtw_node + '.input1Y')
             cmds.connectAttr(self.character_ctrl + '.rigScale' , div_divBtw_node + '.input2X')
             cmds.connectAttr(self.character_ctrl + '.rigScale' , div_divBtw_node + '.input2Y')
-            cmds.setAttr(div_divBtw_node + '.operation' , 0)
+            cmds.setAttr(div_divBtw_node + '.operation' , 3)
 
             # 将真实的距离连接给极向量锁定的blendcolor节点
             # 原理：当极向量锁定值为1打开的时候，启用的是color1的数值。当极向量锁定值为0关闭的时候，启用的是color2的数值
@@ -335,12 +347,12 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
             # 把混合后的关节长度连接给原关节
             cmds.connectAttr(pvLock_blend_node + '.outputR' , midIK_jnt + '.translateX')
             cmds.connectAttr(pvLock_blend_node + '.outputG' , endIK_jnt + '.translateX')
-        else:
+        else :
             pass
 
 
 
-    def ik_spine_rig(self , stretch) :
+    def ik_spine_rig(self) :
         u"""
         创建IKspine链的控制器绑定
         Args:
@@ -354,7 +366,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 
         # 根据ik_chain的关节数量生成曲线
         ik_chain_crv = cmds.curve(degree = 3 , name = self.ik_chain[0].replace('ikjnt' , 'crv') ,
-                                  p = [(0 , 0 , 0) , (0 , 0 , 0), (0 , 0 , 0), (0 , 0 , 0), (0 , 0 , 0)])
+                                  p = [(0 , 0 , 0) , (0 , 0 , 0) , (0 , 0 , 0) , (0 , 0 , 0) , (0 , 0 , 0)])
 
         # 获取节点的曲线形状
         curve_shape = cmds.listRelatives(ik_chain_crv , shapes = True)[0]
@@ -380,8 +392,9 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 
         # 创建开始的IK控制器
         startIK_jnt = self.ik_chain[0]
-        startIK_crv_jnt = pipelineUtils.Pipeline.create_node('joint' , startIK_jnt.replace('jnt' , 'crvjnt') , match = True ,
-                                                    match_node = startIK_jnt)
+        startIK_crv_jnt = pipelineUtils.Pipeline.create_node('joint' , startIK_jnt.replace('jnt' , 'crvjnt') ,
+                                                             match = True ,
+                                                             match_node = startIK_jnt)
         startIK_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.drv_jnts[0] , 'ikctrl' , shape = 'Cube' ,
                                                                   radius = 25 , axis = 'Y+' ,
                                                                   pos = startIK_jnt , parent = None)
@@ -392,8 +405,9 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 
         # 创建尾端的ik控制器
         endIK_jnt = self.ik_chain[-1]
-        endIK_crv_jnt = pipelineUtils.Pipeline.create_node('joint' , endIK_jnt.replace('jnt' , 'crvjnt') , match = True ,
-                                                  match_node = endIK_jnt)
+        endIK_crv_jnt = pipelineUtils.Pipeline.create_node('joint' , endIK_jnt.replace('jnt' , 'crvjnt') ,
+                                                           match = True ,
+                                                           match_node = endIK_jnt)
         endIK_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.drv_jnts[-1] , 'ikctrl' , shape = 'Cube' ,
                                                                 radius = 25 ,
                                                                 axis = 'Y+' ,
@@ -406,8 +420,9 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
         #
         # 创建中间的ik控制器
         midIK_jnt = self.ik_chain[2]
-        midIK_crv_jnt = pipelineUtils.Pipeline.create_node('joint' , midIK_jnt.replace('jnt' , 'crvjnt') , match = True ,
-                                                  match_node = midIK_jnt)
+        midIK_crv_jnt = pipelineUtils.Pipeline.create_node('joint' , midIK_jnt.replace('jnt' , 'crvjnt') ,
+                                                           match = True ,
+                                                           match_node = midIK_jnt)
 
         midIK_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.drv_jnts[2] , 'ikctrl' ,
                                                                 shape = 'Cube' , radius = 20 , axis = 'Y+' ,
@@ -451,7 +466,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 
         # 添加拉伸效果
         # 获取ikspine曲线的形状节点
-        if stretch :
+        if self.stretch :
             ik_chain_crv_shape = cmds.listRelatives(ik_chain_crv , shapes = True)[0]
             # 创建curveinfo节点来获取ikspine曲线的长度
             curveInfo_node = cmds.createNode('curveInfo' , name = ik_chain_crv.replace('crv' , 'crvInfo'))
@@ -489,7 +504,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 
 
 
-class IKFK_Rig(IK_Rig , FK_Rig) :
+class IKFK_Rig(matehuman_base_rig.Base_Rig) :
     u"""
     这是一个用来编写ikfk混合绑定的类，之后的绑定都会在这个类的基础上逐级继承下去
     继承了ik_rig 和 fk_rig
@@ -509,21 +524,113 @@ class IKFK_Rig(IK_Rig , FK_Rig) :
 
 
 
-    def __init__(self , drv_jnts , joint_parent , control_parent , space_list) :
-        super().__init__(drv_jnts , joint_parent , control_parent , space_list)
+    def __init__(self , drv_jnts , joint_parent , control_parent , space_list , stretch) :
+        super(IKFK_Rig , self).__init__()
+        self.drv_jnts = drv_jnts
+        self.joint_parent = joint_parent
+        self.control_parent = control_parent
+        self.space_list = space_list
+        self.stretch = stretch
 
 
 
-    def create_ikfk_chain_rig(self) :
+    def create_ikfk_chain(self) :
+        # 根据self.drv_jnts生成ik关节链
+        self.ikfk_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'ikfkjnt_' , self.joint_parent)
+
+        return self.ikfk_chain
+
+
+
+    def ikfk_spine_rig(self) :
         u"""
-        创建ikfk关节链混合的绑定
+        创建IK样条曲线（脊椎和脖子的绑定）和FK关节链的混合绑定
         """
         self.fk_systeam_chain = self.create_fk_chain()
         self.fk_systeam_rig = self.fk_chain_rig()
 
         self.ik_systeam_chain = self.create_ik_chain()
-        self.ik_systeam_rig = self.ik_chain_rig()
+        self.ik_systeam_rig = self.ik_spine_rig()
         self.ikfk_chain_rig(self.fk_systeam_chain , self.ik_systeam_chain)
+
+
+
+    def ikfk_chain_rig(self , fk_chain , ik_chain) :
+        u"""
+        创建混合IKFk链的bind链控制器绑定
+        Args:
+            fk_chain:fk关节链
+            ik_chain:ik关节链
+            drv_jnts:mateHuman的drv关节链
+            control_parent(str): 控制器组的父层级
+
+        Returns: ik_ctrl_grp ：ikfkBend控制器的最顶层
+
+        """
+        # 获取创建控制器的关节的名称
+        ctrl_jnt = matehumanUtils.MateHuman(self.drv_jnts[0])
+
+        # 创建bind_jnt 关节的集合
+        bind_jnt_set = 'set_bindJnt'
+        make_bind_jnt_set = 'set_' + ctrl_jnt.side + '_' + ctrl_jnt.description + 'Jnt'
+        make_bind_jnt_set = cmds.sets(name = make_bind_jnt_set , empty = True)
+        if bind_jnt_set :
+            bind_jnt_set = bind_jnt_set
+        if not cmds.objExists(bind_jnt_set) or cmds.nodeType(bind_jnt_set) != 'objectSet' :
+            bind_jnt_set = cmds.sets(name = bind_jnt_set , empty = True)
+        for jnt in self.drv_jnts :
+            cmds.sets(make_bind_jnt_set , edit = True , forceElement = bind_jnt_set)
+            cmds.sets(jnt , edit = True , forceElement = make_bind_jnt_set)
+
+        # 创建ikfk切换的控制器
+        ikfkBend_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.drv_jnts[0] , 'ikfkctrl' ,
+                                                                   shape = 'pPlatonic' , radius = 10 ,
+                                                                   axis = 'X+' ,
+                                                                   pos = self.drv_jnts[0] , parent = None)
+        ikfkBend_zero = ikfkBend_ctrl.replace('ctrl' , 'zero')
+        cmds.move(0 , 15 , 15 , ikfkBend_zero , r = True , ls = True , wd = True)
+        cmds.addAttr(ikfkBend_ctrl , longName = 'IkFkBend' , attributeType = 'double' , min = 0 , max = 1 ,
+                     defaultValue = 1 ,
+                     keyable = True)
+        ikfkBend_grp = hierarchyUtils.Hierarchy.add_extra_group(obj = ikfkBend_zero ,
+                                                                grp_name = ikfkBend_zero.replace('zero' , 'grp') ,
+                                                                world_orient = False)
+
+        # 锁定不需要的属性
+        for channel in ['t' , 'r' , 's'] :
+
+            for axis in ['x' , 'y' , 'z'] :
+                cmds.setAttr(ikfkBend_ctrl + '.' + channel + axis , l = True , k = False , cb = False)
+        cmds.setAttr(ikfkBend_ctrl + '.v' , l = True , k = False , cb = False)
+        cmds.setAttr(ikfkBend_ctrl + '.ro' , l = True , k = False , cb = False)
+        cmds.setAttr(ikfkBend_ctrl + '.subCtrlVis' , l = True , k = False , cb = False)
+
+        # 用混合颜色节点来制作fk/ik开关
+        # 连接切换
+        for fk , ik , bind in zip(fk_chain , ik_chain , self.ikfk_chain) :
+            for attr in ['translate' , 'rotate' , 'scale'] :
+                blend_node = cmds.createNode('blendColors' , name = 'blend_{}_{}_001'.format(ctrl_jnt.side ,
+                                                                                             ctrl_jnt.description))
+                cmds.connectAttr(fk + '.{}'.format(attr) , blend_node + '.color1')
+                cmds.connectAttr(ik + '.{}'.format(attr) , blend_node + '.color2')
+                cmds.connectAttr(ikfkBend_ctrl + '.IkFkBend' , blend_node + '.blender')
+                cmds.connectAttr(blend_node + '.output' , bind + '.{}'.format(attr))
+
+        fk_ctrl_grp = fk_chain[0].replace('jnt' , 'grp')
+        ik_ctrl_grp = ik_chain[0].replace('jnt' , 'grp')
+        # 用混合颜色节点来连接fk/ik的控制器的显示开关
+        cmds.connectAttr(ikfkBend_ctrl + '.IkFkBend' , fk_ctrl_grp + '.visibility')
+        reverse_node = cmds.createNode('reverse' , name = blend_node.replace('blend_node_' , 'reverse_'))
+        cmds.connectAttr(ikfkBend_ctrl + '.IkFkBend' , reverse_node + '.inputX')
+        cmds.connectAttr(reverse_node + '.outputX' , ik_ctrl_grp + '.visibility')
+
+        # 用ikfk关节链来约束mateHuman的驱动关节
+        for ikfk , drv in zip(self.ikfk_chain , self.drv_jnts) :
+            cmds.parentConstraint(ikfk , drv , mo = True)
+            cmds.scaleConstraint(ikfk , drv , mo = True)
+
+        # 整理层级结构
+        hierarchyUtils.Hierarchy.parent(child_node = ikfkBend_grp , parent_node = self.control_parent)
 
 
 
@@ -554,88 +661,36 @@ class IKFK_Rig(IK_Rig , FK_Rig) :
 
 
 
-    def ikfk_chain_rig(self , fk_chain , ik_chain) :
+    def create_ikfk_chain_rig(self) :
         u"""
-        创建混合IKFk链的bind链控制器绑定
-        Args:
-            fk_chain:fk关节链
-            ik_chain:ik关节链
-            drv_jnts:mateHuman的drv关节链
-            control_parent(str): 控制器组的父层级
-
-        Returns: ik_ctrl_grp ：ikfkBend控制器的最顶层
-
+        创建ikfk关节链混合的绑定,手臂，腿部关节
         """
-        # 获取创建控制器的关节的名称
-        ikfkBend_ctrl = nameUtils.Name(name = self.drv_jnts[0]).mateHuman_decompose()
+        self.fk_systeam = FK_Rig(self.drv_jnts , self.joint_parent , self.control_parent)
+        self.fk_systeam_chain = self.fk_systeam.create_fk_chain()
+        self.fk_systeam_rig = self.fk_systeam.fk_chain_rig()
 
-        # 创建bind_jnt 关节的集合
-        bind_jnt_set = 'set_bindJnt'
-        make_bind_jnt_set = 'set_' + ikfkBend_ctrl.side + '_' + ikfkBend_ctrl.description + 'Jnt'
-        make_bind_jnt_set = cmds.sets(name = make_bind_jnt_set , empty = True)
-        if bind_jnt_set :
-            bind_jnt_set = bind_jnt_set
-        if not cmds.objExists(bind_jnt_set) or cmds.nodeType(bind_jnt_set) != 'objectSet' :
-            bind_jnt_set = cmds.sets(name = bind_jnt_set , empty = True)
-        for jnt in ikfk_chain :
-            cmds.sets(make_bind_jnt_set , edit = True , forceElement = bind_jnt_set)
-            cmds.sets(jnt , edit = True , forceElement = make_bind_jnt_set)
-
-        # 创建ikfk切换的控制器
-        ikfkBend_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.drv_jnts[0] , 'ikfkctrl' ,
-                                                                   shape = 'pPlatonic' , radius = 10 ,
-                                                                   axis = 'X+' ,
-                                                                   pos = self.drv_jnts[0] , parent = None)
-        ikfkBend_zero = ikfkBend_ctrl.replace('ctrl' , 'zero')
-        cmds.move(0 , 15 , 15 , ikfkBend_zero , r = True , ls = True , wd = True)
-        cmds.addAttr(ikfkBend_ctrl , longName = 'IkFkBend' , attributeType = 'double' , min = 0 , max = 1 ,
-                     defaultValue = 1 ,
-                     keyable = True)
-        ikfkBend_grp = hierarchyUtils.Hierarchy.add_extra_group(obj = ikfkBend_zero ,
-                                                                grp_name = ikfkBend_zero.replace('zero' , 'grp') ,
-                                                                world_orient = False)
-        # 锁定不需要的属性
-        for channel in ['t' , 'r' , 's'] :
-
-            for axis in ['x' , 'y' , 'z'] :
-                cmds.setAttr(ikfkBend_ctrl + '.' + channel + axis , l = True , k = False , cb = False)
-        cmds.setAttr(ikfkBend_ctrl + '.v' , l = True , k = False , cb = False)
-        cmds.setAttr(ikfkBend_ctrl + '.ro' , l = True , k = False , cb = False)
-        cmds.setAttr(ikfkBend_ctrl + '.subCtrlVis' , l = True , k = False , cb = False)
-
-        # 用混合颜色节点来制作fk/ik开关
-        # 连接切换
-        for fk , ik , bind in zip(fk_chain , ik_chain , self.drv_jnts) :
-            for attr in ['translate' , 'rotate' , 'scale'] :
-                blend_node = cmds.createNode('blendColors' , name = 'blend_{}_{}_001'.format(ikfkBend_ctrl.side ,
-                                                                                             ikfkBend_ctrl.description))
-                cmds.connectAttr(fk + '.{}'.format(attr) , blend_node + '.color1')
-                cmds.connectAttr(ik + '.{}'.format(attr) , blend_node + '.color2')
-                cmds.connectAttr(ikfkBend_ctrl + '.IkFkBend' , blend_node + '.blender')
-                cmds.connectAttr(blend_node + '.output' , bind + '.{}'.format(attr))
-
-        fk_ctrl_grp = fk_chain[0].replace('jnt' , 'grp')
-        ik_ctrl_grp = ik_chain[0].replace('jnt' , 'grp')
-        # 用混合颜色节点来连接fk/ik的控制器的显示开关
-        cmds.connectAttr(ikfkBend_ctrl + '.IkFkBend' , fk_ctrl_grp + '.visibility')
-        reverse_node = cmds.createNode('reverse' , name = blend_node.replace('blend_node_' , 'reverse_'))
-        cmds.connectAttr(ikfkBend_ctrl + '.IkFkBend' , reverse_node + '.inputX')
-        cmds.connectAttr(reverse_node + '.outputX' , ik_ctrl_grp + '.visibility')
-
-        # 整理层级结构
-        hierarchyUtils.Hierarchy.parent(child_node = ikfkBend_grp , parent_node = self.control_parent)
+        self.ik_systeam = IK_Rig(self.drv_jnts , self.joint_parent , self.control_parent , self.space_list ,
+                                 self.stretch)
+        self.ik_systeam_chain = self.ik_systeam.create_ik_chain()
+        self.ik_systeam_rig = self.ik_systeam.ik_chain_rig()
+        self.ikfk_systeam_chain = self.create_ikfk_chain()
+        self.ikfk_chain_rig(self.fk_systeam_chain , self.ik_systeam_chain)
 
 
 
-    def ikfk_spine_rig(self) :
+    def create_ikfk_spine_rig(self) :
         u"""
         创建IK样条曲线（脊椎和脖子的绑定）和FK关节链的混合绑定
         """
-        self.fk_systeam_chain = self.create_fk_chain()
-        self.fk_systeam_rig = self.fk_chain_rig()
+        self.fk_systeam = FK_Rig(self.drv_jnts , self.joint_parent , self.control_parent)
+        self.fk_systeam_chain = self.fk_systeam.create_fk_chain()
+        self.fk_systeam_rig = self.fk_systeam.fk_chain_rig()
 
-        self.ik_systeam_chain = self.create_ik_chain()
-        self.ik_systeam_rig = self.ik_spine_rig()
+        self.ik_systeam = IK_Rig(self.drv_jnts , self.joint_parent , self.control_parent , self.space_list ,
+                                 self.stretch)
+        self.ik_systeam_chain = self.ik_systeam.create_ik_chain()
+        self.ik_systeam_rig = self.ik_systeam.ik_spine_rig()
+        self.ikfk_systeam_chain = self.create_ikfk_chain()
         self.ikfk_chain_rig(self.fk_systeam_chain , self.ik_systeam_chain)
 
 

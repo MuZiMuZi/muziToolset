@@ -46,6 +46,10 @@ class Arm_Rig(ikfk_rig.IKFK_Rig) :
 
 
     def create_arm_rig(self) :
+        u'''
+        创建手部的控制器绑定
+        :return:
+        '''
         # 创建锁骨的控制器
         clavicle_ctrl = self.clavicle_jnt.replace('jnt_' , 'ctrl_')
         clavicle_ctrl_obj = controlUtils.Control.create_ctrl(clavicle_ctrl , shape = 'clavicle' , radius = 13 ,
