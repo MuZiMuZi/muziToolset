@@ -2,11 +2,7 @@
 from importlib import reload
 
 from . import matehuman_base_rig
-<<<<<<< HEAD
 from . import matehuman_ikfk_rig
-=======
-from . import ikfk_rig
->>>>>>> origin/master
 import maya.cmds as cmds
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils
