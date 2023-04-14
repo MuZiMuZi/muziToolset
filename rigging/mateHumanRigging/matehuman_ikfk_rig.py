@@ -34,11 +34,12 @@ class FK_Rig(matehuman_base_rig.Base_Rig) :
 	"""
 	
 	
-	def __init__(self , drv_jnts , joint_parent , control_parent) :
+	def __init__(self , drv_jnts , joint_parent , control_parent, redius) :
 		super(FK_Rig , self).__init__()
 		self.drv_jnts = drv_jnts
 		self.joint_parent = joint_parent
 		self.control_parent = control_parent
+		self.redius = redius
 	
 	
 	def create_fk_chain(self) :
@@ -47,13 +48,13 @@ class FK_Rig(matehuman_base_rig.Base_Rig) :
 		
 		return self.fk_chain
 	
-	
 	def fk_chain_rig(self) :
 		u"""
 		创建fk链的控制器绑定
 		Args:
 			self.drv_jnts:mateHuman的self.drv_jnts用于放置模板的关节列表。
 			self.control_parent(str): 控制器组的父层级
+			self.redius: 控制器的大小
 
 		Returns: fk_ctrl_grp ：fk控制器的最顶层
 
@@ -61,7 +62,7 @@ class FK_Rig(matehuman_base_rig.Base_Rig) :
 		# 创建控制器
 		parent = None
 		for jnt in self.drv_jnts :
-			fk_ctrl = controlUtils.Control.create_mateHuman_ctrl(jnt , 'fkctrl' , shape = 'circle' , radius = 20 ,
+			fk_ctrl = controlUtils.Control.create_mateHuman_ctrl(jnt , 'fkctrl' , shape = 'circle' , radius = self.redius ,
 			                                                     axis = 'Y+' ,
 			                                                     pos = jnt ,
 			                                                     parent = None)
@@ -79,6 +80,14 @@ class FK_Rig(matehuman_base_rig.Base_Rig) :
 		if self.control_parent :
 			hierarchyUtils.Hierarchy.parent(child_node = fk_ctrl_grp , parent_node = self.control_parent)
 
+	def _create_fk_chain_system(self):
+		u'''
+		创建fk链条绑定系统
+		:return:
+		'''
+		self.fk_systeam_chain = self.create_fk_chain()
+		self.fk_systeam_rig = self.fk_chain_rig()
+		
 
 class IK_Rig(matehuman_base_rig.Base_Rig) :
 	
