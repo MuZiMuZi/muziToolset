@@ -24,9 +24,7 @@ class MateHuman() :
                                       'head ' : 'head_drv'}
 
         mateHuman_joint_arm_dict = {'clavicle_l' : 'clavicle_l_drv' ,
-                                    'upperarm_l ' : 'upperarm_l_drv' ,
-                                    'lowerarm_l' : 'lowerarm_l_drv' ,
-
+                                    'arm_l' : ['upperarm_l_drv', 'lowerarm_l_drv', 'hand_l_drv'],
                                     'hand_l' : 'hand_l_drv' ,
                                     'index_finger_l' : ['index_metacarpal_l_drv','index_01_l_drv' , 'index_02_l_drv' , 'index_03_l_drv'] ,
                                     'middle_finger_l' : ['middle_metacarpal_l_drv','middle_01_l_drv' , 'middle_02_l_drv' , 'middle_03_l_drv'] ,
@@ -37,7 +35,7 @@ class MateHuman() :
                                     'clavicle_r' : 'clavicle_r_drv' ,
                                     'upperarm_r' : 'upperarm_r_drv' ,
                                     'lowerarm_r' : 'lowerarm_r_drv' ,
-
+                                    'arm_r' : ['upperarm_r_drv' , 'lowerarm_r_drv' , 'hand_r_drv'] ,
                                     'hand_r' : 'hand_r_drv' ,
                                     'index_finger_r' : ['index_metacarpal_r_drv' , 'index_01_r_drv' , 'index_02_r_drv' ,
                                                         'index_03_r_drv'] ,
@@ -50,7 +48,8 @@ class MateHuman() :
                                     'thumb_finger_r' : ['thumb_01_r_drv' , 'thumb_02_r_drv' , 'thumb_03_r_drv']
                                     }
 
-        mateHuman_joint_leg_dict = {'thigh_l' : 'thigh_l_drv' ,
+        mateHuman_joint_leg_dict = {'leg_l' : ['thigh_l_drv', 'calf_l_drv', 'foot_l_drv'] ,
+                                    'thigh_l' : 'thigh_l_drv' ,
                                     'calf_l' : 'calf_l_drv' ,
                                     'foot_l' : 'foot_l_drv' ,
                                     'ball_l ' : 'ball_l_drv' ,
@@ -61,6 +60,7 @@ class MateHuman() :
                                     'littletoe_l' : ['littletoe_01_l_drv' , 'littletoe_02_l_drv'] ,
                                     'ringtoe_l' : ['ringtoe_01_l_drv' , 'ringtoe_02_l_drv'] ,
 
+                                    'leg_r' : ['thigh_r_drv' , 'calf_r_drv' , 'foot_r_drv'],
                                     'thigh_r' : 'thigh_r_drv' ,
                                     'calf_r' : 'calf_r_drv' ,
                                     'foot_r' : 'foot_r_drv' ,

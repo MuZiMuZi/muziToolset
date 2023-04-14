@@ -34,7 +34,7 @@ class FK_Rig(matehuman_base_rig.Base_Rig) :
 	"""
 	
 	
-	def __init__(self , drv_jnts , joint_parent , control_parent, redius) :
+	def __init__(self , drv_jnts , joint_parent , control_parent, redius = 10) :
 		super(FK_Rig , self).__init__()
 		self.drv_jnts = drv_jnts
 		self.joint_parent = joint_parent
@@ -42,9 +42,9 @@ class FK_Rig(matehuman_base_rig.Base_Rig) :
 		self.redius = redius
 	
 	
-	def create_fk_chain(self) :
+	def create_fk_chain(self, constraint = False) :
 		# 根据self.drv_jnts生成fk关节链
-		self.fk_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'fkjnt_' , self.joint_parent)
+		self.fk_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'fkjnt_' , self.joint_parent,constraint )
 		
 		return self.fk_chain
 	
@@ -80,12 +80,12 @@ class FK_Rig(matehuman_base_rig.Base_Rig) :
 		if self.control_parent :
 			hierarchyUtils.Hierarchy.parent(child_node = fk_ctrl_grp , parent_node = self.control_parent)
 
-	def _create_fk_chain_system(self):
+	def _create_fk_chain_system(self, constraint = False):
 		u'''
 		创建fk链条绑定系统
 		:return:
 		'''
-		self.fk_systeam_chain = self.create_fk_chain()
+		self.fk_systeam_chain = self.create_fk_chain(constraint)
 		self.fk_systeam_rig = self.fk_chain_rig()
 		
 
@@ -101,17 +101,19 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		self.stretch = stretch
 	
 	
-	def create_ik_chain(self) :
+	def create_ik_chain(self,constraint = False) :
 		# 根据self.drv_jnts生成ik关节链
-		self.ik_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'ikjnt_' , self.joint_parent)
+		self.ik_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'ikjnt_' , self.joint_parent ,
+		                                                        constraint = False)
 		
 		return self.ik_chain
 	
 	
-	def ik_chain_rig(self) :
+	def ik_chain_rig(self,Y_value = 1) :
 		u"""
 		创建IK链的控制器绑定
 		Args:
+			Y_value : 手臂的极向量控制器在后面为1，腿的极向量控制器在前面为-1
 			self.drv_jnts(list): mateHuman的drv关节链
 			self.control_parent(str): 控制器组的父层级
 			space_list(list): 空间切换的空间
@@ -129,7 +131,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		
 		startIK_ctrl_output = startIK_ctrl.replace('ctrl' , 'output')
 		startIK_zero = startIK_ctrl.replace('ctrl' , 'zero')
-		cmds.pointConstraint(startIK_ctrl_output , startIK_jnt , maintainOffset = True)
+		cmds.parentConstraint(startIK_ctrl_output , startIK_jnt , maintainOffset = True)
 		
 		# 创建尾端的ik控制器
 		endIK_jnt = self.ik_chain[2]
@@ -163,7 +165,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		else :
 			side_value = 1
 		
-		cmds.move(0 , 32 * side_value , 0 , midIK_pv_zero , relative = True , objectSpace = True ,
+		cmds.move(0 , 32 * side_value* Y_value , 0 , midIK_pv_zero , relative = True , objectSpace = True ,
 		          worldSpaceDistance = True)
 		
 		# 创建ik极向量控制器的曲线指示器
@@ -196,7 +198,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		# 创建IKhandle控制
 		rotate_ikhandle_name = startIK_jnt.replace('jnt' , 'ikhandle')
 		rotate_ikhandle_node = \
-			cmds.ikHandle(name = rotate_ikhandle_name , startJoint = self.ik_chain[0] , endEffector = self.ik_chain[2] ,
+			cmds.ikHandle(name = rotate_ikhandle_name , startJoint = self.ik_chain[0] , endEffector = self.ik_chain[-1] ,
 			              sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True)[0]
 		cmds.setAttr(rotate_ikhandle_node + '.visibility' , 0)
 		endIK_local_output = endIK_local_zero.replace('zero' , 'output')
@@ -237,7 +239,6 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 			midIK_jnt_value = cmds.getAttr(midIK_jnt + '.translateX')
 			endIK_jnt_value = cmds.getAttr(endIK_jnt + '.translateX')
 			distance_value = midIK_jnt_value * side_value + endIK_jnt_value * side_value
-			print(distance_value)
 			
 			# 将现有的关节距离减去原本关节的距离得到拉伸的距离
 			reduce_node = cmds.createNode('addDoubleLinear' , name = startIK_jnt.replace('jnt' , 'reduce'))
@@ -533,7 +534,8 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 	
 	def create_ikfk_chain(self) :
 		# 根据self.drv_jnts生成ik关节链
-		self.ikfk_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'ikfkjnt_' , self.joint_parent)
+		self.ikfk_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'ikfkjnt_' , self.joint_parent,
+		                                                          constraint = True)
 		
 		return self.ikfk_chain
 	
@@ -659,12 +661,12 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		创建fk链条绑定系统
 		:return:
 		'''
-		self.fk_systeam = FK_Rig(self.drv_jnts , self.joint_parent , self.control_parent)
+		self.fk_systeam = FK_Rig(self.drv_jnts , self.joint_parent , self.control_parent,redius = 10)
 		self.fk_systeam_chain = self.fk_systeam.create_fk_chain()
 		self.fk_systeam_rig = self.fk_systeam.fk_chain_rig()
 	
 	
-	def create_ik_chain_system(self) :
+	def create_ik_chain_system(self, Y_value) :
 		u'''
 		创建ik链条绑定系统
 		:return:
@@ -672,10 +674,10 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		self.ik_systeam = IK_Rig(self.drv_jnts , self.joint_parent , self.control_parent , self.space_list ,
 		                         self.stretch)
 		self.ik_systeam_chain = self.ik_systeam.create_ik_chain()
-		self.ik_systeam_rig = self.ik_systeam.ik_chain_rig()
+		self.ik_systeam_rig = self.ik_systeam.ik_chain_rig(Y_value)
 	
 	
-	def create_ik_spine_system(self) :
+	def create_ik_spine_system(self, Y_value) :
 		u'''
 		创建ikSpine绑定系统
 		:return:
@@ -683,10 +685,10 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		self.ik_systeam = IK_Rig(self.drv_jnts , self.joint_parent , self.control_parent , self.space_list ,
 		                         self.stretch)
 		self.ik_systeam_chain = self.ik_systeam.create_ik_chain()
-		self.ik_systeam_rig = self.ik_systeam.ik_chain_rig()
+		self.ik_systeam_rig = self.ik_systeam.ik_chain_rig(Y_value)
 	
 	
-	def create_ikfk_chain_rig(self) :
+	def create_ikfk_chain_rig(self, Y_value) :
 		u"""
 		创建ikfk关节链混合的绑定,手臂，腿部关节
 		"""
@@ -695,7 +697,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		self.create_fk_chain_system()
 		
 		# 创建ik控制系统
-		self.create_ik_chain_system()
+		self.create_ik_chain_system(Y_value)
 		
 		# 创建ikfk融合系统
 		self.ikfk_systeam_chain = self.create_ikfk_chain()
@@ -711,7 +713,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		self.create_fk_chain_system()
 		
 		# 创建ik控制系统
-		self.create_ik_spine_system()
+		self.create_ik_spine_system(Y_value)
 		
 		# 创建ikfk融合系统
 		self.ikfk_systeam_chain = self.create_ikfk_chain()

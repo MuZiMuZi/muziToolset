@@ -180,7 +180,7 @@ class Joint(object) :
 
 
     @staticmethod
-    def create_mateHuman_chain(drv_jnts , prefix , joint_parent = None, constraint = True) :
+    def create_mateHuman_chain(drv_jnts , prefix , joint_parent = None, constraint = False) :
         '''创建mateHuman的IK,FK 的关节链
 
         drv_jnts(list): 用于放置模板的关节列表。mateHuman的drv_jnts
