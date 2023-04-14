@@ -23,7 +23,7 @@ import muziToolset.core.pipelineUtils as pipelineUtils
 reload(pipelineUtils)
 reload(jointUtils)
 
-import ikfk_rig
+from . import ikfk_rig
 
 
 class Arm_Rig(ikfk_rig.IKFK_Rig) :

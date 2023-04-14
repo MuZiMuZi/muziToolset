@@ -12,7 +12,7 @@ ik_spine_rig：创建IKspine链的控制器绑定（脊椎，脖子）
 
 """
 from importlib import reload
-import base_rig
+from .import base_rig
 import maya.cmds as cmds
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils

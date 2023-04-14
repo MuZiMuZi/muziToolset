@@ -17,9 +17,9 @@ ribbon_Rig ： 创建ribbon关节的绑定
 
 """
 from importlib import reload
-import base_rig
-import fk_rig
-import ik_rig
+from .import base_rig
+from .import fk_rig
+from .import ik_rig
 import maya.cmds as cmds
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils

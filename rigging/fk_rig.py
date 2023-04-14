@@ -23,7 +23,7 @@ import muziToolset.core.pipelineUtils as pipelineUtils
 
 reload(pipelineUtils)
 reload(jointUtils)
-import base_rig
+from .import base_rig
 
 
 class FK_Rig(base_rig.Base_Rig) :

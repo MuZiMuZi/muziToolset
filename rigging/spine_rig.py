@@ -21,7 +21,7 @@ from importlib import reload
 reload(pipelineUtils)
 reload(jointUtils)
 
-import ikfk_rig
+from . import ikfk_rig
 
 
 spine_bp_joints = ['bpjnt_m_spine_001' , 'bpjnt_m_spine_002' , ' bpjnt_m_spine_003' , 'bpjnt_m_spine_004' ,

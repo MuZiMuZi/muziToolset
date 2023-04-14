@@ -10,14 +10,14 @@ u"""
 build： 根据导入的对应模块，生成绑定系统
 """
 from importlib import reload
-import muziToolset.rigging.base_rig as base_rig
-import muziToolset.rigging.arm_rig as arm_rig
-import muziToolset.rigging.foot_rig as foot_rig
-import muziToolset.rigging.neck_rig as neck_rig
-import muziToolset.rigging.spine_rig as spine_rig
-import muziToolset.rigging.chest_rig as chest_rig
-import muziToolset.rigging.leg_rig as leg_rig
-import muziToolset.rigging.hand_rig as hand_rig
+from .import base_rig
+from .import arm_rig
+from .import foot_rig
+from .import neck_rig
+from .import spine_rig
+from .import chest_rig
+from .import leg_rig
+from .import hand_rig
 
 import maya.cmds as cmds
 

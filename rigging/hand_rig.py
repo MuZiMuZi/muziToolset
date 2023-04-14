@@ -12,10 +12,10 @@ fingerCurlRig : 设置手指关节旋转的姿势。
 
 """
 from importlib import reload
-import arm_rig
-import base_rig
-import fk_rig
-import ik_rig
+from .import arm_rig
+from .import base_rig
+from .import fk_rig
+from .import ik_rig
 import maya.cmds as cmds
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils

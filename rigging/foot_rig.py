@@ -21,8 +21,8 @@ from importlib import reload
 reload(pipelineUtils)
 reload(jointUtils)
 
-import leg_rig
-import ikfk_rig
+from .import leg_rig
+from .import ikfk_rig
 
 
 # leg_bp_joints = ['bpjnt_l_hip_001', 'bpjnt_l_knee_001',' bpjnt_l_ankle_001','bpjnt_l_ball_001','bpjnt_l_toe_001']

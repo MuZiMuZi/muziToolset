@@ -10,7 +10,7 @@ create_master_grp：创建绑定的初始层级组，并隐藏连接对应的属
 
 """
 from importlib import reload
-import base_rig
+from . import base_rig
 import maya.cmds as cmds
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils
