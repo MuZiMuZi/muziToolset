@@ -86,7 +86,7 @@ class Control(object) :
         if t is None :
             self.transform = pm.group(em = 1)
         # 如果给定了t(transfrom) 的值
-        elif isinstance(t , (str , unicode)) :
+        elif isinstance(t , (str , u"".__class__)) :
             # 如果t(transfrom) ，不存在于该场景
             if not pm.objExists(t) :
                 pm.warning("没有与名称符合的物体 " + t)

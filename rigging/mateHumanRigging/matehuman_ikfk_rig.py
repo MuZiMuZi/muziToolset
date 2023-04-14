@@ -131,7 +131,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		
 		startIK_ctrl_output = startIK_ctrl.replace('ctrl' , 'output')
 		startIK_zero = startIK_ctrl.replace('ctrl' , 'zero')
-		cmds.parentConstraint(startIK_ctrl_output , startIK_jnt , maintainOffset = True)
+		# cmds.pointConstraint(startIK_ctrl_output , startIK_jnt , maintainOffset = True)
 		
 		# 创建尾端的ik控制器
 		endIK_jnt = self.ik_chain[2]
@@ -197,9 +197,14 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		#
 		# 创建IKhandle控制
 		rotate_ikhandle_name = startIK_jnt.replace('jnt' , 'ikhandle')
-		rotate_ikhandle_node = \
-			cmds.ikHandle(name = rotate_ikhandle_name , startJoint = self.ik_chain[0] , endEffector = self.ik_chain[-1] ,
-			              sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True)[0]
+		print(self.ik_chain[0])
+		print(self.ik_chain[2])
+		# rotate_ikhandle_node = \
+		# cmds.ikHandle(name = rotate_ikhandle_name , startJoint = 'ikjnt_thigh_l_drv' , endEffector = 'ikjnt_foot_l_drv' ,
+		#               sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True)[0]
+		
+		# rotate_ikhandle_node = cmds.ikHandle(name = rotate_ikhandle_name , startJoint = self.ik_chain[0] , endEffector = self.ik_chain[2] ,
+		#                                      sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True)[0]
 		cmds.setAttr(rotate_ikhandle_node + '.visibility' , 0)
 		endIK_local_output = endIK_local_zero.replace('zero' , 'output')
 		cmds.parent(rotate_ikhandle_node , endIK_local_output)
@@ -208,14 +213,14 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		cmds.parent(startIK_zero , midIK_pv_zero , endIK_zero , ikpv_curve , ik_ctrl_grp)
 		if self.control_parent :
 			hierarchyUtils.Hierarchy.parent(child_node = ik_ctrl_grp , parent_node = self.control_parent)
-		
+
 		# 添加空间切换
 		if self.space_list :
 			for ctrl in [midIK_pv_ctrl , endIK_ctrl] :
 				self.add_spaceSwitch(ctrl , space_list)
 		else :
 			pass
-		
+
 		# 添加IK链的拉伸功能
 		# 创建起始端关节控制器的定位loctor
 		if self.stretch :
@@ -223,57 +228,57 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 			startIK_pos_loc_shape = cmds.listRelatives(startIK_pos_loc , shapes = True)[0]
 			cmds.matchTransform(startIK_pos_loc , startIK_ctrl)
 			hierarchyUtils.Hierarchy.parent(child_node = startIK_pos_loc , parent_node = startIK_ctrl)
-			
+
 			# 创建末端关节控制器的定位loctor
 			endIK_pos_loc = cmds.spaceLocator(name = endIK_ctrl.replace('ctrl' , 'loc'))[0]
 			endIK_pos_loc_shape = cmds.listRelatives(endIK_pos_loc , shapes = True)[0]
 			cmds.matchTransform(endIK_pos_loc , endIK_ctrl)
 			hierarchyUtils.Hierarchy.parent(child_node = endIK_pos_loc , parent_node = endIK_ctrl)
-			
+
 			# 创建计算距离的distween节点，来计算首端关节到中端控制器的距离
 			disBtw_node = cmds.createNode('distanceBetween' , name = endIK_pos_loc.replace('loc' , 'disBtw'))
 			cmds.connectAttr(startIK_pos_loc_shape + '.worldPosition' , disBtw_node + '.point1')
 			cmds.connectAttr(endIK_pos_loc_shape + '.worldPosition' , disBtw_node + '.point2')
-			
+
 			# 计算原本关节的距离值
 			midIK_jnt_value = cmds.getAttr(midIK_jnt + '.translateX')
 			endIK_jnt_value = cmds.getAttr(endIK_jnt + '.translateX')
 			distance_value = midIK_jnt_value * side_value + endIK_jnt_value * side_value
-			
+
 			# 将现有的关节距离减去原本关节的距离得到拉伸的距离
 			reduce_node = cmds.createNode('addDoubleLinear' , name = startIK_jnt.replace('jnt' , 'reduce'))
 			cmds.connectAttr(disBtw_node + '.distance' , reduce_node + '.input1')
 			cmds.setAttr(reduce_node + '.input2' , distance_value * -1)
-			
+
 			# 将变化的数值除以二，均匀分配给对应的拉伸关节
 			mult_node = cmds.createNode('multDoubleLinear' , name = startIK_jnt.replace('jnt' , 'mult'))
 			cmds.connectAttr(reduce_node + '.output' , mult_node + '.input1')
 			cmds.setAttr(mult_node + '.input2' , 0.5 * side_value)
-			
+
 			# 将变化的数值连接给对应的拉伸关节
 			add_midIK_jnt_node = cmds.createNode('addDoubleLinear' , name = midIK_jnt.replace('jnt' , 'add'))
 			add_endIK_jnt_node = cmds.createNode('addDoubleLinear' , name = endIK_jnt.replace('jnt' , 'add'))
-			
+
 			cmds.connectAttr(mult_node + '.output' , add_midIK_jnt_node + '.input1')
 			cmds.setAttr(add_midIK_jnt_node + '.input2' , midIK_jnt_value)
-			
+
 			cmds.connectAttr(mult_node + '.output' , add_endIK_jnt_node + '.input1')
 			cmds.setAttr(add_endIK_jnt_node + '.input2' , endIK_jnt_value)
-			
+
 			# 创建一个判断节点，当变化的数值大于0时才进行拉伸
 			cond_node = cmds.createNode('condition' , name = startIK_jnt.replace('jnt' , 'cond'))
 			cmds.setAttr(cond_node + '.operation' , 2)
 			cmds.connectAttr(reduce_node + '.output' , cond_node + '.firstTerm')
 			cmds.connectAttr(add_midIK_jnt_node + '.output' , cond_node + '.colorIfTrueR')
 			cmds.connectAttr(add_endIK_jnt_node + '.output' , cond_node + '.colorIfTrueG')
-			
+
 			cmds.setAttr(cond_node + '.colorIfFalseR' , midIK_jnt_value)
 			cmds.setAttr(cond_node + '.colorIfFalseG' , endIK_jnt_value)
-			
+
 			# 给控制器创建一个拉伸的属性，动画师根据需要可以选择是否拉伸
 			cmds.addAttr(endIK_ctrl , longName = 'stretch' , attributeType = 'double' ,
 			             niceName = u'拉伸' , minValue = 0 , maxValue = 1 , defaultValue = 1 , keyable = 1)
-			
+
 			# 创建blendcolor节点用来承载拉伸的设置
 			stretch_blend_node = cmds.createNode('blendColors' , name = endIK_ctrl.replace('ctrl' , 'blend'))
 			cmds.connectAttr(endIK_ctrl + '.stretch' , stretch_blend_node + '.blender')
@@ -281,28 +286,28 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 			# 因为绑定有自定义的缩放比例，因此实际的距离值需要除以绑定缩放的比例才能得到真实的距离
 			stretch_divBtw_node = cmds.createNode('multiplyDivide' ,
 			                                      name = stretch_blend_node.replace('blend_' , 'div_'))
-			
+
 			cmds.setAttr(stretch_divBtw_node + '.operation' , 2)
 			cmds.setAttr(stretch_divBtw_node + '.input1X' , midIK_jnt_value)
 			cmds.setAttr(stretch_divBtw_node + '.input1Y' , endIK_jnt_value)
-			
+
 			cmds.connectAttr(self.character_ctrl + '.rigScale' , stretch_divBtw_node + '.input2X')
 			cmds.connectAttr(self.character_ctrl + '.rigScale' , stretch_divBtw_node + '.input2Y')
-			
+
 			# 连接拉伸后的关节长度
 			cmds.connectAttr(stretch_divBtw_node + '.outputX' , stretch_blend_node + '.color2R')
 			cmds.connectAttr(stretch_divBtw_node + '.outputY' , stretch_blend_node + '.color2G')
 			cmds.connectAttr(cond_node + '.outColorR' , stretch_blend_node + '.color1R')
 			cmds.connectAttr(cond_node + '.outColorG' , stretch_blend_node + '.color1G')
-			
+
 			# 给控制器创建一个极向量锁定的属性，动画师根据需要可以选择是否进行极向量锁定
 			cmds.addAttr(endIK_ctrl , longName = 'PvLock' , attributeType = 'double' ,
 			             niceName = u'极向量锁定' , minValue = 0 , maxValue = 1 , defaultValue = 0 , keyable = 1)
-			
+
 			# 创建blendcolor节点用来承载极向量锁定的设置
 			pvLock_blend_node = cmds.createNode('blendColors' , name = midIK_pv_ctrl.replace('ctrl' , 'blend'))
 			cmds.connectAttr(endIK_ctrl + '.PvLock' , pvLock_blend_node + '.blender')
-			
+
 			# 获取起始控制器，极向量控制器，末端控制器层级下用来定位位置的loc.(startIK_pos_loc,midIK_pv_loc,endIK_pos_loc)
 			# 创建对应的disteween节点来获取距离
 			# 计算起始控制器到极向量控制器的距离
@@ -310,13 +315,13 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 			                                    name = startIK_pos_loc.replace('loc' , 'disBtw_upper'))
 			cmds.connectAttr(startIK_pos_loc_shape + '.worldPosition' , upper_disBtw_node + '.point1')
 			cmds.connectAttr(midIK_pv_loc_shape + '.worldPosition' , upper_disBtw_node + '.point2')
-			
+
 			# 创建一个相乘节点来连接
 			mult_upper_disBtw_node = cmds.createNode('multDoubleLinear' ,
 			                                         name = upper_disBtw_node.replace('disBtw_lower' , 'mult'))
 			cmds.connectAttr(upper_disBtw_node + '.distance' , mult_upper_disBtw_node + '.input1')
 			cmds.setAttr(mult_upper_disBtw_node + '.input2' , side_value)
-			
+
 			# 计算末端控制器到极向量控制器的距离
 			lower_disBtw_node = cmds.createNode('distanceBetween' ,
 			                                    name = startIK_pos_loc.replace('loc' , 'disBtw_lower'))
@@ -327,7 +332,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 			                                         name = lower_disBtw_node.replace('disBtw_lower' , 'mult'))
 			cmds.connectAttr(upper_disBtw_node + '.distance' , mult_lower_disBtw_node + '.input1')
 			cmds.setAttr(mult_lower_disBtw_node + '.input2' , side_value)
-			
+
 			# 因为绑定有自定义的缩放比例，因此实际的距离值需要除以绑定缩放的比例才能得到真实的距离
 			div_divBtw_node = cmds.createNode('multiplyDivide' , name = midIK_pv_loc.replace('loc' , 'div'))
 			cmds.connectAttr(mult_upper_disBtw_node + '.output' , div_divBtw_node + '.input1X')
@@ -335,17 +340,17 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 			cmds.connectAttr(self.character_ctrl + '.rigScale' , div_divBtw_node + '.input2X')
 			cmds.connectAttr(self.character_ctrl + '.rigScale' , div_divBtw_node + '.input2Y')
 			cmds.setAttr(div_divBtw_node + '.operation' , 3)
-			
+
 			# 将真实的距离连接给极向量锁定的blendcolor节点
 			# 原理：当极向量锁定值为1打开的时候，启用的是color1的数值。当极向量锁定值为0关闭的时候，启用的是color2的数值
-			
+
 			cmds.connectAttr(div_divBtw_node + '.outputX' , pvLock_blend_node + '.color1R')
 			cmds.connectAttr(div_divBtw_node + '.outputY' , pvLock_blend_node + '.color1G')
-			
+
 			# 将原先关节拉伸后的距离连接给极向量锁定的blendcolor节点的color2
 			cmds.connectAttr(stretch_blend_node + '.outputR' , pvLock_blend_node + '.color2R')
 			cmds.connectAttr(stretch_blend_node + '.outputG' , pvLock_blend_node + '.color2G')
-			
+
 			# 把混合后的关节长度连接给原关节
 			cmds.connectAttr(pvLock_blend_node + '.outputR' , midIK_jnt + '.translateX')
 			cmds.connectAttr(pvLock_blend_node + '.outputG' , endIK_jnt + '.translateX')

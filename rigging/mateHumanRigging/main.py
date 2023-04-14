@@ -16,10 +16,10 @@ space_list = None
 side = 'l'
 
 # example
-l_leg = matehuman_leg_rig.Leg_rig('r',joint_parent , space_list = None,stretch = True)
+l_leg = matehuman_leg_rig.Leg_rig('l',joint_parent , space_list = None,stretch = True)
 
 l_leg.create_leg_rig()
 
-l_arm = matehuman_arm_rig.Arm_rig('r' , joint_parent , space_list = None , stretch = True)
-
-l_arm.create_arm_rig()
+# l_arm = matehuman_arm_rig.Arm_rig('l' , joint_parent , space_list = None , stretch = True)
+#
+# l_arm.create_arm_rig()
