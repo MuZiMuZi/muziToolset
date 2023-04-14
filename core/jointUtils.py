@@ -180,12 +180,13 @@ class Joint(object) :
 
 
     @staticmethod
-    def create_mateHuman_chain(drv_jnts , prefix , joint_parent = None) :
+    def create_mateHuman_chain(drv_jnts , prefix , joint_parent = None, constraint = True) :
         '''创建mateHuman的IK,FK 的关节链
 
         drv_jnts(list): 用于放置模板的关节列表。mateHuman的drv_jnts
         prefix(str):要添加到关节的前缀.
         joint_parent(str):关节的父层级物体.
+        constraint(bool)：新创建出来的关节是否需要与旧关节做约束
 
         :return(list):生成的关节列表.
         '''
@@ -197,6 +198,9 @@ class Joint(object) :
             jnt_new = cmds.createNode('joint' , name = jnt_new_name)
             cmds.matchTransform(jnt_new , jnt , position = True , rotation = True)
             cmds.makeIdentity(jnt_new , apply = True , translate = True , rotate = True , scale = True)
+            if constraint:
+                cmds.parentConstraint(jnt_new, jnt, mo = True)
+                cmds.scaleConstraint(jnt_new,jnt,mo =True)
             if joint_parent :
                 cmds.parent(jnt_new , joint_parent)
             joint_parent = jnt_new
