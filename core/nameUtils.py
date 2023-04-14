@@ -24,8 +24,11 @@ from __future__ import print_function
 import re
 
 import maya.cmds as cmds
-import muziToolset.core.pipelineUtils as pipelineUtils
+from .import pipelineUtils
+from importlib import reload
 
+
+reload(pipelineUtils)
 
 class Name(object):
     """
@@ -132,7 +135,6 @@ class Name(object):
         elif self._side == 'r':
             self._side = 'l'
 
-    @pipelineUtils.Pipeline.make_undo
     def set_rename(self, new_name):
         names = cmds.ls(sl = True)
         for self._name in names:

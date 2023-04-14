@@ -14,7 +14,7 @@ setup: 绑定生成的预设步骤，导入对应的模型和关节结构
 make： 根据给定的bp_joints关节的名称来创建对应的模块组
 
 """
-
+from importlib import reload
 import maya.cmds as cmds
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.nameUtils as nameUtils

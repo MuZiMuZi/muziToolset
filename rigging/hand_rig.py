@@ -11,7 +11,7 @@ fingerCurlRig : 设置手指关节旋转的姿势。
 
 
 """
-
+from importlib import reload
 import arm_rig
 import base_rig
 import fk_rig

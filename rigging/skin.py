@@ -3,7 +3,7 @@
 import maya.cmds as cmds
 import muziToolset.core.hierarchyUtils as hierarchyUtils
 import pymel.core as pm
-
+from importlib import reload
 
 shapenodes = pm.selected()[0].getShape()
 # 获取形状节点的历史节点类型为joint的节点

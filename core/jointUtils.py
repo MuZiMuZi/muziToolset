@@ -11,7 +11,7 @@ u"""
  create_joints_on_curve：基于曲线上的点创建关节(通用版本)，还未添加是否为曲线的判断
 
 """
-
+from importlib import reload
 import maya.cmds as cmds
 from . import nameUtils
 

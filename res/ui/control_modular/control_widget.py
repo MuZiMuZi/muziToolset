@@ -2,7 +2,7 @@
 # 导入所有需要的模块
 
 from __future__ import unicode_literals, print_function
-
+from importlib import reload
 try:
     from PySide2.QtCore import *
     from PySide2.QtGui import *

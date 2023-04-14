@@ -18,6 +18,7 @@ get_attrs_limits:获取控制器属性的限制值
 get_attrs_range:将属性范围作为带键的字典返回 ('{}.{}'.format(ctrl, attr))
 
 """
+from importlib import reload
 from collections import OrderedDict
 from ast import literal_eval
 import maya.cmds as cmds

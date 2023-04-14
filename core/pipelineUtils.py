@@ -27,7 +27,7 @@ from functools import wraps
 import maya.cmds as cmds
 import maya.mel as mel
 import re
-
+from importlib import reload
 from . import hierarchyUtils
 from . import controlUtils
 class Pipeline(object):

@@ -21,7 +21,7 @@ except ImportError:
     from shiboken import wrapInstance
 
 import maya.cmds as cmds
-
+from importlib import reload
 import muziToolset.core.snapUtils as snapUtils
 import muziToolset.res.ui.backGround as backGround
 reload(backGround)

@@ -9,7 +9,7 @@ u"""
 
 build： 根据导入的对应模块，生成绑定系统
 """
-
+from importlib import reload
 import muziToolset.rigging.base_rig as base_rig
 import muziToolset.rigging.arm_rig as arm_rig
 import muziToolset.rigging.foot_rig as foot_rig

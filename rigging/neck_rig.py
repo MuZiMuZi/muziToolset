@@ -17,7 +17,7 @@ import muziToolset.core.jointUtils as jointUtils
 import muziToolset.core.nameUtils as nameUtils
 import muziToolset.core.pipelineUtils as pipelineUtils
 
-
+from importlib import reload
 reload(pipelineUtils)
 reload(jointUtils)
 

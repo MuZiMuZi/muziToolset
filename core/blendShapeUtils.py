@@ -9,6 +9,7 @@ get_blendshape_weight：获取bs节点权重
 get_blendshape_weight_list：：获取bs节点权重列表
 """
 import maya.cmds as cmds
+from importlib import reload
 class BlendShape():
     def __init__(self,modle_ndoe):
         self.modle_ndoe = modle_ndoe

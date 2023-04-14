@@ -1,7 +1,3 @@
-# coding=utf-8
-"""
-
-"""
 from __future__ import unicode_literals,print_function
 import sys
 
@@ -9,11 +5,10 @@ import sys
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QFont
 from PySide2.QtWidgets import *
-
 from maya.OpenMayaUI import  MQtUtil
 from shiboken2 import wrapInstance
 import maya.cmds as cmds
-
+from importlib import reload
 import muziToolset.conf.config as config
 
 

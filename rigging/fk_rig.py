@@ -12,7 +12,7 @@ fk_chain_rig：创建FK链的控制器绑定
 
 
 """
-
+from importlib import reload
 import maya.cmds as cmds
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils
