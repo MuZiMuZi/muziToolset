@@ -277,4 +277,5 @@ class Base_Rig(object) :
 		创建偏移的控制器组
 		:return:
 		'''
-		offset_jnt = cmds.ls('')
+		offset_jnt = cmds.ls('*Off*',type = 'joint')
+		print(offset_jnt)
