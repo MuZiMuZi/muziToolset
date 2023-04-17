@@ -23,13 +23,11 @@ reload(matehuman_hand_rig)
 class Arm_rig(matehuman_base_rig.Base_Rig) :
 	
 	
-	def __init__(self , side , joint_parent , space_list , stretch = True) :
+	def __init__(self , side ,  space_list , stretch = True) :
 		super().__init__()
 		self.side = side
 		self.drv_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('arm_{}'.format(self.side))
-		self.joint_parent = joint_parent
-		self.control_parent = 'output_' + matehumanUtils.MateHuman.get_mateHuman_drv_jnt(
-				'clavicle_{}'.format(self.side))
+		self.make(self.drv_jnts)
 		self.space_list = space_list
 		self.stretch = stretch
 	
@@ -62,7 +60,7 @@ class Arm_rig(matehuman_base_rig.Base_Rig) :
 		clavicle_ctrl = controlUtils.Control.create_mateHuman_ctrl(clavicle_jnt , 'ctrl' , shape = 'ball' ,
 		                                                           radius = 12 ,
 		                                                           axis = 'Z+' ,
-		                                                           pos = clavicle_jnt , parent = None)
+		                                                           pos = clavicle_jnt , parent = self.control_parent)
 		clavicle_output = clavicle_ctrl.replace('ctrl' , 'output')
 		# parent = 'output_m_chest_001'
 		

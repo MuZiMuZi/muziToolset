@@ -74,11 +74,13 @@ class FK_Rig(matehuman_base_rig.Base_Rig) :
 				cmds.parent(zero , parent)
 			parent = output
 		# 创建fk控制器的总组，整理fk控制器的层级结构
-		fk_ctrl_grp = cmds.createNode('transform' , name = 'fkgrp_' + self.drv_jnts[0])
+		fk_ctrl_grp = cmds.createNode('transform' , name = 'fkctrlgrp_' + self.drv_jnts[0])
 		fk_chain_zero = 'fkzero_' + self.drv_jnts[0]
 		cmds.parent(fk_chain_zero , fk_ctrl_grp)
+		
 		if self.control_parent :
 			hierarchyUtils.Hierarchy.parent(child_node = fk_ctrl_grp , parent_node = self.control_parent)
+		
 
 	def _create_fk_chain_system(self, constraint = False):
 		u'''
@@ -131,7 +133,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		
 		startIK_ctrl_output = startIK_ctrl.replace('ctrl' , 'output')
 		startIK_zero = startIK_ctrl.replace('ctrl' , 'zero')
-		# cmds.pointConstraint(startIK_ctrl_output , startIK_jnt , maintainOffset = True)
+		cmds.pointConstraint(startIK_ctrl_output , startIK_jnt , maintainOffset = True)
 		
 		# 创建尾端的ik控制器
 		endIK_jnt = self.ik_chain[2]
@@ -204,10 +206,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		endIK_local_output = endIK_local_zero.replace('zero' , 'output')
 		cmds.parent(rotate_ikhandle_node , endIK_local_output)
 		cmds.poleVectorConstraint(midIK_pv_ctrl , rotate_ikhandle_node)
-		ik_ctrl_grp = cmds.createNode('transform' , name = self.ik_chain[0].replace('jnt' , 'grp'))
-		cmds.parent(startIK_zero , midIK_pv_zero , endIK_zero , ikpv_curve , ik_ctrl_grp)
-		if self.control_parent :
-			hierarchyUtils.Hierarchy.parent(child_node = ik_ctrl_grp , parent_node = self.control_parent)
+		
 
 		# 添加空间切换
 		if self.space_list :
@@ -351,7 +350,12 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 			cmds.connectAttr(pvLock_blend_node + '.outputG' , endIK_jnt + '.translateX')
 		else :
 			pass
-	
+		# 创建ik控制器的总组，整理ik控制器的层级结构
+		ik_ctrl_grp = cmds.createNode('transform' , name = 'ikctrlgrp_' + self.drv_jnts[0])
+		cmds.parent(startIK_zero , midIK_pv_zero , endIK_zero , ikpv_curve , ik_ctrl_grp)
+		
+		if self.control_parent :
+			hierarchyUtils.Hierarchy.parent(child_node = ik_ctrl_grp , parent_node = self.control_parent)
 	
 	def ik_spine_rig(self) :
 		u"""
@@ -459,13 +463,6 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		cmds.connectAttr(endIK_loc + '.worldMatrix[0]' , spine_ikhandle_node + '.dWorldUpMatrixEnd')
 		cmds.setAttr(spine_ikhandle_node + '.visibility' , 0)
 
-		# 整理层级结构
-		ik_ctrl_grp = cmds.createNode('transform' , name = self.ik_chain[0].replace('jnt' , 'grp'))
-		cmds.parent(startIK_zero , midIK_zero , endIK_zero , ik_ctrl_grp)
-		if self.control_parent :
-			hierarchyUtils.Hierarchy.parent(child_node = ik_ctrl_grp , parent_node = self.control_parent)
-		hierarchyUtils.Hierarchy.parent(child_node = spine_ikhandle_node , parent_node = self.rigNode_Local)
-		hierarchyUtils.Hierarchy.parent(child_node = ik_chain_crv , parent_node = self.rigNode_World)
 
 		# 添加拉伸效果
 		# 获取ikspine曲线的形状节点
@@ -504,6 +501,14 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 			cmds.connectAttr(add_node + '.output' , blend_node + '.color1R')
 			# 把混合后的关节长度连接给原关节
 			cmds.connectAttr(blend_node + '.outputR' , jnt + '.translateX')
+		
+		# 整理层级结构
+		ik_ctrl_grp = cmds.createNode('transform' , name = self.ik_chain[0].replace('jnt' , 'ctrlgrp'))
+		cmds.parent(startIK_zero , midIK_zero , endIK_zero , ik_ctrl_grp)
+		if self.control_parent :
+			hierarchyUtils.Hierarchy.parent(child_node = ik_ctrl_grp , parent_node = self.control_parent)
+		hierarchyUtils.Hierarchy.parent(child_node = spine_ikhandle_node , parent_node = self.rigNode_Local)
+		hierarchyUtils.Hierarchy.parent(child_node = ik_chain_crv , parent_node = self.rigNode_World)
 
 
 class IKFK_Rig(matehuman_base_rig.Base_Rig) :
@@ -604,8 +609,8 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 				cmds.connectAttr(ikfkBend_ctrl + '.IkFkBend' , blend_node + '.blender')
 				cmds.connectAttr(blend_node + '.output' , bind + '.{}'.format(attr))
 		
-		fk_ctrl_grp = fk_chain[0].replace('jnt' , 'grp')
-		ik_ctrl_grp = ik_chain[0].replace('jnt' , 'grp')
+		fk_ctrl_grp = fk_chain[0].replace('jnt' , 'ctrlgrp')
+		ik_ctrl_grp = ik_chain[0].replace('jnt' , 'ctrlgrp')
 		# 用混合颜色节点来连接fk/ik的控制器的显示开关
 		cmds.connectAttr(ikfkBend_ctrl + '.IkFkBend' , fk_ctrl_grp + '.visibility')
 		reverse_node = cmds.createNode('reverse' , name = blend_node.replace('blend_node_' , 'reverse_'))
@@ -617,42 +622,18 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 			cmds.parentConstraint(ikfk , drv , mo = True)
 			cmds.scaleConstraint(ikfk , drv , mo = True)
 		
+	
+	
 		# 整理层级结构
 		hierarchyUtils.Hierarchy.parent(child_node = ikfkBend_grp , parent_node = self.control_parent)
-	
-	
-	def create_ribbon_Rig(self , ikfk_chain , control_parent , joint_parent , joint_number) :
-		u"""
-			  创建ribbon关节的绑定
-			  """
-		upper_part = nameUtils.Name(name = ikfk_chain[0])
-		lower_part = nameUtils.Name(name = ikfk_chain[1])
-		# 创建ribbon关节和twist关节
-		self.ribbon_rig(upper_part.name , self.control_parent , self.joint_parent , joint_number = joint_number)
-		self.ribbon_rig(lower_part.name , self.control_parent , self.joint_parent , joint_number = joint_number)
-		
-		# 吸附带控制器组的位置和旋转
-		ribbon_upper_start_driven = 'driven_{}_{}Start_001'.format(upper_part.side , upper_part.description)
-		ribbon_upper_End_driven = 'driven_{}_{}End_001'.format(upper_part.side , upper_part.description)
-		
-		ribbon_lower_start_driven = 'driven_{}_{}Start_001'.format(lower_part.side , lower_part.description)
-		ribbon_lower_End_driven = 'driven_{}_{}End_001'.format(lower_part.side , lower_part.description)
-		
-		# 关节约束对应的控制器组
-		
-		cmds.parentConstraint(ikfk_chain[0] , ribbon_upper_start_driven , maintainOffset = False)
-		cmds.parentConstraint(ikfk_chain[1] , ribbon_upper_End_driven , maintainOffset = False)
-		
-		cmds.parentConstraint(ikfk_chain[1] , ribbon_lower_End_driven , maintainOffset = False)
-		cmds.parentConstraint(ikfk_chain[2] , ribbon_lower_start_driven , maintainOffset = False)
-	
+
 	
 	def create_fk_chain_system(self) :
 		u'''
 		创建fk链条绑定系统
 		:return:
 		'''
-		self.fk_systeam = FK_Rig(self.drv_jnts , self.joint_parent , self.control_parent,redius = 10)
+		self.fk_systeam = FK_Rig(self.drv_jnts , self.joint_parent , self.control_parent,redius = 15)
 		self.fk_systeam_chain = self.fk_systeam.create_fk_chain()
 		self.fk_systeam_rig = self.fk_systeam.fk_chain_rig()
 	

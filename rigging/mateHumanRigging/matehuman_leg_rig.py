@@ -25,12 +25,11 @@ reload(matehuman_hand_rig)
 class Leg_rig(matehuman_base_rig.Base_Rig) :
 	
 	
-	def __init__(self , side , joint_parent , space_list , stretch = True) :
+	def __init__(self , side , space_list , stretch = True) :
 		super().__init__()
 		self.side = side
 		self.drv_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('leg_{}'.format(self.side))
-		self.joint_parent = joint_parent
-		self.control_parent = 'output_m_cog_001'
+		self.make(self.drv_jnts)
 		self.space_list = space_list
 		self.stretch = stretch
 	

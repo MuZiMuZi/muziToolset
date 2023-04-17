@@ -19,7 +19,7 @@ class MateHuman() :
 		                              'pelvis' : 'pelvis_drv' ,
 		                              'spine' : ['spine_01_drv' , 'spine_02_drv' , 'spine_03_drv' , 'spine_04_drv' ,
 		                                         'spine_05_drv'] ,
-		                              'neck' : ['neck_01_drv' , 'neck_02_drv'] ,
+		                              'neck' : ['neck_01_drv' , 'neck_02_drv','head_drv'] ,
 		                              'head ' : 'head_drv'}
 		
 		mateHuman_joint_arm_dict = {'clavicle_l' : 'clavicle_l_drv' ,

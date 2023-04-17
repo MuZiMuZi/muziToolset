@@ -30,11 +30,10 @@ reload(matehuman_ikfk_rig)
 class Spine_Rig(matehuman_base_rig.Base_Rig) :
 	
 	
-	def __init__(self , joint_parent , space_list , stretch = True) :
+	def __init__(self ,  space_list , stretch = True) :
 		super(Spine_Rig , self).__init__()
 		self.drv_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('spine')
-		self.joint_parent = joint_parent
-		self.control_parent = self.cog_ctrl
+		self.make(self.drv_jnts)
 		self.space_list = space_list
 		self.stretch = stretch
 	
