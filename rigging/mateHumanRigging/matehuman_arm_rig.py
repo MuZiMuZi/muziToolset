@@ -64,7 +64,7 @@ class Arm_rig(matehuman_base_rig.Base_Rig) :
 		                                                           axis = 'Z+' ,
 		                                                           pos = clavicle_jnt , parent = self.control_parent)
 		self.clavicle_zero = self.clavicle_ctrl.replace('ctrl' , 'zero')
-		cmds.parentConstraint('ikfkjnt_' + self.spine_jnts[-1] , self.clavicle_zero)
+		cmds.parentConstraint('ikfkjnt_' + self.spine_jnts[-1] , self.clavicle_zero, mo = True)
 		
 		
 		# 创建耸肩的控制器

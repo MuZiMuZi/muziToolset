@@ -32,7 +32,7 @@ class Spine_Rig(matehuman_base_rig.Base_Rig) :
 	
 	def __init__(self ,  space_list , stretch = True) :
 		super(Spine_Rig , self).__init__()
-		self.drv_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('spine')
+		self.drv_jnts = self.spine_jnts
 		self.make(self.drv_jnts)
 		self.space_list = space_list
 		self.stretch = stretch

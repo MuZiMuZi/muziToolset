@@ -32,7 +32,7 @@ class Neck_Rig(matehuman_base_rig.Base_Rig) :
 	
 	def __init__(self ,  space_list) :
 		super(Neck_Rig , self).__init__()
-		self.drv_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('neck')
+		self.drv_jnts = self.neck_jnts
 		self.make(self.drv_jnts)
 		self.space_list = space_list
 	
@@ -41,6 +41,10 @@ class Neck_Rig(matehuman_base_rig.Base_Rig) :
 		# 创建脖子的fk绑定系统
 		neck_system = matehuman_ikfk_rig.FK_Rig(self.drv_jnts , self.joint_parent , self.control_parent)
 		neck_system._create_fk_chain_system(constraint = True)
+		
+		self.neck_zero = 'fkzero_' + self.drv_jnts[0]
+		cmds.parentConstraint('ikfkjnt_' + self.spine_jnts[-1] , self.neck_zero,mo = True)
+		
 
 
 # example

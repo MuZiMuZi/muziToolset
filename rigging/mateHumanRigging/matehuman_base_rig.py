@@ -56,6 +56,7 @@ class Base_Rig(object) :
 		self.geometry = 'geometry'
 		self.control = 'control'
 		self.custom = 'custom'
+		self.matehuman_custom = 'matehuman_custom'
 		
 		self.rigNode = 'rigNode'
 		self.joint = 'joint'
@@ -69,28 +70,17 @@ class Base_Rig(object) :
 		self.high_modle_grp = 'grp_m_high_modle_001'
 		
 		self.rig_ctrl = [self.character_ctrl , self.world_ctrl , self.cog_ctrl , self.custom_ctrl]
-		self.rig_hierarchy_grp = [self.group , self.geometry , self.control , self.custom , self.rigNode , self.joint ,
+		self.rig_hierarchy_grp = [self.group , self.geometry , self.control , self.custom , self.matehuman_custom, self.rigNode , self.joint ,
 		                          self.rigNode_Local , self.rigNode_World , self.nCloth ,
 		                          self.description_rig , self.low_modle_grp , self.mid_modle_grp , self.high_modle_grp]
+	
 		
-		# 定义绑定模块
-		
-		self.arm_rig = 'arm_rig'
-		self.hand_rig = 'hand_rig'
-		self.leg_rig = 'leg_rig'
-		self.foot_rig = 'foot_rig'
-		self.neck_rig = 'neck_rig'
-		self.spine_rig = 'spine_rig'
-		self.chest_rig = 'chest_rig'
-		self.description_rig_list = [self.arm_rig , self.hand_rig , self.leg_rig , self.foot_rig , self.neck_rig ,
-		                             self.spine_rig , self.chest_rig]
-		
-		# # # 定义绑定模块的bp定位关节
-		# self.arm_bp_joints = self.get_description_mateHuman_joints(self.arm_rig)
-		# # self.leg_bp_joints = self.get_description_bp_joints(self.leg_rig)
-		# # self.neck_bp_joints = self.get_description_bp_joints(self.neck_rig)
-		# # self.spine_bp_joints = self.get_description_bp_joints(self.spine_rig)
-		# # self.foot_bp_joints = self.get_description_bp_joints(self.foot_rig)
+		#  定义绑定模块的bp定位关节
+		self.spine_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('spine')
+		self.neck_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('neck')
+		self.root_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('root')
+		self.pelvis_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('pelvis')
+
 		
 		# 设置matehuman导入maya的轴向
 		cmds.setAttr('root_drv' + '.rotateX' , -90)
@@ -172,7 +162,7 @@ class Base_Rig(object) :
 		
 		# 创建RigNode层级下的子层级组并做层级关系
 		cmds.parent(self.rigNode_Local , self.rigNode_World , self.rigNode)
-		cmds.parent(self.rigNode , self.joint , self.nCloth  , self.custom)
+		cmds.parent(self.rigNode , self.joint , self.nCloth  , self.custom, self.matehuman_custom)
 		
 		# 创建Modle层级下的子层级组并且做层级关系
 		cmds.parent(self.low_modle_grp , self.mid_modle_grp , self.high_modle_grp , self.geometry)
@@ -195,10 +185,14 @@ class Base_Rig(object) :
 		controlUtils.Control.create_ctrl(self.world_ctrl , shape = 'local' , radius = 35 , axis = 'Z-' ,
 		                                 pos = None ,
 		                                 parent = self.character_ctrl.replace('ctrl_' , 'output_'))
+		cmds.parentConstraint(self.world_ctrl.replace('ctrl' , 'output') , self.root_jnts , mo = True)
+		cmds.scaleConstraint(self.world_ctrl.replace('ctrl' , 'output') , self.root_jnts , mo = True)
 		# 创建重心控制器
 		controlUtils.Control.create_ctrl(self.cog_ctrl , shape = 'circle' , radius = 28 , axis = 'Y-' ,
-		                                 pos = 'pelvis_drv' ,
+		                                 pos = self.pelvis_jnts,
 		                                 parent = self.world_ctrl.replace('ctrl_' , 'output_'))
+		cmds.parentConstraint(self.cog_ctrl.replace('ctrl','output'), self.pelvis_jnts , mo = True)
+		cmds.scaleConstraint(self.cog_ctrl.replace('ctrl' , 'output') , self.pelvis_jnts , mo = True)
 		# 创建一个自定义的控制器，用来承载自定义的属性
 		controlUtils.Control.create_ctrl(self.custom_ctrl , shape = 'cross' , radius = 3 , axis = 'X+' ,
 		                                 pos = None ,

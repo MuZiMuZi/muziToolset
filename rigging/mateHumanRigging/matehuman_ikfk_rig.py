@@ -108,7 +108,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 	def create_ik_chain(self , constraint = False) :
 		# 根据self.drv_jnts生成ik关节链
 		self.ik_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'ikjnt_' , self.joint_parent ,
-		                                                        constraint = False)
+		                                                        constraint )
 		
 		return self.ik_chain
 	
@@ -203,8 +203,8 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		# 创建IKhandle控制
 		rotate_ikhandle_name = startIK_jnt.replace('jnt' , 'ikhandle')
 		rotate_ikhandle_node = \
-		cmds.ikHandle(name = rotate_ikhandle_name , startJoint = self.ik_chain[0] , endEffector = self.ik_chain[2] ,
-		              sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True)[0]
+			cmds.ikHandle(name = rotate_ikhandle_name , startJoint = self.ik_chain[0] , endEffector = self.ik_chain[2] ,
+			              sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True)[0]
 		cmds.setAttr(rotate_ikhandle_node + '.visibility' , 0)
 		endIK_local_output = endIK_local_zero.replace('zero' , 'output')
 		cmds.parent(rotate_ikhandle_node , endIK_local_output)
