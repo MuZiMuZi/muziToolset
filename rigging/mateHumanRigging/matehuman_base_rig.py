@@ -270,3 +270,11 @@ class Base_Rig(object) :
 			space_grp = cmds.createNode('transform' , name = 'grp_m_{}Space_001'.format(ctrl_obj.description))
 			cmds.parent(space_grp , ctrl)
 			cmds.setAttr(space_grp + '.visibility' , 0)
+			
+	
+	def create_offset_ctrl(self):
+		u'''
+		创建偏移的控制器组
+		:return:
+		'''
+		offset_jnt = cmds.ls('')
