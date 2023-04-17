@@ -366,7 +366,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		"""
 		
 		# 根据ik_chain的关节数量生成曲线
-		ik_chain_crv = cmds.curve(degree = 3 , name = self.ik_chain[0].replace('ikjnt' , 'crv') ,
+		ik_chain_crv = cmds.curve(degree = 1 , name = self.ik_chain[0].replace('ikjnt' , 'crv') ,
 		                          p = [(0 , 0 , 0) , (0 , 0 , 0) , (0 , 0 , 0) , (0 , 0 , 0) , (0 , 0 , 0)])
 		
 		# 获取节点的曲线形状
@@ -403,7 +403,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		startIK_zero = startIK_ctrl.replace('ctrl' , 'zero')
 		cmds.parent(startIK_crv_jnt , startIK_ctrl_output)
 		cmds.setAttr(startIK_crv_jnt + '.visibility' , 0)
-		
+
 		# 创建尾端的ik控制器
 		endIK_jnt = self.ik_chain[-1]
 		endIK_crv_jnt = pipelineUtils.Pipeline.create_node('joint' , endIK_jnt.replace('jnt' , 'crvjnt') ,
@@ -417,14 +417,14 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		endIK_zero = endIK_ctrl.replace('ctrl' , 'zero')
 		cmds.parent(endIK_crv_jnt , endIK_ctrl_output)
 		cmds.setAttr(endIK_crv_jnt + '.visibility' , 0)
-		
+
 		#
 		# 创建中间的ik控制器
 		midIK_jnt = self.ik_chain[2]
 		midIK_crv_jnt = pipelineUtils.Pipeline.create_node('joint' , midIK_jnt.replace('jnt' , 'crvjnt') ,
 		                                                   match = True ,
 		                                                   match_node = midIK_jnt)
-		
+
 		midIK_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.drv_jnts[2] , 'ikctrl' ,
 		                                                        shape = 'Cube' , radius = 20 , axis = 'Y+' ,
 		                                                        pos = midIK_jnt , parent = None)
@@ -432,31 +432,33 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		cmds.parent(midIK_crv_jnt , midIK_ctrl_output)
 		cmds.setAttr(midIK_crv_jnt + '.visibility' , 0)
 		midIK_zero = midIK_ctrl.replace('ctrl' , 'zero')
-		
+
 		# 曲线关节对ikspine曲线进行蒙皮
 		cmds.skinCluster(startIK_crv_jnt , midIK_crv_jnt , endIK_crv_jnt , ik_chain_crv , tsb = True)
-		
+
 		# 曲线对ik关节做ik样条线手柄
 		spine_ikhandle_node = \
 			cmds.ikHandle(curve = ik_chain_crv , startJoint = self.ik_chain[0] , endEffector = self.ik_chain[4] ,
 			              solver = 'ikSplineSolver' , createCurve = 0 ,
 			              name = startIK_jnt.replace('jnt' , 'ikhandle'))[0]
+		
+			
 		# 创建loc来制作ikhandle的横向旋转
 		startIK_loc = cmds.spaceLocator(name = startIK_jnt.replace('jnt' , 'loc'))[0]
 		endIK_loc = cmds.spaceLocator(name = endIK_jnt.replace('jnt' , 'loc'))[0]
-		
+
 		cmds.matchTransform(startIK_loc , startIK_jnt , position = True , rotation = True , scale = True)
 		cmds.parent(startIK_loc , startIK_ctrl_output)
 		cmds.matchTransform(endIK_loc , endIK_jnt , position = True , rotation = True , scale = True)
 		cmds.parent(endIK_loc , endIK_ctrl_output)
-		
+
 		# 设置ikhandle的高级扭曲属性用来设置横向旋转
 		cmds.setAttr(spine_ikhandle_node + '.dTwistControlEnable' , 1)
 		cmds.setAttr(spine_ikhandle_node + '.dWorldUpType' , 4)
 		cmds.connectAttr(startIK_loc + '.worldMatrix[0]' , spine_ikhandle_node + '.dWorldUpMatrix')
 		cmds.connectAttr(endIK_loc + '.worldMatrix[0]' , spine_ikhandle_node + '.dWorldUpMatrixEnd')
 		cmds.setAttr(spine_ikhandle_node + '.visibility' , 0)
-		
+
 		# 整理层级结构
 		ik_ctrl_grp = cmds.createNode('transform' , name = self.ik_chain[0].replace('jnt' , 'grp'))
 		cmds.parent(startIK_zero , midIK_zero , endIK_zero , ik_ctrl_grp)
@@ -464,7 +466,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 			hierarchyUtils.Hierarchy.parent(child_node = ik_ctrl_grp , parent_node = self.control_parent)
 		hierarchyUtils.Hierarchy.parent(child_node = spine_ikhandle_node , parent_node = self.rigNode_Local)
 		hierarchyUtils.Hierarchy.parent(child_node = ik_chain_crv , parent_node = self.rigNode_World)
-		
+
 		# 添加拉伸效果
 		# 获取ikspine曲线的形状节点
 		if self.stretch :
@@ -473,21 +475,21 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 			curveInfo_node = cmds.createNode('curveInfo' , name = ik_chain_crv.replace('crv' , 'crvInfo'))
 			cmds.connectAttr(ik_chain_crv_shape + '.worldSpace' , curveInfo_node + '.inputCurve')
 			ik_chain_crv_value = cmds.getAttr(curveInfo_node + '.arcLength')
-			
+
 			# 创建一个相加节点来获取ikspine曲线变换的数值
 			add_curveInfo_node = cmds.createNode('addDoubleLinear' , name = ik_chain_crv.replace('crv' , 'add'))
 			cmds.connectAttr(curveInfo_node + '.arcLength' , add_curveInfo_node + '.input1')
 			cmds.setAttr(add_curveInfo_node + '.input2' , ik_chain_crv_value * -1)
-			
+
 			# 创建一个相乘节点，来将变换的数值平均分配给每个关节
 			mult_curveInfo_node = cmds.createNode('multDoubleLinear' , name = ik_chain_crv.replace('crv' , 'mult'))
 			cmds.connectAttr(add_curveInfo_node + '.output' , mult_curveInfo_node + '.input1')
 			cmds.setAttr(mult_curveInfo_node + '.input2' , 0.25)
-			
+
 			# 给控制器创建一个拉伸的属性，动画师根据需要可以选择是否拉伸
 			cmds.addAttr(endIK_ctrl , longName = 'stretch' , attributeType = 'double' ,
 			             niceName = u'拉伸' , minValue = 0 , maxValue = 1 , defaultValue = 0 , keyable = 1)
-			
+
 			# 根据对应的关节创建对应的相加节点，将变换后的数值连接到对应的关节上
 			for jnt in self.ik_chain[1 :-1] :
 				add_node = cmds.createNode('addDoubleLinear' , name = jnt.replace('jnt' , 'add'))
@@ -539,18 +541,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		
 		return self.ikfk_chain
 	
-	
-	def ikfk_spine_rig(self) :
-		u"""
-		创建IK样条曲线（脊椎和脖子的绑定）和FK关节链的混合绑定
-		"""
-		self.fk_systeam_chain = self.create_fk_chain()
-		self.fk_systeam_rig = self.fk_chain_rig()
-		
-		self.ik_systeam_chain = self.create_ik_chain()
-		self.ik_systeam_rig = self.ik_spine_rig()
-		self.ikfk_chain_rig(self.fk_systeam_chain , self.ik_systeam_chain)
-	
+
 	
 	def ikfk_chain_rig(self , fk_chain , ik_chain) :
 		u"""
@@ -666,7 +657,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		self.fk_systeam_rig = self.fk_systeam.fk_chain_rig()
 	
 	
-	def create_ik_chain_system(self, Y_value) :
+	def create_ik_chain_system(self, Y_value = 1) :
 		u'''
 		创建ik链条绑定系统
 		:return:
@@ -677,7 +668,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		self.ik_systeam_rig = self.ik_systeam.ik_chain_rig(Y_value)
 	
 	
-	def create_ik_spine_system(self, Y_value) :
+	def create_ik_spine_system(self) :
 		u'''
 		创建ikSpine绑定系统
 		:return:
@@ -685,10 +676,10 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		self.ik_systeam = IK_Rig(self.drv_jnts , self.joint_parent , self.control_parent , self.space_list ,
 		                         self.stretch)
 		self.ik_systeam_chain = self.ik_systeam.create_ik_chain()
-		self.ik_systeam_rig = self.ik_systeam.ik_chain_rig(Y_value)
+		self.ik_systeam_rig = self.ik_systeam.ik_spine_rig()
 	
 	
-	def create_ikfk_chain_rig(self, Y_value) :
+	def create_ikfk_chain_rig(self, Y_value = 1) :
 		u"""
 		创建ikfk关节链混合的绑定,手臂，腿部关节
 		"""
@@ -713,11 +704,11 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		self.create_fk_chain_system()
 		
 		# 创建ik控制系统
-		self.create_ik_spine_system(Y_value)
+		self.create_ik_spine_system()
 		
 		# 创建ikfk融合系统
 		self.ikfk_systeam_chain = self.create_ikfk_chain()
-		self.ikfk_spine_rig(self.fk_systeam_chain , self.ik_systeam_chain)
+		self.ikfk_chain_rig(self.fk_systeam_chain , self.ik_systeam_chain)
 	
 	
 	def ribbon_rig(self , name , control_parent , joint_parent , joint_number = 5) :

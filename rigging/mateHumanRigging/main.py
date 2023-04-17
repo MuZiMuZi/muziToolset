@@ -3,6 +3,7 @@ import muziToolset.rigging.mateHumanRigging.matehuman_hand_rig as matehuman_hand
 import muziToolset.rigging.mateHumanRigging.matehuman_arm_rig as matehuman_arm_rig
 import muziToolset.rigging.mateHumanRigging.matehuman_leg_rig as matehuman_leg_rig
 import muziToolset.rigging.mateHumanRigging.matehuman_foot_rig as matehuman_foot_rig
+import muziToolset.rigging.mateHumanRigging.matehuman_spine_rig as matehuman_spine_rig
 import muziToolset.core.matehumanUtils as matehumanUtils
 from importlib import reload
 
@@ -12,11 +13,9 @@ reload(matehumanUtils)
 reload(matehuman_hand_rig)
 reload(matehuman_leg_rig)
 reload(matehuman_foot_rig)
+reload(matehuman_spine_rig)
 
-joint_parent = None
-control_parent = None
-space_list = None
-side = 'l'
+
 
 # example
 
@@ -26,6 +25,8 @@ l_arm.create_arm_rig()
 l_leg = matehuman_leg_rig.Leg_rig('l' , joint_parent , space_list = None , stretch = True)
 l_leg.create_leg_rig()
 
+m_spine = matehuman_spine_rig.Spine_Rig(joint_parent , space_list , stretch = True)
 
-# l_foot = matehuman_foot_rig.Foot_Rig('l')
-# l_foot.create_foot_rig()
+m_spine.create_spine_rig()
+
+
