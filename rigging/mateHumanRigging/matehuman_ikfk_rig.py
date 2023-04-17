@@ -197,14 +197,8 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		#
 		# 创建IKhandle控制
 		rotate_ikhandle_name = startIK_jnt.replace('jnt' , 'ikhandle')
-		print(self.ik_chain[0])
-		print(self.ik_chain[2])
-		# rotate_ikhandle_node = \
-		# cmds.ikHandle(name = rotate_ikhandle_name , startJoint = 'ikjnt_thigh_l_drv' , endEffector = 'ikjnt_foot_l_drv' ,
-		#               sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True)[0]
-		
-		# rotate_ikhandle_node = cmds.ikHandle(name = rotate_ikhandle_name , startJoint = self.ik_chain[0] , endEffector = self.ik_chain[2] ,
-		#                                      sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True)[0]
+		rotate_ikhandle_node = cmds.ikHandle(name = rotate_ikhandle_name , startJoint = self.ik_chain[0] , endEffector = self.ik_chain[2] ,
+		                                     sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True)[0]
 		cmds.setAttr(rotate_ikhandle_node + '.visibility' , 0)
 		endIK_local_output = endIK_local_zero.replace('zero' , 'output')
 		cmds.parent(rotate_ikhandle_node , endIK_local_output)
@@ -248,7 +242,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 			# 将现有的关节距离减去原本关节的距离得到拉伸的距离
 			reduce_node = cmds.createNode('addDoubleLinear' , name = startIK_jnt.replace('jnt' , 'reduce'))
 			cmds.connectAttr(disBtw_node + '.distance' , reduce_node + '.input1')
-			cmds.setAttr(reduce_node + '.input2' , distance_value * -1)
+			cmds.setAttr(reduce_node + '.input2' , distance_value * -1*Y_value)
 
 			# 将变化的数值除以二，均匀分配给对应的拉伸关节
 			mult_node = cmds.createNode('multDoubleLinear' , name = startIK_jnt.replace('jnt' , 'mult'))
@@ -339,7 +333,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 			cmds.connectAttr(mult_lower_disBtw_node + '.output' , div_divBtw_node + '.input1Y')
 			cmds.connectAttr(self.character_ctrl + '.rigScale' , div_divBtw_node + '.input2X')
 			cmds.connectAttr(self.character_ctrl + '.rigScale' , div_divBtw_node + '.input2Y')
-			cmds.setAttr(div_divBtw_node + '.operation' , 3)
+			cmds.setAttr(div_divBtw_node + '.operation' , 2)
 
 			# 将真实的距离连接给极向量锁定的blendcolor节点
 			# 原理：当极向量锁定值为1打开的时候，启用的是color1的数值。当极向量锁定值为0关闭的时候，启用的是color2的数值
