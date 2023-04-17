@@ -28,6 +28,7 @@ class Arm_rig(matehuman_base_rig.Base_Rig) :
 		self.side = side
 		self.drv_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('arm_{}'.format(self.side))
 		self.make(self.drv_jnts)
+		self.spine_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('spine')
 		self.space_list = space_list
 		self.stretch = stretch
 	
@@ -40,12 +41,13 @@ class Arm_rig(matehuman_base_rig.Base_Rig) :
 		# 创建锁骨部位的绑定
 		self.create_clavicle_rig()
 		# 创建手臂部位的绑定
-		arm_system = matehuman_ikfk_rig.IKFK_Rig(self.drv_jnts , self.joint_parent , self.control_parent ,
+		arm_system = matehuman_ikfk_rig.IKFK_Rig(self.drv_jnts , self.joint_parent , self.scapula_output ,
 		                                         self.space_list , self.stretch)
 		arm_system.create_ikfk_chain_rig(Y_value = 1)
 		
 		# 创建手掌部位的绑定
 		self.create_hand_rig()
+	
 	
 	
 	def create_hand_rig(self) :
@@ -57,40 +59,40 @@ class Arm_rig(matehuman_base_rig.Base_Rig) :
 	def create_clavicle_rig(self) :
 		# 创建锁骨的控制器
 		clavicle_jnt = 'clavicle_{}_drv'.format(self.side)
-		clavicle_ctrl = controlUtils.Control.create_mateHuman_ctrl(clavicle_jnt , 'ctrl' , shape = 'ball' ,
+		self.clavicle_ctrl = controlUtils.Control.create_mateHuman_ctrl(clavicle_jnt , 'ctrl' , shape = 'ball' ,
 		                                                           radius = 12 ,
 		                                                           axis = 'Z+' ,
 		                                                           pos = clavicle_jnt , parent = self.control_parent)
-		clavicle_output = clavicle_ctrl.replace('ctrl' , 'output')
-		# parent = 'output_m_chest_001'
+		self.clavicle_zero = self.clavicle_ctrl.replace('ctrl' , 'zero')
+		cmds.parentConstraint('ikfkjnt_' + self.spine_jnts[-1] , self.clavicle_zero)
 		
 		
 		# 创建耸肩的控制器
 		shrug_jnt = 'clavicle_outOff_{}_drv'.format(self.side)
-		shrug_ctrl = controlUtils.Control.create_mateHuman_ctrl(shrug_jnt , 'ctrl' , shape = 'Cube' ,
+		self.shrug_ctrl = controlUtils.Control.create_mateHuman_ctrl(shrug_jnt , 'ctrl' , shape = 'Cube' ,
 		                                                        radius = 5 ,
 		                                                        axis = 'Z+' ,
-		                                                        pos = None , parent = clavicle_ctrl.replace(
+		                                                        pos = None , parent = self.clavicle_ctrl.replace(
 					'ctrl' , 'output'))
 		# 只吸附位移不吸附旋转
 		
-		cmds.matchTransform(shrug_ctrl.replace('ctrl' , 'zero') , shrug_jnt , position = True)
-		shrug_output = shrug_ctrl.replace('ctrl' , 'output')
+		cmds.matchTransform(self.shrug_ctrl.replace('ctrl' , 'zero') , shrug_jnt , position = True)
+		shrug_output = self.shrug_ctrl.replace('ctrl' , 'output')
 		
 		# 创建肩胛骨的控制器
 		scapula_jnt = 'clavicle_scapOff_{}_drv'.format(self.side)
-		scapula_ctrl = controlUtils.Control.create_mateHuman_ctrl(scapula_jnt , 'ctrl' , shape = 'Cube' ,
+		self.scapula_ctrl = controlUtils.Control.create_mateHuman_ctrl(scapula_jnt , 'ctrl' , shape = 'Cube' ,
 		                                                          radius = 5 ,
 		                                                          axis = 'Z+' ,
-		                                                          pos = None , parent = clavicle_ctrl.replace(
+		                                                          pos = None , parent = self.clavicle_ctrl.replace(
 					'ctrl' , 'output'))
 		# 只吸附位移不吸附旋转
 		
-		cmds.matchTransform(scapula_ctrl.replace('ctrl' , 'zero') , scapula_jnt , position = True)
-		scapula_output = scapula_ctrl.replace('ctrl' , 'output')
+		cmds.matchTransform(self.scapula_ctrl.replace('ctrl' , 'zero') , scapula_jnt , position = True)
+		self.scapula_output = self.scapula_ctrl.replace('ctrl' , 'output')
 		
 		# 创建约束
-		ctrls = [clavicle_ctrl , shrug_ctrl , scapula_ctrl]
+		ctrls = [self.clavicle_ctrl , self.shrug_ctrl , self.scapula_ctrl]
 		jnts = [clavicle_jnt , shrug_jnt , scapula_jnt]
 		for ctrl , jnt in zip(ctrls , jnts) :
 			cmds.parentConstraint(ctrl , jnt , mo = True)
