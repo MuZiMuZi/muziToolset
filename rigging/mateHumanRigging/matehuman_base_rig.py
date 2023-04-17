@@ -277,5 +277,9 @@ class Base_Rig(object) :
 		创建偏移的控制器组
 		:return:
 		'''
-		offset_jnt = cmds.ls('*Off*',type = 'joint')
-		print(offset_jnt)
+		offset_jnts = cmds.ls('*Off*',type = 'joint')
+		for offset_jnt in offset_jnts:
+			offset_ctrl = controlUtils.Control.create_mateHuman_ctrl(offset_jnt , 'offsetctrl' ,
+		                                                         shape = 'Cube' , radius = 5 ,
+		                                                         axis = 'X+' ,
+		                                                         pos = offset_jnt , parent = None)
