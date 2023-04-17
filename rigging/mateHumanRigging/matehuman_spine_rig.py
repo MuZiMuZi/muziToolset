@@ -41,7 +41,7 @@ class Spine_Rig(matehuman_base_rig.Base_Rig) :
 	def create_spine_rig(self) :
 		# 创建脊椎的绑定
 		spine_system = matehuman_ikfk_rig.IKFK_Rig(self.drv_jnts , self.joint_parent , self.control_parent ,
-		                                           self.space_list , self.stretch)
+		                                           self.space_list , self.stretch, redius = 25)
 		spine_system.create_ikfk_spine_rig()
 
 

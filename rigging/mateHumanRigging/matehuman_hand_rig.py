@@ -133,7 +133,7 @@ class Hand_Rig(matehuman_base_rig.Base_Rig) :
 		"""
 		pose_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.thumbHand_drv[0] , 'fkctrlpose' ,
 		                                                       shape = 'pPlatonic' ,
-		                                                       radius = 10 ,
+		                                                       radius = 6 ,
 		                                                       axis = 'X+' ,
 		                                                       pos = self.thumbHand_drv[0] ,
 		                                                       parent = self.hand_ctrl_grp)

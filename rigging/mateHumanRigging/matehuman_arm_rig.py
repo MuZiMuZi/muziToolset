@@ -42,7 +42,7 @@ class Arm_rig(matehuman_base_rig.Base_Rig) :
 		self.create_clavicle_rig()
 		# 创建手臂部位的绑定
 		arm_system = matehuman_ikfk_rig.IKFK_Rig(self.drv_jnts , self.joint_parent , self.scapula_output ,
-		                                         self.space_list , self.stretch)
+		                                         self.space_list , self.stretch,redius = 12)
 		arm_system.create_ikfk_chain_rig(Y_value = 1)
 		
 		# 创建手掌部位的绑定

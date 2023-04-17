@@ -3,6 +3,28 @@
 u"""
 这是一个用来编写mateHuman自动绑定系统的基础类，之后的绑定都会在这个类的基础上逐级继承下去
 
+#############################################################
+#	# # 规定一下命名规范
+# drv关节链: root_drv , spine_01_drv, thigh_r_drv
+# 模块_编号
+
+# fk关节链:'fkjnt_' + drv关节链
+# fk控制器组：'fkctrlgrp_' + drv关节链
+# fk控制器：'fkctrl_+ drv关节链
+# fk次级控制器：'fkctrlSub_+ drv关节链
+
+# ik关节链：'ikjnt' + drv关节链
+# ik控制器组：'ikctrlgrp_+ drv关节链
+# ik控制器：'ikctrl_+ drv关节链
+# ik次级控制器：'ikctrlSub_+ drv关节链
+
+# ikfk混合关节链：'ikfkjnt_' + drv关节链
+# ikfk混合控制器组：'ikfkctrlgrp_'+ drv关节链
+# ikfk混合控制器：'ikfkctrl_'+ drv关节链
+# ikfk混合次级控制器：'ikfkctrlSub_'+ drv关节链
+
+# 模块整体的控制器组 ：'ctrlgrp_' + drv关节链
+#############################################################
 目前已有的功能：
 
 get_description_bp_joints：根据给定关节模块的名称来获取对应的模块组关节的名称
@@ -25,19 +47,25 @@ import pymel.core as pm
 class Base_Rig(object) :
 	
 	
-	# # 规定一下命名规范
-	# drv关节链: root_drv , spine_01_drv, thigh_r_drv
-	
-	# fk关节链:'fkjnt' + drv关节链
-	# fk控制器：'fkctrl_边_模块_编号'
-	# fk次级控制器：'fkctrlSub_边_模块_编号'
-	
-	# ik关节链：'ikjnt' + drv关节链
-	# ik控制器：'ikctrl_边_模块_编号'
-	# ik次级控制器：'ikctrlSub_边_模块_编号'
-	
-	
 	def __init__(self) :
+		
+		# 定义层级架构的命名规范
+		self.define_naming_conventions()
+		
+		# 设置matehuman导入maya的轴向
+		cmds.setAttr('root_drv' + '.rotateX' , -90)
+		cmds.setAttr('headRig_grp' + '.rotateX' , -90)
+		
+		self.rig_top_grp = self.group
+		if not cmds.objExists(self.rig_top_grp) :
+			self.create_master_grp()
+	
+	
+	def define_naming_conventions(self) :
+		u'''
+		定义命名规范
+		:return:
+		'''
 		# # 定义mateHuman的关节层级
 		# self.mateHuman_joint_set()
 		self.side = None
@@ -63,32 +91,23 @@ class Base_Rig(object) :
 		self.rigNode_Local = 'rigNode_Local'
 		self.rigNode_World = 'rigNode_World'
 		self.nCloth = 'nCloth'
-		self.description_rig = 'description_rig'
 		
 		self.low_modle_grp = 'grp_m_low_modle_001'
 		self.mid_modle_grp = 'grp_m_mid_modle_001'
 		self.high_modle_grp = 'grp_m_high_modle_001'
 		
 		self.rig_ctrl = [self.character_ctrl , self.world_ctrl , self.cog_ctrl , self.custom_ctrl]
-		self.rig_hierarchy_grp = [self.group , self.geometry , self.control , self.custom , self.matehuman_custom, self.rigNode , self.joint ,
+		self.rig_hierarchy_grp = [self.group , self.geometry , self.control , self.custom , self.matehuman_custom ,
+		                          self.rigNode , self.joint ,
 		                          self.rigNode_Local , self.rigNode_World , self.nCloth ,
-		                          self.description_rig , self.low_modle_grp , self.mid_modle_grp , self.high_modle_grp]
-	
+		                          self.low_modle_grp , self.mid_modle_grp , self.high_modle_grp]
 		
 		#  定义绑定模块的bp定位关节
 		self.spine_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('spine')
 		self.neck_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('neck')
 		self.root_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('root')
 		self.pelvis_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('pelvis')
-
-		
-		# 设置matehuman导入maya的轴向
-		cmds.setAttr('root_drv' + '.rotateX' , -90)
-		cmds.setAttr('headRig_grp' + '.rotateX' , -90)
-		
-		self.rig_top_grp = self.group
-		if not cmds.objExists(self.rig_top_grp) :
-			self.create_master_grp()
+	
 	
 	def make(self , drv_jnts) :
 		u"""
@@ -98,9 +117,9 @@ class Base_Rig(object) :
 		main = matehumanUtils.MateHuman(name = drv_jnts[0])
 		main.name = 'rigModule_' + main.name
 		self.control_parent = cmds.group(name = main.name.replace('rigModule_' , 'ctrlgrp_') , em = True ,
-		                              parent = self.cog_ctrl.replace('ctrl_' , 'output_'))
+		                                 parent = self.cog_ctrl.replace('ctrl_' , 'output_'))
 		self.joint_parent = cmds.group(name = main.name.replace('rigModule_' , 'jntgrp_') , em = True ,
-		                          parent = self.joint)
+		                               parent = self.joint)
 		self.rigNodes_Local_grp = cmds.group(name = main.name.replace('rigModule_' , 'rigNodesLocal_') , em = True ,
 		                                     parent = self.rigNode_Local)
 		self.rigNodes_World_grp = cmds.group(name = main.name.replace('rigModule_' , 'rigNodesWorld_') , em = True ,
@@ -162,7 +181,7 @@ class Base_Rig(object) :
 		
 		# 创建RigNode层级下的子层级组并做层级关系
 		cmds.parent(self.rigNode_Local , self.rigNode_World , self.rigNode)
-		cmds.parent(self.rigNode , self.joint , self.nCloth  , self.custom, self.matehuman_custom)
+		cmds.parent(self.rigNode , self.joint , self.nCloth , self.matehuman_custom , self.custom)
 		
 		# 创建Modle层级下的子层级组并且做层级关系
 		cmds.parent(self.low_modle_grp , self.mid_modle_grp , self.high_modle_grp , self.geometry)
@@ -170,7 +189,7 @@ class Base_Rig(object) :
 		              '.scaleY' ,
 		              '.scaleZ' , '.visibility' , '.rotateOrder' , '.subCtrlVis']
 		# 创建总控制器Character
-		controlUtils.Control.create_ctrl(self.character_ctrl , shape = 'circle' , radius = 40 ,
+		controlUtils.Control.create_ctrl(self.character_ctrl , shape = 'circle' , radius = 45 ,
 		                                 axis = 'X+' ,
 		                                 pos = None ,
 		                                 parent = self.control)
@@ -182,19 +201,21 @@ class Base_Rig(object) :
 			cmds.setAttr(self.character_ctrl + attr , lock = True , keyable = False , channelBox = False)
 		
 		# 创建世界控制器
-		controlUtils.Control.create_ctrl(self.world_ctrl , shape = 'local' , radius = 35 , axis = 'Z-' ,
+		controlUtils.Control.create_ctrl(self.world_ctrl , shape = 'local' , radius = 40 , axis = 'Z-' ,
 		                                 pos = None ,
 		                                 parent = self.character_ctrl.replace('ctrl_' , 'output_'))
 		cmds.parentConstraint(self.world_ctrl.replace('ctrl' , 'output') , self.root_jnts , mo = True)
 		cmds.scaleConstraint(self.world_ctrl.replace('ctrl' , 'output') , self.root_jnts , mo = True)
+		
 		# 创建重心控制器
-		controlUtils.Control.create_ctrl(self.cog_ctrl , shape = 'circle' , radius = 28 , axis = 'Y-' ,
-		                                 pos = self.pelvis_jnts,
+		controlUtils.Control.create_ctrl(self.cog_ctrl , shape = 'local' , radius = 40 , axis = 'Y-' ,
+		                                 pos = self.pelvis_jnts ,
 		                                 parent = self.world_ctrl.replace('ctrl_' , 'output_'))
-		cmds.parentConstraint(self.cog_ctrl.replace('ctrl','output'), self.pelvis_jnts , mo = True)
+		cmds.parentConstraint(self.cog_ctrl.replace('ctrl' , 'output') , self.pelvis_jnts , mo = True)
 		cmds.scaleConstraint(self.cog_ctrl.replace('ctrl' , 'output') , self.pelvis_jnts , mo = True)
+		
 		# 创建一个自定义的控制器，用来承载自定义的属性
-		controlUtils.Control.create_ctrl(self.custom_ctrl , shape = 'cross' , radius = 3 , axis = 'X+' ,
+		controlUtils.Control.create_ctrl(self.custom_ctrl , shape = 'cross' , radius = 10 , axis = 'X+' ,
 		                                 pos = None ,
 		                                 parent = self.custom)
 		cmds.parentConstraint(self.character_ctrl , self.custom_ctrl , mo = True)

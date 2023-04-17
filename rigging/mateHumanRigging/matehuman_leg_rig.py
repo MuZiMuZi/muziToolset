@@ -41,7 +41,7 @@ class Leg_rig(matehuman_base_rig.Base_Rig) :
 		'''
 		# 创建腿部位的绑定
 		leg_system = matehuman_ikfk_rig.IKFK_Rig(self.drv_jnts , self.joint_parent , self.control_parent ,
-		                                            self.space_list , self.stretch)
+		                                            self.space_list , self.stretch, redius = 12)
 		leg_system.create_ikfk_chain_rig(Y_value = -1)
 		
 		# 创建脚掌部位的绑定

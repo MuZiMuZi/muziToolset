@@ -531,14 +531,14 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 	"""
 	
 	
-	def __init__(self , drv_jnts , joint_parent , control_parent , space_list , stretch = False) :
+	def __init__(self , drv_jnts , joint_parent , control_parent , space_list , stretch = False, redius = 15) :
 		super(IKFK_Rig , self).__init__()
 		self.drv_jnts = drv_jnts
 		self.joint_parent = joint_parent
 		self.control_parent = control_parent
 		self.space_list = space_list
 		self.stretch = stretch
-	
+		self.redius =redius
 	
 	def create_ikfk_chain(self) :
 		# 根据self.drv_jnts生成ik关节链
@@ -577,7 +577,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		
 		# 创建ikfk切换的控制器
 		ikfkBend_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.drv_jnts[0] , 'ikfkctrl' ,
-		                                                           shape = 'pPlatonic' , radius = 10 ,
+		                                                           shape = 'pPlatonic' , radius = 5 ,
 		                                                           axis = 'X+' ,
 		                                                           pos = self.drv_jnts[0] , parent = None)
 		ikfkBend_zero = ikfkBend_ctrl.replace('ctrl' , 'zero')
@@ -631,7 +631,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		创建fk链条绑定系统
 		:return:
 		'''
-		self.fk_systeam = FK_Rig(self.drv_jnts , self.joint_parent , self.control_parent , redius = 15)
+		self.fk_systeam = FK_Rig(self.drv_jnts , self.joint_parent , self.control_parent , self.redius)
 		self.fk_systeam_chain = self.fk_systeam.create_fk_chain()
 		self.fk_systeam_rig = self.fk_systeam.fk_chain_rig()
 	

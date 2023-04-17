@@ -17,18 +17,15 @@ reload(matehuman_foot_rig)
 reload(matehuman_spine_rig)
 reload(matehuman_neck_rig)
 
-
-
-
 m_spine = matehuman_spine_rig.Spine_Rig(space_list , stretch = True)
 
 m_spine.create_spine_rig()
 
-m_neck = matehuman_neck_rig.Neck_Rig( space_list)
+m_neck = matehuman_neck_rig.Neck_Rig(space_list)
 
 m_neck.create_neck_rig()
 
-for side in ['l','r']:
+for side in ['l' , 'r'] :
 	arm = matehuman_arm_rig.Arm_rig(side , space_list = None , stretch = True)
 	arm.create_arm_rig()
 	
