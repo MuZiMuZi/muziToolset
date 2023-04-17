@@ -30,15 +30,21 @@ reload(hierarchyUtils)
 reload(matehumanUtils)
 reload(matehuman_arm_rig)
 reload(matehuman_ikfk_rig)
+reload(matehuman_base_rig)
 
 
 class Hand_Rig(matehuman_base_rig.Base_Rig) :
 	
 	
 	def __init__(self , side) :
-		super().__init__()
+		super(Hand_Rig,self).__init__()
 		self.side = side
+		if self.side == 'l' :
+			self.side_value = 1
+		elif self.side == 'r' :
+			self.side_value = -1
 		self.hand_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('hand_{}'.format(self.side))
+		self.wrist_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('wrist_{}'.format(self.side))
 		self.joint_parent = 'ikfkjnt_' + self.hand_drv
 	
 	
@@ -51,6 +57,9 @@ class Hand_Rig(matehuman_base_rig.Base_Rig) :
 		
 		# 创建手指的弯曲系统
 		self.create_hand_curl_rig()
+		
+		# 创建手指的IK绑定控制系统
+		self.create_hand_ik_rig()
 	
 	
 	def create_hand_fk_rig(self) :
@@ -93,6 +102,29 @@ class Hand_Rig(matehuman_base_rig.Base_Rig) :
 		pinkyHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.pinkyHand_drv , self.joint_parent , self.hand_ctrl_grp ,
 		                                                redius = 2)
 		pinkyHand_fk_system._create_fk_chain_system(constraint = True)
+	
+	
+	def create_hand_ik_rig(self) :
+		u"""
+				创建手指的IK绑定控制系统
+		"""
+		# 创建手掌的ik关节
+		self.hand_ik_jnt = 'ikjnt_' + self.hand_drv
+		self.wirst_ik_chain = cmds.createNode('joint' , name = 'ikjnt_' + self.wrist_drv)
+		cmds.matchTransform(self.wirst_ik_chain , self.hand_ik_jnt , position = True , rotation = True)
+		cmds.makeIdentity(self.wirst_ik_chain , apply = True , translate = True , rotate = True , scale = True)
+		cmds.parent(self.wirst_ik_chain,self.hand_ik_jnt)
+		cmds.setAttr(self.wirst_ik_chain + '.translateX' , self.side_value * 10)
+		
+		# 创建singleIKhandle
+		single_ikhandle_node = \
+			cmds.ikHandle(name = self.hand_ik_jnt.replace('ikjnt' , 'ikhandle') , startJoint = self.hand_ik_jnt ,
+			              endEffector = self.wirst_ik_chain ,
+			              sticky = 'sticky' , solver = 'ikSCsolver' , setupForRPsolver = True)[0]
+		
+		self.hand_ik_outputlocal = self.hand_ik_jnt.replace('jnt' , 'outputLocal')
+		
+		cmds.parent(single_ikhandle_node , self.hand_ik_outputlocal)
 	
 	
 	def create_hand_curl_rig(self) :
@@ -145,9 +177,8 @@ class Hand_Rig(matehuman_base_rig.Base_Rig) :
 					
 					# 将输出连接到偏移组的rotateZ
 					cmds.connectAttr(mult_node + '.output' , offset_name + '.rotateZ')
-			print(10)
 
 
 # example
-# l_hand = Hand_Rig( 'l',joint_parent , control_parent)
+# l_hand = Hand_Rig( 'l')
 # l_hand.create_hand_rig()

@@ -149,6 +149,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		                                                              pos = self.drv_jnts[2] , parent = None)
 		endIK_local_zero = endIK_local_ctrl.replace('ctrl' , 'zero')
 		cmds.parent(endIK_local_zero , endIK_ctrl_output)
+		endIK_local_output = endIK_local_ctrl.replace('ctrl' , 'output')
 		#
 		# 创建ik的极向量控制器
 		midIK_jnt = self.ik_chain[1]

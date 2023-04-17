@@ -29,7 +29,7 @@ class Arm_rig(matehuman_base_rig.Base_Rig) :
 		self.drv_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('arm_{}'.format(self.side))
 		self.joint_parent = joint_parent
 		self.control_parent = 'output_' + matehumanUtils.MateHuman.get_mateHuman_drv_jnt(
-			'clavicle_{}'.format(self.side))
+				'clavicle_{}'.format(self.side))
 		self.space_list = space_list
 		self.stretch = stretch
 	
@@ -43,9 +43,14 @@ class Arm_rig(matehuman_base_rig.Base_Rig) :
 		self.create_clavicle_rig()
 		# 创建手臂部位的绑定
 		arm_system = matehuman_ikfk_rig.IKFK_Rig(self.drv_jnts , self.joint_parent , self.control_parent ,
-		                                            self.space_list , self.stretch)
+		                                         self.space_list , self.stretch)
 		arm_system.create_ikfk_chain_rig(Y_value = 1)
 		
+		# 创建手掌部位的绑定
+		self.create_hand_rig()
+	
+	
+	def create_hand_rig(self) :
 		# 创建手掌部位的绑定
 		hand_system = matehuman_hand_rig.Hand_Rig(self.side)
 		hand_system.create_hand_rig()
@@ -92,7 +97,6 @@ class Arm_rig(matehuman_base_rig.Base_Rig) :
 		for ctrl , jnt in zip(ctrls , jnts) :
 			cmds.parentConstraint(ctrl , jnt , mo = True)
 			cmds.scaleConstraint(ctrl , jnt , mo = True)
-
 
 
 # example

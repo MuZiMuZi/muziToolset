@@ -1,17 +1,19 @@
 # coding=utf-8
 from importlib import reload
 
-from . import matehuman_base_rig
-from . import matehuman_ikfk_rig
-from . import matehuman_hand_rig
 import maya.cmds as cmds
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils
 import muziToolset.core.jointUtils as jointUtils
+import muziToolset.core.matehumanUtils as matehumanUtils
 import muziToolset.core.nameUtils as nameUtils
 import muziToolset.core.pipelineUtils as pipelineUtils
 import muziToolset.core.snapUtils as snapUtils
-import muziToolset.core.matehumanUtils as matehumanUtils
+
+from . import matehuman_base_rig
+from . import matehuman_foot_rig
+from . import matehuman_hand_rig
+from . import matehuman_ikfk_rig
 
 
 reload(matehumanUtils)
@@ -43,14 +45,15 @@ class Leg_rig(matehuman_base_rig.Base_Rig) :
 		                                            self.space_list , self.stretch)
 		leg_system.create_ikfk_chain_rig(Y_value = -1)
 		
-		# # 创建脚掌部位的绑定
-		# self.create_foot_rig()
+		# 创建脚掌部位的绑定
+		self.create_foot_rig()
 	
 	
 	
 	def create_foot_rig(self):
-		pass
-	
+		foot_system = matehuman_foot_rig.Foot_Rig(self.side)
+		foot_system.create_foot_rig()
+		
 
 # example
 # l_leg = matehuman_leg_rig.Leg_rig( 'l',joint_parent , space_list = None,stretch = True)

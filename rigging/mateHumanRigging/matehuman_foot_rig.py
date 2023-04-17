@@ -32,122 +32,102 @@ reload(matehuman_arm_rig)
 reload(matehuman_ikfk_rig)
 
 
-class Hand_Rig(matehuman_base_rig.Base_Rig) :
+class Foot_Rig(matehuman_base_rig.Base_Rig) :
 	
 	
-	def __init__(self , side) :
-		super().__init__()
+
+	def __init__(self,side) :
+		super(Foot_Rig , self).__init__()
 		self.side = side
-		self.hand_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('hand_{}'.format(self.side))
-		self.joint_parent = 'ikfkjnt_' + self.hand_drv
-	
-	
-	def create_hand_rig(self) :
-		u"""
-		创建手指的绑定控制系统
-		"""
-		# 创建手指的FK绑定控制系统
-		self.create_hand_fk_rig()
+
+		self.foot_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('foot_{}'.format(self.side))
+		self.ball_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('ball_{}'.format(self.side))
+		self.joint_parent = 'ikfkjnt_' + self.foot_drv
 		
-		# 创建手指的弯曲系统
-		self.create_hand_curl_rig()
 	
 	
-	def create_hand_fk_rig(self) :
+	def create_foot_rig(self) :
 		u"""
-				创建手指的FK绑定控制系统
+		创建脚掌的绑定控制系统
+		"""
+		# 创建脚掌的FK绑定控制系统
+		self.create_foot_fk_rig()
+		# 创建脚掌的IK绑定控制系统
+		self.create_foot_ik_rig()
+		
+
+	def create_foot_ik_rig(self):
+		u'''
+		创建脚掌的ik绑定控制系统
+		:return:
+		'''
+		#创建脚掌的ik关节
+		self.foot_ik_jnt = 'ikjnt_' + self.foot_drv
+		self.ball_ik_chain = jointUtils.Joint.create_mateHuman_chain([self.ball_drv] , 'ikjnt_' , self.foot_ik_jnt ,
+		                                                          constraint = False)[0]
+		#创建singleIKhandle
+		single_ikhandle_node = \
+		cmds.ikHandle(name = self.ball_ik_chain.replace('ikjnt','ikhandle') , startJoint = self.foot_ik_jnt , endEffector = self.ball_ik_chain ,
+		              sticky = 'sticky' , solver = 'ikSCsolver' , setupForRPsolver = True)[0]
+		
+		self.foot_ik_outputlocal = self.foot_ik_jnt.replace('jnt','outputLocal')
+		
+		cmds.parent(single_ikhandle_node, self.foot_ik_outputlocal)
+		
+		
+		
+	
+	
+	def create_foot_fk_rig(self) :
+		u"""
+				创建脚掌的FK绑定控制系统
 		"""
 		# 创建控制器的层级组
-		self.hand_ctrl_grp = cmds.createNode('transform' , name = 'ctrlgrp_' + self.hand_drv)
-		cmds.matchTransform(self.hand_ctrl_grp , self.hand_drv , position = True , rotation = True , scale = True)
-		cmds.parentConstraint(self.joint_parent , self.hand_ctrl_grp , mo = True)
-		clavicle_output = 'output_' + matehumanUtils.MateHuman.get_mateHuman_drv_jnt(
-				'clavicle_{}'.format(self.side))
-		cmds.parent(self.hand_ctrl_grp , clavicle_output)
+		self.ball_ctrl_grp = cmds.createNode('transform' , name = 'ctrlgrp_' + self.ball_drv)
+		cmds.matchTransform(self.ball_ctrl_grp , self.ball_drv , position = True , rotation = True , scale = True)
+		cmds.parentConstraint(self.ball_drv , self.ball_ctrl_grp , mo = True)
+		cmds.parent(self.ball_ctrl_grp,self.cog_ctrl)
 		
-		# 获取手指各模块的drv关节
-		self.thumbHand_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('thumb_finger_{}'.format(self.side))
-		self.indexHand_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('index_finger_{}'.format(self.side))
-		self.middleHand_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('middle_finger_{}'.format(self.side))
-		self.ringHand_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('ring_finger_{}'.format(self.side))
-		self.pinkyHand_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('pinky_finger_{}'.format(self.side))
+		self.ball_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.ball_drv , 'ikctrl' , shape = 'circle' ,
+		                                                       radius = 8 ,
+		                                                       axis = 'Y+' ,
+		                                                       pos = self.ball_drv , parent = self.ball_ctrl_grp)
+		self.ball_ctrl_output = self.ball_ctrl.replace('ctrl','output')
+
 		
-		# 创建手指各模块的FK关节链
+		# 获取脚趾各模块的drv关节
+		self.bigtoe_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('bigtoe_{}'.format(self.side))
+		self.indextoe_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('indextoe_{}'.format(self.side))
+		self.middletoe_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('middletoe_{}'.format(self.side))
+		self.littletoe_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('littletoe_{}'.format(self.side))
+		self.ringtoe_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('ringtoe_{}'.format(self.side))
 		
-		thumbHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.thumbHand_drv , self.joint_parent , self.hand_ctrl_grp ,
-		                                                redius = 2)
-		thumbHand_fk_system._create_fk_chain_system(constraint = True)
+		# 创建脚趾各模块的FK关节链
 		
-		indexHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.indexHand_drv , self.joint_parent , self.hand_ctrl_grp ,
-		                                                redius = 2)
-		indexHand_fk_system._create_fk_chain_system(constraint = True)
+		bigtoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.bigtoe_drv , self.joint_parent , self.ball_ctrl_output ,
+		                                                redius = 3)
+		bigtoe_fk_system._create_fk_chain_system(constraint = True)
 		
-		middleHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.middleHand_drv , self.joint_parent , self.hand_ctrl_grp ,
-		                                                 redius = 2)
-		middleHand_fk_system._create_fk_chain_system(constraint = True)
+		indextoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.indextoe_drv , self.joint_parent , self.ball_ctrl_output ,
+		                                               redius = 3)
+		indextoe_fk_system._create_fk_chain_system(constraint = True)
 		
-		ringHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.ringHand_drv , self.joint_parent , self.hand_ctrl_grp ,
-		                                               redius = 2)
-		ringHand_fk_system._create_fk_chain_system(constraint = True)
+		middletoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.middletoe_drv , self.joint_parent , self.ball_ctrl_output ,
+		                                                 redius = 3)
+		middletoe_fk_system._create_fk_chain_system(constraint = True)
 		
-		pinkyHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.pinkyHand_drv , self.joint_parent , self.hand_ctrl_grp ,
-		                                                redius = 2)
-		pinkyHand_fk_system._create_fk_chain_system(constraint = True)
+		littletoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.littletoe_drv , self.joint_parent , self.ball_ctrl_output ,
+		                                               redius = 3)
+		littletoe_fk_system._create_fk_chain_system(constraint = True)
+		
+		ringtoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.ringtoe_drv , self.joint_parent , self.ball_ctrl_output ,
+		                                                redius = 3)
+		ringtoe_fk_system._create_fk_chain_system(constraint = True)
 	
 	
-	def create_hand_curl_rig(self) :
-		u"""
-		创建手指的弯曲系统，设置手指关节旋转的姿势。
-		"""
-		pose_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.thumbHand_drv[0] , 'fkctrlpose' ,
-		                                                       shape = 'pPlatonic' ,
-		                                                       radius = 10 ,
-		                                                       axis = 'X+' ,
-		                                                       pos = self.thumbHand_drv[0] ,
-		                                                       parent = self.hand_ctrl_grp)
-		
-		# 获取手指名称
-		finger_names = ['thumb' , 'index' , 'middle' , 'ring' , 'pinky']
-		
-		# 获取关节节数名称
-		digit_index = {'thumb' : ['01' , '02' , '03']}
-		
-		# 获取curl的值
-		curl_mult_values = {'thumb' : [0 , -5 , -7] ,
-		                    'index' : [0 , -7.5 , -10.5 , -8] ,
-		                    'middle' : [0 , -7.5 , -10.5 , -8] ,
-		                    'ring' : [0 , -7.5 , -10.5 , -8] ,
-		                    'pinky' : [0 , -7.5 , -10.5 , -8]}
-		# 获取手姿势控制的控制器
-		# 循环到每个手指，并添加curl attr
-		for finger in finger_names :
-			cmds.addAttr(pose_ctrl , longName = finger + 'Curl' , attributeType = 'float' , keyable = True ,
-			             minValue = -10 , maxValue = 10)
-			curl_attr = '{}.{}Curl'.format(pose_ctrl , finger)
-			
-			# 获取卷曲值
-			curl_values = curl_mult_values[finger]
-			# 获取关节节数名称
-			finger_digits = digit_index.get(finger , ['metacarpal' , '01' , '02' , '03'])
-			# 循环到每个手指并连接卷曲的值
-			for digit , val in zip(finger_digits , curl_values) :
-				offset_name = 'fkoffset_{}_{}_{}_drv'.format(finger , digit , self.side)
-				
-				if val :
-					# 创建乘法节点
-					mult_node = cmds.createNode('multDoubleLinear' ,
-					                            name = 'mult_{}_{}{}Curl_001'.format(self.side , finger ,
-					                                                                 digit.title()))
-					# 连接驱动的节点的属性
-					cmds.connectAttr(curl_attr , mult_node + '.input1')
-					# 设置卷曲值
-					cmds.setAttr(mult_node + '.input2' , val)
-					
-					# 将输出连接到偏移组的rotateZ
-					cmds.connectAttr(mult_node + '.output' , offset_name + '.rotateZ')
-			print(10)
+
 
 
 # example
-# l_hand = Hand_Rig( 'l',joint_parent , control_parent)
-# l_hand.create_hand_rig()
+# l_foot = Foot_Rig( 'l')
+# l_foot.create_foot_rig()
