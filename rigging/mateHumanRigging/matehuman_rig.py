@@ -1,16 +1,18 @@
-import muziToolset.rigging.mateHumanRigging.matehuman_ikfk_rig as matehuman_ikfk_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_hand_rig as matehuman_hand_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_arm_rig as matehuman_arm_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_leg_rig as matehuman_leg_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_foot_rig as matehuman_foot_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_spine_rig as matehuman_spine_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_neck_rig as matehuman_neck_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_base_rig as matehuman_base_rig
-import muziToolset.core.matehumanUtils as matehumanUtils
-import maya.cmds as cmds
 from importlib import reload
 
+import maya.cmds as cmds
+import muziToolset.core.matehumanUtils as matehumanUtils
+import muziToolset.rigging.mateHumanRigging.matehuman_arm_rig as matehuman_arm_rig
+import muziToolset.rigging.mateHumanRigging.matehuman_base_rig as matehuman_base_rig
+import muziToolset.rigging.mateHumanRigging.matehuman_foot_rig as matehuman_foot_rig
+import muziToolset.rigging.mateHumanRigging.matehuman_hand_rig as matehuman_hand_rig
+import muziToolset.rigging.mateHumanRigging.matehuman_ikfk_rig as matehuman_ikfk_rig
+import muziToolset.rigging.mateHumanRigging.matehuman_leg_rig as matehuman_leg_rig
+import muziToolset.rigging.mateHumanRigging.matehuman_neck_rig as matehuman_neck_rig
+import muziToolset.rigging.mateHumanRigging.matehuman_spine_rig as matehuman_spine_rig
 
+
+reload(matehuman_ikfk_rig)
 reload(matehuman_arm_rig)
 reload(matehumanUtils)
 reload(matehuman_hand_rig)

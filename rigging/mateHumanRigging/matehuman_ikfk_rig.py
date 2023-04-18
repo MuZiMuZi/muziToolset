@@ -1,17 +1,18 @@
 # coding=utf-8
 from importlib import reload
 
-import muziToolset.rigging.mateHumanRigging.matehuman_base_rig as matehuman_base_rig
 import maya.cmds as cmds
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils
 import muziToolset.core.jointUtils as jointUtils
+import muziToolset.core.matehumanUtils as matehumanUtils
 import muziToolset.core.nameUtils as nameUtils
 import muziToolset.core.pipelineUtils as pipelineUtils
 import muziToolset.core.snapUtils as snapUtils
-import muziToolset.core.matehumanUtils as matehumanUtils
+from . import matehuman_base_rig
 
 
+reload(matehuman_base_rig)
 reload(controlUtils)
 reload(pipelineUtils)
 reload(jointUtils)
@@ -107,7 +108,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 	def create_ik_chain(self , constraint = False) :
 		# 根据self.drv_jnts生成ik关节链
 		self.ik_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'ikjnt_' , self.joint_parent ,
-		                                                        constraint )
+		                                                        constraint)
 		
 		return self.ik_chain
 	
@@ -530,14 +531,15 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 	"""
 	
 	
-	def __init__(self , drv_jnts , joint_parent , control_parent , space_list , stretch = False, redius = 15) :
+	def __init__(self , drv_jnts , joint_parent , control_parent , space_list , stretch = False , redius = 15) :
 		super(IKFK_Rig , self).__init__()
 		self.drv_jnts = drv_jnts
 		self.joint_parent = joint_parent
 		self.control_parent = control_parent
 		self.space_list = space_list
 		self.stretch = stretch
-		self.redius =redius
+		self.redius = redius
+	
 	
 	def create_ikfk_chain(self) :
 		# 根据self.drv_jnts生成ik关节链
@@ -633,7 +635,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		self.fk_systeam = FK_Rig(self.drv_jnts , self.joint_parent , self.control_parent , self.redius)
 		self.fk_systeam_chain = self.fk_systeam.create_fk_chain()
 		self.fk_systeam_rig = self.fk_systeam.fk_chain_rig()
-
+	
 	
 	def create_ik_chain_system(self , Y_value = 1) :
 		u'''
@@ -683,11 +685,13 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		
 		#  创建ik控制系统
 		self.create_ik_spine_system()
-
+		
 		# 创建ikfk融合系统
 		self.ikfk_systeam_chain = self.create_ikfk_chain()
 		self.ikfk_chain_rig(self.fk_systeam_chain , self.ik_systeam_chain)
-		#
+	
+	
+	#
 	
 	def ribbon_rig(self , name , control_parent , joint_parent , joint_number = 5) :
 		u"""

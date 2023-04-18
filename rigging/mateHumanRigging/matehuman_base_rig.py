@@ -39,8 +39,8 @@ make： 根据给定的bp_joints关节的名称来创建对应的模块组
 
 import maya.cmds as cmds
 import muziToolset.core.controlUtils as controlUtils
-import muziToolset.core.nameUtils as nameUtils
 import muziToolset.core.matehumanUtils as matehumanUtils
+import muziToolset.core.nameUtils as nameUtils
 import muziToolset.core.pipelineUtils as pipelineUtils
 import pymel.core as pm
 
@@ -109,7 +109,6 @@ class Base_Rig(object) :
 		self.neck_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('neck')
 		self.root_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('root')
 		self.pelvis_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('pelvis')
-		
 	
 	
 	def make(self , drv_jnts) :
@@ -222,7 +221,7 @@ class Base_Rig(object) :
 		cmds.scaleConstraint(self.character_ctrl , self.custom_ctrl , mo = True)
 		
 		# 创建自定义的控制器属性
-		for attr in ['geometryVis' , 'controlsVis' , 'rigNodesVis' , 'jointsVis','offCtrlVis'] :
+		for attr in ['geometryVis' , 'controlsVis' , 'rigNodesVis' , 'jointsVis' , 'offCtrlVis'] :
 			if not cmds.objExists('{}.{}'.format(self.custom_ctrl , attr)) :
 				cmds.addAttr(self.custom_ctrl , longName = attr , attributeType = 'bool' , defaultValue = 1 ,
 				             keyable = True)
@@ -273,39 +272,36 @@ class Base_Rig(object) :
 			space_grp = cmds.createNode('transform' , name = 'grp_m_{}Space_001'.format(ctrl_obj.description))
 			cmds.parent(space_grp , ctrl)
 			cmds.setAttr(space_grp + '.visibility' , 0)
-			
-		
-
-			
 	
-	def create_offset_ctrl(self):
+	
+	def create_offset_ctrl(self) :
 		u'''
 		创建修型关节的控制器组
 		:return:
 		'''
-		offset_jnts = cmds.ls('*Off*',type = 'joint')
-		for offset_jnt in offset_jnts:
+		offset_jnts = cmds.ls('*Off*' , type = 'joint')
+		for offset_jnt in offset_jnts :
 			offset_jnt_name = matehumanUtils.MateHuman(name = offset_jnt)
-			#判断关节的模块如果是手指的话则不生成控制器
-			if offset_jnt_name.description in ['thumb','index','middle','ring','pinky']
+			# 判断关节的模块如果是手指的话则不生成控制器
+			if offset_jnt_name.description in ['thumb' , 'index' , 'middle' , 'ring' , 'pinky']:
 				pass
-			else:
+			else :
 				offset_ctrl = controlUtils.Control.create_mateHuman_ctrl(offset_jnt , 'offctrl' ,
-			                                                         shape = 'Cube' , radius =4 ,
-			                                                         axis = 'X+' ,
-			                                                         pos = offset_jnt , parent = None)
-				#查找对应的父级关节,并约束
-				offset_ctrl_output = offset_ctrl.replace('ctrl','output')
+				                                                         shape = 'ball' , radius = 3 ,
+				                                                         axis = 'X+' ,
+				                                                         pos = offset_jnt , parent = None)
+				# 查找对应的父级关节,并约束
+				offset_ctrl_output = offset_ctrl.replace('ctrl' , 'output')
 				offset_ctrl_zero = offset_ctrl.replace('ctrl' , 'zero')
-				cmds.parentConstraint(offset_ctrl_output, offset_jnt,mo = True)
+				cmds.parentConstraint(offset_ctrl_output , offset_jnt , mo = True)
 				offset_jnt_parent = cmds.listRelatives(offset_jnt , parent = True)[0]
 				cmds.parentConstraint(offset_jnt_parent , offset_ctrl_zero , mo = True)
 				
-				#整理层级结构
+				# 整理层级结构
 				offset_ctrl_grp = 'offctrlgrp_m_cog_001'
-				if cmds.objExists(offset_ctrl_grp):
-					cmds.parent(offset_ctrl_zero, offset_ctrl_grp)
-				else:
+				if cmds.objExists(offset_ctrl_grp) :
+					cmds.parent(offset_ctrl_zero , offset_ctrl_grp)
+				else :
 					cmds.group(name = offset_ctrl_grp , parent = self.cog_ctrl_output)
 					cmds.parent(offset_ctrl_zero , offset_ctrl_grp)
 		cmds.connectAttr(self.custom_ctrl + '.offCtrlVis' , offset_ctrl_grp + '.visibility')
