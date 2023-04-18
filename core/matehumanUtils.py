@@ -1,5 +1,6 @@
 from . import pipelineUtils
 from importlib import reload
+import maya.cmds as cmds
 reload(pipelineUtils)
 class MateHuman() :
 	
@@ -125,7 +126,24 @@ class MateHuman() :
 		导出面部的动画在文件的路径下
 		:return:
 		'''
-		scene_path = pipelineUtils.Pipeline.get_current_scene_path()
-		pipelineUtils.Pipeline.fbxExport(scene_path)
+		#获取maya文件的路径
+		scene_path = pipelineUtils.Pipeline.get_current_scene_path() + '_face_animation'
 		
+		#选择matehuman的动画数据
+		cmds.select('FacialControls')
+		pipelineUtils.Pipeline.fbxExport(scene_path)
+	
+	
+	@staticmethod
+	def export_body_animation() :
+		u'''
+		导出面部的动画在文件的路径下
+		:return:
+		'''
+		# 获取maya文件的路径
+		scene_path = pipelineUtils.Pipeline.get_current_scene_path() + '_body_animation'
+		
+		# 选择matehuman的动画数据
+		cmds.select('Body_joints')
+		pipelineUtils.Pipeline.fbxExport(scene_path)
 		
