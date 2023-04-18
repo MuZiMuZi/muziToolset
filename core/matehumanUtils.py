@@ -1,3 +1,6 @@
+from . import pipelineUtils
+from importlib import reload
+reload(pipelineUtils)
 class MateHuman() :
 	
 	
@@ -101,7 +104,28 @@ class MateHuman() :
 			else :
 				self.side = name_parts[1]
 				self.index = 1
-		# 剩余的情况为关节为root，pelvis，head的drv关节
-		else :
+		# 情况为关节为root，pelvis，head的drv关节
+		elif len(name_parts) == 2 :
 			self.side = 'm'
 			self.index = 1
+		# 情况为关节为ankle_bckOff_l_drv，ankle_bckOff_r_drv的修型关节
+		elif len(name_parts) == 4 :
+			self.function = name_parts[1]
+			self.side = name_parts[2]
+		# 情况为关节为calf_twist_02_r_drv，calf_twist_01_r_drv的修型关节，len(name_parts) == 5
+		else:
+			self.function = name_parts[1]
+			self.index = name_parts[2]
+			self.side = name_parts[3]
+	
+	
+	@staticmethod
+	def export_face_animation():
+		u'''
+		导出面部的动画在文件的路径下
+		:return:
+		'''
+		scene_path = pipelineUtils.Pipeline.get_current_scene_path()
+		pipelineUtils.Pipeline.fbxExport(scene_path)
+		
+		

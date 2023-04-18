@@ -78,6 +78,7 @@ class Base_Rig(object) :
 		self.character_ctrl = 'ctrl_m_character_001'
 		self.world_ctrl = 'ctrl_m_world_001'
 		self.cog_ctrl = 'ctrl_m_cog_001'
+		self.cog_ctrl_output = 'output_m_cog_001'
 		self.custom_ctrl = 'ctrl_m_custom_001'
 		
 		self.group = 'rig_group'
@@ -185,9 +186,6 @@ class Base_Rig(object) :
 		
 		# 创建Modle层级下的子层级组并且做层级关系
 		cmds.parent(self.low_modle_grp , self.mid_modle_grp , self.high_modle_grp , self.geometry)
-		attrs_list = ['.translateX' , '.translateY' , '.translateZ' , '.rotateX' , '.rotateY' , '.rotateZ' , '.scaleX' ,
-		              '.scaleY' ,
-		              '.scaleZ' , '.visibility' , '.rotateOrder' , '.subCtrlVis']
 		# 创建总控制器Character
 		controlUtils.Control.create_ctrl(self.character_ctrl , shape = 'circle' , radius = 45 ,
 		                                 axis = 'X+' ,
@@ -208,7 +206,7 @@ class Base_Rig(object) :
 		cmds.scaleConstraint(self.world_ctrl.replace('ctrl' , 'output') , self.root_jnts , mo = True)
 		
 		# 创建重心控制器
-		controlUtils.Control.create_ctrl(self.cog_ctrl , shape = 'local' , radius = 40 , axis = 'Y-' ,
+		controlUtils.Control.create_ctrl(self.cog_ctrl , shape = 'local' , radius = 40 , axis = 'X-' ,
 		                                 pos = self.pelvis_jnts ,
 		                                 parent = self.world_ctrl.replace('ctrl_' , 'output_'))
 		cmds.parentConstraint(self.cog_ctrl.replace('ctrl' , 'output') , self.pelvis_jnts , mo = True)
@@ -222,7 +220,7 @@ class Base_Rig(object) :
 		cmds.scaleConstraint(self.character_ctrl , self.custom_ctrl , mo = True)
 		
 		# 创建自定义的控制器属性
-		for attr in ['geometryVis' , 'controlsVis' , 'rigNodesVis' , 'jointsVis'] :
+		for attr in ['geometryVis' , 'controlsVis' , 'rigNodesVis' , 'jointsVis','offCtrlVis'] :
 			if not cmds.objExists('{}.{}'.format(self.custom_ctrl , attr)) :
 				cmds.addAttr(self.custom_ctrl , longName = attr , attributeType = 'bool' , defaultValue = 1 ,
 				             keyable = True)
@@ -261,6 +259,9 @@ class Base_Rig(object) :
 		                 force = True)
 		
 		# 显示和隐藏属性
+		attrs_list = ['.translateX' , '.translateY' , '.translateZ' , '.rotateX' , '.rotateY' , '.rotateZ' , '.scaleX' ,
+		              '.scaleY' ,
+		              '.scaleZ' , '.visibility' , '.rotateOrder' , '.subCtrlVis']
 		for attr in attrs_list :
 			cmds.setAttr(self.custom_ctrl + attr , lock = True , keyable = False , channelBox = False)
 		
@@ -279,7 +280,25 @@ class Base_Rig(object) :
 		'''
 		offset_jnts = cmds.ls('*Off*',type = 'joint')
 		for offset_jnt in offset_jnts:
-			offset_ctrl = controlUtils.Control.create_mateHuman_ctrl(offset_jnt , 'offsetctrl' ,
-		                                                         shape = 'Cube' , radius = 5 ,
+			offset_ctrl = controlUtils.Control.create_mateHuman_ctrl(offset_jnt , 'offctrl' ,
+		                                                         shape = 'Cube' , radius = 2 ,
 		                                                         axis = 'X+' ,
 		                                                         pos = offset_jnt , parent = None)
+			offset_jnt_name = matehumanUtils.MateHuman(name = offset_jnt)
+			#查找对应的父级关节,并约束
+			offset_ctrl_output = offset_ctrl.replace('ctrl','output')
+			offset_ctrl_zero = offset_ctrl.replace('ctrl' , 'zero')
+			cmds.parentConstraint(offset_ctrl_output, offset_jnt,mo = True)
+			offset_jnt_parent = cmds.listRelatives(offset_jnt , parent = True)[0]
+			cmds.parentConstraint(offset_jnt_parent , offset_ctrl_zero , mo = True)
+			
+			#整理层级结构
+			offset_ctrl_grp = 'offctrlgrp_m_cog_001'
+			if cmds.objExists(offset_ctrl_grp):
+				cmds.parent(offset_ctrl_zero, offset_ctrl_grp)
+			else:
+				cmds.group(name = offset_ctrl_grp , parent = self.cog_ctrl_output)
+				cmds.parent(offset_ctrl_zero , offset_ctrl_grp)
+				
+		cmds.connectAttr(self.custom_ctrl + '.offCtrlVis' , offset_ctrl_grp + '.visibility')
+		cmds.setAttr(self.custom_ctrl + '.offCtrlVis' , 0)

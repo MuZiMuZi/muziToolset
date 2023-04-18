@@ -420,6 +420,7 @@ class Control(object) :
 
         """
 
+        global ctrl_color , sub_color
         name_obj = nameUtils.Name(name = name)
         # 获得控制器边的参数
         if name_obj.side == 'l' :
@@ -546,6 +547,7 @@ class Control(object) :
 
         """
 
+        global ctrl_color , sub_color
         name_obj = matehumanUtils.MateHuman(name = jnt_name)
         # 获得控制器边的参数
         if name_obj.side == 'l' :
@@ -602,28 +604,28 @@ class Control(object) :
                     obj = sapce_grp , grp_name = sapce_grp.replace('space' , 'driven') , world_orient = False)
             zero_grp = hierarchyUtils.Hierarchy.add_extra_group(
                     obj = driven_grp , grp_name = driven_grp.replace('driven' , 'zero') , world_orient = False)
-
+        
             # 创建output层级组
             output = cmds.createNode('transform' , name = ctrl_name.replace('ctrl' , 'output') , parent = ctrl_transform)
-
+        
             # 连接次级控制器的属性
             cmds.connectAttr(sub_ctrl.transform + '.translate' , output + '.translate')
             cmds.connectAttr(sub_ctrl.transform + '.rotate' , output + '.rotate')
             cmds.connectAttr(sub_ctrl.transform + '.scale' , output + '.scale')
             cmds.connectAttr(sub_ctrl.transform + '.rotateOrder' , output + '.rotateOrder')
-
+        
             # # 添加次级控制器的属性控制在控制器上
             cmds.addAttr(ctrl_transform , longName = 'subCtrlVis' , attributeType = 'bool')
             cmds.setAttr(ctrl_transform + '.subCtrlVis' , channelBox = True)
-
+        
             # 连接次级控制器的显示
             cmds.connectAttr(ctrl_transform + '.subCtrlVis' , sub_ctrl.transform + '.visibility')
-
+        
             # 锁定并且隐藏不需要的属性
             attrUtils.Attr.lock_and_hide_attrs(obj = ctrl_transform , attrs_list = ['rotateOrder'] , lock = False ,
                                                hide = False)
             # attrUtils.Attr.lock_and_hide_attrs(obj = ctrl_transform, attrs_list = attrs_list, lock = True, hide = True)
-
+        
             # 吸附到对应的位置
             if pos :
                 cmds.matchTransform(zero_grp , pos , position = True , rotation = True , scale = True)
@@ -631,7 +633,7 @@ class Control(object) :
             # 做父子层级
             if parent :
                 hierarchyUtils.Hierarchy.parent(child_node = zero_grp , parent_node = parent)
-
+        
             #
             # 将控制器添加到对应的选择集
             animation_ctrls_set = 'set_ctrl'

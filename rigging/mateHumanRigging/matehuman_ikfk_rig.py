@@ -634,7 +634,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		self.fk_systeam = FK_Rig(self.drv_jnts , self.joint_parent , self.control_parent , self.redius)
 		self.fk_systeam_chain = self.fk_systeam.create_fk_chain()
 		self.fk_systeam_rig = self.fk_systeam.fk_chain_rig()
-	
+
 	
 	def create_ik_chain_system(self , Y_value = 1) :
 		u'''
@@ -682,13 +682,13 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		# 创建fk控制系统
 		self.create_fk_chain_system()
 		
-		# 创建ik控制系统
+		#  创建ik控制系统
 		self.create_ik_spine_system()
-		
+
 		# 创建ikfk融合系统
 		self.ikfk_systeam_chain = self.create_ikfk_chain()
 		self.ikfk_chain_rig(self.fk_systeam_chain , self.ik_systeam_chain)
-	
+		#
 	
 	def ribbon_rig(self , name , control_parent , joint_parent , joint_number = 5) :
 		u"""
