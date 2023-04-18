@@ -9,6 +9,7 @@ import muziToolset.core.matehumanUtils as matehumanUtils
 import muziToolset.core.nameUtils as nameUtils
 import muziToolset.core.pipelineUtils as pipelineUtils
 import muziToolset.core.snapUtils as snapUtils
+
 from . import matehuman_base_rig
 
 
@@ -690,8 +691,6 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		self.ikfk_systeam_chain = self.create_ikfk_chain()
 		self.ikfk_chain_rig(self.fk_systeam_chain , self.ik_systeam_chain)
 	
-	
-	#
 	
 	def ribbon_rig(self , name , control_parent , joint_parent , joint_number = 5) :
 		u"""

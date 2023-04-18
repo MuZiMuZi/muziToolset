@@ -147,19 +147,18 @@ class Base_Rig(object) :
 		
 		for space_name in space_list :
 			# 创建用于空间切换的定位器
-			object_obj = nameUtils.Name(name = object)
-			object_obj.type = 'loc'
-			object_obj.description = object_obj.description + 'Space' + space_name
+			object_obj = matehumanUtils.mateHuman_decompose(name = object)
+			object_obj.description = object_obj.description + 'Space' + space_name + 'loc'
 			loc_node = cmds.spaceLocator(name = object_obj.name)[0]
 			# 创建定位器上层的组并吸附到添加空间切换的对象的位置
-			loc_zero = cmds.createNode('transform' , name = loc_node.replace('loc_' , 'zero_'))
+			loc_zero = cmds.createNode('transform' , name = loc_node.replace('loc' , 'zero'))
 			cmds.parent(loc_node , loc_zero)
 			cmds.matchTransform(loc_zero , object , position = True , rotation = True , scale = True)
 			# 定位器对添加空间切换的对象上层的组做父子约束，并且整理层级
-			cmds.parentConstraint(loc_node , object.replace('ctrl_' , 'space_') , mo = False)
+			cmds.parentConstraint(loc_node , object.replace('ctrl' , 'space') , mo = False)
 			cmds.parent(loc_zero , 'grp_m_{}Space_001'.format(space_name))
 			# 创建用于空间切换的判断节点
-			space_cond_node = cmds.createNode('condition' , name = loc_node.replace('loc_' , 'cond_'))
+			space_cond_node = cmds.createNode('condition' , name = loc_node.replace('loc' , 'cond'))
 			cmds.setAttr(space_cond_node + '.colorIfTrueR' , 1)
 			cmds.setAttr(space_cond_node + '.colorIfFalseR' , 0)
 			cmds.connectAttr(object + '.spaceSwitch' , space_cond_node + '.firstTerm')
@@ -281,6 +280,12 @@ class Base_Rig(object) :
 		'''
 		offset_jnts = cmds.ls('*Off*' , type = 'joint')
 		for offset_jnt in offset_jnts :
+			# 整理层级结构
+			offset_ikfk_jnt_grp = 'offjntgrp_m_cog_001'
+			if cmds.objExists(offset_ikfk_jnt_grp) :
+				pass
+			else :
+				cmds.group(name = offset_ikfk_jnt_grp , parent = self.joint)
 			offset_jnt_name = matehumanUtils.MateHuman(name = offset_jnt)
 			# 判断关节的模块如果是手指的话则不生成控制器
 			if offset_jnt_name.description in ['thumb' , 'index' , 'middle' , 'ring' , 'pinky']:
@@ -289,19 +294,24 @@ class Base_Rig(object) :
 				offset_ctrl = controlUtils.Control.create_mateHuman_ctrl(offset_jnt , 'offctrl' ,
 				                                                         shape = 'ball' , radius = 4 ,
 				                                                         axis = 'X+' ,
-				                                                         pos = offset_jnt , parent = None)
+				                                                         pos = offset_jnt , parent = offset_ikfk_jnt_grp)
 				# 查找对应的父级关节,并约束
+				#生成映射的ikfk的修型关节
 				offset_ctrl_zero = offset_ctrl.replace('ctrl' , 'zero')
-				cmds.parentConstraint(offset_ctrl , offset_jnt , mo = True)
+				offset_ikfk_jnt = pipelineUtils.Pipeline.create_node('joint' , 'ikfk_'+ offset_jnt , match = True ,
+				                                                     match_node = offset_jnt)
+				cmds.parentConstraint(offset_ctrl , offset_ikfk_jnt , mo = True)
+				cmds.parentConstraint(offset_ikfk_jnt,offset_jnt,mo = True)
 				offset_jnt_parent = cmds.listRelatives(offset_jnt , parent = True)[0]
 				cmds.parentConstraint(offset_jnt_parent , offset_ctrl_zero , mo = True)
-				
+			
 				# 整理层级结构
-				offset_ctrl_grp = 'offctrlgrp_m_cog_001'
-				if cmds.objExists(offset_ctrl_grp) :
-					cmds.parent(offset_ctrl_zero , offset_ctrl_grp)
+				offset_ikfk_jnt_grp = 'offjntgrp_m_cog_001'
+				if cmds.objExists(offset_ikfk_jnt_grp) :
+					cmds.parent(offset_ikfk_jnt , offset_ikfk_jnt_grp)
 				else :
-					cmds.group(name = offset_ctrl_grp , parent = self.cog_ctrl_output)
-					cmds.parent(offset_ctrl_zero , offset_ctrl_grp)
+					cmds.group(name = offset_ikfk_jnt_grp , parent = self.joint)
+					cmds.parent(offset_ikfk_jnt , offset_ikfk_jnt_grp)
+				
 		cmds.connectAttr(self.custom_ctrl + '.offCtrlVis' , offset_ctrl_grp + '.visibility')
 		cmds.setAttr(self.custom_ctrl + '.offCtrlVis' , 1)
