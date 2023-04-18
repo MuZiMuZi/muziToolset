@@ -43,6 +43,14 @@ class Spine_Rig(matehuman_base_rig.Base_Rig) :
 		spine_system = matehuman_ikfk_rig.IKFK_Rig(self.drv_jnts , self.joint_parent , self.control_parent ,
 		                                           self.space_list , self.stretch, redius = 25)
 		spine_system.create_ikfk_spine_rig()
+		
+		#创建胯部的绑定
+		self.root_jnts_ikfk = pipelineUtils.Pipeline.create_node('joint' , 'ikfk_' + self.root_jnts , match = True ,
+		                                                         match_node = self.root_jnts)
+		
+		self.pelvis_jnts_ikfk = pipelineUtils.Pipeline.create_node('joint' , 'ikfk_' + self.pelvis_jnts , match = True ,
+		                                                           match_node = self.pelvis_jnts)
+		cmds.parent(self.root_jnts_ikfk , self.pelvis_jnts_ikfk , self.joint)
 
 
 # example

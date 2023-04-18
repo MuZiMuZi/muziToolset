@@ -1,41 +1,33 @@
-from __future__ import unicode_literals , print_function
-import sys
+from __future__ import print_function , unicode_literals
 
+import sys
+from importlib import reload
+
+import maya.cmds as cmds
+import muziToolset.conf.config as config
+import muziToolset.conf.setting as setting
+import muziToolset.core.hierarchyUtils as hierarchyUtils
+import muziToolset.core.jointUtils as jointUtils
+import muziToolset.core.matehumanUtils as matehumanUtils
+import muziToolset.core.nameUtils as nameUtils
+import muziToolset.core.pipelineUtils as pipelineUtils
+import muziToolset.res.ui.control_modular.control_widget as control_widget
+import muziToolset.res.ui.nodes_modular.nodes_widget as nodes_widget
+import muziToolset.res.ui.rename_modular.rename_widget as rename_widget
+import muziToolset.res.ui.setting_modular.setting_widget as setting_widget
+import muziToolset.res.ui.snap_modular.snap_widget as snap_widget
+import muziToolset.rigging.mateHumanRigging.matehuman_rig as matehuman_rig
+import muziToolset.rigging.weightsUtils as weightsUtils
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QFont
 from PySide2.QtWidgets import *
 from maya.OpenMayaUI import MQtUtil
 from shiboken2 import wrapInstance
-import maya.cmds as cmds
-from importlib import reload
-import muziToolset.conf.config as config
-
-import muziToolset.res.ui.rename_modular.rename_widget as rename_widget
-import muziToolset.res.ui.setting_modular.setting_widget as setting_widget
-import muziToolset.res.ui.snap_modular.snap_widget as snap_widget
-import muziToolset.res.ui.control_modular.control_widget as control_widget
-import muziToolset.res.ui.nodes_modular.nodes_widget as nodes_widget
-import muziToolset.conf.setting as setting
-import muziToolset.core.pipelineUtils as pipelineUtils
-import muziToolset.core.hierarchyUtils as hierarchyUtils
-import muziToolset.core.jointUtils as jointUtils
-import muziToolset.core.nameUtils as nameUtils
-import muziToolset.rigging.weightsUtils as weightsUtils
-import muziToolset.core.matehumanUtils as matehumanUtils
-import muziToolset.rigging.mateHumanRigging.matehuman_ikfk_rig as matehuman_ikfk_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_hand_rig as matehuman_hand_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_arm_rig as matehuman_arm_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_leg_rig as matehuman_leg_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_foot_rig as matehuman_foot_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_spine_rig as matehuman_spine_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_neck_rig as matehuman_neck_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_base_rig as matehuman_base_rig
-import muziToolset.rigging.mateHumanRigging.matehuman_rig as matehuman_rig
 
 
 reload(nameUtils)
 reload(hierarchyUtils)
-
+reload(matehuman_rig)
 
 class toolWidget(QWidget) :
 	
@@ -296,8 +288,12 @@ class matehuman_Widget(QWidget) :
 		创建matehuman的身体绑定系统
 		:return:
 		'''
-		matehuman = matehuman_rig.MateHuman_Rig()
-		matehuman.create_rig()
+		if cmds.objExists('rig_group') :
+			cmds.warning(u'已经生成身体绑定')
+			pass
+		else:
+			matehuman = matehuman_rig.MateHuman_Rig()
+			matehuman.create_rig()
 	
 	
 	def _export_face_animation(self) :

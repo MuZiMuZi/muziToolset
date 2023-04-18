@@ -1,8 +1,7 @@
 # coding=utf-8
 from importlib import reload
 
-from . import matehuman_base_rig
-
+import muziToolset.rigging.mateHumanRigging.matehuman_base_rig as matehuman_base_rig
 import maya.cmds as cmds
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.hierarchyUtils as hierarchyUtils

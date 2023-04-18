@@ -274,41 +274,39 @@ class Base_Rig(object) :
 			cmds.parent(space_grp , ctrl)
 			cmds.setAttr(space_grp + '.visibility' , 0)
 			
-		cmds.parent(self.root_jnts_ikfk, self.pelvis_jnts_ikfk, self.joint)
 		
-		self.root_jnts_ikfk = pipelineUtils.Pipeline.create_node('joint' , 'ikfk_' + self.root_jnts , match = True ,
-		                                                         match_node = self.root_jnts)
-		
-		self.pelvis_jnts_ikfk = pipelineUtils.Pipeline.create_node('joint' , 'ikfk_' + self.pelvis_jnts , match = True ,
-		                                                           match_node = self.pelvis_jnts)
+
 			
 	
 	def create_offset_ctrl(self):
 		u'''
-		创建偏移的控制器组
+		创建修型关节的控制器组
 		:return:
 		'''
 		offset_jnts = cmds.ls('*Off*',type = 'joint')
 		for offset_jnt in offset_jnts:
-			offset_ctrl = controlUtils.Control.create_mateHuman_ctrl(offset_jnt , 'offctrl' ,
-		                                                         shape = 'Cube' , radius = 2 ,
-		                                                         axis = 'X+' ,
-		                                                         pos = offset_jnt , parent = None)
 			offset_jnt_name = matehumanUtils.MateHuman(name = offset_jnt)
-			#查找对应的父级关节,并约束
-			offset_ctrl_output = offset_ctrl.replace('ctrl','output')
-			offset_ctrl_zero = offset_ctrl.replace('ctrl' , 'zero')
-			cmds.parentConstraint(offset_ctrl_output, offset_jnt,mo = True)
-			offset_jnt_parent = cmds.listRelatives(offset_jnt , parent = True)[0]
-			cmds.parentConstraint(offset_jnt_parent , offset_ctrl_zero , mo = True)
-			
-			#整理层级结构
-			offset_ctrl_grp = 'offctrlgrp_m_cog_001'
-			if cmds.objExists(offset_ctrl_grp):
-				cmds.parent(offset_ctrl_zero, offset_ctrl_grp)
+			#判断关节的模块如果是手指的话则不生成控制器
+			if offset_jnt_name.description in ['thumb','index','middle','ring','pinky']
+				pass
 			else:
-				cmds.group(name = offset_ctrl_grp , parent = self.cog_ctrl_output)
-				cmds.parent(offset_ctrl_zero , offset_ctrl_grp)
+				offset_ctrl = controlUtils.Control.create_mateHuman_ctrl(offset_jnt , 'offctrl' ,
+			                                                         shape = 'Cube' , radius =4 ,
+			                                                         axis = 'X+' ,
+			                                                         pos = offset_jnt , parent = None)
+				#查找对应的父级关节,并约束
+				offset_ctrl_output = offset_ctrl.replace('ctrl','output')
+				offset_ctrl_zero = offset_ctrl.replace('ctrl' , 'zero')
+				cmds.parentConstraint(offset_ctrl_output, offset_jnt,mo = True)
+				offset_jnt_parent = cmds.listRelatives(offset_jnt , parent = True)[0]
+				cmds.parentConstraint(offset_jnt_parent , offset_ctrl_zero , mo = True)
 				
+				#整理层级结构
+				offset_ctrl_grp = 'offctrlgrp_m_cog_001'
+				if cmds.objExists(offset_ctrl_grp):
+					cmds.parent(offset_ctrl_zero, offset_ctrl_grp)
+				else:
+					cmds.group(name = offset_ctrl_grp , parent = self.cog_ctrl_output)
+					cmds.parent(offset_ctrl_zero , offset_ctrl_grp)
 		cmds.connectAttr(self.custom_ctrl + '.offCtrlVis' , offset_ctrl_grp + '.visibility')
-		cmds.setAttr(self.custom_ctrl + '.offCtrlVis' , 0)
+		cmds.setAttr(self.custom_ctrl + '.offCtrlVis' , 1)
