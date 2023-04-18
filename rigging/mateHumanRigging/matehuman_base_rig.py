@@ -287,13 +287,12 @@ class Base_Rig(object) :
 				pass
 			else :
 				offset_ctrl = controlUtils.Control.create_mateHuman_ctrl(offset_jnt , 'offctrl' ,
-				                                                         shape = 'ball' , radius = 3 ,
+				                                                         shape = 'ball' , radius = 4 ,
 				                                                         axis = 'X+' ,
 				                                                         pos = offset_jnt , parent = None)
 				# 查找对应的父级关节,并约束
-				offset_ctrl_output = offset_ctrl.replace('ctrl' , 'output')
 				offset_ctrl_zero = offset_ctrl.replace('ctrl' , 'zero')
-				cmds.parentConstraint(offset_ctrl_output , offset_jnt , mo = True)
+				cmds.parentConstraint(offset_ctrl , offset_jnt , mo = True)
 				offset_jnt_parent = cmds.listRelatives(offset_jnt , parent = True)[0]
 				cmds.parentConstraint(offset_jnt_parent , offset_ctrl_zero , mo = True)
 				
