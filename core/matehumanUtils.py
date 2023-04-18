@@ -145,5 +145,41 @@ class MateHuman() :
 		
 		# 选择matehuman的动画数据
 		cmds.select('Body_joints')
+		body_jnt = cmds.ls(sl =True)
+		#需要选择骨架烘焙完所有动画在导出
+		#查询当前文件的起始帧
+		start_frame = int(cmds.playbackOptions(query = True , minTime = True))
+		#查询当前文件的结束帧
+		end_frame = int(cmds.playbackOptions(query = True , maxTime = True))
+	
+		#根据当前文件的起始帧和结束帧烘培动画
+		cmds.bakeResults(body_jnt , time = (start_frame , end_frame) , simulation = True)
 		pipelineUtils.Pipeline.fbxExport(scene_path)
-		
+	
+	
+	@staticmethod
+	def reset_mateHuman_control() :
+		u"""重置控制器上所有的数值.
+
+
+
+		 """
+		ctrl_node = cmds.ls('*ctrl*' , type = 'transform')
+		attrs = ['translateX' , 'translateY' , 'translateZ' , 'rotateX' , 'rotateY' , 'rotateZ']
+		scale_attrs = ['scaleX' , 'scaleY' , 'scaleZ']
+		for ctrl in ctrl_node :
+			for attr in attrs :
+				lock_val = cmds.getAttr(ctrl + '.{}'.format(attr) , lock = True)
+				if lock_val == 0 :
+					cmds.setAttr(ctrl + '.{}'.format(attr) , 0)
+				else :
+					pass
+			for scale_attr in scale_attrs :
+				lock_val = cmds.getAttr(ctrl + '.{}'.format(scale_attr) , lock = True)
+				if lock_val == 0 :
+					cmds.setAttr(ctrl + '.{}'.format(scale_attr) , 1)
+				else :
+					pass
+		ctrl_IKFKblend = cmds.ls('ctrl_?_*IKFKBend_???')
+		for IKFKblend in ctrl_IKFKblend :
+			cmds.setAttr(IKFKblend + '.IkFkBend' , 1)

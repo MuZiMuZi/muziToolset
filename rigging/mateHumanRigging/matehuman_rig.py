@@ -20,10 +20,29 @@ reload(matehuman_neck_rig)
 reload(matehuman_neck_rig)
 
 
-# matehuman = MateHuman_Rig()
-# matehuman.create_rig()
-
-# matehumanUtils.MateHuman.export_face_animation()
-
-matehumanUtils.MateHuman.export_body_animation()
-
+class MateHuman_Rig(matehuman_base_rig.Base_Rig) :
+	
+	
+	def __init__(self) :
+		super(MateHuman_Rig , self).__init__()
+	
+	
+	def create_rig(self) :
+		if cmds.objExists('rig_group'):
+			cmds.warning(u'已经生成身体绑定')
+			pass
+		else:
+			m_spine = matehuman_spine_rig.Spine_Rig(space_list = None , stretch = True)
+			
+			m_spine.create_spine_rig()
+			
+			m_neck = matehuman_neck_rig.Neck_Rig(space_list = None)
+			
+			m_neck.create_neck_rig()
+			
+			for side in ['l' , 'r'] :
+				arm = matehuman_arm_rig.Arm_rig(side , space_list = None , stretch = True)
+				arm.create_arm_rig()
+				
+				leg = matehuman_leg_rig.Leg_rig(side , space_list = None , stretch = True)
+				leg.create_leg_rig()

@@ -41,6 +41,7 @@ import maya.cmds as cmds
 import muziToolset.core.controlUtils as controlUtils
 import muziToolset.core.nameUtils as nameUtils
 import muziToolset.core.matehumanUtils as matehumanUtils
+import muziToolset.core.pipelineUtils as pipelineUtils
 import pymel.core as pm
 
 
@@ -108,6 +109,7 @@ class Base_Rig(object) :
 		self.neck_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('neck')
 		self.root_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('root')
 		self.pelvis_jnts = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('pelvis')
+		
 	
 	
 	def make(self , drv_jnts) :
@@ -271,6 +273,14 @@ class Base_Rig(object) :
 			space_grp = cmds.createNode('transform' , name = 'grp_m_{}Space_001'.format(ctrl_obj.description))
 			cmds.parent(space_grp , ctrl)
 			cmds.setAttr(space_grp + '.visibility' , 0)
+			
+		cmds.parent(self.root_jnts_ikfk, self.pelvis_jnts_ikfk, self.joint)
+		
+		self.root_jnts_ikfk = pipelineUtils.Pipeline.create_node('joint' , 'ikfk_' + self.root_jnts , match = True ,
+		                                                         match_node = self.root_jnts)
+		
+		self.pelvis_jnts_ikfk = pipelineUtils.Pipeline.create_node('joint' , 'ikfk_' + self.pelvis_jnts , match = True ,
+		                                                           match_node = self.pelvis_jnts)
 			
 	
 	def create_offset_ctrl(self):
