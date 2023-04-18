@@ -47,6 +47,6 @@ class MateHuman_Rig(matehuman_base_rig.Base_Rig):
 # matehuman = MateHuman_Rig()
 # matehuman.create_rig()
 
-matehumanUtils.MateHuman.export_face_animation()
+# matehumanUtils.MateHuman.export_face_animation()
 matehumanUtils.MateHuman.export_body_animation()
 
