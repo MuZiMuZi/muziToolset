@@ -39,8 +39,8 @@ class MateHuman_Rig(matehuman_base_rig.Base_Rig) :
 		# 创建脖子的绑定
 		m_neck = matehuman_neck_rig.Neck_Rig(space_list = None)
 		m_neck.create_neck_rig()
-
-		# 创建四肢的绑定
+		#
+		# # 创建四肢的绑定
 		for side in ['l' , 'r'] :
 			arm = matehuman_arm_rig.Arm_rig(side , space_list = None , stretch = True)
 			arm.create_arm_rig()

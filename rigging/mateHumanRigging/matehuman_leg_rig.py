@@ -46,6 +46,7 @@ class Leg_rig(matehuman_base_rig.Base_Rig) :
 		
 		# 创建脚掌部位的绑定
 		self.create_foot_rig()
+		
 	
 	
 	

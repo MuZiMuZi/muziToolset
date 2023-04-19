@@ -126,8 +126,10 @@ class Base_Rig(object) :
 		                                     parent = self.rigNode_Local)
 		self.rigNodes_World_grp = cmds.group(name = main.name.replace('rigModule_' , 'rigNodesWorld_') , em = True ,
 		                                     parent = self.rigNode_World)
-		self.space_grp = cmds.group(name = main.name.replace('rigModule_' , 'space_') , em = True ,
+		self.space_grp = cmds.group(name = 'grp_{}_{}Space_001'.format(main.side,main.description), em = True ,
 		                            parent = self.control_parent)
+		cmds.matchTransform(self.space_grp , drv_jnts[0], position = True , rotation = True ,
+		                    scale = True)
 		# 设置组的可见性
 		cmds.setAttr(self.space_grp + '.visibility' , 0)
 	
@@ -147,16 +149,21 @@ class Base_Rig(object) :
 		
 		for space_name in space_list :
 			# 创建用于空间切换的定位器
-			object_obj = matehumanUtils.mateHuman_decompose(name = object)
-			object_obj.description = object_obj.description + 'Space' + space_name + 'loc'
-			loc_node = cmds.spaceLocator(name = object_obj.name)[0]
+			object_obj = matehumanUtils.MateHuman(object)
+			# object_obj.description = object_obj.description + space_name+'Space' + 'loc'
+			loc_node = cmds.spaceLocator(name = object_obj.name.replace(object_obj.description,
+			                                                            object_obj.description + space_name + 'Space' + 'loc'))[0]
 			# 创建定位器上层的组并吸附到添加空间切换的对象的位置
-			loc_zero = cmds.createNode('transform' , name = loc_node.replace('loc' , 'zero'))
+			loc_zero = cmds.createNode('transform' , name = loc_node.replace('Spaceloc' , 'Spacezero'))
 			cmds.parent(loc_node , loc_zero)
-			cmds.matchTransform(loc_zero , object , position = True , rotation = True , scale = True)
+			cmds.matchTransform(loc_zero , object.replace('ctrl' , 'space') , position = True , rotation = True , scale = True)
 			# 定位器对添加空间切换的对象上层的组做父子约束，并且整理层级
 			cmds.parentConstraint(loc_node , object.replace('ctrl' , 'space') , mo = False)
-			cmds.parent(loc_zero , 'grp_m_{}Space_001'.format(space_name))
+			if space_name in ['spine','neck']:
+				space_grp = 'grp_{}_{}Space_001'.format('m' , space_name)
+			else:
+				space_grp= 'grp_{}_{}Space_001'.format(object_obj.side , space_name)
+			cmds.parent(loc_zero , space_grp)
 			# 创建用于空间切换的判断节点
 			space_cond_node = cmds.createNode('condition' , name = loc_node.replace('loc' , 'cond'))
 			cmds.setAttr(space_cond_node + '.colorIfTrueR' , 1)
@@ -164,7 +171,7 @@ class Base_Rig(object) :
 			cmds.connectAttr(object + '.spaceSwitch' , space_cond_node + '.firstTerm')
 			cmds.setAttr(space_cond_node + '.secondTerm' , space_list.index(space_name))
 			# 连接约束节点
-			constraint_node = object.replace('ctrl_' , 'space_') + '_parentConstraint1'
+			constraint_node = object.replace('ctrl' , 'space') + '_parentConstraint1'
 			cmds.connectAttr(space_cond_node + '.outColorR' ,
 			                 constraint_node + '.{}W{}'.format(loc_node , space_list.index(space_name)))
 	
@@ -283,7 +290,7 @@ class Base_Rig(object) :
 		offset_ikfk_jnt_grp = 'offjntgrp_m_cog_001'
 		# 判断偏移关节顶层组是否存在，如存在则跳过，不存在的话则新创建
 		if cmds.objExists(offset_ikfk_jnt_grp) :
-			pass
+			hierarchyUtils.Hierarchy.chain_parent(offset_ikfk_jnt_grp, self.joint)
 		else :
 			cmds.group(name = offset_ikfk_jnt_grp , parent = self.joint)
 			
@@ -311,7 +318,7 @@ class Base_Rig(object) :
 				# 查找对应的父级关节,并约束
 				#生成映射的ikfk的修型关节
 				offset_ctrl_zero = offset_ctrl.replace('ctrl' , 'zero')
-				offset_ikfk_jnt = pipelineUtils.Pipeline.create_node('joint' , 'ikfk_'+ offset_jnt , match = True ,
+				offset_ikfk_jnt = pipelineUtils.Pipeline.create_node('joint' , 'ikfkjnt_'+ offset_jnt , match = True ,
 				                                                     match_node = offset_jnt)
 				cmds.parent(offset_ikfk_jnt, offset_ikfk_jnt_grp)
 				cmds.parentConstraint(offset_ctrl , offset_ikfk_jnt , mo = True)

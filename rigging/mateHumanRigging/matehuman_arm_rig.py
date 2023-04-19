@@ -48,6 +48,7 @@ class Arm_rig(matehuman_base_rig.Base_Rig) :
 		
 		# 创建手掌部位的绑定
 		self.create_hand_rig()
+		
 	
 	
 	def create_hand_rig(self) :
@@ -67,8 +68,6 @@ class Arm_rig(matehuman_base_rig.Base_Rig) :
 		self.clavicle_zero = self.clavicle_ctrl.replace('ctrl' , 'zero')
 		self.clavicle_output = self.clavicle_ctrl.replace('ctrl' , 'output')
 		cmds.parentConstraint('ikfkjnt_' + self.spine_jnts[-1] , self.clavicle_zero , mo = True)
-		
-		
 		
 		# 创建约束
 		ctrls = [self.clavicle_ctrl]

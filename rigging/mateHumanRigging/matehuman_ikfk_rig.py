@@ -213,7 +213,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		# 添加空间切换
 		if self.space_list :
 			for ctrl in [midIK_pv_ctrl , endIK_ctrl] :
-				self.add_spaceSwitch(ctrl , space_list)
+				self.add_spaceSwitch(ctrl , self.space_list)
 		else :
 			pass
 		
@@ -358,8 +358,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 		
 		if self.control_parent :
 			hierarchyUtils.Hierarchy.parent(child_node = ik_ctrl_grp , parent_node = self.control_parent)
-	
-	
+		
 	def ik_spine_rig(self) :
 		u"""
 		创建IKspine链的控制器绑定
@@ -625,7 +624,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		
 		# 整理层级结构
 		hierarchyUtils.Hierarchy.parent(child_node = ikfkBend_grp , parent_node = self.control_parent)
-	
+		
 	
 	def create_fk_chain_system(self) :
 		u'''

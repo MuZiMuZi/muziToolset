@@ -1,7 +1,13 @@
-from . import pipelineUtils
 from importlib import reload
+
 import maya.cmds as cmds
+
+from . import pipelineUtils
+
+
 reload(pipelineUtils)
+
+
 class MateHuman() :
 	
 	
@@ -23,7 +29,7 @@ class MateHuman() :
 		                              'pelvis' : 'pelvis_drv' ,
 		                              'spine' : ['spine_01_drv' , 'spine_02_drv' , 'spine_03_drv' , 'spine_04_drv' ,
 		                                         'spine_05_drv'] ,
-		                              'neck' : ['neck_01_drv' , 'neck_02_drv','head_drv'] ,
+		                              'neck' : ['neck_01_drv' , 'neck_02_drv' , 'head_drv'] ,
 		                              'head ' : 'head_drv'}
 		
 		mateHuman_joint_arm_dict = {'clavicle_l' : 'clavicle_l_drv' ,
@@ -114,22 +120,22 @@ class MateHuman() :
 			self.function = name_parts[1]
 			self.side = name_parts[2]
 		# 情况为关节为calf_twist_02_r_drv，calf_twist_01_r_drv的修型关节，len(name_parts) == 5
-		else:
+		else :
 			self.function = name_parts[1]
 			self.index = name_parts[2]
 			self.side = name_parts[3]
 	
 	
 	@staticmethod
-	def export_face_animation():
+	def export_face_animation() :
 		u'''
 		导出面部的动画在文件的路径下
 		:return:
 		'''
-		#获取maya文件的路径
+		# 获取maya文件的路径
 		scene_path = pipelineUtils.Pipeline.get_current_scene_path() + '_face_animation'
 		
-		#选择matehuman的动画数据
+		# 选择matehuman的动画数据
 		cmds.select('FacialControls')
 		pipelineUtils.Pipeline.fbxExport(scene_path)
 	
@@ -145,14 +151,14 @@ class MateHuman() :
 		
 		# 选择matehuman的动画数据
 		cmds.select('Body_joints')
-		body_jnt = cmds.ls(sl =True)
-		#需要选择骨架烘焙完所有动画在导出
-		#查询当前文件的起始帧
+		body_jnt = cmds.ls(sl = True)
+		# 需要选择骨架烘焙完所有动画在导出
+		# 查询当前文件的起始帧
 		start_frame = int(cmds.playbackOptions(query = True , minTime = True))
-		#查询当前文件的结束帧
+		# 查询当前文件的结束帧
 		end_frame = int(cmds.playbackOptions(query = True , maxTime = True))
-	
-		#根据当前文件的起始帧和结束帧烘培动画
+		
+		# 根据当前文件的起始帧和结束帧烘培动画
 		cmds.bakeResults(body_jnt , time = (start_frame , end_frame) , simulation = True)
 		pipelineUtils.Pipeline.fbxExport(scene_path)
 	
@@ -181,14 +187,13 @@ class MateHuman() :
 					cmds.setAttr(ctrl + '.{}'.format(scale_attr) , 1)
 				else :
 					pass
-		#重置ikfk切换控制器
+		# 重置ikfk切换控制器
 		ctrl_ikfkblends = cmds.ls('ikfkctrl_*' , type = 'transform')
 		for ctrl_ikfkblend in ctrl_ikfkblends :
 			cmds.setAttr(ctrl_ikfkblend + '.IkFkBend' , 1)
-
+		
 		# 重置手指pose控制器
 		ctrl_poses = cmds.ls('fkposectrl_*' , type = 'transform')
-		for ctrl_pose in ctrl_poses:
-			for finger in ['pinky','thumb','index','middle','ring']:
+		for ctrl_pose in ctrl_poses :
+			for finger in ['pinky' , 'thumb' , 'index' , 'middle' , 'ring'] :
 				cmds.setAttr(ctrl_pose + '.{}Curl'.format(finger) , 0)
-		
