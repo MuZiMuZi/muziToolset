@@ -164,10 +164,11 @@ class MateHuman() :
 
 
 		 """
-		ctrl_node = cmds.ls('*ctrl*' , type = 'transform')
+		# 重置ikfk控制器
+		ctrls = cmds.ls('*ctrl_*' , type = 'transform')
 		attrs = ['translateX' , 'translateY' , 'translateZ' , 'rotateX' , 'rotateY' , 'rotateZ']
 		scale_attrs = ['scaleX' , 'scaleY' , 'scaleZ']
-		for ctrl in ctrl_node :
+		for ctrl in ctrls :
 			for attr in attrs :
 				lock_val = cmds.getAttr(ctrl + '.{}'.format(attr) , lock = True)
 				if lock_val == 0 :
@@ -180,6 +181,14 @@ class MateHuman() :
 					cmds.setAttr(ctrl + '.{}'.format(scale_attr) , 1)
 				else :
 					pass
-		ctrl_IKFKblend = cmds.ls('ctrl_?_*IKFKBend_???')
-		for IKFKblend in ctrl_IKFKblend :
-			cmds.setAttr(IKFKblend + '.IkFkBend' , 1)
+		#重置ikfk切换控制器
+		ctrl_ikfkblends = cmds.ls('ikfkctrl_*' , type = 'transform')
+		for ctrl_ikfkblend in ctrl_ikfkblends :
+			cmds.setAttr(ctrl_ikfkblend + '.IkFkBend' , 1)
+
+		# 重置手指pose控制器
+		ctrl_poses = cmds.ls('fkposectrl_*' , type = 'transform')
+		for ctrl_pose in ctrl_poses:
+			for finger in ['pinky','thumb','index','middle','ring']:
+				cmds.setAttr(ctrl_pose + '.{}Curl'.format(finger) , 0)
+		

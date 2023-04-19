@@ -131,7 +131,7 @@ class Hand_Rig(matehuman_base_rig.Base_Rig) :
 		u"""
 		创建手指的弯曲系统，设置手指关节旋转的姿势。
 		"""
-		pose_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.thumbHand_drv[0] , 'fkctrlpose' ,
+		pose_ctrl = controlUtils.Control.create_mateHuman_ctrl(self.thumbHand_drv[0] , 'fkposectrl' ,
 		                                                       shape = 'pPlatonic' ,
 		                                                       radius = 6 ,
 		                                                       axis = 'X+' ,

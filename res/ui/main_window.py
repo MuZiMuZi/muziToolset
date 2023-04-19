@@ -263,8 +263,8 @@ class matehuman_Widget(QWidget) :
 		self.mate_rig_button = QPushButton(u"创建身体绑定")
 		self.mate_rig_button.clicked.connect(self.create_matehuman_rig)
 		
-		self.mate_ctrl_button = QPushButton(u"重置控制器(开发中)")
-		# self.mate_ctrl_button.clicked.connect(self.reset_mateHuman_control)
+		self.mate_ctrl_button = QPushButton(u"重置控制器")
+		self.mate_ctrl_button.clicked.connect(self._reset_mateHuman_control)
 		
 		self.mate_face_button = QPushButton(u"导出面部动画")
 		self.mate_face_button.clicked.connect(self._export_face_animation)
