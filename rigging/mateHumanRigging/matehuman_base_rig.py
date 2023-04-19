@@ -279,13 +279,26 @@ class Base_Rig(object) :
 		:return:
 		'''
 		offset_jnts = cmds.ls('*Off*' , type = 'joint')
+		# 整理偏移关节的层级结构
+		offset_ikfk_jnt_grp = 'offjntgrp_m_cog_001'
+		# 判断偏移关节顶层组是否存在，如存在则跳过，不存在的话则新创建
+		if cmds.objExists(offset_ikfk_jnt_grp) :
+			pass
+		else :
+			cmds.group(name = offset_ikfk_jnt_grp , parent = self.joint)
+			
+		# 整理偏移控制器的层级结构
+		offset_ctrl_grp = 'offctrlgrp_m_cog_001'
+		#判断控制器顶层组是否存在，如存在则跳过，不存在的话则新创建
+		if cmds.objExists(offset_ctrl_grp) :
+			pass
+		else :
+			cmds.group(name = offset_ctrl_grp , parent = self.cog_ctrl_output)
+		
+		cmds.connectAttr(self.custom_ctrl + '.offCtrlVis' , offset_ctrl_grp + '.visibility')
+		cmds.setAttr(self.custom_ctrl + '.offCtrlVis' , 1)
+		
 		for offset_jnt in offset_jnts :
-			# 整理层级结构
-			offset_ikfk_jnt_grp = 'offjntgrp_m_cog_001'
-			if cmds.objExists(offset_ikfk_jnt_grp) :
-				pass
-			else :
-				cmds.group(name = offset_ikfk_jnt_grp , parent = self.joint)
 			offset_jnt_name = matehumanUtils.MateHuman(name = offset_jnt)
 			# 判断关节的模块如果是手指的话则不生成控制器
 			if offset_jnt_name.description in ['thumb' , 'index' , 'middle' , 'ring' , 'pinky']:
@@ -294,24 +307,15 @@ class Base_Rig(object) :
 				offset_ctrl = controlUtils.Control.create_mateHuman_ctrl(offset_jnt , 'offctrl' ,
 				                                                         shape = 'ball' , radius = 4 ,
 				                                                         axis = 'X+' ,
-				                                                         pos = offset_jnt , parent = offset_ikfk_jnt_grp)
+				                                                         pos = offset_jnt , parent = offset_ctrl_grp)
 				# 查找对应的父级关节,并约束
 				#生成映射的ikfk的修型关节
 				offset_ctrl_zero = offset_ctrl.replace('ctrl' , 'zero')
 				offset_ikfk_jnt = pipelineUtils.Pipeline.create_node('joint' , 'ikfk_'+ offset_jnt , match = True ,
 				                                                     match_node = offset_jnt)
+				cmds.parent(offset_ikfk_jnt, offset_ikfk_jnt_grp)
 				cmds.parentConstraint(offset_ctrl , offset_ikfk_jnt , mo = True)
 				cmds.parentConstraint(offset_ikfk_jnt,offset_jnt,mo = True)
 				offset_jnt_parent = cmds.listRelatives(offset_jnt , parent = True)[0]
 				cmds.parentConstraint(offset_jnt_parent , offset_ctrl_zero , mo = True)
-			
-				# 整理层级结构
-				offset_ikfk_jnt_grp = 'offjntgrp_m_cog_001'
-				if cmds.objExists(offset_ikfk_jnt_grp) :
-					cmds.parent(offset_ikfk_jnt , offset_ikfk_jnt_grp)
-				else :
-					cmds.group(name = offset_ikfk_jnt_grp , parent = self.joint)
-					cmds.parent(offset_ikfk_jnt , offset_ikfk_jnt_grp)
 				
-		cmds.connectAttr(self.custom_ctrl + '.offCtrlVis' , offset_ctrl_grp + '.visibility')
-		cmds.setAttr(self.custom_ctrl + '.offCtrlVis' , 1)

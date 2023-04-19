@@ -122,7 +122,7 @@ class Hand_Rig(matehuman_base_rig.Base_Rig) :
 			              endEffector = self.wirst_ik_chain ,
 			              sticky = 'sticky' , solver = 'ikSCsolver' , setupForRPsolver = True)[0]
 		
-		self.hand_ik_outputlocal = self.hand_ik_jnt.replace('jnt' , 'outputLocal')
+		self.hand_ik_outputlocal = self.hand_ik_jnt.replace('jnt' , 'Localoutput')
 		
 		cmds.parent(single_ikhandle_node , self.hand_ik_outputlocal)
 	
