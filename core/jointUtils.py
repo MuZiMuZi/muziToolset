@@ -202,3 +202,23 @@ class Joint(object) :
 			joints_chain.append(jnt_new)
 		cmds.setAttr(joints_chain[0] + '.visibility' , 0)
 		return joints_chain
+	@staticmethod
+	def auto_bpjoint_orientation():
+		u'''
+		对于用来定位绑定系统的bp关节自动关节定向,正常关节定向为X轴指向下一关节，末端关节定向为世界方向
+		'''
+		#获取场景里所有的bp定位关节
+		bp_jnts = cmds.ls('bpjnt_*',type = 'joint')
+		
+		#判断关节是否具有子关节
+		for bp_jnt in bp_jnts:
+			jnt_sub = cmds.listRelatives(bp_jnt , children = True , allDescendents = True , type = 'joint')
+			#如果有子关节，则关节定向为X轴指向下一关节
+			if jnt_sub:
+				cmds.joint(bp_jnt, zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'xyz' , secondaryAxisOrient = 'xup')
+			#无子关节，关节定向为世界方向
+			else:
+				cmds.joint(bp_jnt, zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')
+
+		
+		
