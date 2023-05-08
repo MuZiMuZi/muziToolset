@@ -1,3 +1,15 @@
+u"""
+matehumanUtils：这是一个用来对matehuman的基础功能定义的模块
+
+目前已有的功能：
+get_mateHuman_drv_jnt:定义matehuman的骨架结构,查询到对应的模块后返回对应的关节
+mateHuman_decompose:拆分mateHuman的关节名称
+export_face_animation:导出面部的动画在文件的路径下
+export_body_animation:导出身体的动画在文件的路径下
+reset_mateHuman_control:重置控制器上所有的数值.
+
+"""
+
 from importlib import reload
 
 import maya.cmds as cmds
@@ -143,7 +155,7 @@ class MateHuman() :
 	@staticmethod
 	def export_body_animation() :
 		u'''
-		导出面部的动画在文件的路径下
+		导出身体的动画在文件的路径下
 		:return:
 		'''
 		# 获取maya文件的路径

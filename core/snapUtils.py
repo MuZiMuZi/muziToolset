@@ -1,14 +1,14 @@
 # coding=utf-8
 u"""
-这是一个吸附类。用来吸附对应的位置。
+这是一个吸附的。用来吸附对应的位置。
 
 实现的功能：
 
 返回对象列表的位移中心位置：find_centerPos_pivot
 返回对象列表的选择中心位置：find_centerRet_pivot
 将要吸附中心位置的对象捕捉到对象列表的中心位置：snap_to_PosCenter
-设置控制器的名字：snap_to_retCenter
-设置控制器的颜色：snap
+将要吸附中心旋转的对象捕捉到对象列表的中心旋转：snap_to_retCenter
+根据选择的吸附模式，进行对应的吸附功能：snap
 
 """
 # 导入所有需要的模块

@@ -1,6 +1,6 @@
 # coding=utf-8
 u"""
-这是一个blendshape的类。用来对混合变形进行一系列修改的操作。
+这是一个blendshape的模块。用来对混合变形进行一系列修改的操作。
 
 实现的功能：
 get_blendshape_node:获取bs节点

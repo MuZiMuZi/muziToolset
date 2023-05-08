@@ -1,14 +1,18 @@
 # coding=utf-8
 
 u"""
-这是一个用来编写关节工具的类
+jointUtils：这是一个用来编写关节工具的模块
 
 目前已有的功能：
- create_chain：通过放置的模板关节生成相应的IK、FK和Bindjoint
+avg_joint：在选定的关节上创建新的avg关节用于旋转约束连接
 
- create_joints_on_curve_rigging：基于曲线上的点创建关节(rigging版本)，还未添加是否为曲线的判断
+create_joints_on_curve_rigging：基于曲线上的点创建关节(rigging版本)，还未添加是否为曲线的判断
 
- create_joints_on_curve：基于曲线上的点创建关节(通用版本)，还未添加是否为曲线的判断
+create_joints_on_curve：基于曲线上的点创建关节(通用版本)，还未添加是否为曲线的判断
+
+create_chain：通过放置的模板关节生成相应的IK、FK和Bindjoint
+
+create_mateHuman_chain：通过放置的模板关节创建mateHuman的IK,FK 的关节链
 
 """
 from importlib import reload

@@ -2,14 +2,13 @@
 from importlib import reload
 import maya.cmds as cmds
 u"""
-这是一个用来对层级修改的类
+hierarchyUtils：这是一个用来对层级结构进行修改的类
 
 目前已有的功能：
 
 parent：查找子物体和父物体之间是否有父子层级关系
-chain_parent：
 add_extra_group：在对象上方添加一个额外的组.
-control_hierarchy:打组
+control_hierarchy:做控制器的层级结构
 get_child_object:获取对象的所有子物体包括对象本身
 """
 
@@ -32,11 +31,6 @@ class Hierarchy(object):
         else:
             cmds.warning(u'没有给定父物体节点')
 
-    @staticmethod
-    def chain_parent(nodes, parent_node=None):
-        for n in nodes:
-            Hierarchy.parent(n, parent_node)
-            parent_node = n
 
     @staticmethod
     def add_extra_group(obj, grp_name, world_orient=False):

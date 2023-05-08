@@ -10,16 +10,22 @@ remove_non_face_objs：移除没有带“isFace”标志的物体
 copy_weight：复制蒙皮
 rename_bs_sc：批量重命名对象的蒙皮和混合变形节点
 distence_between：获取两个对象之间的距离.
-add_extra_group：在对象上方添加一个额外的组.
 reset_control：重置控制器上所有的数值.
 list_operation：将两个列表的并集/差分/交集/对称_差分部分作为列表返回.
 tag_joint：对选择的关节添加关节标签
 batch_Constraints：选中多个物体，批量对物体进行约束
 default_grp： 添加绑定的初始层级组，并隐藏连接对应的属性
-create_constraints：快速创建约束
+create_constraints：快速创建约束	用法：先选择需要约束的物体，在选择被约束的物体
 delete_constraints：删除所选择物体的所有约束节点
 select_sub_objects：快速选择所选物体的所有子物体
 finger_Connect：  adv重新生成后手指的驱动可能会消失，于是可以依靠这个代码重新连接
+create_node：根据给定的节点类型，在给定的位置生成新的节点。
+get_maya_main_window()：获取maya的主窗口
+save_file_as：另存为文件
+get_current_scene_path ： 获取当前文件的绝对路径
+create_reference：在maya里的当前文件创建引用
+create_native_script_job:创建回调函数在新场景打开的时候执行回调函数
+fbxExport:所选择的物体导出成为fbx文件
 
 """
 import math
@@ -42,6 +48,7 @@ from shiboken2 import wrapInstance
 
 from . import controlUtils
 from . import hierarchyUtils
+from . import qtUtils
 
 
 class Pipeline(object) :
@@ -567,7 +574,7 @@ class Pipeline(object) :
 	
 	
 	@staticmethod
-	def save_file_as(current_opend_file , current_selected_file) :
+	def save_file_as(current_selected_file) :
 		u'''
 		保存给定的文件的名称
 		:param current_opend_file: 当前打开的文件
@@ -576,7 +583,7 @@ class Pipeline(object) :
 		'''
 		# 根据所选择的文件获取源文件的名称，并打开重命名名称的窗口
 		old_name = os.path.basename(current_selected_file)
-		new_name = QtUtils.input_dialog_text(u'重命名_{}'.format(old_name) , u'重命名为新的名称' , (500 , 200))
+		new_name = qtutils.input_dialog_text(u'重命名_{}'.format(old_name) , u'重命名为新的名称' , (500 , 200))
 		new_name = '.'.join([new_name , 'ma'])
 		if new_name is None :
 			return
