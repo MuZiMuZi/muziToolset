@@ -22,7 +22,9 @@ from . import nameUtils
 from . import controlUtils
 
 
+
 class Joint(object) :
+	
 	
 	
 	def __init__(self) :
@@ -34,6 +36,7 @@ class Joint(object) :
 		self.driver_joint = None
 		self.avg_jnt = None
 		self.bp_joints = None
+	
 	
 	
 	def avg_joint(self , driven_joint , weight = 0.5) :
@@ -76,6 +79,7 @@ class Joint(object) :
 		cmds.setAttr('{}.{}W1'.format(cons_node , self.driven_joint) , 1 - weight)
 	
 	
+	
 	@staticmethod
 	def create_joints_on_curve_rigging() :
 		u"""基于曲线上的点创建关节(rigging版本)
@@ -113,6 +117,7 @@ class Joint(object) :
 			cmds.parent(jnt , grp_jnts)
 	
 	
+	
 	@staticmethod
 	def create_joints_on_curve() :
 		u"""基于曲线上的点创建关节(通用版本)
@@ -146,6 +151,7 @@ class Joint(object) :
 			cmds.parent(jnt , grp_jnts)
 	
 	
+	
 	@staticmethod
 	def create_chain(bp_joints , suffix , joint_parent = None) :
 		'''通过放置的模板关节生成相应的IK、FK和Bindjoint
@@ -172,6 +178,7 @@ class Joint(object) :
 			joints_chain.append(jnt_new)
 		cmds.setAttr(bp_joints[0] + '.visibility' , 0)
 		return joints_chain
+	
 	
 	
 	@staticmethod
@@ -202,23 +209,26 @@ class Joint(object) :
 			joints_chain.append(jnt_new)
 		cmds.setAttr(joints_chain[0] + '.visibility' , 0)
 		return joints_chain
+	
+	
+	
 	@staticmethod
-	def auto_bpjoint_orientation():
+	def auto_bpJoint_orientation() :
 		u'''
 		对于用来定位绑定系统的bp关节自动关节定向,正常关节定向为X轴指向下一关节，末端关节定向为世界方向
 		'''
-		#获取场景里所有的bp定位关节
-		bp_jnts = cmds.ls('bpjnt_*',type = 'joint')
+		# 获取场景里所有的bp定位关节
+		bp_jnts = cmds.ls('bpjnt_*' , type = 'joint')
 		
-		#判断关节是否具有子关节
-		for bp_jnt in bp_jnts:
+		# 判断关节是否具有子关节
+		for bp_jnt in bp_jnts :
+			cmds.makeIdentity(bp_jnt,apply = True, translate = 1, rotate =1, scale =1 , normal =0 , preserveNormals = 1)
 			jnt_sub = cmds.listRelatives(bp_jnt , children = True , allDescendents = True , type = 'joint')
-			#如果有子关节，则关节定向为X轴指向下一关节
-			if jnt_sub:
-				cmds.joint(bp_jnt, zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'xyz' , secondaryAxisOrient = 'xup')
-			#无子关节，关节定向为世界方向
-			else:
-				cmds.joint(bp_jnt, zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')
-
-		
-		
+			# 如果有子关节，则关节定向为X轴指向下一关节
+			if jnt_sub :
+				cmds.joint(bp_jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'xyz' ,
+				           secondaryAxisOrient = 'xup')
+			
+			# 无子关节，关节定向为世界方向
+			else :
+				cmds.joint(bp_jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')
