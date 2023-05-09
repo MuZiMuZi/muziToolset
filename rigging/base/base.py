@@ -15,10 +15,8 @@ class Base(bone.Bone) :
 	
 	
 	
-	def __init__(self , side , name , index , joint_parent = None , control_parent = None , point_value = True ,
-	             orient_value = True , scale_value = True , mo_value = True) :
-		bone.Bone.__init__(self , side , name , index , joint_parent , control_parent , point_value , orient_value ,
-		                   scale_value , mo_value)
+	def __init__(self , side , name , index , joint_parent = None , control_parent = None ) :
+		bone.Bone.__init__(self , side , name , index , joint_parent , control_parent)
 		self._rtype = 'base'
 		self._name = name + self._rtype
 

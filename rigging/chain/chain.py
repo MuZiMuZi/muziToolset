@@ -4,10 +4,8 @@ class Chain(base.Base):
 	
 	
 	
-	def __init__(self , side , name , index , joint_parent = None , control_parent = None , point_value = True ,
-	             orient_value = True , scale_value = True , mo_value = True) :
-		base.Base.__init__(self,side , name , index , joint_parent , control_parent , point_value , orient_value ,
-		                 scale_value , mo_value)
+	def __init__(self , side , name , index , joint_parent = None , control_parent = None ) :
+		base.Base.__init__(self,side , name , index , joint_parent , control_parent )
 		
 		self._rtype = 'chain'
 		self._name = name + self._rtype

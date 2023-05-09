@@ -25,8 +25,7 @@ class Bone(object) :
 	
 	
 	
-	def __init__(self , side , name , index , joint_parent = None , control_parent = None , point_value = True ,
-	             orient_value = True , scale_value = True , mo_value = True) :
+	def __init__(self , side , name , index , joint_parent = None , control_parent = None ) :
 		"""
 		根据给定的变量创建关节和控制器
 
@@ -51,11 +50,7 @@ class Bone(object) :
 		if not self.control_parent :
 			self.control_parent = '_control'
 				
-		# 约束的参数设置
-		self.point_value = point_value
-		self.orient_value = orient_value
-		self.scale_value = scale_value
-		self.mo_value = mo_value
+
 		
 		#生成的绑定类型
 		self._rtype =''
@@ -137,10 +132,10 @@ class Bone(object) :
 		for ctrl , jnt in zip(self.ctrl_list , self.jnt_list) :
 			
 			pipelineUtils.Pipeline.create_constraint(ctrl.replace(' ctrl' , 'output') , jnt ,
-			                                         point_value = self.point_value ,
-			                                         orient_value = self.orient_value , scale_value =
-			                                         self.scale_value ,
-			                                         mo_value = self.mo_value)
+			                                         point_value = True ,
+			                                         orient_value = True, scale_value =
+			                                         True ,
+			                                         mo_value = True)
 	
 	
 	
