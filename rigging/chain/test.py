@@ -1,20 +1,20 @@
-from muziToolset.rigging.chain import chain
+import muziToolset.rigging.chain.chainFK as chainFK
 from importlib import reload
 
 
 
-reload(chain)
+reload(chainFK)
 
 
 
 def x() :
-	custom = chain.Chain(side = 'l' , name = 'zz' , index = 5 , joint_parent = None , control_parent = None)
+	custom = chainFK.ChainFk(side = 'l' , name = 'zz' , index = 5 , joint_parent = None , control_parent = None)
 	custom.build_setup()
 
 
 
 def y() :
-	custom = chain.Chain(side = 'l' , name = 'zz' , index = 5 , joint_parent = None , control_parent = None)
+	custom = chainFK.ChainFk(side = 'l' , name = 'zz' , index = 5 , joint_parent = None , control_parent = None)
 	custom.build_rig()
 
 
