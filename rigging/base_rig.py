@@ -23,7 +23,25 @@ import pymel.core as pm
 
 
 class Base_Rig(object) :
+	'''规定一下命名规范
+	# BP定位关节链: BPjnt_{side}_{name}_{index}
+	# 蒙皮关节链: IKFKjnt_{side}_{name}_{index}
 	
+	
+	
+	# FK关节链: FKjnt_{side}_{name}_{index}
+	# FK控制器组：FKctrlGrp_{side}_{name}_{index}
+	# FK控制器： FKctrl_{side}_{name}_{index}
+	# FK次级控制器： FKsubctrl_{side}_{name}_{index}
+	
+	# IK关节链: IKjnt_{side}_{name}_{index}
+	# IK控制器组：IKctrlGrp_{side}_{name}_{index}
+	# IK控制器： IKctrl_{side}_{name}_{index}
+	# IK次级控制器： IKsubctrl_{side}_{name}_{index}
+	# IK曲线： IKcrv_{side}_{name}_{index}
+	
+	# 模块整体的控制器组 ：IKFKctrlGrp_{side}_{name}_{index}
+	'''
 	
 	
 	def __init__(self) :
@@ -33,14 +51,15 @@ class Base_Rig(object) :
 			self.side_value = 1
 		elif self.side == 'r' :
 			self.side_value = -1
-		#定义层级架构命名
+		# 定义层级架构命名
 		self.define_naming_conventions()
-		#创建绑定的初始层级组，并隐藏连接对应的属性
+		# 创建绑定的初始层级组，并隐藏连接对应的属性
 		self.rig_top_grp = 'group'
 		if not cmds.objExists(self.rig_top_grp) :
 			self.create_master_grp()
 		
-		
+		self.bpjnt_dict = {'jaw_m' : ['BPjnt_m_Jaw_001' , 'BPjnt_m_Jaw_002']}
+	
 	
 	
 	def define_naming_conventions(self) :
@@ -86,6 +105,21 @@ class Base_Rig(object) :
 		self.chest_rig = 'chest_rig'
 		self.modular_rig_list = [self.arm_rig , self.hand_rig , self.leg_rig , self.foot_rig , self.neck_rig ,
 		                         self.spine_rig , self.chest_rig]
+	
+	
+	
+	def get_bpjnt(self , module) :
+		u'''
+		给定模块名后查询对应的bpjnt定位关节
+		'''
+		if module in self.bpjnt_dict :
+			if len(self.bpjnt_dict[module]) == 1 :
+				return self.bpjnt_dict[module][0]
+			else :
+				return self.bpjnt_dict[module]
+		else :
+			print(u'{}不存在这个bpjnt_dict字典里'.format(module))
+			pass
 	
 	
 	
