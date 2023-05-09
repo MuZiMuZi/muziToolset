@@ -131,3 +131,5 @@ class Snap(object):
 
         if self.combo == 'Rotation':
             self.snap_to_RetCenter()
+
+
