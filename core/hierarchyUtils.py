@@ -154,3 +154,15 @@ class Hierarchy(object):
         object_lsit.append(object)
         object_lsit.reverse()
         return object_lsit
+
+
+    @staticmethod
+    def create_rig_grp() :
+        loc_grp = '_locator'
+        ctrl_grp = '_control'
+        jnt_grp = '_joint'
+        mesh_grp = '_mesh'
+        for grp in [loc_grp , ctrl_grp , jnt_grp , mesh_grp] :
+            if not cmds.ls(grp) :
+                cmds.group(em = 1 , name = grp)
+                

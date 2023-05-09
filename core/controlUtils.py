@@ -40,8 +40,10 @@ from . import matehumanUtils
 from . import nameUtils
 
 
+
 reload(nameUtils)
 reload(matehumanUtils)
+
 
 
 class Control(object) :
@@ -58,6 +60,7 @@ class Control(object) :
 	"""
 	
 	
+	
 	def __init__(self , *args , **kwargs) :
 		self.cv = None
 		self.transform = None
@@ -65,8 +68,10 @@ class Control(object) :
 		self.set(**kwargs)
 	
 	
+	
 	def __repr__(self) :
 		return "{m}.{c}.(t = {t})".format(m = __name__ , c = self.__class__.__name__ , t = self.get_transform().name())
+	
 	
 	
 	def set(self , **kwargs) :
@@ -77,6 +82,7 @@ class Control(object) :
 		self.set_radius(**kwargs)
 		self.set_offset(**kwargs)
 		self.set_locked(**kwargs)
+	
 	
 	
 	def set_transform(self , *args , **kwargs) :
@@ -110,6 +116,7 @@ class Control(object) :
 			self.transform = t
 	
 	
+	
 	def set_parent(self , *args , **kwargs) :
 		u"""
 		设置控制器的父对象
@@ -125,6 +132,7 @@ class Control(object) :
 				self.get_transform().s.set(1 , 1 , 1)
 			except (RuntimeError , UnicodeEncodeError) :
 				pass
+	
 	
 	
 	def set_shape(self , *args , **kwargs) :
@@ -164,6 +172,7 @@ class Control(object) :
 				self.set_shape(s = json.load(fp))
 	
 	
+	
 	def set_name(self , *args , **kwargs) :
 		u"""
 		设置名字
@@ -174,6 +183,7 @@ class Control(object) :
 		self.get_transform().rename(n)
 		for s in self.get_transform().getShapes() :
 			s.rename(n + "Shape")
+	
 	
 	
 	def set_color(self , *args , **kwargs) :
@@ -190,6 +200,7 @@ class Control(object) :
 				continue
 			shape.overrideEnabled.set(True)
 			shape.overrideColor.set(color)
+	
 	
 	
 	def set_radius(self , *args , **kwargs) :
@@ -210,11 +221,13 @@ class Control(object) :
 				pm.xform(cv , t = [xyz * scale for xyz in p])
 	
 	
+	
 	def set_rotateX(self , **kwargs) :
 		rotateX = kwargs.get('rx' , kwargs.get('rotateX' , 0))  # type: int
 		shape_node = cmds.listRelatives('{}'.format(self.get_transform()) , shapes = True)[0]
 		points = '{}'.format(shape_node) + ".cv[0:700000]"
 		cmds.rotate(rotateX , 0 , 0 , points)
+	
 	
 	
 	def set_rotateY(self , **kwargs) :
@@ -224,11 +237,13 @@ class Control(object) :
 		cmds.rotate(0 , rotateY , 0 , points)
 	
 	
+	
 	def set_rotateZ(self , **kwargs) :
 		rotateZ = kwargs.get('rz' , kwargs.get('rotateZ' , 0))  # type: int
 		shape_node = cmds.listRelatives('{}'.format(self.get_transform()) , shapes = True)[0]
 		points = '{}'.format(shape_node) + ".cv[0:700000]"
 		cmds.rotate(0 , 0 , rotateZ , points)
+	
 	
 	
 	def set_offset(self , *args , **kwargs) :
@@ -246,8 +261,10 @@ class Control(object) :
 				pm.xform(cv , t = [p_xyz + o_xyz for p_xyz , o_xyz in zip(p , offset)])
 	
 	
+	
 	def set_locked(self , *args , **kwargs) :
 		pass
+	
 	
 	
 	def upload(self) :
@@ -316,6 +333,7 @@ class Control(object) :
 		pm.delete(temp.get_transform())
 	
 	
+	
 	def mirror(self , other) :
 		u"""
 		镜像控制器
@@ -328,6 +346,7 @@ class Control(object) :
 				point = pm.xform(dst_cv , q = 1 , t = 1 , ws = 1)
 				point[0] = -point[0]
 				pm.xform(src_cv , t = point , ws = 1)
+	
 	
 	
 	def get_shape(self) :
@@ -343,6 +362,7 @@ class Control(object) :
 		        for shape in self.get_transform().getShapes()]
 	
 	
+	
 	def get_transform(self) :
 		u"""
 		 -t -transform string/node/Control 控制器
@@ -350,6 +370,7 @@ class Control(object) :
 		返回控制器的transform节点
 		"""
 		return self.transform
+	
 	
 	
 	def get_color(self) :
@@ -362,6 +383,7 @@ class Control(object) :
 		for shape in self.get_transform().getShapes() :
 			c = shape.overrideColor.get()
 		return c
+	
 	
 	
 	def get_radius(self) :
@@ -377,6 +399,7 @@ class Control(object) :
 		lengths = [self.get_length(p , [0 , 0 , 0]) for ps in points for p in ps]
 		radius = max(lengths)
 		return radius
+	
 	
 	
 	@staticmethod
@@ -484,7 +507,8 @@ class Control(object) :
 			# 锁定并且隐藏不需要的属性
 			attrUtils.Attr.lock_and_hide_attrs(obj = ctrl_transform , attrs_list = ['rotateOrder'] , lock = False ,
 			                                   hide = False)
-			# attrUtils.Attr.lock_and_hide_attrs(obj = ctrl_transform, attrs_list = attrs_list, lock = True, hide = True)
+			# attrUtils.Attr.lock_and_hide_attrs(obj = ctrl_transform, attrs_list = attrs_list, lock = True,
+			# hide = True)
 			
 			# 吸附到对应的位置
 			if pos :
@@ -502,6 +526,9 @@ class Control(object) :
 				cmds.sets('{}'.format(ctrl.transform) , edit = True , forceElement = animation_ctrls_set)
 			else :
 				cmds.sets('{}'.format(ctrl.transform) , edit = True , forceElement = animation_ctrls_set)
+		
+		return name
+	
 	
 	
 	@staticmethod
@@ -610,7 +637,8 @@ class Control(object) :
 			# 锁定并且隐藏不需要的属性
 			attrUtils.Attr.lock_and_hide_attrs(obj = ctrl_transform , attrs_list = ['rotateOrder'] , lock = False ,
 			                                   hide = False)
-			# attrUtils.Attr.lock_and_hide_attrs(obj = ctrl_transform, attrs_list = attrs_list, lock = True, hide = True)
+			# attrUtils.Attr.lock_and_hide_attrs(obj = ctrl_transform, attrs_list = attrs_list, lock = True,
+			# hide = True)
 			
 			# 吸附到对应的位置
 			if pos :
@@ -632,6 +660,7 @@ class Control(object) :
 		return ctrl_name
 	
 	
+	
 	@staticmethod
 	def get_arg(args) :
 		if len(args) > 0 :
@@ -639,9 +668,11 @@ class Control(object) :
 		return None
 	
 	
+	
 	@staticmethod
 	def get_curve_shape_points(shape) :
 		return pm.xform(shape.cv , q = 1 , t = 1)
+	
 	
 	
 	@staticmethod
@@ -651,6 +682,7 @@ class Control(object) :
 		return:返回软选择的范围
 		"""
 		return pm.softSelect(query = 1 , ssd = 1)
+	
 	
 	
 	@staticmethod
@@ -667,6 +699,7 @@ class Control(object) :
 		return distance
 	
 	
+	
 	@classmethod
 	def selected(cls) :
 		u"""
@@ -674,6 +707,7 @@ class Control(object) :
 		选择的控制器
 		"""
 		return [cls(t = t) for t in pm.selected(type = "transform")]
+	
 	
 	
 	@classmethod
@@ -688,6 +722,7 @@ class Control(object) :
 		pm.select([control.get_transform() for control in selected])
 	
 	
+	
 	@classmethod
 	def mirror_selected(cls) :
 		u"""
@@ -699,6 +734,7 @@ class Control(object) :
 			return
 		src , dst = selected
 		src.mirror(dst)
+	
 	
 	
 	@classmethod
@@ -718,6 +754,7 @@ class Control(object) :
 			os.remove(jpg_path)
 	
 	
+	
 	@classmethod
 	def delete_shapes(cls , *args) :
 		"""
@@ -726,6 +763,7 @@ class Control(object) :
 		"""
 		for s in args :
 			cls.delete_shape(s)
+	
 	
 	
 	@staticmethod
@@ -757,7 +795,8 @@ class Control(object) :
 		                             name = 'grp_{}_{}Ribbon_{:03d}'.format(ribbon.side , ribbon.description ,
 		                                                                    ribbon.index))
 		ribbon_ctrl_grp = cmds.createNode('transform' ,
-		                                  name = 'grp_{}_{}RibbonCtrls_{:03d}'.format(ribbon.side , ribbon.description ,
+		                                  name = 'grp_{}_{}RibbonCtrls_{:03d}'.format(ribbon.side ,
+		                                                                              ribbon.description ,
 		                                                                              ribbon.index) ,
 		                                  parent = ribbon_grp)
 		ribbon_jnt_grp = cmds.createNode('transform' ,
