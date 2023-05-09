@@ -40,8 +40,8 @@ class Bone(object) :
 		#创建层级结构
 		hierarchyUtils.Hierarchy.create_rig_grp()
 		self._side = side
-		self._name = name
 		self._index = index
+		
 		
 		#设置关节的父层级和控制器的父层级
 		self.joint_parent = joint_parent
@@ -58,8 +58,8 @@ class Bone(object) :
 		self.mo_value = mo_value
 		
 		#生成的绑定类型
-		self._rtype = None
-	
+		self._rtype =''
+		self._name = name
 	
 	@property
 	def name(self) :
@@ -101,6 +101,9 @@ class Bone(object) :
 		'''
 		根据定位的bp关节创建关节
 		'''
+		#修改关节定向
+		self.joint_orientation()
+		#根据bp关节创建新的关节
 		self.jnt_list = []
 		for i in range(self._index) :
 			self.jnt_name = 'jnt_{}_{}_{:03d}'.format(self._side , self._name , i + 1)
@@ -140,6 +143,28 @@ class Bone(object) :
 			                                         mo_value = self.mo_value)
 	
 	
+	
+	def joint_orientation(self) :
+		u'''
+		对于用来定位绑定系统的bp关节自动关节定向,正常关节定向为X轴指向下一关节，末端关节定向为世界方向
+		'''
+		# 获取场景里所有的bp定位关节
+		bp_jnts = cmds.ls('bpjnt_*',type = 'joint')
+		
+		# 判断关节是否具有子关节
+		for bp_jnt in bp_jnts :
+			cmds.makeIdentity(bp_jnt , apply = True , translate = 1 , rotate = 1 , scale = 1 , normal = 0 ,
+			                  preserveNormals = 1)
+			jnt_sub = cmds.listRelatives(bp_jnt , children = True , allDescendents = True , type = 'joint')
+			# 如果有子关节，则关节定向为X轴指向下一关节
+			if jnt_sub :
+				cmds.joint(bp_jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'xyz' ,
+				           secondaryAxisOrient = 'xup')
+			
+			# 无子关节，关节定向为世界方向
+			else :
+				cmds.joint(bp_jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')
+		
 	
 	def build_setup(self) :
 		"""

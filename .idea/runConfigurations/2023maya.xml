@@ -3,7 +3,7 @@
     <option name="executionType" value="FILE" />
     <option name="mayaSdkPath" value="C:\Program Files\Autodesk\Maya2023\bin\mayapy.exe" />
     <option name="scriptCodeText" value="" />
-    <option name="scriptFilePath" value="C:\Users\lixin\Documents\maya\scripts\muziToolset\rigging\base\test.py" />
+    <option name="scriptFilePath" value="C:\Users\lixin\Documents\maya\scripts\muziToolset\rigging\chain\test.py" />
     <method v="2" />
   </configuration>
 </component>
