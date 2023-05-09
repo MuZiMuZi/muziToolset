@@ -108,17 +108,20 @@ class Base_Rig(object) :
 	
 	
 	
-	def get_bpjnt(self , module) :
+	def get_bpjnt(self , module,side) :
 		u'''
 		给定模块名后查询对应的bpjnt定位关节
+		module:模块
+		side:边
 		'''
-		if module in self.bpjnt_dict :
-			if len(self.bpjnt_dict[module]) == 1 :
-				return self.bpjnt_dict[module][0]
+		key = ['{}_{}'.format(module,side)]
+		if key in self.bpjnt_dict :
+			if len(self.bpjnt_dict[key]) == 1 :
+				return self.bpjnt_dict[key][0]
 			else :
-				return self.bpjnt_dict[module]
+				return self.bpjnt_dict[key]
 		else :
-			print(u'{}不存在这个bpjnt_dict字典里'.format(module))
+			print(u'{}不存在这个bpjnt_dict字典里'.format(key))
 			pass
 	
 	

@@ -51,11 +51,14 @@ from . import hierarchyUtils
 from . import qtUtils
 
 
+
 class Pipeline(object) :
+	
 	
 	
 	def __init__(self) :
 		pass
+	
 	
 	
 	@staticmethod
@@ -72,6 +75,7 @@ class Pipeline(object) :
 			cmds.warning(u"场景内没有动画关键帧")
 	
 	
+	
 	@staticmethod
 	def add_face_tag() :
 		u"""将“isFace”标记添加到所选物体的属性上.
@@ -84,6 +88,7 @@ class Pipeline(object) :
 			if not cmds.objExists('{}.isFace'.format(sel)) :
 				cmds.addAttr(sel , ln = 'isFace' , at = 'bool' , dv = 1)
 				cmds.setAttr('{}.isFace'.format(sel) , keyable = False , channelBox = False)
+	
 	
 	
 	@staticmethod
@@ -100,6 +105,7 @@ class Pipeline(object) :
 				for child in children :
 					if not cmds.objExists('{}.isFace'.format(child)) or not cmds.getAttr('{}.isFace'.format(child)) :
 						cmds.delete(child)
+	
 	
 	
 	@staticmethod
@@ -141,6 +147,7 @@ class Pipeline(object) :
 			Pipeline.rename_bs_sc()
 	
 	
+	
 	@staticmethod
 	def rename_bs_sc() :
 		u'''
@@ -157,6 +164,7 @@ class Pipeline(object) :
 				cmds.rename(bs , 'bs_{}'.format(geo))
 	
 	
+	
 	@staticmethod
 	def distence_between(node_a , node_b) :
 		u'''获取两个对象之间的距离.
@@ -170,6 +178,7 @@ class Pipeline(object) :
 		point_b = cmds.xform(node_b , query = True , worldSpace = True , rotatePivot = True)
 		dist = math.sqrt(sum([pow((b - a) , 2) for b , a in zip(point_a , point_b)]))
 		return dist
+	
 	
 	
 	@staticmethod
@@ -198,6 +207,7 @@ class Pipeline(object) :
 		ctrl_IKFKblend = cmds.ls('ctrl_?_*IKFKBend_???')
 		for IKFKblend in ctrl_IKFKblend :
 			cmds.setAttr(IKFKblend + '.IkFkBend' , 1)
+	
 	
 	
 	@staticmethod
@@ -233,6 +243,7 @@ class Pipeline(object) :
 			return list(set_a.symmetric_difference(set_b))
 	
 	
+	
 	@staticmethod
 	def tag_joint() :
 		"""
@@ -255,6 +266,7 @@ class Pipeline(object) :
 			cmds.setAttr(jnt + '.side' , side_index)
 			cmds.setAttr(jnt + '.type' , 18)
 			cmds.setAttr(jnt + '.otherType' , name_parts[2] + name_parts[3] , type = 'string')
+	
 	
 	
 	@staticmethod
@@ -301,6 +313,7 @@ class Pipeline(object) :
 			cmds.undoInfo(openChunk = False)  # 批量撤销的开头
 	
 	
+	
 	@staticmethod
 	def default_grp() :
 		u'''
@@ -331,7 +344,8 @@ class Pipeline(object) :
 		cmds.parent(Low_modle_grp , Mid_modle_grp , High_modle_grp , Geometry)
 		
 		World_zero = [Group , Geometry , RigNodes_Local , RigNodes_World , RigNodes , Control , Joints , Custom]
-		attrs_list = ['.translateX' , '.translateY' , '.translateZ' , '.rotateX' , '.rotateY' , '.rotateZ' , '.scaleX' ,
+		attrs_list = ['.translateX' , '.translateY' , '.translateZ' , '.rotateX' , '.rotateY' , '.rotateZ' ,
+		              '.scaleX' ,
 		              '.scaleY' ,
 		              '.scaleZ' , '.visibility' , '.rotateOrder' , '.subCtrlVis']
 		rig_top_grp = 'Group'
@@ -352,7 +366,8 @@ class Pipeline(object) :
 		                                                  pos = None ,
 		                                                  parent = 'ctrl_m_Character_001')
 		
-		cog_ctrl_obj = controlUtils.Control.create_ctrl('ctrl_m_cog_001' , shape = 'circle' , radius = 3 , axis = 'X+' ,
+		cog_ctrl_obj = controlUtils.Control.create_ctrl('ctrl_m_cog_001' , shape = 'circle' , radius = 3 ,
+		                                                axis = 'X+' ,
 		                                                pos = None ,
 		                                                parent = 'output_m_world_001')
 		
@@ -417,7 +432,8 @@ class Pipeline(object) :
 				'RigNodes_Local' : RigNodes_Local ,
 				'RigNodes_World' : RigNodes_World ,
 				'nCloth_geo_grp' : nCloth_geo_grp
-		}
+				}
+	
 	
 	
 	@staticmethod
@@ -434,6 +450,7 @@ class Pipeline(object) :
 		cmds.scaleConstraint(driver_obj , driven_obj , mo = True)
 	
 	
+	
 	@staticmethod
 	def delete_constraints() :
 		u'''
@@ -446,6 +463,7 @@ class Pipeline(object) :
 				cmds.delete(const)
 	
 	
+	
 	@staticmethod
 	def select_sub_objects() :
 		u'''
@@ -456,11 +474,13 @@ class Pipeline(object) :
 			cmds.select(cmds.listRelatives(obj , allDescendents = True , type = 'transform') , add = True)
 	
 	
+	
 	@staticmethod
 	def make_undo(func) :
 		u'''
 		一键撤销的解释器
 		'''
+		
 		
 		
 		@wraps(func)
@@ -471,7 +491,9 @@ class Pipeline(object) :
 			return result
 		
 		
+		
 		return wrap
+	
 	
 	
 	@staticmethod
@@ -480,6 +502,7 @@ class Pipeline(object) :
 		adv重新生成后手指的驱动可能会消失，于是可以依靠这个代码重新连接
 		选择所有需要驱动的手指控制器加选Finger控制器创建连接
 		'''
+		
 		
 		
 		# 选择所有需要驱动的手指控制器加选Finger控制器创建连接
@@ -493,6 +516,7 @@ class Pipeline(object) :
 			cmds.setAttr(ctrl + str , 0)
 			cmds.setAttr(sdk + '.ry' , 0)
 			cmds.setDrivenKeyframe(sdk + '.ry' , cd = ctrl + str)
+		
 		
 		
 		ctrl = cmds.ls(sl = True)
@@ -521,6 +545,7 @@ class Pipeline(object) :
 				cmds.setDrivenKeyframe(SDK1 + '.rx' , cd = ctrl[-1] + '.cup' , itt = 'linear')
 		
 		
+		
 		def myDrv(sdk , min , max , ctrl) :
 			cmds.setAttr(ctrl + '.spread' , -5)
 			cmds.setAttr(sdk + '.rz' , min)
@@ -531,6 +556,7 @@ class Pipeline(object) :
 			cmds.setAttr(ctrl + '.spread' , 0)
 			cmds.setAttr(sdk + '.rz' , 0)
 			cmds.setDrivenKeyframe(sdk + '.rz' , cd = ctrl + '.spread')
+		
 		
 		
 		for i in ctrl[0 :-1] :
@@ -544,6 +570,7 @@ class Pipeline(object) :
 				myDrv(SDK2 , 15 , -30 , ctrl[-1])
 			if 'IndexFinger1' in i :
 				myDrv(SDK2 , -20 , 40 , ctrl[-1])
+	
 	
 	
 	@staticmethod
@@ -562,6 +589,7 @@ class Pipeline(object) :
 		return new_node
 	
 	
+	
 	@staticmethod
 	def get_maya_main_window() :
 		u'''
@@ -571,6 +599,7 @@ class Pipeline(object) :
 		# c++的指针概念，获取maya的窗口对象
 		pointer = omui.MQtUtil.mainWindow()
 		return wrapInstance(int(pointer) , QtWidgets.QWidget)
+	
 	
 	
 	@staticmethod
@@ -601,6 +630,7 @@ class Pipeline(object) :
 		pm.saveAs(new_path)
 	
 	
+	
 	@staticmethod
 	def get_current_scene_path() :
 		u'''
@@ -608,6 +638,7 @@ class Pipeline(object) :
 		:return:
 		'''
 		return str(pm.sceneName().abspath()).replace('\\' , '/')
+	
 	
 	
 	@staticmethod
@@ -618,6 +649,7 @@ class Pipeline(object) :
 		:return:
 		'''
 		return 'REF_{}'.format(name_space)
+	
 	
 	
 	@staticmethod
@@ -647,6 +679,7 @@ class Pipeline(object) :
 		return ref_node , pm.Namespace(name_space) , grp_name
 	
 	
+	
 	@staticmethod
 	def create_native_script_job(event_name , callback) :
 		#############################################################
@@ -656,6 +689,7 @@ class Pipeline(object) :
 				event_name , callback)
 		# 创建回调函数被销毁的机制，防止重复调用
 		return partial(om.MEventMessage.removeCallback , scene_open_callback_id)
+	
 	
 	
 	@staticmethod
@@ -673,3 +707,19 @@ class Pipeline(object) :
 		except Exception as e :
 			print('Export failed. ' + path_string)
 			print(e)
+	
+	
+	
+	@staticmethod
+	def create_constraint(driver , driven , point_value = True , orient_value = True , scale_value = True , mo_value = True) :
+		'''
+		创建约束对象
+		driver:约束者
+		driven:被约束者
+		'''
+		if point_value :
+			cmds.pointConstraint(driver , driven , mo = mo_value)
+		if orient_value :
+			cmds.orientConstraint(driver , driven , mo = mo_value)
+		if scale_value :
+			cmds.scaleConstraint(driver , driven , mo = mo_value)

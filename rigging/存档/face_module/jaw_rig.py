@@ -23,7 +23,7 @@ class Jaw_Rig(base_rig.Base_Rig):
 		u'''
 		生成下巴的绑定
 		'''
-		self.jaw_bpjnts = self.get_bpjnt('jaw_m')
+		self.jaw_bpjnts = self.get_bpjnt('jaw','m')
 		self.jaw_joints = jointUtils.Joint.create_chain(self.jaw_bpjnts , 'FK', self.joint_parent)
 		self.jaw_ctrl = controlUtils.Control.create_ctrl(self.jaw_bpjnts[0].replace('BPjnt','ctrl') , shape = 'circle' , radius =3 , axis = 'Z-' ,
 		                                                 pos = self.jaw_bpjnts[0] ,
