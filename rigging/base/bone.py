@@ -111,8 +111,7 @@ class Bone(object) :
 			cmds.delete(self.bpjnt)
 	
 	
-	def set_shape(self,shape = 'circle'):
-		self.shape = shape
+
 		
 	def create_ctrl(self) :
 		u"""
@@ -121,7 +120,7 @@ class Bone(object) :
 		self.ctrl_list = []
 		for i in range(self._index) :
 			self.ctrl_name = 'ctrl_{}_{}_{:03d}'.format(self._side , self._name , i + 1)
-			self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_name , shape = self.shape ,
+			self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_name , shape = 'circle' ,
 			                                             radius = 5 ,
 			                                             axis = 'X+' , pos = self.ctrl_name.replace('ctrl','jnt') , parent = self.control_parent)
 			self.ctrl_list.append(self.ctrl)
@@ -155,7 +154,6 @@ class Bone(object) :
 		创建绑定系统
 		"""
 		self.create_joint()
-		self.set_shape('circle')
 		self.create_ctrl()
 		self.add_constraint()
 

@@ -19,9 +19,7 @@ class Base(bone.Bone):
 	
 	
 	
-	def set_shape(self , shape = 'circle') :
-		super().set_shape(shape)
-		self.shape = 'cube'
+
 	
 
 	
