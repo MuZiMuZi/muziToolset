@@ -168,7 +168,7 @@ class Joint(object) :
 			jnt_new = jnt
 			jnt_new_name = nameUtils.Name(name = jnt_new)
 			jnt_new_name.type = 'jnt'
-			jnt_new_name.description = '{}{}'.format(jnt_new_name.description , suffix)
+			jnt_new_name.type = '{}{}'.format(suffix,jnt_new_name.type)
 			jnt_new = cmds.createNode('joint' , name = jnt_new_name.name)
 			cmds.matchTransform(jnt_new , jnt , position = True , rotation = True)
 			cmds.makeIdentity(jnt_new , apply = True , translate = True , rotate = True , scale = True)
