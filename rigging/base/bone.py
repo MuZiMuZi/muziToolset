@@ -55,7 +55,6 @@ class Bone(object) :
 		self._name = name
 		
 		# 根据给定的边，名称和index生成列表来存储创建的名称
-		self.base = None
 		self.bpjnt_list = list()
 		self.jnt_list = list()
 		self.ctrl_list = list()
@@ -91,9 +90,13 @@ class Bone(object) :
 		创建名称规范整理
 		"""
 		for i in range(self._index) :
-			self.bpjnt_list.append('bpjnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i))
-			self.jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i))
-			self.ctrl_list.append('ctrl_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i))
+			self.bpjnt_list.append('bpjnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i+1))
+			self.jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
+			self.ctrl_list.append('ctrl_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
+	
+		print(self.bpjnt_list)
+		print(self.jnt_list)
+		print(self.ctrl_list)
 	
 	
 	
@@ -115,7 +118,6 @@ class Bone(object) :
 			jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
 			cmds.matchTransform(jnt, bpjnt)
 			cmds.delete(bpjnt)
-			
 	
 	
 	
@@ -124,7 +126,7 @@ class Bone(object) :
 		创建控制器
 		"""
 		for ctrl,jnt in zip(self.ctrl_list,self.jnt_list):
-			ctrl = controlUtils.Control.create_ctrl(ctrl , shape = 'circle' ,
+			self.ctrl = controlUtils.Control.create_ctrl(ctrl , shape = 'circle' ,
 			                                             radius = 5 ,
 			                                             axis = 'X+' , pos = jnt ,
 			                                             parent = self.control_parent)
@@ -182,6 +184,7 @@ class Bone(object) :
 		"""
 		创建绑定系统
 		"""
+		self.create_namespace()
 		self.joint_orientation()
 		self.create_joint()
 		self.create_ctrl()

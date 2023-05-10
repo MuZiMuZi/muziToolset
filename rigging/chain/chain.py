@@ -30,13 +30,10 @@ class Chain(base.Base) :
 		"""
 		创建定位的bp关节
 		"""
-		self.bpjnt_list = []
-		for i in range(self._index) :
-			self.bpjnt_name = 'bpjnt_{}_{}_{:03d}'.format(self._side , self._name , i + 1)
-			self.bpjnt = cmds.createNode('joint' , name = self.bpjnt_name , parent = self.joint_parent)
-			self.bpjnt_list.append(self.bpjnt)
+		for bpjnt in self.bpjnt_list :
+			self.bpjnt = cmds.createNode('joint' , name = bpjnt,parent = self.joint_parent)
 			# 指定关节的父层级为上一轮创建出来的关节
-			self.joint_parent = self.bpjnt_name
+			self.joint_parent = self.bpjnt
 			# 调整距离
 			pipelineUtils.Pipeline.move(obj = self.bpjnt , pos = self.direction)
 	
@@ -46,15 +43,11 @@ class Chain(base.Base) :
 		'''
 		根据定位的bp关节创建关节
 		'''
-		self.jnt_list = []
-		for i in range(self._index) :
-			self.jnt_name = 'jnt_{}_{}_{:03d}'.format(self._side , self._name , i + 1)
-			self.jnt = cmds.createNode('joint' , name = self.jnt_name , parent = self.joint_parent)
-			self.bpjnt = self.jnt_name.replace('jnt' , 'bpjnt')
-			cmds.matchTransform(self.jnt_name , self.bpjnt)
-			self.jnt_list.append(self.jnt)
+		for bpjnt,jnt in [self.bpjnt_list,self.jnt_list] :
+			self.jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
+			cmds.matchTransform(self.jnt, bpjnt)
 			# 指定关节的父层级为上一轮创建出来的关节
-			self.joint_parent = self.jnt_name
+			self.joint_parent = self.jnt
 		
 		# 删除bp的定位关节
-		cmds.delete(self.jnt_list[0].replace('jnt' , 'bpjnt'))
+		cmds.delete(self.bpjnt_list[0])
