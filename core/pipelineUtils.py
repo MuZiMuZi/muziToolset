@@ -723,5 +723,15 @@ class Pipeline(object) :
 			cmds.orientConstraint(driver , driven , mo = mo_value)
 		if scale_value :
 			cmds.scaleConstraint(driver , driven , mo = mo_value)
-
 	
+	
+	
+	@staticmethod
+	def move(obj , pos) :
+		"""
+		位移物体到指定的位置
+
+		:param obj: str. maya的对象
+		:param pos: list. 位置信息 x, y and z
+		"""
+		return cmds.move(pos[0] , pos[1] , pos[2] , obj , r = 1)
