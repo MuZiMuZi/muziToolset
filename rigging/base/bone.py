@@ -12,6 +12,7 @@ reload(pipelineUtils)
 reload(hierarchyUtils)
 
 
+
 class Bone(object) :
 	"""
 	创建定位的bp关节，然后生成对应的绑定
@@ -25,7 +26,7 @@ class Bone(object) :
 	
 	
 	
-	def __init__(self , side , name , index , joint_parent = None , control_parent = None ) :
+	def __init__(self , side , name , index , joint_parent = None , control_parent = None) :
 		"""
 		根据给定的变量创建关节和控制器
 
@@ -36,25 +37,30 @@ class Bone(object) :
 		:param control_parent: 生成的控制器的父层级
 		"""
 		super(Bone , self).__init__()
-		#创建层级结构
+		# 创建层级结构
 		hierarchyUtils.Hierarchy.create_rig_grp()
 		self._side = side
 		self._index = index
 		
-		
-		#设置关节的父层级和控制器的父层级
+		# 设置关节的父层级和控制器的父层级
 		self.joint_parent = joint_parent
 		self.control_parent = control_parent
 		if not self.joint_parent :
 			self.joint_parent = '_joint'
 		if not self.control_parent :
 			self.control_parent = '_control'
-				
-
 		
-		#生成的绑定类型
-		self._rtype =''
+		# 生成的绑定类型
+		self._rtype = ''
 		self._name = name
+		
+		# 根据给定的边，名称和index生成列表来存储创建的名称
+		self.base = None
+		self.bpjnt_list = list()
+		self.jnt_list = list()
+		self.ctrl_list = list()
+	
+	
 	
 	@property
 	def name(self) :
@@ -80,15 +86,23 @@ class Bone(object) :
 	
 	
 	
+	def create_namespace(self) :
+		u"""
+		创建名称规范整理
+		"""
+		for i in range(self._index) :
+			self.bpjnt_list.append('bpjnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i))
+			self.jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i))
+			self.ctrl_list.append('ctrl_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i))
+	
+	
+	
 	def create_bpjnt(self) :
 		"""
 		创建定位的bp关节
 		"""
-		self.bpjnt_list = []
-		for i in range(self._index) :
-			self.bpjnt_name = 'bpjnt_{}_{}_{:03d}'.format(self._side , self._name , i + 1)
-			self.bpjnt = cmds.createNode('joint' , name = self.bpjnt_name)
-			self.bpjnt_list.append(self.bpjnt)
+		for bpjnt in self.bpjnt_list :
+			self.bpjnt = cmds.createNode('joint' , name = bpjnt)
 	
 	
 	
@@ -96,32 +110,25 @@ class Bone(object) :
 		'''
 		根据定位的bp关节创建关节
 		'''
-		#修改关节定向
-		self.joint_orientation()
-		#根据bp关节创建新的关节
-		self.jnt_list = []
-		for i in range(self._index) :
-			self.jnt_name = 'jnt_{}_{}_{:03d}'.format(self._side , self._name , i + 1)
-			self.jnt = cmds.createNode('joint' , name = self.jnt_name , parent = self.joint_parent)
-			self.bpjnt = self.jnt_name.replace('jnt','bpjnt')
-			cmds.matchTransform(self.jnt_name,self.bpjnt)
-			self.jnt_list.append(self.jnt)
-			cmds.delete(self.bpjnt)
+		# 根据bp关节创建新的关节
+		for bpjnt,jnt in zip(self.bpjnt_list, self.jnt_list) :
+			jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
+			cmds.matchTransform(jnt, bpjnt)
+			cmds.delete(bpjnt)
+			
 	
 	
-
-		
+	
 	def create_ctrl(self) :
 		u"""
 		创建控制器
 		"""
-		self.ctrl_list = []
-		for i in range(self._index) :
-			self.ctrl_name = 'ctrl_{}_{}_{:03d}'.format(self._side , self._name , i + 1)
-			self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_name , shape = 'circle' ,
+		for ctrl,jnt in zip(self.ctrl_list,self.jnt_list):
+			ctrl = controlUtils.Control.create_ctrl(ctrl , shape = 'circle' ,
 			                                             radius = 5 ,
-			                                             axis = 'X+' , pos = self.ctrl_name.replace('ctrl','jnt') , parent = self.control_parent)
-			self.ctrl_list.append(self.ctrl)
+			                                             axis = 'X+' , pos = jnt ,
+			                                             parent = self.control_parent)
+		
 	
 	
 	
@@ -133,7 +140,7 @@ class Bone(object) :
 			
 			pipelineUtils.Pipeline.create_constraint(ctrl.replace(' ctrl' , 'output') , jnt ,
 			                                         point_value = True ,
-			                                         orient_value = True, scale_value =
+			                                         orient_value = True , scale_value =
 			                                         True ,
 			                                         mo_value = True)
 	
@@ -144,7 +151,7 @@ class Bone(object) :
 		对于用来定位绑定系统的bp关节自动关节定向,正常关节定向为X轴指向下一关节，末端关节定向为世界方向
 		'''
 		# 获取场景里所有的bp定位关节
-		bp_jnts = cmds.ls('bpjnt_*',type = 'joint')
+		bp_jnts = self.bpjnt_list
 		
 		# 判断关节是否具有子关节
 		for bp_jnt in bp_jnts :
@@ -159,12 +166,14 @@ class Bone(object) :
 			# 无子关节，关节定向为世界方向
 			else :
 				cmds.joint(bp_jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')
-		
+	
+	
 	
 	def build_setup(self) :
 		"""
 		创建bp的定位关节,生成准备
 		"""
+		self.create_namespace()
 		self.create_bpjnt()
 	
 	
@@ -173,10 +182,7 @@ class Bone(object) :
 		"""
 		创建绑定系统
 		"""
+		self.joint_orientation()
 		self.create_joint()
 		self.create_ctrl()
 		self.add_constraint()
-
-
-
-
