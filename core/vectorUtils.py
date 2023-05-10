@@ -30,6 +30,8 @@ class Vector(object) :
 		
 		if not self._vector :
 			raise TypeError(u'初始化失败，检查输入类型')
+		
+		self._axis = None
 	
 	
 	
@@ -84,6 +86,28 @@ class Vector(object) :
 	
 	
 	
-
-	def mult_interval(self, interval) :
-		return (self.x* interval , self.y * interval , self.z * interval)
+	@property
+	def axis(self) :
+		if self._vector == [1 , 0 , 0] :
+			self._axis = 'X+'
+		if self._vector == [-1 , 0 , 0] :
+			self._axis = 'X-'
+		if self._vector == [0 , 1 , 0] :
+			self._axis = 'Y+'
+		if self._vector == [0 , -1 , 0] :
+			self._axis = 'Y-'
+		if self._vector == [0 , 0 , 1] :
+			self._axis = 'Z+'
+		if self._vector == [0 , 0 , -1] :
+			self._axis = 'Z-'
+		return self._axis
+	
+	
+	
+	# @axis.setter
+	# def axis(self , value) :
+	# 	self._axis = value
+	
+	
+	def mult_interval(self , interval) :
+		return (self.x * interval , self.y * interval , self.z * interval)

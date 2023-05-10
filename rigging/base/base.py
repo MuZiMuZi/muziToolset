@@ -19,3 +19,5 @@ class Base(bone.Bone) :
 		bone.Bone.__init__(self , side , name , index , joint_parent , control_parent)
 		self._rtype = 'base'
 
+	
+	

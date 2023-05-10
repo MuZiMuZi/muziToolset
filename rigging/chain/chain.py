@@ -6,6 +6,7 @@ import math
 
 from importlib import reload
 reload(vectorUtils)
+reload(base)
 class Chain(base.Base) :
 	
 	
@@ -17,7 +18,6 @@ class Chain(base.Base) :
 		
 		'''
 		self._rtype = 'chain'
-		self._name = name + self._rtype
 		
 		
 		self.length = length
@@ -43,7 +43,7 @@ class Chain(base.Base) :
 		'''
 		根据定位的bp关节创建关节
 		'''
-		for bpjnt,jnt in [self.bpjnt_list,self.jnt_list] :
+		for bpjnt,jnt in zip (self.bpjnt_list , self.jnt_list) :
 			self.jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
 			cmds.matchTransform(self.jnt, bpjnt)
 			# 指定关节的父层级为上一轮创建出来的关节

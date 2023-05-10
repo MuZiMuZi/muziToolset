@@ -53,6 +53,7 @@ class Bone(object) :
 		# 生成的绑定类型
 		self._rtype = ''
 		self._name = name
+		self.shape = 'circle'
 		
 		# 根据给定的边，名称和index生成列表来存储创建的名称
 		self.bpjnt_list = list()
@@ -84,19 +85,20 @@ class Bone(object) :
 		return self._scale
 	
 	
+	def set_shape(self,shape):
+		u'''
+		设置控制器形状
+		'''
+		self.shape = shape
 	
 	def create_namespace(self) :
 		u"""
 		创建名称规范整理
 		"""
 		for i in range(self._index) :
-			self.bpjnt_list.append('bpjnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i+1))
+			self.bpjnt_list.append('bpjnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.ctrl_list.append('ctrl_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
-	
-		print(self.bpjnt_list)
-		print(self.jnt_list)
-		print(self.ctrl_list)
 	
 	
 	
@@ -114,9 +116,9 @@ class Bone(object) :
 		根据定位的bp关节创建关节
 		'''
 		# 根据bp关节创建新的关节
-		for bpjnt,jnt in zip(self.bpjnt_list, self.jnt_list) :
+		for bpjnt , jnt in zip(self.bpjnt_list , self.jnt_list) :
 			jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
-			cmds.matchTransform(jnt, bpjnt)
+			cmds.matchTransform(jnt , bpjnt)
 			cmds.delete(bpjnt)
 	
 	
@@ -125,12 +127,12 @@ class Bone(object) :
 		u"""
 		创建控制器
 		"""
-		for ctrl,jnt in zip(self.ctrl_list,self.jnt_list):
-			self.ctrl = controlUtils.Control.create_ctrl(ctrl , shape = 'circle' ,
+		self.set_shape(self.shape)
+		for ctrl , jnt in zip(self.ctrl_list , self.jnt_list) :
+			self.ctrl = controlUtils.Control.create_ctrl(ctrl , shape = self.shape ,
 			                                             radius = 5 ,
 			                                             axis = 'X+' , pos = jnt ,
 			                                             parent = self.control_parent)
-		
 	
 	
 	
