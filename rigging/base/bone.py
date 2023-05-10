@@ -59,6 +59,9 @@ class Bone(object) :
 		self.bpjnt_list = list()
 		self.jnt_list = list()
 		self.ctrl_list = list()
+		self.zero_list = list()
+		self.driven_list = list()
+		self.output_list = list()
 	
 	
 	
@@ -98,7 +101,10 @@ class Bone(object) :
 		for i in range(self._index) :
 			self.bpjnt_list.append('bpjnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
+			self.zero_list.append('zero_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
+			self.driven_list.append('driven_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.ctrl_list.append('ctrl_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
+			self.output_list.append('output_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 	
 	
 	
