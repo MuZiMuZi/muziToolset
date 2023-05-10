@@ -8,8 +8,6 @@ from importlib import reload
 
 
 
-reload(vectorUtils)
-reload(chain)
 
 
 
@@ -34,12 +32,6 @@ class ChainIK(chain.Chain) :
 		self.is_stretch = is_stretch
 		
 		# 根据给定的边，名称和index生成列表来存储创建的名称
-		self.bpjnt_list = list()
-		self.jnt_list = list()
-		self.ctrl_list = list()
-		self.zero_list = list()
-		self.driven_list = list()
-		self.output_list = list()
 		self.cluster_list = list()
 		self.ik_curve = None
 		self.ik_handle = None

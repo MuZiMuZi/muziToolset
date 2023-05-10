@@ -104,9 +104,6 @@ class Vector(object) :
 	
 	
 	
-	# @axis.setter
-	# def axis(self , value) :
-	# 	self._axis = value
 	
 	
 	def mult_interval(self , interval) :

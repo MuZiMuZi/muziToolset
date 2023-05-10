@@ -5,8 +5,7 @@ from ...core import vectorUtils
 import math
 
 from importlib import reload
-reload(vectorUtils)
-reload(base)
+
 class Chain(base.Base) :
 	
 	

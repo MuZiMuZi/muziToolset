@@ -8,12 +8,10 @@ from importlib import reload
 
 
 
-reload(vectorUtils)
-reload(chain)
 
 
 
-class ChainFk(chain.Chain) :
+class ChainFK(chain.Chain) :
 	
 	
 	
