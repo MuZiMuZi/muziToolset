@@ -15,16 +15,16 @@ class ChainFK(chain.Chain) :
 	
 	
 	
-	def __init__(self , side , name , index , direction , length = 10 , joint_parent = None , control_parent = None) :
+	def __init__(self , side , name , joint_nuber , direction , length = 10 , joint_parent = None , control_parent = None) :
 		u"""
 		用来创建fk关节链条的绑定
 		length(int)：关节的总长度
 		direction（list）:从根节点到顶部节点的方向例如[1,0,0]或者[0,1,0]
 		"""
-		chain.Chain.__init__(self , side , name , index , length , joint_parent , control_parent)
+		chain.Chain.__init__(self , side , name , joint_nuber , length , joint_parent , control_parent)
 		self._rtype = 'chainFK'
 		
-		self.interval = length / (self._index - 1)
+		self.interval = length / (self._joint_nuber - 1)
 		self.direction = list(vectorUtils.Vector(direction).mult_interval(self.interval))
 		self.shape = 'circle'
 		self.axis = vectorUtils.Vector(direction).axis
@@ -46,6 +46,6 @@ class ChainFK(chain.Chain) :
 	
 	
 	def add_constraint(self) :
-		for index , jnt in enumerate(self.jnt_list) :
-			cmds.parentConstraint(self.ctrl_list[index] , jnt)
-			cmds.scaleConstraint(self.ctrl_list[index] , jnt)
+		for joint_nuber , jnt in enumerate(self.jnt_list) :
+			cmds.parentConstraint(self.ctrl_list[joint_nuber] , jnt)
+			cmds.scaleConstraint(self.ctrl_list[joint_nuber] , jnt)

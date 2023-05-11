@@ -10,8 +10,8 @@ class Chain(base.Base) :
 	
 	
 	
-	def __init__(self , side , name , index , length = 10 , joint_parent = None , control_parent = None) :
-		base.Base.__init__(self , side , name , index , joint_parent , control_parent)
+	def __init__(self , side , name , joint_nuber , length = 10 , joint_parent = None , control_parent = None) :
+		base.Base.__init__(self , side , name , joint_nuber , joint_parent , control_parent)
 		'''
 		length：关节的总长度
 		

@@ -7,13 +7,13 @@ reload(chainEP)
 
 
 def x() :
-	custom = chainEP.ChainEP(side = 'l' , name = 'zz' , index = 5 , controller_number = 5 , curve = 'curve1' ,joint_parent = None , control_parent = None)
+	custom = chainEP.ChainEP(side = 'l' , name = 'zz' , joint_nuber = 5 , controller_number = 5 , curve = 'curve1' ,joint_parent = None , control_parent = None)
 	custom.build_setup()
 
 
 
 def y() :
-	custom = chainEP.ChainEP(side = 'l' , name = 'zz' , index = 5 , controller_number  = 5, curve = 'curve1',
+	custom = chainEP.ChainEP(side = 'l' , name = 'zz' , joint_nuber = 5 , controller_number  = 5, curve = 'curve1',
 	joint_parent = None , control_parent = None)
 	custom.build_rig()
 
