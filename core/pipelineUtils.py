@@ -36,8 +36,8 @@ from functools import wraps
 from importlib import reload
 
 # noinspection PyUnresolvedReferences
-import maya.OpenMaya as om
-import maya.OpenMayaUI as omui
+from maya import OpenMaya as om
+from maya import OpenMayaUI as omui
 import maya.cmds as cmds
 import maya.mel as mel
 import pymel.core as pm
@@ -735,3 +735,84 @@ class Pipeline(object) :
 		:param pos: list. 位置信息 x, y and z
 		"""
 		return cmds.move(pos[0] , pos[1] , pos[2] , obj , r = 1)
+	
+	
+	
+	@staticmethod
+	def get_percentages(sample_count) :
+		"""
+		曲线的总长度为1，给定需要平分的点数量，返回每个点的位置信息
+		例子：get_percentages(5) == [0.0, 0.25, 0.5, 0.75, 1.0]
+		:param sample_count: int. 需要平分的点数量
+		:return: list. 返回每个点的位置信息
+		"""
+		if sample_count <= 1 :
+			return
+		
+		outputs = list()
+		gap = 1.00 / (sample_count - 1)
+		for index in range(sample_count) :
+			outputs.append(index * gap)
+		
+		return outputs
+	
+	
+	
+	@staticmethod
+	def get_point_on_curve(curve , sample_count) :
+		"""
+		获取具有均匀距离的nurbs曲线上的点信息
+		https://help.autodesk.com/view/MAYAUL/2018/ENU/?guid=__cpp_ref_class_m_fn_nurbs_curve_html
+
+		:param curve: str. nurbs曲线的名称
+		:param sample_count: int. 采样点的数量
+		:return: tuple. om.MPoint object and om.MVector object
+		"""
+		plists = Pipeline.get_percentages(sample_count)
+		
+		points = list()
+		tangents = list()
+		crv_fn = om.MFnNurbsCurve(transform.get_dag_path(curve))
+		for percentage in plists :
+			parameter = crv_fn.findParamFromLength(crv_fn.length() * percentage)
+			point = om.MPoint()
+			crv_fn.getPointAtParam(parameter , point)
+			tangent = crv_fn.tangent(parameter)
+			
+			points.append(point)
+			tangents.append(tangent)
+		
+		return points , tangents
+	
+	
+	
+	@staticmethod
+	def create_joints_on_curve(curve , sample_count) :
+		"""
+		创建均匀分布在曲线上的关节点
+
+		:param curve: str. 曲线的节点名称
+		:param sample_count: int. 采样点的数量
+		:return: list. 返回创建关节的列表
+		"""
+		
+		jnt_list = list()
+		#获取具有均匀距离的nurbs曲线上的点信息
+		points , tangents = util.get_point_on_curve(curve , sample_count)
+		for index in range(len(points)) :
+			point = points[index]
+			tangent = tangents[index]
+			#在对应的点上创建关节，并且创建个transform组来做目标约束吸附旋转
+			jnt = cmds.createNode('joint')
+			jnt_list.append(jnt)
+			temp_node = cmds.createNode('transform')
+			
+			cmds.xform(
+					temp_node ,
+					t = [point.x + tangent.x , point.y + tangent.y , point.z + tangent.z]
+					)
+			cmds.xform(jnt , t = [point.x , point.y , point.z])
+			constraint = cmds.aimConstraint(temp_node , jnt)[0]
+			cmds.delete([temp_node , constraint])
+		
+		return jnt_list
