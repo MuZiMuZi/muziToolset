@@ -9,10 +9,10 @@ class ChainEP(base.Base):
 	
 	
 	
-	def __init__(self , side , name , joint_nuber ,ctrl_number , curve , joint_parent = None , control_parent = None) :
-		super().__init__(side , name , joint_nuber , joint_parent , control_parent)
+	def __init__(self , side , name , joint_number ,ctrl_number , curve , joint_parent = None , control_parent = None) :
+		super().__init__(side , name , joint_number , joint_parent , control_parent)
 		u'''给定一根曲线，根据曲线的长度来创建关节和控制器
-		joint_nuber：生成的关节数量
+		joint_number：生成的关节数量
 		ctrl_number：生成的控制器数量
 		crv_node：需要创建控制器与关节的曲线
 		'''
@@ -24,7 +24,7 @@ class ChainEP(base.Base):
 		
 		#根据给定的控制器数量，获取控制对应的百分比信息
 		if not ctrl_number :
-			ctrl_number = self.joint_nuber
+			ctrl_number = self.joint_number
 		if ctrl_number < 2 :
 			raise ValueError(u"请有足够的控制点")
 		
@@ -33,7 +33,7 @@ class ChainEP(base.Base):
 		
 		percents = pipelineUtils.Pipeline.get_percentages(ctrl_number)
 		for p in percents :
-			integer = int(round(p * (self.joint_nuber - 1)))
+			integer = int(round(p * (self.joint_number - 1)))
 			self.cvs.append(integer)
 	
 	
@@ -43,8 +43,8 @@ class ChainEP(base.Base):
 		创建定位的bp关节
 		"""
 		bpjnt_list = pipelineUtils.Pipeline.create_joints_on_curve(self.curve , self.ctrl_number)
-		for joint_nuber , bpjnt in enumerate(bpjnt_list) :
-			bpjnt = cmds.rename(bpjnt , self.bpjnt_list[joint_nuber])
+		for joint_number , bpjnt in enumerate(bpjnt_list) :
+			bpjnt = cmds.rename(bpjnt , self.bpjnt_list[joint_number])
 			cmds.parent(bpjnt,self.joint_parent)
 			# 指定关节的父层级为上一轮创建出来的关节
 			self.joint_parent = bpjnt

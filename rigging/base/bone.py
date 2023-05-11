@@ -26,13 +26,13 @@ class Bone(object) :
 	
 	
 	
-	def __init__(self , side , name , joint_nuber , joint_parent = None , control_parent = None) :
+	def __init__(self , side , name , joint_number , joint_parent = None , control_parent = None) :
 		"""
 		根据给定的变量创建关节和控制器
 
 		:param side: 关节的边
 		:param name: 关节的模块名称
-		:param joint_nuber: 关节的数量
+		:param joint_number: 关节的数量
 		:param joint_parent: 生成的关节的父层级
 		:param control_parent: 生成的控制器的父层级
 		"""
@@ -40,7 +40,7 @@ class Bone(object) :
 		# 创建层级结构
 		hierarchyUtils.Hierarchy.create_rig_grp()
 		self._side = side
-		self.joint_nuber = joint_nuber
+		self.joint_number = joint_number
 		
 		# 设置关节的父层级和控制器的父层级
 		self.joint_parent = joint_parent
@@ -56,7 +56,7 @@ class Bone(object) :
 		self.shape = 'circle'
 		self.radius = 5
 		
-		# 根据给定的边，名称和joint_nuber生成列表来存储创建的名称
+		# 根据给定的边，名称和joint_number生成列表来存储创建的名称
 		self.bpjnt_list = list()
 		self.jnt_list = list()
 		self.ctrl_list = list()
@@ -102,7 +102,7 @@ class Bone(object) :
 		u"""
 		创建名称规范整理
 		"""
-		for i in range(self.joint_nuber) :
+		for i in range(self.joint_number) :
 			self.bpjnt_list.append('bpjnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.zero_list.append('zero_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
