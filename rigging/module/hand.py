@@ -74,4 +74,22 @@ class Hand(finger.Finger) :
 			finger.add_constraint()
 	
 	
+if __name__ == '__main__':
+	def build_setup() :
+		finger_l = hand.Hand(side = 'l' , name = 'zz' , joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
+		                     joint_parent = None ,
+		                     control_parent = None)
+		finger_l.build_setup()
 	
+	
+	
+	def build_rig() :
+		finger_l = hand.Hand(side = 'l' , name = 'zz' , joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
+		                     joint_parent = None ,
+		                     control_parent = None)
+		finger_l.build_rig()
+	
+	
+	
+	build_setup()
+	build_rig()
