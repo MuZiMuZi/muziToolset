@@ -23,7 +23,7 @@ class Finger(chainFK.ChainFK) :
 		super().create_ctrl()
 		
 		# 添加手指头一键弯曲的属性
-		cmds.addAttr(self.ctrl_list[0] , ln = '{}Curl'.format(self.name) , at = 'double' , dv = 0 , min = -10 ,
+		cmds.addAttr(self.ctrl_list[0] , ln = 'Curl' , at = 'double' , dv = 0 , min = -10 ,
 		             max = 10 ,
 		             k = 1)
 		
@@ -38,7 +38,7 @@ class Finger(chainFK.ChainFK) :
 		for ctrl in self.ctrl_list[1 :-1] :
 			mult_node = cmds.createNode('multDoubleLinear' , name = ctrl.replace('ctrl' , 'mult'))
 			cmds.setAttr(mult_node + '.input2' , 9)
-			cmds.connectAttr(self.ctrl_list[0] + '.{}Curl'.format(self.name) , mult_node + '.input1')
+			cmds.connectAttr(self.ctrl_list[0] + '.Curl' , mult_node + '.input1')
 			cmds.connectAttr(mult_node + '.output' , ctrl + '.rotateZ')
 
 
