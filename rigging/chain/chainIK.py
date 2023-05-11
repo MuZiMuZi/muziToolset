@@ -24,7 +24,7 @@ class ChainIK(chain.Chain) :
 		
 		self._rtype = 'chainIK'
 		
-		self.interval = length / (self._joint_nuber - 1)
+		self.interval = length / (self.joint_nuber - 1)
 		self.direction = list(vectorUtils.Vector(direction).mult_interval(self.interval))
 		self.is_stretch = is_stretch
 		
@@ -42,7 +42,7 @@ class ChainIK(chain.Chain) :
 		u'''
 		创建ik绑定系统的命名规范
 		'''
-		for i in range(self._joint_nuber) :
+		for i in range(self.joint_nuber) :
 			self.bpjnt_list.append('bpjnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.zero_list.append('zero_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
@@ -130,7 +130,7 @@ class ChainIK(chain.Chain) :
 		# 设置中间的cluster的权重
 		for joint_nuber , driven in enumerate(self.driven_list) :
 			if self.ctrl_list[joint_nuber] not in [self.ctrl_list[0] , self.ctrl_list[-1]] :
-				weight = (1.00 / (self._joint_nuber - 1)) * joint_nuber
+				weight = (1.00 / (self.joint_nuber - 1)) * joint_nuber
 				cmds.pointConstraint(self.ctrl_list[-1] , driven , w = weight , mo = 1)
 				cmds.pointConstraint(self.ctrl_list[0] , driven , w = 1 - weight , mo = 1)
 		#
@@ -153,7 +153,7 @@ class ChainIK(chain.Chain) :
 		cmds.connectAttr('{}.arcLength'.format(ik_info) , stretch_node + '.input1X')
 		
 		# 将曲线缩放的倍数连接回来链接关节的缩放
-		for i in range(self._joint_nuber) :
+		for i in range(self.joint_nuber) :
 			mult_node = cmds.createNode('multDoubleLinear' , name = self.jnt_list[i].replace(' jnt' , 'mult'))
 			tx_value = cmds.getAttr(self.jnt_list[i] + '.translateX')
 			cmds.setAttr(mult_node + '.input2' , tx_value)

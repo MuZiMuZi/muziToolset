@@ -22,19 +22,18 @@ class ChainEP(base.Base):
 		self.radius = 3
 		self.set_shape('ball')
 		
-		#根据给定的控制器数量
-		if not controller_number :
-			controller_number = self._joint_nuber
-		if controller_number < 2 :
-			raise ValueError('in-sufficient control points')
+		#根据给定的控制器数量，获取控制对应的百分比信息
+		if not ctrl_number :
+			ctrl_number = self.joint_nuber
+		if ctrl_number < 2 :
+			raise ValueError(u"请有足够的控制点")
 		
-		self.clusters = list()
 		self.guide_curve = None
 		self.cvs = list()
 		
-		percents = pipelineUtils.Pipeline.get_percentages(controller_number)
+		percents = pipelineUtils.Pipeline.get_percentages(ctrl_number)
 		for p in percents :
-			integer = int(round(p * (self._joint_nuber - 1)))
+			integer = int(round(p * (self.joint_nuber - 1)))
 			self.cvs.append(integer)
 	
 	
@@ -43,7 +42,7 @@ class ChainEP(base.Base):
 		"""
 		创建定位的bp关节
 		"""
-		bpjnt_list = pipelineUtils.Pipeline.create_joints_on_curve(self.curve , self.controller_number)
+		bpjnt_list = pipelineUtils.Pipeline.create_joints_on_curve(self.curve , self.ctrl_number)
 		for joint_nuber , bpjnt in enumerate(bpjnt_list) :
 			bpjnt = cmds.rename(bpjnt , self.bpjnt_list[joint_nuber])
 			cmds.parent(bpjnt,self.joint_parent)
@@ -73,14 +72,14 @@ class ChainEP(base.Base):
 			for j in range(head , tail + 1) :
 				gap = 1.00 / (tail - head)
 				
-				# parent constraint will break things
-				cmds.pointConstraint(self.ctrls[head] , self.jnts[j] ,
+				# 制作点约束和旋转约束
+				cmds.pointConstraint(self.ctrl_list[head] , self.jnt_list[j] ,
 				                     w = 1 - ((j - head) * gap) , mo = 1)
-				cmds.pointConstraint(self.ctrls[tail] , self.jnts[j] ,
+				cmds.pointConstraint(self.ctrl_list[tail] , self.jnt_list[j] ,
 				                     w = (j - head) * gap , mo = 1)
-				cmds.orientConstraint(self.ctrls[head] , self.jnts[j] ,
+				cmds.orientConstraint(self.ctrl_list[head] , self.jnt_list[j] ,
 				                      w = 1 - ((j - head) * gap) , mo = 1)
-				cmds.orientConstraint(self.ctrls[tail] , self.jnts[j] ,
+				cmds.orientConstraint(self.ctrl_list[tail] , self.jnt_list[j] ,
 				                      w = (j - head) * gap , mo = 1)
 	
 	

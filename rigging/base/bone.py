@@ -40,7 +40,7 @@ class Bone(object) :
 		# 创建层级结构
 		hierarchyUtils.Hierarchy.create_rig_grp()
 		self._side = side
-		self._joint_nuber = joint_nuber
+		self.joint_nuber = joint_nuber
 		
 		# 设置关节的父层级和控制器的父层级
 		self.joint_parent = joint_parent
@@ -102,7 +102,7 @@ class Bone(object) :
 		u"""
 		创建名称规范整理
 		"""
-		for i in range(self._joint_nuber) :
+		for i in range(self.joint_nuber) :
 			self.bpjnt_list.append('bpjnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.zero_list.append('zero_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))

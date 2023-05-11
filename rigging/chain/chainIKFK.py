@@ -31,7 +31,7 @@ class ChainIKFK(chain.Chain) :
 		self._rtype = 'chainIKFK'
 		self.radius = 6
 		# 获取初始的位置
-		self.interval = length / (self._joint_nuber - 1)
+		self.interval = length / (self.joint_nuber - 1)
 		self.direction = list(vectorUtils.Vector(direction).mult_interval(self.interval))
 		self.is_stretch = is_stretch
 		self.axis = vectorUtils.Vector(direction).axis
@@ -112,7 +112,7 @@ class ChainIKFK(chain.Chain) :
 		self.fk_chain.add_constraint()
 		
 		# IK关节链，FK关节链来约束IKFK关节链
-		for joint_nuber in range(self._joint_nuber) :
+		for joint_nuber in range(self.joint_nuber) :
 			cons = cmds.parentConstraint(
 					self.ik_chain.jnt_list[joint_nuber] ,
 					self.fk_chain.jnt_list[joint_nuber] ,

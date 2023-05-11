@@ -24,7 +24,7 @@ class ChainFK(chain.Chain) :
 		chain.Chain.__init__(self , side , name , joint_nuber , length , joint_parent , control_parent)
 		self._rtype = 'chainFK'
 		
-		self.interval = length / (self._joint_nuber - 1)
+		self.interval = length / (self.joint_nuber - 1)
 		self.direction = list(vectorUtils.Vector(direction).mult_interval(self.interval))
 		self.shape = 'circle'
 		self.axis = vectorUtils.Vector(direction).axis
