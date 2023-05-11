@@ -40,3 +40,23 @@ class Finger(chainFK.ChainFK) :
 			cmds.setAttr(mult_node + '.input2' , 9)
 			cmds.connectAttr(self.ctrl_list[0] + '.{}Curl'.format(self.name) , mult_node + '.input1')
 			cmds.connectAttr(mult_node + '.output' , ctrl + '.rotateZ')
+
+
+
+if __name__ == '__main__' :
+	def x() :
+		finger_l = finger.Finger(side = 'l' , name = 'zz' , joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
+		                         joint_parent = None , control_parent = None)
+		finger_l.build_setup()
+	
+	
+	
+	def y() :
+		finger_l = finger.Finger(side = 'l' , name = 'zz' , joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
+		                         joint_parent = None , control_parent = None)
+		finger_l.build_rig()
+	
+	
+	
+	x()
+	y()
