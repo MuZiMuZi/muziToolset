@@ -92,13 +92,15 @@ class ChainIK(chain.Chain) :
 	
 	
 	
+		# 添加ikspline绑定系统
+		self.build_ikSpline()
+	
+	
 	def add_constraint(self) :
 		"""
 		使用对应的控制器来约束对应的关节，并且添加ikSpline绑定系统和添加拉伸
 		"""
 		
-		# 添加ikspline绑定系统
-		self.build_ikSpline()
 		
 		# 将创建好的cluster 放到对应的控制器层级组下
 		for joint_number , cluster in enumerate(self.cluster_list) :
@@ -159,6 +161,12 @@ class ChainIK(chain.Chain) :
 			cmds.setAttr(mult_node + '.input2' , tx_value)
 			cmds.connectAttr(stretch_node + '.outputX' , mult_node + '.input1')
 			cmds.connectAttr(mult_node + '.output' , self.jnt_list[i] + '.translateX')
+	
+	
+	
+	def build_rig(self) :
+		
+		super().build_rig()
 
 
 
