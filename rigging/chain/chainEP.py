@@ -119,3 +119,15 @@ class ChainEP(base.Base):
 		
 	
 		
+if __name__ == '__main__':
+	def x() :
+		custom = chainEP.ChainEP(side = 'l' , name = 'zz' , joint_number = 20 , ctrl_number = 20 , curve = 'curve1' ,
+		                         joint_parent = None , control_parent = None)
+		custom.build_setup()
+	
+	
+	
+	def y() :
+		custom = chainEP.ChainEP(side = 'l' , name = 'zz' , joint_number = 20 , ctrl_number = 20 , curve = 'curve1' ,
+		                         joint_parent = None , control_parent = None)
+		custom.build_rig()
