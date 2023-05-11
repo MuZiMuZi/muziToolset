@@ -8,9 +8,6 @@ from importlib import reload
 
 
 
-
-
-
 class ChainIK(chain.Chain) :
 	
 	
@@ -31,10 +28,13 @@ class ChainIK(chain.Chain) :
 		self.direction = list(vectorUtils.Vector(direction).mult_interval(self.interval))
 		self.is_stretch = is_stretch
 		
+		self.set_shape('ball')
+		self.radius = 2
 		# 根据给定的边，名称和index生成列表来存储创建的名称
 		self.cluster_list = list()
 		self.ik_curve = None
 		self.ik_handle = None
+		self.axis = vectorUtils.Vector(direction).axis
 	
 	
 	
@@ -159,19 +159,23 @@ class ChainIK(chain.Chain) :
 			cmds.setAttr(mult_node + '.input2' , tx_value)
 			cmds.connectAttr(stretch_node + '.outputX' , mult_node + '.input1')
 			cmds.connectAttr(mult_node + '.output' , self.jnt_list[i] + '.translateX')
-			
-if __name__ == '__main__':
+
+
+
+if __name__ == '__main__' :
 	def x() :
 		custom = chainIK.ChainIK(side = 'l' , name = 'zz' , index = 5 , direction = [1 , 0 , 0] ,
-		                                     joint_parent = None , control_parent = None)
+		                         joint_parent = None , control_parent = None)
 		custom.build_setup()
 	
 	
 	
 	def y() :
 		custom = chainIK.ChainIK(side = 'l' , name = 'zz' , index = 5 , direction = [1 , 0 , 0] ,
-		                                     joint_parent = None , control_parent = None)
+		                         joint_parent = None , control_parent = None)
 		custom.build_rig()
-		
+	
+	
+	
 	x()
 	y()

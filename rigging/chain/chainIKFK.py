@@ -2,7 +2,7 @@ import maya.cmds as cmds
 
 from . import chain , chainFK , chainIK
 from ..base import bone
-from ...core import vectorUtils
+from ...core import vectorUtils,controlUtils
 from importlib import reload
 
 
@@ -29,10 +29,12 @@ class ChainIKFK(chain.Chain) :
 		self.fk_chain = chainFK.ChainFK(side , name , index , direction,length )
 		
 		self._rtype = 'chainIKFK'
+		self.radius = 6
 		# 获取初始的位置
 		self.interval = length / (self._index - 1)
 		self.direction = list(vectorUtils.Vector(direction).mult_interval(self.interval))
 		self.is_stretch = is_stretch
+		self.axis = vectorUtils.Vector(direction).axis
 	
 	
 	
@@ -70,6 +72,7 @@ class ChainIKFK(chain.Chain) :
 			pos = cmds.xform(bpjnt , q = 1 , t = 1 , ws = 1)
 			cmds.joint(p = pos , name = self.jnt_list[index])
 		
+		cmds.delete(self.bpjnt_list[0])
 		# 设置ik关节链条和fk关节链条的可见性
 		cmds.setAttr(self.ik_chain.jnt_list[0] + '.v' , 0)
 		cmds.setAttr(self.fk_chain.jnt_list[0] + '.v' , 0)
@@ -86,9 +89,9 @@ class ChainIKFK(chain.Chain) :
 		self.fk_chain.create_ctrl()
 		
 		# 创建用于ikfk切换的控制器
-		self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_list[0] , shape = 'switch' ,
-		                                             radius = 5 ,
-		                                             axis = 'X+' , pos = self.jnt_list[0] ,
+		self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_list[0] , shape = 'cube' ,
+		                                             radius = self.radius ,
+		                                             axis = self.axis , pos = self.jnt_list[0] ,
 		                                             parent = self.control_parent)
 		
 		# 添加IKFK切换的属性
@@ -124,11 +127,11 @@ class ChainIKFK(chain.Chain) :
 			cmds.setDrivenKeyframe(
 					'{}.w1'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 1)
 			
-			cmds.setDrivenKeyframe(self.ik_chain.ctrls[index] + '.v' ,
+			cmds.setDrivenKeyframe(self.ik_chain.ctrl_list[index] + '.v' ,
 			                       cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 1)
-			cmds.setDrivenKeyframe(self.ik_chain.ctrls[index] + '.v' ,
+			cmds.setDrivenKeyframe(self.ik_chain.ctrl_list[index] + '.v' ,
 			                       cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 0)
-			cmds.setDrivenKeyframe(self.fk_chain.ctrls[index] + '.v' ,
+			cmds.setDrivenKeyframe(self.fk_chain.ctrl_list[index] + '.v' ,
 			                       cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 1)
-			cmds.setDrivenKeyframe(self.fk_chain.ctrls[index] + '.v' ,
+			cmds.setDrivenKeyframe(self.fk_chain.ctrl_list[index] + '.v' ,
 			                       cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 0)

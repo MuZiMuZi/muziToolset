@@ -28,6 +28,8 @@ class ChainFK(chain.Chain) :
 		self.direction = list(vectorUtils.Vector(direction).mult_interval(self.interval))
 		self.shape = 'circle'
 		self.axis = vectorUtils.Vector(direction).axis
+		
+		self.radius = 4
 	
 	
 	
@@ -35,7 +37,7 @@ class ChainFK(chain.Chain) :
 		self.set_shape(self.shape)
 		for ctrl , jnt in zip(self.ctrl_list , self.jnt_list) :
 			self.ctrl = controlUtils.Control.create_ctrl(ctrl , shape = self.shape,
-			                                             radius = 5 ,
+			                                             radius = self.radius ,
 			                                             axis = self.axis , pos = jnt ,
 			                                             parent = self.control_parent)
 			# 指定关节的父层级为上一轮创建出来的控制器层级组

@@ -54,6 +54,7 @@ class Bone(object) :
 		self._rtype = ''
 		self._name = name
 		self.shape = 'circle'
+		self.radius = 5
 		
 		# 根据给定的边，名称和index生成列表来存储创建的名称
 		self.bpjnt_list = list()
@@ -88,11 +89,14 @@ class Bone(object) :
 		return self._scale
 	
 	
-	def set_shape(self,shape):
+	
+	def set_shape(self , shape) :
 		u'''
 		设置控制器形状
 		'''
 		self.shape = shape
+	
+	
 	
 	def create_namespace(self) :
 		u"""
@@ -136,7 +140,7 @@ class Bone(object) :
 		self.set_shape(self.shape)
 		for ctrl , jnt in zip(self.ctrl_list , self.jnt_list) :
 			self.ctrl = controlUtils.Control.create_ctrl(ctrl , shape = self.shape ,
-			                                             radius = 5 ,
+			                                             radius = self.radius ,
 			                                             axis = 'X+' , pos = jnt ,
 			                                             parent = self.control_parent)
 	
