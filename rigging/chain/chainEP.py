@@ -27,6 +27,9 @@ class ChainEP(base.Base):
 			ctrl_number = self.joint_number
 		if ctrl_number < 2 :
 			raise ValueError(u"请有足够的控制点")
+		if ctrl_number < joint_number:
+			raise ValueError(u"控制器的数量请大于关节的数量")
+		
 		
 		self.guide_curve = None
 		self.cvs = list()
@@ -35,7 +38,6 @@ class ChainEP(base.Base):
 		for p in percents :
 			integer = int(round(p * (self.joint_number - 1)))
 			self.cvs.append(integer)
-		print(self.cvs)
 	
 	def create_bpjnt(self) :
 		"""
