@@ -15,7 +15,7 @@ class ChainFK(chain.Chain) :
 	
 	
 	
-	def __init__(self , side , name , joint_number , direction , length = 10 , joint_parent = None , control_parent = None) :
+	def __init__(self , side , name , joint_number , direction  = [-1 , 0 , 0], length = 10 , joint_parent = None , control_parent = None) :
 		u"""
 		用来创建fk关节链条的绑定
 		length(int)：关节的总长度

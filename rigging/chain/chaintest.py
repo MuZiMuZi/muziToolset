@@ -1,23 +1,27 @@
-import muziToolset.rigging.chain.chainEP as chainEP
+import muziToolset.rigging.chain.limbFK as limbFK
 from importlib import reload
 
 
 
-reload(chainEP)
+reload(limbFK)
 
 
-def x() :
-	custom = chainEP.ChainEP(side = 'l' , name = 'zz' , joint_number = 20 , ctrl_number = 20 , curve = 'curve1' ,joint_parent = None , control_parent = None)
+
+def build_setup() :
+	custom = limbFK.LimbFK(side = 'l' , name = 'zz' , joint_number = 3 , direction = [-1 , 0 , 0] , length = 10 ,
+	                       joint_parent = None ,
+	                       control_parent = None)
 	custom.build_setup()
 
 
 
-def y() :
-	custom = chainEP.ChainEP(side = 'l' , name = 'zz' , joint_number = 20 , ctrl_number  = 20, curve = 'curve1',
-	joint_parent = None , control_parent = None)
+def build_rig() :
+	custom = limbFK.LimbFK(side = 'l' , name = 'zz' , joint_number = 3 , direction = [-1 , 0 , 0] , length = 10 ,
+	                       joint_parent = None ,
+	                       control_parent = None)
 	custom.build_rig()
 
 
 
-x()
-y()
+build_setup()
+build_rig()
