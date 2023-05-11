@@ -52,22 +52,20 @@ class LimbIK(chainIK.ChainIK) :
 		                               sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True)[0]
 		
 		cmds.setAttr(self.ik_handle + '.v' , 0)
-		cmds.parent(self.ik_handle , self.output_list[-1])
 	
 	
 	
 	def create_ctrl(self) :
 		super().create_ctrl()
-		self.build_ikHandle()
 		# 创建极向量控制器
-		self.pv_ctrl = controlUtils.Control.create_ctrl(self.pv_ctrl , shape = 'ball' ,
+		self.pv_ctrl = controlUtils.Control.create_ctrl(self.pv_ctrl , shape = 'cube' ,
 		                                                radius = self.radius ,
 		                                                axis = 'X+' , pos = self.jnt_list[1] ,
 		                                                parent = self.control_parent)
 		# 移动极向量控制器组的位置
 		cmds.setAttr(self.pv_ctrl.replace('ctrl' , 'zero') + '.translateZ' , 10 * self.z_value)
-		# 极向量控制器约束ikHandle
-		cmds.poleVectorConstraint(self.pv_ctrl.replace('ctrl' , 'output') , self.ik_handle)
+
+		cmds.parent(self.ik_handle , self.output_list[-1])
 		
 		## 创建ik极向量控制器的曲线指示器
 		# 创建pv控制器的loc来记录位置
@@ -97,3 +95,19 @@ class LimbIK(chainIK.ChainIK) :
 		cmds.setAttr(ikpv_curve_shape + '.overrideEnabled' , 1)
 		cmds.setAttr(ikpv_curve_shape + '.overrideDisplayType' , 2)
 		cmds.setAttr(ikpv_curve + '.inheritsTransform' , 0)
+	
+	
+	
+	def add_constraint(self) :
+		# 极向量控制器约束ikHandle
+		cmds.poleVectorConstraint(self.pv_ctrl.replace('ctrl' , 'output') , self.ik_handle)
+	
+	
+	
+	def build_rig(self) :
+		self.create_namespace()
+		self.joint_orientation()
+		self.create_joint()
+		self.build_ikHandle()
+		self.create_ctrl()
+		# self.add_constraint()

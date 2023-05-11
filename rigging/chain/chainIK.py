@@ -165,8 +165,15 @@ class ChainIK(chain.Chain) :
 	
 	
 	def build_rig(self) :
-		
-		super().build_rig()
+		"""
+		创建绑定系统
+		"""
+		self.create_namespace()
+		self.joint_orientation()
+		self.create_joint()
+		self.build_ikSpline()
+		self.create_ctrl()
+		self.add_constraint()
 
 
 
