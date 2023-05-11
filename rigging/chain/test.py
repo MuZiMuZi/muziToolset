@@ -1,30 +1,23 @@
-import muziToolset.rigging.chain.chainIKFK as chainIKFK
+import muziToolset.rigging.chain.chainEP as chainEP
 from importlib import reload
 
 
 
-reload(chainIKFK)
-
+reload(chainEP)
 
 
 def x() :
-	custom = chainIKFK.ChainIKFK(side = 'l' , name = 'zz' , index = 5 , direction = [1,0,0] ,joint_parent = None , control_parent = None)
+	custom = chainEP.ChainEP(side = 'l' , name = 'zz' , index = 5 , controller_number = 5 , curve = 'curve1' ,joint_parent = None , control_parent = None)
 	custom.build_setup()
 
 
 
 def y() :
-	custom = chainIKFK.ChainIKFK(side = 'l' , name = 'zz' , index = 5 , direction = [1 , 0 , 0],
+	custom = chainEP.ChainEP(side = 'l' , name = 'zz' , index = 5 , controller_number  = 5, curve = 'curve1',
 	joint_parent = None , control_parent = None)
 	custom.build_rig()
 
 
 
-
-
-
-
-
-# x()
-# y()
-
+x()
+y()

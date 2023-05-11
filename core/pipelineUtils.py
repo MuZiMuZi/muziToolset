@@ -759,6 +759,20 @@ class Pipeline(object) :
 	
 	
 	@staticmethod
+	def get_dag_path(node = None) :
+		"""
+		获取指定节点的DAG路径
+
+		:param node: str. maya的节点对象
+		:return: str. DAG 路径
+		"""
+		selection = om.MSelectionList()
+		selection.add(node)
+		dag_path = om.MDagPath()
+		selection.getDagPath(0 , dag_path)
+		return dag_path
+	
+	@staticmethod
 	def get_point_on_curve(curve , sample_count) :
 		"""
 		获取具有均匀距离的nurbs曲线上的点信息
@@ -772,7 +786,7 @@ class Pipeline(object) :
 		
 		points = list()
 		tangents = list()
-		crv_fn = om.MFnNurbsCurve(transform.get_dag_path(curve))
+		crv_fn = om.MFnNurbsCurve(Pipeline.get_dag_path(curve))
 		for percentage in plists :
 			parameter = crv_fn.findParamFromLength(crv_fn.length() * percentage)
 			point = om.MPoint()
@@ -798,7 +812,7 @@ class Pipeline(object) :
 		
 		jnt_list = list()
 		#获取具有均匀距离的nurbs曲线上的点信息
-		points , tangents = util.get_point_on_curve(curve , sample_count)
+		points , tangents = Pipeline.get_point_on_curve(curve , sample_count)
 		for index in range(len(points)) :
 			point = points[index]
 			tangent = tangents[index]

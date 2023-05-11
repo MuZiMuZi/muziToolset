@@ -2,7 +2,7 @@ import maya.cmds as cmds
 
 from . import chain , chainFK , chainIK
 from ..base import bone
-from ...core import vectorUtils,controlUtils
+from ...core import vectorUtils , controlUtils
 from importlib import reload
 
 
@@ -20,13 +20,13 @@ class ChainIKFK(chain.Chain) :
 	
 	
 	
-	def __init__(self , side , name , index , direction , is_stretch  =1, length = 10 , joint_parent = None ,
+	def __init__(self , side , name , index , direction , is_stretch = 1 , length = 10 , joint_parent = None ,
 	             control_parent = None) :
 		chain.Chain.__init__(self , side , name , index , length , joint_parent , control_parent)
 		
 		# 初始化ik关节链条和fk关节链条
-		self.ik_chain = chainIK.ChainIK(side , name , index , direction, length  , is_stretch)
-		self.fk_chain = chainFK.ChainFK(side , name , index , direction,length )
+		self.ik_chain = chainIK.ChainIK(side , name , index , direction , length , is_stretch)
+		self.fk_chain = chainFK.ChainFK(side , name , index , direction , length)
 		
 		self._rtype = 'chainIKFK'
 		self.radius = 6
@@ -117,7 +117,7 @@ class ChainIKFK(chain.Chain) :
 					self.ik_chain.jnt_list[index] ,
 					self.fk_chain.jnt_list[index] ,
 					self.jnt_list[index])[0]
-			#连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
+			# 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
 			cmds.setDrivenKeyframe(
 					'{}.w0'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 1)
 			cmds.setDrivenKeyframe(
@@ -135,3 +135,23 @@ class ChainIKFK(chain.Chain) :
 			                       cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 1)
 			cmds.setDrivenKeyframe(self.fk_chain.ctrl_list[index] + '.v' ,
 			                       cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 0)
+
+
+
+if __name__ == '__main__' :
+	def x() :
+		custom = chainIKFK.ChainIKFK(side = 'l' , name = 'zz' , index = 5 , direction = [1 , 0 , 0] ,
+		                             joint_parent = None , control_parent = None)
+		custom.build_setup()
+	
+	
+	
+	def y() :
+		custom = chainIKFK.ChainIKFK(side = 'l' , name = 'zz' , index = 5 , direction = [1 , 0 , 0] ,
+		                             joint_parent = None , control_parent = None)
+		custom.build_rig()
+
+
+
+# x()
+# y()
