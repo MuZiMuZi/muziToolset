@@ -65,6 +65,8 @@ class ChainEP(base.Base):
 	
 	def create_ctrl(self) :
 		self.set_shape(self.shape)
+		# 创建整体的控制器层级组
+		self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
 		for index in (self.cvs)  :
 			self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_list[index] , shape = self.shape ,
 			                                             radius = self.radius ,
