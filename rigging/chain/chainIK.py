@@ -41,13 +41,8 @@ class ChainIK(chain.Chain) :
 		u'''
 		创建ik绑定系统的命名规范
 		'''
+		super().create_namespace()
 		for i in range(self.joint_number) :
-			self.bpjnt_list.append('bpjnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
-			self.jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
-			self.zero_list.append('zero_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
-			self.driven_list.append('driven_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
-			self.ctrl_list.append('ctrl_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
-			self.output_list.append('output_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.cluster_list.append('cluster_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 		
 		self.ik_curve = ('curve_{}_{}{}_001'.format(self._side , self._name , self._rtype))
