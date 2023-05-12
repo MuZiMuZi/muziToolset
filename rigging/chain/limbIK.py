@@ -35,6 +35,9 @@ class LimbIK(chainIK.ChainIK) :
 			self.side_value = -1
 		
 		self.radius = 5
+		
+		self.shape = 'cube'
+	
 	
 	
 	def create_namespace(self) :
@@ -65,14 +68,18 @@ class LimbIK(chainIK.ChainIK) :
 	
 	
 	def create_ctrl(self) :
+		u'''
+		创建控制器结构
+		'''
 		super().create_ctrl()
+		cmds.delete(self.zero_list[1])
 		# 创建极向量控制器
-		self.pv_ctrl = controlUtils.Control.create_ctrl(self.pv_ctrl , shape = 'cube' ,
+		self.pv_ctrl = controlUtils.Control.create_ctrl(self.pv_ctrl , shape = 'ball' ,
 		                                                radius = self.radius ,
 		                                                axis = 'X+' , pos = self.jnt_list[1] ,
 		                                                parent = self.control_parent)
 		# 移动极向量控制器组的位置
-		cmds.setAttr(self.pv_ctrl.replace('ctrl' , 'zero') + '.translateZ' , 10 * self.z_value)
+		cmds.setAttr(self.pv_ctrl.replace('ctrl' , 'zero') + '.translateZ' , 10 * self.z_value * self.side_value)
 		
 		cmds.parent(self.ik_handle , self.output_list[-1])
 		
@@ -104,12 +111,19 @@ class LimbIK(chainIK.ChainIK) :
 		cmds.setAttr(ikpv_curve_shape + '.overrideEnabled' , 1)
 		cmds.setAttr(ikpv_curve_shape + '.overrideDisplayType' , 2)
 		cmds.setAttr(ikpv_curve + '.inheritsTransform' , 0)
+		cmds.parent(ikpv_curve , self.control_parent)
 		
 		# 创建local控制器给手腕
-		self.local_ctrl = controlUtils.Control.create_ctrl(self.local_ctrl , shape = 'cube' ,
+		self.local_ctrl = controlUtils.Control.create_ctrl(self.local_ctrl , shape = 'cross' ,
 		                                                   radius = self.radius * 0.75 ,
 		                                                   axis = 'X+' , pos = self.jnt_list[-1] ,
 		                                                   parent = self.ctrl_list[-1])
+		
+		# 判断是否需要添加拉伸功能
+		if not self.is_stretch :
+			return
+		else :
+			self.add_stretch()
 	
 	
 	
@@ -120,11 +134,8 @@ class LimbIK(chainIK.ChainIK) :
 		# ikHandle放到local控制器层级下
 		cmds.parent(self.ik_handle , self.local_ctrl.replace('ctrl' , 'output'))
 		
-		# 判断是否需要添加拉伸功能
-		if not self.is_stretch :
-			return
-		else :
-			self.add_stretch()
+		# 首段ik控制器点约束首段ik关节
+		cmds.pointConstraint(self.output_list[0] , self.jnt_list[0] , mo = True)
 	
 	
 	
@@ -135,13 +146,15 @@ class LimbIK(chainIK.ChainIK) :
 		self.startIK_pos_loc = cmds.spaceLocator(name = self.startIK_pos_loc)[0]
 		startIK_pos_loc_shape = cmds.listRelatives(self.startIK_pos_loc , shapes = True)[0]
 		cmds.matchTransform(self.startIK_pos_loc , self.ctrl_list[0])
-		hierarchyUtils.Hierarchy.parent(child_node = self.startIK_pos_loc , parent_node = self.ctrl_list[0])
+		cmds.setAttr(self.startIK_pos_loc + '.v',0)
+		hierarchyUtils.Hierarchy.parent(child_node = self.startIK_pos_loc , parent_node = self.output_list[0])
 		
 		# 创建末端关节控制器的定位loctor
 		self.endIK_pos_loc = cmds.spaceLocator(name = self.endIK_pos_loc)[0]
 		endIK_pos_loc_shape = cmds.listRelatives(self.endIK_pos_loc , shapes = True)[0]
+		cmds.setAttr(self.endIK_pos_loc + '.v' , 0)
 		cmds.matchTransform(self.endIK_pos_loc , self.ctrl_list[-1])
-		hierarchyUtils.Hierarchy.parent(child_node = self.endIK_pos_loc , parent_node = self.ctrl_list[-1])
+		hierarchyUtils.Hierarchy.parent(child_node = self.endIK_pos_loc , parent_node = self.output_list[-1])
 		
 		# 创建计算距离的distween节点，来计算首端关节到中端控制器的距离
 		disBtw_node = cmds.createNode('distanceBetween' , name = self.endIK_pos_loc.replace('loc' , 'disBtw'))
