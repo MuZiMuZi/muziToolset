@@ -20,7 +20,7 @@ class LimbIK(chainIK.ChainIK) :
 		limbtype(str):给定的limbtype 是手臂还是腿部
 		"""
 		super().__init__(side , name , joint_number , direction , length , is_stretch , joint_parent , control_parent)
-		self._rtype = 'IK'
+		self._rtype = 'LimbIK'
 		
 		# 判断给定的limbtype 是手臂还是腿部
 		if limbtype == 'arm' :
@@ -268,8 +268,32 @@ class LimbIK(chainIK.ChainIK) :
 	
 	def build_rig(self) :
 		self.create_namespace()
-		self.joint_orientation()
 		self.create_joint()
 		self.build_ikHandle()
 		self.create_ctrl()
 		self.add_constraint()
+
+
+if __name__ == '__main__':
+	def build_setup() :
+		custom = limbIK.LimbIK(side = 'l' , name = 'zz' , joint_number = 3 , direction = [-1 , 0 , 0] , length = 10 ,
+		                       is_stretch = 1 ,
+		                       limbtype = 'arm' ,
+		                       joint_parent = None ,
+		                       control_parent = None)
+		custom.build_setup()
+	
+	
+	
+	def build_rig() :
+		custom = limbIK.LimbIK(side = 'l' , name = 'zz' , joint_number = 3 , direction = [-1 , 0 , 0] , length = 10 ,
+		                       limbtype = 'arm' ,
+		                       joint_parent = None ,
+		                       control_parent = None)
+		custom.build_rig()
+	
+	
+	
+
+	build_setup()
+	build_rig()
