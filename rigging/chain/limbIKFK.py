@@ -116,11 +116,13 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		self.ik_limb.create_ctrl()
 		self.fk_limb.create_ctrl()
 		
+		# 创建整体的控制器层级组
+		self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
 		# 创建用于ikfk切换的控制器
 		self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_list[0] , shape = 'pPlatonic' ,
 		                                             radius = self.radius ,
 		                                             axis = self.axis , pos = self.jnt_list[0] ,
-		                                             parent = self.control_parent)
+		                                             parent = self.ctrl_grp)
 		
 		# 添加IKFK切换的属性
 		cmds.addAttr(self.ctrl , sn = 'Switch' , ln = 'ikfkSwitch' , at = 'double' , dv = 1 , min = 0 , max = 1 ,
