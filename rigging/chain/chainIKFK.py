@@ -2,7 +2,7 @@ import maya.cmds as cmds
 
 from . import chain , chainFK , chainIK
 from ..base import bone
-from ...core import vectorUtils , controlUtils,jointUtils
+from ...core import vectorUtils , controlUtils , jointUtils
 from importlib import reload
 
 
@@ -76,7 +76,7 @@ class ChainIKFK(chain.Chain) :
 		for joint_number , bpjnt in enumerate(self.bpjnt_list) :
 			pos = cmds.xform(bpjnt , q = 1 , t = 1 , ws = 1)
 			cmds.joint(p = pos , name = self.jnt_list[joint_number])
-		#进行关节定向
+		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.jnt_list)
 		
 		cmds.delete(self.bpjnt_list[0])
@@ -85,8 +85,7 @@ class ChainIKFK(chain.Chain) :
 		cmds.setAttr(self.fk_chain.jnt_list[0] + '.v' , 0)
 		
 		cmds.parent(self.jnt_list[0] , self.joint_parent)
-		
-		
+	
 	
 	
 	def create_ctrl(self) :
@@ -96,12 +95,15 @@ class ChainIKFK(chain.Chain) :
 		self.ik_chain.create_ctrl()
 		self.fk_chain.create_ctrl()
 		
-		# 创建用于ikfk切换的控制器
-		self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_list[0] , shape = 'cube' ,
-		                                             radius = self.radius ,
-		                                             axis = self.axis , pos = self.jnt_list[0] ,
-		                                             parent = self.control_parent)
+		# 创建整体的控制器层级组
+		self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
 		
+		# 创建用于ikfk切换的控制器
+		self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_list[0] , shape = 'pPlatonic' ,
+		                                             radius = self.radius * 1.2 ,
+		                                             axis = self.axis , pos = self.jnt_list[0] ,
+		                                             parent = self.ctrl_grp)
+		cmds.setAttr(self.zero_list[0] + '.translateZ' , -5)
 		# 添加IKFK切换的属性
 		cmds.addAttr(self.ctrl , sn = 'Switch' , ln = 'ikfkSwitch' , at = 'double' , dv = 1 , min = 0 , max = 1 ,
 		             k = 1)
