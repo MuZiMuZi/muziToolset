@@ -129,6 +129,10 @@ class Bone(object) :
 		for bpjnt , jnt in zip(self.bpjnt_list , self.jnt_list) :
 			jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
 			cmds.matchTransform(jnt , bpjnt)
+			# 设置为bp关节的关节定向数值
+			cmds.setAttr(jnt + '.jointOrientX' , cmds.getAttr(bpjnt + '.jointOrientX'))
+			cmds.setAttr(jnt + '.jointOrientY' , cmds.getAttr(bpjnt + '.jointOrientY'))
+			cmds.setAttr(jnt + '.jointOrientZ' , cmds.getAttr(bpjnt + '.jointOrientZ'))
 			cmds.delete(bpjnt)
 	
 	
