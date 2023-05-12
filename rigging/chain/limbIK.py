@@ -28,11 +28,6 @@ class LimbIK(chainIK.ChainIK) :
 		else :
 			self.z_value = -1
 		
-		# 判断边为'l'还是'r'
-		if side == 'l' :
-			self.side_value = 1
-		else :
-			self.side_value = -1
 		
 		self.radius = 5
 		
@@ -74,13 +69,14 @@ class LimbIK(chainIK.ChainIK) :
 		super().create_ctrl()
 		#创建ikhandle系统
 		self.build_ikHandle()
-		
+		# 创建整体的控制器层级组
+		self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
 		cmds.setAttr(self.zero_list[1]+ '.v',0)
 		# 创建极向量控制器
 		self.pv_ctrl = controlUtils.Control.create_ctrl(self.pv_ctrl , shape = 'ball' ,
 		                                                radius = self.radius ,
 		                                                axis = 'X+' , pos = self.jnt_list[1] ,
-		                                                parent = self.control_parent)
+		                                                parent = self.ctrl_grp)
 		# 移动极向量控制器组的位置
 		cmds.setAttr(self.pv_ctrl.replace('ctrl' , 'zero') + '.translateZ' , 10 * self.z_value * self.side_value)
 		
