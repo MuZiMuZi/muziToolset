@@ -60,8 +60,14 @@ class Bone(object) :
 		self.zero_list = list()
 		self.driven_list = list()
 		self.output_list = list()
-	
-	
+		
+		# 判断边为'l'还是'r'
+		if side == 'l' :
+			self.side_value = 1
+		elif side == 'r' :
+			self.side_value = -1
+		else:
+			self.side_value = 0
 	
 	@property
 	def name(self) :
