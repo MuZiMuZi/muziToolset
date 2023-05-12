@@ -123,14 +123,14 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		                                             radius = self.radius ,
 		                                             axis = self.axis , pos = self.jnt_list[0] ,
 		                                             parent = self.ctrl_grp)
-		
+		cmds.setAttr(self.zero_list[0] + '.translateZ' , -5)
 		# 添加IKFK切换的属性
 		cmds.addAttr(self.ctrl , sn = 'Switch' , ln = 'ikfkSwitch' , at = 'double' , dv = 1 , min = 0 , max = 1 ,
 		             k = 1)
 		
 		# 整理层级结构
-		cmds.parent(self.ik_limb.zero_list[0] , self.output_list[0])
-		cmds.parent(self.fk_limb.zero_list[0] , self.output_list[0])
+		cmds.parent(self.ik_limb.ctrl_grp , self.output_list[0])
+		cmds.parent(self.fk_limb.ctrl_grp , self.output_list[0])
 	
 	
 	
@@ -157,13 +157,17 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 			cmds.setDrivenKeyframe(
 					'{}.w1'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 1)
 			
-			cmds.setDrivenKeyframe(self.ik_limb.ctrl_list[joint_number] + '.v' ,
+			# 设置ik关节链条和ik控制器的可见性
+			cmds.setDrivenKeyframe(self.ik_limb.ctrl_grp + '.v' ,
 			                       cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 1)
-			cmds.setDrivenKeyframe(self.ik_limb.ctrl_list[joint_number] + '.v' ,
+			cmds.setDrivenKeyframe(self.ik_limb.ctrl_grp + '.v' ,
 			                       cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 0)
-			cmds.setDrivenKeyframe(self.fk_limb.ctrl_list[joint_number] + '.v' ,
+		
+			
+			# 设置fk关节链条和fk控制器的可见性
+			cmds.setDrivenKeyframe(self.fk_limb.ctrl_grp + '.v' ,
 			                       cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 1)
-			cmds.setDrivenKeyframe(self.fk_limb.ctrl_list[joint_number] + '.v' ,
+			cmds.setDrivenKeyframe(self.fk_limb.ctrl_grp + '.v' ,
 			                       cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 0)
 	
 	

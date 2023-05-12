@@ -69,8 +69,6 @@ class LimbIK(chainIK.ChainIK) :
 		super().create_ctrl()
 		#创建ikhandle系统
 		self.build_ikHandle()
-		# 创建整体的控制器层级组
-		self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
 		cmds.setAttr(self.zero_list[1]+ '.v',0)
 		# 创建极向量控制器
 		self.pv_ctrl = controlUtils.Control.create_ctrl(self.pv_ctrl , shape = 'ball' ,
@@ -110,7 +108,7 @@ class LimbIK(chainIK.ChainIK) :
 		cmds.setAttr(ikpv_curve_shape + '.overrideEnabled' , 1)
 		cmds.setAttr(ikpv_curve_shape + '.overrideDisplayType' , 2)
 		cmds.setAttr(ikpv_curve + '.inheritsTransform' , 0)
-		cmds.parent(ikpv_curve , self.control_parent)
+		cmds.parent(ikpv_curve , self.ctrl_grp)
 		
 		# 创建local控制器给手腕
 		self.local_ctrl = controlUtils.Control.create_ctrl(self.local_ctrl , shape = 'cross' ,

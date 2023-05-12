@@ -1,7 +1,9 @@
 from . import chain , chainIK , chainFK
 import maya.cmds as cmds
 from ...core import pipelineUtils , vectorUtils
+from importlib import reload
 
+reload(chainFK)
 
 
 class LimbFK(chainFK.ChainFK) :
