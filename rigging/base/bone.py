@@ -112,7 +112,7 @@ class Bone(object) :
 			self.driven_list.append('driven_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.ctrl_list.append('ctrl_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.output_list.append('output_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
-	
+		self.ctrl_grp = ('grp_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 	
 	
 	def create_bpjnt(self) :
@@ -143,11 +143,17 @@ class Bone(object) :
 		创建控制器
 		"""
 		self.set_shape(self.shape)
+		#创建整体的控制器层级组
+		self.ctrl_grp = cmds.createNode('transform',name = self.ctrl_grp,parent=self.control_parent)
+		
 		for ctrl , jnt in zip(self.ctrl_list , self.jnt_list) :
 			self.ctrl = controlUtils.Control.create_ctrl(ctrl , shape = self.shape ,
 			                                             radius = self.radius ,
 			                                             axis = 'X+' , pos = jnt ,
-			                                             parent = self.control_parent)
+			                                             parent = self.ctrl_grp)
+
+		
+		
 	
 	
 	
