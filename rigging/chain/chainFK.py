@@ -22,7 +22,7 @@ class ChainFK(chain.Chain) :
 		direction（list）:从根节点到顶部节点的方向例如[1,0,0]或者[0,1,0]
 		"""
 		chain.Chain.__init__(self , side , name , joint_number , length , joint_parent , control_parent)
-		self._rtype = 'chainFK'
+		self._rtype = 'ChainFK'
 		
 		self.interval = length / (self.joint_number - 1)
 		self.direction = list(vectorUtils.Vector(direction).mult_interval(self.interval))

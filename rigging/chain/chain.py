@@ -15,7 +15,7 @@ class Chain(base.Base) :
 		length：关节的总长度
 		
 		'''
-		self._rtype = 'chain'
+		self._rtype = 'Chain'
 		
 		
 		self.length = length

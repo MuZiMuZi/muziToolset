@@ -17,7 +17,7 @@ class Base(bone.Bone) :
 	
 	def __init__(self , side , name , joint_number , joint_parent = None , control_parent = None ) :
 		bone.Bone.__init__(self , side , name , joint_number , joint_parent , control_parent)
-		self._rtype = 'base'
+		self._rtype = 'Base'
 
 	
 	
