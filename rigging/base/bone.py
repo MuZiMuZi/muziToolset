@@ -184,6 +184,8 @@ class Bone(object) :
 			# 无子关节，关节定向为世界方向
 			else :
 				cmds.joint(bp_jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')
+		
+		
 	
 	
 	
