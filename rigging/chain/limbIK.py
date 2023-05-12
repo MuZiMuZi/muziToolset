@@ -72,7 +72,10 @@ class LimbIK(chainIK.ChainIK) :
 		创建控制器结构
 		'''
 		super().create_ctrl()
-		cmds.delete(self.zero_list[1])
+		#创建ikhandle系统
+		self.build_ikHandle()
+		
+		cmds.setAttr(self.zero_list[1]+ '.v',0)
 		# 创建极向量控制器
 		self.pv_ctrl = controlUtils.Control.create_ctrl(self.pv_ctrl , shape = 'ball' ,
 		                                                radius = self.radius ,
@@ -269,7 +272,6 @@ class LimbIK(chainIK.ChainIK) :
 	def build_rig(self) :
 		self.create_namespace()
 		self.create_joint()
-		self.build_ikHandle()
 		self.create_ctrl()
 		self.add_constraint()
 
