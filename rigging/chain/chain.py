@@ -35,8 +35,9 @@ class Chain(base.Base) :
 			self.joint_parent = self.bpjnt
 			# 调整距离
 			pipelineUtils.Pipeline.move(obj = self.bpjnt , pos = self.direction)
-	
-	
+		# 进行关节定向
+		jointUtils.Joint.joint_orientation(self.bpjnt_list)
+		
 	
 	def create_joint(self) :
 		'''
@@ -45,12 +46,10 @@ class Chain(base.Base) :
 		for bpjnt,jnt in zip (self.bpjnt_list , self.jnt_list) :
 			self.jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
 			cmds.matchTransform(self.jnt, bpjnt)
-			# 设置为bp关节的关节定向数值
-			cmds.setAttr(jnt + '.jointOrientX' , cmds.getAttr(bpjnt + '.jointOrientX'))
-			cmds.setAttr(jnt + '.jointOrientY' , cmds.getAttr(bpjnt + '.jointOrientY'))
-			cmds.setAttr(jnt + '.jointOrientZ' , cmds.getAttr(bpjnt + '.jointOrientZ'))
 			# 指定关节的父层级为上一轮创建出来的关节
 			self.joint_parent = self.jnt
 		
+		# 进行关节定向
+		jointUtils.Joint.joint_orientation(self.jnt_list)
 		# 删除bp的定位关节
 		cmds.delete(self.bpjnt_list[0])
