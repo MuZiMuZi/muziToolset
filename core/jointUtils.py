@@ -213,22 +213,20 @@ class Joint(object) :
 	
 	
 	@staticmethod
-	def auto_bpJoint_orientation() :
+	def joint_orientation(jnt_list) :
 		u'''
-		对于用来定位绑定系统的bp关节自动关节定向,正常关节定向为X轴指向下一关节，末端关节定向为世界方向
+		给定关节的列表自动进行关节定向,正常关节定向为X轴指向下一关节，末端关节定向为世界方向
+		jnt_list（list）:需要进行关节定向的列表
 		'''
-		# 获取场景里所有的bp定位关节
-		bp_jnts = cmds.ls('bpjnt_*' , type = 'joint')
-		
 		# 判断关节是否具有子关节
-		for bp_jnt in bp_jnts :
-			cmds.makeIdentity(bp_jnt,apply = True, translate = 1, rotate =1, scale =1 , normal =0 , preserveNormals = 1)
-			jnt_sub = cmds.listRelatives(bp_jnt , children = True , allDescendents = True , type = 'joint')
+		for jnt in jnt_list :
+			cmds.makeIdentity(jnt,apply = True, translate = 1, rotate =1, scale =1 , normal =0 , preserveNormals = 1)
+			jnt_sub = cmds.listRelatives(jnt , children = True , allDescendents = True , type = 'joint')
 			# 如果有子关节，则关节定向为X轴指向下一关节
 			if jnt_sub :
-				cmds.joint(bp_jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'xyz' ,
+				cmds.joint(jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'xyz' ,
 				           secondaryAxisOrient = 'xup')
 			
 			# 无子关节，关节定向为世界方向
 			else :
-				cmds.joint(bp_jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')
+				cmds.joint(jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')

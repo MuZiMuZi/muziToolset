@@ -1,9 +1,6 @@
 # coding=utf-8
 from importlib import reload
-from ...core import jointUtils
-from ...core import pipelineUtils
-from ...core import hierarchyUtils
-from ...core import controlUtils
+from ...core import jointUtils, controlUtils, pipelineUtils, hierarchyUtils
 import maya.cmds as cmds
 
 
@@ -118,7 +115,8 @@ class Bone(object) :
 		"""
 		for bpjnt in self.bpjnt_list :
 			self.bpjnt = cmds.createNode('joint' , name = bpjnt)
-	
+		# 进行关节定向
+		jointUtils.Joint.joint_orientation(self.bpjnt_list)
 	
 	
 	def create_joint(self) :
@@ -129,12 +127,9 @@ class Bone(object) :
 		for bpjnt , jnt in zip(self.bpjnt_list , self.jnt_list) :
 			jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
 			cmds.matchTransform(jnt , bpjnt)
-			# 设置为bp关节的关节定向数值
-			cmds.setAttr(jnt + '.jointOrientX' , cmds.getAttr(bpjnt + '.jointOrientX'))
-			cmds.setAttr(jnt + '.jointOrientY' , cmds.getAttr(bpjnt + '.jointOrientY'))
-			cmds.setAttr(jnt + '.jointOrientZ' , cmds.getAttr(bpjnt + '.jointOrientZ'))
 			cmds.delete(bpjnt)
-	
+		#进行关节定向
+		jointUtils.Joint.joint_orientation(self.jnt_list)
 	
 	
 	def create_ctrl(self) :
@@ -164,26 +159,6 @@ class Bone(object) :
 	
 	
 	
-	def joint_orientation(self) :
-		u'''
-		对于用来定位绑定系统的bp关节自动关节定向,正常关节定向为X轴指向下一关节，末端关节定向为世界方向
-		'''
-		# 获取场景里所有的bp定位关节
-		bp_jnts = self.bpjnt_list
-		
-		# 判断关节是否具有子关节
-		for bp_jnt in bp_jnts :
-			cmds.makeIdentity(bp_jnt , apply = True , translate = 1 , rotate = 1 , scale = 1 , normal = 0 ,
-			                  preserveNormals = 1)
-			jnt_sub = cmds.listRelatives(bp_jnt , children = True , allDescendents = True , type = 'joint')
-			# 如果有子关节，则关节定向为X轴指向下一关节
-			if jnt_sub :
-				cmds.joint(bp_jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'xyz' ,
-				           secondaryAxisOrient = 'xup')
-			
-			# 无子关节，关节定向为世界方向
-			else :
-				cmds.joint(bp_jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')
 		
 		
 	
@@ -203,7 +178,6 @@ class Bone(object) :
 		创建绑定系统
 		"""
 		self.create_namespace()
-		self.joint_orientation()
 		self.create_joint()
 		self.create_ctrl()
 		self.add_constraint()
