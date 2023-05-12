@@ -42,7 +42,7 @@ class Hand(finger.Finger) :
 		# 创建手指各模块的定位关节
 		for finger in self.finger_list :
 			finger.create_namespace()
-	
+		self.finger_grp = ('grp_{}_{}Finger_001'.format(self._side , self._name))
 	
 	
 	def create_bpjnt(self) :
@@ -50,8 +50,8 @@ class Hand(finger.Finger) :
 		for index , finger in enumerate(self.finger_list) :
 			finger.create_bpjnt()
 			# 移动初始关节的位置
-			cmds.setAttr(finger.bpjnt_list[0] + '.translateZ' , int(index * 2))
-			cmds.setAttr(finger.bpjnt_list[0] + '.translateX' , int(-20 * self.side_value))
+			cmds.setAttr(finger.bpjnt_list[0] + '.translateZ' , int(index *1))
+			cmds.setAttr(finger.bpjnt_list[0] + '.translateX' , int(20 * self.side_value))
 	
 	
 	
@@ -63,9 +63,11 @@ class Hand(finger.Finger) :
 	
 	
 	def create_ctrl(self) :
-		# 创建手指各模块的绑定
+		self.finger_grp = cmds.createNode('transform',name = self.finger_grp,parent = self.control_parent)
+		# 创建手指各模块的绑定控制器
 		for finger in self.finger_list :
 			finger.create_ctrl()
+			cmds.parent(finger.ctrl_grp,self.finger_grp)
 	
 	
 	

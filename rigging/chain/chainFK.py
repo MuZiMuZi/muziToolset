@@ -45,7 +45,6 @@ class ChainFK(chain.Chain) :
 			                                             parent = parent)
 			# 指定关节的父层级为上一轮创建出来的控制器层级组
 			parent = ctrl.replace('ctrl','output')
-			print(parent)
 	
 	
 	

@@ -1,6 +1,7 @@
-from . import chain , chainIK , chainFK
 import maya.cmds as cmds
-from ...core import pipelineUtils , vectorUtils , controlUtils , hierarchyUtils
+
+from . import chain , chainFK , chainIK
+from ...core import controlUtils , hierarchyUtils , pipelineUtils , vectorUtils
 
 
 
@@ -27,7 +28,6 @@ class LimbIK(chainIK.ChainIK) :
 			self.z_value = 1
 		else :
 			self.z_value = -1
-		
 		
 		self.radius = 5
 		
@@ -67,16 +67,16 @@ class LimbIK(chainIK.ChainIK) :
 		创建控制器结构
 		'''
 		super().create_ctrl()
-		#创建ikhandle系统
+		# 创建ikhandle系统
 		self.build_ikHandle()
-		cmds.setAttr(self.zero_list[1]+ '.v',0)
+		cmds.setAttr(self.zero_list[1] + '.v' , 0)
 		# 创建极向量控制器
 		self.pv_ctrl = controlUtils.Control.create_ctrl(self.pv_ctrl , shape = 'ball' ,
-		                                                radius = self.radius ,
+		                                                radius = self.radius * 0.6 ,
 		                                                axis = 'X+' , pos = self.jnt_list[1] ,
 		                                                parent = self.ctrl_grp)
 		# 移动极向量控制器组的位置
-		cmds.setAttr(self.pv_ctrl.replace('ctrl' , 'zero') + '.translateZ' , 10 * self.z_value * self.side_value)
+		cmds.setAttr(self.pv_ctrl.replace('ctrl' , 'zero') + '.translateZ' , -10 * self.z_value * self.side_value)
 		
 		cmds.parent(self.ik_handle , self.output_list[-1])
 		
@@ -143,7 +143,7 @@ class LimbIK(chainIK.ChainIK) :
 		self.startIK_pos_loc = cmds.spaceLocator(name = self.startIK_pos_loc)[0]
 		startIK_pos_loc_shape = cmds.listRelatives(self.startIK_pos_loc , shapes = True)[0]
 		cmds.matchTransform(self.startIK_pos_loc , self.ctrl_list[0])
-		cmds.setAttr(self.startIK_pos_loc + '.v',0)
+		cmds.setAttr(self.startIK_pos_loc + '.v' , 0)
 		hierarchyUtils.Hierarchy.parent(child_node = self.startIK_pos_loc , parent_node = self.output_list[0])
 		
 		# 创建末端关节控制器的定位loctor
@@ -270,7 +270,8 @@ class LimbIK(chainIK.ChainIK) :
 		self.add_constraint()
 
 
-if __name__ == '__main__':
+
+if __name__ == '__main__' :
 	def build_setup() :
 		custom = limbIK.LimbIK(side = 'l' , name = 'zz' , joint_number = 3 , direction = [-1 , 0 , 0] , length = 10 ,
 		                       is_stretch = 1 ,
@@ -290,6 +291,5 @@ if __name__ == '__main__':
 	
 	
 	
-
 	build_setup()
 	build_rig()
