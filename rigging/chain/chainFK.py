@@ -37,14 +37,14 @@ class ChainFK(chain.Chain) :
 		self.set_shape(self.shape)
 		# 创建整体的控制器层级组
 		self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
-		
+		parent = self.ctrl_grp
 		for ctrl , jnt in zip(self.ctrl_list , self.jnt_list) :
 			self.ctrl = controlUtils.Control.create_ctrl(ctrl , shape = self.shape,
 			                                             radius = self.radius ,
 			                                             axis = self.axis , pos = jnt ,
-			                                             parent = self.ctrl_grp)
+			                                             parent = parent)
 			# 指定关节的父层级为上一轮创建出来的控制器层级组
-			self.control_parent = self.ctrl.replace('ctrl','output')
+			parent = self.ctrl.replace('ctrl','output')
 	
 	
 	
