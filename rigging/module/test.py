@@ -1,17 +1,19 @@
-import muziToolset.rigging.module.hand as hand
+import muziToolset.rigging.module.spine as spine
 from importlib import reload
 
 
 
-reload(hand)
+reload(spine)
 def build_setup():
-    finger_l = hand.Hand(side = 'l', name = 'zz' , joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 , joint_parent = None ,
+    spine_m = spine.Spine(side = 'm', name = 'zz' , joint_number = 4 , direction = [0, 1 , 0] , length = 10 ,
+                          is_stretch = 1,joint_parent = None ,
                          control_parent = None)
-    finger_l.build_setup()
+    spine_m.build_setup()
 def build_rig():
-    finger_l = hand.Hand(side = 'l' , name = 'zz', joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 , joint_parent = None ,
+    spine_m = spine.Spine(side = 'm' , name = 'zz', joint_number = 4 , direction = [0 , 1 , 0] , length = 10 ,
+                          is_stretch = 1,joint_parent = None ,
                          control_parent = None)
-    finger_l.build_rig()
+    spine_m.build_rig()
 
 
 

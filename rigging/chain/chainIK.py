@@ -1,7 +1,6 @@
 from ..base import base
 import maya.cmds as cmds
-from ...core import controlUtils
-from ...core import vectorUtils
+from ...core import controlUtils, vectorUtils,jointUtils
 from . import chain
 
 from importlib import reload
@@ -22,13 +21,13 @@ class ChainIK(chain.Chain) :
 		is_stretch(bool):是否允许ik关节链条进行拉伸
 		"""
 		
-		self._rtype = 'chainIK'
+		self._rtype = 'ChainIK'
 		
 		self.interval = length / (self.joint_number - 1)
 		self.direction = list(vectorUtils.Vector(direction).mult_interval(self.interval))
 		self.is_stretch = is_stretch
 		
-		self.set_shape('ball')
+		self.set_shape('circle')
 		self.radius = 2
 		# 根据给定的边，名称和joint_number生成列表来存储创建的名称
 		self.cluster_list = list()
@@ -67,7 +66,7 @@ class ChainIK(chain.Chain) :
 			pos = cmds.xform(jnt , q = 1 , t = 1 , ws = 1)
 			curve_points.append(pos)
 		# 创建ik曲线
-		cmds.curve(p = curve_points , name = self.ik_curve)
+		self.ik_curve = cmds.curve(p = curve_points , name = self.ik_curve)
 		cmds.setAttr(self.ik_curve + '.v' , 0)
 		
 		# inherit变换将导致曲线移动/缩放两倍
@@ -92,8 +91,6 @@ class ChainIK(chain.Chain) :
 	
 	
 	
-		# 添加ikspline绑定系统
-		self.build_ikSpline()
 	
 	
 	def add_constraint(self) :
@@ -101,6 +98,8 @@ class ChainIK(chain.Chain) :
 		使用对应的控制器来约束对应的关节，并且添加ikSpline绑定系统和添加拉伸
 		"""
 		
+		# 添加ikspline绑定系统
+		self.build_ikSpline()
 		
 		# 将创建好的cluster 放到对应的控制器层级组下
 		for joint_number , cluster in enumerate(self.cluster_list) :
@@ -163,17 +162,6 @@ class ChainIK(chain.Chain) :
 			cmds.connectAttr(mult_node + '.output' , self.jnt_list[i] + '.translateX')
 	
 	
-	
-	def build_rig(self) :
-		"""
-		创建绑定系统
-		"""
-		self.create_namespace()
-		self.joint_orientation()
-		self.create_joint()
-		self.build_ikSpline()
-		self.create_ctrl()
-		self.add_constraint()
 
 
 
