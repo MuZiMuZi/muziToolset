@@ -36,7 +36,7 @@ class LimbIK(chainIK.ChainIK) :
 		self.pv_loc = ('loc_{}_{}{}PV_001'.format(self._side , self._name , self._rtype))
 		self.jnt_loc = ('jnt_{}_{}{}PV_001'.format(self._side , self._name , self._rtype))
 		self.pv_curve = ('crv_{}_{}{}PV_001'.format(self._side , self._name , self._rtype))
-	
+		self.local_ctrl = ('crv_{}_{}{}Local_001'.format(self._side , self._name , self._rtype))
 	
 	
 	def build_ikHandle(self) :
@@ -98,9 +98,30 @@ class LimbIK(chainIK.ChainIK) :
 	
 	
 	
+		# 创建local控制器给手腕
+		self.local_ctrl = controlUtils.Control.create_ctrl(self.local_ctrl , shape = 'cube' ,
+		                                                radius = self.radius ,
+		                                                axis = 'X+' , pos = self.jnt_list[-1] ,
+		                                                parent = self.ctrl_list[-1])
+	
+	
 	def add_constraint(self) :
 		# 极向量控制器约束ikHandle
 		cmds.poleVectorConstraint(self.pv_ctrl.replace('ctrl' , 'output') , self.ik_handle)
+		
+		#ikHandle放到local控制器层级下
+		cmds.parent(self.ik_handle, self.local_ctrl.replace('ctrl','output'))
+		
+		# 判断是否需要添加拉伸功能
+		if not self.is_stretch :
+			return
+		else :
+			self.add_stretch()
+	
+	
+	
+	def add_stretch(self) :
+		super().add_stretch()
 	
 	
 	
