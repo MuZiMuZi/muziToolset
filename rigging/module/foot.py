@@ -1,7 +1,7 @@
 import maya.cmds as cmds
 from ..base import base , bone
 from ..chain import chain
-from ...core import controlUtils , jointUtils , hierarchyUtils,vectorUtils
+from ...core import controlUtils , jointUtils , hierarchyUtils , vectorUtils
 
 
 
@@ -13,10 +13,12 @@ class Foot(chain.Chain) :
 		super().__init__(side , name , joint_number , joint_parent , control_parent)
 		self.length = length
 		self.parts = ['Ankle' , 'Ball' , 'Toe']
-		self.rvs_jnt_list = list()
+		self.rvs_bpjnt_list = list()
 		self.rvs_jnt_parts = ['Tiptoe' , 'Heel' , 'Inn' , 'Out']
 		
-		self.value = length/joint_number
+		self.value = length / joint_number
+		self.radius = 3
+	
 	
 	def create_namespace(self) :
 		u"""
@@ -32,13 +34,11 @@ class Foot(chain.Chain) :
 		self.ctrl_grp = ('grp_{}_{}{}_001'.format(self._side , self._name , self._rtype))
 		# 创建用来定位旋转轴心点的关节
 		for part in self.rvs_jnt_parts :
-			self.rvs_jnt_list.append('jntRvs_{}_{}{}_001'.format(self._side , self._name , part))
-		self.rvs_tiptoe_jnt = ('jntRvs_{}_{}Tiptoe_001'.format(self._side , self._name))
-		self.rvs_heel_jnt = ('jntRvs_{}_{}Heel_001'.format(self._side , self._name))
-		self.rvs_inn_jnt = ('jntRvs_{}_{}Inn_001'.format(self._side , self._name))
-		self.rvs_out_jnt = ('jntRvs_{}_{}Out_001'.format(self._side , self._name))
-		
-
+			self.rvs_bpjnt_list.append('bpjnt_{}_{}{}_001'.format(self._side , self._name , part))
+		self.tiptoe_bpjnt = ('bpjnt_{}_{}Tiptoe_001'.format(self._side , self._name))
+		self.heel_bpjnt = ('bpjnt_{}_{}Heel_001'.format(self._side , self._name))
+		self.inn_bpjnt = ('bpjnt_{}_{}Inn_001'.format(self._side , self._name))
+		self.out_bpjnt = ('bpjnt_{}_{}Out_001'.format(self._side , self._name))
 	
 	
 	
@@ -54,13 +54,34 @@ class Foot(chain.Chain) :
 			cmds.setAttr(bpjnt + '.translate' , 0 , 0 , self.value)
 		cmds.setAttr(self.bpjnt_list[0] + '.translate' , self.value * self.side_value , self.value , 0)
 		# 创建用来定位ik旋转轴心点的关节
-		for rvs_jnt in self.rvs_jnt_list :
+		for rvs_jnt in self.rvs_bpjnt_list :
 			self.rvs_jnt = cmds.createNode('joint' , name = rvs_jnt)
 		# 进行关节定向
-		jointUtils.Joint.joint_orientation(self.rvs_jnt_list)
+		jointUtils.Joint.joint_orientation(self.rvs_bpjnt_list)
 		
 		# 设置定位旋转轴心点的关节的位置
-		cmds.setAttr(self.rvs_tiptoe_jnt + '.translate' , self.value * self.side_value , 0 , self.value * 2)
-		cmds.setAttr(self.rvs_heel_jnt + '.translate' , self.value * self.side_value , 0 , 0)
-		cmds.setAttr(self.rvs_inn_jnt + '.translate' , 0 , 0 , self.value)
-		cmds.setAttr(self.rvs_out_jnt + '.translate' , self.value * 2 * self.side_value , 0 , self.value)
+		cmds.setAttr(self.tiptoe_bpjnt + '.translate' , self.value * self.side_value , 0 , self.value * 2)
+		cmds.setAttr(self.heel_bpjnt + '.translate' , self.value * self.side_value , 0 , 0)
+		cmds.setAttr(self.inn_bpjnt + '.translate' , 0 , 0 , self.value)
+		cmds.setAttr(self.out_bpjnt + '.translate' , self.value * 2 * self.side_value , 0 , self.value)
+	
+	
+	
+	def create_joint(self) :
+		super().create_joint()
+		# 创建用来定位ik旋转轴心点的关节
+		for rvs_bpjnt in self.rvs_bpjnt_list :
+			self.jnt = cmds.createNode('joint' , name = rvs_bpjnt.replace('bpjnt' , 'jnt') , parent = self.joint_parent)
+			cmds.matchTransform(self.jnt , rvs_bpjnt)
+			cmds.delete(rvs_bpjnt)
+	
+	
+	
+	def create_ctrl(self) :
+		super().create_ctrl()
+		# 创建用来定位ik旋转轴心点的控制器
+		for rvs_bpjnt in self.rvs_bpjnt_list :
+			rvs_ctrl = controlUtils.Control.create_ctrl(rvs_bpjnt.replace('bpjnt' , 'ctrl') , shape = 'ball' ,
+			                                            radius = self.radius * 0.5,
+			                                            axis = 'X+' , pos = rvs_bpjnt.replace('bpjnt' , 'jnt') ,
+			                                            parent = self.ctrl_grp)

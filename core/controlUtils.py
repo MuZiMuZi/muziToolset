@@ -489,7 +489,7 @@ class Control(object) :
 					obj = driven_grp , grp_name = driven_grp.replace('driven' , 'zero') , world_orient = False)
 			
 			# 创建output层级组
-			output = cmds.createNode('transform' , name = name.replace('ctrl_' , 'output_') , parent = ctrl_transform)
+			output = cmds.createNode('transform' , name = name.replace('ctrl' , 'output') , parent = ctrl_transform)
 			
 			# 连接次级控制器的属性
 			cmds.connectAttr(sub_ctrl.transform + '.translate' , output + '.translate')
