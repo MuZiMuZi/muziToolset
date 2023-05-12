@@ -2,7 +2,7 @@ import maya.cmds as cmds
 
 from . import chain , chainFK , chainIK
 from ..base import bone
-from ...core import vectorUtils , controlUtils
+from ...core import vectorUtils , controlUtils,jointUtils
 from importlib import reload
 
 
@@ -28,7 +28,7 @@ class ChainIKFK(chain.Chain) :
 		self.ik_chain = chainIK.ChainIK(side , name , joint_number , direction , length , is_stretch)
 		self.fk_chain = chainFK.ChainFK(side , name , joint_number , direction , length)
 		
-		self._rtype = 'chainIKFK'
+		self._rtype = 'ChainIKFK'
 		self.radius = 6
 		# 获取初始的位置
 		self.interval = length / (self.joint_number - 1)
@@ -71,6 +71,8 @@ class ChainIKFK(chain.Chain) :
 		for joint_number , bpjnt in enumerate(self.bpjnt_list) :
 			pos = cmds.xform(bpjnt , q = 1 , t = 1 , ws = 1)
 			cmds.joint(p = pos , name = self.jnt_list[joint_number])
+		#进行关节定向
+		jointUtils.Joint.joint_orientation(self.jnt_list)
 		
 		cmds.delete(self.bpjnt_list[0])
 		# 设置ik关节链条和fk关节链条的可见性
