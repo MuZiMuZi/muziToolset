@@ -1,7 +1,6 @@
 from ..base import base
 import maya.cmds as cmds
-from ...core import pipelineUtils
-from ...core import vectorUtils
+from ...core import vectorUtils,jointUtils, pipelineUtils
 import math
 
 from importlib import reload

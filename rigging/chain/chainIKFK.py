@@ -44,6 +44,11 @@ class ChainIKFK(chain.Chain) :
 		# 创建ik关节链条和fk关节链条的定位关节
 		self.ik_chain.create_bpjnt()
 		self.fk_chain.create_bpjnt()
+		
+		# 设置连接让定位关节驱动ik和fk的关节链条
+		for bpjnt , ik_bpjnt , fk_bpjnt in zip(self.bpjnt_list , self.ik_chain.bpjnt_list , self.fk_chain.bpjnt_list) :
+			cmds.parentConstraint(bpjnt , ik_bpjnt , mo = False)
+			cmds.parentConstraint(bpjnt , fk_bpjnt , mo = False)
 	
 	
 	
@@ -80,7 +85,8 @@ class ChainIKFK(chain.Chain) :
 		cmds.setAttr(self.fk_chain.jnt_list[0] + '.v' , 0)
 		
 		cmds.parent(self.jnt_list[0] , self.joint_parent)
-	
+		
+		
 	
 	
 	def create_ctrl(self) :
