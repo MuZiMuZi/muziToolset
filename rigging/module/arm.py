@@ -12,7 +12,7 @@ class Arm(limbIKFK.LimbIKFK) :
 	
 	
 	
-	def __init__(self , side , name , joint_number = 3 , direction = [-1 , 0 , 0] , is_stretch = 1 , length = 15,
+	def __init__(self , side , name , joint_number = 3 , direction = [-1 , 0 , 0] , is_stretch = 1 , length = 15 ,
 	             limbtype = 'arm' ,
 	             joint_parent = None , control_parent = None) :
 		super().__init__(side , name , joint_number , direction , is_stretch , length , limbtype , joint_parent ,
@@ -21,8 +21,8 @@ class Arm(limbIKFK.LimbIKFK) :
 		
 		# 初始化手指的模块
 		self.hand_limb = hand.Hand(side , name , joint_number , direction , length = 3 ,
-		                      joint_parent = None ,
-		                      control_parent = None)
+		                           joint_parent = None ,
+		                           control_parent = None)
 	
 	
 	
@@ -53,11 +53,13 @@ class Arm(limbIKFK.LimbIKFK) :
 	def add_constraint(self) :
 		super().add_constraint()
 		self.hand_limb.add_constraint()
-	
+		
 		# 手部关节对手指的控制器组做约束
-		cmds.pointConstraint(self.jnt_list[-1],self.hand_limb.finger_grp,mo = True)
+		cmds.pointConstraint(self.jnt_list[-1] , self.hand_limb.finger_grp , mo = True)
 
-if __name__ == '__main__':
+
+
+if __name__ == '__main__' :
 	def build_setup() :
 		arm_l = arm.Arm(side = 'l' , name = 'zz' , joint_number = 3 , direction = [-1 , 0 , 0] , length = 10 ,
 		                is_stretch = 1 , joint_parent = None ,
