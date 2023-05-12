@@ -117,7 +117,7 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		self.fk_limb.create_ctrl()
 		
 		# 创建用于ikfk切换的控制器
-		self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_list[0] , shape = 'cube' ,
+		self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_list[0] , shape = 'pPlatonic' ,
 		                                             radius = self.radius ,
 		                                             axis = self.axis , pos = self.jnt_list[0] ,
 		                                             parent = self.control_parent)
