@@ -51,7 +51,8 @@ class Chain(base.Base) :
 			# 指定关节的父层级为上一轮创建出来的关节
 			self.joint_parent = self.jnt
 		
-		# 进行关节定向
-		jointUtils.Joint.joint_orientation(self.jnt_list)
 		# 删除bp的定位关节
 		cmds.delete(self.bpjnt_list[0])
+		# 进行关节定向
+		jointUtils.Joint.joint_orientation(self.jnt_list)
+
