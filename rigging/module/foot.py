@@ -137,7 +137,6 @@ class Foot(chain.Chain) :
 			cmds.matchTransform(self.jnt , rvs_bpjnt)
 			cmds.delete(rvs_bpjnt)
 			parent = self.jnt
-		
 	
 	
 	
@@ -155,8 +154,11 @@ class Foot(chain.Chain) :
 			parent = rvs_ctrl.replace('ctrl' , 'output')
 		
 		# 整理控制器的层级结构
-		cmds.parent(self.foot_ik.zero_list[1].self.foot_ik.zero_list[-1] ,
+		cmds.parent(self.foot_ik.zero_list[1] , self.foot_ik.zero_list[-1] ,
 		            self.rvs_bpjnt_list[-1].replace('bpjnt' , 'output'))
+		
+		# 添加ik控制器的footik控制
+		self.add_footik_ctrl()
 	
 	
 	
@@ -164,17 +166,20 @@ class Foot(chain.Chain) :
 		u'''
 		创建ikSingle的绑定系统
 		'''
-		self.ball_ikhandle = cmds.ikHandle(name = self.ball_ikhandle , startJoint = self.foot_ik.jnt_list[0] ,
-		                                   endEffector = self.foot_ik.jnt_list[1] ,
-		                                   sticky = 'sticky' , solver = 'ikSCsolver ' , setupForRPsolver = True)[0]
+		self.ball_ikhandle = cmds.ikHandle(name = 'ball_ikhandle' , startJoint = self.foot_ik.jnt_list[0] ,
+		                                   endEffector = self.foot_ik.jnt_list[1],
+		                                   sticky = 'sticky' , solver = 'ikSCsolver' , setupForRPsolver = True)[0]
 		
-		self.toe_ikhandle = cmds.ikHandle(name = self.toe_ikhandle , startJoint = self.foot_ik.jnt_list[1] ,
-		                                  endEffector = self.foot_ik.jnt_list[-1] ,
-		                                  sticky = 'sticky' , solver = 'ikSCsolver ' , setupForRPsolver = True)[0]
+		self.toe_ikhandle = cmds.ikHandle(name = 'ball_ikhandle' , startJoint = self.foot_ik.jnt_list[1] ,
+		                                  endEffector = self.foot_ik.jnt_list[2] ,
+		                                  sticky = 'sticky' , solver = 'ikSCsolver' , setupForRPsolver = True)[0]
 	
 	
 	
 	def add_constraint(self) :
+		u"""
+		添加控制器的约束
+		"""
 		# fk的关节控制器添加约束
 		self.foot_fk.add_constraint()
 		
@@ -185,8 +190,30 @@ class Foot(chain.Chain) :
 		cmds.parent(self.toe_ikhandle , self.foot_ik.output_list[-1])
 		
 		# 用来定位ik旋转轴心点的控制器约束对应的关节
-		for index,jnt in enumerate(self.rvs_jnt_list) :
-			cmds.parentConstraint(self.rvs_output_list[index],jnt)
+		for index , jnt in enumerate(self.rvs_jnt_list) :
+			cmds.parentConstraint(self.rvs_output_list[index] , jnt)
+	
+	
+	
+	def add_footik_ctrl(self) :
+		"""
+		添加footik的控制
+		heelSide:脚跟滑动
+		heelRoll:脚跟翻转
+		ballRoll:脚掌翻转
+		toeSide:脚尖滑动
+		toeRoll:脚尖翻转
+		toeTap:抬脚尖
+		toeLeft:
+		toeStraight:
+		"""
+		# 需要添加到ik控制器上的属性控制
+		footik_attrs_list = ['heelSide' , 'heelRoll' , 'ballRoll' , 'toeSide' , 'toeRoll' , 'toeTap' , 'toeLeft' ,
+		                     'toeStraight']
+		cmds.addAttr(self.foot_ik.ctrl_list[0] , ln = 'footIKCtrl' , nn = 'footIKCtrl--------' , at = 'bool' , k = 1)
+		for attr in footik_attrs_list :
+			cmds.addAttr(self.foot_ik.ctrl_list[0] , sn = attr , at = 'double' , dv = 0 , min = -100 , max = 100 ,
+			             k = 1)
 	
 	
 	
