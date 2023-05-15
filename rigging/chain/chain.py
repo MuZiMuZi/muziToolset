@@ -1,9 +1,11 @@
 from ..base import base
 import maya.cmds as cmds
-from ...core import vectorUtils,jointUtils, pipelineUtils
+from ...core import vectorUtils , jointUtils , pipelineUtils
 import math
 
 from importlib import reload
+
+
 
 class Chain(base.Base) :
 	
@@ -17,11 +19,11 @@ class Chain(base.Base) :
 		'''
 		self._rtype = 'Chain'
 		
-		
 		self.length = length
-		self.interval =None
+		self.interval = None
 		self.direction = None
 		self.curve = None
+	
 	
 	
 	def create_bpjnt(self) :
@@ -29,22 +31,23 @@ class Chain(base.Base) :
 		创建定位的bp关节
 		"""
 		for bpjnt in self.bpjnt_list :
-			self.bpjnt = cmds.createNode('joint' , name = bpjnt,parent = self.joint_parent)
+			self.bpjnt = cmds.createNode('joint' , name = bpjnt , parent = self.joint_parent)
 			# 指定关节的父层级为上一轮创建出来的关节
 			self.joint_parent = self.bpjnt
 			# 调整距离
 			pipelineUtils.Pipeline.move(obj = self.bpjnt , pos = self.direction)
 		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.bpjnt_list)
-		
+	
+	
 	
 	def create_joint(self) :
 		'''
 		根据定位的bp关节创建关节
 		'''
-		for bpjnt,jnt in zip (self.bpjnt_list , self.jnt_list) :
+		for bpjnt , jnt in zip(self.bpjnt_list , self.jnt_list) :
 			self.jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
-			cmds.matchTransform(self.jnt, bpjnt)
+			cmds.parentConstraint(bpjnt , self.jnt , mo = False)
 			# 指定关节的父层级为上一轮创建出来的关节
 			self.joint_parent = self.jnt
 		
