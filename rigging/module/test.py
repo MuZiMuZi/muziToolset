@@ -1,15 +1,15 @@
-import muziToolset.rigging.module.foot as foot
+import muziToolset.rigging.module.leg as leg
 from importlib import reload
 
 
 
-reload(foot)
+reload(leg)
 def build_setup():
-    foot_l = foot.Foot(side = 'l' , name  = 'zz', joint_parent = None , control_parent = None)
-    foot_l.build_setup()
+    leg_l = leg.Leg(side = 'l' , name  = 'zz', joint_parent = None , control_parent = None)
+    leg_l.build_setup()
 def build_rig():
-    foot_l = foot.Foot(side = 'l' , name = 'zz' , joint_parent = None , control_parent = None)
-    foot_l.build_rig()
+    leg_l = leg.Leg(side = 'l' , name = 'zz' , joint_parent = None , control_parent = None)
+    leg_l.build_rig()
 
 #
 # #

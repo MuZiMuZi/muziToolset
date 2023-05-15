@@ -263,11 +263,7 @@ class LimbIK(chainIK.ChainIK) :
 	
 	
 	
-	def build_rig(self) :
-		self.create_namespace()
-		self.create_joint()
-		self.create_ctrl()
-		self.add_constraint()
+
 
 
 

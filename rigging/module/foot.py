@@ -256,13 +256,13 @@ class Foot(chain.Chain) :
 						self.jnt_list[joint_number])[0]
 				# 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
 				cmds.setDrivenKeyframe(
-						'{}.w0'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 1)
+						'{}.w0'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 0)
 				cmds.setDrivenKeyframe(
-						'{}.w1'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 0)
+						'{}.w1'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 1)
 				cmds.setDrivenKeyframe(
-						'{}.w0'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 0)
+						'{}.w0'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 1)
 				cmds.setDrivenKeyframe(
-						'{}.w1'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 1)
+						'{}.w1'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 0)
 				
 				cmds.setDrivenKeyframe(self.foot_ik.ctrl_list[joint_number] + '.v' ,
 				                       cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 1)
@@ -277,3 +277,21 @@ class Foot(chain.Chain) :
 	
 	def build_rig(self) :
 		super().build_rig()
+
+
+
+if __name__ == '__main__' :
+	def build_setup() :
+		foot_l = foot.Foot(side = 'l' , name = 'zz' , joint_parent = None , control_parent = None)
+		foot_l.build_setup()
+	
+	
+	
+	def build_rig() :
+		foot_l = foot.Foot(side = 'l' , name = 'zz' , joint_parent = None , control_parent = None)
+		foot_l.build_rig()
+	
+	
+	
+	build_setup()
+	build_rig()
