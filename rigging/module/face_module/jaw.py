@@ -22,7 +22,7 @@ class Jaw(chainFK.ChainFK) :
 	             length = 5 , joint_parent = None , control_parent = None) :
 		super().__init__(side , name , joint_number , direction , length , joint_parent , control_parent)
 		self.shape = 'circle'
-		self._rtype = 'jaw'
+		self._rtype = 'Jaw'
 		self.radius = 2
 	
 	
