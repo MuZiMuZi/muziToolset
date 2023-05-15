@@ -59,6 +59,10 @@ class Foot(chain.Chain) :
 		self.tiptoe_bpjnt = ('bpjnt_{}_{}Tiptoe_001'.format(self._side , self._name))
 		self.inn_bpjnt = ('bpjnt_{}_{}Inn_001'.format(self._side , self._name))
 		self.out_bpjnt = ('bpjnt_{}_{}Out_001'.format(self._side , self._name))
+		
+		# 创建 IKhandle 的名称规范
+		self.ball_ikhandle = self.jnt_list[1].replace('jnt' , 'ikhandle')
+		self.toe_ikhandle = self.jnt_list[-1].replace('jnt' , 'ikhandle')
 	
 	
 	
@@ -109,13 +113,13 @@ class Foot(chain.Chain) :
 		# 设置脚部的fk，ik关节的可见性
 		cmds.setAttr(self.foot_fk.jnt_list[0] + '.v' , 0)
 		cmds.setAttr(self.foot_ik.jnt_list[0] + '.v' , 0)
-		for fk_jnt,ik_jnt,jnt in zip(self.foot_fk.jnt_list,self.foot_ik.jnt_list,self.jnt_list):
+		for fk_jnt , ik_jnt , jnt in zip(self.foot_fk.jnt_list , self.foot_ik.jnt_list , self.jnt_list) :
 			# 吸附对应的关节位置
-			cmds.delete(cmds.parentConstraint(jnt,fk_jnt,mo = False))
+			cmds.delete(cmds.parentConstraint(jnt , fk_jnt , mo = False))
 			cmds.delete(cmds.parentConstraint(jnt , ik_jnt , mo = False))
 			# fk和ik关节约束jnt关节
-			cmds.parentConstraint(fk_jnt,ik_jnt,jnt)
-			
+			cmds.parentConstraint(fk_jnt , ik_jnt , jnt)
+		
 		# 创建用来定位ik旋转轴心点的关节
 		for rvs_bpjnt in self.rvs_bpjnt_list :
 			self.jnt = cmds.createNode('joint' , name = rvs_bpjnt.replace('bpjnt' , 'jnt') , parent =
@@ -132,25 +136,47 @@ class Foot(chain.Chain) :
 	
 	
 	def create_ctrl(self) :
-		# 创建脚部的fk，ik关节
+		# 创建脚部的fk，ik控制器
 		self.foot_fk.create_ctrl()
 		self.foot_ik.create_ctrl()
 		# 创建用来定位ik旋转轴心点的控制器
-		parent = self.foot_ik.output_list[-1]
+		parent = self.foot_ik.output_list[0]
 		for rvs_bpjnt in self.rvs_bpjnt_list :
 			rvs_ctrl = controlUtils.Control.create_ctrl(rvs_bpjnt.replace('bpjnt' , 'ctrl') , shape = 'ball' ,
 			                                            radius = self.radius * 0.5 ,
 			                                            axis = 'X+' , pos = rvs_bpjnt.replace('bpjnt' , 'jnt') ,
 			                                            parent = parent)
 			parent = rvs_ctrl.replace('ctrl' , 'output')
+		
+		# 整理控制器的层级结构
+		cmds.parent(self.foot_ik.zero_list[1].self.foot_ik.zero_list[-1] ,
+		            self.rvs_bpjnt_list[-1].replace('bpjnt' , 'output'))
+	
+	
+	
+	def build_ikSingle(self) :
+		u'''
+		创建ikSingle的绑定系统
+		'''
+		self.ball_ikhandle = cmds.ikHandle(name = self.ball_ikhandle , startJoint = self.foot_ik.jnt_list[0] ,
+		                                   endEffector = self.foot_ik.jnt_list[1] ,
+		                                   sticky = 'sticky' , solver = 'ikSCsolver ' , setupForRPsolver = True)[0]
+		
+		self.toe_ikhandle = cmds.ikHandle(name = self.toe_ikhandle , startJoint = self.foot_ik.jnt_list[1] ,
+		                                  endEffector = self.foot_ik.jnt_list[-1] ,
+		                                  sticky = 'sticky' , solver = 'ikSCsolver ' , setupForRPsolver = True)[0]
 	
 	
 	
 	def add_constraint(self) :
-		pass
-	
+		# fk的关节控制器添加约束
+		self.foot_fk.add_constraint()
+
+		# ik的关节控制器添加约束
+		#创建ikhandle
+		self.build_ikSingle()
+		cmds.parent(self.ball_ikhandle,self.foot_ik.output_list[1])
+		cmds.parent(self.toe_ikhandle , self.foot_ik.output_list[-1])
 	
 	def build_rig(self) :
 		super().build_rig()
-	
-	
