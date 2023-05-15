@@ -1,22 +1,22 @@
 
-import muziToolset.rigging.module.face_module.ear as ear
+import muziToolset.rigging.module.face_module.eye as eye
 from importlib import reload
 
 
 
-reload(ear)
+reload(eye)
 
 
 
 def build_setup() :
-	ear_l = ear.Ear(side = 'l' , joint_parent = None , control_parent = None)
-	ear_l.build_setup()
+	eye_l = eye.Eye(side = 'l' , joint_parent = None , control_parent = None)
+	eye_l.build_setup()
 
 
 
 def build_rig() :
-	ear_l = ear.Ear(side = 'l' , joint_parent = None , control_parent = None)
-	ear_l.build_rig()
+	eye_l = eye.Eye(side = 'l' , joint_parent = None , control_parent = None)
+	eye_l.build_rig()
 
 
 
