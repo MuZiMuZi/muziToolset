@@ -14,7 +14,7 @@ class Foot(chain.Chain) :
 		self.length = length
 		# 整理命名规范的列表
 		self.parts = ['Ankle' , 'Ball' , 'Toe']
-		self.rvs_jnt_parts = ['Tiptoe' , 'Heel' , 'Inn' , 'Out']
+		self.rvs_jnt_parts = ['Heel' , 'Tiptoe' , 'Inn' , 'Out']
 		self.rvs_bpjnt_list = list()
 		self.rvs_jnt_list = list()
 		self.rvs_ctrl_list = list()
@@ -72,7 +72,8 @@ class Foot(chain.Chain) :
 		# 创建 IKhandle 的名称规范
 		self.ball_ikhandle = self.jnt_list[1].replace('jnt' , 'ikhandle')
 		self.toe_ikhandle = self.jnt_list[-1].replace('jnt' , 'ikhandle')
-	
+		#创建整体的控制器层级组
+		self.ctrl_grp = ('grp_{}_{}{}_001'.format(self._side , self._name , self._rtype))
 	
 	
 	def create_bpjnt(self) :
@@ -140,7 +141,60 @@ class Foot(chain.Chain) :
 	
 	
 	
+	def build_ikSingle(self) :
+		u'''
+		创建ikSingle的绑定系统
+		'''
+		self.ball_ikhandle = cmds.ikHandle(name = 'ball_ikhandle' , startJoint = self.foot_ik.jnt_list[0] ,
+		                                   endEffector = self.foot_ik.jnt_list[1] ,
+		                                   sticky = 'sticky' , solver = 'ikSCsolver' , setupForRPsolver = True)[0]
+		
+		self.toe_ikhandle = cmds.ikHandle(name = 'ball_ikhandle' , startJoint = self.foot_ik.jnt_list[1] ,
+		                                  endEffector = self.foot_ik.jnt_list[2] ,
+		                                  sticky = 'sticky' , solver = 'ikSCsolver' , setupForRPsolver = True)[0]
+	
+	
+	
+	def add_footik_ctrl(self) :
+		"""
+		添加footik的控制
+		heelSide:脚跟滑动
+		heelRoll:脚跟翻转
+		ballRoll:脚掌翻转
+		toeSide:脚尖滑动
+		toeRoll:脚尖翻转
+		toeTap:抬脚尖
+		heelTap:抬脚跟
+		toeLeft:
+		toeStraight:
+		"""
+		ankle_ik_ctrl = self.foot_ik.ctrl_list[0]
+		# 需要添加到ik控制器上的属性控制
+		footik_attrs_list = ['toeTap' , 'heelTap' , 'toeRoll' , 'heelRoll' , 'toeSide' , 'heelSide' ,
+		                     'toeLeft' ,
+		                     'toeStraight']
+		cmds.addAttr(ankle_ik_ctrl , ln = 'footIKCtrl' , nn = 'footIKCtrl--------' , at = 'bool' , k = 1)
+		for attr in footik_attrs_list :
+			cmds.addAttr(ankle_ik_ctrl , sn = attr , at = 'double' , dv = 0 , min = -100 , max = 100 ,
+			             k = 1)
+		
+		# 连接属性控制
+		# 在ankleIK控制器上连接对应的脚部控制开关
+		cmds.connectAttr(ankle_ik_ctrl + '.toeTap' , self.tiptoe_bpjnt.replace('bpjnt' , 'connect') + '.rotateX')
+		cmds.connectAttr(ankle_ik_ctrl + '.heelTap' , self.heel_bpjnt.replace('bpjnt' , 'connect') + '.rotateX')
+		
+		cmds.connectAttr(ankle_ik_ctrl + '.toeRoll' , self.tiptoe_bpjnt.replace('bpjnt' , 'connect') + '.rotateZ')
+		cmds.connectAttr(ankle_ik_ctrl + '.heelRoll' , self.heel_bpjnt.replace('bpjnt' , 'connect') + '.rotateZ')
+		
+		cmds.connectAttr(ankle_ik_ctrl + '.toeSide' , self.tiptoe_bpjnt.replace('bpjnt' , 'connect') + '.rotateY')
+		cmds.connectAttr(ankle_ik_ctrl + '.heelSide' , self.heel_bpjnt.replace('bpjnt' , 'connect') + '.rotateY')
+	
+	
+	
 	def create_ctrl(self) :
+		# 创建整体的控制器层级组
+		self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
+		
 		# 创建脚部的fk，ik控制器
 		self.foot_fk.create_ctrl()
 		self.foot_ik.create_ctrl()
@@ -152,28 +206,30 @@ class Foot(chain.Chain) :
 			                                            axis = 'X+' , pos = rvs_bpjnt.replace('bpjnt' , 'jnt') ,
 			                                            parent = parent)
 			parent = rvs_ctrl.replace('ctrl' , 'output')
-		
-		# 整理控制器的层级结构
-		cmds.parent(self.foot_ik.zero_list[1] , self.foot_ik.zero_list[-1] ,
-		            self.rvs_bpjnt_list[-1].replace('bpjnt' , 'output'))
-		
+			
 		# 添加ik控制器的footik控制
 		self.add_footik_ctrl()
-	
-	
-	
-	def build_ikSingle(self) :
-		u'''
-		创建ikSingle的绑定系统
-		'''
-		self.ball_ikhandle = cmds.ikHandle(name = 'ball_ikhandle' , startJoint = self.foot_ik.jnt_list[0] ,
-		                                   endEffector = self.foot_ik.jnt_list[1],
-		                                   sticky = 'sticky' , solver = 'ikSCsolver' , setupForRPsolver = True)[0]
 		
-		self.toe_ikhandle = cmds.ikHandle(name = 'ball_ikhandle' , startJoint = self.foot_ik.jnt_list[1] ,
-		                                  endEffector = self.foot_ik.jnt_list[2] ,
-		                                  sticky = 'sticky' , solver = 'ikSCsolver' , setupForRPsolver = True)[0]
-	
+		# 整理IK控制器的层级结构
+		cmds.parent(self.foot_ik.zero_list[1] , self.foot_ik.zero_list[-1] ,
+		            self.rvs_bpjnt_list[-1].replace('bpjnt' , 'output'))
+		cmds.parent(self.foot_ik.zero_list[0], self.ctrl_grp)
+		
+
+		
+		# 整理FK控制器的层级结构
+		cmds.parent(self.foot_fk.zero_list[0] , self.ctrl_grp)
+		
+		# 创建用于ikfk切换的控制器
+		self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_list[0] , shape = 'pPlatonic' ,
+		                                             radius = self.radius * 1.2 ,
+		                                             axis = 'X+', pos = self.jnt_list[0] ,
+		                                             parent = self.ctrl_grp)
+		cmds.setAttr(self.zero_list[0] + '.translateX' , 5 * self.side_value)
+		# 添加IKFK切换的属性
+		cmds.addAttr(self.ctrl , sn = 'Switch' , ln = 'ikfkSwitch' , at = 'double' , dv = 1 , min = 0 , max = 1 ,
+		             k = 1)
+		
 	
 	
 	def add_constraint(self) :
@@ -192,28 +248,31 @@ class Foot(chain.Chain) :
 		# 用来定位ik旋转轴心点的控制器约束对应的关节
 		for index , jnt in enumerate(self.rvs_jnt_list) :
 			cmds.parentConstraint(self.rvs_output_list[index] , jnt)
-	
-	
-	
-	def add_footik_ctrl(self) :
-		"""
-		添加footik的控制
-		heelSide:脚跟滑动
-		heelRoll:脚跟翻转
-		ballRoll:脚掌翻转
-		toeSide:脚尖滑动
-		toeRoll:脚尖翻转
-		toeTap:抬脚尖
-		toeLeft:
-		toeStraight:
-		"""
-		# 需要添加到ik控制器上的属性控制
-		footik_attrs_list = ['heelSide' , 'heelRoll' , 'ballRoll' , 'toeSide' , 'toeRoll' , 'toeTap' , 'toeLeft' ,
-		                     'toeStraight']
-		cmds.addAttr(self.foot_ik.ctrl_list[0] , ln = 'footIKCtrl' , nn = 'footIKCtrl--------' , at = 'bool' , k = 1)
-		for attr in footik_attrs_list :
-			cmds.addAttr(self.foot_ik.ctrl_list[0] , sn = attr , at = 'double' , dv = 0 , min = -100 , max = 100 ,
-			             k = 1)
+			
+			# IK关节链，FK关节链来约束IKFK关节链
+			for joint_number in range(self.joint_number) :
+				cons = cmds.parentConstraint(
+						self.foot_ik.jnt_list[joint_number] ,
+						self.foot_fk.jnt_list[joint_number] ,
+						self.jnt_list[joint_number])[0]
+				# 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
+				cmds.setDrivenKeyframe(
+						'{}.w0'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 1)
+				cmds.setDrivenKeyframe(
+						'{}.w1'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 0)
+				cmds.setDrivenKeyframe(
+						'{}.w0'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 0)
+				cmds.setDrivenKeyframe(
+						'{}.w1'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 1)
+				
+				cmds.setDrivenKeyframe(self.foot_ik.ctrl_list[joint_number] + '.v' ,
+				                       cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 1)
+				cmds.setDrivenKeyframe(self.foot_ik.ctrl_list[joint_number] + '.v' ,
+				                       cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 0)
+				cmds.setDrivenKeyframe(self.foot_fk.ctrl_list[joint_number] + '.v' ,
+				                       cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 1)
+				cmds.setDrivenKeyframe(self.foot_fk.ctrl_list[joint_number] + '.v' ,
+				                       cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 0)
 	
 	
 	
