@@ -23,21 +23,26 @@ class Eye(chain.Chain) :
 		super().__init__(side , name , joint_number , length , joint_parent , control_parent)
 		self.shape = 'circle'
 		self._rtype = 'Eye'
-		self.radius = 0.5
+		self.radius = 0.3
 		
 		# iris的缩放关节
 		self.iris_bpjnt_list = list()
 		self.iris_jnt_list = list()
 	
 	
+	
 	def create_namespace(self) :
 		super().create_namespace()
 		self.aim_ctrl = ('ctrl_{}_{}{}Aim_001'.format(self._side , self._name , self._rtype))
-		self.aim_loc = ('loc{}_{}{}Aim_001'.format(self._side , self._name , self._rtype))
+		self.aim_loc = ('loc_{}_{}{}Aim_001'.format(self._side , self._name , self._rtype))
+		self.jnt_loc = ('loc_{}_{}{}Jnt_001'.format(self._side , self._name , self._rtype))
+		self.aim_crv = ('crv_{}_{}{}Aim_001'.format(self._side , self._name , self._rtype))
 		for index in range(3) :
-			self.iris_bpjnt_list.append('bpjnt_{}_{}{}iris_{:03d}'.format(self._side , self._name , self._rtype , index+1))
-			self.iris_jnt_list.append('jnt_{}_{}{}iris_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
-		
+			self.iris_bpjnt_list.append(
+				'bpjnt_{}_{}{}iris_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
+			self.iris_jnt_list.append(
+				'jnt_{}_{}{}iris_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
+	
 	
 	
 	def create_bpjnt(self) :
@@ -68,7 +73,7 @@ class Eye(chain.Chain) :
 		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.jnt_list)
 		jointUtils.Joint.joint_orientation(self.iris_jnt_list)
-		
+	
 	
 	
 	def create_ctrl(self) :
@@ -95,37 +100,39 @@ class Eye(chain.Chain) :
 		self.aim_zero = self.aim_ctrl.replace('ctrl' , 'zero')
 		# 移动控制器的位置
 		cmds.setAttr(self.aim_zero + '.translateZ' ,
-		             cmds.getAttr(self.aim_zero + '.translateZ') + 5)
+		             cmds.getAttr(self.aim_zero + '.translateZ') + 3)
 		
 		## 创建曲线指示器
-		# 创建pv控制器的loc来记录位置
-		midIK_pv_loc = cmds.spaceLocator(name = self.pv_loc)[0]
-		cmds.matchTransform(midIK_pv_loc , self.pv_ctrl.replace('ctrl' , 'output') , position = True , rotation =
+		# 创建aim控制器的loc来记录位置
+		self.aim_loc = cmds.spaceLocator(name = self.aim_loc)[0]
+		cmds.matchTransform(self.aim_loc , self.aim_ctrl , position = True , rotation =
 		True ,
 		                    scale = True)
-		cmds.parent(midIK_pv_loc , self.pv_ctrl)
-		cmds.setAttr(midIK_pv_loc + '.visibility' , 0)
-		# 创建pvjnt的loc来记录位置
-		midIK_jnt_loc = cmds.spaceLocator(name = self.jnt_loc)[0]
-		cmds.matchTransform(midIK_jnt_loc , self.jnt_list[1] , position = True , rotation = True , scale = True)
-		cmds.parent(midIK_jnt_loc , self.jnt_list[1])
-		cmds.setAttr(midIK_jnt_loc + '.visibility' , 0)
+		cmds.parent(self.aim_loc , self.aim_ctrl)
+		cmds.setAttr(self.aim_loc + '.visibility' , 0)
+		# 创建jnt的loc来记录位置
+		self.jnt_loc = cmds.spaceLocator(name = self.jnt_loc)[0]
+		cmds.matchTransform(self.jnt_loc , self.jnt_list[0] , position = True , rotation = True , scale = True)
+		cmds.parent(self.jnt_loc , self.jnt_list[0])
+		cmds.setAttr(self.jnt_loc + '.visibility' , 0)
 		
 		# 连接loc和曲线来表示位置
-		ikpv_curve = cmds.curve(degree = 1 , point = [(0.0 , 0.0 , 0.0) , (0.0 , 0.0 , 0.0)] ,
-		                        name = self.pv_curve)
-		midIK_jnt_loc_shape = cmds.listRelatives(midIK_jnt_loc , shapes = True)[0]
-		midIK_pv_loc_shape = cmds.listRelatives(midIK_pv_loc , shapes = True)[0]
-		ikpv_curve_shape = cmds.listRelatives(ikpv_curve , shapes = True)[0]
+		self.aim_crv = cmds.curve(degree = 1 , point = [(0.0 , 0.0 , 0.0) , (0.0 , 0.0 , 0.0)] ,
+		                          name = self.aim_crv)
+		aim_loc_shape = cmds.listRelatives(self.aim_loc , shapes = True)[0]
+		jnt_loc_shape = cmds.listRelatives(self.jnt_loc , shapes = True)[0]
+		aim_curve_shape = cmds.listRelatives(self.aim_crv , shapes = True)[0]
 		
 		# 连接曲线与loc
-		cmds.connectAttr(midIK_jnt_loc_shape + '.worldPosition[0]' , ikpv_curve_shape + '.controlPoints[0]')
-		cmds.connectAttr(midIK_pv_loc_shape + '.worldPosition[0]' , ikpv_curve_shape + '.controlPoints[1]')
+		cmds.connectAttr(aim_loc_shape + '.worldPosition[0]' , aim_curve_shape + '.controlPoints[0]')
+		cmds.connectAttr(jnt_loc_shape + '.worldPosition[0]' , aim_curve_shape + '.controlPoints[1]')
 		# 设置曲线的可见性
-		cmds.setAttr(ikpv_curve_shape + '.overrideEnabled' , 1)
-		cmds.setAttr(ikpv_curve_shape + '.overrideDisplayType' , 2)
-		cmds.setAttr(ikpv_curve + '.inheritsTransform' , 0)
-		cmds.parent(ikpv_curve , self.ctrl_grp)
+		cmds.setAttr(aim_curve_shape + '.overrideEnabled' , 1)
+		cmds.setAttr(aim_curve_shape + '.overrideDisplayType' , 2)
+		cmds.setAttr(self.aim_crv + '.inheritsTransform' , 0)
+		cmds.parent(self.aim_crv , self.ctrl_grp)
+	
+	
 	
 	def add_constraint(self) :
 		u"""

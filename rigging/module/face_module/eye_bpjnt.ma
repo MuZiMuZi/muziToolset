@@ -1,6 +1,6 @@
 //Maya ASCII 2023 scene
 //Name: eye_bpjnt.ma
-//Last modified: Mon, May 15, 2023 04:31:33 PM
+//Last modified: Mon, May 15, 2023 05:24:47 PM
 //Codeset: 936
 requires maya "2023";
 requires "stereoCamera" "10.0";
@@ -11,12 +11,13 @@ fileInfo "product" "Maya 2023";
 fileInfo "version" "2023";
 fileInfo "cutIdentifier" "202211021031-847a9f9623";
 fileInfo "osv" "Windows 10 Pro for Workstations v2009 (Build: 19044)";
-fileInfo "UUID" "1183894D-4355-96C8-DB29-9DB94CA6E6D6";
-createNode joint -n "bpjnt_l_EyeBall_001";
-	rename -uid "1E3BA125-4622-A297-BA67-4BAFC61C8A5A";
+fileInfo "UUID" "ECA862CD-4406-B0A0-F7D4-119BF48DCAB2";
+createNode joint -n "bpjnt_l_Eye_001";
+	rename -uid "6905078C-488B-F630-8DBE-D5B2A16D0DDF";
 	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
 	addAttr -ci true -sn "MeshPosInfo" -ln "MeshPosInfo" -dt "string";
 	setAttr ".t" -type "double3" 0.56634339690208413 32.72411727905272 1.5263134241104126 ;
+	setAttr ".r" -type "double3" 90.000000000000014 -0.00052458573293871931 -8.1146347568787185 ;
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
 	setAttr ".mxrl" -type "double3" 360 360 360 ;
 	setAttr ".jo" -type "double3" -89.996283595602279 -81.885365226278395 -0.0036791944032349283 ;
@@ -29,8 +30,8 @@ createNode joint -n "bpjnt_l_EyeBall_001";
 	setAttr ".liw" yes;
 	setAttr -l on -k on ".MeshPosInfo" -type "string" (
 		"[u'mesh_r_high_eyeballInnerSpans_001.vtx[244]', u'mesh_r_high_eyeballInnerSpans_001.vtx[245]', u'mesh_r_high_eyeballInnerSpans_001.vtx[246]', u'mesh_r_high_eyeballInnerSpans_001.vtx[254]', u'mesh_r_high_eyeballInnerSpans_001.vtx[255]', u'mesh_r_high_eyeballInnerSpans_001.vtx[278]', u'mesh_r_high_eyeballInnerSpans_001.vtx[279]', u'mesh_r_high_eyeballInnerSpans_001.vtx[285]', u'mesh_r_high_eyeballInnerSpans_001.vtx[286]', u'mesh_r_high_eyeballInnerSpans_001.vtx[376]', u'mesh_r_high_eyeballInnerSpans_001.vtx[377]', u'mesh_r_high_eyeballInnerSpans_001.vtx[383]', u'mesh_r_high_eyeballInnerSpans_001.vtx[384]', u'mesh_r_high_eyeballInnerSpans_001.vtx[404]', u'mesh_r_high_eyeballInnerSpans_001.vtx[405]', u'mesh_r_high_eyeballInnerSpans_001.vtx[411]', u'mesh_r_high_eyeballInnerSpans_001.vtx[412]', u'mesh_r_high_eyeballInnerSpans_001.vtx[707]', u'mesh_r_high_eyeballInnerSpans_001.vtx[708]', u'mesh_r_high_eyeballInnerSpans_001.vtx[714]', u'mesh_r_high_eyeballInnerSpans_001.vtx[715]', u'mesh_r_high_eyeballInnerSpans_001.vtx[735]', u'mesh_r_high_eyeballInnerSpans_001.vtx[736]', u'mesh_r_high_eyeballInnerSpans_001.vtx[742]', u'mesh_r_high_eyeballInnerSpans_001.vtx[743]', u'mesh_r_high_eyeballInnerSpans_001.vtx[826]', u'mesh_r_high_eyeballInnerSpans_001.vtx[827]', u'mesh_r_high_eyeballInnerSpans_001.vtx[833]', u'mesh_r_high_eyeballInnerSpans_001.vtx[834]', u'mesh_r_high_eyeballInnerSpans_001.vtx[853]', u'mesh_r_high_eyeballInnerSpans_001.vtx[854]', u'mesh_r_high_eyeballInnerSpans_001.vtx[860]']");
-createNode joint -n "bpjnt_l_Eye_002" -p "bpjnt_l_EyeBall_001";
-	rename -uid "8A0EFB7C-47AD-A7B4-06AB-D48B69CED3F1";
+createNode joint -n "bpjnt_l_Eye_002" -p "bpjnt_l_Eye_001";
+	rename -uid "72071C39-49F9-CCB0-E566-79B47F8CA80D";
 	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
 	setAttr ".t" -type "double3" 0.42085884208364899 0 0 ;
 	setAttr ".r" -type "double3" -1.0276926444028873e-41 2.4265706493099341e-20 -4.8531412986198681e-20 ;
@@ -46,8 +47,8 @@ createNode joint -n "bpjnt_l_Eye_002" -p "bpjnt_l_EyeBall_001";
 	setAttr ".otp" -type "string" "Eye002";
 	setAttr ".radi" 0.492;
 	setAttr ".liw" yes;
-createNode joint -n "bpjnt_l_EyeIris_001" -p "bpjnt_l_EyeBall_001";
-	rename -uid "1998B6DA-4D91-BE41-3CB9-738E12F9AA00";
+createNode joint -n "bpjnt_l_Eyeiris_001" -p "bpjnt_l_Eye_001";
+	rename -uid "DE053590-47B0-487A-8A77-1282208CEEE2";
 	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
 	setAttr ".s" -type "double3" 1.0000000000000002 1 1 ;
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
@@ -61,8 +62,8 @@ createNode joint -n "bpjnt_l_EyeIris_001" -p "bpjnt_l_EyeBall_001";
 	setAttr ".otp" -type "string" "EyeIris001";
 	setAttr ".radi" 0.39999999999999991;
 	setAttr ".liw" yes;
-createNode joint -n "bpjnt_l_EyeIris_002" -p "bpjnt_l_EyeIris_001";
-	rename -uid "F25CE1C6-4CF3-DB68-DB9A-09B0D1E548AA";
+createNode joint -n "bpjnt_l_Eyeiris_002" -p "bpjnt_l_Eyeiris_001";
+	rename -uid "E2FA9614-4880-9FF9-6AAD-489A8A0A3844";
 	addAttr -ci true -sn "MeshPosInfo" -ln "MeshPosInfo" -dt "string";
 	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
@@ -77,8 +78,8 @@ createNode joint -n "bpjnt_l_EyeIris_002" -p "bpjnt_l_EyeIris_001";
 	setAttr ".radi" 0.5;
 	setAttr -l on -k on ".MeshPosInfo" -type "string" "[u'jnt_l_EyeBall_001', u'jnt_l_EyeIris_001']";
 	setAttr ".liw" yes;
-createNode joint -n "bpjnt_l_EyeIris_003" -p "bpjnt_l_EyeIris_002";
-	rename -uid "461654C0-429E-4356-DE5F-10AC312161E5";
+createNode joint -n "bpjnt_l_Eyeiris_003" -p "bpjnt_l_Eyeiris_002";
+	rename -uid "9AE592CB-407D-6DD8-533C-BC904EB58F82";
 	addAttr -ci true -sn "MeshPosInfo" -ln "MeshPosInfo" -dt "string";
 	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
 	setAttr ".s" -type "double3" 1 1.0000000000000002 1 ;
@@ -95,8 +96,8 @@ createNode joint -n "bpjnt_l_EyeIris_003" -p "bpjnt_l_EyeIris_002";
 	setAttr ".radi" 0.5;
 	setAttr -l on -k on ".MeshPosInfo" -type "string" "[u'jnt_l_EyeBall_001', u'jnt_l_EyeIris_001']";
 	setAttr ".liw" yes;
-createNode parentConstraint -n "bpjnt_l_EyeIris_003_parentConstraint1" -p "bpjnt_l_EyeIris_003";
-	rename -uid "39F4D723-4E2E-0037-72E8-4C8B785B6D00";
+createNode parentConstraint -n "bpjnt_l_EyeIris_003_parentConstraint1" -p "bpjnt_l_Eyeiris_003";
+	rename -uid "6DB4A024-438B-15EA-EE7E-F38A9BCC65F3";
 	addAttr -dcb 0 -ci true -k true -sn "w0" -ln "bpjnt_l_EyeBall_001W0" -dv 1 -min 
 		0 -at "double";
 	addAttr -dcb 0 -ci true -k true -sn "w1" -ln "bpjnt_l_Eye_002W1" -dv 1 -min 0 -at "double";
@@ -123,8 +124,8 @@ createNode parentConstraint -n "bpjnt_l_EyeIris_003_parentConstraint1" -p "bpjnt
 	setAttr ".rsrr" -type "double3" -3.4986101496098688e-14 3.1805546814635176e-15 -9.7105938557103516e-31 ;
 	setAttr -k on ".w0" 0;
 	setAttr -k on ".w1";
-createNode parentConstraint -n "bpjnt_l_EyeIris_002_parentConstraint1" -p "bpjnt_l_EyeIris_002";
-	rename -uid "2C7E8179-4E0D-6C5E-C5A0-0EB2400F5FC0";
+createNode parentConstraint -n "bpjnt_l_EyeIris_002_parentConstraint1" -p "bpjnt_l_Eyeiris_002";
+	rename -uid "314BAA09-4BA3-F5D0-DF18-82896F2776C6";
 	addAttr -dcb 0 -ci true -k true -sn "w0" -ln "bpjnt_l_EyeBall_001W0" -dv 1 -min 
 		0 -at "double";
 	addAttr -dcb 0 -ci true -k true -sn "w1" -ln "bpjnt_l_Eye_002W1" -dv 1 -min 0 -at "double";
@@ -147,13 +148,13 @@ createNode parentConstraint -n "bpjnt_l_EyeIris_002_parentConstraint1" -p "bpjnt
 		-4.7708320221952815e-15 ;
 	setAttr ".tg[1].tot" -type "double3" -0.21769839547404168 -5.5511151231257827e-17 
 		4.2632564145606011e-14 ;
-	setAttr ".lr" -type "double3" -1.5902773407317584e-14 0 0 ;
+	setAttr ".lr" -type "double3" -1.2791140766935622e-14 -1.5902773407317584e-14 -5.2007934986441556e-15 ;
 	setAttr ".rst" -type "double3" 0.20316044660960864 2.2204460492503131e-16 1.4210854715202004e-14 ;
 	setAttr ".rsrr" -type "double3" -3.4986101496098688e-14 3.1805546814635176e-15 -9.7105938557103516e-31 ;
 	setAttr -k on ".w0" 0.5;
 	setAttr -k on ".w1" 0.5;
-createNode parentConstraint -n "bpjnt_l_EyeIris_001_parentConstraint1" -p "bpjnt_l_EyeIris_001";
-	rename -uid "C4D7B411-444C-A5C1-2063-B095133FEC3D";
+createNode parentConstraint -n "bpjnt_l_EyeIris_001_parentConstraint1" -p "bpjnt_l_Eyeiris_001";
+	rename -uid "F8695E0D-4E3C-7C13-D686-E2AEFF45C1A9";
 	addAttr -dcb 0 -ci true -k true -sn "w0" -ln "bpjnt_l_EyeBall_001W0" -dv 1 -min 
 		0 -at "double";
 	addAttr -dcb 0 -ci true -k true -sn "w1" -ln "bpjnt_l_Eye_002W1" -dv 1 -min 0 -at "double";
@@ -176,7 +177,7 @@ createNode parentConstraint -n "bpjnt_l_EyeIris_001_parentConstraint1" -p "bpjnt
 		-4.7708320221952815e-15 ;
 	setAttr ".tg[1].tot" -type "double3" -0.42085884208364988 -2.2204460492503131e-16 
 		2.8421709430404007e-14 ;
-	setAttr ".lr" -type "double3" -3.1805546814635168e-14 0 0 ;
+	setAttr ".lr" -type "double3" -2.5582281533871238e-14 -3.1805546814635168e-14 -1.0401586997288308e-14 ;
 	setAttr ".rst" -type "double3" -8.8817841970012523e-16 -3.8857805861880479e-16 2.8421709430404007e-14 ;
 	setAttr ".rsrr" -type "double3" -3.4986101496098688e-14 3.1805546814635176e-15 -9.7105938557103516e-31 ;
 	setAttr -k on ".w0";
@@ -487,75 +488,83 @@ select -ne :hardwareRenderGlobals;
 	setAttr -k on ".bswa";
 	setAttr -k on ".shml";
 	setAttr -k on ".hwel";
-connectAttr "bpjnt_l_EyeBall_001.s" "bpjnt_l_Eye_002.is";
-connectAttr "bpjnt_l_EyeBall_001.s" "bpjnt_l_EyeIris_001.is";
-connectAttr "bpjnt_l_EyeIris_001_parentConstraint1.ctx" "bpjnt_l_EyeIris_001.tx"
+select -ne :ikSystem;
+	setAttr -k on ".cch";
+	setAttr -k on ".ihi";
+	setAttr -k on ".nds";
+	setAttr -k on ".bnm";
+	setAttr -av -k on ".gsn";
+	setAttr -k on ".gsv";
+	setAttr -s 4 ".sol";
+connectAttr "bpjnt_l_Eye_001.s" "bpjnt_l_Eye_002.is";
+connectAttr "bpjnt_l_Eye_001.s" "bpjnt_l_Eyeiris_001.is";
+connectAttr "bpjnt_l_EyeIris_001_parentConstraint1.ctx" "bpjnt_l_Eyeiris_001.tx"
 		;
-connectAttr "bpjnt_l_EyeIris_001_parentConstraint1.cty" "bpjnt_l_EyeIris_001.ty"
+connectAttr "bpjnt_l_EyeIris_001_parentConstraint1.cty" "bpjnt_l_Eyeiris_001.ty"
 		;
-connectAttr "bpjnt_l_EyeIris_001_parentConstraint1.ctz" "bpjnt_l_EyeIris_001.tz"
+connectAttr "bpjnt_l_EyeIris_001_parentConstraint1.ctz" "bpjnt_l_Eyeiris_001.tz"
 		;
-connectAttr "bpjnt_l_EyeIris_001_parentConstraint1.crx" "bpjnt_l_EyeIris_001.rx"
+connectAttr "bpjnt_l_EyeIris_001_parentConstraint1.crx" "bpjnt_l_Eyeiris_001.rx"
 		;
-connectAttr "bpjnt_l_EyeIris_001_parentConstraint1.cry" "bpjnt_l_EyeIris_001.ry"
+connectAttr "bpjnt_l_EyeIris_001_parentConstraint1.cry" "bpjnt_l_Eyeiris_001.ry"
 		;
-connectAttr "bpjnt_l_EyeIris_001_parentConstraint1.crz" "bpjnt_l_EyeIris_001.rz"
+connectAttr "bpjnt_l_EyeIris_001_parentConstraint1.crz" "bpjnt_l_Eyeiris_001.rz"
 		;
-connectAttr "bpjnt_l_EyeIris_001.s" "bpjnt_l_EyeIris_002.is";
-connectAttr "bpjnt_l_EyeIris_002_parentConstraint1.ctx" "bpjnt_l_EyeIris_002.tx"
+connectAttr "bpjnt_l_Eyeiris_001.s" "bpjnt_l_Eyeiris_002.is";
+connectAttr "bpjnt_l_EyeIris_002_parentConstraint1.ctx" "bpjnt_l_Eyeiris_002.tx"
 		;
-connectAttr "bpjnt_l_EyeIris_002_parentConstraint1.cty" "bpjnt_l_EyeIris_002.ty"
+connectAttr "bpjnt_l_EyeIris_002_parentConstraint1.cty" "bpjnt_l_Eyeiris_002.ty"
 		;
-connectAttr "bpjnt_l_EyeIris_002_parentConstraint1.ctz" "bpjnt_l_EyeIris_002.tz"
+connectAttr "bpjnt_l_EyeIris_002_parentConstraint1.ctz" "bpjnt_l_Eyeiris_002.tz"
 		;
-connectAttr "bpjnt_l_EyeIris_002_parentConstraint1.crx" "bpjnt_l_EyeIris_002.rx"
+connectAttr "bpjnt_l_EyeIris_002_parentConstraint1.crx" "bpjnt_l_Eyeiris_002.rx"
 		;
-connectAttr "bpjnt_l_EyeIris_002_parentConstraint1.cry" "bpjnt_l_EyeIris_002.ry"
+connectAttr "bpjnt_l_EyeIris_002_parentConstraint1.cry" "bpjnt_l_Eyeiris_002.ry"
 		;
-connectAttr "bpjnt_l_EyeIris_002_parentConstraint1.crz" "bpjnt_l_EyeIris_002.rz"
+connectAttr "bpjnt_l_EyeIris_002_parentConstraint1.crz" "bpjnt_l_Eyeiris_002.rz"
 		;
-connectAttr "bpjnt_l_EyeIris_002.s" "bpjnt_l_EyeIris_003.is";
-connectAttr "bpjnt_l_EyeIris_003_parentConstraint1.ctx" "bpjnt_l_EyeIris_003.tx"
+connectAttr "bpjnt_l_Eyeiris_002.s" "bpjnt_l_Eyeiris_003.is";
+connectAttr "bpjnt_l_EyeIris_003_parentConstraint1.ctx" "bpjnt_l_Eyeiris_003.tx"
 		;
-connectAttr "bpjnt_l_EyeIris_003_parentConstraint1.cty" "bpjnt_l_EyeIris_003.ty"
+connectAttr "bpjnt_l_EyeIris_003_parentConstraint1.cty" "bpjnt_l_Eyeiris_003.ty"
 		;
-connectAttr "bpjnt_l_EyeIris_003_parentConstraint1.ctz" "bpjnt_l_EyeIris_003.tz"
+connectAttr "bpjnt_l_EyeIris_003_parentConstraint1.ctz" "bpjnt_l_Eyeiris_003.tz"
 		;
-connectAttr "bpjnt_l_EyeIris_003_parentConstraint1.crx" "bpjnt_l_EyeIris_003.rx"
+connectAttr "bpjnt_l_EyeIris_003_parentConstraint1.crx" "bpjnt_l_Eyeiris_003.rx"
 		;
-connectAttr "bpjnt_l_EyeIris_003_parentConstraint1.cry" "bpjnt_l_EyeIris_003.ry"
+connectAttr "bpjnt_l_EyeIris_003_parentConstraint1.cry" "bpjnt_l_Eyeiris_003.ry"
 		;
-connectAttr "bpjnt_l_EyeIris_003_parentConstraint1.crz" "bpjnt_l_EyeIris_003.rz"
+connectAttr "bpjnt_l_EyeIris_003_parentConstraint1.crz" "bpjnt_l_Eyeiris_003.rz"
 		;
-connectAttr "bpjnt_l_EyeIris_003.ro" "bpjnt_l_EyeIris_003_parentConstraint1.cro"
+connectAttr "bpjnt_l_Eyeiris_003.ro" "bpjnt_l_EyeIris_003_parentConstraint1.cro"
 		;
-connectAttr "bpjnt_l_EyeIris_003.pim" "bpjnt_l_EyeIris_003_parentConstraint1.cpim"
+connectAttr "bpjnt_l_Eyeiris_003.pim" "bpjnt_l_EyeIris_003_parentConstraint1.cpim"
 		;
-connectAttr "bpjnt_l_EyeIris_003.rp" "bpjnt_l_EyeIris_003_parentConstraint1.crp"
+connectAttr "bpjnt_l_Eyeiris_003.rp" "bpjnt_l_EyeIris_003_parentConstraint1.crp"
 		;
-connectAttr "bpjnt_l_EyeIris_003.rpt" "bpjnt_l_EyeIris_003_parentConstraint1.crt"
+connectAttr "bpjnt_l_Eyeiris_003.rpt" "bpjnt_l_EyeIris_003_parentConstraint1.crt"
 		;
-connectAttr "bpjnt_l_EyeIris_003.jo" "bpjnt_l_EyeIris_003_parentConstraint1.cjo"
+connectAttr "bpjnt_l_Eyeiris_003.jo" "bpjnt_l_EyeIris_003_parentConstraint1.cjo"
 		;
-connectAttr "bpjnt_l_EyeBall_001.t" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tt"
+connectAttr "bpjnt_l_Eye_001.t" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tt"
 		;
-connectAttr "bpjnt_l_EyeBall_001.rp" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].trp"
+connectAttr "bpjnt_l_Eye_001.rp" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].trp"
 		;
-connectAttr "bpjnt_l_EyeBall_001.rpt" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].trt"
+connectAttr "bpjnt_l_Eye_001.rpt" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].trt"
 		;
-connectAttr "bpjnt_l_EyeBall_001.r" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tr"
+connectAttr "bpjnt_l_Eye_001.r" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tr"
 		;
-connectAttr "bpjnt_l_EyeBall_001.ro" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tro"
+connectAttr "bpjnt_l_Eye_001.ro" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tro"
 		;
-connectAttr "bpjnt_l_EyeBall_001.s" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].ts"
+connectAttr "bpjnt_l_Eye_001.s" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].ts"
 		;
-connectAttr "bpjnt_l_EyeBall_001.pm" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tpm"
+connectAttr "bpjnt_l_Eye_001.pm" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tpm"
 		;
-connectAttr "bpjnt_l_EyeBall_001.jo" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tjo"
+connectAttr "bpjnt_l_Eye_001.jo" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tjo"
 		;
-connectAttr "bpjnt_l_EyeBall_001.ssc" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tsc"
+connectAttr "bpjnt_l_Eye_001.ssc" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tsc"
 		;
-connectAttr "bpjnt_l_EyeBall_001.is" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tis"
+connectAttr "bpjnt_l_Eye_001.is" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tis"
 		;
 connectAttr "bpjnt_l_EyeIris_003_parentConstraint1.w0" "bpjnt_l_EyeIris_003_parentConstraint1.tg[0].tw"
 		;
@@ -581,35 +590,35 @@ connectAttr "bpjnt_l_Eye_002.is" "bpjnt_l_EyeIris_003_parentConstraint1.tg[1].ti
 		;
 connectAttr "bpjnt_l_EyeIris_003_parentConstraint1.w1" "bpjnt_l_EyeIris_003_parentConstraint1.tg[1].tw"
 		;
-connectAttr "bpjnt_l_EyeIris_002.ro" "bpjnt_l_EyeIris_002_parentConstraint1.cro"
+connectAttr "bpjnt_l_Eyeiris_002.ro" "bpjnt_l_EyeIris_002_parentConstraint1.cro"
 		;
-connectAttr "bpjnt_l_EyeIris_002.pim" "bpjnt_l_EyeIris_002_parentConstraint1.cpim"
+connectAttr "bpjnt_l_Eyeiris_002.pim" "bpjnt_l_EyeIris_002_parentConstraint1.cpim"
 		;
-connectAttr "bpjnt_l_EyeIris_002.rp" "bpjnt_l_EyeIris_002_parentConstraint1.crp"
+connectAttr "bpjnt_l_Eyeiris_002.rp" "bpjnt_l_EyeIris_002_parentConstraint1.crp"
 		;
-connectAttr "bpjnt_l_EyeIris_002.rpt" "bpjnt_l_EyeIris_002_parentConstraint1.crt"
+connectAttr "bpjnt_l_Eyeiris_002.rpt" "bpjnt_l_EyeIris_002_parentConstraint1.crt"
 		;
-connectAttr "bpjnt_l_EyeIris_002.jo" "bpjnt_l_EyeIris_002_parentConstraint1.cjo"
+connectAttr "bpjnt_l_Eyeiris_002.jo" "bpjnt_l_EyeIris_002_parentConstraint1.cjo"
 		;
-connectAttr "bpjnt_l_EyeBall_001.t" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tt"
+connectAttr "bpjnt_l_Eye_001.t" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tt"
 		;
-connectAttr "bpjnt_l_EyeBall_001.rp" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].trp"
+connectAttr "bpjnt_l_Eye_001.rp" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].trp"
 		;
-connectAttr "bpjnt_l_EyeBall_001.rpt" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].trt"
+connectAttr "bpjnt_l_Eye_001.rpt" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].trt"
 		;
-connectAttr "bpjnt_l_EyeBall_001.r" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tr"
+connectAttr "bpjnt_l_Eye_001.r" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tr"
 		;
-connectAttr "bpjnt_l_EyeBall_001.ro" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tro"
+connectAttr "bpjnt_l_Eye_001.ro" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tro"
 		;
-connectAttr "bpjnt_l_EyeBall_001.s" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].ts"
+connectAttr "bpjnt_l_Eye_001.s" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].ts"
 		;
-connectAttr "bpjnt_l_EyeBall_001.pm" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tpm"
+connectAttr "bpjnt_l_Eye_001.pm" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tpm"
 		;
-connectAttr "bpjnt_l_EyeBall_001.jo" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tjo"
+connectAttr "bpjnt_l_Eye_001.jo" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tjo"
 		;
-connectAttr "bpjnt_l_EyeBall_001.ssc" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tsc"
+connectAttr "bpjnt_l_Eye_001.ssc" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tsc"
 		;
-connectAttr "bpjnt_l_EyeBall_001.is" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tis"
+connectAttr "bpjnt_l_Eye_001.is" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tis"
 		;
 connectAttr "bpjnt_l_EyeIris_002_parentConstraint1.w0" "bpjnt_l_EyeIris_002_parentConstraint1.tg[0].tw"
 		;
@@ -635,35 +644,35 @@ connectAttr "bpjnt_l_Eye_002.is" "bpjnt_l_EyeIris_002_parentConstraint1.tg[1].ti
 		;
 connectAttr "bpjnt_l_EyeIris_002_parentConstraint1.w1" "bpjnt_l_EyeIris_002_parentConstraint1.tg[1].tw"
 		;
-connectAttr "bpjnt_l_EyeIris_001.ro" "bpjnt_l_EyeIris_001_parentConstraint1.cro"
+connectAttr "bpjnt_l_Eyeiris_001.ro" "bpjnt_l_EyeIris_001_parentConstraint1.cro"
 		;
-connectAttr "bpjnt_l_EyeIris_001.pim" "bpjnt_l_EyeIris_001_parentConstraint1.cpim"
+connectAttr "bpjnt_l_Eyeiris_001.pim" "bpjnt_l_EyeIris_001_parentConstraint1.cpim"
 		;
-connectAttr "bpjnt_l_EyeIris_001.rp" "bpjnt_l_EyeIris_001_parentConstraint1.crp"
+connectAttr "bpjnt_l_Eyeiris_001.rp" "bpjnt_l_EyeIris_001_parentConstraint1.crp"
 		;
-connectAttr "bpjnt_l_EyeIris_001.rpt" "bpjnt_l_EyeIris_001_parentConstraint1.crt"
+connectAttr "bpjnt_l_Eyeiris_001.rpt" "bpjnt_l_EyeIris_001_parentConstraint1.crt"
 		;
-connectAttr "bpjnt_l_EyeIris_001.jo" "bpjnt_l_EyeIris_001_parentConstraint1.cjo"
+connectAttr "bpjnt_l_Eyeiris_001.jo" "bpjnt_l_EyeIris_001_parentConstraint1.cjo"
 		;
-connectAttr "bpjnt_l_EyeBall_001.t" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tt"
+connectAttr "bpjnt_l_Eye_001.t" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tt"
 		;
-connectAttr "bpjnt_l_EyeBall_001.rp" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].trp"
+connectAttr "bpjnt_l_Eye_001.rp" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].trp"
 		;
-connectAttr "bpjnt_l_EyeBall_001.rpt" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].trt"
+connectAttr "bpjnt_l_Eye_001.rpt" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].trt"
 		;
-connectAttr "bpjnt_l_EyeBall_001.r" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tr"
+connectAttr "bpjnt_l_Eye_001.r" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tr"
 		;
-connectAttr "bpjnt_l_EyeBall_001.ro" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tro"
+connectAttr "bpjnt_l_Eye_001.ro" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tro"
 		;
-connectAttr "bpjnt_l_EyeBall_001.s" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].ts"
+connectAttr "bpjnt_l_Eye_001.s" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].ts"
 		;
-connectAttr "bpjnt_l_EyeBall_001.pm" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tpm"
+connectAttr "bpjnt_l_Eye_001.pm" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tpm"
 		;
-connectAttr "bpjnt_l_EyeBall_001.jo" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tjo"
+connectAttr "bpjnt_l_Eye_001.jo" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tjo"
 		;
-connectAttr "bpjnt_l_EyeBall_001.ssc" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tsc"
+connectAttr "bpjnt_l_Eye_001.ssc" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tsc"
 		;
-connectAttr "bpjnt_l_EyeBall_001.is" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tis"
+connectAttr "bpjnt_l_Eye_001.is" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tis"
 		;
 connectAttr "bpjnt_l_EyeIris_001_parentConstraint1.w0" "bpjnt_l_EyeIris_001_parentConstraint1.tg[0].tw"
 		;
