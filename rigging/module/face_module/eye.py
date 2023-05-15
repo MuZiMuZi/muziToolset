@@ -39,9 +39,9 @@ class Eye(chain.Chain) :
 		self.aim_crv = ('crv_{}_{}{}Aim_001'.format(self._side , self._name , self._rtype))
 		for index in range(3) :
 			self.iris_bpjnt_list.append(
-				'bpjnt_{}_{}{}iris_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
+					'bpjnt_{}_{}{}iris_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
 			self.iris_jnt_list.append(
-				'jnt_{}_{}{}iris_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
+					'jnt_{}_{}{}iris_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
 	
 	
 	
@@ -145,3 +145,23 @@ class Eye(chain.Chain) :
 		                   aimVector = (1 , 0 , 0) , upVector = (
 					
 					0 , 1 , 0) , worldUpType = "vector" , worldUpVector = (0 , 1 , 0))
+
+
+
+if __name__ == "__main__" :
+	def build_setup() :
+		eye_l = eye.Eye(side = 'l' , joint_parent = None , control_parent = None)
+		eye_l.build_setup()
+	
+	
+	
+	def build_rig() :
+		eye_l = eye.Eye(side = 'l' , joint_parent = None , control_parent = None)
+		eye_l.build_rig()
+	
+	
+	
+	#
+	# #
+	build_setup()
+	build_rig()
