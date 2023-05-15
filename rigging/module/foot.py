@@ -12,9 +12,14 @@ class Foot(chain.Chain) :
 	def __init__(self , side , name , joint_number = 3 , length = 6 , joint_parent = None , control_parent = None) :
 		super().__init__(side , name , joint_number , joint_parent , control_parent)
 		self.length = length
+		# 整理命名规范的列表
 		self.parts = ['Ankle' , 'Ball' , 'Toe']
-		self.rvs_bpjnt_list = list()
 		self.rvs_jnt_parts = ['Tiptoe' , 'Heel' , 'Inn' , 'Out']
+		self.rvs_bpjnt_list = list()
+		self.rvs_jnt_list = list()
+		self.rvs_ctrl_list = list()
+		self.rvs_output_list = list()
+		
 		self.joint_number = joint_number
 		self.value = length / joint_number
 		self.radius = 3
@@ -55,6 +60,10 @@ class Foot(chain.Chain) :
 		# 创建用来定位旋转轴心点的关节
 		for part in self.rvs_jnt_parts :
 			self.rvs_bpjnt_list.append('bpjnt_{}_{}{}_001'.format(self._side , self._name , part))
+			self.rvs_jnt_list.append('jnt_{}_{}{}_001'.format(self._side , self._name , part))
+			self.rvs_ctrl_list.append('ctrl_{}_{}{}_001'.format(self._side , self._name , part))
+			self.rvs_output_list.append('output_{}_{}{}_001'.format(self._side , self._name , part))
+		
 		self.heel_bpjnt = ('bpjnt_{}_{}Heel_001'.format(self._side , self._name))
 		self.tiptoe_bpjnt = ('bpjnt_{}_{}Tiptoe_001'.format(self._side , self._name))
 		self.inn_bpjnt = ('bpjnt_{}_{}Inn_001'.format(self._side , self._name))
@@ -121,17 +130,14 @@ class Foot(chain.Chain) :
 			cmds.parentConstraint(fk_jnt , ik_jnt , jnt)
 		
 		# 创建用来定位ik旋转轴心点的关节
+		parent = self.foot_ik.jnt_list[-1]
 		for rvs_bpjnt in self.rvs_bpjnt_list :
 			self.jnt = cmds.createNode('joint' , name = rvs_bpjnt.replace('bpjnt' , 'jnt') , parent =
-			self.joint_parent)
+			parent)
 			cmds.matchTransform(self.jnt , rvs_bpjnt)
 			cmds.delete(rvs_bpjnt)
+			parent = self.jnt
 		
-		# 创建关节的层级架构
-		cmds.parent(self.heel_bpjnt.replace('bpjnt' , 'jnt') , self.foot_ik.jnt_list[-1])
-		cmds.parent(self.tiptoe_bpjnt.replace('bpjnt' , 'jnt') , self.heel_bpjnt.replace('bpjnt' , 'jnt'))
-		cmds.parent(self.inn_bpjnt.replace('bpjnt' , 'jnt') , self.tiptoe_bpjnt.replace('bpjnt' , 'jnt'))
-		cmds.parent(self.out_bpjnt.replace('bpjnt' , 'jnt') , self.inn_bpjnt.replace('bpjnt' , 'jnt'))
 	
 	
 	
@@ -171,12 +177,18 @@ class Foot(chain.Chain) :
 	def add_constraint(self) :
 		# fk的关节控制器添加约束
 		self.foot_fk.add_constraint()
-
+		
 		# ik的关节控制器添加约束
-		#创建ikhandle
+		# 创建ikhandle
 		self.build_ikSingle()
-		cmds.parent(self.ball_ikhandle,self.foot_ik.output_list[1])
+		cmds.parent(self.ball_ikhandle , self.foot_ik.output_list[1])
 		cmds.parent(self.toe_ikhandle , self.foot_ik.output_list[-1])
+		
+		# 用来定位ik旋转轴心点的控制器约束对应的关节
+		for index,jnt in enumerate(self.rvs_jnt_list) :
+			cmds.parentConstraint(self.rvs_output_list[index],jnt)
+	
+	
 	
 	def build_rig(self) :
 		super().build_rig()
