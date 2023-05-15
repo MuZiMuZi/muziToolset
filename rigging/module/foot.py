@@ -72,8 +72,9 @@ class Foot(chain.Chain) :
 		# 创建 IKhandle 的名称规范
 		self.ball_ikhandle = self.jnt_list[1].replace('jnt' , 'ikhandle')
 		self.toe_ikhandle = self.jnt_list[-1].replace('jnt' , 'ikhandle')
-		#创建整体的控制器层级组
+		# 创建整体的控制器层级组
 		self.ctrl_grp = ('grp_{}_{}{}_001'.format(self._side , self._name , self._rtype))
+	
 	
 	
 	def create_bpjnt(self) :
@@ -206,16 +207,14 @@ class Foot(chain.Chain) :
 			                                            axis = 'X+' , pos = rvs_bpjnt.replace('bpjnt' , 'jnt') ,
 			                                            parent = parent)
 			parent = rvs_ctrl.replace('ctrl' , 'output')
-			
+		
 		# 添加ik控制器的footik控制
 		self.add_footik_ctrl()
 		
 		# 整理IK控制器的层级结构
 		cmds.parent(self.foot_ik.zero_list[1] , self.foot_ik.zero_list[-1] ,
 		            self.rvs_bpjnt_list[-1].replace('bpjnt' , 'output'))
-		cmds.parent(self.foot_ik.zero_list[0], self.ctrl_grp)
-		
-
+		cmds.parent(self.foot_ik.zero_list[0] , self.ctrl_grp)
 		
 		# 整理FK控制器的层级结构
 		cmds.parent(self.foot_fk.zero_list[0] , self.ctrl_grp)
@@ -223,13 +222,13 @@ class Foot(chain.Chain) :
 		# 创建用于ikfk切换的控制器
 		self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_list[0] , shape = 'pPlatonic' ,
 		                                             radius = self.radius * 1.2 ,
-		                                             axis = 'X+', pos = self.jnt_list[0] ,
+		                                             axis = 'X+' , pos = self.jnt_list[0] ,
 		                                             parent = self.ctrl_grp)
 		cmds.setAttr(self.zero_list[0] + '.translateX' , 5 * self.side_value)
 		# 添加IKFK切换的属性
 		cmds.addAttr(self.ctrl , sn = 'Switch' , ln = 'ikfkSwitch' , at = 'double' , dv = 1 , min = 0 , max = 1 ,
 		             k = 1)
-		
+	
 	
 	
 	def add_constraint(self) :
