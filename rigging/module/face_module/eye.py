@@ -46,10 +46,10 @@ class Eye(chain.Chain) :
 	
 	
 	def create_bpjnt(self) :
-		# 获得jaw_bpjnt 的路径
-		self.jaw_bpjnt_path = os.path.abspath(__file__ + "/../eye_bpjnt.ma")
+		# 获得eye_bpjnt 的路径
+		self.eye_bpjnt_path = os.path.abspath(__file__ + "/../eye_bpjnt.ma")
 		# 导入关节
-		cmds.file(self.jaw_bpjnt_path , i = True , rnn = True)
+		cmds.file(self.eye_bpjnt_path , i = True , rnn = True)
 	
 	
 	

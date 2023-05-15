@@ -33,10 +33,10 @@ class Ear(chainFK.ChainFK) :
 	
 	
 	def create_bpjnt(self) :
-		# 获得jaw_bpjnt 的路径
-		self.jaw_bpjnt_path = os.path.abspath(__file__ + "/../ear_bpjnt.ma")
+		# 获得ear_bpjnt 的路径
+		self.ear_bpjnt_path = os.path.abspath(__file__ + "/../ear_bpjnt.ma")
 		# 导入关节
-		cmds.file(self.jaw_bpjnt_path , i = True , rnn = True)
+		cmds.file(self.ear_bpjnt_path , i = True , rnn = True)
 
 
 
