@@ -37,7 +37,6 @@ class Nose(base.Base) :
 		self.side_bpjnt_list.append(self.bottom_bpjnt)
 		self.side_bpjnt_list.append(self.front_bpjnt)
 		
-		self
 	
 	
 	
@@ -88,8 +87,9 @@ class Nose(base.Base) :
 			                                        radius = self.radius ,
 			                                        axis = 'X+' , pos = bpjnt.replace('bpjnt' , 'jnt') ,
 			                                        parent = self.ctrl_list[-1])
-	
-	
+		# 左边的控制器上层的组scaleX需要给个-1值对称
+		cmds.setAttr('bpjnt_r_NoseSide_001'.replace('bpjnt','offset') + '.scaleX',-1)
+		
 	
 	def add_constraint(self) :
 		super().add_constraint()
