@@ -711,7 +711,8 @@ class Pipeline(object) :
 	
 	
 	@staticmethod
-	def create_constraint(driver , driven , point_value = True , orient_value = True , scale_value = True , mo_value = True) :
+	def create_constraint(driver , driven , point_value = True , orient_value = True , scale_value = True ,
+	                      mo_value = True) :
 		'''
 		创建约束对象
 		driver:约束者
@@ -772,6 +773,8 @@ class Pipeline(object) :
 		selection.getDagPath(0 , dag_path)
 		return dag_path
 	
+	
+	
 	@staticmethod
 	def get_point_on_curve(curve , sample_count) :
 		"""
@@ -811,12 +814,12 @@ class Pipeline(object) :
 		"""
 		
 		jnt_list = list()
-		#获取具有均匀距离的nurbs曲线上的点信息
+		# 获取具有均匀距离的nurbs曲线上的点信息
 		points , tangents = Pipeline.get_point_on_curve(curve , sample_count)
 		for index in range(len(points)) :
 			point = points[index]
 			tangent = tangents[index]
-			#在对应的点上创建关节，并且创建个transform组来做目标约束吸附旋转
+			# 在对应的点上创建关节，并且创建个transform组来做目标约束吸附旋转
 			jnt = cmds.createNode('joint')
 			jnt_list.append(jnt)
 			temp_node = cmds.createNode('transform')
@@ -830,3 +833,28 @@ class Pipeline(object) :
 			cmds.delete([temp_node , constraint])
 		
 		return jnt_list
+	
+	
+	
+	@staticmethod
+	def create_curve_on_joints(jnt_list,curve, degree = 3):
+		u"""
+		根据关节点的位置生成曲线
+		jnt_list(list):关节的列表
+		curve（str）：创建出来的曲线的名称
+		degree(float)：新曲线的阶数。默认值为3。请注意，您需要（阶数+1）个曲线点来创建可见的曲线跨度。你必须为3度曲线放置4个点。
+		
+		return:
+			返回创建出来的曲线curve
+		"""
+		#创建一个列表用来存储点的位置信息
+		curve_points = list()
+		
+		# 查询所有关节的位置信息，将所有关节的位置信息保存到curve_points里
+		for  jnt in jnt_list :
+			pos = cmds.xform(jnt , q = 1 , t = 1 , ws = 1)
+			curve_points.append(pos)
+		# 创建曲线
+		curve = cmds.curve(p = curve_points , name = curve,degree=degree)
+		
+		return curve
