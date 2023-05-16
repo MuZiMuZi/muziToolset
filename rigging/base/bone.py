@@ -56,10 +56,12 @@ class Bone(object) :
 		# 根据给定的边，名称和joint_number生成列表来存储创建的名称
 		self.bpjnt_list = list()
 		self.jnt_list = list()
-		self.ctrl_list = list()
 		self.zero_list = list()
 		self.driven_list = list()
+		self.connect_list = list()
+		self.ctrl_list = list()
 		self.output_list = list()
+		
 		
 		# 判断边为'l'还是'r'
 		if side == 'l' :
