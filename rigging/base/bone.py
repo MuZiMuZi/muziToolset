@@ -61,8 +61,8 @@ class Bone(object) :
 		self.connect_list = list()
 		self.offset_list = list()
 		self.ctrl_list = list()
+		self.subctrl_list = list()
 		self.output_list = list()
-		
 		
 		# 判断边为'l'还是'r'
 		if side == 'l' :
@@ -118,8 +118,9 @@ class Bone(object) :
 			self.connect_list.append('connect_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.offset_list.append('offset_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.ctrl_list.append('ctrl_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
+			self.subctrl_list.append('ctrl_{}_{}{}Sub_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.output_list.append('output_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
-		self.ctrl_grp = ('grp_{}_{}{}_001'.format(self._side , self._name , self._rtype ))
+		self.ctrl_grp = ('grp_{}_{}{}_001'.format(self._side , self._name , self._rtype))
 	
 	
 	
