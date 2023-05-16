@@ -1,7 +1,9 @@
 # coding=utf-8
 from importlib import reload
-from ...core import jointUtils , controlUtils , pipelineUtils , hierarchyUtils
+
 import maya.cmds as cmds
+
+from ...core import controlUtils , hierarchyUtils , jointUtils , pipelineUtils
 
 
 

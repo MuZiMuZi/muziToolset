@@ -1,26 +1,24 @@
 
-import muziToolset.rigging.module.face_module.tongue as tongue
+import muziToolset.rigging.module.face_module.jaw as jaw
 from importlib import reload
 
 
 
-reload(tongue)
+reload(jaw)
 
 
 
 def build_setup() :
-	tongue_m = tongue.Tongue(joint_parent = None , control_parent = None)
-	tongue_m.build_setup()
+	jaw_m = jaw.Jaw(side = 'm' , joint_parent = None , control_parent = None)
+	jaw_m.build_setup()
 
 
 
 def build_rig() :
-	tongue_m = tongue.Tongue( joint_parent = None , control_parent = None)
-	tongue_m.build_rig()
+	jaw_m = jaw.Jaw(side = 'm' , joint_parent = None , control_parent = None)
+	jaw_m.build_rig()
 
 
 
-# #
-# # #
 build_setup()
 build_rig()
