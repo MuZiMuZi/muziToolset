@@ -115,32 +115,23 @@ class Nose(base.Base) :
 			                                         orient_value = True , scale_value =
 			                                         True ,
 			                                         mo_value = True)
-	
-	
-	
-	def build_rig(self) :
-		"""
-		创建绑定系统
-		"""
-		self.create_namespace()
-		self.create_joint()
-		self.create_ctrl()
-	# self.add_constraint()
 
 
 
 if __name__ == "__main__" :
 	def build_setup() :
-		jaw_m = jaw.Jaw(side = 'm' , joint_parent = None , control_parent = None)
-		jaw_m.build_setup()
+		nose_m = nose.Nose(joint_parent = None , control_parent = None)
+		nose_m.build_setup()
 	
 	
 	
 	def build_rig() :
-		jaw_m = jaw.Jaw(side = 'm' , joint_parent = None , control_parent = None)
-		jaw_m.build_rig()
+		nose_m = nose.Nose(joint_parent = None , control_parent = None)
+		nose_m.build_rig()
 	
 	
 	
+	# #
+	# # #
 	build_setup()
 	build_rig()
