@@ -4,19 +4,19 @@ from importlib import reload
 
 
 
-reload(tonegue)
+reload(tongue)
 
 
 
 def build_setup() :
-	tonegue_m = tonegue.Tongue(joint_parent = None , control_parent = None)
-	tonegue_m.build_setup()
+	tongue_m = tongue.Tongue(joint_parent = None , control_parent = None)
+	tongue_m.build_setup()
 
 
 
 def build_rig() :
-	tonegue_m = tonegue.Tongue( joint_parent = None , control_parent = None)
-	tonegue_m.build_rig()
+	tongue_m = tongue.Tongue( joint_parent = None , control_parent = None)
+	tongue_m.build_rig()
 
 
 
