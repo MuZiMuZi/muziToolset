@@ -59,6 +59,7 @@ class Bone(object) :
 		self.zero_list = list()
 		self.driven_list = list()
 		self.connect_list = list()
+		self.offset_list = list()
 		self.ctrl_list = list()
 		self.output_list = list()
 		
@@ -115,6 +116,7 @@ class Bone(object) :
 			self.zero_list.append('zero_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.driven_list.append('driven_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.connect_list.append('connect_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
+			self.offset_list.append('offset_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.ctrl_list.append('ctrl_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.output_list.append('output_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 		self.ctrl_grp = ('grp_{}_{}{}_001'.format(self._side , self._name , self._rtype ))
