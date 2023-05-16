@@ -22,14 +22,16 @@ class Nose(base.Base) :
 		super().__init__(side , name , joint_number , joint_parent , control_parent)
 		self.shape = 'cube'
 		self._rtype = 'Nose'
-		self.radius = 0.3
+		self.radius = 0.2
 		
 		self.side_bpjnt_list = list()
+		self.side_jnt_list = list()
 	
 	
 	
 	def create_namespace(self) :
 		super().create_namespace()
+		# 创建用于定位的四边的鼻子关节
 		self.bottom_bpjnt = 'bpjnt_m_Nose{}_001'.format('Bottom')
 		self.front_bpjnt = 'bpjnt_m_Nose{}_001'.format('Front')
 		for side in ['l' , 'r'] :
@@ -37,6 +39,8 @@ class Nose(base.Base) :
 		self.side_bpjnt_list.append(self.bottom_bpjnt)
 		self.side_bpjnt_list.append(self.front_bpjnt)
 		
+		for bpjnt in self.side_bpjnt_list :
+			self.side_jnt_list.append(bpjnt.replace('bpjnt' , 'jnt'))
 	
 	
 	
@@ -53,15 +57,23 @@ class Nose(base.Base) :
 		根据定位的bp关节创建关节
 		'''
 		# 根据bp关节创建新的关节
+		parent = self.joint_parent
 		for bpjnt , jnt in zip(self.bpjnt_list , self.jnt_list) :
-			jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
+			jnt = cmds.createNode('joint' , name = jnt , parent = parent)
 			cmds.matchTransform(jnt , bpjnt)
+			parent = jnt
 		# 创建botton关节和front关节，side关节
 		for bpjnt in self.side_bpjnt_list :
 			jnt = cmds.createNode('joint' , name = bpjnt.replace('bpjnt' , 'jnt') , parent = self.jnt_list[-1])
 			cmds.matchTransform(jnt , bpjnt)
 		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.jnt_list)
+		cmds.joint(self.jnt_list[-1] , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')
+		# 定向四边的关节，无子关节，关节定向为世界方向
+		for jnt in self.side_jnt_list :
+			cmds.makeIdentity(jnt , apply = True , translate = 1 , rotate = 1 , scale = 1 , normal = 0 ,
+			                  preserveNormals = 1)
+			cmds.joint(jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')
 		# 删除定位的bp关节
 		cmds.delete(self.bpjnt_list[0])
 	
@@ -80,16 +92,17 @@ class Nose(base.Base) :
 			                                             radius = self.radius ,
 			                                             axis = 'X+' , pos = jnt ,
 			                                             parent = parent)
-			parent = self.ctrl.replace('ctrl','output')
-		# 创建bottom控制器
-		for bpjnt in self.side_bpjnt_list :
-			ctrl = controlUtils.Control.create_ctrl(bpjnt.replace('bpjnt' , 'ctrl') , shape = 'ball' ,
+			parent = self.ctrl.replace('ctrl' , 'output')
+		# 创建四边的控制器
+		for jnt in self.side_jnt_list :
+			ctrl = controlUtils.Control.create_ctrl(jnt.replace('jnt' , 'ctrl') , shape = 'ball' ,
 			                                        radius = self.radius ,
-			                                        axis = 'X+' , pos = bpjnt.replace('bpjnt' , 'jnt') ,
+			                                        axis = 'X+' , pos = jnt ,
 			                                        parent = self.ctrl_list[-1])
-		# 左边的控制器上层的组scaleX需要给个-1值对称
-		cmds.setAttr('bpjnt_r_NoseSide_001'.replace('bpjnt','offset') + '.scaleX',-1)
-		
+		# 左边的控制器上层的组scaleY需要给个-1值对称
+		cmds.setAttr(self.side_jnt_list[1].replace('jnt' , 'offset') + '.scaleY' , -1)
+	
+	
 	
 	def add_constraint(self) :
 		super().add_constraint()
@@ -102,6 +115,17 @@ class Nose(base.Base) :
 			                                         orient_value = True , scale_value =
 			                                         True ,
 			                                         mo_value = True)
+	
+	
+	
+	def build_rig(self) :
+		"""
+		创建绑定系统
+		"""
+		self.create_namespace()
+		self.create_joint()
+		self.create_ctrl()
+	# self.add_constraint()
 
 
 
