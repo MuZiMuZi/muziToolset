@@ -112,6 +112,7 @@ class Bone(object) :
 			self.jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.zero_list.append('zero_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.driven_list.append('driven_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
+			self.connect_list.append('connect_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.ctrl_list.append('ctrl_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 			self.output_list.append('output_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
 		self.ctrl_grp = ('grp_{}_{}{}_001'.format(self._side , self._name , self._rtype ))
