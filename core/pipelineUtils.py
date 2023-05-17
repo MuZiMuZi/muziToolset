@@ -888,5 +888,61 @@ class Pipeline(object) :
 			          sectionSpans = 1 ,
 			          range = False , polygon = 0 ,
 			          name = surface_node)[0]
-		cmds.delete(curve,duplicate_crv)
+		cmds.delete(curve , duplicate_crv)
 		return surface_node
+	
+	
+	
+	@staticmethod
+	def create_joint_follicle_on_surface(surf_node , side , description , joint_number) :
+		"""
+		在给定的曲面上创建毛囊节点和关节节点
+		surf_node（str）:给定的曲面，需要创建毛囊节点和关节节点的曲面
+		side（str）:边
+		description(str)：描述
+		joint_number(int):需要创建的关节节点数量
+		"""
+		# 获得曲面的形状节点
+		surf_shape = cmds.listRelatives(surf_node , shapes = True)[0]
+		
+		# 创建follicle整体层级组的名称
+		fol_grp = cmds.createNode('transform' ,
+		                          name = 'grp_{}_{}Follicles_001'.format(side , description))
+		# 创建jnt整体层级组的名称
+		jnt_grp = cmds.createNode('transform' ,
+		                          name = 'grp_{}_{}Jnts_001'.format(side , description))
+		
+		# 循环制作
+		for index in range(joint_number) :
+			# 创建毛囊
+			fol_shape = cmds.createNode('follicle' , name = 'fol_{}_{}_{:03d}Shape'.format(side , description ,
+			                                                                               index + 1))
+			# 重命名毛囊的tran节点名称
+			fol_node = cmds.listRelatives(fol_shape , parent = True)[0]
+			fol_node = cmds.rename(fol_node , fol_shape[:-5])
+			# 把毛囊放入对应的层级组
+			cmds.parent(fol_node , fol_grp)
+			# 连接毛囊属性
+			cmds.connectAttr(surf_shape + '.worldSpace[0]' , fol_shape + '.inputSurface')
+			# 连接毛囊的形状节点以进行变换
+			cmds.connectAttr(fol_shape + '.outTranslate' , fol_node + '.translate')
+			cmds.connectAttr(fol_shape + '.outRotate' , fol_node + '.rotate')
+			# 设置uv值
+			cmds.setAttr(fol_shape + '.parameterU' , 0.5)
+			cmds.setAttr(fol_shape + '.parameterV' , float(index) / (joint_number - 1))
+			
+			# 创建关节
+			jnt = cmds.createNode('joint' , name = 'jnt_{}_{}Skin_{:03d}'.format(side , description ,
+			                                                                     index + 1))
+			grp_nodes = []
+			parent_grp = jnt_grp
+			for node_type in ['zero' , 'offset'] :
+				grp = cmds.createNode('transform' , name = jnt.replace('jnt' , node_type) , parent = parent_grp)
+				grp_nodes.append(grp)
+				parent_grp = grp
+			
+			cmds.parent(jnt , grp_nodes[-1])
+			# 让对应的毛囊约束对应的关节点
+			cmds.parentConstraint(fol_node , grp_nodes[0] , maintainOffset = False)
+			# 将偏移组的旋转设置为零
+			cmds.xform(grp_nodes[1] , rotation = [0 , 0 , 0] , worldSpace = True)
