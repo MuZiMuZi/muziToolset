@@ -888,5 +888,5 @@ class Pipeline(object) :
 			          sectionSpans = 1 ,
 			          range = False , polygon = 0 ,
 			          name = surface_node)[0]
-		
+		cmds.delete(curve,duplicate_crv)
 		return surface_node
