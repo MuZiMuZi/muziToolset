@@ -35,7 +35,6 @@ class Brow(base.Base) :
 		self.brow_l.shape = 'cube'
 		self.brow_l.radius = 0.25
 		
-		
 		self.brow_r = base.Base(side = 'r' , name = '' , joint_number = 4 , joint_parent = None , control_parent =
 		None)
 		self.brow_r._rtype = 'Brow'
@@ -81,7 +80,6 @@ class Brow(base.Base) :
 		self.brow_l.drive_suf = pipelineUtils.Pipeline.create_surface_on_curve(self.brow_l.drive_crv ,
 		                                                                       self.brow_l.drive_suf , spans = 6 ,
 		                                                                       offset = 0.1)
-		# cmds.parent(self.brow_l.drive_suf,self.ctrl_grp)
 		
 		# 创建右边的bp定位眉毛曲线
 		self.brow_r.drive_crv = pipelineUtils.Pipeline.create_curve_on_joints(self.brow_r.bpjnt_list ,
@@ -92,7 +90,9 @@ class Brow(base.Base) :
 		self.brow_r.drive_suf = pipelineUtils.Pipeline.create_surface_on_curve(self.brow_r.drive_crv ,
 		                                                                       self.brow_r.drive_suf , spans = 6 ,
 		                                                                       offset = 0.1)
-		# cmds.parent(self.brow_r.drive_suf , self.ctrl_grp)
+	
+	
+
 	
 	
 	
@@ -103,19 +103,26 @@ class Brow(base.Base) :
 		# 创建眉毛右边的关节
 		self.brow_r.create_joint()
 		# 右边的关节对曲面进行蒙皮
-		cmds.skinCluster(self.brow_r.jnt_list ,self.brow_r.drive_suf , tsb = True)
+		cmds.skinCluster(self.brow_r.jnt_list , self.brow_r.drive_suf , tsb = True)
 		
 		# 创建眉毛左边的关节
 		self.brow_l.create_joint()
 		
 		# 左边的关节对曲面进行蒙皮
 		cmds.skinCluster(self.brow_l.jnt_list , self.brow_l.drive_suf , tsb = True)
-		
-	def create_folice(self):
+	
+	
+	
+	def create_folice(self) :
 		u"""
 		对曲面创建毛囊，并且创建权重的关节
 		"""
-		pass
+		# 创建右边的曲面上的毛囊和权重关节
+		pipelineUtils.Pipeline.create_joint_follicle_on_surface(self.brow_r.drive_suf , self.brow_r.side , self.brow_r._rtype , joint_number = 6)
+
+		# 创建左边的曲面上的毛囊和权重关节
+		pipelineUtils.Pipeline.create_joint_follicle_on_surface(self.brow_l.drive_suf , self.brow_l.side ,
+		                                                        self.brow_l._rtype , joint_number = 6)
 	
 	
 	
@@ -127,5 +134,4 @@ class Brow(base.Base) :
 		# 创建眉毛左边的控制器
 		self.brow_l.create_ctrl()
 		cmds.parent(self.brow_l.drive_suf , self.brow_l.ctrl_grp)
-
-	
+		self.create_folice()
