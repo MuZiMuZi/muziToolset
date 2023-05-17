@@ -1,6 +1,6 @@
 //Maya ASCII 2023 scene
 //Name: brow_bpjnt.ma
-//Last modified: Wed, May 17, 2023 11:28:27 AM
+//Last modified: Wed, May 17, 2023 01:59:29 PM
 //Codeset: 936
 requires maya "2023";
 requires "stereoCamera" "10.0";
@@ -12,7 +12,7 @@ fileInfo "product" "Maya 2023";
 fileInfo "version" "2023";
 fileInfo "cutIdentifier" "202211021031-847a9f9623";
 fileInfo "osv" "Windows 10 Pro for Workstations v2009 (Build: 19044)";
-fileInfo "UUID" "DB366918-42BD-F1CA-CE36-B1A14916A985";
+fileInfo "UUID" "0293D2BD-4BDF-FE68-BFF5-7B8C5AC6E1D3";
 createNode transform -n "bpjnt_r_BrowJnt_001";
 	rename -uid "52186E92-4A71-7972-EE56-B2BF33680852";
 createNode joint -n "bpjnt_r_Brow_001" -p "bpjnt_r_BrowJnt_001";
@@ -147,10 +147,13 @@ createNode transform -n "bpjnt_l_BrowJnt_001";
 	rename -uid "C062B142-4689-B3CE-55C8-F8872EE3AC41";
 createNode joint -n "bpjnt_l_Brow_001" -p "bpjnt_l_BrowJnt_001";
 	rename -uid "F6569858-471E-E711-F697-3B8CDA4E92E8";
+	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
+	setAttr ".uoc" 1;
 	setAttr ".t" -type "double3" 0.19919462502002716 32.955272674560547 2.1782350540161133 ;
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
 	setAttr ".mxrl" -type "double3" 360 360 360 ;
 	setAttr ".jot" -type "string" "none";
+	setAttr ".bps" -type "matrix" 1 0 0 0 0 1 0 0 0 0 1 0 0.19919462502002716 32.955272674560547 2.1782350540161133 1;
 	setAttr ".radi" 0.54816741153675108;
 createNode transform -n "bpctrl_l_Brow_001" -p "bpjnt_l_Brow_001";
 	rename -uid "73773AFB-4F62-6F16-DCC5-D7B716230603";
@@ -186,11 +189,14 @@ createNode nurbsCurve -n "bpctrl_l_Brow_001Shape" -p "bpctrl_l_Brow_001";
 		;
 createNode joint -n "bpjnt_l_Brow_002" -p "bpjnt_l_BrowJnt_001";
 	rename -uid "25A03B60-4BE9-C711-D712-56A4B46C91DD";
+	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
 	setAttr ".t" -type "double3" 0.48069290145496241 33.022665506379518 2.1441271252247365 ;
 	setAttr ".r" -type "double3" 0 19.129160836124342 0 ;
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
 	setAttr ".mxrl" -type "double3" 360 360 360 ;
 	setAttr ".jot" -type "string" "none";
+	setAttr ".bps" -type "matrix" 0.94478225137692962 0 -0.32769879078681408 0 0 1 0 0
+		 0.32769879078681408 0 0.94478225137692962 0 0.48069290145496241 33.022665506379518 2.1441271252247365 1;
 	setAttr ".radi" 0.54131012972560655;
 createNode transform -n "bpctrl_l_Brow_002" -p "bpjnt_l_Brow_002";
 	rename -uid "2570587D-4F9A-9FE5-DBDC-3DA6278DB276";
@@ -214,11 +220,14 @@ createNode nurbsCurve -n "bpctrl_l_Brow_002Shape" -p "bpctrl_l_Brow_002";
 		;
 createNode joint -n "bpjnt_l_Brow_003" -p "bpjnt_l_BrowJnt_001";
 	rename -uid "A4FC6E5A-48E1-C670-9492-C8A39EA882FA";
+	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
 	setAttr ".t" -type "double3" 0.76909813658598547 33.017352660330893 2.0081801459216706 ;
 	setAttr ".r" -type "double3" 0 29.319538085954999 0 ;
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
 	setAttr ".mxrl" -type "double3" 360 360 360 ;
 	setAttr ".jot" -type "string" "none";
+	setAttr ".bps" -type "matrix" 0.87190234039259185 0 -0.48967980233814096 0 0 1 0 0
+		 0.48967980233814096 0 0.87190234039259185 0 0.76909813658598547 33.017352660330893 2.0081801459216706 1;
 	setAttr ".radi" 0.52839033437406968;
 createNode transform -n "bpctrl_l_Brow_003" -p "bpjnt_l_Brow_003";
 	rename -uid "D36E55E6-42C2-8014-AB0C-628BCA472A32";
@@ -242,11 +251,14 @@ createNode nurbsCurve -n "bpctrl_l_Brow_003Shape" -p "bpctrl_l_Brow_003";
 		;
 createNode joint -n "bpjnt_l_Brow_004" -p "bpjnt_l_BrowJnt_001";
 	rename -uid "188E31C8-414F-A910-43BA-47A42A376A30";
+	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
 	setAttr ".t" -type "double3" 1.0180069049165605 32.932854891936728 1.7790202827492114 ;
 	setAttr ".r" -type "double3" 0 52.06043014383431 0 ;
 	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
 	setAttr ".mxrl" -type "double3" 360 360 360 ;
 	setAttr ".jot" -type "string" "none";
+	setAttr ".bps" -type "matrix" 0.61483001418402605 0 -0.78865965641616931 0 0 1 0 0
+		 0.78865965641616931 0 0.61483001418402605 0 1.0180069049165605 32.932854891936728 1.7790202827492114 1;
 	setAttr ".radi" 0.52326743915106277;
 createNode transform -n "bpctrl_l_Brow_004" -p "bpjnt_l_Brow_004";
 	rename -uid "6C92D4D9-4744-D96D-6632-20B362C15540";
@@ -280,6 +292,48 @@ createNode nurbsCurve -n "bpctrl_l_Brow_004Shape" -p "bpctrl_l_Brow_004";
 		0.15936198690244363 0.15942458002567861 0.004466972898098831
 		0.08624608582315163 0.20829825195252738 0.0024175083119084562
 		;
+createNode joint -n "bpjnt_m_Brow_001";
+	rename -uid "13810C1E-4FC4-BA28-0B4F-8192B940817B";
+	addAttr -ci true -sn "liw" -ln "lockInfluenceWeights" -min 0 -max 1 -at "bool";
+	setAttr ".uoc" 1;
+	setAttr ".t" -type "double3" -1.5361250049750197e-09 32.949718475341797 2.1906836032867432 ;
+	setAttr ".mnrl" -type "double3" -360 -360 -360 ;
+	setAttr ".mxrl" -type "double3" 360 360 360 ;
+	setAttr ".jot" -type "string" "none";
+	setAttr ".bps" -type "matrix" 1 0 0 0 0 1 0 0 0 0 1 0 0.19919462502002716 32.955272674560547 2.1782350540161133 1;
+	setAttr ".radi" 0.54816741153675108;
+createNode transform -n "bpctrl_m_Brow_001" -p "bpjnt_m_Brow_001";
+	rename -uid "AE6E4B83-4E60-6751-A8C7-2192DC6398B2";
+	setAttr -l on ".ro";
+	setAttr ".rp" -type "double3" 0 -7.1054273576010019e-15 -8.8817841970012523e-16 ;
+	setAttr ".sp" -type "double3" 0 0 -8.8817841970012523e-16 ;
+createNode nurbsCurve -n "bpctrl_m_Brow_001Shape" -p "bpctrl_m_Brow_001";
+	rename -uid "CC00177F-4D13-1511-277B-3DA3869070A0";
+	setAttr -k off ".v";
+	setAttr ".ove" yes;
+	setAttr ".ovc" 6;
+	setAttr ".cc" -type "nurbsCurve" 
+		1 16 0 no 3
+		17 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+		17
+		0.086279960977347581 0.20829825195254159 -2.2204460492503131e-16
+		1.6653345369377348e-16 0.2254604032479719 -4.4408920985006262e-16
+		-0.08627996097734747 0.20829825195254159 -6.6613381477509392e-16
+		-0.15942458002568777 0.15942458002569282 -6.6613381477509392e-16
+		-0.20829825195253365 0.086279960977350356 -6.6613381477509392e-16
+		-0.22546040324796249 0 -6.6613381477509392e-16
+		-0.2082982519525336 -0.086279960977350356 -6.6613381477509392e-16
+		-0.15942458002568777 -0.15942458002567861 -6.6613381477509392e-16
+		-0.086279960977347414 -0.20829825195252738 -6.6613381477509392e-16
+		1.1102230246251565e-16 -0.22546040324795058 -4.4408920985006262e-16
+		0.086279960977347692 -0.20829825195252738 -2.2204460492503131e-16
+		0.15942458002568782 -0.15942458002567861 -2.2204460492503131e-16
+		0.20829825195253393 -0.08627996097732904 -2.2204460492503131e-16
+		0.22546040324796246 1.4210854715202004e-14 -2.2204460492503131e-16
+		0.20829825195253382 0.086279960977364567 -2.2204460492503131e-16
+		0.15942458002568782 0.15942458002569992 -2.2204460492503131e-16
+		0.086279960977347581 0.20829825195254159 -2.2204460492503131e-16
+		;
 createNode multiplyDivide -n "transjnt_l_Brow_001";
 	rename -uid "D4464A72-451B-D322-E39A-798300125A9F";
 	setAttr ".i2" -type "float3" -1 1 1 ;
@@ -299,9 +353,9 @@ createNode displayLayer -n "bp_r_Brow";
 	setAttr ".do" 2;
 createNode displayLayerManager -n "layerManager";
 	rename -uid "F0123D22-4D6E-76C6-4651-56A7249A09A7";
-	setAttr ".cdl" 2;
-	setAttr -s 4 ".dli[1:4]"  1 2 0 3;
-	setAttr -s 3 ".dli";
+	setAttr ".cdl" 4;
+	setAttr -s 5 ".dli[1:5]"  1 2 0 3 4;
+	setAttr -s 4 ".dli";
 createNode multiplyDivide -n "transctrl_l_Brow_001";
 	rename -uid "7592FE90-45AB-CB0A-1469-91A0C2600CDD";
 	setAttr ".i2" -type "float3" -1 1 1 ;
@@ -391,6 +445,11 @@ createNode displayLayer -n "bp_l_Brow";
 	setAttr ".c" 6;
 	setAttr ".ufem" -type "stringArray" 0  ;
 	setAttr ".do" 1;
+createNode displayLayer -n "bp_m_Brow";
+	rename -uid "283426EA-4044-37DD-C2D8-A7A8FF86565F";
+	setAttr ".c" 17;
+	setAttr ".ufem" -type "stringArray" 0  ;
+	setAttr ".do" 3;
 select -ne :time1;
 	setAttr -av -k on ".cch";
 	setAttr -k on ".fzn";
@@ -731,6 +790,8 @@ connectAttr "bp_l_Brow.di" "bpjnt_l_Brow_003.do";
 connectAttr "bp_l_Brow.di" "bpctrl_l_Brow_003.do";
 connectAttr "bp_l_Brow.di" "bpjnt_l_Brow_004.do";
 connectAttr "bp_l_Brow.di" "bpctrl_l_Brow_004.do";
+connectAttr "bp_m_Brow.di" "bpjnt_m_Brow_001.do";
+connectAttr "bp_m_Brow.di" "bpctrl_m_Brow_001.do";
 connectAttr "bpjnt_l_Brow_001.t" "transjnt_l_Brow_001.i1";
 connectAttr "rotatejnt_l_Brow_001.o" "unitConversion2.i";
 connectAttr "unitConversion1.o" "rotatejnt_l_Brow_001.i1";
@@ -765,6 +826,7 @@ connectAttr "rotatectrl_l_Brow_004.o" "unitConversion16.i";
 connectAttr "unitConversion15.o" "rotatectrl_l_Brow_004.i1";
 connectAttr "bpctrl_l_Brow_004.r" "unitConversion15.i";
 connectAttr "layerManager.dli[2]" "bp_l_Brow.id";
+connectAttr "layerManager.dli[5]" "bp_m_Brow.id";
 dataStructure -fmt "raw" -as "name=notes_slopesMountainsGrass_Combined:string=value";
 dataStructure -fmt "raw" -as "name=faceConnectMarkerStructure:bool=faceConnectMarker:string[200]=faceConnectOutputGroups";
 dataStructure -fmt "raw" -as "name=notes_baseLeaves:string=value";
