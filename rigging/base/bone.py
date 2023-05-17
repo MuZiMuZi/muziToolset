@@ -146,9 +146,9 @@ class Bone(object) :
 		for bpjnt , jnt in zip(self.bpjnt_list , self.jnt_list) :
 			for attr in ['.translate' , '.rotate' , '.scale'] :
 				# 判断bp关节上有没有连接的属性，如果有的话则断掉
-				plug = cmds.listConnections(bpjnt + attr , plugs = True)[0]
+				plug = cmds.listConnections(bpjnt + attr , plugs = True)
 				if plug :
-					cmds.disconnectAttr(plug , bpjnt + attr)
+					cmds.disconnectAttr(plug[0] , bpjnt + attr)
 				else :
 					return
 				jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
