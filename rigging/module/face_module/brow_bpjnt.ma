@@ -1,6 +1,6 @@
 //Maya ASCII 2023 scene
 //Name: brow_bpjnt.ma
-//Last modified: Wed, May 17, 2023 11:05:24 AM
+//Last modified: Wed, May 17, 2023 11:28:27 AM
 //Codeset: 936
 requires maya "2023";
 requires "stereoCamera" "10.0";
@@ -12,7 +12,7 @@ fileInfo "product" "Maya 2023";
 fileInfo "version" "2023";
 fileInfo "cutIdentifier" "202211021031-847a9f9623";
 fileInfo "osv" "Windows 10 Pro for Workstations v2009 (Build: 19044)";
-fileInfo "UUID" "FF35EECF-4183-B2E8-B405-1290943F5141";
+fileInfo "UUID" "DB366918-42BD-F1CA-CE36-B1A14916A985";
 createNode transform -n "bpjnt_r_BrowJnt_001";
 	rename -uid "52186E92-4A71-7972-EE56-B2BF33680852";
 createNode joint -n "bpjnt_r_Brow_001" -p "bpjnt_r_BrowJnt_001";

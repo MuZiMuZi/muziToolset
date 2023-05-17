@@ -20,5 +20,5 @@ def build_rig() :
 
 
 
-build_setup()
+# build_setup()
 build_rig()
