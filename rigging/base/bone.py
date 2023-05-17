@@ -153,8 +153,7 @@ class Bone(object) :
 			jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
 			cmds.matchTransform(jnt , bpjnt)
 			cmds.delete(bpjnt)
-		# 进行关节定向
-		jointUtils.Joint.joint_orientation(self.jnt_list)
+
 	
 	
 	
@@ -171,10 +170,6 @@ class Bone(object) :
 			                                             radius = self.radius ,
 			                                             axis = 'X+' , pos = jnt ,
 			                                             parent = self.ctrl_grp)
-			# 获取关节的关节定向赋予给zero组，获得的关节定向是个元组，需要解包数值
-			jointOrient_number = cmds.getAttr(jnt + '.jointOrient')[0]
-			cmds.setAttr(ctrl.replace('ctrl' , 'zero') + '.rotate' , jointOrient_number[0] , jointOrient_number[1] ,
-			             jointOrient_number[2])
 			# 判断所创建的控制器的边，如果边为_r_的话，offset组需要修改镜像
 			if self.side == 'r' :
 				cmds.setAttr(ctrl.replace('ctrl' , 'offset') + '.scaleX' , -1)
