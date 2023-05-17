@@ -904,13 +904,17 @@ class Pipeline(object) :
 		"""
 		# 获得曲面的形状节点
 		surf_shape = cmds.listRelatives(surf_node , shapes = True)[0]
-		
+		# 创建所有deform的层级组
+		deform_grp = cmds.createNode('transform' ,
+		                             name = 'grp_{}_{}Deforms_001'.format(side , description))
+		cmds.parent(surf_node , deform_grp)
+		cmds.setAttr(surf_node + '.v' , 0)
 		# 创建follicle整体层级组的名称
 		fol_grp = cmds.createNode('transform' ,
-		                          name = 'grp_{}_{}Follicles_001'.format(side , description))
+		                          name = 'grp_{}_{}Follicles_001'.format(side , description) , parent = deform_grp)
 		# 创建jnt整体层级组的名称
 		jnt_grp = cmds.createNode('transform' ,
-		                          name = 'grp_{}_{}Jnts_001'.format(side , description))
+		                          name = 'grp_{}_{}Jnts_001'.format(side , description) , parent = deform_grp)
 		
 		# 循环制作
 		for index in range(joint_number) :
@@ -946,3 +950,5 @@ class Pipeline(object) :
 			cmds.parentConstraint(fol_node , grp_nodes[0] , maintainOffset = False)
 			# 将偏移组的旋转设置为零
 			cmds.xform(grp_nodes[1] , rotation = [0 , 0 , 0] , worldSpace = True)
+			# 设置关节的大小
+			cmds.setAttr(jnt + '.radius' , 0.4)
