@@ -1,16 +1,16 @@
-bpjnts = cmds.ls(sl = True)
+bp_list = cmds.ls(sl = True)
 
-for bpjnt in bpjnts :
+for bp in bp_list :
 	# 创建镜像位移的乘除节点
-	trans_node = cmds.createNode('multiplyDivide' , name = bpjnt.replace('bpjnt' , 'trans'))
-	cmds.setAttr(trans_node + '.input2X' , -1)
+	trans_bp_node = cmds.createNode('multiplyDivide' , name = bp.replace('bp' , 'trans'))
+	cmds.setAttr(trans_bp_node + '.input2X' , -1)
 	
-	cmds.connectAttr(bpjnt + '.translate' , trans_node + '.input1')
-	cmds.connectAttr(trans_node + '.output' , bpjnt.replace('_l_' , '_r_') + '.translate')
+	cmds.connectAttr(bp + '.translate' , trans_bp_node + '.input1')
+	cmds.connectAttr(trans_bp_node + '.output' , bp.replace('_l_' , '_r_') + '.translate')
 	# 创建镜像旋转的乘除节点
-	rotate_node = cmds.createNode('multiplyDivide' , name = bpjnt.replace('bpjnt' , 'rotate'))
-	cmds.setAttr(rotate_node + '.input2Y' , -1)
-	cmds.setAttr(rotate_node + '.input2Z' , -1)
+	rotate_bpctrl_node = cmds.createNode('multiplyDivide' , name = bp.replace('bp' , 'rotate'))
+	cmds.setAttr(rotate_bpctrl_node + '.input2Y' , -1)
+	cmds.setAttr(rotate_bpctrl_node + '.input2Z' , -1)
 	
-	cmds.connectAttr(bpjnt + '.rotate' , rotate_node + '.input1')
-	cmds.connectAttr(rotate_node + '.output' , bpjnt.replace('_l_' , '_r_') + '.rotate')
+	cmds.connectAttr(bp + '.rotate' , rotate_bpctrl_node + '.input1')
+	cmds.connectAttr(rotate_bpctrl_node + '.output' , bp.replace('_l_' , '_r_') + '.rotate')
