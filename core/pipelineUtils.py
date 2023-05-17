@@ -837,7 +837,7 @@ class Pipeline(object) :
 	
 	
 	@staticmethod
-	def create_curve_on_joints(jnt_list , curve, degree = 3) :
+	def create_curve_on_joints(jnt_list , curve , degree = 3) :
 		u"""
 		根据关节点的位置生成曲线
 		jnt_list(list):关节的列表
@@ -858,3 +858,35 @@ class Pipeline(object) :
 		curve = cmds.curve(p = curve_points , name = curve , degree = degree)
 		
 		return curve
+	
+	
+	
+	@staticmethod
+	def create_surface_on_curve(curve , surface_node , spans = 4 , offset = 0.2) :
+		u"""
+		根据给定的曲线放样生成出曲面
+		curve(str):给定的曲线名称
+		surface_node（str）：生成出来的曲面的名称
+		spans（int）:重建后曲线的点数
+		offset（float）：曲线偏移的距离值
+		
+		return:
+			返回曲面的节点
+		"""
+		# 重建曲线
+		cmds.rebuildCurve(curve , ch = 1 , rpo = 1 , rt = 0 , end = 1 , kr = 0 , kcp = 0 , kep = 1 ,
+		                  kt = 0 , spans = spans , d = 3 , tol = 0.01)
+		duplicate_crv = cmds.duplicate(curve)[0]
+		# 移动定位眉毛曲线和复制出来的曲线准备放样曲线生成曲面
+		cmds.setAttr(curve + '.translateY' , offset)
+		cmds.setAttr(duplicate_crv + '.translateY' , offset * -1)
+		# 放样曲线出曲面
+		# 通过两条曲线来放样制作曲面
+		surface_node = \
+			cmds.loft(curve , duplicate_crv , constructionHistory = False , uniform = True ,
+			          degree = 3 ,
+			          sectionSpans = 1 ,
+			          range = False , polygon = 0 ,
+			          name = surface_node)[0]
+		
+		return surface_node
