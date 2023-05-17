@@ -141,11 +141,19 @@ class Bone(object) :
 		'''
 		根据定位的bp关节创建关节
 		'''
+
 		# 根据bp关节创建新的关节
 		for bpjnt , jnt in zip(self.bpjnt_list , self.jnt_list) :
-			jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
-			cmds.matchTransform(jnt , bpjnt)
-			cmds.delete(bpjnt)
+			for attr in ['.translate','.rotate','.scale']:
+				#判断bp关节上有没有连接的属性，如果有的话则断掉
+				plug = cmds.listConnections(bpjnt + attr , plugs = True)[0]
+				if plug:
+					cmds.disconnectAttr(plug , bpjnt + attr)
+				else:
+					return
+				jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
+				cmds.matchTransform(jnt , bpjnt)
+				cmds.delete(bpjnt)
 		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.jnt_list)
 	
