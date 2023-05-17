@@ -901,8 +901,12 @@ class Pipeline(object) :
 		side（str）:边
 		description(str)：描述
 		joint_number(int):需要创建的关节节点数量
+		
+		return:follicle_dict:存储数据,fol_grp,jnt_grp,ctrl_grp,connect_list
+		
 		"""
 		# 获得曲面的形状节点
+
 		surf_shape = cmds.listRelatives(surf_node , shapes = True)[0]
 		# 创建所有deform的层级组
 		deform_grp = cmds.createNode('transform' ,
@@ -916,6 +920,10 @@ class Pipeline(object) :
 		jnt_grp = cmds.createNode('transform' ,
 		                          name = 'grp_{}_{}Jnts_001'.format(side , description) , parent = deform_grp)
 		
+		# 创建ctrl整体层级组的名称
+		ctrl_grp = cmds.createNode('transform' ,
+		                           name = 'grp_{}_{}Ctrls_001'.format(side , description) , parent = deform_grp)
+		connect_list = []
 		# 循环制作
 		for index in range(joint_number) :
 			# 创建毛囊
@@ -938,17 +946,26 @@ class Pipeline(object) :
 			# 创建关节
 			jnt = cmds.createNode('joint' , name = 'jnt_{}_{}Skin_{:03d}'.format(side , description ,
 			                                                                     index + 1))
-			grp_nodes = []
-			parent_grp = jnt_grp
-			for node_type in ['zero' , 'offset'] :
-				grp = cmds.createNode('transform' , name = jnt.replace('jnt' , node_type) , parent = parent_grp)
-				grp_nodes.append(grp)
-				parent_grp = grp
-			
-			cmds.parent(jnt , grp_nodes[-1])
-			# 让对应的毛囊约束对应的关节点
-			cmds.parentConstraint(fol_node , grp_nodes[0] , maintainOffset = False)
+			cmds.parent(jnt , jnt_grp)
+			# 整理层级结构，创建zero组和offset组
+			# 创建关节的控制器
+			ctrl = controlUtils.Control.create_ctrl(jnt.replace('jnt' , 'ctrl') , shape = 'ball' , radius = 0.05 ,
+			                                        axis = 'X+' , pos = jnt , parent = ctrl_grp)
+			cmds.parentConstraint(ctrl.replace('ctrl' , 'output') , jnt)
+			# 让对应的毛囊约束对应的控制器
+			cmds.parentConstraint(fol_node , ctrl.replace('ctrl' , 'driven') , maintainOffset = False)
 			# 将偏移组的旋转设置为零
-			cmds.xform(grp_nodes[1] , rotation = [0 , 0 , 0] , worldSpace = True)
+			cmds.xform(ctrl.replace('ctrl' , 'offset') , rotation = [0 , 0 , 0] , worldSpace = True)
 			# 设置关节的大小
 			cmds.setAttr(jnt + '.radius' , 0.4)
+			
+			# 将connect组添加到connect_list里，方便外部进行调用
+			connect_list.append(ctrl.replace('ctrl','connect'))
+			
+			follicle_dict = {
+					'jnt_grp' : jnt_grp ,
+					'ctrl_grp' : ctrl_grp ,
+					'fol_grp' : fol_grp,
+					'connect_list' : connect_list
+					}
+		return follicle_dict
