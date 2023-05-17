@@ -43,10 +43,11 @@ class Brow(base.Base) :
 		self.brow_r.create_namespace()
 		# 创建左边的眉毛曲线名称
 		self.brow_l.bpjnt_crv = self.brow_l.bpjnt_list[0].replace('jnt' , 'crv')
-		self.brow_l.jnt_crv = self.brow_l.bpjnt_list[0].replace('bpjnt' , 'crv')
+		self.brow_l.aim_crv = self.brow_l.bpjnt_list[0].replace('bpjnt' , 'aimcrv')
+		
 		# 创建右边的眉毛曲线名称
 		self.brow_r.bpjnt_crv = self.brow_r.bpjnt_list[0].replace('jnt' , 'crv')
-		self.brow_r.jnt_crv = self.brow_r.bpjnt_list[0].replace('bpjnt' , 'crv')
+		self.brow_r.aim_crv = self.brow_r.bpjnt_list[0].replace('bpjnt' , 'aimcrv')
 	
 	
 	
@@ -55,26 +56,39 @@ class Brow(base.Base) :
 		self.brow_bpjnt_path = os.path.abspath(__file__ + "/../brow_bpjnt.ma")
 		# 导入关节
 		cmds.file(self.brow_bpjnt_path , i = True , rnn = True)
-		
 	
 	
 	
 	def create_bpcrv(self) :
 		u"""
-		创建用于目标约束的曲线
+		创建用于约束关节的曲线
 		"""
 		
-		# 创建左边的bp眉毛
+		# 创建左边的bp定位眉毛曲线
 		self.brow_l.bpjnt_crv = pipelineUtils.Pipeline.create_curve_on_joints(self.brow_l.bpjnt_list ,
 		                                                                      self.brow_l.bpjnt_crv , degree = 3
 		                                                                      )
-		# 创建右边的bp眉毛
+		# 创建右边的bp定位眉毛曲线
 		self.brow_r.bpjnt_crv = pipelineUtils.Pipeline.create_curve_on_joints(self.brow_r.bpjnt_list ,
 		                                                                      self.brow_r.bpjnt_crv , degree = 3
 		                                                                      )
 	
 	
 	
+	def create_crv(self) :
+		u"""
+		创建用于目标约束的曲线
+		"""
+		# 创建左边的aim目标约束的眉毛曲线
+		self.brow_l.aim_crv = cmds.duplicate(self.brow_l.bpjnt_crv , name = self.brow_l.aim_crv)[0]
+		cmds.move(0 , 0 , 0.75 , self.brow_l.aim_crv , absolute = True)
+		# 创建右边的aim目标约束的眉毛曲线
+		self.brow_r.aim_crv = cmds.duplicate(self.brow_r.bpjnt_crv , name = self.brow_r.aim_crv)[0]
+		cmds.move(0 , 0 , 0.75 , self.brow_r.aim_crv , absolute = True)
+		
+	
+	
 	def create_joint(self) :
 		self.create_bpcrv()
+		self.create_crv()
 		super().create_joint()
