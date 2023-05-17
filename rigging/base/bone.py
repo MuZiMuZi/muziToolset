@@ -141,15 +141,15 @@ class Bone(object) :
 		'''
 		根据定位的bp关节创建关节
 		'''
-
+		
 		# 根据bp关节创建新的关节
 		for bpjnt , jnt in zip(self.bpjnt_list , self.jnt_list) :
-			for attr in ['.translate','.rotate','.scale']:
-				#判断bp关节上有没有连接的属性，如果有的话则断掉
+			for attr in ['.translate' , '.rotate' , '.scale'] :
+				# 判断bp关节上有没有连接的属性，如果有的话则断掉
 				plug = cmds.listConnections(bpjnt + attr , plugs = True)[0]
-				if plug:
+				if plug :
 					cmds.disconnectAttr(plug , bpjnt + attr)
-				else:
+				else :
 					return
 				jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
 				cmds.matchTransform(jnt , bpjnt)
@@ -172,6 +172,11 @@ class Bone(object) :
 			                                             radius = self.radius ,
 			                                             axis = 'X+' , pos = jnt ,
 			                                             parent = self.ctrl_grp)
+			# 判断所创建的控制器的边，如果边为_r_的话，offset组需要修改镜像
+			if self.side == 'r' :
+				cmds.setAttr(self.ctrl.replace('ctrl' , 'offset' + '.scaleX' , -1))
+			else :
+				return
 	
 	
 	
