@@ -1,6 +1,9 @@
 bp_list = cmds.ls(sl = True)
 
 for bp in bp_list :
+	#判断是否为关节，如果是关节的话则需要将关节定向清零
+	if cmds.nodeType(bp) == 'joint':
+		cmds.setAttr(bp + '.jointOrient' , 0 , 0 , 0)
 	# 创建镜像位移的乘除节点
 	trans_bp_node = cmds.createNode('multiplyDivide' , name = bp.replace('bp' , 'trans'))
 	cmds.setAttr(trans_bp_node + '.input2X' , -1)
