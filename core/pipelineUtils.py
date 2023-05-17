@@ -837,24 +837,24 @@ class Pipeline(object) :
 	
 	
 	@staticmethod
-	def create_curve_on_joints(jnt_list,curve, degree = 3):
+	def create_curve_on_joints(jnt_list , curve, degree = 3) :
 		u"""
 		根据关节点的位置生成曲线
 		jnt_list(list):关节的列表
 		curve（str）：创建出来的曲线的名称
-		degree(float)：新曲线的阶数。默认值为3。请注意，您需要（阶数+1）个曲线点来创建可见的曲线跨度。你必须为3度曲线放置4个点。
+		degree(int)：新曲线的阶数。默认值为3。请注意，您需要（阶数+1）个曲线点来创建可见的曲线跨度。你必须为3度曲线放置4个点。
 		
 		return:
 			返回创建出来的曲线curve
 		"""
-		#创建一个列表用来存储点的位置信息
+		# 创建一个列表用来存储点的位置信息
 		curve_points = list()
 		
 		# 查询所有关节的位置信息，将所有关节的位置信息保存到curve_points里
-		for  jnt in jnt_list :
+		for jnt in jnt_list :
 			pos = cmds.xform(jnt , q = 1 , t = 1 , ws = 1)
 			curve_points.append(pos)
 		# 创建曲线
-		curve = cmds.curve(p = curve_points , name = curve,degree=degree)
+		curve = cmds.curve(p = curve_points , name = curve , degree = degree)
 		
 		return curve
