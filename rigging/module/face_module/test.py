@@ -9,19 +9,19 @@ reload(eyeLid)
 
 
 def build_setup() :
-	eye_lid = eyeLid.EyeLid(side = 'l' , name = 'upper' , joint_number = 5 , joint_parent = None , control_parent = None)
+	eye_lid = eyeLid.EyeLid(side = 'l' , name = 'upper' , joint_number = 7 , joint_parent = None , control_parent = None)
 	eye_lid.build_setup()
 
 
 
 def build_curve() :
-	eye_lid = eyeLid.EyeLid(side = 'l' , name = 'upper' , joint_number = 5 , joint_parent = None , control_parent =
+	eye_lid = eyeLid.EyeLid(side = 'l' , name = 'upper' , joint_number = 7 , joint_parent = None , control_parent =
 	None)
 	eye_lid.build_setup()
 	eye_lid.build_curve()
 
 def build_rig() :
-	eye_lid = eyeLid.EyeLid(side = 'l' , name = 'upper' , joint_number = 5 , joint_parent = None , control_parent =
+	eye_lid = eyeLid.EyeLid(side = 'l' , name = 'upper' , joint_number = 7 , joint_parent = None , control_parent =
 	None)
 	eye_lid.build_rig()
 

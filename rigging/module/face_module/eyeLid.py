@@ -13,7 +13,7 @@ from ...chain import chain , chainFK
 from ....core import controlUtils , hierarchyUtils , jointUtils , pipelineUtils
 
 
-
+reload(bone)
 reload(pipelineUtils)
 reload(jointUtils)
 
@@ -23,12 +23,13 @@ class EyeLid(bone.Bone) :
 	
 	
 	
-	def __init__(self , side , name , joint_number = 5 , joint_parent = None , control_parent = None) :
+	def __init__(self , side , name , joint_number = 7 , joint_parent = None , control_parent = None) :
 		super().__init__(side , name , joint_number , joint_parent , control_parent)
 		
-		self.shape = 'circle'
+		self.shape = 'cube'
 		self._rtype = 'EyeLid'
-		self.radius = 0.15
+		self.radius = 0.1
+		self.joint_number = joint_number
 		self.curve_jnt_list = list()
 	
 	
@@ -53,34 +54,6 @@ class EyeLid(bone.Bone) :
 		self.eye_jnt = 'jnt_{}_Eye_001'.format(self._side)
 		self.eye_up_loc = 'loc_{}_EyeUp_001'.format(self._side)
 		self.eye_up_zero = 'zero_{}_EyeUp_001'.format(self._side)
-	
-	
-	
-	def create_joint(self) :
-		u'''
-		创建眼皮的权重关节在曲线上
-		'''
-		# 将控制器的关节进行隐藏
-		cmds.setAttr(self.curve_jnt_grp + '.visibility' , 0)
-		# 判断向上的目标物体是否存在，如果不存在的话则创建
-		if cmds.objExists(self.eye_up_loc) :
-			pass
-		else :
-			self.eye_up_zero = cmds.createNode('transform' , name = self.eye_up_zero)
-			self.eye_up_loc = cmds.spaceLocator(name = self.eye_up_loc)[0]
-			cmds.parent(self.eye_up_loc , self.eye_up_zero)
-			cmds.matchTransform(self.eye_up_zero , self.eye_jnt)
-			cmds.setAttr(self.eye_up_loc + '.translateY' , 5)
-		# 创建眼皮的权重关节在曲线上
-		pipelineUtils.Pipeline.create_eyelid_joints_on_curve(self.skin_curve , self.eye_jnt , self.eye_up_loc)
-	
-	
-	
-	def build_setup(self) :
-		"""
-		创建定位曲线,生成准备
-		"""
-		self.create_namespace()
 	
 	
 	
@@ -119,9 +92,46 @@ class EyeLid(bone.Bone) :
 		wire_node = cmds.wire(self.curve , w = self.skin_curve , gw = False , en = 1.000000 , ce = 0.000000 ,
 		                      li = 0.000000)[0]
 		cmds.setAttr(wire_node + '.dropoffDistance[0]' , 200)
+		BaseWire_node = self.skin_curve + 'BaseWire'
+		cmds.parent(BaseWire_node , self.curve_nodes_grp)
+	
+	def create_joint(self) :
+		u'''
+		创建眼皮的权重关节在曲线上
+		'''
+		# 将控制器的关节进行隐藏
+		cmds.setAttr(self.curve_jnt_grp + '.visibility' , 0)
+		# 判断向上的目标物体是否存在，如果不存在的话则创建
+		if cmds.objExists(self.eye_up_loc) :
+			pass
+		else :
+			self.eye_up_zero = cmds.createNode('transform' , name = self.eye_up_zero)
+			self.eye_up_loc = cmds.spaceLocator(name = self.eye_up_loc)[0]
+			cmds.parent(self.eye_up_loc , self.eye_up_zero)
+			cmds.matchTransform(self.eye_up_zero , self.eye_jnt)
+			cmds.setAttr(self.eye_up_loc + '.translateY' , 5)
+		# 创建眼皮的权重关节在曲线上
+		pipelineUtils.Pipeline.create_eyelid_joints_on_curve(self.skin_curve , self.eye_jnt , self.eye_up_loc)
+	
+	
+	
+	def build_setup(self) :
+		"""
+		创建定位曲线,生成准备
+		"""
+		self.create_namespace()
+	
+	
+	
+	
+	
+	
+	def create_ctrl(self) :
+		super().create_ctrl()
 	
 	
 	
 	def build_rig(self) :
 		self.create_namespace()
 		self.create_joint()
+		self.create_ctrl()

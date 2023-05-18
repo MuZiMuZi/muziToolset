@@ -998,6 +998,7 @@ class Pipeline(object) :
 		curve_point = cmds.ls(sl = True)
 		# 创建新的曲线
 		curve_node = cmds.polyToCurve(curve_point , name = name , degree = degree , conformToSmoothMeshPreview = 1)
+		cmds.reverseCurve(name , constructionHistory = 1 , replaceOriginal = 1)
 		# 创建出来的曲线删除历史
 		cmds.delete(curve_node , constructionHistory = True)
 		
@@ -1043,8 +1044,8 @@ class Pipeline(object) :
 		# 创建层级组结构
 		
 		node_grp = cmds.createNode('transform' ,
-		                            name = 'grp_{}_{}RigNodes_{:03d}'.format(curve_obj.side , curve_obj.description ,
-		                                                                     curve_obj.index))
+		                           name = 'grp_{}_{}RigNodes_{:03d}'.format(curve_obj.side , curve_obj.description ,
+		                                                                    curve_obj.index))
 		
 		drive_attach_grp = cmds.createNode('transform' ,
 		                                   name = 'grp_{}_{}Attaches_{:03d}'.format(curve_obj.side ,
@@ -1053,8 +1054,8 @@ class Pipeline(object) :
 		                                   parent = node_grp)
 		
 		jnt_grp = cmds.createNode('transform' ,
-		                           name = 'grp_{}_{}Jnts_{:03d}'.format(curve_obj.side , curve_obj.description ,
-		                                                                curve_obj.index),parent = node_grp )
+		                          name = 'grp_{}_{}Jnts_{:03d}'.format(curve_obj.side , curve_obj.description ,
+		                                                               curve_obj.index) , parent = node_grp)
 		
 		# 整理层级结构
 		cmds.parent(curve , node_grp)
@@ -1110,5 +1111,3 @@ class Pipeline(object) :
 			# 将关节定向到zero组的方向
 			cmds.matchTransform(jnt , aim_node , position = False , rotation = True)
 			cmds.makeIdentity(jnt , apply = True , translate = True , rotate = True , scale = True)
-			
-			
