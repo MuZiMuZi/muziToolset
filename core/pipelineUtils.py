@@ -924,6 +924,17 @@ class Pipeline(object) :
 		ctrl_grp = cmds.createNode('transform' ,
 		                           name = 'grp_{}_{}Ctrls_001'.format(side , description) , parent = deform_grp)
 		connect_list = []
+		
+		# 创建skin关节的集合
+		skin_jnt_set = 'set_skinJnt'
+		make_skin_jnt_set = 'set_' + side+ '_' + description + 'Jnt'
+		make_skin_jnt_set = cmds.sets(name = make_skin_jnt_set , empty = True)
+		if not cmds.objExists(skin_jnt_set) or cmds.nodeType(skin_jnt_set) != 'objectSet' :
+			skin_jnt_set = cmds.sets(name = skin_jnt_set , empty = True)
+			cmds.sets(make_skin_jnt_set , edit = True , forceElement = skin_jnt_set)
+		else :
+			cmds.sets(make_skin_jnt_set , edit = True , forceElement = skin_jnt_set)
+			
 		# 循环制作
 		for index in range(joint_number) :
 			# 创建毛囊
@@ -962,10 +973,14 @@ class Pipeline(object) :
 			# 将connect组添加到connect_list里，方便外部进行调用
 			connect_list.append(ctrl.replace('ctrl','connect'))
 			
+			# 将生成的skin关节放在对应的集里方便选择
+			cmds.sets(jnt , edit = True , forceElement = make_skin_jnt_set)
+			
 			follicle_dict = {
 					'jnt_grp' : jnt_grp ,
 					'ctrl_grp' : ctrl_grp ,
 					'fol_grp' : fol_grp,
-					'connect_list' : connect_list
+					'connect_list' : connect_list,
+					'deform_grp': deform_grp
 					}
 		return follicle_dict
