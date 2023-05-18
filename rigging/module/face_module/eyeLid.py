@@ -14,10 +14,6 @@ from ....core import controlUtils , hierarchyUtils , jointUtils , pipelineUtils
 
 
 
-
-
-
-
 class EyeLid(bone.Bone) :
 	
 	
@@ -88,11 +84,10 @@ class EyeLid(bone.Bone) :
 		cmds.skinCluster(self.curve_jnt_list , self.curve)
 		
 		# 控制器曲线对蒙皮曲线做wire变形，让控制器曲线控制蒙皮曲线,注意如果是两条曲线做wire变形器的话，被控制的曲线需要给个w参数
-		wire_node = cmds.wire(self.curve , w = self.skin_curve , gw = False , en = 1.000000 , ce = 0.000000 ,
+		wire_node = cmds.wire(self.skin_curve , w = self.curve , gw = False , en = 1.000000 , ce = 0.000000 ,
 		                      li = 0.000000)[0]
 		cmds.setAttr(wire_node + '.dropoffDistance[0]' , 200)
-		BaseWire_node = self.skin_curve + 'BaseWire'
-		cmds.parent(BaseWire_node , self.curve_nodes_grp)
+
 	
 	
 	
@@ -116,14 +111,6 @@ class EyeLid(bone.Bone) :
 	
 	
 	
-	def build_setup(self) :
-		"""
-		创建定位曲线,生成准备
-		"""
-		self.create_namespace()
-	
-	
-	
 	def create_ctrl(self) :
 		super().create_ctrl()
 	
@@ -141,7 +128,7 @@ class EyeLid(bone.Bone) :
 		# [4,5,6]
 		
 		# 首端控制器和末端控制器约束中间的控制器,在列表里是[0,3,6]
-		cmds.parentConstraint(self.output_list[0] , self.output_list[6] , self.driven_list[3],mo = True)
+		cmds.parentConstraint(self.output_list[0] , self.output_list[6] , self.driven_list[3] , mo = True)
 		
 		# 约束中间的控制器[0,2,3]，两侧的控制器约束中间的控制器
 		cmds.parentConstraint(self.output_list[0] , self.output_list[3] , self.driven_list[2] , mo = True)
@@ -168,6 +155,14 @@ class EyeLid(bone.Bone) :
 		# 连接可见性
 		cmds.connectAttr(self.ctrl_list[3] + '.LidSubCtrlVis' , self.ctrl_list[1] + '.visibility')
 		cmds.connectAttr(self.ctrl_list[3] + '.LidSubCtrlVis' , self.ctrl_list[5] + '.visibility')
+	
+	
+	
+	def build_setup(self) :
+		"""
+		创建定位曲线,生成准备
+		"""
+		self.create_namespace()
 	
 	
 	
