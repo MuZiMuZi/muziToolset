@@ -119,17 +119,20 @@ class Joint(object) :
 	
 	
 	@staticmethod
-	def create_joints_on_curve() :
+	def create_joints_on_curve(is_parent = True) :
 		u"""基于曲线上的点创建关节(通用版本)
 			还未添加是否为曲线的判断
+			is_parent(bool):是否需要将关节放在上一次创建出来的关节层级下
+			return：
+				jnt_dict：将关节的信息资料存储成一个字典返回出去，方便外部调用
 		  """
 		
 		curve = cmds.ls(sl = True)[0]
 		# 获取节点的曲线形状
 		curve_shape = cmds.listRelatives(curve , shapes = True)[0]
 		# 创建组
-		grp_jnts = cmds.createNode('transform' ,
-		                           name = 'grp_{}Jnts_001'.format(curve))
+		jnt_grp = cmds.createNode('transform' ,
+		                           name = 'grp_{}Jnts'.format(curve))
 		
 		# 获取节点的曲线形状
 		curve_shape = cmds.listRelatives(curve , shapes = True)[0]
@@ -140,17 +143,23 @@ class Joint(object) :
 		
 		# 获取曲线的点数目
 		cv_num = spans + degree
-		
+		jnt_list = []
 		# 创建关节并吸附到曲线
+		parent = jnt_grp
 		for i in range(cv_num) :
-			jnt = cmds.createNode('joint' , name = 'jnt_{}_{:03d}'.format(curve , i + 1))
+			jnt = cmds.createNode('joint' , name = 'jnt_{}_{:03d}'.format(curve , i + 1), parent = parent)
 			# 获取cv位置
 			cv_pos = cmds.xform('{}.cv[{}]'.format(curve , i) , query = True , translation = True , worldSpace = True)
 			# 设置关节位置
 			cmds.xform(jnt , translation = cv_pos , worldSpace = True)
-			cmds.parent(jnt , grp_jnts)
-	
-	
+			jnt_list.append(jnt)
+			# 判断是否需要修改父层级关节
+			if is_parent:
+				parent = jnt
+		# 将关节的信息资料存储成一个字典返回出去，方便外部调用
+		jnt_dict = {'jnt_list':jnt_list,
+		            'jnt_grp': jnt_grp}
+		return jnt_dict
 	
 	@staticmethod
 	def create_chain(bp_joints , suffix , joint_parent = None) :
