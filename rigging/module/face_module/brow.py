@@ -129,9 +129,9 @@ class Brow(base.Base) :
 		
 		# 创建右边的曲面上的毛囊和权重关节
 		self.brow_r.follicle_dict = pipelineUtils.Pipeline.create_joint_follicle_on_surface(self.brow_r.drive_suf ,
-		                                                                               self.brow_r.side ,
-		                                                                               self.brow_r._rtype ,
-		                                                                               joint_number = 6)
+		                                                                                    self.brow_r.side ,
+		                                                                                    self.brow_r._rtype ,
+		                                                                                    joint_number = 6)
 	
 	
 	
@@ -144,7 +144,10 @@ class Brow(base.Base) :
 		                                                           axis = 'X+' , pos = self.brow_l.jnt_list[1] ,
 		                                                           parent = self.control_parent)
 		self.brow_l.create_ctrl()
+		# 整理眉毛左边的控制器层级结构
 		cmds.parent(self.brow_l.drive_suf , self.brow_l.ctrl_grp)
+		cmds.parent(self.brow_l.master_ctrl.replace('ctrl' , 'zero') , self.brow_l.ctrl_grp)
+		cmds.parent(self.brow_l.follicle_dict['deform_grp'] , self.brow_l.ctrl_grp)
 		
 		# 创建眉毛左边的控制器
 		# 创建眉毛右边的整体控制器
@@ -153,12 +156,16 @@ class Brow(base.Base) :
 		                                                           axis = 'X+' , pos = self.brow_r.jnt_list[1] ,
 		                                                           parent = self.control_parent)
 		self.brow_r.create_ctrl()
+		# 整理眉毛右边的控制器层级结构
 		cmds.parent(self.brow_r.drive_suf , self.brow_r.ctrl_grp)
+		cmds.parent(self.brow_r.master_ctrl.replace('ctrl' , 'zero') , self.brow_r.ctrl_grp)
+		cmds.parent(self.brow_r.follicle_dict['deform_grp'] , self.brow_r.ctrl_grp)
 		
 		# 整体控制器添加属性
 		for ctrl in [self.brow_l.master_ctrl , self.brow_r.master_ctrl] :
 			cmds.addAttr(ctrl , ln = 'BrowCtrlsVis' , dv = 0 , at = 'bool' , k = 1)
-			cmds.addAttr(ctrl,ln = 'FollowValue',nn = 'FollowValue---------' , dv = 0 , at = 'bool' , hidden = False, k = 0)
+			cmds.addAttr(ctrl , ln = 'FollowValue' , nn = 'FollowValue---------' , dv = 0 , at = 'bool' ,
+			             hidden = False , k = 0)
 			for index in range(4) :
 				cmds.addAttr(ctrl , ln = 'Follow{:02d}'.format(index) , dv = 1 - 0.25 * index , at = 'float' ,
 				             min = 0 ,
@@ -174,12 +181,14 @@ class Brow(base.Base) :
 		# 左右两边的眉毛控制器约束中间眉心的控制器
 		brow_l_output = self.brow_l.output_list[0]
 		brow_r_output = self.brow_r.output_list[0]
-		cmds.parentConstraint(brow_l_output , brow_r_output , self.output_list[0] , mo = True)
+		
+		cmds.parentConstraint(brow_l_output , brow_r_output , self.driven_list[0] , mo = True)
 		
 		# 左边眉毛的整体控制器连接子级控制器
 		self.create_connect(self.brow_l.master_ctrl , self.brow_l.connect_list)
 		# 左边眉毛的整体控制器连接子级控制器的显示
-		cmds.connectAttr(self.brow_l.master_ctrl + '.BrowCtrlsVis' , self.brow_l.follicle_dict['ctrl_grp'] + '.visibility')
+		cmds.connectAttr(self.brow_l.master_ctrl + '.BrowCtrlsVis' ,
+		                 self.brow_l.follicle_dict['ctrl_grp'] + '.visibility')
 		
 		# 右边眉毛的整体控制器连接子级控制器
 		self.create_connect(self.brow_r.master_ctrl , self.brow_r.connect_list)
@@ -200,7 +209,7 @@ class Brow(base.Base) :
 			trans_node = cmds.createNode('multiplyDivide' ,
 			                             name = driven[index].replace('connect' , 'trans'))
 			cmds.connectAttr(driver + '.translate' , trans_node + '.input1')
-			for axis in ['X','Y','Z']:
+			for axis in ['X' , 'Y' , 'Z'] :
 				cmds.connectAttr(driver + '.Follow{:02d}'.format(index) , trans_node + '.input2{}'.format(axis))
 			cmds.connectAttr(trans_node + '.output' , driven[index] + '.translate')
 			# 创建旋转的乘除节点
