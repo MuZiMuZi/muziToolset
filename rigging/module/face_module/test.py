@@ -6,7 +6,8 @@ from importlib import reload
 
 reload(brow)
 
-
+curve_point = cmds.ls(sl = True)
+cmds.polyToCurve(curve_point  , degree = 3 , conformToSmoothMeshPreview = 1)
 
 def build_setup() :
 	brow_m = brow.Brow(side = 'm' , joint_parent = None , control_parent = None)

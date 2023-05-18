@@ -984,3 +984,21 @@ class Pipeline(object) :
 					'deform_grp' : deform_grp
 					}
 		return follicle_dict
+	
+	
+	
+	@staticmethod
+	def create_curve_on_polyToCurve(name,degree = 3):
+		u"""
+		根据模型上所选择的边，模型的边到曲线生成新的曲线
+		curve_name(str)：所生成的曲线的名称
+		degree(int)：新曲线的阶数。默认值为3。请注意，您需要（阶数+1）个曲线点来创建可见的曲线跨度。你必须为3度曲线放置4个点。
+		return:
+			生成的曲线
+		"""
+		#获取根据模型上所选择的边的点信息
+		curve_point = cmds.ls(sl = True)
+		# 创建新的曲线
+		curve_node = cmds.polyToCurve(curve_point , name = name,degree = degree , conformToSmoothMeshPreview = 1)
+		
+		return curve_node
