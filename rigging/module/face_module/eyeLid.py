@@ -43,9 +43,12 @@ class EyeLid(bone.Bone) :
 		for index in range(7) :
 			self.curve_jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
 		self.curve_jnt_grp = 'grp_{}_{}{}Jnts_001'.format(self._side , self._name , self._rtype)
+		self.skin_jnt_grp = 'grp_{}_{}{}SkinJnts_001'.format(self._side , self._name , self._rtype)
 	
-	
-	
+		self.eye_jnt = 'jnt_{}_Eye_001'.format(self._side)
+		self.eye_up_loc = 'loc_{}_EyeUp_001'.format(self._side)
+		self.eye_up_zero = 'zero_{}_EyeUp_001'.format(self._side)
+
 	def build_curve(self) :
 		u"""
 		根据选择的模型点创建用于定位的曲线
@@ -76,6 +79,12 @@ class EyeLid(bone.Bone) :
 	
 	
 	
+	def create_joint(self) :
+		# 创建眼皮的权重关节在曲线上
+		pipelineUtils.Pipeline.create_eyelid_joints_on_curve(self.skin_curve , self.eye_jnt)
+	
+	
+	
 	def build_setup(self) :
 		"""
 		创建定位曲线,生成准备
@@ -85,4 +94,5 @@ class EyeLid(bone.Bone) :
 	
 	
 	def build_rig(self) :
-		super().build_rig()
+		self.create_namespace()
+		self.create_joint()

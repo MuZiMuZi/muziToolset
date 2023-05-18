@@ -30,4 +30,4 @@ def build_rig() :
 
 # build_setup()
 build_curve()
-# build_rig()
+build_rig()
