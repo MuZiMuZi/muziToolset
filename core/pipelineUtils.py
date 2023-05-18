@@ -46,9 +46,7 @@ from maya import mel
 from pymel.util import path
 from shiboken2 import wrapInstance
 
-from . import controlUtils
-from . import hierarchyUtils
-from . import qtUtils
+from . import controlUtils , hierarchyUtils , nameUtils , qtUtils
 
 
 
@@ -988,7 +986,7 @@ class Pipeline(object) :
 	
 	
 	@staticmethod
-	def create_curve_on_polyToCurve(name,degree = 3):
+	def create_curve_on_polyToCurve(name , degree = 3) :
 		u"""
 		根据模型上所选择的边，模型的边到曲线生成新的曲线
 		curve_name(str)：所生成的曲线的名称
@@ -996,12 +994,109 @@ class Pipeline(object) :
 		return:
 			生成的曲线
 		"""
-		#获取根据模型上所选择的边的点信息
+		# 获取根据模型上所选择的边的点信息
 		curve_point = cmds.ls(sl = True)
-		print(curve_point)
 		# 创建新的曲线
-		curve_node = cmds.polyToCurve(curve_point , name = name,degree = degree , conformToSmoothMeshPreview = 1)
+		curve_node = cmds.polyToCurve(curve_point , name = name , degree = degree , conformToSmoothMeshPreview = 1)
 		# 创建出来的曲线删除历史
 		cmds.delete(curve_node , constructionHistory = True)
 		
 		return curve_node
+	
+	
+	@staticmethod
+	def get_curve_number(curve):
+		u"""
+		curve(str):想要获取点数量的曲线名称
+		获得曲线的点数量:spans + degree
+		return:
+			cv_num：返回曲线的点数量
+		"""
+		# 获得曲线的形状节点
+		curve_shape = cmds.listRelatives(curve , shapes = True)[0]
+		
+		# 获取曲线跨度和阶数
+		spans = cmds.getAttr(curve_shape + '.spans')
+		degree = cmds.getAttr(curve_shape + '.degree')
+		
+		# 获取cv点数量
+		cv_num = spans + degree
+		
+		return cv_num
+	@staticmethod
+	def create_eyelid_joints_on_curve(curve , eye_joint ) :
+		"""
+		基于cv创建眼睑关节，并使用目标约束附加到曲线
+	
+		Args:
+			curve (str): 眼睑曲线
+			eye_joint (str): 眼睛的关节
+		"""
+		# 获得名称规范
+		curve_obj = nameUtils.Name(curve)
+		
+		# 创建层级组结构
+		grp_jnts = cmds.createNode('transform' ,
+		                           name = 'grp_{}_{}Jnts_{:03d}'.format(curve_obj.side , curve_obj.description ,
+		                                                                curve_obj.index))
+		
+		grp_nodes = cmds.createNode('transform' ,
+		                            name = 'grp_{}_{}RigNodes_{:03d}'.format(curve_obj.side , curve_obj.description ,
+		                                                                     curve_obj.index))
+		
+		grp_drive_attach = cmds.createNode('transform' ,
+		                                   name = 'grp_{}_{}Attaches_{:03d}'.format(curve_obj.side , curve_obj.description ,
+		                                                                            curve_obj.index) ,
+		                                   parent = grp_nodes)
+		
+		# 整理层级结构
+		cmds.parent(curve , grp_nodes)
+		
+		#获取曲线的点数量
+		cv_num = Pipeline.get_curve_number(curve)
+		
+		# 获得曲线的形状节点
+		curve_shape = cmds.listRelatives(curve , shapes = True)[0]
+		
+		# 创建关节并附着到曲线
+		for i in range(cv_num) :
+			jnt = cmds.createNode('joint' , name = 'jnt_{}_{}_{:03d}'.format(curve_obj.side , curve_obj.description , i + 1))
+			cmds.setAttr(jnt + '.radius' , 0.2)
+			# 获取cv点的位置信息
+			cv_pos = cmds.xform('{}.cv[{}]'.format(curve , i) , query = True , translation = True , worldSpace = True)
+			# 设置关节点的位置信息
+			cmds.xform(jnt , translation = cv_pos , worldSpace = True)
+			
+			# 获取曲线上最接近的参数，创建nearestPointOnCurve节点查找最经典
+			npoc = cmds.createNode('nearestPointOnCurve')
+			cmds.connectAttr(curve_shape + '.worldSpace[0]' , npoc + '.inputCurve')
+			cmds.connectAttr(jnt + '.translate' , npoc + '.inPosition')
+			parameter = cmds.getAttr(npoc + '.parameter')
+			cmds.delete(npoc)
+			
+			# 创建附加节点
+			attach = cmds.createNode('transform' ,
+			                         name = 'grp_{}_{}Attach_{:03d}'.format(curve_obj.side , curve_obj.description , i + 1) ,
+			                         parent = grp_drive_attach)
+			poci = cmds.createNode('pointOnCurveInfo' , name = attach.replace('grp' , 'poci'))
+			cmds.connectAttr(curve_shape + '.worldSpace[0]' , poci + '.inputCurve')
+			cmds.setAttr(poci + '.parameter' , parameter)
+			cmds.connectAttr(poci + '.position' , attach + '.translate')
+			
+			# 在眼睛关节位置上创建目标节点
+			aim_node = cmds.createNode('transform' ,
+			                           name = 'grp_{}_{}Aim_{:03d}'.format(curve_obj.side , curve_obj.description , i + 1) ,
+			                           parent = grp_jnts)
+			cmds.matchTransform(aim_node , eye_joint , position = True)
+			
+			# 带有附加节点的目标约束
+			cmds.aimConstraint(attach , aim_node , aimVector = [1 , 0 , 0] , upVector = [0 , 1 , 0] ,
+			                   worldUpType = 'none' ,
+			                   worldUpVector = [0 , 1 , 0] ,
+			                   maintainOffset = False)
+			
+			# 将关节放到目标约束的节点下，并确定关节的方向
+			cmds.parent(jnt , aim_node)
+			# 将关节定向到zero组的方向
+			cmds.matchTransform(jnt , aim_node , position = False , rotation = True)
+			cmds.makeIdentity(jnt , apply = True , translate = True , rotate = True , scale = True)
