@@ -13,6 +13,7 @@ from ...chain import chain , chainFK
 from ....core import controlUtils , hierarchyUtils , jointUtils , pipelineUtils
 
 
+
 reload(bone)
 reload(pipelineUtils)
 reload(jointUtils)
@@ -28,7 +29,7 @@ class EyeLid(bone.Bone) :
 		
 		self.shape = 'cube'
 		self._rtype = 'EyeLid'
-		self.radius = 0.1
+		self.radius = 0.05
 		self.joint_number = joint_number
 		self.curve_jnt_list = list()
 	
@@ -95,6 +96,8 @@ class EyeLid(bone.Bone) :
 		BaseWire_node = self.skin_curve + 'BaseWire'
 		cmds.parent(BaseWire_node , self.curve_nodes_grp)
 	
+	
+	
 	def create_joint(self) :
 		u'''
 		创建眼皮的权重关节在曲线上
@@ -123,11 +126,50 @@ class EyeLid(bone.Bone) :
 	
 	
 	
-	
-	
-	
 	def create_ctrl(self) :
 		super().create_ctrl()
+	
+	
+	
+	def add_constraint(self) :
+		super().add_constraint()
+		
+		# 控制器之间需要添加约束
+		# ctrl_list =
+		# [0,3,6]
+		# [0,2,3]
+		# [0,1,2]
+		# [3,4,6]
+		# [4,5,6]
+		
+		# 首端控制器和末端控制器约束中间的控制器,在列表里是[0,3,6]
+		cmds.parentConstraint(self.output_list[0] , self.output_list[6] , self.driven_list[3],mo = True)
+		
+		# 约束中间的控制器[0,2,3]，两侧的控制器约束中间的控制器
+		cmds.parentConstraint(self.output_list[0] , self.output_list[3] , self.driven_list[2] , mo = True)
+		
+		# 约束中间的控制器[0,1,2]，两侧的控制器约束中间的控制器
+		cmds.parentConstraint(self.output_list[0] , self.output_list[2] , self.driven_list[1] , mo = True)
+		
+		# 约束中间的控制器[3,4,6]，两侧的控制器约束中间的控制器
+		cmds.parentConstraint(self.output_list[3] , self.output_list[6] , self.driven_list[4] , mo = True)
+		
+		# 约束中间的控制器[4,5,6]，两侧的控制器约束中间的控制器
+		cmds.parentConstraint(self.output_list[4] , self.output_list[6] , self.driven_list[5])
+	
+	
+	
+	def add_connect(self) :
+		u"""
+		连接控制器的显示
+		"""
+		# 第二个控制器和第六个控制器是为了调整小的形态，默认是隐藏的,连接他们的可见性到中间的控制器上
+		cmds.addAttr(self.ctrl_list[3] , attributeType = 'bool' , longName = 'LidSubCtrlVis' , keyable = 1 ,
+		             defaultValue = 0)
+		
+		# 连接可见性
+		cmds.connectAttr(self.ctrl_list[3] + '.LidSubCtrlVis' , self.ctrl_list[1] + '.visibility')
+		cmds.connectAttr(self.ctrl_list[3] + '.LidSubCtrlVis' , self.ctrl_list[5] + '.visibility')
 	
 	
 	
@@ -135,3 +177,5 @@ class EyeLid(bone.Bone) :
 		self.create_namespace()
 		self.create_joint()
 		self.create_ctrl()
+		self.add_constraint()
+		self.add_connect()
