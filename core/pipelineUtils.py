@@ -1004,8 +1004,9 @@ class Pipeline(object) :
 		return curve_node
 	
 	
+	
 	@staticmethod
-	def get_curve_number(curve):
+	def get_curve_number(curve) :
 		u"""
 		curve(str):想要获取点数量的曲线名称
 		获得曲线的点数量:spans + degree
@@ -1023,36 +1024,42 @@ class Pipeline(object) :
 		cv_num = spans + degree
 		
 		return cv_num
+	
+	
+	
 	@staticmethod
-	def create_eyelid_joints_on_curve(curve , eye_joint ) :
+	def create_eyelid_joints_on_curve(curve , eye_joint , up_object) :
 		"""
 		基于cv创建眼睑关节，并使用目标约束附加到曲线
 	
 		Args:
 			curve (str): 眼睑曲线
 			eye_joint (str): 眼睛的关节
+			up_object(str):向上的目标物体
 		"""
 		# 获得名称规范
 		curve_obj = nameUtils.Name(curve)
 		
 		# 创建层级组结构
-		grp_jnts = cmds.createNode('transform' ,
-		                           name = 'grp_{}_{}Jnts_{:03d}'.format(curve_obj.side , curve_obj.description ,
-		                                                                curve_obj.index))
 		
-		grp_nodes = cmds.createNode('transform' ,
+		node_grp = cmds.createNode('transform' ,
 		                            name = 'grp_{}_{}RigNodes_{:03d}'.format(curve_obj.side , curve_obj.description ,
 		                                                                     curve_obj.index))
 		
-		grp_drive_attach = cmds.createNode('transform' ,
-		                                   name = 'grp_{}_{}Attaches_{:03d}'.format(curve_obj.side , curve_obj.description ,
+		drive_attach_grp = cmds.createNode('transform' ,
+		                                   name = 'grp_{}_{}Attaches_{:03d}'.format(curve_obj.side ,
+		                                                                            curve_obj.description ,
 		                                                                            curve_obj.index) ,
-		                                   parent = grp_nodes)
+		                                   parent = node_grp)
+		
+		jnt_grp = cmds.createNode('transform' ,
+		                           name = 'grp_{}_{}Jnts_{:03d}'.format(curve_obj.side , curve_obj.description ,
+		                                                                curve_obj.index),parent = node_grp )
 		
 		# 整理层级结构
-		cmds.parent(curve , grp_nodes)
+		cmds.parent(curve , node_grp)
 		
-		#获取曲线的点数量
+		# 获取曲线的点数量
 		cv_num = Pipeline.get_curve_number(curve)
 		
 		# 获得曲线的形状节点
@@ -1060,7 +1067,8 @@ class Pipeline(object) :
 		
 		# 创建关节并附着到曲线
 		for i in range(cv_num) :
-			jnt = cmds.createNode('joint' , name = 'jnt_{}_{}_{:03d}'.format(curve_obj.side , curve_obj.description , i + 1))
+			jnt = cmds.createNode('joint' ,
+			                      name = 'jnt_{}_{}_{:03d}'.format(curve_obj.side , curve_obj.description , i + 1))
 			cmds.setAttr(jnt + '.radius' , 0.2)
 			# 获取cv点的位置信息
 			cv_pos = cmds.xform('{}.cv[{}]'.format(curve , i) , query = True , translation = True , worldSpace = True)
@@ -1076,8 +1084,9 @@ class Pipeline(object) :
 			
 			# 创建附加节点
 			attach = cmds.createNode('transform' ,
-			                         name = 'grp_{}_{}Attach_{:03d}'.format(curve_obj.side , curve_obj.description , i + 1) ,
-			                         parent = grp_drive_attach)
+			                         name = 'grp_{}_{}Attach_{:03d}'.format(curve_obj.side , curve_obj.description ,
+			                                                                i + 1) ,
+			                         parent = drive_attach_grp)
 			poci = cmds.createNode('pointOnCurveInfo' , name = attach.replace('grp' , 'poci'))
 			cmds.connectAttr(curve_shape + '.worldSpace[0]' , poci + '.inputCurve')
 			cmds.setAttr(poci + '.parameter' , parameter)
@@ -1085,13 +1094,14 @@ class Pipeline(object) :
 			
 			# 在眼睛关节位置上创建目标节点
 			aim_node = cmds.createNode('transform' ,
-			                           name = 'grp_{}_{}Aim_{:03d}'.format(curve_obj.side , curve_obj.description , i + 1) ,
-			                           parent = grp_jnts)
+			                           name = 'grp_{}_{}Aim_{:03d}'.format(curve_obj.side , curve_obj.description ,
+			                                                               i + 1) ,
+			                           parent = jnt_grp)
 			cmds.matchTransform(aim_node , eye_joint , position = True)
 			
 			# 带有附加节点的目标约束
 			cmds.aimConstraint(attach , aim_node , aimVector = [1 , 0 , 0] , upVector = [0 , 1 , 0] ,
-			                   worldUpType = 'none' ,
+			                   worldUpType = 'objectrotation' , worldUpObject = up_object ,
 			                   worldUpVector = [0 , 1 , 0] ,
 			                   maintainOffset = False)
 			
