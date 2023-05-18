@@ -156,9 +156,18 @@ class Joint(object) :
 			# 判断是否需要修改父层级关节
 			if is_parent:
 				parent = jnt
+		
+		#创建层级组结构
+		node_grp = cmds.createNode('transform' ,
+		                           name = 'grp_{}RigNodes_001'.format(curve) , parent = parent)
+		cmds.parent(jnt_grp,curve,node_grp)
+		
 		# 将关节的信息资料存储成一个字典返回出去，方便外部调用
-		jnt_dict = {'jnt_list':jnt_list,
-		            'jnt_grp': jnt_grp}
+		jnt_dict = {
+				'jnt_list' : jnt_list ,
+				'jnt_grp' : jnt_grp ,
+				'node_grp' : node_grp
+				}
 		return jnt_dict
 	
 	@staticmethod
