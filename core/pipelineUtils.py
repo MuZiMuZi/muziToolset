@@ -998,6 +998,7 @@ class Pipeline(object) :
 		"""
 		#获取根据模型上所选择的边的点信息
 		curve_point = cmds.ls(sl = True)
+		print(curve_point)
 		# 创建新的曲线
 		curve_node = cmds.polyToCurve(curve_point , name = name,degree = degree , conformToSmoothMeshPreview = 1)
 		# 创建出来的曲线删除历史
