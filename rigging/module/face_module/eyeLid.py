@@ -87,7 +87,6 @@ class EyeLid(bone.Bone) :
 		wire_node = cmds.wire(self.skin_curve , w = self.curve , gw = False , en = 1.000000 , ce = 0.000000 ,
 		                      li = 0.000000)[0]
 		cmds.setAttr(wire_node + '.dropoffDistance[0]' , 200)
-
 	
 	
 	
