@@ -1000,5 +1000,8 @@ class Pipeline(object) :
 		curve_point = cmds.ls(sl = True)
 		# 创建新的曲线
 		curve_node = cmds.polyToCurve(curve_point , name = name,degree = degree , conformToSmoothMeshPreview = 1)
+		# 创建出来的曲线删除历史并且隐藏
+		cmds.delete(curve_node , constructionHistory = True)
+		cmds.setAttr(curve_node + '.visibility',0)
 		
 		return curve_node
