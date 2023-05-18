@@ -35,13 +35,13 @@ from functools import partial
 from functools import wraps
 from importlib import reload
 
-# noinspection PyUnresolvedReferences
-from maya import OpenMaya as om
-from maya import OpenMayaUI as omui
 import maya.cmds as cmds
 import maya.mel as mel
 import pymel.core as pm
 from PySide2 import QtWidgets
+# noinspection PyUnresolvedReferences
+from maya import OpenMaya as om
+from maya import OpenMayaUI as omui
 from maya import mel
 from pymel.util import path
 from shiboken2 import wrapInstance
@@ -906,7 +906,7 @@ class Pipeline(object) :
 		
 		"""
 		# 获得曲面的形状节点
-
+		
 		surf_shape = cmds.listRelatives(surf_node , shapes = True)[0]
 		# 创建所有deform的层级组
 		deform_grp = cmds.createNode('transform' ,
@@ -927,14 +927,14 @@ class Pipeline(object) :
 		
 		# 创建skin关节的集合
 		skin_jnt_set = 'set_skinJnt'
-		make_skin_jnt_set = 'set_' + side+ '_' + description + 'Jnt'
+		make_skin_jnt_set = 'set_' + side + '_' + description + 'Jnt'
 		make_skin_jnt_set = cmds.sets(name = make_skin_jnt_set , empty = True)
 		if not cmds.objExists(skin_jnt_set) or cmds.nodeType(skin_jnt_set) != 'objectSet' :
 			skin_jnt_set = cmds.sets(name = skin_jnt_set , empty = True)
 			cmds.sets(make_skin_jnt_set , edit = True , forceElement = skin_jnt_set)
 		else :
 			cmds.sets(make_skin_jnt_set , edit = True , forceElement = skin_jnt_set)
-			
+		
 		# 循环制作
 		for index in range(joint_number) :
 			# 创建毛囊
@@ -971,7 +971,7 @@ class Pipeline(object) :
 			cmds.setAttr(jnt + '.radius' , 0.4)
 			
 			# 将connect组添加到connect_list里，方便外部进行调用
-			connect_list.append(ctrl.replace('ctrl','connect'))
+			connect_list.append(ctrl.replace('ctrl' , 'connect'))
 			
 			# 将生成的skin关节放在对应的集里方便选择
 			cmds.sets(jnt , edit = True , forceElement = make_skin_jnt_set)
@@ -979,8 +979,8 @@ class Pipeline(object) :
 			follicle_dict = {
 					'jnt_grp' : jnt_grp ,
 					'ctrl_grp' : ctrl_grp ,
-					'fol_grp' : fol_grp,
-					'connect_list' : connect_list,
-					'deform_grp': deform_grp
+					'fol_grp' : fol_grp ,
+					'connect_list' : connect_list ,
+					'deform_grp' : deform_grp
 					}
 		return follicle_dict
