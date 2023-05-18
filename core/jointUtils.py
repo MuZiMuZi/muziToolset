@@ -132,7 +132,7 @@ class Joint(object) :
 		curve_shape = cmds.listRelatives(curve , shapes = True)[0]
 		# 创建组
 		jnt_grp = cmds.createNode('transform' ,
-		                           name = 'grp_{}Jnts'.format(curve))
+		                          name = 'grp_{}Jnts'.format(curve))
 		
 		# 获取节点的曲线形状
 		curve_shape = cmds.listRelatives(curve , shapes = True)[0]
@@ -147,20 +147,20 @@ class Joint(object) :
 		# 创建关节并吸附到曲线
 		parent = jnt_grp
 		for i in range(cv_num) :
-			jnt = cmds.createNode('joint' , name = 'jnt_{}_{:03d}'.format(curve , i + 1), parent = parent)
+			jnt = cmds.createNode('joint' , name = 'jnt_{}_{:03d}'.format(curve , i + 1) , parent = parent)
 			# 获取cv位置
 			cv_pos = cmds.xform('{}.cv[{}]'.format(curve , i) , query = True , translation = True , worldSpace = True)
 			# 设置关节位置
 			cmds.xform(jnt , translation = cv_pos , worldSpace = True)
 			jnt_list.append(jnt)
 			# 判断是否需要修改父层级关节
-			if is_parent:
+			if is_parent :
 				parent = jnt
 		
-		#创建层级组结构
+		# 创建层级组结构
 		node_grp = cmds.createNode('transform' ,
-		                           name = 'grp_{}RigNodes'.format(curve) , parent = parent)
-		cmds.parent(jnt_grp,curve,node_grp)
+		                           name = 'grp_{}RigNodes'.format(curve))
+		cmds.parent(jnt_grp , curve , node_grp)
 		
 		# 将关节的信息资料存储成一个字典返回出去，方便外部调用
 		jnt_dict = {
@@ -169,6 +169,8 @@ class Joint(object) :
 				'node_grp' : node_grp
 				}
 		return jnt_dict
+	
+	
 	
 	@staticmethod
 	def create_chain(bp_joints , suffix , joint_parent = None) :
@@ -186,7 +188,7 @@ class Joint(object) :
 			jnt_new = jnt
 			jnt_new_name = nameUtils.Name(name = jnt_new)
 			jnt_new_name.type = 'jnt'
-			jnt_new_name.type = '{}{}'.format(suffix,jnt_new_name.type)
+			jnt_new_name.type = '{}{}'.format(suffix , jnt_new_name.type)
 			jnt_new = cmds.createNode('joint' , name = jnt_new_name.name)
 			cmds.matchTransform(jnt_new , jnt , position = True , rotation = True)
 			cmds.makeIdentity(jnt_new , apply = True , translate = True , rotate = True , scale = True)
@@ -238,7 +240,8 @@ class Joint(object) :
 		'''
 		# 判断关节是否具有子关节
 		for jnt in jnt_list :
-			cmds.makeIdentity(jnt,apply = True, translate = 1, rotate =1, scale =1 , normal =0 , preserveNormals = 1)
+			cmds.makeIdentity(jnt , apply = True , translate = 1 , rotate = 1 , scale = 1 , normal = 0 ,
+			                  preserveNormals = 1)
 			jnt_sub = cmds.listRelatives(jnt , children = True , allDescendents = True , type = 'joint')
 			# 如果有子关节，则关节定向为X轴指向下一关节
 			if jnt_sub :

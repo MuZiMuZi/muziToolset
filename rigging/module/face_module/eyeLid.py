@@ -60,6 +60,8 @@ class EyeLid(bone.Bone) :
 		u'''
 		创建眼皮的权重关节在曲线上
 		'''
+		# 将控制器的关节进行隐藏
+		cmds.setAttr(self.curve_jnt_grp + '.visibility' , 0)
 		# 判断向上的目标物体是否存在，如果不存在的话则创建
 		if cmds.objExists(self.eye_up_loc) :
 			pass
@@ -71,7 +73,6 @@ class EyeLid(bone.Bone) :
 			cmds.setAttr(self.eye_up_loc + '.translateY' , 5)
 		# 创建眼皮的权重关节在曲线上
 		pipelineUtils.Pipeline.create_eyelid_joints_on_curve(self.skin_curve , self.eye_jnt , self.eye_up_loc)
-	
 	
 	
 	
@@ -110,11 +111,16 @@ class EyeLid(bone.Bone) :
 		for index , jnt in enumerate(jnt_list) :
 			cmds.rename(jnt , self.curve_jnt_list[index])
 		self.curve_jnt_grp = cmds.rename('grp_{}Jnts'.format(self.curve) , self.curve_jnt_grp)
-		self.self.curve_nodes_grp = cmds.rename('grp_{}RigNodes'.format(self.curve) , self.curve_jnt_grp)
+		self.curve_nodes_grp = cmds.rename('grp_{}RigNodes'.format(self.curve) , self.curve_nodes_grp)
 		# 蒙皮曲线
 		cmds.skinCluster(self.curve_jnt_list , self.curve)
+		
+		# 控制器曲线对蒙皮曲线做wire变形，让控制器曲线控制蒙皮曲线,注意如果是两条曲线做wire变形器的话，被控制的曲线需要给个w参数
+		wire_node = cmds.wire(self.curve , w = self.skin_curve , gw = False , en = 1.000000 , ce = 0.000000 ,
+		                      li = 0.000000)[0]
+		cmds.setAttr(wire_node + '.dropoffDistance[0]' , 200)
 	
-		#控制器曲线对蒙皮曲线做wire变形，让控制器曲线控制蒙皮曲线
+	
 	
 	def build_rig(self) :
 		self.create_namespace()

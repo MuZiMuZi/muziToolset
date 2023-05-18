@@ -1110,3 +1110,5 @@ class Pipeline(object) :
 			# 将关节定向到zero组的方向
 			cmds.matchTransform(jnt , aim_node , position = False , rotation = True)
 			cmds.makeIdentity(jnt , apply = True , translate = True , rotate = True , scale = True)
+			
+			
