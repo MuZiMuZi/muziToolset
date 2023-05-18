@@ -38,17 +38,51 @@ class EyeLid(bone.Bone) :
 		创建名称规范整理
 		"""
 		super().create_namespace()
-		self.skin_curve = 'crv_{}_{}{}Skin_001'.format(self._side , self._name , self._rtype)
+		# 整理与控制器有关的曲线的名称规范层级结构
 		self.curve = 'crv_{}_{}{}_001'.format(self._side , self._name , self._rtype)
 		for index in range(7) :
 			self.curve_jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
 		self.curve_jnt_grp = 'grp_{}_{}{}Jnts_001'.format(self._side , self._name , self._rtype)
+		self.curve_nodes_grp = 'grp_{}_{}{}RigNodes_001'.format(self._side , self._name , self._rtype)
+		
+		# 整理与蒙皮关节有关的曲线名称规范层级结构
+		self.skin_curve = 'crv_{}_{}{}Skin_001'.format(self._side , self._name , self._rtype)
 		self.skin_jnt_grp = 'grp_{}_{}{}SkinJnts_001'.format(self._side , self._name , self._rtype)
-	
+		
+		# 整理眼睛的关节和向上方向的参考向量的名称规范层级结构
 		self.eye_jnt = 'jnt_{}_Eye_001'.format(self._side)
 		self.eye_up_loc = 'loc_{}_EyeUp_001'.format(self._side)
 		self.eye_up_zero = 'zero_{}_EyeUp_001'.format(self._side)
-
+	
+	
+	
+	def create_joint(self) :
+		u'''
+		创建眼皮的权重关节在曲线上
+		'''
+		# 判断向上的目标物体是否存在，如果不存在的话则创建
+		if cmds.objExists(self.eye_up_loc) :
+			pass
+		else :
+			self.eye_up_zero = cmds.createNode('transform' , name = self.eye_up_zero)
+			self.eye_up_loc = cmds.spaceLocator(name = self.eye_up_loc)[0]
+			cmds.parent(self.eye_up_loc , self.eye_up_zero)
+			cmds.matchTransform(self.eye_up_zero , self.eye_jnt)
+			cmds.setAttr(self.eye_up_loc + '.translateY' , 5)
+		# 创建眼皮的权重关节在曲线上
+		pipelineUtils.Pipeline.create_eyelid_joints_on_curve(self.skin_curve , self.eye_jnt , self.eye_up_loc)
+	
+	
+	
+	
+	def build_setup(self) :
+		"""
+		创建定位曲线,生成准备
+		"""
+		self.create_namespace()
+	
+	
+	
 	def build_curve(self) :
 		u"""
 		根据选择的模型点创建用于定位的曲线
@@ -72,26 +106,15 @@ class EyeLid(bone.Bone) :
 		# 在曲线上创建关节用来蒙皮曲线创建控制器的约束
 		cmds.select(self.curve)
 		jnt_list = jointUtils.Joint.create_joints_on_curve(is_parent = False)['jnt_list']
+		# 重命名蒙皮关节和层级结构的名称
 		for index , jnt in enumerate(jnt_list) :
 			cmds.rename(jnt , self.curve_jnt_list[index])
 		self.curve_jnt_grp = cmds.rename('grp_{}Jnts'.format(self.curve) , self.curve_jnt_grp)
+		self.self.curve_nodes_grp = cmds.rename('grp_{}RigNodes'.format(self.curve) , self.curve_jnt_grp)
+		# 蒙皮曲线
 		cmds.skinCluster(self.curve_jnt_list , self.curve)
 	
-	
-	
-	def create_joint(self) :
-		# 创建眼皮的权重关节在曲线上
-		pipelineUtils.Pipeline.create_eyelid_joints_on_curve(self.skin_curve , self.eye_jnt)
-	
-	
-	
-	def build_setup(self) :
-		"""
-		创建定位曲线,生成准备
-		"""
-		self.create_namespace()
-	
-	
+		#控制器曲线对蒙皮曲线做wire变形，让控制器曲线控制蒙皮曲线
 	
 	def build_rig(self) :
 		self.create_namespace()
