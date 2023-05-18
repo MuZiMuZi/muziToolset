@@ -159,7 +159,7 @@ class Joint(object) :
 		
 		#创建层级组结构
 		node_grp = cmds.createNode('transform' ,
-		                           name = 'grp_{}RigNodes_001'.format(curve) , parent = parent)
+		                           name = 'grp_{}RigNodes'.format(curve) , parent = parent)
 		cmds.parent(jnt_grp,curve,node_grp)
 		
 		# 将关节的信息资料存储成一个字典返回出去，方便外部调用
