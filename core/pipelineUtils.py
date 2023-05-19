@@ -986,25 +986,32 @@ class Pipeline(object) :
 	
 	
 	@staticmethod
-	def create_curve_on_polyToCurve(name , degree = 3) :
+	def create_curve_on_polyToCurve(curve_name , degree = 3) :
 		u"""
-		根据模型上所选择的边，模型的边到曲线生成新的曲线
+		根据模型上所选择的边，模型的边到曲线生成新的曲线，判断场景里是否已经生成过对应的曲线，如果有的话则将其删除，没有的话则新创建
 		curve_name(str)：所生成的曲线的名称
 		degree(int)：新曲线的阶数。默认值为3。请注意，您需要（阶数+1）个曲线点来创建可见的曲线跨度。你必须为3度曲线放置4个点。
 		return:
 			生成的曲线
 		"""
-		# 获取根据模型上所选择的边的点信息
-		curve_point = cmds.ls(sl = True)
-		# 创建新的曲线
-		curve_node = cmds.polyToCurve(curve_point , name = name , degree = degree , conformToSmoothMeshPreview = 1)
-		cmds.reverseCurve(name , constructionHistory = 1 , replaceOriginal = 1)
-		# 创建出来的曲线删除历史
-		cmds.delete(curve_node , constructionHistory = True)
+		# 判断场景里是否已经生成过对应的曲线，如果有的话则将其删除，没有的话则新创建
 		
+		if cmds.objExists(curve_name) :
+			cmds.delete(curve_name)
+		else :
+			# 根据所选择的点创建曲线
+			# 获取根据模型上所选择的边的点信息
+			curve_point = cmds.ls(sl = True)
+			# 创建新的曲线
+			curve_node = cmds.polyToCurve(curve_point , name = curve_name , degree = degree , conformToSmoothMeshPreview = 1)
+			cmds.reverseCurve(curve_name , constructionHistory = 1 , replaceOriginal = 1)
+			# 创建出来的曲线删除历史
+			cmds.delete(curve_node , constructionHistory = True)
+			
 		return curve_node
 	
 	
+
 	
 	@staticmethod
 	def get_curve_number(curve) :
@@ -1111,3 +1118,6 @@ class Pipeline(object) :
 			# 将关节定向到zero组的方向
 			cmds.matchTransform(jnt , aim_node , position = False , rotation = True)
 			cmds.makeIdentity(jnt , apply = True , translate = True , rotate = True , scale = True)
+	
+	
+	
