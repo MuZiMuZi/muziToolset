@@ -1003,15 +1003,15 @@ class Pipeline(object) :
 			# 获取根据模型上所选择的边的点信息
 			curve_point = cmds.ls(sl = True)
 			# 创建新的曲线
-			curve_node = cmds.polyToCurve(curve_point , name = curve_name , degree = degree , conformToSmoothMeshPreview = 1)
+			curve_node = cmds.polyToCurve(curve_point , name = curve_name , degree = degree ,
+			                              conformToSmoothMeshPreview = 1)
 			cmds.reverseCurve(curve_name , constructionHistory = 1 , replaceOriginal = 1)
 			# 创建出来的曲线删除历史
 			cmds.delete(curve_node , constructionHistory = True)
-			
+		
 		return curve_node
 	
 	
-
 	
 	@staticmethod
 	def get_curve_number(curve) :
@@ -1118,6 +1118,3 @@ class Pipeline(object) :
 			# 将关节定向到zero组的方向
 			cmds.matchTransform(jnt , aim_node , position = False , rotation = True)
 			cmds.makeIdentity(jnt , apply = True , translate = True , rotate = True , scale = True)
-	
-	
-	
