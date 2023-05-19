@@ -1009,7 +1009,7 @@ class Pipeline(object) :
 			# 创建出来的曲线删除历史
 			cmds.delete(curve_node , constructionHistory = True)
 		
-		return curve_node
+		return curve_name
 	
 	
 	
