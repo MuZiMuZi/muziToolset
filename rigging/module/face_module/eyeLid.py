@@ -18,11 +18,11 @@ class EyeLid(bone.Bone) :
 	
 	
 	
-	def __init__(self , side , name ,joint_number = 7 , joint_parent = None , control_parent = None) :
+	def __init__(self , side , name , joint_number = 7 , joint_parent = None , control_parent = None) :
 		super().__init__(side , name , joint_number , joint_parent , control_parent)
-		#定位用的曲线
+		# 定位用的曲线
 		self.skin_curve = 'crv_{}_{}{}Skin_001'.format(self._side , self._name , self._rtype)
-		
+		self._name = name
 		self.shape = 'cube'
 		self._rtype = 'EyeLid'
 		self.radius = 0.05
@@ -37,10 +37,10 @@ class EyeLid(bone.Bone) :
 		"""
 		super().create_namespace()
 		# 整理与控制器有关的曲线的名称规范层级结构
-		self.curve = 'crv_{}_{}{}_001'.format(self._side , self._name , self._rtype)
+		self.curve = 'crv_{}_{}{}EyeLid_001'.format(self._side , self._name , self._rtype)
 		for index in range(7) :
 			self.curve_jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
-		self.curve_jnt_grp = 'grp_{}_{}{}Jnts_001'.format(self._side , self._name , self._rtype)
+		self.curve_jnt_grp = 'grp_{}_{}{}SkinJnts_001'.format(self._side , self._name , self._rtype)
 		self.curve_nodes_grp = 'grp_{}_{}{}RigNodes_001'.format(self._side , self._name , self._rtype)
 		
 		# 整理与蒙皮关节有关的曲线名称规范层级结构
@@ -121,8 +121,6 @@ class EyeLid(bone.Bone) :
 		# [3,4,6]
 		# [4,5,6]
 		
-		# 首端控制器和末端控制器约束中间的控制器,在列表里是[0,3,6]
-		cmds.parentConstraint(self.output_list[0] , self.output_list[6] , self.driven_list[3] , mo = True)
 		
 		# 约束中间的控制器[0,2,3]，两侧的控制器约束中间的控制器
 		cmds.parentConstraint(self.output_list[0] , self.output_list[3] , self.driven_list[2] , mo = True)
@@ -146,20 +144,9 @@ class EyeLid(bone.Bone) :
 	
 	
 	
-	
-	
-	
 	def build_setup(self) :
 		"""
 		创建定位曲线,生成准备
 		"""
 		self.create_namespace()
-	
-	
-	
-	def build_rig(self) :
-		self.create_namespace()
-		self.create_joint()
-		self.create_ctrl()
-		self.add_constraint()
-		self.add_connect()
+		self.build_curve()

@@ -10,7 +10,12 @@ import maya.cmds as cmds
 
 from ...base import base
 from ...chain import chain , chainFK
-from ....core import controlUtils , jointUtils
+from ....core import controlUtils , jointUtils , pipelineUtils
+from . import eyeLid
+
+
+
+reload(eyeLid)
 
 
 
@@ -28,11 +33,21 @@ class Eye(chain.Chain) :
 		# iris的缩放关节
 		self.iris_bpjnt_list = list()
 		self.iris_jnt_list = list()
+		
+		# 生成上部分的眼皮
+		self.eye_lid_upper = eyeLid.EyeLid(side = self.side , name = 'upper' , joint_number = 7 , joint_parent = None ,
+		                                   control_parent = None)
+		
+		# 生成下部分的眼皮
+		self.eye_lid_lower = eyeLid.EyeLid(side = self.side , name = 'lower' , joint_number = 7 , joint_parent = None ,
+		                                   control_parent = None)
 	
 	
 	
 	def create_namespace(self) :
 		super().create_namespace()
+		
+		# 创建眼睛部位的命名规范
 		self.aim_ctrl = ('ctrl_{}_{}{}Aim_001'.format(self._side , self._name , self._rtype))
 		self.aim_loc = ('loc_{}_{}{}Aim_001'.format(self._side , self._name , self._rtype))
 		self.jnt_loc = ('loc_{}_{}{}Jnt_001'.format(self._side , self._name , self._rtype))
@@ -73,10 +88,13 @@ class Eye(chain.Chain) :
 		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.jnt_list)
 		jointUtils.Joint.joint_orientation(self.iris_jnt_list)
-	
+		
+
 	
 	
 	def create_ctrl(self) :
+		
+		
 		# 创建控制器总体的层级组
 		self.ctrl_grp = cmds.createNode('transform' , parent = self.control_parent , name = self.ctrl_grp)
 		# 创建控制器
@@ -131,6 +149,8 @@ class Eye(chain.Chain) :
 		cmds.setAttr(aim_curve_shape + '.overrideDisplayType' , 2)
 		cmds.setAttr(self.aim_crv + '.inheritsTransform' , 0)
 		cmds.parent(self.aim_crv , self.ctrl_grp)
+		
+
 	
 	
 	
@@ -139,12 +159,33 @@ class Eye(chain.Chain) :
 		创建约束
 		"""
 		super().add_constraint()
+		
 		# 创建目标约束
 		self.aim_output = self.aim_ctrl.replace('ctrl' , 'output')
 		cmds.aimConstraint(self.aim_output , self.ctrl_list[0] , offset = (0 , 0 , 0) , weight = 1 ,
 		                   aimVector = (1 , 0 , 0) , upVector = (
 					
 					0 , 1 , 0) , worldUpType = "vector" , worldUpVector = (0 , 1 , 0))
+		
+
+	
+	
+	
+	def build_setup(self) :
+		super().build_setup()
+		# 生成上部分的眼皮准备
+		self.eye_lid_upper.build_setup()
+		# 生成下部分的眼皮准备
+		self.eye_lid_lower.build_setup()
+	
+	
+	
+	def build_rig(self) :
+		super().build_rig()
+		# 生成上部分的眼皮绑定
+		self.eye_lid_upper.build_rig()
+		# 生成下部分的眼皮绑定
+		self.eye_lid_lower.build_rig()
 
 
 
