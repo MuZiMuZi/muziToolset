@@ -18,8 +18,10 @@ class EyeLid(bone.Bone) :
 	
 	
 	
-	def __init__(self , side , name , joint_number = 7 , joint_parent = None , control_parent = None) :
+	def __init__(self , side , name ,joint_number = 7 , joint_parent = None , control_parent = None) :
 		super().__init__(side , name , joint_number , joint_parent , control_parent)
+		#定位用的曲线
+		self.skin_curve = 'crv_{}_{}{}Skin_001'.format(self._side , self._name , self._rtype)
 		
 		self.shape = 'cube'
 		self._rtype = 'EyeLid'
@@ -56,13 +58,6 @@ class EyeLid(bone.Bone) :
 		u"""
 		根据选择的模型点创建用于定位的曲线
 		"""
-		# 判断场景里是否已经生成过skin_curve，如果有的话则将其删除，没有的话则新创建
-		
-		if cmds.objExists(self.skin_curve) :
-			cmds.delete(self.skin_curve)
-		else :
-			# 根据所选择的点创建Skin关节定位曲线
-			self.skin_curve = pipelineUtils.Pipeline.create_curve_on_polyToCurve(self.skin_curve , degree = 3)[0]
 		
 		# 根据skin_curve来制作curve，用于制作控制器的控制
 		self.curve = cmds.duplicate(self.skin_curve , name = self.curve)[0]
@@ -140,13 +135,7 @@ class EyeLid(bone.Bone) :
 		
 		# 约束中间的控制器[4,5,6]，两侧的控制器约束中间的控制器
 		cmds.parentConstraint(self.output_list[4] , self.output_list[6] , self.driven_list[5])
-	
-	
-	
-	def add_connect(self) :
-		u"""
-		连接控制器的显示
-		"""
+		
 		# 第二个控制器和第六个控制器是为了调整小的形态，默认是隐藏的,连接他们的可见性到中间的控制器上
 		cmds.addAttr(self.ctrl_list[3] , attributeType = 'bool' , longName = 'LidSubCtrlVis' , keyable = 1 ,
 		             defaultValue = 0)
@@ -154,6 +143,9 @@ class EyeLid(bone.Bone) :
 		# 连接可见性
 		cmds.connectAttr(self.ctrl_list[3] + '.LidSubCtrlVis' , self.ctrl_list[1] + '.visibility')
 		cmds.connectAttr(self.ctrl_list[3] + '.LidSubCtrlVis' , self.ctrl_list[5] + '.visibility')
+	
+	
+	
 	
 	
 	
