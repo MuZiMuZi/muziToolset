@@ -67,10 +67,12 @@ class Eye(chain.Chain) :
 		# 创建上下眼皮的权重曲线的blink曲线的名称规范
 		self.eye_lid_upper.blink_curve = self.eye_lid_upper.skin_curve.replace('Skin' , 'SkinBlink')
 		self.eye_lid_lower.blink_curve = self.eye_lid_lower.skin_curve.replace('Skin' , 'SkinBlink')
-	
+		
 		# 创建眼内侧和眼外侧的控制器的名称规范
 		self.inn_ctrl = 'ctrl_{}_{}{}inn_001'.format(self._side , self._name , self._rtype)
 		self.out_ctrl = 'ctrl_{}_{}{}out_001'.format(self._side , self._name , self._rtype)
+	
+	
 	
 	def create_bpjnt(self) :
 		# 获得eye_bpjnt 的路径
@@ -172,11 +174,12 @@ class Eye(chain.Chain) :
 		self.eye_lid_lower.create_ctrl()
 		
 		# 创建眼角的控制器
-		self.inn_ctrl = controlUtils.Control.create_ctrl(self.inn_ctrl,shape = 'circle',axis='X+', radius = 0.5,pos = self
-		                                                 .eye_lid_upper.zero_list[0],parent = self.ctrl_grp)
-		self.out_ctrl = controlUtils.Control.create_ctrl(self.out_ctrl , shape = 'circle' , axis = 'X+' , radius = 0.5,pos = self
+		self.inn_ctrl = controlUtils.Control.create_ctrl(self.inn_ctrl , shape = 'ball' , axis = 'X+' , radius = 0.1 ,
+		                                                 pos = self
+		                                                 .eye_lid_upper.zero_list[0] , parent = self.ctrl_grp)
+		self.out_ctrl = controlUtils.Control.create_ctrl(self.out_ctrl , shape = 'ball' , axis = 'X+' , radius = 0.1 ,
+		                                                 pos = self
 		                                                 .eye_lid_upper.zero_list[-1] , parent = self.ctrl_grp)
-		
 	
 	
 	
@@ -200,10 +203,29 @@ class Eye(chain.Chain) :
 		self.add_blink()
 		
 		# 添加眼球移动的时候眼皮跟随运动的功能，眼球控制器对眼皮中间的控制器添加旋转约束，注意这次的旋转约束需要添加上眼皮控制器上层的组，这样可以控制旋转的幅度
-		cmds.orientConstraint(self.output_list[0],self.eye_lid_upper.zero_list[3], self.eye_lid_upper.driven_list[3])
-		cmds.orientConstraint(self.output_list[0] , self.eye_lid_lower.zero_list[3] , self.eye_lid_lower.driven_list[3])
+		cmds.orientConstraint(self.output_list[0] , self.eye_lid_upper.zero_list[3] ,
+		                      self.eye_lid_upper.driven_list[3])
+		cmds.orientConstraint(self.output_list[0] , self.eye_lid_lower.zero_list[3] ,
+		                      self.eye_lid_lower.driven_list[3])
 		
-		#
+		# 眼睛内侧控制器对上下眼皮的内侧控制器做约束
+		cmds.parentConstraint(self.inn_ctrl.replace('ctrl' , 'output') , self
+		                      .eye_lid_upper.driven_list[0])
+		cmds.parentConstraint(self.inn_ctrl.replace('ctrl' , 'output') , self
+		                      .eye_lid_lower.driven_list[0])
+		# 隐藏上下眼皮的内侧控制器
+		cmds.setAttr(self.eye_lid_upper.zero_list[0] + '.v' , 0)
+		cmds.setAttr(self.eye_lid_lower.zero_list[0] + '.v' , 0)
+		# 眼睛外侧控制器对上下眼皮的外侧控制器做约束
+		cmds.parentConstraint(self.out_ctrl.replace('ctrl' , 'output') , self
+		                      .eye_lid_upper.driven_list[-1])
+		cmds.parentConstraint(self.out_ctrl.replace('ctrl' , 'output') , self
+		                      .eye_lid_lower.driven_list[-1])
+		# 隐藏上下眼皮的外侧控制器
+		cmds.setAttr(self.eye_lid_upper.zero_list[-1] + '.v' , 0)
+		cmds.setAttr(self.eye_lid_lower.zero_list[-1] + '.v' , 0)
+	
+	
 	
 	def add_blink(self) :
 		u"""
@@ -267,10 +289,11 @@ class Eye(chain.Chain) :
 		                                             w = [(0 , 1)])
 		cmds.connectAttr(self.aim_ctrl + '.blink' , self.eye_lid_lower.bs_node[0] + '.{}'.format(
 				self.eye_lid_lower.blink_curve))
-		#恢复blinkHeight的数值
+		# 恢复blinkHeight的数值
 		cmds.setAttr(self.aim_ctrl + '.blinkHeight' , 0.5)
 
-	
+
+
 if __name__ == "__main__" :
 	def build_setup() :
 		eye_l = eye.Eye(side = 'l' , joint_parent = None , control_parent = None)
