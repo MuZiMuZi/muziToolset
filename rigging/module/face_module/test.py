@@ -1,25 +1,25 @@
-import muziToolset.rigging.module.face_module.eye as eye
+import muziToolset.rigging.module.face_module.mouth as mouth
 from importlib import reload
 
 
 
-reload(eye)
+reload(mouth)
 
 
 
 def build_setup() :
-	eye_l = eye.Eye(side = 'l' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+	mouth_m = mouth.Mouth(side = 'm' , name = '' , joint_number = 2 , joint_parent = None ,
 	                control_parent = None)
-	eye_l.build_setup()
+	mouth_m.build_setup()
 
 
 
 def build_rig() :
-	eye_l = eye.Eye(side = 'l' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+	mouth_m = mouth.Eye(side = 'm' , name = '' , joint_number = 2  , joint_parent = None ,
 	                control_parent = None)
-	eye_l.build_rig()
+	mouth_m.build_rig()
 
 
 
 build_setup()
-build_rig()
+# build_rig()
