@@ -1118,3 +1118,105 @@ class Pipeline(object) :
 			# 将关节定向到zero组的方向
 			cmds.matchTransform(jnt , aim_node , position = False , rotation = True)
 			cmds.makeIdentity(jnt , apply = True , translate = True , rotate = True , scale = True)
+	
+	
+	
+	@staticmethod
+	def attach_joints_on_curve(jnt_list , drive_curve , aim_curve , up_object , aim_type = 'object') :
+		"""
+		使用pointOnCurveInfo节点在曲线上附加关节
+
+		Args:
+			jnt_list (list): 需要连接的关节列表
+			drive_curve (str): 驱动关节的曲线
+			aim_curve (str): 目标曲线
+			up_object (str): 向上的参考向量的曲线
+			aim_type (str): object/curve 物体或者是曲线
+		"""
+		# 获取名称
+		name_parts = nameUtils.Name(name = drive_curve)
+		
+		# 判断aim_type的类型后，选择是否添加进curves曲线列表里
+		if aim_type == 'curve' :
+			curves = [drive_curve , aim_curve , up_object]
+		else :
+			curves = [drive_curve , aim_curve]
+		
+		# 创建整理层级的组
+		jnts_grp = cmds.createNode('transform' ,
+		                           name = 'grp_{}_{}Jnts_{:03d}'.format(name_parts.side , name_parts.description ,
+		                                                                name_parts.index))
+		
+		nodes_grp = cmds.createNode('transform' ,
+		                            name = 'grp_{}_{}RigNodes_{:03d}'.format(name_parts.side , name_parts.description ,
+		                                                                     name_parts.index))
+		
+		attaches_grp = []
+		for crv , part_name in zip(curves , ['Drive' , 'Aim' , 'Up']) :
+			grp_attach = cmds.createNode('transform' ,
+			                             name = 'grp_{}_{}{}Attaches_{:03d}'.format(name_parts.side ,
+			                                                                        name_parts.description ,
+			                                                                        part_name ,
+			                                                                        name_parts.index) ,
+			                             parent = nodes_grp)
+			attaches_grp.append(grp_attach)
+		
+		# 整理层级结构
+		cmds.parent(curves , nodes_grp)
+		
+		# 获取曲线形状节点
+		crv_shapes = []
+		for crv in curves :
+			crv_shape = cmds.listRelatives(crv , shapes = True)[0]
+			crv_shapes.append(crv_shape)
+		
+		# 将关节附着到曲线
+		for jnt in jnt_list :
+			# 获得关节的命名规范
+			jnt_name_parts = nameUtils.Name(name = jnt)
+			
+			# 获取曲线上最接近的点的位置
+			npoc = cmds.createNode('nearestPointOnCurve')
+			cmds.connectAttr(crv_shapes[0] + '.worldSpace[0]' , npoc + '.inputCurve')
+			cmds.connectAttr(jnt + '.translate' , npoc + '.inPosition')
+			parameter = cmds.getAttr(npoc + '.parameter')
+			cmds.delete(npoc)
+			
+			# 创建附加节点
+			attach_nodes = []
+			for crv_shape , part_name , grp in zip(crv_shapes , ['Drive' , 'Aim' , 'Up'] , attaches_grp) :
+				attach = cmds.createNode('transform' ,
+				                         name = 'grp_{}_{}{}Attach_{:03d}'.format(jnt_name_parts.side ,
+				                                                                  jnt_name_parts.description ,
+				                                                                  part_name ,
+				                                                                  jnt_name_parts.index) ,
+				                         parent = grp)
+				poci = cmds.createNode('pointOnCurveInfo' , name = attach.replace('grp' , 'poci'))
+				cmds.connectAttr(crv_shape + '.worldSpace[0]' , poci + '.inputCurve')
+				cmds.setAttr(poci + '.parameter' , parameter)
+				cmds.connectAttr(poci + '.position' , attach + '.translate')
+				attach_nodes.append(attach)
+			
+			# 创建目标约束来约束附加节点
+			if aim_type == 'curve' :
+				cmds.aimConstraint(attach_nodes[1] , attach_nodes[0] , aimVector = [1 , 0 , 0] ,
+				                   upVector = [0 , 1 , 0] ,
+				                   worldUpType = 'object' , worldUpObject = attach_nodes[2] ,
+				                   worldUpVector = [0 , 1 , 0] ,
+				                   maintainOffset = False)
+			else :
+				cmds.aimConstraint(attach_nodes[1] , attach_nodes[0] , aimVector = [1 , 0 , 0] ,
+				                   upVector = [0 , 1 , 0] ,
+				                   worldUpType = 'objectrotation' , worldUpObject = up_object ,
+				                   worldUpVector = [0 , 1 , 0] ,
+				                   maintainOffset = False)
+			
+			# 创建关节的zero组，用于整理层级结构
+			zero = cmds.createNode('transform' , name = jnt.replace('jnt' , 'zero') , parent = jnts_grp)
+			cmds.parentConstraint(attach_nodes[0] , zero , maintainOffset = False)
+			
+			# 整理关节的层级结构
+			cmds.parent(jnt , zero)
+			# 将关节定向到zero组的方向
+			cmds.matchTransform(jnt , zero , position = False , rotation = True)
+			cmds.makeIdentity(jnt , apply = True , translate = True , rotate = True , scale = True)
