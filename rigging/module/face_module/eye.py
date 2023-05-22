@@ -46,7 +46,8 @@ class Eye(chain.Chain) :
 	
 	def create_namespace(self) :
 		super().create_namespace()
-		
+		self.eye_lid_upper.create_namespace()
+		self.eye_lid_lower.create_namespace()
 		# 创建眼睛部位的命名规范
 		self.aim_ctrl = ('ctrl_{}_{}{}Aim_001'.format(self._side , self._name , self._rtype))
 		self.aim_loc = ('loc_{}_{}{}Aim_001'.format(self._side , self._name , self._rtype))
@@ -57,6 +58,15 @@ class Eye(chain.Chain) :
 					'bpjnt_{}_{}{}iris_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
 			self.iris_jnt_list.append(
 					'jnt_{}_{}{}iris_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
+		# 创建眼睛闭合曲线的名称规范：blink
+		self.blink_curve = 'crv_{}_{}{}EyeLidBlink_001'.format(self._side , self._name , self._rtype)
+		
+		# 创建连接blinkHeight上眼皮的reverse节点的名称规范
+		self.reverse_node = self.eye_lid_upper.curve.replace('crv' , 'reverse')
+		
+		# 创建上下眼皮的权重曲线的blink曲线的名称规范
+		self.eye_lid_upper.blink_curve = self.eye_lid_upper.skin_curve.replace('Skin' , 'SkinBlink')
+		self.eye_lid_lower.blink_curve = self.eye_lid_lower.skin_curve.replace('Skin' , 'SkinBlink')
 	
 	
 	
@@ -65,6 +75,9 @@ class Eye(chain.Chain) :
 		self.eye_bpjnt_path = os.path.abspath(__file__ + "/../eye_bpjnt.ma")
 		# 导入关节
 		cmds.file(self.eye_bpjnt_path , i = True , rnn = True)
+		
+		self.eye_lid_upper.build_curve()
+		self.eye_lid_lower.build_curve()
 	
 	
 	
@@ -89,7 +102,9 @@ class Eye(chain.Chain) :
 		jointUtils.Joint.joint_orientation(self.jnt_list)
 		jointUtils.Joint.joint_orientation(self.iris_jnt_list)
 		
-
+		self.eye_lid_upper.create_joint()
+		self.eye_lid_lower.create_joint()
+	
 	
 	
 	def create_ctrl(self) :
@@ -150,7 +165,8 @@ class Eye(chain.Chain) :
 		cmds.setAttr(self.aim_crv + '.inheritsTransform' , 0)
 		cmds.parent(self.aim_crv , self.ctrl_grp)
 		
-
+		self.eye_lid_upper.create_ctrl()
+		self.eye_lid_lower.create_ctrl()
 	
 	
 	
@@ -167,25 +183,75 @@ class Eye(chain.Chain) :
 					
 					0 , 1 , 0) , worldUpType = "vector" , worldUpVector = (0 , 1 , 0))
 		
-
+		self.eye_lid_upper.add_constraint()
+		self.eye_lid_lower.add_constraint()
+		
+		self.add_blink()
 	
 	
 	
-	def build_setup(self) :
-		super().build_setup()
-		# 生成上部分的眼皮准备
-		self.eye_lid_upper.build_setup()
-		# 生成下部分的眼皮准备
-		self.eye_lid_lower.build_setup()
-	
-	
-	
-	def build_rig(self) :
-		super().build_rig()
-		# 生成上部分的眼皮绑定
-		self.eye_lid_upper.build_rig()
-		# 生成下部分的眼皮绑定
-		self.eye_lid_lower.build_rig()
+	def add_blink(self) :
+		u"""
+		添加闭合眼皮曲线的功能
+		"""
+		# 创建blink曲线
+		self.blink_curve = cmds.duplicate(self.eye_lid_upper.curve , name = self.blink_curve)[0]
+		
+		# 将上眼皮的控制曲线与下眼皮的控制曲线对blink曲线做bs驱动,将两个目标体的影响值设置在0.5
+		self.bs_node = cmds.blendShape(self.eye_lid_upper.curve , self.eye_lid_lower.curve , self.blink_curve ,
+		                               w = [(0 , 0.5) , (1 , 0.5)])
+		
+		# 给眼球控制器添加blink的属性控制
+		cmds.addAttr(self.aim_ctrl , longName = 'blink' , at = 'double' , defaultValue = 0 , minValue = 0 ,
+		             maxValue = 1 ,
+		             keyable = True)
+		cmds.addAttr(self.aim_ctrl , longName = 'blinkHeight' , at = 'double' , defaultValue = 0.5 , minValue = 0 ,
+		             maxValue = 1 ,
+		             keyable = True)
+		
+		# 属性blinkHeight连接给bs的权重值
+		# 查找连接的bs节点
+		cmds.connectAttr(self.aim_ctrl + '.blinkHeight' , self.bs_node[0] + '.{}'.format(self.eye_lid_lower.curve))
+		self.reverse_node = cmds.createNode('reverse' , name = self.reverse_node)
+		cmds.connectAttr(self.aim_ctrl + '.blinkHeight' , self.reverse_node + '.inputX')
+		cmds.connectAttr(self.reverse_node + '.outputX' , self.bs_node[0] + '.{}'.format(self.eye_lid_upper.curve))
+		
+		# 创建上下眼皮的权重曲线的blink曲线
+		self.eye_lid_upper.blink_curve = cmds.duplicate(self.eye_lid_upper.skin_curve , name = self.eye_lid_upper
+		                                                .blink_curve)[0]
+		self.eye_lid_lower.blink_curve = cmds.duplicate(self.eye_lid_lower.skin_curve , name = self.eye_lid_lower
+		                                                .blink_curve)[0]
+		
+		# blink曲线对上眼皮的权重曲线的blink曲线制作线变形器，注意，需要先将blinkHeight调整到0
+		cmds.setAttr(self.aim_ctrl + '.blinkHeight' , 0)
+		self.eye_lid_upper.wire_node = \
+			cmds.wire(self.eye_lid_upper.blink_curve , w = self.blink_curve , gw = False , en = 1.000000 ,
+			          ce = 0.000000 ,
+			          li = 0.000000)[0]
+		# 调整上眼皮线变形器的参数
+		cmds.setAttr(self.eye_lid_upper.wire_node + '.dropoffDistance[0]' , 200)
+		cmds.setAttr(self.eye_lid_upper.wire_node + '.scale[0]' , 0)
+		# 上眼皮的权重曲线的blink曲线对上眼皮的权重曲线做bs
+		self.eye_lid_upper.bs_node = cmds.blendShape(self.eye_lid_upper.blink_curve , self.eye_lid_upper.skin_curve ,
+		                                             w = [(0 , 1)])
+		cmds.connectAttr(self.aim_ctrl + '.blink' , self.eye_lid_upper.bs_node[0] + '.{}'.format(
+				self.eye_lid_upper.blink_curve))
+		
+		# blink曲线对下眼皮的权重曲线的blink曲线制作线变形器，注意，需要先将blinkHeight调整到1
+		cmds.setAttr(self.aim_ctrl + '.blinkHeight' , 1)
+		self.eye_lid_lower.wire_node = \
+			cmds.wire(self.eye_lid_lower.blink_curve , w = self.blink_curve , gw = False , en = 1.000000 ,
+			          ce = 0.000000 ,
+			          li = 0.000000)[0]
+		# 调整下眼皮线变形器的参数
+		cmds.setAttr(self.eye_lid_lower.wire_node + '.dropoffDistance[0]' , 200)
+		cmds.setAttr(self.eye_lid_lower.wire_node + '.scale[0]' , 0)
+		
+		# 下眼皮的权重曲线的blink曲线对上眼皮的权重曲线做bs
+		self.eye_lid_lower.bs_node = cmds.blendShape(self.eye_lid_lower.blink_curve , self.eye_lid_lower.skin_curve ,
+		                                             w = [(0 , 1)])
+		cmds.connectAttr(self.aim_ctrl + '.blink' , self.eye_lid_lower.bs_node[0] + '.{}'.format(
+				self.eye_lid_lower.blink_curve))
 
 
 
@@ -202,7 +268,5 @@ if __name__ == "__main__" :
 	
 	
 	
-	#
-	# #
 	build_setup()
 	build_rig()

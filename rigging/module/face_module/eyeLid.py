@@ -37,7 +37,7 @@ class EyeLid(bone.Bone) :
 		"""
 		super().create_namespace()
 		# 整理与控制器有关的曲线的名称规范层级结构
-		self.curve = 'crv_{}_{}{}EyeLid_001'.format(self._side , self._name , self._rtype)
+		self.curve = 'crv_{}_{}{}_001'.format(self._side , self._name , self._rtype)
 		for index in range(7) :
 			self.curve_jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
 		self.curve_jnt_grp = 'grp_{}_{}{}SkinJnts_001'.format(self._side , self._name , self._rtype)
