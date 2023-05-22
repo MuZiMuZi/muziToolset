@@ -123,16 +123,16 @@ class EyeLid(bone.Bone) :
 		
 		
 		# 约束中间的控制器[0,2,3]，两侧的控制器约束中间的控制器
-		cmds.parentConstraint(self.output_list[0] , self.output_list[3] , self.driven_list[2] , mo = True)
+		cmds.pointConstraint(self.output_list[0] , self.output_list[3] , self.driven_list[2] , mo = True)
 		
 		# 约束中间的控制器[0,1,2]，两侧的控制器约束中间的控制器
-		cmds.parentConstraint(self.output_list[0] , self.output_list[2] , self.driven_list[1] , mo = True)
+		cmds.pointConstraint(self.output_list[0] , self.output_list[2] , self.driven_list[1] , mo = True)
 		
 		# 约束中间的控制器[3,4,6]，两侧的控制器约束中间的控制器
-		cmds.parentConstraint(self.output_list[3] , self.output_list[6] , self.driven_list[4] , mo = True)
+		cmds.pointConstraint(self.output_list[3] , self.output_list[6] , self.driven_list[4] , mo = True)
 		
 		# 约束中间的控制器[4,5,6]，两侧的控制器约束中间的控制器
-		cmds.parentConstraint(self.output_list[4] , self.output_list[6] , self.driven_list[5])
+		cmds.pointConstraint(self.output_list[4] , self.output_list[6] , self.driven_list[5])
 		
 		# 第二个控制器和第六个控制器是为了调整小的形态，默认是隐藏的,连接他们的可见性到中间的控制器上
 		cmds.addAttr(self.ctrl_list[3] , attributeType = 'bool' , longName = 'LidSubCtrlVis' , keyable = 1 ,
