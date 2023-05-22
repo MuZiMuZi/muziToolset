@@ -1144,12 +1144,13 @@ class Pipeline(object) :
 		
 		# 创建整理层级的组
 		jnts_grp = cmds.createNode('transform' ,
-		                           name = 'grp_{}_{}Jnts_{:03d}'.format(name_parts.side , name_parts.description ,
+		                           name = 'grp_{}_{}AttachJnts_{:03d}'.format(name_parts.side , name_parts.description ,
 		                                                                name_parts.index))
-		
-		nodes_grp = cmds.createNode('transform' ,
-		                            name = 'grp_{}_{}RigNodes_{:03d}'.format(name_parts.side , name_parts.description ,
-		                                                                     name_parts.index))
+		nodes_grp = 'grp_{}_{}RigNodes_{:03d}'.format(name_parts.side , name_parts.description ,
+		                                              name_parts.index)
+		if not cmds.objExists(nodes_grp) :
+			nodes_grp = cmds.createNode('transform' ,
+			                            name = nodes_grp)
 		
 		attaches_grp = []
 		for crv , part_name in zip(curves , ['Drive' , 'Aim' , 'Up']) :
@@ -1161,8 +1162,7 @@ class Pipeline(object) :
 			                             parent = nodes_grp)
 			attaches_grp.append(grp_attach)
 		
-		# 整理层级结构
-		cmds.parent(curves , nodes_grp)
+
 		
 		# 获取曲线形状节点
 		crv_shapes = []
@@ -1219,4 +1219,4 @@ class Pipeline(object) :
 			cmds.parent(jnt , zero)
 			# 将关节定向到zero组的方向
 			cmds.matchTransform(jnt , zero , position = False , rotation = True)
-			cmds.makeIdentity(jnt , apply = True , translate = True , rotate = True , scale = True)
+			# cmds.makeIdentity(jnt , apply = True , translate = True , rotate = True , scale = True)
