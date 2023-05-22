@@ -26,6 +26,7 @@ class Mouth(bone.Bone) :
 	def __init__(self , side , name , joint_number = 7 , joint_parent = None , control_parent = None) :
 		super().__init__(side , name , joint_number , joint_parent , control_parent)
 		
+		self._rtype = 'Mouth'
 		# 生成上部分的嘴唇
 		self.mouth_lip_upper = mouthLip.MouthLip(side = self.side , name = 'upper' , joint_number = 7 ,
 		                                         joint_parent = None ,
@@ -76,7 +77,8 @@ class Mouth(bone.Bone) :
 		self.out_ctrl = controlUtils.Control.create_ctrl(self.out_ctrl , shape = 'ball' , axis = 'X+' , radius = 0.1 ,
 		                                                 pos = self.mouth_lip_lower.zero_list[-1] , parent = self.ctrl_grp)
 	
-	
+		# 整理控制器的层级结构
+		cmds.parent(self.mouth_lip_upper.ctrl_grp,self.mouth_lip_lower.ctrl_grp,self.ctrl_grp)
 	
 	def add_constraint(self) :
 		# 创建上下嘴唇的约束
