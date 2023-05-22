@@ -186,6 +186,7 @@ class Eye(chain.Chain) :
 		self.eye_lid_upper.add_constraint()
 		self.eye_lid_lower.add_constraint()
 		
+		# 添加闭合眼皮曲线的功能
 		self.add_blink()
 	
 	
@@ -252,8 +253,10 @@ class Eye(chain.Chain) :
 		                                             w = [(0 , 1)])
 		cmds.connectAttr(self.aim_ctrl + '.blink' , self.eye_lid_lower.bs_node[0] + '.{}'.format(
 				self.eye_lid_lower.blink_curve))
+		#恢复blinkHeight的数值
+		cmds.setAttr(self.aim_ctrl + '.blinkHeight' , 0.5)
 
-
+	
 
 if __name__ == "__main__" :
 	def build_setup() :
