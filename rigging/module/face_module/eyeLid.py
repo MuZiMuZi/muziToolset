@@ -51,8 +51,9 @@ class EyeLid(bone.Bone) :
 		self.eye_jnt = 'jnt_{}_Eye_001'.format(self._side)
 		self.eye_up_loc = 'loc_{}_EyeUp_001'.format(self._side)
 		self.eye_up_zero = 'zero_{}_EyeUp_001'.format(self._side)
-	
-	
+		
+		# 整理节点的层级结构
+		self.node_grp = 'grp_{}_{}{}Nodes_001'.format(self._side , self._name , self._rtype)
 	
 	def build_curve(self) :
 		u"""
@@ -83,7 +84,7 @@ class EyeLid(bone.Bone) :
 		wire_node = cmds.wire(self.skin_curve , w = self.curve , gw = False , en = 1.000000 , ce = 0.000000 ,
 		                      li = 0.000000)[0]
 		cmds.setAttr(wire_node + '.dropoffDistance[0]' , 200)
-	
+		
 	
 	
 	def create_joint(self) :
@@ -103,8 +104,11 @@ class EyeLid(bone.Bone) :
 			cmds.setAttr(self.eye_up_loc + '.translateY' , 5)
 		# 创建眼皮的权重关节在曲线上
 		pipelineUtils.Pipeline.create_eyelid_joints_on_curve(self.skin_curve , self.eye_jnt , self.eye_up_loc)
-	
-	
+		
+		# 整理节点的层级结构
+		self.node_grp = cmds.createNode('transform',name = self.node_grp,parent = '_node')
+		cmds.parent(self.curve_nodes_grp,self.skin_nodes_grp,self.node_grp)
+		cmds.parent(self.skin_jnt_grp,'_joint')
 	
 	def create_ctrl(self) :
 		super().create_ctrl()
@@ -147,7 +151,7 @@ class EyeLid(bone.Bone) :
 		cmds.setAttr(self.curve + '.v' , 0)
 		cmds.setAttr(self.skin_curve + '.v' , 0)
 	
-	
+		#
 	
 	def build_setup(self) :
 		"""
