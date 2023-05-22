@@ -154,8 +154,8 @@ class MouthLip(bone.Bone) :
 		# 设置offset组的偏移值，上下运动才可匹配
 		for offset in self.offset_list :
 			cmds.setAttr(offset + '.scaleY' , 1 * self.Y_value)
-	
-	
+		
+		
 	
 	def add_constraint(self) :
 		super().add_constraint()
@@ -177,6 +177,14 @@ class MouthLip(bone.Bone) :
 		
 		# 约束中间的控制器[4,5,6]，两侧的控制器约束中间的控制器
 		cmds.pointConstraint(self.output_list[4] , self.output_list[6] , self.driven_list[5])
+		
+		# 第二个控制器和第六个控制器是为了调整小的形态，默认是隐藏的,连接他们的可见性到中间的控制器上
+		cmds.addAttr(self.ctrl_list[3] , attributeType = 'bool' , longName = 'LidSubCtrlVis' , keyable = 1 ,
+		             defaultValue = 0)
+		
+		# 连接可见性
+		cmds.connectAttr(self.ctrl_list[3] + '.LidSubCtrlVis' , self.ctrl_list[1] + '.visibility')
+		cmds.connectAttr(self.ctrl_list[3] + '.LidSubCtrlVis' , self.ctrl_list[5] + '.visibility')
 		
 		# 设置曲线的可见性
 		cmds.setAttr(self.curve + '.visibility' , 0)
