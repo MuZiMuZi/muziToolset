@@ -36,21 +36,21 @@ class Mouth(bone.Bone) :
 	def create_namespace(self) :
 		super().create_namespace()
 		self.mouth_lip_upper.create_namespace()
-		# self.mouth_lip_lower.create_namespace()
+		self.mouth_lip_lower.create_namespace()
 	
 	
 	
 	def create_bpjnt(self) :
 		# 创建上下嘴唇的控制器曲线
 		self.mouth_lip_upper.build_curve()
-		# self.mouth_lip_lower.build_curve()
+		self.mouth_lip_lower.build_curve()
 	
 	
 	
 	def create_joint(self) :
 		# 创建上下嘴唇的曲线
 		self.mouth_lip_upper.create_joint()
-		# self.mouth_lip_lower.create_joint()
+		self.mouth_lip_lower.create_joint()
 	
 	
 	

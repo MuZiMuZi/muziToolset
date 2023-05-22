@@ -30,6 +30,7 @@ class MouthLip(bone.Bone) :
 		self._rtype = 'MouthLip'
 		self.radius = 0.05
 		self.joint_number = joint_number
+		
 		self.curve_jnt_list = list()
 		self.skin_jnt_list = list()
 		self.skin_curve = 'crv_{}_{}{}Skin_001'.format(self._side , self._name , self._rtype)
@@ -63,7 +64,8 @@ class MouthLip(bone.Bone) :
 		self.up_jnt_grp = 'grp_{}_{}{}UpJnts_001'.format(self._side , self._name , self._rtype)
 		self.up_nodes_grp = 'grp_{}_{}{}UpRigNodes_001'.format(self._side , self._name , self._rtype)
 	
-	
+		# 整理节点的层级结构
+		self.node_grp = 'grp_{}_{}{}Nodes_001'.format(self._side , self._name , self._rtype)
 	
 	def build_curve(self) :
 		u"""
@@ -125,6 +127,12 @@ class MouthLip(bone.Bone) :
 		# 向上曲线的位置距离可以适当调整大一点，防止翻转曲线的轴向
 		cmds.setAttr(self.up_curve + '.translateY' , cmds.getAttr(self.up_curve + '.translateY') + 0.8)
 		# 创建三条曲线的目标约束
-		pipelineUtils.Pipeline.attach_joints_on_curve(self.skin_jnt_list , self.curve , self.aim_curve ,
+		con_dict = pipelineUtils.Pipeline.attach_joints_on_curve(self.skin_jnt_list , self.curve , self.aim_curve ,
 		                                              self.up_curve ,
 		                                              aim_type = 'curve')
+		self.con_nodes_grp = con_dict['nodes_grp']
+		self.skin_jnt_grp = con_dict['jnts_grp']
+		# 整理节点的层级结构
+		self.node_grp = cmds.createNode('transform',name = self.node_grp,parent = '_node')
+		cmds.parent(self.skin_nodes_grp,self.curve_nodes_grp, self.con_nodes_grp,self.node_grp)
+		cmds.parent(self.skin_jnt_grp,'_joint')
