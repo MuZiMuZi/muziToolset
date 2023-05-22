@@ -71,9 +71,11 @@ class Eye(chain.Chain) :
 		# 创建眼内侧和眼外侧的控制器的名称规范
 		self.inn_ctrl = 'ctrl_{}_{}{}inn_001'.format(self._side , self._name , self._rtype)
 		self.out_ctrl = 'ctrl_{}_{}{}out_001'.format(self._side , self._name , self._rtype)
-	
+		
 		# 所有曲线的集合
-		self.crv_list = [self.blink_curve,self.eye_lid_upper.blink_curve, self.eye_lid_lower.blink_curve]
+		self.crv_list = [self.blink_curve , self.eye_lid_upper.blink_curve , self.eye_lid_lower.blink_curve]
+	
+	
 	
 	def create_bpjnt(self) :
 		# 获得eye_bpjnt 的路径
@@ -226,9 +228,11 @@ class Eye(chain.Chain) :
 		# 隐藏上下眼皮的外侧控制器
 		cmds.setAttr(self.eye_lid_upper.zero_list[-1] + '.v' , 0)
 		cmds.setAttr(self.eye_lid_lower.zero_list[-1] + '.v' , 0)
-	
-		#整理整体的层级架构
+		
+		# 整理整体的层级架构
 		self.organization_hierarchy()
+	
+	
 	
 	def add_blink(self) :
 		u"""
@@ -303,10 +307,11 @@ class Eye(chain.Chain) :
 		"""
 		cmds.parent(self.eye_lid_upper.eye_up_zero , self.locator_grp)
 		cmds.parent(self.eye_lid_upper.curve_nodes_grp , self.eye_lid_upper.skin_nodes_grp ,
-		            self.eye_lid_lower.curve_nodes_grp , self.eye_lid_lower.skin_nodes_grp,self.node_grp)
-		#设置曲线的可见性
-		for crv in self.crv_list:
-			cmds.setAttr(crv + '.v',0)
+		            self.eye_lid_lower.curve_nodes_grp , self.eye_lid_lower.skin_nodes_grp , self.node_grp)
+		# 设置曲线的可见性
+		for crv in self.crv_list :
+			cmds.setAttr(crv + '.v' , 0)
+
 
 
 if __name__ == "__main__" :
