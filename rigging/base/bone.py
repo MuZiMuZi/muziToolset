@@ -154,7 +154,6 @@ class Bone(object) :
 			jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
 			cmds.matchTransform(jnt , bpjnt)
 			cmds.delete(bpjnt)
-
 	
 	
 	
@@ -174,7 +173,6 @@ class Bone(object) :
 			# 判断所创建的控制器的边，如果边为_r_的话，offset组需要修改镜像
 			if self.side == 'r' :
 				cmds.setAttr(ctrl.replace('ctrl' , 'offset') + '.scaleX' , -1)
-
 	
 	
 	
@@ -183,7 +181,6 @@ class Bone(object) :
 		添加约束
 		'''
 		for ctrl , jnt in zip(self.ctrl_list , self.jnt_list) :
-			
 			pipelineUtils.Pipeline.create_constraint(ctrl.replace(' ctrl' , 'output') , jnt ,
 			                                         point_value = True ,
 			                                         orient_value = True , scale_value =
