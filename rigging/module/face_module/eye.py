@@ -117,16 +117,13 @@ class Eye(chain.Chain) :
 		# 创建控制器总体的层级组
 		self.ctrl_grp = cmds.createNode('transform' , parent = self.control_parent , name = self.ctrl_grp)
 		# 创建控制器
-		parent = self.ctrl_grp
-		for index , ctrl in enumerate(self.ctrl_list) :
-			self.ctrl = controlUtils.Control.create_ctrl(ctrl , shape = 'circle' ,
-			                                             radius = self.radius ,
-			                                             axis = 'X+' , pos = self.jnt_list[index] ,
-			                                             parent = parent)
-			parent = self.ctrl.replace('ctrl' , 'output')
-			# 移动控制器的位置
-			cmds.setAttr(self.zero_list[index] + '.translateX' ,
-			             cmds.getAttr(self.zero_list[index] + '.translateX') + 0.25 * index)
+		self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_list[0] , shape = 'circle' ,
+		                                             radius = self.radius ,
+		                                             axis = 'X+' , pos = self.jnt_list[0] ,
+		                                             parent = self.ctrl_grp)
+		# 移动控制器的位置
+		cmds.setAttr(self.zero_list[0] + '.translateZ' ,
+		             cmds.getAttr(self.zero_list[0] + '.translateZ') + 1)
 		
 		# 创建aim控制器用于做目标约束
 		self.aim_ctrl = controlUtils.Control.create_ctrl(self.aim_ctrl , shape = 'shape_040' ,
@@ -187,11 +184,15 @@ class Eye(chain.Chain) :
 		u"""
 		创建约束
 		"""
-		super().add_constraint()
+		pipelineUtils.Pipeline.create_constraint(self.ctrl_list[0].replace('ctrl' , 'output') , self.jnt_list[0] ,
+		                                         point_value = True ,
+		                                         orient_value = True , scale_value =
+		                                         True ,
+		                                         mo_value = True)
 		
 		# 创建目标约束
 		self.aim_output = self.aim_ctrl.replace('ctrl' , 'output')
-		cmds.aimConstraint(self.aim_output , self.ctrl_list[0] , offset = (0 , 0 , 0) , weight = 1 ,
+		cmds.aimConstraint(self.aim_output , self.driven_list[0] , offset = (0 , 0 , 0) , weight = 1 ,
 		                   aimVector = (1 , 0 , 0) , upVector = (
 					
 					0 , 1 , 0) , worldUpType = "vector" , worldUpVector = (0 , 1 , 0))
@@ -225,7 +226,8 @@ class Eye(chain.Chain) :
 		cmds.setAttr(self.eye_lid_upper.zero_list[-1] + '.v' , 0)
 		cmds.setAttr(self.eye_lid_lower.zero_list[-1] + '.v' , 0)
 	
-	
+		#整理整体的层级架构
+		self.organization_hierarchy()
 	
 	def add_blink(self) :
 		u"""
@@ -291,6 +293,16 @@ class Eye(chain.Chain) :
 				self.eye_lid_lower.blink_curve))
 		# 恢复blinkHeight的数值
 		cmds.setAttr(self.aim_ctrl + '.blinkHeight' , 0.5)
+	
+	
+	
+	def organization_hierarchy(self) :
+		u"""
+		整理整体的层级架构
+		"""
+		cmds.parent(self.eye_lid_upper.eye_up_zero , self.locator_grp)
+		cmds.parent(self.eye_lid_upper.curve_nodes_grp , self.eye_lid_upper.skin_nodes_grp ,
+		            self.eye_lid_lower.curve_nodes_grp , self.eye_lid_lower.skin_nodes_grp,self.node_grp)
 
 
 

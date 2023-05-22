@@ -46,7 +46,7 @@ class EyeLid(bone.Bone) :
 		# 整理与蒙皮关节有关的曲线名称规范层级结构
 		self.skin_curve = 'crv_{}_{}{}Skin_001'.format(self._side , self._name , self._rtype)
 		self.skin_jnt_grp = 'grp_{}_{}{}SkinJnts_001'.format(self._side , self._name , self._rtype)
-		
+		self.skin_nodes_grp = 'grp_{}_{}{}SkinRigNodes_001'.format(self._side , self._name , self._rtype)
 		# 整理眼睛的关节和向上方向的参考向量的名称规范层级结构
 		self.eye_jnt = 'jnt_{}_Eye_001'.format(self._side)
 		self.eye_up_loc = 'loc_{}_EyeUp_001'.format(self._side)

@@ -48,7 +48,8 @@ class Bone(object) :
 			self.joint_parent = '_joint'
 		if not self.control_parent :
 			self.control_parent = '_control'
-		
+		self.node_grp = '_node'
+		self.locator_grp = '_locator'
 		# 生成的绑定类型
 		self._rtype = ''
 		self._name = name
