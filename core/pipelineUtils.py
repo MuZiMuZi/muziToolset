@@ -1132,6 +1132,8 @@ class Pipeline(object) :
 			aim_curve (str): 目标曲线
 			up_object (str): 向上的参考向量的曲线
 			aim_type (str): object/curve 物体或者是曲线
+		return:
+			attach_dict: 将创建出来的attach对象返回出去
 		"""
 		# 获取名称
 		name_parts = nameUtils.Name(name = drive_curve)
@@ -1144,8 +1146,9 @@ class Pipeline(object) :
 		
 		# 创建整理层级的组
 		jnts_grp = cmds.createNode('transform' ,
-		                           name = 'grp_{}_{}AttachJnts_{:03d}'.format(name_parts.side , name_parts.description ,
-		                                                                name_parts.index))
+		                           name = 'grp_{}_{}AttachJnts_{:03d}'.format(name_parts.side ,
+		                                                                      name_parts.description ,
+		                                                                      name_parts.index))
 		nodes_grp = 'grp_{}_{}RigNodes_{:03d}'.format(name_parts.side , name_parts.description ,
 		                                              name_parts.index)
 		if not cmds.objExists(nodes_grp) :
@@ -1154,15 +1157,13 @@ class Pipeline(object) :
 		
 		attaches_grp = []
 		for crv , part_name in zip(curves , ['Drive' , 'Aim' , 'Up']) :
-			grp_attach = cmds.createNode('transform' ,
+			attach_grp = cmds.createNode('transform' ,
 			                             name = 'grp_{}_{}{}Attaches_{:03d}'.format(name_parts.side ,
 			                                                                        name_parts.description ,
 			                                                                        part_name ,
 			                                                                        name_parts.index) ,
 			                             parent = nodes_grp)
-			attaches_grp.append(grp_attach)
-		
-
+			attaches_grp.append(attach_grp)
 		
 		# 获取曲线形状节点
 		crv_shapes = []
@@ -1219,4 +1220,12 @@ class Pipeline(object) :
 			cmds.parent(jnt , zero)
 			# 将关节定向到zero组的方向
 			cmds.matchTransform(jnt , zero , position = False , rotation = True)
-			# cmds.makeIdentity(jnt , apply = True , translate = True , rotate = True , scale = True)
+		# cmds.makeIdentity(jnt , apply = True , translate = True , rotate = True , scale = True)
+		attach_dict = {
+				'attach_grp' : attach_grp ,
+				'jnts_grp' : jnts_grp ,
+				'nodes_grp' : nodes_grp ,
+				'attach_nodes' : attach_nodes ,
+				
+				}
+		return attach_dict
