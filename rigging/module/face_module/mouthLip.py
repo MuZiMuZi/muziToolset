@@ -154,8 +154,8 @@ class MouthLip(bone.Bone) :
 		# 设置offset组的偏移值，上下运动才可匹配
 		for offset in self.offset_list :
 			cmds.setAttr(offset + '.scaleY' , 1 * self.Y_value)
-		
-		
+	
+	
 	
 	def add_constraint(self) :
 		super().add_constraint()
