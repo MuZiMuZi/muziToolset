@@ -40,7 +40,7 @@ class EyeLid(bone.Bone) :
 		self.curve = 'crv_{}_{}{}_001'.format(self._side , self._name , self._rtype)
 		for index in range(7) :
 			self.curve_jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
-		self.curve_jnt_grp = 'grp_{}_{}{}SkinJnts_001'.format(self._side , self._name , self._rtype)
+		self.curve_jnt_grp = 'grp_{}_{}{}Jnts_001'.format(self._side , self._name , self._rtype)
 		self.curve_nodes_grp = 'grp_{}_{}{}RigNodes_001'.format(self._side , self._name , self._rtype)
 		
 		# 整理与蒙皮关节有关的曲线名称规范层级结构
@@ -69,12 +69,13 @@ class EyeLid(bone.Bone) :
 		
 		# 在曲线上创建关节用来蒙皮曲线创建控制器的约束
 		cmds.select(self.curve)
-		jnt_list = jointUtils.Joint.create_joints_on_curve(is_parent = False)['jnt_list']
+		self.curve_jnt_dict = jointUtils.Joint.create_joints_on_curve(is_parent = False)
+		jnt_list = self.curve_jnt_dict['jnt_list']
 		# 重命名蒙皮关节和层级结构的名称
 		for index , jnt in enumerate(jnt_list) :
 			cmds.rename(jnt , self.curve_jnt_list[index])
-		self.curve_jnt_grp = cmds.rename('grp_{}Jnts'.format(self.curve) , self.curve_jnt_grp)
-		self.curve_nodes_grp = cmds.rename('grp_{}RigNodes'.format(self.curve) , self.curve_nodes_grp)
+		self.curve_jnt_grp = cmds.rename(self.curve_jnt_dict['jnt_grp'], self.curve_jnt_grp)
+		self.curve_nodes_grp = cmds.rename(self.curve_jnt_dict['node_grp'] , self.curve_nodes_grp)
 		# 蒙皮曲线
 		cmds.skinCluster(self.curve_jnt_list , self.curve)
 		
