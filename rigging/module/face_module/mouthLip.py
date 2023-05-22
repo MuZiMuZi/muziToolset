@@ -28,12 +28,18 @@ class MouthLip(bone.Bone) :
 		self._name = name
 		self.shape = 'cube'
 		self._rtype = 'MouthLip'
-		self.radius = 0.05
+		self.radius = 0.1
 		self.joint_number = joint_number
 		
 		self.curve_jnt_list = list()
 		self.skin_jnt_list = list()
 		self.skin_curve = 'crv_{}_{}{}Skin_001'.format(self._side , self._name , self._rtype)
+		
+		# 判断是否为下部分的嘴唇,如果为下部分的嘴唇的话，scaleY需要设置成-1，这样上下运动的时候才可匹配
+		if self._name == 'lower' :
+			self.Y_value = -1
+		else :
+			self.Y_value = 1
 	
 	
 	
@@ -50,7 +56,8 @@ class MouthLip(bone.Bone) :
 		# 获取蒙皮曲线的关节点数量
 		self.skin_number = pipelineUtils.Pipeline.get_curve_number(self.skin_curve)
 		for index in range(self.skin_number) :
-			self.skin_jnt_list.append('jnt_{}_{}{}Skin_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
+			self.skin_jnt_list.append(
+					'jnt_{}_{}{}Skin_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
 		self.skin_jnt_grp = 'grp_{}_{}{}SkinJnts_001'.format(self._side , self._name , self._rtype)
 		self.skin_nodes_grp = 'grp_{}_{}{}SkinRigNodes_001'.format(self._side , self._name , self._rtype)
 		
@@ -66,6 +73,8 @@ class MouthLip(bone.Bone) :
 		
 		# 整理节点的层级结构
 		self.node_grp = 'grp_{}_{}{}Nodes_001'.format(self._side , self._name , self._rtype)
+	
+	
 	
 	def build_curve(self) :
 		u"""
@@ -105,6 +114,7 @@ class MouthLip(bone.Bone) :
 		wire_node = cmds.wire(self.skin_curve , w = self.curve , gw = False , en = 1.000000 , ce = 0.000000 ,
 		                      li = 0.000000)[0]
 		cmds.setAttr(wire_node + '.dropoffDistance[0]' , 200)
+		cmds.setAttr(self.skin_jnt_grp + '.v' , 0)
 	
 	
 	
@@ -128,19 +138,22 @@ class MouthLip(bone.Bone) :
 		cmds.setAttr(self.up_curve + '.translateY' , cmds.getAttr(self.up_curve + '.translateY') + 0.8)
 		# 创建三条曲线的目标约束
 		con_dict = pipelineUtils.Pipeline.attach_joints_on_curve(self.skin_jnt_list , self.curve , self.aim_curve ,
-		                                              self.up_curve ,
-		                                              aim_type = 'curve')
+		                                                         self.up_curve ,
+		                                                         aim_type = 'curve')
 		self.con_nodes_grp = con_dict['nodes_grp']
 		self.skin_jnt_grp = con_dict['jnts_grp']
 		# 整理节点的层级结构
-		self.node_grp = cmds.createNode('transform',name = self.node_grp,parent = '_node')
-		cmds.parent(self.skin_nodes_grp,self.curve_nodes_grp, self.con_nodes_grp,self.node_grp)
-		cmds.parent(self.skin_jnt_grp,'_joint')
+		self.node_grp = cmds.createNode('transform' , name = self.node_grp , parent = '_node')
+		cmds.parent(self.skin_nodes_grp , self.curve_nodes_grp , self.con_nodes_grp , self.node_grp)
+		cmds.parent(self.skin_jnt_grp , '_joint')
 	
 	
 	
 	def create_ctrl(self) :
 		super().create_ctrl()
+		# 设置offset组的偏移值，上下运动才可匹配
+		for offset in self.offset_list :
+			cmds.setAttr(offset + '.scaleY' , 1 * self.Y_value)
 	
 	
 	
@@ -168,7 +181,6 @@ class MouthLip(bone.Bone) :
 		# 设置曲线的可见性
 		cmds.setAttr(self.curve + '.visibility' , 0)
 		cmds.setAttr(self.skin_curve + '.visibility' , 0)
-		
-	
-		
-	
+		# 设置关节的可见性
+		cmds.setAttr(self.skin_jnt_grp + '.v' , 1)
+		cmds.setAttr(self.curve_jnt_grp + '.v' , 0)
