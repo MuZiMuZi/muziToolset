@@ -116,7 +116,6 @@ class Eye(chain.Chain) :
 	
 	def create_ctrl(self) :
 		
-		
 		# 创建控制器总体的层级组
 		self.ctrl_grp = cmds.createNode('transform' , parent = self.control_parent , name = self.ctrl_grp)
 		# 创建控制器
@@ -311,6 +310,9 @@ class Eye(chain.Chain) :
 		# 设置曲线的可见性
 		for crv in self.crv_list :
 			cmds.setAttr(crv + '.v' , 0)
+			
+		# 设置控制器组的层级结构
+		cmds.parent(self.eye_lid_upper.ctrl_grp,self.eye_lid_lower.ctrl_grp,self.ctrl_grp)
 
 
 
