@@ -141,6 +141,10 @@ class EyeLid(bone.Bone) :
 		# 连接可见性
 		cmds.connectAttr(self.ctrl_list[3] + '.LidSubCtrlVis' , self.ctrl_list[1] + '.visibility')
 		cmds.connectAttr(self.ctrl_list[3] + '.LidSubCtrlVis' , self.ctrl_list[5] + '.visibility')
+		
+		# 设置曲线的可见性
+		cmds.setAttr(self.curve + '.v' , 0)
+		cmds.setAttr(self.skin_curve + '.v' , 0)
 	
 	
 	

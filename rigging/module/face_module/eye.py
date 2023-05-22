@@ -72,7 +72,8 @@ class Eye(chain.Chain) :
 		self.inn_ctrl = 'ctrl_{}_{}{}inn_001'.format(self._side , self._name , self._rtype)
 		self.out_ctrl = 'ctrl_{}_{}{}out_001'.format(self._side , self._name , self._rtype)
 	
-	
+		# 所有曲线的集合
+		self.crv_list = [self.blink_curve,self.eye_lid_upper.blink_curve, self.eye_lid_lower.blink_curve]
 	
 	def create_bpjnt(self) :
 		# 获得eye_bpjnt 的路径
@@ -303,7 +304,9 @@ class Eye(chain.Chain) :
 		cmds.parent(self.eye_lid_upper.eye_up_zero , self.locator_grp)
 		cmds.parent(self.eye_lid_upper.curve_nodes_grp , self.eye_lid_upper.skin_nodes_grp ,
 		            self.eye_lid_lower.curve_nodes_grp , self.eye_lid_lower.skin_nodes_grp,self.node_grp)
-
+		#设置曲线的可见性
+		for crv in self.crv_list:
+			cmds.setAttr(crv + '.v',0)
 
 
 if __name__ == "__main__" :
