@@ -54,14 +54,21 @@ class Mouth(bone.Bone) :
 	
 	
 	
-	def build_rig(self) :
-		"""
-		创建绑定系统
-		"""
-		self.create_namespace()
-		self.create_joint()
-		# self.create_ctrl()
-		# self.add_constraint()
+	def create_ctrl(self) :
+		# 创建上下嘴唇的控制器
+		self.mouth_lip_upper.create_ctrl()
+		self.mouth_lip_lower.create_ctrl()
+	
+	
+	
+	def add_constraint(self) :
+		# 创建上下嘴唇的约束
+		self.mouth_lip_upper.add_constraint()
+		self.mouth_lip_lower.add_constraint()
+	
+	
+	
+
 	
 	
 	

@@ -63,7 +63,7 @@ class MouthLip(bone.Bone) :
 		self.up_curve = 'crv_{}_{}{}Up_001'.format(self._side , self._name , self._rtype)
 		self.up_jnt_grp = 'grp_{}_{}{}UpJnts_001'.format(self._side , self._name , self._rtype)
 		self.up_nodes_grp = 'grp_{}_{}{}UpRigNodes_001'.format(self._side , self._name , self._rtype)
-	
+		
 		# 整理节点的层级结构
 		self.node_grp = 'grp_{}_{}{}Nodes_001'.format(self._side , self._name , self._rtype)
 	
@@ -136,3 +136,39 @@ class MouthLip(bone.Bone) :
 		self.node_grp = cmds.createNode('transform',name = self.node_grp,parent = '_node')
 		cmds.parent(self.skin_nodes_grp,self.curve_nodes_grp, self.con_nodes_grp,self.node_grp)
 		cmds.parent(self.skin_jnt_grp,'_joint')
+	
+	
+	
+	def create_ctrl(self) :
+		super().create_ctrl()
+	
+	
+	
+	def add_constraint(self) :
+		super().add_constraint()
+		# 控制器之间需要添加约束
+		# ctrl_list =
+		# [0,3,6]
+		# [0,2,3]
+		# [0,1,2]
+		# [3,4,6]
+		# [4,5,6]
+		# 约束中间的控制器[0,2,3]，两侧的控制器约束中间的控制器
+		cmds.pointConstraint(self.output_list[0] , self.output_list[3] , self.driven_list[2] , mo = True)
+		
+		# 约束中间的控制器[0,1,2]，两侧的控制器约束中间的控制器
+		cmds.pointConstraint(self.output_list[0] , self.output_list[2] , self.driven_list[1] , mo = True)
+		
+		# 约束中间的控制器[3,4,6]，两侧的控制器约束中间的控制器
+		cmds.pointConstraint(self.output_list[3] , self.output_list[6] , self.driven_list[4] , mo = True)
+		
+		# 约束中间的控制器[4,5,6]，两侧的控制器约束中间的控制器
+		cmds.pointConstraint(self.output_list[4] , self.output_list[6] , self.driven_list[5])
+		
+		# 设置曲线的可见性
+		cmds.setAttr(self.curve + '.visibility' , 0)
+		cmds.setAttr(self.skin_curve + '.visibility' , 0)
+		
+	
+		
+	
