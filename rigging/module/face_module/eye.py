@@ -313,7 +313,14 @@ class Eye(chain.Chain) :
 			
 		# 设置控制器组的层级结构
 		cmds.parent(self.eye_lid_upper.ctrl_grp,self.eye_lid_lower.ctrl_grp,self.ctrl_grp)
+	
+	
+	def create_iris(self):
+		"""
+		瞳孔缩放
+		Returns:
 
+		"""
 
 
 if __name__ == "__main__" :
