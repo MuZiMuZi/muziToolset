@@ -996,7 +996,7 @@ class Pipeline(object) :
 		Returns:
 				生成的曲线
 		'''
-
+		
 		# 判断场景里是否已经生成过对应的曲线，如果有的话则将其删除，没有的话则新创建
 		
 		if cmds.objExists(curve_name) :
@@ -1236,11 +1236,12 @@ class Pipeline(object) :
 	
 	
 	@staticmethod
-	def create_zip_lip(lip_ctrls , upper_jnts , lower_jnts , zip_height = 0.5 , falloff = 3) :
+	def create_zip_lip(lip_ctrls , jaw_ctrl , upper_jnts , lower_jnts , zip_height = 0.5 , falloff = 3) :
 		'''
 		给嘴唇添加拉链嘴的绑定
 		Args:
 			lip_ctrls(list):嘴唇控制器列表
+			jaw_ctrl(str):下巴控制器
 			upper_jnts(list):上嘴唇的关节列表
 			lower_jnts(list):下嘴唇的关节列表
 			zip_height(float):zip的高度，默认为0.5，也就是上下嘴唇闭合到中间的高度
@@ -1249,4 +1250,21 @@ class Pipeline(object) :
 		Returns:
 
 		'''
-	
+		# 添加属性给嘴唇和下巴的控制器
+		for ctrl in lip_ctrls :
+			cmds.addAttr(ctrl , longName = 'zip' , attributeType = 'float' , minValue = 0 , maxValue = 1 ,
+			             keyable = True)
+		
+		cmds.addAttr(jaw_ctrl , longName = 'zipHight' , attributeType = 'float' , minValue = 0 , maxValue = 1 ,
+		             defaultValue = zip_height , keyable = True)
+		height_rvs = cmds.createNode('reverse' , name = 'rvs_m_lipZipHeight_001')
+		cmds.connectAttr(jaw_ctrl + '.zipHight' , height_rvs + '.inputX')
+		
+		# 创建节点的层级组结构,用于整理所有节点的名称
+		nodes_grp = cmds.createNode('transform' , name = 'grp_m_lipZipNodes_001')
+		
+		# 获取关节的数量，因为上下嘴唇的关节一致
+		jnts_num = len(upper_jnts)
+
+		#获取zip_weight的值
+		zip_weight = 1/float(jnts_num)
