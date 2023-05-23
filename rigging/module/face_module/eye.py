@@ -10,7 +10,7 @@ import maya.cmds as cmds
 
 from ...base import base
 from ...chain import chain , chainFK
-from ....core import controlUtils , jointUtils , pipelineUtils
+from ....core import controlUtils , jointUtils , pipelineUtils , nameUtils
 from . import eyeLid
 
 
@@ -98,10 +98,8 @@ class Eye(chain.Chain) :
 		
 		# 创建iris的关节
 		for bpjnt , jnt in zip(self.iris_bpjnt_list , self.iris_jnt_list) :
-			self.jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
+			self.jnt = cmds.createNode('joint' , name = jnt , parent = self.jnt_list[0])
 			cmds.parentConstraint(bpjnt , self.jnt , mo = False)
-			# 指定关节的父层级为上一轮创建出来的关节
-			self.joint_parent = self.jnt
 		
 		# 删除bp的定位关节
 		cmds.delete(self.bpjnt_list[0])
@@ -310,17 +308,63 @@ class Eye(chain.Chain) :
 		# 设置曲线的可见性
 		for crv in self.crv_list :
 			cmds.setAttr(crv + '.v' , 0)
-			
+		
 		# 设置控制器组的层级结构
-		cmds.parent(self.eye_lid_upper.ctrl_grp,self.eye_lid_lower.ctrl_grp,self.ctrl_grp)
+		cmds.parent(self.eye_lid_upper.ctrl_grp , self.eye_lid_lower.ctrl_grp , self.ctrl_grp)
 	
 	
-	def create_iris(self):
+	
+	def create_iris(self) :
 		"""
-		瞳孔缩放
+		瞳孔缩放，运用勾股定理来制作瞳孔的缩放
+		眼球半径的平方-关节TX的平方，再开更号即可得出缩放的值
 		Returns:
 
 		"""
+		# 给眼睛控制器添加控制瞳孔缩放的属性
+		cmds.addAttr(self.ctrl_list[0] , longName = 'iris' , keyable = 1 , dv = 1 , minValue = -1 , maxValue = 1)
+		# 获取眼球的半径值
+		self.eye_radius = cmds.getAttr(self.jnt_list[-1] + '.translateX')
+		# 给瞳孔缩放关节创建连接
+		for jnt in self.iris_jnt_list :
+			name_parts = nameUtils.Name(name = jnt)
+			# 连接瞳孔缩放关节的位移
+			offset_Tx_node = cmds.createNode('multDoubleLinear' , name = jnt.replace('jnt' , 'offsetTx'))
+			cmds.connectAttr(self.ctrl_list[0] + '.iris' , offset_Tx_node + '.input1')
+			cmds.setAttr(offset_Tx_node + '.input2' , cmds.getAttr(jnt + '.translateX'))
+			cmds.connectAttr(offset_Tx_node + '.output' , jnt + '.translateX')
+			
+			# 创建一个乘方节点，用来计算眼球半径的平方和关节Tx的平方
+			power_node = cmds.createNode('multiplyDivide' , name = jnt.replace('jnt' , 'power'))
+			cmds.connectAttr(jnt + '.translateX' , power_node + '.input1X')
+			cmds.setAttr(power_node + '.input1Y ' , self.eye_radius)
+			# 设置平方
+			cmds.setAttr(power_node + '.operation' , 3)
+			cmds.setAttr(power_node + 'input2X ' , 2)
+			cmds.setAttr(power_node + 'input2Y ' , 2)
+			
+			# 创建一个相减节点，用来计算半径的平方减去关节Tx平方的值
+			minus_node = cmds.createNode('plusMinusAverage' , name = jnt.replace('jnt' , 'minus'))
+			cmds.connectAttr(power_node + '.outputX' , minus_node + '.input1D[0]')
+			cmds.connectAttr(power_node + '.outputY' , minus_node + '.input1D[1]')
+			cmds.setAttr(power_node + '.operation ' , 2)
+			
+			# 创建一个开方节点，用于开方
+			sqit_node = cmds.createNode('multiplyDivide' , name = jnt.replace('jnt' , 'sqit'))
+			cmds.connectAttr(minus_node + '.output1D' , sqit_node + '.input1X')
+			# 设置平方
+			cmds.setAttr(sqit_node + '.operation' , 3)
+			cmds.setAttr(sqit_node + 'input2X ' , 0.5)
+			
+			# 创建一个乘除节点，用于将缩放的值重新连接回关节的缩放
+			div_node = cmds.createNode('multiplyDivide' , name = jnt.replace('jnt' , 'div'))
+			cmds.connectAttr(sqit_node + '.outputX' , div_node + '.input1X')
+			# 设置除法
+			cmds.setAttr(div_node + '.operation ' , 2)
+			
+			#将乘除节点最后得出的值连接回给关节的缩放Y,Z
+			cmds.connectAttr(div_node +'.outputX',jnt +'.scaleY')
+			cmds.connectAttr(div_node + '.outputX' , jnt + '.scaleZ')
 
 
 if __name__ == "__main__" :
