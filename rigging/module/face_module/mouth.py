@@ -102,6 +102,11 @@ class Mouth(bone.Bone) :
 		cmds.setAttr(self.mouth_lip_upper.zero_list[-1] + '.v' , 0)
 		cmds.setAttr(self.mouth_lip_lower.zero_list[-1] + '.v' , 0)
 
+		
+	def add_zip_lip(self):
+		u"""
+		添加拉链嘴的绑定
+		"""
 
 
 if __name__ == '__main__' :
