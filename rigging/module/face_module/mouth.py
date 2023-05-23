@@ -99,14 +99,28 @@ class Mouth(bone.Bone) :
 		cmds.parentConstraint(self.out_ctrl.replace('ctrl' , 'output') , self.mouth_lip_upper.driven_list[-1])
 		cmds.parentConstraint(self.out_ctrl.replace('ctrl' , 'output') , self.mouth_lip_lower.driven_list[-1])
 		# 隐藏上下嘴唇的外侧控制器
-		cmds.setAttr(self.mouth_lip_upper.zero_list[-1] + '.v' , 0)
-		cmds.setAttr(self.mouth_lip_lower.zero_list[-1] + '.v' , 0)
-
+		cmds.setAttr(self.mouth_lip_upper.zero_list[-1] + '.visibility' , 0)
+		cmds.setAttr(self.mouth_lip_lower.zero_list[-1] + '.visibility' , 0)
 		
-	def add_zip_lip(self):
+		# 添加拉链嘴的绑定效果
+		self.add_zip_lip()
+	
+	
+	
+	def add_zip_lip(self) :
 		u"""
 		添加拉链嘴的绑定
 		"""
+		lip_ctrls = [self.inn_ctrl , self.out_ctrl]
+		jaw_ctrl = self.inn_ctrl
+		upper_jnts = self.mouth_lip_upper.skin_jnt_list
+		lower_jnts = self.mouth_lip_lower.skin_jnt_list
+		
+		self.zip_lip_dict = pipelineUtils.Pipeline.create_zip_lip(lip_ctrls , jaw_ctrl , upper_jnts , lower_jnts ,
+		                                                          zip_height = 0.5 ,
+		                                                          falloff = 3)
+		cmds.parent(self.zip_lip_dict['node_grp'] , self.node_grp)
+
 
 
 if __name__ == '__main__' :
