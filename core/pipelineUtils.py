@@ -1254,9 +1254,13 @@ class Pipeline(object) :
 		for ctrl in lip_ctrls :
 			cmds.addAttr(ctrl , longName = 'zip' , attributeType = 'float' , minValue = 0 , maxValue = 1 ,
 			             keyable = True)
+			# 创建一个属性微调嘴角的数值
+			cmds.addAttr(ctrl , longName = 'adjust' , attributeType = 'float' , minValue = -0.1 , maxValue = 0.1 ,
+			             keyable = True)
 		
 		cmds.addAttr(jaw_ctrl , longName = 'zipHeight' , attributeType = 'float' , minValue = 0 , maxValue = 1 ,
 		             defaultValue = zip_height , keyable = True)
+		
 		height_rvs = cmds.createNode('reverse' , name = 'rvs_m_lipZipHeight_001')
 		cmds.connectAttr(jaw_ctrl + '.zipHeight' , height_rvs + '.inputX')
 		
@@ -1285,7 +1289,7 @@ class Pipeline(object) :
 			mid_loc = cmds.spaceLocator(name = 'loc_{}_{}Zip_{:03d}'.format(name_side , name_parts.description ,
 			                                                                name_index))[0]
 			cmds.parent(mid_loc , node_grp)
-			cmds.setAttr(mid_loc + '.v',0)
+			cmds.setAttr(mid_loc + '.v' , 0)
 			
 			pnt_con = cmds.parentConstraint(upper_grp , lower_grp , mid_loc , maintainOffset = False)[0]
 			cmds.setAttr(pnt_con + '.interpType' , 2)
@@ -1329,16 +1333,27 @@ class Pipeline(object) :
 			
 			# 在原始位置和中间位置之间混合距离
 			for jnt , jnt_parent in zip([upper_jnt , lower_jnt] , [upper_grp , lower_grp]) :
-				offset = cmds.createNode('transform' , name = jnt.replace('jnt' , 'offset') , parent = jnt_parent)
-				cmds.matchTransform(offset , jnt , position = True , rotation = True)
+				zero = cmds.createNode('transform' , name = jnt.replace('jnt' , 'zeroJnt') , parent = jnt_parent)
+				offset = cmds.createNode('transform' , name = jnt.replace('jnt' , 'offsetJnt') , parent = zero)
+				cmds.matchTransform(zero , jnt , position = True , rotation = True)
 				cmds.parent(jnt , offset)
 				
-				pnt_con = cmds.parentConstraint(mid_loc , offset , jnt , maintainOffset = False)[0]
+				pnt_con = cmds.parentConstraint(mid_loc , zero , offset , maintainOffset = False)[0]
 				cmds.setAttr(pnt_con + '.interpType' , 2)
-				cmds.connectAttr(clamp + '.outputR' , '{}.{}W0'.format(pnt_con , mid_loc))
-				cmds.connectAttr(rvs_node + '.outputX' , '{}.{}W1'.format(pnt_con , offset))
+				# 给边角的三个关节增加微调的控制
+				if i in [0 , 1 , 2 , 3 , jnts_num - 3 , jnts_num - 2 , jnts_num - 1 , jnts_num] :
+					# 使用控制器的adjus属性来微调嘴角的数值，用于改变嘴巴闭合状态时，嘴角的表演。通常对应的是“嘴角微微上扬”“有些许不快”的这种微表演
+					if i in [0 , 1 , 2 , 3] :
+						cmds.connectAttr(lip_ctrls[0] + '.adjust' , jnt + '.translateY')
+					else :
+						cmds.connectAttr(lip_ctrls[-1] + '.adjust' , jnt + '.translateY')
+				
+				else :
+					cmds.connectAttr(clamp + '.outputR' , '{}.{}W0'.format(pnt_con , mid_loc))
+					cmds.connectAttr(rvs_node + '.outputX' , '{}.{}W1'.format(pnt_con , zero))
 			
 			i += 1
-		zip_lip_dict = {'node_grp':node_grp
+		zip_lip_dict = {
+				'node_grp' : node_grp
 				}
 		return zip_lip_dict
