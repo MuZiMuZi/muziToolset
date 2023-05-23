@@ -93,8 +93,8 @@ class Mouth(bone.Bone) :
 		cmds.parentConstraint(self.inn_ctrl.replace('ctrl' , 'output') , self.mouth_lip_upper.driven_list[0])
 		cmds.parentConstraint(self.inn_ctrl.replace('ctrl' , 'output') , self.mouth_lip_lower.driven_list[0])
 		# 隐藏上下嘴唇的内侧控制器
-		cmds.setAttr(self.mouth_lip_upper.zero_list[0] + '.v' , 0)
-		cmds.setAttr(self.mouth_lip_lower.zero_list[0] + '.v' , 0)
+		cmds.setAttr(self.mouth_lip_upper.zero_list[0] + '.visibility' , 0)
+		cmds.setAttr(self.mouth_lip_lower.zero_list[0] + '.visibility' , 0)
 		# 嘴角外侧控制器对上下嘴唇的外侧控制器做约束
 		cmds.parentConstraint(self.out_ctrl.replace('ctrl' , 'output') , self.mouth_lip_upper.driven_list[-1])
 		cmds.parentConstraint(self.out_ctrl.replace('ctrl' , 'output') , self.mouth_lip_lower.driven_list[-1])
