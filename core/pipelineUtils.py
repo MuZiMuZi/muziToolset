@@ -987,13 +987,16 @@ class Pipeline(object) :
 	
 	@staticmethod
 	def create_curve_on_polyToCurve(curve_name , degree = 3) :
-		u"""
+		u'''
 		根据模型上所选择的边，模型的边到曲线生成新的曲线，判断场景里是否已经生成过对应的曲线，如果有的话则将其删除，没有的话则新创建
-		curve_name(str)：所生成的曲线的名称
-		degree(int)：新曲线的阶数。默认值为3。请注意，您需要（阶数+1）个曲线点来创建可见的曲线跨度。你必须为3度曲线放置4个点。
-		return:
-			生成的曲线
-		"""
+		Args:
+			curve_name(str)：所生成的曲线的名称
+			degree(int)：新曲线的阶数。默认值为3。请注意，您需要（阶数+1）个曲线点来创建可见的曲线跨度。你必须为3度曲线放置4个点。
+
+		Returns:
+				生成的曲线
+		'''
+
 		# 判断场景里是否已经生成过对应的曲线，如果有的话则将其删除，没有的话则新创建
 		
 		if cmds.objExists(curve_name) :
@@ -1229,3 +1232,21 @@ class Pipeline(object) :
 				
 				}
 		return attach_dict
+	
+	
+	
+	@staticmethod
+	def create_zip_lip(lip_ctrls , upper_jnts , lower_jnts , zip_height = 0.5 , falloff = 3) :
+		'''
+		给嘴唇添加拉链嘴的绑定
+		Args:
+			lip_ctrls(list):嘴唇控制器列表
+			upper_jnts(list):上嘴唇的关节列表
+			lower_jnts(list):下嘴唇的关节列表
+			zip_height(float):zip的高度，默认为0.5，也就是上下嘴唇闭合到中间的高度
+			falloff:平滑值，嘴唇关节之间粘连的过渡值
+
+		Returns:
+
+		'''
+	
