@@ -1248,23 +1248,97 @@ class Pipeline(object) :
 			falloff:平滑值，嘴唇关节之间粘连的过渡值
 
 		Returns:
-
+				zip_lip_dict(dict):返回出创建出来的内容
 		'''
 		# 添加属性给嘴唇和下巴的控制器
 		for ctrl in lip_ctrls :
 			cmds.addAttr(ctrl , longName = 'zip' , attributeType = 'float' , minValue = 0 , maxValue = 1 ,
 			             keyable = True)
 		
-		cmds.addAttr(jaw_ctrl , longName = 'zipHight' , attributeType = 'float' , minValue = 0 , maxValue = 1 ,
+		cmds.addAttr(jaw_ctrl , longName = 'zipHeight' , attributeType = 'float' , minValue = 0 , maxValue = 1 ,
 		             defaultValue = zip_height , keyable = True)
 		height_rvs = cmds.createNode('reverse' , name = 'rvs_m_lipZipHeight_001')
-		cmds.connectAttr(jaw_ctrl + '.zipHight' , height_rvs + '.inputX')
+		cmds.connectAttr(jaw_ctrl + '.zipHeight' , height_rvs + '.inputX')
 		
 		# 创建节点的层级组结构,用于整理所有节点的名称
-		nodes_grp = cmds.createNode('transform' , name = 'grp_m_lipZipNodes_001')
+		node_grp = cmds.createNode('transform' , name = 'grp_m_lipZipNodes_001')
 		
 		# 获取关节的数量，因为上下嘴唇的关节一致
 		jnts_num = len(upper_jnts)
-
-		#获取zip_weight的值
-		zip_weight = 1/float(jnts_num)
+		
+		# 获取zip_weight的值
+		zip_weight = 1 / float(jnts_num)
+		
+		# 给每个嘴唇关节循环添加zip设置
+		i = 1
+		for upper_jnt , lower_jnt in zip(upper_jnts , lower_jnts) :
+			# 获取名称规范
+			name_parts = nameUtils.Name(name = upper_jnt)
+			name_side = name_parts.side
+			name_parts.description = ''
+			name_index = name_parts.index
+			
+			# 创建中间位置的定位器
+			upper_grp = cmds.listRelatives(upper_jnt , parent = True)[0]
+			lower_grp = cmds.listRelatives(lower_jnt , parent = True)[0]
+			
+			mid_loc = cmds.spaceLocator(name = 'loc_{}_{}Zip_{:03d}'.format(name_side , name_parts.description ,
+			                                                                name_index))[0]
+			cmds.parent(mid_loc , node_grp)
+			cmds.setAttr(mid_loc + '.v',0)
+			
+			pnt_con = cmds.parentConstraint(upper_grp , lower_grp , mid_loc , maintainOffset = False)[0]
+			cmds.setAttr(pnt_con + '.interpType' , 2)
+			cmds.connectAttr(jaw_ctrl + '.zipHeight' , '{}.{}W0'.format(pnt_con , upper_grp))
+			cmds.connectAttr(height_rvs + '.outputX' , '{}.{}W1'.format(pnt_con , lower_grp))
+			
+			# 创建remap节点用来连接控制器的zip属性
+			remap_left = cmds.createNode('remapValue' ,
+			                             name = 'remap_{}_{}ZipWeightLeft_{:03d}'.format(name_side ,
+			                                                                             name_parts.description ,
+			                                                                             name_index))
+			remap_right = cmds.createNode('remapValue' ,
+			                              name = 'remap_{}_{}ZipWeightRight_{:03d}'.format(name_side ,
+			                                                                               name_parts.description ,
+			                                                                               name_index))
+			cmds.connectAttr(lip_ctrls[0] + '.zip' , remap_left + '.inputValue')
+			cmds.connectAttr(lip_ctrls[1] + '.zip' , remap_right + '.inputValue')
+			
+			# 设置remap节点的值
+			cmds.setAttr(remap_left + '.value[0].value_Position' , max([0 , zip_weight * (i - falloff)]))
+			cmds.setAttr(remap_left + '.value[1].value_Position' , zip_weight * i)
+			
+			cmds.setAttr(remap_right + '.value[0].value_Position' ,
+			             max([0 , zip_weight * (jnts_num - i + 1 - falloff)]))
+			cmds.setAttr(remap_right + '.value[1].value_Position' , zip_weight * (jnts_num - i + 1))
+			
+			# 把相加后的权重相加为 0-1驱动，通过clamp节点剪除超过的范围
+			add = cmds.createNode('addDoubleLinear' ,
+			                      name = 'add_{}_{}ZipWeight_{:03d}'.format(name_side , name_parts.description ,
+			                                                                name_index))
+			cmds.connectAttr(remap_left + '.outValue' , add + '.input1')
+			cmds.connectAttr(remap_right + '.outValue' , add + '.input2')
+			
+			clamp = cmds.createNode('clamp' , name = add.replace('add' , 'clamp'))
+			cmds.connectAttr(add + '.output' , clamp + '.inputR')
+			cmds.setAttr(clamp + '.maxR' , 1)
+			
+			# 获取反向的权重
+			rvs_node = cmds.createNode('reverse' , name = clamp.replace('clamp' , 'rvs'))
+			cmds.connectAttr(clamp + '.outputR' , rvs_node + '.inputX')
+			
+			# 在原始位置和中间位置之间混合距离
+			for jnt , jnt_parent in zip([upper_jnt , lower_jnt] , [upper_grp , lower_grp]) :
+				offset = cmds.createNode('transform' , name = jnt.replace('jnt' , 'offset') , parent = jnt_parent)
+				cmds.matchTransform(offset , jnt , position = True , rotation = True)
+				cmds.parent(jnt , offset)
+				
+				pnt_con = cmds.parentConstraint(mid_loc , offset , jnt , maintainOffset = False)[0]
+				cmds.setAttr(pnt_con + '.interpType' , 2)
+				cmds.connectAttr(clamp + '.outputR' , '{}.{}W0'.format(pnt_con , mid_loc))
+				cmds.connectAttr(rvs_node + '.outputX' , '{}.{}W1'.format(pnt_con , offset))
+			
+			i += 1
+		zip_lip_dict = {'node_grp':node_grp
+				}
+		return zip_lip_dict
