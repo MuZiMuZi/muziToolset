@@ -226,6 +226,8 @@ class Eye(chain.Chain) :
 		cmds.setAttr(self.eye_lid_upper.zero_list[-1] + '.v' , 0)
 		cmds.setAttr(self.eye_lid_lower.zero_list[-1] + '.v' , 0)
 		
+		# 添加瞳孔缩放的功能
+		self.create_iris()
 		# 整理整体的层级架构
 		self.organization_hierarchy()
 	
@@ -322,7 +324,7 @@ class Eye(chain.Chain) :
 
 		"""
 		# 给眼睛控制器添加控制瞳孔缩放的属性
-		cmds.addAttr(self.ctrl_list[0] , longName = 'iris' , keyable = 1 , dv = 1 , minValue = -1 , maxValue = 1)
+		cmds.addAttr(self.ctrl_list[0] , longName = 'iris' , keyable = 1 , dv = 1 , minValue = -1 , maxValue = 2)
 		# 获取眼球的半径值
 		self.eye_radius = cmds.getAttr(self.jnt_list[-1] + '.translateX')
 		# 给瞳孔缩放关节创建连接
@@ -340,8 +342,8 @@ class Eye(chain.Chain) :
 			cmds.setAttr(power_node + '.input1Y ' , self.eye_radius)
 			# 设置平方
 			cmds.setAttr(power_node + '.operation' , 3)
-			cmds.setAttr(power_node + 'input2X ' , 2)
-			cmds.setAttr(power_node + 'input2Y ' , 2)
+			cmds.setAttr(power_node + '.input2X ' , 2)
+			cmds.setAttr(power_node + '.input2Y ' , 2)
 			
 			# 创建一个相减节点，用来计算半径的平方减去关节Tx平方的值
 			minus_node = cmds.createNode('plusMinusAverage' , name = jnt.replace('jnt' , 'minus'))
@@ -354,7 +356,7 @@ class Eye(chain.Chain) :
 			cmds.connectAttr(minus_node + '.output1D' , sqit_node + '.input1X')
 			# 设置平方
 			cmds.setAttr(sqit_node + '.operation' , 3)
-			cmds.setAttr(sqit_node + 'input2X ' , 0.5)
+			cmds.setAttr(sqit_node + '.input2X ' , 0.5)
 			
 			# 创建一个乘除节点，用于将缩放的值重新连接回关节的缩放
 			div_node = cmds.createNode('multiplyDivide' , name = jnt.replace('jnt' , 'div'))
