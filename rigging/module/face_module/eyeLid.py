@@ -28,6 +28,12 @@ class EyeLid(bone.Bone) :
 		self.radius = 0.05
 		self.joint_number = joint_number
 		self.curve_jnt_list = list()
+		# 创建眼袋的名称列表
+		self.pouch_ctrl_list = list()
+		self.pouch_jnt_list = list()
+		self.pouch_zero_list = list()
+		self.pouch_bpjnt_list = list()
+		self.pouch_output_list = list()
 	
 	
 	
@@ -51,9 +57,32 @@ class EyeLid(bone.Bone) :
 		self.eye_jnt = 'jnt_{}_Eye_001'.format(self._side)
 		self.eye_up_loc = 'loc_{}_EyeUp_001'.format(self._side)
 		self.eye_up_zero = 'zero_{}_EyeUp_001'.format(self._side)
-		
+		# 添加眼袋的名称规范
+		if i in range(3) :
+			self.pouch_ctrl_list.append('ctrl_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype , i))
+			self.pouch_jnt_list.append('jnt_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype , i))
+			self.pouch_zero_list.append('zero_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype , i))
+			self.pouch_bpjnt_list.append('bpjnt_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype , i))
+			self.pouch_output_list.append('output_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype ,
+			                                                                  i))
+		self.pouch_master_ctrl = 'ctrl_{}_{}{}PouchMaster_001'.format(self._side , self._name , self._rtype)
 		# 整理节点的层级结构
 		self.node_grp = 'grp_{}_{}{}Nodes_001'.format(self._side , self._name , self._rtype)
+	
+	
+	
+	def create_bpjnt(self) :
+		"""
+		创建定位的bp关节
+		"""
+		# 创建曲线
+		self.build_curve()
+		# 创建眼袋的bp定位关节
+		for index , bpjnt in zip(self.pouch_bpjnt_list) :
+			cmds.createNode('joint' , name = bpjnt , pos = self.curve)
+			# 移动位置
+			cmds.setAttr(bpjnt + '.translateX' , index * 0.25)
+			cmds.setAttr(bpjnt + '.translateZ' , 0.25)
 	
 	
 	
@@ -116,6 +145,19 @@ class EyeLid(bone.Bone) :
 	
 	def create_ctrl(self) :
 		super().create_ctrl()
+		# 创建眼袋总组控制器
+		self.pouch_master_ctrl = controlUtils.Control.create_ctrl(self.pouch_master_ctrl , shape = self.shape ,
+		                                                          radius = self.radius ,
+		                                                          axis = 'X+' , pos = self.pouch_ctrl_list[1] ,
+		                                                          parent = self.ctrl_grp)
+		
+		# 创建眼袋关节的控制器
+		for ctrl , jnt in zip(self.pouch_ctrl_list , self.pouch_jnt_list) :
+			self.pouch_ctrl = controlUtils.Control.create_ctrl(ctrl , shape = self.shape ,
+			                                                   radius = self.radius ,
+			                                                   axis = 'X+' , pos = jnt ,
+			                                                   parent = self.pouch_master_ctrl.replace('ctrl' ,
+			                                                                                           'output'))
 	
 	
 	
@@ -154,14 +196,9 @@ class EyeLid(bone.Bone) :
 		# 设置曲线的可见性
 		cmds.setAttr(self.curve + '.v' , 0)
 		cmds.setAttr(self.skin_curve + '.v' , 0)
-	
-	
-	
-	#
-	
-	def build_setup(self) :
-		"""
-		创建定位曲线,生成准备
-		"""
-		self.create_namespace()
-		self.build_curve()
+		
+		# 眼袋控制器与眼袋关节之间进行约束
+		for output , jnt in zip(self.pouch_output_list , self.pouch_jnt_list) :
+			pipelineUtils.Pipeline.create_constraint(output , jnt , point_value = True , orient_value = True ,
+			                                         scale_value = True ,
+			                                         mo_value = False)
