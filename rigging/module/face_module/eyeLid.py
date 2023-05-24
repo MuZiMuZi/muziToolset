@@ -65,15 +65,17 @@ class EyeLid(bone.Bone) :
 		self.eye_up_zero = 'zero_{}_EyeUp_001'.format(self._side)
 		# 添加眼袋的名称规范
 		for i in range(3) :
-			self.pouch_ctrl_list.append('ctrl_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype , i))
-			self.pouch_jnt_list.append('jnt_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype , i))
-			self.pouch_zero_list.append('zero_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype , i))
-			self.pouch_bpjnt_list.append('bpjnt_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype , i))
+			self.pouch_ctrl_list.append('ctrl_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype , i+1))
+			self.pouch_jnt_list.append('jnt_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
+			self.pouch_zero_list.append('zero_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype , i + 1))
+			self.pouch_bpjnt_list.append('bpjnt_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype ,
+			                                                                i + 1))
 			self.pouch_output_list.append('output_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype ,
-			                                                                  i))
+			                                                                  i + 1))
 		self.pouch_master_ctrl = 'ctrl_{}_{}{}PouchMaster_001'.format(self._side , self._name , self._rtype)
 		# 整理节点的层级结构
 		self.node_grp = 'grp_{}_{}{}Nodes_001'.format(self._side , self._name , self._rtype)
+		self.pouch_jnt_grp = 'grp_{}_{}{}PouchJnts_001'.format(self._side , self._name , self._rtype)
 	
 	
 	
@@ -148,30 +150,34 @@ class EyeLid(bone.Bone) :
 		self.node_grp = cmds.createNode('transform' , name = self.node_grp , parent = '_node')
 		cmds.parent(self.curve_nodes_grp , self.skin_nodes_grp , self.node_grp)
 		cmds.parent(self.skin_jnt_grp , '_joint')
+		# 整理关节层级结构
+		self.pouch_jnt_grp = cmds.createNode('transform' , name = self.pouch_jnt_grp)
+		cmds.parent(self.pouch_jnt_grp , '_joint')
 		
 		# 根据眼袋的bp关节的位置创建眼袋关节
 		for bpjnt , jnt in zip(self.pouch_bpjnt_list , self.pouch_jnt_list) :
-			jnt = cmds.createNode('joint' , name = jnt , pos = bpjnt)
-	
-	
-	
+			jnt = cmds.createNode('joint' , name = jnt )
+			cmds.matchTransform(jnt,bpjnt)
+			cmds.delete(bpjnt)
+			cmds.parent(jnt,self.pouch_jnt_grp)
+			
 	def create_ctrl(self) :
 		super().create_ctrl()
 		# 创建眼袋总组控制器
-		self.pouch_master_ctrl = controlUtils.Control.create_ctrl(self.pouch_master_ctrl , shape = self.shape ,
+		self.pouch_master_ctrl = controlUtils.Control.create_ctrl(self.pouch_master_ctrl , shape = 'ball' ,
 		                                                          radius = self.radius ,
-		                                                          axis = 'X+' , pos = self.pouch_ctrl_list[1] ,
+		                                                          axis = 'X+' , pos = self.pouch_jnt_list[1] ,
 		                                                          parent = self.ctrl_grp)
 		
 		# 创建眼袋关节的控制器
 		for ctrl , jnt in zip(self.pouch_ctrl_list , self.pouch_jnt_list) :
-			self.pouch_ctrl = controlUtils.Control.create_ctrl(ctrl , shape = self.shape ,
+			self.pouch_ctrl = controlUtils.Control.create_ctrl(ctrl , shape = 'circle' ,
 			                                                   radius = self.radius ,
 			                                                   axis = 'X+' , pos = jnt ,
 			                                                   parent = self.pouch_master_ctrl.replace('ctrl' ,
 			                                                                                           'output'))
 	
-	
+		
 	
 	def add_constraint(self) :
 		super().add_constraint()
