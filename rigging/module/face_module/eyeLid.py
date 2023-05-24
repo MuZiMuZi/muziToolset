@@ -58,7 +58,7 @@ class EyeLid(bone.Bone) :
 		self.eye_up_loc = 'loc_{}_EyeUp_001'.format(self._side)
 		self.eye_up_zero = 'zero_{}_EyeUp_001'.format(self._side)
 		# 添加眼袋的名称规范
-		if i in range(3) :
+		for i in range(3) :
 			self.pouch_ctrl_list.append('ctrl_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype , i))
 			self.pouch_jnt_list.append('jnt_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype , i))
 			self.pouch_zero_list.append('zero_{}_{}{}Pouch_{:03d}'.format(self._side , self._name , self._rtype , i))
@@ -78,12 +78,13 @@ class EyeLid(bone.Bone) :
 		# 创建曲线
 		self.build_curve()
 		# 创建眼袋的bp定位关节
-		for index , bpjnt in zip(self.pouch_bpjnt_list) :
-			cmds.createNode('joint' , name = bpjnt , pos = self.curve)
+		for index , bpjnt in enumerate(self.pouch_bpjnt_list) :
+			bpjnt = cmds.createNode('joint' , name = bpjnt)
+			cmds.matchTransform(bpjnt , self.jnt_list[-1])
 			# 移动位置
-			cmds.setAttr(bpjnt + '.translateX' , index * 0.25)
-			cmds.setAttr(bpjnt + '.translateZ' , 0.25)
-	
+			cmds.setAttr(bpjnt + '.translateX' , cmds.getAttr(self.jnt_list[-1] + '.translateX') + index * 0.25)
+			cmds.setAttr(bpjnt + '.translateY' , cmds.getAttr(self.jnt_list[-1] + '.translateY') +  0.25)
+			cmds.setAttr(bpjnt + '.translateZ' , cmds.getAttr(self.jnt_list[-1] + '.translateZ') + 0.25)
 	
 	
 	def build_curve(self) :
