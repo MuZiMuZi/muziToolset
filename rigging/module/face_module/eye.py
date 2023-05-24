@@ -83,8 +83,8 @@ class Eye(chain.Chain) :
 		# 导入关节
 		cmds.file(self.eye_bpjnt_path , i = True , rnn = True)
 		
-		self.eye_lid_upper.build_curve()
-		self.eye_lid_lower.build_curve()
+		self.eye_lid_upper.create_bpjnt()
+		self.eye_lid_lower.create_bpjnt()
 	
 	
 	
@@ -364,9 +364,10 @@ class Eye(chain.Chain) :
 			# 设置除法
 			cmds.setAttr(div_node + '.operation ' , 2)
 			
-			#将乘除节点最后得出的值连接回给关节的缩放Y,Z
-			cmds.connectAttr(div_node +'.outputX',jnt +'.scaleY')
+			# 将乘除节点最后得出的值连接回给关节的缩放Y,Z
+			cmds.connectAttr(div_node + '.outputX' , jnt + '.scaleY')
 			cmds.connectAttr(div_node + '.outputX' , jnt + '.scaleZ')
+
 
 
 if __name__ == "__main__" :

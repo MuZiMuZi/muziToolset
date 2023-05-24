@@ -34,6 +34,12 @@ class EyeLid(bone.Bone) :
 		self.pouch_zero_list = list()
 		self.pouch_bpjnt_list = list()
 		self.pouch_output_list = list()
+		
+		# 判断为上部分还是下部分，用来移动y轴的位置
+		if self.name == 'upper' :
+			self.y_value = 1
+		else :
+			self.y_value = -1
 	
 	
 	
@@ -83,8 +89,9 @@ class EyeLid(bone.Bone) :
 			cmds.matchTransform(bpjnt , self.jnt_list[-1])
 			# 移动位置
 			cmds.setAttr(bpjnt + '.translateX' , cmds.getAttr(self.jnt_list[-1] + '.translateX') + index * 0.25)
-			cmds.setAttr(bpjnt + '.translateY' , cmds.getAttr(self.jnt_list[-1] + '.translateY') +  0.25)
+			cmds.setAttr(bpjnt + '.translateY' , cmds.getAttr(self.jnt_list[-1] + '.translateY') + 0.25 * self.y_value)
 			cmds.setAttr(bpjnt + '.translateZ' , cmds.getAttr(self.jnt_list[-1] + '.translateZ') + 0.25)
+	
 	
 	
 	def build_curve(self) :
