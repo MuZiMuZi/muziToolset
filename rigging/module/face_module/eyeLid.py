@@ -140,6 +140,10 @@ class EyeLid(bone.Bone) :
 		self.node_grp = cmds.createNode('transform' , name = self.node_grp , parent = '_node')
 		cmds.parent(self.curve_nodes_grp , self.skin_nodes_grp , self.node_grp)
 		cmds.parent(self.skin_jnt_grp , '_joint')
+		
+		# 根据眼袋的bp关节的位置创建眼袋关节
+		for bpjnt , jnt in zip(self.pouch_bpjnt_list , self.pouch_jnt_list) :
+			jnt = cmds.createNode('joint' , name = jnt , pos = bpjnt)
 	
 	
 	
