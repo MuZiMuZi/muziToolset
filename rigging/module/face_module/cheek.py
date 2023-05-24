@@ -93,7 +93,9 @@ class Cheek(base.Base) :
 		# 导入关节
 		cmds.file(self.cheek_bpjnt_path , i = True , rnn = True)
 
-if __name__ == "__main__":
+
+
+if __name__ == "__main__" :
 	def build_setup() :
 		cheek_m = cheek.Cheek(side = 'm' , name = '' , joint_number = 8 , joint_parent = None ,
 		                      control_parent = None)
