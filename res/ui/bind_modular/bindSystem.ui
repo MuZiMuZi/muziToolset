@@ -65,9 +65,6 @@
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
-            <item row="0" column="0">
-             <widget class="QListView" name="proxy_view"/>
-            </item>
             <item row="1" column="0">
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
@@ -97,6 +94,9 @@
                </widget>
               </item>
              </layout>
+            </item>
+            <item row="0" column="0">
+             <widget class="QListView" name="proxy_view"/>
             </item>
            </layout>
           </widget>
@@ -134,7 +134,7 @@
              </property>
              <layout class="QGridLayout" name="gridLayout_5">
               <item row="0" column="0">
-               <widget class="QListView" name="listView_2"/>
+               <widget class="QListView" name="preset_view"/>
               </item>
              </layout>
             </widget>
@@ -170,7 +170,7 @@
              </property>
              <layout class="QGridLayout" name="gridLayout_4">
               <item row="0" column="0">
-               <widget class="QListView" name="listView_3"/>
+               <widget class="QListView" name="custom_view"/>
               </item>
              </layout>
             </widget>
@@ -210,7 +210,7 @@
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
               <item row="0" column="0">
-               <widget class="QListView" name="listView_4"/>
+               <widget class="QListView" name="setting_view"/>
               </item>
              </layout>
             </widget>

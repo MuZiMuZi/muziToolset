@@ -51,11 +51,6 @@ class Ui_MainWindow(object):
         self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 306, 674))
         self.gridLayout_2 = QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.proxy_view = QListView(self.scrollAreaWidgetContents)
-        self.proxy_view.setObjectName(u"proxy_view")
-
-        self.gridLayout_2.addWidget(self.proxy_view, 0, 0, 1, 1)
-
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.jointRadius_label = QLabel(self.scrollAreaWidgetContents)
@@ -75,6 +70,11 @@ class Ui_MainWindow(object):
 
 
         self.gridLayout_2.addLayout(self.horizontalLayout_2, 1, 0, 1, 1)
+
+        self.proxy_view = QListView(self.scrollAreaWidgetContents)
+        self.proxy_view.setObjectName(u"proxy_view")
+
+        self.gridLayout_2.addWidget(self.proxy_view, 0, 0, 1, 1)
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
