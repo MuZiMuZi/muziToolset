@@ -101,10 +101,10 @@ class Ui_MainWindow(object):
         self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 303, 322))
         self.gridLayout_5 = QGridLayout(self.scrollAreaWidgetContents_5)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
-        self.listView_2 = QListView(self.scrollAreaWidgetContents_5)
-        self.listView_2.setObjectName(u"listView_2")
+        self.preset_view = QListView(self.scrollAreaWidgetContents_5)
+        self.preset_view.setObjectName(u"preset_view")
 
-        self.gridLayout_5.addWidget(self.listView_2, 0, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.preset_view, 0, 0, 1, 1)
 
         self.scrollArea_2.setWidget(self.scrollAreaWidgetContents_5)
 
@@ -129,10 +129,10 @@ class Ui_MainWindow(object):
         self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 303, 322))
         self.gridLayout_4 = QGridLayout(self.scrollAreaWidgetContents_3)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
-        self.listView_3 = QListView(self.scrollAreaWidgetContents_3)
-        self.listView_3.setObjectName(u"listView_3")
+        self.custom_view = QListView(self.scrollAreaWidgetContents_3)
+        self.custom_view.setObjectName(u"custom_view")
 
-        self.gridLayout_4.addWidget(self.listView_3, 0, 0, 1, 1)
+        self.gridLayout_4.addWidget(self.custom_view, 0, 0, 1, 1)
 
         self.scrollArea_3.setWidget(self.scrollAreaWidgetContents_3)
 
@@ -162,10 +162,10 @@ class Ui_MainWindow(object):
         self.scrollAreaWidgetContents_6.setGeometry(QRect(0, 0, 304, 559))
         self.gridLayout_6 = QGridLayout(self.scrollAreaWidgetContents_6)
         self.gridLayout_6.setObjectName(u"gridLayout_6")
-        self.listView_4 = QListView(self.scrollAreaWidgetContents_6)
-        self.listView_4.setObjectName(u"listView_4")
+        self.setting_view = QListView(self.scrollAreaWidgetContents_6)
+        self.setting_view.setObjectName(u"setting_view")
 
-        self.gridLayout_6.addWidget(self.listView_4, 0, 0, 1, 1)
+        self.gridLayout_6.addWidget(self.setting_view, 0, 0, 1, 1)
 
         self.scrollArea_5.setWidget(self.scrollAreaWidgetContents_6)
 
