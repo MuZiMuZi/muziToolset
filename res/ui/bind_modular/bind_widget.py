@@ -25,7 +25,6 @@ class BindSystemWindow(bindSystem.Ui_MainWindow , QtWidgets.QMainWindow) :
 		super().__init__(*args , **kwargs)
 		# 调用父层级的创建ui方法
 		self.setupUi(self)
-		self.proxy_path = 'D:/'
 		self.apply_model()
 		
 		self.add_connect()
@@ -43,7 +42,7 @@ class BindSystemWindow(bindSystem.Ui_MainWindow , QtWidgets.QMainWindow) :
 		u"""
 		用来添加连接的槽函数
 		"""
-		pass
+		self.proxy_widget.doubleClicked.connect(self.get_proxy_widget_dbclk)
 	
 	
 	
@@ -55,14 +54,17 @@ class BindSystemWindow(bindSystem.Ui_MainWindow , QtWidgets.QMainWindow) :
 		# 判断点击的地方是否是可以选择的东西，不是空白的地方
 		pass
 	
+	def get_proxy_widget_dbclk(self):
+		u"""
+		获得所双击的proxy_widget的项目的index值
+		"""
+		Item = self.proxy_widget.selectedItems()
+		print(Item.row())
+		
 	
 	
-	def add_item_proxy_view(self) :
-		# # 以文件的名称制作item
-		# file_path= 'aa'
-		# Qitem = QtGui.QStandardItem(file_path)
-		# self.proxy_model.appendRow(Qitem)
-		pass
+	
+
 
 
 
