@@ -31,27 +31,39 @@ class BindSystemWindow(bindSystem.Ui_MainWindow , QtWidgets.QMainWindow) :
 		self.add_connect()
 	
 	
+	
 	def apply_model(self) :
 		u"""
 		添加模型到view里
 		"""
-		# # 添加模型到proxy_view里
-		# self.proxy_model = QtWidgets.QFileSystemModel()
-		# self.proxy_view.setModel(self.proxy_model)
-		# self.proxy_view.setRootIndex(self.proxy_path)
-		# root_index= self.proxy_model.index(self.proxy_path)
-		# self.proxy_view.setRootIndex(root_index)
-		#
-		# 添加模型到proxy_view里
-		self.proxy_model = QtGui.QStandardItemModel()
-		self.proxy_view.setModel(self.proxy_model)
-	
-	def add_connect(self):
+		pass
+
+		
+	def add_connect(self) :
 		u"""
 		用来添加连接的槽函数
 		"""
-		self.proxy_view.doubleClicked.connect(self.cmd_proxy_view_dbclk)
-		
+		pass
+	
+	
+	
+	def cmd_proxy_view_dbclk(self , index) :
+		u"""
+		用来连接proxy_view双击所连接的功能槽函数
+		index：鼠标双击的时候所在的位置
+		"""
+		# 判断点击的地方是否是可以选择的东西，不是空白的地方
+		pass
+	
+	
+	
+	def add_item_proxy_view(self) :
+		# # 以文件的名称制作item
+		# file_path= 'aa'
+		# Qitem = QtGui.QStandardItem(file_path)
+		# self.proxy_model.appendRow(Qitem)
+		pass
+
 
 
 if __name__ == '__main__' :
