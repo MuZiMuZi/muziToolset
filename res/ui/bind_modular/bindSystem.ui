@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>961</width>
-    <height>761</height>
+    <width>728</width>
+    <height>728</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -69,8 +69,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>299</width>
-             <height>662</height>
+             <width>262</width>
+             <height>629</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
@@ -184,6 +184,79 @@
                   <red>247</red>
                   <green>255</green>
                   <blue>152</blue>
+                 </color>
+                </brush>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>baseRig</string>
+               </property>
+               <property name="foreground">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>183</green>
+                  <blue>248</blue>
+                 </color>
+                </brush>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>fkRig</string>
+               </property>
+               <property name="background">
+                <brush brushstyle="NoBrush">
+                 <color alpha="255">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </property>
+               <property name="foreground">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>137</green>
+                  <blue>153</blue>
+                 </color>
+                </brush>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ikRig</string>
+               </property>
+               <property name="foreground">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>137</green>
+                  <blue>153</blue>
+                 </color>
+                </brush>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ikfkRig</string>
+               </property>
+               <property name="font">
+                <font>
+                 <kerning>true</kerning>
+                </font>
+               </property>
+               <property name="textAlignment">
+                <set>AlignLeading|AlignVCenter</set>
+               </property>
+               <property name="foreground">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>137</green>
+                  <blue>153</blue>
                  </color>
                 </brush>
                </property>
@@ -356,79 +429,6 @@
                 </brush>
                </property>
               </item>
-              <item>
-               <property name="text">
-                <string>ikfkRig</string>
-               </property>
-               <property name="font">
-                <font>
-                 <kerning>true</kerning>
-                </font>
-               </property>
-               <property name="textAlignment">
-                <set>AlignLeading|AlignVCenter</set>
-               </property>
-               <property name="foreground">
-                <brush brushstyle="SolidPattern">
-                 <color alpha="255">
-                  <red>255</red>
-                  <green>137</green>
-                  <blue>153</blue>
-                 </color>
-                </brush>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>fkRig</string>
-               </property>
-               <property name="background">
-                <brush brushstyle="NoBrush">
-                 <color alpha="255">
-                  <red>0</red>
-                  <green>0</green>
-                  <blue>0</blue>
-                 </color>
-                </brush>
-               </property>
-               <property name="foreground">
-                <brush brushstyle="SolidPattern">
-                 <color alpha="255">
-                  <red>255</red>
-                  <green>137</green>
-                  <blue>153</blue>
-                 </color>
-                </brush>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>ikRig</string>
-               </property>
-               <property name="foreground">
-                <brush brushstyle="SolidPattern">
-                 <color alpha="255">
-                  <red>255</red>
-                  <green>137</green>
-                  <blue>153</blue>
-                 </color>
-                </brush>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>baseRig</string>
-               </property>
-               <property name="foreground">
-                <brush brushstyle="SolidPattern">
-                 <color alpha="255">
-                  <red>255</red>
-                  <green>183</green>
-                  <blue>248</blue>
-                 </color>
-                </brush>
-               </property>
-              </item>
              </widget>
             </item>
            </layout>
@@ -467,8 +467,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>296</width>
-               <height>310</height>
+               <width>262</width>
+               <height>294</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_5">
@@ -536,8 +536,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>296</width>
-               <height>310</height>
+               <width>262</width>
+               <height>293</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_4">
@@ -573,46 +573,27 @@
            </widget>
           </item>
           <item>
-           <widget class="QScrollArea" name="scrollArea_5">
-            <property name="widgetResizable">
-             <bool>true</bool>
+           <layout class="QVBoxLayout" name="set_layout">
+            <property name="topMargin">
+             <number>9</number>
             </property>
-            <widget class="QWidget" name="scrollAreaWidgetContents_6">
-             <property name="geometry">
-              <rect>
-               <x>0</x>
-               <y>0</y>
-               <width>318</width>
-               <height>549</height>
-              </rect>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_6">
-              <item row="0" column="1">
-               <widget class="QStackedWidget" name="set_widget">
-                <property name="currentIndex">
-                 <number>0</number>
-                </property>
-                <widget class="QWidget" name="initial_page"/>
-                <widget class="QWidget" name="arm_page">
-                 <widget class="QPushButton" name="pushButton">
-                  <property name="geometry">
-                   <rect>
-                    <x>120</x>
-                    <y>170</y>
-                    <width>75</width>
-                    <height>23</height>
-                   </rect>
-                  </property>
-                  <property name="text">
-                   <string>test</string>
-                  </property>
-                 </widget>
-                </widget>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </widget>
+            <property name="bottomMargin">
+             <number>9</number>
+            </property>
+           </layout>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </item>
@@ -637,19 +618,6 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
-             <widget class="QPushButton" name="reset_button">
-              <property name="font">
-               <font>
-                <family>Agency FB</family>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>重置绑定</string>
-              </property>
-             </widget>
-            </item>
-            <item>
              <widget class="QPushButton" name="delete_button">
               <property name="font">
                <font>
@@ -658,7 +626,7 @@
                </font>
               </property>
               <property name="text">
-               <string>删除绑定</string>
+               <string>删除定位</string>
               </property>
              </widget>
             </item>
@@ -671,20 +639,7 @@
                </font>
               </property>
               <property name="text">
-               <string>重置控制器</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="set_button">
-              <property name="font">
-               <font>
-                <family>Agency FB</family>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>设置</string>
+               <string>生成定位</string>
               </property>
              </widget>
             </item>
@@ -716,7 +671,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>961</width>
+     <width>728</width>
      <height>23</height>
     </rect>
    </property>

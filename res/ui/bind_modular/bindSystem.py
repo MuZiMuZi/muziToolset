@@ -17,7 +17,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(961, 761)
+        MainWindow.resize(728, 728)
         self.actionRefersh = QAction(MainWindow)
         self.actionRefersh.setObjectName(u"actionRefersh")
         self.centralwidget = QWidget(MainWindow)
@@ -53,7 +53,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 299, 662))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 262, 629))
         self.gridLayout_2 = QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.horizontalLayout_2 = QHBoxLayout()
@@ -83,51 +83,51 @@ class Ui_MainWindow(object):
         brush.setStyle(Qt.SolidPattern)
         __qlistwidgetitem = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem.setForeground(brush);
-        brush1 = QBrush(QColor(88, 76, 255, 255))
+        brush1 = QBrush(QColor(255, 183, 248, 255))
         brush1.setStyle(Qt.SolidPattern)
         __qlistwidgetitem1 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem1.setForeground(brush1);
-        __qlistwidgetitem2 = QListWidgetItem(self.proxy_widget)
-        __qlistwidgetitem2.setForeground(brush1);
-        __qlistwidgetitem3 = QListWidgetItem(self.proxy_widget)
-        __qlistwidgetitem3.setForeground(brush1);
-        __qlistwidgetitem4 = QListWidgetItem(self.proxy_widget)
-        __qlistwidgetitem4.setForeground(brush1);
-        __qlistwidgetitem5 = QListWidgetItem(self.proxy_widget)
-        __qlistwidgetitem5.setForeground(brush1);
-        __qlistwidgetitem6 = QListWidgetItem(self.proxy_widget)
-        __qlistwidgetitem6.setForeground(brush1);
-        brush2 = QBrush(QColor(255, 79, 79, 255))
+        brush2 = QBrush(QColor(255, 137, 153, 255))
         brush2.setStyle(Qt.SolidPattern)
-        __qlistwidgetitem7 = QListWidgetItem(self.proxy_widget)
-        __qlistwidgetitem7.setForeground(brush2);
-        __qlistwidgetitem8 = QListWidgetItem(self.proxy_widget)
-        __qlistwidgetitem8.setForeground(brush2);
-        __qlistwidgetitem9 = QListWidgetItem(self.proxy_widget)
-        __qlistwidgetitem9.setForeground(brush2);
-        __qlistwidgetitem10 = QListWidgetItem(self.proxy_widget)
-        __qlistwidgetitem10.setForeground(brush2);
-        __qlistwidgetitem11 = QListWidgetItem(self.proxy_widget)
-        __qlistwidgetitem11.setForeground(brush2);
-        __qlistwidgetitem12 = QListWidgetItem(self.proxy_widget)
-        __qlistwidgetitem12.setForeground(brush2);
-        brush3 = QBrush(QColor(255, 137, 153, 255))
-        brush3.setStyle(Qt.SolidPattern)
+        brush3 = QBrush(QColor(0, 0, 0, 255))
+        brush3.setStyle(Qt.NoBrush)
+        __qlistwidgetitem2 = QListWidgetItem(self.proxy_widget)
+        __qlistwidgetitem2.setBackground(brush3);
+        __qlistwidgetitem2.setForeground(brush2);
+        __qlistwidgetitem3 = QListWidgetItem(self.proxy_widget)
+        __qlistwidgetitem3.setForeground(brush2);
         font1 = QFont()
         font1.setKerning(True)
-        __qlistwidgetitem13 = QListWidgetItem(self.proxy_widget)
-        __qlistwidgetitem13.setTextAlignment(Qt.AlignLeading|Qt.AlignVCenter);
-        __qlistwidgetitem13.setFont(font1);
-        __qlistwidgetitem13.setForeground(brush3);
-        brush4 = QBrush(QColor(0, 0, 0, 255))
-        brush4.setStyle(Qt.NoBrush)
-        __qlistwidgetitem14 = QListWidgetItem(self.proxy_widget)
-        __qlistwidgetitem14.setBackground(brush4);
-        __qlistwidgetitem14.setForeground(brush3);
-        __qlistwidgetitem15 = QListWidgetItem(self.proxy_widget)
-        __qlistwidgetitem15.setForeground(brush3);
-        brush5 = QBrush(QColor(255, 183, 248, 255))
+        __qlistwidgetitem4 = QListWidgetItem(self.proxy_widget)
+        __qlistwidgetitem4.setTextAlignment(Qt.AlignLeading|Qt.AlignVCenter);
+        __qlistwidgetitem4.setFont(font1);
+        __qlistwidgetitem4.setForeground(brush2);
+        brush4 = QBrush(QColor(88, 76, 255, 255))
+        brush4.setStyle(Qt.SolidPattern)
+        __qlistwidgetitem5 = QListWidgetItem(self.proxy_widget)
+        __qlistwidgetitem5.setForeground(brush4);
+        __qlistwidgetitem6 = QListWidgetItem(self.proxy_widget)
+        __qlistwidgetitem6.setForeground(brush4);
+        __qlistwidgetitem7 = QListWidgetItem(self.proxy_widget)
+        __qlistwidgetitem7.setForeground(brush4);
+        __qlistwidgetitem8 = QListWidgetItem(self.proxy_widget)
+        __qlistwidgetitem8.setForeground(brush4);
+        __qlistwidgetitem9 = QListWidgetItem(self.proxy_widget)
+        __qlistwidgetitem9.setForeground(brush4);
+        __qlistwidgetitem10 = QListWidgetItem(self.proxy_widget)
+        __qlistwidgetitem10.setForeground(brush4);
+        brush5 = QBrush(QColor(255, 79, 79, 255))
         brush5.setStyle(Qt.SolidPattern)
+        __qlistwidgetitem11 = QListWidgetItem(self.proxy_widget)
+        __qlistwidgetitem11.setForeground(brush5);
+        __qlistwidgetitem12 = QListWidgetItem(self.proxy_widget)
+        __qlistwidgetitem12.setForeground(brush5);
+        __qlistwidgetitem13 = QListWidgetItem(self.proxy_widget)
+        __qlistwidgetitem13.setForeground(brush5);
+        __qlistwidgetitem14 = QListWidgetItem(self.proxy_widget)
+        __qlistwidgetitem14.setForeground(brush5);
+        __qlistwidgetitem15 = QListWidgetItem(self.proxy_widget)
+        __qlistwidgetitem15.setForeground(brush5);
         __qlistwidgetitem16 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem16.setForeground(brush5);
         self.proxy_widget.setObjectName(u"proxy_widget")
@@ -153,7 +153,7 @@ class Ui_MainWindow(object):
         self.proxy_widget.setDragEnabled(False)
         self.proxy_widget.setDragDropOverwriteMode(False)
         self.proxy_widget.setDragDropMode(QAbstractItemView.NoDragDrop)
-        self.proxy_widget.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.proxy_widget.setSelectionMode(QAbstractItemView.SingleSelection)
         self.proxy_widget.setSelectionRectVisible(False)
 
         self.gridLayout_2.addWidget(self.proxy_widget, 0, 0, 1, 1)
@@ -181,7 +181,7 @@ class Ui_MainWindow(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 296, 310))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 262, 294))
         self.gridLayout_5 = QGridLayout(self.scrollAreaWidgetContents_5)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
         self.preset_widget = QListWidget(self.scrollAreaWidgetContents_5)
@@ -218,12 +218,10 @@ class Ui_MainWindow(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scrollAreaWidgetContents_3 = QWidget()
         self.scrollAreaWidgetContents_3.setObjectName(u"scrollAreaWidgetContents_3")
-        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 296, 310))
+        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 262, 293))
         self.gridLayout_4 = QGridLayout(self.scrollAreaWidgetContents_3)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.custom_widget = QListWidget(self.scrollAreaWidgetContents_3)
-        QListWidgetItem(self.custom_widget)
-        QListWidgetItem(self.custom_widget)
         self.custom_widget.setObjectName(u"custom_widget")
 
         self.gridLayout_4.addWidget(self.custom_widget, 0, 0, 1, 1)
@@ -249,28 +247,15 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_4.addWidget(self.label_3)
 
-        self.scrollArea_5 = QScrollArea(self.centralwidget)
-        self.scrollArea_5.setObjectName(u"scrollArea_5")
-        self.scrollArea_5.setWidgetResizable(True)
-        self.scrollAreaWidgetContents_6 = QWidget()
-        self.scrollAreaWidgetContents_6.setObjectName(u"scrollAreaWidgetContents_6")
-        self.scrollAreaWidgetContents_6.setGeometry(QRect(0, 0, 318, 549))
-        self.gridLayout_6 = QGridLayout(self.scrollAreaWidgetContents_6)
-        self.gridLayout_6.setObjectName(u"gridLayout_6")
-        self.set_widget = QStackedWidget(self.scrollAreaWidgetContents_6)
-        self.set_widget.setObjectName(u"set_widget")
-        self.page = QWidget()
-        self.page.setObjectName(u"page")
-        self.set_widget.addWidget(self.page)
-        self.page_2 = QWidget()
-        self.page_2.setObjectName(u"page_2")
-        self.set_widget.addWidget(self.page_2)
+        self.set_layout = QVBoxLayout()
+        self.set_layout.setObjectName(u"set_layout")
+        self.set_layout.setContentsMargins(-1, 9, -1, 9)
 
-        self.gridLayout_6.addWidget(self.set_widget, 0, 1, 1, 1)
+        self.verticalLayout_4.addLayout(self.set_layout)
 
-        self.scrollArea_5.setWidget(self.scrollAreaWidgetContents_6)
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.verticalLayout_4.addWidget(self.scrollArea_5)
+        self.verticalLayout_4.addItem(self.verticalSpacer)
 
 
         self.setting_layout.addLayout(self.verticalLayout_4)
@@ -286,17 +271,11 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.reset_button = QPushButton(self.centralwidget)
-        self.reset_button.setObjectName(u"reset_button")
+        self.delete_button = QPushButton(self.centralwidget)
+        self.delete_button.setObjectName(u"delete_button")
         font4 = QFont()
         font4.setFamily(u"Agency FB")
         font4.setPointSize(10)
-        self.reset_button.setFont(font4)
-
-        self.horizontalLayout_3.addWidget(self.reset_button)
-
-        self.delete_button = QPushButton(self.centralwidget)
-        self.delete_button.setObjectName(u"delete_button")
         self.delete_button.setFont(font4)
 
         self.horizontalLayout_3.addWidget(self.delete_button)
@@ -306,12 +285,6 @@ class Ui_MainWindow(object):
         self.ctrl_button.setFont(font4)
 
         self.horizontalLayout_3.addWidget(self.ctrl_button)
-
-        self.set_button = QPushButton(self.centralwidget)
-        self.set_button.setObjectName(u"set_button")
-        self.set_button.setFont(font4)
-
-        self.horizontalLayout_3.addWidget(self.set_button)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_3)
@@ -337,7 +310,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 961, 23))
+        self.menubar.setGeometry(QRect(0, 0, 728, 23))
         self.menuWindow = QMenu(self.menubar)
         self.menuWindow.setObjectName(u"menuWindow")
         MainWindow.setMenuBar(self.menubar)
@@ -364,37 +337,37 @@ class Ui_MainWindow(object):
         ___qlistwidgetitem = self.proxy_widget.item(0)
         ___qlistwidgetitem.setText(QCoreApplication.translate("MainWindow", u"masterRig", None));
         ___qlistwidgetitem1 = self.proxy_widget.item(1)
-        ___qlistwidgetitem1.setText(QCoreApplication.translate("MainWindow", u"browRig", None));
+        ___qlistwidgetitem1.setText(QCoreApplication.translate("MainWindow", u"baseRig", None));
         ___qlistwidgetitem2 = self.proxy_widget.item(2)
-        ___qlistwidgetitem2.setText(QCoreApplication.translate("MainWindow", u"eyeRig", None));
+        ___qlistwidgetitem2.setText(QCoreApplication.translate("MainWindow", u"fkRig", None));
         ___qlistwidgetitem3 = self.proxy_widget.item(3)
-        ___qlistwidgetitem3.setText(QCoreApplication.translate("MainWindow", u"noseRig", None));
+        ___qlistwidgetitem3.setText(QCoreApplication.translate("MainWindow", u"ikRig", None));
         ___qlistwidgetitem4 = self.proxy_widget.item(4)
-        ___qlistwidgetitem4.setText(QCoreApplication.translate("MainWindow", u"mouthRig", None));
+        ___qlistwidgetitem4.setText(QCoreApplication.translate("MainWindow", u"ikfkRig", None));
         ___qlistwidgetitem5 = self.proxy_widget.item(5)
-        ___qlistwidgetitem5.setText(QCoreApplication.translate("MainWindow", u"cheekRig", None));
+        ___qlistwidgetitem5.setText(QCoreApplication.translate("MainWindow", u"browRig", None));
         ___qlistwidgetitem6 = self.proxy_widget.item(6)
-        ___qlistwidgetitem6.setText(QCoreApplication.translate("MainWindow", u"jawRig", None));
+        ___qlistwidgetitem6.setText(QCoreApplication.translate("MainWindow", u"eyeRig", None));
         ___qlistwidgetitem7 = self.proxy_widget.item(7)
-        ___qlistwidgetitem7.setText(QCoreApplication.translate("MainWindow", u"armRig", None));
+        ___qlistwidgetitem7.setText(QCoreApplication.translate("MainWindow", u"noseRig", None));
         ___qlistwidgetitem8 = self.proxy_widget.item(8)
-        ___qlistwidgetitem8.setText(QCoreApplication.translate("MainWindow", u"handRig", None));
+        ___qlistwidgetitem8.setText(QCoreApplication.translate("MainWindow", u"mouthRig", None));
         ___qlistwidgetitem9 = self.proxy_widget.item(9)
-        ___qlistwidgetitem9.setText(QCoreApplication.translate("MainWindow", u"spineRig", None));
+        ___qlistwidgetitem9.setText(QCoreApplication.translate("MainWindow", u"cheekRig", None));
         ___qlistwidgetitem10 = self.proxy_widget.item(10)
-        ___qlistwidgetitem10.setText(QCoreApplication.translate("MainWindow", u"legRig", None));
+        ___qlistwidgetitem10.setText(QCoreApplication.translate("MainWindow", u"jawRig", None));
         ___qlistwidgetitem11 = self.proxy_widget.item(11)
-        ___qlistwidgetitem11.setText(QCoreApplication.translate("MainWindow", u"footRig", None));
+        ___qlistwidgetitem11.setText(QCoreApplication.translate("MainWindow", u"armRig", None));
         ___qlistwidgetitem12 = self.proxy_widget.item(12)
-        ___qlistwidgetitem12.setText(QCoreApplication.translate("MainWindow", u"tailRig", None));
+        ___qlistwidgetitem12.setText(QCoreApplication.translate("MainWindow", u"handRig", None));
         ___qlistwidgetitem13 = self.proxy_widget.item(13)
-        ___qlistwidgetitem13.setText(QCoreApplication.translate("MainWindow", u"ikfkRig", None));
+        ___qlistwidgetitem13.setText(QCoreApplication.translate("MainWindow", u"spineRig", None));
         ___qlistwidgetitem14 = self.proxy_widget.item(14)
-        ___qlistwidgetitem14.setText(QCoreApplication.translate("MainWindow", u"fkRig", None));
+        ___qlistwidgetitem14.setText(QCoreApplication.translate("MainWindow", u"legRig", None));
         ___qlistwidgetitem15 = self.proxy_widget.item(15)
-        ___qlistwidgetitem15.setText(QCoreApplication.translate("MainWindow", u"ikRig", None));
+        ___qlistwidgetitem15.setText(QCoreApplication.translate("MainWindow", u"footRig", None));
         ___qlistwidgetitem16 = self.proxy_widget.item(16)
-        ___qlistwidgetitem16.setText(QCoreApplication.translate("MainWindow", u"baseRig", None));
+        ___qlistwidgetitem16.setText(QCoreApplication.translate("MainWindow", u"tailRig", None));
         self.proxy_widget.setSortingEnabled(__sortingEnabled)
 
         self.label.setText(QCoreApplication.translate("MainWindow", u"\u9884\u8bbe", None))
@@ -410,21 +383,10 @@ class Ui_MainWindow(object):
         self.preset_widget.setSortingEnabled(__sortingEnabled1)
 
         self.custom_label.setText(QCoreApplication.translate("MainWindow", u"\u81ea\u5b9a\u4e49\u6a21\u5757", None))
-
-        __sortingEnabled2 = self.custom_widget.isSortingEnabled()
-        self.custom_widget.setSortingEnabled(False)
-        ___qlistwidgetitem20 = self.custom_widget.item(0)
-        ___qlistwidgetitem20.setText(QCoreApplication.translate("MainWindow", u"m_Master_01", None));
-        ___qlistwidgetitem21 = self.custom_widget.item(1)
-        ___qlistwidgetitem21.setText(QCoreApplication.translate("MainWindow", u"m_Neck_01", None));
-        self.custom_widget.setSortingEnabled(__sortingEnabled2)
-
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"\u8bbe\u7f6e", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u7ed1\u5b9a\u5de5\u5177", None))
-        self.reset_button.setText(QCoreApplication.translate("MainWindow", u"\u91cd\u7f6e\u7ed1\u5b9a", None))
-        self.delete_button.setText(QCoreApplication.translate("MainWindow", u"\u5220\u9664\u7ed1\u5b9a", None))
-        self.ctrl_button.setText(QCoreApplication.translate("MainWindow", u"\u91cd\u7f6e\u63a7\u5236\u5668", None))
-        self.set_button.setText(QCoreApplication.translate("MainWindow", u"\u8bbe\u7f6e", None))
+        self.delete_button.setText(QCoreApplication.translate("MainWindow", u"\u5220\u9664\u5b9a\u4f4d", None))
+        self.ctrl_button.setText(QCoreApplication.translate("MainWindow", u"\u751f\u6210\u5b9a\u4f4d", None))
         self.build_button.setText(QCoreApplication.translate("MainWindow", u"\u751f\u6210\u7ed1\u5b9a", None))
         self.menuWindow.setTitle(QCoreApplication.translate("MainWindow", u"Window", None))
     # retranslateUi
