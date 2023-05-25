@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>733</width>
-    <height>839</height>
+    <width>961</width>
+    <height>761</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -60,13 +60,43 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>207</width>
-             <height>752</height>
+             <width>306</width>
+             <height>674</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
             <item row="0" column="0">
-             <widget class="QListView" name="listView"/>
+             <widget class="QListView" name="proxy_view"/>
+            </item>
+            <item row="1" column="0">
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QLabel" name="jointRadius_label">
+                <property name="text">
+                 <string>关节大小显示</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSlider" name="jointRadius_Slider">
+                <property name="contextMenuPolicy">
+                 <enum>Qt::DefaultContextMenu</enum>
+                </property>
+                <property name="layoutDirection">
+                 <enum>Qt::LeftToRight</enum>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>50</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
@@ -98,8 +128,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>204</width>
-               <height>361</height>
+               <width>303</width>
+               <height>322</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_5">
@@ -134,8 +164,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>204</width>
-               <height>361</height>
+               <width>303</width>
+               <height>322</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_4">
@@ -174,8 +204,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>274</width>
-               <height>512</height>
+               <width>304</width>
+               <height>559</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
@@ -216,8 +246,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>274</width>
-               <height>210</height>
+               <width>304</width>
+               <height>85</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_3">
@@ -259,7 +289,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>733</width>
+     <width>961</width>
      <height>23</height>
     </rect>
    </property>

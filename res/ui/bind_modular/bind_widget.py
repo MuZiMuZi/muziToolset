@@ -5,8 +5,12 @@ import sys
 from PySide2 import QtWidgets
 from PySide2 import QtGui
 from PySide2 import QtCore
-
+from importlib import reload
 from . import bindSystem
+
+
+
+reload(bindSystem)
 
 
 
@@ -17,6 +21,25 @@ class BindSystemWindow(bindSystem.Ui_MainWindow , QtWidgets.QMainWindow) :
 	
 	
 	
-	def __init__(*args , **kwargs) :
+	def __init__(self , *args , **kwargs) :
 		super().__init__(*args , **kwargs)
+		# 调用父层级的创建ui方法
+		self.setupUi(self)
+		self.apply_model()
 	
+	
+	
+	def apply_model(self) :
+		u"""
+		添加模型到view里
+		"""
+
+
+
+
+
+if __name__ == '__main__' :
+	app = QtWidgets.QApplication()
+	qt_app = BindSystemWindow()
+	qt_app.show()
+	app.exec_()

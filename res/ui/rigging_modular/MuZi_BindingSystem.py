@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'bindSystem.ui'
+## Form generated from reading UI file 'MuZi_BindingSystem.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
@@ -17,7 +17,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(961, 761)
+        MainWindow.resize(733, 839)
         self.actionRefersh = QAction(MainWindow)
         self.actionRefersh.setObjectName(u"actionRefersh")
         self.centralwidget = QWidget(MainWindow)
@@ -48,33 +48,13 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 306, 674))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 207, 752))
         self.gridLayout_2 = QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.proxy_view = QListView(self.scrollAreaWidgetContents)
-        self.proxy_view.setObjectName(u"proxy_view")
+        self.listView = QListView(self.scrollAreaWidgetContents)
+        self.listView.setObjectName(u"listView")
 
-        self.gridLayout_2.addWidget(self.proxy_view, 0, 0, 1, 1)
-
-        self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.jointRadius_label = QLabel(self.scrollAreaWidgetContents)
-        self.jointRadius_label.setObjectName(u"jointRadius_label")
-
-        self.horizontalLayout_2.addWidget(self.jointRadius_label)
-
-        self.jointRadius_Slider = QSlider(self.scrollAreaWidgetContents)
-        self.jointRadius_Slider.setObjectName(u"jointRadius_Slider")
-        self.jointRadius_Slider.setContextMenuPolicy(Qt.DefaultContextMenu)
-        self.jointRadius_Slider.setLayoutDirection(Qt.LeftToRight)
-        self.jointRadius_Slider.setMinimum(1)
-        self.jointRadius_Slider.setMaximum(50)
-        self.jointRadius_Slider.setOrientation(Qt.Horizontal)
-
-        self.horizontalLayout_2.addWidget(self.jointRadius_Slider)
-
-
-        self.gridLayout_2.addLayout(self.horizontalLayout_2, 1, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.listView, 0, 0, 1, 1)
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
@@ -98,7 +78,7 @@ class Ui_MainWindow(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 303, 322))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 204, 361))
         self.gridLayout_5 = QGridLayout(self.scrollAreaWidgetContents_5)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
         self.listView_2 = QListView(self.scrollAreaWidgetContents_5)
@@ -126,7 +106,7 @@ class Ui_MainWindow(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scrollAreaWidgetContents_3 = QWidget()
         self.scrollAreaWidgetContents_3.setObjectName(u"scrollAreaWidgetContents_3")
-        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 303, 322))
+        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 204, 361))
         self.gridLayout_4 = QGridLayout(self.scrollAreaWidgetContents_3)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.listView_3 = QListView(self.scrollAreaWidgetContents_3)
@@ -159,7 +139,7 @@ class Ui_MainWindow(object):
         self.scrollArea_5.setWidgetResizable(True)
         self.scrollAreaWidgetContents_6 = QWidget()
         self.scrollAreaWidgetContents_6.setObjectName(u"scrollAreaWidgetContents_6")
-        self.scrollAreaWidgetContents_6.setGeometry(QRect(0, 0, 304, 559))
+        self.scrollAreaWidgetContents_6.setGeometry(QRect(0, 0, 274, 512))
         self.gridLayout_6 = QGridLayout(self.scrollAreaWidgetContents_6)
         self.gridLayout_6.setObjectName(u"gridLayout_6")
         self.listView_4 = QListView(self.scrollAreaWidgetContents_6)
@@ -192,7 +172,7 @@ class Ui_MainWindow(object):
         self.scrollArea_4.setWidgetResizable(True)
         self.scrollAreaWidgetContents_4 = QWidget()
         self.scrollAreaWidgetContents_4.setObjectName(u"scrollAreaWidgetContents_4")
-        self.scrollAreaWidgetContents_4.setGeometry(QRect(0, 0, 304, 85))
+        self.scrollAreaWidgetContents_4.setGeometry(QRect(0, 0, 274, 210))
         self.gridLayout_3 = QGridLayout(self.scrollAreaWidgetContents_4)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
         self.radioButton_2 = QRadioButton(self.scrollAreaWidgetContents_4)
@@ -226,7 +206,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 961, 23))
+        self.menubar.setGeometry(QRect(0, 0, 733, 23))
         self.menuWindow = QMenu(self.menubar)
         self.menuWindow.setObjectName(u"menuWindow")
         MainWindow.setMenuBar(self.menubar)
@@ -246,7 +226,6 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MuZi_BindingSystem", None))
         self.actionRefersh.setText(QCoreApplication.translate("MainWindow", u"refersh", None))
         self.proxy_label.setText(QCoreApplication.translate("MainWindow", u"\u6a21\u677f\u5e93", None))
-        self.jointRadius_label.setText(QCoreApplication.translate("MainWindow", u"\u5173\u8282\u5927\u5c0f\u663e\u793a", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"\u9884\u8bbe", None))
         self.custom_label.setText(QCoreApplication.translate("MainWindow", u"\u81ea\u5b9a\u4e49\u6a21\u5757", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"\u8bbe\u7f6e", None))
