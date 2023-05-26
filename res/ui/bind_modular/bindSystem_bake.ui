@@ -69,7 +69,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>260</width>
+             <width>238</width>
              <height>629</height>
             </rect>
            </property>
@@ -467,7 +467,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>261</width>
+               <width>237</width>
                <height>294</height>
               </rect>
              </property>
@@ -536,13 +536,20 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>261</width>
+               <width>237</width>
                <height>293</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_4">
               <item row="0" column="0">
-               <widget class="QListWidget" name="custom_widget"/>
+               <widget class="QListWidget" name="custom_widget">
+                <property name="font">
+                 <font>
+                  <family>Arial Narrow</family>
+                  <pointsize>14</pointsize>
+                 </font>
+                </property>
+               </widget>
               </item>
              </layout>
             </widget>
@@ -582,15 +589,15 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>261</width>
-               <height>499</height>
+               <width>306</width>
+               <height>516</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_3">
               <item row="0" column="0">
                <widget class="QStackedWidget" name="set_widget">
                 <property name="currentIndex">
-                 <number>1</number>
+                 <number>2</number>
                 </property>
                 <widget class="QWidget" name="initial_page"/>
                 <widget class="QWidget" name="base_page">
