@@ -138,6 +138,7 @@ class Ui_MainWindow(object):
         self.proxy_widget.setSizePolicy(sizePolicy1)
         self.proxy_widget.setBaseSize(QSize(0, 0))
         font2 = QFont()
+        font2.setFamily(u"Arial Narrow")
         font2.setPointSize(14)
         font2.setBold(True)
         font2.setItalic(False)
@@ -223,6 +224,10 @@ class Ui_MainWindow(object):
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.custom_widget = QListWidget(self.scrollAreaWidgetContents_3)
         self.custom_widget.setObjectName(u"custom_widget")
+        font4 = QFont()
+        font4.setFamily(u"Arial Narrow")
+        font4.setPointSize(14)
+        self.custom_widget.setFont(font4)
 
         self.gridLayout_4.addWidget(self.custom_widget, 0, 0, 1, 1)
 
@@ -273,16 +278,16 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.delete_button = QPushButton(self.centralwidget)
         self.delete_button.setObjectName(u"delete_button")
-        font4 = QFont()
-        font4.setFamily(u"Agency FB")
-        font4.setPointSize(10)
-        self.delete_button.setFont(font4)
+        font5 = QFont()
+        font5.setFamily(u"Agency FB")
+        font5.setPointSize(10)
+        self.delete_button.setFont(font5)
 
         self.horizontalLayout_3.addWidget(self.delete_button)
 
         self.ctrl_button = QPushButton(self.centralwidget)
         self.ctrl_button.setObjectName(u"ctrl_button")
-        self.ctrl_button.setFont(font4)
+        self.ctrl_button.setFont(font5)
 
         self.horizontalLayout_3.addWidget(self.ctrl_button)
 
@@ -291,10 +296,10 @@ class Ui_MainWindow(object):
 
         self.build_button = QPushButton(self.centralwidget)
         self.build_button.setObjectName(u"build_button")
-        font5 = QFont()
-        font5.setFamily(u"Agency FB")
-        font5.setPointSize(20)
-        self.build_button.setFont(font5)
+        font6 = QFont()
+        font6.setFamily(u"Agency FB")
+        font6.setPointSize(20)
+        self.build_button.setFont(font6)
 
         self.verticalLayout.addWidget(self.build_button)
 

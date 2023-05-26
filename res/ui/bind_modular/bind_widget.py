@@ -7,8 +7,8 @@ from PySide2 import QtGui
 from PySide2 import QtCore
 from importlib import reload
 from . import bindSystem
-
-
+from ....core import qtUtils
+reload(qtUtils)
 
 reload(bindSystem)
 
@@ -44,10 +44,10 @@ class BindSystemWindow(bindSystem.Ui_MainWindow , QtWidgets.QMainWindow) :
 		用来添加连接的槽函数
 		"""
 		self.proxy_widget.doubleClicked.connect(self.cmd_proxy_widget_dbclk)
+		self.custom_widget.itemDoubleClicked.connect(self.cmd_custom_widget_dbclk)
 	
 	
-	
-	def cmd_proxy_widget_dbclk(self , index) :
+	def cmd_proxy_widget_dbclk(self) :
 		u"""
 		用来连接proxy_widget双击所连接的功能槽函数
 		index：鼠标双击的时候所在的位置
@@ -63,9 +63,32 @@ class BindSystemWindow(bindSystem.Ui_MainWindow , QtWidgets.QMainWindow) :
 			self.custom_widget.addItem(item[0:-3])
 		else :
 			return
+		
+	def cmd_custom_widget_dbclk(self):
+		u"""
+		用来连接custom_widget双击所连接的功能槽函数
+		index：鼠标双击的时候所在的位置
+		"""
+		index = self.custom_widget.currentIndex()
+		# 如果index.isValid的返回值有值的话，说明选择了可以点击的文件，不是的话则是空白的物体
+		if index.isValid() :
+			# 获得custom_widget里所选择的item
+			self.edited_item = self.custom_widget.currentItem()
+			#开始编辑模式
+			self.custom_widget.openPersistentEditor(self.edited_item)
+			self.custom_widget.editItem(self.edited_item)
+		else :
+			self.custom_widget.closePersistentEditor(self.edited_item)
 
+		
+	def close_edit(self):
+		u"""
+		关闭edit
+		"""
+		if self.edited_item and self.isPersistentEditorOpen(self.edited_item) :
+			self.closePersistentEditor(self.edited_item)
 
-
+		
 if __name__ == '__main__' :
 	app = QtWidgets.QApplication()
 	qt_app = BindSystemWindow()
