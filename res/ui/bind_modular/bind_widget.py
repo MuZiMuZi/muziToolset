@@ -49,7 +49,7 @@ class BindSystemWindow(bindSystem.Ui_MainWindow , QtWidgets.QMainWindow) :
 	
 	def cmd_proxy_widget_dbclk(self , index) :
 		u"""
-		用来连接proxy_view双击所连接的功能槽函数
+		用来连接proxy_widget双击所连接的功能槽函数
 		index：鼠标双击的时候所在的位置
 		"""
 		# 获取proxy_view双击时候的位置信息
@@ -57,10 +57,12 @@ class BindSystemWindow(bindSystem.Ui_MainWindow , QtWidgets.QMainWindow) :
 		# 如果index.isValid的返回值有值的话，说明选择了可以点击的文件，不是的话则是空白的物体
 		if index.isValid() :
 			select_index = index.row()
-			# 设置set_widget 的页数
-			self.set_widget.setCurrentIndex(select_index)
+			# 获得proxy_widget里所选择的item
+			item = self.proxy_widget.currentItem().text()
+			#在custom_widget里添加这个item
+			self.custom_widget.addItem(item[0:-3])
 		else :
-			self.set_widget.setCurrentIndex(0)
+			return
 
 
 
