@@ -23,6 +23,9 @@ class custom_lineEdit(QtWidgets.QLineEdit) :
 	
 	
 	def keyPressEvent(self , event) :
+		u"""
+		按键事件
+		"""
 		super().keyPressEvent(event)
 		
 		if event.key() == QtCore.Qt.Key_Enter or event.key() == QtCore.Qt.Key_Return :
@@ -88,7 +91,7 @@ class TestDialog(QtWidgets.QDialog) :
 		u"""
 		创建槽函数的连接
 		"""
-		self.lineEdit.editingFinished.connect(self.print_hello_name)
+		self.lineEdit.enter_pressed.connect(self.on_enter_presseed)
 		self.hidden_box.toggled.connect(self.print_is_hidden)
 		self.cancel_btn.clicked.connect(self.close)
 		
@@ -122,6 +125,11 @@ class TestDialog(QtWidgets.QDialog) :
 	@QtCore.Slot(str)
 	def on_activated_str(self , text) :
 		print('comboBox Text : {}'.format(text))
+	
+	
+	
+	def on_enter_presseed(self) :
+		print('Enter Key Pressed')
 
 
 
