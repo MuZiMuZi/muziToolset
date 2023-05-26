@@ -24,12 +24,12 @@ class custom_lineEdit(QtWidgets.QLineEdit) :
 	
 	def keyPressEvent(self , event) :
 		u"""
-		按键事件
+		自定义一个键盘事件，当键盘事件触发的时候发出新的命令。类似clicked
 		"""
 		super().keyPressEvent(event)
 		
 		if event.key() == QtCore.Qt.Key_Enter or event.key() == QtCore.Qt.Key_Return :
-			self.enter_pressed.emit()
+			self.enter_pressed.emit(event.key())
 
 
 
@@ -128,8 +128,8 @@ class TestDialog(QtWidgets.QDialog) :
 	
 	
 	
-	def on_enter_presseed(self) :
-		print('Enter Key Pressed')
+	def on_enter_presseed(self , text) :
+		print(text)
 
 
 
