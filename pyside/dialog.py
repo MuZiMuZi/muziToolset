@@ -14,6 +14,22 @@ def maya_main_window() :
 
 
 
+class custom_lineEdit(QtWidgets.QLineEdit) :
+	u"""
+	自定义一个新的lineEdit，重写keyPressEvent的方法
+	"""
+	enter_pressed = QtCore.Signal()
+	
+	
+	
+	def keyPressEvent(self , event) :
+		super().keyPressEvent(event)
+		
+		if event.key() == QtCore.Qt.Key_Enter or event.key() == QtCore.Qt.Key_Return :
+			self.enter_pressed.emit()
+
+
+
 class TestDialog(QtWidgets.QDialog) :
 	
 	
@@ -35,7 +51,7 @@ class TestDialog(QtWidgets.QDialog) :
 	
 	
 	def create_widgets(self) :
-		self.lineEdit = QtWidgets.QLineEdit()
+		self.lineEdit = custom_lineEdit()
 		self.hidden_box = QtWidgets.QCheckBox()
 		self.checkBox2 = QtWidgets.QCheckBox()
 		
