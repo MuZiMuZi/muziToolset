@@ -33,8 +33,8 @@ class TestDialog(QtWidgets.QDialog) :
 	
 	def create_widgets(self) :
 		self.lineEdit = QtWidgets.QLineEdit()
-		self.checkBox1 = QtWidgets.QCheckBox()
-		self.checkBox2 = QtWidgets.QCheckBox()
+		self.checkBox1 = QtWidgets.QCheckBox('cc')
+		self.checkBox2 = QtWidgets.QCheckBox('zz')
 		self.ok_btn = QtWidgets.QPushButton('ok')
 		self.cancel_btn = QtWidgets.QPushButton('cancel')
 	
@@ -44,7 +44,7 @@ class TestDialog(QtWidgets.QDialog) :
 		# 创建表单布局
 		self.form_layout = QtWidgets.QFormLayout()
 		self.form_layout.addRow('name:' , self.lineEdit)
-		self.form_layout.addRow('hiddon:' , self.checkBox1)
+		self.form_layout.addRow('hidden:' , self.checkBox1)
 		self.form_layout.addRow('locked:' , self.checkBox2)
 		
 		# 创建水平布局
@@ -61,5 +61,12 @@ class TestDialog(QtWidgets.QDialog) :
 
 
 if __name__ == "__main__" :
-	t = TestDialog()
-	t.show()
+	
+	try :
+		test_dialog.close()
+		test_dialog.deleteLater()
+	except :
+		pass
+	
+	test_dialog = TestDialog()
+	test_dialog.show()
