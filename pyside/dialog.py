@@ -38,6 +38,10 @@ class TestDialog(QtWidgets.QDialog) :
 		self.lineEdit = QtWidgets.QLineEdit()
 		self.hidden_box = QtWidgets.QCheckBox()
 		self.checkBox2 = QtWidgets.QCheckBox()
+		
+		self.combo_box = QtWidgets.QComboBox()
+		self.combo_box.addItems(['test1' , 'test2' , 'test3' , 'test4'])
+		
 		self.ok_btn = QtWidgets.QPushButton('ok')
 		self.cancel_btn = QtWidgets.QPushButton('cancel')
 	
@@ -49,6 +53,7 @@ class TestDialog(QtWidgets.QDialog) :
 		self.form_layout.addRow('name:' , self.lineEdit)
 		self.form_layout.addRow('hidden:' , self.hidden_box)
 		self.form_layout.addRow('locked:' , self.checkBox2)
+		self.form_layout.addRow(self.combo_box)
 		
 		# 创建水平布局
 		self.button_layout = QtWidgets.QHBoxLayout()
@@ -70,6 +75,10 @@ class TestDialog(QtWidgets.QDialog) :
 		self.lineEdit.editingFinished.connect(self.print_hello_name)
 		self.hidden_box.toggled.connect(self.print_is_hidden)
 		self.cancel_btn.clicked.connect(self.close)
+		
+		# 连接combo_box的连接信号
+		self.combo_box.activated.connect(self.on_activated_int)
+		self.combo_box.activated[str].connect(self.on_activated_str)
 	
 	
 	
@@ -85,6 +94,18 @@ class TestDialog(QtWidgets.QDialog) :
 			print('hidden')
 		else :
 			print('visible')
+	
+	
+	
+	@QtCore.Slot(int)
+	def on_activated_int(self , index) :
+		print('comboBox Index : {}'.format(index))
+	
+	
+	
+	@QtCore.Slot(str)
+	def on_activated_str(self , text) :
+		print('comboBox Text : {}'.format(text))
 
 
 
