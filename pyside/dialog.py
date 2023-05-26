@@ -1,6 +1,6 @@
 # coding=utf-8
 import maya.OpenMayaUI as omui
-from PySide2 import QtWidgets
+from PySide2 import QtCore , QtWidgets
 from shiboken2 import wrapInstance
 
 
