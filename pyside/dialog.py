@@ -28,6 +28,9 @@ class TestDialog(QtWidgets.QDialog) :
 		# 添加部件
 		self.create_widgets()
 		self.create_layouts()
+		
+		# 添加连接
+		self.create_connections()
 	
 	
 	
@@ -57,6 +60,21 @@ class TestDialog(QtWidgets.QDialog) :
 		self.main_layout = QtWidgets.QVBoxLayout(self)
 		self.main_layout.addLayout(self.form_layout)
 		self.main_layout.addLayout(self.button_layout)
+	
+	
+	
+	def create_connections(self) :
+		u"""
+		创建槽函数的连接
+		"""
+		self.lineEdit.editingFinished.connect(self.print_hello_name)
+		self.cancel_btn.clicked.connect(self.close)
+	
+	
+	
+	def print_hello_name(self) :
+		name = self.lineEdit.text()
+		print('hello {}!'.format(name))
 
 
 
