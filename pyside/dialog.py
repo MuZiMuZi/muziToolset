@@ -22,8 +22,8 @@ class TestDialog(QtWidgets.QDialog) :
 		super(TestDialog , self).__init__(parent)
 		# 设置标题和尺寸
 		self.setWindowTitle('TestDialog')
-		self.setMinimumHeight(300)
-		self.setMinimumWidth(300)
+		self.setMinimumHeight(200)
+		self.setMinimumWidth(200)
 		
 		# 添加部件
 		self.create_widgets()
@@ -33,20 +33,30 @@ class TestDialog(QtWidgets.QDialog) :
 	
 	def create_widgets(self) :
 		self.lineEdit = QtWidgets.QLineEdit()
-		self.checkBox1 = QtWidgets.QCheckBox('checkBox1')
-		self.checkBox2 = QtWidgets.QCheckBox('checkBox2')
-		self.button1 = QtWidgets.QPushButton('button1')
-		self.button2 = QtWidgets.QPushButton('button2')
+		self.checkBox1 = QtWidgets.QCheckBox()
+		self.checkBox2 = QtWidgets.QCheckBox()
+		self.ok_btn = QtWidgets.QPushButton('ok')
+		self.cancel_btn = QtWidgets.QPushButton('cancel')
 	
 	
 	
 	def create_layouts(self) :
+		# 创建表单布局
+		self.form_layout = QtWidgets.QFormLayout()
+		self.form_layout.addRow('name:' , self.lineEdit)
+		self.form_layout.addRow('hiddon:' , self.checkBox1)
+		self.form_layout.addRow('locked:' , self.checkBox2)
+		
+		# 创建水平布局
+		self.button_layout = QtWidgets.QHBoxLayout()
+		self.button_layout.addStretch()
+		self.button_layout.addWidget(self.ok_btn)
+		self.button_layout.addWidget(self.cancel_btn)
+		
+		# 创建主布局，并添加空间
 		self.main_layout = QtWidgets.QVBoxLayout(self)
-		self.main_layout.addWidget(self.lineEdit)
-		self.main_layout.addWidget(self.checkBox1)
-		self.main_layout.addWidget(self.checkBox2)
-		self.main_layout.addWidget(self.button1)
-		self.main_layout.addWidget(self.button2)
+		self.main_layout.addLayout(self.form_layout)
+		self.main_layout.addLayout(self.button_layout)
 
 
 
