@@ -33,8 +33,8 @@ class TestDialog(QtWidgets.QDialog) :
 	
 	def create_widgets(self) :
 		self.lineEdit = QtWidgets.QLineEdit()
-		self.checkBox1 = QtWidgets.QCheckBox('cc')
-		self.checkBox2 = QtWidgets.QCheckBox('zz')
+		self.checkBox1 = QtWidgets.QCheckBox()
+		self.checkBox2 = QtWidgets.QCheckBox()
 		self.ok_btn = QtWidgets.QPushButton('ok')
 		self.cancel_btn = QtWidgets.QPushButton('cancel')
 	
@@ -61,7 +61,7 @@ class TestDialog(QtWidgets.QDialog) :
 
 
 if __name__ == "__main__" :
-	
+	# 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口
 	try :
 		test_dialog.close()
 		test_dialog.deleteLater()

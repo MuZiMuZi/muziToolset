@@ -6,5 +6,11 @@ from muziToolset.pyside import dialog
 
 reload(dialog)
 
-t = dialog.TestDialog()
-t.show()
+try :
+	test_dialog.close()
+	test_dialog.deleteLater()
+except :
+	pass
+
+test_dialog = dialog.TestDialog()
+test_dialog.show()
