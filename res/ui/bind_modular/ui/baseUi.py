@@ -6,17 +6,18 @@ from PySide2 import QtWidgets , QtGui
 from PySide2.QtUiTools import QUiLoader
 from . import boneUi
 from ..config import Side , ui_dir
+from . import Bind
 
 
-
-class BaseUi(boneUi.RigItem) :
+class BaseUi(boneUi.RigItem,Bind.Ui_MainWindow) :
 	def __init__(self , name = 'base') :
 		'''
 		使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 		
 		'''
 		super(boneUi.RigItem , self).__init__(name)
-		self.base_ui = '{}.ui'.format(name)
+		# 调用父类的ui方法，来运行ui
+		self.setupUi(self)
 		self.init_base()
 	
 	
