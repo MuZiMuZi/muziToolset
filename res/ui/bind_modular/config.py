@@ -2,10 +2,11 @@ import os
 
 
 
-ui_dir = os.path.dirname(os.path.dirname(__file__))
-icon_dir = os.path.join(ui_dir , '../icon')
+project_root = os.path.dirname(__file__)
+ui_dir = os.path.join(project_root , 'ui')
+icon_dir = os.path.join(project_root , 'icon')
 
-# print(project_root)
+print(project_root)
 
 print(ui_dir)
 
