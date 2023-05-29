@@ -64,7 +64,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QComboBox" name="side_combo">
+        <widget class="QComboBox" name="side_cbox">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -118,7 +118,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLineEdit" name="name_line">
+        <widget class="QLineEdit" name="name_edit">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -176,7 +176,7 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QLineEdit" name="jnt_parent_line">
+        <widget class="QLineEdit" name="jnt_parent_edit">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -213,7 +213,7 @@
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QLineEdit" name="control_parent_line">
+        <widget class="QLineEdit" name="control_parent_edit">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -229,7 +229,7 @@
         </widget>
        </item>
        <item row="5" column="0">
-        <widget class="QPushButton" name="create_button">
+        <widget class="QPushButton" name="create_btn">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -248,7 +248,7 @@
         </widget>
        </item>
        <item row="5" column="1">
-        <widget class="QPushButton" name="delete_button">
+        <widget class="QPushButton" name="delete_btn">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -267,7 +267,7 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QSpinBox" name="jnt_number_spinbox">
+        <widget class="QSpinBox" name="jnt_number_sbox">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
