@@ -211,7 +211,15 @@
               </item>
               <item>
                <property name="text">
-                <string>fkRig</string>
+                <string>———chain———</string>
+               </property>
+               <property name="flags">
+                <set>NoItemFlags</set>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>chainFKRig</string>
                </property>
                <property name="background">
                 <brush brushstyle="NoBrush">
@@ -234,7 +242,7 @@
               </item>
               <item>
                <property name="text">
-                <string>ikRig</string>
+                <string>chainIKRig</string>
                </property>
                <property name="foreground">
                 <brush brushstyle="SolidPattern">
@@ -248,7 +256,7 @@
               </item>
               <item>
                <property name="text">
-                <string>ikfkRig</string>
+                <string>chainIKFKRig</string>
                </property>
                <property name="font">
                 <font>
@@ -266,6 +274,42 @@
                   <blue>153</blue>
                  </color>
                 </brush>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>chainEPRig</string>
+               </property>
+               <property name="foreground">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>137</green>
+                  <blue>153</blue>
+                 </color>
+                </brush>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>fingerRig</string>
+               </property>
+               <property name="foreground">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>137</green>
+                  <blue>153</blue>
+                 </color>
+                </brush>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>———face———</string>
+               </property>
+               <property name="flags">
+                <set>NoItemFlags</set>
                </property>
               </item>
               <item>
@@ -350,6 +394,14 @@
                   <blue>255</blue>
                  </color>
                 </brush>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>———body———</string>
+               </property>
+               <property name="flags">
+                <set>NoItemFlags</set>
                </property>
               </item>
               <item>
@@ -547,9 +599,21 @@
                <height>293</height>
               </rect>
              </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <layout class="QGridLayout" name="gridLayout_4">
               <item row="0" column="0">
                <widget class="QListWidget" name="custom_widget">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="font">
                  <font>
                   <family>Arial Narrow</family>
@@ -590,14 +654,18 @@
            </widget>
           </item>
           <item>
-           <layout class="QVBoxLayout" name="set_layout">
-            <property name="topMargin">
-             <number>9</number>
-            </property>
-            <property name="bottomMargin">
-             <number>9</number>
-            </property>
-           </layout>
+           <widget class="QStackedWidget" name="setting_stack">
+            <widget class="QWidget" name="Page1">
+             <layout class="QVBoxLayout" name="set_layout">
+              <property name="topMargin">
+               <number>9</number>
+              </property>
+              <property name="bottomMargin">
+               <number>9</number>
+              </property>
+             </layout>
+            </widget>
+           </widget>
           </item>
           <item>
            <spacer name="verticalSpacer">
