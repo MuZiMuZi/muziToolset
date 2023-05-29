@@ -1,7 +1,7 @@
 import os
 from functools import wraps
 
-from PySide2 import QtWidgets,QtGui,QtCore
+from PySide2 import QtWidgets , QtGui , QtCore
 
 from ..config import icon_dir
 
@@ -37,7 +37,7 @@ class Bone_Widget(QtWidgets.QListWidgetItem) :
 		使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 		name(str):对应给定的模块名称
 		'''
-		super(Bone_Widget , self).__init__()
+		super(Bone_Widget , self).__init__(name)
 		
 		# 初始化icon文件和ui文件
 		self.icon = '{}.png'.format(name)
