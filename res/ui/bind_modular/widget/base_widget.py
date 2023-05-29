@@ -56,11 +56,14 @@ class Base_Widget(bone_widget.Bone_Widget , base.Ui_MainWindow) :
 	
 	def parse_base(self) :
 		"""
-		分析extra_widget中的输入并将其作为参数返回
+		分析base_widget中的输入并将其作为参数返回
 		"""
 		name = self.base_widget.name_edit.text()
 		side = self.base_widget.side_cbox.currentText()
-		return [Side(side) , name]
+		jnt_number = self.base_widget.jnt_number_sbox.currentText()
+		jnt_parent = self.base_widget.jnt_parent_edit.text()
+		control_parent = self.base_widget.control_parent_edit.text()
+		return [Side(side) , name, jnt_number,jnt_parent,control_parent]
 	
 	
 	
