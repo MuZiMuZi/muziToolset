@@ -393,8 +393,8 @@ class Ui_MainWindow(object):
         self.custom_label.setText(QCoreApplication.translate("MainWindow", u"\u81ea\u5b9a\u4e49\u6a21\u5757", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"\u8bbe\u7f6e", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u7ed1\u5b9a\u5de5\u5177", None))
-        self.delete_button.setText(QCoreApplication.translate("MainWindow", u"\u5220\u9664\u5b9a\u4f4d", None))
-        self.ctrl_button.setText(QCoreApplication.translate("MainWindow", u"\u751f\u6210\u5b9a\u4f4d", None))
+        self.delete_button.setText(QCoreApplication.translate("MainWindow", u"\u5220\u9664\u7ed1\u5b9a", None))
+        self.ctrl_button.setText(QCoreApplication.translate("MainWindow", u"\u91cd\u7f6e\u63a7\u5236\u5668", None))
         self.build_button.setText(QCoreApplication.translate("MainWindow", u"\u751f\u6210\u7ed1\u5b9a", None))
         self.menuWindow.setTitle(QCoreApplication.translate("MainWindow", u"Window", None))
     # retranslateUi
