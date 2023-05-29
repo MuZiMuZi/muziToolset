@@ -3,18 +3,24 @@ import os
 import maya.cmds as cmds
 from PySide2 import QtCore , QtWidgets
 from PySide2.QtUiTools import QUiLoader
-from ..config import icon_dir,Side,Direction, ui_dir,chain_dir,module_dir,base_dir,limb_dir
+from ..config import icon_dir , Side , Direction , ui_dir , chain_dir , module_dir , base_dir , limb_dir
 from .....core import qtUtils
 from .....bind.base import *
 from .....bind.chain import *
 from .....bind.limb import *
 from .....bind.module import *
 from . import Bind
+from . import baseUi
+
+from importlib import reload
 
 
 
+reload(baseUi)
 
-class BindWindow(QtWidgets.QMainWindow,Bind.Ui_MainWindow) :
+
+
+class BindWindow(QtWidgets.QMainWindow , Bind.Ui_MainWindow) :
 	"""
 	Main dialog window class
 	"""
@@ -30,6 +36,15 @@ class BindWindow(QtWidgets.QMainWindow,Bind.Ui_MainWindow) :
 		self.setupUi(self)
 		self.setWindowFlags(QtCore.Qt.Window)
 		
+		self.item = None
+		self.create_layout()
+	
+	
+	
+	def create_layout(self) :
+		base = baseUi.BaseUi()
+		base_widget = base.base_widget
+		self.set_layout.addWidget(base_widget)
 
 
 

@@ -7,32 +7,43 @@ from PySide2.QtUiTools import QUiLoader
 from . import boneUi
 from ..config import Side , ui_dir
 from . import Bind
+from .....core import qtUtils
+
+from importlib import reload
 
 
-class BaseUi(boneUi.RigItem,Bind.Ui_MainWindow) :
-	def __init__(self , name = 'base') :
+
+reload(Bind)
+
+from . import base
+
+
+
+class BaseUi(boneUi.RigItem , Bind.Ui_MainWindow) :
+	
+	
+	
+	def __init__(self , name = 'base' ) :
 		'''
 		使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 		
 		'''
 		super(boneUi.RigItem , self).__init__(name)
-		# 调用父类的ui方法，来运行ui
-		self.setupUi(self)
+		self.base_ui = 'base.ui'
 		self.init_base()
-	
+		
 	
 	
 	def init_base(self) :
 		"""
 		初始化作为QWidget对象的base_widget属性,用于设置绑定的基础属性（例如名称，边，关节数量，关节的父对象，控制器的父对象）
 		"""
-		self.base_widget = QtWidgets.QWidget()
-		QUiLoader().load(os.path.join(ui_dir , self.base_ui) , self.base_widget)
 		
-		# 添加边的combox
-		for side in Side :
-			self.base_widget.side_cbox.addItem(side.value)
-	
+		self.base_widget = QUiLoader().load(os.path.join(ui_dir , self.base_ui))
+	# # 添加边的combox
+	# for side in Side :
+	# 	self.base_widget.side_cbox.addItem(side.value)
+	#
 	
 	
 	def build_setup(self , side , base_name) :
