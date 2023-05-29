@@ -10,15 +10,12 @@ from ..config import Side , ui_dir
 
 
 class BaseUi(boneUi.RigItem) :
-	
-	
-	
 	def __init__(self , name = 'base') :
 		'''
 		使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 		
 		'''
-		super(BaseItem , self).__init__(name)
+		super(boneUi.RigItem , self).__init__(name)
 		self.base_ui = '{}.ui'.format(name)
 		self.init_base()
 	

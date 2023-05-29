@@ -1,7 +1,7 @@
 import maya.cmds as cmds
 
 from . import hand
-from ..chain import limbIKFK
+from bind.limb import limbIKFK
 
 
 

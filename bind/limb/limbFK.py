@@ -1,6 +1,6 @@
 from importlib import reload
 
-from . import chainFK
+from bind.chain import chainFK
 
 
 

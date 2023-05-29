@@ -3,7 +3,7 @@ from importlib import reload
 import maya.cmds as cmds
 
 from . import foot
-from ..chain import limbIKFK
+from bind.limb import limbIKFK
 
 
 
