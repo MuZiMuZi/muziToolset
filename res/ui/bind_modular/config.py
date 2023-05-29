@@ -10,6 +10,7 @@ icon_dir = os.path.join(project_root , 'icon')
 bind_root = os.path.abspath(__file__ + "/../../../../bind")
 base_dir = os.path.join(bind_root , 'base')
 chain_dir = os.path.join(bind_root , 'chain')
+limb_dir = os.path.join(bind_root , 'limb')
 module_dir = os.path.join(bind_root , 'module')
 
 
