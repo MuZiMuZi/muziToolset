@@ -15,6 +15,7 @@ from . import base_widget , chain_widget , chainEP_widget
 rigtype_custom = ['baseRig']
 rigtype_chain = ['ikRig' , 'fkRig' , 'chainIKFK']
 rigtype_chainEP = ['chainEP']
+rigtype_limb = ['armRig' , 'legRig' , 'fingerRig' , 'tailRig']
 
 reload(base_widget)
 reload(chain_widget)
