@@ -8,7 +8,7 @@ from PySide2 import QtWidgets , QtCore
 from .....core import qtUtils
 
 from ..ui import bind , base
-from . import base_widget , chain_widget,chainEP_widget
+from . import base_widget , chain_widget , chainEP_widget
 
 
 
@@ -19,6 +19,7 @@ rigtype_chainEP = ['chainEP']
 reload(base_widget)
 reload(chain_widget)
 reload(bind)
+
 
 
 class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
@@ -115,11 +116,10 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 		"""
 		self.item = item
 		self.initialize_field()
-		#获取custom_widget 里的item数量，切换到对应的设置面板
+		# 获取custom_widget 里的item数量，切换到对应的设置面板
 		index = self.custom_widget.count()
 		self.setting_stack.setCurrentIndex(index)
-
-
+	
 	
 	
 	def initialize_field(self) :
@@ -131,15 +131,14 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 		if self.item in rigtype_chain :
 			chain = chain_widget.Chain_Widget()
 			self.base_widget = chain.base_widget
-		elif self.item in rigtype_chainEP:
+		elif self.item in rigtype_chainEP :
 			chainEP = chainEP_widget.ChainEP_Widget()
 			self.base_widget = chainEP.base_widget
-		else:
+		else :
 			base = base_widget.Base_Widget()
 			self.base_widget = base.base_widget
 		self.base_widget.module_edit.setText('{}'.format(self.item))
 		self.setting_stack.addWidget(self.base_widget)
-		
 
 
 
