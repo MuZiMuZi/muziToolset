@@ -12,8 +12,10 @@
 '''
 import os
 import subprocess
+import maya.OpenMayaUI as omui
+from PySide2 import QtCore , QtWidgets,QtGui
+from shiboken2 import wrapInstance
 
-from PySide2 import QtWidgets
 
 
 
@@ -172,7 +174,9 @@ def show_folder_in_explorer(folder_path) :
 
 
 
-
-
-
-
+def get_maya_window() :
+	u"""
+	返回maya的主窗口部件
+	"""
+	pointer = omui.MQtUtil.mainWindow()
+	return wrapInstance(int(pointer) , QtWidgets.QWidget)
