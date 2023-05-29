@@ -1,25 +1,18 @@
 import os
-import maya.cmds as cmds
-
-from PySide2 import QtWidgets , QtGui
 
 from PySide2.QtUiTools import QUiLoader
-from . import boneUi
+from ..widget import bone_widget
 from ..config import Side , ui_dir
-from . import Bind
-from .....core import qtUtils
+from ..ui import bind,base
 
 from importlib import reload
 
-
-
-reload(Bind)
-
-from . import base
+reload(bone_widget)
 
 
 
-class BaseUi(boneUi.RigItem , Bind.Ui_MainWindow) :
+
+class Base_Widget(bone_widget.Bone_Widget , base.Ui_MainWindow) :
 	
 	
 	
@@ -28,8 +21,8 @@ class BaseUi(boneUi.RigItem , Bind.Ui_MainWindow) :
 		使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 		
 		'''
-		super(boneUi.RigItem , self).__init__(name)
-		self.base_ui = 'base.ui'
+		super(bone_widget.Bone_Widget , self).__init__(name)
+		self.base_ui =  'base.ui'
 		self.init_base()
 		
 	

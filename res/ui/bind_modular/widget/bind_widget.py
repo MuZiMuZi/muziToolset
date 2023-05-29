@@ -3,33 +3,37 @@
 # ui界面生成需要三个模块QtWidgets，QtGui，QtCore
 from importlib import reload
 
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets , QtCore
 
-from core import qtUtils
-from res.ui.bind_modular.ui import bindSystem
+from .....core import qtUtils
 
-
-
-reload(qtUtils)
-
-reload(bindSystem)
+from ..ui import bind , base
+from . import base_widget
 
 
 
-class BindSystemWindow(bindSystem.Ui_MainWindow , QtWidgets.QMainWindow) :
+reload(base_widget)
+
+
+
+class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 	u'''
 	用于创建绑定系统的界面系统
 	'''
 	
 	
 	
-	def __init__(self , *args , **kwargs) :
-		super().__init__(*args , **kwargs)
+	def __init__(self ,parent= qtUtils.get_maya_window()) :
+		super().__init__(parent)
 		# 调用父层级的创建ui方法
 		self.setupUi(self)
 		self.apply_model()
 		
 		self.add_connect()
+		
+		self.item = None
+		
+		self.create_layout()
 	
 	
 	
@@ -93,11 +97,41 @@ class BindSystemWindow(bindSystem.Ui_MainWindow , QtWidgets.QMainWindow) :
 		"""
 		if self.edited_item and self.isPersistentEditorOpen(self.edited_item) :
 			self.closePersistentEditor(self.edited_item)
+	
+	
+	
+	def create_layout(self) :
+		base = base_widget.Base_Widget()
+		self.base_widget = base.base_widget
+		self.set_layout.addWidget(self.base_widget)
+	
+	
+	
+	def update_current(self) :
+		pass
 
 
 
-if __name__ == '__main__' :
-	app = QtWidgets.QApplication()
-	qt_app = BindSystemWindow()
-	qt_app.show()
-	app.exec_()
+def show() :
+	window = Bind_Widget()
+	# 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口
+	try :
+		window.close()
+	except :
+		pass
+	window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+	window.show()
+	return window
+
+
+
+if __name__ == "__main__" :
+	# 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口
+	window = Bind_Widget()
+	# 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口
+	try :
+		window.close()
+	except :
+		pass
+	window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+	window.show()

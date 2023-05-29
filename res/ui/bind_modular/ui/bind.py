@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'Bind.ui'
+## Form generated from reading UI file 'bind.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
