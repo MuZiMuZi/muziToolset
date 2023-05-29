@@ -5,7 +5,7 @@ from PySide2 import QtWidgets
 
 from ..config import icon_dir
 
-
+from . import Bind
 
 def update_base_name(func) :
 	"""
@@ -42,6 +42,7 @@ class RigItem(QtWidgets.QListWidgetItem) :
 		self.base_ui = None
 		self.extra_ui = None
 		
+		
 		# 设置icon文件和ui文件的标题
 		self.setText(name)
 		icon = QtGui.QIcon()
@@ -50,6 +51,7 @@ class RigItem(QtWidgets.QListWidgetItem) :
 		self.setIcon(icon)
 		
 		# 设置模板的widget
+		# 调用父类的ui方法，来运行ui
 		self.base_widget = None
 		self.extra_widget = None
 		
