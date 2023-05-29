@@ -40,10 +40,10 @@ class BaseUi(boneUi.RigItem , Bind.Ui_MainWindow) :
 		"""
 		
 		self.base_widget = QUiLoader().load(os.path.join(ui_dir , self.base_ui))
-	# # 添加边的combox
-	# for side in Side :
-	# 	self.base_widget.side_cbox.addItem(side.value)
-	#
+		# 添加边的combox
+		for side in Side :
+			self.base_widget.side_cbox.addItem(side.value)
+
 	
 	
 	def build_setup(self , side , base_name) :

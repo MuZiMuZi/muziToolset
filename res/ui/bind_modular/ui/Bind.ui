@@ -643,7 +643,7 @@
                </font>
               </property>
               <property name="text">
-               <string>删除定位</string>
+               <string>删除绑定</string>
               </property>
              </widget>
             </item>
@@ -656,7 +656,7 @@
                </font>
               </property>
               <property name="text">
-               <string>生成定位</string>
+               <string>重置控制器</string>
               </property>
              </widget>
             </item>

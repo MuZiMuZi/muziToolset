@@ -45,8 +45,10 @@ class BindWindow(QtWidgets.QMainWindow , Bind.Ui_MainWindow) :
 		base = baseUi.BaseUi()
 		base_widget = base.base_widget
 		self.set_layout.addWidget(base_widget)
-
-
+	
+	def update_current(self):
+		pass
+	
 
 def show() :
 	window = BindWindow()
