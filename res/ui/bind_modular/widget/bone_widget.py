@@ -1,7 +1,7 @@
 import os
 from functools import wraps
 
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets,QtGui,QtCore
 
 from ..config import icon_dir
 
@@ -77,7 +77,7 @@ class Bone_Widget(QtWidgets.QListWidgetItem) :
 	
 	
 	
-	def parse_extra(self) :
+	def parse_base(self) :
 		"""
 		将base_widget中的输入作为参数进行分析并返回
 		"""
@@ -85,7 +85,7 @@ class Bone_Widget(QtWidgets.QListWidgetItem) :
 	
 	
 	
-	def parse_base(self) :
+	def parse_extra(self) :
 		"""
 		分析extra_widget中的输入并将其作为参数返回
 		"""
