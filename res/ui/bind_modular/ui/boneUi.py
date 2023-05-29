@@ -1,13 +1,20 @@
-import os
+from functools import wraps
 
 
 
-project_root = os.path.dirname(os.path.abspath(__file__))
-ui_dir = os.path.abspath(__file__)
-icon_dir = os.path.join(ui_dir , '../icon')
-
-print(project_root)
-
-print(ui_dir)
-
-print(icon_dir)
+def update_base_name(func) :
+	"""
+	更新组件模块中的名称属性和结构
+	"""
+	
+	
+	
+	@wraps(func)
+	def wrap(self) :
+		self.base = '{}_{}_{}'.format(
+				self._rtype , self._side.value , self._name)
+		func(self)
+	
+	
+	
+	return wrap
