@@ -8,12 +8,16 @@ from PySide2 import QtWidgets , QtCore
 from .....core import qtUtils
 
 from ..ui import bind , base
-from . import base_widget
+from . import base_widget , chain_widget
 
 
+
+rigtype_custom = ['baseRig']
+rigtype_chain = ['ikRig' , 'fkRig' , 'chainIKFK' , 'chainEP']
 
 reload(base_widget)
-
+reload(chain_widget)
+reload(bind)
 
 
 class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
@@ -23,7 +27,7 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 	
 	
 	
-	def __init__(self ,parent= qtUtils.get_maya_window()) :
+	def __init__(self , parent = qtUtils.get_maya_window()) :
 		super().__init__(parent)
 		# 调用父层级的创建ui方法
 		self.setupUi(self)
@@ -32,8 +36,6 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 		self.add_connect()
 		
 		self.item = None
-		
-		self.create_layout()
 	
 	
 	
@@ -68,6 +70,7 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 			item = self.proxy_widget.currentItem().text()
 			# 在custom_widget里添加这个item
 			self.custom_widget.addItem(item[0 :-3])
+			self.update_current(item)
 		else :
 			return
 	
@@ -100,16 +103,40 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 	
 	
 	
-	def create_layout(self) :
-		base = base_widget.Base_Widget()
-		self.base_widget = base.base_widget
-		self.set_layout.addWidget(self.base_widget)
-	
-	
-	
-	def update_current(self) :
-		pass
+	def update_current(self , item) :
+		u"""
+		获取proxy_widget所选择的项目，从而更新set_layout的面板
+		Args:
+			item:
 
+		Returns:
+
+		"""
+		self.item = item
+		self.initialize_field()
+		#获取custom_widget 里的item数量，切换到对应的设置面板
+		index = self.custom_widget.count()
+		self.setting_stack.setCurrentIndex(index)
+
+
+	
+	
+	def initialize_field(self) :
+		u"""
+		根据所得知的item，选择对应的设置面板
+		Returns:
+
+		"""
+		if self.item in rigtype_custom :
+			base = base_widget.Base_Widget()
+			self.base_widget = base.base_widget
+			self.setting_stack.addWidget(self.base_widget)
+		elif self.item in rigtype_chain :
+			chain = chain_widget.Chain_Widget()
+			self.chain_widget = chain.base_widget
+			self.setting_stack.addWidget(self.chain_widget)
+		
+		
 
 
 def show() :
