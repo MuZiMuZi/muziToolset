@@ -222,10 +222,17 @@ class Ui_MainWindow(object):
         self.scrollAreaWidgetContents_3 = QWidget()
         self.scrollAreaWidgetContents_3.setObjectName(u"scrollAreaWidgetContents_3")
         self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 262, 293))
+        sizePolicy.setHeightForWidth(self.scrollAreaWidgetContents_3.sizePolicy().hasHeightForWidth())
+        self.scrollAreaWidgetContents_3.setSizePolicy(sizePolicy)
         self.gridLayout_4 = QGridLayout(self.scrollAreaWidgetContents_3)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.custom_widget = QListWidget(self.scrollAreaWidgetContents_3)
         self.custom_widget.setObjectName(u"custom_widget")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.custom_widget.sizePolicy().hasHeightForWidth())
+        self.custom_widget.setSizePolicy(sizePolicy2)
         font4 = QFont()
         font4.setFamily(u"Arial Narrow")
         font4.setPointSize(14)
@@ -255,11 +262,16 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_4.addWidget(self.label_3)
 
-        self.set_layout = QVBoxLayout()
+        self.setting_stack = QStackedWidget(self.centralwidget)
+        self.setting_stack.setObjectName(u"setting_stack")
+        self.Page1 = QWidget()
+        self.Page1.setObjectName(u"Page1")
+        self.set_layout = QVBoxLayout(self.Page1)
         self.set_layout.setObjectName(u"set_layout")
         self.set_layout.setContentsMargins(-1, 9, -1, 9)
+        self.setting_stack.addWidget(self.Page1)
 
-        self.verticalLayout_4.addLayout(self.set_layout)
+        self.verticalLayout_4.addWidget(self.setting_stack)
 
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 

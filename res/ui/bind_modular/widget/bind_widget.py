@@ -8,12 +8,13 @@ from PySide2 import QtWidgets , QtCore
 from .....core import qtUtils
 
 from ..ui import bind , base
-from . import base_widget , chain_widget
+from . import base_widget , chain_widget,chainEP_widget
 
 
 
 rigtype_custom = ['baseRig']
-rigtype_chain = ['ikRig' , 'fkRig' , 'chainIKFK' , 'chainEP']
+rigtype_chain = ['ikRig' , 'fkRig' , 'chainIKFK']
+rigtype_chainEP = ['chainEP']
 
 reload(base_widget)
 reload(chain_widget)
@@ -123,20 +124,23 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 	
 	def initialize_field(self) :
 		u"""
-		根据所得知的item，选择对应的设置面板
+		根据所得知的item，创建对应的设置面板
 		Returns:
 
 		"""
-		if self.item in rigtype_custom :
+		if self.item in rigtype_chain :
+			chain = chain_widget.Chain_Widget()
+			self.base_widget = chain.base_widget
+		elif self.item in rigtype_chainEP:
+			chainEP = chainEP_widget.ChainEP_Widget()
+			self.base_widget = chainEP.base_widget
+		else:
 			base = base_widget.Base_Widget()
 			self.base_widget = base.base_widget
-			self.setting_stack.addWidget(self.base_widget)
-		elif self.item in rigtype_chain :
-			chain = chain_widget.Chain_Widget()
-			self.chain_widget = chain.base_widget
-			self.setting_stack.addWidget(self.chain_widget)
+		self.base_widget.module_edit.setText('{}'.format(self.item))
+		self.setting_stack.addWidget(self.base_widget)
 		
-		
+
 
 
 def show() :

@@ -17,12 +17,13 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(800, 730)
+        MainWindow.resize(799, 730)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
+        self.gridLayout = QGridLayout(self.centralwidget)
+        self.gridLayout.setObjectName(u"gridLayout")
         self.widget = QWidget(self.centralwidget)
         self.widget.setObjectName(u"widget")
-        self.widget.setGeometry(QRect(200, 10, 327, 537))
         sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -32,8 +33,8 @@ class Ui_MainWindow(object):
         font.setFamily(u"Arial Narrow")
         font.setPointSize(16)
         self.widget.setFont(font)
-        self.gridLayout_2 = QGridLayout(self.widget)
-        self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.formLayout_2 = QFormLayout(self.widget)
+        self.formLayout_2.setObjectName(u"formLayout_2")
         self.side_label = QLabel(self.widget)
         self.side_label.setObjectName(u"side_label")
         sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -52,31 +53,7 @@ class Ui_MainWindow(object):
         self.side_label.setLayoutDirection(Qt.LeftToRight)
         self.side_label.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
 
-        self.gridLayout_2.addWidget(self.side_label, 0, 0, 1, 1)
-
-        self.name_edit = QLineEdit(self.widget)
-        self.name_edit.setObjectName(u"name_edit")
-        sizePolicy1.setHeightForWidth(self.name_edit.sizePolicy().hasHeightForWidth())
-        self.name_edit.setSizePolicy(sizePolicy1)
-        self.name_edit.setFont(font)
-
-        self.gridLayout_2.addWidget(self.name_edit, 1, 1, 1, 1)
-
-        self.create_btn = QPushButton(self.widget)
-        self.create_btn.setObjectName(u"create_btn")
-        sizePolicy1.setHeightForWidth(self.create_btn.sizePolicy().hasHeightForWidth())
-        self.create_btn.setSizePolicy(sizePolicy1)
-        self.create_btn.setFont(font)
-
-        self.gridLayout_2.addWidget(self.create_btn, 7, 0, 1, 1)
-
-        self.jnt_parent_edit = QLineEdit(self.widget)
-        self.jnt_parent_edit.setObjectName(u"jnt_parent_edit")
-        sizePolicy1.setHeightForWidth(self.jnt_parent_edit.sizePolicy().hasHeightForWidth())
-        self.jnt_parent_edit.setSizePolicy(sizePolicy1)
-        self.jnt_parent_edit.setFont(font)
-
-        self.gridLayout_2.addWidget(self.jnt_parent_edit, 5, 1, 1, 1)
+        self.formLayout_2.setWidget(3, QFormLayout.LabelRole, self.side_label)
 
         self.side_cbox = QComboBox(self.widget)
         self.side_cbox.setObjectName(u"side_cbox")
@@ -84,39 +61,7 @@ class Ui_MainWindow(object):
         self.side_cbox.setSizePolicy(sizePolicy1)
         self.side_cbox.setFont(font1)
 
-        self.gridLayout_2.addWidget(self.side_cbox, 0, 1, 1, 1)
-
-        self.label_5 = QLabel(self.widget)
-        self.label_5.setObjectName(u"label_5")
-        sizePolicy.setHeightForWidth(self.label_5.sizePolicy().hasHeightForWidth())
-        self.label_5.setSizePolicy(sizePolicy)
-        self.label_5.setFont(font1)
-
-        self.gridLayout_2.addWidget(self.label_5, 2, 0, 1, 1)
-
-        self.control_parent_edit = QLineEdit(self.widget)
-        self.control_parent_edit.setObjectName(u"control_parent_edit")
-        sizePolicy1.setHeightForWidth(self.control_parent_edit.sizePolicy().hasHeightForWidth())
-        self.control_parent_edit.setSizePolicy(sizePolicy1)
-        self.control_parent_edit.setFont(font)
-
-        self.gridLayout_2.addWidget(self.control_parent_edit, 6, 1, 1, 1)
-
-        self.label_6 = QLabel(self.widget)
-        self.label_6.setObjectName(u"label_6")
-        sizePolicy.setHeightForWidth(self.label_6.sizePolicy().hasHeightForWidth())
-        self.label_6.setSizePolicy(sizePolicy)
-        self.label_6.setFont(font1)
-
-        self.gridLayout_2.addWidget(self.label_6, 5, 0, 1, 1)
-
-        self.label_7 = QLabel(self.widget)
-        self.label_7.setObjectName(u"label_7")
-        sizePolicy.setHeightForWidth(self.label_7.sizePolicy().hasHeightForWidth())
-        self.label_7.setSizePolicy(sizePolicy)
-        self.label_7.setFont(font1)
-
-        self.gridLayout_2.addWidget(self.label_7, 6, 0, 1, 1)
+        self.formLayout_2.setWidget(3, QFormLayout.FieldRole, self.side_cbox)
 
         self.label_4 = QLabel(self.widget)
         self.label_4.setObjectName(u"label_4")
@@ -124,7 +69,23 @@ class Ui_MainWindow(object):
         self.label_4.setSizePolicy(sizePolicy)
         self.label_4.setFont(font1)
 
-        self.gridLayout_2.addWidget(self.label_4, 1, 0, 1, 1)
+        self.formLayout_2.setWidget(4, QFormLayout.LabelRole, self.label_4)
+
+        self.name_edit = QLineEdit(self.widget)
+        self.name_edit.setObjectName(u"name_edit")
+        sizePolicy1.setHeightForWidth(self.name_edit.sizePolicy().hasHeightForWidth())
+        self.name_edit.setSizePolicy(sizePolicy1)
+        self.name_edit.setFont(font)
+
+        self.formLayout_2.setWidget(4, QFormLayout.FieldRole, self.name_edit)
+
+        self.label_5 = QLabel(self.widget)
+        self.label_5.setObjectName(u"label_5")
+        sizePolicy.setHeightForWidth(self.label_5.sizePolicy().hasHeightForWidth())
+        self.label_5.setSizePolicy(sizePolicy)
+        self.label_5.setFont(font1)
+
+        self.formLayout_2.setWidget(5, QFormLayout.LabelRole, self.label_5)
 
         self.jnt_number_sbox = QSpinBox(self.widget)
         self.jnt_number_sbox.setObjectName(u"jnt_number_sbox")
@@ -133,7 +94,74 @@ class Ui_MainWindow(object):
         self.jnt_number_sbox.setFont(font)
         self.jnt_number_sbox.setValue(1)
 
-        self.gridLayout_2.addWidget(self.jnt_number_sbox, 2, 1, 1, 1)
+        self.formLayout_2.setWidget(5, QFormLayout.FieldRole, self.jnt_number_sbox)
+
+        self.label = QLabel(self.widget)
+        self.label.setObjectName(u"label")
+
+        self.formLayout_2.setWidget(6, QFormLayout.LabelRole, self.label)
+
+        self.length_sbox = QDoubleSpinBox(self.widget)
+        self.length_sbox.setObjectName(u"length_sbox")
+        self.length_sbox.setDecimals(2)
+        self.length_sbox.setValue(5.000000000000000)
+
+        self.formLayout_2.setWidget(6, QFormLayout.FieldRole, self.length_sbox)
+
+        self.label_2 = QLabel(self.widget)
+        self.label_2.setObjectName(u"label_2")
+
+        self.formLayout_2.setWidget(7, QFormLayout.LabelRole, self.label_2)
+
+        self.direction_cbox = QComboBox(self.widget)
+        self.direction_cbox.setObjectName(u"direction_cbox")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.direction_cbox.sizePolicy().hasHeightForWidth())
+        self.direction_cbox.setSizePolicy(sizePolicy2)
+
+        self.formLayout_2.setWidget(7, QFormLayout.FieldRole, self.direction_cbox)
+
+        self.label_6 = QLabel(self.widget)
+        self.label_6.setObjectName(u"label_6")
+        sizePolicy.setHeightForWidth(self.label_6.sizePolicy().hasHeightForWidth())
+        self.label_6.setSizePolicy(sizePolicy)
+        self.label_6.setFont(font1)
+
+        self.formLayout_2.setWidget(8, QFormLayout.LabelRole, self.label_6)
+
+        self.jnt_parent_edit = QLineEdit(self.widget)
+        self.jnt_parent_edit.setObjectName(u"jnt_parent_edit")
+        sizePolicy1.setHeightForWidth(self.jnt_parent_edit.sizePolicy().hasHeightForWidth())
+        self.jnt_parent_edit.setSizePolicy(sizePolicy1)
+        self.jnt_parent_edit.setFont(font)
+
+        self.formLayout_2.setWidget(8, QFormLayout.FieldRole, self.jnt_parent_edit)
+
+        self.label_7 = QLabel(self.widget)
+        self.label_7.setObjectName(u"label_7")
+        sizePolicy.setHeightForWidth(self.label_7.sizePolicy().hasHeightForWidth())
+        self.label_7.setSizePolicy(sizePolicy)
+        self.label_7.setFont(font1)
+
+        self.formLayout_2.setWidget(9, QFormLayout.LabelRole, self.label_7)
+
+        self.control_parent_edit = QLineEdit(self.widget)
+        self.control_parent_edit.setObjectName(u"control_parent_edit")
+        sizePolicy1.setHeightForWidth(self.control_parent_edit.sizePolicy().hasHeightForWidth())
+        self.control_parent_edit.setSizePolicy(sizePolicy1)
+        self.control_parent_edit.setFont(font)
+
+        self.formLayout_2.setWidget(9, QFormLayout.FieldRole, self.control_parent_edit)
+
+        self.create_btn = QPushButton(self.widget)
+        self.create_btn.setObjectName(u"create_btn")
+        sizePolicy1.setHeightForWidth(self.create_btn.sizePolicy().hasHeightForWidth())
+        self.create_btn.setSizePolicy(sizePolicy1)
+        self.create_btn.setFont(font)
+
+        self.formLayout_2.setWidget(10, QFormLayout.LabelRole, self.create_btn)
 
         self.delete_btn = QPushButton(self.widget)
         self.delete_btn.setObjectName(u"delete_btn")
@@ -141,34 +169,26 @@ class Ui_MainWindow(object):
         self.delete_btn.setSizePolicy(sizePolicy1)
         self.delete_btn.setFont(font)
 
-        self.gridLayout_2.addWidget(self.delete_btn, 7, 1, 1, 1)
+        self.formLayout_2.setWidget(10, QFormLayout.FieldRole, self.delete_btn)
 
-        self.length_sbox = QDoubleSpinBox(self.widget)
-        self.length_sbox.setObjectName(u"length_sbox")
-        self.length_sbox.setDecimals(2)
-        self.length_sbox.setValue(5.000000000000000)
+        self.module_edit = QLineEdit(self.widget)
+        self.module_edit.setObjectName(u"module_edit")
+        self.module_edit.setEnabled(False)
 
-        self.gridLayout_2.addWidget(self.length_sbox, 3, 1, 1, 1)
+        self.formLayout_2.setWidget(2, QFormLayout.FieldRole, self.module_edit)
 
-        self.label = QLabel(self.widget)
-        self.label.setObjectName(u"label")
+        self.label_3 = QLabel(self.widget)
+        self.label_3.setObjectName(u"label_3")
 
-        self.gridLayout_2.addWidget(self.label, 3, 0, 1, 1)
+        self.formLayout_2.setWidget(2, QFormLayout.LabelRole, self.label_3)
 
-        self.label_2 = QLabel(self.widget)
-        self.label_2.setObjectName(u"label_2")
 
-        self.gridLayout_2.addWidget(self.label_2, 4, 0, 1, 1)
-
-        self.direction_cbox = QComboBox(self.widget)
-        self.direction_cbox.setObjectName(u"direction_cbox")
-
-        self.gridLayout_2.addWidget(self.direction_cbox, 4, 1, 1, 1)
+        self.gridLayout.addWidget(self.widget, 0, 0, 1, 1)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 800, 23))
+        self.menubar.setGeometry(QRect(0, 0, 799, 23))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -182,13 +202,14 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.side_label.setText(QCoreApplication.translate("MainWindow", u"side\uff1a", None))
-        self.create_btn.setText(QCoreApplication.translate("MainWindow", u"\u521b\u5efa\u5b9a\u4f4d", None))
-        self.label_5.setText(QCoreApplication.translate("MainWindow", u"jnt_number\uff1a", None))
-        self.label_6.setText(QCoreApplication.translate("MainWindow", u"jnt_parent\uff1a", None))
-        self.label_7.setText(QCoreApplication.translate("MainWindow", u"control_parent\uff1a", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"name\uff1a", None))
-        self.delete_btn.setText(QCoreApplication.translate("MainWindow", u"\u5220\u9664\u5b9a\u4f4d", None))
+        self.label_5.setText(QCoreApplication.translate("MainWindow", u"jnt_number\uff1a", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"length\uff1a", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"direction:", None))
+        self.label_6.setText(QCoreApplication.translate("MainWindow", u"jnt_parent\uff1a", None))
+        self.label_7.setText(QCoreApplication.translate("MainWindow", u"control_parent\uff1a", None))
+        self.create_btn.setText(QCoreApplication.translate("MainWindow", u"\u521b\u5efa\u5b9a\u4f4d", None))
+        self.delete_btn.setText(QCoreApplication.translate("MainWindow", u"\u5220\u9664\u5b9a\u4f4d", None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"module_label", None))
     # retranslateUi
 

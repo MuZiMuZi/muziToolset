@@ -23,6 +23,7 @@ class Base_Widget(bone_widget.Bone_Widget , base.Ui_MainWindow) :
 		'''
 		super(bone_widget.Bone_Widget , self).__init__(name)
 		self.base_ui =  'base.ui'
+		
 		self.init_base()
 		
 	
