@@ -1,13 +1,18 @@
-import os
+from PySide2 import QtWidgets
 
-from PySide2.QtUiTools import QUiLoader
-from ..widget import base_widget
-from ..config import Side , ui_dir , Direction
-from ..ui import bind , base , chain,limb
-from . import base_widget
+from . import chain_widget
+from ..ui import limb
 from importlib import reload
+reload(limb)
 
+class Limb_Widget(limb.Ui_MainWindow ,chain_widget.Chain_Widget) :
+	
+	
+	
+	def __init__(self , name = 'limb') :
+		'''
+		使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 
-
-reload(base_widget)
-reload(chain)
+		'''
+		self.base_ui = 'limb.ui'
+		self.init_base()

@@ -248,8 +248,11 @@ class Ui_MainWindow(object):
         font4.setPointSize(14)
         self.custom_widget.setFont(font4)
         self.custom_widget.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed)
+        self.custom_widget.setDragEnabled(True)
+        self.custom_widget.setDragDropOverwriteMode(True)
+        self.custom_widget.setDragDropMode(QAbstractItemView.InternalMove)
 
-        self.gridLayout_4.addWidget(self.custom_widget, 0, 0, 1, 1)
+        self.gridLayout_4.addWidget(self.custom_widget, 1, 0, 1, 1)
 
         self.scrollArea_3.setWidget(self.scrollAreaWidgetContents_3)
 

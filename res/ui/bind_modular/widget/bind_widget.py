@@ -3,23 +3,23 @@
 # ui界面生成需要三个模块QtWidgets，QtGui，QtCore
 from importlib import reload
 
-from PySide2 import QtWidgets , QtCore
+from PySide2 import QtCore , QtWidgets
 
+from . import base_widget , chainEP_widget , chain_widget , limb_widget
+from ..ui import bind
 from .....core import qtUtils
-
-from ..ui import bind , base
-from . import base_widget , chain_widget , chainEP_widget
 
 
 
 rigtype_custom = ['baseRig']
-rigtype_chain = ['ikRig' , 'fkRig' , 'chainIKFK']
-rigtype_chainEP = ['chainEP']
-rigtype_limb = ['armRig' , 'legRig' , 'fingerRig' , 'tailRig']
+rigtype_chain = ['chainFKRig' , 'chainIKRig' , 'chainIKFKRig','fingerRig','spineRig']
+rigtype_chainEP = ['chainEPRig']
+rigtype_limb = ['armRig' , 'legRig' , 'handRig' , 'tailRig','spineRig']
 
 reload(base_widget)
 reload(chain_widget)
 reload(bind)
+reload(limb_widget)
 
 
 
@@ -135,6 +135,9 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 		elif self.item in rigtype_chainEP :
 			chainEP = chainEP_widget.ChainEP_Widget()
 			self.base_widget = chainEP.base_widget
+		elif self.item in rigtype_limb :
+			limb = limb_widget.Limb_Widget()
+			self.base_widget = limb.base_widget
 		else :
 			base = base_widget.Base_Widget()
 			self.base_widget = base.base_widget
