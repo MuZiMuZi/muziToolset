@@ -139,6 +139,7 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 			limb = limb_widget.Limb_Widget()
 			self.base_widget = limb.base_widget
 		else :
+			prnt()
 			base = base_widget.Base_Widget()
 			self.base_widget = base.base_widget
 		self.base_widget.module_edit.setText('{}'.format(self.item))
