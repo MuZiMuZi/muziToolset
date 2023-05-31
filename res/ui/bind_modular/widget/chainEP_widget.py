@@ -14,7 +14,7 @@ reload(chainEP)
 
 
 
-class Chain_Widget(chain_widget.Chain_Widget , chainEP.Ui_MainWindow) :
+class ChainEP_Widget(chain_widget.Chain_Widget , chainEP.Ui_MainWindow) :
 	
 	
 	
