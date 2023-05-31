@@ -180,3 +180,4 @@ def get_maya_window() :
 	"""
 	pointer = omui.MQtUtil.mainWindow()
 	return wrapInstance(int(pointer) , QtWidgets.QWidget)
+

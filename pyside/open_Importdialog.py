@@ -175,6 +175,10 @@ class OpenImportDialog(QtWidgets.QDialog) :
 
 
 def show() :
+	try :
+		win.close()
+	except :
+		pass
 	win = OpenImportDialog()
 	win.show()
 
