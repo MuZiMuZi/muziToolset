@@ -4,6 +4,7 @@
 from importlib import reload
 
 from PySide2 import QtCore , QtWidgets
+from PySide2.QtCore import Qt
 
 from . import base_widget , chainEP_widget , chain_widget , limb_widget
 from ..ui import bind
@@ -39,7 +40,7 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 		self.add_connect()
 		
 		self.item = None
-	
+		self.edit_item = None
 	
 	
 	def apply_model(self) :
@@ -56,6 +57,7 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 		"""
 		self.proxy_widget.doubleClicked.connect(self.cmd_proxy_widget_dbclk)
 		self.custom_widget.itemDoubleClicked.connect(self.cmd_custom_widget_dbclk)
+		self.custom_widget.itemClicked.connect(self.cmd_custom_widget_clk)
 	
 	
 	
@@ -79,30 +81,37 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 	
 	
 	
-	def cmd_custom_widget_dbclk(self) :
+	def cmd_custom_widget_dbclk(self,item) :
 		u"""
 		用来连接custom_widget双击所连接的功能槽函数
-		index：鼠标双击的时候所在的位置
+		item：鼠标双击的时候所在的位置
 		"""
-		try:
-			self.custom_widget.closePersistentEditor(self.edited_item)
-		except:
-			# 获得custom_widget里所选择的item
-			self.edited_item = self.custom_widget.currentItem()
-			# 开始编辑模式
-			self.custom_widget.openPersistentEditor(self.edited_item)
-			# self.custom_widget.editItem(self.edited_item)
+		# 双击的时候可以重命名名称
+		self.edit_item = item
+		self.custom_widget.openPersistentEditor(self.edit_item)
+		self.custom_widget.editItem(self.edit_item)
+			
 	
+	def cmd_custom_widget_clk(self, item):
+		u"""
+		用来连接custom_widget双击所连接的功能槽函数
+		item：鼠标单机的时候所在的位置
+		"""
+		self.edit_item = item
+		# 单机的时候关闭重命名
+		self.custom_widget.closePersistentEditor(self.edit_item)
 	
 	
 	def close_edit(self) :
 		u"""
 		关闭edit
 		"""
-		if self.edited_item and self.isPersistentEditorOpen(self.edited_item) :
+		if not self.edited_item:
 			self.closePersistentEditor(self.edited_item)
 	
 	
+	
+
 	
 	def update_current(self , item) :
 		u"""
