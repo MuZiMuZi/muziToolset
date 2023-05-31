@@ -12,9 +12,9 @@ from .....core import qtUtils
 
 
 rigtype_custom = ['baseRig']
-rigtype_chain = ['chainFKRig' , 'chainIKRig' , 'chainIKFKRig','fingerRig','spineRig']
+rigtype_chain = ['chainFKRig' , 'chainIKRig' , 'chainIKFKRig' , 'fingerRig' , 'spineRig']
 rigtype_chainEP = ['chainEPRig']
-rigtype_limb = ['armRig' , 'legRig' , 'handRig' , 'tailRig','spineRig']
+rigtype_limb = ['armRig' , 'legRig' , 'handRig' , 'tailRig' , 'spineRig']
 
 reload(base_widget)
 reload(chain_widget)
@@ -84,16 +84,14 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 		用来连接custom_widget双击所连接的功能槽函数
 		index：鼠标双击的时候所在的位置
 		"""
-		index = self.custom_widget.currentIndex()
-		# 如果index.isValid的返回值有值的话，说明选择了可以点击的文件，不是的话则是空白的物体
-		if index.isValid() :
+		try:
+			self.custom_widget.closePersistentEditor(self.edited_item)
+		except:
 			# 获得custom_widget里所选择的item
 			self.edited_item = self.custom_widget.currentItem()
 			# 开始编辑模式
 			self.custom_widget.openPersistentEditor(self.edited_item)
-			self.custom_widget.editItem(self.edited_item)
-		else :
-			self.custom_widget.closePersistentEditor(self.edited_item)
+			# self.custom_widget.editItem(self.edited_item)
 	
 	
 	
@@ -147,15 +145,14 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 
 
 def show() :
-	window = Bind_Widget()
 	# 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口
+	global win
 	try :
-		window.close()
+		win.close()  # 为了不让窗口出现多个，因为第一次运行还没初始化，所以要try，在这里尝试先关闭，再重新新建一个窗口
 	except :
 		pass
-	window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-	window.show()
-	return window
+	win = Bind_Widget()
+	win.show()
 
 
 
