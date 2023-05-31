@@ -40,9 +40,8 @@ class Chain_Widget(base_widget.Base_Widget , chain.Ui_MainWindow) :
 	
 	
 	
-	def parse_base(self) :
-		seg = self.extra_widget.ui_seg_sbox.value()
-		length = self.extra_widget.ui_len_sbox.value()
-		direction = ast.literal_eval(self.extra_widget.ui_dir_cbox.currentText())
+	def parse_extra(self) :
+		length = self.extra_widget.length_sbox.value()
+		direction = ast.literal_eval(self.extra_widget.direction_cbox.currentText())
 		
-		return [seg , length , direction]
+		return [length , direction]
