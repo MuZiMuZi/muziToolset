@@ -26,3 +26,13 @@ class ChainEP_Widget(chain_widget.Chain_Widget , chainEP.Ui_MainWindow) :
 		super(chain_widget.Chain_Widget, self).__init__(name)
 		self.base_ui = 'chainEP.ui'
 		self.init_base()
+	
+	
+	
+	def init_base(self) :
+		print(self.base_ui)
+		super().init_base()
+	
+
+
+	

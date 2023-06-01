@@ -21,7 +21,7 @@ reload(base_widget)
 reload(chain_widget)
 reload(bind)
 reload(limb_widget)
-
+reload(chainEP_widget)
 
 
 class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
