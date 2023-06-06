@@ -373,6 +373,10 @@ if __name__ == "__main__" :
 		eye_l = eye.Eye(side = 'l' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
 		                control_parent = None)
 		eye_l.build_setup()
+		
+		eye_r = eye.Eye(side = 'r' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+		                control_parent = None)
+		eye_r.build_setup()
 	
 	
 	
@@ -380,6 +384,10 @@ if __name__ == "__main__" :
 		eye_l = eye.Eye(side = 'l' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
 		                control_parent = None)
 		eye_l.build_rig()
+		
+		eye_r = eye.Eye(side = 'r' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+		                control_parent = None)
+		eye_r.build_rig()
 	
 	
 	
