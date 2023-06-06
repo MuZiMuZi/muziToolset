@@ -49,18 +49,22 @@ class Tongue(chainFK.ChainFK) :
 			cmds.setAttr(mult_node + '.input1' , 10)
 			cmds.connectAttr(self.ctrl_list[0] + '.TongueCurl' , mult_node + '.input2')
 			cmds.connectAttr(mult_node + '.output' , connect + '.rotateY')
-
+		
 
 
 if __name__ == '__main__' :
 	def build_setup() :
-		tongue_m = tongue.Tongue(joint_parent = None , control_parent = None)
+		tongue_m = tongue.Tongue(side = 'm' , name = '' , joint_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
+		                         joint_parent = None ,
+		                         control_parent = None)
 		tongue_m.build_setup()
 	
 	
 	
 	def build_rig() :
-		tongue_m = tongue.Tongue(joint_parent = None , control_parent = None)
+		tongue_m = tongue.Tongue(side = 'm' , name = '' , joint_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
+		                         joint_parent = None ,
+		                         control_parent = None)
 		tongue_m.build_rig()
 	
 	
