@@ -100,7 +100,6 @@ class EyeLid(bone.Bone) :
 		"""
 		
 		# 根据skin_curve来制作curve，用于制作控制器的控制
-		print(self.skin_curve)
 		self.curve = cmds.duplicate(self.skin_curve , name = self.curve)[0]
 		cmds.setAttr(self.skin_curve + '.visibility' , 0)
 		# 重建self.curve用来控制曲线
@@ -218,6 +217,12 @@ class EyeLid(bone.Bone) :
 		
 		# 眼袋控制器与眼袋关节之间进行约束
 		for output , jnt in zip(self.pouch_output_list , self.pouch_jnt_list) :
+			pipelineUtils.Pipeline.create_constraint(output , jnt , point_value = True , orient_value = True ,
+			                                         scale_value = True ,
+			                                         mo_value = False)
+			
+		# 曲线控制器与曲线关节之间进行约束
+		for output , jnt in zip(self.output_list , self.curve_jnt_grp) :
 			pipelineUtils.Pipeline.create_constraint(output , jnt , point_value = True , orient_value = True ,
 			                                         scale_value = True ,
 			                                         mo_value = False)

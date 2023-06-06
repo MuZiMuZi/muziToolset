@@ -6,7 +6,7 @@ import os
 
 import maya.cmds as cmds
 
-from core import hierarchyUtils
+from ....core import hierarchyUtils
 from ...chain import chainFK
 
 
