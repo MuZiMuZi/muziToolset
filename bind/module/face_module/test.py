@@ -1,4 +1,4 @@
-import muziToolset.rigging.module.face_module.cheek as cheek
+import muziToolset.bind.module.face_module.cheek as cheek
 from importlib import reload
 
 
@@ -22,4 +22,4 @@ def build_rig() :
 
 
 build_setup()
-build_rig()
+# build_rig()
