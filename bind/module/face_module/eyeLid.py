@@ -5,13 +5,13 @@
 
 import maya.cmds as cmds
 
-from core import controlUtils , jointUtils , pipelineUtils
+from ....core import controlUtils , jointUtils , pipelineUtils
 from ...base import bone
 
 
 
 class EyeLid(bone.Bone) :
-	
+	example_curve = ['crv_l_upperEyeLidSkin_001','crv_l_lowerEyeLidSkin_001']
 	
 	
 	def __init__(self , side , name , joint_number = 7 , joint_parent = None , control_parent = None) :
@@ -100,6 +100,7 @@ class EyeLid(bone.Bone) :
 		"""
 		
 		# 根据skin_curve来制作curve，用于制作控制器的控制
+		print(self.skin_curve)
 		self.curve = cmds.duplicate(self.skin_curve , name = self.curve)[0]
 		cmds.setAttr(self.skin_curve + '.visibility' , 0)
 		# 重建self.curve用来控制曲线
@@ -201,7 +202,7 @@ class EyeLid(bone.Bone) :
 		cmds.pointConstraint(self.output_list[3] , self.output_list[6] , self.driven_list[4] , mo = True)
 		
 		# 约束中间的控制器[4,5,6]，两侧的控制器约束中间的控制器
-		cmds.pointConstraint(self.output_list[4] , self.output_list[6] , self.driven_list[5])
+		cmds.pointConstraint(self.output_list[4] , self.output_list[6] , self.driven_list[5] , mo = True)
 		
 		# 第二个控制器和第六个控制器是为了调整小的形态，默认是隐藏的,连接他们的可见性到中间的控制器上
 		cmds.addAttr(self.ctrl_list[3] , attributeType = 'bool' , longName = 'LidSubCtrlVis' , keyable = 1 ,
