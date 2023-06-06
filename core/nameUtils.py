@@ -22,7 +22,7 @@ nameutils:这是一个命名类。用来对命名进行一系列修改的操作�
 from __future__ import print_function
 
 import re
-from importlib import reload
+
 
 import maya.cmds as cmds
 

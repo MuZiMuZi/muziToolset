@@ -15,7 +15,7 @@ create_chain：通过放置的模板关节生成相应的IK、FK和Bindjoint
 create_mateHuman_chain：通过放置的模板关节创建mateHuman的IK,FK 的关节链
 
 """
-from importlib import reload
+
 import maya.cmds as cmds
 from . import nameUtils
 

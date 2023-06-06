@@ -33,7 +33,7 @@ import os
 import re
 from functools import partial
 from functools import wraps
-from importlib import reload
+
 
 import maya.cmds as cmds
 import maya.mel as mel

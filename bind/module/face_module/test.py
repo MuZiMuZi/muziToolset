@@ -1,26 +1,34 @@
-import muziToolset.bind.module.face_module.tongue as tongue
-from importlib import reload
+import muziToolset.bind.module.face_module.eye as eye
+# from importlib import reload
 
+print(25)
 
-
-reload(tongue)
+reload(eye)
 
 
 
 def build_setup() :
-	tongue_m = tongue.Tongue(side = 'm' , name = '' , joint_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
-	                         joint_parent = None ,
-	                         control_parent = None)
-	tongue_m.build_setup()
+	eye_l = eye.Eye(side = 'l' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+	                control_parent = None)
+	eye_l.build_setup()
+	
+	eye_r = eye.Eye(side = 'r' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+	                control_parent = None)
+	eye_r.build_setup()
 
 
 
 def build_rig() :
-	tongue_m = tongue.Tongue(side = 'm' , name = '' , joint_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
-	                         joint_parent = None ,
-	                         control_parent = None)
-	tongue_m.build_rig()
+	eye_l = eye.Eye(side = 'l' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+	                control_parent = None)
+	eye_l.build_rig()
+	
+	eye_r = eye.Eye(side = 'r' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+	                control_parent = None)
+	eye_r.build_rig()
+
+
 
 #
-# build_setup()
-build_rig()
+build_setup()
+# build_rig()

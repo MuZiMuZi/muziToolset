@@ -29,7 +29,6 @@ from __future__ import print_function
 
 import json
 import os
-from importlib import reload
 
 import maya.cmds as cmds
 import pymel.core as pm

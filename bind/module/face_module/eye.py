@@ -3,7 +3,7 @@
 眼睛的绑定系统创建
 '''
 import os
-from importlib import reload
+# from importlib import reload
 
 import maya.cmds as cmds
 
@@ -13,7 +13,7 @@ from ...chain import chain
 
 
 
-reload(eyeLid)
+# reload(eyeLid)
 
 
 
