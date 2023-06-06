@@ -6,7 +6,7 @@ from importlib import reload
 
 import maya.cmds as cmds
 
-from core import jointUtils , pipelineUtils
+from ....core import jointUtils , pipelineUtils
 from ...base import bone
 
 
@@ -16,6 +16,7 @@ reload(pipelineUtils)
 
 
 class MouthLip(bone.Bone) :
+	skin_curve = ['crv_m_upperMouthLipSkin_001' , 'crv_m_lowerMouthLipSkin_001']
 	
 	
 	
@@ -44,7 +45,7 @@ class MouthLip(bone.Bone) :
 		super().create_namespace()
 		# 整理与控制器有关的曲线的名称规范层级结构
 		self.curve = 'crv_{}_{}{}_001'.format(self._side , self._name , self._rtype)
-		for index in range(7) :
+		for index in range(self.joint_number + 3) :
 			self.curve_jnt_list.append('jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , index + 1))
 		self.curve_jnt_grp = 'grp_{}_{}{}Jnts_001'.format(self._side , self._name , self._rtype)
 		self.curve_nodes_grp = 'grp_{}_{}{}RigNodes_001'.format(self._side , self._name , self._rtype)
@@ -79,12 +80,13 @@ class MouthLip(bone.Bone) :
 		"""
 		
 		# 根据skin_curve来制作curve，用于制作控制器的控制
+		
 		self.curve = cmds.duplicate(self.skin_curve , name = self.curve)[0]
 		cmds.setAttr(self.skin_curve + '.visibility' , 0)
 		# 重建self.curve用来控制曲线
 		self.curve = \
 			cmds.rebuildCurve(self.curve , ch = 1 , rpo = 1 , rt = 0 , end = 1 , kr = 0 , kcp = 0 , kep = 1 , kt = 0 ,
-			                  s = 4 , d = 3 , tol = 0.01)[0]
+			                  s = self.joint_number , d = 3 , tol = 0.01)[0]
 		cmds.setAttr(self.curve + '.visibility' , 1)
 		
 		# 在曲线上创建关节用来蒙皮曲线创建控制器的约束

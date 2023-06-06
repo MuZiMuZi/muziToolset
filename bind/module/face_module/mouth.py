@@ -6,7 +6,7 @@ from importlib import reload
 
 import maya.cmds as cmds
 
-from core import controlUtils , pipelineUtils
+from ....core import controlUtils , pipelineUtils
 from . import mouthLip
 from ...base import bone
 
@@ -25,12 +25,12 @@ class Mouth(bone.Bone) :
 		
 		self._rtype = 'Mouth'
 		# 生成上部分的嘴唇
-		self.mouth_lip_upper = mouthLip.MouthLip(side = self.side , name = 'upper' , joint_number = 7 ,
+		self.mouth_lip_upper = mouthLip.MouthLip(side = self.side , name = 'upper' , joint_number = 10 ,
 		                                         joint_parent = None ,
 		                                         control_parent = None)
 		
 		# 生成下部分的嘴唇
-		self.mouth_lip_lower = mouthLip.MouthLip(side = self.side , name = 'lower' , joint_number = 7 ,
+		self.mouth_lip_lower = mouthLip.MouthLip(side = self.side , name = 'lower' , joint_number = 10 ,
 		                                         joint_parent = None ,
 		                                         control_parent = None)
 	
