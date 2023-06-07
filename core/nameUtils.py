@@ -23,13 +23,12 @@ from __future__ import print_function
 
 import re
 
-
+from importlib import reload
 import maya.cmds as cmds
 
 from . import pipelineUtils
 
 
-reload(pipelineUtils)
 
 
 class Name(object) :

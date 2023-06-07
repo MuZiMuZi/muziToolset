@@ -3,7 +3,7 @@
 眼睛的绑定系统创建
 '''
 import os
-# from importlib import reload
+from importlib import reload
 
 import maya.cmds as cmds
 
@@ -13,7 +13,7 @@ from ...chain import chain
 
 
 
-# reload(eyeLid)
+reload(eyeLid)
 
 
 
@@ -195,8 +195,8 @@ class Eye(chain.Chain) :
 					
 					0 , 1 , 0) , worldUpType = "vector" , worldUpVector = (0 , 1 , 0))
 		
-		self.eye_lid_upper.add_constraint()
-		self.eye_lid_lower.add_constraint()
+		# self.eye_lid_upper.add_constraint()
+		# self.eye_lid_lower.add_constraint()
 		
 		# 添加闭合眼皮曲线的功能
 		self.add_blink()

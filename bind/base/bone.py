@@ -7,8 +7,6 @@ from ...core import controlUtils , hierarchyUtils , jointUtils , pipelineUtils
 
 
 
-reload(pipelineUtils)
-reload(hierarchyUtils)
 
 
 
