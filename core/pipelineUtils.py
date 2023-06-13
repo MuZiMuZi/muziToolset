@@ -34,7 +34,6 @@ import re
 from functools import partial
 from functools import wraps
 
-
 import maya.cmds as cmds
 import maya.mel as mel
 import pymel.core as pm
@@ -1357,3 +1356,38 @@ class Pipeline(object) :
 				'node_grp' : node_grp
 				}
 		return zip_lip_dict
+	
+	
+	
+	@staticmethod
+	def create_doble_constraint(driver,ctrl,weight):
+		u"""
+		制作需要调整权重值的约束，驱动的物体和控制器的zero组去约束driven组，并且调整权重值
+		driver(str):驱动的物体
+		ctrl(str):被驱动的控制器
+		weight(int):约束的权重值
+		"""
+		zero = ctrl.replace('ctrl' , 'zero')
+		driven = ctrl.replace('ctrl' , 'driven')
+		# 给控制器添加约束的权重值的属性设置
+		cmds.addAttr(ctrl , ln = 'con_weight' , at = 'double' , min = 0 , max = 1 , dv = weight ,
+		             keyable = True)
+		# 创建约束节点
+		con = cmds.parentConstraint(driver , zero , driven , mo = True)[0]
+		# 连接约束的权重值
+		cmds.connectAttr(ctrl + '.con_weight' , con + '.{}W0'.format(driver))
+		
+		# 创建相乘节点计算另外一个物体的权重值；1-weight
+		mult_node = cmds.createNode('multDoubleLinear' , name = ctrl.replace('ctrl' , 'mult_weight'))
+		cmds.setAttr(mult_node + '.input1' , -1)
+		cmds.connectAttr(ctrl + '.con_weight' , mult_node + '.input2')
+		
+		add_node = cmds.createNode('addDoubleLinear' , name = ctrl.replace('ctrl' , 'add_weight'))
+		cmds.setAttr(add_node + '.input1' , 1)
+		cmds.connectAttr(mult_node + '.output' , add_node + '.input2')
+		
+		cmds.connectAttr(add_node + '.output' , con + '.{}W1'.format(zero))
+
+
+		
+		
