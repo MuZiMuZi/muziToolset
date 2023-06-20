@@ -104,7 +104,5 @@ class Vector(object) :
 	
 	
 	
-	
-	
 	def mult_interval(self , interval) :
 		return (self.x * interval , self.y * interval , self.z * interval)

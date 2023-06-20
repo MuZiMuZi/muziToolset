@@ -13,9 +13,8 @@
 import os
 import subprocess
 import maya.OpenMayaUI as omui
-from PySide2 import QtCore , QtWidgets,QtGui
+from PySide2 import QtCore , QtWidgets , QtGui
 from shiboken2 import wrapInstance
-
 
 
 
@@ -180,4 +179,3 @@ def get_maya_window() :
 	"""
 	pointer = omui.MQtUtil.mainWindow()
 	return wrapInstance(int(pointer) , QtWidgets.QWidget)
-

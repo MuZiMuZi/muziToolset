@@ -30,11 +30,11 @@ from . import pipelineUtils
 
 
 
-
 class Name(object) :
 	"""
 	This is a docstring
 	"""
+	
 	
 	
 	def __init__(self , name = None , type = None , side = None , resolution = None , description = None ,
@@ -57,9 +57,11 @@ class Name(object) :
 			self.decompose()
 	
 	
+	
 	@property
 	def type(self) :
 		return self._type
+	
 	
 	
 	@type.setter
@@ -67,9 +69,11 @@ class Name(object) :
 		self._type = value
 	
 	
+	
 	@property
 	def side(self) :
 		return self._side
+	
 	
 	
 	@side.setter
@@ -77,9 +81,11 @@ class Name(object) :
 		self._side = value
 	
 	
+	
 	@property
 	def resolution(self) :
 		return self._resolution
+	
 	
 	
 	@resolution.setter
@@ -87,9 +93,11 @@ class Name(object) :
 		self._resolution = value
 	
 	
+	
 	@property
 	def description(self) :
 		return self._description
+	
 	
 	
 	@description.setter
@@ -97,9 +105,11 @@ class Name(object) :
 		self._description = value
 	
 	
+	
 	@property
 	def index(self) :
 		return self._index
+	
 	
 	
 	@index.setter
@@ -107,10 +117,12 @@ class Name(object) :
 		self._index = value
 	
 	
+	
 	@property
 	def name(self) :
 		self.compose()
 		return self._name
+	
 	
 	
 	def compose(self) :
@@ -123,6 +135,7 @@ class Name(object) :
 		
 		# add index
 		self._name = '{}{:03d}'.format(self._name , self._index)
+	
 	
 	
 	def decompose(self) :
@@ -138,11 +151,13 @@ class Name(object) :
 		self._index = int(name_parts[-1])
 	
 	
+	
 	def flip(self) :
 		if self._side == 'l' :
 			self._side = 'r'
 		elif self._side == 'r' :
 			self._side = 'l'
+	
 	
 	
 	def set_rename(self , new_name) :
@@ -153,6 +168,7 @@ class Name(object) :
 		for self._name in names :
 			self._name = self._name.split("|")[-1]
 			cmds.rename(self._name , new_name)
+	
 	
 	
 	@pipelineUtils.Pipeline.make_undo
@@ -174,6 +190,7 @@ class Name(object) :
 			cmds.rename(self._name , new_object_name)
 	
 	
+	
 	@pipelineUtils.Pipeline.make_undo
 	def add_suffix(self , suffix) :
 		"""
@@ -193,6 +210,7 @@ class Name(object) :
 			cmds.rename(self._name , new_object_name)
 	
 	
+	
 	def _selection_list_nodes(self) :
 		"""
 		Returns: 返回选择的物体下所有的子层级的节点命名
@@ -204,6 +222,7 @@ class Name(object) :
 			self.nodes = self.nodes + cmds.listRelatives(select , allDescendents = True , children = True)
 		
 		return self.nodes
+	
 	
 	
 	@pipelineUtils.Pipeline.make_undo
@@ -225,6 +244,7 @@ class Name(object) :
 			cmds.rename(node , new_object_name)
 	
 	
+	
 	@pipelineUtils.Pipeline.make_undo
 	def add_hierarchy_suffix(self , suffix) :
 		"""
@@ -244,6 +264,7 @@ class Name(object) :
 			cmds.rename(node , new_object_name)
 	
 	
+	
 	@pipelineUtils.Pipeline.make_undo
 	def search_replace_name(self , search , replace) :
 		"""
@@ -261,6 +282,7 @@ class Name(object) :
 			cmds.rename(search_name , search_name.replace(search , replace))
 	
 	
+	
 	def regex_search_replace_name(self , search , replace) :
 		u'''
 		根据正则表达式搜索替换名称
@@ -270,6 +292,7 @@ class Name(object) :
 			self._name = cmds.ls(uid)[0]
 			search_name = self._name.split("|")[-1]
 			cmds.rename(self._name , re_o.sub(replace , search_name))
+	
 	
 	
 	@staticmethod
@@ -286,6 +309,7 @@ class Name(object) :
 		if len(duplicate_object_list) == 0 :
 			cmds.warning(u'场景里没有重名的物体')
 		return duplicate_object_list
+	
 	
 	
 	@staticmethod

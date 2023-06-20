@@ -1360,7 +1360,7 @@ class Pipeline(object) :
 	
 	
 	@staticmethod
-	def create_doble_constraint(driver,ctrl,weight):
+	def create_doble_constraint(driver , ctrl , weight) :
 		u"""
 		制作需要调整权重值的约束，驱动的物体和控制器的zero组去约束driven组，并且调整权重值
 		driver(str):驱动的物体
@@ -1387,7 +1387,3 @@ class Pipeline(object) :
 		cmds.connectAttr(mult_node + '.output' , add_node + '.input2')
 		
 		cmds.connectAttr(add_node + '.output' , con + '.{}W1'.format(zero))
-
-
-		
-		

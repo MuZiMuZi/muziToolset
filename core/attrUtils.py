@@ -22,8 +22,8 @@ import maya.cmds as cmds
 
 
 
-
 class Attr(object) :
+	
 	
 	
 	def __init__(self) :
@@ -32,6 +32,7 @@ class Attr(object) :
 		self.minValue = None
 		self.maxValue = None
 		self.info = None
+	
 	
 	
 	@staticmethod
@@ -58,6 +59,7 @@ class Attr(object) :
 					cmds.setAttr("{}.{}".format(obj , attr) , keyable = True , channelBox = True)
 	
 	
+	
 	@staticmethod
 	def connect_attr(output_attr , input_attr) :
 		u"""将属性从输出属性连接到输入属性.
@@ -73,6 +75,7 @@ class Attr(object) :
 			pass
 		else :
 			cmds.connectAttr(output_attr , input_attr , force = True)
+	
 	
 	
 	@staticmethod
@@ -100,12 +103,14 @@ class Attr(object) :
 		return None
 	
 	
+	
 	@staticmethod
 	def add_attr(obj , longName , attributeType , niceName = None , minValue = None , maxValue = None ,
 	             defaultValue = None) :
 		cmds.addAttr(obj , longName = longName , niceName = niceName , attributeType = attributeType ,
 		             minValue = minValue ,
 		             maxValue = maxValue , defaultValue = defaultValue)
+	
 	
 	
 	def add_string_info(self , attr , information) :
@@ -130,6 +135,7 @@ class Attr(object) :
 		cmds.setAttr('{}.{}'.format(self.name , attr) , lock = True)
 	
 	
+	
 	def get_unwanted_attrs(self , attrs_list) :
 		u"""返回不需要的属性名称列表.
 		给定所需属性名称的列表['translateX', 'translateY', 'translateZ'],
@@ -146,12 +152,13 @@ class Attr(object) :
 		attrs_to_lock_list = [
 				"translateX" , "translateY" , "translateZ" , "rotateX" , "rotateY" , "rotateZ" , "scaleX" , "scaleY" ,
 				"scaleZ"
-		]
+				]
 		for attr in attrs_list :
 			if attr in attrs_to_lock_list :
 				attrs_to_lock_list.remove(attr)
 		
 		return attrs_to_lock_list
+	
 	
 	
 	def set_attrs_limits(self , attr , attrs_dict) :
@@ -161,7 +168,8 @@ class Attr(object) :
 
 		Args:
 			self.name (str): 控制器设置其自身属性的限制.
-			self.attrs_dict (dict): 字典有需要设置的属性键和属性值 (([lower_limit_state, upper_limit_state], [lower_limit, upper_limit])).
+			self.attrs_dict (dict): 字典有需要设置的属性键和属性值 (([lower_limit_state, upper_limit_state], [lower_limit,
+			upper_limit])).
 
 			self.attrs_dict = { 'translateY': [(1, 1), (60, 120)]}
 		"""
@@ -196,6 +204,7 @@ class Attr(object) :
 			if self.attr == "scaleZ" :
 				cmds.transformLimits(self.name , enableScaleZ = value[0])
 				cmds.transformLimits(self.name , scaleZ = value[1])
+	
 	
 	
 	def get_attrs_limits(self) :
@@ -275,6 +284,7 @@ class Attr(object) :
 		return attrs_limits_dict
 	
 	
+	
 	def get_attrs_range(self , return_custom_attrs = True) :
 		u"""将属性范围作为带键的字典返回 ('{}.{}'.format(ctrl, attr)),
 		value (((lower_limit_state, (0.0, lower_limit_num)), (upper_limit_state, (0.0, upper_limit_num)))).
@@ -337,7 +347,7 @@ class Attr(object) :
 			
 			ctrl_attrs_range['{}.{}'.format(self.name , attr)] = (
 					(limit_state[0] , (0.0 , limit_num[0])) , (limit_state[1] , (0.0 , limit_num[1]))
-			)
+					)
 		
 		# 从自定义属性查询属性范围
 		if custom_attrs :
@@ -350,7 +360,7 @@ class Attr(object) :
 						
 						ctrl_attrs_range['{}.{}'.format(self.name , attr)] = (
 								(limit_state[0] , (0.0 , limit_num[0])) , (limit_state[1] , (0.0 , limit_num[1]))
-						)
+								)
 				except :
 					continue
 		
@@ -360,7 +370,8 @@ class Attr(object) :
 		#     """Import all the controllers limits dict, and set them on selected controllers
 		#        with key(ctrl),
 		#        value(
-		#        a dictionary with key (attribute), value (([lower_limit_state, upper_limit_state], [lower_limit, upper_limit]))
+		#        a dictionary with key (attribute), value (([lower_limit_state, upper_limit_state], [lower_limit,
+		#        upper_limit]))
 		#        )
 		#
 		#     """
@@ -373,7 +384,8 @@ class Attr(object) :
 		#     )
 		#
 		#     if ctrls_attrs_limits_dict:
-		#         ctrls_to_import = pipelineUtils.list_operation(list_a=self.name, list_b=ctrls_attrs_limits_dict.keys(), operation='&')
+		#         ctrls_to_import = pipelineUtils.list_operation(list_a=self.name,
+		#         list_b=ctrls_attrs_limits_dict.keys(), operation='&')
 		#         if ctrls_to_import:
 		#             for self.name in ctrls_to_import:
 		#                 # lock unwanted attrs
@@ -395,7 +407,8 @@ class Attr(object) :
 		#     """Export all the controllers limits as dict
 		#        with key(ctrl),
 		#        value(
-		#        a dictionary with key (attribute), value (([lower_limit_state, upper_limit_state], [lower_limit, upper_limit]))
+		#        a dictionary with key (attribute), value (([lower_limit_state, upper_limit_state], [lower_limit,
+		#        upper_limit]))
 		#        )
 		#
 		#     """
@@ -420,7 +433,8 @@ class Attr(object) :
 		# #         attr (str): Attribute name.
 		# #
 		# #     Returns:
-		# #         float/int/str/tuple/list/dict/None: Converted from string information which is queried from attribute.
+		# #         float/int/str/tuple/list/dict/None: Converted from string information which is queried from
+		# attribute.
 		# #
 		# #     """
 		# #     attr = attr

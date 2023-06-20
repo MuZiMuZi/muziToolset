@@ -40,10 +40,6 @@ from . import nameUtils
 
 
 
-
-
-
-
 class Control(object) :
 	u"""
 		kwargs – 修改控制器的参数
