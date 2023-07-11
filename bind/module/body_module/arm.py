@@ -1,6 +1,6 @@
 import maya.cmds as cmds
 
-from . import hand
+from bind.module.body_module import hand
 from bind.limb import limbIKFK
 
 

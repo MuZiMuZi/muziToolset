@@ -45,7 +45,7 @@ from maya import mel
 from pymel.util import path
 from shiboken2 import wrapInstance
 
-from . import controlUtils , hierarchyUtils , nameUtils , qtUtils
+from . import controlUtils , hierarchyUtils  , qtUtils
 
 
 

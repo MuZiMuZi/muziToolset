@@ -3,7 +3,7 @@
 # ui界面生成需要三个模块QtWidgets，QtGui，QtCore
 from importlib import reload
 
-from PySide2 import QtCore , QtWidgets
+from PySide2 import QtCore , QtWidgets , QtGui
 from PySide2.QtCore import Qt
 
 from . import base_widget , chainEP_widget , chain_widget , limb_widget
@@ -24,6 +24,7 @@ reload(limb_widget)
 reload(chainEP_widget)
 
 
+
 class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 	u'''
 	用于创建绑定系统的界面系统
@@ -41,6 +42,7 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 		
 		self.item = None
 		self.edit_item = None
+	
 	
 	
 	def apply_model(self) :
@@ -81,7 +83,7 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 	
 	
 	
-	def cmd_custom_widget_dbclk(self,item) :
+	def cmd_custom_widget_dbclk(self , item) :
 		u"""
 		用来连接custom_widget双击所连接的功能槽函数
 		item：鼠标双击的时候所在的位置
@@ -90,28 +92,41 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 		self.edit_item = item
 		self.custom_widget.openPersistentEditor(self.edit_item)
 		self.custom_widget.editItem(self.edit_item)
-			
 	
-	def cmd_custom_widget_clk(self, item):
+	
+	
+	def cmd_custom_widget_clk(self , item) :
 		u"""
 		用来连接custom_widget双击所连接的功能槽函数
-		item：鼠标单机的时候所在的位置
+		item：鼠标单击的时候所在的位置
 		"""
 		self.edit_item = item
 		# 单机的时候关闭重命名
 		self.custom_widget.closePersistentEditor(self.edit_item)
 	
 	
+	
+	def cmd_custom_widget_menu(self) :
+		"""
+		用来创建custom_widget右键的菜单
+		"""
+		custom_menu = QtWidgets.QMenu()
+		custom_menu.addAction(self.actionMirror_select)
+		
+		# 创建一个光标对象，在光标对象右击的位置运行这个右键菜单
+		cursor = QtGui.QCursor()
+		menu.exec_(cursor.pos())
+	
+	
+	
 	def close_edit(self) :
 		u"""
 		关闭edit
 		"""
-		if not self.edited_item:
+		if not self.edited_item :
 			self.closePersistentEditor(self.edited_item)
 	
 	
-	
-
 	
 	def update_current(self , item) :
 		u"""

@@ -104,15 +104,6 @@ class Attr(object) :
 	
 	
 	
-	@staticmethod
-	def add_attr(obj , longName , attributeType , niceName = None , minValue = None , maxValue = None ,
-	             defaultValue = None) :
-		cmds.addAttr(obj , longName = longName , niceName = niceName , attributeType = attributeType ,
-		             minValue = minValue ,
-		             maxValue = maxValue , defaultValue = defaultValue)
-	
-	
-	
 	def add_string_info(self , attr , information) :
 		u"""添加信息属性.
 

@@ -2,7 +2,7 @@ from importlib import reload
 
 import maya.cmds as cmds
 
-from . import foot
+from bind.module.body_module import foot
 from bind.limb import limbIKFK
 
 

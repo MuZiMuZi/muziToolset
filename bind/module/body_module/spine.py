@@ -1,4 +1,4 @@
-from ..chain import chainIK
+from bind.chain import chainIK
 
 
 
