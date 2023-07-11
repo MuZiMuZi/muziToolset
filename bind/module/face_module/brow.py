@@ -5,6 +5,8 @@
 import os
 from importlib import reload
 
+
+
 import maya.cmds as cmds
 
 from ....core import controlUtils , pipelineUtils
@@ -14,7 +16,6 @@ from ...base import base
 
 reload(pipelineUtils)
 reload(base)
-
 
 
 class Brow(base.Base) :
@@ -62,7 +63,7 @@ class Brow(base.Base) :
 	
 	def create_bpjnt(self) :
 		# 获得brow_bpjnt 的路径
-		self.brow_bpjnt_path = os.path.abspath(__file__ + "/../brow_bpjnt.ma")
+		self.brow_bpjnt_path = os.path.abspath(__file__ + "/../../../bpjnt/brow_bpjnt.ma")
 		# 导入关节
 		cmds.file(self.brow_bpjnt_path , i = True , rnn = True)
 	

@@ -45,7 +45,7 @@ class Jaw(chainFK.ChainFK) :
 	
 	def create_bpjnt(self) :
 		# 获得jaw_bpjnt 的路径
-		self.jaw_bpjnt_path = os.path.abspath(__file__ + "/../jaw_bpjnt.ma")
+		self.jaw_bpjnt_path = os.path.abspath(__file__ + "/../../../bpjnt/jaw_bpjnt.ma")
 		# 导入关节
 		cmds.file(self.jaw_bpjnt_path , i = True , rnn = True)
 	

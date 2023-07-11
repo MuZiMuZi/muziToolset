@@ -77,7 +77,7 @@ class Eye(chain.Chain) :
 	
 	def create_bpjnt(self) :
 		# 获得eye_bpjnt 的路径
-		self.eye_bpjnt_path = os.path.abspath(__file__ + "/../eye_bpjnt.ma")
+		self.eye_bpjnt_path = os.path.abspath(__file__ + "/../../../bpjnt/eye_bpjnt.ma")
 		# 导入关节
 		cmds.file(self.eye_bpjnt_path , i = True , rnn = True)
 		

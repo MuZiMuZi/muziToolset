@@ -43,7 +43,7 @@ class Nose(base.Base) :
 	
 	def create_bpjnt(self) :
 		# 获得nose_bpjnt 的路径
-		self.nose_bpjnt_path = os.path.abspath(__file__ + "/../nose_bpjnt.ma")
+		self.nose_bpjnt_path = os.path.abspath(__file__ + "/../../../bpjnt/nose_bpjnt.ma")
 		# 导入关节
 		cmds.file(self.nose_bpjnt_path , i = True , rnn = True)
 	

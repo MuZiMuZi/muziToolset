@@ -85,7 +85,7 @@ class Cheek(base.Base) :
 	
 	def create_bpjnt(self) :
 		# 获得cheek_bpjnt 的路径
-		self.cheek_bpjnt_path = os.path.abspath(__file__ + "/../cheek_bpjnt.ma")
+		self.cheek_bpjnt_path = os.path.abspath(__file__ + "/../../../bpjnt/cheek_bpjnt.ma")
 		# 导入关节
 		cmds.file(self.cheek_bpjnt_path , i = True , rnn = True)
 

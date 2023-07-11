@@ -25,7 +25,7 @@ class Tongue(chainFK.ChainFK) :
 	
 	def create_bpjnt(self) :
 		# 获得tongue_bpjnt 的路径
-		self.tongue_bpjnt_path = os.path.abspath(__file__ + "/../tongue_bpjnt.ma")
+		self.tongue_bpjnt_path = os.path.abspath(__file__ + "/../../../bpjnt/tongue_bpjnt.ma")
 		# 导入关节
 		cmds.file(self.tongue_bpjnt_path , i = True , rnn = True)
 	
