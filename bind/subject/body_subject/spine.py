@@ -1,8 +1,12 @@
-from bind.module.chain import chainIK
+from ...module.chain import chainIKFK
+from ...module.base import base
+
+from importlib import reload
+reload(limbIKFK)
 
 
 
-class Spine(chainIK.ChainIK) :
+class Spine(chainIKFK.ChainIKFK) :
 	
 	
 	

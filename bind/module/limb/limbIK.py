@@ -56,7 +56,7 @@ class LimbIK(chainIK.ChainIK) :
 		self.endIK_jnt = cmds.createNode('joint' , name = self.endIK_jnt , parent = self.jnt_list[-1])
 		con = cmds.parentConstraint(self.jnt_list[-1] , self.endIK_jnt , mo = False)
 		cmds.delete(con)
-		cmds.setAttr(self.endIK_jnt + '.translateX' , 5 * side_value)
+		cmds.setAttr(self.endIK_jnt + '.translateX' , 5 * self.side_value)
 	
 	
 	

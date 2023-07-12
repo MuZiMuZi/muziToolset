@@ -1,7 +1,7 @@
 import maya.cmds as cmds
 
-from core import controlUtils , jointUtils
-from bind.module.chain import chain , chainFK , chainIK
+from ....core import controlUtils , jointUtils
+from ...module.chain import chain , chainFK , chainIK
 
 
 

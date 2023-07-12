@@ -55,6 +55,8 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		# 初始化ik关节链条和fk关节链条的命名规范
 		self.ik_limb.create_namespace()
 		self.fk_limb.create_namespace()
+		print(self.ik_limb.jnt_list)
+		print(self.fk_limb.jnt_list)
 	
 	
 	
