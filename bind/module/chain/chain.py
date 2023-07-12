@@ -21,7 +21,8 @@ class Chain(base.Base) :
 		self.interval = None
 		self.direction = None
 		self.curve = None
-	
+		
+
 	
 	
 	def create_bpjnt(self) :

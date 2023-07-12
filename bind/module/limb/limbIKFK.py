@@ -3,11 +3,12 @@ from importlib import reload
 import maya.cmds as cmds
 
 from ....core import controlUtils , jointUtils , pipelineUtils
-from ..chain import chainIKFK , limbIK
-from ..limb import limbFK
+from ..chain import chainIKFK
+from ..limb import limbFK , limbIK
 
 
 
+reload(limbIK)
 
 
 

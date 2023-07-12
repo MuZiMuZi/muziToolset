@@ -22,7 +22,7 @@ class LimbIK(chainIK.ChainIK) :
 		"""
 		super().__init__(side , name , joint_number , direction , length , is_stretch , joint_parent , control_parent)
 		self._rtype = 'LimbIK'
-		
+		self.joint_number = joint_number
 		# 判断给定的limbtype 是手臂还是腿部
 		if limbtype == 'arm' :
 			self.z_value = 1
@@ -44,6 +44,19 @@ class LimbIK(chainIK.ChainIK) :
 		self.local_ctrl = ('ctrl_{}_{}{}Local_001'.format(self._side , self._name , self._rtype))
 		self.startIK_pos_loc = self.jnt_list[0].replace('jnt' , 'loc')
 		self.endIK_pos_loc = self.jnt_list[-1].replace('jnt' , 'loc')
+		
+		# 添加一个末端的iK关节用来制作singleIKhandle，
+		self.endIK_handle = ('handle_{}_{}{}End_001'.format(self._side , self._name , self._rtype))
+		self.endIK_jnt = 'jnt_{}_{}{}_{:03d}'.format(self._side , self._name , self._rtype , self.joint_number + 1)
+	
+	
+	
+	def create_joint(self) :
+		super().create_joint()
+		self.endIK_jnt = cmds.createNode('joint' , name = self.endIK_jnt , parent = self.jnt_list[-1])
+		con = cmds.parentConstraint(self.jnt_list[-1] , self.endIK_jnt , mo = False)
+		cmds.delete(con)
+		cmds.setAttr(self.endIK_jnt + '.translateX' , 5 * side_value)
 	
 	
 	
@@ -55,10 +68,16 @@ class LimbIK(chainIK.ChainIK) :
 		# 创建ikSolverHandle
 		
 		self.ik_handle = cmds.ikHandle(name = self.ik_handle , startJoint = self.jnt_list[0] ,
-		                               endEffector = self.jnt_list[-1] ,
+		                               endEffector = self.jnt_list[2] ,
 		                               sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True)[0]
 		
+		# 创建末端的ikspineHandle
+		self.endIK_handle = cmds.ikHandle(name = self.endIK_handle , startJoint = self.jnt_list[2] ,
+		                                  endEffector = self.endIK_jnt ,
+		                                  sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True)[0]
+		
 		cmds.setAttr(self.ik_handle + '.v' , 0)
+		cmds.setAttr(self.endIK_handle + '.v' , 0)
 	
 	
 	
@@ -78,7 +97,7 @@ class LimbIK(chainIK.ChainIK) :
 		# 移动极向量控制器组的位置
 		cmds.setAttr(self.pv_ctrl.replace('ctrl' , 'zero') + '.translateZ' , -10 * self.z_value * self.side_value)
 		
-		cmds.parent(self.ik_handle , self.output_list[-1])
+		cmds.parent(self.ik_handle , self.endIK_handle , self.output_list[-1])
 		
 		## 创建ik极向量控制器的曲线指示器
 		# 创建pv控制器的loc来记录位置
