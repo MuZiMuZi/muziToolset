@@ -8,9 +8,6 @@ from bind.module.limb import limbFK
 
 
 
-reload(limbFK)
-reload(limbIK)
-reload(chainIKFK)
 
 
 

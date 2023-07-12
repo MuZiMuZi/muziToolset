@@ -2,13 +2,10 @@ from importlib import reload
 
 import maya.cmds as cmds
 
-from core import controlUtils , jointUtils , vectorUtils
+from ....core import controlUtils , jointUtils , vectorUtils
 from . import chain , chainFK , chainIK
 
 
-
-reload(chainFK)
-reload(chainIK)
 
 
 

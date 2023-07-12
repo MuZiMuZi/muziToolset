@@ -1,6 +1,6 @@
 import maya.cmds as cmds
 
-from core import vectorUtils
+from ....core import vectorUtils
 from . import chain
 
 

@@ -4,7 +4,7 @@ from bind.module.chain import chainFK
 
 
 
-reload(chainFK)
+
 
 
 

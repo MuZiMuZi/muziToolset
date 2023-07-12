@@ -19,34 +19,33 @@ limb目录 : 针对创建手臂或者是腿部的四肢关节的绑定
     limbIK.py : 继承至chainIK.ChainIK,创建手臂或者是腿部的四肢关节的IK绑定,IK绑定需要创建极向量控制器和ikHandle
     limbIKFK.py : 继承至chainIKFK.ChainIKFK,创建手臂或者是腿部的四肢关节的绑定系统,由三条关节链组成,ik关节链条,fk关节链条和ikfk关节链条组成
 
+subject目录 : 是针对各模块的绑定
+    body_subject目录 : 身体的模块绑定
+        finger.py : 调用chainFK.ChainFK,创建手指的绑定
+        hand.py : 调用finger.Finger,创建手掌的绑定
+        arm.py : 调用limbIKFK.LimbIKFK,创建手臂的绑定
 
-module目录 : 是针对各模块的绑定
-    body_module目录 : 身体的模块绑定
-        finger.py : 继承至chainFK.ChainFK,创建手指的绑定
-        hand.py : 继承至finger.Finger,创建手掌的绑定
-        arm.py : 继承至limbIKFK.LimbIKFK,创建手臂的绑定
+        foot.py : 调用chain.Chain,创建脚掌的绑定
+        leg.py : 调用limbIKFK.LimbIKFK,创建腿部的绑定
 
-        foot.py : 继承至chain.Chain,创建脚掌的绑定
-        leg.py : 继承至limbIKFK.LimbIKFK,创建腿部的绑定
+        spine.py : 调用chainIK.ChainIK,创建胸腔和脊椎的绑定
 
-        spine.py : 继承至chainIK.ChainIK,创建胸腔和脊椎的绑定
+        tail.py : 调用chainIKFK.ChainIKFK,创建尾部或者飘带的绑定
 
-        tail.py : 继承至chainIKFK.ChainIKFK,创建尾部或者飘带的绑定
+    face_subject目录 : 面部的模块绑定
+        brow.py : 继承base.Base,创建眉毛的绑定
+        ear.py : 调用chainFK.ChainFK,创建耳朵的绑定
 
-    face_module目录 : 面部的模块绑定
-        brow.py : 继承至base.Base,创建眉毛的绑定
-        ear.py : 继承至chainFK.ChainFK,创建耳朵的绑定
+        eyeLid.py : 调用base.Base,创建上下眼皮的绑定
+        eye.py : 调用chain.Chain,创建眼睛的绑定
 
-        eyeLid.py : 继承至base.Base,创建上下眼皮的绑定
-        eye.py : 继承至chain.Chain,创建眼睛的绑定
+        nose.py : 调用base.Base,创建鼻子的绑定
+        cheek.py : 调用base.Base,创建脸颊的绑定
 
-        nose.py : 继承至base.Base,创建鼻子的绑定
-        cheek.py : 继承至base.Base,创建脸颊的绑定
-
-        mouthLip.py : 继承至base.Base,创建上下嘴唇的绑定
-        mouth.py : 继承至base.Base,创建嘴巴的绑定
-        tongue.py : 继承至chainFK.ChainFK,创建舌头的绑定
-        jaw.py : 继承至chainFK.ChainFK,创建下巴的绑定
+        mouthLip.py : 调用base.Base,创建上下嘴唇的绑定
+        mouth.py : 调用base.Base,创建嘴巴的绑定
+        tongue.py : 调用chainFK.ChainFK,创建舌头的绑定
+        jaw.py : 调用chainFK.ChainFK,创建下巴的绑定
 
 
 
