@@ -15,7 +15,7 @@ reload(pipelineUtils)
 
 
 
-class MouthLip(bone.Bone) :
+class MouthLip(base.Base) :
 	skin_curve = ['crv_m_upperMouthLipSkin_001' , 'crv_m_lowerMouthLipSkin_001']
 	
 	

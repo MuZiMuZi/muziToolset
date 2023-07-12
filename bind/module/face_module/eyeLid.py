@@ -10,7 +10,7 @@ from ...base import bone
 
 
 
-class EyeLid(bone.Bone) :
+class EyeLid(base.Base) :
 	example_curve = ['crv_l_upperEyeLidSkin_001','crv_l_lowerEyeLidSkin_001']
 	
 	

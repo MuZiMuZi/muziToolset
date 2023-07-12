@@ -11,7 +11,7 @@ reload(pipelineUtils)
 
 
 
-class ChainEP(base.Base) :
+class ChainEP(chain.Chain) :
 	
 	
 	

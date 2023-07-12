@@ -16,7 +16,7 @@ reload(mouthLip)
 
 
 
-class Mouth(bone.Bone) :
+class Mouth(base.Base) :
 	
 	
 	
