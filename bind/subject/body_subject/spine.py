@@ -2,7 +2,7 @@ from ...module.chain import chainIKFK
 from ...module.base import base
 
 from importlib import reload
-reload(limbIKFK)
+reload(chainIKFK)
 
 
 

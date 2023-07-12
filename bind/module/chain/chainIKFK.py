@@ -7,8 +7,6 @@ from . import chain , chainFK , chainIK
 
 
 
-
-
 class ChainIKFK(chain.Chain) :
 	u'''
 	创建ikfk的关节链条的绑定系统
@@ -23,6 +21,7 @@ class ChainIKFK(chain.Chain) :
 		
 		# 初始化ik关节链条和fk关节链条
 		self.ik_chain = chainIK.ChainIK(side , name , joint_number , direction , length , is_stretch)
+		
 		self.fk_chain = chainFK.ChainFK(side , name , joint_number , direction , length)
 		
 		self._rtype = 'ChainIKFK'
@@ -104,10 +103,6 @@ class ChainIKFK(chain.Chain) :
 		# 添加IKFK切换的属性
 		cmds.addAttr(self.ctrl , sn = 'Switch' , ln = 'ikfkSwitch' , at = 'double' , dv = 1 , min = 0 , max = 1 ,
 		             k = 1)
-		
-		# 整理层级结构
-		cmds.parent(self.ik_chain.zero_list[0] , self.output_list[0])
-		cmds.parent(self.fk_chain.zero_list[0] , self.output_list[0])
 	
 	
 	

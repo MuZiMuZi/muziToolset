@@ -1,4 +1,4 @@
-from bind.module.chain import chainIKFK
+from ...module.chain import chainIKFK
 
 
 
@@ -14,19 +14,19 @@ class Tail(chainIKFK.ChainIKFK) :
 
 
 if __name__ == '__main__' :
-	def x() :
+	def build_setup() :
 		finger_l = tail.Tail(side = 'l' , name = 'zz' , joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
 		                     joint_parent = None , control_parent = None)
 		finger_l.build_setup()
 	
 	
 	
-	def y() :
+	def build_rig() :
 		finger_l = tail.Tail(side = 'l' , name = 'zz' , joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
 		                     joint_parent = None , control_parent = None)
 		finger_l.build_rig()
 	
 	
 	
-	x()
-	y()
+	build_setup()
+	build_rig()

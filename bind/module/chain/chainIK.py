@@ -25,7 +25,7 @@ class ChainIK(chain.Chain) :
 		self.direction = list(vectorUtils.Vector(direction).mult_interval(self.interval))
 		self.is_stretch = is_stretch
 		
-		self.set_shape('circle')
+		self.set_shape('cube')
 		self.radius = 2
 		# 根据给定的边，名称和joint_number生成列表来存储创建的名称
 		self.cluster_list = list()
