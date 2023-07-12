@@ -141,19 +141,19 @@ class ChainIKFK(chain.Chain) :
 
 
 if __name__ == '__main__' :
-	def x() :
-		custom = chainIKFK.ChainIKFK(side = 'l' , name = 'zz' , joint_number = 5 , direction = [1 , 0 , 0] ,
+	def build_setup() :
+		chain_ikfk = chainIKFK.ChainIKFK(side = 'l' , name = 'zz' , joint_number = 5 , direction = [1 , 0 , 0] ,
 		                             joint_parent = None , control_parent = None)
-		custom.build_setup()
+		chain_ikfk.build_setup()
 	
 	
 	
 	def y() :
-		custom = chainIKFK.ChainIKFK(side = 'l' , name = 'zz' , joint_number = 5 , direction = [1 , 0 , 0] ,
+		chain_ikfk = chainIKFK.ChainIKFK(side = 'l' , name = 'zz' , joint_number = 5 , direction = [1 , 0 , 0] ,
 		                             joint_parent = None , control_parent = None)
-		custom.build_rig()
+		chain_ikfk.build_rig()
 
 
 
-# x()
-# y()
+# build_setup()
+# build_rig()
