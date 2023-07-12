@@ -12,13 +12,17 @@ from ...core import controlUtils , hierarchyUtils , jointUtils , pipelineUtils
 
 class Bone(object) :
 	"""
-	创建定位的bp关节，然后生成对应的绑定
+	构架思路：创建定位的bp关节，然后生成对应的绑定
 	创建绑定的步骤:
-	1. build_setup: 	创建定位的bp关节
-	2. build_rig: 		根据定位的bp关节创建关节
+	build_setup(): 创建bp的定位关节,生成准备
+		1.create_namespace(): 创建名称规范整理
+		2.create_bpjnt() :根据名称规范，创建定位的bp关节
+	build_rig(): 根据定位的bp关节创建绑定系统
+		1.create_namespace(): 创建名称规范整理
+		2.create_joint() :根据名称规范和定位的bp关节创建蒙皮关节
+		3.create_ctrl() :根据名称规范和蒙皮关节创建控制器
+		4.add_constraint() :控制器和蒙皮关节创建约束或者连接控制
 
-	# Attribute:
-	namer. a string generator for temporary naming
 	"""
 	
 	
@@ -127,7 +131,7 @@ class Bone(object) :
 	
 	def create_bpjnt(self) :
 		"""
-		创建定位的bp关节
+		根据名称规范，创建定位的bp关节
 		"""
 		for bpjnt in self.bpjnt_list :
 			self.bpjnt = cmds.createNode('joint' , name = bpjnt)

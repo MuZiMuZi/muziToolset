@@ -1,4 +1,4 @@
-
+目录架构介绍：
 
 bpjnt目录 : 是用来定位的关节的ma文件,通过导入模板文件进行绑定
 
@@ -47,7 +47,6 @@ module目录 : 是针对各模块的绑定
         mouth.py : 继承至base.Base,创建嘴巴的绑定
         tongue.py : 继承至chainFK.ChainFK,创建舌头的绑定
         jaw.py : 继承至chainFK.ChainFK,创建下巴的绑定
-
 
 
 
