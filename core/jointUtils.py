@@ -240,6 +240,7 @@ class Joint(object) :
 		'''
 		# 判断关节是否具有子关节
 		for jnt in jnt_list :
+			cmds.DeleteConstraints(jnt)
 			cmds.makeIdentity(jnt , apply = True , translate = 1 , rotate = 1 , scale = 1 , normal = 0 ,
 			                  preserveNormals = 1)
 			jnt_sub = cmds.listRelatives(jnt , children = True , allDescendents = True , type = 'joint')
