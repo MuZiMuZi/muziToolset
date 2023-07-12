@@ -1,7 +1,7 @@
 import maya.cmds as cmds
 
-from core import controlUtils , hierarchyUtils
-from bind.module.chain import chainIK
+from ....core import controlUtils , hierarchyUtils
+from ..chain import chainIK
 
 
 
