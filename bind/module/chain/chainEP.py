@@ -67,7 +67,8 @@ class ChainEP(chain.Chain) :
 			cmds.matchTransform(jnt , bpjnt)
 			# 指定关节的父层级为上一轮创建出来的关节
 			self.joint_parent = jnt
-		cmds.delete(self.bpjnt_list[0])
+		# 隐藏bp的定位关节
+		cmds.setAttr(self.bpjnt_list[0] + '.visibility' , 0)
 	
 	
 	

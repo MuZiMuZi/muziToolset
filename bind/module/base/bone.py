@@ -152,11 +152,20 @@ class Bone(object) :
 				plug = cmds.listConnections(bpjnt + attr , s = True , d = False , p = True)
 				if plug :
 					cmds.disconnectAttr(plug[0] , bpjnt + attr)
+					
 		for bpjnt , jnt in zip(self.bpjnt_list , self.jnt_list) :
+			#判断场景里是否已经存在对应的关节，重建的情况
+			if cmds.objExists(jnt):
+				#删除过去的关节后，并重新创建关节
+				cmds.delete(jnt)
+			else:
+				pass
+			
+			#场景里没有存在对应的关节，第一次创建绑定的情况
 			jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
 			cmds.matchTransform(jnt , bpjnt)
-			cmds.delete(bpjnt)
-	
+		# 隐藏bp的定位关节
+		cmds.setAttr(self.bpjnt_list[0] + '.visibility' , 0)
 	
 	
 	def create_ctrl(self) :
@@ -165,8 +174,14 @@ class Bone(object) :
 		"""
 		self.set_shape(self.shape)
 		# 创建整体的控制器层级组
-		self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
-		
+		# 判断场景里是否已经存在对应的控制器，重建的情况
+		if cmds.objExists(self.ctrl_grp) :
+			# 删除过去的控制器层级组后，并重新创建控制器
+			cmds.delete(self.ctrl_grp)
+			self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
+		else :
+			self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
+			
 		for ctrl , jnt in zip(self.ctrl_list , self.jnt_list) :
 			self.ctrl = controlUtils.Control.create_ctrl(ctrl , shape = self.shape ,
 			                                             radius = self.radius ,
