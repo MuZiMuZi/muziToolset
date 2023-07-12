@@ -7,7 +7,7 @@ import os
 import maya.cmds as cmds
 
 from core import controlUtils , jointUtils , pipelineUtils
-from ...base import base
+from bind.module.base import base
 
 
 

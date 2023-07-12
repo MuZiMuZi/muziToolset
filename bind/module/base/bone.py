@@ -3,7 +3,7 @@ from importlib import reload
 
 import maya.cmds as cmds
 
-from ...core import controlUtils , hierarchyUtils , jointUtils , pipelineUtils
+from core import controlUtils , hierarchyUtils , jointUtils , pipelineUtils
 
 
 

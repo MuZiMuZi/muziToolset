@@ -5,8 +5,7 @@
 
 import maya.cmds as cmds
 
-from ....core import controlUtils , jointUtils , pipelineUtils
-from ...base import bone
+from core import controlUtils , jointUtils , pipelineUtils
 
 
 

@@ -1,4 +1,4 @@
-from bind.chain import chainIKFK
+from bind.module.chain import chainIKFK
 
 
 

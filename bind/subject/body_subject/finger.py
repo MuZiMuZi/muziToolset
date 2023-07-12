@@ -1,6 +1,6 @@
 import maya.cmds as cmds
 
-from bind.chain import chainFK
+from bind.module.chain import chainFK
 
 
 

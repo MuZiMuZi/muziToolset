@@ -6,7 +6,7 @@ import os
 
 import maya.cmds as cmds
 
-from ...base import base
+from bind.module.base import base
 
 
 

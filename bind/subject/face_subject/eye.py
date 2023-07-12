@@ -7,9 +7,9 @@ from importlib import reload
 
 import maya.cmds as cmds
 
-from ....core import controlUtils , jointUtils , nameUtils , pipelineUtils
+from core import controlUtils , jointUtils , nameUtils , pipelineUtils
 from . import eyeLid
-from ...chain import chain
+from bind.module.chain import chain
 
 
 

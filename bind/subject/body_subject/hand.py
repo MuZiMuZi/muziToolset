@@ -1,6 +1,6 @@
 import maya.cmds as cmds
 
-from bind.module.body_module import finger
+from bind.subject.body_subject import finger
 
 
 

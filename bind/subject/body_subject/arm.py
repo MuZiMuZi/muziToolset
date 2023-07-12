@@ -1,66 +1,58 @@
-from importlib import reload
-
 import maya.cmds as cmds
 
-from bind.module.body_module import foot
-from bind.limb import limbIKFK
+from bind.subject.body_subject import hand
+from bind.module.limb import limbIKFK
 
 
 
-reload(foot)
-
-
-
-class Leg(limbIKFK.LimbIKFK) :
+class Arm(limbIKFK.LimbIKFK) :
 	
 	
 	
-	def __init__(self , side , name , joint_number = 3 , direction = [0 , -1 , 0] , is_stretch = 1 , length = 15 ,
-	             limbtype = 'leg' ,
+	def __init__(self , side , name , joint_number = 3 , direction = [-1 , 0 , 0] , is_stretch = 1 , length = 15 ,
+	             limbtype = 'arm' ,
 	             joint_parent = None , control_parent = None) :
 		super().__init__(side , name , joint_number , direction , is_stretch , length , limbtype , joint_parent ,
 		                 control_parent)
-		self._rtype = 'Leg'
-		self.axis = 'Z+'
-		# 初始化脚掌的模块
-		self.foot_limb = foot.Foot(side , name , joint_number = 3 , length = 6 , joint_parent = None ,
+		self._rtype = 'Arm'
+		
+		# 初始化手指的模块
+		self.hand_limb = hand.Hand(side , name , joint_number , direction , length = 3 ,
+		                           joint_parent = None ,
 		                           control_parent = None)
 	
 	
 	
 	def create_namespace(self) :
 		super().create_namespace()
-		self.foot_limb.create_namespace()
-		self.ik_handle = ('handle_{}_{}{}_001'.format(self._side , self._name , 'LimbIK'))
+		self.hand_limb.create_namespace()
 	
 	
 	
 	def create_bpjnt(self) :
 		super().create_bpjnt()
-		self.foot_limb.create_bpjnt()
+		self.hand_limb.create_bpjnt()
 	
 	
 	
 	def create_joint(self) :
 		super().create_joint()
-		self.foot_limb.create_joint()
+		self.hand_limb.create_joint()
 	
 	
 	
 	def create_ctrl(self) :
 		super().create_ctrl()
-		self.foot_limb.create_ctrl()
-		# 将ikhandle放给脚腕的控制器
-		cmds.parent(self.ik_handle , self.foot_limb.foot_ik.output_list[0])
+		self.hand_limb.create_ctrl()
 	
 	
 	
 	def add_constraint(self) :
 		super().add_constraint()
-		self.foot_limb.add_constraint()
+		self.hand_limb.add_constraint()
 		
-		# 脚部关节对脚掌的控制器组做约束
-		cmds.pointConstraint(self.jnt_list[-1] , self.foot_limb.ctrl_grp , mo = True)
+		# 手部关节对手指的控制器组做约束
+		cmds.pointConstraint(self.jnt_list[-1] , self.hand_limb.finger_grp , mo = True)
 
 
 

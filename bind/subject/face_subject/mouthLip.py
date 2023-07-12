@@ -6,8 +6,7 @@ from importlib import reload
 
 import maya.cmds as cmds
 
-from ....core import jointUtils , pipelineUtils
-from ...base import bone
+from core import jointUtils , pipelineUtils
 
 
 

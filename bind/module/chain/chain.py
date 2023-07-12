@@ -1,6 +1,6 @@
 import maya.cmds as cmds
 
-from ...core import jointUtils , pipelineUtils
+from core import jointUtils , pipelineUtils
 from ..base import base
 
 
