@@ -3,3 +3,28 @@ INFO:root:2
 WARNING:root:3
 ERROR:root:4
 CRITICAL:root:5
+2023-07-13 10:30:49,143 -root - DEBUG - 1
+2023-07-13 10:30:49,143 -root - INFO - 2
+2023-07-13 10:30:49,143 -root - WARNING - 3
+2023-07-13 10:30:49,143 -root - ERROR - 4
+2023-07-13 10:30:49,143 -root - CRITICAL - 5
+13 - Jul - 23 10:40:02 -root - DEBUG - 1
+13 - Jul - 23 10:40:02 -root - INFO - 2
+13 - Jul - 23 10:40:02 -root - WARNING - 3
+13 - Jul - 23 10:40:02 -root - ERROR - 4
+13 - Jul - 23 10:40:02 -root - CRITICAL - 5
+13 - Jul - 23 10:40:02 -root - ERROR - division by zero
+Traceback (most recent call last):
+  File "C:\Users\lixin\Documents\maya\scripts\muziToolset\log\encoder.py", line 24, in <module>
+    1/0
+ZeroDivisionError: division by zero
+13 - Jul - 23 10:47:11 -my_custom_logger - DEBUG - 1
+13 - Jul - 23 10:47:11 -my_custom_logger - INFO - 2
+13 - Jul - 23 10:47:11 -my_custom_logger - WARNING - 3
+13 - Jul - 23 10:47:11 -my_custom_logger - ERROR - 4
+13 - Jul - 23 10:47:11 -my_custom_logger - CRITICAL - 5
+13 - Jul - 23 10:47:11 -my_custom_logger - ERROR - division by zero
+Traceback (most recent call last):
+  File "C:\Users\lixin\Documents\maya\scripts\muziToolset\log\encoder.py", line 26, in <module>
+    1/0
+ZeroDivisionError: division by zero
