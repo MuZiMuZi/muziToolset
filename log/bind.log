@@ -1,144 +1,24 @@
-2023-07-13 17:05:31,732 -Arm_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,732 -Arm_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,732 -ChainIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,732 -ChainIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,733 -ChainFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,733 -ChainFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,733 -LimbIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,733 -LimbIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,733 -LimbFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,733 -LimbFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,734 -Hand_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,734 -Hand_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,734 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,734 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,734 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,734 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,735 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,735 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,735 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,735 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,735 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,735 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,739 -LimbIK_logger - DEBUG - arm_BP joint creation completed for positioning
-2023-07-13 17:05:31,739 -LimbIK_logger - DEBUG - arm_BP joint creation completed for positioning
-2023-07-13 17:05:31,740 -LimbFK_logger - DEBUG - arm_BP joint creation completed for positioning
-2023-07-13 17:05:31,740 -LimbFK_logger - DEBUG - arm_BP joint creation completed for positioning
-2023-07-13 17:05:31,745 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:05:31,745 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:05:31,747 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:05:31,747 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:05:31,750 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:05:31,750 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:05:31,752 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:05:31,752 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:05:31,754 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:05:31,754 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:05:31,754 -Arm_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,754 -Arm_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,755 -ChainIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,755 -ChainIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,755 -ChainFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,755 -ChainFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,755 -LimbIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,755 -LimbIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,756 -LimbFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,756 -LimbFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,756 -Hand_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,756 -Hand_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,756 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,756 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,756 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,756 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,757 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,757 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,757 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,757 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,757 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,757 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:05:31,759 -LimbIK_logger - DEBUG - arm_Skin joint creation completed
-2023-07-13 17:05:31,759 -LimbIK_logger - DEBUG - arm_Skin joint creation completed
-2023-07-13 17:05:31,763 -LimbFK_logger - DEBUG - arm_Skin joint creation completed
-2023-07-13 17:05:31,763 -LimbFK_logger - DEBUG - arm_Skin joint creation completed
-2023-07-13 17:05:31,767 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:05:31,767 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:05:31,769 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:05:31,769 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:05:31,771 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:05:31,771 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:05:31,773 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:05:31,773 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:05:31,775 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:05:31,775 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:07:06,012 -Arm_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,012 -Arm_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,012 -ChainIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,012 -ChainIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,012 -ChainFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,012 -ChainFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,013 -LimbIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,013 -LimbIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,013 -LimbFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,013 -LimbFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,013 -Hand_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,013 -Hand_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,013 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,013 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,014 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,014 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,014 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,014 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,014 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,014 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,014 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,014 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,017 -LimbIK_logger - DEBUG - arm_BP joint creation completed for positioning
-2023-07-13 17:07:06,017 -LimbIK_logger - DEBUG - arm_BP joint creation completed for positioning
-2023-07-13 17:07:06,019 -LimbFK_logger - DEBUG - arm_BP joint creation completed for positioning
-2023-07-13 17:07:06,019 -LimbFK_logger - DEBUG - arm_BP joint creation completed for positioning
-2023-07-13 17:07:06,024 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:07:06,024 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:07:06,026 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:07:06,026 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:07:06,028 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:07:06,028 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:07:06,029 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:07:06,029 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:07:06,032 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:07:06,032 -Finger_logger - DEBUG - Chain_BP joint creation completed for positioning
-2023-07-13 17:07:06,032 -Arm_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,032 -Arm_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,032 -ChainIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,032 -ChainIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,033 -ChainFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,033 -ChainFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,033 -LimbIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,033 -LimbIK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,033 -LimbFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,033 -LimbFK_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,034 -Hand_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,034 -Hand_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,034 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,034 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,034 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,034 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,034 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,034 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,035 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,035 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,035 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,035 -Finger_logger - INFO - C:\Users/lixin/Documents/maya/scripts\muziToolset\bind\module\base\bone.py
-2023-07-13 17:07:06,037 -LimbIK_logger - DEBUG - arm_l_Skin joint creation completed
-2023-07-13 17:07:06,037 -LimbIK_logger - DEBUG - arm_l_Skin joint creation completed
-2023-07-13 17:07:06,040 -LimbFK_logger - DEBUG - arm_l_Skin joint creation completed
-2023-07-13 17:07:06,040 -LimbFK_logger - DEBUG - arm_l_Skin joint creation completed
-2023-07-13 17:07:06,043 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:07:06,043 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:07:06,045 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:07:06,045 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:07:06,048 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:07:06,048 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:07:06,050 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:07:06,050 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:07:06,052 -Finger_logger - DEBUG - Chain_Skin joint creation completed
-2023-07-13 17:07:06,052 -Finger_logger - DEBUG - Chain_Skin joint creation completed
+2023-07-13 17:21:18,285 -Arm_logger - DEBUG - arm_l_BP joint creation completed for positioning
+2023-07-13 17:21:18,285 -Arm_logger - DEBUG - arm_l_BP joint creation completed for positioning
+2023-07-13 17:21:18,305 -Arm_logger - DEBUG - arm_l_Skin joint creation completed
+2023-07-13 17:21:18,305 -Arm_logger - DEBUG - arm_l_Skin joint creation completed
+2023-07-13 17:22:05,481 -Arm_logger - DEBUG - arm_l_BP joint creation completed for positioning
+2023-07-13 17:22:05,499 -Arm_logger - DEBUG - arm_l_Skin joint creation completed
+2023-07-13 17:22:22,186 -Arm_logger - DEBUG - arm_l_BP joint creation completed for positioning
+2023-07-13 17:22:22,205 -Arm_logger - DEBUG - arm_l_Skin joint creation completed
+2023-07-13 17:23:42,306 -Arm_logger - DEBUG - arm_l_BP joint creation completed for positioning
+2023-07-13 17:23:42,324 -Arm_logger - DEBUG - arm_l_Skin joint creation completed
+2023-07-13 17:23:42,538 -Arm_logger - DEBUG - arm_l_Controller creation completed
+2023-07-13 17:23:42,843 -Arm_logger - DEBUG - arm_l_Constraint creation completed
+2023-07-13 17:25:04,058 -Arm_logger - DEBUG - arm_l_BP joint creation completed for positioning
+2023-07-13 17:25:04,075 -Arm_logger - DEBUG - arm_l_Skin joint creation completed
+2023-07-13 17:25:04,306 -Arm_logger - DEBUG - arm_l_Controller creation completed
+2023-07-13 17:25:04,621 -Arm_logger - DEBUG - arm_l_Constraint creation completed
+2023-07-13 17:25:44,718 -Arm_logger - DEBUG - arm_l_BP joint creation completed for positioning
+2023-07-13 17:25:44,718 -Arm_logger - DEBUG - arm_l_BP joint creation completed for positioning
+2023-07-13 17:25:44,756 -Arm_logger - DEBUG - arm_l_Skin joint creation completed
+2023-07-13 17:25:44,756 -Arm_logger - DEBUG - arm_l_Skin joint creation completed
+2023-07-13 17:25:45,030 -Arm_logger - DEBUG - arm_l_Controller creation completed
+2023-07-13 17:25:45,030 -Arm_logger - DEBUG - arm_l_Controller creation completed
+2023-07-13 17:25:45,358 -Arm_logger - DEBUG - arm_l_Constraint creation completed
+2023-07-13 17:25:45,358 -Arm_logger - DEBUG - arm_l_Constraint creation completed

@@ -42,7 +42,7 @@ class Chain(base.Base) :
 			pipelineUtils.Pipeline.move(obj = self.bpjnt , pos = self.direction)
 		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.bpjnt_list)
-		self.logger.debug(u'{}_BP joint creation completed for positioning'.format(self.name , self.side))
+
 	
 	
 	
@@ -74,4 +74,4 @@ class Chain(base.Base) :
 		
 		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.jnt_list)
-		self.logger.debug(u'{}_{}_Skin joint creation completed'.format(self.name , self.side))
+

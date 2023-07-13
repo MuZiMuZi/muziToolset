@@ -81,7 +81,8 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		for bpjnt , ik_bpjnt , fk_bpjnt in zip(self.bpjnt_list , self.ik_limb.bpjnt_list , self.fk_limb.bpjnt_list) :
 			cmds.parentConstraint(bpjnt , ik_bpjnt , mo = False)
 			cmds.parentConstraint(bpjnt , fk_bpjnt , mo = False)
-	
+		
+		self.logger.debug(u'{}_{}_BP joint creation completed for positioning'.format(self.name , self.side))
 	
 	
 	def create_joint(self) :
@@ -106,7 +107,8 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		cmds.setAttr(self.fk_limb.jnt_list[0] + '.v' , 0)
 		
 		cmds.parent(self.jnt_list[0] , self.joint_parent)
-	
+		
+		self.logger.debug(u'{}_{}_Skin joint creation completed'.format(self.name , self.side))
 	
 	
 	def create_ctrl(self) :
@@ -131,8 +133,8 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		# 整理层级结构
 		cmds.parent(self.ik_limb.ctrl_grp , self.output_list[0])
 		cmds.parent(self.fk_limb.ctrl_grp , self.output_list[0])
-	
-	
+		
+		self.logger.debug(u'{}_{}_Controller creation completed'.format(self.name , self.side))
 	
 	def add_constraint(self) :
 		'''
@@ -168,7 +170,8 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 			                       cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 1)
 			cmds.setDrivenKeyframe(self.fk_limb.ctrl_grp + '.v' ,
 			                       cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 0)
-
+		
+		self.logger.debug(u'{}_{}_Constraint creation completed'.format(self.name , self.side))
 
 
 if __name__ == '__main__' :
