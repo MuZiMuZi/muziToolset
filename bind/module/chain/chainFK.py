@@ -2,7 +2,8 @@ import maya.cmds as cmds
 
 from ....core import controlUtils, vectorUtils
 from . import chain
-
+from importlib import reload
+reload(chain)
 
 
 class ChainFK(chain.Chain) :
