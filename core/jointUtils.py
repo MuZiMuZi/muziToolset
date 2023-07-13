@@ -19,7 +19,7 @@ create_mateHuman_chain：通过放置的模板关节创建mateHuman的IK,FK 的�
 import maya.cmds as cmds
 from . import nameUtils
 
-from . import controlUtils
+from . import controlUtils,pipelineUtils
 
 
 
@@ -238,9 +238,11 @@ class Joint(object) :
 		给定关节的列表自动进行关节定向,正常关节定向为X轴指向下一关节，末端关节定向为世界方向
 		jnt_list（list）:需要进行关节定向的列表
 		'''
+		#删除关节上的约束信息
+		cmds.select(jnt_list)
+		pipelineUtils.Pipeline.delete_constraints()
 		# 判断关节是否具有子关节
 		for jnt in jnt_list :
-			cmds.DeleteConstraints(jnt)
 			cmds.makeIdentity(jnt , apply = True , translate = 1 , rotate = 1 , scale = 1 , normal = 0 ,
 			                  preserveNormals = 1)
 			jnt_sub = cmds.listRelatives(jnt , children = True , allDescendents = True , type = 'joint')

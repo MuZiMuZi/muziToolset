@@ -11,19 +11,24 @@ reload(spine)
 reload(tail)
 
 
+
 def build_setup() :
-    finger_l = tail.Tail(side = 'l' , name = 'zz' , joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
-                         joint_parent = None , control_parent = None)
-    finger_l.build_setup()
+    arm_l = arm.Arm(side = 'l' , name = 'zz' , joint_number = 3 , direction = [1 , 0 , 0] , length = 10 ,
+                    is_stretch = 1 , joint_parent = None ,
+                    control_parent = None)
+    arm_l.build_setup()
 
 
 
 def build_rig() :
-    finger_l = tail.Tail(side = 'l' , name = 'zz' , joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
-                         joint_parent = None , control_parent = None)
-    finger_l.build_rig()
+    arm_l = arm.Arm(side = 'l' , name = 'zz' , joint_number = 3 , direction = [1 , 0 , 0] , length = 10 ,
+                    is_stretch = 1 , joint_parent = None ,
+                    control_parent = None)
+    arm_l.build_rig()
 
 
 
-# build_setup()
+#
+#
+build_setup()
 build_rig()
