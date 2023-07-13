@@ -57,12 +57,13 @@ class Chain(base.Base) :
 				plug = cmds.listConnections(bpjnt + attr , s = True , d = False , p = True)
 				if plug :
 					cmds.disconnectAttr(plug[0] , bpjnt + attr)
-		
+		# 判断场景里是否已经存在对应的关节，重建的情况
+		if cmds.objExists(self.jnt_list[0]) :
+			# 删除过去的关节后，并重新创建关节
+			cmds.delete(self.jnt_list[0])
+		else :
+			pass
 		for bpjnt , jnt in zip(self.bpjnt_list , self.jnt_list) :
-			# 判断场景里是否已经存在对应的关节，重建的情况
-			if cmds.objExists(jnt) :
-				# 删除过去的关节后，并重新创建关节
-				cmds.delete(jnt)
 			# 场景里没有存在对应的关节，第一次创建绑定的情况
 			self.jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
 			cmds.matchTransform(jnt , bpjnt)

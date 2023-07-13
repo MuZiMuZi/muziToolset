@@ -6,10 +6,11 @@ from ....core import controlUtils , jointUtils , pipelineUtils
 from ..chain import chainIKFK
 from ..limb import limbFK , limbIK
 
+
+
 reload(limbFK)
 reload(limbIK)
 reload(chainIKFK)
-
 
 
 
@@ -56,7 +57,8 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		# 初始化ik关节链条和fk关节链条的命名规范
 		self.ik_limb.create_namespace()
 		self.fk_limb.create_namespace()
-
+	
+	
 	
 	def create_bpjnt(self) :
 		"""
@@ -81,8 +83,9 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		for bpjnt , ik_bpjnt , fk_bpjnt in zip(self.bpjnt_list , self.ik_limb.bpjnt_list , self.fk_limb.bpjnt_list) :
 			cmds.parentConstraint(bpjnt , ik_bpjnt , mo = False)
 			cmds.parentConstraint(bpjnt , fk_bpjnt , mo = False)
-		
-		self.logger.debug(u'{}_{}_BP joint creation completed for positioning'.format(self.name , self.side))
+		# 创建logging用来记录日志
+		self.logger.debug(u'{}_{}  :  BP joint creation completed for positioning'.format(self.name , self.side))
+	
 	
 	
 	def create_joint(self) :
@@ -107,8 +110,9 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		cmds.setAttr(self.fk_limb.jnt_list[0] + '.v' , 0)
 		
 		cmds.parent(self.jnt_list[0] , self.joint_parent)
-		
-		self.logger.debug(u'{}_{}_Skin joint creation completed'.format(self.name , self.side))
+		# 创建logging用来记录日志
+		self.logger.debug(u'{}_{}  :  Skin joint creation completed'.format(self.name , self.side))
+	
 	
 	
 	def create_ctrl(self) :
@@ -133,8 +137,10 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		# 整理层级结构
 		cmds.parent(self.ik_limb.ctrl_grp , self.output_list[0])
 		cmds.parent(self.fk_limb.ctrl_grp , self.output_list[0])
-		
-		self.logger.debug(u'{}_{}_Controller creation completed'.format(self.name , self.side))
+		# 创建logging用来记录日志
+		self.logger.debug(u'{}_{}  :  Controller creation completed'.format(self.name , self.side))
+	
+	
 	
 	def add_constraint(self) :
 		'''
@@ -170,8 +176,28 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 			                       cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 1)
 			cmds.setDrivenKeyframe(self.fk_limb.ctrl_grp + '.v' ,
 			                       cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 0)
-		
-		self.logger.debug(u'{}_{}_Constraint creation completed'.format(self.name , self.side))
+		# 创建logging用来记录日志
+		self.logger.debug(u'{}_{}  :  Constraint creation completed'.format(self.name , self.side))
+	
+	
+	
+	def build_setup(self) :
+		super().build_setup()
+		# 创建logging用来记录日志
+		self.logger.debug('done')
+		self.logger.info(
+			'{}_{}  :  Create positioning joints for BP and prepare for generation'.format(self.name , self.side))
+		self.logger.info('\n')
+	
+	
+	
+	def build_rig(self) :
+		super().build_rig()
+		# 创建logging用来记录日志
+		self.logger.debug('done')
+		self.logger.info(u'{}_{}  :  Create binding system'.format(self.name , self.side))
+		self.logger.info('\n')
+
 
 
 if __name__ == '__main__' :
