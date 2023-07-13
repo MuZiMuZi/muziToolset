@@ -37,6 +37,7 @@ class ChainFK(chain.Chain) :
 			self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
 		else :
 			self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
+			
 		self.set_shape(self.shape)
 
 		parent = self.ctrl_grp
