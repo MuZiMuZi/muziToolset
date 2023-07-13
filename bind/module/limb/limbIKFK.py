@@ -6,8 +6,9 @@ from ....core import controlUtils , jointUtils , pipelineUtils
 from ..chain import chainIKFK
 from ..limb import limbFK , limbIK
 
-
-
+reload(limbFK)
+reload(limbIK)
+reload(chainIKFK)
 
 
 

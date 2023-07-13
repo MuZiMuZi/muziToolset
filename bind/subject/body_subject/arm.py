@@ -30,7 +30,6 @@ class Arm(limbIKFK.LimbIKFK) :
 	
 	
 	
-	
 	def create_namespace(self) :
 		super().create_namespace()
 		self.hand_limb.create_namespace()
@@ -39,6 +38,7 @@ class Arm(limbIKFK.LimbIKFK) :
 	
 	def create_bpjnt(self) :
 		super().create_bpjnt()
+		
 		self.hand_limb.create_bpjnt()
 	
 	

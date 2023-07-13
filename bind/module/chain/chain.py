@@ -3,7 +3,12 @@ import maya.cmds as cmds
 from ....core import jointUtils , pipelineUtils
 from ..base import base
 from importlib import reload
+
+
+
 reload(jointUtils)
+reload(base)
+
 
 
 class Chain(base.Base) :
@@ -22,8 +27,7 @@ class Chain(base.Base) :
 		self.interval = None
 		self.direction = None
 		self.curve = None
-		
-
+	
 	
 	
 	def create_bpjnt(self) :
@@ -38,6 +42,7 @@ class Chain(base.Base) :
 			pipelineUtils.Pipeline.move(obj = self.bpjnt , pos = self.direction)
 		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.bpjnt_list)
+		self.logger.debug(u'{}_BP joint creation completed for positioning'.format(self.name , self.side))
 	
 	
 	
@@ -63,9 +68,10 @@ class Chain(base.Base) :
 			cmds.matchTransform(jnt , bpjnt)
 			# 指定关节的父层级为上一轮创建出来的关节
 			self.joint_parent = self.jnt
-			
+		
 		# 隐藏bp的定位关节
 		cmds.setAttr(self.bpjnt_list[0] + '.visibility' , 0)
 		
 		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.jnt_list)
+		self.logger.debug(u'{}_{}_Skin joint creation completed'.format(self.name , self.side))

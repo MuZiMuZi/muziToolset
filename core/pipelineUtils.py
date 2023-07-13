@@ -45,7 +45,7 @@ from maya import mel
 from pymel.util import path
 from shiboken2 import wrapInstance
 
-from . import controlUtils , hierarchyUtils  , qtUtils
+from . import controlUtils , hierarchyUtils , qtUtils
 
 
 
@@ -1387,30 +1387,35 @@ class Pipeline(object) :
 		cmds.connectAttr(mult_node + '.output' , add_node + '.input2')
 		
 		cmds.connectAttr(add_node + '.output' , con + '.{}W1'.format(zero))
-
-
+	
+	
+	
 	@staticmethod
-	def create_logging(logger_name,formatter = '%(asctime)s -%(name)s - %(levelname)s - %(message)s' ):
+	def create_logging(logger_name ,file_name, formatter = '%(asctime)s -%(name)s - %(levelname)s - %(message)s') :
 		"""
 		创建logging日志，用来记录各个模块的日志报错信息，方便于项目排查
 		logger_name(str):用来自定义logger模块的名称
 		formatter(str):设置保存日志的信息,例如format = '%(asctime)s -%(name)s - %(levelname)s - %(message)s'
 		"""
 		import logging
-		#根据自定义logger模块的名称来创建logger
+		import os
+		
+		
+		
+		# 根据自定义logger模块的名称来创建logger
 		logger = logging.getLogger(''.format(logger_name))
 		
-		#判断是否已经生成过handler，如果已经生成过的话则进行移除
-		for handler in logger.handlers:
+		# 判断是否已经生成过handler，如果已经生成过的话则进行移除
+		for handler in logger.handlers :
 			logger.removeHandler(handler)
-			
-		#设置保存日志的信息
+		
+		# 设置保存日志的信息
 		file_formatter = logging.Formatter(formatter)
 		
-		#保存日志的名称(可以采用绝对路径，如果只给名字的话，日志生成的文件会在当前文件夹下)
-		file_handle = logging.FileHandler(logger_name + '.log')
+		# 保存日志的名称(可以采用绝对路径，如果只给名字的话，日志生成的文件会在当前文件夹下)
+		file_handle = logging.FileHandler(file_name)
 		
-		#level：设置日志的提示级别信息，
+		# level：设置日志的提示级别信息，
 		file_handle.setLevel(logging.DEBUG)
 		
 		file_handle.setFormatter(file_formatter)

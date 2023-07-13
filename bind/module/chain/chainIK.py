@@ -3,7 +3,7 @@ import maya.cmds as cmds
 from ....core import vectorUtils
 from . import chain
 from importlib import reload
-
+reload(chain)
 
 class ChainIK(chain.Chain) :
 	

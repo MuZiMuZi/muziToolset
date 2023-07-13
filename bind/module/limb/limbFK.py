@@ -2,6 +2,7 @@ from importlib import reload
 
 from ..chain import chainFK
 
+reload(chainFK)
 
 
 

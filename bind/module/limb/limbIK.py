@@ -4,7 +4,7 @@ from ....core import controlUtils , hierarchyUtils
 from ..chain import chainIK
 from importlib import reload
 
-
+reload(chainIK)
 
 class LimbIK(chainIK.ChainIK) :
 	u"""
