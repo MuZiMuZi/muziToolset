@@ -1408,7 +1408,7 @@ class Pipeline(object) :
 		# 判断是否已经生成过handler，如果已经生成过的话则进行移除
 		for handler in logger.handlers :
 			logger.removeHandler(handler)
-			
+
 		# 设置保存日志的信息
 		file_formatter = logging.Formatter(formatter)
 		
