@@ -30,9 +30,15 @@ class ChainFK(chain.Chain) :
 	
 	
 	def create_ctrl(self) :
+		# 判断场景里是否已经存在对应的控制器，重建的情况
+		if cmds.objExists(self.ctrl_grp) :
+			# 删除过去的控制器层级组后，并重新创建控制器
+			cmds.delete(self.ctrl_grp)
+			self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
+		else :
+			self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
 		self.set_shape(self.shape)
-		# 创建整体的控制器层级组
-		self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
+
 		parent = self.ctrl_grp
 		for ctrl , jnt in zip(self.ctrl_list , self.jnt_list) :
 			self.ctrl = controlUtils.Control.create_ctrl(ctrl , shape = self.shape ,

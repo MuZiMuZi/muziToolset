@@ -64,12 +64,7 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		"""
 		创建定位的bp关节
 		"""
-		for bpjnt in self.bpjnt_list :
-			self.bpjnt = cmds.createNode('joint' , name = bpjnt , parent = self.joint_parent)
-			# 指定关节的父层级为上一轮创建出来的关节
-			self.joint_parent = self.bpjnt
-			# 调整距离
-			pipelineUtils.Pipeline.move(obj = self.bpjnt , pos = self.direction)
+		super().create_bpjnt()
 		
 		# 创建ik关节链条和fk关节链条的定位关节
 		self.ik_limb.create_bpjnt()
@@ -95,7 +90,12 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		# 创建ik关节链条和fk关节链条的关节
 		self.ik_limb.create_joint()
 		self.fk_limb.create_joint()
-		
+		# 判断场景里是否已经存在对应的关节，重建的情况
+		if cmds.objExists(self.jnt_list[0]) :
+			# 删除过去的关节后，并重新创建关节
+			cmds.delete(self.jnt_list[0])
+		else :
+			pass
 		# 创建ikfk的关节
 		cmds.select(clear = True)
 		for joint_number , bpjnt in enumerate(self.bpjnt_list) :
@@ -119,11 +119,15 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		u'''
 		创建控制器绑定
 		'''
+		# 判断场景里是否已经存在对应的控制器，重建的情况
+		if cmds.objExists(self.ctrl_grp) :
+			# 删除过去的控制器层级组后，并重新创建控制器
+			cmds.delete(self.ctrl_grp)
+			self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
+		else :
+			self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
 		self.ik_limb.create_ctrl()
 		self.fk_limb.create_ctrl()
-		
-		# 创建整体的控制器层级组
-		self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
 		# 创建用于ikfk切换的控制器
 		self.ctrl = controlUtils.Control.create_ctrl(self.ctrl_list[0] , shape = 'pPlatonic' ,
 		                                             radius = self.radius ,
@@ -186,7 +190,7 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		# 创建logging用来记录日志
 		self.logger.debug('done')
 		self.logger.info(
-			'{}_{}  :  Create positioning joints for BP and prepare for generation'.format(self.name , self.side))
+				'{}_{}  :  Create positioning joints for BP and prepare for generation'.format(self.name , self.side))
 		self.logger.info('\n')
 	
 	

@@ -66,7 +66,12 @@ class ChainIKFK(chain.Chain) :
 		# 创建ik关节链条和fk关节链条的关节
 		self.ik_chain.create_joint()
 		self.fk_chain.create_joint()
-		
+		# 判断场景里是否已经存在对应的关节，重建的情况
+		if cmds.objExists(self.jnt_list[0]) :
+			# 删除过去的关节后，并重新创建关节
+			cmds.delete(self.jnt_list[0])
+		else :
+			pass
 		# 创建ikfk的关节
 		cmds.select(clear = True)
 		for joint_number , bpjnt in enumerate(self.bpjnt_list) :

@@ -42,7 +42,6 @@ class Chain(base.Base) :
 			pipelineUtils.Pipeline.move(obj = self.bpjnt , pos = self.direction)
 		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.bpjnt_list)
-
 	
 	
 	
@@ -75,4 +74,3 @@ class Chain(base.Base) :
 		
 		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.jnt_list)
-
