@@ -2,7 +2,7 @@ import maya.cmds as cmds
 
 from ....core import vectorUtils
 from . import chain
-
+from importlib import reload
 
 
 class ChainIK(chain.Chain) :

@@ -8,7 +8,7 @@ from ..limb import limbFK , limbIK
 
 
 
-reload(limbIK)
+
 
 
 

@@ -6,7 +6,6 @@ from ....core import controlUtils , jointUtils , vectorUtils
 from . import chain , chainFK , chainIK
 
 
-
 class ChainIKFK(chain.Chain) :
 	u'''
 	创建ikfk的关节链条的绑定系统

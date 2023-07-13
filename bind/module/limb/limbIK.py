@@ -2,6 +2,7 @@ import maya.cmds as cmds
 
 from ....core import controlUtils , hierarchyUtils
 from ..chain import chainIK
+from importlib import reload
 
 
 

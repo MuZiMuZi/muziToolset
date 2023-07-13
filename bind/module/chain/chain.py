@@ -59,11 +59,11 @@ class Chain(base.Base) :
 				# 删除过去的关节后，并重新创建关节
 				cmds.delete(jnt)
 			# 场景里没有存在对应的关节，第一次创建绑定的情况
-			for bpjnt , jnt in zip(self.bpjnt_list , self.jnt_list) :
-				self.jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
-				cmds.matchTransform(jnt , bpjnt)
-				# 指定关节的父层级为上一轮创建出来的关节
-				self.joint_parent = self.jnt
+			self.jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
+			cmds.matchTransform(jnt , bpjnt)
+			# 指定关节的父层级为上一轮创建出来的关节
+			self.joint_parent = self.jnt
+			
 		# 隐藏bp的定位关节
 		cmds.setAttr(self.bpjnt_list[0] + '.visibility' , 0)
 		
