@@ -198,10 +198,13 @@ class Bone(object) :
 		for bpjnt , jnt in zip(self.bpjnt_list , self.jnt_list) :
 			# 场景里没有存在对应的关节，第一次创建绑定的情况
 			jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
+			# 将蒙皮关节添加到选择集里方便进行选择
+			pipelineUtils.Pipeline.create_set(jnt ,
+			                                  set_name = '{}_{}{}_jnt_set'.format(self._side , self._name ,
+			                                                                        self._rtype) ,
+			                                  set_parent = 'jnt_set')
 			cmds.matchTransform(jnt , bpjnt)
-		# 隐藏bp的定位关节
-		cmds.setAttr(self.bpjnt_list[0] + '.visibility' , 0)
-	
+
 	
 	
 	def create_ctrl(self) :

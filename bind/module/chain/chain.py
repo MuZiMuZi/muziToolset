@@ -63,6 +63,7 @@ class Chain(base.Base) :
 				plug = cmds.listConnections(bpjnt + attr , s = True , d = False , p = True)
 				if plug :
 					cmds.disconnectAttr(plug[0] , bpjnt + attr)
+					
 		# 判断场景里是否已经存在对应的关节，重建的情况
 		if cmds.objExists(self.jnt_list[0]) :
 			# 删除过去的关节后，并重新创建关节
@@ -75,6 +76,11 @@ class Chain(base.Base) :
 			cmds.matchTransform(jnt , bpjnt)
 			# 指定关节的父层级为上一轮创建出来的关节
 			self.joint_parent = self.jnt
+			# 将蒙皮关节添加到选择集里方便进行选择
+			pipelineUtils.Pipeline.create_set(jnt ,
+			                                  set_name = '{}_{}{}_jnt_set'.format(self._side , self._name ,
+			                                                                      self._rtype) ,
+			                                  set_parent = 'jnt_set')
 		
 		
 		# 进行关节定向
