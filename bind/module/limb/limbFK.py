@@ -1,7 +1,7 @@
 from importlib import reload
-
+from ....core import controlUtils , hierarchyUtils , pipelineUtils , jointUtils
 from ..chain import chainFK
-
+import maya.cmds as cmds
 reload(chainFK)
 
 
@@ -20,7 +20,17 @@ class LimbFK(chainFK.ChainFK) :
 		"""
 		super().__init__(side , name , joint_number , direction , length , joint_parent , control_parent)
 		self._rtype = 'LimbFK'
+	
+	
+	
 
+	
+	
+	
+	def create_joint(self) :
+		super().create_joint()
+		# 隐藏bp的定位关节
+		cmds.setAttr(self.bpjnt_list[0] + '.visibility' , 0)
 
 
 if __name__ == '__main__' :

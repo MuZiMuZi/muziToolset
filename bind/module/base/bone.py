@@ -1,12 +1,16 @@
 # coding=utf-8
+import logging
 from importlib import reload
 
 import maya.cmds as cmds
 
 from ....core import controlUtils , hierarchyUtils , jointUtils , pipelineUtils
+from importlib import reload
+import os
 
 
 
+reload(pipelineUtils)
 
 
 
@@ -37,7 +41,6 @@ class Bone(object) :
 		:param joint_parent: 生成的关节的父层级
 		:param control_parent: 生成的控制器的父层级
 		"""
-		super(Bone , self).__init__()
 		# 创建层级结构
 		hierarchyUtils.Hierarchy.create_rig_grp()
 		self._side = side
@@ -76,6 +79,16 @@ class Bone(object) :
 			self.side_value = -1
 		else :
 			self.side_value = 0
+		
+		# 创建一个logger日志用来排查错误
+		# 创建logger日志来排查错误
+		self.logger_name = '{}_logger'.format(self.__class__.__name__)
+		self.file_name = os.path.abspath(__file__ + "/../../../../log/bind.log")
+		
+		pipelineUtils.Pipeline.create_logging(logger_name = self.logger_name , file_name = self.file_name ,
+		                                      formatter = '%(asctime)s -%(name)s - %(levelname)s - %(message)s')
+		self.logger = logging.getLogger(self.logger_name)
+		self.logger.setLevel(logging.DEBUG)
 	
 	
 	
@@ -152,20 +165,19 @@ class Bone(object) :
 				plug = cmds.listConnections(bpjnt + attr , s = True , d = False , p = True)
 				if plug :
 					cmds.disconnectAttr(plug[0] , bpjnt + attr)
-					
+		# 判断场景里是否已经存在对应的关节，重建的情况
+		if cmds.objExists(self.jnt_list[0]) :
+			# 删除过去的关节后，并重新创建关节
+			cmds.delete(self.jnt_list[0])
+		else :
+			pass
 		for bpjnt , jnt in zip(self.bpjnt_list , self.jnt_list) :
-			#判断场景里是否已经存在对应的关节，重建的情况
-			if cmds.objExists(jnt):
-				#删除过去的关节后，并重新创建关节
-				cmds.delete(jnt)
-			else:
-				pass
-			
-			#场景里没有存在对应的关节，第一次创建绑定的情况
+			# 场景里没有存在对应的关节，第一次创建绑定的情况
 			jnt = cmds.createNode('joint' , name = jnt , parent = self.joint_parent)
 			cmds.matchTransform(jnt , bpjnt)
 		# 隐藏bp的定位关节
 		cmds.setAttr(self.bpjnt_list[0] + '.visibility' , 0)
+	
 	
 	
 	def create_ctrl(self) :
@@ -181,7 +193,7 @@ class Bone(object) :
 			self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
 		else :
 			self.ctrl_grp = cmds.createNode('transform' , name = self.ctrl_grp , parent = self.control_parent)
-			
+		
 		for ctrl , jnt in zip(self.ctrl_list , self.jnt_list) :
 			self.ctrl = controlUtils.Control.create_ctrl(ctrl , shape = self.shape ,
 			                                             radius = self.radius ,
