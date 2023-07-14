@@ -29,4 +29,4 @@ def build_rig() :
 build_setup()
 
 #生成绑定系统
-# build_rig()
+build_rig()

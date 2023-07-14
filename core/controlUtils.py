@@ -29,14 +29,15 @@ from __future__ import print_function
 
 import json
 import os
-
+from importlib import reload
 import maya.cmds as cmds
 import pymel.core as pm
 
-from . import attrUtils
-from . import hierarchyUtils
-from . import matehumanUtils
-from . import nameUtils
+from . import nameUtils , pipelineUtils , matehumanUtils , hierarchyUtils , attrUtils
+
+
+
+reload(pipelineUtils)
 
 
 
@@ -501,8 +502,6 @@ class Control(object) :
 			# 锁定并且隐藏不需要的属性
 			attrUtils.Attr.lock_and_hide_attrs(obj = ctrl_transform , attrs_list = ['rotateOrder'] , lock = False ,
 			                                   hide = False)
-			# attrUtils.Attr.lock_and_hide_attrs(obj = ctrl_transform, attrs_list = attrs_list, lock = True,
-			# hide = True)
 			
 			# 吸附到对应的位置
 			if pos :
@@ -513,13 +512,16 @@ class Control(object) :
 				hierarchyUtils.Hierarchy.parent(child_node = zero_grp , parent_node = parent)
 			
 			#
-			# 将控制器添加到对应的选择集
-			animation_ctrls_set = 'set_ctrl'
-			if not cmds.objExists(animation_ctrls_set) or cmds.nodeType(animation_ctrls_set) != 'objectSet' :
-				animation_ctrls_set = cmds.sets(name = animation_ctrls_set , empty = True)
-				cmds.sets('{}'.format(ctrl.transform) , edit = True , forceElement = animation_ctrls_set)
-			else :
-				cmds.sets('{}'.format(ctrl.transform) , edit = True , forceElement = animation_ctrls_set)
+			# 将控制器添加到选择集里方便进行选择
+			pipelineUtils.Pipeline.create_set(ctrl_transform ,
+			                                  set_name = '{}_{}_ctrl_set'.format(name_obj.side ,
+			                                                                     name_obj.description) ,
+			                                  set_parent = 'ctrl_set')
+			
+			pipelineUtils.Pipeline.create_set(sub_ctrl.transform ,
+			                                  set_name = '{}_{}_ctrl_set'.format(name_obj.side ,
+			                                                                     name_obj.description) ,
+			                                  set_parent = 'ctrl_set')
 		
 		return name
 	
@@ -644,7 +646,7 @@ class Control(object) :
 			
 			#
 			# 将控制器添加到对应的选择集
-			animation_ctrls_set = 'set_ctrl'
+			animation_ctrls_set = 'ctrl_set'
 			if not cmds.objExists(animation_ctrls_set) or cmds.nodeType(animation_ctrls_set) != 'objectSet' :
 				animation_ctrls_set = cmds.sets(name = animation_ctrls_set , empty = True)
 				cmds.sets('{}'.format(ctrl.transform) , edit = True , forceElement = animation_ctrls_set)

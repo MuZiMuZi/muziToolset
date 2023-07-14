@@ -148,24 +148,38 @@ class Bone(object) :
 		"""
 		for bpjnt in self.bpjnt_list :
 			self.bpjnt = cmds.createNode('joint' , name = bpjnt)
-		# 进行关节定向
-		jointUtils.Joint.joint_orientation(self.bpjnt_list)
+			#将bp关节添加到选择集里方便进行选择
+			pipelineUtils.Pipeline.create_set(self.bpjnt ,
+			                                  set_name = '{}_{}{}_bpjnt_set'.format(self._side , self._name ,
+			                                                                        self._rtype) ,
+			                                  set_parent = 'bpjnt_set')
+			# 进行关节定向
+			jointUtils.Joint.joint_orientation(self.bpjnt_list)
 	
 	
-	def hide_bpjnt(self):
+	
+	def hide_bpjnt(self) :
 		"""
 		定位完成后隐藏bpjnt关节
 		"""
-		# 隐藏bp的定位关节
-		bpjnts_list = cmds.ls('bpjnt*')
-		for bpjnt in bpjnts_list:
-			cmds.setAttr(bpjnt+ '.visibility' , 0)
+		# 选择bp选择集
+		cmds.select(clear = True)
+		bpjnts_set = cmds.select('bpjnt_set')
+		# 选择bp选择集下所有子对象关节
+		bpjnts_list = cmds.ls(sl = True , type = 'joint')
+		# 对bpjnt关节列表做循环，设置他们的可见性
+		for bpjnt in bpjnts_list :
+			cmds.setAttr(bpjnt + '.visibility' , 0)
 		
+
+	
+	
+	
 	def create_joint(self) :
 		'''
 		根据定位的bp关节创建关节
 		'''
-		#隐藏bp的定位关节
+		# 隐藏bp的定位关节
 		self.hide_bpjnt()
 		
 		# 根据bp关节创建新的关节

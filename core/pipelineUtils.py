@@ -462,13 +462,16 @@ class Pipeline(object) :
 	
 	
 	@staticmethod
-	def select_sub_objects() :
+	def select_sub_objects(obj_type = 'transform') :
 		u'''
 		快速选择所选择物体的所有子对象
 		'''
 		selection = cmds.ls(sl = True)  # 获取选择的所有对象
 		for obj in selection :
-			cmds.select(cmds.listRelatives(obj , allDescendents = True , type = 'transform') , add = True)
+			cmds.select(obj , add = True)
+			cmds.select(cmds.listRelatives(obj , allDescendents = True , type = obj_type) , add = True)
+		
+		
 	
 	
 	
@@ -1421,3 +1424,35 @@ class Pipeline(object) :
 		
 		file_handle.setFormatter(file_formatter)
 		logger.addHandler(file_handle)
+	
+	
+	
+	@staticmethod
+	def create_set(object,set_name,set_parent =None):
+		"""
+		给指定的对象创建set选择集来方便选择
+		object(str)：指定添加到选择集的对象
+		set_name(str):创建的选择集名称
+		set_parent(str):创建的选择集是否需要指定父对象
+		"""
+		# 将指定的对象添加到对应的选择集
+		#判断选择集是否已经存在，如果没有存在的话需要创建选择集
+		if not cmds.objExists(set_name) or cmds.nodeType(set_name) != 'objectSet' :
+			select_set = cmds.sets(name = set_name , empty = True)
+			cmds.sets('{}'.format(object) , edit = True , forceElement = set_name)
+		#选择集已经存在的情况，则直接添加指定的对象到对应的选择集
+		else :
+			cmds.sets('{}'.format(object) , edit = True , forceElement = set_name)
+			
+		#判断创建的选择集是否需要指定父对象
+		if set_parent:
+			#将指定的选择集指定对应的选择集父对象
+			if not cmds.objExists(set_parent) or cmds.nodeType(set_parent) != 'objectSet' :
+				select_set = cmds.sets(name = set_parent , empty = True)
+				cmds.sets('{}'.format(set_name) , edit = True , forceElement = set_parent)
+			# 选择集已经存在的情况，则直接添加指定的对象到对应的选择集
+			else :
+				cmds.sets('{}'.format(set_name) , edit = True , forceElement = set_parent)
+	
+	
+	

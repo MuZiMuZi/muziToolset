@@ -40,6 +40,11 @@ class Chain(base.Base) :
 			self.joint_parent = self.bpjnt
 			# 调整距离
 			pipelineUtils.Pipeline.move(obj = self.bpjnt , pos = self.direction)
+			# 将bp关节添加到选择集里方便进行选择
+			pipelineUtils.Pipeline.create_set(self.bpjnt ,
+			                                  set_name = '{}_{}{}_bpjnt_set'.format(self._side , self._name ,
+			                                                                        self._rtype) ,
+			                                  set_parent = 'bpjnt_set')
 		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.bpjnt_list)
 	
