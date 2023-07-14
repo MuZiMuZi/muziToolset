@@ -102,6 +102,7 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 		"""
 		self.edit_item = item
 		# 单机的时候关闭重命名
+		
 		self.custom_widget.closePersistentEditor(self.edit_item)
 	
 	

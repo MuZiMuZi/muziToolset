@@ -26,7 +26,7 @@ def build_rig() :
 
 
 # #生成定位关节
-build_setup()
+# build_setup()
 
-#生成绑定系统
+# #生成绑定系统
 build_rig()
