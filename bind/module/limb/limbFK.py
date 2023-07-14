@@ -29,8 +29,7 @@ class LimbFK(chainFK.ChainFK) :
 	
 	def create_joint(self) :
 		super().create_joint()
-		# 隐藏bp的定位关节
-		cmds.setAttr(self.bpjnt_list[0] + '.visibility' , 0)
+
 
 
 if __name__ == '__main__' :

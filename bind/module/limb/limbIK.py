@@ -59,7 +59,7 @@ class LimbIK(chainIK.ChainIK) :
 	def create_joint(self) :
 		super().create_joint()
 		# 隐藏bp的定位关节
-		cmds.setAttr(self.bpjnt_list[0] + '.visibility' , 0)
+		
 		self.endIK_jnt = cmds.createNode('joint' , name = self.endIK_jnt , parent = self.jnt_list[-1])
 		con = cmds.parentConstraint(self.jnt_list[-1] , self.endIK_jnt , mo = False)
 		cmds.delete(con)

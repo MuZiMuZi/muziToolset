@@ -104,7 +104,7 @@ class LimbIKFK(chainIKFK.ChainIKFK) :
 		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.jnt_list)
 		# 隐藏bp的定位关节
-		cmds.setAttr(self.bpjnt_list[0] + '.visibility' , 0)
+		self.hide_bpjnt()
 		# 设置ik关节链条和fk关节链条的可见性
 		cmds.setAttr(self.ik_limb.jnt_list[0] + '.v' , 0)
 		cmds.setAttr(self.fk_limb.jnt_list[0] + '.v' , 0)

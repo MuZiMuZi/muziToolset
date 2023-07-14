@@ -152,11 +152,21 @@ class Bone(object) :
 		jointUtils.Joint.joint_orientation(self.bpjnt_list)
 	
 	
-	
+	def hide_bpjnt(self):
+		"""
+		定位完成后隐藏bpjnt关节
+		"""
+		# 隐藏bp的定位关节
+		bpjnts_list = cmds.ls('bpjnt*')
+		for bpjnt in bpjnts_list:
+			cmds.setAttr(bpjnt+ '.visibility' , 0)
+		
 	def create_joint(self) :
 		'''
 		根据定位的bp关节创建关节
 		'''
+		#隐藏bp的定位关节
+		self.hide_bpjnt()
 		
 		# 根据bp关节创建新的关节
 		for bpjnt in self.bpjnt_list :
