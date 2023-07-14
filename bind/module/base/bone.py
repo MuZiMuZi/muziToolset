@@ -148,7 +148,10 @@ class Bone(object) :
 		"""
 		for bpjnt in self.bpjnt_list :
 			self.bpjnt = cmds.createNode('joint' , name = bpjnt)
-			#将bp关节添加到选择集里方便进行选择
+			#给bp定位关节设置颜色方便识别
+			cmds.setAttr(self.bpjnt + '.overrideEnabled',1)
+			cmds.setAttr(self.bpjnt + '.overrideColor',13)
+			# 将bp关节添加到选择集里方便进行选择
 			pipelineUtils.Pipeline.create_set(self.bpjnt ,
 			                                  set_name = '{}_{}{}_bpjnt_set'.format(self._side , self._name ,
 			                                                                        self._rtype) ,
@@ -170,8 +173,6 @@ class Bone(object) :
 		# 对bpjnt关节列表做循环，设置他们的可见性
 		for bpjnt in bpjnts_list :
 			cmds.setAttr(bpjnt + '.visibility' , 0)
-		
-
 	
 	
 	
@@ -201,10 +202,10 @@ class Bone(object) :
 			# 将蒙皮关节添加到选择集里方便进行选择
 			pipelineUtils.Pipeline.create_set(jnt ,
 			                                  set_name = '{}_{}{}_jnt_set'.format(self._side , self._name ,
-			                                                                        self._rtype) ,
+			                                                                      self._rtype) ,
 			                                  set_parent = 'jnt_set')
 			cmds.matchTransform(jnt , bpjnt)
-
+	
 	
 	
 	def create_ctrl(self) :

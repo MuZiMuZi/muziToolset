@@ -437,3 +437,51 @@
 2023-07-14 15:01:22,454 -Arm_logger - INFO - arm_l  :  Create binding system
 2023-07-14 15:01:22,454 -Arm_logger - INFO - 
 
+2023-07-14 15:02:16,122 -Arm_logger - DEBUG - arm_l  :  BP joint creation completed for positioning
+2023-07-14 15:02:16,149 -Arm_logger - DEBUG - done
+2023-07-14 15:02:16,149 -Arm_logger - INFO - arm_l  :  Create positioning joints for BP and prepare for generation
+2023-07-14 15:02:16,149 -Arm_logger - INFO - 
+
+2023-07-14 15:02:16,177 -Arm_logger - DEBUG - arm_l  :  Skin joint creation completed
+2023-07-14 15:02:16,701 -Arm_logger - DEBUG - arm_l  :  Controller creation completed
+2023-07-14 15:02:17,409 -Arm_logger - DEBUG - arm_l  :  Constraint creation completed
+2023-07-14 15:02:17,437 -Arm_logger - DEBUG - done
+2023-07-14 15:02:17,438 -Arm_logger - INFO - arm_l  :  Create binding system
+2023-07-14 15:02:17,438 -Arm_logger - INFO - 
+
+2023-07-14 15:07:25,301 -Arm_logger - DEBUG - arm_l  :  BP joint creation completed for positioning
+2023-07-14 15:07:25,329 -Arm_logger - DEBUG - done
+2023-07-14 15:07:25,329 -Arm_logger - INFO - arm_l  :  Create positioning joints for BP and prepare for generation
+2023-07-14 15:07:25,329 -Arm_logger - INFO - 
+
+2023-07-14 15:07:25,358 -Arm_logger - DEBUG - arm_l  :  Skin joint creation completed
+2023-07-14 15:07:25,867 -Arm_logger - DEBUG - arm_l  :  Controller creation completed
+2023-07-14 15:07:26,549 -Arm_logger - DEBUG - arm_l  :  Constraint creation completed
+2023-07-14 15:07:26,578 -Arm_logger - DEBUG - done
+2023-07-14 15:07:26,578 -Arm_logger - INFO - arm_l  :  Create binding system
+2023-07-14 15:07:26,578 -Arm_logger - INFO - 
+
+2023-07-14 15:09:10,421 -Arm_logger - DEBUG - arm_l  :  BP joint creation completed for positioning
+2023-07-14 15:09:10,434 -Arm_logger - DEBUG - done
+2023-07-14 15:09:10,434 -Arm_logger - INFO - arm_l  :  Create positioning joints for BP and prepare for generation
+2023-07-14 15:09:10,434 -Arm_logger - INFO - 
+
+2023-07-14 15:09:10,447 -Arm_logger - DEBUG - arm_l  :  Skin joint creation completed
+2023-07-14 15:09:10,715 -Arm_logger - DEBUG - arm_l  :  Controller creation completed
+2023-07-14 15:09:11,093 -Arm_logger - DEBUG - arm_l  :  Constraint creation completed
+2023-07-14 15:09:11,105 -Arm_logger - DEBUG - done
+2023-07-14 15:09:11,105 -Arm_logger - INFO - arm_l  :  Create binding system
+2023-07-14 15:09:11,105 -Arm_logger - INFO - 
+
+2023-07-14 15:10:43,137 -Arm_logger - DEBUG - arm_l  :  BP joint creation completed for positioning
+2023-07-14 15:10:43,151 -Arm_logger - DEBUG - done
+2023-07-14 15:10:43,151 -Arm_logger - INFO - arm_l  :  Create positioning joints for BP and prepare for generation
+2023-07-14 15:10:43,152 -Arm_logger - INFO - 
+
+2023-07-14 15:10:43,165 -Arm_logger - DEBUG - arm_l  :  Skin joint creation completed
+2023-07-14 15:10:43,466 -Arm_logger - DEBUG - arm_l  :  Controller creation completed
+2023-07-14 15:10:43,822 -Arm_logger - DEBUG - arm_l  :  Constraint creation completed
+2023-07-14 15:10:43,834 -Arm_logger - DEBUG - done
+2023-07-14 15:10:43,834 -Arm_logger - INFO - arm_l  :  Create binding system
+2023-07-14 15:10:43,834 -Arm_logger - INFO - 
+

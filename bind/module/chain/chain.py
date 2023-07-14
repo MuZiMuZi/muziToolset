@@ -36,6 +36,9 @@ class Chain(base.Base) :
 		"""
 		for bpjnt in self.bpjnt_list :
 			self.bpjnt = cmds.createNode('joint' , name = bpjnt , parent = self.joint_parent)
+			# 给bp定位关节设置颜色方便识别
+			cmds.setAttr(self.bpjnt + '.overrideEnabled' , 1)
+			cmds.setAttr(self.bpjnt + '.overrideColor' , 13)
 			# 指定关节的父层级为上一轮创建出来的关节
 			self.joint_parent = self.bpjnt
 			# 调整距离
