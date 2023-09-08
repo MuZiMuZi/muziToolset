@@ -11,7 +11,7 @@ import muziToolset.core.jointUtils as jointUtils
 import muziToolset.core.matehumanUtils as matehumanUtils
 import muziToolset.core.nameUtils as nameUtils
 import muziToolset.core.pipelineUtils as pipelineUtils
-import muziToolset.core.weightUtils as weightUtils
+import muziToolset.core.weightsUtils as weightsUtils
 import muziToolset.res.ui.control_modular.control_widget as control_widget
 import muziToolset.res.ui.nodes_modular.nodes_widget as nodes_widget
 import muziToolset.res.ui.rename_modular.rename_widget as rename_widget
