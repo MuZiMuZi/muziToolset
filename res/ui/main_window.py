@@ -114,8 +114,11 @@ class functionWidget(QWidget, pipelineUtils.Pipeline):
         self.reset_control_button = QPushButton("重置控制器")
         self.reset_control_button.clicked.connect(self.reset_control)
 
-        self.batch_Constraints_button = QPushButton("批量约束")
-        self.batch_Constraints_button.clicked.connect(self.batch_Constraints)
+        self.batch_Constraints_modle_button = QPushButton("批量约束_物体")
+        self.batch_Constraints_modle_button.clicked.connect(self.batch_Constraints_modle)
+
+        self.batch_Constraints_joint_button = QPushButton("批量约束_关节")
+        self.batch_Constraints_joint_button.clicked.connect(self.batch_Constraints_joint)
 
         self.default_grp_button = QPushButton(u"绑定层级组")
         self.default_grp_button.clicked.connect(self.default_grp)
@@ -135,11 +138,8 @@ class functionWidget(QWidget, pipelineUtils.Pipeline):
         self.load_skinWeights_button = QPushButton(u"导入权重")
         self.load_skinWeights_button.clicked.connect(self.load_skinWeights)
 
-        self.create_constraints_modle_button = QPushButton(u"快速约束_物体")
-        self.create_constraints_modle_button.clicked.connect(self.create_constraints)
-
-        self.create_constraints_joint_button = QPushButton(u"快速约束_关节")
-        self.create_constraints_joint_button.clicked.connect(self.create_constraints)
+        self.create_constraints_button = QPushButton(u"快速约束")
+        self.create_constraints_button.clicked.connect(self.create_constraints)
 
         self.delete_constraints_button = QPushButton("删除约束")
         self.delete_constraints_button.clicked.connect(self.delete_constraints)
@@ -156,8 +156,10 @@ class functionWidget(QWidget, pipelineUtils.Pipeline):
         # 添加按钮
         self.main_layout.addWidget(self.clear_keys_button, 1, 1)
         self.main_layout.addWidget(self.reset_control_button, 1, 2)
-        self.main_layout.addWidget(self.batch_Constraints_button, 1, 3)
-        self.main_layout.addWidget(self.default_grp_button, 1, 4)
+        self.main_layout.addWidget(self.batch_Constraints_modle_button, 1, 3)
+
+        self.main_layout.addWidget(self.batch_Constraints_joint_button, 1, 4)
+
         self.main_layout.addWidget(self.create_joints_on_curve_button, 2, 1)
         self.main_layout.addWidget(self.create_joints_on_curve_rigging_button, 2, 2)
         self.main_layout.addWidget(self.control_hierarchy_button, 2, 3)
@@ -170,6 +172,7 @@ class functionWidget(QWidget, pipelineUtils.Pipeline):
 
         self.main_layout.addWidget(self.print_duplicate_object_button, 4, 1)
         self.main_layout.addWidget(self.rename_duplicate_object_button, 4, 2)
+        self.main_layout.addWidget(self.default_grp_button, 4, 3)
 
     def clear_keys(self):
         pipelineUtils.Pipeline.clear_keys()
@@ -177,8 +180,11 @@ class functionWidget(QWidget, pipelineUtils.Pipeline):
     def reset_control(self):
         pipelineUtils.Pipeline.reset_control()
 
-    def batch_Constraints(self):
-        pipelineUtils.Pipeline.batch_Constraints()
+    def batch_Constraints_modle(self):
+        pipelineUtils.Pipeline.batch_Constraints_modle()
+
+    def batch_Constraints_joint(self):
+        pipelineUtils.Pipeline.batch_Constraints_joint()
 
     def default_grp(self):
         pipelineUtils.Pipeline.default_grp()
@@ -204,11 +210,8 @@ class functionWidget(QWidget, pipelineUtils.Pipeline):
             obj = weightsUtils.Weights(geo)
             obj.load_skinWeights()
 
-    def create_constraints_modle(self):
-        pipelineUtils.Pipeline.batch_Constraints_modle()
-
-    def create_constraints_joint(self):
-        pipelineUtils.Pipeline.batch_Constraints_joint()
+    def create_constraints(self):
+        pipelineUtils.Pipeline.create_constraints()
 
     def delete_constraints(self):
         pipelineUtils.Pipeline.delete_constraints()
