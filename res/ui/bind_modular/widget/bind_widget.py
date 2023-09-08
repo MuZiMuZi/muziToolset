@@ -97,7 +97,8 @@ class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
 	
 	def cmd_custom_widget_clk(self , item) :
 		u"""
-		用来连接custom_widget双击所连接的功能槽函数
+		用来连接custom_widget单击所连接的功能槽函数。
+		单击按钮的时候可以切换到对应的模块设置
 		item：鼠标单击的时候所在的位置
 		"""
 		self.edit_item = item
