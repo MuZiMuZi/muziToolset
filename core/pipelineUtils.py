@@ -159,9 +159,9 @@ class Pipeline(object) :
 			bs = cmds.listConnections(geo_shape , type = 'blendShape')
 			if bs :
 				cmds.rename(bs , 'bs_{}'.format(geo))
-	
-	
-	
+
+
+
 	@staticmethod
 	def distence_between(node_a , node_b) :
 		u'''获取两个对象之间的距离.
@@ -175,9 +175,9 @@ class Pipeline(object) :
 		point_b = cmds.xform(node_b , query = True , worldSpace = True , rotatePivot = True)
 		dist = math.sqrt(sum([pow((b - a) , 2) for b , a in zip(point_a , point_b)]))
 		return dist
-	
-	
-	
+
+
+
 	@staticmethod
 	def reset_control() :
 		u"""重置控制器上所有的数值.
@@ -204,9 +204,9 @@ class Pipeline(object) :
 		ctrl_IKFKblend = cmds.ls('ctrl_?_*IKFKBend_???')
 		for IKFKblend in ctrl_IKFKblend :
 			cmds.setAttr(IKFKblend + '.IkFkBend' , 1)
-	
-	
-	
+
+
+
 	@staticmethod
 	def list_operation(list_a , list_b , operation = '|') :
 		u"""将两个列表的并集/差分/交集/对称_差分部分作为列表返回.
@@ -220,16 +220,16 @@ class Pipeline(object) :
 			list: 作为列表的两个列表的并集/差分/交集/对称_差分部分.
 
 		"""
-		
+
 		# 如果无，则将无转换为[]空列表，仅用于操作
 		if not list_a :
 			list_a = []
 		if not list_b :
 			list_b = []
-		
+
 		set_a = set(list_a)
 		set_b = set(list_b)
-		
+
 		if operation == '|' :
 			return list(set_a.union(set_b))
 		elif operation == '&' :
@@ -238,9 +238,9 @@ class Pipeline(object) :
 			return list(set_a.difference(set_b))
 		elif operation == '^' :
 			return list(set_a.symmetric_difference(set_b))
-	
-	
-	
+
+
+
 	@staticmethod
 	def tag_joint() :
 		"""
@@ -252,31 +252,35 @@ class Pipeline(object) :
 		jnts = cmds.ls(type = 'joint')
 		for jnt in jnts :
 			name_parts = jnt.split('_')
-			
+
 			if name_parts[1] == 'l' :
 				side_index = 1
 			elif name_parts[1] == 'r' :
 				side_index = 2
 			else :
 				side_index = 0
-			
+
 			cmds.setAttr(jnt + '.side' , side_index)
 			cmds.setAttr(jnt + '.type' , 18)
 			cmds.setAttr(jnt + '.otherType' , name_parts[2] + name_parts[3] , type = 'string')
-	
-	
-	
+
+
+
 	@staticmethod
-	def batch_Constraints() :
+	def batch_Constraints_modle() :
 		u"""
-		选择物体，批量制作约束
-		"""
-		geos = cmds.ls(sl = True)
-		for geo in geos :
+		选择物体，批量制作约束。新添加创建关节来蒙皮物体		"""
+		sel_list = cmds.ls(sl = True)
+		for sel in sel_list :
 			cmds.undoInfo(openChunk = True)  # 批量撤销的开头
-			ctrl = controlUtils.Control(n = 'ctrl_' + geo , s = 'cube' , r = 1)
+			#创建对应的关节来蒙皮物体
+			jnt = cmds.createNode('joint', name='jnt_' + sel)
+			cmds.matchTransform(jnt, sel)
+			cmds.skinCluster(jnt, sel)
+			#创建对应的控制器组
+			ctrl = controlUtils.Control(n = 'ctrl_' + sel , s = 'cube' , r = 1)
 			ctrl_transform = '{}'.format(ctrl.transform)
-			sub_ctrl = controlUtils.Control(n = 'ctrlSub_' + geo , s = 'cube' , r = 1 * 0.7)
+			sub_ctrl = controlUtils.Control(n = 'ctrlSub_' + sel , s = 'cube' , r = 1 * 0.7)
 			sub_ctrl.set_parent(ctrl.transform)
 			sub_ctrl_transform = '{}'.format(sub_ctrl.transform)
 			# 添加上层层级组
@@ -289,11 +293,11 @@ class Pipeline(object) :
 					obj = connect_grp , grp_name = connect_grp.replace('connect' , 'driven') , world_orient = False)
 			zero_grp = hierarchyUtils.Hierarchy.add_extra_group(
 					obj = driven_grp , grp_name = driven_grp.replace('driven' , 'zero') , world_orient = False)
-			
+
 			# 创建output层级组
 			output = cmds.createNode('transform' , name = ctrl_transform.replace('ctrl_' , 'output_') ,
 			                         parent = ctrl_transform)
-			
+
 			# 连接次级控制器的属性
 			cmds.connectAttr(sub_ctrl.transform + '.translate' , output + '.translate')
 			cmds.connectAttr(sub_ctrl.transform + '.rotate' , output + '.rotate')
@@ -303,14 +307,55 @@ class Pipeline(object) :
 			             niceName = U'次级控制器显示' ,
 			             keyable = True)
 			cmds.connectAttr(ctrl_transform + '.subCtrlVis' , sub_ctrl_transform + '.visibility')
-			
-			cmds.matchTransform(zero_grp , geo)
-			cmds.parentConstraint(sub_ctrl_transform , geo , mo = True)
-			cmds.scaleConstraint(sub_ctrl_transform , geo , mo = True)
+			#将控制器组吸附到对应的关节位置。并且进行约束
+			cmds.matchTransform(zero_grp , jnt)
+			cmds.parentConstraint(sub_ctrl_transform , jnt , mo = True)
+			cmds.scaleConstraint(sub_ctrl_transform , jnt , mo = True)
 			cmds.undoInfo(openChunk = False)  # 批量撤销的开头
-	
-	
-	
+
+	@staticmethod
+	def batch_Constraints_joint():
+		u"""
+		选择关节，批量制作约束。不需要新添加创建关节来蒙皮物体		"""
+		sel_list = cmds.ls(sl=True)
+		for sel in sel_list:
+			cmds.undoInfo(openChunk=True)  # 批量撤销的开头
+			# 创建对应的控制器组
+			ctrl = controlUtils.Control(n='ctrl_' + sel, s='cube', r=1)
+			ctrl_transform = '{}'.format(ctrl.transform)
+			sub_ctrl = controlUtils.Control(n='ctrlSub_' + sel, s='cube', r=1 * 0.7)
+			sub_ctrl.set_parent(ctrl.transform)
+			sub_ctrl_transform = '{}'.format(sub_ctrl.transform)
+			# 添加上层层级组
+			offset_grp = hierarchyUtils.Hierarchy.add_extra_group(
+				obj=ctrl_transform, grp_name='{}'.format(ctrl_transform.replace('ctrl', 'offset')),
+				world_orient=False)
+			connect_grp = hierarchyUtils.Hierarchy.add_extra_group(
+				obj=offset_grp, grp_name=offset_grp.replace('offset', 'connect'), world_orient=False)
+			driven_grp = hierarchyUtils.Hierarchy.add_extra_group(
+				obj=connect_grp, grp_name=connect_grp.replace('connect', 'driven'), world_orient=False)
+			zero_grp = hierarchyUtils.Hierarchy.add_extra_group(
+				obj=driven_grp, grp_name=driven_grp.replace('driven', 'zero'), world_orient=False)
+
+			# 创建output层级组
+			output = cmds.createNode('transform', name=ctrl_transform.replace('ctrl_', 'output_'),
+									 parent=ctrl_transform)
+
+			# 连接次级控制器的属性
+			cmds.connectAttr(sub_ctrl.transform + '.translate', output + '.translate')
+			cmds.connectAttr(sub_ctrl.transform + '.rotate', output + '.rotate')
+			cmds.connectAttr(sub_ctrl.transform + '.scale', output + '.scale')
+			cmds.connectAttr(sub_ctrl.transform + '.rotateOrder', output + '.rotateOrder')
+			cmds.addAttr(ctrl_transform, attributeType='bool', longName='subCtrlVis',
+						 niceName=U'次级控制器显示',
+						 keyable=True)
+			cmds.connectAttr(ctrl_transform + '.subCtrlVis', sub_ctrl_transform + '.visibility')
+			# 将控制器组吸附到对应的关节位置。并且进行约束
+			cmds.matchTransform(zero_grp, sel)
+			cmds.parentConstraint(sub_ctrl_transform, sel, mo=True)
+			cmds.scaleConstraint(sub_ctrl_transform, sel, mo=True)
+			cmds.undoInfo(openChunk=False)  # 批量撤销的开头
+
 	@staticmethod
 	def default_grp() :
 		u'''
@@ -318,13 +363,13 @@ class Pipeline(object) :
 		'''
 		# 创建顶层的Group组
 		Group = cmds.createNode('transform' , name = 'Group')
-		
+
 		# 创建Group层级下的子层级组，并做层级关系
 		Geometry = cmds.createNode('transform' , name = 'Geometry')
 		Control = cmds.createNode('transform' , name = 'Control')
 		Custom = cmds.createNode('transform' , name = 'Custom')
 		cmds.parent(Geometry , Custom , Control , Group)
-		
+
 		# 创建RigNode层级下的子层级组并做层级关系
 		RigNodes = cmds.createNode('transform' , name = 'RigNodes')
 		Joints = cmds.createNode('transform' , name = 'Joints')
@@ -333,13 +378,13 @@ class Pipeline(object) :
 		nCloth_geo_grp = cmds.createNode('transform' , name = 'nCloth_geo_grp')
 		cmds.parent(RigNodes_Local , RigNodes_World , RigNodes)
 		cmds.parent(RigNodes , Joints , nCloth_geo_grp , Custom)
-		
+
 		# 创建Modle层级下的子层级组并且做层级关系
 		Low_modle_grp = cmds.createNode('transform' , name = 'grp_m_low_Modle_001')
 		Mid_modle_grp = cmds.createNode('transform' , name = 'grp_m_mid_Modle_001')
 		High_modle_grp = cmds.createNode('transform' , name = 'grp_m_high_Modle_001')
 		cmds.parent(Low_modle_grp , Mid_modle_grp , High_modle_grp , Geometry)
-		
+
 		World_zero = [Group , Geometry , RigNodes_Local , RigNodes_World , RigNodes , Control , Joints , Custom]
 		attrs_list = ['.translateX' , '.translateY' , '.translateZ' , '.rotateX' , '.rotateY' , '.rotateZ' ,
 		              '.scaleX' ,
@@ -350,24 +395,24 @@ class Pipeline(object) :
 			selections = cmds.ls(sl = True)
 			if selections :
 				rig_top_grp = selections[0]
-		
+
 		# 创建总控制器Character
 		character_ctrl_obj = controlUtils.Control.create_ctrl('ctrl_m_Character_001' , shape = 'circle' , radius = 10 ,
 		                                                      axis = 'X+' ,
 		                                                      pos = None ,
 		                                                      parent = Control)
-		
+
 		# 创建世界控制器
 		world_ctrl_obj = controlUtils.Control.create_ctrl('ctrl_m_world_001' , shape = 'local' , radius = 8 ,
 		                                                  axis = 'Z-' ,
 		                                                  pos = None ,
 		                                                  parent = 'ctrl_m_Character_001')
-		
+
 		cog_ctrl_obj = controlUtils.Control.create_ctrl('ctrl_m_cog_001' , shape = 'circle' , radius = 3 ,
 		                                                axis = 'X+' ,
 		                                                pos = None ,
 		                                                parent = 'output_m_world_001')
-		
+
 		# 创建一个自定义的控制器，用来承载自定义的属性
 		lock_ctrl_obj = controlUtils.Control.create_ctrl('ctrl_m_custom_001' , shape = 'cross' , radius = 3 ,
 		                                                 axis = 'X+' ,
@@ -376,12 +421,12 @@ class Pipeline(object) :
 		lock_ctrl = 'ctrl_m_custom_001'
 		cmds.parentConstraint('ctrl_m_Character_001' , lock_ctrl , mo = True)
 		cmds.scaleConstraint('ctrl_m_Character_001' , lock_ctrl , mo = True)
-		
+
 		# 创建自定义的控制器属性
 		for attr in ['GeometryVis' , 'ControlsVis' , 'RigNodesVis' , 'JointsVis'] :
 			if not cmds.objExists('{}.{}'.format(lock_ctrl , attr)) :
 				cmds.addAttr(lock_ctrl , ln = attr , at = 'bool' , dv = 1 , keyable = True)
-		
+
 		# 添加精度切换的属性
 		if not cmds.objExists('{}.Resolution'.format(lock_ctrl)) :
 			cmds.addAttr(lock_ctrl , ln = 'Resolution' , at = 'enum' , en = 'low:mid:high' , keyable = True)
@@ -395,32 +440,32 @@ class Pipeline(object) :
 				cmds.setAttr('{}.colorIfFalseR'.format(cnd_node) , 0)
 				cmds.connectAttr('{}.outColorR'.format(cnd_node) , 'grp_m_{}_Modle_001.visibility'.format(res) ,
 				                 f = True)
-		
+
 		# 添加模型显示方式的属性
 		if not cmds.objExists('{}.GeometryDisplayType'.format(lock_ctrl)) :
 			cmds.addAttr(lock_ctrl , ln = 'GeometryDisplayType' , at = 'enum' , en = 'Normal:Template:Reference' ,
 			             keyable = True)
-		
+
 		# 连接 GeometryVis
 		cmds.connectAttr('{}.GeometryVis'.format(lock_ctrl) , '{}.visibility'.format(Geometry) , f = True)
-		
+
 		# 连接 controlsVis
 		cmds.connectAttr('{}.ControlsVis'.format(lock_ctrl) , '{}.visibility'.format(Control) , f = True)
-		
+
 		# 连接 RigNodesVis
 		cmds.connectAttr('{}.RigNodesVis'.format(lock_ctrl) , '{}.visibility'.format(RigNodes) , f = True)
-		
+
 		# 连接 jointsVis
 		cmds.connectAttr('{}.JointsVis'.format(lock_ctrl) , '{}.visibility'.format(Joints) , f = True)
-		
+
 		# 连接模型的可编辑属性
 		cmds.setAttr(Geometry + '.overrideDisplayType' , 2)
 		cmds.connectAttr('{}.GeometryDisplayType'.format(lock_ctrl) , Geometry + '.overrideEnabled' , f = True)
-		
+
 		# 显示和隐藏属性
 		for attr in attrs_list :
 			cmds.setAttr(lock_ctrl + attr , l = True , k = False , cb = False)
-		
+
 		return {
 				'Geometry' : Geometry ,
 				'Control' : Control ,

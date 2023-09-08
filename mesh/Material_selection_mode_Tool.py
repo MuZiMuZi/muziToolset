@@ -17,8 +17,5 @@ u"""
 members发生改变时，可以通过手动刷新看到新的列表
 
 """
-from ast import literal_eval
-from . import pipelineUtils
-from collections import OrderedDict
 
 import maya.cmds as cmds
