@@ -153,6 +153,9 @@ class functionWidget(QWidget, pipelineUtils.Pipeline):
         self.rename_duplicate_object_button = QPushButton("检查并重命名重名节点")
         self.rename_duplicate_object_button.clicked.connect(self.rename_duplicate_object)
 
+        self.create_dynamic_curve_driven_button = QPushButton("创建动力学化曲线驱动头发")
+        self.create_dynamic_curve_driven_button.clicked.connect(self.create_dynamic_curve_driven)
+
         # 添加按钮
         self.main_layout.addWidget(self.clear_keys_button, 1, 1)
         self.main_layout.addWidget(self.reset_control_button, 1, 2)
@@ -173,7 +176,7 @@ class functionWidget(QWidget, pipelineUtils.Pipeline):
         self.main_layout.addWidget(self.print_duplicate_object_button, 4, 1)
         self.main_layout.addWidget(self.rename_duplicate_object_button, 4, 2)
         self.main_layout.addWidget(self.default_grp_button, 4, 3)
-
+        self.main_layout.addWidget(self.create_dynamic_curve_driven_button, 4, 4  )
     def clear_keys(self):
         pipelineUtils.Pipeline.clear_keys()
 
@@ -225,6 +228,11 @@ class functionWidget(QWidget, pipelineUtils.Pipeline):
     def rename_duplicate_object(self):
         nameUtils.Name.rename_duplicate_object()
 
+    def create_dynamic_curve_driven(self):
+        """
+        选择曲线。创建动力学化曲线驱动头发
+        """
+        pipelineUtils.Pipeline.create_dynamic_curve_driven()
 
 class matehuman_Widget(QWidget):
 
