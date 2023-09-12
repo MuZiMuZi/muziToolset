@@ -45,7 +45,7 @@ from maya import mel
 from pymel.util import path
 from shiboken2 import wrapInstance
 
-from . import controlUtils , hierarchyUtils , qtUtils
+from . import controlUtils , hierarchyUtils , qtUtils, jointUtils
 
 
 
@@ -1496,3 +1496,30 @@ class Pipeline(object) :
 			# 选择集已经存在的情况，则直接添加指定的对象到对应的选择集
 			else :
 				cmds.sets('{}'.format(set_name) , edit = True , forceElement = set_parent)
+
+
+	@staticmethod
+	def create_dynamic_curve_driven():
+		"""
+		选择曲线。创建动力学化曲线驱动头发
+		"""
+		dynamic_curve = cmds.ls(sl = True)
+
+		#根据曲线创建关节链条
+		jointUtils.Joint.create_joints_on_curve()
+
+		#头发曲线做动力学化曲线。
+		mel.eval('makeCurvesDynamic 2 { "1", "0", "1", "1", "0"}')
+
+		#获取动力学化曲线生成的毛囊节点 动力学化曲线生成的毛囊需要切换成基础。才能符合头发的动态
+		folicile_node = cmds.listRelatives(dynamic_curve, p=True)
+		#重命名毛囊节点的名称
+		cmds.rename(folicile_node, dynamic_curve + folicile_node)
+		#设置毛囊节点的基础属性
+		cmds.setattr(folicile_node + '.pointLock',1)
+
+		#获取毛囊节点所链接的毛发节点并修改名称
+		hair_scs_node = cmds.listConnections(folicile_node + '.currentPosition', s=True, d=True, p=True, t='hairSystem')[0]
+		hair_shape_node = hair_scs_node.split('.')[0]
+		hair_node = cmds.listRelatives(hair_shape_node, p=True)[0]
+		cmds.rename(hair_node, dynamic_curve + folicile_node)
