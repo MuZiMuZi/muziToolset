@@ -1404,48 +1404,88 @@ class Pipeline(object):
     def create_dynamic_curve_driven():
         """
         选择需要创建动力学化的曲线。创建动力学化曲线驱动头发
+        曲线节点的命名为 模型节点 + '_crv'
+
         """
-        dynamic_curve_node = cmds.ls(sl=True)[0]
+        crv_list = cmds.ls(sl=True)
+        # 判断是否有动力学化曲线的关节组，没有的话则进行创建
+        if not cmds.objExists('nhair_jnt_grp'):
+            nhair_jnt_grp = cmds.createNode('transform', name='nhair_jnt_grp')
+        else:
+            nhair_jnt_grp = 'nhair_jnt_grp'
 
-        # 根据曲线创建关节链条
-        jnt_dict = jointUtils.Joint.create_joints_on_curve()
+        # 判断是否有动力学化曲线的节点组，没有的话则进行创建
+        if not cmds.objExists('nhair_rigNode_grp'):
+            nhair_rigNode_grp = cmds.createNode('transform', name='nhair_rigNode_grp')
+        else:
+            nhair_rigNode_grp = 'nhair_rigNode_grp'
 
-        # 头发曲线做动力学化曲线。
-        mel.eval('makeCurvesDynamic 2 { "1", "0", "1", "1", "0"}')
+        for dynamic_curve_node in crv_list:
+            cmds.DeleteHistory(dynamic_curve_node)
 
-        # 获取动力学化曲线生成的毛囊节点 动力学化曲线生成的毛囊需要切换成基础。才能符合头发的动态
-        folicile_node = cmds.listRelatives(dynamic_curve_node, p=True)[0]
+            # 取消所有曲线选择后，然后选择这次创建的曲线
+            pm.select(dynamic_curve_node, r=True)
+            # 根据曲线创建关节链条
+            jnt_dict = jointUtils.Joint.create_joints_on_curve()
 
-        # 重命名毛囊节点的名称
-        folicile_node = cmds.rename(folicile_node, dynamic_curve_node + folicile_node)
-        folicile_shape_node = cmds.listRelatives(folicile_node, s=True)[0]
-        # 设置毛囊节点的基础属性
-        cmds.setAttr(folicile_node + '.pointLock', 1)
+            # 头发曲线做动力学化曲线。
+            pm.mel.eval('MakeCurvesDynamic')
 
-        # 获取毛囊节点所链接的毛发节点并修改名称
-        hair_shape_node = \
-            cmds.listConnections(folicile_node + '.currentPosition', s=True, d=True, p=True, t='hairSystem')[0].split(
-                '.')[0]
-        hair_node = cmds.listRelatives(hair_shape_node, p=True)[0]
-        hair_node = cmds.rename(hair_node, dynamic_curve_node + folicile_node)
 
-        # 获取输出曲线的节点名称并且重命名
-        output_curve_shape_node = \
-            cmds.listConnections(folicile_shape_node + '.outCurve', s=True, d=True, p=True)[0].split('.')[0]
-        output_curve_node = cmds.listRelatives(output_curve_shape_node, p=True)[0]
+            # 获取动力学化曲线生成的毛囊节点 动力学化曲线生成的毛囊需要切换成基础。才能符合头发的动态
+            folicile_node = cmds.listRelatives(dynamic_curve_node, p=True)[0]
 
-        output_curve_node = cmds.rename(output_curve_node, dynamic_curve_node + '_outputCurve')
-        output_curve_grp = cmds.listRelatives(output_curve_node, p=True)[0]
+            # 重命名毛囊节点的名称
+            folicile_node = cmds.rename(folicile_node, dynamic_curve_node + folicile_node)
+            folicile_shape_node = cmds.listRelatives(folicile_node, s=True)[0]
+            # 设置毛囊节点的基础属性
+            cmds.setAttr(folicile_node + '.pointLock', 1)
+            #
+            # 获取毛囊节点所链接的毛发节点并修改名称
+            hair_shape_node = \
+                cmds.listConnections(folicile_node + '.currentPosition', s=True, d=True, p=True, t='hairSystem')[
+                    0].split(
+                    '.')[0]
+            hair_node = cmds.listRelatives(hair_shape_node, p=True)[0]
+            hair_node = cmds.rename(hair_node, dynamic_curve_node + hair_node)
 
-        # 获取之前曲线创建出来的关节
-        jnt_list = jnt_dict['jnt_list']
+            # 将毛发节点添加到选择集里方便进行选择
+            Pipeline.create_set(hair_node, set_name = 'hairSystem_set', set_parent=None)
+            #
+            # 获取输出曲线的节点名称并且重命名
+            output_curve_shape_node = \
+                cmds.listConnections(folicile_shape_node + '.outCurve', s=True, d=True, p=True)[0].split('.')[0]
+            output_curve_node = cmds.listRelatives(output_curve_shape_node, p=True)[0]
 
-        # 使用曲线创建出来的关节和输出曲线创建spineIK样条线绑定
-        handle_node = cmds.ikHandle(startJoint=jnt_list[0], endEffector=jnt_list[-1], sol='ikSplineSolver', ccv=False,
-                                    curve=output_curve_node,
-                                    name=dynamic_curve_node + '_handle')[0]
+            output_curve_node = cmds.rename(output_curve_node, dynamic_curve_node + '_outputCurve')
+            output_curve_grp = cmds.listRelatives(output_curve_node, p=True)[0]
+            #
+            # 获取之前曲线创建出来的关节
+            jnt_list = jnt_dict['jnt_list']
 
-        # 整理层级结构
-        # 创建动力学的层级组
-        nhair_grp = cmds.createNode('transform', name=dynamic_curve_node + '_nhair_grp')
-        cmds.parent(hair_node, output_curve_grp, handle_node, nhair_grp)
+
+            # 使用曲线创建出来的关节和输出曲线创建spineIK样条线绑定
+            handle_node = \
+            cmds.ikHandle(startJoint=jnt_list[0], endEffector=jnt_list[-1], sol='ikSplineSolver', ccv=False,
+                          curve=output_curve_node,
+                          name=dynamic_curve_node + '_handle')[0]
+            #
+            # 找到模型的节点名称并且将动力学骨骼蒙皮给模型，曲线节点的命名为 模型节点 + '_crv'
+            modle_node = dynamic_curve_node.split('_')[0]
+            cmds.skinCluster(jnt_list, modle_node)
+            #
+            # 整理层级结构
+            # 创建动力学的层级组
+            rigNode_grp = cmds.createNode('transform', name=dynamic_curve_node + '_nhair_grp')
+            cmds.parent(output_curve_node, output_curve_grp)
+            cmds.parent(hair_node, handle_node, rigNode_grp)
+
+
+
+            #整理动力学的层级组
+            cmds.parent(jnt_dict['node_grp' ], nhair_jnt_grp)
+            cmds.parent(rigNode_grp, nhair_rigNode_grp)
+        #将输出曲线整理到对应的节点组
+        outputCurves_grp = cmds.ls('hairSystem*OutputCurves',type = 'transform')
+        for outputCurve_grp in outputCurves_grp:
+            hierarchyUtils.Hierarchy.parent(outputCurve_grp, nhair_rigNode_grp)

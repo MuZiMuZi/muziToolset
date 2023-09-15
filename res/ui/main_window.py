@@ -176,7 +176,8 @@ class functionWidget(QWidget, pipelineUtils.Pipeline):
         self.main_layout.addWidget(self.print_duplicate_object_button, 4, 1)
         self.main_layout.addWidget(self.rename_duplicate_object_button, 4, 2)
         self.main_layout.addWidget(self.default_grp_button, 4, 3)
-        self.main_layout.addWidget(self.create_dynamic_curve_driven_button, 4, 4  )
+        self.main_layout.addWidget(self.create_dynamic_curve_driven_button, 4, 4)
+
     def clear_keys(self):
         pipelineUtils.Pipeline.clear_keys()
 
@@ -233,6 +234,7 @@ class functionWidget(QWidget, pipelineUtils.Pipeline):
         选择曲线。创建动力学化曲线驱动头发
         """
         pipelineUtils.Pipeline.create_dynamic_curve_driven()
+
 
 class matehuman_Widget(QWidget):
 
