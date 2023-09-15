@@ -65,6 +65,21 @@ class Selector_tool:
             menuBar=True
         )
         self.add_menus()
+
+        #创建一个columnLayout来获取物体的名称
+        # columnWidth3设置三个部件的宽度，adjustableColumn表示第几个部件跟随着窗口缩放
+        # placeholderText提示语
+        with pm.columnLayout(adj=True):
+            pm.textFieldButtonGrp(
+                label='Objects',
+                columnWidth3=[50, 140, 5],
+                adjustableColumn=2,
+                editable=False,
+                buttonLabel='<',
+                placeholderText='Please select meshes in the viewport',
+                buttonCommand=lambda *a: None
+            )
+
         self.win.show()
 
     def add_menus(self):
