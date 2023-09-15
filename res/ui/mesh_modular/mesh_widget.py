@@ -32,4 +32,3 @@ class Selector:
         """
         创建ui界面
         """
-        if window(self.winName)
