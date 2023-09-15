@@ -18,17 +18,75 @@ members发生改变时，可以通过手动刷新看到新的列表
 
 """
 
-import maya.cmds as cmds
+# 导入所有需要的模块
+from __future__ import unicode_literals, print_function
 
-class Selector:
+try:
+    from PySide2.QtCore import *
+    from PySide2.QtGui import *
+    from PySide2.QtWidgets import *
+    from PySide2 import __version__
+    from shiboken2 import wrapInstance
+
+except ImportError:
+    from PySide.QtCore import *
+    from PySide.QtGui import *
+    from PySide.QtWidgets import *
+    from PySide import __version__
+    from shiboken import wrapInstance
+import maya.OpenMayaUI as OpenMayaUI
+import maya.cmds as cmds
+import pymel.core as pm
+
+
+class Selector_tool:
     """
     这个工具可以根据材质来选择模型不同的面
     """
+
     def __init__(self):
         self.winTitle = 'Select_mesh_Face'
         self.winName = 'MeshSelectTool'
+        self.init_ui()
 
     def init_ui(self):
         """
         创建ui界面
         """
+        if pm.window(self.winName, exists=True):
+            pm.deleteUI(self.winName)
+
+        self.win = pm.window(
+            self.winName,
+            title=self.winTitle,
+            width=400,
+            height=800,
+            resizeToFitChildren=True,
+            menuBar=True
+        )
+        self.add_menus()
+        self.win.show()
+
+    def add_menus(self):
+        '''
+        添加菜单栏的按钮
+        '''
+        # 添加window栏的按钮
+        with pm.menu(label='Window', tearOff=True) as self.windowMenu:
+            pm.menuItem(label='Refresh', image='refresh.png', command=lambda *a: None)
+            pm.menuItem(label='Clear', image='clearAll.png', command=lambda *a: None)
+            pm.menuItem(label='Collapse All', image='dot.png', command=lambda *a: None)
+            pm.menuItem(label='Expand All', image='dot.png', command=lambda *a: None)
+            pm.menuItem(label='Close', image='closeTabButton.png', command=lambda *a: None)
+
+        with pm.menu(label='Edit', tearOff=True) as self.editMenu:
+            # 创建分隔符
+            pm.menuItem(divider=True, dividerLabel='Selection Mode')
+            # 创建单选的互斥按钮组
+            self.modeRadios = pm.radioMenuItemCollection()
+            pm.menuItem(label='Exclusive', radioButton=True, command=lambda *a: None)
+            pm.menuItem(label='Additive', radioButton=False, command=lambda *a: None)
+
+        with pm.menu(label = 'Help') as self.helpMenu:
+            pm.menuItem(label='help', image='help.png', command=lambda *a: pm.showHelp('https://help.autodesk.com/view/MAYAUL/2023/CHS/',
+                                                                                       absolute=True))
