@@ -5,6 +5,9 @@ from importlib import reload
 reload(mesh_widget)
 print(10)
 
+
 Tool = mesh_widget.Selector_tool()
 
-workspaceControl('example09',retain = True,floating = True, uiScript = 'Tool.init_ui()')
+if workspaceControl(Tool.winTitle ,exists=True):
+    workspaceControl(Tool.winTitle, edit=True,close = True)
+workspaceControl(Tool.winTitle,retain = False,floating = True, uiScript = 'Tool.init_ui()')
