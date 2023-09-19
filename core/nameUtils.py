@@ -51,10 +51,10 @@ class Name(object) :
 		self._description = description
 		self._index = index
 		
-		self._name = name
+		self._name = name.split ("|") [-1]
 		
-		if self._name :
-			self.decompose()
+		# if self._name :
+		# 	self.decompose()
 	
 	
 	
@@ -170,7 +170,7 @@ class Name(object) :
 			cmds.rename(self._name , new_name)
 	
 	
-	
+
 	@pipelineUtils.Pipeline.make_undo
 	def add_prefix(self , prefix) :
 		"""
@@ -181,13 +181,8 @@ class Name(object) :
 		Returns:
 
 		"""
-		names = cmds.ls(sl = True)
-		for self._name in names :
-			# 让新的节点名字加上前缀
-			object_name = self._name.split("|")[-1]
-			new_object_name = prefix + object_name
-			# 重命名节点
-			cmds.rename(self._name , new_object_name)
+		# 重命名节点
+		self._name = cmds.rename(self._name , prefix + self._name)
 	
 	
 	
@@ -201,13 +196,11 @@ class Name(object) :
 		Returns:
 			Object name after modification
 		"""
-		names = cmds.ls(sl = True)
-		for self._name in names :
-			# 让新的节点名字加上前缀
-			object_name = self._name.split("|")[-1]
-			new_object_name = object_name + suffix
-			# 重命名节点
-			cmds.rename(self._name , new_object_name)
+
+
+		# 重命名节点
+		self._name = cmds.rename (self._name , self._name + suffix)
+
 	
 	
 	

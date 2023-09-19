@@ -106,25 +106,30 @@ class Ui_MainWindow(object):
         self.splitter.setObjectName(u"splitter")
         self.splitter.setOrientation(Qt.Horizontal)
         self.selectied_button = QRadioButton(self.splitter)
+        self.insert_buttonGroup = QButtonGroup(MainWindow)
+        self.insert_buttonGroup.setObjectName(u"insert_buttonGroup")
+        self.insert_buttonGroup.addButton(self.selectied_button)
         self.selectied_button.setObjectName(u"selectied_button")
         self.selectied_button.setAcceptDrops(False)
         self.selectied_button.setChecked(True)
         self.splitter.addWidget(self.selectied_button)
         self.hierarchy_button = QRadioButton(self.splitter)
+        self.insert_buttonGroup.addButton(self.hierarchy_button)
         self.hierarchy_button.setObjectName(u"hierarchy_button")
         self.splitter.addWidget(self.hierarchy_button)
         self.all_button = QRadioButton(self.splitter)
+        self.insert_buttonGroup.addButton(self.all_button)
         self.all_button.setObjectName(u"all_button")
         self.splitter.addWidget(self.all_button)
 
         self.gridLayout.addWidget(self.splitter, 8, 0, 1, 2)
 
-        self.pushButton = QPushButton(self.centralwidget)
-        self.pushButton.setObjectName(u"pushButton")
-        self.pushButton.setStyleSheet(u"color: rgb(255, 255, 255);\n"
+        self.execute_button = QPushButton(self.centralwidget)
+        self.execute_button.setObjectName(u"execute_button")
+        self.execute_button.setStyleSheet(u"color: rgb(255, 255, 255);\n"
 "background-color: rgb(85, 170, 255);")
 
-        self.gridLayout.addWidget(self.pushButton, 9, 0, 1, 2)
+        self.gridLayout.addWidget(self.execute_button, 9, 0, 1, 2)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -153,6 +158,6 @@ class Ui_MainWindow(object):
         self.selectied_button.setText(QCoreApplication.translate("MainWindow", u"Selectied(\u9009\u62e9)", None))
         self.hierarchy_button.setText(QCoreApplication.translate("MainWindow", u"Hierarchy\uff08\u5c42\u7ea7\uff09", None))
         self.all_button.setText(QCoreApplication.translate("MainWindow", u"All\uff08\u5168\u90e8\uff09", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Execute(\u6267\u884c)", None))
+        self.execute_button.setText(QCoreApplication.translate("MainWindow", u"Execute(\u6267\u884c)", None))
     # retranslateUi
 
