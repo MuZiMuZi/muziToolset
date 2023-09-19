@@ -480,13 +480,14 @@ class Pipeline(object):
     @staticmethod
     def select_sub_objects(obj_type='transform'):
         u'''
-        快速选择所选择物体的所有子对象
+        快速选择所选择物体的所有子对象,将所有选择的对象名称返回出去方便其他函数调用
         '''
         selection = cmds.ls(sl=True)  # 获取选择的所有对象
         for obj in selection:
             cmds.select(obj, add=True)
             cmds.select(cmds.listRelatives(obj, allDescendents=True, type=obj_type), add=True)
-
+        selection = cmds.ls (sl = True)  # 获取选择的所有对象
+        return selection
     @staticmethod
     def make_undo(func):
         u'''
