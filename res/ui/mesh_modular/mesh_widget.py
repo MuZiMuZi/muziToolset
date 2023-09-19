@@ -22,6 +22,7 @@ members发生改变时，可以通过手动刷新看到新的列表
 from __future__ import unicode_literals , print_function
 from pymel.core import workspaceControl
 
+
 try :
     from PySide2.QtCore import *
     from PySide2.QtGui import *
@@ -46,24 +47,25 @@ class Selector_tool :
     """
 
 
-    def __init__ ( self ) :
+    def __init__ (self) :
         self.winTitle = 'Select_mesh_Face'
         self.winName = 'MeshSelectTool'
+        self.objects - list()
 
 
-    def init_ui ( self ) :
+    def init_ui (self) :
         """
         创建ui界面
         """
         # 创建一个columnLayout来获取物体的名称
         # columnWidth3设置三个部件的宽度，adjustableColumn表示第几个部件跟随着窗口缩放
         # placeholderText提示语
-        with pm.columnLayout ( adj = True ) :
-            with pm.menuBarLayout ( ) :
-                self.add_menus ( )
+        with pm.columnLayout (adj = True) :
+            with pm.menuBarLayout () :
+                self.add_menus ()
             pm.textFieldButtonGrp (
                 label = 'Objects' ,
-                columnWidth3 = [ 50 , 140 , 5 ] ,
+                columnWidth3 = [50 , 140 , 5] ,
                 adjustableColumn = 2 ,
                 editable = False ,
                 buttonLabel = '<' ,
@@ -74,29 +76,44 @@ class Selector_tool :
         # self.win.show()
 
 
-    def add_menus ( self ) :
+    def add_menus (self) :
         '''
         添加菜单栏的按钮
         '''
         # 添加window栏的按钮
-        with pm.menu ( label = 'Window' , tearOff = True ) as self.windowMenu :
-            pm.menuItem ( label = 'Refresh' , image = 'refresh.png' , command = lambda *a : None )
-            pm.menuItem ( label = 'Clear' , image = 'clearAll.png' , command = lambda *a : None )
-            pm.menuItem ( label = 'Collapse All' , image = 'dot.png' , command = lambda *a : None )
-            pm.menuItem ( label = 'Expand All' , image = 'dot.png' , command = lambda *a : None )
-            pm.menuItem ( label = 'Close' , image = 'closeTabButton.png' ,
-                          command = workspaceControl ( self.winTitle , edit = True ,
-                                                       close = True ) )
+        with pm.menu (label = 'Window' , tearOff = True) as self.windowMenu :
+            pm.menuItem (label = 'Refresh' , image = 'refresh.png' , command = lambda *a : None)
+            pm.menuItem (label = 'Clear' , image = 'clearAll.png' , command = lambda *a : None)
+            pm.menuItem (label = 'Collapse All' , image = 'dot.png' , command = lambda *a : None)
+            pm.menuItem (label = 'Expand All' , image = 'dot.png' , command = lambda *a : None)
+            pm.menuItem (label = 'Close' , image = 'closeTabButton.png' ,
+                         command = lambda *a :workspaceControl (self.winTitle , edit = True , close = True))
 
-        with pm.menu ( label = 'Edit' , tearOff = True ) as self.editMenu :
+        with pm.menu (label = 'Edit' , tearOff = True) as self.editMenu :
             # 创建分隔符
-            pm.menuItem ( divider = True , dividerLabel = 'Selection Mode' )
+            pm.menuItem (divider = True , dividerLabel = 'Selection Mode')
             # 创建单选的互斥按钮组
-            self.modeRadios = pm.radioMenuItemCollection ( )
-            pm.menuItem ( label = 'Exclusive' , radioButton = True , command = lambda *a : None )
-            pm.menuItem ( label = 'Additive' , radioButton = False , command = lambda *a : None )
+            self.modeRadios = pm.radioMenuItemCollection ()
+            pm.menuItem (label = 'Exclusive' , radioButton = True , command = lambda *a : None)
+            pm.menuItem (label = 'Additive' , radioButton = False , command = lambda *a : None)
 
-        with pm.menu ( label = 'Help' ) as self.helpMenu :
-            pm.menuItem ( label = 'help' , image = 'help.png' ,
-                          command = lambda *a : pm.showHelp ( 'https://help.autodesk.com/view/MAYAUL/2023/CHS/' ,
-                                                              absolute = True ) )
+        with pm.menu (label = 'Help') as self.helpMenu :
+            pm.menuItem (label = 'help' , image = 'help.png' ,
+                         command = lambda *a : pm.showHelp ('https://help.autodesk.com/view/MAYAUL/2023/CHS/' ,
+                                                            absolute = True))
+
+
+    def insert_selection(self,*args):
+        pass
+
+
+    def validate_selection (self , *args):
+        """
+        检查所选择的物体是否为模型节点
+        """
+        selected_objects = pm.selected (type = 'transform')
+        self.objects = [n for n in selected_objects if n.getShape ()]
+        if self.objects :
+            return True
+        else :
+            return False
