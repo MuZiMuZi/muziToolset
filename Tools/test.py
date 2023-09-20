@@ -1,12 +1,13 @@
-import muziToolset.tools.Names_Tool_main as Names_Tool_main
+import muziToolset.tools.Joint_Tool_main as Joint_Tool_main
+from pymel.core import workspaceControl
 from importlib import reload
-reload(Names_Tool_main)
-try:
-    name_tool.close()
-    name_tool.deleteLater ()
-except :
-    pass
-name_tool = Names_Tool_main.Names_Tool_main()
+reload(Joint_Tool_main)
 
-name_tool.show()
+Tool = Joint_Tool_main.Joint_Tool ()
+
+if workspaceControl (Tool.win_title , exists = True) :
+    workspaceControl (Tool.win_title , edit = True , close = True)
+
+workspaceControl (Tool.win_title , retain = False , floating = True , uiScript = 'Tool.init_ui()')
+
 

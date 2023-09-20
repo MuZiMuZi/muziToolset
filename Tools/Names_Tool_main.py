@@ -16,7 +16,7 @@ reload (pipelineUtils)
 reload (nameUtils)
 
 
-class Names_Tool_main (Names_Tool.Ui_MainWindow , QtWidgets.QMainWindow) :
+class Names_Tool (Names_Tool.Ui_MainWindow , QtWidgets.QMainWindow) :
 
     def __init__ (self , *args , **kwargs) :
         super ().__init__ (*args , **kwargs)
@@ -108,19 +108,14 @@ def show():
         name_tool.deleteLater ()
     except :
         pass
-    name_tool = Names_Tool_main.Names_Tool_main ()
+    name_tool = Names_Tool ()
 
     name_tool.show ()
 
 
 if __name__ == '__main__' :
-    try :
-        Names_Tool.close ()
-        Names_Tool.deleteLater ()
-    except :
-        pass
-
-    Names_Tool = Names_Tool_main (
-        parent = pipelineUtils.Pipeline.get_maya_main_window ()
-    )
-    Names_Tool.show ()
+    # 通过QApplication方法来生成应用
+    app = QtWidgets.QApplication ()
+    qt_app = Names_Tool ()
+    qt_app.show ()
+    app.exec_ ()
