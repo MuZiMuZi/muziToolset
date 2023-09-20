@@ -490,16 +490,18 @@ class Pipeline(object):
         return selection
     @staticmethod
     def make_undo(func):
-        u'''
-        一键撤销的解释器
-        '''
+        """
+            这是一个装饰器，用于将一系列操作的撤销 包裹成一个撤销操作
+        """
 
-        @wraps(func)
-        def wrap(*args, **kwargs):
-            cmds.undoInfo(openChunk=True)
-            result = func(*args, **kwargs)
-            cmds.undoInfo(closeChunk=True)
+
+        @wraps (func)
+        def wrap (*args , **kwargs) :
+            cmds.undoInfo (openChunk = True)
+            result = func (*args , **kwargs)
+            cmds.undoInfo (closeChunk = True)
             return result
+
 
         return wrap
 
