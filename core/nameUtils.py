@@ -28,6 +28,8 @@ import maya.cmds as cmds
 
 from . import pipelineUtils
 
+reload(pipelineUtils)
+
 
 
 class Name(object) :
@@ -261,7 +263,7 @@ class Name(object) :
 	@pipelineUtils.Pipeline.make_undo
 	def search_replace_name(self , search , replace) :
 		"""
-			搜索替换对应的名称
+			搜索替换对应的名称,根据正则表达式搜索替换名称
 		Args:
 			search: 搜索的名称
 			replace:替换的名称
@@ -269,13 +271,17 @@ class Name(object) :
 		Returns:
 
 		"""
-		names = cmds.ls(sl = True)
-		for self._name in names :
-			search_name = self._name.split("|")[-1]
-			cmds.rename(search_name , search_name.replace(search , replace))
+		cmds.rename (self._name , self._name.replace (search , replace))
 	
-	
-	
+	def rename_to_name(self,new_name):
+		"""
+		重命名为指定的名称
+		Args:
+			new_name: 指定的名称
+
+		Returns:
+		"""
+		cmds.rename (self._name , new_name)
 	def regex_search_replace_name(self , search , replace) :
 		u'''
 		根据正则表达式搜索替换名称
