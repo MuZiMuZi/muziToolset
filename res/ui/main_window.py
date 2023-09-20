@@ -19,9 +19,13 @@ import muziToolset.res.ui.setting_modular.setting_widget as setting_widget
 import muziToolset.res.ui.snap_modular.snap_widget as snap_widget
 import muziToolset.tools.Names_Tool_main as Names_Tool_main
 from importlib import reload
+import muziToolset.tools.Names_Tool_main as Names_Tool_main
+from importlib import reload
 
 
 reload (Names_Tool_main)
+
+
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QFont
 from PySide2.QtWidgets import *

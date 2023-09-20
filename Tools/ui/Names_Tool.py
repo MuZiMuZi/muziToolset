@@ -23,8 +23,8 @@ class Ui_MainWindow(object):
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(743, 706))
-        self.gridLayout = QGridLayout(self.centralwidget)
-        self.gridLayout.setObjectName(u"gridLayout")
+        self.verticalLayout = QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.label = QLabel(self.centralwidget)
         self.label.setObjectName(u"label")
         self.label.setStyleSheet(u"color: rgb(255, 0, 0);")
@@ -32,27 +32,27 @@ class Ui_MainWindow(object):
         self.label.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
         self.label.setWordWrap(False)
 
-        self.gridLayout.addWidget(self.label, 0, 0, 1, 2)
+        self.verticalLayout.addWidget(self.label)
 
         self.label_2 = QLabel(self.centralwidget)
         self.label_2.setObjectName(u"label_2")
 
-        self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
+        self.verticalLayout.addWidget(self.label_2)
 
         self.prefix_lineEdit = QLineEdit(self.centralwidget)
         self.prefix_lineEdit.setObjectName(u"prefix_lineEdit")
 
-        self.gridLayout.addWidget(self.prefix_lineEdit, 1, 1, 1, 1)
+        self.verticalLayout.addWidget(self.prefix_lineEdit)
 
         self.label_3 = QLabel(self.centralwidget)
         self.label_3.setObjectName(u"label_3")
 
-        self.gridLayout.addWidget(self.label_3, 2, 0, 1, 1)
+        self.verticalLayout.addWidget(self.label_3)
 
         self.subfix_lineEdit = QLineEdit(self.centralwidget)
         self.subfix_lineEdit.setObjectName(u"subfix_lineEdit")
 
-        self.gridLayout.addWidget(self.subfix_lineEdit, 2, 1, 1, 1)
+        self.verticalLayout.addWidget(self.subfix_lineEdit)
 
         self.label_6 = QLabel(self.centralwidget)
         self.label_6.setObjectName(u"label_6")
@@ -61,27 +61,27 @@ class Ui_MainWindow(object):
         self.label_6.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
         self.label_6.setWordWrap(False)
 
-        self.gridLayout.addWidget(self.label_6, 3, 0, 1, 2)
+        self.verticalLayout.addWidget(self.label_6)
 
         self.label_4 = QLabel(self.centralwidget)
         self.label_4.setObjectName(u"label_4")
 
-        self.gridLayout.addWidget(self.label_4, 4, 0, 1, 1)
+        self.verticalLayout.addWidget(self.label_4)
 
         self.search_lineEdit = QLineEdit(self.centralwidget)
         self.search_lineEdit.setObjectName(u"search_lineEdit")
 
-        self.gridLayout.addWidget(self.search_lineEdit, 4, 1, 1, 1)
+        self.verticalLayout.addWidget(self.search_lineEdit)
 
         self.label_5 = QLabel(self.centralwidget)
         self.label_5.setObjectName(u"label_5")
 
-        self.gridLayout.addWidget(self.label_5, 5, 0, 1, 1)
+        self.verticalLayout.addWidget(self.label_5)
 
         self.replace_lineEdit = QLineEdit(self.centralwidget)
         self.replace_lineEdit.setObjectName(u"replace_lineEdit")
 
-        self.gridLayout.addWidget(self.replace_lineEdit, 5, 1, 1, 1)
+        self.verticalLayout.addWidget(self.replace_lineEdit)
 
         self.label_8 = QLabel(self.centralwidget)
         self.label_8.setObjectName(u"label_8")
@@ -90,17 +90,17 @@ class Ui_MainWindow(object):
         self.label_8.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
         self.label_8.setWordWrap(False)
 
-        self.gridLayout.addWidget(self.label_8, 6, 0, 1, 2)
+        self.verticalLayout.addWidget(self.label_8)
 
         self.label_7 = QLabel(self.centralwidget)
         self.label_7.setObjectName(u"label_7")
 
-        self.gridLayout.addWidget(self.label_7, 7, 0, 1, 1)
+        self.verticalLayout.addWidget(self.label_7)
 
         self.rename_lineEdit = QLineEdit(self.centralwidget)
         self.rename_lineEdit.setObjectName(u"rename_lineEdit")
 
-        self.gridLayout.addWidget(self.rename_lineEdit, 7, 1, 1, 1)
+        self.verticalLayout.addWidget(self.rename_lineEdit)
 
         self.splitter = QSplitter(self.centralwidget)
         self.splitter.setObjectName(u"splitter")
@@ -122,14 +122,20 @@ class Ui_MainWindow(object):
         self.all_button.setObjectName(u"all_button")
         self.splitter.addWidget(self.all_button)
 
-        self.gridLayout.addWidget(self.splitter, 8, 0, 1, 2)
+        self.verticalLayout.addWidget(self.splitter)
 
         self.execute_button = QPushButton(self.centralwidget)
         self.execute_button.setObjectName(u"execute_button")
         self.execute_button.setStyleSheet(u"color: rgb(255, 255, 255);\n"
 "background-color: rgb(85, 170, 255);")
 
-        self.gridLayout.addWidget(self.execute_button, 9, 0, 1, 2)
+        self.verticalLayout.addWidget(self.execute_button)
+
+        self.reset_button = QPushButton(self.centralwidget)
+        self.reset_button.setObjectName(u"reset_button")
+        self.reset_button.setStyleSheet(u"background-color: rgb(255, 158, 255);")
+
+        self.verticalLayout.addWidget(self.reset_button)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -159,5 +165,6 @@ class Ui_MainWindow(object):
         self.hierarchy_button.setText(QCoreApplication.translate("MainWindow", u"Hierarchy\uff08\u5c42\u7ea7\uff09", None))
         self.all_button.setText(QCoreApplication.translate("MainWindow", u"All\uff08\u5168\u90e8\uff09", None))
         self.execute_button.setText(QCoreApplication.translate("MainWindow", u"Execute(\u6267\u884c)", None))
+        self.reset_button.setText(QCoreApplication.translate("MainWindow", u"Reset(\u91cd\u7f6e)", None))
     # retranslateUi
 
