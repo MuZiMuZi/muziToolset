@@ -254,3 +254,17 @@ class Joint(object) :
 			# 无子关节，关节定向为世界方向
 			else :
 				cmds.joint(jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')
+
+
+	def show_joint_axis(self):
+		"""
+		显示关节轴向
+		"""
+		pass
+
+	def hide_joint_axis(self):
+		"""
+		隐藏关节轴向
+		"""
+		pass
+
