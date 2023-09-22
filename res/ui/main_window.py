@@ -25,7 +25,6 @@ from importlib import reload
 
 reload (Names_Tool_main)
 
-
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QFont
 from PySide2.QtWidgets import *

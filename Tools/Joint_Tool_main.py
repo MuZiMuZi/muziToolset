@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import os
 from PySide2 import QtCore
 from PySide2 import QtGui
@@ -6,7 +7,8 @@ import pymel.core as pm
 from .config import ui_dir , icon_dir
 from ..core import pipelineUtils , nameUtils , jointUtils
 from importlib import reload
-
+import maya.OpenMayaUI as omui
+from shiboken2 import wrapInstance
 import maya.cmds as cmds
 
 
@@ -14,14 +16,14 @@ reload (jointUtils)
 reload (pipelineUtils)
 
 
-class Joint_Tool () :
+class Joint_Tool (QtWidgets.QMainWindow) :
     """
     一个关节工具的类
     """
 
 
-    def __init__ (self , *args , **kwargs) :
-        super ().__init__ (*args , **kwargs)
+    def __init__ (self , parent = pipelineUtils.Pipeline.get_maya_main_window ()) :
+        super (Joint_Tool , self).__init__ (parent)
         self.win_name = 'Joint_Tool'
         self.win_title = 'Joint_Tool(关节工具)'
         self.init_ui ()
@@ -31,26 +33,37 @@ class Joint_Tool () :
         #############################################################
         # 创建ui界面
         #############################################################
-        self.main_window = pm.window (self.win_title , width = 300 , height = 500)
-
-        pm.scrollLayout ()
-        # 添加各个模块工具的ui
-        self.init_joint_attr_ui ()
-        self.init_add_joint_ui ()
-        self.init_joint_tool_ui ()
+        # 设置标题
+        self.setWindowTitle (self.win_title)
+        # 设置宽高
+        self.setMinimumSize (300 , 400)
+        # #
+        # # # 添加各个模块工具的ui
+        self.create_joint_attr_layout ()
+        # self.init_add_joint_ui ()
+        # self.init_joint_tool_ui ()
         # self.main_window.show ()
 
 
-    def init_joint_attr_ui (self) :
-        ## 创建添加关节属性的ui界面
-        pm.frameLayout (label = '关节属性' ,
-                        collapsable = True ,
-                        backgroundColor = [0 , 0 , 20])
-        # pm.checkBox (label = '关节方向')
-        cmds.iconTextCheckBox (style = 'iconAndTextHorizontal' , image1 = 'menuIconModify.png' , label = '关节方向')
-        cmds.iconTextCheckBox (style = 'iconAndTextHorizontal' , image1 = 'kinJoint.png' , label = '关节定向')
-        pm.setParent ('..')
-        pm.setParent ('..')
+    def create_joint_attr_layout (self) :
+        self.joint_attr_layout = QtWidgets.QVBoxLayout ()
+
+        self.button = QtWidgets.QPushButton ()
+        self.axis_cheekbox = QtWidgets.QCheckBox ()
+
+        self.joint_attr_layout.addWidget (self.button)
+        self.joint_attr_layout.addWidget (self.axis_cheekbox)
+
+
+        # ## 创建添加关节属性的ui界面
+        # pm.frameLayout (label = '关节属性' ,
+        #                 collapsable = True ,
+        #                 backgroundColor = [0 , 0 , 20])
+        # # pm.checkBox (label = '关节方向')
+        # cmds.iconTextCheckBox (style = 'iconAndTextHorizontal' , image1 = 'menuIconModify.png' , label = '关节方向')
+        # cmds.iconTextCheckBox (style = 'iconAndTextHorizontal' , image1 = 'kinJoint.png' , label = '关节定向')
+        # pm.setParent ('..')
+        # pm.setParent ('..')
 
 
     def init_add_joint_ui (self) :
@@ -122,9 +135,20 @@ class Joint_Tool () :
 
 def show () :
     try :
-        cmds.deleteUI (joint_tool.win_title)
-        cmds.delete (joint_tool)
+        window.close ()  # 关闭窗口
+        window.deleteLater ()  # 删除窗口
     except :
         pass
-    joint_tool = Joint_Tool ()
-    joint_tool.main_window.show ()
+    window = Joint_Tool ()  # 创建实例
+    window.show ()  # 显示窗口
+
+
+if __name__ == "__main__" :
+
+    try :
+        window.close ()  # 关闭窗口
+        window.deleteLater ()  # 删除窗口
+    except :
+        pass
+    window = Joint_Tool ()  # 创建实例
+    window.show ()  # 显示窗口

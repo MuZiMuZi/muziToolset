@@ -23,7 +23,7 @@ from pymel.core.nodetypes import Joint
 from . import controlUtils , pipelineUtils
 
 
-class Joint_util (object) :
+class Joint (object) :
 
 
     def __init__ (self ,jnt, *args , **kwargs) :
