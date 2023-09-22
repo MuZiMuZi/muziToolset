@@ -143,6 +143,10 @@ def show () :
     window.show ()  # 显示窗口
 
 
+def main () :
+    return Joint_Tool ()
+
+
 if __name__ == "__main__" :
 
     try :

@@ -55,16 +55,16 @@ class Names_Tool (Names_Tool.Ui_MainWindow , QtWidgets.QMainWindow) :
         """
         判断修改名称的模式,根据修改名称的模式来获取需要修改名称的对象
         """
-        #选中的物体修改命名的情况
+        # 选中的物体修改命名的情况
         if self.selectied_button.isChecked () :
             self.object_list = cmds.ls (sl = True)
-        #层级修改命名的情况
+        # 层级修改命名的情况
         elif self.hierarchy_button.isChecked () :
             self.object_list = pipelineUtils.Pipeline.select_sub_objects ()
-        #全部修改命名的情况
+        # 全部修改命名的情况
         else :
             cmds.select (allDagObjects = True)
-            self.object_list =cmds.ls (sl = True)
+            self.object_list = cmds.ls (sl = True)
         # 判断object_list里是否有无法重命名的节点,如果有的话将其删除
         cmds.select (self.object_list)
 
@@ -100,9 +100,7 @@ class Names_Tool (Names_Tool.Ui_MainWindow , QtWidgets.QMainWindow) :
             lineEdit.clear ()
 
 
-
-
-def show():
+def show () :
     try :
         name_tool.close ()
         name_tool.deleteLater ()
@@ -111,6 +109,10 @@ def show():
     name_tool = Names_Tool ()
 
     name_tool.show ()
+
+
+def main () :
+    return Names_Tool ()
 
 
 if __name__ == '__main__' :

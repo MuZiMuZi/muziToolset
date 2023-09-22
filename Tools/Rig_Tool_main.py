@@ -10,7 +10,7 @@ from importlib import reload
 import maya.cmds as cmds
 
 
-class Rig_Tool () :
+class Rig_Tool (QtWidgets.QWidget) :
     """
     一个绑定工具的类
     """
@@ -20,7 +20,7 @@ class Rig_Tool () :
         super ().__init__ (*args , **kwargs)
         self.win_name = 'Rig_Tool'
         self.win_title = 'Rig_Tool(绑定工具)'
-        self.init_ui ()
+        button = QtWidgets.QPushButton ('ceshi' , parent = self)
 
 
     def init_ui (self) :
@@ -117,3 +117,7 @@ class Rig_Tool () :
         pm.button (label = '删除IK链条' , command = lambda *a : None)
         pm.setParent ('..')
         pm.setParent ('..')
+
+
+def main () :
+    return Rig_Tool ()
