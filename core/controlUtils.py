@@ -38,7 +38,7 @@ from . import nameUtils , pipelineUtils , matehumanUtils , hierarchyUtils , attr
 
 
 reload(pipelineUtils)
-
+reload (nameUtils)
 
 
 class Control(object) :
@@ -426,14 +426,15 @@ class Control(object) :
 		
 		global ctrl_color , sub_color
 		name_obj = nameUtils.Name(name = name)
+		name_obj.decompose()
 		# 获得控制器边的参数
-		if name_obj.side == 'l' :
+		if name_obj.side == 'l'or 'L' :
 			ctrl_color = 6
 			sub_color = 18
-		elif name_obj.side == 'r' :
+		elif name_obj.side == 'r' or 'R' :
 			ctrl_color = 13
 			sub_color = 20
-		elif name_obj.side == 'm' :
+		elif name_obj.side == 'm' or 'M' :
 			ctrl_color = 17
 			sub_color = 22
 		
