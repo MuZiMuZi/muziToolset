@@ -5,7 +5,10 @@ u"""
 目前已有的功能：
 """
 from . import pipelineUtils , controlUtils , hierarchyUtils
+from importlib import reload
 
+
+reload (controlUtils)
 import maya.cmds as cmds
 
 
@@ -47,3 +50,36 @@ class AdvUtils (object) :
                                                       point_value = True , orient_value = True ,
                                                       scale_value = False ,
                                                       mo_value = True)
+
+
+    @staticmethod
+    def add_lid_ctrl () :
+        '''
+        眼皮中间添加新的次级控制器，应用于动画制作的情况
+        思路：
+        对应中间的关节upperLidJoint_L 添加上新的控制器，并且制作约束即可
+        次级控制器约束关节，嘴唇大环控制器约束次级控制器
+        注意约束不要添加缩放约束
+        '''
+
+        # 分成上下嘴唇两种情况制作次级控制器
+        for type in ['upperLid' , 'lowerLid','lowerLidOuter','upperLidOuter'] :
+            for side in ['L' , 'R'] :
+                lid_joint = type + 'Joint_{}'.format (side)
+                lid_main_ctrl = type + '_{}'.format (side)
+
+                # 删除lid关节上自带的约束
+                cmds.select (lid_joint , r = True)
+                pipelineUtils.Pipeline.delete_constraints ()
+
+                # 创建新的次级控制器并且吸附到lid关节上
+                lid_ctrl = controlUtils.Control.create_ctrl (name = 'ctrl_{}_{}_001'.format (side,type) ,
+                                                             shape = 'Cube' ,
+                                                             radius = 0.5 , axis = 'Y+' , pos = lid_joint ,
+                                                             parent = lid_main_ctrl)
+
+                # 创建出来的次级控制器对lid关节进行约束
+                pipelineUtils.Pipeline.create_constraint (lid_ctrl.replace ('ctrl' , 'output') , lid_joint ,
+                                                          point_value = True , orient_value = True ,
+                                                          scale_value = True ,
+                                                          mo_value = True)
