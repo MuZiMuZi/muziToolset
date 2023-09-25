@@ -63,7 +63,7 @@ class AdvUtils (object) :
         '''
 
         # 分成上下嘴唇两种情况制作次级控制器
-        for type in ['upperLid' , 'lowerLid','lowerLidOuter','upperLidOuter'] :
+        for type in ['upperLid' , 'lowerLid' , 'lowerLidOuter' , 'upperLidOuter'] :
             for side in ['L' , 'R'] :
                 lid_joint = type + 'Joint_{}'.format (side)
                 lid_main_ctrl = type + '_{}'.format (side)
@@ -73,11 +73,17 @@ class AdvUtils (object) :
                 pipelineUtils.Pipeline.delete_constraints ()
 
                 # 创建新的次级控制器并且吸附到lid关节上
-                lid_ctrl = controlUtils.Control.create_ctrl (name = 'ctrl_{}_{}_001'.format (side,type) ,
+                lid_ctrl = controlUtils.Control.create_ctrl (name = 'ctrl_{}_{}_001'.format (side , type) ,
                                                              shape = 'Cube' ,
                                                              radius = 0.5 , axis = 'Y+' , pos = lid_joint ,
                                                              parent = lid_main_ctrl)
-
+                # 控制器左右需要镜像一下，r边的情况下offset组的值需要乘-1
+                if side == 'R' :
+                    side_value = -1
+                else :
+                    side_value = 1
+                for i in ['x' , 'y' , 'z'] :
+                    cmds.setAttr (lid_ctrl.replace ('ctrl_' , 'offset_') + 'translate{}'.format (i) , side_value)
                 # 创建出来的次级控制器对lid关节进行约束
                 pipelineUtils.Pipeline.create_constraint (lid_ctrl.replace ('ctrl' , 'output') , lid_joint ,
                                                           point_value = True , orient_value = True ,
