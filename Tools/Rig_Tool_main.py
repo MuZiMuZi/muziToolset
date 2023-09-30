@@ -16,40 +16,47 @@ class Rig_Tool (QtWidgets.QWidget) :
     """
 
 
-    def __init__ (self , *args , **kwargs) :
-        super ().__init__ (*args , **kwargs)
+    def __init__ (self , parent = None) :
+        super (Rig_Tool,self).__init__ (parent)
         self.win_name = 'Rig_Tool'
         self.win_title = 'Rig_Tool(绑定工具)'
-        button = QtWidgets.QPushButton ('ceshi' , parent = self)
+        self.init_ui()
 
 
     def init_ui (self) :
         #############################################################
         # 创建ui界面
         #############################################################
-        self.main_window = pm.window (self.win_title , width = 300 , height = 500)
+        self.main_window = QtWidgets.QMainWindow()
+        self.main_window.setWindowTitle(self.win_title)
+        self.main_window.setGeometry(500, 500, 600,600)
 
-        pm.scrollLayout ()
+
+
+
+
         # 添加各个模块工具的ui
-        self.init_fk_ui ()
-        self.init_ik_ui ()
-        self.init_ikspine_ui ()
+        # self.init_fk_ui ()
+        # self.init_ik_ui ()
+        # self.init_ikspine_ui ()
 
 
     def init_fk_ui (self) :
         #############################################################
         # 创建装备fk的ui界面
         #############################################################
-        pm.frameLayout (label = '装配FK' ,
-                        collapsable = True ,
-                        backgroundColor = [0 , 0 , 20])
-
-        pm.rowColumnLayout (numberOfColumns = 2)
-
-        pm.button (label = '创建fk链条' , command = lambda *a : None)
-        pm.button (label = '删除fk链条' , command = lambda *a : print ('delete_fk(1)'))
-        pm.setParent ('..')
-        pm.setParent ('..')
+        button = QtWidgets.QPushButton ('ceshi2' , parent = self)
+        self.scroll_layout.add
+        # pm.frameLayout (label = '装配FK' ,
+        #                 collapsable = True ,
+        #                 backgroundColor = [0 , 0 , 20])
+        #
+        # pm.rowColumnLayout (numberOfColumns = 2)
+        #
+        # pm.button (label = '创建fk链条' , command = lambda *a : None)
+        # pm.button (label = '删除fk链条' , command = lambda *a : print ('delete_fk(1)'))
+        # pm.setParent ('..')
+        # pm.setParent ('..')
 
 
     def init_ik_ui (self) :
@@ -121,3 +128,10 @@ class Rig_Tool (QtWidgets.QWidget) :
 
 def main () :
     return Rig_Tool ()
+
+
+if __name__ == "__main__" :
+    app = QApplication (sys.argv)
+    mainwindow = Rig_Tool ()
+    mainwindow.show ()
+    sys.exit (app.exec_ ())

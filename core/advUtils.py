@@ -17,7 +17,7 @@ class AdvUtils (object) :
     @staticmethod
     def add_lip_ctrl () :
         '''
-        adv嘴唇中间添加新的次级控制器，应用于动画制作抿嘴的情况
+        adv嘴唇中间添加新的次级控制器，应用于动画制作抿嘴的情况，注意需要吸附枢纽
         思路：
         adv的嘴唇绑定是通过面片上的关节来驱动的，因此只需要找到对应中间的关节添加上新的控制器，并且制作约束即可
         次级控制器约束关节，嘴唇大环控制器约束次级控制器
@@ -38,6 +38,8 @@ class AdvUtils (object) :
             lip_ctrl = controlUtils.Control.create_ctrl (name = 'ctrl_m_{}Lip_001'.format (type) , shape = 'Cube' ,
                                                          radius = 0.5 , axis = 'Y+' , pos = lip_joint ,
                                                          parent = 'LipRegion_M')
+
+
 
             # 创建出来的次级控制器对lip关节进行约束
             pipelineUtils.Pipeline.create_constraint (lip_ctrl.replace ('ctrl' , 'output') , lip_joint ,

@@ -1529,9 +1529,9 @@ class Pipeline (object) :
                                curve = output_curve_node ,
                                name = dynamic_curve_node + '_handle') [0]
             #
-            # # 找到模型的节点名称并且将动力学骨骼蒙皮给模型，曲线节点的命名为 模型节点 + '_crv'
-            # modle_node = dynamic_curve_node.split('_')[0]
-            # cmds.skinCluster(jnt_list, modle_node)
+            # 找到模型的节点名称并且将动力学骨骼蒙皮给模型，曲线节点的命名为 模型节点 + '_crv'
+            modle_node = dynamic_curve_node.split('_')[0]
+            cmds.skinCluster(jnt_list, modle_node)
             #
             # 整理层级结构
             # 创建动力学的层级组

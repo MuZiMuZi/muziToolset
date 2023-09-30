@@ -10,10 +10,11 @@ from ..core import pipelineUtils
 from . import config , Names_Tool_main , Joint_Tool_main , Rig_Tool_main , test_main
 
 
-reload(Names_Tool_main)
-reload(Joint_Tool_main)
-reload(Rig_Tool_main)
-reload(test_main)
+reload (Names_Tool_main)
+reload (Joint_Tool_main)
+reload (Rig_Tool_main)
+reload (test_main)
+
 
 class TemplateWindow (QtWidgets.QMainWindow) :
 
@@ -58,7 +59,7 @@ class TemplateWindow (QtWidgets.QMainWindow) :
     def add_layouts (self) :
         # 设置标签布局
         self.main_widget = QtWidgets.QTabWidget ()
-        self.main_widget.setTabShape (QTabWidget.Triangular)
+        self.main_widget.setTabShape (QtWidgets.QTabWidget.Triangular)
 
         # 创建页面
         self.name_tool_tab = QtWidgets.QWidget ()
@@ -82,16 +83,6 @@ class TemplateWindow (QtWidgets.QMainWindow) :
 
 
     # 信号与槽链接
-
-    def name_tool_tab_ui (self) :
-        layout = QtWidgets.QHBoxLayout ()
-        name_tool = Names_Tool_main.Names_Tool ()
-        name_tool.show ()
-        # self.name_tool_tab.setlayout (layout)
-
-
-    def test_tool_tab_ui (self) :
-        pass
 
 
 if __name__ == "__main__" :

@@ -506,7 +506,7 @@ class Control(object) :
 			
 			# 吸附到对应的位置
 			if pos :
-				cmds.matchTransform(zero_grp , pos , position = True , rotation = True , scale = True)
+				cmds.matchTransform(zero_grp , pos , position = True , rotation = True , scale = True, piv = True)
 			#
 			# 做父子层级
 			if parent :
