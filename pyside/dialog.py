@@ -48,88 +48,40 @@ class TestDialog(QtWidgets.QDialog) :
 		self.create_widgets()
 		self.create_layouts()
 		
-		# 添加连接
-		self.create_connections()
+		# # 添加连接
+		# self.create_connections()
 	
 	
 	
 	def create_widgets(self) :
-		self.lineEdit = custom_lineEdit()
-		self.hidden_box = QtWidgets.QCheckBox()
-		self.checkBox2 = QtWidgets.QCheckBox()
-		
-		self.combo_box = QtWidgets.QComboBox()
-		self.combo_box.addItems(['test1' , 'test2' , 'test3' , 'test4'])
-		
-		self.ok_btn = QtWidgets.QPushButton('ok')
-		self.cancel_btn = QtWidgets.QPushButton('cancel')
+		self.lineedit = QtWidgets.QLineEdit()
+		self.checkbox1 = QtWidgets.QCheckBox('Cheekbox1')
+		self.checkbox2 = QtWidgets.QCheckBox('Cheekbox2')
+		self.button1 = QtWidgets.QPushButton('Button1')
+		self.button2 = QtWidgets.QPushButton('Button2')
+
+
 	
 	
 	
 	def create_layouts(self) :
+		pass
 		# 创建表单布局
-		self.form_layout = QtWidgets.QFormLayout()
-		self.form_layout.addRow('name:' , self.lineEdit)
-		self.form_layout.addRow('hidden:' , self.hidden_box)
-		self.form_layout.addRow('locked:' , self.checkBox2)
-		self.form_layout.addRow(self.combo_box)
+		main_layout = QtWidgets.QVBoxLayout(self)
+		main_layout.addWidget(self.lineedit)
+		main_layout.addWidget(self.checkbox1)
+		main_layout.addWidget(self.checkbox2)
+		main_layout.addWidget(self.button1)
+		main_layout.addWidget(self.button2)
 		
 		# 创建水平布局
-		self.button_layout = QtWidgets.QHBoxLayout()
-		self.button_layout.addStretch()
-		self.button_layout.addWidget(self.ok_btn)
-		self.button_layout.addWidget(self.cancel_btn)
+
 		
 		# 创建主布局，并添加空间
-		self.main_layout = QtWidgets.QVBoxLayout(self)
-		self.main_layout.addLayout(self.form_layout)
-		self.main_layout.addLayout(self.button_layout)
+
 	
 	
 	
-	def create_connections(self) :
-		u"""
-		创建槽函数的连接
-		"""
-		self.lineEdit.enter_pressed.connect(self.on_enter_presseed)
-		self.hidden_box.toggled.connect(self.print_is_hidden)
-		self.cancel_btn.clicked.connect(self.close)
-		
-		# 连接combo_box的连接信号
-		self.combo_box.activated.connect(self.on_activated_int)
-		self.combo_box.activated[str].connect(self.on_activated_str)
-	
-	
-	
-	def print_hello_name(self) :
-		name = self.lineEdit.text()
-		print('hello {}!'.format(name))
-	
-	
-	
-	def print_is_hidden(self) :
-		hidden = self.hidden_box.isChecked()
-		if hidden :
-			print('hidden')
-		else :
-			print('visible')
-	
-	
-	
-	@QtCore.Slot(int)
-	def on_activated_int(self , index) :
-		print('comboBox Index : {}'.format(index))
-	
-	
-	
-	@QtCore.Slot(str)
-	def on_activated_str(self , text) :
-		print('comboBox Text : {}'.format(text))
-	
-	
-	
-	def on_enter_presseed(self , text) :
-		print(text)
 
 
 
