@@ -18,8 +18,8 @@ reload (nameUtils)
 
 class Names_Tool (Names_Tool.Ui_MainWindow , QtWidgets.QMainWindow) :
 
-    def __init__ (self , *args , **kwargs) :
-        super ().__init__ (*args , **kwargs)
+    def __init__ (self , parent = None) :
+        super ().__init__ (parent)
         # 调用父类的ui方法，来运行ui
         self.winTitle = 'Names_Tool(命名工具)'
         self.setupUi (self)

@@ -4,10 +4,13 @@ from PySide2 import QtGui
 from PySide2 import QtWidgets
 import pymel.core as pm
 from .config import ui_dir , icon_dir
-from ..core import pipelineUtils , nameUtils , jointUtils
+from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils
 from importlib import reload
 
 import maya.cmds as cmds
+
+
+reload (qtUtils)
 
 
 class Rig_Tool (QtWidgets.QWidget) :
@@ -17,46 +20,36 @@ class Rig_Tool (QtWidgets.QWidget) :
 
 
     def __init__ (self , parent = None) :
-        super (Rig_Tool,self).__init__ (parent)
+        super (Rig_Tool , self).__init__ (parent)
         self.win_name = 'Rig_Tool'
         self.win_title = 'Rig_Tool(绑定工具)'
-        self.init_ui()
+        self.create_widgets ()
+        self.create_layouts ()
 
 
-    def init_ui (self) :
-        #############################################################
-        # 创建ui界面
-        #############################################################
-        self.main_window = QtWidgets.QMainWindow()
-        self.main_window.setWindowTitle(self.win_title)
-        self.main_window.setGeometry(500, 500, 600,600)
+    def create_widgets (self) :
+        self.fk_label = QtWidgets.QLabel ('创建FK----------------' , self)
+        self.create_fk_button = QtWidgets.QPushButton ('创建fk链条')
+        self.delete_fk_button = QtWidgets.QPushButton ('删除fk链条')
+
+
+        self.ik_start_button = QtWidgets.QPushButton ('拾取ik起始关节')
+        self.ik_start_line = QtWidgets.QLineEdit()
+        self.ik_end_button = QtWidgets.QPushButton ('拾取ik结束关节')
+        self.ik_end_line = QtWidgets.QLineEdit ()
+    def create_layouts (self) :
+        #创建fk系统的layout
+        self.fk_layout = QtWidgets.QFormLayout (self)
+        self.fk_layout.addRow (self.fk_label)
+        self.fk_layout.addRow (self.create_fk_button , self.delete_fk_button)
+
+        #创建ik系统的layout
+        self.ik_layout = QtWidgets.QFormLayout (self)
+        self.ik_layout.addRow('起始关节',self.ik_start_line,self.ik_start_button)
 
 
 
 
-
-        # 添加各个模块工具的ui
-        # self.init_fk_ui ()
-        # self.init_ik_ui ()
-        # self.init_ikspine_ui ()
-
-
-    def init_fk_ui (self) :
-        #############################################################
-        # 创建装备fk的ui界面
-        #############################################################
-        button = QtWidgets.QPushButton ('ceshi2' , parent = self)
-        self.scroll_layout.add
-        # pm.frameLayout (label = '装配FK' ,
-        #                 collapsable = True ,
-        #                 backgroundColor = [0 , 0 , 20])
-        #
-        # pm.rowColumnLayout (numberOfColumns = 2)
-        #
-        # pm.button (label = '创建fk链条' , command = lambda *a : None)
-        # pm.button (label = '删除fk链条' , command = lambda *a : print ('delete_fk(1)'))
-        # pm.setParent ('..')
-        # pm.setParent ('..')
 
 
     def init_ik_ui (self) :
