@@ -43,9 +43,8 @@ class TestDialog (QtWidgets.QDialog) :
         self.create_widgets ()
         self.create_layouts ()
 
-
-    # # 添加连接
-    # self.create_connections()
+        # 添加连接
+        self.create_connections ()
 
 
     def create_widgets (self) :
@@ -73,6 +72,26 @@ class TestDialog (QtWidgets.QDialog) :
         main_layout = QtWidgets.QVBoxLayout (self)
         main_layout.addLayout (from_layout)
         main_layout.addLayout (button_layout)
+
+
+    def create_connections (self) :
+        self.cancel_button.clicked.connect (self.close)
+        self.lineedit.editingFinished.connect (self.print_hello_name)
+        self.checkbox1.toggled.connect (self.print_is_hidden)
+
+
+    def print_hello_name (self) :
+        name = self.lineedit.text ()
+        print ('hello,{}'.format (name))
+
+
+    def print_is_hidden (self) :
+        hidden = self.checkbox1.isChecked ()
+        if hidden :
+            print ('hidden')
+        else :
+            print ('visible')
+
 
 
 if __name__ == "__main__" :
