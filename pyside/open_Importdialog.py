@@ -27,9 +27,9 @@ class OpenImportDialog(qtUtils.Dialog) :
 	def __init__ (self , parent = qtUtils.get_maya_window ()) :
 		super(OpenImportDialog,self).__init__(parent)
 		# 设置标题和尺寸
-		self.setWindowTitle ('TestDialog')
+		self.setWindowTitle ('Open/Import/Reference')
 		self.setMinimumHeight (200)
-		self.setMinimumWidth (200)
+		self.setMinimumWidth (300)
 
 		# 添加部件
 		self.create_widgets ()
@@ -41,12 +41,40 @@ class OpenImportDialog(qtUtils.Dialog) :
 
 	def create_widgets (self) :
 		"""创建需要的小部件"""
-		pass
+		#创建文件路径的小部件
+		self.file_path_lineEdit = QtWidgets.QLineEdit()
+		self.selected_btn = QtWidgets.QPushButton('...')
+
+		#创建打开方式的单选按钮组
+		self.open_rb = QtWidgets.QRadioButton()
+		self.import_rb = QtWidgets.QRadioButton()
+		self.reference_rb = QtWidgets.QRadioButton()
+
 
 
 	def create_layouts (self) :
 		"""创建需要的布局"""
-		pass
+		#创建文件路径的布局
+		self.file_path_layout = QtWidgets.QHBoxLayout()
+		self.file_path_layout.addWidget(self.file_path_lineEdit)
+		self.file_path_layout.addWidget(self.selected_btn)
+
+		#创建打开方式的布局
+		self.radio_btn_layout = QtWidgets.QHBoxLayout()
+		self.radio_btn_layout.addWidget(self.open_rb)
+		self.radio_btn_layout.addWidget(self.import_rb)
+		self.radio_btn_layout.addWidget(self.reference_rb)
+
+		#创建表单布局来排列各个布局的顺序
+		self.form_layout = QtWidgets.QFormLayout()
+		self.form_layout.addRow('File:',self.file_path_layout)
+		self.form_layout.addRow(self.radio_btn_layout)
+
+		self.main_layout = QtWidgets.QVBoxLayout(self)
+		self.main_layout.addLayout(self.form_layout)
+
+
+
 
 
 	def create_connections (self) :
@@ -72,5 +100,3 @@ def show() :
 	test_dialog = OpenImportDialog ()
 	test_dialog.show ()
 
-
-show()
