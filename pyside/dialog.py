@@ -83,6 +83,9 @@ class TestDialog (QtWidgets.QDialog) :
         self.lineedit.editingFinished.connect (self.print_hello_name)
         self.checkbox1.toggled.connect (self.print_is_hidden)
 
+        self.combobox.activated.connect(self.on_activated_int)
+        self.combobox.activated[str].connect (self.on_activated_str)
+
 
     def print_hello_name (self) :
         name = self.lineedit.text ()
@@ -96,12 +99,14 @@ class TestDialog (QtWidgets.QDialog) :
         else :
             print ('visible')
 
+    @QtCore.Slot(int)
     def on_activated_int(self,index):
-        print('comboBox Index : {}',format(index))
+        print('comboBox Index : {}'.format(index))
 
 
-    def on_activated_int (self , text) :
-        print ('comboBox Text : {}' , format (text))
+    @QtCore.Slot (str)
+    def on_activated_str (self , text) :
+        print ('comboBox Text : {}' . format (text))
 
 
 if __name__ == "__main__" :
