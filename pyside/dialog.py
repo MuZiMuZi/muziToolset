@@ -12,21 +12,25 @@ def maya_main_window () :
     return wrapInstance (int (pointer) , QtWidgets.QWidget)
 
 
-class custom_lineEdit (QtWidgets.QLineEdit) :
+class MylineEdit (QtWidgets.QLineEdit) :
     u"""
     自定义一个新的lineEdit，重写keyPressEvent的方法
     """
-    enter_pressed = QtCore.Signal ()
+    # 创建自定义信号
+    enter_pressed = QtCore.Signal (str)
 
 
     def keyPressEvent (self , event) :
         u"""
         自定义一个键盘事件，当键盘事件触发的时候发出新的命令。类似clicked
         """
-        super ().keyPressEvent (event)
+        super (MylineEdit , self).keyPressEvent (event)
 
-        if event.key () == QtCore.Qt.Key_Enter or event.key () == QtCore.Qt.Key_Return :
-            self.enter_pressed.emit (event.key ())
+        # 判断当键盘上按下enter或者是return键的时候发出自定义信号
+        if event.key () == QtCore.Qt.Key_Enter :
+            self.enter_pressed.emit ('Enter Key Pressed')
+        elif  event.key () == QtCore.Qt.Key_Return:
+            self.enter_pressed.emit ('Return Key Pressed')
 
 
 class TestDialog (QtWidgets.QDialog) :
@@ -48,14 +52,14 @@ class TestDialog (QtWidgets.QDialog) :
 
 
     def create_widgets (self) :
-        self.lineedit = QtWidgets.QLineEdit ()
+        self.lineedit = MylineEdit ()
         self.checkbox1 = QtWidgets.QCheckBox ('Cheekbox1')
         self.checkbox2 = QtWidgets.QCheckBox ('Cheekbox2')
         self.ok_button = QtWidgets.QPushButton ('ok')
         self.cancel_button = QtWidgets.QPushButton ('cancel')
 
-        self.combobox = QtWidgets.QComboBox()
-        self.combobox.addItems(['com1','com2','com3','com4'])
+        self.combobox = QtWidgets.QComboBox ()
+        self.combobox.addItems (['com1' , 'com2' , 'com3' , 'com4'])
 
 
     def create_layouts (self) :
@@ -64,7 +68,7 @@ class TestDialog (QtWidgets.QDialog) :
         from_layout.addRow ('Name:' , self.lineedit)
         from_layout.addRow ('Hidden:' , self.checkbox1)
         from_layout.addRow ('Locked:' , self.checkbox2)
-        from_layout.addRow(self.combobox)
+        from_layout.addRow (self.combobox)
 
         # 创建水平布局
         button_layout = QtWidgets.QHBoxLayout ()
@@ -80,16 +84,21 @@ class TestDialog (QtWidgets.QDialog) :
 
     def create_connections (self) :
         self.cancel_button.clicked.connect (self.close)
-        self.lineedit.editingFinished.connect (self.print_hello_name)
+        self.lineedit.enter_pressed.connect (self.on_enter_pressed)
         self.checkbox1.toggled.connect (self.print_is_hidden)
 
-        self.combobox.activated.connect(self.on_activated_int)
-        self.combobox.activated[str].connect (self.on_activated_str)
+        # 采用装饰器来限定信号传出来的数值类型
+        self.combobox.activated.connect (self.on_activated_int)
+        self.combobox.activated [str].connect (self.on_activated_str)
 
 
     def print_hello_name (self) :
         name = self.lineedit.text ()
         print ('hello,{}'.format (name))
+
+
+    def on_enter_pressed (self , text) :
+        print (text)
 
 
     def print_is_hidden (self , checked) :
@@ -99,14 +108,17 @@ class TestDialog (QtWidgets.QDialog) :
         else :
             print ('visible')
 
-    @QtCore.Slot(int)
-    def on_activated_int(self,index):
-        print('comboBox Index : {}'.format(index))
+
+    # 采用装饰器来限定信号传出来的数值类型
+    @QtCore.Slot (int)
+    def on_activated_int (self , index) :
+        print ('comboBox Index : {}'.format (index))
 
 
+    # 采用装饰器来限定信号传出来的数值类型
     @QtCore.Slot (str)
     def on_activated_str (self , text) :
-        print ('comboBox Text : {}' . format (text))
+        print ('comboBox Text : {}'.format (text))
 
 
 if __name__ == "__main__" :
