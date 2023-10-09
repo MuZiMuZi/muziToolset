@@ -46,9 +46,9 @@ class OpenImportDialog(qtUtils.Dialog) :
 		self.selected_btn = QtWidgets.QPushButton('...')
 
 		#创建打开方式的单选按钮组
-		self.open_rb = QtWidgets.QRadioButton()
-		self.import_rb = QtWidgets.QRadioButton()
-		self.reference_rb = QtWidgets.QRadioButton()
+		self.open_rb = QtWidgets.QRadioButton('Open')
+		self.import_rb = QtWidgets.QRadioButton('Import')
+		self.reference_rb = QtWidgets.QRadioButton('Reference')
 
 
 
