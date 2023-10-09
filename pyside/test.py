@@ -1,16 +1,16 @@
 from importlib import reload
 
-from muziToolset.pyside import dialog
+from muziToolset.pyside import  open_Importdialog
 
 
 
-reload(dialog)
+reload (open_Importdialog)
 
 try :
-	test_dialog.close()
-	test_dialog.deleteLater()
+    test_dialog.close ()
+    test_dialog.deleteLater ()
 except :
-	pass
+    pass
 
-test_dialog = dialog.TestDialog()
-test_dialog.show()
+test_dialog = open_Importdialog.OpenImportDialog ()
+test_dialog.show ()

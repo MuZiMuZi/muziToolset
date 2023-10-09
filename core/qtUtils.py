@@ -281,12 +281,7 @@ class Dialog (QtWidgets.QDialog) :
     """
 
     def __init__ (self , parent = get_maya_window ()) :
-        super (TestDialog , self).__init__ (parent)
-        # 设置标题和尺寸
-        self.setWindowTitle ('TestDialog')
-        self.setMinimumHeight (200)
-        self.setMinimumWidth (200)
-
+        super (Dialog , self).__init__ (parent)
         # 添加部件
         self.create_widgets ()
         self.create_layouts ()
