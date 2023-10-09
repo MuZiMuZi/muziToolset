@@ -54,6 +54,9 @@ class TestDialog (QtWidgets.QDialog) :
         self.ok_button = QtWidgets.QPushButton ('ok')
         self.cancel_button = QtWidgets.QPushButton ('cancel')
 
+        self.combobox = QtWidgets.QComboBox()
+        self.combobox.addItems(['com1','com2','com3','com4'])
+
 
     def create_layouts (self) :
         # 创建表单布局
@@ -61,6 +64,7 @@ class TestDialog (QtWidgets.QDialog) :
         from_layout.addRow ('Name:' , self.lineedit)
         from_layout.addRow ('Hidden:' , self.checkbox1)
         from_layout.addRow ('Locked:' , self.checkbox2)
+        from_layout.addRow(self.combobox)
 
         # 创建水平布局
         button_layout = QtWidgets.QHBoxLayout ()
@@ -85,13 +89,19 @@ class TestDialog (QtWidgets.QDialog) :
         print ('hello,{}'.format (name))
 
 
-    def print_is_hidden (self) :
-        hidden = self.checkbox1.isChecked ()
-        if hidden :
+    def print_is_hidden (self , checked) :
+        # hidden = self.checkbox1.isChecked ()
+        if checked :
             print ('hidden')
         else :
             print ('visible')
 
+    def on_activated_int(self,index):
+        print('comboBox Index : {}',format(index))
+
+
+    def on_activated_int (self , text) :
+        print ('comboBox Text : {}' , format (text))
 
 
 if __name__ == "__main__" :
