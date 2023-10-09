@@ -47,9 +47,15 @@ class OpenImportDialog(qtUtils.Dialog) :
 
 		#创建打开方式的单选按钮组
 		self.open_rb = QtWidgets.QRadioButton('Open')
+		self.open_rb.setChecked(True)
 		self.import_rb = QtWidgets.QRadioButton('Import')
 		self.reference_rb = QtWidgets.QRadioButton('Reference')
 
+		self.force_cb = QtWidgets.QCheckBox('Force')
+
+		#创建确定和关闭的按钮
+		self.apply_btn = QtWidgets.QPushButton('Apply')
+		self.close_btn = QtWidgets.QPushButton('Close')
 
 
 	def create_layouts (self) :
@@ -69,9 +75,17 @@ class OpenImportDialog(qtUtils.Dialog) :
 		self.form_layout = QtWidgets.QFormLayout()
 		self.form_layout.addRow('File:',self.file_path_layout)
 		self.form_layout.addRow(self.radio_btn_layout)
+		self.form_layout.addRow(self.force_cb)
+
+		#创建按钮布局
+		self.btn_layout  = QtWidgets.QHBoxLayout()
+		self.btn_layout.addStretch()
+		self.btn_layout.addWidget(self.apply_btn)
+		self.btn_layout.addWidget(self.close_btn)
 
 		self.main_layout = QtWidgets.QVBoxLayout(self)
 		self.main_layout.addLayout(self.form_layout)
+		self.main_layout.addLayout(self.btn_layout)
 
 
 
