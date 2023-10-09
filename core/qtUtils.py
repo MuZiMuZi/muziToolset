@@ -276,7 +276,9 @@ class FrameWidget (QtWidgets.QGroupBox) :
 
 
 class Dialog (QtWidgets.QDialog) :
-
+    """
+    创建一个自定义的dialog模版
+    """
 
     def __init__ (self , parent = get_maya_window ()) :
         super (TestDialog , self).__init__ (parent)
