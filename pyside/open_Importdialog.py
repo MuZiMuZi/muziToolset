@@ -19,6 +19,7 @@ def maya_main_window () :
 
 
 class OpenImportDialog (qtUtils.Dialog) :
+    # 设置文件的选择类型过滤器
     FILE_FILTERS = "Maya(*.ma *.mb);;Maya ASCII (*.ma);;Maya Binary (*.mb);;All Files (*.*)"  # 全部的过滤项
 
     selected_filter = "Maya (*.ma *.mb)"  # 记录选择的过滤项，每次更改过滤项的同时会更改这个全局变量的值
@@ -106,11 +107,13 @@ class OpenImportDialog (qtUtils.Dialog) :
         '''
         打开文件资源浏览器
         '''
-        #打开一个文件资源浏览器，file_path 是所选择的文件路径
-        file_path,selected_filter = QtWidgets.QFileDialog.getOpenFileName(self,'Select File')
-        #将所选择的文件路径添加到输入框内
-        if file_path:
-            self.file_path_lineEdit.setText(file_path)
+        # 打开一个文件资源浏览器，file_path 是所选择的文件路径,selected_filter是选择过滤的文件类型
+        file_path , selected_filter = QtWidgets.QFileDialog.getOpenFileName (self , 'Select File' , '' ,
+                                                                             self.FILE_FILTERS , self.selected_filter)
+        # 将所选择的文件路径添加到输入框内
+        if file_path :
+            self.file_path_lineEdit.setText (file_path)
+
 
     def update_force_visibility (self) :
         self.force_cb.setVisible (checked)
