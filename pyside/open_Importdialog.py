@@ -27,6 +27,17 @@ class OpenImportDialog (qtUtils.Dialog) :
     dlg_instance = None
 
 
+    @classmethod
+    def show_dialog (cls) :
+        if not cls.dlg_instance :
+            cls.dlg_instance = OpenImportDialog ()
+        if cls.dlg_instance.isHidden () :
+            cls.dlg_instance.show ()
+        else :
+            cls.dlg_instance.raise_ ()
+            cls.dlg_instance.activateWindow ()
+
+
     def __init__ (self , parent = qtUtils.get_maya_window ()) :
         super (OpenImportDialog , self).__init__ (parent)
         # 设置标题和尺寸
@@ -116,9 +127,7 @@ class OpenImportDialog (qtUtils.Dialog) :
             self.file_path_lineEdit.setText (file_path)
 
 
-
-
-    def update_force_visibility (self, checked) :
+    def update_force_visibility (self , checked) :
         self.force_cb.setVisible (checked)
 
 
@@ -126,27 +135,28 @@ class OpenImportDialog (qtUtils.Dialog) :
         '''
         读取文件，根据选择的打开方式来进行打开读取文件
         '''
-        file_path = self.file_path_lineEdit.text()
+        file_path = self.file_path_lineEdit.text ()
 
-        #检查文件路径是否存在，如果不存在则返回
-        if not file_path:
+        # 检查文件路径是否存在，如果不存在则返回
+        if not file_path :
             return
-        #判断给定的文件路径是否正确有对应的文件
-        file_info = QtCore.QFileInfo(file_path)
-        if not file_info.exists():
-            om.MGlobal.displayError('这个路径的文件不存在：{}'.format(file_path))
+        # 判断给定的文件路径是否正确有对应的文件
+        file_info = QtCore.QFileInfo (file_path)
+        if not file_info.exists () :
+            om.MGlobal.displayError ('这个路径的文件不存在：{}'.format (file_path))
             return
 
-        if self.open_rb.isChecked():
-            self.open_file(file_path)
-        elif self.import_rb.isChecked():
-            self.import_file(file_path)
-        else:
-            self.reference_file(file_path)
+        if self.open_rb.isChecked () :
+            self.open_file (file_path)
+        elif self.import_rb.isChecked () :
+            self.import_file (file_path)
+        else :
+            self.reference_file (file_path)
 
-    def open_file(self,file_path):
+
+    def open_file (self , file_path) :
         force = self.force_cb.isChecked ()
-        #弹出一个对话框来让用户确认是否已经保存文件
+        # 弹出一个对话框来让用户确认是否已经保存文件
         if not force and cmds.file (q = True , modified = True) :
             result = QtWidgets.QMessageBox.question (self , "Modified" , "Current scene has unsaved changes. Continue?")
             if result == QtWidgets.QMessageBox.StandardButton.Yes :
@@ -162,6 +172,7 @@ class OpenImportDialog (qtUtils.Dialog) :
 
     def reference_file (self , file_path) :
         cmds.file (file_path , r = True , ignoreVersion = True)
+
 
 import os
 
