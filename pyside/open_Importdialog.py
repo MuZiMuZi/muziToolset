@@ -108,20 +108,60 @@ class OpenImportDialog (qtUtils.Dialog) :
         打开文件资源浏览器
         '''
         # 打开一个文件资源浏览器，file_path 是所选择的文件路径,selected_filter是选择过滤的文件类型
-        file_path , selected_filter = QtWidgets.QFileDialog.getOpenFileName (self , 'Select File' , '' ,
-                                                                             self.FILE_FILTERS , self.selected_filter)
+        file_path , self.selected_filter = QtWidgets.QFileDialog.getOpenFileName (self , "Select File" , "" ,
+                                                                                  self.FILE_FILTERS ,
+                                                                                  self.selected_filter)
         # 将所选择的文件路径添加到输入框内
         if file_path :
             self.file_path_lineEdit.setText (file_path)
 
 
-    def update_force_visibility (self) :
+
+
+    def update_force_visibility (self, checked) :
         self.force_cb.setVisible (checked)
 
 
     def load_file (self) :
-        pass
+        '''
+        读取文件，根据选择的打开方式来进行打开读取文件
+        '''
+        file_path = self.file_path_lineEdit.text()
 
+        #检查文件路径是否存在，如果不存在则返回
+        if not file_path:
+            return
+        #判断给定的文件路径是否正确有对应的文件
+        file_info = QtCore.QFileInfo(file_path)
+        if not file_info.exists():
+            om.MGlobal.displayError('这个路径的文件不存在：{}'.format(file_path))
+            return
+
+        if self.open_rb.isChecked():
+            self.open_file(file_path)
+        elif self.import_rb.isChecked():
+            self.import_file(file_path)
+        else:
+            self.reference_file(file_path)
+
+    def open_file(self,file_path):
+        force = self.force_cb.isChecked ()
+        #弹出一个对话框来让用户确认是否已经保存文件
+        if not force and cmds.file (q = True , modified = True) :
+            result = QtWidgets.QMessageBox.question (self , "Modified" , "Current scene has unsaved changes. Continue?")
+            if result == QtWidgets.QMessageBox.StandardButton.Yes :
+                force = True
+            else :
+                return
+        cmds.file (file_path , open = True , ignoreVersion = True , force = force)
+
+
+    def import_file (self , file_path) :
+        cmds.file (file_path , i = True , ignoreVersion = True)
+
+
+    def reference_file (self , file_path) :
+        cmds.file (file_path , r = True , ignoreVersion = True)
 
 import os
 
