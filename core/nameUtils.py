@@ -55,8 +55,8 @@ class Name(object) :
 		
 		self._name = name.split ("|") [-1]
 		
-		# if self._name :
-		# 	self.decompose()
+		if self._name :
+			self.decompose()
 	
 	
 	

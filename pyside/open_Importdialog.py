@@ -46,6 +46,7 @@ class OpenImportDialog (qtUtils.Dialog) :
         # 创建文件路径的小部件
         self.file_path_lineEdit = QtWidgets.QLineEdit ()
         self.selected_btn = QtWidgets.QPushButton ()
+        # 选择文件的按钮设置图标和设置文字提示
         self.selected_btn.setIcon (QtGui.QIcon (':fileOpen.png'))
         self.selected_btn.setToolTip ('Select File')
 
@@ -102,11 +103,17 @@ class OpenImportDialog (qtUtils.Dialog) :
 
 
     def show_file_select_dialog (self) :
-        pass
-
+        '''
+        打开文件资源浏览器
+        '''
+        #打开一个文件资源浏览器，file_path 是所选择的文件路径
+        file_path,selected_filter = QtWidgets.QFileDialog.getOpenFileName(self,'Select File')
+        #将所选择的文件路径添加到输入框内
+        if file_path:
+            self.file_path_lineEdit.setText(file_path)
 
     def update_force_visibility (self) :
-        pass
+        self.force_cb.setVisible (checked)
 
 
     def load_file (self) :

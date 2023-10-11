@@ -19,6 +19,7 @@ import muziToolset.core.hierarchyUtils as hierarchyUtils
 
 
 reload(hierarchyUtils)
+reload (controlUtils)
 
 chest_bp_joints = ['bpjnt_l_shoulder_001' , 'bpjnt_l_elbow_001' , ' bpjnt_l_wrist_001']
 
