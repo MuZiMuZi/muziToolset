@@ -27,9 +27,10 @@ class File (object) :
         打开文件资源浏览器
         '''
         # 打开一个文件资源浏览器，file_path 是所选择的文件路径,selected_filter是选择过滤的文件类型
-        self.file_path , self.selected_filter = QtWidgets.QFileDialog.getOpenFileName (self , "Select File" , "" ,
+        self.file_path , self.selected_filter = QtWidgets.QFileDialog.getOpenFileName (qtUtils.get_maya_window () , "Select File" , "" ,
                                                                                        self.file_filter ,
                                                                                        self.selected_filter)
+        return self.file_path
     def load_file(self,load_method):
         """
         读取文件
