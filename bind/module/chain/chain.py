@@ -88,3 +88,4 @@ class Chain(base.Base) :
 		
 		# 进行关节定向
 		jointUtils.Joint.joint_orientation(self.jnt_list)
+		print(self.jnt_list)

@@ -158,7 +158,7 @@ class Bone(object) :
 			                                  set_parent = 'bpjnt_set')
 			# 进行关节定向
 			jointUtils.Joint.joint_orientation(self.bpjnt_list)
-	
+
 	
 	
 	def hide_bpjnt(self) :

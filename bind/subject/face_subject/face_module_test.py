@@ -7,5 +7,7 @@ reload(face_rig)
 
 face = face_rig.Face_rig()
 
+#创建定位系统
 face.build_setup()
-# build_rig()
+#生成绑定
+face.build_rig()

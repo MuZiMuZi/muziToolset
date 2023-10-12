@@ -8,7 +8,9 @@ import maya.cmds as cmds
 
 from ...module.chain import chainFK
 
+from importlib import reload
 
+reload(chainFK)
 
 class Tongue(chainFK.ChainFK) :
 	

@@ -1457,7 +1457,7 @@ class Pipeline (object) :
             else :
                 cmds.sets ('{}'.format (set_name) , edit = True , forceElement = set_parent)
 
-
+        return set_name
     @staticmethod
     def create_dynamic_curve_driven () :
         """

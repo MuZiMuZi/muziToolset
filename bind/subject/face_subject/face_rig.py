@@ -15,14 +15,13 @@ reload (nose)
 class Face_rig () :
 
     def __init__ (self) :
-        pass
-
-
-    def build_setup (self) :
         self.tongue_m = tongue.Tongue (side = 'm' , name = '' , joint_number = 5 , direction = [-1 , 0 , 0] ,
                                        length = 10 ,
                                        joint_parent = None ,
                                        control_parent = None)
+
+
+    def build_setup (self) :
         self.tongue_m.build_setup ()
 
 
