@@ -91,8 +91,13 @@ class Bone_Widget(QtWidgets.QListWidgetItem) :
 		"""
 		pass
 	
-	
-	
+
+	def add_connect(self):
+		u"""
+		用来添加连接的槽函数
+		"""
+		pass
+
 	def build_setup(self , *args , **kwargs) :
 		"""
 		构建绑定的定位结构和生成准备
@@ -101,8 +106,8 @@ class Bone_Widget(QtWidgets.QListWidgetItem) :
 	
 	
 	
-	def build_rig(self) :
+	def delete_setup(self) :
 		"""
-		根据绑定模块的定位关节来生成对应的绑定系统
+		删除生成准备的定位关节
 		"""
 		pass

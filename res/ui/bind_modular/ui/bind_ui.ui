@@ -779,15 +779,15 @@
     <property name="title">
      <string>Custom</string>
     </property>
-    <addaction name="actionMirror_select"/>
-    <addaction name="actionMirror"/>
+    <addaction name="action_Mirror_select"/>
+    <addaction name="action_Mirror"/>
     <addaction name="separator"/>
-    <addaction name="actionUpward"/>
-    <addaction name="actionLowward"/>
-    <addaction name="actionDelete"/>
+    <addaction name="action_Upward"/>
+    <addaction name="action_Lowward"/>
+    <addaction name="action_Rename"/>
     <addaction name="separator"/>
-    <addaction name="actionRename"/>
-    <addaction name="actionClear"/>
+    <addaction name="action_Delete"/>
+    <addaction name="action_Clear"/>
    </widget>
    <addaction name="menuWindow"/>
    <addaction name="menuCustom"/>
@@ -798,37 +798,37 @@
     <string>refersh</string>
    </property>
   </action>
-  <action name="actionMirror_select">
+  <action name="action_Mirror_select">
    <property name="text">
     <string>Mirror_selection</string>
    </property>
   </action>
-  <action name="actionMirror">
+  <action name="action_Mirror">
    <property name="text">
     <string>Mirror_All</string>
    </property>
   </action>
-  <action name="actionUpward">
+  <action name="action_Upward">
    <property name="text">
     <string>Upward</string>
    </property>
   </action>
-  <action name="actionLowward">
+  <action name="action_Lowward">
    <property name="text">
     <string>Downward</string>
    </property>
   </action>
-  <action name="actionDelete">
-   <property name="text">
-    <string>Delete</string>
-   </property>
-  </action>
-  <action name="actionRename">
+  <action name="action_Rename">
    <property name="text">
     <string>Rename</string>
    </property>
   </action>
-  <action name="actionClear">
+  <action name="action_Delete">
+   <property name="text">
+    <string>Delete</string>
+   </property>
+  </action>
+  <action name="action_Clear">
    <property name="text">
     <string>Clear</string>
    </property>

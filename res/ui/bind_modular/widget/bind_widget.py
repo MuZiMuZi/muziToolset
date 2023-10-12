@@ -7,188 +7,174 @@ from PySide2 import QtCore , QtWidgets , QtGui
 from PySide2.QtCore import Qt
 
 from . import base_widget , chainEP_widget , chain_widget , limb_widget
-from ..ui import bind
+from ..ui import bind_ui
 from .....core import qtUtils
 
 
+rigtype_custom = ['base']
+rigtype_chain = ['chainFK' , 'chainIK' , 'chainIKFK' , 'finger' , 'spine']
+rigtype_chainEP = ['chainEP']
+rigtype_limb = ['arm' , 'leg' , 'hand' , 'tail' , 'spine']
 
-rigtype_custom = ['baseRig']
-rigtype_chain = ['chainFKRig' , 'chainIKRig' , 'chainIKFKRig' , 'fingerRig' , 'spineRig']
-rigtype_chainEP = ['chainEPRig']
-rigtype_limb = ['armRig' , 'legRig' , 'handRig' , 'tailRig' , 'spineRig']
-
-reload(base_widget)
-reload(chain_widget)
-reload(bind)
-reload(limb_widget)
-reload(chainEP_widget)
-
+reload (base_widget)
+reload (chain_widget)
+reload (bind_ui)
+reload (limb_widget)
+reload (chainEP_widget)
 
 
-class Bind_Widget(bind.Ui_MainWindow , QtWidgets.QMainWindow) :
-	u'''
-	用于创建绑定系统的界面系统
-	'''
-	
-	
-	
-	def __init__(self , parent = qtUtils.get_maya_window()) :
-		super().__init__(parent)
-		# 调用父层级的创建ui方法
-		self.setupUi(self)
-		self.apply_model()
-		
-		self.add_connect()
-		
-		self.item = None
-		self.edit_item = None
-	
-	
-	
-	def apply_model(self) :
-		u"""
-		添加模型到view里
-		"""
-		pass
-	
-	
-	
-	def add_connect(self) :
-		u"""
-		用来添加连接的槽函数
-		"""
-		self.proxy_widget.doubleClicked.connect(self.cmd_proxy_widget_dbclk)
-		self.custom_widget.itemDoubleClicked.connect(self.cmd_custom_widget_dbclk)
-		self.custom_widget.itemClicked.connect(self.cmd_custom_widget_clk)
-	
-	
-	
-	def cmd_proxy_widget_dbclk(self) :
-		u"""
-		用来连接proxy_widget双击所连接的功能槽函数
-		index：鼠标双击的时候所在的位置
-		"""
-		# 获取proxy_view双击时候的位置信息
-		index = self.proxy_widget.currentIndex()
-		# 如果index.isValid的返回值有值的话，说明选择了可以点击的文件，不是的话则是空白的物体
-		if index.isValid() :
-			select_index = index.row()
-			# 获得proxy_widget里所选择的item
-			item = self.proxy_widget.currentItem().text()
-			# 在custom_widget里添加这个item
-			self.custom_widget.addItem(item[0 :-3])
-			self.update_current(item)
-		else :
-			return
-	
-	
-	
-	def cmd_custom_widget_dbclk(self , item) :
-		u"""
-		用来连接custom_widget双击所连接的功能槽函数
-		item：鼠标双击的时候所在的位置
-		"""
-		# 双击的时候可以重命名名称
-		self.edit_item = item
-		self.custom_widget.openPersistentEditor(self.edit_item)
-		self.custom_widget.editItem(self.edit_item)
-	
-	
-	
-	def cmd_custom_widget_clk(self , item) :
-		u"""
-		用来连接custom_widget单击所连接的功能槽函数。
-		单击按钮的时候可以切换到对应的模块设置
-		item：鼠标单击的时候所在的位置
-		"""
-		self.edit_item = item
-		# 单机的时候关闭重命名
-		
-		self.custom_widget.closePersistentEditor(self.edit_item)
-	
-	
-	
-	def cmd_custom_widget_menu(self) :
-		"""
-		用来创建custom_widget右键的菜单
-		"""
-		custom_menu = QtWidgets.QMenu()
-		custom_menu.addAction(self.actionMirror_select)
-		
-		# 创建一个光标对象，在光标对象右击的位置运行这个右键菜单
-		cursor = QtGui.QCursor()
-		menu.exec_(cursor.pos())
-	
-	
-	
-	def close_edit(self) :
-		u"""
-		关闭edit
-		"""
-		if not self.edited_item :
-			self.closePersistentEditor(self.edited_item)
-	
-	
-	
-	def update_current(self , item) :
-		u"""
-		获取proxy_widget所选择的项目，从而更新set_layout的面板
-		Args:
-			item:
+class Bind_Widget (bind.Ui_MainWindow , QtWidgets.QMainWindow) :
+    u'''
+    用于创建绑定系统的界面系统
+    '''
+    item_dict = {}
 
-		Returns:
 
-		"""
-		self.item = item
-		self.initialize_field()
-		# 获取custom_widget 里的item数量，切换到对应的设置面板
-		index = self.custom_widget.count()
-		self.setting_stack.setCurrentIndex(index)
-	
-	
-	
-	def initialize_field(self) :
-		u"""
-		根据所得知的item，创建对应的设置面板
-		Returns:
+    def __init__ (self , parent = qtUtils.get_maya_window ()) :
+        super ().__init__ (parent)
+        # 调用父层级的创建ui方法
+        self.setupUi (self)
+        self.apply_model ()
 
-		"""
-		if self.item in rigtype_chain :
-			chain = chain_widget.Chain_Widget()
-			self.base_widget = chain.base_widget
-		elif self.item in rigtype_chainEP :
-			chainEP = chainEP_widget.ChainEP_Widget()
-			self.base_widget = chainEP.base_widget
-		elif self.item in rigtype_limb :
-			limb = limb_widget.Limb_Widget()
-			self.base_widget = limb.base_widget
-		else :
-			base = base_widget.Base_Widget()
-			self.base_widget = base.base_widget
-		self.base_widget.module_edit.setText('{}'.format(self.item))
-		self.setting_stack.addWidget(self.base_widget)
+        self.add_connect ()
+
+
+    def apply_model (self) :
+        u"""
+        添加模型到view里
+        """
+        pass
+
+
+    def add_connect (self) :
+        u"""
+        用来添加连接的槽函数
+        """
+        self.proxy_widget.doubleClicked.connect (self.cmd_proxy_widget_dbclk)
+
+        # custom_widget 的连接
+        self.custom_widget.setContextMenuPolicy (Qt.CustomContextMenu)
+        self.custom_widget.customContextMenuRequested.connect (self.cmd_custom_widget_menu)
+        # self.custom_widget.itemDoubleClicked.connect(self.cmd_custom_widget_menu)
+        self.custom_widget.itemClicked.connect (self.cmd_custom_widget_clk)
+
+
+    def cmd_proxy_widget_dbclk (self) :
+        u"""
+        用来连接proxy_widget双击所连接的功能槽函数,双击的时候将模版库的模版添加到自定义模块里
+        index：鼠标双击的时候所在的位置
+        """
+        # 获取proxy_view双击时候的位置信息
+        index = self.proxy_widget.currentIndex ()
+        # 如果index.isValid的返回值有值的话，说明选择了可以点击的文件，不是的话则是空白的物体
+        if index.isValid () :
+            select_index = index.row ()
+            # 获得proxy_widget里所选择的item_name
+            item_name = self.proxy_widget.currentItem ().text () [0 :-3]
+            # 在custom_widget里添加这个item
+            item = QtWidgets.QListWidgetItem (item_name)
+            self.custom_widget.addItem (item)
+            item.text = item_name
+            self.update_current (item)
+        else :
+            return
 
 
 
-def show() :
-	# 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口
-	global win
-	try :
-		win.close()  # 为了不让窗口出现多个，因为第一次运行还没初始化，所以要try，在这里尝试先关闭，再重新新建一个窗口
-	except :
-		pass
-	win = Bind_Widget()
-	win.show()
 
+
+    def cmd_custom_widget_clk (self , item) :
+        u"""
+        用来连接custom_widget单击所连接的功能槽函数。
+        单击按钮的时候可以切换到对应的模块设置
+        item：鼠标单击的时候所在的位置
+        """
+        # 获取当前选中项目的索引
+        selected_index = self.custom_widget.currentRow ()
+
+        # 根据选中项目的索引切换到对应的属性设置面板
+        self.setting_stack.setCurrentIndex (selected_index + 1)
+
+
+
+
+
+    def cmd_custom_widget_menu (self) :
+        """
+        用来创建custom_widget右键的菜单
+        """
+        custom_menu = QtWidgets.QMenu ()
+        #添加右键菜单的设置
+        custom_menu.addActions ([
+            self.action_Mirror_select ,
+            self.action_Mirror ,
+            custom_menu.addSeparator () ,
+            self.action_Upward ,
+            self.action_Lowward ,
+            self.action_Rename ,
+            custom_menu.addSeparator () ,
+            self.action_Delete ,
+            self.action_Clear
+        ])
+        # 创建一个光标对象，在光标对象右击的位置运行这个右键菜单
+        cursor = QtGui.QCursor ()
+        custom_menu.exec_ (cursor.pos ())
+
+
+    def close_edit (self) :
+        u"""
+        关闭edit
+        """
+        if not self.edited_item :
+            self.closePersistentEditor (self.edited_item)
+
+
+    def update_current (self , item) :
+        u"""
+        获取proxy_widget所选择的项目，从而更新set_layout的面板
+        Args:
+            item:
+
+        Returns:
+
+        """
+        self.item = item
+        self.initialize_field (item)
+        # 获取custom_widget 里的item数量，切换到对应的设置面板
+        index = self.custom_widget.count ()
+        self.setting_stack.setCurrentIndex (index)
+
+
+    def initialize_field (self , item) :
+        u"""
+        根据所得知的item，创建对应的设置面板
+        Returns:
+
+        """
+        base = base_widget.Base_Widget ()
+        self.base_widget = base.base_widget
+        self.base_widget.module_edit.setText ('{}'.format (item.text))
+        self.setting_stack.addWidget (self.base_widget)
+
+
+def show () :
+    # 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口
+    global win
+    try :
+        win.close ()  # 为了不让窗口出现多个，因为第一次运行还没初始化，所以要try，在这里尝试先关闭，再重新新建一个窗口
+    except :
+        pass
+    win = Bind_Widget ()
+    win.show ()
 
 
 if __name__ == "__main__" :
-	# 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口
-	window = Bind_Widget()
-	# 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口
-	try :
-		window.close()
-	except :
-		pass
-	window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-	window.show()
+    # 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口
+    window = Bind_Widget ()
+    # 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口
+    try :
+        window.close ()
+    except :
+        pass
+    window.setAttribute (QtCore.Qt.WA_DeleteOnClose)
+    window.show ()

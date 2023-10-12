@@ -3,18 +3,18 @@ import os
 from PySide2.QtUiTools import QUiLoader
 from ..widget import base_widget
 from ..config import Side , ui_dir , Direction
-from ..ui import bind , base , chain
+from ..ui import base_ui , chain_ui
 from . import base_widget
 from importlib import reload
 
 
 
 reload(base_widget)
-reload(chain)
+reload(chain_ui)
 
 
 
-class Chain_Widget(base_widget.Base_Widget , chain.Ui_MainWindow) :
+class Chain_Widget(base_widget.Base_Widget , chain_ui.Ui_MainWindow) :
 	
 	
 	
