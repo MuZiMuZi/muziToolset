@@ -6,9 +6,9 @@ from importlib import reload
 
 import maya.cmds as cmds
 
-from core import jointUtils , pipelineUtils
+from .... core import jointUtils , pipelineUtils
 
-
+from ...module.base import base
 
 reload(pipelineUtils)
 

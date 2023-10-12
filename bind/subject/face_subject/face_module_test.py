@@ -1,27 +1,11 @@
-import muziToolset.bind.module.face_module.tongue as tongue
+import muziToolset.bind.subject.face_subject.face_rig as face_rig
 from importlib import reload
 
 
 
-reload(tongue)
+reload(face_rig)
 
+face = face_rig.Face_rig()
 
-
-def build_setup() :
-	tongue_m = tongue.Tongue(side = 'm' , name = '' , joint_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
-	                         joint_parent = None ,
-	                         control_parent = None)
-	tongue_m.build_setup()
-
-
-
-def build_rig() :
-	tongue_m = tongue.Tongue(side = 'm' , name = '' , joint_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
-	                         joint_parent = None ,
-	                         control_parent = None)
-	tongue_m.build_rig()
-
-
-
-# build_setup()
-build_rig()
+face.build_setup()
+# build_rig()

@@ -6,9 +6,9 @@ from importlib import reload
 
 import maya.cmds as cmds
 
-from core import controlUtils , pipelineUtils
+from .... core import controlUtils , pipelineUtils
 from . import mouthLip
-
+from ...module.base import base
 
 
 reload(mouthLip)

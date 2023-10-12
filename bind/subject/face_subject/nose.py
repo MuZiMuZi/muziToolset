@@ -6,8 +6,8 @@ import os
 
 import maya.cmds as cmds
 
-from core import controlUtils , jointUtils , pipelineUtils
-from bind.module.base import base
+from .... core import controlUtils , jointUtils , pipelineUtils
+from ...module.base import base
 
 
 

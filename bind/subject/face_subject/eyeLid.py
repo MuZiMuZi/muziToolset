@@ -5,9 +5,9 @@
 
 import maya.cmds as cmds
 
-from core import controlUtils , jointUtils , pipelineUtils
+from .... core import controlUtils , jointUtils , pipelineUtils
 
-
+from ...module.base import base
 
 class EyeLid(base.Base) :
 	example_curve = ['crv_l_upperEyeLidSkin_001','crv_l_lowerEyeLidSkin_001']

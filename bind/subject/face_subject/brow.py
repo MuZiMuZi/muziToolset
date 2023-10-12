@@ -9,8 +9,10 @@ from importlib import reload
 
 import maya.cmds as cmds
 
-from core import controlUtils , pipelineUtils
-from bind.module.base import base
+
+
+from ....core import controlUtils , pipelineUtils
+from ...module.base import base
 
 
 
