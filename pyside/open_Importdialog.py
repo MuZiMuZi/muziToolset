@@ -6,11 +6,6 @@ from shiboken2 import wrapInstance
 import maya.OpenMayaUI as omui
 import maya.OpenMaya as om
 import maya.cmds as cmds
-from ..core import qtUtils
-from importlib import reload
-
-
-reload (qtUtils)
 
 
 def maya_main_window () :
@@ -18,8 +13,7 @@ def maya_main_window () :
     return wrapInstance (int (main_window_ptr) , QtWidgets.QWidget)
 
 
-class OpenImportDialog (qtUtils.Dialog) :
-    # 设置文件的选择类型过滤器
+class OpenImportDialog (QtWidgets.QDialog) :
     FILE_FILTERS = "Maya(*.ma *.mb);;Maya ASCII (*.ma);;Maya Binary (*.mb);;All Files (*.*)"  # 全部的过滤项
 
     selected_filter = "Maya (*.ma *.mb)"  # 记录选择的过滤项，每次更改过滤项的同时会更改这个全局变量的值
@@ -30,101 +24,85 @@ class OpenImportDialog (qtUtils.Dialog) :
     @classmethod
     def show_dialog (cls) :
         if not cls.dlg_instance :
-            cls.dlg_instance = OpenImportDialog ()
+            cls.dlg_instance = OpenImportDialog ()  # 第一次使用函数会生成窗口实例给dlg_instance全局变量
+
         if cls.dlg_instance.isHidden () :
-            cls.dlg_instance.show ()
+            cls.dlg_instance.show ()  # 如果窗口隐藏了就显示出来
         else :
+            # 如果窗口还在屏幕中就激活窗口并顶端显示
             cls.dlg_instance.raise_ ()
             cls.dlg_instance.activateWindow ()
 
 
-    def __init__ (self , parent = qtUtils.get_maya_window ()) :
+    def __init__ (self , parent = maya_main_window ()) :
         super (OpenImportDialog , self).__init__ (parent)
-        # 设置标题和尺寸
-        self.setWindowTitle ('Open/Import/Reference')
-        self.setMinimumHeight (200)
-        self.setMinimumWidth (300)
 
-        # 添加部件
+        self.setWindowTitle ('Open/Import/Reference')
+        self.setMinimumSize (300 , 80)
+        self.setWindowFlags (self.windowFlags () ^ QtCore.Qt.WindowContextHelpButtonHint)
+        self.geometry = None
         self.create_widgets ()
         self.create_layouts ()
-
-        # 添加连接
         self.create_connections ()
 
 
     def create_widgets (self) :
-        """创建需要的小部件"""
-        # 创建文件路径的小部件
-        self.file_path_lineEdit = QtWidgets.QLineEdit ()
-        self.selected_btn = QtWidgets.QPushButton ()
-        # 选择文件的按钮设置图标和设置文字提示
-        self.selected_btn.setIcon (QtGui.QIcon (':fileOpen.png'))
-        self.selected_btn.setToolTip ('Select File')
+        self.filepath_le = QtWidgets.QLineEdit ()
+        self.select_file_path_btn = QtWidgets.QPushButton ()
+        self.select_file_path_btn.setIcon (QtGui.QIcon (':fileOpen.png'))
+        self.select_file_path_btn.setToolTip ("select File")
 
-        # 创建打开方式的单选按钮组
-        self.open_rb = QtWidgets.QRadioButton ('Open')
+        self.open_rb = QtWidgets.QRadioButton ("Open")
         self.open_rb.setChecked (True)
-        self.import_rb = QtWidgets.QRadioButton ('Import')
-        self.reference_rb = QtWidgets.QRadioButton ('Reference')
+        self.import_rb = QtWidgets.QRadioButton ("Import")
+        self.reference_rb = QtWidgets.QRadioButton ("Reference")
 
-        self.force_cb = QtWidgets.QCheckBox ('Force')
+        self.force_cb = QtWidgets.QCheckBox ("Force")
 
-        # 创建确定和关闭的按钮
-        self.apply_btn = QtWidgets.QPushButton ('Apply')
-        self.close_btn = QtWidgets.QPushButton ('Close')
+        self.apply_btn = QtWidgets.QPushButton ("Apply")
+        self.close_btn = QtWidgets.QPushButton ("Close")
 
 
     def create_layouts (self) :
-        """创建需要的布局"""
-        # 创建文件路径的布局
-        self.file_path_layout = QtWidgets.QHBoxLayout ()
-        self.file_path_layout.addWidget (self.file_path_lineEdit)
-        self.file_path_layout.addWidget (self.selected_btn)
+        file_path_layout = QtWidgets.QHBoxLayout ()
+        file_path_layout.addWidget (self.filepath_le)
+        file_path_layout.addWidget (self.select_file_path_btn)
 
-        # 创建打开方式的布局
-        self.radio_btn_layout = QtWidgets.QHBoxLayout ()
-        self.radio_btn_layout.addWidget (self.open_rb)
-        self.radio_btn_layout.addWidget (self.import_rb)
-        self.radio_btn_layout.addWidget (self.reference_rb)
+        radio_btn_layout = QtWidgets.QHBoxLayout ()
+        radio_btn_layout.addWidget (self.open_rb)
+        radio_btn_layout.addWidget (self.import_rb)
+        radio_btn_layout.addWidget (self.reference_rb)
 
-        # 创建表单布局来排列各个布局的顺序
-        self.form_layout = QtWidgets.QFormLayout ()
-        self.form_layout.addRow ('File:' , self.file_path_layout)
-        self.form_layout.addRow (self.radio_btn_layout)
-        self.form_layout.addRow (self.force_cb)
+        forme_layout = QtWidgets.QFormLayout ()
+        forme_layout.addRow ("File" , file_path_layout)
+        forme_layout.addRow ("" , radio_btn_layout)
+        forme_layout.addRow ("" , self.force_cb)
 
-        # 创建按钮布局
-        self.btn_layout = QtWidgets.QHBoxLayout ()
-        self.btn_layout.addStretch ()
-        self.btn_layout.addWidget (self.apply_btn)
-        self.btn_layout.addWidget (self.close_btn)
+        button_layout = QtWidgets.QHBoxLayout ()
+        button_layout.addStretch ()
+        button_layout.addWidget (self.apply_btn)
+        button_layout.addWidget (self.close_btn)
 
-        self.main_layout = QtWidgets.QVBoxLayout (self)
-        self.main_layout.addLayout (self.form_layout)
-        self.main_layout.addLayout (self.btn_layout)
+        main_layout = QtWidgets.QVBoxLayout (self)
+        main_layout.addLayout (forme_layout)
+        main_layout.addLayout (button_layout)
 
 
     def create_connections (self) :
-        """连接需要的部件和对应的信号"""
-        self.selected_btn.clicked.connect (self.show_file_select_dialog)
+        self.select_file_path_btn.clicked.connect (self.show_file_select_dialog)
 
         self.open_rb.toggled.connect (self.update_force_visibility)
+
         self.apply_btn.clicked.connect (self.load_file)
         self.close_btn.clicked.connect (self.close)
 
 
     def show_file_select_dialog (self) :
-        '''
-        打开文件资源浏览器
-        '''
-        # 打开一个文件资源浏览器，file_path 是所选择的文件路径,selected_filter是选择过滤的文件类型
         file_path , self.selected_filter = QtWidgets.QFileDialog.getOpenFileName (self , "Select File" , "" ,
                                                                                   self.FILE_FILTERS ,
                                                                                   self.selected_filter)
-        # 将所选择的文件路径添加到输入框内
         if file_path :
-            self.file_path_lineEdit.setText (file_path)
+            self.filepath_le.setText (file_path)
 
 
     def update_force_visibility (self , checked) :
@@ -132,23 +110,17 @@ class OpenImportDialog (qtUtils.Dialog) :
 
 
     def load_file (self) :
-        '''
-        读取文件，根据选择的打开方式来进行打开读取文件
-        '''
-        file_path = self.file_path_lineEdit.text ()
-
-        # 检查文件路径是否存在，如果不存在则返回
+        file_path = self.filepath_le.text ()
         if not file_path :
             return
-        # 判断给定的文件路径是否正确有对应的文件
-        file_info = QtCore.QFileInfo (file_path)
-        if not file_info.exists () :
-            om.MGlobal.displayError ('这个路径的文件不存在：{}'.format (file_path))
-            return
 
+        file_info = QtCore.QFileInfo (file_path)  # 得到文件的信息
+        if not file_info.exists () :  # 判断文件是否存在
+            om.MGlobal.displayError ("File does not exist: {}".format (file_path))
+            return
         if self.open_rb.isChecked () :
             self.open_file (file_path)
-        elif self.import_rb.isChecked () :
+        if self.import_rb.isChecked () :
             self.import_file (file_path)
         else :
             self.reference_file (file_path)
@@ -156,7 +128,6 @@ class OpenImportDialog (qtUtils.Dialog) :
 
     def open_file (self , file_path) :
         force = self.force_cb.isChecked ()
-        # 弹出一个对话框来让用户确认是否已经保存文件
         if not force and cmds.file (q = True , modified = True) :
             result = QtWidgets.QMessageBox.question (self , "Modified" , "Current scene has unsaved changes. Continue?")
             if result == QtWidgets.QMessageBox.StandardButton.Yes :
@@ -174,15 +145,18 @@ class OpenImportDialog (qtUtils.Dialog) :
         cmds.file (file_path , r = True , ignoreVersion = True)
 
 
-import os
+    def showEvent (self , e) :
+        super (OpenImportDialog , self).showEvent (e)
+        # 在对话框显示的时候读取对话框的位置信息和大小
+        if self.geometry :
+            self.restoreGeometry (self.geometry)
 
 
-def show () :
-    try :
-        test_dialog.close ()
-        test_dialog.deleteLater ()
-    except :
-        pass
+    def closeEvent (self , e) :
+        # 防止出现qt被删除的情况报错，如果对象被删除，则代码不执行
+        if isinstance (self , OpenImportDialog) :
+            super (OpenImportDialog , self).closeEvent (e)
+            # 在对话框关闭的时候存储对话框位置信息和大小
+            self.geometry = self.saveGeometry ()
 
-    test_dialog = OpenImportDialog ()
-    test_dialog.show ()
+
