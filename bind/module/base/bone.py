@@ -144,15 +144,19 @@ class Bone (object) :
         根据名称规范，创建定位的bp关节
         """
         for bpjnt in self.bpjnt_list :
-            self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.bpjnt_grp)
-            # 给bp定位关节设置颜色方便识别
-            cmds.setAttr (self.bpjnt + '.overrideEnabled' , 1)
-            cmds.setAttr (self.bpjnt + '.overrideColor' , 13)
-            # 将bp关节添加到选择集里方便进行选择
-            pipelineUtils.Pipeline.create_set (self.bpjnt ,
-                                               set_name = '{}_{}{}_bpjnt_set'.format (self._side , self._name ,
-                                                                                      self._rtype) ,
-                                               set_parent = 'bpjnt_set')
+            # 判断是否已经生成过定位关节，如果没有生成过定位关节的话则生成定位关节
+            if cmds.objExists(bpjnt):
+                cmds.delete(bpjnt)
+            else:
+                self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.bpjnt_grp)
+                # 给bp定位关节设置颜色方便识别
+                cmds.setAttr (self.bpjnt + '.overrideEnabled' , 1)
+                cmds.setAttr (self.bpjnt + '.overrideColor' , 13)
+                # 将bp关节添加到选择集里方便进行选择
+                pipelineUtils.Pipeline.create_set (self.bpjnt ,
+                                                   set_name = '{}_{}{}_bpjnt_set'.format (self._side , self._name ,
+                                                                                          self._rtype) ,
+                                                   set_parent = 'bpjnt_set')
         # 进行关节定向
         jointUtils.Joint.joint_orientation (self.bpjnt_list)
 
@@ -178,7 +182,7 @@ class Bone (object) :
         # 隐藏bp的定位关节
         self.hide_bpjnt ()
 
-        # 根据bp关节创建新的关节
+        # 根据bp关节创建新的关节,需要做生成关节的准备，断掉bp关节上的所有属性链接
         for bpjnt in self.bpjnt_list :
             for attr in ['.translate' , '.rotate' , '.scale'] :
                 # 判断bp关节上有没有连接的属性，如果有的话则断掉

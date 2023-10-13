@@ -31,19 +31,24 @@ class Chain (base.Base) :
         创建定位的bp关节
         """
         for bpjnt in self.bpjnt_list :
-            self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.joint_parent)
-            # 给bp定位关节设置颜色方便识别
-            cmds.setAttr (self.bpjnt + '.overrideEnabled' , 1)
-            cmds.setAttr (self.bpjnt + '.overrideColor' , 13)
-            # 指定关节的父层级为上一轮创建出来的关节
-            self.joint_parent = self.bpjnt
-            # 调整距离
-            cmds.setAttr(self.bpjnt + '.translateX', self.length/self.joint_number)
-            # 将bp关节添加到选择集里方便进行选择
-            pipelineUtils.Pipeline.create_set (self.bpjnt ,
-                                               set_name = '{}_{}{}_bpjnt_set'.format (self._side , self._name ,
-                                                                                      self._rtype) ,
-                                               set_parent = 'bpjnt_set')
+            # 判断是否已经生成过定位关节，如果没有生成过定位关节的话则生成定位关节
+            if cmds.objExists (bpjnt) :
+                cmds.delete (bpjnt)
+                print(bpjnt)
+            else :
+                self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.joint_parent)
+                # 给bp定位关节设置颜色方便识别
+                cmds.setAttr (self.bpjnt + '.overrideEnabled' , 1)
+                cmds.setAttr (self.bpjnt + '.overrideColor' , 13)
+                # 指定关节的父层级为上一轮创建出来的关节
+                self.joint_parent = self.bpjnt
+                # 调整距离
+                cmds.setAttr(self.bpjnt + '.translateX', self.length/self.joint_number)
+                # 将bp关节添加到选择集里方便进行选择
+                pipelineUtils.Pipeline.create_set (self.bpjnt ,
+                                                   set_name = '{}_{}{}_bpjnt_set'.format (self._side , self._name ,
+                                                                                          self._rtype) ,
+                                                   set_parent = 'bpjnt_set')
         # 进行关节定向
         jointUtils.Joint.joint_orientation (self.bpjnt_list)
         cmds.setAttr (self.bpjnt_list[0] + '.translateX' , 0)
