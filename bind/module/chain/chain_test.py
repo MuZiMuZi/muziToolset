@@ -1,30 +1,18 @@
-import muziToolset.rigging.chain.limbIKFK as limbIKFK
+import muziToolset.bind.module.chain.chain as chain
 from importlib import reload
 
 
 
-reload(limbIKFK)
+reload(chain)
 
+chain = chain.Chain (side = 'l' , name = 'test' , joint_number = 4, length = 10 , joint_parent = None ,
+					 control_parent = None)
 
+# 创建定位系统
+chain.build_setup ()
 
-def build_setup() :
-	custom = limbIKFK.LimbIKFK(side = 'l' , name = 'zz' , joint_number = 3 , direction = [-1 , 0 , 0] , length = 10 ,
-	                       is_stretch = 1 ,
-	                       limbtype = 'arm' ,
-	                       joint_parent = None ,
-	                       control_parent = None)
-	custom.build_setup()
-
-
-
-def build_rig() :
-	custom = limbIKFK.LimbIKFK(side = 'l' , name = 'zz' , joint_number = 3 , direction = [-1 , 0 , 0] , length = 10 ,
-	                       limbtype = 'arm' ,
-	                       joint_parent = None ,
-	                       control_parent = None)
-	custom.build_rig()
-
-
-
-build_setup()
-build_rig()
+# # 生成绑定
+# chain.build_rig ()
+#
+# #删除绑定
+# bone.delete_rig()

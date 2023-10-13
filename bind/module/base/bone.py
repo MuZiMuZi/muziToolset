@@ -267,11 +267,6 @@ class Bone (object) :
         else :
             pass
 
-        # for zero in self.zero_list :
-        #     if cmds.objExists (zero) :
-        #         cmds.delete (zero)
-        # else :
-        #     pass
         if cmds.objExists (self.ctrl_grp) :
             cmds.delete (self.ctrl_grp)
         else :
