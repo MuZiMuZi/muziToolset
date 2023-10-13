@@ -175,11 +175,17 @@ class Hierarchy(object) :
 	
 	@staticmethod
 	def create_rig_grp() :
-		loc_grp = '_locator'
-		ctrl_grp = '_control'
-		jnt_grp = '_joint'
-		mesh_grp = '_mesh'
-		node_grp = '_node'
-		for grp in [loc_grp , ctrl_grp , jnt_grp , mesh_grp , node_grp] :
+		"""
+		创建绑定的默认层级组
+		"""
+		main_group = 'Group'
+		bpjnt_grp = 'grp_m_bpjnt_001'
+		ctrl_grp = 'grp_m_control_001'
+		jnt_grp = 'grp_m_jnt_001'
+		mesh_grp = 'grp_m_mesh_001'
+		node_grp = 'grp_m_node_001'
+
+		for grp in [main_group,bpjnt_grp , ctrl_grp , jnt_grp , mesh_grp , node_grp] :
 			if not cmds.ls(grp) :
 				cmds.group(em = 1 , name = grp)
+		cmds.parent(bpjnt_grp , ctrl_grp , jnt_grp , mesh_grp , node_grp, main_group)

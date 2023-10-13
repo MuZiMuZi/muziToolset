@@ -9,7 +9,7 @@ from importlib import reload
 import os
 
 
-
+reload(hierarchyUtils)
 reload(pipelineUtils)
 
 
@@ -50,11 +50,10 @@ class Bone(object) :
 		self.joint_parent = joint_parent
 		self.control_parent = control_parent
 		if not self.joint_parent :
-			self.joint_parent = '_joint'
+			self.joint_parent = 'grp_m_jnt_001'
 		if not self.control_parent :
-			self.control_parent = '_control'
-		self.node_grp = '_node'
-		self.locator_grp = '_locator'
+			self.control_parent = 'grp_m_control_001'
+		self.bpjnt_grp = 'grp_m_bpjnt_001'
 		# 生成的绑定类型
 		self._rtype = ''
 		self._name = name
@@ -89,7 +88,9 @@ class Bone(object) :
 		                                      formatter = '%(asctime)s -%(name)s - %(levelname)s - %(message)s')
 		self.logger = logging.getLogger(self.logger_name)
 		self.logger.setLevel(logging.DEBUG)
-	
+
+		#创建名称规范整理
+		self.create_namespace()
 	
 	
 	@property
@@ -147,7 +148,7 @@ class Bone(object) :
 		根据名称规范，创建定位的bp关节
 		"""
 		for bpjnt in self.bpjnt_list :
-			self.bpjnt = cmds.createNode('joint' , name = bpjnt)
+			self.bpjnt = cmds.createNode('joint' , name = bpjnt,parent = self.bpjnt_grp)
 			#给bp定位关节设置颜色方便识别
 			cmds.setAttr(self.bpjnt + '.overrideEnabled',1)
 			cmds.setAttr(self.bpjnt + '.overrideColor',13)
@@ -156,8 +157,8 @@ class Bone(object) :
 			                                  set_name = '{}_{}{}_bpjnt_set'.format(self._side , self._name ,
 			                                                                        self._rtype) ,
 			                                  set_parent = 'bpjnt_set')
-			# 进行关节定向
-			jointUtils.Joint.joint_orientation(self.bpjnt_list)
+		# 进行关节定向
+		jointUtils.Joint.joint_orientation(self.bpjnt_list)
 
 	
 	
@@ -250,7 +251,6 @@ class Bone(object) :
 		"""
 		创建bp的定位关节,生成准备
 		"""
-		self.create_namespace()
 		self.create_bpjnt()
 	
 	
@@ -259,7 +259,6 @@ class Bone(object) :
 		"""
 		创建绑定系统
 		"""
-		self.create_namespace()
 		self.create_joint()
 		self.create_ctrl()
 		self.add_constraint()
