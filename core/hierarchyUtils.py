@@ -178,7 +178,7 @@ class Hierarchy(object) :
 		"""
 		创建绑定的默认层级组
 		"""
-		main_group = 'Group'
+		main_group = 'grp_m_group_001'
 		bpjnt_grp = 'grp_m_bpjnt_001'
 		ctrl_grp = 'grp_m_control_001'
 		jnt_grp = 'grp_m_jnt_001'
@@ -188,4 +188,5 @@ class Hierarchy(object) :
 		for grp in [main_group,bpjnt_grp , ctrl_grp , jnt_grp , mesh_grp , node_grp] :
 			if not cmds.ls(grp) :
 				cmds.group(em = 1 , name = grp)
+
 		cmds.parent(bpjnt_grp , ctrl_grp , jnt_grp , mesh_grp , node_grp, main_group)
