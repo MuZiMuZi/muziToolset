@@ -45,10 +45,12 @@ from maya import OpenMayaUI as omui
 from maya import mel
 from pymel.util import path
 from shiboken2 import wrapInstance
-from  importlib import reload
+from importlib import reload
 from . import controlUtils , hierarchyUtils , qtUtils , jointUtils
 
-reload(jointUtils)
+
+reload (jointUtils)
+
 
 class Pipeline (object) :
 
@@ -622,10 +624,10 @@ class Pipeline (object) :
         '''
         # c++的指针概念，获取maya的窗口对象
         pointer = omui.MQtUtil.mainWindow ()
-        #判断python的版本号，如果大于3的话就使用int
-        if sys.version_info.major >= 3:
+        # 判断python的版本号，如果大于3的话就使用int
+        if sys.version_info.major >= 3 :
             return wrapInstance (int (pointer) , QtWidgets.QWidget)
-        else:
+        else :
             return wrapInstance (long (pointer) , QtWidgets.QWidget)
 
 
@@ -755,6 +757,7 @@ class Pipeline (object) :
         :param obj: str. maya的对象
         :param pos: list. 位置信息 x, y and z
         """
+
         return cmds.move (pos [0] , pos [1] , pos [2] , obj , r = 1)
 
 
@@ -1458,6 +1461,8 @@ class Pipeline (object) :
                 cmds.sets ('{}'.format (set_name) , edit = True , forceElement = set_parent)
 
         return set_name
+
+
     @staticmethod
     def create_dynamic_curve_driven () :
         """
@@ -1530,8 +1535,8 @@ class Pipeline (object) :
                                name = dynamic_curve_node + '_handle') [0]
             #
             # 找到模型的节点名称并且将动力学骨骼蒙皮给模型，曲线节点的命名为 模型节点 + '_crv'
-            modle_node = dynamic_curve_node.split('_crv')[0]
-            cmds.skinCluster(jnt_list, modle_node)
+            modle_node = dynamic_curve_node.split ('_crv') [0]
+            cmds.skinCluster (jnt_list , modle_node)
             #
             # 整理层级结构
             # 创建动力学的层级组
