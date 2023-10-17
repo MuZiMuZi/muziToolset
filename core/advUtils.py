@@ -36,7 +36,7 @@ class AdvUtils (object) :
 
             # 创建新的次级控制器并且吸附到lip关节上
             lip_ctrl = controlUtils.Control.create_ctrl (name = 'ctrl_m_{}Lip_001'.format (type) , shape = 'Cube' ,
-                                                         radius = 0.5 , axis = 'Y+' , pos = lip_joint ,
+                                                         radius = 0.3 , axis = 'Y+' , pos = lip_joint ,
                                                          parent = 'LipRegion_M')
 
 
@@ -77,17 +77,38 @@ class AdvUtils (object) :
                 # 创建新的次级控制器并且吸附到lid关节上
                 lid_ctrl = controlUtils.Control.create_ctrl (name = 'ctrl_{}_{}_001'.format (side , type) ,
                                                              shape = 'Cube' ,
-                                                             radius = 0.5 , axis = 'Y+' , pos = lid_joint ,
+                                                             radius = 0.3 , axis = 'Y+' , pos = lid_joint ,
                                                              parent = lid_main_ctrl)
                 # 控制器左右需要镜像一下，r边的情况下offset组的值需要乘-1
                 if side == 'R' :
                     side_value = -1
                 else :
                     side_value = 1
-                for i in ['x' , 'y' , 'z'] :
-                    cmds.setAttr (lid_ctrl.replace ('ctrl_' , 'offset_') + 'translate{}'.format (i) , side_value)
+                for i in ['X' , 'Y' , 'Z'] :
+                    cmds.setAttr (lid_ctrl.replace ('ctrl_' , 'offset_') + '.scale{}'.format (i) , side_value)
                 # 创建出来的次级控制器对lid关节进行约束
                 pipelineUtils.Pipeline.create_constraint (lid_ctrl.replace ('ctrl' , 'output') , lid_joint ,
                                                           point_value = True , orient_value = True ,
                                                           scale_value = True ,
                                                           mo_value = True)
+
+
+    @staticmethod
+    def connect_CheekRaiser_ctrl():
+        """
+        adv脸部在生成的时候会自动连接CheekRaiser控制器的translateY轴，需要在控制器上层创建一个新的组来重新连接
+        CheekRaiser_ctrl:CheekRaiser控制器
+        bw_node:连接CheekRaiser控制器的translateY的节点
+        """
+        # 分成左右两边两种情况在控制器上层创建一个新的组来重新连接
+        for side in ['L' , 'R'] :
+            #获取CheekRaiser控制器和连接控制器的节点
+            CheekRaiser_ctrl =  'CheekRaiser_{}'.format (side)
+            bw_node = 'bwCheekRaiser_{}_translateY'.format(side)
+
+            #在CheekRaiser控制器上层创建新的控制器层级组
+            con_CheekRaiser_grp = cmds.group (CheekRaiser_ctrl, n = 'con_' + CheekRaiser_ctrl)
+
+            #重新连接控制器的translateY
+            cmds.connectAttr (bw_node + '.output' , con_CheekRaiser_grp + '.translateY')
+            cmds.disconnectAttr(bw_node + '.output' , CheekRaiser_ctrl + '.translateY')
