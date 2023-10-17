@@ -112,3 +112,51 @@ class AdvUtils (object) :
             #重新连接控制器的translateY
             cmds.connectAttr (bw_node + '.output' , con_CheekRaiser_grp + '.translateY')
             cmds.disconnectAttr(bw_node + '.output' , CheekRaiser_ctrl + '.translateY')
+
+
+    @staticmethod
+    def add_cheek_ctrl():
+        """
+        adv自带的脸颊控制器不够丰富，无法满足动画的需要，需要添加两个控制器，
+        一个是眼皮下方用来控制鼻子外侧与颧骨这一带的控制器，
+        第二个是颧骨到耳朵处用来模拟腮帮子咬合的效果
+        """
+        for type in ['cheekAdj' , 'cheekOcclus'] :
+            for side in ['L' , 'R'] :
+                type_joint = 'jnt_{}_{}_001'.format (side , type)
+
+                type_joint = cmds.createNode('joint',name = type_joint,parent = 'FaceJoint_M')
+                # 创建新的控制器并且吸附到对应的关节上
+                type_ctrl = controlUtils.Control.create_ctrl (name = 'ctrl_{}_{}_001'.format (side , type) ,
+                                                             shape = 'Cube' ,
+                                                             radius = 0.3 , axis = 'Y+' , pos = type_joint ,
+                                                             parent = None)
+                # 控制器左右需要镜像一下，r边的情况下offset组的值需要乘-1
+                if side == 'R' :
+                    side_value = -1
+                else :
+                    side_value = 1
+                cmds.setAttr (type_ctrl.replace ('ctrl_' , 'offset_') + '.scaleX', side_value)
+            # 创建出来的控制器对关节进行约束
+                pipelineUtils.Pipeline.create_constraint (type_ctrl.replace ('ctrl' , 'output') , type_joint ,
+                                                          point_value = True , orient_value = True ,
+                                                          scale_value = True ,
+                                                          mo_value = True)
+
+
+    @staticmethod
+    def add_jaw_ctrl () :
+        """
+        adv自带的下巴控制器不够丰富，无法满足动画的需要，需要添加两个控制器用来凹进去夸张表情，
+        一个下嘴唇底部用来凹口轮扎肌的动态，jaw_adj ,这是两个关节组成的关节链条
+        第二个是下巴底下用来突出下巴的动态
+        """
+
+        # 创建新的次级控制器并且吸附到lid关节上
+        jaw_adj_ctrl = controlUtils.Control.create_ctrl (name = 'ctrl_{}_{}_001'.format (side , type) ,
+                                                     shape = 'Cube' ,
+                                                     radius = 0.3 , axis = 'Y+' , pos = lid_joint ,
+                                                     parent = lid_main_ctrl)
+        'TODO:'
+
+        pass
