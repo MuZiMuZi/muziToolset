@@ -36,9 +36,9 @@ class SimpleOutliner (QtWidgets.QDialog) :
         self.tree_widget = QtWidgets.QTreeWidget ()
         # 隐藏抬头标题
         self.tree_widget.setHeaderHidden (True)
-        #设置抬头标题的文本
-        header = self.tree_widget.headerItem()
-        header.setText(0,'Column 0 text')
+        # 设置抬头标题的文本
+        header = self.tree_widget.headerItem ()
+        header.setText (0 , 'Column 0 text')
 
         self.refresh_btn = QtWidgets.QPushButton ('Refresh')
 
@@ -62,7 +62,32 @@ class SimpleOutliner (QtWidgets.QDialog) :
 
 
     def refresh_tree_widget (self) :
-        print ('TODO :  refresh_tree_widget')
+        """根据maya里的物品更新tree_widget"""
+        # 清空tree_widget
+        self.tree_widget.clear ()
+        # 查询maya里所有的顶层物体，并将这些顶层物体添加到对应的tree_widget里作为item
+        top_level_object_names = cmds.ls (assemblies = True)
+        for name in top_level_object_names :
+            item = self.create_item (name)
+            self.tree_widget.addTopLevelItem (item)
+
+
+    def create_item (self , name) :
+        item = QtWidgets.QTreeWidgetItem ([name])
+        self.add_children_item (item)
+
+        return item
+
+
+    def add_children_item (self , item) :
+        """
+        如果tree_widget里的item有子物体的话则需要添加子item
+        """
+        children = cmds.listRelatives (item.text (0) , children = True)
+        if children :
+            for child in children :
+                child_item = self.create_item (child)
+                item.addChild (child_item)
 
 
 window = SimpleOutliner ()
