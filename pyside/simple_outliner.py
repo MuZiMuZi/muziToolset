@@ -22,6 +22,13 @@ class SimpleOutliner (QtWidgets.QDialog) :
         super (SimpleOutliner , self).__init__ (parent)
         self.window_title = 'Simple_Outliner'
         self.setWindowTitle (self.window_title)
+        self.setGeometry(300,700)
+
+        # 设置各个物体的图标
+        self.transform_icon = QtGui.QIcon (":transform.svg")
+        self.camera_icon = QtGui.QIcon (":Camera.png")
+        self.mesh_icon = QtGui.QIcon (":mesh.svg")
+
         # 添加部件
         self.create_widgets ()
         self.create_layouts ()
@@ -58,6 +65,12 @@ class SimpleOutliner (QtWidgets.QDialog) :
 
     def create_connections (self) :
         """连接需要的部件和对应的信号"""
+        # 当tree——widget里item展开或收起的时候触发信号
+        self.tree_widget.itemCollapsed.connect (self.update_icon)
+        self.tree_widget.itemExpanded.connect (self.update_icon)
+
+        #当tree——widget里item被选择的时候触发信号
+        self.tree_widget.itemSelectionChanged.connect(self.select_items)
         self.refresh_btn.clicked.connect (self.refresh_tree_widget)
 
 
@@ -75,7 +88,7 @@ class SimpleOutliner (QtWidgets.QDialog) :
     def create_item (self , name) :
         item = QtWidgets.QTreeWidgetItem ([name])
         self.add_children_item (item)
-
+        self.update_icon (item)
         return item
 
 
@@ -89,6 +102,42 @@ class SimpleOutliner (QtWidgets.QDialog) :
                 child_item = self.create_item (child)
                 item.addChild (child_item)
 
+
+    def update_icon (self , item) :
+        """
+        更新item的图标
+        """
+        object_type = ""
+
+        if item.isExpanded () :  # 如果item被展开
+            object_type = "transform"
+        else :
+            child_count = item.childCount ()
+            if child_count == 0 :
+                object_type = cmds.objectType (item.text (0))
+            elif child_count == 1 :
+                child_item = item.child (0)
+                object_type = cmds.objectType (child_item.text (0))
+            else :
+                object_type = "transform"
+        if object_type == "transform" :
+            item.setIcon (0 , self.transform_icon)
+        elif object_type == "camera" :
+            item.setIcon (0 , self.camera_icon)
+        elif object_type == "mesh" :
+            item.setIcon (0 , self.mesh_icon)
+
+
+    def select_items(self):
+        """
+        选择了tree_widget里的item的话，maya的物体也会被选中
+        """
+        items = self.tree_widget.selectedItems()
+        names = []
+        for item in items :
+            names.append (item.text (0))
+
+        cmds.select(names, replace = True)
 
 window = SimpleOutliner ()
 window.show ()
