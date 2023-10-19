@@ -43,6 +43,9 @@ class SimpleOutliner (QtWidgets.QDialog) :
         """
         self.about_action = QtWidgets.QAction ('About' , self)
 
+        self.display_shape_action = QtWidgets.QAction ('Shapes' , self)
+        self.display_shape_action.setCheckable(True)
+        self.display_shape_action.setChecked(True)
 
     def create_widgets (self) :
         """创建需要的小部件"""
@@ -59,6 +62,7 @@ class SimpleOutliner (QtWidgets.QDialog) :
         # 创建自定义的右键菜单
         self.menu_bar = QtWidgets.QMenuBar ()
         self.display_menu = self.menu_bar.addMenu ('Display')
+        self.display_menu.addAction(self.display_shape_action)
         self.help_menu = self.menu_bar.addMenu ('Help')
         self.help_menu.addAction (self.about_action)
 
@@ -79,8 +83,10 @@ class SimpleOutliner (QtWidgets.QDialog) :
 
     def create_connections (self) :
         """连接需要的部件和对应的信号"""
-        #行为进行链接
-        self.about_action.trigger.connect(self.about)
+        # 行为进行链接
+        self.about_action.triggered.connect (self.about)
+        self.display_shape_action.triggered.connect(self.set_shape_nodes_visible)
+        #
         # 当tree——widget里item展开或收起的时候触发信号
         self.tree_widget.itemCollapsed.connect (self.update_icon)
         self.tree_widget.itemExpanded.connect (self.update_icon)
@@ -155,9 +161,13 @@ class SimpleOutliner (QtWidgets.QDialog) :
 
         cmds.select (names , replace = True)
 
-    def about (self):
-        #弹出一个对话框
-        QtWidgets.QMessageBox.about(self,'About Simple Outliner ','Add About Text Here')
+
+    def about (self) :
+        # 弹出一个对话框
+        QtWidgets.QMessageBox.about (self , 'About Simple Outliner ' , 'Add About Text Here')
+
+    def set_shape_nodes_visible(self,visible):
+        pass
 
 window = SimpleOutliner ()
 window.show ()
