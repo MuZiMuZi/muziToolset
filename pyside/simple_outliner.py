@@ -79,6 +79,8 @@ class SimpleOutliner (QtWidgets.QDialog) :
 
     def create_connections (self) :
         """连接需要的部件和对应的信号"""
+        #行为进行链接
+        self.about_action.trigger.connect(self.about)
         # 当tree——widget里item展开或收起的时候触发信号
         self.tree_widget.itemCollapsed.connect (self.update_icon)
         self.tree_widget.itemExpanded.connect (self.update_icon)
@@ -153,6 +155,9 @@ class SimpleOutliner (QtWidgets.QDialog) :
 
         cmds.select (names , replace = True)
 
+    def about (self):
+        #弹出一个对话框
+        QtWidgets.QMessageBox.about(self,'About Simple Outliner ','Add About Text Here')
 
 window = SimpleOutliner ()
 window.show ()
