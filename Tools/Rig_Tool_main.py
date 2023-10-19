@@ -54,7 +54,7 @@ class Rig_Tool (QWidget) :
 
 
     def create_tool_widgets (self) :
-        self.clear_keys_button = QPushButton ("删除关键帧")
+        self.clear_keys_button = QPushButton (QIcon (':fileOpen.png') , "删除关键帧")
 
         self.reset_control_button = QPushButton ("重置控制器")
 
@@ -148,6 +148,21 @@ class Rig_Tool (QWidget) :
         """
         链接信号与槽
         """
+        # fk系统的部件连接
+        self.create_fk_button.clicked.connect (lambda *args : print (1))
+        self.create_fk_button.clicked.connect (lambda *args : print (1))
+
+        # ik系统的部件连接
+        self.ik_start_button.clicked.connect (lambda *args : print (1))
+        self.ik_end_button.clicked.connect (lambda *args : print (1))
+        self.create_ik_button.clicked.connect (lambda *args : print (1))
+        self.delete_ik_button.clicked.connect (lambda *args : print (1))
+
+        # 约束系统的部件连接
+        self.create_constraint_button.clicked.connect (lambda : pipelineUtils.Pipeline.create_constraints ())
+        self.delete_constraint_button.clicked.connect (lambda *args : pipelineUtils.Pipeline.delete_constraints ())
+
+        # 绑定小工具的部件连接
         self.add_tool_connect ()
 
 

@@ -63,20 +63,11 @@ class TemplateWindow (QMainWindow) :
         self.main_widget = QTabWidget ()
         self.main_widget.setTabShape (QTabWidget.Triangular)
 
-        # 创建页面
-        self.name_tool_tab = QWidget ()
-        self.joint_tool_tab = QWidget ()
-        self.rig_tool_tab = QWidget ()
-        self.control_tool_tab = QWidget ()
-        self.attr_tool_tab = QWidget ()
-        self.constraint_tool_tab = QWidget ()
-        self.test_tool_tab = QWidget ()
-
         # 创建对应的页面标签
-        self.main_widget.addTab (Names_Tool_main.main () , '命名')
         # self.main_widget.addTab (Joint_Tool_main.main () , '关节')
         self.main_widget.addTab (Rig_Tool_main.main () , '绑定')
         self.main_widget.addTab (control_widget.main() , '控制器')
+        self.main_widget.addTab (Names_Tool_main.main () , '命名')
         # self.main_widget.addTab (self.attr_tool_tab , '属性')
         # self.main_widget.addTab (self.constraint_tool_tab , '约束')
         self.main_widget.addTab (nodes_widget.main () , '节点')
