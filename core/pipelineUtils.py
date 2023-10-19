@@ -475,11 +475,13 @@ class Pipeline (object) :
     def create_constraints () :
         u"""
         快速创建约束.
-        用法：先选择需要约束的物体，在选择被约束的物体
+        用法：先选择需要约束者，在选择被约束者
+        driver_obj：约束者
+        driven_obj：被约束者
         """
         sel = cmds.ls (sl = True)
-        driver_obj = sel [-1]
-        driven_obj = sel [0 :-1]
+        driver_obj = sel [0:-1]
+        driven_obj = sel [-1]
         cmds.pointConstraint (driver_obj , driven_obj , mo = True)
         cmds.orientConstraint (driver_obj , driven_obj , mo = True)
         cmds.scaleConstraint (driver_obj , driven_obj , mo = True)
