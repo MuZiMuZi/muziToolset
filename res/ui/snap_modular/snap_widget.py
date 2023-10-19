@@ -123,3 +123,6 @@ def show():
         pass
     win = SnapWindow()
     win.show()
+
+def main():
+    return SnapWindow()

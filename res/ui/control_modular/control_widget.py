@@ -256,6 +256,9 @@ class ControlsWidget(QWidget):
                     control.set_rotateZ(rz =ro)
         pm.undoInfo(closeChunk=1)
 
+def main():
+    return ControlsWidget ()
+
 window = None
 
 def show():

@@ -5,7 +5,7 @@ from PySide2 import QtWidgets , QtGui , QtCore
 
 from ..config import icon_dir
 
-from ..ui import bind
+from ..ui import bind_ui
 
 
 
@@ -98,7 +98,7 @@ class Bone_Widget(QtWidgets.QListWidgetItem) :
 		"""
 		pass
 
-	def build_setup(self , *args , **kwargs) :
+	def build_setup(self , *args) :
 		"""
 		构建绑定的定位结构和生成准备
 		"""

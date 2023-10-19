@@ -141,16 +141,19 @@ class Name(object) :
 	
 	
 	def decompose(self) :
-		name_parts = self._name.split('_')
-		
-		self._type = name_parts[0]
-		self._side = name_parts[1]
-		if len(name_parts) == 5 :
-			self._resolution = name_parts[2]
-		else :
-			self._resolution = None
-		self._description = name_parts[-2]
-		self._index = int(name_parts[-1])
+		try :
+			name_parts = self._name.split('_')
+
+			self._type = name_parts[0]
+			self._side = name_parts[1]
+			if len(name_parts) == 5 :
+				self._resolution = name_parts[2]
+			else :
+				self._resolution = None
+			self._description = name_parts[-2]
+			self._index = int(name_parts[-1])
+		except:
+			pass
 	
 	
 	

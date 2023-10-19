@@ -170,6 +170,9 @@ class NodeWidget(backGround.BackGround):
 
 window = None
 
+
+def main () :
+    return NodeWidget ()
 def show():
     global window
     if window is None:

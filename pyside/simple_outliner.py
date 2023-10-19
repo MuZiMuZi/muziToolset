@@ -44,8 +44,9 @@ class SimpleOutliner (QtWidgets.QDialog) :
         self.about_action = QtWidgets.QAction ('About' , self)
 
         self.display_shape_action = QtWidgets.QAction ('Shapes' , self)
-        self.display_shape_action.setCheckable(True)
-        self.display_shape_action.setChecked(True)
+        self.display_shape_action.setCheckable (True)
+        self.display_shape_action.setChecked (True)
+
 
     def create_widgets (self) :
         """创建需要的小部件"""
@@ -62,7 +63,7 @@ class SimpleOutliner (QtWidgets.QDialog) :
         # 创建自定义的右键菜单
         self.menu_bar = QtWidgets.QMenuBar ()
         self.display_menu = self.menu_bar.addMenu ('Display')
-        self.display_menu.addAction(self.display_shape_action)
+        self.display_menu.addAction (self.display_shape_action)
         self.help_menu = self.menu_bar.addMenu ('Help')
         self.help_menu.addAction (self.about_action)
 
@@ -85,7 +86,7 @@ class SimpleOutliner (QtWidgets.QDialog) :
         """连接需要的部件和对应的信号"""
         # 行为进行链接
         self.about_action.triggered.connect (self.about)
-        self.display_shape_action.triggered.connect(self.set_shape_nodes_visible)
+        self.display_shape_action.triggered.connect (self.set_shape_nodes_visible)
         #
         # 当tree——widget里item展开或收起的时候触发信号
         self.tree_widget.itemCollapsed.connect (self.update_icon)
@@ -98,8 +99,12 @@ class SimpleOutliner (QtWidgets.QDialog) :
 
     def refresh_tree_widget (self) :
         """根据maya里的物品更新tree_widget"""
+        # 获取maya里所有的形状节点
+        self.shape_nodes = cmds.ls (shapes = True)
+
         # 清空tree_widget
         self.tree_widget.clear ()
+
         # 查询maya里所有的顶层物体，并将这些顶层物体添加到对应的tree_widget里作为item
         top_level_object_names = cmds.ls (assemblies = True)
         for name in top_level_object_names :
@@ -111,6 +116,9 @@ class SimpleOutliner (QtWidgets.QDialog) :
         item = QtWidgets.QTreeWidgetItem ([name])
         self.add_children_item (item)
         self.update_icon (item)
+        is_shape = name in self.shape_nodes
+        #存储数据
+        item.setData(0,QtCore.Qt.UserRole,is_shape)
         return item
 
 
@@ -166,8 +174,10 @@ class SimpleOutliner (QtWidgets.QDialog) :
         # 弹出一个对话框
         QtWidgets.QMessageBox.about (self , 'About Simple Outliner ' , 'Add About Text Here')
 
-    def set_shape_nodes_visible(self,visible):
+
+    def set_shape_nodes_visible (self , visible) :
         pass
+
 
 window = SimpleOutliner ()
 window.show ()

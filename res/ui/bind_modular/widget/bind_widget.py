@@ -23,7 +23,7 @@ reload (limb_widget)
 reload (chainEP_widget)
 
 
-class Bind_Widget (bind.Ui_MainWindow , QtWidgets.QMainWindow) :
+class Bind_Widget (bind_ui.Ui_MainWindow , QtWidgets.QMainWindow) :
     u'''
     用于创建绑定系统的界面系统
     '''
@@ -153,7 +153,7 @@ class Bind_Widget (bind.Ui_MainWindow , QtWidgets.QMainWindow) :
         """
         base = base_widget.Base_Widget ()
         self.base_widget = base.base_widget
-        self.base_widget.module_edit.setText ('{}'.format (item.text))
+        base.module_edit.setText ('{}'.format (item.text))
         self.setting_stack.addWidget (self.base_widget)
 
 
@@ -162,6 +162,7 @@ def show () :
     global win
     try :
         win.close ()  # 为了不让窗口出现多个，因为第一次运行还没初始化，所以要try，在这里尝试先关闭，再重新新建一个窗口
+        win.deleteLater ()
     except :
         pass
     win = Bind_Widget ()
@@ -174,6 +175,7 @@ if __name__ == "__main__" :
     # 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口
     try :
         window.close ()
+        window.deleteLater()
     except :
         pass
     window.setAttribute (QtCore.Qt.WA_DeleteOnClose)
