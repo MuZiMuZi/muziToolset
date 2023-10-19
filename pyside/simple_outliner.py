@@ -22,7 +22,6 @@ class SimpleOutliner (QtWidgets.QDialog) :
         super (SimpleOutliner , self).__init__ (parent)
         self.window_title = 'Simple_Outliner'
         self.setWindowTitle (self.window_title)
-        self.setGeometry(300,700)
 
         # 设置各个物体的图标
         self.transform_icon = QtGui.QIcon (":transform.svg")
@@ -30,11 +29,19 @@ class SimpleOutliner (QtWidgets.QDialog) :
         self.mesh_icon = QtGui.QIcon (":mesh.svg")
 
         # 添加部件
+        self.create_actions ()
         self.create_widgets ()
         self.create_layouts ()
 
         # 添加连接
         self.create_connections ()
+
+
+    def create_actions (self) :
+        """
+        创建自定义的行为
+        """
+        self.about_action = QtWidgets.QAction ('About' , self)
 
 
     def create_widgets (self) :
@@ -49,6 +56,12 @@ class SimpleOutliner (QtWidgets.QDialog) :
 
         self.refresh_btn = QtWidgets.QPushButton ('Refresh')
 
+        # 创建自定义的右键菜单
+        self.menu_bar = QtWidgets.QMenuBar ()
+        self.display_menu = self.menu_bar.addMenu ('Display')
+        self.help_menu = self.menu_bar.addMenu ('Help')
+        self.help_menu.addAction (self.about_action)
+
 
     def create_layouts (self) :
         """创建需要的布局"""
@@ -58,6 +71,7 @@ class SimpleOutliner (QtWidgets.QDialog) :
 
         main_layout = QtWidgets.QVBoxLayout (self)
         main_layout.setContentsMargins (2 , 2 , 2 , 2)
+        main_layout.setMenuBar (self.menu_bar)
         main_layout.setSpacing (2)
         main_layout.addWidget (self.tree_widget)
         main_layout.addLayout (button_layout)
@@ -69,8 +83,8 @@ class SimpleOutliner (QtWidgets.QDialog) :
         self.tree_widget.itemCollapsed.connect (self.update_icon)
         self.tree_widget.itemExpanded.connect (self.update_icon)
 
-        #当tree——widget里item被选择的时候触发信号
-        self.tree_widget.itemSelectionChanged.connect(self.select_items)
+        # 当tree——widget里item被选择的时候触发信号
+        self.tree_widget.itemSelectionChanged.connect (self.select_items)
         self.refresh_btn.clicked.connect (self.refresh_tree_widget)
 
 
@@ -128,16 +142,17 @@ class SimpleOutliner (QtWidgets.QDialog) :
             item.setIcon (0 , self.mesh_icon)
 
 
-    def select_items(self):
+    def select_items (self) :
         """
         选择了tree_widget里的item的话，maya的物体也会被选中
         """
-        items = self.tree_widget.selectedItems()
+        items = self.tree_widget.selectedItems ()
         names = []
         for item in items :
             names.append (item.text (0))
 
-        cmds.select(names, replace = True)
+        cmds.select (names , replace = True)
+
 
 window = SimpleOutliner ()
 window.show ()
