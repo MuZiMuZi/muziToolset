@@ -5,13 +5,14 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 import pymel.core as pm
 from .config import ui_dir , icon_dir
-from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils
+from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils
 from importlib import reload
 
 import maya.cmds as cmds
 
 
 reload (qtUtils)
+reload (controlUtils)
 
 
 class Rig_Tool (QWidget) :
@@ -31,22 +32,25 @@ class Rig_Tool (QWidget) :
 
     def create_widgets (self) :
         # FK
-        self.fk_label = QLabel ('---------------创建FK----------------')
-        self.create_fk_button = QPushButton ('创建fk链条')
-        self.delete_fk_button = QPushButton ('删除fk链条')
+        self.fk_label = QLabel ('---------------创建FK系统----------------')
+        self.create_fk_button = QPushButton (QIcon (':kinConnect.png') , '创建fk系统')
+        self.delete_fk_button = QPushButton (QIcon (':kinConnect.png') , '删除fk系统')
         # IK
-        self.ik_label = QLabel ('---------------创建IK链条----------------')
-        self.ik_start_button = QPushButton ('拾取ik起始关节')
+        self.ik_label = QLabel ('---------------创建IK系统----------------')
+        self.ik_start_button = QPushButton (QIcon (':kinJoint.png') , '拾取ik起始关节')
         self.ik_start_line = QLineEdit ()
-        self.ik_end_button = QPushButton ('拾取ik结束关节')
+        self.ik_end_button = QPushButton (QIcon (':kinJoint.png') , '拾取ik结束关节')
         self.ik_end_line = QLineEdit ()
-        self.create_ik_button = QPushButton ('创建ik链条')
-        self.delete_ik_button = QPushButton ('删除ik链条')
+        # self.ik_ctrlnumber_cbox = QSpinBox()
+        # self.ik_ctrlnumber_cbox.setRange (3,10)
+        # self.ik_ctrlnumber_cbox.setSingleStep(1)
+        self.create_ik_button = QPushButton (QIcon (':kinConnect.png') , '创建ik系统')
+        self.delete_ik_button = QPushButton (QIcon (':kinConnect.png') , '删除ik系统')
 
         # 约束
         self.constraint_label = QLabel ('---------------创建约束----------------')
-        self.create_constraint_button = QPushButton ('创建约束')
-        self.delete_constraint_button = QPushButton ('删除约束')
+        self.create_constraint_button = QPushButton (QIcon (':aimConstraint.svg') , '创建约束')
+        self.delete_constraint_button = QPushButton (QIcon (':aimConstraint.svg') , '删除约束')
 
         # 工具
         self.tool_label = QLabel ('---------------绑定小工具---------------')
@@ -99,6 +103,7 @@ class Rig_Tool (QWidget) :
         self.fk_ho_layout = QHBoxLayout ()
         self.fk_ho_layout.addWidget (self.create_fk_button)
         self.fk_ho_layout.addWidget (self.delete_fk_button)
+        self.fk_ho_layout.addStretch ()
         self.fk_layout.addRow (self.fk_ho_layout)
 
         # 创建ik系统的layout
@@ -106,9 +111,11 @@ class Rig_Tool (QWidget) :
         self.ik_layout.addRow (self.ik_label)
         self.ik_layout.addRow (self.ik_start_line , self.ik_start_button)
         self.ik_layout.addRow (self.ik_end_line , self.ik_end_button)
+        # self.ik_layout.addRow('控制器数量', self.ik_ctrlnumber_cbox)
         self.ik_ho_layout = QHBoxLayout ()
         self.ik_ho_layout.addWidget (self.create_ik_button)
         self.ik_ho_layout.addWidget (self.delete_ik_button)
+        self.ik_ho_layout.addStretch ()
         self.ik_layout.addRow (self.ik_ho_layout)
 
         # 创建约束的layout
@@ -118,6 +125,7 @@ class Rig_Tool (QWidget) :
         self.constraint_ho_layout = QHBoxLayout ()
         self.constraint_ho_layout.addWidget (self.create_constraint_button)
         self.constraint_ho_layout.addWidget (self.delete_constraint_button)
+        self.constraint_ho_layout.addStretch ()
         self.constraint_layout.addRow (self.constraint_ho_layout)
 
         # 创建小工具的layout
@@ -149,18 +157,18 @@ class Rig_Tool (QWidget) :
         链接信号与槽
         """
         # fk系统的部件连接
-        self.create_fk_button.clicked.connect (lambda *args : print (1))
-        self.create_fk_button.clicked.connect (lambda *args : print (1))
+        self.create_fk_button.clicked.connect (self.create_fk)
+        self.delete_fk_button.clicked.connect (self.delete_fk)
 
         # ik系统的部件连接
-        self.ik_start_button.clicked.connect (lambda *args : print (1))
-        self.ik_end_button.clicked.connect (lambda *args : print (1))
-        self.create_ik_button.clicked.connect (lambda *args : print (1))
-        self.delete_ik_button.clicked.connect (lambda *args : print (1))
+        self.ik_start_button.clicked.connect (self.ik_start_pickup)
+        self.ik_end_button.clicked.connect (self.ik_end_pickup)
+        self.create_ik_button.clicked.connect (self.create_ik_ctrl)
+        self.delete_ik_button.clicked.connect (self.delete_ik_ctrl)
 
         # 约束系统的部件连接
         self.create_constraint_button.clicked.connect (lambda : pipelineUtils.Pipeline.create_constraints ())
-        self.delete_constraint_button.clicked.connect (lambda *args : pipelineUtils.Pipeline.delete_constraints ())
+        self.delete_constraint_button.clicked.connect (lambda : pipelineUtils.Pipeline.delete_constraints ())
 
         # 绑定小工具的部件连接
         self.add_tool_connect ()
@@ -222,6 +230,48 @@ class Rig_Tool (QWidget) :
         for geo in geos :
             obj = weightsUtils.Weights (geo)
             obj.load_skinWeights ()
+
+
+    def create_fk (self) :
+        objects = cmds.ls (sl = True)
+        controlUtils.Control.create_fk_ctrl (objects)
+
+
+    def delete_fk (self) :
+        objects = cmds.ls (sl = True)
+        controlUtils.Control.delete_fk_ctrl (objects)
+
+
+    def ik_start_pickup (self) :
+        ik_start = cmds.ls (sl = True , type = 'joint')
+        if len (ik_start) != 1 :
+            pm.warning ("选择了多个关节，请只选择一个关节作为ik系统的起始关节 " + ik_start)
+            return
+        else :
+            self.ik_start_line.setText (ik_start [0])
+            pm.warning ("设定了{}为ik系统的起始关节 ".format (ik_start [0]))
+
+
+    def ik_end_pickup (self) :
+        ik_end = cmds.ls (sl = True , type = 'joint')
+        if len (ik_end) != 1 :
+            pm.warning ("选择了多个关节，请只选择一个关节作为ik系统的末端关节 " + ik_end)
+            return
+        else :
+            self.ik_end_line.setText (ik_end [0])
+            pm.warning ("设定了{}为ik系统的末端关节 ".format (ik_end [0]))
+
+
+    def create_ik_ctrl (self) :
+        startIK_jnt = self.ik_start_line.text ()
+        endIK_jnt = self.ik_end_line.text ()
+        # 创建ik控制器
+        controlUtils.Control.create_ik_ctrl (startIK_jnt , endIK_jnt)
+
+
+    def delete_ik_ctrl (self) :
+        objects = cmds.ls (sl = True)
+        controlUtils.Control.delete_ik_ctrl (objects)
 
 
 def main () :

@@ -764,69 +764,48 @@ class Control (object) :
 
     @staticmethod
     def delete_fk_ctrl (objects) :
-        cmds.warning ('删除{}的fk链条'.format (objects))
         for object in objects :
             zero_name = 'zero_{}'.format (object)
             try :
                 cmds.delete (zero_name)
+                cmds.warning ('已经删除了{}的fk链条'.format (objects))
             except :
                 # 已经被删除的情况就返回
                 return
 
 
     @staticmethod
-    def create_ik_ctrl (startjnt , endjnt) :
+    def create_ik_ctrl (startIK_jnt , endIK_jnt) :
         u"""
         创建IKspine链的控制器绑定
         Args:
             startjnt(str):ik关节链条的起始关节
-            endjnt(bool):ik关节链条的结束关节
+            endIK_jnt(bool):ik关节链条的结束关节
             ctrl_number(int):控制器的数量
 
         Returns: ik_ctrl_grp ：IK控制器的最顶层
 
         """
         # 获取startjnt底下所有的子物体关节作为列表
-        startjnt_child_list = hierarchyUtils.Hierarchy.get_child_object ()
-        # 获取endjnt在这个关节列表里的索引值
-        enjnt_index = startjnt_child_list.index (endjnt)
-        # ik关节链则是从0到endjnt关节索引值
+        startjnt_child_list = hierarchyUtils.Hierarchy.get_child_object (startIK_jnt)
+        # 获取endIK_jnt在这个关节列表里的索引值
+        enjnt_index = startjnt_child_list.index (endIK_jnt)
+        # ik关节链则是从0到endIK_jnt关节索引值
         ik_chain = startjnt_child_list [0 :enjnt_index]
 
         # 创建ik关节链条曲线
-        ik_chain_crv = cmds.curve (degree = 3 , name = 'ikspinecrv_'
-                                                       + startjnt ,
-                                   p = [(0 , 0 , 0) , (0 , 0 , 0) , (0 , 0 , 0) , (0 , 0 , 0) , (0 , 0 , 0)])
-
-        # 获取节点的曲线形状
-        curve_shape = cmds.listRelatives (ik_chain_crv , shapes = True) [0]
-
-        # 获取曲线跨度和度数
-        spans = cmds.getAttr (curve_shape + '.spans')
-        degree = cmds.getAttr (curve_shape + '.degree')
-
-        # 获取曲线的点数目
-        cv_num = spans + degree
-
-        # 将曲线点吸附到关节上
-        for i in range (cv_num) :
-            jnt = ik_chain [i]
-            # 获取jnt位置
-            jnt_pos = cmds.xform (jnt , query = True , translation = True ,
-                                  worldSpace = True)
-            # 获取cv位置
-            cv = '{}.cv[{}]'.format (ik_chain_crv , i)
-            # 设置cv点的位置
-            cmds.xform (cv , translation = jnt_pos , worldSpace = True)
+        ik_chain_crv = pipelineUtils.Pipeline.create_curve_on_joints (jnt_list = ik_chain ,
+                                                                      curve = 'crvIKspine_' + ik_chain [0] ,
+                                                                      degree = 3
+                                                                      )
         cmds.setAttr (ik_chain_crv + '.visibility' , 0)
 
         # 创建开始的IK控制器
-        startIK_jnt = ik_chain [0]
         startIK_crv_jnt = cmds.createNode ('joint' , name = 'crvjnt_' + startIK_jnt)
         cmds.matchTransform (startIK_crv_jnt , startIK_jnt , position = True , rotation = True , scale = True)
 
         startIK_ctrl = 'ctrl_' + startIK_jnt
-        startIK_ctrl_obj = controlUtils.Control.create_current_ctrl (startIK_ctrl , shape = 'Cube' , radius = 20 ,
+        startIK_ctrl_obj = Control.create_current_ctrl (startIK_ctrl , shape = 'Cube' , radius = 20 ,
                                                                      axis = 'Y+' ,
                                                                      pos = startIK_jnt , parent = None)
         startIK_ctrl_output = startIK_ctrl.replace ('ctrl_' , 'output_')
@@ -835,11 +814,10 @@ class Control (object) :
         cmds.setAttr (startIK_crv_jnt + '.visibility' , 0)
 
         # 创建尾端的ik控制器
-        endIK_jnt = ik_chain [-1]
         endIK_crv_jnt = cmds.createNode ('joint' , name = 'crvjnt_' + endIK_jnt)
         cmds.matchTransform (endIK_crv_jnt , endIK_jnt , position = True , rotation = True , scale = True)
         endIK_ctrl = 'ctrl_' + endIK_jnt
-        endIK_ctrl_obj = controlUtils.Control.create_ctrl (endIK_ctrl , shape = 'Cube' , radius = 20 , axis = 'Y+' ,
+        endIK_ctrl_obj = Control.create_current_ctrl (endIK_ctrl , shape = 'Cube' , radius = 20 , axis = 'Y+' ,
                                                            pos = endIK_jnt , parent = None)
         endIK_ctrl_output = endIK_ctrl.replace ('ctrl_' , 'output_')
         endIK_zero = endIK_ctrl.replace ('ctrl_' , 'zero_')
@@ -848,11 +826,11 @@ class Control (object) :
 
         #
         # 创建中间的ik控制器
-        midIK_jnt = ik_chain [len (ik_chain // 2)]
+        midIK_jnt = ik_chain [len (ik_chain ) // 2]
         midIK_crv_jnt = cmds.createNode ('joint' , name = 'crvjnt_' + midIK_jnt)
         cmds.matchTransform (midIK_crv_jnt , midIK_jnt , position = True , rotation = True , scale = True)
         midIK_ctrl = 'ctrl_' + midIK_jnt
-        midIK_ctrl_obj = controlUtils.Control.create_ctrl (midIK_ctrl , shape = 'Cube' , radius = 15 , axis = 'Y+' ,
+        midIK_ctrl_obj = Control.create_current_ctrl (midIK_ctrl , shape = 'Cube' , radius = 15 , axis = 'Y+' ,
                                                            pos = midIK_jnt , parent = None)
         midIK_ctrl_output = midIK_ctrl.replace ('ctrl_' , 'output_')
         cmds.parent (midIK_crv_jnt , midIK_ctrl_output)
@@ -864,7 +842,7 @@ class Control (object) :
 
         # 曲线对ik关节做ik样条线手柄
         spine_ikhandle_node = \
-            cmds.ikHandle (curve = ik_chain_crv , startJoint = ik_chain [0] , endEffector = ik_chain [4] ,
+            cmds.ikHandle (curve = ik_chain_crv , startJoint = ik_chain [0] , endEffector = ik_chain [-1] ,
                            solver = 'ikSplineSolver' , createCurve = 0 ,
                            name = 'ikhandle_' + startIK_jnt) [0]
 
@@ -885,51 +863,59 @@ class Control (object) :
         cmds.setAttr (spine_ikhandle_node + '.visibility' , 0)
 
         # 整理层级结构
-        ik_ctrl_grp = cmds.createNode ('transform' , name = "grp" + ik_chain [0])
-        cmds.parent (startIK_zero , midIK_zero , endIK_zero , ik_ctrl_grp)
-        if control_parent :
-            hierarchyUtils.Hierarchy.parent (child_node = ik_ctrl_grp , parent_node = control_parent)
-        hierarchyUtils.Hierarchy.parent (child_node = spine_ikhandle_node , parent_node = self.rigNode_Local)
-        hierarchyUtils.Hierarchy.parent (child_node = ik_chain_crv , parent_node = self.rigNode_World)
+        ik_ctrl_grp = cmds.createNode ('transform' , name = "grpIKspine_" + ik_chain [0])
+        cmds.parent (spine_ikhandle_node,ik_chain_crv,startIK_zero , midIK_zero , endIK_zero , ik_ctrl_grp)
+
 
         # 添加拉伸效果
         # 获取ikspine曲线的形状节点
-        if stretch :
-            ik_chain_crv_shape = cmds.listRelatives (ik_chain_crv , shapes = True) [0]
+        ik_chain_crv_shape = cmds.listRelatives (ik_chain_crv , shapes = True) [0]
 
-            # 创建curveinfo节点来获取ikspine曲线的长度
-            curveInfo_node = cmds.createNode ('curveInfo' , name = 'crvInfo_' + ik_chain_crv)
-            cmds.connectAttr (ik_chain_crv_shape + '.worldSpace' , curveInfo_node + '.inputCurve')
-            ik_chain_crv_value = cmds.getAttr (curveInfo_node + '.arcLength')
+        # 创建curveinfo节点来获取ikspine曲线的长度
+        curveInfo_node = cmds.createNode ('curveInfo' , name = 'crvInfo_' + ik_chain_crv)
+        cmds.connectAttr (ik_chain_crv_shape + '.worldSpace' , curveInfo_node + '.inputCurve')
+        ik_chain_crv_value = cmds.getAttr (curveInfo_node + '.arcLength')
 
-            # 创建一个相加节点来获取ikspine曲线变换的数值
-            add_curveInfo_node = cmds.createNode ('addDoubleLinear' , name = 'add_'+ ik_chain_crv)
-            cmds.connectAttr (curveInfo_node + '.arcLength' , add_curveInfo_node + '.input1')
-            cmds.setAttr (add_curveInfo_node + '.input2' , ik_chain_crv_value * -1)
+        # 创建一个相加节点来获取ikspine曲线变换的数值
+        add_curveInfo_node = cmds.createNode ('addDoubleLinear' , name = 'add_' + ik_chain_crv)
+        cmds.connectAttr (curveInfo_node + '.arcLength' , add_curveInfo_node + '.input1')
+        cmds.setAttr (add_curveInfo_node + '.input2' , ik_chain_crv_value * -1)
 
-            # 创建一个相乘节点，来将变换的数值平均分配给每个关节
-            mult_curveInfo_node = cmds.createNode ('multDoubleLinear' , name = 'mult_' + ik_chain_crv)
-            cmds.connectAttr (add_curveInfo_node + '.output' , mult_curveInfo_node + '.input1')
-            cmds.setAttr (mult_curveInfo_node + '.input2' , 0.25)
+        # 创建一个相乘节点，来将变换的数值平均分配给每个关节
+        mult_curveInfo_node = cmds.createNode ('multDoubleLinear' , name = 'mult_' + ik_chain_crv)
+        cmds.connectAttr (add_curveInfo_node + '.output' , mult_curveInfo_node + '.input1')
+        cmds.setAttr (mult_curveInfo_node + '.input2' , 0.25)
 
-            # 给控制器创建一个拉伸的属性，动画师根据需要可以选择是否拉伸
-            cmds.addAttr (endIK_ctrl , longName = 'stretch' , attributeType = 'double' ,
-                          niceName = u'拉伸' , minValue = 0 , maxValue = 1 , defaultValue = 0 , keyable = 1)
+        # 给控制器创建一个拉伸的属性，动画师根据需要可以选择是否拉伸
+        cmds.addAttr (endIK_ctrl , longName = 'stretch' , attributeType = 'double' ,
+                      niceName = u'拉伸' , minValue = 0 , maxValue = 1 , defaultValue = 0 , keyable = 1)
 
-            # 根据对应的关节创建对应的相加节点，将变换后的数值连接到对应的关节上
-            for jnt in ik_chain [1 :-1] :
-                add_node = cmds.createNode ('addDoubleLinear' , name = jnt.replace ('jnt_' , 'add_'))
-                cmds.connectAttr (mult_curveInfo_node + '.output' , add_node + '.input1')
-                cmds.setAttr (add_node + '.input2' , cmds.getAttr (jnt + '.translateX'))
-                # 创建blendcolor节点用来承载拉伸的设置
-                blend_node = cmds.createNode ('blendColors' , name = jnt.replace ('jnt_' , 'blend_'))
-                cmds.connectAttr (endIK_ctrl + '.stretch' , blend_node + '.blender')
-                # 设置blendcolor节点混合值为0的时候，也就是没有拉伸的时候，color2R 的值是原关节的长度
-                cmds.setAttr (blend_node + '.color2R' , cmds.getAttr (jnt + '.translateX'))
-                # 连接拉伸后的关节长度
-                cmds.connectAttr (add_node + '.output' , blend_node + '.color1R')
-                # 把混合后的关节长度连接给原关节
-                cmds.connectAttr (blend_node + '.outputR' , jnt + '.translateX')
+        # 根据对应的关节创建对应的相加节点，将变换后的数值连接到对应的关节上
+        for jnt in ik_chain [1 :-1] :
+            add_node = cmds.createNode ('addDoubleLinear' , name = 'add_' + jnt)
+            cmds.connectAttr (mult_curveInfo_node + '.output' , add_node + '.input1')
+            cmds.setAttr (add_node + '.input2' , cmds.getAttr (jnt + '.translateX'))
+            # 创建blendcolor节点用来承载拉伸的设置
+            blend_node = cmds.createNode ('blendColors' , name = 'blend_' + jnt)
+            cmds.connectAttr (endIK_ctrl + '.stretch' , blend_node + '.blender')
+            # 设置blendcolor节点混合值为0的时候，也就是没有拉伸的时候，color2R 的值是原关节的长度
+            cmds.setAttr (blend_node + '.color2R' , cmds.getAttr (jnt + '.translateX'))
+            # 连接拉伸后的关节长度
+            cmds.connectAttr (add_node + '.output' , blend_node + '.color1R')
+            # 把混合后的关节长度连接给原关节
+            cmds.connectAttr (blend_node + '.outputR' , jnt + '.translateX')
+
+
+    @staticmethod
+    def delete_ik_ctrl(objects):
+        for object in objects :
+            grp_name = 'grpIKspine_{}'.format (object)
+            try :
+                cmds.delete (grp_name)
+                cmds.warning ('已经删除了{}的ik链条'.format (objects))
+            except :
+                # 已经被删除的情况就返回
+                return
 
 
     @staticmethod
