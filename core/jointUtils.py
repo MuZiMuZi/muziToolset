@@ -305,7 +305,7 @@ class Joint (object) :
         """
         joints = cmds.ls (sl = True , type = 'joint')
         for jnt in joints :
-            cmds.setAttr (jnt + '.displayLocalAxis' , 1)
+            cmds.setAttr (jnt + '.displayLocalAxis' , 0)
             child_list = cmds.listRelatives (jnt , children = True , type = 'joint' , allDescendents = True)
             if child_list :
                 for child in child_list :
@@ -319,3 +319,12 @@ class Joint (object) :
         joints = cmds.ls (type = 'joint')
         for jnt in joints :
             cmds.setAttr (jnt + '.displayLocalAxis' , 0)
+
+
+    @staticmethod
+    def set_jointSize (value) :
+        joints = cmds.ls (type = 'joint')
+        for joint in joints :
+            cmds.setAttr (joint + '.radius' , value)
+
+
