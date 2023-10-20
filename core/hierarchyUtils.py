@@ -166,10 +166,10 @@ class Hierarchy(object) :
 		:param object: 需要获取所有子物体的对象
 		:return: 所有子物体的名称列表
 		'''
-		object_lsit = cmds.listRelatives(object , children = True , allDescendents = True)
-		object_lsit.append(object)
-		object_lsit.reverse()
-		return object_lsit
+		object_list = cmds.listRelatives(object , children = True , allDescendents = True)
+		object_list.append(object)
+		object_list.reverse()
+		return object_list
 	
 	
 	
