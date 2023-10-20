@@ -1,14 +1,12 @@
-from __future__ import unicode_literals
 import os
-from PySide2 import QtCore
-from PySide2 import QtGui
-from PySide2 import QtWidgets
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
 import pymel.core as pm
 from .config import ui_dir , icon_dir
-from ..core import pipelineUtils , nameUtils , jointUtils
+from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils , hierarchyUtils
 from importlib import reload
-import maya.OpenMayaUI as omui
-from shiboken2 import wrapInstance
+import maya.mel as mel
 import maya.cmds as cmds
 
 
@@ -16,121 +14,95 @@ reload (jointUtils)
 reload (pipelineUtils)
 
 
-class Joint_Tool (QtWidgets.QMainWindow) :
+class Joint_Tool (QWidget) :
     """
     一个关节工具的类
     """
 
 
-    def __init__ (self , parent = pipelineUtils.Pipeline.get_maya_main_window ()) :
+    def __init__ (self , parent = None) :
         super (Joint_Tool , self).__init__ (parent)
-        self.win_name = 'Joint_Tool'
-        self.win_title = 'Joint_Tool(关节工具)'
-        self.init_ui ()
+        # 添加部件
+        self.create_widgets ()
+        self.create_layouts ()
+
+        # 添加连接
+        self.create_connections ()
 
 
-    def init_ui (self) :
-        #############################################################
-        # 创建ui界面
-        #############################################################
-        # 设置标题
-        self.setWindowTitle (self.win_title)
-        # 设置宽高
-        self.setMinimumSize (300 , 400)
-        # #
-        # # # 添加各个模块工具的ui
-        self.create_joint_attr_layout ()
-        # self.init_add_joint_ui ()
-        # self.init_joint_tool_ui ()
-        # self.main_window.show ()
+    def create_widgets (self) :
+        """创建需要的小部件"""
+        # 关节显示大小的部件
+        self.joint_size_label = QLabel ("关节显示大小:")
+        self.joint_size_line = QLineEdit ()
+        self.joint_size_slider = QSlider (Qt.Horizontal)
+        self.joint_size_slider.setMinimum (0.01)
+        self.joint_size_slider.setMaximum (100)
+
+        # 关节轴向的部件
+        self.show_joint_axis_label = QLabel ('---------------关节轴向----------------')
+        self.show_joint_axis_select_btn = QPushButton ('显示关节轴向(选择)')
+        self.show_joint_axis_hierarchy_btn = QPushButton ('显示关节轴向(层级)')
+        self.show_joint_axis_all_btn = QPushButton ('显示关节轴向(所有)')
+
+        self.hide_joint_axis_select_btn = QPushButton ('隐藏关节轴向(选择)')
+        self.hide_joint_axis_hierarchy_btn = QPushButton ('隐藏关节轴向(层级)')
+        self.hide_joint_axis_all_btn = QPushButton ('隐藏关节轴向(所有)')
+
+        self.joint_axis_buttons = [self.show_joint_axis_select_btn , self.show_joint_axis_hierarchy_btn ,
+                                   self.show_joint_axis_all_btn , self.hide_joint_axis_select_btn ,
+                                   self.hide_joint_axis_hierarchy_btn , self.hide_joint_axis_all_btn
+                                   ]
+        # 关节定向的部件
+        self.joint_orient_btn = QPushButton ('确定关节方向')
 
 
-    def create_joint_attr_layout (self) :
-        self.joint_attr_layout = QtWidgets.QVBoxLayout ()
+    def create_layouts (self) :
+        """创建需要的布局"""
+        # 创建关节大小的布局
+        self.joint_size_layout = QHBoxLayout ()
+        self.joint_size_layout.addWidget (self.joint_size_label)
+        self.joint_size_layout.addWidget (self.joint_size_line)
+        self.joint_size_layout.addWidget (self.joint_size_slider)
 
-        self.button = QtWidgets.QPushButton ()
-        self.axis_cheekbox = QtWidgets.QCheckBox ()
+        # 创建关节轴向的布局
+        self.joint_axis_layout = QGridLayout ()
+        self.create_joint_axis_layout ()
 
-        self.joint_attr_layout.addWidget (self.button)
-        self.joint_attr_layout.addWidget (self.axis_cheekbox)
+        # 创建关节方向的布局
+        self.joint_orient_layout = QHBoxLayout ()
+        self.joint_orient_layout.addWidget (self.joint_orient_btn)
 
-
-        # ## 创建添加关节属性的ui界面
-        # pm.frameLayout (label = '关节属性' ,
-        #                 collapsable = True ,
-        #                 backgroundColor = [0 , 0 , 20])
-        # # pm.checkBox (label = '关节方向')
-        # cmds.iconTextCheckBox (style = 'iconAndTextHorizontal' , image1 = 'menuIconModify.png' , label = '关节方向')
-        # cmds.iconTextCheckBox (style = 'iconAndTextHorizontal' , image1 = 'kinJoint.png' , label = '关节定向')
-        # pm.setParent ('..')
-        # pm.setParent ('..')
-
-
-    def init_add_joint_ui (self) :
-        #############################################################
-        # 创建添加关节工具的ui界面
-        #############################################################
-        pm.frameLayout (label = '添加关节' ,
-                        collapsable = True ,
-                        backgroundColor = [0 , 0 , 20])
-        pm.textFieldButtonGrp (label = '起始关节' ,
-                               columnWidth3 = [50 , 140 , 5] ,
-                               adjustableColumn = 2 ,
-                               editable = False ,
-                               buttonLabel = '拾取' ,
-                               placeholderText = '请选择起始关节' ,
-                               buttonCommand = lambda *a : None)
-
-        pm.textFieldButtonGrp (label = '结束关节' ,
-                               columnWidth3 = [50 , 140 , 5] ,
-                               adjustableColumn = 2 ,
-                               editable = False ,
-                               buttonLabel = '拾取' ,
-                               placeholderText = '请选择结束关节' ,
-                               buttonCommand = lambda *a : None)
-        self.jnt_number = pm.intSliderGrp ('jnt_number' , label = '关节数量:' , f = True , min = 1 ,
-                                           max = 100 , fmn = 1 ,
-                                           fmx = 100 ,
-                                           v = 1)
-        pm.button (label = '执行' , command = lambda *a : None)
-        pm.setParent ('..')
-        pm.setParent ('..')
+        # 创建关节主页面的布局
+        self.main_layout = QVBoxLayout (self)
+        self.main_layout.addLayout (self.joint_size_layout)
+        self.main_layout.addStretch ()
+        self.main_layout.addWidget (self.show_joint_axis_label)
+        self.main_layout.addLayout (self.joint_axis_layout)
+        self.main_layout.addStretch ()
+        self.main_layout.addLayout (self.joint_orient_layout)
+        self.main_layout.addStretch ()
 
 
-    def init_joint_tool_ui (self) :
-        # 创建关节小工具的ui界面
-        pm.frameLayout (label = '关节小工具' ,
-                        collapsable = True ,
-                        backgroundColor = [0 , 0 , 20])
-        # 设置关节显示
-        self.jnt_size = pm.floatSliderGrp ('jnt_Size' , label = '关节显示大小:' , f = True , min = 1 ,
-                                           max = 10 , fmn = 1 ,
-                                           fmx = 100 ,
-                                           v = 1)
-        pm.rowColumnLayout (numberOfColumns = 3)
-        cmds.iconTextButton (style = 'iconAndTextHorizontal' , image1 = 'kinJoint.png' , label = '关节定向清零' ,
-                             command = lambda *a : None)
+    def create_joint_axis_layout (self) :
+        # 添加按钮
+        positions = [(i , j) for i in range (5) for j in range (3)]
 
-        cmds.iconTextButton (style = 'iconAndTextHorizontal' , image1 = 'kinInsert.png' , label = '创建关节' ,
-                             command = lambda *a : None)
-        cmds.iconTextButton (style = 'iconAndTextHorizontal' , image1 = 'kinInsert.png' , label = '创建子关节' ,
-                             command = lambda *a : None)
-        cmds.iconTextButton (style = 'iconAndTextHorizontal' , image1 = 'kinInsert.png' , label = '组成关节链' ,
-                             command = lambda *a : None)
-
-        cmds.iconTextButton (style = 'iconAndTextHorizontal' , image1 = 'kinJoint.png' , label = '开启分段比例补偿' ,
-                             command = lambda *a : None)
-        cmds.iconTextButton (style = 'iconAndTextHorizontal' , image1 = 'kinJoint.png' , label = '关闭分段比例补偿' ,
-                             command = lambda *a : None)
-        pm.setParent ('..')
-        pm.setParent ('..')
+        for position , button in zip (positions , self.joint_axis_buttons) :
+            self.joint_axis_layout.addWidget (button , *position)
 
 
-    def text_button (self) :
-        jnts = cmds.ls (sl = True , type = 'joint')
-        for jnt in jnts :
-            jnt_obj = jointUtils.Joint_util (jnt)
-            jnt_obj.get_AngleZ ()
+    def create_connections (self) :
+        """连接需要的部件和对应的信号"""
+
+        self.show_joint_axis_select_btn.clicked.connect (lambda : jointUtils.Joint.show_joint_axis_select ())
+        self.show_joint_axis_hierarchy_btn.clicked.connect (lambda : jointUtils.Joint.show_joint_axis_hirerarchy ())
+        self.show_joint_axis_all_btn.clicked.connect (lambda : jointUtils.Joint.show_joint_axis_all ())
+
+        self.hide_joint_axis_select_btn.clicked.connect(lambda : jointUtils.Joint.hide_joint_axis_select ())
+        self.hide_joint_axis_hierarchy_btn.clicked.connect (lambda : jointUtils.Joint.hide_joint_axis_hirerarchy ())
+        self.hide_joint_axis_all_btn.clicked.connect (lambda : jointUtils.Joint.hide_joint_axis_all ())
+
 
 
 def show () :

@@ -64,7 +64,7 @@ class TemplateWindow (QMainWindow) :
         self.main_widget.setTabShape (QTabWidget.Triangular)
 
         # 创建对应的页面标签
-        # self.main_widget.addTab (Joint_Tool_main.main () , '关节')
+        self.main_widget.addTab (Joint_Tool_main.main () , '关节')
         self.main_widget.addTab (Rig_Tool_main.main () , '绑定')
         self.main_widget.addTab (control_widget.main() , '控制器')
         self.main_widget.addTab (Names_Tool_main.main () , '命名')
