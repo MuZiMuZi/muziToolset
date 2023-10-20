@@ -26,7 +26,7 @@ from . import controlUtils , pipelineUtils
 class Joint (object) :
 
 
-    def __init__ (self ,jnt, *args , **kwargs) :
+    def __init__ (self , jnt , *args , **kwargs) :
 
         """
         jnt(str)：关节对象
@@ -41,13 +41,12 @@ class Joint (object) :
         self.avg_jnt = None
         self.bp_joints = None
 
-        #实例化jnt对象，用pymel.core.nodetypes.Joint类
-        self.jnt_obj = Joint(self.jnt)
+        # 实例化jnt对象，用pymel.core.nodetypes.Joint类
+        self.jnt_obj = Joint (self.jnt)
 
 
-    def get_AngleZ(self):
-        print(self.jnt_obj.getAngleZ())
-
+    def get_AngleZ (self) :
+        print (self.jnt_obj.getAngleZ ())
 
 
     def avg_joint (self , driven_joint , weight = 0.5) :
@@ -262,19 +261,61 @@ class Joint (object) :
                 cmds.joint (jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')
 
 
-    def show_joint_axis (self) :
-        """
-        显示关节轴向
-        """
-        pass
+    @staticmethod
+    def show_joint_axis_select () :
+        joints = cmds.ls (sl = True , type = 'joint')
+        for jnt in joints :
+            cmds.setAttr (jnt + '.displayLocalAxis' , 1)
 
 
-    def hide_joint_axis (self) :
+    @staticmethod
+    def show_joint_axis_hirerarchy () :
         """
-        隐藏关节轴向
+        显示选择的层级关节的关节轴向
         """
-        pass
+        joints = cmds.ls (sl = True , type = 'joint')
+        for jnt in joints :
+            cmds.setAttr (jnt + '.displayLocalAxis' , 1)
+            child_list = cmds.listRelatives (jnt , children = True , type = 'joint' , allDescendents = True)
+            if child_list :
+                for child in child_list :
+                    cmds.setAttr (child + '.displayLocalAxis' , 1)
+            else :
+                return
 
 
-        def print_jnt (self) :
-            pass
+    @staticmethod
+    def show_joint_axis_all () :
+        joints = cmds.ls (type = 'joint')
+        for jnt in joints :
+            cmds.setAttr (jnt + '.displayLocalAxis' , 1)
+
+
+    @staticmethod
+    def hide_joint_axis_select () :
+        joints = cmds.ls (sl = True , type = 'joint')
+        for jnt in joints :
+            cmds.setAttr (jnt + '.displayLocalAxis' , 0)
+
+
+    @staticmethod
+    def hide_joint_axis_hirerarchy () :
+        """
+        隐藏选择的层级关节的关节轴向
+        """
+        joints = cmds.ls (sl = True , type = 'joint')
+        for jnt in joints :
+            cmds.setAttr (jnt + '.displayLocalAxis' , 1)
+            child_list = cmds.listRelatives (jnt , children = True , type = 'joint' , allDescendents = True)
+            if child_list :
+                for child in child_list :
+                    cmds.setAttr (child + '.displayLocalAxis' , 0)
+            else :
+                return
+
+
+    @staticmethod
+    def hide_joint_axis_all () :
+        joints = cmds.ls (type = 'joint')
+        for jnt in joints :
+            cmds.setAttr (jnt + '.displayLocalAxis' , 0)
