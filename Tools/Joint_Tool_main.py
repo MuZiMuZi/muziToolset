@@ -35,9 +35,12 @@ class Joint_Tool (QWidget) :
         # 关节显示大小的部件
         self.joint_size_label = QLabel ("关节显示大小:")
         self.joint_size_line = QLineEdit ()
+        self.joint_size_line.setText('0.50')
         self.joint_size_slider = QSlider (Qt.Horizontal)
+        self.joint_size_slider.setSingleStep(0.10)
         self.joint_size_slider.setMinimum (0.01)
-        self.joint_size_slider.setMaximum (100)
+        self.joint_size_slider.setMaximum (10)
+        self.joint_size_slider.setTickPosition(QSlider.TicksBelow)
 
         # 关节轴向的部件
         self.show_joint_axis_label = QLabel ('---------------关节轴向----------------')
@@ -94,7 +97,8 @@ class Joint_Tool (QWidget) :
 
     def create_connections (self) :
         """连接需要的部件和对应的信号"""
-
+        self.joint_size_line.textChanged.connect(self.set_joint_size)
+        self.joint_size_slider.valueChanged.connect(self.set_joint_size_line)
         self.show_joint_axis_select_btn.clicked.connect (lambda : jointUtils.Joint.show_joint_axis_select ())
         self.show_joint_axis_hierarchy_btn.clicked.connect (lambda : jointUtils.Joint.show_joint_axis_hirerarchy ())
         self.show_joint_axis_all_btn.clicked.connect (lambda : jointUtils.Joint.show_joint_axis_all ())
@@ -103,6 +107,15 @@ class Joint_Tool (QWidget) :
         self.hide_joint_axis_hierarchy_btn.clicked.connect (lambda : jointUtils.Joint.hide_joint_axis_hirerarchy ())
         self.hide_joint_axis_all_btn.clicked.connect (lambda : jointUtils.Joint.hide_joint_axis_all ())
 
+        self.joint_orient_btn.clicked.connect(lambda :mel.eval("OrientJointOptions;"))
+    def set_joint_size_line(self):
+        joint_size_value = float(self.joint_size_slider.value())
+        self.joint_size_line.setText(str(joint_size_value))
+
+    def set_joint_size(self):
+        joint_size_value = float(self.joint_size_line.text())
+        self.joint_size_slider.setValue(joint_size_value)
+        jointUtils.Joint.set_jointSize(joint_size_value)
 
 
 def show () :
