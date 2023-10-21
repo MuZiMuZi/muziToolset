@@ -328,3 +328,31 @@ class Joint (object) :
             cmds.setAttr (joint + '.radius' , value)
 
 
+    @staticmethod
+    def create_snap_joint():
+        """
+        吸附创建——关节
+        """
+        objs_list = cmds.ls (selection = True , flatten = True)
+        if len (objs_list) >= 1 :
+            obj = cmds.createNode ('joint' , name = 'jnt_' + objs_list [0])
+            snap_modle = 'Position + Rotation'
+            jnt = snapUtils.Snap (obj , objs_list , snap_modle)
+            jnt.snap ()
+        else :
+            cmds.warning ("请选择一个或以上的物体或者Cv点")
+
+
+    @staticmethod
+    def create_child_joint():
+        """
+        在选择对象的下层创建子关节
+        """
+        objs_list = cmds.ls (selection = True , flatten = True)
+        if len (objs_list) >= 1 :
+            for obj in objs_list:
+                child_jnt = cmds.createNode('joint' , name = obj + '_childJoint')
+                cmds.matchTransform(child_jnt,obj)
+                cmds.parent(child_jnt,obj)
+        else :
+            cmds.warning ("请选择一个或以上的物体")
