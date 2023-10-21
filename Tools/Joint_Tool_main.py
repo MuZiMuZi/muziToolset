@@ -35,12 +35,12 @@ class Joint_Tool (QWidget) :
         # 关节显示大小的部件
         self.joint_size_label = QLabel ("关节显示大小:")
         self.joint_size_line = QLineEdit ()
-        self.joint_size_line.setText('0.50')
+        self.joint_size_line.setText ('0.50')
         self.joint_size_slider = QSlider (Qt.Horizontal)
-        self.joint_size_slider.setSingleStep(0.10)
+        self.joint_size_slider.setSingleStep (0.10)
         self.joint_size_slider.setMinimum (0.01)
         self.joint_size_slider.setMaximum (10)
-        self.joint_size_slider.setTickPosition(QSlider.TicksBelow)
+        self.joint_size_slider.setTickPosition (QSlider.TicksBelow)
 
         # 关节轴向的部件
         self.show_joint_axis_label = QLabel ('---------------关节轴向----------------')
@@ -56,8 +56,20 @@ class Joint_Tool (QWidget) :
                                    self.show_joint_axis_all_btn , self.hide_joint_axis_select_btn ,
                                    self.hide_joint_axis_hierarchy_btn , self.hide_joint_axis_all_btn
                                    ]
-        # 关节定向的部件
+        # 关节设置的部件
+        self.joint_setting_label = QLabel ('---------------关节设置----------------')
         self.joint_orient_btn = QPushButton ('确定关节方向')
+        self.mirror_joint_btn = QPushButton ('镜像关节')
+        self.create_ikHandle_btn = QPushButton ('创建IK控制柄')
+        self.create_ikSplineHandle_btn = QPushButton ('创建IK样条线控制柄')
+
+        self.joint_setting_buttons = [self.joint_orient_btn , self.mirror_joint_btn ,
+                                      self.create_ikHandle_btn , self.create_ikSplineHandle_btn
+                                      ]
+
+        #关节工具的部件
+        self.joint_tool_label = QLabel ('---------------关节工具----------------')
+
 
 
     def create_layouts (self) :
@@ -72,9 +84,9 @@ class Joint_Tool (QWidget) :
         self.joint_axis_layout = QGridLayout ()
         self.create_joint_axis_layout ()
 
-        # 创建关节方向的布局
-        self.joint_orient_layout = QHBoxLayout ()
-        self.joint_orient_layout.addWidget (self.joint_orient_btn)
+        # 创建关节工具的布局
+        self.joint_orient_layout = QGridLayout ()
+        self.create_joint_tool_layout ()
 
         # 创建关节主页面的布局
         self.main_layout = QVBoxLayout (self)
@@ -83,39 +95,57 @@ class Joint_Tool (QWidget) :
         self.main_layout.addWidget (self.show_joint_axis_label)
         self.main_layout.addLayout (self.joint_axis_layout)
         self.main_layout.addStretch ()
+        self.main_layout.addWidget (self.joint_setting_label)
         self.main_layout.addLayout (self.joint_orient_layout)
         self.main_layout.addStretch ()
 
 
     def create_joint_axis_layout (self) :
-        # 添加按钮
+        # 添加joint_axis_layout的按钮
         positions = [(i , j) for i in range (5) for j in range (3)]
 
         for position , button in zip (positions , self.joint_axis_buttons) :
             self.joint_axis_layout.addWidget (button , *position)
 
 
+    def create_joint_tool_layout (self) :
+        # 添加joint_orient_layout的按钮
+        positions = [(i , j) for i in range (5) for j in range (3)]
+
+        for position , button in zip (positions , self.joint_setting_buttons) :
+            self.joint_orient_layout.addWidget (button , *position)
+
+
     def create_connections (self) :
         """连接需要的部件和对应的信号"""
-        self.joint_size_line.textChanged.connect(self.set_joint_size)
-        self.joint_size_slider.valueChanged.connect(self.set_joint_size_line)
+        # 关节显示大小的部件
+        self.joint_size_line.textChanged.connect (self.set_joint_size)
+        self.joint_size_slider.valueChanged.connect (self.set_joint_size_line)
         self.show_joint_axis_select_btn.clicked.connect (lambda : jointUtils.Joint.show_joint_axis_select ())
         self.show_joint_axis_hierarchy_btn.clicked.connect (lambda : jointUtils.Joint.show_joint_axis_hirerarchy ())
         self.show_joint_axis_all_btn.clicked.connect (lambda : jointUtils.Joint.show_joint_axis_all ())
 
-        self.hide_joint_axis_select_btn.clicked.connect(lambda : jointUtils.Joint.hide_joint_axis_select ())
+        # 关节轴向的部件
+        self.hide_joint_axis_select_btn.clicked.connect (lambda : jointUtils.Joint.hide_joint_axis_select ())
         self.hide_joint_axis_hierarchy_btn.clicked.connect (lambda : jointUtils.Joint.hide_joint_axis_hirerarchy ())
         self.hide_joint_axis_all_btn.clicked.connect (lambda : jointUtils.Joint.hide_joint_axis_all ())
 
-        self.joint_orient_btn.clicked.connect(lambda :mel.eval("OrientJointOptions;"))
-    def set_joint_size_line(self):
-        joint_size_value = float(self.joint_size_slider.value())
-        self.joint_size_line.setText(str(joint_size_value))
+        # 关节设置的部件
+        self.joint_orient_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
+        self.mirror_joint_btn.clicked.connect (lambda : mel.eval ("MirrorJointOptions;"))
+        self.create_ikHandle_btn.clicked.connect (lambda : mel.eval ("IKHandleToolOptions;"))
+        self.create_ikSplineHandle_btn.clicked.connect (lambda : mel.eval ("IKSplineHandleToolOptions;"))
 
-    def set_joint_size(self):
-        joint_size_value = float(self.joint_size_line.text())
-        self.joint_size_slider.setValue(joint_size_value)
-        jointUtils.Joint.set_jointSize(joint_size_value)
+
+    def set_joint_size_line (self) :
+        joint_size_value = float (self.joint_size_slider.value ())
+        self.joint_size_line.setText (str (joint_size_value))
+
+
+    def set_joint_size (self) :
+        joint_size_value = float (self.joint_size_line.text ())
+        self.joint_size_slider.setValue (joint_size_value)
+        jointUtils.Joint.set_jointSize (joint_size_value)
 
 
 def show () :
