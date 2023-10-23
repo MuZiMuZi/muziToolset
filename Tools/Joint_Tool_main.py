@@ -44,13 +44,13 @@ class Joint_Tool (QWidget) :
 
         # 关节轴向的部件
         self.show_joint_axis_label = QLabel ('---------------关节轴向----------------')
-        self.show_joint_axis_select_btn = QPushButton ('显示关节轴向(选择)')
-        self.show_joint_axis_hierarchy_btn = QPushButton ('显示关节轴向(层级)')
-        self.show_joint_axis_all_btn = QPushButton ('显示关节轴向(所有)')
+        self.show_joint_axis_select_btn = QPushButton (QIcon (icon_dir + '/directions.png'),'显示关节轴向(选择)')
+        self.show_joint_axis_hierarchy_btn = QPushButton (QIcon (icon_dir + '/directions.png') ,'显示关节轴向(层级)')
+        self.show_joint_axis_all_btn = QPushButton (QIcon (icon_dir + '/directions.png') ,'显示关节轴向(所有)')
 
-        self.hide_joint_axis_select_btn = QPushButton ('隐藏关节轴向(选择)')
-        self.hide_joint_axis_hierarchy_btn = QPushButton ('隐藏关节轴向(层级)')
-        self.hide_joint_axis_all_btn = QPushButton ('隐藏关节轴向(所有)')
+        self.hide_joint_axis_select_btn = QPushButton (QIcon (icon_dir + '/directions.png') ,'隐藏关节轴向(选择)')
+        self.hide_joint_axis_hierarchy_btn = QPushButton (QIcon (icon_dir + '/directions.png') ,'隐藏关节轴向(层级)')
+        self.hide_joint_axis_all_btn = QPushButton (QIcon (icon_dir + '/directions.png') ,'隐藏关节轴向(所有)')
 
         self.joint_axis_buttons = [self.show_joint_axis_select_btn , self.show_joint_axis_hierarchy_btn ,
                                    self.show_joint_axis_all_btn , self.hide_joint_axis_select_btn ,
@@ -58,10 +58,10 @@ class Joint_Tool (QWidget) :
                                    ]
         # 关节设置的部件
         self.joint_setting_label = QLabel ('---------------关节设置----------------')
-        self.joint_orient_btn = QPushButton ('确定关节方向')
-        self.mirror_joint_btn = QPushButton ('镜像关节')
-        self.create_ikHandle_btn = QPushButton ('创建IK控制柄')
-        self.create_ikSplineHandle_btn = QPushButton ('创建IK样条线控制柄')
+        self.joint_orient_btn = QPushButton (QIcon(':orientJoint.png'),'确定关节方向')
+        self.mirror_joint_btn = QPushButton (QIcon (':kinMirrorJoint_S.png'),'镜像关节')
+        self.create_ikHandle_btn = QPushButton (QIcon (':kinHandle.png') ,'创建IK控制柄')
+        self.create_ikSplineHandle_btn = QPushButton (QIcon (':kinSplineHandle.png') ,'创建IK样条线控制柄')
 
         self.joint_setting_buttons = [self.joint_orient_btn , self.mirror_joint_btn ,
                                       self.create_ikHandle_btn , self.create_ikSplineHandle_btn
@@ -69,11 +69,11 @@ class Joint_Tool (QWidget) :
 
         #蒙皮设置的部件
         self.skin_setting_label = QLabel ('---------------蒙皮设置----------------')
-        self.bind_skin_btn = QPushButton('绑定蒙皮')
-        self.delete_skin_btn = QPushButton ('取消绑定蒙皮')
-        self.artPaint_skin_btn = QPushButton ('绘制蒙皮权重')
-        self.mirror_skin_btn = QPushButton ('镜像蒙皮权重')
-        self.copy_skin_btn = QPushButton ('复制蒙皮权重')
+        self.bind_skin_btn = QPushButton(QIcon (':smoothSkin.png') ,'绑定蒙皮')
+        self.delete_skin_btn = QPushButton (QIcon (':detachSkin.png') ,'取消绑定蒙皮')
+        self.artPaint_skin_btn = QPushButton (QIcon (':paintSkinWeights.png') ,'绘制蒙皮权重')
+        self.mirror_skin_btn = QPushButton (QIcon (':mirrorSkinWeight.png') ,'镜像蒙皮权重')
+        self.copy_skin_btn = QPushButton (QIcon (':copySkinWeight.png') ,'复制蒙皮权重')
         self.skin_setting_buttons = [self.bind_skin_btn ,
                                    self.delete_skin_btn ,
                                    self.artPaint_skin_btn ,
@@ -84,21 +84,21 @@ class Joint_Tool (QWidget) :
 
         # 关节工具的部件
         self.joint_tool_label = QLabel ('---------------关节工具----------------')
-        self.create_snap_joint_btn = QPushButton ('吸附——创建关节')
-        self.create_child_joint_btn = QPushButton ('创建子关节')
-        self.create_more_joint_btn = QPushButton ('关节链重采样')
+        self.create_snap_joint_btn = QPushButton (QIcon(icon_dir + '/bone.png'),'吸附——创建关节')
+        self.create_child_joint_btn = QPushButton (QIcon (':kinJoint.png'),'创建子关节')
+        self.create_more_joint_btn = QPushButton (QIcon(':kinConnect.png'),'关节链重采样')
 
-        self.create_joint_chain_btn = QPushButton ('组成关节链')
-        self.create_curve_chain_btn = QPushButton ('曲线——创建关节链')
-        self.create_edge_chain_btn = QPushButton ('多边形边——创建关节链')
+        self.create_joint_chain_btn = QPushButton (QIcon (':kinConnect.png') ,'组成关节链')
+        self.create_curve_chain_btn = QPushButton (QIcon(':curveEP.png'),'曲线——创建关节链')
+        self.create_edge_chain_btn = QPushButton (QIcon(':polyEdgeToCurves.png'),'多边形边——创建关节链')
 
-        self.open_joint_scaleCompensate_btn = QPushButton ('开启关节分段比例补偿')
-        self.close_joint_scaleCompensate_btn = QPushButton ('开启关节分段比例补偿')
-        self.create_constraint_joint_btn = QPushButton ('批量约束——关节')
+        self.open_joint_scaleCompensate_btn = QPushButton (QIcon (icon_dir + '/bone.png') ,'开启关节分段比例补偿')
+        self.close_joint_scaleCompensate_btn = QPushButton (QIcon (icon_dir + '/bone.png') ,'开启关节分段比例补偿')
+        self.create_constraint_joint_btn = QPushButton (QIcon (icon_dir + '/assign.png'),'批量约束——关节')
 
-        self.show_joint_orient_btn = QPushButton ('显示关节定向')
-        self.hide_joint_orient_btn = QPushButton ('隐藏关节定向')
-        self.clear_joint_orient_btn = QPushButton ('归零关节定向')
+        self.show_joint_orient_btn = QPushButton (QIcon (icon_dir + '/directions.png') ,'显示关节定向')
+        self.hide_joint_orient_btn = QPushButton (QIcon (icon_dir + '/directions.png') ,'隐藏关节定向')
+        self.clear_joint_orient_btn = QPushButton (QIcon (icon_dir + '/directions.png') ,'归零关节定向')
 
         self.joint_tool_buttons = [self.create_snap_joint_btn ,
                                    self.create_child_joint_btn ,
@@ -209,6 +209,12 @@ class Joint_Tool (QWidget) :
         self.create_ikHandle_btn.clicked.connect (lambda : mel.eval ("IKHandleToolOptions;"))
         self.create_ikSplineHandle_btn.clicked.connect (lambda : mel.eval ("IKSplineHandleToolOptions;"))
 
+        #蒙皮设置的部件连接
+        self.bind_skin_btn.clicked.connect (lambda : mel.eval ("SmoothBindSkinOptions;"))
+        self.delete_skin_btn.clicked.connect (lambda : mel.eval ("DetachSkinOptions;"))
+        self.artPaint_skin_btn.clicked.connect (lambda : mel.eval ("ArtPaintSkinWeightsToolOptions;"))
+        self.mirror_skin_btn.clicked.connect (lambda : mel.eval ("MirrorSkinWeightsOptions;"))
+        self.copy_skin_btn.clicked.connect (lambda : mel.eval ("CopySkinWeightsOptions;"))
 
         #创建关节工具面板的按钮的连接
         self.create_connections_joint_tool_layout()
