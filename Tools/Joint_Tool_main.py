@@ -67,9 +67,54 @@ class Joint_Tool (QWidget) :
                                       self.create_ikHandle_btn , self.create_ikSplineHandle_btn
                                       ]
 
-        #关节工具的部件
-        self.joint_tool_label = QLabel ('---------------关节工具----------------')
+        #蒙皮设置的部件
+        self.skin_setting_label = QLabel ('---------------蒙皮设置----------------')
+        self.bind_skin_btn = QPushButton('绑定蒙皮')
+        self.delete_skin_btn = QPushButton ('取消绑定蒙皮')
+        self.artPaint_skin_btn = QPushButton ('绘制蒙皮权重')
+        self.mirror_skin_btn = QPushButton ('镜像蒙皮权重')
+        self.copy_skin_btn = QPushButton ('复制蒙皮权重')
+        self.skin_setting_buttons = [self.bind_skin_btn ,
+                                   self.delete_skin_btn ,
+                                   self.artPaint_skin_btn ,
 
+                                   self.mirror_skin_btn ,
+                                   self.copy_skin_btn ]
+
+
+        # 关节工具的部件
+        self.joint_tool_label = QLabel ('---------------关节工具----------------')
+        self.create_snap_joint_btn = QPushButton ('吸附——创建关节')
+        self.create_child_joint_btn = QPushButton ('创建子关节')
+        self.create_more_joint_btn = QPushButton ('关节链重采样')
+
+        self.create_joint_chain_btn = QPushButton ('组成关节链')
+        self.create_curve_chain_btn = QPushButton ('曲线——创建关节链')
+        self.create_edge_chain_btn = QPushButton ('多边形边——创建关节链')
+
+        self.open_joint_scaleCompensate_btn = QPushButton ('开启关节分段比例补偿')
+        self.close_joint_scaleCompensate_btn = QPushButton ('开启关节分段比例补偿')
+        self.create_constraint_joint_btn = QPushButton ('批量约束——关节')
+
+        self.show_joint_orient_btn = QPushButton ('显示关节定向')
+        self.hide_joint_orient_btn = QPushButton ('隐藏关节定向')
+        self.clear_joint_orient_btn = QPushButton ('归零关节定向')
+
+        self.joint_tool_buttons = [self.create_snap_joint_btn ,
+                                   self.create_child_joint_btn ,
+                                   self.create_more_joint_btn ,
+
+                                   self.create_joint_chain_btn ,
+                                   self.create_curve_chain_btn ,
+                                   self.create_edge_chain_btn ,
+
+                                   self.open_joint_scaleCompensate_btn ,
+                                   self.close_joint_scaleCompensate_btn ,
+                                   self.create_constraint_joint_btn ,
+
+                                   self.show_joint_orient_btn ,
+                                   self.hide_joint_orient_btn ,
+                                   self.clear_joint_orient_btn]
 
 
     def create_layouts (self) :
@@ -84,8 +129,16 @@ class Joint_Tool (QWidget) :
         self.joint_axis_layout = QGridLayout ()
         self.create_joint_axis_layout ()
 
+        # 创建关节设置的布局
+        self.joint_setting_layout = QGridLayout ()
+        self.create_joint_setting_layout ()
+
+        #创建蒙皮设置的布局
+        self.skin_setting_layout = QGridLayout()
+        self.create_skin_setting_layout()
+
         # 创建关节工具的布局
-        self.joint_orient_layout = QGridLayout ()
+        self.joint_tool_layout = QGridLayout ()
         self.create_joint_tool_layout ()
 
         # 创建关节主页面的布局
@@ -96,7 +149,13 @@ class Joint_Tool (QWidget) :
         self.main_layout.addLayout (self.joint_axis_layout)
         self.main_layout.addStretch ()
         self.main_layout.addWidget (self.joint_setting_label)
-        self.main_layout.addLayout (self.joint_orient_layout)
+        self.main_layout.addLayout (self.joint_setting_layout)
+        self.main_layout.addStretch ()
+        self.main_layout.addWidget (self.skin_setting_label)
+        self.main_layout.addLayout (self.skin_setting_layout)
+        self.main_layout.addStretch ()
+        self.main_layout.addWidget (self.joint_tool_label)
+        self.main_layout.addLayout (self.joint_tool_layout)
         self.main_layout.addStretch ()
 
 
@@ -108,12 +167,26 @@ class Joint_Tool (QWidget) :
             self.joint_axis_layout.addWidget (button , *position)
 
 
-    def create_joint_tool_layout (self) :
-        # 添加joint_orient_layout的按钮
-        positions = [(i , j) for i in range (5) for j in range (3)]
+    def create_joint_setting_layout (self) :
+        # 添加joint_setting_layout的按钮
+        positions = [(i , j) for i in range (5) for j in range (4)]
 
         for position , button in zip (positions , self.joint_setting_buttons) :
-            self.joint_orient_layout.addWidget (button , *position)
+            self.joint_setting_layout.addWidget (button , *position)
+
+    def create_skin_setting_layout(self):
+        # 添加joint_setting_layout的按钮
+        positions = [(i , j) for i in range (5) for j in range (4)]
+
+        for position , button in zip (positions , self.skin_setting_buttons) :
+            self.skin_setting_layout.addWidget (button , *position)
+
+    def create_joint_tool_layout (self) :
+        # 添加joint_tool_layout的按钮,关节工具面板的按钮
+        positions = [(i , j) for i in range (5) for j in range (3)]
+
+        for position , button in zip (positions , self.joint_tool_buttons) :
+            self.joint_tool_layout.addWidget (button , *position)
 
 
     def create_connections (self) :
@@ -135,6 +208,30 @@ class Joint_Tool (QWidget) :
         self.mirror_joint_btn.clicked.connect (lambda : mel.eval ("MirrorJointOptions;"))
         self.create_ikHandle_btn.clicked.connect (lambda : mel.eval ("IKHandleToolOptions;"))
         self.create_ikSplineHandle_btn.clicked.connect (lambda : mel.eval ("IKSplineHandleToolOptions;"))
+
+
+        #创建关节工具面板的按钮的连接
+        self.create_connections_joint_tool_layout()
+
+    def create_connections_joint_tool_layout(self):
+        """
+        创建关节工具面板的按钮的连接
+        """
+        self.create_snap_joint_btn.clicked.connect (lambda : jointUtils.Joint.create_snap_joint())
+        self.create_child_joint_btn.clicked.connect (lambda : jointUtils.Joint.create_child_joint())
+        self.create_more_joint_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
+
+        self.create_joint_chain_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
+        self.create_curve_chain_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
+        self.create_edge_chain_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
+
+        self.open_joint_scaleCompensate_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
+        self.close_joint_scaleCompensate_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
+        self.create_constraint_joint_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
+
+        self.show_joint_orient_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
+        self.hide_joint_orient_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
+        self.clear_joint_orient_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
 
 
     def set_joint_size_line (self) :
