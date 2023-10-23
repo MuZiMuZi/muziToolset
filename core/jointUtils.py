@@ -24,7 +24,7 @@ from pymel.core.nodetypes import Joint
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
-from . import controlUtils , pipelineUtils , qtUtils
+from . import controlUtils , pipelineUtils , qtUtils , hierarchyUtils , snapUtils
 
 
 class Joint (object) :
@@ -340,8 +340,8 @@ class Joint (object) :
         objs_list = cmds.ls (selection = True , flatten = True)
         if len (objs_list) >= 1 :
             obj = cmds.createNode ('joint' , name = 'jnt_' + objs_list [0])
-            snap_modle = 'Position + Rotation'
-            jnt = snapUtils.Snap (obj , objs_list , snap_modle)
+            combo_txt = 'Position + Rotation'
+            jnt = snapUtils.Snap (obj , objs_list , combo_txt)
             jnt.snap ()
         else :
             cmds.warning ("请选择一个或以上的物体或者Cv点")
@@ -411,15 +411,116 @@ class Joint (object) :
 
 
     @staticmethod
-    def create_chain_on_polyToCurve():
+    def create_chain_on_polyToCurve () :
         """
         根据模型上所选择的边生成新的曲线，生成关节链条
         """
-        #根据模型上所选择的边，模型的边到曲线生成新的曲线
+        # 根据模型上所选择的边，模型的边到曲线生成新的曲线
         curve = pipelineUtils.Pipeline.create_curve_on_polyToCurve ('curve_polyToCurve' , degree = 3)
-        cmds.select(curve, replace = True)
-        #选择生成后的曲线创建关节
+        cmds.select (curve , replace = True)
+        # 选择生成后的曲线创建关节
         Joint.create_joints_on_curve ()
+
+
+    @staticmethod
+    def open_joint_scaleCompensate () :
+        """
+        打开选择的关节的分段比例补偿
+        """
+        jnt_list = cmds.ls (sl = True , type = 'joint')
+        for jnt in jnt_list :
+            cmds.setAttr (jnt + '.segmentScaleCompensate' , 1)
+
+
+    @staticmethod
+    def close_joint_scaleCompensate () :
+        """
+        关闭选择的关节的分段比例补偿
+        """
+        jnt_list = cmds.ls (sl = True , type = 'joint')
+        for jnt in jnt_list :
+            cmds.setAttr (jnt + '.segmentScaleCompensate' , 0)
+
+
+    @staticmethod
+    def batch_Constraints_joint () :
+        u"""
+        选择关节，批量制作约束。不需要新添加创建关节来蒙皮物体		"""
+        sel_list = cmds.ls (sl = True , type = 'joint')
+        for sel in sel_list :
+            cmds.undoInfo (openChunk = True)  # 批量撤销的开头
+            # 创建对应的控制器组
+            ctrl = controlUtils.Control (n = 'ctrl_' + sel , s = 'cube' , r = 1)
+            ctrl_transform = '{}'.format (ctrl.transform)
+            sub_ctrl = controlUtils.Control (n = 'ctrlSub_' + sel , s = 'cube' , r = 1 * 0.7)
+            sub_ctrl.set_parent (ctrl.transform)
+            sub_ctrl_transform = '{}'.format (sub_ctrl.transform)
+            # 添加上层层级组
+            offset_grp = hierarchyUtils.Hierarchy.add_extra_group (
+                obj = ctrl_transform , grp_name = '{}'.format (ctrl_transform.replace ('ctrl' , 'offset')) ,
+                world_orient = False)
+            connect_grp = hierarchyUtils.Hierarchy.add_extra_group (
+                obj = offset_grp , grp_name = offset_grp.replace ('offset' , 'connect') , world_orient = False)
+            driven_grp = hierarchyUtils.Hierarchy.add_extra_group (
+                obj = connect_grp , grp_name = connect_grp.replace ('connect' , 'driven') , world_orient = False)
+            zero_grp = hierarchyUtils.Hierarchy.add_extra_group (
+                obj = driven_grp , grp_name = driven_grp.replace ('driven' , 'zero') , world_orient = False)
+
+            # 创建output层级组
+            output = cmds.createNode ('transform' , name = ctrl_transform.replace ('ctrl_' , 'output_') ,
+                                      parent = ctrl_transform)
+
+            # 连接次级控制器的属性
+            cmds.connectAttr (sub_ctrl.transform + '.translate' , output + '.translate')
+            cmds.connectAttr (sub_ctrl.transform + '.rotate' , output + '.rotate')
+            cmds.connectAttr (sub_ctrl.transform + '.scale' , output + '.scale')
+            cmds.connectAttr (sub_ctrl.transform + '.rotateOrder' , output + '.rotateOrder')
+            cmds.addAttr (ctrl_transform , attributeType = 'bool' , longName = 'subCtrlVis' ,
+                          niceName = U'次级控制器显示' ,
+                          keyable = True)
+            cmds.connectAttr (ctrl_transform + '.subCtrlVis' , sub_ctrl_transform + '.visibility')
+            # 将控制器组吸附到对应的关节位置。并且进行约束
+            cmds.matchTransform (zero_grp , sel)
+            cmds.parentConstraint (sub_ctrl_transform , sel , mo = True)
+            cmds.scaleConstraint (sub_ctrl_transform , sel , mo = True)
+            cmds.undoInfo (openChunk = False)  # 批量撤销的开头
+
+
+    @staticmethod
+    def show_joint_orient () :
+        """
+        将选中的关节的关节定向数值添加到通道盒里
+        """
+        jnt_list = cmds.ls (sl = True , type = 'joint')
+        for jnt in jnt_list :
+            cmds.setAttr (jnt + '.jointOrientX' , keyable = True)
+            cmds.setAttr (jnt + '.jointOrientY' , keyable = True)
+            cmds.setAttr (jnt + '.jointOrientZ' , keyable = True)
+
+
+    @staticmethod
+    def hide_joint_orient () :
+        """
+        将选中的关节的关节定向数值从通道盒里隐藏
+        """
+        jnt_list = cmds.ls (sl = True , type = 'joint')
+        for jnt in jnt_list :
+            cmds.setAttr (jnt + '.jointOrientX' , keyable = False)
+            cmds.setAttr (jnt + '.jointOrientY' , keyable = False)
+            cmds.setAttr (jnt + '.jointOrientZ' , keyable = False)
+
+
+    @staticmethod
+    def clear_joint_orient () :
+        """
+        将选中的关节的关节定向数值清零
+        """
+        jnt_list = cmds.ls (sl = True , type = 'joint')
+        for jnt in jnt_list :
+            cmds.setAttr (jnt + '.jointOrientX' , 0)
+            cmds.setAttr (jnt + '.jointOrientY' , 0)
+            cmds.setAttr (jnt + '.jointOrientZ' , 0)
+
 
 class Joint_Resampling (QDialog) :
     """
