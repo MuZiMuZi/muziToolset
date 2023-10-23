@@ -5,7 +5,7 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 import pymel.core as pm
 from .config import ui_dir , icon_dir
-from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils
+from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils , snapUtils
 from importlib import reload
 
 import maya.cmds as cmds
@@ -58,33 +58,38 @@ class Rig_Tool (QWidget) :
 
 
     def create_tool_widgets (self) :
-        self.clear_keys_button = QPushButton (QIcon (':fileOpen.png') , "删除关键帧")
+        self.clear_keys_button = QPushButton (QIcon (icon_dir + '/key .png') , "删除关键帧")
 
-        self.reset_control_button = QPushButton ("重置控制器")
+        self.reset_control_button = QPushButton (QIcon (icon_dir + '/icon-resetting.png') , "重置控制器")
 
-        self.batch_Constraints_modle_button = QPushButton ("批量约束_物体")
+        self.batch_Constraints_modle_button = QPushButton (QIcon (icon_dir + '/assign.png') , "批量约束_物体")
 
-        self.batch_Constraints_joint_button = QPushButton ("批量约束_关节")
+        self.batch_Constraints_joint_button = QPushButton (QIcon (icon_dir + '/assign.png') , "批量约束_关节")
 
-        self.default_grp_button = QPushButton (u"绑定层级组")
+        self.default_grp_button = QPushButton (QIcon (icon_dir + '/hierarchy-fill.png') , "绑定层级组")
 
-        self.create_joints_on_curve_button = QPushButton (u"曲线上点创建关节(通用)")
+        self.create_joints_on_curve_button = QPushButton (QIcon (icon_dir + '/bone.png') , "曲线上点创建关节(通用)")
 
-        self.create_joints_on_curve_rigging_button = QPushButton (u"曲线上点创建关节(自用)")
+        self.create_joints_on_curve_rigging_button = QPushButton (QIcon (icon_dir + '/bone.png') ,
+                                                                  "曲线上点创建关节(自用)")
 
-        self.control_hierarchy_button = QPushButton (u"自动打组(自用)")
+        self.control_hierarchy_button = QPushButton (QIcon (icon_dir + '/hierarchy-fill.png') , "自动打组(自用)")
 
-        self.save_skinWeights_button = QPushButton (u"导出权重")
+        self.save_skinWeights_button = QPushButton (QIcon (icon_dir + '/skin (1).png') , u"导出权重")
 
-        self.load_skinWeights_button = QPushButton (u"导入权重")
+        self.load_skinWeights_button = QPushButton (QIcon (icon_dir + '/skin.png') , u"导入权重")
 
-        self.select_sub_objects_button = QPushButton ("快速选择子物体")
+        self.select_sub_objects_button = QPushButton (QIcon (icon_dir + '/hierarchy-fill.png') , "快速选择子物体")
 
-        self.print_duplicate_object_button = QPushButton ("检查并列出重名节点")
+        self.print_duplicate_object_button = QPushButton (QIcon (icon_dir + '/RENAME.png') , "检查并列出重名节点")
 
-        self.rename_duplicate_object_button = QPushButton ("检查并重命名重名节点")
+        self.rename_duplicate_object_button = QPushButton (QIcon (icon_dir + '/rename (1).png') ,
+                                                           "检查并重命名重名节点")
 
-        self.create_dynamic_curve_driven_button = QPushButton ("创建动力学化曲线驱动头发")
+        self.create_dynamic_curve_driven_button = QPushButton (QIcon (':hairDynamicCurves.png') ,
+                                                               "创建动力学化曲线驱动头发")
+        self.snap_modle_button = QPushButton (QIcon (icon_dir + '/directions.png') ,
+                                              "吸附物体")
 
         self.tool_buttons = [self.clear_keys_button , self.reset_control_button , self.batch_Constraints_modle_button ,
                              self.batch_Constraints_joint_button , self.default_grp_button ,
@@ -93,7 +98,8 @@ class Rig_Tool (QWidget) :
                              self.save_skinWeights_button ,
                              self.load_skinWeights_button , self.select_sub_objects_button ,
                              self.print_duplicate_object_button ,
-                             self.rename_duplicate_object_button , self.create_dynamic_curve_driven_button]
+                             self.rename_duplicate_object_button , self.create_dynamic_curve_driven_button ,
+                             self.snap_modle_button]
 
 
     def create_layouts (self) :
@@ -210,6 +216,8 @@ class Rig_Tool (QWidget) :
 
         self.create_dynamic_curve_driven_button.clicked.connect (
             lambda *args : pipelineUtils.Pipeline.create_dynamic_curve_driven ())
+
+        self.snap_modle_button.clicked.connect (lambda *args : snapUtils.Snap.push_snip ())
 
 
     def save_skinWeights (self) :

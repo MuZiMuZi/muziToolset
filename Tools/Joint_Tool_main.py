@@ -93,7 +93,7 @@ class Joint_Tool (QWidget) :
         self.create_edge_chain_btn = QPushButton (QIcon(':polyEdgeToCurves.png'),'多边形边——创建关节链')
 
         self.open_joint_scaleCompensate_btn = QPushButton (QIcon (icon_dir + '/bone.png') ,'开启关节分段比例补偿')
-        self.close_joint_scaleCompensate_btn = QPushButton (QIcon (icon_dir + '/bone.png') ,'开启关节分段比例补偿')
+        self.close_joint_scaleCompensate_btn = QPushButton (QIcon (icon_dir + '/bone.png') ,'关闭关节分段比例补偿')
         self.create_constraint_joint_btn = QPushButton (QIcon (icon_dir + '/assign.png'),'批量约束——关节')
 
         self.show_joint_orient_btn = QPushButton (QIcon (icon_dir + '/directions.png') ,'显示关节定向')
@@ -231,13 +231,13 @@ class Joint_Tool (QWidget) :
         self.create_curve_chain_btn.clicked.connect (lambda : jointUtils.Joint.create_joints_on_curve())
         self.create_edge_chain_btn.clicked.connect (lambda : jointUtils.Joint.create_chain_on_polyToCurve())
 
-        self.open_joint_scaleCompensate_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
-        self.close_joint_scaleCompensate_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
-        self.create_constraint_joint_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
+        self.open_joint_scaleCompensate_btn.clicked.connect (lambda : jointUtils.Joint.open_joint_scaleCompensate())
+        self.close_joint_scaleCompensate_btn.clicked.connect (lambda : jointUtils.Joint.close_joint_scaleCompensate ())
+        self.create_constraint_joint_btn.clicked.connect (lambda : jointUtils.Joint.batch_Constraints_joint())
 
-        self.show_joint_orient_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
-        self.hide_joint_orient_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
-        self.clear_joint_orient_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
+        self.show_joint_orient_btn.clicked.connect (lambda : jointUtils.Joint.show_joint_orient())
+        self.hide_joint_orient_btn.clicked.connect (lambda : jointUtils.Joint.hide_joint_orient ())
+        self.clear_joint_orient_btn.clicked.connect (lambda : jointUtils.Joint.clear_joint_orient ())
 
 
     def set_joint_size_line (self) :

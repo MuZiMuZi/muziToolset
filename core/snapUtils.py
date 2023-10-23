@@ -145,3 +145,15 @@ class Snap(object) :
 		
 		if self.combo == 'Rotation' :
 			self.snap_to_RetCenter()
+
+	@staticmethod
+	def push_snip ():
+		sel_list = cmds.ls (selection = True , flatten = True)
+		if len (sel_list) >= 1 :
+			objs_list = sel_list [:-1]
+			obj = sel_list [-1]
+			combo_txt = 'Position + Rotation'
+			i = snapUtils.Snap (obj , objs_list , combo_txt)
+			i.snap ()
+		else :
+			cmds.warning ("请选择两个或以上的物体或者Cv点")
