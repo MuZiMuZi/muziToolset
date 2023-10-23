@@ -15,12 +15,16 @@ create_chain：通过放置的模板关节生成相应的IK、FK和Bindjoint
 create_mateHuman_chain：通过放置的模板关节创建mateHuman的IK,FK 的关节链
 
 """
+import sys
 
 import maya.cmds as cmds
 from . import nameUtils
 import pymel.core as pm
 from pymel.core.nodetypes import Joint
-from . import controlUtils , pipelineUtils
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
+from . import controlUtils , pipelineUtils , qtUtils
 
 
 class Joint (object) :
@@ -329,7 +333,7 @@ class Joint (object) :
 
 
     @staticmethod
-    def create_snap_joint():
+    def create_snap_joint () :
         """
         吸附创建——关节
         """
@@ -344,15 +348,166 @@ class Joint (object) :
 
 
     @staticmethod
-    def create_child_joint():
+    def create_child_joint () :
         """
         在选择对象的下层创建子关节
         """
         objs_list = cmds.ls (selection = True , flatten = True)
         if len (objs_list) >= 1 :
-            for obj in objs_list:
-                child_jnt = cmds.createNode('joint' , name = obj + '_childJoint')
-                cmds.matchTransform(child_jnt,obj)
-                cmds.parent(child_jnt,obj)
+            for obj in objs_list :
+                child_jnt = cmds.createNode ('joint' , name = obj + '_childJoint')
+                cmds.matchTransform (child_jnt , obj)
+                cmds.parent (child_jnt , obj)
         else :
             cmds.warning ("请选择一个或以上的物体")
+
+
+    @staticmethod
+    def create_more_joint () :
+        try :
+            window.close ()  # 关闭窗口
+            window.deleteLater ()  # 删除窗口
+        except :
+            pass
+        window = Joint_Resampling ()  # 创建实例
+        window.show ()  # 显示窗口
+
+
+    @staticmethod
+    def resample_joint (startJoint , endJoint , joint_number) :
+        """
+        关节重采样，选择起始关节和末端关节，在二者中间重新构建指定数量的关节链条
+        startJoint(str):起始关节
+        endJoint(str):末端关节
+        joint_number(int)：指定数量的关节链条
+        """
+        jnt_parent = startJoint
+        # 获取起始关节与末端关节之间的距离
+        try :
+            cmds.parent (endJoint , startJoint)
+        except :
+            pass
+        tx_value = cmds.getAttr (endJoint + '.translateX') / joint_number
+        cmds.parent (endJoint , world = True)
+        cmds.delete (cmds.listRelatives (startJoint , children = True))
+        # 根据指定的关节数量，循环创建对应的关节
+        for index in range (joint_number) :
+            jnt = cmds.createNode ('joint' , name = startJoint + '_{:03d}'.format (index))
+            cmds.matchTransform (jnt , startJoint)
+            cmds.parent (jnt , jnt_parent)
+            cmds.setAttr (jnt + '.translateX' , tx_value)
+            jnt_parent = jnt
+        cmds.parent (endJoint , startJoint + '_{:03d}'.format (joint_number - 1))
+
+
+    @staticmethod
+    def joint_To_Chain_Selection () :
+        """
+        按照选择的顺序将关节组成关节链条
+        """
+        jnt_list = cmds.ls (sl = True , type = 'joint')
+        for i in range (len (jnt_list) - 1 , 0 , -1) :
+            pm.parent (jnt_list [i] , jnt_list [i - 1])
+
+
+class Joint_Resampling (QDialog) :
+    """
+    关节重采样工具的页面编写
+    """
+
+
+    def __init__ (self , parent = qtUtils.get_maya_window ()) :
+        super (Joint_Resampling , self).__init__ (parent)
+        self.setWindowTitle ("关节重采样工具")
+        # 添加部件
+        self.create_widgets ()
+        self.create_layouts ()
+
+        # 添加连接
+        self.create_connections ()
+
+
+    def create_widgets (self) :
+        # 在start_layout里面添加控件
+        self.start_label = QLabel ('startJoint:')
+        self.start_line = QLineEdit ()
+        self.start_pick_btn = QPushButton ('拾取起始关节')
+
+        # 在end_layout里面添加控件
+        self.end_label = QLabel ('endJoint:')
+        self.end_line = QLineEdit ()
+        self.end_pick_btn = QPushButton ('拾取末端关节')
+
+        # 在joint_number_layout 里面添加控件
+        self.joint_number_label = QLabel ('joint_number:')
+        self.joint_number_spine = QSpinBox ()
+        self.joint_number_spine.setValue (2)
+
+        #
+        self.resample_btn = QPushButton ('resample')
+
+
+    def create_layouts (self) :
+        # 添加页面布局
+        self.start_layout = QHBoxLayout ()
+        self.start_layout.addWidget (self.start_label)
+        self.start_layout.addWidget (self.start_line)
+        self.start_layout.addWidget (self.start_pick_btn)
+
+        self.end_layout = QHBoxLayout ()
+        self.end_layout.addWidget (self.end_label)
+        self.end_layout.addWidget (self.end_line)
+        self.end_layout.addWidget (self.end_pick_btn)
+
+        self.joint_layout = QHBoxLayout ()
+        self.joint_layout.addWidget (self.joint_number_label)
+        self.joint_layout.addWidget (self.joint_number_spine)
+        self.joint_layout.addStretch ()
+
+        self.main_layout = QVBoxLayout (self)
+
+        self.main_layout.addLayout (self.start_layout)
+        self.main_layout.addLayout (self.end_layout)
+        self.main_layout.addLayout (self.joint_layout)
+        self.main_layout.addWidget (self.resample_btn)
+
+
+    def create_connections (self) :
+        self.start_pick_btn.clicked.connect (self.pick_startJoint_line)
+        self.end_pick_btn.clicked.connect (self.pick_endJoint_line)
+
+        self.resample_btn.clicked.connect (self.clicked_resample_btn)
+
+
+    def pick_startJoint_line (self) :
+        """
+        拾取起始关节
+        """
+        startJoint = cmds.ls (sl = True , type = 'joint')
+        if len (startJoint) != 1 :
+            pm.warning ("选择了多个关节，请只选择一个关节作为关节重采样的起始关节 " + startJoint)
+            return
+        else :
+            self.start_line.setText (startJoint [0])
+            pm.warning ("设定了{}为关节重采样的起始关节 ".format (startJoint [0]))
+
+
+    def pick_endJoint_line (self) :
+        """
+                拾取末端关节
+                """
+        endJoint = cmds.ls (sl = True , type = 'joint')
+        if len (endJoint) != 1 :
+            pm.warning ("选择了多个关节，请只选择一个关节作为关节重采样的起始关节 " + endJoint)
+            return
+        else :
+            self.end_line.setText (endJoint [0])
+            pm.warning ("设定了{}为关节重采样的起始关节 ".format (endJoint [0]))
+
+
+    def clicked_resample_btn (self) :
+        startJoint = self.start_line.text ()
+        endJoint = self.end_line.text ()
+        joint_number = self.joint_number_spine.value ()
+
+        Joint.resample_joint (startJoint , endJoint , joint_number)
