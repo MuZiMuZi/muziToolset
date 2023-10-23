@@ -49,8 +49,8 @@ class Rig_Tool (QWidget) :
 
         # 约束
         self.constraint_label = QLabel ('---------------创建约束----------------')
-        self.create_constraint_button = QPushButton (QIcon (':aimConstraint.svg') , '创建约束')
-        self.delete_constraint_button = QPushButton (QIcon (':aimConstraint.svg') , '删除约束')
+        self.create_constraint_button = QPushButton (QIcon (icon_dir + '/assign.png') , '创建约束')
+        self.delete_constraint_button = QPushButton (QIcon (icon_dir + '/assign.png') , '删除约束')
 
         # 工具
         self.tool_label = QLabel ('---------------绑定小工具---------------')
