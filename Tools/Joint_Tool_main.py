@@ -225,11 +225,11 @@ class Joint_Tool (QWidget) :
         """
         self.create_snap_joint_btn.clicked.connect (lambda : jointUtils.Joint.create_snap_joint())
         self.create_child_joint_btn.clicked.connect (lambda : jointUtils.Joint.create_child_joint())
-        self.create_more_joint_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
+        self.create_more_joint_btn.clicked.connect (lambda : jointUtils.Joint.create_more_joint())
 
-        self.create_joint_chain_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
-        self.create_curve_chain_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
-        self.create_edge_chain_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
+        self.create_joint_chain_btn.clicked.connect (lambda : jointUtils.Joint.joint_To_Chain_Selection())
+        self.create_curve_chain_btn.clicked.connect (lambda : jointUtils.Joint.create_joints_on_curve())
+        self.create_edge_chain_btn.clicked.connect (lambda : jointUtils.Joint.create_chain_on_polyToCurve())
 
         self.open_joint_scaleCompensate_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))
         self.close_joint_scaleCompensate_btn.clicked.connect (lambda : mel.eval ("OrientJointOptions;"))

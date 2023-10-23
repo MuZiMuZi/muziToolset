@@ -1017,19 +1017,18 @@ class Pipeline (object) :
         '''
 
         # 判断场景里是否已经生成过对应的曲线，如果有的话则将其删除，没有的话则新创建
-
-        if cmds.objExists (curve_name) :
+        if cmds.objExists (curve_name):
             cmds.delete (curve_name)
-        else :
-            # 根据所选择的点创建曲线
-            # 获取根据模型上所选择的边的点信息
-            curve_point = cmds.ls (sl = True)
-            # 创建新的曲线
-            curve_node = cmds.polyToCurve (curve_point , name = curve_name , degree = degree ,
-                                           conformToSmoothMeshPreview = 1)
-            cmds.reverseCurve (curve_name , constructionHistory = 1 , replaceOriginal = 1)
-            # 创建出来的曲线删除历史
-            cmds.delete (curve_node , constructionHistory = True)
+
+        # 根据所选择的点创建曲线
+        # 获取根据模型上所选择的边的点信息
+        curve_point = cmds.ls (sl = True)
+        # 创建新的曲线
+        curve_node = cmds.polyToCurve (curve_point , name = curve_name , degree = degree ,
+                                       conformToSmoothMeshPreview = 1)
+        cmds.reverseCurve (curve_name , constructionHistory = 1 , replaceOriginal = 1)
+        # 创建出来的曲线删除历史
+        cmds.delete (curve_node , constructionHistory = True)
 
         return curve_name
 

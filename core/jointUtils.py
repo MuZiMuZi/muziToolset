@@ -410,6 +410,17 @@ class Joint (object) :
             pm.parent (jnt_list [i] , jnt_list [i - 1])
 
 
+    @staticmethod
+    def create_chain_on_polyToCurve():
+        """
+        根据模型上所选择的边生成新的曲线，生成关节链条
+        """
+        #根据模型上所选择的边，模型的边到曲线生成新的曲线
+        curve = pipelineUtils.Pipeline.create_curve_on_polyToCurve ('curve_polyToCurve' , degree = 3)
+        cmds.select(curve, replace = True)
+        #选择生成后的曲线创建关节
+        Joint.create_joints_on_curve ()
+
 class Joint_Resampling (QDialog) :
     """
     关节重采样工具的页面编写
