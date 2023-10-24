@@ -488,6 +488,17 @@ class Pipeline (object) :
 
 
     @staticmethod
+    def select_constraints ():
+        u'''
+        快速选择物体的约束节点
+        '''
+        sel = cmds.ls (sl = True)
+        for obj in sel :
+            const = cmds.listConnections (obj , type = 'constraint')
+            if const :
+                cmds.select (const,replace = True)
+
+    @staticmethod
     def delete_constraints () :
         u'''
         快速删除选择物体的约束节点
