@@ -1,4 +1,8 @@
 from __future__ import unicode_literals , print_function
+
+import json
+import os.path
+import sys
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
@@ -11,6 +15,8 @@ from . import config , Names_Tool_main , Joint_Tool_main , Rig_Tool_main , test_
 import muziToolset.res.ui.control_modular.control_widget as control_widget
 import muziToolset.res.ui.nodes_modular.nodes_widget as nodes_widget
 import muziToolset.res.ui.snap_modular.snap_widget as snap_widget
+
+
 reload (Names_Tool_main)
 reload (Joint_Tool_main)
 reload (Rig_Tool_main)
@@ -18,20 +24,23 @@ reload (test_main)
 reload (control_widget)
 reload (nodes_widget)
 reload (snap_widget)
-class TemplateWindow (QMainWindow) :
+
+
+class Tool_main_Window (QMainWindow) :
 
     def __init__ (self , parent = pipelineUtils.Pipeline.get_maya_main_window ()) :
-        super (TemplateWindow , self).__init__ (parent)
+        super (Tool_main_Window , self).__init__ (parent)
 
         # 设置标题
         self.setWindowTitle ("muzi_Tools")
         # 设置宽高
         self.setMinimumSize (500 , 600)
-
         # 添加ui布局
         self.add_actions ()
         self.add_menubar ()
         self.add_layouts ()
+
+        self.geometry = None
 
 
     # 创建标签
@@ -66,17 +75,28 @@ class TemplateWindow (QMainWindow) :
         # 创建对应的页面标签
         self.main_widget.addTab (Joint_Tool_main.main () , '关节')
         self.main_widget.addTab (Rig_Tool_main.main () , '绑定')
-        self.main_widget.addTab (control_widget.main() , '控制器')
+        self.main_widget.addTab (control_widget.main () , '控制器')
         self.main_widget.addTab (Names_Tool_main.main () , '命名')
         # self.main_widget.addTab (self.attr_tool_tab , '属性')
         # self.main_widget.addTab (self.constraint_tool_tab , '约束')
-        self.main_widget.addTab (nodes_widget.main () , '节点')
-        self.main_widget.addTab (snap_widget.main () , '吸附')
 
         self.setCentralWidget (self.main_widget)
 
 
     # 信号与槽链接
+
+
+    def closeEvent (self , event) :
+        # 防止出现qt被删除的情况报错，如果对象被删除，则代码不执行
+        if isinstance (self , Tool_main_Window) :
+            # 在对话框关闭的时候存储对话框位置信息和大小
+            self.geometry = self.saveGeometry ()
+
+
+    def showEvent (self , event) :
+        # 在对话框显示的时候读取对话框的位置信息和大小
+        if self.geometry :
+            self.restoreGeometry (self.geometry)
 
 
 if __name__ == "__main__" :
@@ -86,5 +106,5 @@ if __name__ == "__main__" :
         window.deleteLater ()  # 删除窗口
     except :
         pass
-    window = TemplateWindow ()  # 创建实例
+    window = Tool_main_Window ()  # 创建实例
     window.show ()  # 显示窗口

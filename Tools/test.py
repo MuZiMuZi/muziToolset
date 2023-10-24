@@ -10,5 +10,5 @@ try :
     window.deleteLater ()  # 删除窗口
 except :
     pass
-window = Tool_main.TemplateWindow ()  # 创建实例
+window = Tool_main.Tool_main_Window ()  # 创建实例
 window.show ()  # 显示窗口
