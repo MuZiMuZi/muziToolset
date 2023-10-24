@@ -14,6 +14,7 @@ import os
 import subprocess
 import maya.OpenMayaUI as omui
 from PySide2 import QtCore , QtWidgets , QtGui
+from PySide2.QtCore import Qt
 from shiboken2 import wrapInstance
 
 
@@ -170,6 +171,41 @@ def get_maya_window () :
     return wrapInstance (int (pointer) , QtWidgets.QWidget)
 
 
+class Left_menu_button (QtWidgets.QPushButton) :
+    """
+    自定义的
+    """
+
+
+    def __init__ (self , action_1 =None, action_2 = None, * args , **kwargs ,) :
+        super (Left_menu_button , self).__init__ (*args , **kwargs)
+        self.action_1 = action_1
+        self.action_2 = action_2
+
+        # 创建右键菜单
+        # 必须将ContextMenuPolicy设置为Qt.CustomContextMenu
+        # 否则无法使用customContextMenuRequested信号
+        self.setContextMenuPolicy (Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect (self.showContextMenu)
+
+
+
+
+    # 创建右键菜单
+    def showContextMenu (self, mouseClick = QtCore.Qt.RightButton ) :
+        # Create menu, if it doesn't exist ------------------------------
+        menu = self.menu (mouseClick)
+        if not menu :
+            menu = QtWidgets.QMenu (self)
+            self.setMenu (menu , mouseClick)
+
+        self.action_1 = menu.addAction (QtWidgets.QAction (self.action_1 , self))
+        self.action_2 = menu.addAction (QtWidgets.QAction (self.action_2 , self))
+
+        # 菜单事件处理
+        action = menu.exec_ (self.mapToGlobal (pos))
+
+
 class FrameWidget (QtWidgets.QGroupBox) :
 
     def __init__ (self , title = '' , parent = None) :
@@ -279,6 +315,7 @@ class Dialog (QtWidgets.QDialog) :
     """
     创建一个自定义的dialog模版
     """
+
 
     def __init__ (self , parent = get_maya_window ()) :
         super (Dialog , self).__init__ (parent)

@@ -33,27 +33,28 @@ class Rig_Tool (QWidget) :
     def create_widgets (self) :
         # FK
         self.fk_label = QLabel ('---------------创建FK系统----------------')
+        self.fk_label.setStyleSheet (u"color: rgb(85, 255, 255);")
         self.create_fk_button = QPushButton (QIcon (':kinConnect.png') , '创建fk系统')
         self.delete_fk_button = QPushButton (QIcon (':kinConnect.png') , '删除fk系统')
         # IK
         self.ik_label = QLabel ('---------------创建IK系统----------------')
+        self.ik_label.setStyleSheet (u"color: rgb(169, 255, 175);")
         self.ik_start_button = QPushButton (QIcon (':kinJoint.png') , '拾取ik起始关节')
         self.ik_start_line = QLineEdit ()
         self.ik_end_button = QPushButton (QIcon (':kinJoint.png') , '拾取ik结束关节')
         self.ik_end_line = QLineEdit ()
-        # self.ik_ctrlnumber_cbox = QSpinBox()
-        # self.ik_ctrlnumber_cbox.setRange (3,10)
-        # self.ik_ctrlnumber_cbox.setSingleStep(1)
         self.create_ik_button = QPushButton (QIcon (':kinConnect.png') , '创建ik系统')
         self.delete_ik_button = QPushButton (QIcon (':kinConnect.png') , '删除ik系统')
 
         # 约束
         self.constraint_label = QLabel ('---------------创建约束----------------')
+        self.constraint_label.setStyleSheet (u"color: rgb(170, 170, 255);")
         self.create_constraint_button = QPushButton (QIcon (icon_dir + '/assign.png') , '创建约束')
         self.delete_constraint_button = QPushButton (QIcon (icon_dir + '/assign.png') , '删除约束')
 
         # 工具
         self.tool_label = QLabel ('---------------绑定小工具---------------')
+        self.tool_label.setStyleSheet (u"color: rgb(170, 255, 128);")
         self.create_tool_widgets ()
 
 
