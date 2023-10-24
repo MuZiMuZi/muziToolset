@@ -34,6 +34,7 @@ class Joint_Tool (QWidget) :
         """创建需要的小部件"""
         # 关节显示大小的部件
         self.joint_size_label = QLabel ("关节显示大小:")
+        self.joint_size_label.setStyleSheet (u"color: rgb(255, 0, 0);")
         self.joint_size_line = QLineEdit ()
         self.joint_size_line.setText ('0.50')
         self.joint_size_slider = QSlider (Qt.Horizontal)
@@ -44,6 +45,7 @@ class Joint_Tool (QWidget) :
 
         # 关节轴向的部件
         self.show_joint_axis_label = QLabel ('---------------关节轴向----------------')
+        self.show_joint_axis_label.setStyleSheet (u"color: rgb(170, 255, 255);")
         self.show_joint_axis_select_btn = QPushButton (QIcon (icon_dir + '/directions.png'),'显示关节轴向(选择)')
         self.show_joint_axis_hierarchy_btn = QPushButton (QIcon (icon_dir + '/directions.png') ,'显示关节轴向(层级)')
         self.show_joint_axis_all_btn = QPushButton (QIcon (icon_dir + '/directions.png') ,'显示关节轴向(所有)')
@@ -58,6 +60,7 @@ class Joint_Tool (QWidget) :
                                    ]
         # 关节设置的部件
         self.joint_setting_label = QLabel ('---------------关节设置----------------')
+        self.joint_setting_label.setStyleSheet (u"color: rgb(255,170, 255);")
         self.joint_orient_btn = QPushButton (QIcon(':orientJoint.png'),'确定关节方向')
         self.mirror_joint_btn = QPushButton (QIcon (':kinMirrorJoint_S.png'),'镜像关节')
         self.create_ikHandle_btn = QPushButton (QIcon (':kinHandle.png') ,'创建IK控制柄')
@@ -69,6 +72,7 @@ class Joint_Tool (QWidget) :
 
         #蒙皮设置的部件
         self.skin_setting_label = QLabel ('---------------蒙皮设置----------------')
+        self.skin_setting_label.setStyleSheet (u"color: rgb(0,85, 254);")
         self.bind_skin_btn = QPushButton(QIcon (':smoothSkin.png') ,'绑定蒙皮')
         self.delete_skin_btn = QPushButton (QIcon (':detachSkin.png') ,'取消绑定蒙皮')
         self.artPaint_skin_btn = QPushButton (QIcon (':paintSkinWeights.png') ,'绘制蒙皮权重')
@@ -84,6 +88,7 @@ class Joint_Tool (QWidget) :
 
         # 关节工具的部件
         self.joint_tool_label = QLabel ('---------------关节工具----------------')
+        self.joint_tool_label.setStyleSheet (u"color: rgb(0,255, 127);")
         self.create_snap_joint_btn = QPushButton (QIcon(icon_dir + '/bone.png'),'吸附——创建关节')
         self.create_child_joint_btn = QPushButton (QIcon (':kinJoint.png'),'创建子关节')
         self.create_more_joint_btn = QPushButton (QIcon(':kinConnect.png'),'关节链重采样')
