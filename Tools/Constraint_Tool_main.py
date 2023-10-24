@@ -52,7 +52,7 @@ class Constraint_Tool (QWidget) :
         self.orient_constraint_btn = QPushButton (QIcon (':orientConstraint.png') ,'方向约束')
         self.scale_constraint_btn = QPushButton (QIcon (':scaleConstraint.png') ,'缩放约束')
         self.aim_constraint_btn = QPushButton (QIcon (':aimConstraint.png') ,'目标约束')
-        self.pole_vector_constraint_btn = QPushButton (QIcon ('poleVectorConstraint.png') ,'极向量约束')
+        self.pole_vector_constraint_btn = QPushButton (QIcon (':poleVectorConstraint.png') ,'极向量约束')
         self.select_constraint_btn = QPushButton (QIcon (icon_dir + '/select.png') ,'选择约束')
         self.delete_constraint_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,'删除约束')
 
@@ -118,7 +118,20 @@ class Constraint_Tool (QWidget) :
         self.match_scale_btn.clicked.connect (lambda : cmds.matchTransform (cmds.ls (selection = True) , pos = False ,
                                                                             rot = False , scl = True , piv = False))
         self.match_pivot_btn.clicked.connect (lambda : cmds.matchTransform (cmds.ls (selection = True) , pos = False ,
-                                                                            rot = False , scl = False , piv = True))
+                                                                    rot = False , scl = False , piv = True))
+        #链接约束部件的连接信号
+        self.parent_constraint_btn.clicked.connect (lambda : cmds.parentConstraint (cmds.ls (selection = True) ,
+                                                                                    maintainOffset = self.maintainOffset_checkBox.isChecked()))
+        self.point_constraint_btn.clicked.connect (lambda : cmds.pointConstraint (cmds.ls (selection = True) ,
+                                                                                   maintainOffset = self.maintainOffset_checkBox.isChecked ()))
+        self.orient_constraint_btn.clicked.connect (lambda : cmds.orientConstraint (cmds.ls (selection = True) ,
+                                                                                    maintainOffset = self.maintainOffset_checkBox.isChecked ()))
+        self.scale_constraint_btn.clicked.connect (lambda : cmds.scaleConstraint (cmds.ls (selection = True) ,
+                                                                                   maintainOffset = self.maintainOffset_checkBox.isChecked ()))
+        self.aim_constraint_btn.clicked.connect (lambda : mel.eval ("performAimConstraint 0;"))
+        self.pole_vector_constraint_btn.clicked.connect (lambda : cmds.poleVectorConstraint (cmds.ls (selection = True)))
+        self.select_constraint_btn.clicked.connect (lambda : pipelineUtils.Pipeline.select_constraints())
+        self.delete_constraint_btn.clicked.connect (lambda : pipelineUtils.Pipeline.delete_constraints())
 
 
     def create_constraint_layout (self) :
