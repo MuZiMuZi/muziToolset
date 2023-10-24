@@ -36,18 +36,17 @@ class Constraint_Tool (QWidget) :
         self.match_objects_label = QLabel ("--------------吸附对象--------------")
         self.match_objects_label.setStyleSheet (u"color: rgb(255, 0, 0);")
 
-        self.match_pos_rot_btn = QPushButton ('吸附物体的平移和旋转')
-        self.group_zero_object_btn = QPushButton ('物体上层添加组')
-        self.match_pos_btn = QPushButton ('平移')
-        self.match_rot_btn = QPushButton ('旋转')
-        self.match_scale_btn = QPushButton ('缩放')
-        self.match_pivot_btn = QPushButton ('轴心点')
+        self.match_pos_rot_btn = QPushButton ('匹配平移和旋转')
+        self.match_all_btn = QPushButton ('匹配所有变换')
+        self.match_pos_btn = QPushButton ('匹配平移')
+        self.match_rot_btn = QPushButton ('匹配旋转')
+        self.match_scale_btn = QPushButton ('匹配缩放')
+        self.match_pivot_btn = QPushButton ('匹配枢纽')
 
         # 创建约束的工具部件
         self.constraint_objects_label = QLabel ("--------------约束工具--------------")
         self.constraint_objects_label.setStyleSheet (u"color: rgb(255, 0, 0);")
-        self.maintainOffset_radio = QRadioButton ('保持偏移')
-        self.no_maintainOffset_radio = QRadioButton ('不保持偏移')
+        self.maintainOffset_checkBox = QCheckBox ('保持偏移')
         self.parent_constraint_btn = QPushButton ('父子约束')
         self.point_constraint_btn = QPushButton ('点约束')
         self.orient_constraint_btn = QPushButton ('方向约束')
@@ -74,7 +73,7 @@ class Constraint_Tool (QWidget) :
         self.match_objects_layout = QVBoxLayout ()
         self.match_objects_QHlayout = QHBoxLayout ()
         self.match_objects_QHlayout.addWidget (self.match_pos_rot_btn)
-        self.match_objects_QHlayout.addWidget (self.group_zero_object_btn)
+        self.match_objects_QHlayout.addWidget (self.match_all_btn)
         self.match_layout = QHBoxLayout ()
         self.match_layout.addWidget (self.match_pos_btn)
         self.match_layout.addWidget (self.match_rot_btn)
@@ -86,8 +85,9 @@ class Constraint_Tool (QWidget) :
         # 创建约束页面的布局
         self.constraint_objects_layout = QVBoxLayout ()
         self.maintainOffset_layout = QHBoxLayout ()
-        self.maintainOffset_layout.addWidget (self.maintainOffset_radio)
-        self.maintainOffset_layout.addWidget (self.no_maintainOffset_radio)
+        self.maintainOffset_layout.addStretch ()
+        self.maintainOffset_layout.addWidget (self.maintainOffset_checkBox)
+        self.maintainOffset_layout.addStretch ()
         self.constraint_layout = QGridLayout ()
         self.create_constraint_layout ()
         self.constraint_objects_layout.addLayout (self.maintainOffset_layout)
@@ -105,12 +105,25 @@ class Constraint_Tool (QWidget) :
 
     def create_connections (self) :
         """连接需要的部件和对应的信号"""
-        pass
+        # 吸附对象部件的连接信号
+        self.match_pos_rot_btn.clicked.connect (lambda : cmds.matchTransform (cmds.ls (selection = True) , pos = True ,
+                                                                              rot = True , scl = False , piv = False))
+        self.match_all_btn.clicked.connect (
+            lambda : cmds.matchTransform (cmds.ls (selection = True) , pos = True ,
+                                          rot = True , scl = True , piv = True))
+        self.match_pos_btn.clicked.connect (lambda : cmds.matchTransform (cmds.ls (selection = True) , pos = True ,
+                                                                          rot = False , scl = False , piv = False))
+        self.match_rot_btn.clicked.connect (lambda : cmds.matchTransform (cmds.ls (selection = True) , pos = False ,
+                                                                          rot = True , scl = False , piv = False))
+        self.match_scale_btn.clicked.connect (lambda : cmds.matchTransform (cmds.ls (selection = True) , pos = False ,
+                                                                            rot = False , scl = True , piv = False))
+        self.match_pivot_btn.clicked.connect (lambda : cmds.matchTransform (cmds.ls (selection = True) , pos = False ,
+                                                                            rot = False , scl = False , piv = True))
 
 
     def create_constraint_layout (self) :
         # 添加constraint_layout的按钮
-        positions = [(i , j) for i in range (5) for j in range (2)]
+        positions = [(i , j) for i in range (5) for j in range (4)]
 
         for position , button in zip (positions , self.constraint_btns) :
             self.constraint_layout.addWidget (button , *position)
