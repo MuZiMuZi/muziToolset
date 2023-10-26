@@ -502,14 +502,16 @@ class Connection (object) :
         rotateMessage = ""
         scaleMessage = ""
         matrixMessage = ""
-        if translate :
-            translateSuccess = self.breakConnectionsTwoObj (objList , "translate" , obj , "translate")
-        if rotation :
-            rotateSuccess = self.breakConnectionsTwoObj (objList , "rotate" , obj , "rotate")
-        if scale :
-            scaleSuccess = self.breakConnectionsTwoObj (objList , "scale" , obj , "scale")
-        if matrix :
-            matrixSuccess = self.breakConnectionsTwoObj (objList , "matrix" , obj , "offsetParentMatrix")
+        masterObj = objList.pop (0)
+        for obj in objList :
+            if translate :
+                translateSuccess = self.breakConnectionsTwoObj (masterObj , "translate" , obj , "translate")
+            if rotation :
+                rotateSuccess = self.breakConnectionsTwoObj (masterObj , "rotate" , obj , "rotate")
+            if scale :
+                scaleSuccess = self.breakConnectionsTwoObj (masterObj , "scale" , obj , "scale")
+            if matrix :
+                matrixSuccess = self.breakConnectionsTwoObj (masterObj , "matrix" , obj , "offsetParentMatrix")
         if translateSuccess :
             translateMessage = "Translation"
         if rotateSuccess :
@@ -527,7 +529,7 @@ class Connection (object) :
             return translateSuccess , rotateSuccess , scaleSuccess , matrixSuccess
 
 
-    def delSrtConnectionsObjsSel (rotation = False , translate = False , scale = False , matrix = False ,
+    def delSrtConnectionsObjsSel (self, translate = False ,rotation = False , scale = False , matrix = False ,
                                   ) :
         """用于在第一个选定对象和所有其他对象之间断掉位移，旋转，缩放，矩阵等连接
 

@@ -135,7 +135,7 @@ class Connections_Tool (QWidget) :
         self.matrix_attr_cheekbox.stateChanged.connect (self.stateChanged_matrix_attr_cheekbox)
         self.reset_attr_btn.clicked.connect (self.clicked_reset_attr_btn)
         self.connect_default_connection_btn.clicked.connect(self.clicked_connect_default_connection_btn)
-
+        self.delete_default_connection_btn.clicked.connect(self.clicked_delete_default_connection_btn)
 
     def stateChanged_matrix_attr_cheekbox (self) :
         """
@@ -171,6 +171,19 @@ class Connections_Tool (QWidget) :
                                            rotation = rotate_value ,
                                            scale = scale_value ,
                                            matrix = matrix_value)
+
+    def clicked_delete_default_connection_btn (self):
+        translate_value = self.translate_attr_cheekbox.isChecked ()
+        rotate_value = self.rotate_attr_cheekbox.isChecked ()
+        scale_value = self.scale_attr_cheekbox.isChecked ()
+        matrix_value = self.matrix_attr_cheekbox.isChecked ()
+        if not translate_value and not rotate_value and not scale_value and not matrix_value :
+            cmds.warning ('没有选中任何内容连接。请选中复选框进行断开连接')
+            return
+        obj_con = connectionUtils.Connection ()
+        obj_con.delSrtConnectionsObjsSel (translate = translate_value ,
+                                           rotation = rotate_value ,
+                                           scale = scale_value)
 
 
 def main () :
