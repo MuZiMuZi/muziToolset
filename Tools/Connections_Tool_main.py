@@ -5,12 +5,17 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 import pymel.core as pm
 from .config import ui_dir , icon_dir
-from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils , snapUtils , connectionUtils
+from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils , snapUtils , connectionUtils , \
+    attrUtils
 from importlib import reload
 
 import maya.cmds as cmds
 
-reload(connectionUtils)
+
+reload (connectionUtils)
+reload (attrUtils)
+
+
 class Connections_Tool (QWidget) :
     """
 这是一个用来写属性连接工具的类
@@ -31,7 +36,7 @@ class Connections_Tool (QWidget) :
         创建连接的部件
         """
         # 创建默认属性连接的部件
-        self.connect_default_connection_label = QLabel ('---------------连接默认属性连接---------------')
+        self.connect_default_connection_label = QLabel ('---------------连接默认属性---------------')
         self.connect_default_connection_label.setStyleSheet (u"color: rgb(169, 255, 175);")
         self.translate_attr_cheekbox = QCheckBox ('Translate')
         self.rotate_attr_cheekbox = QCheckBox ('Rotate')
@@ -45,7 +50,7 @@ class Connections_Tool (QWidget) :
                                                           'delete_connection(删除连接)')
 
         # 创建自定义属性连接的部件
-        self.connect_custom_connection_label = QLabel ('---------------连接自定义属性连接---------------')
+        self.connect_custom_connection_label = QLabel ('---------------连接自定义属性---------------')
         self.connect_custom_connection_label.setStyleSheet (u"color: rgb(85, 255, 255);")
         self.driver_attr_label = QLabel ('Driver(驱动者):---')
         self.driver_attr_line = QLineEdit ()
@@ -63,7 +68,7 @@ class Connections_Tool (QWidget) :
         # 创建复制属性连接的部件
         self.copy_delete_connection_label = QLabel ('---------------复制/删除属性连接---------------')
         self.copy_delete_connection_label.setStyleSheet (u"color: rgb(170, 255, 128);")
-        self.copy_connection_btn = QPushButton (QIcon (icon_dir + '/copy.png') , 'copy_Driven_connection(复制连接)')
+        self.copy_connection_btn = QPushButton (QIcon (icon_dir + '/copy.png') , 'copy_Driven_connection(复制连接)--未完成')
         self.delete_connection_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,
                                                   'delete_Driven_connection(删除连接)')
 
@@ -132,11 +137,21 @@ class Connections_Tool (QWidget) :
 
 
     def add_connnect (self) :
+        # 连接默认属性的部件
         self.matrix_attr_cheekbox.stateChanged.connect (self.stateChanged_matrix_attr_cheekbox)
         self.reset_attr_btn.clicked.connect (self.clicked_reset_attr_btn)
-        self.connect_default_connection_btn.clicked.connect(self.clicked_connect_default_connection_btn)
-        self.delete_default_connection_btn.clicked.connect(self.clicked_delete_default_connection_btn)
+        self.connect_default_connection_btn.clicked.connect (self.clicked_connect_default_connection_btn)
+        self.delete_default_connection_btn.clicked.connect (self.clicked_delete_default_connection_btn)
 
+        # 连接自定义属性的部件
+        self.pick_driver_attr_btn.clicked.connect (self.clicked_pick_driver_attr_btn)
+        self.pick_driven_attr_btn.clicked.connect(self.clicked_pick_driven_attr_btn)
+        self.connect_custom_connection_btn.clicked.connect(self.clicked_connect_custom_connection_btn)
+        self.delete_custom_connection_btn.clicked.connect (self.clicked_delete_custom_connection_btn)
+
+        #连接复制/删除属性的部件
+        self.copy_connection_btn.clicked.connect(self.clicked_copy_connection_btn)
+        self.delete_connection_btn.clicked.connect (self.clicked_delete_connection_btn)
     def stateChanged_matrix_attr_cheekbox (self) :
         """
         当matrix_attr_cheekbox按钮被选中的时候，则将位移,旋转，缩放的属性选项全部取消
@@ -159,7 +174,7 @@ class Connections_Tool (QWidget) :
 
 
     def clicked_connect_default_connection_btn (self) :
-        translate_value = self.translate_attr_cheekbox.isChecked()
+        translate_value = self.translate_attr_cheekbox.isChecked ()
         rotate_value = self.rotate_attr_cheekbox.isChecked ()
         scale_value = self.scale_attr_cheekbox.isChecked ()
         matrix_value = self.matrix_attr_cheekbox.isChecked ()
@@ -172,7 +187,8 @@ class Connections_Tool (QWidget) :
                                            scale = scale_value ,
                                            matrix = matrix_value)
 
-    def clicked_delete_default_connection_btn (self):
+
+    def clicked_delete_default_connection_btn (self) :
         translate_value = self.translate_attr_cheekbox.isChecked ()
         rotate_value = self.rotate_attr_cheekbox.isChecked ()
         scale_value = self.scale_attr_cheekbox.isChecked ()
@@ -182,9 +198,42 @@ class Connections_Tool (QWidget) :
             return
         obj_con = connectionUtils.Connection ()
         obj_con.delSrtConnectionsObjsSel (translate = translate_value ,
-                                           rotation = rotate_value ,
-                                           scale = scale_value)
+                                          rotation = rotate_value ,
+                                          scale = scale_value)
 
+
+    def clicked_pick_driver_attr_btn (self) :
+        driver_attr = attrUtils.Attr.get_channelBox_attrs ()
+        self.driver_attr_line.setText ( driver_attr [0])
+
+
+    def clicked_pick_driven_attr_btn (self) :
+        driver_attr = attrUtils.Attr.get_channelBox_attrs ()
+        self.driven_attr_line.setText (driver_attr [0])
+
+
+    def clicked_connect_custom_connection_btn (self) :
+        sourceAttr = self.driver_attr_line.text()
+        targetAttr = self.driven_attr_line.text()
+        obj_con = connectionUtils.Connection ()
+        obj_con.makeConnectionAttrsOrChannelBox (driverAttr = sourceAttr ,
+                                                     drivenAttr = targetAttr)
+
+    def clicked_delete_custom_connection_btn(self):
+        sourceAttr = self.driver_attr_line.text ()
+        targetAttr = self.driven_attr_line.text ()
+        obj_con = connectionUtils.Connection ()
+        obj_con.breakConnectionAttrsOrChannelBox (driverAttr = sourceAttr ,
+                                                         drivenAttr = targetAttr)
+
+    def clicked_copy_connection_btn(self):
+        obj_con = connectionUtils.Connection ()
+        obj_con.copyDrivenConnectedAttrsSel ()
+
+
+    def clicked_delete_connection_btn(self):
+        obj_con = connectionUtils.Connection ()
+        obj_con.breakAllDrivenOrChannelBoxSel ()
 
 def main () :
     return Connections_Tool ()
