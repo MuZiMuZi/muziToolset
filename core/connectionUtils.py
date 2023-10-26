@@ -9,6 +9,7 @@ from PySide2.QtGui import *
 from shiboken2 import wrapInstance
 import maya.cmds as cmds
 import maya.OpenMayaUI as omui
+import maya.mel as mel
 from importlib import reload
 from ..core import pipelineUtils
 import maya.api.OpenMaya as om
@@ -52,6 +53,23 @@ class Connection (object) :
             om.MGlobal.displayWarning ("{}没有已连接的属性 ".format (driven_obj))
             return list ()
         return self.driven_attrs_connection
+
+
+    def getDestinationSourceAttrs (self , drivenObj) :
+        """从受驱动对象返回其所有destinationObjAttrs和sourceObAttrs
+
+        driven_obj(str):作为被驱动者的物体
+        """
+        sourceObAttrs = list ()
+        destinationObjAttrs = self.get_obj_driven_attrs_connection (drivenObj )  # Haven't found an easy way
+        #判断没有选择属性的时候
+        if not destinationObjAttrs :
+            return list () , list ()
+
+        for objAttr in destinationObjAttrs :
+            sourceObAttrs.append (
+                cmds.listConnections (objAttr , destination = False , source = True , plugs = True) [0])
+        return sourceObAttrs , destinationObjAttrs
 
 
     """
@@ -160,10 +178,10 @@ class Connection (object) :
         if not sel_objs :
             cmds.warning ("未选择任何对象。请选择两个或多个对象或节点")
             return False
-        if len (selObjs) < 2 :
+        if len (sel_objs) < 2 :
             cmds.warning ("未选择任何对象。请选择两个或多个对象或节点")
             return False
-        return safe_connect_List (sel_objs , source_attr , destination_attr)
+        return self.safeConnectList (sel_objs , source_attr , destination_attr)
 
 
     def makeConnectionAttrsOrChannelBox (self , driverAttr = "" , drivenAttr = "") :
@@ -200,14 +218,14 @@ class Connection (object) :
                 cmds.warning ('只能有一个选择的被驱动属性')
                 return False
             driverAttr = selAttrs [0]
-            success = safeConnectList (selObjs , driverAttr , drivenAttr , message = message)
+            success = self.safeConnectList (selObjs , driverAttr , drivenAttr )
         # driverAttr和drivenAttr两者都不存在，因此对驱动程序和被驱动程序都使用通道盒
         else :  # Neither exists so use channel box for both driver and driven -----------------------------------
             driverAttr = selAttrs [0]
             drivenAttr = selAttrs [0]
             success = True
             for attr in selAttrs :
-                if not safeConnectList (selObjs , attr , attr , message = message) :
+                if not self.safeConnectList (selObjs , attr , attr ) :
                     success = False
         if success :
             cmds.warning ('已经成功将{}连接到{}'.format (driverAttr , drivenAttr))
@@ -393,8 +411,9 @@ class Connection (object) :
         if driverAttr and drivenAttr :
             return self.breakConnectionsSelection (driverAttr , drivenAttr)
         # 未输入的两个名称都来自选定对象和通道盒属性选择
+        selObjs = cmds.ls (selection = True , long = True)
         if not selObjs :
-            cmds.warning ("No objects selected. Please select two or more objects or nodes")
+            cmds.warning ("未选择任何对象。请选择两个或多个对象或节点")
             return False
         # 获取通道盒属性选择
         selAttrs = mel.eval ('selectedChannelBoxAttributes')
@@ -529,7 +548,7 @@ class Connection (object) :
             return translateSuccess , rotateSuccess , scaleSuccess , matrixSuccess
 
 
-    def delSrtConnectionsObjsSel (self, translate = False ,rotation = False , scale = False , matrix = False ,
+    def delSrtConnectionsObjsSel (self , translate = False , rotation = False , scale = False , matrix = False ,
                                   ) :
         """用于在第一个选定对象和所有其他对象之间断掉位移，旋转，缩放，矩阵等连接
 
@@ -556,3 +575,47 @@ class Connection (object) :
         return self.breakSrtConnectionsObjs (selTransforms , rotation = rotation , translate = translate ,
                                              scale = scale ,
                                              matrix = matrix)
+
+
+    def copyDrivenConnectedAttrs (self , obj) :
+        """复制受驱动的属性
+
+        返回:
+
+            1.连接属性的来源，来自驱动对象列表（object.attribute）
+
+            2.所有受驱动的属性，即具有进入节点列表的连接的属性（attributeNames）
+
+        obj(str): 具有传入连接的节点。一个受驱动的对象
+
+
+        """
+        destinationAttrs = list ()
+        sourceObjAttrs , destObjAttrs = self.getDestinationSourceAttrs (obj)
+        for obAttr in destObjAttrs :
+            destinationAttrs.append (obAttr.split (".") [1])
+        if destinationAttrs :
+            self.makeConnectionAttrsOrChannelBox (driverAttr = sourceObjAttrs[0] ,
+                                                  drivenAttr = destinationAttrs [0])
+            cmds.warning (
+                "成功复制了`{}` 连接的属性 `{}`".format (sourceObjAttrs , destinationAttrs))
+        else :
+            cmds.warning ("在这个节点上面找不到传入的链接`{}`,未复制任何数据.".format (obj))
+        return sourceObjAttrs , destinationAttrs
+
+
+    def copyDrivenConnectedAttrsSel (self) :
+        """复制第一个选定对象的受驱动属性。
+        返回:
+
+        1.连接属性的来源，来自驱动对象列表（object.attribute）
+
+        2.所有受驱动的属性，即具有进入节点列表的连接的属性（attributeNames）
+
+
+        """
+        selObjs = cmds.ls (selection = True , long = True)
+        if not selObjs :
+            cmds.warning ("未选择要复制连接属性的对象。请重新选择需要复制的对象")
+            return list () , list ()
+        return self.copyDrivenConnectedAttrs (selObjs[0])
