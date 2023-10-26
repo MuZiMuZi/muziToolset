@@ -285,3 +285,272 @@ class Connection (object) :
     """
     断开连接
     """
+
+
+    def breakAttr (self , objectAttribute) :
+        """根据右键单击通道框中的断开连接，断开单个属性的连接
+        objectAttribute(str): 需要断开连接的单个物体属性
+        """
+        # 获取该属性的连接
+        oppositeAttrs = cmds.listConnections (objectAttribute , plugs = True)
+        if not oppositeAttrs :
+            return False
+        try :
+            cmds.disconnectAttr (oppositeAttrs [0] , objectAttribute)
+            return True
+        except RuntimeError :
+            pass
+        return False
+
+
+    def breakAttrList (self , objAttrList) :
+        """仅使用一个属性断开连接，如在列表上的通道框中右键单击断开连接：
+
+            objAttrList: ["pCube1.rotateX", "pCube1.translateY"]
+
+        objAttrList(list/str): 具有属性名称的对象列表，即[“pCube1.rotateX”，“pCube1-translateY”]
+        """
+        success = False
+        for objAttr in objAttrList :
+            if breakAttr (objAttr) :
+                success = True
+        return success
+
+
+    def breakConnectionSourceDestination (self , sourceObj , sourceAttr , destinationObj , destinationAttr) :
+        """断开连接，并检查连接是否存在。必须按照正确的source、destination和存在性
+            如果不知道源和目标顺序，可以使用breakConnectionsTwoObj()
+
+        sourceObj(str):  作为驱动者的物体
+        sourceAttr(str): 作为驱动者的物体上驱动的属性
+        destinationObj(str):作为被驱动者的物体
+        destinationAttr(str): 作为被驱动者的物体上被驱动的属性
+        """
+        destinationObjAttr = "{}.{}".format (destinationObj , destinationAttr)
+        sourceObjAttr = "{}.{}".format (sourceObj , sourceAttr)
+        sourceConnections = cmds.listConnections (destinationObjAttr , destination = False , source = True ,
+                                                  plugs = True)
+        if sourceConnections :
+            if sourceObjAttr in sourceConnections :  # then yes confirmed
+                cmds.disconnectAttr (sourceObjAttr , destinationObjAttr)
+                return True
+        return False
+
+
+    def breakConnectionsTwoObj (self , objOne , objOneAttr , objTwo , objTwoAttr) :
+        """断开连接，并检查连接是否存在。目的地/来源顺序无关紧要，两者都尝试。
+        objOne(str): 驱动者的节点名称
+        objOneAttr(str): 驱动者的节点名称的属性
+
+        objTwo(str): 被驱动者的节点名称
+
+        objTwoAttr(str): 被驱动者的节点名称的属性
+
+
+        """
+        if not self.breakConnectionSourceDestination (objOne , objOneAttr , objTwo , objTwoAttr) :  # Try the inverse
+            if not self.breakConnectionSourceDestination (objTwo , objTwoAttr , objOne , objOneAttr) :
+                return False
+        return True
+
+
+    def breakConnectionsList (self , objList , sourceAttr , destinationAttr) :
+        """安全地断开第一个对象与其余对象之间的连接。
+        objList(list/str): Maya节点的列表
+        sourceAttr(str): 仅第一个对象的源属性（from属性）
+        destinationAttr(str): 要连接到所有剩余对象上的目标属性（不是第一个）
+
+        """
+        success = False
+        objList = cmds.ls (objList , shortNames = True)
+        sourceObj = objList.pop (0)
+        for obj in objList :
+            if self.breakConnectionsTwoObj (sourceObj , sourceAttr , obj , destinationAttr) :
+                success = True
+        return success
+
+
+    def breakConnectionsSelection (self , sourceAttr , destinationAttr) :
+        """安全地断开第一个对象与选择中其余对象之间的连接
+
+        sourceAttr(str): 仅第一个对象的源属性（from属性）
+
+        destinationAttr(str): 要连接到所有剩余对象上的目标属性（不是第一个）
+
+        """
+        selObjs = cmds.ls (selection = True , long = True)
+        if not selObjs :
+            cmds.warning ("未选择任何对象。请选择两个或多个对象或节点")
+            return False
+        if len (selObjs) < 2 :
+            cmds.warning ("请选择两个或多个对象或节点")
+            return False
+        return self.breakConnectionsList (selObjs , sourceAttr , destinationAttr)
+
+
+    def breakConnectionAttrsOrChannelBox (self , driverAttr = "" , drivenAttr = "" , message = True) :
+        # 当给定了driverAttr和drivenAttr的值的时候
+        if driverAttr and drivenAttr :
+            return self.breakConnectionsSelection (driverAttr , drivenAttr)
+        # 未输入的两个名称都来自选定对象和通道盒属性选择
+        if not selObjs :
+            cmds.warning ("No objects selected. Please select two or more objects or nodes")
+            return False
+        # 获取通道盒属性选择
+        selAttrs = mel.eval ('selectedChannelBoxAttributes')
+        if not selAttrs :
+            cmds.warning ("请同时填写driverAttr和drivenAttr属性，或在通道框中选择")
+            return False
+        # 缺少驱动者属性的时候
+        if driverAttr :
+            drivenAttr = selAttrs [0]
+            mel.eval ('channelBoxCommand -break;')
+            success = True
+
+        elif drivenAttr :  # Then driver attr is missing -----------------------------------
+            if len (selAttrs) != 1 :
+                if message :
+                    cmds.warning ("请在属性栏里只选择一个频道，只能有一个驱动的属性")
+                return False
+            driverAttr = selAttrs [0]
+            success = self.breakConnectionsList (selObjs , driverAttr , drivenAttr)
+        else :  # Neither exists so just break channel selection -----------------------------------
+            driverAttr = selAttrs [0]
+            drivenAttr = selAttrs [0]
+            mel.eval ('channelBoxCommand -break;')
+            success = True
+        if success :
+            cmds.warning ("成功打断了 `{}` 到 `{}` for `{}` ".format (driverAttr , drivenAttr , selObjs))
+        return
+
+
+    def breakAllDrivenOrChannelBoxSel (self) :
+        """断开所选内容上的所有连接，如果通道盒具有属性选择，则仅断开那些选定的连接
+        """
+        selObjs = cmds.ls (selection = True , long = True)
+        # 判断是否有不符合要求的情况
+        if not selObjs :
+            cmds.warning ("未选择任何对象。请选择对象和通道框属性来进行断开连接")
+            return False
+        # 从通道盒中获取选择
+        selAttrs = mel.eval ('selectedChannelBoxAttributes')
+        # 在通道框中选择属性
+        if selAttrs :
+            mel.eval ('channelBoxCommand -break;')
+            cmds.warning ("与通道盒断开了选择连接的属性")
+            return True
+        # 未选择属性，因此全部打断
+        return self.breakAllConnectionsObjList (selObjs)
+
+
+    def breakAllConnectionsObj (self , obj) :
+        """断开对象或节点的所有受驱动连接
+
+        obj(list/str): Maya对象或节点
+        """
+        success = True
+        destinationAttrs = self.get_obj_driven_attrs_connection (obj)
+        for objAttr in destinationAttrs :
+            if not breakAttr (objAttr) :
+                success = False
+                cmds.warning ("`{}`无法断开连接".format (objAttr))
+        cmds.warning ("断开的所有属性{}`".format (obj))
+        return success
+
+
+    def breakAllConnectionsObjList (self , objList) :
+        """断开对象列表中的所有受驱动连接
+
+        objList(list/str): Maya对象或节点的列表
+        """
+        success = True
+        for obj in objList :
+            if not self.breakAllConnectionsObj (obj) :
+                success = False
+        cmds.warning ("断开的所有属性`{}`".format (objList))
+        return success
+
+
+    def breakAllConnectionsSel (self , objList) :
+        """断开所有选定对象的所有受驱动连接
+
+        objList(list/str): Maya对象或节点的列表
+        """
+        selObjs = cmds.ls (selection = True , long = True)
+        # 判断是否有选定对象
+        if not selObjs :
+            cmds.warning ("No objects selected. Please select object/s to break connections")
+            return False
+        return self.breakAllConnectionsObjList (objList)
+
+
+    def breakSrtConnectionsObjs (self , objList , translate = False , rotation = False , scale = False ,
+                                 matrix = False) :
+        """用于在第一个对象和列表中的所有其他对象之间建立位移，旋转，缩放，矩阵等连接
+               objList(list):Maya节点名称列表，第一个节点将为驱动物体
+        translate(bool):是否连接所有位移的值
+        rotation(bool):是否连接所有旋转的值
+        scale(bool):是否连接所有缩放的值
+        matrix(bool):是否连接所有矩阵的值
+        """
+
+        translateSuccess = False
+        rotateSuccess = False
+        scaleSuccess = False
+        matrixSuccess = False
+        translateMessage = ""
+        rotateMessage = ""
+        scaleMessage = ""
+        matrixMessage = ""
+        if translate :
+            translateSuccess = self.breakConnectionsTwoObj (objList , "translate" , obj , "translate")
+        if rotation :
+            rotateSuccess = self.breakConnectionsTwoObj (objList , "rotate" , obj , "rotate")
+        if scale :
+            scaleSuccess = self.breakConnectionsTwoObj (objList , "scale" , obj , "scale")
+        if matrix :
+            matrixSuccess = self.breakConnectionsTwoObj (objList , "matrix" , obj , "offsetParentMatrix")
+        if translateSuccess :
+            translateMessage = "Translation"
+        if rotateSuccess :
+            rotateMessage = "Rotation"
+        if scaleSuccess :
+            scaleMessage = "Scale"
+        if matrixSuccess :
+            matrixMessage = "Matrix"
+            if translateSuccess or rotateSuccess or scaleSuccess or matrixSuccess :
+                om2.MGlobal.displayInfo ("Success: {} {} {} {} 成功连接了 {}".format (translateMessage ,
+                                                                                      rotateMessage ,
+                                                                                      scaleMessage ,
+                                                                                      matrixMessage ,
+                                                                                      objList))
+            return translateSuccess , rotateSuccess , scaleSuccess , matrixSuccess
+
+
+    def delSrtConnectionsObjsSel (rotation = False , translate = False , scale = False , matrix = False ,
+                                  ) :
+        """用于在第一个选定对象和所有其他对象之间断掉位移，旋转，缩放，矩阵等连接
+
+                objList(list):Maya节点名称列表，第一个节点将为驱动物体
+        translate(bool):是否连接所有位移的值
+        rotation(bool):是否连接所有旋转的值
+        scale(bool):是否连接所有缩放的值
+        matrix(bool):是否连接所有矩阵的值
+        """
+
+        selObjs = cmds.ls (selection = True , long = True)
+        # 检查是否有足够多的对象进行连接
+        if not selObjs :
+            cmds.warning ("未选择任何变换对象。请选择两个或多个对象（转换）")
+            return
+        selTransforms = cmds.ls (selObjs , type = "transform")
+        # 断开连接
+        if not selTransforms :
+            cmds.warning ("未选择任何变换对象。请选择两个或多个对象（转换）")
+            return
+        if len (selTransforms) < 2 :
+            cmds.warning ("请选择两个或多个对象（转换）")
+            return
+        return self.breakSrtConnectionsObjs (selTransforms , rotation = rotation , translate = translate ,
+                                             scale = scale ,
+                                             matrix = matrix)
