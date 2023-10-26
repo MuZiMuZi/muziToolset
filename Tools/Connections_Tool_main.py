@@ -128,8 +128,28 @@ class Connections_Tool (QWidget) :
 
 
     def add_connnect (self) :
-        pass
+        self.matrix_attr_cheekbox.stateChanged.connect(self.stateChanged_matrix_attr_cheekbox)
+        self.reset_attr_btn.clicked.connect(self.clicked_reset_attr_btn)
 
+
+    def stateChanged_matrix_attr_cheekbox(self):
+        """
+        当matrix_attr_cheekbox按钮被选中的时候，则将位移,旋转，缩放的属性选项全部取消
+        """
+        matrix_check_value = self.matrix_attr_cheekbox.isChecked()
+        if matrix_check_value:
+            self.translate_attr_cheekbox.setChecked (False)
+            self.rotate_attr_cheekbox.setChecked (False)
+            self.scale_attr_cheekbox.setChecked (False)
+
+    def clicked_reset_attr_btn(self):
+        """
+        当reset_attr_btn按钮被按下的时候，则将位移,旋转，缩放，矩阵的属性选项全部取消
+        """
+        self.translate_attr_cheekbox.setChecked (False)
+        self.rotate_attr_cheekbox.setChecked (False)
+        self.scale_attr_cheekbox.setChecked (False)
+        self.matrix_attr_cheekbox.setChecked(False)
 
 def main () :
     return Connections_Tool ()
