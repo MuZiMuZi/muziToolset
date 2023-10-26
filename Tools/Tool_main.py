@@ -11,7 +11,7 @@ from shiboken2 import wrapInstance
 import maya.OpenMayaUI as omui
 from importlib import reload
 from ..core import pipelineUtils
-from . import config , Names_Tool_main , Joint_Tool_main , Rig_Tool_main , test_main,Constraint_Tool_main
+from . import config , Names_Tool_main , Joint_Tool_main , Rig_Tool_main , test_main,Constraint_Tool_main,Connections_Tool_main
 import muziToolset.res.ui.control_modular.control_widget as control_widget
 import muziToolset.res.ui.nodes_modular.nodes_widget as nodes_widget
 import muziToolset.res.ui.snap_modular.snap_widget as snap_widget
@@ -25,7 +25,7 @@ reload (control_widget)
 reload (nodes_widget)
 reload (snap_widget)
 reload(Constraint_Tool_main)
-
+reload(Connections_Tool_main)
 
 class Tool_main_Window (QMainWindow) :
 
@@ -74,6 +74,7 @@ class Tool_main_Window (QMainWindow) :
         self.main_widget.setTabShape (QTabWidget.Triangular)
 
         # 创建对应的页面标签
+        self.main_widget.addTab (Connections_Tool_main.main () , '连接')
         self.main_widget.addTab (Constraint_Tool_main.main () , '约束')
         self.main_widget.addTab (Joint_Tool_main.main () , '关节')
         self.main_widget.addTab (Rig_Tool_main.main () , '绑定')
