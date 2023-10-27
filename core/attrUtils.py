@@ -17,7 +17,7 @@ get_attrs_range:将属性范围作为带键的字典返回 ('{}.{}'.format(ctrl,
 from ast import literal_eval
 from . import pipelineUtils
 from collections import OrderedDict
-
+import pymel.core as pm
 import maya.cmds as cmds
 
 
@@ -449,6 +449,7 @@ class Attr (object) :
             else :
                 return None
 
+
     @staticmethod
     def get_channelBox_attrs () :
         """返回通道框中选定属性的长名称
@@ -479,6 +480,63 @@ class Attr (object) :
                             pass
                     attrNames += resultList
         attrNames = list (set (attrNames))  # Remove duplicates
-        if not attrNames:
+        if not attrNames :
             cmds.warning ("请在通道盒中选择属性")
         return attrNames
+
+
+    @staticmethod
+    def move_channelBox_attr (up = True , down = False) :
+        """
+        获取通道盒内所有的属性列表，查询需要位移的属性在列表的位置信息，之后进行通道盒属性位移
+        up(bool):属性是否向上位移,默认为True
+        down(bool):属性是否向下位移
+        思路：以原本属性列表[A,B,C,D]为例。需要位移的属性为B
+
+        上移的话：[A,B,C,D]---->[B,A,C,D]
+                1.删除所选择的需要位移的属性B的上一个属性A，然后撤回，这个时候属性A会在最后一个位置,现在属性列表为[B,C,D,A]
+                2.删除在之前列表中位移的属性B之后的所有属性，然后撤回,这个时候属性B会在对应的位置，现在属性列表为[B,A,C,D]
+
+
+        下移的话: [A,B,C,D]---->[A,C,B,D]
+                1.删除所选择的需要位移的属性B，然后撤回，这个时候属性B会在最后一个位置，现在属性列表为[A,C,D,B]
+                2.删除在之前列表后位移的属性B后两位到最末尾的属性D，这个时候属性D会在最后一个位置，现在属性列表为[A,C,B,D]
+        """
+        obj = cmds.ls (sl = 1) [0]
+        select_attr = cmds.channelBox ('mainChannelBox' , q = 1 , sma = 1) [0]
+        # 先判断选择的属性是否可以被编辑,当属性不可以被编辑的时候报告错误信息并终止运行
+        if cmds.getAttr (obj + '.' + select_attr , lock = True) :
+            cmds.warning ('{}.{}属性不可以被编辑'.format (obj , select_attr))
+            pass
+        else :
+            # 属性可以被编辑的情况运行下方代码，获取所有可见的属性，以及获取所选择的属性的编号
+            attrList = cmds.listAttr (obj , userDefined = True)
+            select_attr_index = attrList.index (select_attr)
+
+            ###思路：以原本属性列表[A,B,C,D]为例。需要位移的属性为B###
+            #上移的话：[A , B , C , D] - --->[B , A , C , D]
+            if up :
+                delete_attr_index = select_attr_index - 1
+                if select_attr_index == 0 :
+                    pass
+                else :
+                    # 1.删除所选择的需要位移的属性B的上一个属性A，然后撤回，这个时候属性A会在最后一个位置,现在属性列表为[B,C,D,A]
+                    cmds.deleteAttr (obj + "." + attrList [delete_attr_index])
+                    cmds.undo ()
+                    # 2.删除位移的属性B之后的所有属性，然后撤回,这个时候属性B会在对应的位置，现在属性列表为[B,A,C,D]
+                    for index in range ((select_attr_index + 1) , len (attrList)) :
+                        cmds.deleteAttr (obj + "." + attrList [index])
+                        cmds.undo ()
+
+            #下移的话: [A , B , C , D] - --->[A , C , B , D]
+            if down :
+                if select_attr_index == len (attrList) :
+                    return
+                else :
+                    #1.删除所选择的需要位移的属性B，然后撤回，这个时候属性B会在最后一个位置，现在属性列表为 [A , C , D , B]
+                    cmds.deleteAttr (obj + "." + attrList [select_attr_index])
+                    cmds.undo ()
+                    # 删除在之前列表后位移的属性B后两位到最末尾的属性D，这个时候属性D会在最后一个位置，现在属性列表为[A,C,B,D]
+                    for index in range ((select_attr_index + 2) , len (attrList)):
+                        cmds.deleteAttr (obj + "." + attrList [index])
+                        cmds.undo ()
