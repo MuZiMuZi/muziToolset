@@ -512,7 +512,8 @@ class Attr (object) :
             # 属性可以被编辑的情况运行下方代码，获取所有可见的属性，以及获取所选择的属性的编号
             attrList = cmds.listAttr (obj , userDefined = True)
             select_attr_index = attrList.index (select_attr)
-
+            #将撤销队列设置打开
+            cmds.undoInfo (openChunk = True)
             ###思路：以原本属性列表[A,B,C,D]为例。需要位移的属性为B###
             #上移的话：[A , B , C , D] - --->[B , A , C , D]
             if up :
