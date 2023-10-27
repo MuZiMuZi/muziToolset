@@ -32,20 +32,25 @@ class Attr_Tool (QWidget) :
         创建连接的部件
         """
         # 创建属性编辑器的页面部件
-        self.attr_window_label = QLabel ('属性编辑——————————')
-        self.add_attr_window_btn = QPushButton ('Add_Attribute(添加属性)')
-        self.edit_attr_window_btn = QPushButton ('Edit_Attribute(编辑属性)')
-        self.connect_attr_window_btn = QPushButton ('Connect_Attr(连接编辑器)')
-        self.channel_control_window_btn = QPushButton ('Channel_Control(通道控制)')
-        self.delete_attr_window_btn = QPushButton ('Delete_Attr(删除属性)')
+        self.attr_window_label = QLabel ('----------------属性编辑----------------')
+        self.attr_window_label.setStyleSheet (u"color: rgb(255, 0, 0);")
+        self.add_attr_window_btn = QPushButton (QIcon (icon_dir + '/add.png') , 'Add_Attribute(添加属性)')
+        self.edit_attr_window_btn = QPushButton (QIcon (icon_dir + '/edit.png') , 'Edit_Attribute(编辑属性)')
+        self.connect_attr_window_btn = QPushButton (QIcon (icon_dir + '/connect-empty.png') ,
+                                                    'Connect_Attr(连接编辑器)')
+        self.channel_control_window_btn = QPushButton (QIcon (icon_dir + '/control.png') , 'Channel_Control(通道控制)')
+        self.delete_attr_window_btn = QPushButton (QIcon (icon_dir + '/delete.png') , 'Delete_Attr(删除属性)')
 
         # 创建属性工具的页面部件
-        self.attr_tool_label = QLabel ('属性工具——————————')
+        self.attr_tool_label = QLabel ('----------------属性工具----------------')
+        self.attr_tool_label.setStyleSheet (u"color: rgb(255,170, 255);")
+        self.attr_move_label = QLabel('Select a single attribute for displacement(选择单个属性进行位移)')
         self.attr_up_btn = QPushButton ('attr_up(属性上移)')
         self.attr_down_btn = QPushButton ('attr_down(属性下移)')
 
         # 创建属性设置的页面部件
-        self.attr_set_label = QLabel ('属性设置——————————')
+        self.attr_set_label = QLabel ('----------------属性设置----------------')
+        self.attr_set_label.setStyleSheet (u"color: rgb(170, 255, 255);")
         # 位移
         self.translation_set_label = QLabel ('Translation:')
         self.translation_locked_cheekbox = QCheckBox ('Locked')
@@ -92,6 +97,7 @@ class Attr_Tool (QWidget) :
         # 创建属性工具的页面布局
         self.attr_tool_layout = QVBoxLayout ()
         self.attr_translate_layout = QHBoxLayout ()
+        self.attr_translate_layout.addWidget(self.attr_move_label)
         self.attr_translate_layout.addWidget (self.attr_up_btn)
         self.attr_translate_layout.addWidget (self.attr_down_btn)
         self.attr_tool_layout.addLayout (self.attr_translate_layout)
