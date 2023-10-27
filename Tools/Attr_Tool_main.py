@@ -12,7 +12,7 @@ from importlib import reload
 import maya.cmds as cmds
 
 
-class Attr_Tool(QWidget) :
+class Attr_Tool (QWidget) :
     """
     属性工具的面板
     """
@@ -31,31 +31,133 @@ class Attr_Tool(QWidget) :
         """
         创建连接的部件
         """
-        self.attr_window_label = QLabel('属性编辑——————————')
-        self.add_attr_window_btn = QPushButton('Add_Attribute(添加属性)')
+        # 创建属性编辑器的页面部件
+        self.attr_window_label = QLabel ('属性编辑——————————')
+        self.add_attr_window_btn = QPushButton ('Add_Attribute(添加属性)')
         self.edit_attr_window_btn = QPushButton ('Edit_Attribute(编辑属性)')
-        self.set_driven_key_window_btn = QPushButton ('Set Driven Key(设置收驱动关键帧)')
-        self.channel_control_window_btn = QPushButton ('Channel Control(通道控制)')
+        self.set_driven_key_window_btn = QPushButton ('Set_Driven_Key(设置受驱动关键帧)')
+        self.channel_control_window_btn = QPushButton ('Channel_Control(通道控制)')
+
+        # 创建属性工具的页面部件
+        self.attr_tool_label = QLabel ('属性工具——————————')
+        self.attr_up_btn = QPushButton ('attr_up(属性上移)')
+        self.attr_down_btn = QPushButton ('attr_down(属性下移)')
+
+        # 创建属性设置的页面部件
+        self.attr_set_label = QLabel ('属性设置——————————')
+        # 位移
+        self.translation_set_label = QLabel ('Translation:')
+        self.translation_locked_cheekbox = QCheckBox ('Locked')
+        self.translation_hidden_cheekbox = QCheckBox ('Hidden')
+        self.translation_nonkeyable_cheekbox = QCheckBox ('Nonkeyable')
+        # 选择
+        self.rotate_set_label = QLabel ('Rotate:')
+        self.rotate_locked_cheekbox = QCheckBox ('Locked')
+        self.rotate_hidden_cheekbox = QCheckBox ('Hidden')
+        self.rotate_nonkeyable_cheekbox = QCheckBox ('Nonkeyable')
+        # 缩放
+        self.scale_set_label = QLabel ('Scale:')
+        self.scale_locked_cheekbox = QCheckBox ('Locked')
+        self.scale_hidden_cheekbox = QCheckBox ('Hidden')
+        self.scale_nonkeyable_cheekbox = QCheckBox ('Nonkeyable')
+        # 可见性
+        self.visability_set_label = QLabel ('Visability:')
+        self.visability_locked_cheekbox = QCheckBox ('Locked')
+        self.visability_hidden_cheekbox = QCheckBox ('Hidden')
+        self.visability_nonkeyable_cheekbox = QCheckBox ('Nonkeyable')
+        #设置按钮
+        self.attr_set_btn = QPushButton ('set(设置)')
+        self.attr_reset_btn = QPushButton ('reset(重置)')
+
+        self.attr_cheekbox = [self.translation_locked_cheekbox , self.translation_hidden_cheekbox ,
+                              self.translation_nonkeyable_cheekbox ,
+                              self.rotate_locked_cheekbox ,self.rotate_hidden_cheekbox ,
+                              self.rotate_nonkeyable_cheekbox , 
+                              self.scale_locked_cheekbox ,self.scale_hidden_cheekbox ,
+                              self.scale_nonkeyable_cheekbox , 
+                              self.visability_locked_cheekbox , self.visability_hidden_cheekbox ,
+                              self.visability_nonkeyable_cheekbox]
+
 
     def create_layouts (self) :
-        self.attr_window_layout = QVBoxLayout()
-        self.main_layout.addWidget (self.add_attr_window_btn)
-        self.main_layout.addWidget (self.edit_attr_window_btn)
-        self.main_layout.addWidget (self.edit_attr_window_btn)
-        self.main_layout.addWidget (self.edit_attr_window_btn)
+        # 创建属性编辑器的页面布局
+        self.attr_window_layout = QHBoxLayout ()
+        self.attr_window_layout.addWidget (self.add_attr_window_btn)
+        self.attr_window_layout.addWidget (self.edit_attr_window_btn)
+        self.attr_window_layout.addWidget (self.set_driven_key_window_btn)
+        self.attr_window_layout.addWidget (self.channel_control_window_btn)
 
+        # 创建属性工具的页面布局
+        self.attr_tool_layout = QVBoxLayout ()
+        self.attr_translate_layout = QHBoxLayout ()
+        self.attr_translate_layout.addWidget (self.attr_up_btn)
+        self.attr_translate_layout.addWidget (self.attr_down_btn)
+        self.attr_tool_layout.addLayout (self.attr_translate_layout)
+        
+        #创建属性设置的页面布局
+        self.attr_set_layout  =QVBoxLayout()
+        self.create_attr_set_layout()
 
+        self.main_layout = QVBoxLayout (self)
+        self.main_layout.addWidget (self.attr_window_label)
+        self.main_layout.addLayout (self.attr_window_layout)
+        self.main_layout.addStretch ()
+        self.main_layout.addWidget (self.attr_tool_label)
+        self.main_layout.addLayout (self.attr_tool_layout)
+        self.main_layout.addStretch ()
+        self.main_layout.addWidget (self.attr_set_label)
+        self.main_layout.addLayout (self.attr_set_layout)
+        self.main_layout.addStretch ()
 
-        self.main_layout = QHBoxLayout(self)
+    def create_attr_set_layout(self):
+        """
+        创建属性设置的页面布局
+        """
+        #位移属性设置页面
+        self.translation_set_layout = QHBoxLayout()
+        self.translation_set_layout.addWidget(self.translation_set_label)
+        self.translation_set_layout.addWidget(self.translation_locked_cheekbox)
+        self.translation_set_layout.addWidget (self.translation_hidden_cheekbox)
+        self.translation_set_layout.addWidget (self.translation_nonkeyable_cheekbox)
+        # 旋转属性设置页面
+        self.rotate_set_layout = QHBoxLayout ()
+        self.rotate_set_layout.addWidget (self.rotate_set_label)
+        self.rotate_set_layout.addWidget (self.rotate_locked_cheekbox)
+        self.rotate_set_layout.addWidget (self.rotate_hidden_cheekbox)
+        self.rotate_set_layout.addWidget (self.rotate_nonkeyable_cheekbox)
+        # 缩放属性设置页面
+        self.scale_set_layout = QHBoxLayout ()
+        self.scale_set_layout.addWidget (self.scale_set_label)
+        self.scale_set_layout.addWidget (self.scale_locked_cheekbox)
+        self.scale_set_layout.addWidget (self.scale_hidden_cheekbox)
+        self.scale_set_layout.addWidget (self.scale_nonkeyable_cheekbox)
+        # 可见性属性设置页面
+        self.visability_set_layout = QHBoxLayout ()
+        self.visability_set_layout.addWidget (self.visability_set_label)
+        self.visability_set_layout.addWidget (self.visability_locked_cheekbox)
+        self.visability_set_layout.addWidget (self.visability_hidden_cheekbox)
+        self.visability_set_layout.addWidget (self.visability_nonkeyable_cheekbox)
+        
+        #操作页面布局
+        self.attr_operate_layout = QHBoxLayout()
+        self.attr_operate_layout.addWidget(self.attr_set_btn)
+        self.attr_operate_layout.addWidget(self.attr_reset_btn)
 
-
-
+        #将所有页面布局添加到创建属性设置的页面布局
+        self.attr_set_layout.addLayout(self.translation_set_layout)
+        self.attr_set_layout.addLayout (self.rotate_set_layout)
+        self.attr_set_layout.addLayout (self.scale_set_layout)
+        self.attr_set_layout.addLayout (self.visability_set_layout)
+        self.attr_set_layout.addLayout (self.attr_operate_layout)
+        
+        
     def add_connnect (self) :
         pass
 
 
-def main():
-    return Attr_Tool()
+def main () :
+    return Attr_Tool ()
+
 
 if __name__ == "__main__" :
 
