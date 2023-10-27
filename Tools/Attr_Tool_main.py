@@ -50,34 +50,34 @@ class Attr_Tool (QWidget) :
         self.translation_set_label = QLabel ('Translation:')
         self.translation_locked_cheekbox = QCheckBox ('Locked')
         self.translation_hidden_cheekbox = QCheckBox ('Hidden')
-        self.translation_nonkeyable_cheekbox = QCheckBox ('Nonkeyable')
+
         # 选择
         self.rotate_set_label = QLabel ('Rotate:')
         self.rotate_locked_cheekbox = QCheckBox ('Locked')
         self.rotate_hidden_cheekbox = QCheckBox ('Hidden')
-        self.rotate_nonkeyable_cheekbox = QCheckBox ('Nonkeyable')
+
         # 缩放
         self.scale_set_label = QLabel ('Scale:')
         self.scale_locked_cheekbox = QCheckBox ('Locked')
         self.scale_hidden_cheekbox = QCheckBox ('Hidden')
-        self.scale_nonkeyable_cheekbox = QCheckBox ('Nonkeyable')
+
         # 可见性
         self.visability_set_label = QLabel ('Visability:')
         self.visability_locked_cheekbox = QCheckBox ('Locked')
         self.visability_hidden_cheekbox = QCheckBox ('Hidden')
-        self.visability_nonkeyable_cheekbox = QCheckBox ('Nonkeyable')
+
         # 设置按钮
         self.attr_set_btn = QPushButton ('set(设置)')
         self.attr_reset_btn = QPushButton ('reset(重置)')
 
         self.attr_cheekbox = [self.translation_locked_cheekbox , self.translation_hidden_cheekbox ,
-                              self.translation_nonkeyable_cheekbox ,
+
                               self.rotate_locked_cheekbox , self.rotate_hidden_cheekbox ,
-                              self.rotate_nonkeyable_cheekbox ,
+
                               self.scale_locked_cheekbox , self.scale_hidden_cheekbox ,
-                              self.scale_nonkeyable_cheekbox ,
+
                               self.visability_locked_cheekbox , self.visability_hidden_cheekbox ,
-                              self.visability_nonkeyable_cheekbox]
+                              ]
 
 
     def create_layouts (self) :
@@ -87,7 +87,7 @@ class Attr_Tool (QWidget) :
         self.attr_window_layout.addWidget (self.edit_attr_window_btn , 0 , 1)
         self.attr_window_layout.addWidget (self.connect_attr_window_btn , 0 , 2)
         self.attr_window_layout.addWidget (self.channel_control_window_btn , 1 , 0)
-        self.attr_window_layout.addWidget(self.delete_attr_window_btn,1,1)
+        self.attr_window_layout.addWidget (self.delete_attr_window_btn , 1 , 1)
 
         # 创建属性工具的页面布局
         self.attr_tool_layout = QVBoxLayout ()
@@ -121,25 +121,24 @@ class Attr_Tool (QWidget) :
         self.translation_set_layout.addWidget (self.translation_set_label)
         self.translation_set_layout.addWidget (self.translation_locked_cheekbox)
         self.translation_set_layout.addWidget (self.translation_hidden_cheekbox)
-        self.translation_set_layout.addWidget (self.translation_nonkeyable_cheekbox)
+
         # 旋转属性设置页面
         self.rotate_set_layout = QHBoxLayout ()
         self.rotate_set_layout.addWidget (self.rotate_set_label)
         self.rotate_set_layout.addWidget (self.rotate_locked_cheekbox)
         self.rotate_set_layout.addWidget (self.rotate_hidden_cheekbox)
-        self.rotate_set_layout.addWidget (self.rotate_nonkeyable_cheekbox)
+
         # 缩放属性设置页面
         self.scale_set_layout = QHBoxLayout ()
         self.scale_set_layout.addWidget (self.scale_set_label)
         self.scale_set_layout.addWidget (self.scale_locked_cheekbox)
         self.scale_set_layout.addWidget (self.scale_hidden_cheekbox)
-        self.scale_set_layout.addWidget (self.scale_nonkeyable_cheekbox)
+
         # 可见性属性设置页面
         self.visability_set_layout = QHBoxLayout ()
         self.visability_set_layout.addWidget (self.visability_set_label)
         self.visability_set_layout.addWidget (self.visability_locked_cheekbox)
         self.visability_set_layout.addWidget (self.visability_hidden_cheekbox)
-        self.visability_set_layout.addWidget (self.visability_nonkeyable_cheekbox)
 
         # 操作页面布局
         self.attr_operate_layout = QHBoxLayout ()
@@ -159,12 +158,55 @@ class Attr_Tool (QWidget) :
         self.add_attr_window_btn.clicked.connect (lambda *args : mel.eval ("dynAddAttrWin({})"))
         self.edit_attr_window_btn.clicked.connect (lambda *args : mel.eval ("dynRenameAttrWin({})"))
         self.connect_attr_window_btn.clicked.connect (lambda *args : cmds.ConnectionEditor ())
-        self.channel_control_window_btn.clicked.connect (lambda *args :cmds.ChannelControlEditor() )
-        self.delete_attr_window_btn.clicked.connect(lambda *args : mel.eval ("dynDeleteAttrWin({})"))
+        self.channel_control_window_btn.clicked.connect (lambda *args : cmds.ChannelControlEditor ())
+        self.delete_attr_window_btn.clicked.connect (lambda *args : mel.eval ("dynDeleteAttrWin({})"))
 
-        #创建属性工具的页面部件连接
-        self.attr_up_btn.clicked.connect(lambda *args :attrUtils.Attr.move_channelBox_attr(up = True))
-        self.attr_down_btn.clicked.connect(lambda *args :attrUtils.Attr.move_channelBox_attr(down = True))
+        # 创建属性工具的页面部件连接
+        self.attr_up_btn.clicked.connect (lambda *args : attrUtils.Attr.move_channelBox_attr (up = True))
+        self.attr_down_btn.clicked.connect (lambda *args : attrUtils.Attr.move_channelBox_attr (down = True))
+
+        # 创建属性设置的页面布局连接
+        self.attr_set_btn.clicked.connect (self.clicked_attr_set_btn)
+        self.attr_reset_btn.clicked.connect (self.clicked_attr_reset_btn)
+
+
+    def clicked_attr_set_btn (self) :
+        """
+        设置所选择的物体的属性
+        """
+        # 获取所选择的物体
+        obj_list = cmds.ls (sl = True)
+
+        # 设置物体的属性
+        for obj in obj_list :
+            for axis in ['X' , 'Y' , 'Z'] :
+                # 设置物体的位移设置
+                attrUtils.Attr.lock_hide_attr (obj , 'translate' + axis ,
+                                               lock = self.translation_locked_cheekbox.isChecked () ,
+                                               hide = self.translation_hidden_cheekbox.isChecked ()
+                                               )
+                # 设置物体的旋转设置
+                attrUtils.Attr.lock_hide_attr (obj , 'rotate' + axis ,
+                                               lock = self.rotate_locked_cheekbox.isChecked () ,
+                                               hide = self.rotate_hidden_cheekbox.isChecked ()
+                                               )
+                # 设置物体的缩放设置
+                attrUtils.Attr.lock_hide_attr (obj , 'scale' + axis ,
+                                               lock = self.scale_locked_cheekbox.isChecked () ,
+                                               hide = self.scale_hidden_cheekbox.isChecked ()
+                                               )
+            attrUtils.Attr.lock_hide_attr (obj , 'visibility' ,
+                                           lock = self.visability_locked_cheekbox.isChecked () ,
+                                           hide = self.visability_hidden_cheekbox.isChecked ()
+                                           )
+
+
+    def clicked_attr_reset_btn (self) :
+        """
+        重置所有属性设置
+        """
+        for cheekbox in self.attr_cheekbox :
+            cheekbox.setChecked (False)
 
 
 def main () :
