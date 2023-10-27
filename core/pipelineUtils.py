@@ -747,7 +747,7 @@ class Pipeline (object) :
 
 
     @staticmethod
-    def create_constraint (driver , driven , point_value = True , orient_value = True , scale_value = True ,
+    def create_constraint (driver , driven , point_value = False , orient_value = False ,parent_value = True, scale_value = False ,
                            mo_value = True) :
         '''
         创建约束对象
@@ -758,6 +758,8 @@ class Pipeline (object) :
             cmds.pointConstraint (driver , driven , mo = mo_value)
         if orient_value :
             cmds.orientConstraint (driver , driven , mo = mo_value)
+        if parent_value:
+            cmds.parentConstraint (driver , driven , mo = mo_value)
         if scale_value :
             cmds.scaleConstraint (driver , driven , mo = mo_value)
 

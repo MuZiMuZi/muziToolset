@@ -46,6 +46,9 @@ class Constraint_Tool (QWidget) :
         # 创建约束的工具部件
         self.constraint_objects_label = QLabel ("--------------约束工具--------------")
         self.constraint_objects_label.setStyleSheet (u"color: rgb(169, 255, 175);")
+        self.mult_to_one_radio = QRadioButton ('mult_to_one(多对1约束)')
+        self.mult_to_one_radio.setChecked (True)
+        self.one_to_mult_radio = QRadioButton ('one_to_mult(1对多约束)')
         self.maintainOffset_checkBox = QCheckBox ('保持偏移')
         self.parent_constraint_btn = QPushButton (QIcon (':parentConstraint.png') , '父子约束')
         self.point_constraint_btn = QPushButton (QIcon (':posConstraint.png') , '点约束')
@@ -85,6 +88,8 @@ class Constraint_Tool (QWidget) :
         # 创建约束页面的布局
         self.constraint_objects_layout = QVBoxLayout ()
         self.maintainOffset_layout = QHBoxLayout ()
+        self.maintainOffset_layout.addWidget (self.mult_to_one_radio)
+        self.maintainOffset_layout.addWidget (self.one_to_mult_radio)
         self.maintainOffset_layout.addStretch ()
         self.maintainOffset_layout.addWidget (self.maintainOffset_checkBox)
         self.maintainOffset_layout.addStretch ()
@@ -120,19 +125,31 @@ class Constraint_Tool (QWidget) :
         self.match_pivot_btn.clicked.connect (lambda : cmds.matchTransform (cmds.ls (selection = True) , pos = False ,
                                                                             rot = False , scl = False , piv = True))
         # 链接约束部件的连接信号
-        self.parent_constraint_btn.clicked.connect (lambda : cmds.parentConstraint (cmds.ls (selection = True) ,
-                                                                                    maintainOffset = self.maintainOffset_checkBox.isChecked ()))
-        self.point_constraint_btn.clicked.connect (lambda : cmds.pointConstraint (cmds.ls (selection = True) ,
-                                                                                  maintainOffset = self.maintainOffset_checkBox.isChecked ()))
-        self.orient_constraint_btn.clicked.connect (lambda : cmds.orientConstraint (cmds.ls (selection = True) ,
-                                                                                    maintainOffset = self.maintainOffset_checkBox.isChecked ()))
-        self.scale_constraint_btn.clicked.connect (lambda : cmds.scaleConstraint (cmds.ls (selection = True) ,
-                                                                                  maintainOffset = self.maintainOffset_checkBox.isChecked ()))
+        self.parent_constraint_btn.clicked.connect (self.clicked_parent_constraint_btn)
+        self.point_constraint_btn.clicked.connect (self.clicked_point_constraint_btn)
+        self.orient_constraint_btn.clicked.connect (self.clicked_orient_constraint_btn)
+        self.scale_constraint_btn.clicked.connect (self.clicked_scale_constraint_btn)
         self.aim_constraint_btn.clicked.connect (lambda : mel.eval ("performAimConstraint 0;"))
         self.pole_vector_constraint_btn.clicked.connect (
             lambda : cmds.poleVectorConstraint (cmds.ls (selection = True)))
         self.select_constraint_btn.clicked.connect (lambda : pipelineUtils.Pipeline.select_constraints ())
         self.delete_constraint_btn.clicked.connect (lambda : pipelineUtils.Pipeline.delete_constraints ())
+
+
+    def get_driver_driven_obj (self) :
+        """
+        根据约束模式获取约束对象
+        """
+        obj_list = cmds.ls (selection = True)
+        if self.mult_to_one_radio.isChecked () :
+            # 多对1约束的模式
+            driver = obj_list [0 :-1]
+            driven = obj_list [-1]
+        else :
+            # 1对多约束的模式
+            driver = obj_list [0]
+            driven = obj_list [1 :]
+        return driver , driven
 
 
     def create_constraint_layout (self) :
@@ -141,6 +158,71 @@ class Constraint_Tool (QWidget) :
 
         for position , button in zip (positions , self.constraint_btns) :
             self.constraint_layout.addWidget (button , *position)
+
+
+    def clicked_parent_constraint_btn (self) :
+        """
+        批量进行父子约束
+        """
+        driver , driven = self.get_driver_driven_obj ()
+        mo_value = self.maintainOffset_checkBox.isChecked ()
+        if len (driven) != 1 :
+            # 1对多的约束情况
+            for i in driven :
+                pipelineUtils.Pipeline.create_constraint (driver , i , point_value = False , orient_value = False ,
+                                                          parent_value = True , mo_value = mo_value)
+        else :
+            pipelineUtils.Pipeline.create_constraint (driver , driven , point_value = False , orient_value = False ,
+                                                      parent_value = True , mo_value = mo_value)
+
+
+    def clicked_point_constraint_btn (self) :
+        """
+        批量进行点约束
+        """
+        driver , driven = self.get_driver_driven_obj ()
+        mo_value = self.maintainOffset_checkBox.isChecked ()
+        if len (driven) != 1 :
+            # 1对多的约束情况
+            for i in driven :
+                pipelineUtils.Pipeline.create_constraint (driver , i , point_value = True , orient_value = False ,
+                                                          parent_value = False , mo_value = mo_value)
+        else :
+            pipelineUtils.Pipeline.create_constraint (driver , driven , point_value = True , orient_value = False ,
+                                                      parent_value = False , mo_value = mo_value)
+
+
+    def clicked_orient_constraint_btn (self) :
+        """
+        批量进行方向约束
+        """
+        driver , driven = self.get_driver_driven_obj ()
+        mo_value = self.maintainOffset_checkBox.isChecked ()
+        if len (driven) != 1 :
+            # 1对多的约束情况
+            for i in driven :
+                pipelineUtils.Pipeline.create_constraint (driver , i , point_value = False , orient_value = True ,
+                                                          parent_value = False , mo_value = mo_value)
+        else :
+            pipelineUtils.Pipeline.create_constraint (driver , driven , point_value = False , orient_value = True ,
+                                                      parent_value = False , mo_value = mo_value)
+
+
+    def clicked_scale_constraint_btn (self) :
+        """
+        批量进行缩放约束
+        """
+        driver , driven = self.get_driver_driven_obj ()
+        mo_value = self.maintainOffset_checkBox.isChecked ()
+        if len (driven) != 1 :
+            # 1对多的约束情况
+            for i in driven :
+                pipelineUtils.Pipeline.create_constraint (driver , i , point_value = False , orient_value = False ,
+                                                          parent_value = False , scale_value = True ,
+                                                          mo_value = mo_value)
+        else :
+            pipelineUtils.Pipeline.create_constraint (driver , driven , point_value = False , orient_value = False ,
+                                                      parent_value = False , scale_value = True , mo_value = mo_value)
 
 
 def main () :
