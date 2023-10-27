@@ -56,7 +56,6 @@ class Attr (object) :
                     cmds.setAttr ("{}.{}".format (obj , attr) , keyable = True , channelBox = True)
 
 
-    @staticmethod
     def connect_attr (output_attr , input_attr) :
         u"""将属性从输出属性连接到输入属性.
 
@@ -512,10 +511,10 @@ class Attr (object) :
             # 属性可以被编辑的情况运行下方代码，获取所有可见的属性，以及获取所选择的属性的编号
             attrList = cmds.listAttr (obj , userDefined = True)
             select_attr_index = attrList.index (select_attr)
-            #将撤销队列设置打开
+            # 将撤销队列设置打开
             cmds.undoInfo (openChunk = True)
             ###思路：以原本属性列表[A,B,C,D]为例。需要位移的属性为B###
-            #上移的话：[A , B , C , D] - --->[B , A , C , D]
+            # 上移的话：[A , B , C , D] - --->[B , A , C , D]
             if up :
                 delete_attr_index = select_attr_index - 1
                 if select_attr_index == 0 :
@@ -529,15 +528,61 @@ class Attr (object) :
                         cmds.deleteAttr (obj + "." + attrList [index])
                         cmds.undo ()
 
-            #下移的话: [A , B , C , D] - --->[A , C , B , D]
+            # 下移的话: [A , B , C , D] - --->[A , C , B , D]
             if down :
                 if select_attr_index == len (attrList) :
                     return
                 else :
-                    #1.删除所选择的需要位移的属性B，然后撤回，这个时候属性B会在最后一个位置，现在属性列表为 [A , C , D , B]
+                    # 1.删除所选择的需要位移的属性B，然后撤回，这个时候属性B会在最后一个位置，现在属性列表为 [A , C , D , B]
                     cmds.deleteAttr (obj + "." + attrList [select_attr_index])
                     cmds.undo ()
                     # 删除在之前列表后位移的属性B后两位到最末尾的属性D，这个时候属性D会在最后一个位置，现在属性列表为[A,C,B,D]
-                    for index in range ((select_attr_index + 2) , len (attrList)):
+                    for index in range ((select_attr_index + 2) , len (attrList)) :
                         cmds.deleteAttr (obj + "." + attrList [index])
                         cmds.undo ()
+
+
+    @staticmethod
+    def set_lock_attr (node , attr , lock = True) :
+        """
+        锁住属性
+        node(str):maya节点
+        attr(str):需要隐藏的属性
+        hide(bool):是否进行隐藏
+        keyable(bool):是否能够k动画帧
+        """
+        cmds.setAttr ("{}.{}".format (node , attr) , lock = lock , keyable = True)
+
+
+    @staticmethod
+    def set_hide_attr (node , attr , hide = True) :
+        """
+        隐藏属性
+        node(str):maya节点
+        attr(str):需要隐藏的属性
+        hide(bool):是否进行隐藏
+        keyable(bool):是否能够k动画帧
+        """
+        if hide :
+            cmds.setAttr ("{}.{}".format (node , attr) , keyable = False , channelBox = False)
+        else :
+            cmds.setAttr ("{}.{}".format (node , attr) , keyable = True , channelBox = True)
+            cmds.setAttr ("{}.{}".format (node , attr) , keyable = True)
+
+
+    @staticmethod
+    def set_key_attr (node , attr , keyable = True) :
+        """
+        属性是否可以k动画帧
+        node(str):maya节点
+        attr(str):需要隐藏的属性
+        hide(bool):是否进行隐藏
+        keyable(bool):是否能够k动画帧
+        """
+        cmds.setAttr ("{}.{}".format (node , attr) , keyable = keyable)
+
+
+    @staticmethod
+    def lock_hide_attr (node , attr , lock = True , hide = True) :
+        Attr.set_lock_attr (node , attr , lock = lock)
+        Attr.set_hide_attr (node , attr , hide = hide)
