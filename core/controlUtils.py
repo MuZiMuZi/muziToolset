@@ -754,7 +754,7 @@ class Control (object) :
                                                 parent = parent)
             # 制作约束
             pipelineUtils.Pipeline.create_constraint (driver = ctrl_name.replace ('ctrl' , 'output') , driven = object ,
-                                                      point_value = True , orient_value = True ,
+                                                      point_value = False , orient_value = False ,parent_value = True,
                                                       scale_value = True ,
                                                       mo_value = True)
             # 指定关节的父层级为上一轮创建出来的控制器层级组

@@ -586,3 +586,21 @@ class Attr (object) :
     def lock_hide_attr (node , attr , lock = True , hide = True) :
         Attr.set_lock_attr (node , attr , lock = lock)
         Attr.set_hide_attr (node , attr , hide = hide)
+
+
+    @staticmethod
+    def reset_attr(node):
+        """
+        重置所选择的物体的默认属性
+        """
+        for attr in ['translate','rotate']:
+            for axis in ['X','Y','Z']:
+                try:
+                    cmds.setAttr(node + '.{}{}'.format(attr,axis),0)
+                except:
+                    pass
+        for axis in ['X' , 'Y' , 'Z'] :
+                try :
+                    cmds.setAttr (node + '.scale{}'.format (axis) , 1)
+                except :
+                    pass

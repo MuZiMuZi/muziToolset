@@ -141,11 +141,6 @@ class Joint_Tool (QWidget) :
         self.hide_joint_orient_btn.setToolTip ('隐藏所选择的关节的关节定向在通道盒里')
         self.clear_joint_orient_btn.setToolTip ('归零所选择的关节的关节定向')
 
-
-
-
-
-
         self.joint_tool_buttons = [self.create_snap_joint_btn ,
                                    self.create_child_joint_btn ,
                                    self.create_more_joint_btn ,
