@@ -154,7 +154,7 @@ class Constraint_Tool (QWidget) :
 
     def create_constraint_layout (self) :
         # 添加constraint_layout的按钮
-        positions = [(i , j) for i in range (5) for j in range (4)]
+        positions = [(i , j) for i in range (5) for j in range (3)]
 
         for position , button in zip (positions , self.constraint_btns) :
             self.constraint_layout.addWidget (button , *position)
