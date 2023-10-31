@@ -43,13 +43,13 @@ class AdvUtils (object) :
 
             # 创建出来的次级控制器对lip关节进行约束
             pipelineUtils.Pipeline.create_constraint (lip_ctrl.replace ('ctrl' , 'output') , lip_joint ,
-                                                      point_value = True , orient_value = True ,
+                                                      point_value = False , orient_value = False ,parent_value = True,
                                                       scale_value = False ,
                                                       mo_value = True)
             # lip总控制器对创建出来的次级控制器组做约束
             pipelineUtils.Pipeline.create_constraint (lip_main_ctrl ,
                                                       lip_ctrl.replace ('ctrl' , 'driven') ,
-                                                      point_value = True , orient_value = True ,
+                                                      point_value = False , orient_value = False , parent_value = True ,
                                                       scale_value = False ,
                                                       mo_value = True)
 
@@ -88,7 +88,8 @@ class AdvUtils (object) :
                     cmds.setAttr (lid_ctrl.replace ('ctrl_' , 'offset_') + '.scale{}'.format (i) , side_value)
                 # 创建出来的次级控制器对lid关节进行约束
                 pipelineUtils.Pipeline.create_constraint (lid_ctrl.replace ('ctrl' , 'output') , lid_joint ,
-                                                          point_value = True , orient_value = True ,
+                                                          point_value = False , orient_value = False ,
+                                                          parent_value = True ,
                                                           scale_value = True ,
                                                           mo_value = True)
 
@@ -139,7 +140,8 @@ class AdvUtils (object) :
                 cmds.setAttr (type_ctrl.replace ('ctrl_' , 'offset_') + '.scaleX', side_value)
             # 创建出来的控制器对关节进行约束
                 pipelineUtils.Pipeline.create_constraint (type_ctrl.replace ('ctrl' , 'output') , type_joint ,
-                                                          point_value = True , orient_value = True ,
+                                                          point_value = False , orient_value = False ,
+                                                          parent_value = True ,
                                                           scale_value = True ,
                                                           mo_value = True)
 

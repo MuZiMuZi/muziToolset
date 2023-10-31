@@ -5,7 +5,7 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 import pymel.core as pm
 from .config import ui_dir , icon_dir
-from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils , snapUtils
+from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils , snapUtils,attrUtils
 from importlib import reload
 
 import maya.cmds as cmds
@@ -13,7 +13,7 @@ import maya.cmds as cmds
 
 reload (qtUtils)
 reload (controlUtils)
-
+reload(attrUtils)
 
 class Rig_Tool (QWidget) :
     """
@@ -36,6 +36,11 @@ class Rig_Tool (QWidget) :
         self.fk_label.setStyleSheet (u"color: rgb(85, 255, 255);")
         self.create_fk_button = QPushButton (QIcon (':kinConnect.png') , '创建fk系统')
         self.delete_fk_button = QPushButton (QIcon (':kinConnect.png') , '删除fk系统')
+        #添加文字提示
+        self.create_fk_button.setToolTip('将选择的物体创建fk绑定系统')
+        self.delete_fk_button.setToolTip ('将选择的物体删除fk绑定系统')
+
+
         # IK
         self.ik_label = QLabel ('---------------创建IK系统----------------')
         self.ik_label.setStyleSheet (u"color: rgb(169, 255, 175);")
@@ -46,11 +51,19 @@ class Rig_Tool (QWidget) :
         self.create_ik_button = QPushButton (QIcon (':kinConnect.png') , '创建ik系统')
         self.delete_ik_button = QPushButton (QIcon (':kinConnect.png') , '删除ik系统')
 
+        #添加文字提示
+        self.create_ik_button.setToolTip ('将选择的物体创建ik绑定系统')
+        self.delete_ik_button.setToolTip ('将选择的物体删除ik绑定系统')
+
         # 约束
-        self.constraint_label = QLabel ('---------------创建约束----------------')
+        self.constraint_label = QLabel ('---------------创建快速约束----------------')
         self.constraint_label.setStyleSheet (u"color: rgb(170, 170, 255);")
         self.create_constraint_button = QPushButton (QIcon (icon_dir + '/assign.png') , '创建约束')
         self.delete_constraint_button = QPushButton (QIcon (icon_dir + '/assign.png') , '删除约束')
+
+        # 添加文字提示
+        self.create_constraint_button.setToolTip ('将选择的物体创建约束，被约束物体为选择的最后一个物体')
+        self.delete_constraint_button.setToolTip ('将选择的物体删除约束')
 
         # 工具
         self.tool_label = QLabel ('---------------绑定小工具---------------')
@@ -61,18 +74,13 @@ class Rig_Tool (QWidget) :
     def create_tool_widgets (self) :
         self.clear_keys_button = QPushButton (QIcon (icon_dir + '/key .png') , "删除关键帧")
 
-        self.reset_control_button = QPushButton (QIcon (icon_dir + '/icon-resetting.png') , "重置控制器")
+        self.reset_attr_button = QPushButton (QIcon (icon_dir + '/icon-resetting.png') , "重置属性")
 
         self.batch_Constraints_modle_button = QPushButton (QIcon (icon_dir + '/assign.png') , "批量约束_物体")
 
         self.batch_Constraints_joint_button = QPushButton (QIcon (icon_dir + '/assign.png') , "批量约束_关节")
 
         self.default_grp_button = QPushButton (QIcon (icon_dir + '/hierarchy-fill.png') , "绑定层级组")
-
-        self.create_joints_on_curve_button = QPushButton (QIcon (icon_dir + '/bone.png') , "曲线上点创建关节(通用)")
-
-        self.create_joints_on_curve_rigging_button = QPushButton (QIcon (icon_dir + '/bone.png') ,
-                                                                  "曲线上点创建关节(自用)")
 
         self.control_hierarchy_button = QPushButton (QIcon (icon_dir + '/hierarchy-fill.png') , "自动打组(自用)")
 
@@ -91,11 +99,34 @@ class Rig_Tool (QWidget) :
                                                                "创建动力学化曲线驱动头发")
         self.snap_modle_button = QPushButton (QIcon (icon_dir + '/directions.png') ,
                                               "吸附物体")
+        #添加文本提示
+        self.clear_keys_button.setToolTip ('将场景内的动画关键帧删除')
 
-        self.tool_buttons = [self.clear_keys_button , self.reset_control_button , self.batch_Constraints_modle_button ,
+        self.reset_attr_button.setToolTip ('重置选择的物体的属性')
+
+        self.batch_Constraints_modle_button.setToolTip ('批量约束所选择的物体')
+        self.batch_Constraints_joint_button.setToolTip ('批量约束所选择的关节')
+
+        self.default_grp_button.setToolTip ('创建默认的绑定层级组')
+
+        self.control_hierarchy_button.setToolTip ('自动将符合名称规范的控制器打组,ctrl_(side)_(description)_(index)')
+
+        self.save_skinWeights_button.setToolTip ('将选择的物体的蒙皮权重导出到文件路径旁')
+
+        self.load_skinWeights_button.setToolTip ('将选择的物体的蒙皮权重导入')
+
+        self.select_sub_objects_button.setToolTip ('快速选择所选择物体的子物体')
+
+        self.print_duplicate_object_button.setToolTip ('检查并列出场景里具有的重名节点')
+
+        self.rename_duplicate_object_button.setToolTip ('检查并重命名场景里的重名节点')
+
+        self.create_dynamic_curve_driven_button.setToolTip ('选择曲线，创建动力学曲线驱动')
+        self.snap_modle_button.setToolTip ('选择物体，将最后的物体吸附到前面物体的中心')
+
+        self.tool_buttons = [self.clear_keys_button , self.reset_attr_button , self.batch_Constraints_modle_button ,
                              self.batch_Constraints_joint_button , self.default_grp_button ,
-                             self.create_joints_on_curve_button ,
-                             self.create_joints_on_curve_rigging_button , self.control_hierarchy_button ,
+                             self.control_hierarchy_button ,
                              self.save_skinWeights_button ,
                              self.load_skinWeights_button , self.select_sub_objects_button ,
                              self.print_duplicate_object_button ,
@@ -164,18 +195,18 @@ class Rig_Tool (QWidget) :
         链接信号与槽
         """
         # fk系统的部件连接
-        self.create_fk_button.clicked.connect (self.create_fk)
-        self.delete_fk_button.clicked.connect (self.delete_fk)
+        self.create_fk_button.clicked.connect (self.clicked_create_fk)
+        self.delete_fk_button.clicked.connect (self.clicked_delete_fk)
 
         # ik系统的部件连接
-        self.ik_start_button.clicked.connect (self.ik_start_pickup)
-        self.ik_end_button.clicked.connect (self.ik_end_pickup)
-        self.create_ik_button.clicked.connect (self.create_ik_ctrl)
-        self.delete_ik_button.clicked.connect (self.delete_ik_ctrl)
+        self.ik_start_button.clicked.connect (self.clicked_ik_start_pickup)
+        self.ik_end_button.clicked.connect (self.clicked_ik_end_pickup)
+        self.create_ik_button.clicked.connect (self.clicked_create_ik_ctrl)
+        self.delete_ik_button.clicked.connect (self.clicked_delete_ik_ctrl)
 
         # 约束系统的部件连接
-        self.create_constraint_button.clicked.connect (lambda : pipelineUtils.Pipeline.create_constraints ())
-        self.delete_constraint_button.clicked.connect (lambda : pipelineUtils.Pipeline.delete_constraints ())
+        self.create_constraint_button.clicked.connect (lambda *args : pipelineUtils.Pipeline.create_constraints ())
+        self.delete_constraint_button.clicked.connect (lambda *args: pipelineUtils.Pipeline.delete_constraints ())
 
         # 绑定小工具的部件连接
         self.add_tool_connect ()
@@ -187,7 +218,7 @@ class Rig_Tool (QWidget) :
         """
         self.clear_keys_button.clicked.connect (lambda *args : pipelineUtils.Pipeline.clear_keys ())
 
-        self.reset_control_button.clicked.connect (lambda *args : pipelineUtils.Pipeline.reset_control ())
+        self.reset_attr_button.clicked.connect (self.clicked_reset_attr)
 
         self.batch_Constraints_modle_button.clicked.connect (
             lambda *args : pipelineUtils.Pipeline.batch_Constraints_modle ())
@@ -196,11 +227,6 @@ class Rig_Tool (QWidget) :
             lambda *args : pipelineUtils.Pipeline.batch_Constraints_joint ())
 
         self.default_grp_button.clicked.connect (lambda *args : pipelineUtils.Pipeline.default_grp ())
-
-        self.create_joints_on_curve_button.clicked.connect (lambda *args : jointUtils.Joint.create_joints_on_curve ())
-
-        self.create_joints_on_curve_rigging_button.clicked.connect (
-            lambda *args : jointUtils.Joint.create_joints_on_curve_rigging ())
 
         self.control_hierarchy_button.clicked.connect (lambda *args : hierarchyUtils.Hierarchy.control_hierarchy ())
 
@@ -241,17 +267,17 @@ class Rig_Tool (QWidget) :
             obj.load_skinWeights ()
 
 
-    def create_fk (self) :
+    def clicked_create_fk (self) :
         objects = cmds.ls (sl = True)
         controlUtils.Control.create_fk_ctrl (objects)
 
 
-    def delete_fk (self) :
+    def clicked_delete_fk (self) :
         objects = cmds.ls (sl = True)
         controlUtils.Control.delete_fk_ctrl (objects)
 
 
-    def ik_start_pickup (self) :
+    def clicked_ik_start_pickup (self) :
         ik_start = cmds.ls (sl = True , type = 'joint')
         if len (ik_start) != 1 :
             pm.warning ("选择了多个关节，请只选择一个关节作为ik系统的起始关节 " + ik_start)
@@ -261,7 +287,7 @@ class Rig_Tool (QWidget) :
             pm.warning ("设定了{}为ik系统的起始关节 ".format (ik_start [0]))
 
 
-    def ik_end_pickup (self) :
+    def clicked_ik_end_pickup (self) :
         ik_end = cmds.ls (sl = True , type = 'joint')
         if len (ik_end) != 1 :
             pm.warning ("选择了多个关节，请只选择一个关节作为ik系统的末端关节 " + ik_end)
@@ -271,16 +297,21 @@ class Rig_Tool (QWidget) :
             pm.warning ("设定了{}为ik系统的末端关节 ".format (ik_end [0]))
 
 
-    def create_ik_ctrl (self) :
+    def clicked_create_ik_ctrl (self) :
         startIK_jnt = self.ik_start_line.text ()
         endIK_jnt = self.ik_end_line.text ()
         # 创建ik控制器
         controlUtils.Control.create_ik_ctrl (startIK_jnt , endIK_jnt)
 
 
-    def delete_ik_ctrl (self) :
+    def clicked_delete_ik_ctrl (self) :
         objects = cmds.ls (sl = True)
         controlUtils.Control.delete_ik_ctrl (objects)
+
+    def clicked_reset_attr(self):
+        nodes = cmds.ls(sl = True)
+        for node in nodes:
+            attrUtils.Attr.reset_attr(node)
 
 
 def main () :
