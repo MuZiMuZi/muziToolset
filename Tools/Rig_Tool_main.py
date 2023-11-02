@@ -5,7 +5,8 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 import pymel.core as pm
 from .config import ui_dir , icon_dir
-from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils , snapUtils,attrUtils
+from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils , snapUtils , attrUtils , fileUtils , \
+    hierarchyUtils
 from importlib import reload
 
 import maya.cmds as cmds
@@ -13,7 +14,9 @@ import maya.cmds as cmds
 
 reload (qtUtils)
 reload (controlUtils)
-reload(attrUtils)
+reload (attrUtils)
+reload (fileUtils)
+
 
 class Rig_Tool (QWidget) :
     """
@@ -36,10 +39,9 @@ class Rig_Tool (QWidget) :
         self.fk_label.setStyleSheet (u"color: rgb(85, 255, 255);")
         self.create_fk_button = QPushButton (QIcon (':kinConnect.png') , '创建fk系统')
         self.delete_fk_button = QPushButton (QIcon (':kinConnect.png') , '删除fk系统')
-        #添加文字提示
-        self.create_fk_button.setToolTip('将选择的物体创建fk绑定系统')
+        # 添加文字提示
+        self.create_fk_button.setToolTip ('将选择的物体创建fk绑定系统')
         self.delete_fk_button.setToolTip ('将选择的物体删除fk绑定系统')
-
 
         # IK
         self.ik_label = QLabel ('---------------创建IK系统----------------')
@@ -51,7 +53,7 @@ class Rig_Tool (QWidget) :
         self.create_ik_button = QPushButton (QIcon (':kinConnect.png') , '创建ik系统')
         self.delete_ik_button = QPushButton (QIcon (':kinConnect.png') , '删除ik系统')
 
-        #添加文字提示
+        # 添加文字提示
         self.create_ik_button.setToolTip ('将选择的物体创建ik绑定系统')
         self.delete_ik_button.setToolTip ('将选择的物体删除ik绑定系统')
 
@@ -99,7 +101,12 @@ class Rig_Tool (QWidget) :
                                                                "创建动力学化曲线驱动头发")
         self.snap_modle_button = QPushButton (QIcon (icon_dir + '/directions.png') ,
                                               "吸附物体")
-        #添加文本提示
+
+        self.export_animation_button = QPushButton (QIcon (icon_dir + '/directions.png') ,
+                                                    "导出动画")
+        self.import_animation_button = QPushButton (QIcon (icon_dir + '/directions.png') ,
+                                                    "导入动画")
+        # 添加文本提示
         self.clear_keys_button.setToolTip ('将场景内的动画关键帧删除')
 
         self.reset_attr_button.setToolTip ('重置选择的物体的属性')
@@ -123,6 +130,7 @@ class Rig_Tool (QWidget) :
 
         self.create_dynamic_curve_driven_button.setToolTip ('选择曲线，创建动力学曲线驱动')
         self.snap_modle_button.setToolTip ('选择物体，将最后的物体吸附到前面物体的中心')
+        self.export_animation_button.setToolTip ('导入对应的json文件里的动画')
 
         self.tool_buttons = [self.clear_keys_button , self.reset_attr_button , self.batch_Constraints_modle_button ,
                              self.batch_Constraints_joint_button , self.default_grp_button ,
@@ -131,7 +139,7 @@ class Rig_Tool (QWidget) :
                              self.load_skinWeights_button , self.select_sub_objects_button ,
                              self.print_duplicate_object_button ,
                              self.rename_duplicate_object_button , self.create_dynamic_curve_driven_button ,
-                             self.snap_modle_button]
+                             self.snap_modle_button , self.export_animation_button , self.import_animation_button]
 
 
     def create_layouts (self) :
@@ -206,7 +214,7 @@ class Rig_Tool (QWidget) :
 
         # 约束系统的部件连接
         self.create_constraint_button.clicked.connect (lambda *args : pipelineUtils.Pipeline.create_constraints ())
-        self.delete_constraint_button.clicked.connect (lambda *args: pipelineUtils.Pipeline.delete_constraints ())
+        self.delete_constraint_button.clicked.connect (lambda *args : pipelineUtils.Pipeline.delete_constraints ())
 
         # 绑定小工具的部件连接
         self.add_tool_connect ()
@@ -245,6 +253,9 @@ class Rig_Tool (QWidget) :
             lambda *args : pipelineUtils.Pipeline.create_dynamic_curve_driven ())
 
         self.snap_modle_button.clicked.connect (lambda *args : snapUtils.Snap.push_snip ())
+
+        self.export_animation_button.clicked.connect (lambda *args : fileUtils.File.export_animation ())
+        self.import_animation_button.clicked.connect (lambda *args : fileUtils.File.import_animation ())
 
 
     def save_skinWeights (self) :
@@ -308,10 +319,11 @@ class Rig_Tool (QWidget) :
         objects = cmds.ls (sl = True)
         controlUtils.Control.delete_ik_ctrl (objects)
 
-    def clicked_reset_attr(self):
-        nodes = cmds.ls(sl = True)
-        for node in nodes:
-            attrUtils.Attr.reset_attr(node)
+
+    def clicked_reset_attr (self) :
+        nodes = cmds.ls (sl = True)
+        for node in nodes :
+            attrUtils.Attr.reset_attr (node)
 
 
 def main () :

@@ -1566,3 +1566,4 @@ class Pipeline (object) :
         outputCurves_grp = cmds.ls ('hairSystem*OutputCurves' , type = 'transform')
         for outputCurve_grp in outputCurves_grp :
             hierarchyUtils.Hierarchy.parent (outputCurve_grp , nhair_rigNode_grp)
+
