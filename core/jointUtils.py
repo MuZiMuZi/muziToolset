@@ -522,6 +522,26 @@ class Joint (object) :
             cmds.setAttr (jnt + '.jointOrientZ' , 0)
 
 
+    @staticmethod
+    def create_secondary_joint () :
+        """
+        创建次级控制器的次级关节，用于做衣服的次级控制器
+        思路：在关节下面创建一个子关节，子关节保持和父关节相同的位置，然后被次级控制器连接所有属性
+        """
+        jnts = cmds.ls (sl = True , type = 'joint')
+
+        for jnt in jnts :
+            child_jnt = cmds.createNode ('joint' , name = '{}_child'.format (jnt))
+            cmds.parent (child_jnt , jnt)
+            for attr in ['translate' , 'rotate'] :
+                for axis in ['x' , 'y' , 'z'] :
+                    # 将属性清空
+                    cmds.setAttr (child_jnt + '.{}{}'.format (attr , axis) , 0)
+                    # 将次级控制器的属性与生成的次级关节进行连接
+                    ctrl = 'ctrl_' + jnt
+                    cmds.connectAttr (ctrl + '.{}{}'.format (attr , axis) , child_jnt + '.{}{}'.format (attr , axis))
+
+
 class Joint_Resampling (QDialog) :
     """
     关节重采样工具的页面编写

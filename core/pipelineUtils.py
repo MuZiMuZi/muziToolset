@@ -482,8 +482,7 @@ class Pipeline (object) :
         sel = cmds.ls (sl = True)
         driver_obj = sel [0:-1]
         driven_obj = sel [-1]
-        cmds.pointConstraint (driver_obj , driven_obj , mo = True)
-        cmds.orientConstraint (driver_obj , driven_obj , mo = True)
+        cmds.parentConstraint (driver_obj , driven_obj , mo = True)
         cmds.scaleConstraint (driver_obj , driven_obj , mo = True)
 
 

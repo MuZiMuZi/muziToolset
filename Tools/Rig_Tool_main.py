@@ -6,7 +6,7 @@ from PySide2.QtWidgets import *
 import pymel.core as pm
 from .config import ui_dir , icon_dir
 from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils , snapUtils , attrUtils , fileUtils , \
-    hierarchyUtils
+    hierarchyUtils, weightsUtils
 from importlib import reload
 
 import maya.cmds as cmds
