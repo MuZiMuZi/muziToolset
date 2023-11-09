@@ -43,6 +43,16 @@ class Constraint_Tool (QWidget) :
         self.match_scale_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '匹配缩放')
         self.match_pivot_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '匹配枢纽')
 
+        # 约束
+        self.fast_constraint_label = QLabel ('---------------创建快速约束----------------')
+        self.fast_constraint_label.setStyleSheet (u"color: rgb(170, 170, 255);")
+        self.create_constraint_button = QPushButton (QIcon (icon_dir + '/assign.png') , '创建约束')
+        self.delete_constraint_button = QPushButton (QIcon (icon_dir + '/assign.png') , '删除约束')
+
+        # 添加文字提示
+        self.create_constraint_button.setToolTip ('将选择的物体创建约束，被约束物体为选择的最后一个物体')
+        self.delete_constraint_button.setToolTip ('将选择的物体删除约束')
+
         # 创建约束的工具部件
         self.constraint_objects_label = QLabel ("--------------约束工具--------------")
         self.constraint_objects_label.setStyleSheet (u"color: rgb(169, 255, 175);")
@@ -86,6 +96,16 @@ class Constraint_Tool (QWidget) :
         self.match_objects_layout.addLayout (self.match_objects_QHlayout)
         self.match_objects_layout.addLayout (self.match_layout)
 
+        # 创建快速约束的layout
+        self.fast_constraint_layout = QFormLayout ()
+        self.fast_constraint_layout.addRow (self.fast_constraint_label)
+
+        self.constraint_ho_layout = QHBoxLayout ()
+        self.constraint_ho_layout.addWidget (self.create_constraint_button)
+        self.constraint_ho_layout.addWidget (self.delete_constraint_button)
+        self.constraint_ho_layout.addStretch ()
+        self.fast_constraint_layout.addRow (self.constraint_ho_layout)
+
         # 创建约束页面的布局
         self.constraint_objects_layout = QVBoxLayout ()
         self.maintainOffset_layout = QHBoxLayout ()
@@ -97,12 +117,16 @@ class Constraint_Tool (QWidget) :
         self.constraint_layout = QGridLayout ()
         self.create_constraint_layout ()
         self.constraint_objects_layout.addLayout (self.maintainOffset_layout)
+        self.constraint_objects_layout.addLayout(self.constraint_layout)
         self.constraint_objects_layout.addLayout (self.constraint_layout)
 
         # 创建主页面的布局
         self.main_layout = QVBoxLayout (self)
         self.main_layout.addWidget (self.match_objects_label)
         self.main_layout.addLayout (self.match_objects_layout)
+        self.main_layout.addStretch ()
+        self.main_layout.addWidget (self.fast_constraint_label)
+        self.main_layout.addLayout (self.fast_constraint_layout)
         self.main_layout.addStretch ()
         self.main_layout.addWidget (self.constraint_objects_label)
         self.main_layout.addLayout (self.constraint_objects_layout)
@@ -125,6 +149,10 @@ class Constraint_Tool (QWidget) :
                                                                             rot = False , scl = True , piv = False))
         self.match_pivot_btn.clicked.connect (lambda : cmds.matchTransform (cmds.ls (selection = True) , pos = False ,
                                                                             rot = False , scl = False , piv = True))
+        # 快速约束系统的部件连接
+        self.create_constraint_button.clicked.connect (lambda *args : pipelineUtils.Pipeline.create_constraints ())
+        self.delete_constraint_button.clicked.connect (lambda *args : pipelineUtils.Pipeline.delete_constraints ())
+
         # 链接约束部件的连接信号
         self.parent_constraint_btn.clicked.connect (self.clicked_parent_constraint_btn)
         self.point_constraint_btn.clicked.connect (self.clicked_point_constraint_btn)

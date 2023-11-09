@@ -57,15 +57,6 @@ class Rig_Tool (QWidget) :
         self.create_ik_button.setToolTip ('将选择的物体创建ik绑定系统')
         self.delete_ik_button.setToolTip ('将选择的物体删除ik绑定系统')
 
-        # 约束
-        self.constraint_label = QLabel ('---------------创建快速约束----------------')
-        self.constraint_label.setStyleSheet (u"color: rgb(170, 170, 255);")
-        self.create_constraint_button = QPushButton (QIcon (icon_dir + '/assign.png') , '创建约束')
-        self.delete_constraint_button = QPushButton (QIcon (icon_dir + '/assign.png') , '删除约束')
-
-        # 添加文字提示
-        self.create_constraint_button.setToolTip ('将选择的物体创建约束，被约束物体为选择的最后一个物体')
-        self.delete_constraint_button.setToolTip ('将选择的物体删除约束')
 
         # 工具
         self.tool_label = QLabel ('---------------绑定小工具---------------')
@@ -164,15 +155,7 @@ class Rig_Tool (QWidget) :
         self.ik_ho_layout.addStretch ()
         self.ik_layout.addRow (self.ik_ho_layout)
 
-        # 创建约束的layout
-        self.constraint_layout = QFormLayout ()
-        self.constraint_layout.addRow (self.constraint_label)
 
-        self.constraint_ho_layout = QHBoxLayout ()
-        self.constraint_ho_layout.addWidget (self.create_constraint_button)
-        self.constraint_ho_layout.addWidget (self.delete_constraint_button)
-        self.constraint_ho_layout.addStretch ()
-        self.constraint_layout.addRow (self.constraint_ho_layout)
 
         # 创建小工具的layout
         self.tool_layout = QGridLayout ()
@@ -183,8 +166,6 @@ class Rig_Tool (QWidget) :
         self.main_layout.addLayout (self.fk_layout)
         self.main_layout.addStretch ()
         self.main_layout.addLayout (self.ik_layout)
-        self.main_layout.addStretch ()
-        self.main_layout.addLayout (self.constraint_layout)
         self.main_layout.addStretch ()
         self.main_layout.addWidget (self.tool_label)
         self.main_layout.addLayout (self.tool_layout)
@@ -212,9 +193,6 @@ class Rig_Tool (QWidget) :
         self.create_ik_button.clicked.connect (self.clicked_create_ik_ctrl)
         self.delete_ik_button.clicked.connect (self.clicked_delete_ik_ctrl)
 
-        # 约束系统的部件连接
-        self.create_constraint_button.clicked.connect (lambda *args : pipelineUtils.Pipeline.create_constraints ())
-        self.delete_constraint_button.clicked.connect (lambda *args : pipelineUtils.Pipeline.delete_constraints ())
 
         # 绑定小工具的部件连接
         self.add_tool_connect ()
