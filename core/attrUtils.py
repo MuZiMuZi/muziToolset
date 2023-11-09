@@ -56,7 +56,7 @@ class Attr (object) :
                     cmds.setAttr ("{}.{}".format (obj , attr) , keyable = True , channelBox = True)
 
 
-    def connect_attr (output_attr , input_attr) :
+    def connect_attr (self,output_attr , input_attr) :
         u"""将属性从输出属性连接到输入属性.
 
         Args:

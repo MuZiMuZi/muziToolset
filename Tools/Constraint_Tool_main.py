@@ -50,6 +50,7 @@ class Constraint_Tool (QWidget) :
         self.mult_to_one_radio.setChecked (True)
         self.one_to_mult_radio = QRadioButton ('one_to_mult(1对多约束)')
         self.maintainOffset_checkBox = QCheckBox ('保持偏移')
+        self.maintainOffset_checkBox.setChecked (True)
         self.parent_constraint_btn = QPushButton (QIcon (':parentConstraint.png') , '父子约束')
         self.point_constraint_btn = QPushButton (QIcon (':posConstraint.png') , '点约束')
         self.orient_constraint_btn = QPushButton (QIcon (':orientConstraint.png') , '方向约束')
