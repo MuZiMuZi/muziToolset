@@ -77,13 +77,13 @@ class Tool_main_Window (QMainWindow) :
         self.main_widget.setTabShape (QTabWidget.Triangular)
 
         # 创建对应的页面标签
-        self.main_widget.addTab (Rig_Tool_main.main () , '绑定')
-        self.main_widget.addTab (Attr_Tool_main.main () , '属性')
-        self.main_widget.addTab (Constraint_Tool_main.main () , '约束')
-        self.main_widget.addTab (Joint_Tool_main.main () , '关节')
-        self.main_widget.addTab (control_widget.main () , '控制器')
-        self.main_widget.addTab (Names_Tool_main.main () , '命名')
-        self.main_widget.addTab (Connections_Tool_main.main () , '连接')
+        self.main_widget.addTab (Rig_Tool_main.main () , 'Rig')
+        self.main_widget.addTab (Attr_Tool_main.main () , 'Attr')
+        self.main_widget.addTab (Constraint_Tool_main.main () , 'Constraint')
+        self.main_widget.addTab (Joint_Tool_main.main () , 'Joint')
+        self.main_widget.addTab (control_widget.main () , 'Control')
+        self.main_widget.addTab (Names_Tool_main.main () , 'Names')
+        self.main_widget.addTab (Connections_Tool_main.main () , 'Connections')
 
 
         self.setCentralWidget (self.main_widget)
