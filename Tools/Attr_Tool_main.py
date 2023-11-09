@@ -39,7 +39,7 @@ class Attr_Tool (QWidget) :
         self.edit_attr_window_btn = QPushButton (QIcon (icon_dir + '/edit.png') , 'Edit_Attribute')
         self.edit_attr_window_btn.setToolTip ('打开编辑属性窗口')
         self.connect_attr_window_btn = QPushButton (QIcon (icon_dir + '/connect-empty.png') ,
-                                                    'Connect_Attr(连接编辑器)')
+                                                    'Connect_Attr')
         self.connect_attr_window_btn.setToolTip ('打开连接编辑器')
         self.channel_control_window_btn = QPushButton (QIcon (icon_dir + '/control.png') , 'Channel_Control')
         self.channel_control_window_btn.setToolTip ('打开通道控制编辑器')
@@ -50,9 +50,9 @@ class Attr_Tool (QWidget) :
         self.attr_tool_label = QLabel ('----------------属性工具----------------')
         self.attr_tool_label.setStyleSheet (u"color: rgb(255,170, 255);")
         self.attr_move_label = QLabel ('选择单个属性进行位移-------')
-        self.attr_up_btn = QPushButton (QIcon (icon_dir + '/arrow-upward .png') , 'attr_up')
+        self.attr_up_btn = QPushButton (QIcon (icon_dir + '/arrow-upward .png') , 'Attr_up')
         self.attr_up_btn.setToolTip ('使选中的属性在通道盒上移')
-        self.attr_down_btn = QPushButton (QIcon (icon_dir + '/arrow-downward.png') , 'attr_down')
+        self.attr_down_btn = QPushButton (QIcon (icon_dir + '/arrow-downward.png') , 'Attr_down')
         self.attr_down_btn.setToolTip ('使选中的属性在通道盒下移')
 
         # 创建属性设置的页面部件
@@ -79,9 +79,9 @@ class Attr_Tool (QWidget) :
         self.visability_hidden_cheekbox = QCheckBox ('Hidden')
 
         # 设置按钮
-        self.attr_set_btn = QPushButton ('set')
+        self.attr_set_btn = QPushButton ('Set')
         self.attr_set_btn.setToolTip ('根据选择的属性设置来设置属性的锁定和隐藏')
-        self.attr_reset_btn = QPushButton ('reset')
+        self.attr_reset_btn = QPushButton ('Reset')
         self.attr_reset_btn.setToolTip ('重置选择的属性设置')
 
         self.attr_cheekbox = [self.translation_locked_cheekbox , self.translation_hidden_cheekbox ,

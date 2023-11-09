@@ -46,9 +46,11 @@ class Rig_Tool (QWidget) :
         # IK
         self.ik_label = QLabel ('---------------创建IK系统----------------')
         self.ik_label.setStyleSheet (u"color: rgb(169, 255, 175);")
-        self.ik_start_button = QPushButton (QIcon (':kinJoint.png') , '拾取ik起始关节')
+        self.ik_start_button = QPushButton (QIcon (':kinJoint.png') , 'Pick')
+        self.ik_start_button.setToolTip ('拾取ik起始关节')
         self.ik_start_line = QLineEdit ()
-        self.ik_end_button = QPushButton (QIcon (':kinJoint.png') , '拾取ik结束关节')
+        self.ik_end_button = QPushButton (QIcon (':kinJoint.png') , 'Pick')
+        self.ik_end_button.setToolTip ('拾取ik结束关节')
         self.ik_end_line = QLineEdit ()
         self.create_ik_button = QPushButton (QIcon (':kinConnect.png') , '创建ik系统')
         self.delete_ik_button = QPushButton (QIcon (':kinConnect.png') , '删除ik系统')

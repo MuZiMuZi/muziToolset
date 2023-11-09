@@ -42,35 +42,36 @@ class Connections_Tool (QWidget) :
         self.rotate_attr_cheekbox = QCheckBox ('Rotate')
         self.scale_attr_cheekbox = QCheckBox ('Scale')
         self.matrix_attr_cheekbox = QCheckBox ('Matrix')
-        self.reset_attr_btn = QPushButton (QIcon (icon_dir + '/reset.png') , 'Reset(重置)')
+        self.reset_attr_btn = QPushButton (QIcon (icon_dir + '/reset.png') , 'Reset')
 
         self.connect_default_connection_btn = QPushButton (QIcon (icon_dir + '/connect.png') ,
-                                                           'create_connection(创建连接)')
+                                                           'Create_connection')
         self.delete_default_connection_btn = QPushButton (QIcon (icon_dir + '/disconnect.png') ,
-                                                          'delete_connection(删除连接)')
+                                                          'Delete_connection')
 
         # 创建自定义属性连接的部件
         self.connect_custom_connection_label = QLabel ('---------------连接自定义属性---------------')
         self.connect_custom_connection_label.setStyleSheet (u"color: rgb(85, 255, 255);")
         self.driver_attr_label = QLabel ('Driver(驱动者):---')
         self.driver_attr_line = QLineEdit ()
-        self.pick_driver_attr_btn = QPushButton (QIcon (icon_dir + '/select.png') , 'pick(拾取)')
+        self.pick_driver_attr_btn = QPushButton (QIcon (icon_dir + '/select.png') , 'pick')
 
         self.driven_attr_label = QLabel ('Driven(被驱动者):')
         self.driven_attr_line = QLineEdit ()
-        self.pick_driven_attr_btn = QPushButton (QIcon (icon_dir + '/select.png') , 'pick(拾取)')
+        self.pick_driven_attr_btn = QPushButton (QIcon (icon_dir + '/select.png') , 'pick')
 
         self.connect_custom_connection_btn = QPushButton (QIcon (icon_dir + '/connect.png') ,
-                                                          'create_connection(创建连接)')
+                                                          'Create_connection')
         self.delete_custom_connection_btn = QPushButton (QIcon (icon_dir + '/disconnect.png') ,
-                                                         'delete_connection(删除连接)')
+                                                         'Delete_connection')
 
         # 创建复制属性连接的部件
         self.copy_delete_connection_label = QLabel ('---------------复制/删除属性连接---------------')
         self.copy_delete_connection_label.setStyleSheet (u"color: rgb(170, 255, 128);")
-        self.copy_connection_btn = QPushButton (QIcon (icon_dir + '/copy.png') , 'copy_Driven_connection(复制连接)--未完成')
+        self.copy_connection_btn = QPushButton (QIcon (icon_dir + '/copy.png') ,
+                                                'Copy_Driven_connection--未完成')
         self.delete_connection_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,
-                                                  'delete_Driven_connection(删除连接)')
+                                                  'Delete_Driven_connection')
 
 
     def create_layouts (self) :
@@ -145,13 +146,15 @@ class Connections_Tool (QWidget) :
 
         # 连接自定义属性的部件
         self.pick_driver_attr_btn.clicked.connect (self.clicked_pick_driver_attr_btn)
-        self.pick_driven_attr_btn.clicked.connect(self.clicked_pick_driven_attr_btn)
-        self.connect_custom_connection_btn.clicked.connect(self.clicked_connect_custom_connection_btn)
+        self.pick_driven_attr_btn.clicked.connect (self.clicked_pick_driven_attr_btn)
+        self.connect_custom_connection_btn.clicked.connect (self.clicked_connect_custom_connection_btn)
         self.delete_custom_connection_btn.clicked.connect (self.clicked_delete_custom_connection_btn)
 
-        #连接复制/删除属性的部件
-        self.copy_connection_btn.clicked.connect(self.clicked_copy_connection_btn)
+        # 连接复制/删除属性的部件
+        self.copy_connection_btn.clicked.connect (self.clicked_copy_connection_btn)
         self.delete_connection_btn.clicked.connect (self.clicked_delete_connection_btn)
+
+
     def stateChanged_matrix_attr_cheekbox (self) :
         """
         当matrix_attr_cheekbox按钮被选中的时候，则将位移,旋转，缩放的属性选项全部取消
@@ -204,7 +207,7 @@ class Connections_Tool (QWidget) :
 
     def clicked_pick_driver_attr_btn (self) :
         driver_attr = attrUtils.Attr.get_channelBox_attrs ()
-        self.driver_attr_line.setText ( driver_attr [0])
+        self.driver_attr_line.setText (driver_attr [0])
 
 
     def clicked_pick_driven_attr_btn (self) :
@@ -213,27 +216,30 @@ class Connections_Tool (QWidget) :
 
 
     def clicked_connect_custom_connection_btn (self) :
-        sourceAttr = self.driver_attr_line.text()
-        targetAttr = self.driven_attr_line.text()
+        sourceAttr = self.driver_attr_line.text ()
+        targetAttr = self.driven_attr_line.text ()
         obj_con = connectionUtils.Connection ()
         obj_con.makeConnectionAttrsOrChannelBox (driverAttr = sourceAttr ,
-                                                     drivenAttr = targetAttr)
+                                                 drivenAttr = targetAttr)
 
-    def clicked_delete_custom_connection_btn(self):
+
+    def clicked_delete_custom_connection_btn (self) :
         sourceAttr = self.driver_attr_line.text ()
         targetAttr = self.driven_attr_line.text ()
         obj_con = connectionUtils.Connection ()
         obj_con.breakConnectionAttrsOrChannelBox (driverAttr = sourceAttr ,
-                                                         drivenAttr = targetAttr)
+                                                  drivenAttr = targetAttr)
 
-    def clicked_copy_connection_btn(self):
+
+    def clicked_copy_connection_btn (self) :
         obj_con = connectionUtils.Connection ()
         obj_con.copyDrivenConnectedAttrsSel ()
 
 
-    def clicked_delete_connection_btn(self):
+    def clicked_delete_connection_btn (self) :
         obj_con = connectionUtils.Connection ()
         obj_con.breakAllDrivenOrChannelBoxSel ()
+
 
 def main () :
     return Connections_Tool ()
