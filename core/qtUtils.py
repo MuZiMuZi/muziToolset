@@ -340,3 +340,5 @@ class Dialog (QtWidgets.QDialog) :
     def create_connections (self) :
         """连接需要的部件和对应的信号"""
         pass
+
+
