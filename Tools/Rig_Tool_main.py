@@ -100,7 +100,7 @@ class Rig_Tool (QWidget) :
         self.import_animation_button = QPushButton (QIcon (icon_dir + '/directions.png') ,
                                                     "导入动画")
         # 添加文本提示
-        self.clear_keys_button.setToolTip ('将场景内的动画关键帧删除')
+        self.clear_keys_button.setToolTip ('将场景内所有的动画关键帧删除')
 
         self.reset_attr_button.setToolTip ('重置选择的物体的属性')
 
@@ -123,7 +123,7 @@ class Rig_Tool (QWidget) :
 
         self.create_dynamic_curve_driven_button.setToolTip ('选择曲线，创建动力学曲线驱动')
         self.snap_modle_button.setToolTip ('选择物体，将最后的物体吸附到前面物体的中心')
-        self.export_animation_button.setToolTip ('导入对应的json文件里的动画')
+        self.export_animation_button.setToolTip ('选择控制器导出到动画到对应的json文件里')
 
         self.tool_buttons = [self.clear_keys_button , self.reset_attr_button , self.batch_Constraints_modle_button ,
                              self.batch_Constraints_joint_button , self.default_grp_button ,
