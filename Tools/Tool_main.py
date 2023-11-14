@@ -10,14 +10,15 @@ from shiboken2 import wrapInstance
 
 import maya.OpenMayaUI as omui
 from importlib import reload
-from ..core import pipelineUtils
+from ..core import pipelineUtils,qtUtils
+
 from . import config , Names_Tool_main , Joint_Tool_main , Rig_Tool_main , Constraint_Tool_main , \
     Connections_Tool_main , Attr_Tool_main
 import muziToolset.res.ui.control_modular.control_widget as control_widget
 import muziToolset.res.ui.nodes_modular.nodes_widget as nodes_widget
 import muziToolset.res.ui.snap_modular.snap_widget as snap_widget
 
-
+reload(config)
 reload (Names_Tool_main)
 reload (Joint_Tool_main)
 reload (Rig_Tool_main)
@@ -27,7 +28,6 @@ reload (snap_widget)
 reload (Constraint_Tool_main)
 reload (Connections_Tool_main)
 reload (Attr_Tool_main)
-
 
 class Tool_main_Window (QMainWindow) :
 
@@ -44,6 +44,10 @@ class Tool_main_Window (QMainWindow) :
         self.add_layouts ()
 
         self.geometry = None
+
+        style_file = './qss_1.qss'
+        style_sheet = qtUtils.QSSLoader.read_qss_file (config.qss_dir + style_file)
+        self.setStyleSheet (style_sheet)
 
     # 创建标签
     def add_actions (self) :
@@ -73,10 +77,7 @@ class Tool_main_Window (QMainWindow) :
         # 设置标签布局
         self.main_widget = QTabWidget ()
         self.main_widget.setTabShape (QTabWidget.Triangular)
-        self.main_widget.setStyleSheet ("QTabWidget::pane { border: 1px solid #3E3E3E; }"
-                                        "QTabWidget::tab-bar { alignment: center; }"
-                                        "QTabBar::tab { background: #3E3E3E; color: #FFFFFF; }"
-                                        "QTabBar::tab:selected { background: #535353; }")
+
         # 创建对应的页面标签
         self.main_widget.addTab (Rig_Tool_main.main () , 'Rig')
         self.main_widget.addTab (Attr_Tool_main.main () , 'Attr')
