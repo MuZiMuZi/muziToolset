@@ -342,3 +342,29 @@ class Dialog (QtWidgets.QDialog) :
         pass
 
 
+class QSSLoader :
+    """
+    创建一个加载QSS样式表的公共类
+    """
+
+    def __init__ (self) :
+        pass
+
+
+    @staticmethod
+    def read_qss_file (qss_file_name) :
+        with open (qss_file_name , 'r' , encoding = 'UTF-8') as file :
+            return file.read ()
+    def example_of_loading_qss(self):
+        """
+        在代码中加载qss样式表的示例
+        """
+        app = QApplication (sys.argv)
+        window = MainWindow ()
+
+        style_file = './style.qss'
+        style_sheet = QSSLoader.read_qss_file (style_file)
+        window.setStyleSheet (style_sheet)
+
+        window.show ()
+        sys.exit (app.exec_ ())
