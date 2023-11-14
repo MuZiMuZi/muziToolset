@@ -48,28 +48,9 @@ class Joint_Tool (QWidget) :
         self.joint_size_slider.setTickPosition (QSlider.TicksBelow)
 
         # 关节轴向的部件
-        button_style = '''
-                  QPushButton {
-                      background-color: #4CAF50; 
-                      border: none;
-                      color: white;
-                      padding: 10px 20px;
-                      text-align: center;
-                      text-decoration: none;
-                      display: inline-block;
-                      font-size: 16px;
-                      margin: 4px 2px;
-                      cursor: pointer;
-                      border-radius: 8px;
-                  }
-                  QPushButton:hover {
-                      background-color: #45a049; 
-                  }
-              '''
         self.show_joint_axis_label = QLabel ('---------------关节轴向----------------')
         self.show_joint_axis_label.setStyleSheet ("color: rgb(255, 69, 0); font-weight: bold; font-size: 14px;")
         self.show_joint_axis_select_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '显示关节轴向(选择)')
-        self.show_joint_axis_select_btn.setStyleSheet (button_style)
         self.show_joint_axis_select_btn.setToolTip ('将所选择的关节显示关节轴向')
         self.show_joint_axis_hierarchy_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '显示关节轴向(层级)')
         self.show_joint_axis_hierarchy_btn.setToolTip ('将选择的关节的层级关节显示关节轴向')
