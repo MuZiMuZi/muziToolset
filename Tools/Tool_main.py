@@ -57,7 +57,7 @@ class Tool_main_Window (QMainWindow) :
             self.restoreState (windowState)
 
         # 设置qt样式表
-        style_file = './manjaroMix.qss'
+        style_file = './simplicity.qss'
         style_sheet = qtUtils.QSSLoader.read_qss_file (config.qss_dir + style_file)
         self.setStyleSheet (style_sheet)
 
@@ -68,15 +68,19 @@ class Tool_main_Window (QMainWindow) :
 
         self.help_documents_action = QAction ("About" , self)
 
-        #主题设置的action
+        # 主题设置的action
         self.manjaroMix_action = QAction ('manjaroMix' , self)
         self.amoled_action = QAction ('amoled' , self)
-        self.dark_teal_action = QAction ('dark_teal' , self)
+
         self.shared_action = QAction ('shared' , self)
         self.black_action = QAction ('black' , self)
+        self.lightblack_action = QAction ('lightblack' , self)
+        self.simplicity_action = QAction ('simplicity' , self)
+        self.evilworks_action = QAction ('evilworks' , self)
 
-        self.theme_Actions = [self.manjaroMix_action,  self.amoled_action,
-                              self.dark_teal_action, self.shared_action, self.black_action]
+
+        self.theme_Actions = [self.manjaroMix_action , self.amoled_action  , self.shared_action , self.black_action , self.lightblack_action,
+                              self.simplicity_action,self.evilworks_action]
 
 
     def add_actions_connect (self) :
@@ -91,7 +95,7 @@ class Tool_main_Window (QMainWindow) :
         # 用于处理悬停信号的插槽
         if isinstance (action , QAction) :
             action_text = action.text ()
-            self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format(action_text)))
+            self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format (action_text)))
 
 
     def add_menubar (self) :
@@ -105,7 +109,7 @@ class Tool_main_Window (QMainWindow) :
 
         # 创建theme栏的菜单
         self.theme_menu = QMenu ("Theme")
-        self.theme_menu.addActions(self.theme_Actions)
+        self.theme_menu.addActions (self.theme_Actions)
 
         # 添加各个菜单到窗口
         self.menu_bar = self.menuBar ()
@@ -121,7 +125,7 @@ class Tool_main_Window (QMainWindow) :
     def add_layouts (self) :
         # 设置标签布局
         self.main_widget = QTabWidget ()
-        self.main_widget.setTabShape (QTabWidget.Triangular)
+        # self.main_widget.setTabShape (QTabWidget.Triangular)
 
         # 创建对应的页面标签
         self.main_widget.addTab (Rig_Tool_main.main () , 'Rig')
