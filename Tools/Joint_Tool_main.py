@@ -32,8 +32,6 @@ class Joint_Tool (QWidget) :
         self.create_connections ()
 
 
-
-
     def create_widgets (self) :
         """创建需要的小部件"""
         # 关节显示大小的部件

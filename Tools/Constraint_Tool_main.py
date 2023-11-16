@@ -172,7 +172,7 @@ class Constraint_Tool (QWidget) :
         obj_list = cmds.ls (selection = True)
         if self.mult_to_one_radio.isChecked () :
             # 多对1约束的模式
-            driver = obj_list [0 :-1]
+            driver = obj_list [0 :-2]
             driven = obj_list [-1]
         else :
             # 1对多约束的模式
