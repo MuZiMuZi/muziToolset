@@ -23,7 +23,9 @@ class Ui_MainWindow(object):
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(743, 706))
-        self.verticalLayout = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_5 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.label = QLabel(self.centralwidget)
         self.label.setObjectName(u"label")
@@ -34,26 +36,41 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.label)
 
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.label_2 = QLabel(self.centralwidget)
         self.label_2.setObjectName(u"label_2")
 
-        self.verticalLayout.addWidget(self.label_2)
+        self.horizontalLayout.addWidget(self.label_2)
 
         self.prefix_lineEdit = QLineEdit(self.centralwidget)
         self.prefix_lineEdit.setObjectName(u"prefix_lineEdit")
 
-        self.verticalLayout.addWidget(self.prefix_lineEdit)
+        self.horizontalLayout.addWidget(self.prefix_lineEdit)
 
+
+        self.verticalLayout.addLayout(self.horizontalLayout)
+
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.label_3 = QLabel(self.centralwidget)
         self.label_3.setObjectName(u"label_3")
 
-        self.verticalLayout.addWidget(self.label_3)
+        self.horizontalLayout_2.addWidget(self.label_3)
 
         self.subfix_lineEdit = QLineEdit(self.centralwidget)
         self.subfix_lineEdit.setObjectName(u"subfix_lineEdit")
 
-        self.verticalLayout.addWidget(self.subfix_lineEdit)
+        self.horizontalLayout_2.addWidget(self.subfix_lineEdit)
 
+
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
+
+
+        self.verticalLayout_5.addLayout(self.verticalLayout)
+
+        self.verticalLayout_2 = QVBoxLayout()
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.label_6 = QLabel(self.centralwidget)
         self.label_6.setObjectName(u"label_6")
         self.label_6.setStyleSheet(u"color: rgb(255, 255, 0);")
@@ -61,28 +78,43 @@ class Ui_MainWindow(object):
         self.label_6.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
         self.label_6.setWordWrap(False)
 
-        self.verticalLayout.addWidget(self.label_6)
+        self.verticalLayout_2.addWidget(self.label_6)
 
+        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.label_4 = QLabel(self.centralwidget)
         self.label_4.setObjectName(u"label_4")
 
-        self.verticalLayout.addWidget(self.label_4)
+        self.horizontalLayout_3.addWidget(self.label_4)
 
         self.search_lineEdit = QLineEdit(self.centralwidget)
         self.search_lineEdit.setObjectName(u"search_lineEdit")
 
-        self.verticalLayout.addWidget(self.search_lineEdit)
+        self.horizontalLayout_3.addWidget(self.search_lineEdit)
 
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_3)
+
+        self.horizontalLayout_4 = QHBoxLayout()
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.label_5 = QLabel(self.centralwidget)
         self.label_5.setObjectName(u"label_5")
 
-        self.verticalLayout.addWidget(self.label_5)
+        self.horizontalLayout_4.addWidget(self.label_5)
 
         self.replace_lineEdit = QLineEdit(self.centralwidget)
         self.replace_lineEdit.setObjectName(u"replace_lineEdit")
 
-        self.verticalLayout.addWidget(self.replace_lineEdit)
+        self.horizontalLayout_4.addWidget(self.replace_lineEdit)
 
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_4)
+
+
+        self.verticalLayout_5.addLayout(self.verticalLayout_2)
+
+        self.verticalLayout_3 = QVBoxLayout()
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.label_8 = QLabel(self.centralwidget)
         self.label_8.setObjectName(u"label_8")
         self.label_8.setStyleSheet(u"color: rgb(85, 255, 127);")
@@ -90,52 +122,70 @@ class Ui_MainWindow(object):
         self.label_8.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
         self.label_8.setWordWrap(False)
 
-        self.verticalLayout.addWidget(self.label_8)
+        self.verticalLayout_3.addWidget(self.label_8)
 
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.label_7 = QLabel(self.centralwidget)
         self.label_7.setObjectName(u"label_7")
 
-        self.verticalLayout.addWidget(self.label_7)
+        self.horizontalLayout_5.addWidget(self.label_7)
 
         self.rename_lineEdit = QLineEdit(self.centralwidget)
         self.rename_lineEdit.setObjectName(u"rename_lineEdit")
 
-        self.verticalLayout.addWidget(self.rename_lineEdit)
+        self.horizontalLayout_5.addWidget(self.rename_lineEdit)
 
-        self.splitter = QSplitter(self.centralwidget)
-        self.splitter.setObjectName(u"splitter")
-        self.splitter.setOrientation(Qt.Horizontal)
-        self.selectied_button = QRadioButton(self.splitter)
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_5)
+
+
+        self.verticalLayout_5.addLayout(self.verticalLayout_3)
+
+        self.horizontalLayout_6 = QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.selectied_button = QRadioButton(self.centralwidget)
         self.insert_buttonGroup = QButtonGroup(MainWindow)
         self.insert_buttonGroup.setObjectName(u"insert_buttonGroup")
         self.insert_buttonGroup.addButton(self.selectied_button)
         self.selectied_button.setObjectName(u"selectied_button")
         self.selectied_button.setAcceptDrops(False)
         self.selectied_button.setChecked(True)
-        self.splitter.addWidget(self.selectied_button)
-        self.hierarchy_button = QRadioButton(self.splitter)
+
+        self.horizontalLayout_6.addWidget(self.selectied_button)
+
+        self.hierarchy_button = QRadioButton(self.centralwidget)
         self.insert_buttonGroup.addButton(self.hierarchy_button)
         self.hierarchy_button.setObjectName(u"hierarchy_button")
-        self.splitter.addWidget(self.hierarchy_button)
-        self.all_button = QRadioButton(self.splitter)
+
+        self.horizontalLayout_6.addWidget(self.hierarchy_button)
+
+        self.all_button = QRadioButton(self.centralwidget)
         self.insert_buttonGroup.addButton(self.all_button)
         self.all_button.setObjectName(u"all_button")
-        self.splitter.addWidget(self.all_button)
 
-        self.verticalLayout.addWidget(self.splitter)
+        self.horizontalLayout_6.addWidget(self.all_button)
 
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_6)
+
+        self.verticalLayout_4 = QVBoxLayout()
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.execute_button = QPushButton(self.centralwidget)
         self.execute_button.setObjectName(u"execute_button")
         self.execute_button.setStyleSheet(u"color: rgb(255, 255, 255);\n"
 "background-color: rgb(85, 170, 255);")
 
-        self.verticalLayout.addWidget(self.execute_button)
+        self.verticalLayout_4.addWidget(self.execute_button)
 
         self.reset_button = QPushButton(self.centralwidget)
         self.reset_button.setObjectName(u"reset_button")
         self.reset_button.setStyleSheet(u"background-color: rgb(255, 158, 255);")
 
-        self.verticalLayout.addWidget(self.reset_button)
+        self.verticalLayout_4.addWidget(self.reset_button)
+
+
+        self.verticalLayout_5.addLayout(self.verticalLayout_4)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)

@@ -57,14 +57,15 @@ class Names_Tool (Names_Tool.Ui_MainWindow , QtWidgets.QMainWindow) :
         """
         # 选中的物体修改命名的情况
         if self.selectied_button.isChecked () :
-            self.object_list = cmds.ls (sl = True)
+            self.object_list = cmds.ls (sl = True , l = 1)
+
         # 层级修改命名的情况
         elif self.hierarchy_button.isChecked () :
             self.object_list = pipelineUtils.Pipeline.select_sub_objects ()
         # 全部修改命名的情况
         else :
             cmds.select (allDagObjects = True)
-            self.object_list = cmds.ls (sl = True)
+            self.object_list = cmds.ls (sl = True , l = 1)
         # 判断object_list里是否有无法重命名的节点,如果有的话将其删除
         cmds.select (self.object_list)
 
