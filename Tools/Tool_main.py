@@ -51,19 +51,16 @@ class Tool_main_Window (QMainWindow) :
         windowState = settings.value ("windowState")
         style_sheet = settings.value ("style_sheet")
 
+        # 设置恢复窗口大小
         if geometry is not None :
             self.restoreGeometry (geometry)
-
+        # 设置恢复窗口位置
         if windowState is not None :
             self.restoreState (windowState)
 
-        # 设置qt样式表
+        # 设置恢复qt样式表
         if style_sheet is not None :
             self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format (style_sheet)))
-
-        # style_file = './simplicity.qss'
-        # style_sheet = qtUtils.QSSLoader.read_qss_file (config.qss_dir + style_file)
-        # self.setStyleSheet (style_sheet)
 
 
     # 创建标签
@@ -81,10 +78,13 @@ class Tool_main_Window (QMainWindow) :
         self.lightblack_action = QAction ('lightblack' , self)
         self.simplicity_action = QAction ('simplicity' , self)
         self.evilworks_action = QAction ('evilworks' , self)
+        self.liang_style_action = QAction ('liang_style' , self)
+        self.qDarkStyleSheet_action = QAction ('qDarkStyleSheet' , self)
 
-
-        self.theme_Actions = [self.manjaroMix_action , self.amoled_action  , self.shared_action , self.black_action , self.lightblack_action,
-                              self.simplicity_action,self.evilworks_action]
+        self.theme_Actions = [self.manjaroMix_action , self.amoled_action , self.shared_action , self.black_action ,
+                              self.lightblack_action ,
+                              self.simplicity_action , self.evilworks_action ,
+                              self.liang_style_action , self.qDarkStyleSheet_action]
 
 
     def add_actions_connect (self) :
@@ -99,7 +99,7 @@ class Tool_main_Window (QMainWindow) :
         # 用于处理悬停信号的插槽
         if isinstance (action , QAction) :
             style_sheet = action.text ()
-            #保存主题在settings里
+            # 保存主题在settings里
             settings = QSettings ()
             settings.setValue ("style_sheet" , style_sheet)
             self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format (style_sheet)))
