@@ -45,10 +45,11 @@ class Tool_main_Window (QMainWindow) :
         self.add_menubar ()
         self.add_layouts ()
 
-        # 恢复窗口大小和位置
+        # 恢复窗口大小和位置和主题设置
         settings = QSettings ()
         geometry = settings.value ("geometry")
         windowState = settings.value ("windowState")
+        style_sheet = settings.value ("style_sheet")
 
         if geometry is not None :
             self.restoreGeometry (geometry)
@@ -57,9 +58,12 @@ class Tool_main_Window (QMainWindow) :
             self.restoreState (windowState)
 
         # 设置qt样式表
-        style_file = './simplicity.qss'
-        style_sheet = qtUtils.QSSLoader.read_qss_file (config.qss_dir + style_file)
-        self.setStyleSheet (style_sheet)
+        if style_sheet is not None :
+            self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format (style_sheet)))
+
+        # style_file = './simplicity.qss'
+        # style_sheet = qtUtils.QSSLoader.read_qss_file (config.qss_dir + style_file)
+        # self.setStyleSheet (style_sheet)
 
 
     # 创建标签
@@ -94,8 +98,11 @@ class Tool_main_Window (QMainWindow) :
         """
         # 用于处理悬停信号的插槽
         if isinstance (action , QAction) :
-            action_text = action.text ()
-            self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format (action_text)))
+            style_sheet = action.text ()
+            #保存主题在settings里
+            settings = QSettings ()
+            settings.setValue ("style_sheet" , style_sheet)
+            self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format (style_sheet)))
 
 
     def add_menubar (self) :
