@@ -22,13 +22,8 @@ import maya.api.OpenMaya as om
 
 class Connection () :
 
-    def __init__ (self , object) :
-        """
-        object(str):给定的一个对象
-        """
-        self.object = object
-        # 列出物体上的所有属性
-        self.object_all_attrs = cmds.listAttr (self.object , connectable = True , inUse = True)
+    def __init__ (self ) :
+        pass
 
 
     """
@@ -36,50 +31,54 @@ class Connection () :
     """
 
 
-    def get_input_connection (self) :
+    def get_input_connection (self,object) :
         """
         获取物体上的输入连接
-        self.object(str):获取输入连接的物体
-        return: self.input_connections
+        object(str):获取输入连接的物体
+        return: input_connections
                 返回所有的输入连接
         """
-        self.input_connections = list ()
+        input_connections = list ()
+        # 列出物体上的所有属性
+        object_all_attrs = cmds.listAttr (object, connectable = True , inUse = True)
         # 检查属性是否有输入连接
-        for attr in self.object_all_attrs :
-            self.object_Attr = ".".join ([self.object , attr])
+        for attr in object_all_attrs :
+            object_Attr = ".".join ([object, attr])
             try :
-                if cmds.listConnections (self.object_Attr , source = True , destination = False , plugs = True) :
-                    self.input_connections.append (self.object_Attr)
+                if cmds.listConnections (object_Attr , source = True , destination = False , plugs = True) :
+                    input_connections.append (object_Attr)
             except ValueError :  # 遇到找不到某些属性的错误
                 pass
 
-        if not self.input_connections :
+        if not input_connections :
             # 如果物体没有被连接的属性的话，则爆出提示
-            om.MGlobal.displayWarning ("{}没有已连接的属性 ".format (self.object))
+            om.MGlobal.displayWarning ("{}没有已连接的属性 ".format (object))
             return list ()
-        return self.input_connections
+        return input_connections
 
 
-    def get_output_attributes (self) :
+    def get_output_attributes (self , object) :
         """
         获取物体上的输出连接
         self.object(str):获取输出连接的物体
         return: self.input_connections
                 返回所有的输出连接
         """
-        self.ouput_connections = list ()
+        ouput_connections = list ()
+        # 列出物体上的所有属性
+        object_all_attrs = cmds.listAttr (object , connectable = True , inUse = True)
         # 检查属性是否有输出连接
-        for attr in self.object_all_attrs :
-            self.object_Attr = ".".join ([self.object , attr])
+        for attr in object_all_attrs :
+            object_Attr = ".".join ([object, attr])
             try :
-                if cmds.listConnections (self.object_Attr , source = True , destination = False , plugs = True) :
-                    self.ouput_connections.append (self.object_Attr)
+                if cmds.listConnections (object_Attr , source = True , destination = False , plugs = True) :
+                    self.ouput_connections.append (object_Attr)
             except ValueError :  # 遇到找不到某些属性的错误
                 pass
 
-        if not self.ouput_connections :
+        if not ouput_connections :
             # 如果物体没有被连接的属性的话，则爆出提示
-            om.MGlobal.displayWarning ("{}没有已连接的属性 ".format (self.object))
+            om.MGlobal.displayWarning ("{}没有已连接的属性 ".format (object))
             return list ()
         return self.ouput_connections
 
