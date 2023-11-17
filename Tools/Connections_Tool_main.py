@@ -229,11 +229,21 @@ class Connections_Tool (QWidget) :
 
 
     def clicked_connect_custom_connection_btn (self) :
+        """
+        连接自定义属性的槽函数
+        """
         sourceAttr = self.driver_attr_line.text ()
         targetAttr = self.driven_attr_line.text ()
-        obj_con = connectionUtils.Connection ()
-        obj_con.makeConnectionAttrsOrChannelBox (driverAttr = sourceAttr ,
-                                                 drivenAttr = targetAttr)
+        #判断输入框上是否有符合的对象，没有的话则报错
+        if not sourceAttr:
+            cmds.warning ("未加载驱动者的连接属性。请重新选择通道盒的属性进行加载")
+        if not targetAttr :
+            cmds.warning ("未加载被驱动者的连接属性。请重新选择通道盒的属性进行加载")
+        #输入框上都有符合的对象的以后才进行连接
+        if sourceAttr and targetAttr:
+            obj_con = connectionUtils.Connection ()
+            obj_con.makeConnectionAttrsOrChannelBox (driverAttr = sourceAttr ,
+                                                     drivenAttr = targetAttr)
 
 
     def clicked_delete_custom_connection_btn (self) :
