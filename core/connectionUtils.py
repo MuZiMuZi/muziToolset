@@ -72,7 +72,7 @@ class Connection () :
             object_Attr = ".".join ([object, attr])
             try :
                 if cmds.listConnections (object_Attr , source = True , destination = False , plugs = True) :
-                    self.ouput_connections.append (object_Attr)
+                    ouput_connections .append (object_Attr)
             except ValueError :  # 遇到找不到某些属性的错误
                 pass
 
@@ -80,7 +80,7 @@ class Connection () :
             # 如果物体没有被连接的属性的话，则爆出提示
             om.MGlobal.displayWarning ("{}没有已连接的属性 ".format (object))
             return list ()
-        return self.ouput_connections
+        return ouput_connections 
 
 
     """
