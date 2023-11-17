@@ -125,6 +125,7 @@ class Joint_Tool (QWidget) :
         self.show_joint_orient_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '显示关节定向')
         self.hide_joint_orient_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '隐藏关节定向')
         self.clear_joint_orient_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '归零关节定向')
+        self.create_curve_on_joints_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '选择关节链条创建曲线')
 
         # 设置文本提示
         self.create_snap_joint_btn.setToolTip ('根据吸附的物体中心创建关节')
@@ -157,7 +158,8 @@ class Joint_Tool (QWidget) :
 
                                    self.show_joint_orient_btn ,
                                    self.hide_joint_orient_btn ,
-                                   self.clear_joint_orient_btn]
+                                   self.clear_joint_orient_btn ,
+                                   self.create_curve_on_joints_btn]
 
 
     def create_layouts (self) :
@@ -284,11 +286,21 @@ class Joint_Tool (QWidget) :
         self.show_joint_orient_btn.clicked.connect (lambda : jointUtils.Joint.show_joint_orient ())
         self.hide_joint_orient_btn.clicked.connect (lambda : jointUtils.Joint.hide_joint_orient ())
         self.clear_joint_orient_btn.clicked.connect (lambda : jointUtils.Joint.clear_joint_orient ())
+        self.create_curve_on_joints_btn.connect (self.clicked_create_curve_on_joints_btn ())
 
 
     def set_joint_size_line (self) :
         joint_size_value = float (self.joint_size_slider.value ())
         self.joint_size_line.setText (str (joint_size_value))
+
+
+    def clicked_create_curve_on_joints_btn (self) :
+        """
+        选择关节链条，在对应的关节点上创建曲线
+        """
+        jnt_list = cmds.ls (sl = True , type = 'joint')
+        curve = 'crv' + jnt_list [0]
+        pipelineUtils.Pipeline.create_curve_on_joints (jnt_list , curve , degree = 3)
 
 
     def set_joint_size (self) :
