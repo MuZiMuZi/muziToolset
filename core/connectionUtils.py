@@ -163,7 +163,7 @@ class Connection () :
             cmds.connectAttr (driver_attr , driven_attr)
 
 
-    def create_connect_list (self , driver_obj , source_attr , driven_obj_list , destination_attr) :
+    def create_connect_connections_list (self , driver_obj , source_attr , driven_obj_list , destination_attr) :
         """将驱动者的需要连接的属性连接给所有被驱动者需要连接的属性
         driver_obj(str):作为驱动者的物体
         source_attr(str):作为驱动者的物体上驱动的属性
@@ -183,12 +183,23 @@ class Connection () :
                     '未将{}.{}与{}.{}进行连接'.format (driver_obj , source_attr , driven_obj , destination_attr))
 
 
-    def safeConnectSelection (self , source_attr , destination_attr) :
-        """将第一个选定对象安全地连接到其余选定对象。
+    def create_connect_connections (self , source_attr , destination_attr) :
+        """选择多个物体，连接他们的属性，用来连接
 
         """
-
-        return self.create_connect_list (driver_obj , source_attr , driven_obj_list , destination_attr)
+        #获取所有选择的物体对象作为一个列表
+        sel_objs = cmds.ls (selection = True , long = True)
+        if not sel_objs :
+            cmds.warning ("未选择任何对象。请选择两个或多个对象或节点")
+            return False
+        if len (sel_objs) < 2 :
+            cmds.warning ("未选择任何对象。请选择两个或多个对象或节点")
+            return False
+        #选择的第一个物体作为驱动者
+        driver_obj = sel_objs[0]
+        #选择的第二个物体到最后一个物体作为被驱动者
+        driven_obj_list = sel_objs [1:]
+        return self.create_connect_connections_list (driver_obj , source_attr , driven_obj_list , destination_attr)
 
 
     def makeConnectionAttrsOrChannelBox (self , driverAttr = "" , drivenAttr = "") :
@@ -199,40 +210,8 @@ class Connection () :
         driverAttr(str):驱动者的属性
         drivenAttr(str)被驱动者的属性
         """
-        # 当两个属性都被输入的时候
-        if driverAttr and drivenAttr :
-            return self.safeConnectSelection (driverAttr , drivenAttr)
-        # 未输入的两个名称都来自选定对象和通道盒属性选择
-        selObjs = cmds.ls (selection = True , long = True)
-        if not selObjs :
-            cmds.warning ("未选择任何对象。请选择两个或多个对象或节点")
-            return False
-        # 获取通道盒属性选择
-        selAttrs = mel.eval ('selectedChannelBoxAttributes')
-        if not selAttrs :
-            cmds.warning ("请同时填写driverAttr和drivenAttr属性，或在通道框中选择")
-            return False
-        # 缺少驱动属性的情况
-        if driverAttr :
-            success = True
-            drivenAttr = selAttrs [0]
             for attr in selAttrs :
-                if not self.create_connect_list (selObjs , driverAttr , attr) :
-                    success = False
-        # 缺少被驱动属性的情况
-        elif drivenAttr :
-            if len (selAttrs) != 1 :
-                cmds.warning ('只能有一个选择的被驱动属性')
-                return False
-            driverAttr = selAttrs [0]
-            success = self.create_connect_list (selObjs , driverAttr , drivenAttr)
-        # driverAttr和drivenAttr两者都不存在，因此对驱动程序和被驱动程序都使用通道盒
-        else :  # Neither exists so use channel box for both driver and driven -----------------------------------
-            driverAttr = selAttrs [0]
-            drivenAttr = selAttrs [0]
-            success = True
-            for attr in selAttrs :
-                if not self.create_connect_list (selObjs , attr , attr) :
+                if not self.create_connect_connections_list (selObjs , attr , attr) :
                     success = False
         if success :
             cmds.warning ('已经成功将{}连接到{}'.format (driverAttr , drivenAttr))
@@ -256,13 +235,13 @@ class Connection () :
         scaleMessage = ""
         matrixMessage = ""
         if translate :
-            translateSuccess = self.create_connect_list (objList , "translate" , "translate")
+            translateSuccess = self.create_connect_connections_list (objList , "translate" , "translate")
         if rotation :
-            rotateSuccess = self.create_connect_list (objList , "rotate" , "rotate")
+            rotateSuccess = self.create_connect_connections_list (objList , "rotate" , "rotate")
         if scale :
-            scaleSuccess = self.create_connect_list (objList , "scale" , "scale")
+            scaleSuccess = self.create_connect_connections_list (objList , "scale" , "scale")
         if matrix :
-            matrixSuccess = self.create_connect_list (objList , "matrix" , "offsetParentMatrix")
+            matrixSuccess = self.create_connect_connections_list (objList , "matrix" , "offsetParentMatrix")
         if translateSuccess :
             translateMessage = "Translation"
         if rotateSuccess :
