@@ -22,16 +22,18 @@ import maya.api.OpenMaya as om
 
 class Connection () :
 
-    def __init__ (self ) :
+    def __init__ (self) :
         pass
 
 
     """
-    获得连接
+    获得物体的输入连接和输出连接
+    get_input_connection：获取物体的输入连接
+    get_output_attributes：获取物体的输入连接
     """
 
 
-    def get_input_connection (self,object) :
+    def get_input_connection (self , object) :
         """
         获取物体上的输入连接
         object(str):获取输入连接的物体
@@ -40,10 +42,10 @@ class Connection () :
         """
         input_connections = list ()
         # 列出物体上的所有属性
-        object_all_attrs = cmds.listAttr (object, connectable = True , inUse = True)
+        object_all_attrs = cmds.listAttr (object , connectable = True , inUse = True)
         # 检查属性是否有输入连接
         for attr in object_all_attrs :
-            object_Attr = ".".join ([object, attr])
+            object_Attr = ".".join ([object , attr])
             try :
                 if cmds.listConnections (object_Attr , source = True , destination = False , plugs = True) :
                     input_connections.append (object_Attr)
@@ -69,10 +71,10 @@ class Connection () :
         object_all_attrs = cmds.listAttr (object , connectable = True , inUse = True)
         # 检查属性是否有输出连接
         for attr in object_all_attrs :
-            object_Attr = ".".join ([object, attr])
+            object_Attr = ".".join ([object , attr])
             try :
                 if cmds.listConnections (object_Attr , source = True , destination = False , plugs = True) :
-                    ouput_connections .append (object_Attr)
+                    ouput_connections.append (object_Attr)
             except ValueError :  # 遇到找不到某些属性的错误
                 pass
 
@@ -80,14 +82,37 @@ class Connection () :
             # 如果物体没有被连接的属性的话，则爆出提示
             om.MGlobal.displayWarning ("{}没有已连接的属性 ".format (object))
             return list ()
-        return ouput_connections 
+        return ouput_connections
 
 
     """
-    创建连接
+    检查连接的可行性：
+    判断是否有足够的对象可以进行连接
+    判断对象的属性是否可以进行连接
     """
+    #检查是否有足够的对象可以进行连接
+    def cheek_enough_obj_connection(self):
+        """
+        判断选择的对象是否数量足够可以进行连接
+        return：
+            返回驱动者和被驱动者
+        """
+        # 获取所有选择的物体对象作为一个列表
+        sel_objs = cmds.ls (selection = True , long = True)
+        if not sel_objs :
+            cmds.warning ("未选择任何对象。请选择两个或多个对象或节点")
+            return False
+        if len (sel_objs) < 2 :
+            cmds.warning ("未选择任何对象。请选择两个或多个对象或节点")
+            return False
+        # 选择的第一个物体作为驱动者
+        driver_obj = sel_objs [0]
+        # 选择的第二个物体到最后一个物体作为被驱动者
+        driven_obj_list = sel_objs [1 :]
+        return driver_obj,driven_obj_list
 
-
+    
+    #检查对象的属性是否可以进行连接
     def cheek_obj_attrs_connection (self , driver_obj , source_attr , driven_obj , destination_attr) :
         """
         检查：驱动者的属性是否能够成功连接上被驱动者的属性
@@ -142,7 +167,11 @@ class Connection () :
         return cheek_value
 
 
-    def create_attribute_connections (self , driver_obj , source_attr , driven_obj , destination_attr) :
+    """
+    创建属性连接
+    """
+    
+    def create_attr_connections (self , driver_obj , source_attr , driven_obj , destination_attr) :
         """
         驱动者的属性连接上被驱动者的属性
         driver_obj(str):作为驱动者的物体
@@ -174,51 +203,26 @@ class Connection () :
         # 对被驱动者的物体列表进行循环，连接被驱动者的物体上被驱动的属性
         for driven_obj in driven_obj_list :
             try :
-                self.create_attribute_connections (driver_obj , source_attr , driven_obj , destination_attr ,
+                self.create_attr_connections (driver_obj , source_attr , driven_obj , destination_attr ,
                                                    )
                 cmds.warning (
                     '已将{}.{}与{}.{}进行连接'.format (driver_obj , source_attr , driven_obj , destination_attr))
-            except:
+            except :
                 cmds.warning (
                     '未将{}.{}与{}.{}进行连接'.format (driver_obj , source_attr , driven_obj , destination_attr))
 
 
     def create_connect_connections (self , source_attr , destination_attr) :
-        """选择多个物体，连接他们的属性，用来连接
+        """选择多个物体，用于在第一个对象和列表中的所有其他对象之间建立连接
 
         """
-        #获取所有选择的物体对象作为一个列表
-        sel_objs = cmds.ls (selection = True , long = True)
-        if not sel_objs :
-            cmds.warning ("未选择任何对象。请选择两个或多个对象或节点")
-            return False
-        if len (sel_objs) < 2 :
-            cmds.warning ("未选择任何对象。请选择两个或多个对象或节点")
-            return False
-        #选择的第一个物体作为驱动者
-        driver_obj = sel_objs[0]
-        #选择的第二个物体到最后一个物体作为被驱动者
-        driven_obj_list = sel_objs [1:]
+        #进行判断检查，检查是否有足够的对象可以进行连接
+
         return self.create_connect_connections_list (driver_obj , source_attr , driven_obj_list , destination_attr)
 
 
-    def makeConnectionAttrsOrChannelBox (self , driverAttr = "" , drivenAttr = "") :
-        """从GUI连接选择列表中的“driver.attr”和“driven.attr”
-        第一个选定对象到其余选定对象。
-        如果没有给定driverAttr和drivenAttr，则将尝试使用通道框选择的属性来填充任何丢失的数据。
-        在通道框中只能选择一个属性
-        driverAttr(str):驱动者的属性
-        drivenAttr(str)被驱动者的属性
-        """
-            for attr in selAttrs :
-                if not self.create_connect_connections_list (selObjs , attr , attr) :
-                    success = False
-        if success :
-            cmds.warning ('已经成功将{}连接到{}'.format (driverAttr , drivenAttr))
-        return success
-
-
-    def makeSrtConnectionsObjs (self , objList , translate = True , rotation = True , scale = True , matrix = False) :
+    def create_connect_srt_connections (self , objList , translate = True , rotation = True , scale = True ,
+                                    matrix = False) :
         """用于在第一个对象和列表中的所有其他对象之间建立位移，旋转，缩放，矩阵等连接
         objList(list):Maya节点名称列表，第一个节点将为驱动物体
         translate(bool):是否连接所有位移的值
@@ -226,16 +230,13 @@ class Connection () :
         scale(bool):是否连接所有缩放的值
         matrix(bool):是否连接所有矩阵的值
         """
-        translateSuccess = False
-        rotateSuccess = False
-        scaleSuccess = False
-        matrixSuccess = False
-        translateMessage = ""
-        rotateMessage = ""
-        scaleMessage = ""
-        matrixMessage = ""
+        # 选择的第一个物体作为驱动者
+        driver_obj = sel_objs [0]
+        # 选择的第二个物体到最后一个物体作为被驱动者
+        driven_obj_list = sel_objs [1 :]
         if translate :
-            translateSuccess = self.create_connect_connections_list (objList , "translate" , "translate")
+            translateSuccess = self.create_connect_connections_list (driver_obj , source_attr , driven_obj_list ,
+                                                                     destination_attr)
         if rotation :
             rotateSuccess = self.create_connect_connections_list (objList , "rotate" , "rotate")
         if scale :
