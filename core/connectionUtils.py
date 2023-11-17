@@ -20,10 +20,15 @@ import maya.api.OpenMaya as om
 """
 
 
-class Connection (object) :
+class Connection () :
 
-    def __init__ (self) :
-        pass
+    def __init__ (self, object) :
+        """
+        object(str):给定的一个对象
+        """
+        self.object = object
+        # 列出物体上的所有属性
+        self.object_all_attrs = cmds.listAttr (self.object , connectable = True , inUse = True)
 
 
     """
@@ -31,45 +36,52 @@ class Connection (object) :
     """
 
 
-    def get_obj_driven_attrs_connection (self , driven_obj) :
+    def get_input_connection (self  ) :
         """
-        获取物体作为被驱动者所连接的属性
-        driven_obj(str):作为被驱动者的物体
+        获取物体上的输入连接
+        self.object(str):获取输入连接的物体
+        return: self.input_connections
+                返回所有的输入连接
         """
-        self.driven_attrs_connection = list ()
-        # 获取物体作为被驱动者的所有属性
-        self.current_driven_all_attrs = cmds.listAttr (driven_obj , connectable = True , inUse = True)
-        # 获取物体作为被驱动者连接的属性
-        for attr in self.current_driven_all_attrs :
-            objAttr = ".".join ([driven_obj , attr])
+        self.input_connections = list ()
+        # 检查属性是否有输入连接
+        for attr in self.object_all_attrs :
+            self.object_Attr = ".".join ([self.object , attr])
             try :
-                if cmds.listConnections (objAttr , destination = False , source = True) :
-                    self.driven_attrs_connection.append (objAttr)
+                if cmds.listConnections (self.object_Attr , source = True , destination = False , plugs = True) :
+                    self.input_connections.append (self.object_Attr)
             except ValueError :  # 遇到找不到某些属性的错误
                 pass
 
-        if not self.driven_attrs_connection :
+        if not self.input_connections :
             # 如果物体没有被连接的属性的话，则爆出提示
-            om.MGlobal.displayWarning ("{}没有已连接的属性 ".format (driven_obj))
+            om.MGlobal.displayWarning ("{}没有已连接的属性 ".format (self.object))
             return list ()
-        return self.driven_attrs_connection
+        return self.input_connections
 
 
-    def getDestinationSourceAttrs (self , drivenObj) :
-        """从受驱动对象返回其所有destinationObjAttrs和sourceObAttrs
-
-        driven_obj(str):作为被驱动者的物体
+    def get_output_attributes (self) :
         """
-        sourceObAttrs = list ()
-        destinationObjAttrs = self.get_obj_driven_attrs_connection (drivenObj )  # Haven't found an easy way
-        #判断没有选择属性的时候
-        if not destinationObjAttrs :
-            return list () , list ()
+        获取物体上的输出连接
+        self.object(str):获取输出连接的物体
+        return: self.input_connections
+                返回所有的输出连接
+        """
+        self.ouput_connections = list ()
+        # 检查属性是否有输出连接
+        for attr in self.object_all_attrs :
+            self.object_Attr = ".".join ([self.object , attr])
+            try :
+                if cmds.listConnections (self.object_Attr , source = True , destination = False , plugs = True) :
+                    self.ouput_connections.append (self.object_Attr)
+            except ValueError :  # 遇到找不到某些属性的错误
+                pass
 
-        for objAttr in destinationObjAttrs :
-            sourceObAttrs.append (
-                cmds.listConnections (objAttr , destination = False , source = True , plugs = True) [0])
-        return sourceObAttrs , destinationObjAttrs
+        if not self.ouput_connections :
+            # 如果物体没有被连接的属性的话，则爆出提示
+            om.MGlobal.displayWarning ("{}没有已连接的属性 ".format (self.object))
+            return list ()
+        return self.ouput_connections
 
 
     """
@@ -468,7 +480,7 @@ class Connection (object) :
         obj(list/str): Maya对象或节点
         """
         success = True
-        destinationAttrs = self.get_obj_driven_attrs_connection (obj)
+        destinationAttrs = self.get_input_connection (obj)
         for objAttr in destinationAttrs :
             if not breakAttr (objAttr) :
                 success = False
@@ -591,7 +603,7 @@ class Connection (object) :
 
         """
         destinationAttrs = list ()
-        sourceObjAttrs , destObjAttrs = self.getDestinationSourceAttrs (obj)
+        sourceObjAttrs , destObjAttrs = self.get_destination_source_attrs (obj)
         for obAttr in destObjAttrs :
             destinationAttrs.append (obAttr.split (".") [1])
         if destinationAttrs :

@@ -206,13 +206,26 @@ class Connections_Tool (QWidget) :
 
 
     def clicked_pick_driver_attr_btn (self) :
+        # 获取选择的驱动者的属性
         driver_attr = attrUtils.Attr.get_channelBox_attrs ()
-        self.driver_attr_line.setText (driver_attr [0])
+        # 获取选择的驱动者的对象
+        driver = cmds.ls (sl = True) [0]
+        # 将选定的驱动者的对象和属性添加到输入框内
+        self.driver_attr_line.setText ('{}.{}'.format (driver , driver_attr [0]))
 
 
     def clicked_pick_driven_attr_btn (self) :
+        # 获取选择的被驱动者的属性
         driver_attr = attrUtils.Attr.get_channelBox_attrs ()
-        self.driven_attr_line.setText (driver_attr [0])
+        # 获取选择的被驱动者的对象
+        drivens = cmds.ls (sl = True)
+        self.driven_attr_line.drivens_attrs = []
+        for driven in drivens :
+            driven_attr = '{}.{}'.format (driven , driver_attr [0])
+            # 将选定的驱动者的对象和属性存为一个变量drivens_attrs方便后续调用
+            self.driven_attr_line.drivens_attrs.append(driven_attr)
+            # 将选定的被驱动者的对象和属性添加到输入框内
+            self.driven_attr_line.insert(driven_attr + ',')
 
 
     def clicked_connect_custom_connection_btn (self) :
