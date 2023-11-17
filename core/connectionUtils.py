@@ -188,13 +188,7 @@ class Connection () :
         """将第一个选定对象安全地连接到其余选定对象。
 
         """
-        sel_objs = cmds.ls (selection = True , long = True)
-        if not sel_objs :
-            cmds.warning ("未选择任何对象。请选择两个或多个对象或节点")
-            return False
-        if len (sel_objs) < 2 :
-            cmds.warning ("未选择任何对象。请选择两个或多个对象或节点")
-            return False
+
         return self.create_connect_list (driver_obj , source_attr , driven_obj_list , destination_attr)
 
 
