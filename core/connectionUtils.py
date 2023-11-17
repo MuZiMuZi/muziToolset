@@ -22,7 +22,7 @@ import maya.api.OpenMaya as om
 
 class Connection () :
 
-    def __init__ (self, object) :
+    def __init__ (self , object) :
         """
         object(str):给定的一个对象
         """
@@ -36,7 +36,7 @@ class Connection () :
     """
 
 
-    def get_input_connection (self  ) :
+    def get_input_connection (self) :
         """
         获取物体上的输入连接
         self.object(str):获取输入连接的物体
@@ -143,7 +143,7 @@ class Connection () :
         return cheek_value
 
 
-    def makeSafeConnectionsTwoObjs (self , driver_obj , source_attr , driven_obj , destination_attr) :
+    def create_attribute_connections (self , driver_obj , source_attr , driven_obj , destination_attr) :
         """
         驱动者的属性连接上被驱动者的属性
         driver_obj(str):作为驱动者的物体
@@ -164,22 +164,24 @@ class Connection () :
             cmds.connectAttr (driver_attr , driven_attr)
 
 
-    def safeConnectList (self , objList , source_attr , destination_attr) :
-        """将对象列表中的第一个对象安全地连接到其余对象
+    def create_connect_list (self , driver_obj , source_attr , driven_obj_list , destination_attr) :
+        """将驱动者的需要连接的属性连接给所有被驱动者需要连接的属性
         driver_obj(str):作为驱动者的物体
         source_attr(str):作为驱动者的物体上驱动的属性
-        driven_obj(str):作为被驱动者的物体
+        driven_obj_list(str):作为被驱动者的物体列表
         destination_attr(str):作为被驱动者的物体上被驱动的属性
         """
 
-        success = False
-        objList = cmds.ls (objList , shortNames = True)
-        sourceObj = objList.pop (0)
-        for obj in objList :
-            if self.makeSafeConnectionsTwoObjs (sourceObj , source_attr , obj , destination_attr ,
-                                                ) :
-                success = True
-        return success
+        # 对被驱动者的物体列表进行循环，连接被驱动者的物体上被驱动的属性
+        for driven_obj in driven_obj_list :
+            try :
+                self.create_attribute_connections (driver_obj , source_attr , driven_obj , destination_attr ,
+                                                   )
+                cmds.warning (
+                    '已将{}.{}与{}.{}进行连接'.format (driver_obj , source_attr , driven_obj , destination_attr))
+            except:
+                cmds.warning (
+                    '未将{}.{}与{}.{}进行连接'.format (driver_obj , source_attr , driven_obj , destination_attr))
 
 
     def safeConnectSelection (self , source_attr , destination_attr) :
@@ -193,7 +195,7 @@ class Connection () :
         if len (sel_objs) < 2 :
             cmds.warning ("未选择任何对象。请选择两个或多个对象或节点")
             return False
-        return self.safeConnectList (sel_objs , source_attr , destination_attr)
+        return self.create_connect_list (driver_obj , source_attr , driven_obj_list , destination_attr)
 
 
     def makeConnectionAttrsOrChannelBox (self , driverAttr = "" , drivenAttr = "") :
@@ -222,7 +224,7 @@ class Connection () :
             success = True
             drivenAttr = selAttrs [0]
             for attr in selAttrs :
-                if not self.safeConnectList (selObjs , driverAttr , attr) :
+                if not self.create_connect_list (selObjs , driverAttr , attr) :
                     success = False
         # 缺少被驱动属性的情况
         elif drivenAttr :
@@ -230,14 +232,14 @@ class Connection () :
                 cmds.warning ('只能有一个选择的被驱动属性')
                 return False
             driverAttr = selAttrs [0]
-            success = self.safeConnectList (selObjs , driverAttr , drivenAttr )
+            success = self.create_connect_list (selObjs , driverAttr , drivenAttr)
         # driverAttr和drivenAttr两者都不存在，因此对驱动程序和被驱动程序都使用通道盒
         else :  # Neither exists so use channel box for both driver and driven -----------------------------------
             driverAttr = selAttrs [0]
             drivenAttr = selAttrs [0]
             success = True
             for attr in selAttrs :
-                if not self.safeConnectList (selObjs , attr , attr ) :
+                if not self.create_connect_list (selObjs , attr , attr) :
                     success = False
         if success :
             cmds.warning ('已经成功将{}连接到{}'.format (driverAttr , drivenAttr))
@@ -261,13 +263,13 @@ class Connection () :
         scaleMessage = ""
         matrixMessage = ""
         if translate :
-            translateSuccess = self.safeConnectList (objList , "translate" , "translate")
+            translateSuccess = self.create_connect_list (objList , "translate" , "translate")
         if rotation :
-            rotateSuccess = self.safeConnectList (objList , "rotate" , "rotate")
+            rotateSuccess = self.create_connect_list (objList , "rotate" , "rotate")
         if scale :
-            scaleSuccess = self.safeConnectList (objList , "scale" , "scale")
+            scaleSuccess = self.create_connect_list (objList , "scale" , "scale")
         if matrix :
-            matrixSuccess = self.safeConnectList (objList , "matrix" , "offsetParentMatrix")
+            matrixSuccess = self.create_connect_list (objList , "matrix" , "offsetParentMatrix")
         if translateSuccess :
             translateMessage = "Translation"
         if rotateSuccess :
@@ -607,7 +609,7 @@ class Connection () :
         for obAttr in destObjAttrs :
             destinationAttrs.append (obAttr.split (".") [1])
         if destinationAttrs :
-            self.makeConnectionAttrsOrChannelBox (driverAttr = sourceObjAttrs[0] ,
+            self.makeConnectionAttrsOrChannelBox (driverAttr = sourceObjAttrs [0] ,
                                                   drivenAttr = destinationAttrs [0])
             cmds.warning (
                 "成功复制了`{}` 连接的属性 `{}`".format (sourceObjAttrs , destinationAttrs))
@@ -630,4 +632,4 @@ class Connection () :
         if not selObjs :
             cmds.warning ("未选择要复制连接属性的对象。请重新选择需要复制的对象")
             return list () , list ()
-        return self.copyDrivenConnectedAttrs (selObjs[0])
+        return self.copyDrivenConnectedAttrs (selObjs [0])
