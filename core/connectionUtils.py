@@ -87,8 +87,8 @@ class Connection () :
 
     """
     检查连接的可行性：
-    判断是否有足够的对象可以进行连接
-    判断对象的属性是否可以进行连接
+    cheek_enough_obj_connection：判断是否有足够的对象可以进行连接
+    cheek_obj_attrs_connection：判断对象的属性是否可以进行连接
     """
     #检查是否有足够的对象可以进行连接
     def cheek_enough_obj_connection(self):
