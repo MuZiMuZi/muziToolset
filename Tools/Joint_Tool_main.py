@@ -286,7 +286,7 @@ class Joint_Tool (QWidget) :
         self.show_joint_orient_btn.clicked.connect (lambda : jointUtils.Joint.show_joint_orient ())
         self.hide_joint_orient_btn.clicked.connect (lambda : jointUtils.Joint.hide_joint_orient ())
         self.clear_joint_orient_btn.clicked.connect (lambda : jointUtils.Joint.clear_joint_orient ())
-        self.create_curve_on_joints_btn.connect (self.clicked_create_curve_on_joints_btn ())
+        self.create_curve_on_joints_btn.clicked.connect (self.clicked_create_curve_on_joints_btn )
 
 
     def set_joint_size_line (self) :
@@ -298,9 +298,14 @@ class Joint_Tool (QWidget) :
         """
         选择关节链条，在对应的关节点上创建曲线
         """
-        jnt_list = cmds.ls (sl = True , type = 'joint')
-        curve = 'crv' + jnt_list [0]
-        pipelineUtils.Pipeline.create_curve_on_joints (jnt_list , curve , degree = 3)
+        jnts = cmds.ls (sl = True , type = 'joint')
+        #对所有选中的关节做循环
+        for jnt in jnts:
+            #获取所有选中的关节下方的所有关节链
+            jnt_list = cmds.listRelatives (jnt , children = True , allDescendents = True,type = 'joint')
+            jnt_list.append (jnt)
+            jnt_list.reverse ()
+            pipelineUtils.Pipeline.create_curve_on_joints (jnt_list , 'crv' + jnt , degree = 3)
 
 
     def set_joint_size (self) :
