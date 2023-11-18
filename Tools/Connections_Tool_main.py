@@ -185,7 +185,7 @@ class Connections_Tool (QWidget) :
             cmds.warning ('没有选中任何内容连接。请选中复选框进行连接')
             return
         obj_con = connectionUtils.Connection ()
-        obj_con.makeSrtConnectionsObjsSel (translate = translate_value ,
+        obj_con.create_connect_srt_connections (translate = translate_value ,
                                            rotation = rotate_value ,
                                            scale = scale_value ,
                                            matrix = matrix_value)
@@ -200,7 +200,7 @@ class Connections_Tool (QWidget) :
             cmds.warning ('没有选中任何内容连接。请选中复选框进行断开连接')
             return
         obj_con = connectionUtils.Connection ()
-        obj_con.delSrtConnectionsObjsSel (translate = translate_value ,
+        obj_con.delete_connect_srt_connections (translate = translate_value ,
                                           rotation = rotate_value ,
                                           scale = scale_value)
 
@@ -215,13 +215,15 @@ class Connections_Tool (QWidget) :
 
 
     def clicked_pick_driven_attr_btn (self) :
-        # 获取选择的被驱动者的属性
-        driver_attr = attrUtils.Attr.get_channelBox_attrs ()
+        self.driven_attr_line.clear()
         # 获取选择的被驱动者的对象
         drivens = cmds.ls (sl = True)
         self.driven_attr_line.drivens_attrs = []
+        #对每个选择的被驱动对象循环，获取被驱动对象上需要被驱动的属性
         for driven in drivens :
-            driven_attr = '{}.{}'.format (driven , driver_attr [0])
+            cmds.select (driven,replace = True)
+            # 获取选择的被驱动者的属性
+            driven_attr = attrUtils.Attr.get_channelBox_attrs ()
             # 将选定的驱动者的对象和属性存为一个变量drivens_attrs方便后续调用
             self.driven_attr_line.drivens_attrs.append(driven_attr)
             # 将选定的被驱动者的对象和属性添加到输入框内
@@ -232,18 +234,28 @@ class Connections_Tool (QWidget) :
         """
         连接自定义属性的槽函数
         """
-        sourceAttr = self.driver_attr_line.text ()
-        targetAttr = self.driven_attr_line.text ()
+        #获取driver_attr_line上的输入，格式为driver_obj.source_attr,
+        # 例如['loctaor1.translate']
+        source = self.driver_attr_line.text ()
+        # 获取driver_attr_line上的输入，格式为driven_obj1.destination_attr,driven_obj2.destination_attr
+        # 例如['loctaor1.translate','loctaor1.translate']
+        destination_attr = self.driven_attr_line.text ()
         #判断输入框上是否有符合的对象，没有的话则报错
         if not sourceAttr:
             cmds.warning ("未加载驱动者的连接属性。请重新选择通道盒的属性进行加载")
         if not targetAttr :
             cmds.warning ("未加载被驱动者的连接属性。请重新选择通道盒的属性进行加载")
+
+        #拆分driver_obj和source_attr
+        driver_obj = source.split ('.') [0]
+        source_attr = source.split ('.') [1]
+
+        #拆分driven_obj_list 和 destination_attr
+        print(self.driven_attr_line.drivens_attrs)
         #输入框上都有符合的对象的以后才进行连接
-        if sourceAttr and targetAttr:
-            obj_con = connectionUtils.Connection ()
-            obj_con.makeConnectionAttrsOrChannelBox (driverAttr = sourceAttr ,
-                                                     drivenAttr = targetAttr)
+        # if source_attr and destination_attr:
+        #     obj_con = connectionUtils.Connection ()
+        #     obj_con.create_connect_connections_list(driver_obj , source_attr , driven_obj_list , destination_attr)
 
 
     def clicked_delete_custom_connection_btn (self) :

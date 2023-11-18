@@ -514,19 +514,8 @@ class Connection () :
         matrix(bool):是否连接所有矩阵的值
         """
 
-        selObjs = cmds.ls (selection = True , long = True)
-        # 检查是否有足够多的对象进行连接
-        if not selObjs :
-            cmds.warning ("未选择任何变换对象。请选择两个或多个对象（转换）")
-            return
-        selTransforms = cmds.ls (selObjs , type = "transform")
-        # 断开连接
-        if not selTransforms :
-            cmds.warning ("未选择任何变换对象。请选择两个或多个对象（转换）")
-            return
-        if len (selTransforms) < 2 :
-            cmds.warning ("请选择两个或多个对象（转换）")
-            return
+        # 检查是否有足够多的对象进行断开连接
+        self.cheek_enough_obj_connection()
         return self.breakSrtConnectionsObjs (selTransforms , rotation = rotation , translate = translate ,
                                              scale = scale ,
                                              matrix = matrix)
