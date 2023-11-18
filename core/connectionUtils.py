@@ -95,7 +95,7 @@ class Connection () :
         """
         判断选择的对象是否数量足够可以进行连接
         return：
-            返回驱动者和被驱动者
+            返回驱动者和被驱动者:driver_obj,driven_obj_list
         """
         # 获取所有选择的物体对象作为一个列表
         sel_objs = cmds.ls (selection = True , long = True)
@@ -217,11 +217,12 @@ class Connection () :
 
         """
         #进行判断检查，检查是否有足够的对象可以进行连接
+        driver_obj , driven_obj_list = self.cheek_enough_obj_connection()
+        #将驱动者的需要连接的属性连接给所有被驱动者需要连接的属性
+        self.create_connect_connections_list (driver_obj , source_attr , driven_obj_list , destination_attr)
 
-        return self.create_connect_connections_list (driver_obj , source_attr , driven_obj_list , destination_attr)
 
-
-    def create_connect_srt_connections (self , objList , translate = True , rotation = True , scale = True ,
+    def create_connect_srt_connections (self , translate = True , rotation = True , scale = True ,
                                     matrix = False) :
         """用于在第一个对象和列表中的所有其他对象之间建立位移，旋转，缩放，矩阵等连接
         objList(list):Maya节点名称列表，第一个节点将为驱动物体
@@ -230,19 +231,14 @@ class Connection () :
         scale(bool):是否连接所有缩放的值
         matrix(bool):是否连接所有矩阵的值
         """
-        # 选择的第一个物体作为驱动者
-        driver_obj = sel_objs [0]
-        # 选择的第二个物体到最后一个物体作为被驱动者
-        driven_obj_list = sel_objs [1 :]
         if translate :
-            translateSuccess = self.create_connect_connections_list (driver_obj , source_attr , driven_obj_list ,
-                                                                     destination_attr)
+            translateSuccess = self.create_connect_connections (source_attr = "translate" , destination_attr = "translate")
         if rotation :
-            rotateSuccess = self.create_connect_connections_list (objList , "rotate" , "rotate")
+            rotateSuccess = self.create_connect_connections (source_attr = "rotate" , destination_attr ="rotate")
         if scale :
-            scaleSuccess = self.create_connect_connections_list (objList , "scale" , "scale")
+            scaleSuccess = self.create_connect_connections (source_attr ="scale" , destination_attr = "scale")
         if matrix :
-            matrixSuccess = self.create_connect_connections_list (objList , "matrix" , "offsetParentMatrix")
+            matrixSuccess = self.create_connect_connections (source_attr = "matrix" , destination_attr ="offsetParentMatrix")
         if translateSuccess :
             translateMessage = "Translation"
         if rotateSuccess :
@@ -255,36 +251,8 @@ class Connection () :
                 om2.MGlobal.displayInfo ("Success: {} {} {} {} 成功连接了 {}".format (translateMessage ,
                                                                                       rotateMessage ,
                                                                                       scaleMessage ,
-                                                                                      matrixMessage ,
-                                                                                      objList))
+                                                                                      matrixMessage ))
             return translateSuccess , rotateSuccess , scaleSuccess , matrixSuccess
-
-
-    def makeSrtConnectionsObjsSel (self , translate = False , rotation = False , scale = False , matrix = False) :
-        """用于在第一个选定对象和所有其他对象之间建立位移，旋转，缩放，矩阵等连接
-
-                objList(list):Maya节点名称列表，第一个节点将为驱动物体
-        translate(bool):是否连接所有位移的值
-        rotation(bool):是否连接所有旋转的值
-        scale(bool):是否连接所有缩放的值
-        matrix(bool):是否连接所有矩阵的值
-        """
-        selObjs = cmds.ls (selection = True , long = True)
-        # 检查是否有足够多的对象进行连接
-        if not selObjs :
-            cmds.warning ("未选择任何变换对象。请选择两个或多个对象（转换）")
-            return
-        selTransforms = cmds.ls (selObjs , type = "transform")
-        # 断开连接
-        if not selTransforms :
-            cmds.warning ("未选择任何变换对象。请选择两个或多个对象（转换）")
-            return
-        if len (selTransforms) < 2 :
-            cmds.warning ("请选择两个或多个对象（转换）")
-            return
-        return self.makeSrtConnectionsObjs (selTransforms , rotation = rotation , translate = translate ,
-                                            scale = scale ,
-                                            matrix = matrix)
 
 
     """
@@ -292,7 +260,7 @@ class Connection () :
     """
 
 
-    def breakAttr (self , objectAttribute) :
+    def break_attr_connection (self , objectAttribute) :
         """根据右键单击通道框中的断开连接，断开单个属性的连接
         objectAttribute(str): 需要断开连接的单个物体属性
         """
@@ -535,7 +503,7 @@ class Connection () :
             return translateSuccess , rotateSuccess , scaleSuccess , matrixSuccess
 
 
-    def delSrtConnectionsObjsSel (self , translate = False , rotation = False , scale = False , matrix = False ,
+    def delete_connect_srt_connections (self , translate = False , rotation = False , scale = False , matrix = False ,
                                   ) :
         """用于在第一个选定对象和所有其他对象之间断掉位移，旋转，缩放，矩阵等连接
 
