@@ -41,7 +41,7 @@ class Attr_Tool (QWidget) :
         self.connect_attr_window_btn = QPushButton (QIcon (icon_dir + '/connect-empty.png') ,
                                                     'Connect_Attr')
         self.connect_attr_window_btn.setToolTip ('打开连接编辑器')
-        self.channel_control_window_btn = QPushButton (QIcon (icon_dir + '/control.png') , 'Channel_Control')
+        self.channel_control_window_btn = QPushButton (QIcon (icon_dir + '/set.png') , 'Channel_Control')
         self.channel_control_window_btn.setToolTip ('打开通道控制编辑器')
         self.delete_attr_window_btn = QPushButton (QIcon (icon_dir + '/delete.png') , 'Delete_Attr')
         self.delete_attr_window_btn.setToolTip ('删除选中的属性')
@@ -79,9 +79,9 @@ class Attr_Tool (QWidget) :
         self.visability_hidden_cheekbox = QCheckBox ('Hidden')
 
         # 设置按钮
-        self.attr_set_btn = QPushButton ('Set')
+        self.attr_set_btn = QPushButton (QIcon (icon_dir + '/set.png') ,'Set')
         self.attr_set_btn.setToolTip ('根据选择的属性设置来设置属性的锁定和隐藏')
-        self.attr_reset_btn = QPushButton ('Reset')
+        self.attr_reset_btn = QPushButton (QIcon (icon_dir + '/reset.png') ,'Reset')
         self.attr_reset_btn.setToolTip ('重置选择的属性设置')
 
         self.attr_cheekbox = [self.translation_locked_cheekbox , self.translation_hidden_cheekbox ,
