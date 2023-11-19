@@ -56,9 +56,9 @@ class Constraint_Tool (QWidget) :
         # 创建约束的工具部件
         self.constraint_objects_label = QLabel ("--------------约束工具--------------")
         self.constraint_objects_label.setStyleSheet (u"color: rgb(169, 255, 175);")
-        self.mult_to_one_radio = QRadioButton ('mult_to_one(多对1约束)')
+        self.mult_to_one_radio = QRadioButton ('mult_to_one(多对1)')
         self.mult_to_one_radio.setChecked (True)
-        self.one_to_mult_radio = QRadioButton ('one_to_mult(1对多约束)')
+        self.one_to_mult_radio = QRadioButton ('one_to_mult(1对多)')
         self.maintainOffset_checkBox = QCheckBox ('保持偏移')
         self.maintainOffset_checkBox.setChecked (True)
         self.parent_constraint_btn = QPushButton (QIcon (':parentConstraint.png') , '父子约束')
