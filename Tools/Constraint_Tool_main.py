@@ -117,7 +117,7 @@ class Constraint_Tool (QWidget) :
         self.constraint_layout = QGridLayout ()
         self.create_constraint_layout ()
         self.constraint_objects_layout.addLayout (self.maintainOffset_layout)
-        self.constraint_objects_layout.addLayout(self.constraint_layout)
+        self.constraint_objects_layout.addLayout (self.constraint_layout)
         self.constraint_objects_layout.addLayout (self.constraint_layout)
 
         # 创建主页面的布局
@@ -172,7 +172,7 @@ class Constraint_Tool (QWidget) :
         obj_list = cmds.ls (selection = True)
         if self.mult_to_one_radio.isChecked () :
             # 多对1约束的模式
-            driver = obj_list [0 :-2]
+            driver = obj_list [0 :-1]
             driven = obj_list [-1]
         else :
             # 1对多约束的模式
@@ -195,14 +195,15 @@ class Constraint_Tool (QWidget) :
         """
         driver , driven = self.get_driver_driven_obj ()
         mo_value = self.maintainOffset_checkBox.isChecked ()
-        if len (driven) != 1 :
-            # 1对多的约束情况
+        if self.mult_to_one_radio.isChecked () :
+            # 多对1约束的模式
+            pipelineUtils.Pipeline.create_constraint (driver , driven , point_value = False , orient_value = False ,
+                                                      parent_value = True , mo_value = mo_value)
+        else :
+            # 1对多约束的模式
             for i in driven :
                 pipelineUtils.Pipeline.create_constraint (driver , i , point_value = False , orient_value = False ,
                                                           parent_value = True , mo_value = mo_value)
-        else :
-            pipelineUtils.Pipeline.create_constraint (driver , driven , point_value = False , orient_value = False ,
-                                                      parent_value = True , mo_value = mo_value)
 
 
     def clicked_point_constraint_btn (self) :
