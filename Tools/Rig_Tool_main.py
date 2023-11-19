@@ -91,7 +91,7 @@ class Rig_Tool (QWidget) :
 
         self.create_dynamic_curve_driven_button = QPushButton (QIcon (':hairDynamicCurves.png') ,
                                                                "创建动力学化曲线驱动头发")
-        self.snap_modle_button = QPushButton (QIcon (icon_dir + '/directions.png') ,
+        self.snap_modle_button = QPushButton (QIcon (':menuIconModify.png') ,
                                               "吸附物体")
 
         self.export_animation_button = QPushButton (QIcon (':setKeyframe.png') ,

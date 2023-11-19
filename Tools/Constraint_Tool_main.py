@@ -36,18 +36,18 @@ class Constraint_Tool (QWidget) :
         self.match_objects_label = QLabel ("--------------吸附对象--------------")
         self.match_objects_label.setStyleSheet (u"color: rgb(170, 170, 255);")
 
-        self.match_pos_rot_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '匹配平移和旋转')
-        self.match_all_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '匹配所有变换')
-        self.match_pos_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '匹配平移')
-        self.match_rot_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '匹配旋转')
-        self.match_scale_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '匹配缩放')
-        self.match_pivot_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '匹配枢纽')
+        self.match_pos_rot_btn = QPushButton (QIcon (':menuIconModify.png') , '匹配平移和旋转')
+        self.match_all_btn = QPushButton (QIcon (':menuIconModify.png') , '匹配所有变换')
+        self.match_pos_btn = QPushButton (QIcon (':menuIconModify.png') , '匹配平移')
+        self.match_rot_btn = QPushButton (QIcon (':menuIconModify.png') , '匹配旋转')
+        self.match_scale_btn = QPushButton (QIcon (':menuIconModify.png') , '匹配缩放')
+        self.match_pivot_btn = QPushButton (QIcon (':menuIconModify.png') , '匹配枢纽')
 
         # 约束
         self.fast_constraint_label = QLabel ('---------------创建快速约束----------------')
         self.fast_constraint_label.setStyleSheet (u"color: rgb(170, 170, 255);")
-        self.create_constraint_button = QPushButton (QIcon (icon_dir + '/assign.png') , '创建约束')
-        self.delete_constraint_button = QPushButton (QIcon (icon_dir + '/assign.png') , '删除约束')
+        self.create_constraint_button = QPushButton (QIcon (':parentConstraint.png') , '创建约束')
+        self.delete_constraint_button = QPushButton (QIcon (':parentConstraint.png') , '删除约束')
 
         # 添加文字提示
         self.create_constraint_button.setToolTip ('将选择的物体创建约束，被约束物体为选择的最后一个物体')
