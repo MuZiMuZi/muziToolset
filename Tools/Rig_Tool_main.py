@@ -6,7 +6,7 @@ from PySide2.QtWidgets import *
 import pymel.core as pm
 from .config import ui_dir , icon_dir
 from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils , snapUtils , attrUtils , fileUtils , \
-    hierarchyUtils, weightsUtils
+    hierarchyUtils , weightsUtils
 from importlib import reload
 
 import maya.cmds as cmds
@@ -59,7 +59,6 @@ class Rig_Tool (QWidget) :
         self.create_ik_button.setToolTip ('将选择的物体创建ik绑定系统')
         self.delete_ik_button.setToolTip ('将选择的物体删除ik绑定系统')
 
-
         # 工具
         self.tool_label = QLabel ('---------------绑定小工具---------------')
         self.tool_label.setStyleSheet (u"color: rgb(170, 255, 128);")
@@ -71,17 +70,17 @@ class Rig_Tool (QWidget) :
 
         self.reset_attr_button = QPushButton (QIcon (icon_dir + '/icon-resetting.png') , "重置属性")
 
-        self.batch_Constraints_modle_button = QPushButton (QIcon (icon_dir + '/assign.png') , "批量约束_物体")
+        self.batch_Constraints_modle_button = QPushButton (QIcon (':parentConstraint.png') , "批量约束_物体")
 
-        self.batch_Constraints_joint_button = QPushButton (QIcon (icon_dir + '/assign.png') , "批量约束_关节")
+        self.batch_Constraints_joint_button = QPushButton (QIcon (':parentConstraint.png') , "批量约束_关节")
 
         self.default_grp_button = QPushButton (QIcon (icon_dir + '/hierarchy-fill.png') , "绑定层级组")
 
         self.control_hierarchy_button = QPushButton (QIcon (icon_dir + '/hierarchy-fill.png') , "自动打组(自用)")
 
-        self.save_skinWeights_button = QPushButton (QIcon (icon_dir + '/skin (1).png') , u"导出权重")
+        self.save_skinWeights_button = QPushButton (QIcon (':exportSmoothSkin.png') , u"导出权重")
 
-        self.load_skinWeights_button = QPushButton (QIcon (icon_dir + '/skin.png') , u"导入权重")
+        self.load_skinWeights_button = QPushButton (QIcon (':importSmoothSkin.png') , u"导入权重")
 
         self.select_sub_objects_button = QPushButton (QIcon (icon_dir + '/hierarchy-fill.png') , "快速选择子物体")
 
@@ -92,12 +91,12 @@ class Rig_Tool (QWidget) :
 
         self.create_dynamic_curve_driven_button = QPushButton (QIcon (':hairDynamicCurves.png') ,
                                                                "创建动力学化曲线驱动头发")
-        self.snap_modle_button = QPushButton (QIcon (icon_dir + '/directions.png') ,
+        self.snap_modle_button = QPushButton (QIcon (':menuIconModify.png') ,
                                               "吸附物体")
 
-        self.export_animation_button = QPushButton (QIcon (icon_dir + '/directions.png') ,
+        self.export_animation_button = QPushButton (QIcon (':setKeyframe.png') ,
                                                     "导出动画")
-        self.import_animation_button = QPushButton (QIcon (icon_dir + '/directions.png') ,
+        self.import_animation_button = QPushButton (QIcon (':setKeyOnAnim.png') ,
                                                     "导入动画")
         # 添加文本提示
         self.clear_keys_button.setToolTip ('将场景内所有的动画关键帧删除')
@@ -157,8 +156,6 @@ class Rig_Tool (QWidget) :
         self.ik_ho_layout.addStretch ()
         self.ik_layout.addRow (self.ik_ho_layout)
 
-
-
         # 创建小工具的layout
         self.tool_layout = QGridLayout ()
         self.create_tool_layouts ()
@@ -194,7 +191,6 @@ class Rig_Tool (QWidget) :
         self.ik_end_button.clicked.connect (self.clicked_ik_end_pickup)
         self.create_ik_button.clicked.connect (self.clicked_create_ik_ctrl)
         self.delete_ik_button.clicked.connect (self.clicked_delete_ik_ctrl)
-
 
         # 绑定小工具的部件连接
         self.add_tool_connect ()

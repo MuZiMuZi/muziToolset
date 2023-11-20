@@ -90,8 +90,10 @@ class Connection () :
     cheek_enough_obj_connection：判断是否有足够的对象可以进行连接
     cheek_obj_attrs_connection：判断对象的属性是否可以进行连接
     """
-    #检查是否有足够的对象可以进行连接
-    def cheek_enough_obj_connection(self):
+
+
+    # 检查是否有足够的对象可以进行连接
+    def cheek_enough_obj_connection (self) :
         """
         判断选择的对象是否数量足够可以进行连接
         return：
@@ -109,10 +111,10 @@ class Connection () :
         driver_obj = sel_objs [0]
         # 选择的第二个物体到最后一个物体作为被驱动者
         driven_obj_list = sel_objs [1 :]
-        return driver_obj,driven_obj_list
+        return driver_obj , driven_obj_list
 
-    
-    #检查对象的属性是否可以进行连接
+
+    # 检查对象的属性是否可以进行连接
     def cheek_obj_attrs_connection (self , driver_obj , source_attr , driven_obj , destination_attr) :
         """
         检查：驱动者的属性是否能够成功连接上被驱动者的属性
@@ -170,7 +172,8 @@ class Connection () :
     """
     创建属性连接
     """
-    
+
+
     def create_attr_connections (self , driver_obj , source_attr , driven_obj , destination_attr) :
         """
         驱动者的属性连接上被驱动者的属性
@@ -204,7 +207,7 @@ class Connection () :
         for driven_obj in driven_obj_list :
             try :
                 self.create_attr_connections (driver_obj , source_attr , driven_obj , destination_attr ,
-                                                   )
+                                              )
                 cmds.warning (
                     '已将{}.{}与{}.{}进行连接'.format (driver_obj , source_attr , driven_obj , destination_attr))
             except :
@@ -216,14 +219,14 @@ class Connection () :
         """选择多个物体，用于在第一个对象和列表中的所有其他对象之间建立连接
 
         """
-        #进行判断检查，检查是否有足够的对象可以进行连接
-        driver_obj , driven_obj_list = self.cheek_enough_obj_connection()
-        #将驱动者的需要连接的属性连接给所有被驱动者需要连接的属性
+        # 进行判断检查，检查是否有足够的对象可以进行连接
+        driver_obj , driven_obj_list = self.cheek_enough_obj_connection ()
+        # 将驱动者的需要连接的属性连接给所有被驱动者需要连接的属性
         self.create_connect_connections_list (driver_obj , source_attr , driven_obj_list , destination_attr)
 
 
     def create_connect_srt_connections (self , translate = True , rotation = True , scale = True ,
-                                    matrix = False) :
+                                        matrix = False) :
         """用于在第一个对象和列表中的所有其他对象之间建立位移，旋转，缩放，矩阵等连接
         objList(list):Maya节点名称列表，第一个节点将为驱动物体
         translate(bool):是否连接所有位移的值
@@ -232,13 +235,15 @@ class Connection () :
         matrix(bool):是否连接所有矩阵的值
         """
         if translate :
-            translateSuccess = self.create_connect_connections (source_attr = "translate" , destination_attr = "translate")
+            translateSuccess = self.create_connect_connections (source_attr = "translate" ,
+                                                                destination_attr = "translate")
         if rotation :
-            rotateSuccess = self.create_connect_connections (source_attr = "rotate" , destination_attr ="rotate")
+            rotateSuccess = self.create_connect_connections (source_attr = "rotate" , destination_attr = "rotate")
         if scale :
-            scaleSuccess = self.create_connect_connections (source_attr ="scale" , destination_attr = "scale")
+            scaleSuccess = self.create_connect_connections (source_attr = "scale" , destination_attr = "scale")
         if matrix :
-            matrixSuccess = self.create_connect_connections (source_attr = "matrix" , destination_attr ="offsetParentMatrix")
+            matrixSuccess = self.create_connect_connections (source_attr = "matrix" ,
+                                                             destination_attr = "offsetParentMatrix")
         if translateSuccess :
             translateMessage = "Translation"
         if rotateSuccess :
@@ -251,7 +256,7 @@ class Connection () :
                 om2.MGlobal.displayInfo ("Success: {} {} {} {} 成功连接了 {}".format (translateMessage ,
                                                                                       rotateMessage ,
                                                                                       scaleMessage ,
-                                                                                      matrixMessage ))
+                                                                                      matrixMessage))
             return translateSuccess , rotateSuccess , scaleSuccess , matrixSuccess
 
 
@@ -504,7 +509,7 @@ class Connection () :
 
 
     def delete_connect_srt_connections (self , translate = False , rotation = False , scale = False , matrix = False ,
-                                  ) :
+                                        ) :
         """用于在第一个选定对象和所有其他对象之间断掉位移，旋转，缩放，矩阵等连接
 
                 objList(list):Maya节点名称列表，第一个节点将为驱动物体
@@ -515,8 +520,8 @@ class Connection () :
         """
 
         # 检查是否有足够多的对象进行断开连接
-        self.cheek_enough_obj_connection()
-        return self.breakSrtConnectionsObjs (selTransforms , rotation = rotation , translate = translate ,
+        driver_obj , driven_obj_list = self.cheek_enough_obj_connection ()
+        return self.breakSrtConnectionsObjs (driver_obj , driven_obj_list , rotation = rotation , translate = translate ,
                                              scale = scale ,
                                              matrix = matrix)
 

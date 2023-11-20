@@ -748,9 +748,9 @@ class Control (object) :
         parent = None
         for object in objects :
             ctrl_name = 'ctrl_{}'.format (object)
-            ctrl = Control.create_current_ctrl (ctrl_name , shape = 'circle' ,
+            ctrl = Control.create_current_ctrl (ctrl_name , shape = 'shape_020' ,
                                                 radius = 4 ,
-                                                axis = 'X+' , pos = object ,
+                                                axis = 'Z+' , pos = object ,
                                                 parent = parent)
             # 制作约束
             pipelineUtils.Pipeline.create_constraint (driver = ctrl_name.replace ('ctrl' , 'output') , driven = object ,
@@ -805,8 +805,9 @@ class Control (object) :
         cmds.matchTransform (startIK_crv_jnt , startIK_jnt , position = True , rotation = True , scale = True)
 
         startIK_ctrl = 'ctrl_' + startIK_jnt
-        startIK_ctrl_obj = Control.create_current_ctrl (startIK_ctrl , shape = 'Cube' , radius = 20 ,
-                                                                     axis = 'Y+' ,
+        startIK_ctrl_obj = Control.create_current_ctrl (startIK_ctrl , shape = 'shape_020' ,
+                                                        radius = 8,
+                                                                     axis = 'Z+' ,
                                                                      pos = startIK_jnt , parent = None)
         startIK_ctrl_output = startIK_ctrl.replace ('ctrl_' , 'output_')
         startIK_zero = startIK_ctrl.replace ('ctrl_' , 'zero_')
@@ -817,7 +818,7 @@ class Control (object) :
         endIK_crv_jnt = cmds.createNode ('joint' , name = 'crvjnt_' + endIK_jnt)
         cmds.matchTransform (endIK_crv_jnt , endIK_jnt , position = True , rotation = True , scale = True)
         endIK_ctrl = 'ctrl_' + endIK_jnt
-        endIK_ctrl_obj = Control.create_current_ctrl (endIK_ctrl , shape = 'Cube' , radius = 20 , axis = 'Y+' ,
+        endIK_ctrl_obj = Control.create_current_ctrl (endIK_ctrl , shape = 'Cube' , radius = 4, axis = 'Y+' ,
                                                            pos = endIK_jnt , parent = None)
         endIK_ctrl_output = endIK_ctrl.replace ('ctrl_' , 'output_')
         endIK_zero = endIK_ctrl.replace ('ctrl_' , 'zero_')
@@ -830,7 +831,7 @@ class Control (object) :
         midIK_crv_jnt = cmds.createNode ('joint' , name = 'crvjnt_' + midIK_jnt)
         cmds.matchTransform (midIK_crv_jnt , midIK_jnt , position = True , rotation = True , scale = True)
         midIK_ctrl = 'ctrl_' + midIK_jnt
-        midIK_ctrl_obj = Control.create_current_ctrl (midIK_ctrl , shape = 'Cube' , radius = 15 , axis = 'Y+' ,
+        midIK_ctrl_obj = Control.create_current_ctrl (midIK_ctrl , shape = 'Cube' , radius = 4 , axis = 'Y+' ,
                                                            pos = midIK_jnt , parent = None)
         midIK_ctrl_output = midIK_ctrl.replace ('ctrl_' , 'output_')
         cmds.parent (midIK_crv_jnt , midIK_ctrl_output)

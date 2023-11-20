@@ -36,18 +36,18 @@ class Constraint_Tool (QWidget) :
         self.match_objects_label = QLabel ("--------------吸附对象--------------")
         self.match_objects_label.setStyleSheet (u"color: rgb(170, 170, 255);")
 
-        self.match_pos_rot_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '匹配平移和旋转')
-        self.match_all_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '匹配所有变换')
-        self.match_pos_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '匹配平移')
-        self.match_rot_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '匹配旋转')
-        self.match_scale_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '匹配缩放')
-        self.match_pivot_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '匹配枢纽')
+        self.match_pos_rot_btn = QPushButton (QIcon (':menuIconModify.png') , '匹配平移和旋转')
+        self.match_all_btn = QPushButton (QIcon (':menuIconModify.png') , '匹配所有变换')
+        self.match_pos_btn = QPushButton (QIcon (':menuIconModify.png') , '匹配平移')
+        self.match_rot_btn = QPushButton (QIcon (':menuIconModify.png') , '匹配旋转')
+        self.match_scale_btn = QPushButton (QIcon (':menuIconModify.png') , '匹配缩放')
+        self.match_pivot_btn = QPushButton (QIcon (':menuIconModify.png') , '匹配枢纽')
 
         # 约束
         self.fast_constraint_label = QLabel ('---------------创建快速约束----------------')
         self.fast_constraint_label.setStyleSheet (u"color: rgb(170, 170, 255);")
-        self.create_constraint_button = QPushButton (QIcon (icon_dir + '/assign.png') , '创建约束')
-        self.delete_constraint_button = QPushButton (QIcon (icon_dir + '/assign.png') , '删除约束')
+        self.create_constraint_button = QPushButton (QIcon (':parentConstraint.png') , '创建约束')
+        self.delete_constraint_button = QPushButton (QIcon (':parentConstraint.png') , '删除约束')
 
         # 添加文字提示
         self.create_constraint_button.setToolTip ('将选择的物体创建约束，被约束物体为选择的最后一个物体')
@@ -56,9 +56,9 @@ class Constraint_Tool (QWidget) :
         # 创建约束的工具部件
         self.constraint_objects_label = QLabel ("--------------约束工具--------------")
         self.constraint_objects_label.setStyleSheet (u"color: rgb(169, 255, 175);")
-        self.mult_to_one_radio = QRadioButton ('mult_to_one(多对1约束)')
+        self.mult_to_one_radio = QRadioButton ('mult_to_one(多对1)')
         self.mult_to_one_radio.setChecked (True)
-        self.one_to_mult_radio = QRadioButton ('one_to_mult(1对多约束)')
+        self.one_to_mult_radio = QRadioButton ('one_to_mult(1对多)')
         self.maintainOffset_checkBox = QCheckBox ('保持偏移')
         self.maintainOffset_checkBox.setChecked (True)
         self.parent_constraint_btn = QPushButton (QIcon (':parentConstraint.png') , '父子约束')
@@ -117,7 +117,7 @@ class Constraint_Tool (QWidget) :
         self.constraint_layout = QGridLayout ()
         self.create_constraint_layout ()
         self.constraint_objects_layout.addLayout (self.maintainOffset_layout)
-        self.constraint_objects_layout.addLayout(self.constraint_layout)
+        self.constraint_objects_layout.addLayout (self.constraint_layout)
         self.constraint_objects_layout.addLayout (self.constraint_layout)
 
         # 创建主页面的布局
@@ -172,7 +172,7 @@ class Constraint_Tool (QWidget) :
         obj_list = cmds.ls (selection = True)
         if self.mult_to_one_radio.isChecked () :
             # 多对1约束的模式
-            driver = obj_list [0 :-2]
+            driver = obj_list [0 :-1]
             driven = obj_list [-1]
         else :
             # 1对多约束的模式
@@ -195,14 +195,15 @@ class Constraint_Tool (QWidget) :
         """
         driver , driven = self.get_driver_driven_obj ()
         mo_value = self.maintainOffset_checkBox.isChecked ()
-        if len (driven) != 1 :
-            # 1对多的约束情况
+        if self.mult_to_one_radio.isChecked () :
+            # 多对1约束的模式
+            pipelineUtils.Pipeline.create_constraint (driver , driven , point_value = False , orient_value = False ,
+                                                      parent_value = True , mo_value = mo_value)
+        else :
+            # 1对多约束的模式
             for i in driven :
                 pipelineUtils.Pipeline.create_constraint (driver , i , point_value = False , orient_value = False ,
                                                           parent_value = True , mo_value = mo_value)
-        else :
-            pipelineUtils.Pipeline.create_constraint (driver , driven , point_value = False , orient_value = False ,
-                                                      parent_value = True , mo_value = mo_value)
 
 
     def clicked_point_constraint_btn (self) :

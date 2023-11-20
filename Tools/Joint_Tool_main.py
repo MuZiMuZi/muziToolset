@@ -48,15 +48,15 @@ class Joint_Tool (QWidget) :
         # 关节轴向的部件
         self.show_joint_axis_label = QLabel ('---------------关节轴向----------------')
         self.show_joint_axis_label.setStyleSheet ("color: rgb(255, 69, 0); font-weight: bold; font-size: 14px;")
-        self.show_joint_axis_select_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '显示关节轴向(选择)')
+        self.show_joint_axis_select_btn = QPushButton (QIcon (':menuIconModify.png') , '显示关节轴向(选择)')
         self.show_joint_axis_select_btn.setToolTip ('将所选择的关节显示关节轴向')
-        self.show_joint_axis_hierarchy_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '显示关节轴向(层级)')
+        self.show_joint_axis_hierarchy_btn = QPushButton (QIcon (':menuIconModify.png') , '显示关节轴向(层级)')
         self.show_joint_axis_hierarchy_btn.setToolTip ('将选择的关节的层级关节显示关节轴向')
-        self.show_joint_axis_all_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '显示关节轴向(所有)')
+        self.show_joint_axis_all_btn = QPushButton (QIcon (':menuIconModify.png') , '显示关节轴向(所有)')
         self.show_joint_axis_all_btn.setToolTip ('将场景里所有的关节显示关节轴向')
-        self.hide_joint_axis_select_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '隐藏关节轴向(选择)')
-        self.hide_joint_axis_hierarchy_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '隐藏关节轴向(层级)')
-        self.hide_joint_axis_all_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '隐藏关节轴向(所有)')
+        self.hide_joint_axis_select_btn = QPushButton (QIcon (':menuIconModify.png') , '隐藏关节轴向(选择)')
+        self.hide_joint_axis_hierarchy_btn = QPushButton (QIcon (':menuIconModify.png') , '隐藏关节轴向(层级)')
+        self.hide_joint_axis_all_btn = QPushButton (QIcon (':menuIconModify.png') , '隐藏关节轴向(所有)')
         # 设置文本提示
         self.hide_joint_axis_select_btn.setToolTip ('将所选择的关节隐藏关节轴向')
         self.hide_joint_axis_hierarchy_btn.setToolTip ('将选择的关节的层级关节隐藏关节轴向')
@@ -110,7 +110,7 @@ class Joint_Tool (QWidget) :
         # 关节工具的部件
         self.joint_tool_label = QLabel ('---------------关节工具----------------')
         self.joint_tool_label.setStyleSheet (u"color: rgb(0,255, 127);")
-        self.create_snap_joint_btn = QPushButton (QIcon (icon_dir + '/bone.png') , '吸附——创建关节')
+        self.create_snap_joint_btn = QPushButton (QIcon (':kinJoint.png') , '吸附——创建关节')
         self.create_child_joint_btn = QPushButton (QIcon (':kinJoint.png') , '创建子关节')
         self.create_more_joint_btn = QPushButton (QIcon (':kinConnect.png') , '关节链重采样')
 
@@ -118,14 +118,14 @@ class Joint_Tool (QWidget) :
         self.create_curve_chain_btn = QPushButton (QIcon (':curveEP.png') , '曲线——创建关节链')
         self.create_edge_chain_btn = QPushButton (QIcon (':polyEdgeToCurves.png') , '多边形边——创建关节链')
 
-        self.open_joint_scaleCompensate_btn = QPushButton (QIcon (icon_dir + '/bone.png') , '开启关节分段比例补偿')
-        self.close_joint_scaleCompensate_btn = QPushButton (QIcon (icon_dir + '/bone.png') , '关闭关节分段比例补偿')
-        self.create_constraint_joint_btn = QPushButton (QIcon (icon_dir + '/assign.png') , '批量约束——关节')
+        self.open_joint_scaleCompensate_btn = QPushButton (QIcon (':kinJoint.png') , '开启关节分段比例补偿')
+        self.close_joint_scaleCompensate_btn = QPushButton (QIcon (':kinJoint.png') , '关闭关节分段比例补偿')
+        self.create_constraint_joint_btn = QPushButton (QIcon (':parentConstraint.png') , '批量约束——关节')
 
-        self.show_joint_orient_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '显示关节定向')
-        self.hide_joint_orient_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '隐藏关节定向')
-        self.clear_joint_orient_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '归零关节定向')
-        self.create_curve_on_joints_btn = QPushButton (QIcon (icon_dir + '/directions.png') , '选择关节链条创建曲线')
+        self.show_joint_orient_btn = QPushButton (QIcon (':menuIconModify.png') , '显示关节定向')
+        self.hide_joint_orient_btn = QPushButton (QIcon (':menuIconModify.png') , '隐藏关节定向')
+        self.clear_joint_orient_btn = QPushButton (QIcon (':menuIconModify.png') , '归零关节定向')
+        self.create_curve_on_joints_btn = QPushButton (QIcon (':curveEP.png') , '选择关节链条创建曲线')
 
         # 设置文本提示
         self.create_snap_joint_btn.setToolTip ('根据吸附的物体中心创建关节')

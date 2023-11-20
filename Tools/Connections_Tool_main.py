@@ -44,9 +44,9 @@ class Connections_Tool (QWidget) :
         self.matrix_attr_cheekbox = QCheckBox ('Matrix')
         self.reset_attr_btn = QPushButton (QIcon (icon_dir + '/reset.png') , 'Reset')
 
-        self.connect_default_connection_btn = QPushButton (QIcon (icon_dir + '/connect.png') ,
+        self.connect_default_connection_btn = QPushButton (QIcon (':parentConstraint.png') ,
                                                            'Create_connection')
-        self.delete_default_connection_btn = QPushButton (QIcon (icon_dir + '/disconnect.png') ,
+        self.delete_default_connection_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,
                                                           'Delete_connection')
 
         # 创建自定义属性连接的部件
@@ -60,9 +60,9 @@ class Connections_Tool (QWidget) :
         self.driven_attr_line = QLineEdit ()
         self.pick_driven_attr_btn = QPushButton (QIcon (icon_dir + '/select.png') , 'pick')
 
-        self.connect_custom_connection_btn = QPushButton (QIcon (icon_dir + '/connect.png') ,
+        self.connect_custom_connection_btn = QPushButton (QIcon (':parentConstraint.png') ,
                                                           'Create_connection')
-        self.delete_custom_connection_btn = QPushButton (QIcon (icon_dir + '/disconnect.png') ,
+        self.delete_custom_connection_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,
                                                          'Delete_connection')
 
         # 创建复制属性连接的部件
