@@ -454,7 +454,7 @@ class Attr (object) :
         """从Maya的主通道框中检索选定属性的长名称，可以选择通道盒上的属性，也可以选择历史记录上的属性，也可以选择形状历史上的属性
         selAttrs = mel.eval('selectedChannelBoxAttributes')
         return：
-        attrNames(list/str): 长属性名称列表，例如[“translateX”，“rotateX”]
+        attr_names(list/str): 长属性名称列表，例如[“translateX”，“rotateX”]
 
         """
         #transfrom节点的属性获取
@@ -475,24 +475,26 @@ class Attr (object) :
         # 获取当前在主通道框中选择的形状对象（几何体节点）的选定属性。
         shape_attrs = cmds.channelBox ("mainChannelBox" , query = True , selectedShapeAttributes = True)
         # 现在组合并获得长名称
-        attrNames = []
+        attr_names = []
         for pair in ((main_objs , main_attrs) , (hist_objs , hist_attrs) , (shape_objs , shape_attrs)) :
             objs , attrs = pair
             if attrs is not None :
                 for nodeName in objs :
-                    # Get the long name not the short name ----------------------
+                    # 获取长名称，而不是短名称
                     resultList = list ()
                     for attr in attrs :
                         try :
                             longName = cmds.attributeQuery (attr , node = nodeName , longName = True)
                             resultList.append (longName)
-                        except RuntimeError :  # multiple selected objects the attr may not exist.
+                        #属性可能不存在多个选定对象。
+                        except RuntimeError :
                             pass
-                    attrNames += resultList
-        attrNames = list (set (attrNames))  # Remove duplicates
-        if not attrNames :
+                    attr_names += resultList
+        # 删除重复项
+        attr_names = list (set (attr_names))
+        if not attr_names :
             cmds.warning ("请在通道盒中选择属性")
-        return attrNames
+        return attr_names
 
 
     @staticmethod

@@ -11,7 +11,7 @@ import maya.cmds as cmds
 import maya.OpenMayaUI as omui
 import maya.mel as mel
 from importlib import reload
-from ..core import pipelineUtils
+from ..core import pipelineUtils,attrUtils
 import maya.api.OpenMaya as om
 
 
@@ -251,20 +251,24 @@ class Connection () :
     """
 
 
-    def break_attr_connection (self , objectAttribute) :
-        """根据右键单击通道框中的断开连接，断开单个属性的连接
-        objectAttribute(str): 需要断开连接的单个物体属性
+    def break_attr_connection (self,attr_list ) :
+        """给定一个属性列表，断开这些属性的连接
+        attr_list(list): 需要断开连接的属性列表,例如['locator1.translate','locator1.rotate']
+
         """
-        # 获取该属性的连接
-        oppositeAttrs = cmds.listConnections (objectAttribute , plugs = True)
-        if not oppositeAttrs :
+
+        #对获取的选择属性列表做循环
+        for attr in attr_list:
+            # 获取该属性的输入连接
+            ouput_attrs = cmds.connectionInfo (attr, sourceFromDestination = True)
+            if not ouput_attrs :
+                return False
+            try :
+                cmds.disconnectAttr (ouput_attrs , attr)
+                return True
+            except RuntimeError :
+                pass
             return False
-        try :
-            cmds.disconnectAttr (oppositeAttrs [0] , objectAttribute)
-            return True
-        except RuntimeError :
-            pass
-        return False
 
 
     def breakAttrList (self , objAttrList) :
