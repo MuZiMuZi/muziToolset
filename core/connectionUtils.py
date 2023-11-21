@@ -235,29 +235,15 @@ class Connection () :
         matrix(bool):是否连接所有矩阵的值
         """
         if translate :
-            translateSuccess = self.create_connect_connections (source_attr = "translate" ,
-                                                                destination_attr = "translate")
+            self.create_connect_connections (source_attr = "translate" ,
+                                             destination_attr = "translate")
         if rotation :
-            rotateSuccess = self.create_connect_connections (source_attr = "rotate" , destination_attr = "rotate")
+            self.create_connect_connections (source_attr = "rotate" , destination_attr = "rotate")
         if scale :
-            scaleSuccess = self.create_connect_connections (source_attr = "scale" , destination_attr = "scale")
+            self.create_connect_connections (source_attr = "scale" , destination_attr = "scale")
         if matrix :
-            matrixSuccess = self.create_connect_connections (source_attr = "matrix" ,
-                                                             destination_attr = "offsetParentMatrix")
-        if translateSuccess :
-            translateMessage = "Translation"
-        if rotateSuccess :
-            rotateMessage = "Rotation"
-        if scaleSuccess :
-            scaleMessage = "Scale"
-        if matrixSuccess :
-            matrixMessage = "Matrix"
-            if translateSuccess or rotateSuccess or scaleSuccess or matrixSuccess :
-                om2.MGlobal.displayInfo ("Success: {} {} {} {} 成功连接了 {}".format (translateMessage ,
-                                                                                      rotateMessage ,
-                                                                                      scaleMessage ,
-                                                                                      matrixMessage))
-            return translateSuccess , rotateSuccess , scaleSuccess , matrixSuccess
+            self.create_connect_connections (source_attr = "matrix" ,
+                                             destination_attr = "offsetParentMatrix")
 
 
     """
@@ -521,7 +507,8 @@ class Connection () :
 
         # 检查是否有足够多的对象进行断开连接
         driver_obj , driven_obj_list = self.cheek_enough_obj_connection ()
-        return self.breakSrtConnectionsObjs (driver_obj , driven_obj_list , rotation = rotation , translate = translate ,
+        return self.breakSrtConnectionsObjs (driver_obj , driven_obj_list , rotation = rotation ,
+                                             translate = translate ,
                                              scale = scale ,
                                              matrix = matrix)
 

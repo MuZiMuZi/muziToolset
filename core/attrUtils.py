@@ -451,21 +451,32 @@ class Attr (object) :
 
     @staticmethod
     def get_channelBox_attrs () :
-        """返回通道框中选定属性的长名称
+        """从Maya的主通道框中检索选定属性的长名称，可以选择通道盒上的属性，也可以选择历史记录上的属性，也可以选择形状历史上的属性
         selAttrs = mel.eval('selectedChannelBoxAttributes')
         return：
         attrNames(list/str): 长属性名称列表，例如[“translateX”，“rotateX”]
 
         """
-        mainObjs = cmds.channelBox ("mainChannelBox" , query = True , mainObjectList = True)
-        mainAttrs = cmds.channelBox ("mainChannelBox" , query = True , selectedMainAttributes = True)
-        histObjs = cmds.channelBox ("mainChannelBox" , query = True , historyObjectList = True)
-        histAttrs = cmds.channelBox ("mainChannelBox" , query = True , selectedHistoryAttributes = True)
-        shapeObjs = cmds.channelBox ("mainChannelBox" , query = True , shapeObjectList = True)
-        shapeAttrs = cmds.channelBox ("mainChannelBox" , query = True , selectedShapeAttributes = True)
+        #transfrom节点的属性获取
+        #获取当前主通道框中选择的主要对象（transfrom节点）
+        main_objs = cmds.channelBox ("mainChannelBox" , query = True , mainObjectList = True)
+        #获取当前主通道框中选择的主要对象（transfrom节点）选定的属性
+        main_attrs = cmds.channelBox ("mainChannelBox" , query = True , selectedMainAttributes = True)
+
+        #history历史通道的节点的属性获取
+        #获取当前在主通道框中选择的历史记录（输入历史记录）对象。
+        hist_objs = cmds.channelBox ("mainChannelBox" , query = True , historyObjectList = True)
+        # 获取当前在主通道框中选择的历史记录（输入历史记录）对象的选定属性
+        hist_attrs = cmds.channelBox ("mainChannelBox" , query = True , selectedHistoryAttributes = True)
+
+        # shape历史通道的节点的属性获取
+        #获取当前在主通道框中选择的形状对象（几何体节点）
+        shape_objs = cmds.channelBox ("mainChannelBox" , query = True , shapeObjectList = True)
+        # 获取当前在主通道框中选择的形状对象（几何体节点）的选定属性。
+        shape_attrs = cmds.channelBox ("mainChannelBox" , query = True , selectedShapeAttributes = True)
         # 现在组合并获得长名称
         attrNames = []
-        for pair in ((mainObjs , mainAttrs) , (histObjs , histAttrs) , (shapeObjs , shapeAttrs)) :
+        for pair in ((main_objs , main_attrs) , (hist_objs , hist_attrs) , (shape_objs , shape_attrs)) :
             objs , attrs = pair
             if attrs is not None :
                 for nodeName in objs :
