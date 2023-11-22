@@ -185,7 +185,7 @@ class Connections_Tool (QWidget) :
             cmds.warning ('没有选中任何内容连接。请选中复选框进行连接')
             return
         obj_con = connectionUtils.Connection ()
-        obj_con.create_connect_srt_connections (translate = translate_value ,
+        obj_con.create_srt_connections (translate = translate_value ,
                                            rotation = rotate_value ,
                                            scale = scale_value ,
                                            matrix = matrix_value)
@@ -199,6 +199,7 @@ class Connections_Tool (QWidget) :
         if not translate_value and not rotate_value and not scale_value and not matrix_value :
             cmds.warning ('没有选中任何内容连接。请选中复选框进行断开连接')
             return
+
         obj_con = connectionUtils.Connection ()
         obj_con.delete_connect_srt_connections (translate = translate_value ,
                                           rotation = rotate_value ,

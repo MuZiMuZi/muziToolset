@@ -282,6 +282,7 @@ class Connection () :
         return False
 
 
+    # 断开驱动者的需要连接的属性和所有被驱动者连接的属性的连接
     def break_connections_list (self , driver_obj , source_attr , driven_obj_list , destination_attr) :
         """将驱动者的需要连接的属性连接给所有被驱动者需要连接的属性
         driver_obj(str):作为驱动者的物体
