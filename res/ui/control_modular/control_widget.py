@@ -24,7 +24,8 @@ import muziToolset.res.ui.backGround as backGround
 
 import muziToolset.core.controlUtils as controlUtils
 
-reload(controlUtils)
+
+reload (controlUtils)
 
 class ShapeWidget(QListWidget):
     def __init__(self):
@@ -177,7 +178,7 @@ class ControlsWidget(QWidget):
 
         # 创建旋转控制器按钮页面布局
         self.rotate_layout = QHBoxLayout(self)
-        self.rotate_layout.addWidget(QLabel("旋转角度"))
+        self.rotate_layout.addWidget(QLabel("旋转角度:"))
 
         #创建旋转角度的输入框
         self.rotate_text = QLineEdit()
@@ -200,11 +201,36 @@ class ControlsWidget(QWidget):
         self.rotate_layout.addLayout(self.rotate_button_layout)
         self.rotate_layout.addWidget(self.rotate_button)
 
+        #添加缩放控制器大小的页面布局
+        self.scale_layout = QHBoxLayout(self)
+        self.scale_label = QLabel ('缩放控制器（百分比）:')
+        self.scale_line = QLineEdit()
+        self.scale_line.setText(str(100))
+        validator = QDoubleValidator (self)
+        validator.setDecimals (3)
+        self.scale_line.setValidator (validator)
+        self.scale_slider = QSlider (Qt.Horizontal)
+        self.scale_btn = QPushButton('缩放')
+        self.scale_btn.clicked.connect(self.clicked_scale_control)
+        self.scale_layout.addWidget(self.scale_label)
+        self.scale_layout.addWidget (self.scale_line)
+        self.scale_layout.addWidget(self.scale_slider)
+        self.scale_layout.addWidget(self.scale_btn)
+
+        #设置self.scale_slider的最小值，最大值，步长和默认值
+        self.scale_slider.setMinimum (1)
+        self.scale_slider.setMaximum (600)
+        self.scale_slider.setValue(100)
+
+
+        #创建一个槽函数当self.scale_slider数值更新的时候设置self.scale_line的数值
+        self.scale_slider.valueChanged.connect (lambda value : self.scale_line.setText (str(float(value))))
+        #创建一个槽函数当self.scale_line数值更新的时候设置self.scale_slider的值
+        self.scale_line.textChanged.connect(lambda value : self.scale_slider.setValue ( (float (value))))
 
         # 创建控制器按钮页面布局
         self.button_layout = QHBoxLayout(self)
-        self.scale_button = QPushButton("缩放(按B键调整大小)")
-        self.scale_button.clicked.connect(self.scale_control)
+
 
         self.mirror_button = QPushButton("镜像")
         self.mirror_button.clicked.connect(self.mirror_control)
@@ -213,7 +239,6 @@ class ControlsWidget(QWidget):
         self.replace_button.clicked.connect(self.replace_control)
 
         # 添加控制器按钮页面布局的小部件
-        self.button_layout.addWidget(self.scale_button)
         self.button_layout.addWidget(self.mirror_button)
         self.button_layout.addWidget(self.replace_button)
 
@@ -223,11 +248,15 @@ class ControlsWidget(QWidget):
         self.main_layout.addWidget(self.color_layout)
         self.main_layout.addWidget(QLabel("-------旋转控制器形状------"))
         self.main_layout.addLayout(self.rotate_layout)
+        self.main_layout.addLayout(self.scale_layout)
         self.main_layout.addLayout(self.button_layout)
 
-    @staticmethod
-    def scale_control():
-        controlUtils.Control.set_selected(r = controlUtils.Control.get_soft_radius())
+
+    def clicked_scale_control(self):
+        """
+        连接缩放控制器的按钮的槽函数
+        """
+        controlUtils.Control.set_selected(r = float(self.scale_slider.value ()*0.1))
 
     @staticmethod
     def mirror_control():
