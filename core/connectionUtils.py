@@ -59,7 +59,7 @@ class Connection () :
         return input_connections
 
 
-    def get_output_attributes (self , object) :
+    def get_output_connection (self , object) :
         """
         获取物体上的输出连接
         self.object(str):获取输出连接的物体
@@ -253,6 +253,27 @@ class Connection () :
     """
     断开连接
     """
+
+
+    # 断开所选择的通道盒上的属性的属性连接
+    def break_attr_connections (self) :
+        """
+        断开所选择的通道盒上的属性的属性连接
+        """
+        # 获得选择的通道盒上的属性名称
+        driven_attrs = attrUtils.Attr.get_channelBox_attrs ()
+        drivens = cmds.ls (sl = True)
+        for driven in drivens :
+            for driven_attr in driven_attrs :
+                # 获取driven_attr的上游属性连接
+                driver_obj_attr = cmds.connectionInfo(driven + '.'+driven_attr,sourceFromDestination = True)
+                #断开选择的属性连接
+                try:
+                    cmds.disconnectAttr (driver_obj_attr , '{}.{}'.format (driven , driven_attr))
+                except:
+                    pass
+
+
 
 
     # 断开驱动者的属性和被驱动者的属性连接

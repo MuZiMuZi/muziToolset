@@ -54,10 +54,12 @@ class Connections_Tool (QWidget) :
         self.connect_custom_connection_label.setStyleSheet (u"color: rgb(85, 255, 255);")
         self.driver_attr_label = QLabel ('Driver(驱动者):---')
         self.driver_attr_line = QLineEdit ()
+        self.driver_attr_line.setReadOnly (True)
         self.pick_driver_attr_btn = QPushButton (QIcon (icon_dir + '/select.png') , 'pick')
 
         self.driven_attr_label = QLabel ('Driven(被驱动者):')
         self.driven_attr_line = QLineEdit ()
+        self.driven_attr_line.setReadOnly (True)
         self.pick_driven_attr_btn = QPushButton (QIcon (icon_dir + '/select.png') , 'pick')
 
         self.connect_custom_connection_btn = QPushButton (QIcon (':parentConstraint.png') ,
@@ -300,7 +302,7 @@ class Connections_Tool (QWidget) :
 
     def clicked_break_connection_btn (self) :
         obj_con = connectionUtils.Connection ()
-        obj_con.breakAllDrivenOrChannelBoxSel ()
+        obj_con.break_attr_connections ()
 
 
 def main () :
