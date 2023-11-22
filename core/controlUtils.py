@@ -153,7 +153,7 @@ class Control (object) :
             self.set_radius (radius)
         elif isinstance (shape , (str , bool)) :
             # elif isinstance(shape , (str , unicode)) :
-            data_file = os.path.abspath (__file__ + "/../../res/image/{s}.json".format (s = shape))
+            data_file = os.path.abspath (__file__ + "/../../tools/image/{s}.json".format (s = shape))
             if not os.path.isfile (data_file) :
                 pm.warning (u"找不到这个文件 " + data_file)
                 return
@@ -251,7 +251,7 @@ class Control (object) :
         u"""
         上传控制器到data路径下，并且截图
         """
-        data_path = os.path.abspath (__file__ + "/../../res/image")
+        data_path = os.path.abspath (__file__ + "/../../tools/image")
         if not os.path.isdir (data_path) :
             pm.warning (u"没有找到这个路径" + data_path)
             return
@@ -997,10 +997,10 @@ class Control (object) :
         s = kwargs.get ("s" , kwargs.get ("shape" , cls.get_arg (args)))
         if s is None :
             return
-        json_path = os.path.abspath (__file__ + "/../../res/image/{s}.json".format (s = s))
+        json_path = os.path.abspath (__file__ + "/../../tools/image/{s}.json".format (s = s))
         if os.path.isfile (json_path) :
             os.remove (json_path)
-        jpg_path = os.path.abspath (__file__ + "/../../res/image/{s}.jpg".format (s = s))
+        jpg_path = os.path.abspath (__file__ + "/../../tools/image/{s}.jpg".format (s = s))
         if os.path.isfile (jpg_path) :
             os.remove (jpg_path)
 
