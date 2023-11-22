@@ -262,10 +262,10 @@ class Connections_Tool (QWidget) :
 
     def clicked_connect_custom_connection_btn (self) :
         """
-        连接自定义属性的槽函数
+        连接自定义属性的槽函数，创建指定属性连接
         """
         # 检查连接自定义属性的面板是否有输入，没有的话则报错
-        self.cheek_connect_custom_connection ()
+        driver_obj , source_attr , destination_list = self.cheek_connect_custom_connection ()
 
         # 输入框上都有符合的对象的以后才进行连接
         # 对destination_attr_list进行循环进行创建连接
@@ -278,13 +278,19 @@ class Connections_Tool (QWidget) :
 
 
     def clicked_break_custom_connection_btn (self) :
+        """
+        连接自定义属性的槽函数，断开指定属性连接
+        """
         # 检查连接自定义属性的面板是否有输入，没有的话则报错
-        self.cheek_connect_custom_connection ()
-        sourceAttr = self.driver_attr_line.text ()
-        targetAttr = self.driven_attr_line.text ()
-        obj_con = connectionUtils.Connection ()
-        obj_con.breakConnectionAttrsOrChannelBox (driverAttr = sourceAttr ,
-                                                  drivenAttr = targetAttr)
+        driver_obj , source_attr , destination_list = self.cheek_connect_custom_connection ()
+        # 输入框上都有符合的对象的以后才进行连接
+        # 对destination_attr_list进行循环进行断开连接
+        for destination in destination_list :
+            # 拆分driven_obj和destination_attr
+            driven_obj = destination.split ('.') [0]
+            destination_attr = destination.split ('.') [1]
+            obj_con = connectionUtils.Connection ()
+            obj_con.break_connections (driver_obj , source_attr , driven_obj , destination_attr)
 
 
     def clicked_copy_connection_btn (self) :
