@@ -44,10 +44,16 @@ class Connections_Tool (QWidget) :
         self.matrix_attr_cheekbox = QCheckBox ('Matrix')
         self.reset_attr_btn = QPushButton (QIcon (icon_dir + '/reset.png') , 'Reset')
 
-        self.connect_default_connection_btn = QPushButton (QIcon (':parentConstraint.png') ,
-                                                           'Create_connection')
-        self.break_default_connection_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,
-                                                          'Break_connection')
+        self.connect_srt_connection_btn = QPushButton (QIcon (':parentConstraint.png') ,
+                                                           'Create_srt_connection')
+        self.break_srt_connection_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,
+                                                         'Break_srt_connection')
+        
+        #添加默认属性连接的部件的文本提示
+        self.reset_attr_btn.setToolTip('重置需要连接的默认属性')
+        self.connect_srt_connection_btn.setToolTip('连接选定的的默认属性')
+        self.break_srt_connection_btn.setToolTip('断开选定的默认属性')
+        
 
         # 创建自定义属性连接的部件
         self.connect_custom_connection_label = QLabel ('---------------连接自定义属性---------------')
@@ -65,7 +71,16 @@ class Connections_Tool (QWidget) :
         self.connect_custom_connection_btn = QPushButton (QIcon (':parentConstraint.png') ,
                                                           'Create_connection')
         self.break_custom_connection_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,
-                                                         'Break_connection')
+                                                        'Break_connection')
+
+        # 添加自定义属性连接的部件的文本提示
+        self.pick_driver_attr_btn.setToolTip('在通道盒里选择驱动者的属性')
+        self.pick_driven_attr_btn.setToolTip('在通道盒里选择被驱动者的属性')
+        self.connect_custom_connection_btn.setToolTip ('连接驱动者与被驱动者的属性')
+        self.break_custom_connection_btn.setToolTip ('断开驱动者与被驱动者的属性')
+
+
+
 
         # 创建复制属性连接的部件
         self.copy_break_connection_label = QLabel ('---------------复制/删除属性连接---------------')
@@ -73,7 +88,10 @@ class Connections_Tool (QWidget) :
         self.copy_connection_btn = QPushButton (QIcon (icon_dir + '/copy.png') ,
                                                 'Copy_Driven_connection--未完成')
         self.break_connection_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,
-                                                  'Break_Driven_connection')
+                                                 'Break_Driven_connection')
+
+        # 添加复制属性连接的部件的文本提示
+        self.break_connection_btn.setToolTip('选择需要断开连接的通道盒属性断开连接')
 
 
     def create_layouts (self) :
@@ -89,8 +107,8 @@ class Connections_Tool (QWidget) :
 
         # 创建操作默认属性链接的布局
         self.operate_default_connection_layout = QHBoxLayout ()
-        self.operate_default_connection_layout.addWidget (self.connect_default_connection_btn)
-        self.operate_default_connection_layout.addWidget (self.break_default_connection_btn)
+        self.operate_default_connection_layout.addWidget (self.connect_srt_connection_btn)
+        self.operate_default_connection_layout.addWidget (self.break_srt_connection_btn)
 
         # 将default_attr_layout和operate_default_connection_layout，添加到connect_default_connection_layout里
         self.connect_default_connection_layout.addLayout (self.default_attr_layout)
@@ -143,8 +161,8 @@ class Connections_Tool (QWidget) :
         # 连接默认属性的部件
         self.matrix_attr_cheekbox.stateChanged.connect (self.stateChanged_matrix_attr_cheekbox)
         self.reset_attr_btn.clicked.connect (self.clicked_reset_attr_btn)
-        self.connect_default_connection_btn.clicked.connect (self.clicked_connect_default_connection_btn)
-        self.break_default_connection_btn.clicked.connect (self.clicked_break_default_connection_btn)
+        self.connect_srt_connection_btn.clicked.connect (self.clicked_connect_srt_connection_btn)
+        self.break_srt_connection_btn.clicked.connect (self.clicked_break_srt_connection_btn)
 
         # 连接自定义属性的部件
         self.pick_driver_attr_btn.clicked.connect (self.clicked_pick_driver_attr_btn)
@@ -178,7 +196,7 @@ class Connections_Tool (QWidget) :
         self.matrix_attr_cheekbox.setChecked (False)
 
 
-    def clicked_connect_default_connection_btn (self) :
+    def clicked_connect_srt_connection_btn (self) :
         translate_value = self.translate_attr_cheekbox.isChecked ()
         rotate_value = self.rotate_attr_cheekbox.isChecked ()
         scale_value = self.scale_attr_cheekbox.isChecked ()
@@ -193,7 +211,7 @@ class Connections_Tool (QWidget) :
                                         matrix = matrix_value)
 
 
-    def clicked_break_default_connection_btn (self) :
+    def clicked_break_srt_connection_btn (self) :
         translate_value = self.translate_attr_cheekbox.isChecked ()
         rotate_value = self.rotate_attr_cheekbox.isChecked ()
         scale_value = self.scale_attr_cheekbox.isChecked ()
