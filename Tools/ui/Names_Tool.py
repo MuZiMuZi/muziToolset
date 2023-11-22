@@ -173,14 +173,13 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.execute_button = QPushButton(self.centralwidget)
         self.execute_button.setObjectName(u"execute_button")
-        self.execute_button.setStyleSheet(u"color: rgb(255, 255, 255);\n"
-"background-color: rgb(85, 170, 255);")
+
 
         self.verticalLayout_4.addWidget(self.execute_button)
 
         self.reset_button = QPushButton(self.centralwidget)
         self.reset_button.setObjectName(u"reset_button")
-        self.reset_button.setStyleSheet(u"background-color: rgb(255, 158, 255);")
+
 
         self.verticalLayout_4.addWidget(self.reset_button)
 

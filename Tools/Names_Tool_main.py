@@ -1,7 +1,7 @@
 import os
-from PySide2 import QtCore
-from PySide2 import QtGui
-from PySide2 import QtWidgets
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
 
 from .config import ui_dir , icon_dir
 from ..core import pipelineUtils , nameUtils
@@ -24,6 +24,8 @@ class Names_Tool (Names_Tool.Ui_MainWindow , QtWidgets.QMainWindow) :
         self.winTitle = 'Names_Tool(命名工具)'
         self.setupUi (self)
         self.add_connect ()
+        self.reset_button.setIcon(QIcon (icon_dir + '/set.png'))
+        self.execute_button.setIcon(QIcon (icon_dir + '/reset.png'))
 
         self.object_list = []
 
