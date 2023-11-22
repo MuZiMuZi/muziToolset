@@ -230,7 +230,7 @@ class Connection () :
 
     # 选择多个物体，创建驱动者的需要连接的属性和所有被驱动者需要连接的属性的连接
     def create_srt_connections (self , translate = True , rotation = True , scale = True ,
-                                        matrix = False) :
+                                matrix = False) :
         """用于在第一个对象和列表中的所有其他对象之间建立位移，旋转，缩放，矩阵等连接
         objList(list):Maya节点名称列表，第一个节点将为驱动物体
         translate(bool):是否连接所有位移的值
@@ -255,7 +255,6 @@ class Connection () :
     """
 
 
-
     # 断开驱动者的属性和被驱动者的属性连接
     def break_connections (self , driver_obj , source_attr , driven_obj , destination_attr) :
         """
@@ -267,15 +266,9 @@ class Connection () :
         """
         driver_attr = driver_obj + '.' + source_attr
         driven_attr = driven_obj + '.' + destination_attr
-
-        # 获取该属性的输入连接，sourceFromDestination，为True时返回上游属性（返回的是一个unicode）
-        ouput_attrs = cmds.connectionInfo (driven_attr , sourceFromDestination = True)
-        # 进行判断检查，判断输入属性的连接是否和给定的输入属性相同
-        if not ouput_attrs or ouput_attrs != driver_attr:
-            return False
         try :
             # 断开属性连接
-            cmds.disconnectAttr (ouput_attrs , driven_attr)
+            cmds.disconnectAttr (driver_attr , driven_attr)
             return True
         except RuntimeError :
             pass
@@ -295,15 +288,26 @@ class Connection () :
         for driven_obj in driven_obj_list :
             try :
                 self.break_connections (driver_obj , source_attr , driven_obj , destination_attr ,
-                                         )
+                                        )
                 cmds.warning (
                     '已将{}.{}与{}.{}断开连接'.format (driver_obj , source_attr , driven_obj , destination_attr))
             except :
                 cmds.warning (
                     '未将{}.{}与{}.{}断开连接'.format (driver_obj , source_attr , driven_obj , destination_attr))
 
+
+    def break_connect_connections (self , source_attr , destination_attr) :
+        """选择多个物体，用于在第一个对象和列表中的所有其他对象之间断开连接
+
+        """
+        # 进行判断检查，检查是否有足够的对象可以进行连接
+        driver_obj , driven_obj_list = self.cheek_enough_obj_connection ()
+        # 将驱动者的需要连接的属性连接给所有被驱动者需要连接的属性
+        self.break_connections_list (driver_obj , source_attr , driven_obj_list , destination_attr)
+
+
     def break_connect_srt_connections (self , translate = True , rotation = True , scale = True ,
-                                        matrix = False) :
+                                       matrix = False) :
         """断开被驱动者上默认属性的断开连接
         objList(list):Maya节点名称列表，第一个节点将为驱动物体
         translate(bool):是否断开连接所有位移的值
@@ -312,12 +316,12 @@ class Connection () :
         matrix(bool):是否断开连接所有矩阵的值
         """
         if translate :
-            self.break_connections (source_attr = "translate" ,
-                                             destination_attr = "translate")
+            self.break_connect_connections (source_attr = "translate" ,
+                                            destination_attr = "translate")
         if rotation :
-            self.break_connections (source_attr = "rotate" , destination_attr = "rotate")
+            self.break_connect_connections (source_attr = "rotate" , destination_attr = "rotate")
         if scale :
-            self.break_connections (source_attr = "scale" , destination_attr = "scale")
+            self.break_connect_connections (source_attr = "scale" , destination_attr = "scale")
         if matrix :
-            self.break_connections (source_attr = "matrix" ,
-                                             destination_attr = "offsetParentMatrix")
+            self.break_connect_connections (source_attr = "matrix" ,
+                                            destination_attr = "offsetParentMatrix")
