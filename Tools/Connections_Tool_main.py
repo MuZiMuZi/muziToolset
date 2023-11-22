@@ -46,8 +46,8 @@ class Connections_Tool (QWidget) :
 
         self.connect_default_connection_btn = QPushButton (QIcon (':parentConstraint.png') ,
                                                            'Create_connection')
-        self.delete_default_connection_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,
-                                                          'Delete_connection')
+        self.break_default_connection_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,
+                                                          'Break_connection')
 
         # 创建自定义属性连接的部件
         self.connect_custom_connection_label = QLabel ('---------------连接自定义属性---------------')
@@ -62,16 +62,16 @@ class Connections_Tool (QWidget) :
 
         self.connect_custom_connection_btn = QPushButton (QIcon (':parentConstraint.png') ,
                                                           'Create_connection')
-        self.delete_custom_connection_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,
-                                                         'Delete_connection')
+        self.break_custom_connection_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,
+                                                         'Break_connection')
 
         # 创建复制属性连接的部件
-        self.copy_delete_connection_label = QLabel ('---------------复制/删除属性连接---------------')
-        self.copy_delete_connection_label.setStyleSheet (u"color: rgb(170, 255, 128);")
+        self.copy_break_connection_label = QLabel ('---------------复制/删除属性连接---------------')
+        self.copy_break_connection_label.setStyleSheet (u"color: rgb(170, 255, 128);")
         self.copy_connection_btn = QPushButton (QIcon (icon_dir + '/copy.png') ,
                                                 'Copy_Driven_connection--未完成')
-        self.delete_connection_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,
-                                                  'Delete_Driven_connection')
+        self.break_connection_btn = QPushButton (QIcon (icon_dir + '/delete.png') ,
+                                                  'Break_Driven_connection')
 
 
     def create_layouts (self) :
@@ -88,7 +88,7 @@ class Connections_Tool (QWidget) :
         # 创建操作默认属性链接的布局
         self.operate_default_connection_layout = QHBoxLayout ()
         self.operate_default_connection_layout.addWidget (self.connect_default_connection_btn)
-        self.operate_default_connection_layout.addWidget (self.delete_default_connection_btn)
+        self.operate_default_connection_layout.addWidget (self.break_default_connection_btn)
 
         # 将default_attr_layout和operate_default_connection_layout，添加到connect_default_connection_layout里
         self.connect_default_connection_layout.addLayout (self.default_attr_layout)
@@ -112,7 +112,7 @@ class Connections_Tool (QWidget) :
         # 创建操作自定义属性连接按钮的布局
         self.operate_custom_connection_layout = QHBoxLayout ()
         self.operate_custom_connection_layout.addWidget (self.connect_custom_connection_btn)
-        self.operate_custom_connection_layout.addWidget (self.delete_custom_connection_btn)
+        self.operate_custom_connection_layout.addWidget (self.break_custom_connection_btn)
 
         # 将驱动者的属性布局和被驱动者的属性布局添加到自定义属性连接布局
         self.connect_custom_connection_layout.addLayout (self.driver_attr_layout)
@@ -120,9 +120,9 @@ class Connections_Tool (QWidget) :
         self.connect_custom_connection_layout.addLayout (self.operate_custom_connection_layout)
 
         # 创建复制属性连接的页面布局
-        self.copy_delete_connection_layout = QHBoxLayout ()
-        self.copy_delete_connection_layout.addWidget (self.copy_connection_btn)
-        self.copy_delete_connection_layout.addWidget (self.delete_connection_btn)
+        self.copy_break_connection_layout = QHBoxLayout ()
+        self.copy_break_connection_layout.addWidget (self.copy_connection_btn)
+        self.copy_break_connection_layout.addWidget (self.break_connection_btn)
 
         # 创建main_layout的布局
         self.main_layout = QVBoxLayout (self)
@@ -132,8 +132,8 @@ class Connections_Tool (QWidget) :
         self.main_layout.addWidget (self.connect_custom_connection_label)
         self.main_layout.addLayout (self.connect_custom_connection_layout)
         self.main_layout.addStretch ()
-        self.main_layout.addWidget (self.copy_delete_connection_label)
-        self.main_layout.addLayout (self.copy_delete_connection_layout)
+        self.main_layout.addWidget (self.copy_break_connection_label)
+        self.main_layout.addLayout (self.copy_break_connection_layout)
         self.main_layout.addStretch ()
 
 
@@ -142,17 +142,17 @@ class Connections_Tool (QWidget) :
         self.matrix_attr_cheekbox.stateChanged.connect (self.stateChanged_matrix_attr_cheekbox)
         self.reset_attr_btn.clicked.connect (self.clicked_reset_attr_btn)
         self.connect_default_connection_btn.clicked.connect (self.clicked_connect_default_connection_btn)
-        self.delete_default_connection_btn.clicked.connect (self.clicked_delete_default_connection_btn)
+        self.break_default_connection_btn.clicked.connect (self.clicked_break_default_connection_btn)
 
         # 连接自定义属性的部件
         self.pick_driver_attr_btn.clicked.connect (self.clicked_pick_driver_attr_btn)
         self.pick_driven_attr_btn.clicked.connect (self.clicked_pick_driven_attr_btn)
         self.connect_custom_connection_btn.clicked.connect (self.clicked_connect_custom_connection_btn)
-        self.delete_custom_connection_btn.clicked.connect (self.clicked_delete_custom_connection_btn)
+        self.break_custom_connection_btn.clicked.connect (self.clicked_break_custom_connection_btn)
 
         # 连接复制/删除属性的部件
         self.copy_connection_btn.clicked.connect (self.clicked_copy_connection_btn)
-        self.delete_connection_btn.clicked.connect (self.clicked_delete_connection_btn)
+        self.break_connection_btn.clicked.connect (self.clicked_break_connection_btn)
 
 
     def stateChanged_matrix_attr_cheekbox (self) :
@@ -186,12 +186,12 @@ class Connections_Tool (QWidget) :
             return
         obj_con = connectionUtils.Connection ()
         obj_con.create_srt_connections (translate = translate_value ,
-                                           rotation = rotate_value ,
-                                           scale = scale_value ,
-                                           matrix = matrix_value)
+                                        rotation = rotate_value ,
+                                        scale = scale_value ,
+                                        matrix = matrix_value)
 
 
-    def clicked_delete_default_connection_btn (self) :
+    def clicked_break_default_connection_btn (self) :
         translate_value = self.translate_attr_cheekbox.isChecked ()
         rotate_value = self.rotate_attr_cheekbox.isChecked ()
         scale_value = self.scale_attr_cheekbox.isChecked ()
@@ -201,9 +201,10 @@ class Connections_Tool (QWidget) :
             return
 
         obj_con = connectionUtils.Connection ()
-        obj_con.delete_connect_srt_connections (translate = translate_value ,
-                                          rotation = rotate_value ,
-                                          scale = scale_value)
+        obj_con.break_connect_srt_connections (translate = translate_value ,
+                                               rotation = rotate_value ,
+                                               scale = scale_value ,
+                                               matrix = matrix_value)
 
 
     def clicked_pick_driver_attr_btn (self) :
@@ -216,50 +217,69 @@ class Connections_Tool (QWidget) :
 
 
     def clicked_pick_driven_attr_btn (self) :
-        self.driven_attr_line.clear()
+        self.driven_attr_line.clear ()
         # 获取选择的被驱动者的对象
         drivens = cmds.ls (sl = True)
-        self.driven_attr_line.drivens_attrs = []
-        #对每个选择的被驱动对象循环，获取被驱动对象上需要被驱动的属性
+        # 对每个选择的被驱动对象循环，获取被驱动对象上需要被驱动的属性
         for driven in drivens :
-            cmds.select (driven,replace = True)
+            cmds.select (driven , replace = True)
             # 获取选择的被驱动者的属性
-            driven_attr = attrUtils.Attr.get_channelBox_attrs ()
-            # 将选定的驱动者的对象和属性存为一个变量drivens_attrs方便后续调用
-            self.driven_attr_line.drivens_attrs.append(driven_attr)
-            # 将选定的被驱动者的对象和属性添加到输入框内
-            self.driven_attr_line.insert(driven_attr + ',')
+            driven_attrs = attrUtils.Attr.get_channelBox_attrs ()
+            # 对每一个被驱动者的属性做循环，添加
+            for driven_attr in driven_attrs :
+                # 将选定的被驱动者的对象和属性添加到输入框内
+                self.driven_attr_line.insert ('{}.{},'.format (driven , driven_attr))
+
+
+    def cheek_connect_custom_connection (self) :
+        """
+        检查连接自定义属性的面板是否有输入，没有的话则报错
+        """
+        # 获取driver_attr_line上的输入，格式为driver_obj.source_attr,
+        # 例如['loctaor1.translate']
+        source = self.driver_attr_line.text ()
+
+        # 获取driver_attr_line上的输入，格式为driven_obj1.destination_attr,driven_obj2.destination_attr
+        # 例如['loctaor1.translate','loctaor1.translate']
+        # 使用逗号分割字符串
+        destination = self.driven_attr_line.text ()
+        destination_list = destination.split (',')
+
+        # 判断输入框上是否有符合的对象，没有的话则报错
+        if not source :
+            cmds.warning ("未加载驱动者的连接属性。请重新选择通道盒的属性进行加载")
+            return
+        if not destination :
+            cmds.warning ("未加载被驱动者的连接属性。请重新选择通道盒的属性进行加载")
+            return
+
+        # 拆分driver_obj和source_attr
+        driver_obj = source.split ('.') [0]
+        source_attr = source.split ('.') [1]
+
+        return driver_obj , source_attr , destination_list
 
 
     def clicked_connect_custom_connection_btn (self) :
         """
         连接自定义属性的槽函数
         """
-        #获取driver_attr_line上的输入，格式为driver_obj.source_attr,
-        # 例如['loctaor1.translate']
-        source = self.driver_attr_line.text ()
-        # 获取driver_attr_line上的输入，格式为driven_obj1.destination_attr,driven_obj2.destination_attr
-        # 例如['loctaor1.translate','loctaor1.translate']
-        destination_attr = self.driven_attr_line.text ()
-        #判断输入框上是否有符合的对象，没有的话则报错
-        if not sourceAttr:
-            cmds.warning ("未加载驱动者的连接属性。请重新选择通道盒的属性进行加载")
-        if not targetAttr :
-            cmds.warning ("未加载被驱动者的连接属性。请重新选择通道盒的属性进行加载")
+        # 检查连接自定义属性的面板是否有输入，没有的话则报错
+        self.cheek_connect_custom_connection ()
 
-        #拆分driver_obj和source_attr
-        driver_obj = source.split ('.') [0]
-        source_attr = source.split ('.') [1]
-
-        #拆分driven_obj_list 和 destination_attr
-        print(self.driven_attr_line.drivens_attrs)
-        #输入框上都有符合的对象的以后才进行连接
-        # if source_attr and destination_attr:
-        #     obj_con = connectionUtils.Connection ()
-        #     obj_con.create_connect_connections_list(driver_obj , source_attr , driven_obj_list , destination_attr)
+        # 输入框上都有符合的对象的以后才进行连接
+        # 对destination_attr_list进行循环进行创建连接
+        for destination in destination_list :
+            # 拆分driven_obj和destination_attr
+            driven_obj = destination.split ('.') [0]
+            destination_attr = destination.split ('.') [1]
+            obj_con = connectionUtils.Connection ()
+            obj_con.create_connections (driver_obj , source_attr , driven_obj , destination_attr)
 
 
-    def clicked_delete_custom_connection_btn (self) :
+    def clicked_break_custom_connection_btn (self) :
+        # 检查连接自定义属性的面板是否有输入，没有的话则报错
+        self.cheek_connect_custom_connection ()
         sourceAttr = self.driver_attr_line.text ()
         targetAttr = self.driven_attr_line.text ()
         obj_con = connectionUtils.Connection ()
@@ -272,7 +292,7 @@ class Connections_Tool (QWidget) :
         obj_con.copyDrivenConnectedAttrsSel ()
 
 
-    def clicked_delete_connection_btn (self) :
+    def clicked_break_connection_btn (self) :
         obj_con = connectionUtils.Connection ()
         obj_con.breakAllDrivenOrChannelBoxSel ()
 
