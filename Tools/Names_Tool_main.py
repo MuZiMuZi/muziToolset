@@ -16,7 +16,7 @@ reload (pipelineUtils)
 reload (nameUtils)
 
 
-class Names_Tool (Names_Tool.Ui_MainWindow , QtWidgets.QMainWindow) :
+class Names_Tool (Names_Tool.Ui_MainWindow , QMainWindow) :
 
     def __init__ (self , parent = None) :
         super ().__init__ (parent)
@@ -37,8 +37,8 @@ class Names_Tool (Names_Tool.Ui_MainWindow , QtWidgets.QMainWindow) :
         设置输入内容的规范
         '''
         ## 限制以下特殊符号在lineEdit中的输入
-        rx = QtCore.QRegExp ("[^\\\\/:*?\"<>| ]*")
-        validator = QtGui.QRegExpValidator (rx)
+        rx = QRegExp ("[^\\\\/:*?\"<>| ]*")
+        validator = QRegExpValidator (rx)
 
         for lineEdit in [self.prefix_lineEdit , self.subfix_lineEdit , self.search_lineEdit , self.replace_lineEdit ,
                          self.rename_lineEdit] :
@@ -120,7 +120,7 @@ def main () :
 
 if __name__ == '__main__' :
     # 通过QApplication方法来生成应用
-    app = QtWidgets.QApplication ()
+    app = QApplication ()
     qt_app = Names_Tool ()
     qt_app.show ()
     app.exec_ ()
