@@ -92,3 +92,5 @@ class Weights (object) :
         cmds.deformerWeights (self.skinWeights_FileName , path = self.skinWeights_Path , im = True ,
                               deformer = skin_node)
         cmds.warning (u'{}这个物体导入权重成功'.format (self.geo))
+
+
