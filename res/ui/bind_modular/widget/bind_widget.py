@@ -3,8 +3,10 @@
 # ui界面生成需要三个模块QtWidgets，QtGui，QtCore
 from importlib import reload
 
-from PySide2 import QtCore , QtWidgets , QtGui
-from PySide2.QtCore import Qt
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
+
 
 from . import base_widget , chainEP_widget , chain_widget , limb_widget
 from ..ui import bind_ui
@@ -23,7 +25,7 @@ reload (limb_widget)
 reload (chainEP_widget)
 
 
-class Bind_Widget (bind_ui.Ui_MainWindow , QtWidgets.QMainWindow) :
+class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
     u'''
     用于创建绑定系统的界面系统
     '''
@@ -72,7 +74,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QtWidgets.QMainWindow) :
             # 获得proxy_widget里所选择的item_name
             item_name = self.proxy_widget.currentItem ().text () [0 :-3]
             # 在custom_widget里添加这个item
-            item = QtWidgets.QListWidgetItem (item_name)
+            item = QListWidgetItem (item_name)
             self.custom_widget.addItem (item)
             item.text = item_name
             self.update_current (item)
@@ -96,14 +98,19 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QtWidgets.QMainWindow) :
         self.setting_stack.setCurrentIndex (selected_index + 1)
 
 
-
+    def cmd_custom_widget_dbclk(self,item):
+        """
+        用来连接custom_widget双击所连接的功能槽函数。
+        双击的时候可以修改item的名称，并且在离开聚焦的时候取消重命名
+        """
+        self.proxy_widget.currentItem ().text () [0 :-3]
 
 
     def cmd_custom_widget_menu (self) :
         """
         用来创建custom_widget右键的菜单
         """
-        custom_menu = QtWidgets.QMenu ()
+        custom_menu = QMenu ()
         #添加右键菜单的设置
         custom_menu.addActions ([
             self.action_Mirror_select ,
@@ -117,7 +124,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QtWidgets.QMainWindow) :
             self.action_Clear
         ])
         # 创建一个光标对象，在光标对象右击的位置运行这个右键菜单
-        cursor = QtGui.QCursor ()
+        cursor = QCursor ()
         custom_menu.exec_ (cursor.pos ())
 
 
@@ -178,5 +185,5 @@ if __name__ == "__main__" :
         window.deleteLater()
     except :
         pass
-    window.setAttribute (QtCore.Qt.WA_DeleteOnClose)
+    window.setAttribute (Qt.WA_DeleteOnClose)
     window.show ()

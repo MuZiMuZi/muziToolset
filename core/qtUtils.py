@@ -13,8 +13,9 @@
 import os
 import subprocess
 import maya.OpenMayaUI as omui
-from PySide2 import QtCore , QtWidgets , QtGui
-from PySide2.QtCore import Qt
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
 from shiboken2 import wrapInstance
 
 
@@ -29,14 +30,14 @@ def input_dialog_text (title , label , size = (400 , 200)) :
     :param size:弹窗的大小
     :return:
     '''
-    input_text = QtWidgets.QInputDialog ()
+    input_text = QInputDialog ()
     # *size 是为了解包元组
     input_text.setFixedSize (*size)
-    input_text.setInputMode (QtWidgets.QInputDialog.TextInput)
+    input_text.setInputMode (QInputDialog.TextInput)
     input_text.setWindowTitle (title)
     input_text.setLabelText (label)
 
-    if input_text.exec_ () == QtWidgets.QDialog.Accepted :
+    if input_text.exec_ () == QDialog.Accepted :
         return input_text.textValue ()
     else :
         return None
@@ -51,19 +52,19 @@ def input_dialog_message (title , text = '' , informative = u'确认?' , size = 
     :param size:弹出的窗口的大小
     :return:
     '''
-    msg_box = QtWidgets.QMessageBox ()
+    msg_box = QMessageBox ()
     msg_box.setFixedSize (*size)
     msg_box.setText (text)
     msg_box.setWindowTitle (title)
     # 设置弹出的窗口的提示语
     msg_box.setInformativeText (informative)
     # 设置弹出的窗口的按钮
-    msg_box.setStandardButtons (QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-    msg_box.setDefaultButton (QtWidgets.QMessageBox.Yes)
+    msg_box.setStandardButtons (QMessageBox.Yes | QMessageBox.No)
+    msg_box.setDefaultButton (QMessageBox.Yes)
 
     # 确认最后执行的结果
     decision = msg_box.exec_ ()
-    if decision == QtWidgets.QMessageBox.Yes :
+    if decision == QMessageBox.Yes :
         return True
     else :
         return False
@@ -168,16 +169,16 @@ def get_maya_window () :
     返回maya的主窗口部件
     """
     pointer = omui.MQtUtil.mainWindow ()
-    return wrapInstance (int (pointer) , QtWidgets.QWidget)
+    return wrapInstance (int (pointer) , QWidget)
 
 
-class Left_menu_button (QtWidgets.QPushButton) :
+class Left_menu_button (QPushButton) :
     """
     自定义的
     """
 
 
-    def __init__ (self , action_1 =None, action_2 = None, * args , **kwargs ,) :
+    def __init__ (self , action_1 = None , action_2 = None , *args , **kwargs , ) :
         super (Left_menu_button , self).__init__ (*args , **kwargs)
         self.action_1 = action_1
         self.action_2 = action_2
@@ -189,36 +190,34 @@ class Left_menu_button (QtWidgets.QPushButton) :
         self.customContextMenuRequested.connect (self.showContextMenu)
 
 
-
-
     # 创建右键菜单
-    def showContextMenu (self, mouseClick = QtCore.Qt.RightButton ) :
+    def showContextMenu (self , mouseClick = Qt.RightButton) :
         # Create menu, if it doesn't exist ------------------------------
         menu = self.menu (mouseClick)
         if not menu :
-            menu = QtWidgets.QMenu (self)
+            menu = QMenu (self)
             self.setMenu (menu , mouseClick)
 
-        self.action_1 = menu.addAction (QtWidgets.QAction (self.action_1 , self))
-        self.action_2 = menu.addAction (QtWidgets.QAction (self.action_2 , self))
+        self.action_1 = menu.addAction (QAction (self.action_1 , self))
+        self.action_2 = menu.addAction (QAction (self.action_2 , self))
 
         # 菜单事件处理
         action = menu.exec_ (self.mapToGlobal (pos))
 
 
-class FrameWidget (QtWidgets.QGroupBox) :
+class FrameWidget (QGroupBox) :
 
     def __init__ (self , title = '' , parent = None) :
         super (FrameWidget , self).__init__ (title , parent)
 
-        layout = QtWidgets.QVBoxLayout ()
+        layout = QVBoxLayout ()
         layout.setContentsMargins (0 , 7 , 0 , 0)
         layout.setSpacing (0)
         super (FrameWidget , self).setLayout (layout)
 
-        self.__widget = QtWidgets.QFrame (parent)
-        self.__widget.setFrameShape (QtWidgets.QFrame.Panel)
-        self.__widget.setFrameShadow (QtWidgets.QFrame.Plain)
+        self.__widget = QFrame (parent)
+        self.__widget.setFrameShape (QFrame.Panel)
+        self.__widget.setFrameShadow (QFrame.Plain)
         self.__widget.setLineWidth (0)
         layout.addWidget (self.__widget)
 
@@ -230,7 +229,7 @@ class FrameWidget (QtWidgets.QGroupBox) :
 
 
     def expandCollapseRect (self) :
-        return QtCore.QRect (0 , 0 , self.width () , 20)
+        return QRect (0 , 0 , self.width () , 20)
 
 
     def mouseReleaseEvent (self , event) :
@@ -275,7 +274,7 @@ class FrameWidget (QtWidgets.QGroupBox) :
         painter.fillRect (self.expandCollapseRect () , QtGui.QColor (93 , 93 , 93))
         painter.drawText (
             x + offset , y + 3 , w , 16 ,
-            QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop ,
+            Qt.AlignLeft | Qt.AlignTop ,
             self.title ()
         )
         self.__drawTriangle (painter , x , y)  # (1)
@@ -285,15 +284,15 @@ class FrameWidget (QtWidgets.QGroupBox) :
 
     def __drawTriangle (self , painter , x , y) :  # (2)
         if not self.__collapsed :  # (3)
-            points = [QtCore.QPoint (x + 10 , y + 6) ,
-                      QtCore.QPoint (x + 20 , y + 6) ,
-                      QtCore.QPoint (x + 15 , y + 11)
+            points = [QPoint (x + 10 , y + 6) ,
+                      QPoint (x + 20 , y + 6) ,
+                      QPoint (x + 15 , y + 11)
                       ]
 
         else :
-            points = [QtCore.QPoint (x + 10 , y + 4) ,
-                      QtCore.QPoint (x + 15 , y + 9) ,
-                      QtCore.QPoint (x + 10 , y + 14)
+            points = [QPoint (x + 10 , y + 4) ,
+                      QPoint (x + 15 , y + 9) ,
+                      QPoint (x + 10 , y + 14)
                       ]
 
         currentBrush = painter.brush ()  # (4)
@@ -302,16 +301,16 @@ class FrameWidget (QtWidgets.QGroupBox) :
         painter.setBrush (
             QtGui.QBrush (
                 QtGui.QColor (187 , 187 , 187) ,
-                QtCore.Qt.SolidPattern
+                Qt.SolidPattern
             )
         )  # (5)
-        painter.setPen (QtGui.QPen (QtCore.Qt.NoPen))  # (6)
+        painter.setPen (QtGui.QPen (Qt.NoPen))  # (6)
         painter.drawPolygon (QtGui.QPolygon (points))  # (7)
         painter.setBrush (currentBrush)  # (8)
         painter.setPen (currentPen)
 
 
-class Dialog (QtWidgets.QDialog) :
+class Dialog (QDialog) :
     """
     创建一个自定义的dialog模版
     """
@@ -347,6 +346,7 @@ class QSSLoader :
     创建一个加载QSS样式表的公共类
     """
 
+
     def __init__ (self) :
         pass
 
@@ -355,7 +355,9 @@ class QSSLoader :
     def read_qss_file (qss_file_name) :
         with open (qss_file_name , 'r' , encoding = 'UTF-8') as file :
             return file.read ()
-    def example_of_loading_qss(self):
+
+
+    def example_of_loading_qss (self) :
         """
         在代码中加载qss样式表的示例
         """
@@ -368,3 +370,41 @@ class QSSLoader :
 
         window.show ()
         sys.exit (app.exec_ ())
+
+
+# 创建了一个可编辑的ListWidget，在项目双击时启动编辑，编辑完成时隐藏编辑框
+class Editable_ListWidget_Item (QListWidgetItem) :
+
+    # 创建了一个可编辑的ListWidget，在项目双击时启动编辑，编辑完成时隐藏编辑框
+
+    def __init__ (self) :
+        super (Editable_ListWidget_Item , self).__init__ ()
+        # 跟踪当前编辑的项目
+        self.current_item = None
+
+        self.itemDoubleClicked.connect (self.start_editing)
+        self.editingFinished.connect (self.finish_editing)
+
+
+    def start_editing (self , item) :
+        """
+        当item被双击的时候启动编辑
+        """
+        if isinstance (item , EditableListWidgetItem) :
+            self.current_item = item
+            item.setFlags (item.flags () | Qt.ItemIsEditable)
+            item.show_editor ()
+            self.setItemWidget (item , item.edit_line)
+            item.edit_line.selectAll ()
+
+
+    def finish_editing (self) :
+        """
+        当item失去聚焦的时候结束编辑
+        """
+        if self.current_item :
+            edited_text = self.current_item.edit_line.text ()
+            self.current_item.setText (edited_text)
+            self.current_item.hide_editor ()
+            self.current_item.setFlags (self.current_item.flags () & ~Qt.ItemIsEditable)
+            self.current_item = None
