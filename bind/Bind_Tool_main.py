@@ -1,13 +1,8 @@
 # coding=utf-8
-import os
-from PySide2.QtCore import *
-from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-from ..core import pipelineUtils , nameUtils
-from . import Bind_Tool
+from res.ui.bind_modular.ui import Bind_Tool
 from importlib import reload
-import maya.cmds as cmds
 
 
 reload (Bind_Tool)
