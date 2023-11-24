@@ -22,16 +22,16 @@ import maya.cmds as cmds
 from . import pipelineUtils
 
 
-class Attr (object) :
+class Attr () :
 
 
-    def __init__ (self , obj , attr) :
+    def __init__ (self , object , attr) :
         """
         给定一个物体和需要进行操作的属性
-        obj(str):需要操作的物体对象
+        object(str):需要操作的物体对象
         attr(str):需要操作的属性
         """
-        self.obj = obj
+        self.object = object
         self.attr = attr
         self.minValue = None
         self.maxValue = None
@@ -80,8 +80,8 @@ class Attr (object) :
             cmds.connectAttr (output_attr , input_attr , force = True)
 
 
-    #用于获取字符串类型属性的返回值的函数
-    def get_string_info (self ) :
+    # 用于获取字符串类型属性的返回值的函数
+    def get_string_info (self) :
         """用于获取字符串类型属性的返回值的函数
 
         Args:
@@ -92,11 +92,11 @@ class Attr (object) :
             float/int/str/tuple/list/dict/None: 从属性查询的字符串信息转换而来。.
 
         """
-        #使用 cmds.self.objExists 检查对象和属性是否存在。
-        if cmds.self.objExists ('{}.{}'.format (self.obj , self.attr)) :
-            #如果属性存在，使用 cmds.getAttr 获取属性的字符串信息。
-            string_info_message = cmds.getAttr ('{}.{}'.format (self.obj , self.attr))
-            #尝试将字符串信息转换为 Python 对象，使用 literal_eval 函数。
+        # 使用 cmds.self.objectExists 检查对象和属性是否存在。
+        if cmds.self.objectExists ('{}.{}'.format (self.object , self.attr)) :
+            # 如果属性存在，使用 cmds.getAttr 获取属性的字符串信息。
+            string_info_message = cmds.getAttr ('{}.{}'.format (self.object , self.attr))
+            # 尝试将字符串信息转换为 Python 对象，使用 literal_eval 函数。
             # 这个函数可以安全地将字符串表示的 Python 字面值（literal）转换为相应的 Python 对象。
             if string_info_message :
                 info = literal_eval (string_info_message)
@@ -111,13 +111,15 @@ class Attr (object) :
         # attribute_name = "myStringAttribute"
         #
         # # 调用函数获取字符串类型属性的返回值
-        # result = get_string_attribute_value (object_name , attribute_name)
+        #  attr = attrUtils.Attr(object_name,attribute_name)
+        #  attr.get_string_info (information_value)
         #
         # # 打印返回值
         # print (result)
 
-    #用于在 Maya 中添加信息属性的函数
-    def add_string_info (self ,  information) :
+
+    # 用于在 Maya 中添加信息属性的函数
+    def add_string_info (self , information) :
         u"""用于在 Maya 中添加信息属性的函数
 
         Args:
@@ -126,22 +128,35 @@ class Attr (object) :
           information (float/int/str/tuple/list/dict): ''要作为此属性的字符串值添加的信息''.
 
         """
-        #使用 cmds.objExists 检查属性是否已经存在，如果不存在，则使用 cmds.addAttr 添加一个数据类型为 'string' 的属性。
-        if not cmds.objExists ('{}.{}'.format (self.obj , self.attr)) :
-            cmds.addAttr (self.obj , ln = self.attr , dt = 'string')
+        # 使用 cmds.objExists 检查属性是否已经存在，如果不存在，则使用 cmds.addAttr 添加一个数据类型为 'string' 的属性。
+        if not cmds.objExists ('{}.{}'.format (self.object , self.attr)) :
+            cmds.addAttr (self.object , ln = self.attr , dt = 'string')
 
-        #如果传入的 information 为空（None），将其设置为空字符串。
+        # 如果传入的 information 为空（None），将其设置为空字符串。
         if not information :
             information = ''
-        #设置属性的设置
-        #使用 cmds.setAttr 设置属性的锁定状态为解锁（lock=False）。
-        cmds.setAttr ('{}.{}'.format (self.obj , self.attr) , lock = False)
+        # 设置属性的设置
+        # 使用 cmds.setAttr 设置属性的锁定状态为解锁（lock=False）。
+        cmds.setAttr ('{}.{}'.format (self.object , self.attr) , lock = False)
 
-        cmds.setAttr ('{}.{}'.format (self.obj , self.attr) , e = True , keyable = True)
+        # 使用 cmds.setAttr 设置属性为关键帧可用（keyable=True）。
+        cmds.setAttr ('{}.{}'.format (self.object , self.attr) , e = True , keyable = True)
 
-        cmds.setAttr ('{}.{}'.format (self.obj , self.attr) , information , type = 'string')
+        # 使用 cmds.setAttr 将传入的信息设置为属性的值。
+        cmds.setAttr ('{}.{}'.format (self.object , self.attr) , information , type = 'string')
 
-        cmds.setAttr ('{}.{}'.format (self.obj , self.attr) , lock = True)
+        # 使用 cmds.setAttr 将属性重新锁定（lock=True）
+        cmds.setAttr ('{}.{}'.format (self.object , self.attr) , lock = True)
+
+        ###简单的示例###
+        # # 假设有一个对象名称、属性名称和要添加的信息
+        # object_name = "myObject"
+        # attribute_name = "myStringAttribute"
+        # information_value = {"key" : "value"}
+        # 
+        # # 调用函数添加信息属性
+        # attr = attrUtils.Attr(object_name,attribute_name)
+        # attr.add_information_attribute (information_value)
 
 
     def get_unwanted_attrs (self , attrs_list) :
@@ -174,7 +189,7 @@ class Attr (object) :
         设置键(self.attribute) 基于值的限制(([lower_limit_state, upper_limit_state], [lower_limit, upper_limit])).
 
         Args:
-            self.obj (str): 控制器设置其自身属性的限制.
+            self.object (str): 控制器设置其自身属性的限制.
             self.attrs_dict (dict): 字典有需要设置的属性键和属性值 (([lower_limit_state, upper_limit_state], [lower_limit,
             upper_limit])).
 
@@ -183,34 +198,34 @@ class Attr (object) :
         self.attr = attr
         for self.attr , value in attrs_dict.items () :
             if self.attr == "translateX" :
-                cmds.transformLimits (self.obj , enableTranslationX = value [0])
-                cmds.transformLimits (self.obj , translationX = value [1])
+                cmds.transformLimits (self.object , enableTranslationX = value [0])
+                cmds.transformLimits (self.object , translationX = value [1])
             if self.attr == "translateY" :
-                cmds.transformLimits (self.obj , enableTranslationY = value [0])
-                cmds.transformLimits (self.obj , translationY = value [1])
+                cmds.transformLimits (self.object , enableTranslationY = value [0])
+                cmds.transformLimits (self.object , translationY = value [1])
             if self.attr == "translateZ" :
-                cmds.transformLimits (self.obj , enableTranslationZ = value [0])
-                cmds.transformLimits (self.obj , translationZ = value [1])
+                cmds.transformLimits (self.object , enableTranslationZ = value [0])
+                cmds.transformLimits (self.object , translationZ = value [1])
 
             if self.attr == "rotateX" :
-                cmds.transformLimits (self.obj , enableRotationX = value [0])
-                cmds.transformLimits (self.obj , rotationX = value [1])
+                cmds.transformLimits (self.object , enableRotationX = value [0])
+                cmds.transformLimits (self.object , rotationX = value [1])
             if self.attr == "rotateY" :
-                cmds.transformLimits (self.obj , enableRotationY = value [0])
-                cmds.transformLimits (self.obj , rotationY = value [1])
+                cmds.transformLimits (self.object , enableRotationY = value [0])
+                cmds.transformLimits (self.object , rotationY = value [1])
             if self.attr == "rotateZ" :
-                cmds.transformLimits (self.obj , enableRotationZ = value [0])
-                cmds.transformLimits (self.obj , rotationZ = value [1])
+                cmds.transformLimits (self.object , enableRotationZ = value [0])
+                cmds.transformLimits (self.object , rotationZ = value [1])
 
             if self.attr == "scaleX" :
-                cmds.transformLimits (self.obj , enableScaleX = value [0])
-                cmds.transformLimits (self.obj , scaleX = value [1])
+                cmds.transformLimits (self.object , enableScaleX = value [0])
+                cmds.transformLimits (self.object , scaleX = value [1])
             if self.attr == "scaleY" :
-                cmds.transformLimits (self.obj , enableScaleY = value [0])
-                cmds.transformLimits (self.obj , scaleY = value [1])
+                cmds.transformLimits (self.object , enableScaleY = value [0])
+                cmds.transformLimits (self.object , scaleY = value [1])
             if self.attr == "scaleZ" :
-                cmds.transformLimits (self.obj , enableScaleZ = value [0])
-                cmds.transformLimits (self.obj , scaleZ = value [1])
+                cmds.transformLimits (self.object , enableScaleZ = value [0])
+                cmds.transformLimits (self.object , scaleZ = value [1])
 
 
     def get_attrs_limits (self) :
@@ -218,15 +233,15 @@ class Attr (object) :
         Given
 
         Args:
-            self.obj (str): 获取控制器属性的限制.
+            self.object (str): 获取控制器属性的限制.
 
         Returns:
             dict:   属性列表为键(attribute)
                   属性的限制值 (([lower_limit_state, upper_limit_state], [lower_limit, upper_limit])).
 
         """
-        keyable_attrs = cmds.listAttr (self.obj , keyable = True)
-        custom_attrs = cmds.listAttr (self.obj , keyable = True , userDefined = True)
+        keyable_attrs = cmds.listAttr (self.object , keyable = True)
+        custom_attrs = cmds.listAttr (self.object , keyable = True , userDefined = True)
         default_attrs = pipelineUtils.list_operation (list_a = keyable_attrs , list_b = custom_attrs , operation = '-')
 
         attrs_limits_dict = OrderedDict ()
@@ -234,56 +249,56 @@ class Attr (object) :
 
             #  query default transformation attributes
             if attr == "translateX" :
-                limit_state = cmds.transformLimits (self.obj , q = True , etx = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , tx = True)
+                limit_state = cmds.transformLimits (self.object , q = True , etx = True)
+                limit_num = cmds.transformLimits (self.object , q = True , tx = True)
 
                 attrs_limits_dict [attr] = (limit_state , limit_num)
 
             if attr == "translateY" :
-                limit_state = cmds.transformLimits (self.obj , q = True , ety = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , ty = True)
+                limit_state = cmds.transformLimits (self.object , q = True , ety = True)
+                limit_num = cmds.transformLimits (self.object , q = True , ty = True)
 
                 attrs_limits_dict [attr] = (limit_state , limit_num)
 
             if attr == "translateZ" :
-                limit_state = cmds.transformLimits (self.obj , q = True , etz = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , tz = True)
+                limit_state = cmds.transformLimits (self.object , q = True , etz = True)
+                limit_num = cmds.transformLimits (self.object , q = True , tz = True)
 
                 attrs_limits_dict [attr] = (limit_state , limit_num)
 
             if attr == "rotateX" :
-                limit_state = cmds.transformLimits (self.obj , q = True , erx = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , rx = True)
+                limit_state = cmds.transformLimits (self.object , q = True , erx = True)
+                limit_num = cmds.transformLimits (self.object , q = True , rx = True)
 
                 attrs_limits_dict [attr] = (limit_state , limit_num)
 
             if attr == "rotateY" :
-                limit_state = cmds.transformLimits (self.obj , q = True , ery = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , ry = True)
+                limit_state = cmds.transformLimits (self.object , q = True , ery = True)
+                limit_num = cmds.transformLimits (self.object , q = True , ry = True)
 
                 attrs_limits_dict [attr] = (limit_state , limit_num)
 
             if attr == "rotateZ" :
-                limit_state = cmds.transformLimits (self.obj , q = True , erz = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , rz = True)
+                limit_state = cmds.transformLimits (self.object , q = True , erz = True)
+                limit_num = cmds.transformLimits (self.object , q = True , rz = True)
 
                 attrs_limits_dict [attr] = (limit_state , limit_num)
 
             if attr == "scaleX" :
-                limit_state = cmds.transformLimits (self.obj , q = True , esx = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , sx = True)
+                limit_state = cmds.transformLimits (self.object , q = True , esx = True)
+                limit_num = cmds.transformLimits (self.object , q = True , sx = True)
 
                 attrs_limits_dict [attr] = (limit_state , limit_num)
 
             if attr == "scaleY" :
-                limit_state = cmds.transformLimits (self.obj , q = True , esy = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , sy = True)
+                limit_state = cmds.transformLimits (self.object , q = True , esy = True)
+                limit_num = cmds.transformLimits (self.object , q = True , sy = True)
 
                 attrs_limits_dict [attr] = (limit_state , limit_num)
 
             if attr == "scaleZ" :
-                limit_state = cmds.transformLimits (self.obj , q = True , esz = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , sz = True)
+                limit_state = cmds.transformLimits (self.object , q = True , esz = True)
+                limit_num = cmds.transformLimits (self.object , q = True , sz = True)
 
                 attrs_limits_dict [attr] = (limit_state , limit_num)
 
@@ -295,7 +310,7 @@ class Attr (object) :
         value (((lower_limit_state, (0.0, lower_limit_num)), (upper_limit_state, (0.0, upper_limit_num)))).
 
         Args:
-            self.obj (str): 控制器查询属性范围.
+            self.object (str): 控制器查询属性范围.
             return_custom_attrs (bool): 是否返回自定义属性范围.
 
         Returns:
@@ -306,8 +321,8 @@ class Attr (object) :
 
         """
 
-        keyable_attrs = cmds.listAttr (self.obj , keyable = True)
-        custom_attrs = cmds.listAttr (self.obj , keyable = True , userDefined = True)
+        keyable_attrs = cmds.listAttr (self.object , keyable = True)
+        custom_attrs = cmds.listAttr (self.object , keyable = True , userDefined = True)
         default_attrs = pipelineUtils.list_operation (list_a = keyable_attrs , list_b = custom_attrs , operation = '-')
 
         if not return_custom_attrs :
@@ -321,36 +336,36 @@ class Attr (object) :
 
             #  query default transformation attributes
             if attr == "translateX" :
-                limit_state = cmds.transformLimits (self.obj , q = True , etx = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , tx = True)
+                limit_state = cmds.transformLimits (self.object , q = True , etx = True)
+                limit_num = cmds.transformLimits (self.object , q = True , tx = True)
             if attr == "translateY" :
-                limit_state = cmds.transformLimits (self.obj , q = True , ety = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , ty = True)
+                limit_state = cmds.transformLimits (self.object , q = True , ety = True)
+                limit_num = cmds.transformLimits (self.object , q = True , ty = True)
             if attr == "translateZ" :
-                limit_state = cmds.transformLimits (self.obj , q = True , etz = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , tz = True)
+                limit_state = cmds.transformLimits (self.object , q = True , etz = True)
+                limit_num = cmds.transformLimits (self.object , q = True , tz = True)
 
             if attr == "rotateX" :
-                limit_state = cmds.transformLimits (self.obj , q = True , erx = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , rx = True)
+                limit_state = cmds.transformLimits (self.object , q = True , erx = True)
+                limit_num = cmds.transformLimits (self.object , q = True , rx = True)
             if attr == "rotateY" :
-                limit_state = cmds.transformLimits (self.obj , q = True , ery = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , ry = True)
+                limit_state = cmds.transformLimits (self.object , q = True , ery = True)
+                limit_num = cmds.transformLimits (self.object , q = True , ry = True)
             if attr == "rotateZ" :
-                limit_state = cmds.transformLimits (self.obj , q = True , erz = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , rz = True)
+                limit_state = cmds.transformLimits (self.object , q = True , erz = True)
+                limit_num = cmds.transformLimits (self.object , q = True , rz = True)
 
             if attr == "scaleX" :
-                limit_state = cmds.transformLimits (self.obj , q = True , esx = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , sx = True)
+                limit_state = cmds.transformLimits (self.object , q = True , esx = True)
+                limit_num = cmds.transformLimits (self.object , q = True , sx = True)
             if attr == "scaleY" :
-                limit_state = cmds.transformLimits (self.obj , q = True , esy = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , sy = True)
+                limit_state = cmds.transformLimits (self.object , q = True , esy = True)
+                limit_num = cmds.transformLimits (self.object , q = True , sy = True)
             if attr == "scaleZ" :
-                limit_state = cmds.transformLimits (self.obj , q = True , esz = True)
-                limit_num = cmds.transformLimits (self.obj , q = True , sz = True)
+                limit_state = cmds.transformLimits (self.object , q = True , esz = True)
+                limit_num = cmds.transformLimits (self.object , q = True , sz = True)
 
-            ctrl_attrs_range ['{}.{}'.format (self.obj , attr)] = (
+            ctrl_attrs_range ['{}.{}'.format (self.object , attr)] = (
                 (limit_state [0] , (0.0 , limit_num [0])) , (limit_state [1] , (0.0 , limit_num [1]))
             )
 
@@ -358,12 +373,12 @@ class Attr (object) :
         if custom_attrs :
             for attr in custom_attrs :
                 try :
-                    limit_num = cmds.attributeQuery (attr , node = self.obj , range = True)
+                    limit_num = cmds.attributeQuery (attr , node = self.object , range = True)
                     if limit_num and limit_num != [0.0 , 0.0] :
                         limit_state = [False if limit_num [0] == 0.0 else True ,
                                        False if limit_num [1] == 0.0 else True]
 
-                        ctrl_attrs_range ['{}.{}'.format (self.obj , attr)] = (
+                        ctrl_attrs_range ['{}.{}'.format (self.object , attr)] = (
                             (limit_state [0] , (0.0 , limit_num [0])) , (limit_state [1] , (0.0 , limit_num [1]))
                         )
                 except :
@@ -389,17 +404,17 @@ class Attr (object) :
         #     )
         #
         #     if ctrls_attrs_limits_dict:
-        #         ctrls_to_import = pipelineUtils.list_operation(list_a=self.obj,
+        #         ctrls_to_import = pipelineUtils.list_operation(list_a=self.object,
         #         list_b=ctrls_attrs_limits_dict.keys(), operation='&')
         #         if ctrls_to_import:
-        #             for self.obj in ctrls_to_import:
+        #             for self.object in ctrls_to_import:
         #                 # lock unwanted attrs
-        #                 ctrl_attrs = ctrls_attrs_limits_dict[self.obj].keys()
+        #                 ctrl_attrs = ctrls_attrs_limits_dict[self.object].keys()
         #                 attrs_to_lock = self.get_unwanted_attrs(attrs_list=ctrl_attrs)
         #                 self.lock_and_hide_attrs(ctrl_attrs, lock = False, hide=False)
         #                 self.lock_and_hide_attrs(attrs_to_lock, lock = True, hide=True)
         #                 # set attrs limits
-        #                 self.set_Limits(ctrls_attrs_limits_dict[self.obj])
+        #                 self.set_Limits(ctrls_attrs_limits_dict[self.object])
         #
         #             print("Controllers attrs limits data imported from {}".format(current_path))
         #
@@ -423,7 +438,7 @@ class Attr (object) :
         #     ctrls_attrs_limits_dict = {}
         #
         #     attrs_limits_dict = self.get_attrs_limits()
-        #     ctrls_attrs_limits_dict[self.obj] = attrs_limits_dict
+        #     ctrls_attrs_limits_dict[self.object] = attrs_limits_dict
         #
         #     fileManage.version_up(path=current_path, user_file='ctrls_attrs_limits.json')
         #     fileManage.export_file_info_as_json(
@@ -434,7 +449,7 @@ class Attr (object) :
         # #     """Return value from string type attribute.
         # #
         # #     Args:
-        # #        self.obj(str): name has this string type attribute.
+        # #        self.object(str): name has this string type attribute.
         # #         attr (str): Attribute name.
         # #
         # #     Returns:
@@ -443,8 +458,8 @@ class Attr (object) :
         # #
         # #     """
         # #     attr = attr
-        # #     if cmds.nameExists('{}.{}'.format(self.obj , attr)):
-        # #         string_info_message = cmds.getAttr('{}.{}'.format(self.obj, attr))
+        # #     if cmds.nameExists('{}.{}'.format(self.object , attr)):
+        # #         string_info_message = cmds.getAttr('{}.{}'.format(self.object, attr))
         # #         if string_info_message:
         # #             self.info = literal_eval(string_info_message)
         # #             return self.info
