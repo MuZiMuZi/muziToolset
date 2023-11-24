@@ -14,7 +14,7 @@ from importlib import reload
 
 import maya.cmds as cmds
 
-from . import pipelineUtils
+from . import pipelineUtils,fileUtils
 
 
 
@@ -155,7 +155,7 @@ class MateHuman() :
 		:return:
 		'''
 		# 获取maya文件的路径
-		scene_path = pipelineUtils.Pipeline.get_current_scene_path() + '_face_animation'
+		scene_path = fileUtils.File.get_current_scene_path() + '_face_animation'
 		
 		# 选择matehuman的动画数据
 		cmds.select('FacialControls')
@@ -170,7 +170,7 @@ class MateHuman() :
 		:return:
 		'''
 		# 获取maya文件的路径
-		scene_path = pipelineUtils.Pipeline.get_current_scene_path() + '_body_animation'
+		scene_path = fileUtils.File.get_current_scene_path () + '_body_animation'
 		
 		# 选择matehuman的动画数据
 		cmds.select('Body_joints')

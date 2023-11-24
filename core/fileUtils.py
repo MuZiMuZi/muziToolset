@@ -159,6 +159,17 @@ class File (object) :
 
         #  keyframeInfo = cmds.keyframe(ctrl, attribute=attr, query=True, time=(keyframeInfo[0], keyframeInfo[2]), timeChange=True, valueChange=True)
 
+
+    # 获取当前文件的绝对路径
+    @staticmethod
+    def get_current_scene_path () :
+        u'''
+        获取当前文件的绝对路径
+        :return:
+        '''
+        return str (pm.sceneName ().abspath ()).replace ('\\' , '/')
+
+
 def text () :
     """
     对于文件操作的例子

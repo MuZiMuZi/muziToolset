@@ -29,7 +29,7 @@ reload (Control_Tool_main)
 
 class Tool_main_Window (QMainWindow) :
 
-    def __init__ (self , parent = pipelineUtils.Pipeline.get_maya_main_window ()) :
+    def __init__ (self , parent = qtUtils.get_maya_window()) :
         super (Tool_main_Window , self).__init__ (parent)
 
         # 设置标题

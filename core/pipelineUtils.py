@@ -364,43 +364,6 @@ class Pipeline (object) :
 
 
     @staticmethod
-    def save_file_as (current_selected_file) :
-        u'''
-        保存给定的文件的名称
-        :param current_opend_file: 当前打开的文件
-        :param current_selected_file: 选择保存的文件
-        :return:
-        '''
-        # 根据所选择的文件获取源文件的名称，并打开重命名名称的窗口
-        old_name = os.path.basename (current_selected_file)
-        new_name = qtutils.input_dialog_text (u'重命名_{}'.format (old_name) , u'重命名为新的名称' , (500 , 200))
-        new_name = '.'.join ([new_name , 'ma'])
-        if new_name is None :
-            return
-
-        if os.path.isfile (current_selected_file) :
-            parent_path = os.path.dirname (current_selected_file)
-        else :
-            parent_path = current_selected_file
-
-        new_path = QtUtils.path_joiner (parent_path , new_name)
-        if os.path.exists (new_path) :
-            print ('{} already exists .Request ignored.'.format (new_path))
-            return
-
-        pm.saveAs (new_path)
-
-
-    @staticmethod
-    def get_current_scene_path () :
-        u'''
-        获取当前文件的绝对路径
-        :return:
-        '''
-        return str (pm.sceneName ().abspath ()).replace ('\\' , '/')
-
-
-    @staticmethod
     def get_group_name (name_space) :
         u'''
         根据给定的name_space来设定组的名称
