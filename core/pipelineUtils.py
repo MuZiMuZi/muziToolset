@@ -362,34 +362,7 @@ class Pipeline (object) :
 
         return new_node
 
-
-    @staticmethod
-    def create_reference (file_path , name_space = None) :
-        u'''
-        在maya里的当前文件创建引用
-        :param file_path: 需要引用的文件路径
-        :param name_space: 引用文件的名称空间
-        :return:
-        '''
-        if name_space is None :
-            name_space = os.path.basename (file_path).split ('.') [0].upper ()
-        try :
-            pm.Namespace (name_space).remove ()
-        except :
-            pass
-        # 设定引用的文件的组名，对应的引用文件放在这个组下
-        grp_name = get_group_name (name_space)
-
-        # 引用文件设置
-        ref_node = pm.createReference (file_path ,
-                                       namespace = name_space ,
-                                       loadReferenceDepth = 'all' ,
-                                       groupReference = True ,
-                                       groupName = grp_name)
-
-        return ref_node , pm.Namespace (name_space) , grp_name
-
-
+    #创建回调函数在新场景打开的时候执行回调函数
     @staticmethod
     def create_native_script_job (event_name , callback) :
         #############################################################
@@ -401,21 +374,6 @@ class Pipeline (object) :
         return partial (om.MEventMessage.removeCallback , scene_open_callback_id)
 
 
-    @staticmethod
-    def fbxExport (des_path) :
-        u"""
-        所选择的物体导出成为fbx文件
-        :type des_path: str
-        :return:
-        """
-        path_string = des_path.replace ('\\' , '/')
-        try :
-            path (des_path).parent.makedirs_p ()
-            mel.eval (f'FBXExport -f "{path_string}" -s')
-            print (f'Export succeeded. {pm.selected ()} -> {path_string}')
-        except Exception as e :
-            print ('Export failed. ' + path_string)
-            print (e)
 
 
     @staticmethod

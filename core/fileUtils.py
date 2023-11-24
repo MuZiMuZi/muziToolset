@@ -196,6 +196,28 @@ class File (object) :
         return ref_node , pm.Namespace (name_space) , grp_name
 
 
+    # 在 Maya 中导出所选物体为 FBX 文件的脚本,接受一个目标路径self.file_path参数。该路径指定了导出的 FBX 文件的保存位置。
+    def fbxExport (self) :
+        u"""
+        在 Maya 中导出所选物体为 FBX 文件的脚本,接受一个目标路径self.file_path参数。该路径指定了导出的 FBX 文件的保存位置。
+        : self.file_path: 该路径指定了导出的 FBX 文件的保存位置。
+        :return:
+        """
+        # 将目标路径的反斜杠 \ 替换为正斜杠 /。
+        path_string = self.file_path.replace ('\\' , '/')
+        try :
+            # 尝试创建目标路径的父目录，以确保导出路径存在。
+            path (self.file_path).parent.makedirs_p ()
+            # 使用 Mel 脚本命令 FBXExport 将所选物体导出为 FBX 文件，指定导出文件的路径。
+            mel.eval (f'FBXExport -f "{path_string}" -s')
+            # 在成功导出时，打印成功消息，并输出导出的物体列表。
+            print (f'Export succeeded. {pm.selected ()} -> {path_string}')
+        # 在导出失败时，打印错误消息和异常信息。
+        except Exception as e :
+            print ('Export failed. ' + path_string)
+            print (e)
+
+
 def text () :
     """
     对于文件操作的例子
