@@ -1154,6 +1154,7 @@ class Pipeline (object) :
         # logger.error ("This is an error message.")
 
 
+    # 给指定的对象创建set选择集来方便选择
     @staticmethod
     def create_set (object , set_name , set_parent = None) :
         """
@@ -1184,6 +1185,7 @@ class Pipeline (object) :
         return set_name
 
 
+    # 选择需要创建动力学化的曲线。创建动力学化曲线驱动头发
     @staticmethod
     def create_dynamic_curve_driven () :
         """
