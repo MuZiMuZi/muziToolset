@@ -362,7 +362,8 @@ class Pipeline (object) :
 
         return new_node
 
-    #创建回调函数在新场景打开的时候执行回调函数
+
+    # 创建回调函数在新场景打开的时候执行回调函数
     @staticmethod
     def create_native_script_job (event_name , callback) :
         #############################################################
@@ -374,16 +375,22 @@ class Pipeline (object) :
         return partial (om.MEventMessage.removeCallback , scene_open_callback_id)
 
 
-
-
+    # 这是一个用于在 Maya 中创建约束（constraint）的函数。
     @staticmethod
     def create_constraint (driver , driven , point_value = False , orient_value = False , parent_value = True ,
                            scale_value = False ,
                            mo_value = True) :
         '''
-        创建约束对象
-        driver:约束者
-        driven:被约束者
+
+        这是一个用于在 Maya 中创建约束（constraint）的函数。该函数接受以下参数：
+
+        driver(str): 约束的驱动对象。
+        driven(str): 被约束的对象。
+        point_value(bool): 布尔值，指示是否创建点约束（默认为 False）。
+        orient_value(bool): 布尔值，指示是否创建方向约束（默认为 False）。
+        parent_value(bool): 布尔值，指示是否创建父级约束（默认为 True）。
+        scale_value(bool): 布尔值，指示是否创建缩放约束（默认为 False）。
+        mo_value(bool): 布尔值，指示是否使用移动轴心（默认为 True）。
         '''
         if point_value :
             cmds.pointConstraint (driver , driven , mo = mo_value)
