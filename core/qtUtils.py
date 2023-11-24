@@ -11,6 +11,7 @@
 选择文件夹点击按钮后可以在系统文件资源管理器里打开这个文件夹:show_folder_in_explorer
 '''
 import os
+import sys
 import subprocess
 import maya.OpenMayaUI as omui
 from PySide2.QtCore import *
@@ -174,9 +175,9 @@ def get_maya_window () :
     pointer = omui.MQtUtil.mainWindow ()
     # 判断python的版本号，如果大于3的话就使用int
     if sys.version_info.major >= 3 :
-        return wrapInstance (int (pointer) , QtWidgets.QWidget)
+        return wrapInstance (int (pointer) , QWidget)
     else :
-        return wrapInstance (long (pointer) , QtWidgets.QWidget)
+        return wrapInstance (long (pointer) , QWidget)
 
 
 class Left_menu_button (QPushButton) :
@@ -265,7 +266,7 @@ class FrameWidget (QGroupBox) :
 
 
     def paintEvent (self , event) :
-        painter = QtGui.QPainter ()
+        painter = QPainter ()
         painter.begin (self)
 
         font = painter.font ()
@@ -278,14 +279,14 @@ class FrameWidget (QGroupBox) :
         offset = 25
 
         painter.setRenderHint (painter.Antialiasing)
-        painter.fillRect (self.expandCollapseRect () , QtGui.QColor (93 , 93 , 93))
+        painter.fillRect (self.expandCollapseRect () , QColor (93 , 93 , 93))
         painter.drawText (
             x + offset , y + 3 , w , 16 ,
             Qt.AlignLeft | Qt.AlignTop ,
             self.title ()
         )
         self.__drawTriangle (painter , x , y)  # (1)
-        painter.setRenderHint (QtGui.QPainter.Antialiasing , False)
+        painter.setRenderHint (QPainter.Antialiasing , False)
         painter.end ()
 
 
@@ -306,13 +307,13 @@ class FrameWidget (QGroupBox) :
         currentPen = painter.pen ()
 
         painter.setBrush (
-            QtGui.QBrush (
-                QtGui.QColor (187 , 187 , 187) ,
+            QBrush (
+                QColor (187 , 187 , 187) ,
                 Qt.SolidPattern
             )
         )  # (5)
-        painter.setPen (QtGui.QPen (Qt.NoPen))  # (6)
-        painter.drawPolygon (QtGui.QPolygon (points))  # (7)
+        painter.setPen (QPen (Qt.NoPen))  # (6)
+        painter.drawPolygon (QPolygon (points))  # (7)
         painter.setBrush (currentBrush)  # (8)
         painter.setPen (currentPen)
 
