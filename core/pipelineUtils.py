@@ -538,11 +538,11 @@ class Pipeline (object) :
         # # 打印创建的关节列表
         # print (joints_list)
 
-
+    #根据给定关节点的位置生成曲线的函数
     @staticmethod
     def create_curve_on_joints (jnt_list , curve , degree = 3) :
         u"""
-        根据关节点的位置生成曲线
+       根据给定关节点的位置生成曲线的函数
         jnt_list(list):关节的列表
         curve（str）：创建出来的曲线的名称
         degree(int)：新曲线的阶数。默认值为3。请注意，您需要（阶数+1）个曲线点来创建可见的曲线跨度。你必须为3度曲线放置4个点。
@@ -553,7 +553,7 @@ class Pipeline (object) :
         # 创建一个列表用来存储点的位置信息
         curve_points = list ()
 
-        # 查询所有关节的位置信息，将所有关节的位置信息保存到curve_points里
+        # 遍历 jnt_list 中的每个关节点，获取其位置信息，并将位置信息添加到 curve_points 列表中。
         for jnt in jnt_list :
             pos = cmds.xform (jnt , q = 1 , t = 1 , ws = 1)
             curve_points.append (pos)
@@ -561,6 +561,17 @@ class Pipeline (object) :
         curve = cmds.curve (p = curve_points , name = curve , degree = degree)
 
         return curve
+
+        ##简单的示例
+        # # 假设有一个关节点的列表和要创建的曲线名称
+        # joint_list = ["joint1" , "joint2" , "joint3"]
+        # curve_name = "generated_curve"
+        #
+        # # 调用函数生成曲线
+        # created_curve = generate_curve_from_joints (joint_list , curve_name)
+        #
+        # # 打印创建的曲线名称
+        # print (created_curve)
 
 
     @staticmethod
