@@ -84,7 +84,7 @@ class File (object) :
 
 
     @staticmethod
-    def export_animation ():
+    def export_animation () :
         """
         选择所有需要导出动画的控制器导出动画,来源37佬
         """
@@ -124,7 +124,6 @@ class File (object) :
         """
         根据json文件里的动画来导入动画文件测试,来源37佬
         """
-
 
         # 从文本文件中读取动画数据并赋予 blendshape B
         fpath1 = r"D:\animation.json"
@@ -168,6 +167,33 @@ class File (object) :
         :return:
         '''
         return str (pm.sceneName ().abspath ()).replace ('\\' , '/')
+
+
+    # 在maya里的当前文件创建引用,给定需要引用的文件路径和设置引用文件的名称空间
+    def create_reference (self , name_space = None) :
+        u'''
+        在maya里的当前文件创建引用
+        :param self.file_path: 需要引用的文件路径
+        :param name_space: 引用文件的名称空间
+        :return:
+        '''
+        if name_space is None :
+            name_space = os.path.basename (self.file_path).split ('.') [0].upper ()
+        try :
+            pm.Namespace (name_space).remove ()
+        except :
+            pass
+        # 设定引用的文件的组名，对应的引用文件放在这个组下
+        grp_name = get_group_name (name_space)
+
+        # 引用文件设置
+        ref_node = pm.createReference (self.file_path ,
+                                       namespace = name_space ,
+                                       loadReferenceDepth = 'all' ,
+                                       groupReference = True ,
+                                       groupName = grp_name)
+
+        return ref_node , pm.Namespace (name_space) , grp_name
 
 
 def text () :

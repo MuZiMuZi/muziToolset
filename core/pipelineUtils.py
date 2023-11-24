@@ -364,16 +364,6 @@ class Pipeline (object) :
 
 
     @staticmethod
-    def get_group_name (name_space) :
-        u'''
-        根据给定的name_space来设定组的名称
-        :param name_space:
-        :return:
-        '''
-        return 'REF_{}'.format (name_space)
-
-
-    @staticmethod
     def create_reference (file_path , name_space = None) :
         u'''
         在maya里的当前文件创建引用
