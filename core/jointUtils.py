@@ -542,6 +542,7 @@ class Joint (object) :
                     cmds.connectAttr (ctrl + '.{}{}'.format (attr , axis) , child_jnt + '.{}{}'.format (attr , axis))
 
 
+    # 根据关节的名称，该脚本将关节的一些属性进行设置，根据关节的名称，设置了关节的 side、type 和 otherType 属性。
     def tag_joint (self) :
         """
         根据关节的名称，该脚本将关节的一些属性进行设置，根据关节的名称，设置了关节的 side、type 和 otherType 属性。
