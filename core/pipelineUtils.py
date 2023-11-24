@@ -57,7 +57,8 @@ class Pipeline (object) :
     def __init__ (self) :
         pass
 
-    #清除场景内所有的关键帧
+
+    # 清除场景内所有的关键帧
     @staticmethod
     def clear_keys () :
         u"""
@@ -71,7 +72,8 @@ class Pipeline (object) :
         else :
             cmds.warning (u"场景内没有动画关键帧")
 
-    #将“isFace”标记添加到所选物体的属性上
+
+    # 将“isFace”标记添加到所选物体的属性上
     @staticmethod
     def add_face_tag () :
         u"""将“isFace”标记添加到所选物体的属性上.
@@ -86,7 +88,7 @@ class Pipeline (object) :
                 cmds.setAttr ('{}.isFace'.format (sel) , keyable = False , channelBox = False)
 
 
-    #移除没有带face标志的物体.
+    # 移除没有带face标志的物体.
     @staticmethod
     def remove_non_face_objs () :
         u"""“移除没有带face标志的物体.
@@ -103,7 +105,8 @@ class Pipeline (object) :
                             '{}.isFace'.format (child)) :
                         cmds.delete (child)
 
-    #获取两个对象之间的距离.
+
+    # 获取两个对象之间的距离.
     @staticmethod
     def distence_between (node_a , node_b) :
         u'''获取两个对象之间的距离.
@@ -118,7 +121,8 @@ class Pipeline (object) :
         dist = math.sqrt (sum ([pow ((b - a) , 2) for b , a in zip (point_a , point_b)]))
         return dist
 
-    #重置绑定系统的控制器上所有的数值.
+
+    # 重置绑定系统的控制器上所有的数值.
     @staticmethod
     def reset_control () :
         u"""重置绑定系统的控制器上所有的数值.
@@ -146,7 +150,8 @@ class Pipeline (object) :
         for IKFKblend in ctrl_IKFKblend :
             cmds.setAttr (IKFKblend + '.IkFkBend' , 1)
 
-    #根据传入的操作符号（|, &, -, ^）返回两个列表的并集、交集、差分或对称差分。
+
+    # 根据传入的操作符号（|, &, -, ^）返回两个列表的并集、交集、差分或对称差分。
     @staticmethod
     def list_operation (list_a , list_b , operation = '|') :
         u"""将两个列表的并集/差分/交集/对称_差分部分作为列表返回.
@@ -186,9 +191,7 @@ class Pipeline (object) :
             return list (set_a.symmetric_difference (set_b))
 
 
-
-
-
+    # 选择物体，批量制作约束。新添加创建关节来蒙皮物体
     @staticmethod
     def batch_Constraints_modle () :
         u"""
@@ -237,6 +240,7 @@ class Pipeline (object) :
             cmds.undoInfo (openChunk = False)  # 批量撤销的开头
 
 
+    # 选择关节，批量制作约束。不需要新添加创建关节来蒙皮物体
     @staticmethod
     def batch_Constraints_joint () :
         u"""
@@ -281,125 +285,6 @@ class Pipeline (object) :
             cmds.undoInfo (openChunk = False)  # 批量撤销的开头
 
 
-    @staticmethod
-    def default_grp () :
-        u'''
-        添加绑定的初始层级组，并隐藏连接对应的属性
-        '''
-        # 创建顶层的Group组
-        Group = cmds.createNode ('transform' , name = 'Group')
-
-        # 创建Group层级下的子层级组，并做层级关系
-        Geometry = cmds.createNode ('transform' , name = 'Geometry')
-        Control = cmds.createNode ('transform' , name = 'Control')
-        Custom = cmds.createNode ('transform' , name = 'Custom')
-        cmds.parent (Geometry , Custom , Control , Group)
-
-        # 创建RigNode层级下的子层级组并做层级关系
-        RigNodes = cmds.createNode ('transform' , name = 'RigNodes')
-        Joints = cmds.createNode ('transform' , name = 'Joints')
-        RigNodes_Local = cmds.createNode ('transform' , name = 'RigNodesLocal')
-        RigNodes_World = cmds.createNode ('transform' , name = 'RigNodesWorld')
-        nCloth_geo_grp = cmds.createNode ('transform' , name = 'nCloth_geo_grp')
-        cmds.parent (RigNodes_Local , RigNodes_World , RigNodes)
-        cmds.parent (RigNodes , Joints , nCloth_geo_grp , Custom)
-
-        # 创建Modle层级下的子层级组并且做层级关系
-        Low_modle_grp = cmds.createNode ('transform' , name = 'grp_m_low_Modle_001')
-        Mid_modle_grp = cmds.createNode ('transform' , name = 'grp_m_mid_Modle_001')
-        High_modle_grp = cmds.createNode ('transform' , name = 'grp_m_high_Modle_001')
-        cmds.parent (Low_modle_grp , Mid_modle_grp , High_modle_grp , Geometry)
-
-        World_zero = [Group , Geometry , RigNodes_Local , RigNodes_World , RigNodes , Control , Joints , Custom]
-        attrs_list = ['.translateX' , '.translateY' , '.translateZ' , '.rotateX' , '.rotateY' , '.rotateZ' ,
-                      '.scaleX' ,
-                      '.scaleY' ,
-                      '.scaleZ' , '.visibility' , '.rotateOrder' , '.subCtrlVis']
-        rig_top_grp = 'Group'
-        if not cmds.objExists (rig_top_grp) :
-            selections = cmds.ls (sl = True)
-            if selections :
-                rig_top_grp = selections [0]
-
-        # 创建总控制器Character
-        character_ctrl_obj = controlUtils.Control.create_ctrl ('ctrl_m_Character_001' , shape = 'circle' , radius = 10 ,
-                                                               axis = 'X+' ,
-                                                               pos = None ,
-                                                               parent = Control)
-
-        # 创建世界控制器
-        world_ctrl_obj = controlUtils.Control.create_ctrl ('ctrl_m_world_001' , shape = 'local' , radius = 8 ,
-                                                           axis = 'Z-' ,
-                                                           pos = None ,
-                                                           parent = 'ctrl_m_Character_001')
-
-        cog_ctrl_obj = controlUtils.Control.create_ctrl ('ctrl_m_cog_001' , shape = 'circle' , radius = 3 ,
-                                                         axis = 'X+' ,
-                                                         pos = None ,
-                                                         parent = 'output_m_world_001')
-
-        # 创建一个自定义的控制器，用来承载自定义的属性
-        lock_ctrl_obj = controlUtils.Control.create_ctrl ('ctrl_m_custom_001' , shape = 'cross' , radius = 3 ,
-                                                          axis = 'X+' ,
-                                                          pos = None ,
-                                                          parent = Custom)
-        lock_ctrl = 'ctrl_m_custom_001'
-        cmds.parentConstraint ('ctrl_m_Character_001' , lock_ctrl , mo = True)
-        cmds.scaleConstraint ('ctrl_m_Character_001' , lock_ctrl , mo = True)
-
-        # 创建自定义的控制器属性
-        for attr in ['GeometryVis' , 'ControlsVis' , 'RigNodesVis' , 'JointsVis'] :
-            if not cmds.objExists ('{}.{}'.format (lock_ctrl , attr)) :
-                cmds.addAttr (lock_ctrl , ln = attr , at = 'bool' , dv = 1 , keyable = True)
-
-        # 添加精度切换的属性
-        if not cmds.objExists ('{}.Resolution'.format (lock_ctrl)) :
-            cmds.addAttr (lock_ctrl , ln = 'Resolution' , at = 'enum' , en = 'low:mid:high' , keyable = True)
-            for idx , res in {0 : 'low' , 1 : 'mid' , 2 : 'high'}.items () :
-                cnd_node = 'resolution_{}_conditionNode'.format (res)
-                if not cmds.objExists (cnd_node) :
-                    cnd_node = cmds.createNode ('condition' , n = cnd_node)
-                cmds.connectAttr ('{}.Resolution'.format (lock_ctrl) , '{}.firstTerm'.format (cnd_node) , f = True)
-                cmds.setAttr ('{}.secondTerm'.format (cnd_node) , idx)
-                cmds.setAttr ('{}.colorIfTrueR'.format (cnd_node) , 1)
-                cmds.setAttr ('{}.colorIfFalseR'.format (cnd_node) , 0)
-                cmds.connectAttr ('{}.outColorR'.format (cnd_node) , 'grp_m_{}_Modle_001.visibility'.format (res) ,
-                                  f = True)
-
-        # 添加模型显示方式的属性
-        if not cmds.objExists ('{}.GeometryDisplayType'.format (lock_ctrl)) :
-            cmds.addAttr (lock_ctrl , ln = 'GeometryDisplayType' , at = 'enum' , en = 'Normal:Template:Reference' ,
-                          keyable = True)
-
-        # 连接 GeometryVis
-        cmds.connectAttr ('{}.GeometryVis'.format (lock_ctrl) , '{}.visibility'.format (Geometry) , f = True)
-
-        # 连接 controlsVis
-        cmds.connectAttr ('{}.ControlsVis'.format (lock_ctrl) , '{}.visibility'.format (Control) , f = True)
-
-        # 连接 RigNodesVis
-        cmds.connectAttr ('{}.RigNodesVis'.format (lock_ctrl) , '{}.visibility'.format (RigNodes) , f = True)
-
-        # 连接 jointsVis
-        cmds.connectAttr ('{}.JointsVis'.format (lock_ctrl) , '{}.visibility'.format (Joints) , f = True)
-
-        # 连接模型的可编辑属性
-        cmds.setAttr (Geometry + '.overrideDisplayType' , 2)
-        cmds.connectAttr ('{}.GeometryDisplayType'.format (lock_ctrl) , Geometry + '.overrideEnabled' , f = True)
-
-        # 显示和隐藏属性
-        for attr in attrs_list :
-            cmds.setAttr (lock_ctrl + attr , l = True , k = False , cb = False)
-
-        return {
-            'Geometry' : Geometry ,
-            'Control' : Control ,
-            'RigNodes' : RigNodes ,
-            'Joints' : Joints ,
-            'RigNodes_Local' : RigNodes_Local ,
-            'RigNodes_World' : RigNodes_World ,
-            'nCloth_geo_grp' : nCloth_geo_grp
-        }
 
 
     @staticmethod
