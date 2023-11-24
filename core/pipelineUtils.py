@@ -103,59 +103,6 @@ class Pipeline (object) :
                         cmds.delete (child)
 
 
-    @staticmethod
-    def copy_weight () :
-        u'''
-
-        Returns:复制蒙皮
-
-        '''
-        # 获取选择
-        sel = cmds.ls (selection = True)
-
-        source_mesh = sel [0]
-        target_meshes = sel [1 :]
-
-        # 查询目标对象是否具有蒙皮信息
-        for target_mesh in target_meshes :
-            target_skin = mel.eval ('findRelatedSkinCluster("' + target_mesh + '")')
-            if target_skin :
-                cmds.delete (target_skin)
-
-        # 获取源对象的蒙皮信息
-        source_skin = mel.eval ('findRelatedSkinCluster("' + source_mesh + '")')
-
-        # 获取源对象受影响的蒙皮信息
-        source_joints = cmds.skinCluster (source_skin , query = True , influence = True)
-
-        # 在每个目标对象中循环
-        for target_mesh in target_meshes :
-            # 用源关节绑定蒙皮
-            target_skin = cmds.skinCluster (source_joints , target_mesh , toSelectedBones = True) [0]
-
-            # 复制蒙皮权重
-            cmds.copySkinWeights (sourceSkin = source_skin , destinationSkin = target_skin , noMirror = True ,
-                                  surfaceAssociation = 'closestPoint' , influenceAssociation = ['label' , 'oneToOne'])
-
-            # 重命名对象蒙皮
-            cmds.select (sel)
-            Pipeline.rename_bs_sc ()
-
-
-    @staticmethod
-    def rename_bs_sc () :
-        u'''
-        批量重命名对象的蒙皮和混合变形节点
-        '''
-        geos = cmds.ls (sl = True)
-        for geo in geos :
-            geo_shape = cmds.listRelatives (geo , shapes = True)
-            sc = cmds.listConnections (geo_shape , type = 'skinCluster')
-            if sc :
-                cmds.rename (sc , 'sc_{}'.format (geo))
-            bs = cmds.listConnections (geo_shape , type = 'blendShape')
-            if bs :
-                cmds.rename (bs , 'bs_{}'.format (geo))
 
 
     @staticmethod

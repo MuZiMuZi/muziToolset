@@ -36,6 +36,7 @@ class Weights (object) :
         self.influences_Path = os.path.join (self.skinWeights_Path , self.influences_FileName)
 
 
+    # 选择物体，导出保存的权重文件
     def save_skinWeights (self) :
         u'''
        将蒙皮几何体对象的权重保存到给定权重文件夹，权重将保存在对象短名称下，并附加存储其蒙皮影响的文件
@@ -59,6 +60,7 @@ class Weights (object) :
             json.dump (influences , influences_file , sort_keys = True , indent = 4 , separators = (',' , ': '))
 
 
+    # 选择物体，读取保存的权重文件
     def load_skinWeights (self) :
         u'''
        从给定权重文件夹加载蒙皮几何体对象的权重将从与对象短名称匹配的文件名加载权重，并添加其他文件以获取其影响
@@ -94,3 +96,58 @@ class Weights (object) :
         cmds.warning (u'{}这个物体导入权重成功'.format (self.geo))
 
 
+    # 复制权重，先选择需要复制的蒙皮权重物体，再加选需要复制权重的物体
+    @staticmethod
+    def copy_weight () :
+        u'''
+
+        Returns:复制权重，先选择需要复制的蒙皮权重物体，再加选需要复制权重的物体
+
+        '''
+        # 获取选择
+        sel = cmds.ls (selection = True)
+
+        source_mesh = sel [0]
+        target_meshes = sel [1 :]
+
+        # 查询目标对象是否具有蒙皮信息
+        for target_mesh in target_meshes :
+            target_skin = mel.eval ('findRelatedSkinCluster("' + target_mesh + '")')
+            if target_skin :
+                cmds.delete (target_skin)
+
+        # 获取源对象的蒙皮信息
+        source_skin = mel.eval ('findRelatedSkinCluster("' + source_mesh + '")')
+
+        # 获取源对象受影响的蒙皮信息
+        source_joints = cmds.skinCluster (source_skin , query = True , influence = True)
+
+        # 在每个目标对象中循环
+        for target_mesh in target_meshes :
+            # 用源关节绑定蒙皮
+            target_skin = cmds.skinCluster (source_joints , target_mesh , toSelectedBones = True) [0]
+
+            # 复制蒙皮权重
+            cmds.copySkinWeights (sourceSkin = source_skin , destinationSkin = target_skin , noMirror = True ,
+                                  surfaceAssociation = 'closestPoint' , influenceAssociation = ['label' , 'oneToOne'])
+
+            # 重命名对象蒙皮
+            cmds.select (sel)
+            Pipeline.rename_bs_sc ()
+
+
+    # 批量重命名对象的蒙皮和混合变形节点
+    @staticmethod
+    def rename_bs_sc () :
+        u'''
+        批量重命名对象的蒙皮和混合变形节点
+        '''
+        geos = cmds.ls (sl = True)
+        for geo in geos :
+            geo_shape = cmds.listRelatives (geo , shapes = True)
+            sc = cmds.listConnections (geo_shape , type = 'skinCluster')
+            if sc :
+                cmds.rename (sc , 'sc_{}'.format (geo))
+            bs = cmds.listConnections (geo_shape , type = 'blendShape')
+            if bs :
+                cmds.rename (bs , 'bs_{}'.format (geo))
