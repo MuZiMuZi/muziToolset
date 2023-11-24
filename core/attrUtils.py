@@ -253,191 +253,24 @@ class Attr () :
         # 返回包含属性及其限制值的字典
         return attrs_limits_dict
 
-
-    def get_attrs_range (self , return_custom_attrs = True) :
-        u"""将属性范围作为带键的字典返回 ('{}.{}'.format(ctrl, attr)),
-        value (((lower_limit_state, (0.0, lower_limit_num)), (upper_limit_state, (0.0, upper_limit_num)))).
-
-        Args:
-            self.object (str): 控制器查询属性范围.
-            return_custom_attrs (bool): 是否返回自定义属性范围.
-
-        Returns:
-            dict: A dictionary {
-            '{}.{}'.format(ctrl, attr):
-            ((lower_limit_state, (0.0, lower_limit_num)), (upper_limit_state, (0.0, upper_limit_num)))
-            }.
-
-        """
-
-        keyable_attrs = cmds.listAttr (self.object , keyable = True)
-        custom_attrs = cmds.listAttr (self.object , keyable = True , userDefined = True)
-        default_attrs = pipelineUtils.list_operation (list_a = keyable_attrs , list_b = custom_attrs , operation = '-')
-
-        if not return_custom_attrs :
-            custom_attrs = []
-
-        # 从默认属性查询属性范围
-        ctrl_attrs_range = OrderedDict ()
-        for attr in default_attrs :
-            limit_state = [False , False]
-            limit_num = [-1 , 1]
-
-            #  query default transformation attributes
-            if attr == "translateX" :
-                limit_state = cmds.transformLimits (self.object , q = True , etx = True)
-                limit_num = cmds.transformLimits (self.object , q = True , tx = True)
-            if attr == "translateY" :
-                limit_state = cmds.transformLimits (self.object , q = True , ety = True)
-                limit_num = cmds.transformLimits (self.object , q = True , ty = True)
-            if attr == "translateZ" :
-                limit_state = cmds.transformLimits (self.object , q = True , etz = True)
-                limit_num = cmds.transformLimits (self.object , q = True , tz = True)
-
-            if attr == "rotateX" :
-                limit_state = cmds.transformLimits (self.object , q = True , erx = True)
-                limit_num = cmds.transformLimits (self.object , q = True , rx = True)
-            if attr == "rotateY" :
-                limit_state = cmds.transformLimits (self.object , q = True , ery = True)
-                limit_num = cmds.transformLimits (self.object , q = True , ry = True)
-            if attr == "rotateZ" :
-                limit_state = cmds.transformLimits (self.object , q = True , erz = True)
-                limit_num = cmds.transformLimits (self.object , q = True , rz = True)
-
-            if attr == "scaleX" :
-                limit_state = cmds.transformLimits (self.object , q = True , esx = True)
-                limit_num = cmds.transformLimits (self.object , q = True , sx = True)
-            if attr == "scaleY" :
-                limit_state = cmds.transformLimits (self.object , q = True , esy = True)
-                limit_num = cmds.transformLimits (self.object , q = True , sy = True)
-            if attr == "scaleZ" :
-                limit_state = cmds.transformLimits (self.object , q = True , esz = True)
-                limit_num = cmds.transformLimits (self.object , q = True , sz = True)
-
-            ctrl_attrs_range ['{}.{}'.format (self.object , attr)] = (
-                (limit_state [0] , (0.0 , limit_num [0])) , (limit_state [1] , (0.0 , limit_num [1]))
-            )
-
-        # 从自定义属性查询属性范围
-        if custom_attrs :
-            for attr in custom_attrs :
-                try :
-                    limit_num = cmds.attributeQuery (attr , node = self.object , range = True)
-                    if limit_num and limit_num != [0.0 , 0.0] :
-                        limit_state = [False if limit_num [0] == 0.0 else True ,
-                                       False if limit_num [1] == 0.0 else True]
-
-                        ctrl_attrs_range ['{}.{}'.format (self.object , attr)] = (
-                            (limit_state [0] , (0.0 , limit_num [0])) , (limit_state [1] , (0.0 , limit_num [1]))
-                        )
-                except :
-                    continue
-
-        return ctrl_attrs_range
-
-        # def import_ctrls_attrs_limits(self):
-        #     """Import all the controllers limits dict, and set them on selected controllers
-        #        with key(ctrl),
-        #        value(
-        #        a dictionary with key (attribute), value (([lower_limit_state, upper_limit_state], [lower_limit,
-        #        upper_limit]))
-        #        )
+        # 示例#
+        # # Example usage
+        # # Create a cube as a sample controller
+        # cube_name = cmds.polyCube () [0]
         #
-        #     """
+        # # Create an instance of YourClass
+        # your_instance = attrUtils.Attr (cube_name)
         #
-        #     # get current maya working path
-        #     current_path = fileManage.current_maya_path()
-        #
-        #     ctrls_attrs_limits_dict = fileManage.read_file_info_from_json(
-        #         path=current_path, user_file='ctrls_attrs_limits.json'
-        #     )
-        #
-        #     if ctrls_attrs_limits_dict:
-        #         ctrls_to_import = pipelineUtils.list_operation(list_a=self.object,
-        #         list_b=ctrls_attrs_limits_dict.keys(), operation='&')
-        #         if ctrls_to_import:
-        #             for self.object in ctrls_to_import:
-        #                 # lock unwanted attrs
-        #                 ctrl_attrs = ctrls_attrs_limits_dict[self.object].keys()
-        #                 attrs_to_lock = self.get_unwanted_attrs(attrs_list=ctrl_attrs)
-        #                 self.lock_and_hide_attrs(ctrl_attrs, lock = False, hide=False)
-        #                 self.lock_and_hide_attrs(attrs_to_lock, lock = True, hide=True)
-        #                 # set attrs limits
-        #                 self.set_Limits(ctrls_attrs_limits_dict[self.object])
-        #
-        #             print("Controllers attrs limits data imported from {}".format(current_path))
-        #
-        #         else:
-        #             cmds.warning("Controllers attrs limits data file doesn't exists!")
-        #     else:
-        #         cmds.warning("Controllers attrs limits data file doesn't exists!")
-        #
-        # def export_ctrls_attrs_limits(self):
-        #     """Export all the controllers limits as dict
-        #        with key(ctrl),
-        #        value(
-        #        a dictionary with key (attribute), value (([lower_limit_state, upper_limit_state], [lower_limit,
-        #        upper_limit]))
-        #        )
-        #
-        #     """
-        #
-        #     # get current maya working path
-        #     current_path = fileManage.current_maya_path()
-        #     ctrls_attrs_limits_dict = {}
-        #
-        #     attrs_limits_dict = self.get_attrs_limits()
-        #     ctrls_attrs_limits_dict[self.object] = attrs_limits_dict
-        #
-        #     fileManage.version_up(path=current_path, user_file='ctrls_attrs_limits.json')
-        #     fileManage.export_file_info_as_json(
-        #         path=current_path, user_file='ctrls_attrs_limits.json', data=ctrls_attrs_limits_dict)
-        #     print ("Controllers attrs limits data exported at {}".format(current_path))
-        #
-        # # def get_string_info(self, attr):
-        # #     """Return value from string type attribute.
-        # #
-        # #     Args:
-        # #        self.object(str): name has this string type attribute.
-        # #         attr (str): Attribute name.
-        # #
-        # #     Returns:
-        # #         float/int/str/tuple/list/dict/None: Converted from string information which is queried from
-        # attribute.
-        # #
-        # #     """
-        # #     attr = attr
-        # #     if cmds.nameExists('{}.{}'.format(self.object , attr)):
-        # #         string_info_message = cmds.getAttr('{}.{}'.format(self.object, attr))
-        # #         if string_info_message:
-        # #             self.info = literal_eval(string_info_message)
-        # #             return self.info
-        # #         else:
-        # #             return None
-        #
-        #
-        # # def get_string_info(name, attr=''):
-        """Return value from string type attribute.
-
-        Args:
-            name (str): name has this string type attribute.
-            attr (str): Attribute name.
-
-        Returns:
-            float/int/str/tuple/list/dict/None: Converted from string information which is queried from attribute.
-
-        """
-
-        if cmds.nameExists ('{}.{}'.format (name , attr)) :
-            string_info_message = cmds.getAttr ('{}.{}'.format (name , attr))
-            if string_info_message :
-                info = literal_eval (string_info_message)
-                return info
-
-            else :
-                return None
+        # # Get and print the attribute limits
+        # limits_dict = your_instance.get_attrs_limits ()
+        # for attr , limits in limits_dict.items () :
+        #     print (f"Attribute: {attr}")
+        #     print (f"Limit State: {limits [0]}")
+        #     print (f"Limit Values: {limits [1]}")
+        #     print ("--------")
 
 
+    #从Maya的主通道框中检索选定属性的长名称，可以选择通道盒上的属性，也可以选择历史记录上的属性，也可以选择形状历史上的属性
     @staticmethod
     def get_channelBox_attrs () :
         """从Maya的主通道框中检索选定属性的长名称，可以选择通道盒上的属性，也可以选择历史记录上的属性，也可以选择形状历史上的属性
@@ -485,7 +318,7 @@ class Attr () :
             cmds.warning ("请在通道盒中选择属性")
         return attr_names
 
-
+    #获取通道盒内所有的属性列表，查询需要位移的属性在列表的位置信息，之后进行通道盒属性位移
     @staticmethod
     def move_channelBox_attr (up = True , down = False) :
         """
