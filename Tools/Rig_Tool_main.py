@@ -210,7 +210,7 @@ class Rig_Tool (QWidget) :
         self.batch_Constraints_joint_button.clicked.connect (
             lambda *args : pipelineUtils.Pipeline.batch_Constraints_joint ())
 
-        self.default_grp_button.clicked.connect (lambda *args : pipelineUtils.Pipeline.default_grp ())
+        self.default_grp_button.clicked.connect (lambda *args : hierarchyUtils.Hierarchy.create_default_grp ())
 
         self.control_hierarchy_button.clicked.connect (lambda *args : hierarchyUtils.Hierarchy.control_hierarchy ())
 
