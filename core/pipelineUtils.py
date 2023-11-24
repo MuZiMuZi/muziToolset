@@ -34,6 +34,8 @@ import re
 import sys
 from functools import partial
 from functools import wraps
+import logging
+import os
 
 import maya.cmds as cmds
 import maya.mel as mel
@@ -538,7 +540,8 @@ class Pipeline (object) :
         # # 打印创建的关节列表
         # print (joints_list)
 
-    #根据给定关节点的位置生成曲线的函数
+
+    # 根据给定关节点的位置生成曲线的函数
     @staticmethod
     def create_curve_on_joints (jnt_list , curve , degree = 3) :
         u"""
@@ -574,6 +577,7 @@ class Pipeline (object) :
         # print (created_curve)
 
 
+    # 根据给定的曲线放样生成出曲面
     @staticmethod
     def create_surface_on_curve (curve , surface_node , spans = 4 , offset = 0.2) :
         u"""
@@ -605,6 +609,7 @@ class Pipeline (object) :
         return surface_node
 
 
+    # 在给定的曲面上创建毛囊节点和关节节点
     @staticmethod
     def create_joint_follicle_on_surface (surf_node , side , description , joint_number) :
         """
@@ -698,6 +703,7 @@ class Pipeline (object) :
         return follicle_dict
 
 
+    # 根据模型上所选择的边，模型的边到曲线生成新的曲线，判断场景里是否已经生成过对应的曲线，如果有的话则将其删除，没有的话则新创建
     @staticmethod
     def create_curve_on_polyToCurve (curve_name , degree = 3) :
         u'''
@@ -727,9 +733,11 @@ class Pipeline (object) :
         return curve_name
 
 
+    # 获取曲线的点数量的函数
     @staticmethod
     def get_curve_number (curve) :
         u"""
+        获取曲线的点数量的函数
         curve(str):想要获取点数量的曲线名称
         获得曲线的点数量:spans + degree
         return:
@@ -748,6 +756,7 @@ class Pipeline (object) :
         return cv_num
 
 
+    # 基于cv创建眼睑关节，并使用目标约束附加到曲线
     @staticmethod
     def create_eyelid_joints_on_curve (curve , eye_joint , up_object) :
         """
@@ -833,6 +842,7 @@ class Pipeline (object) :
             cmds.makeIdentity (jnt , apply = True , translate = True , rotate = True , scale = True)
 
 
+    # 使用pointOnCurveInfo节点在曲线上附加关节
     @staticmethod
     def attach_joints_on_curve (jnt_list , drive_curve , aim_curve , up_object , aim_type = 'object') :
         """
@@ -943,6 +953,7 @@ class Pipeline (object) :
         return attach_dict
 
 
+    # 给嘴唇添加拉链嘴的绑定
     @staticmethod
     def create_zip_lip (lip_ctrls , jaw_ctrl , upper_jnts , lower_jnts , zip_height = 0.5 , falloff = 3) :
         '''
@@ -1067,6 +1078,7 @@ class Pipeline (object) :
         return zip_lip_dict
 
 
+    # 制作需要调整权重值的约束，驱动的物体和控制器的zero组去约束driven组，并且调整权重值
     @staticmethod
     def create_doble_constraint (driver , ctrl , weight) :
         u"""
@@ -1097,6 +1109,7 @@ class Pipeline (object) :
         cmds.connectAttr (add_node + '.output' , con + '.{}W1'.format (zero))
 
 
+    # 创建logging日志，用来记录各个模块的日志报错信息，方便于项目排查
     @staticmethod
     def create_logging (logger_name , file_name , formatter = '%(asctime)s -%(name)s - %(levelname)s - %(message)s') :
         """
@@ -1104,9 +1117,6 @@ class Pipeline (object) :
         logger_name(str):用来自定义logger模块的名称
         formatter(str):设置保存日志的信息,例如format = '%(asctime)s -%(name)s - %(levelname)s - %(message)s'
         """
-        import logging
-        import os
-
         # 根据自定义logger模块的名称来创建logger
         logger = logging.getLogger (''.format (logger_name))
 
@@ -1123,9 +1133,25 @@ class Pipeline (object) :
 
         # level：设置日志的提示级别信息，
         file_handle.setLevel (logging.DEBUG)
-
+        # 设置文件处理器的格式为提供的 formatter。
         file_handle.setFormatter (file_formatter)
+        # 将文件处理器添加到 logger 中。
         logger.addHandler (file_handle)
+
+        ##简单实例
+        # # 假设有一个自定义的 logger 名称和要保存的日志文件名称
+        # logger_name = "my_logger"
+        # log_file_name = "my_log_file.log"
+        #
+        # # 调用函数创建 logger
+        # create_logging (logger_name , log_file_name)
+        #
+        # # 使用创建的 logger 记录日志信息
+        # logger = logging.getLogger (logger_name)
+        # logger.debug ("This is a debug message.")
+        # logger.info ("This is an info message.")
+        # logger.warning ("This is a warning message.")
+        # logger.error ("This is an error message.")
 
 
     @staticmethod
