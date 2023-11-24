@@ -326,7 +326,8 @@ class Pipeline (object) :
             if const :
                 cmds.delete (const)
 
-    #这是一个装饰器，用于将一系列操作的撤销 包裹成一个撤销操作
+
+    # 这是一个装饰器，用于将一系列操作的撤销 包裹成一个撤销操作
     @staticmethod
     def make_undo (func) :
         """
@@ -344,10 +345,7 @@ class Pipeline (object) :
 
         return wrap
 
-
-
-
-
+    #根据给定的节点类型，在给定的位置生成新的节点。常用来创建关节
     @staticmethod
     def create_node (node_type , node_name , match = False , match_node = None) :
         u'''
