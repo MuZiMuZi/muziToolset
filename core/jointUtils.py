@@ -542,6 +542,32 @@ class Joint (object) :
                     cmds.connectAttr (ctrl + '.{}{}'.format (attr , axis) , child_jnt + '.{}{}'.format (attr , axis))
 
 
+    def tag_joint (self) :
+        """
+        根据关节的名称，该脚本将关节的一些属性进行设置，根据关节的名称，设置了关节的 side、type 和 otherType 属性。
+        1.获取场景中所有类型为 'joint' 的关节对象。
+        2.遍历每个关节对象，根据关节名称的一部分（使用下划线 _ 分割）来确定关节的侧（left、right 或未知）。
+        3.根据关节的侧设置 side 属性的值。如果侧为 'l'，则设置为 1；如果侧为 'r'，则设置为 2；否则设置为 0。
+        4.设置 type 属性的值为 18。
+        5.将关节名称的其他部分连接起来，并将结果设置为 otherType 属性，其类型为字符串。
+        Args:
+            self.jnt (str): 需要设置关节的名称
+        """
+
+        name_parts = self.jnt.split ('_')
+
+        if name_parts [1] == 'l' :
+            side_index = 1
+        elif name_parts [1] == 'r' :
+            side_index = 2
+        else :
+            side_index = 0
+
+        cmds.setAttr (self.jnt + '.side' , side_index)
+        cmds.setAttr (self.jnt + '.type' , 18)
+        cmds.setAttr (self.jnt + '.otherType' , name_parts [2] + name_parts [3] , type = 'string')
+
+
 class Joint_Resampling (QDialog) :
     """
     关节重采样工具的页面编写

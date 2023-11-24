@@ -57,7 +57,7 @@ class Pipeline (object) :
     def __init__ (self) :
         pass
 
-
+    #清除场景内所有的关键帧
     @staticmethod
     def clear_keys () :
         u"""
@@ -71,7 +71,7 @@ class Pipeline (object) :
         else :
             cmds.warning (u"场景内没有动画关键帧")
 
-
+    #将“isFace”标记添加到所选物体的属性上
     @staticmethod
     def add_face_tag () :
         u"""将“isFace”标记添加到所选物体的属性上.
@@ -86,6 +86,7 @@ class Pipeline (object) :
                 cmds.setAttr ('{}.isFace'.format (sel) , keyable = False , channelBox = False)
 
 
+    #移除没有带face标志的物体.
     @staticmethod
     def remove_non_face_objs () :
         u"""“移除没有带face标志的物体.
@@ -102,9 +103,7 @@ class Pipeline (object) :
                             '{}.isFace'.format (child)) :
                         cmds.delete (child)
 
-
-
-
+    #获取两个对象之间的距离.
     @staticmethod
     def distence_between (node_a , node_b) :
         u'''获取两个对象之间的距离.
@@ -119,10 +118,10 @@ class Pipeline (object) :
         dist = math.sqrt (sum ([pow ((b - a) , 2) for b , a in zip (point_a , point_b)]))
         return dist
 
-
+    #重置绑定系统的控制器上所有的数值.
     @staticmethod
     def reset_control () :
-        u"""重置控制器上所有的数值.
+        u"""重置绑定系统的控制器上所有的数值.
 
 
 
@@ -147,15 +146,21 @@ class Pipeline (object) :
         for IKFKblend in ctrl_IKFKblend :
             cmds.setAttr (IKFKblend + '.IkFkBend' , 1)
 
-
+    #根据传入的操作符号（|, &, -, ^）返回两个列表的并集、交集、差分或对称差分。
     @staticmethod
     def list_operation (list_a , list_b , operation = '|') :
         u"""将两个列表的并集/差分/交集/对称_差分部分作为列表返回.
-
+        用于执行集合操作的 Python 函数，根据传入的操作符号（|, &, -, ^）返回两个列表的并集、交集、差分或对称差分。
         Args:
             list_a (list/None): 第一个列表.
             list_b (list/None): 第二个列表.
             operation (str): 运算符号为 '|', '&', '-', '^'.
+
+        具体而言，该函数的实现步骤如下：
+
+        1.将传入的两个列表（list_a 和 list_b）转换为集合（set_a 和 set_b）。
+        2.根据传入的操作符号执行相应的集合操作。
+        3.将结果转换回列表并返回。
 
         Returns:
             list: 作为列表的两个列表的并集/差分/交集/对称_差分部分.
@@ -181,28 +186,7 @@ class Pipeline (object) :
             return list (set_a.symmetric_difference (set_b))
 
 
-    @staticmethod
-    def tag_joint () :
-        """
-        tag joint base on its name
 
-        Args:
-            jnt (str): joint name
-        """
-        jnts = cmds.ls (type = 'joint')
-        for jnt in jnts :
-            name_parts = jnt.split ('_')
-
-            if name_parts [1] == 'l' :
-                side_index = 1
-            elif name_parts [1] == 'r' :
-                side_index = 2
-            else :
-                side_index = 0
-
-            cmds.setAttr (jnt + '.side' , side_index)
-            cmds.setAttr (jnt + '.type' , 18)
-            cmds.setAttr (jnt + '.otherType' , name_parts [2] + name_parts [3] , type = 'string')
 
 
     @staticmethod
@@ -427,14 +411,14 @@ class Pipeline (object) :
         driven_obj：被约束者
         """
         sel = cmds.ls (sl = True)
-        driver_obj = sel [0:-1]
+        driver_obj = sel [0 :-1]
         driven_obj = sel [-1]
         cmds.parentConstraint (driver_obj , driven_obj , mo = True)
         cmds.scaleConstraint (driver_obj , driven_obj , mo = True)
 
 
     @staticmethod
-    def select_constraints ():
+    def select_constraints () :
         u'''
         快速选择物体的约束节点
         '''
@@ -442,7 +426,8 @@ class Pipeline (object) :
         for obj in sel :
             const = cmds.listConnections (obj , type = 'constraint')
             if const :
-                cmds.select (const,replace = True)
+                cmds.select (const , replace = True)
+
 
     @staticmethod
     def delete_constraints () :
@@ -693,7 +678,8 @@ class Pipeline (object) :
 
 
     @staticmethod
-    def create_constraint (driver , driven , point_value = False , orient_value = False ,parent_value = True, scale_value = False ,
+    def create_constraint (driver , driven , point_value = False , orient_value = False , parent_value = True ,
+                           scale_value = False ,
                            mo_value = True) :
         '''
         创建约束对象
@@ -704,7 +690,7 @@ class Pipeline (object) :
             cmds.pointConstraint (driver , driven , mo = mo_value)
         if orient_value :
             cmds.orientConstraint (driver , driven , mo = mo_value)
-        if parent_value:
+        if parent_value :
             cmds.parentConstraint (driver , driven , mo = mo_value)
         if scale_value :
             cmds.scaleConstraint (driver , driven , mo = mo_value)
@@ -976,7 +962,7 @@ class Pipeline (object) :
         '''
 
         # 判断场景里是否已经生成过对应的曲线，如果有的话则将其删除，没有的话则新创建
-        if cmds.objExists (curve_name):
+        if cmds.objExists (curve_name) :
             cmds.delete (curve_name)
 
         # 根据所选择的点创建曲线
@@ -1512,4 +1498,3 @@ class Pipeline (object) :
         outputCurves_grp = cmds.ls ('hairSystem*OutputCurves' , type = 'transform')
         for outputCurve_grp in outputCurves_grp :
             hierarchyUtils.Hierarchy.parent (outputCurve_grp , nhair_rigNode_grp)
-
