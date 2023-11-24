@@ -414,7 +414,8 @@ class Pipeline (object) :
 
         return cmds.move (pos [0] , pos [1] , pos [2] , obj , r = 1)
 
-    #曲线的总长度为1，给定需要平分的点数量，返回每个点的位置信息
+
+    # 曲线的总长度为1，给定需要平分的点数量，返回每个点的位置信息
     @staticmethod
     def get_percentages (sample_count) :
         """
@@ -433,6 +434,7 @@ class Pipeline (object) :
 
         return outputs
 
+
     # 这是一个用于在 Maya 中获取指定节点的 DAG（Directed Acyclic Graph）路径的函数。函数接受一个参数 node，即 Maya 的节点对象（node name），并返回该节点的 DAG 路径（DAG path）。
     @staticmethod
     def get_dag_path (node = None) :
@@ -441,20 +443,21 @@ class Pipeline (object) :
         :param node: str. maya的节点对象
         :return: str. DAG 路径
         """
-        #创建一个 MSelectionList 对象，用于存储要查询的节点。
+        # 创建一个 MSelectionList 对象，用于存储要查询的节点。
         selection = om.MSelectionList ()
 
-        #将指定的节点名称添加到 MSelectionList 中。
+        # 将指定的节点名称添加到 MSelectionList 中。
         selection.add (node)
 
-        #创建一个 MDagPath 对象，用于存储 DAG 路径。
+        # 创建一个 MDagPath 对象，用于存储 DAG 路径。
         dag_path = om.MDagPath ()
-        #使用 getDagPath 方法从 MSelectionList 中获取 DAG 路径，并将结果存储在 MDagPath 对象中。
+        # 使用 getDagPath 方法从 MSelectionList 中获取 DAG 路径，并将结果存储在 MDagPath 对象中。
         selection.getDagPath (0 , dag_path)
-        #返回 DAG 路径。
+        # 返回 DAG 路径。
         return dag_path
 
-    #获取具有均匀距离的nurbs曲线上的点信息
+
+    # 获取具有均匀距离的nurbs曲线上的点信息
     @staticmethod
     def get_point_on_curve (curve , sample_count) :
         """
@@ -482,10 +485,11 @@ class Pipeline (object) :
         return points , tangents
 
 
+    # 在 Maya 中创建均匀分布在曲线上的关节点的函数。
     @staticmethod
     def create_joints_on_curve (curve , sample_count) :
         """
-        创建均匀分布在曲线上的关节点
+        在 Maya 中创建均匀分布在曲线上的关节点的函数。函数接受两个参数：
 
         :param curve: str. 曲线的节点名称
         :param sample_count: int. 采样点的数量
@@ -493,25 +497,46 @@ class Pipeline (object) :
         """
 
         jnt_list = list ()
-        # 获取具有均匀距离的nurbs曲线上的点信息
+        # 获取具有均匀距离的 nurbs 曲线上的点信息和切线信息。
         points , tangents = Pipeline.get_point_on_curve (curve , sample_count)
+
+        # 遍历每个点，为每个点创建一个关节，并在对应的点上创建一个 transform 组来做目标约束吸附旋转。
         for index in range (len (points)) :
             point = points [index]
             tangent = tangents [index]
+
             # 在对应的点上创建关节，并且创建个transform组来做目标约束吸附旋转
+            # 使用 cmds.createNode('joint') 创建关节，并使用 cmds.createNode('transform') 创建 transform 组。
             jnt = cmds.createNode ('joint')
             jnt_list.append (jnt)
             temp_node = cmds.createNode ('transform')
 
+            # 使用 cmds.xform 设置 transform 组的位置为点坐标加上切线。设置关节的位置为点坐标。
             cmds.xform (
                 temp_node ,
                 t = [point.x + tangent.x , point.y + tangent.y , point.z + tangent.z]
             )
             cmds.xform (jnt , t = [point.x , point.y , point.z])
+
+            # 使用 cmds.aimConstraint 创建一个 Aim 约束，将 transform 组约束到关节上。
             constraint = cmds.aimConstraint (temp_node , jnt) [0]
+
+            # 删除创建的临时节点和约束。
             cmds.delete ([temp_node , constraint])
 
+        # 返回创建的关节列表。
         return jnt_list
+
+        ###简单的示例
+        # # 假设有一个曲线的节点名称和采样点的数量
+        # curve_name = "curve1"
+        # sample_count = 10
+        #
+        # # 调用函数创建均匀分布在曲线上的关节点
+        # joints_list = create_joints_on_curve (curve_name , sample_count)
+        #
+        # # 打印创建的关节列表
+        # print (joints_list)
 
 
     @staticmethod
