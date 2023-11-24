@@ -162,3 +162,75 @@ class AdvUtils (object) :
         'TODO:'
 
         pass
+
+    #adv重新生成后手指的驱动可能会消失，于是可以依靠这个代码重新连接,选择所有需要驱动的手指控制器加选Finger控制器创建连接
+    @staticmethod
+    def finger_Connect () :
+        '''
+        adv重新生成后手指的驱动可能会消失，于是可以依靠这个代码重新连接
+        选择所有需要驱动的手指控制器加选Finger控制器创建连接
+        '''
+
+
+        # 选择所有需要驱动的手指控制器加选Finger控制器创建连接
+        def myDrv (sdk , ctrl , str) :
+            cmds.setAttr (ctrl + str , -2)
+            cmds.setAttr (sdk + '.ry' , -18)
+            cmds.setDrivenKeyframe (sdk + '.ry' , cd = ctrl + str , ott = 'linear')
+            cmds.setAttr (ctrl + str , 10)
+            cmds.setAttr (sdk + '.ry' , 90)
+            cmds.setDrivenKeyframe (sdk + '.ry' , cd = ctrl + str , itt = 'linear')
+            cmds.setAttr (ctrl + str , 0)
+            cmds.setAttr (sdk + '.ry' , 0)
+            cmds.setDrivenKeyframe (sdk + '.ry' , cd = ctrl + str)
+
+
+        ctrl = cmds.ls (sl = True)
+        myStr = ['.indexCurl' , '.middleCurl' , '.ringCurl' , '.pinkyCurl' , '.thumbCurl']
+        for i in ctrl [0 :-1] :
+            Extra = re.sub ('FK' , 'FKExtra' , i)
+            Grp = cmds.listRelatives (Extra , p = True) [0]
+            SDK1 = cmds.group (em = True , p = Grp , n = 'SDK1' + i)
+            cmds.parent (Extra , SDK1)
+            if 'Index' in i :
+                myDrv (SDK1 , ctrl [-1] , myStr [0])
+            if 'Middle' in i :
+                myDrv (SDK1 , ctrl [-1] , myStr [1])
+            if 'Ring' in i :
+                myDrv (SDK1 , ctrl [-1] , myStr [2])
+            if 'Pinky' in i :
+                myDrv (SDK1 , ctrl [-1] , myStr [3])
+            if 'Thumb' in i :
+                myDrv (SDK1 , ctrl [-1] , myStr [4])
+            if 'Cup' in i :
+                cmds.setAttr (ctrl [-1] + '.cup' , 0)
+                cmds.setAttr (SDK1 + '.rx' , 0)
+                cmds.setDrivenKeyframe (SDK1 + '.rx' , cd = ctrl [-1] + '.cup' , ott = 'linear')
+                cmds.setAttr (ctrl [-1] + '.cup' , 10)
+                cmds.setAttr (SDK1 + '.rx' , 65)
+                cmds.setDrivenKeyframe (SDK1 + '.rx' , cd = ctrl [-1] + '.cup' , itt = 'linear')
+
+
+        def myDrv (sdk , min , max , ctrl) :
+            cmds.setAttr (ctrl + '.spread' , -5)
+            cmds.setAttr (sdk + '.rz' , min)
+            cmds.setDrivenKeyframe (sdk + '.rz' , cd = ctrl + '.spread' , ott = 'linear')
+            cmds.setAttr (ctrl + '.spread' , 10)
+            cmds.setAttr (sdk + '.rz' , max)
+            cmds.setDrivenKeyframe (sdk + '.rz' , cd = ctrl + '.spread' , itt = 'linear')
+            cmds.setAttr (ctrl + '.spread' , 0)
+            cmds.setAttr (sdk + '.rz' , 0)
+            cmds.setDrivenKeyframe (sdk + '.rz' , cd = ctrl + '.spread')
+
+
+        for i in ctrl [0 :-1] :
+            Grp = cmds.listRelatives ('SDK1' + i , p = True) [0]
+            SDK2 = cmds.group (em = True , p = Grp , n = 'SDK2' + i)
+
+            cmds.parent ('SDK1' + i , SDK2)
+            if 'PinkyFinger1' in i :
+                myDrv (SDK2 , 30 , -60 , ctrl [-1])
+            if 'RingFinger1' in i :
+                myDrv (SDK2 , 15 , -30 , ctrl [-1])
+            if 'IndexFinger1' in i :
+                myDrv (SDK2 , -20 , 40 , ctrl [-1])
