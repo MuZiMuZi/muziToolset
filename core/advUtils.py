@@ -4,16 +4,14 @@ u"""
 
 目前已有的功能：
 """
-from . import pipelineUtils , controlUtils , hierarchyUtils
-from importlib import reload
-
-
-reload (controlUtils)
 import maya.cmds as cmds
+
+from . import pipelineUtils , controlUtils
 
 
 class AdvUtils (object) :
 
+    # adv嘴唇中间添加新的次级控制器，应用于动画制作抿嘴的情况，注意需要吸附枢纽
     @staticmethod
     def add_lip_ctrl () :
         '''
@@ -39,11 +37,9 @@ class AdvUtils (object) :
                                                          radius = 0.3 , axis = 'Y+' , pos = lip_joint ,
                                                          parent = 'LipRegion_M')
 
-
-
             # 创建出来的次级控制器对lip关节进行约束
             pipelineUtils.Pipeline.create_constraint (lip_ctrl.replace ('ctrl' , 'output') , lip_joint ,
-                                                      point_value = False , orient_value = False ,parent_value = True,
+                                                      point_value = False , orient_value = False , parent_value = True ,
                                                       scale_value = False ,
                                                       mo_value = True)
             # lip总控制器对创建出来的次级控制器组做约束
@@ -53,7 +49,7 @@ class AdvUtils (object) :
                                                       scale_value = False ,
                                                       mo_value = True)
 
-
+    #眼皮中间添加新的次级控制器，应用于动画制作的情况
     @staticmethod
     def add_lid_ctrl () :
         '''
@@ -93,9 +89,9 @@ class AdvUtils (object) :
                                                           scale_value = True ,
                                                           mo_value = True)
 
-
+    #adv脸部在生成的时候会自动连接CheekRaiser控制器的translateY轴，需要在控制器上层创建一个新的组来重新连接
     @staticmethod
-    def connect_CheekRaiser_ctrl():
+    def connect_CheekRaiser_ctrl () :
         """
         adv脸部在生成的时候会自动连接CheekRaiser控制器的translateY轴，需要在控制器上层创建一个新的组来重新连接
         CheekRaiser_ctrl:CheekRaiser控制器
@@ -103,20 +99,20 @@ class AdvUtils (object) :
         """
         # 分成左右两边两种情况在控制器上层创建一个新的组来重新连接
         for side in ['L' , 'R'] :
-            #获取CheekRaiser控制器和连接控制器的节点
-            CheekRaiser_ctrl =  'CheekRaiser_{}'.format (side)
-            bw_node = 'bwCheekRaiser_{}_translateY'.format(side)
+            # 获取CheekRaiser控制器和连接控制器的节点
+            CheekRaiser_ctrl = 'CheekRaiser_{}'.format (side)
+            bw_node = 'bwCheekRaiser_{}_translateY'.format (side)
 
-            #在CheekRaiser控制器上层创建新的控制器层级组
-            con_CheekRaiser_grp = cmds.group (CheekRaiser_ctrl, n = 'con_' + CheekRaiser_ctrl)
+            # 在CheekRaiser控制器上层创建新的控制器层级组
+            con_CheekRaiser_grp = cmds.group (CheekRaiser_ctrl , n = 'con_' + CheekRaiser_ctrl)
 
-            #重新连接控制器的translateY
+            # 重新连接控制器的translateY
             cmds.connectAttr (bw_node + '.output' , con_CheekRaiser_grp + '.translateY')
-            cmds.disconnectAttr(bw_node + '.output' , CheekRaiser_ctrl + '.translateY')
+            cmds.disconnectAttr (bw_node + '.output' , CheekRaiser_ctrl + '.translateY')
 
-
+    #adv自带的脸颊控制器不够丰富，无法满足动画的需要，需要添加两个控制器，
     @staticmethod
-    def add_cheek_ctrl():
+    def add_cheek_ctrl () :
         """
         adv自带的脸颊控制器不够丰富，无法满足动画的需要，需要添加两个控制器，
         一个是眼皮下方用来控制鼻子外侧与颧骨这一带的控制器，
@@ -126,26 +122,26 @@ class AdvUtils (object) :
             for side in ['L' , 'R'] :
                 type_joint = 'jnt_{}_{}_001'.format (side , type)
 
-                type_joint = cmds.createNode('joint',name = type_joint,parent = 'FaceJoint_M')
+                type_joint = cmds.createNode ('joint' , name = type_joint , parent = 'FaceJoint_M')
                 # 创建新的控制器并且吸附到对应的关节上
                 type_ctrl = controlUtils.Control.create_ctrl (name = 'ctrl_{}_{}_001'.format (side , type) ,
-                                                             shape = 'Cube' ,
-                                                             radius = 0.3 , axis = 'Y+' , pos = type_joint ,
-                                                             parent = None)
+                                                              shape = 'Cube' ,
+                                                              radius = 0.3 , axis = 'Y+' , pos = type_joint ,
+                                                              parent = None)
                 # 控制器左右需要镜像一下，r边的情况下offset组的值需要乘-1
                 if side == 'R' :
                     side_value = -1
                 else :
                     side_value = 1
-                cmds.setAttr (type_ctrl.replace ('ctrl_' , 'offset_') + '.scaleX', side_value)
-            # 创建出来的控制器对关节进行约束
+                cmds.setAttr (type_ctrl.replace ('ctrl_' , 'offset_') + '.scaleX' , side_value)
+                # 创建出来的控制器对关节进行约束
                 pipelineUtils.Pipeline.create_constraint (type_ctrl.replace ('ctrl' , 'output') , type_joint ,
                                                           point_value = False , orient_value = False ,
                                                           parent_value = True ,
                                                           scale_value = True ,
                                                           mo_value = True)
 
-
+    #adv自带的下巴控制器不够丰富，无法满足动画的需要，需要添加两个控制器用来凹进去夸张表情，
     @staticmethod
     def add_jaw_ctrl () :
         """
@@ -156,14 +152,15 @@ class AdvUtils (object) :
 
         # 创建新的次级控制器并且吸附到lid关节上
         jaw_adj_ctrl = controlUtils.Control.create_ctrl (name = 'ctrl_{}_{}_001'.format (side , type) ,
-                                                     shape = 'Cube' ,
-                                                     radius = 0.3 , axis = 'Y+' , pos = lid_joint ,
-                                                     parent = lid_main_ctrl)
+                                                         shape = 'Cube' ,
+                                                         radius = 0.3 , axis = 'Y+' , pos = lid_joint ,
+                                                         parent = lid_main_ctrl)
         'TODO:'
 
         pass
 
-    #adv重新生成后手指的驱动可能会消失，于是可以依靠这个代码重新连接,选择所有需要驱动的手指控制器加选Finger控制器创建连接
+
+    # adv重新生成后手指的驱动可能会消失，于是可以依靠这个代码重新连接,选择所有需要驱动的手指控制器加选Finger控制器创建连接
     @staticmethod
     def finger_Connect () :
         '''
