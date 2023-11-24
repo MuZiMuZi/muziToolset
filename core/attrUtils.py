@@ -15,23 +15,28 @@ get_attrs_range:将属性范围作为带键的字典返回 ('{}.{}'.format(ctrl,
 
 """
 from ast import literal_eval
-from . import pipelineUtils
 from collections import OrderedDict
-import pymel.core as pm
+
 import maya.cmds as cmds
+
+from . import pipelineUtils
 
 
 class Attr (object) :
 
 
-    def __init__ (self) :
-
-        self.attr = None
+    def __init__ (self , obj , attr) :
+        """
+        给定一个物体和需要进行操作的属性
+        """
+        self.obj = obj
+        self.attr = attr
         self.minValue = None
         self.maxValue = None
         self.info = None
 
 
+    # 锁定或解锁、隐藏或显示属性.
     @staticmethod
     def lock_and_hide_attrs (obj , attrs_list , lock = True , hide = True) :
         u"""锁定或解锁、隐藏或显示属性.
@@ -56,7 +61,8 @@ class Attr (object) :
                     cmds.setAttr ("{}.{}".format (obj , attr) , keyable = True , channelBox = True)
 
 
-    def connect_attr (self,output_attr , input_attr) :
+    # 将属性从输出属性连接到输入属性.
+    def connect_attr (self , output_attr , input_attr) :
         u"""将属性从输出属性连接到输入属性.
 
         Args:
@@ -72,29 +78,40 @@ class Attr (object) :
             cmds.connectAttr (output_attr , input_attr , force = True)
 
 
-    @staticmethod
-    def get_string_info (obj , attr = '') :
-        """字符串类型属性的返回值.
+    def get_string_info (self ) :
+        """用于获取字符串类型属性的返回值的函数
 
         Args:
-            obj (str): 对象具有此字符串类型属性.
-            attr (str): 属性名称.
+            self.obj (str): 对象具有此字符串类型属性.
+            self.attr (str): 属性名称.
 
         Returns:
             float/int/str/tuple/list/dict/None: 从属性查询的字符串信息转换而来。.
 
         """
-
-        if cmds.objExists ('{}.{}'.format (obj , attr)) :
-            string_info_message = cmds.getAttr ('{}.{}'.format (obj , attr))
+        #使用 cmds.self.objExists 检查对象和属性是否存在。
+        if cmds.self.objExists ('{}.{}'.format (self.obj , self.attr)) :
+            #如果属性存在，使用 cmds.getAttr 获取属性的字符串信息。
+            string_info_message = cmds.getAttr ('{}.{}'.format (self.obj , self.attr))
+            #尝试将字符串信息转换为 Python 对象，使用 literal_eval 函数。
+            # 这个函数可以安全地将字符串表示的 Python 字面值（literal）转换为相应的 Python 对象。
             if string_info_message :
                 info = literal_eval (string_info_message)
+                # 返回转换后的信息。
                 return info
 
             else :
                 return None
-
-        return None
+        ###简单的示例###
+        # 假设有一个对象和属性名称
+        # object_name = "myObject"
+        # attribute_name = "myStringAttribute"
+        #
+        # # 调用函数获取字符串类型属性的返回值
+        # result = get_string_attribute_value (object_name , attribute_name)
+        #
+        # # 打印返回值
+        # print (result)
 
 
     def add_string_info (self , attr , information) :
@@ -457,20 +474,20 @@ class Attr (object) :
         attr_names(list/str): 长属性名称列表，例如[“translateX”，“rotateX”]
 
         """
-        #transfrom节点的属性获取
-        #获取当前主通道框中选择的主要对象（transfrom节点）
+        # transfrom节点的属性获取
+        # 获取当前主通道框中选择的主要对象（transfrom节点）
         main_objs = cmds.channelBox ("mainChannelBox" , query = True , mainObjectList = True)
-        #获取当前主通道框中选择的主要对象（transfrom节点）选定的属性
+        # 获取当前主通道框中选择的主要对象（transfrom节点）选定的属性
         main_attrs = cmds.channelBox ("mainChannelBox" , query = True , selectedMainAttributes = True)
 
-        #history历史通道的节点的属性获取
-        #获取当前在主通道框中选择的历史记录（输入历史记录）对象。
+        # history历史通道的节点的属性获取
+        # 获取当前在主通道框中选择的历史记录（输入历史记录）对象。
         hist_objs = cmds.channelBox ("mainChannelBox" , query = True , historyObjectList = True)
         # 获取当前在主通道框中选择的历史记录（输入历史记录）对象的选定属性
         hist_attrs = cmds.channelBox ("mainChannelBox" , query = True , selectedHistoryAttributes = True)
 
         # shape历史通道的节点的属性获取
-        #获取当前在主通道框中选择的形状对象（几何体节点）
+        # 获取当前在主通道框中选择的形状对象（几何体节点）
         shape_objs = cmds.channelBox ("mainChannelBox" , query = True , shapeObjectList = True)
         # 获取当前在主通道框中选择的形状对象（几何体节点）的选定属性。
         shape_attrs = cmds.channelBox ("mainChannelBox" , query = True , selectedShapeAttributes = True)
@@ -486,7 +503,7 @@ class Attr (object) :
                         try :
                             longName = cmds.attributeQuery (attr , node = nodeName , longName = True)
                             resultList.append (longName)
-                        #属性可能不存在多个选定对象。
+                        # 属性可能不存在多个选定对象。
                         except RuntimeError :
                             pass
                     attr_names += resultList
@@ -602,18 +619,18 @@ class Attr (object) :
 
 
     @staticmethod
-    def reset_attr(node):
+    def reset_attr (node) :
         """
         重置所选择的物体的默认属性
         """
-        for attr in ['translate','rotate']:
-            for axis in ['X','Y','Z']:
-                try:
-                    cmds.setAttr(node + '.{}{}'.format(attr,axis),0)
-                except:
-                    pass
-        for axis in ['X' , 'Y' , 'Z'] :
+        for attr in ['translate' , 'rotate'] :
+            for axis in ['X' , 'Y' , 'Z'] :
                 try :
-                    cmds.setAttr (node + '.scale{}'.format (axis) , 1)
+                    cmds.setAttr (node + '.{}{}'.format (attr , axis) , 0)
                 except :
                     pass
+        for axis in ['X' , 'Y' , 'Z'] :
+            try :
+                cmds.setAttr (node + '.scale{}'.format (axis) , 1)
+            except :
+                pass
