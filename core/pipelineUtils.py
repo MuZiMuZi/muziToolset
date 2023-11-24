@@ -206,9 +206,9 @@ class Pipeline (object) :
             cmds.matchTransform (jnt , sel)
             cmds.skinCluster (jnt , sel)
             # 创建对应的控制器组
-            ctrl = controlUtils.Control (n = 'ctrl_' + sel , s = 'cube' , r = 1)
+            ctrl = controlUtils.Control (n = 'ctrl_' + sel , s = 'hexagon' , r = 1)
             ctrl_transform = '{}'.format (ctrl.transform)
-            sub_ctrl = controlUtils.Control (n = 'ctrlSub_' + sel , s = 'cube' , r = 1 * 0.7)
+            sub_ctrl = controlUtils.Control (n = 'ctrlSub_' + sel , s = 'hexagon' , r = 1 * 0.7)
             sub_ctrl.set_parent (ctrl.transform)
             sub_ctrl_transform = '{}'.format (sub_ctrl.transform)
             # 添加上层层级组
@@ -251,9 +251,9 @@ class Pipeline (object) :
         for sel in sel_list :
             cmds.undoInfo (openChunk = True)  # 批量撤销的开头
             # 创建对应的控制器组
-            ctrl = controlUtils.Control (n = 'ctrl_' + sel , s = 'cube' , r = 1)
+            ctrl = controlUtils.Control (n = 'ctrl_' + sel , s = 'hexagon' , r = 1)
             ctrl_transform = '{}'.format (ctrl.transform)
-            sub_ctrl = controlUtils.Control (n = 'ctrlSub_' + sel , s = 'cube' , r = 1 * 0.7)
+            sub_ctrl = controlUtils.Control (n = 'ctrlSub_' + sel , s = 'hexagon' , r = 1 * 0.7)
             sub_ctrl.set_parent (ctrl.transform)
             sub_ctrl_transform = '{}'.format (sub_ctrl.transform)
             # 添加上层层级组

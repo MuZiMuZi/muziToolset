@@ -200,7 +200,7 @@ class Control (object) :
         points = [self.get_curve_shape_points (shape) for shape in self.get_transform ().getShapes ()]
         points = [[[ps [i + j] for j in range (3)] for i in range (0 , len (ps) , 3)] for ps in points]
         lengths = [self.get_length (p , [0 , 0 , 0]) for ps in points for p in ps]
-        origin_radius = max (lengths)
+        origin_radius = max (lengths) if lengths else 0.0
         scale = radius / origin_radius
         for shape , ps in zip (self.get_transform ().getShapes () , points) :
             for p , cv in zip (ps , shape.cv) :
