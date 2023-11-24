@@ -402,6 +402,7 @@ class Pipeline (object) :
             cmds.scaleConstraint (driver , driven , mo = mo_value)
 
 
+    # 位移物体到指定的位置
     @staticmethod
     def move (obj , pos) :
         """
@@ -413,7 +414,7 @@ class Pipeline (object) :
 
         return cmds.move (pos [0] , pos [1] , pos [2] , obj , r = 1)
 
-
+    #曲线的总长度为1，给定需要平分的点数量，返回每个点的位置信息
     @staticmethod
     def get_percentages (sample_count) :
         """
@@ -432,22 +433,28 @@ class Pipeline (object) :
 
         return outputs
 
-
+    # 这是一个用于在 Maya 中获取指定节点的 DAG（Directed Acyclic Graph）路径的函数。函数接受一个参数 node，即 Maya 的节点对象（node name），并返回该节点的 DAG 路径（DAG path）。
     @staticmethod
     def get_dag_path (node = None) :
         """
-        获取指定节点的DAG路径
-
+        这是一个用于在 Maya 中获取指定节点的 DAG（Directed Acyclic Graph）路径的函数。函数接受一个参数 node，即 Maya 的节点对象（node name），并返回该节点的 DAG 路径（DAG path）。
         :param node: str. maya的节点对象
         :return: str. DAG 路径
         """
+        #创建一个 MSelectionList 对象，用于存储要查询的节点。
         selection = om.MSelectionList ()
+
+        #将指定的节点名称添加到 MSelectionList 中。
         selection.add (node)
+
+        #创建一个 MDagPath 对象，用于存储 DAG 路径。
         dag_path = om.MDagPath ()
+        #使用 getDagPath 方法从 MSelectionList 中获取 DAG 路径，并将结果存储在 MDagPath 对象中。
         selection.getDagPath (0 , dag_path)
+        #返回 DAG 路径。
         return dag_path
 
-
+    #获取具有均匀距离的nurbs曲线上的点信息
     @staticmethod
     def get_point_on_curve (curve , sample_count) :
         """
