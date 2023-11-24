@@ -164,12 +164,19 @@ def show_folder_in_explorer (folder_path) :
     subprocess.Popen (command)
 
 
+# 获取maya的主窗口，判断python的版本号，如果大于3的话就使用int
 def get_maya_window () :
-    u"""
-    返回maya的主窗口部件
-    """
+    u'''
+    获取maya的主窗口，判断python的版本号，如果大于3的话就使用int
+    :return:
+    '''
+    # c++的指针概念，获取maya的窗口对象
     pointer = omui.MQtUtil.mainWindow ()
-    return wrapInstance (int (pointer) , QWidget)
+    # 判断python的版本号，如果大于3的话就使用int
+    if sys.version_info.major >= 3 :
+        return wrapInstance (int (pointer) , QtWidgets.QWidget)
+    else :
+        return wrapInstance (long (pointer) , QtWidgets.QWidget)
 
 
 class Left_menu_button (QPushButton) :

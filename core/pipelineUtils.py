@@ -345,7 +345,8 @@ class Pipeline (object) :
 
         return wrap
 
-    #根据给定的节点类型，在给定的位置生成新的节点。常用来创建关节
+
+    # 根据给定的节点类型，在给定的位置生成新的节点。常用来创建关节
     @staticmethod
     def create_node (node_type , node_name , match = False , match_node = None) :
         u'''
@@ -360,21 +361,6 @@ class Pipeline (object) :
             cmds.matchTransform (new_node , match_node , position = True , rotation = True , scale = True)
 
         return new_node
-
-
-    @staticmethod
-    def get_maya_main_window () :
-        u'''
-        获取maya的主窗口，判断python的版本号，如果大于3的话就使用int
-        :return:
-        '''
-        # c++的指针概念，获取maya的窗口对象
-        pointer = omui.MQtUtil.mainWindow ()
-        # 判断python的版本号，如果大于3的话就使用int
-        if sys.version_info.major >= 3 :
-            return wrapInstance (int (pointer) , QtWidgets.QWidget)
-        else :
-            return wrapInstance (long (pointer) , QtWidgets.QWidget)
 
 
     @staticmethod
