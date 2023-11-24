@@ -285,8 +285,7 @@ class Pipeline (object) :
             cmds.undoInfo (openChunk = False)  # 批量撤销的开头
 
 
-
-
+    # 快速创建约束.用法：先选择需要约束者，在选择被约束者
     @staticmethod
     def create_constraints () :
         u"""
@@ -302,6 +301,7 @@ class Pipeline (object) :
         cmds.scaleConstraint (driver_obj , driven_obj , mo = True)
 
 
+    # 快速选择物体的约束节点
     @staticmethod
     def select_constraints () :
         u'''
@@ -314,6 +314,7 @@ class Pipeline (object) :
                 cmds.select (const , replace = True)
 
 
+    # 快速删除选择物体的约束节点
     @staticmethod
     def delete_constraints () :
         u'''
@@ -324,19 +325,6 @@ class Pipeline (object) :
             const = cmds.listConnections (obj , type = 'constraint')
             if const :
                 cmds.delete (const)
-
-
-    @staticmethod
-    def select_sub_objects (obj_type = 'transform') :
-        u'''
-        快速选择所选择物体的所有子对象,将所有选择的对象名称返回出去方便其他函数调用
-        '''
-        selection = cmds.ls (sl = True)  # 获取选择的所有对象
-        for obj in selection :
-            cmds.select (obj , add = True)
-            cmds.select (cmds.listRelatives (obj , allDescendents = True , type = obj_type) , add = True)
-        selection = cmds.ls (sl = True)  # 获取选择的所有对象
-        return selection
 
 
     @staticmethod

@@ -252,7 +252,7 @@ class functionWidget (QWidget , pipelineUtils.Pipeline) :
 
 
     def select_sub_objects (self) :
-        pipelineUtils.Pipeline.select_sub_objects ()
+        hierarchyUtils.Hierarchy.select_sub_objects ()
 
 
     def print_duplicate_object (self) :

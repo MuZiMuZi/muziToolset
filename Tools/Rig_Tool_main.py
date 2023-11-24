@@ -218,7 +218,7 @@ class Rig_Tool (QWidget) :
 
         self.load_skinWeights_button.clicked.connect (self.load_skinWeights)
 
-        self.select_sub_objects_button.clicked.connect (lambda *args : pipelineUtils.Pipeline.select_sub_objects ())
+        self.select_sub_objects_button.clicked.connect (lambda *args : hierarchyUtils.Hierarchy.select_sub_objects ())
 
         self.print_duplicate_object_button.clicked.connect (lambda *args : nameUtils.Name.print_duplicate_object ()
                                                             )

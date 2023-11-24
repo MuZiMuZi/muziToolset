@@ -4,16 +4,13 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from .config import ui_dir , icon_dir
-from ..core import pipelineUtils , nameUtils
+from ..core import pipelineUtils , nameUtils,hierarchyUtils
 import muziToolset.res.ui.backGround as backGround
 from .ui import Names_Tool
 from importlib import reload
 import maya.cmds as cmds
 
 
-reload (Names_Tool)
-reload (pipelineUtils)
-reload (nameUtils)
 
 
 class Names_Tool (Names_Tool.Ui_MainWindow , QMainWindow) :
@@ -63,7 +60,7 @@ class Names_Tool (Names_Tool.Ui_MainWindow , QMainWindow) :
 
         # 层级修改命名的情况
         elif self.hierarchy_button.isChecked () :
-            self.object_list = pipelineUtils.Pipeline.select_sub_objects ()
+            self.object_list = hierarchyUtils.Hierarchy.select_sub_objects ()
         # 全部修改命名的情况
         else :
             cmds.select (allDagObjects = True)
