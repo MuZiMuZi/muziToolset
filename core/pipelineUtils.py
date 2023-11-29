@@ -48,7 +48,7 @@ from maya import mel
 from pymel.util import path
 from shiboken2 import wrapInstance
 from importlib import reload
-from . import controlUtils , hierarchyUtils , qtUtils , jointUtils
+from . import controlUtils , hierarchyUtils , qtUtils , jointUtils, nameUtils
 
 
 reload (jointUtils)

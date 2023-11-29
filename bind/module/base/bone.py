@@ -9,8 +9,6 @@ from importlib import reload
 import os
 
 
-reload (hierarchyUtils)
-reload (pipelineUtils)
 
 
 class Bone (object) :
@@ -91,8 +89,6 @@ class Bone (object) :
         self.logger = logging.getLogger (self.logger_name)
         self.logger.setLevel (logging.DEBUG)
 
-        # 创建名称规范整理
-        self.create_namespace ()
 
 
     @property

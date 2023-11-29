@@ -685,3 +685,192 @@ abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT023b/Cache/QiZi_
 abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT023b/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc
 2023-10-13 11:25:51,228 -root - INFO - 
 abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT023b/Cache/QiSi_QiSi_geo_grp_abc.abc
+2023-11-28 10:29:27,693 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT003\Hair\EP002_SC001_CUT003.mov输出完成
+2023-11-28 10:30:48,731 -root - INFO - 没有需要缓存的物体
+2023-11-28 10:33:37,839 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT003/Cache/QiSi_QiSi_geo_grp_abc.abc"
+2023-11-28 10:33:37,839 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT003/Cache/QiSi_QiSi_geo_grp_abc.abc"
+2023-11-28 10:33:38,019 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT003/Cache/RenZhu_RenZhu_geo_grp_abc.abc"
+2023-11-28 10:33:38,019 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT003/Cache/RenZhu_RenZhu_geo_grp_abc.abc"
+2023-11-28 10:33:38,645 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT003/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc"
+2023-11-28 10:33:38,645 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT003/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc"
+2023-11-28 10:33:38,655 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT003/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc"
+2023-11-28 10:33:38,655 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT003/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc"
+2023-11-28 10:33:39,787 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT003/Cache/QiSi_QiSi_geo_grp_abc.abc
+2023-11-28 10:33:39,869 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT003/Cache/RenZhu_RenZhu_geo_grp_abc.abc
+2023-11-28 10:33:39,904 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT003/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc
+2023-11-28 10:33:39,939 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT003/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc
+2023-11-28 10:36:38,215 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 10:37:04,077 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 10:41:03,437 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT003\Hair\EP002_SC001_CUT003_v001.mov输出完成
+2023-11-28 10:52:10,955 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT003\Hair\EP002_SC001_CUT003_v001.mov输出完成
+2023-11-28 11:56:04,007 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT019\Hair\EP002_SC001_CUT019_v001.mov输出完成
+2023-11-28 13:34:35,551 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 13:35:29,509 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT019\Hair\EP002_SC001_CUT019_v001.mov输出完成
+2023-11-28 13:36:13,853 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 13:36:26,862 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 13:36:43,098 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 13:37:31,918 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 13:38:48,444 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 13:43:21,544 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT019\Hair\EP002_SC001_CUT019_v001.mov输出完成
+2023-11-28 13:44:41,765 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 13:45:37,318 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT019\Hair\EP002_SC001_CUT019_v001.mov输出完成
+2023-11-28 13:46:15,783 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 13:47:09,602 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 13:48:10,365 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT019\Hair\EP002_SC001_CUT019_v001.mov输出完成
+2023-11-28 14:01:10,092 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT019\Hair\EP002_SC001_CUT019_v002.mov输出完成
+2023-11-28 14:07:20,606 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT019\Hair\EP002_SC001_CUT019_v002.mov输出完成
+2023-11-28 14:22:46,537 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT019\Hair\EP002_SC001_CUT019_v002.mov输出完成
+2023-11-28 14:23:56,516 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT019\Hair\EP002_SC001_CUT019_v002.mov输出完成
+2023-11-28 14:25:16,287 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT019\Hair\EP002_SC001_CUT019_v002.mov输出完成
+2023-11-28 14:32:24,101 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT019\Hair\EP002_SC001_CUT019_v002.mov输出完成
+2023-11-28 14:39:53,532 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT019\Hair\EP002_SC001_CUT019_v002.mov输出完成
+2023-11-28 14:44:16,438 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT019\Hair\EP002_SC001_CUT019_v002.mov输出完成
+2023-11-28 14:48:29,511 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT019\Hair\EP002_SC001_CUT019_v002.mov输出完成
+2023-11-28 15:01:29,004 -root - INFO - 没有需要缓存的物体
+2023-11-28 15:03:08,541 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiXia_QiXia_geo_grp_abc.abc"
+2023-11-28 15:03:08,541 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiXia_QiXia_geo_grp_abc.abc"
+2023-11-28 15:03:21,843 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiShe_QiShe_geo_grp_abc.abc"
+2023-11-28 15:03:21,843 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiShe_QiShe_geo_grp_abc.abc"
+2023-11-28 15:03:21,857 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiZi_Bai_QiZi_Bai_geo_grp_abc.abc"
+2023-11-28 15:03:21,857 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiZi_Bai_QiZi_Bai_geo_grp_abc.abc"
+2023-11-28 15:03:21,864 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc"
+2023-11-28 15:03:21,864 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc"
+2023-11-28 15:03:24,502 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiSi_QiSi_geo_grp_abc.abc"
+2023-11-28 15:03:24,502 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiSi_QiSi_geo_grp_abc.abc"
+2023-11-28 15:03:25,293 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc"
+2023-11-28 15:03:25,293 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc"
+2023-11-28 15:03:26,954 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiXia_QiXia_geo_grp_abc.abc
+2023-11-28 15:03:27,021 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiShe_QiShe_geo_grp_abc.abc
+2023-11-28 15:03:27,054 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiZi_Bai_QiZi_Bai_geo_grp_abc.abc
+2023-11-28 15:03:27,087 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc
+2023-11-28 15:03:27,124 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiSi_QiSi_geo_grp_abc.abc
+2023-11-28 15:03:27,159 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT022b/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc
+2023-11-28 15:08:35,030 -root - INFO - 没有需要缓存的物体
+2023-11-28 15:10:55,519 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiXia_QiXia_geo_grp_abc.abc"
+2023-11-28 15:10:55,519 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiXia_QiXia_geo_grp_abc.abc"
+2023-11-28 15:10:55,528 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiZi_Bai_QiZi_Bai_geo_grp_abc.abc"
+2023-11-28 15:10:55,528 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiZi_Bai_QiZi_Bai_geo_grp_abc.abc"
+2023-11-28 15:10:55,536 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc"
+2023-11-28 15:10:55,536 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc"
+2023-11-28 15:10:56,064 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/LinQin1_LinQin_geo_grp_abc.abc"
+2023-11-28 15:10:56,064 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/LinQin1_LinQin_geo_grp_abc.abc"
+2023-11-28 15:10:56,923 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc"
+2023-11-28 15:10:56,923 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc"
+2023-11-28 15:10:57,175 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/RenZhu_RenZhu_geo_grp_abc.abc"
+2023-11-28 15:10:57,175 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/RenZhu_RenZhu_geo_grp_abc.abc"
+2023-11-28 15:10:59,882 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiSi_QiSi_geo_grp_abc.abc"
+2023-11-28 15:10:59,882 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiSi_QiSi_geo_grp_abc.abc"
+2023-11-28 15:11:02,126 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiXia_QiXia_geo_grp_abc.abc
+2023-11-28 15:11:02,161 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiZi_Bai_QiZi_Bai_geo_grp_abc.abc
+2023-11-28 15:11:02,197 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc
+2023-11-28 15:11:02,267 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/LinQin1_LinQin_geo_grp_abc.abc
+2023-11-28 15:11:02,305 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc
+2023-11-28 15:11:02,363 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/RenZhu_RenZhu_geo_grp_abc.abc
+2023-11-28 15:11:02,400 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/QiSi_QiSi_geo_grp_abc.abc
+2023-11-28 15:12:06,814 -root - INFO - AbcImport -mode import -connect "Patching_geo_grp_abc" "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/EP002_SC001_CUT019_Patch.abc"
+2023-11-28 15:12:06,830 -root - INFO - 
+导入abc:AbcImport -mode import -connect "Patching_geo_grp_abc" "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/EP002_SC001_CUT019_Patch.abc"
+2023-11-28 15:12:07,317 -root - INFO - 
+导出Maya文件 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/EP002_SC001_CUT019_Patch.ma
+2023-11-28 15:12:29,953 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT019/Cache/EP002_SC001_CUT019_Patch.abc
+2023-11-28 15:17:24,980 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT032\Hair\EP002_SC001_CUT032_v001.mov输出完成
+2023-11-28 15:21:11,282 -root - INFO - 没有需要缓存的物体
+2023-11-28 15:22:39,773 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc"
+2023-11-28 15:22:39,773 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc"
+2023-11-28 15:22:39,934 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/RenZhu_RenZhu_geo_grp_abc.abc"
+2023-11-28 15:22:39,934 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/RenZhu_RenZhu_geo_grp_abc.abc"
+2023-11-28 15:22:39,940 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc"
+2023-11-28 15:22:39,940 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc"
+2023-11-28 15:22:41,504 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/QiSi_QiSi_geo_grp_abc.abc"
+2023-11-28 15:22:41,504 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/QiSi_QiSi_geo_grp_abc.abc"
+2023-11-28 15:22:42,601 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc
+2023-11-28 15:22:42,652 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/RenZhu_RenZhu_geo_grp_abc.abc
+2023-11-28 15:22:42,683 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc
+2023-11-28 15:22:42,720 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/QiSi_QiSi_geo_grp_abc.abc
+2023-11-28 15:23:20,509 -root - INFO - AbcImport -mode import -connect "Patching_geo_grp_abc" "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/EP002_SC001_CUT032_Patch.abc"
+2023-11-28 15:23:20,518 -root - INFO - 
+导入abc:AbcImport -mode import -connect "Patching_geo_grp_abc" "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/EP002_SC001_CUT032_Patch.abc"
+2023-11-28 15:23:20,717 -root - INFO - 
+导出Maya文件 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/EP002_SC001_CUT032_Patch.ma
+2023-11-28 15:23:41,115 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/EP002_SC001_CUT032_Patch.abc
+2023-11-28 15:30:53,533 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 15:31:05,035 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 15:31:10,593 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 15:31:50,702 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 15:33:05,458 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 15:34:31,237 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT023b\Hair\EP002_SC001_CUT023b_v001.mov输出完成
+2023-11-28 15:41:02,051 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 15:41:33,050 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 15:41:56,441 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 15:42:00,529 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 15:43:35,477 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 15:43:44,460 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 15:44:07,215 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 15:46:13,204 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT023b\Hair\EP002_SC001_CUT023b_v001.mov输出完成
+2023-11-28 16:18:38,186 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT021b\Hair\EP002_SC001_CUT021b_v001.mov输出完成
+2023-11-28 16:21:59,010 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT021b\Hair\EP002_SC001_CUT021b_v001.mov输出完成
+2023-11-28 16:46:29,494 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT022b\Hair\EP002_SC001_CUT022b.mov输出完成
+2023-11-28 17:17:41,948 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:18:05,915 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:18:46,596 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:19:26,846 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:19:58,752 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT022b\Hair\EP002_SC001_CUT022b_v001.mov输出完成
+2023-11-28 17:26:41,624 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:27:03,771 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:27:29,565 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:28:11,623 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:28:44,379 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:29:01,157 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:29:20,525 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:29:51,716 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:31:34,346 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:31:50,358 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:33:59,400 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:37:39,560 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT022b\Hair\EP002_SC001_CUT022b_v001.mov输出完成
+2023-11-28 17:40:55,652 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:41:24,679 -root - WARNING - 确保一个3D视图面板被激活
+2023-11-28 17:43:40,694 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT022b\Hair\EP002_SC001_CUT022b_v001.mov输出完成
