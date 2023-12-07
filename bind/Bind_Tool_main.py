@@ -7,11 +7,10 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-
+from . import config
 from .ui.widget import base_widget , chainEP_widget , chain_widget , limb_widget
 from .ui.widget import bind_ui
 from ..core import qtUtils
-from . import config
 
 
 rigtype_custom = ['base']
@@ -23,7 +22,7 @@ reload (base_widget)
 reload (chain_widget)
 reload (limb_widget)
 reload (chainEP_widget)
-reload(bind_ui)
+reload (bind_ui)
 
 
 class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
@@ -41,8 +40,10 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
 
         self.add_connect ()
 
-        #设置qss样式表
+        # 设置qss样式表
         self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format ('manjaroMix')))
+
+
     def apply_model (self) :
         u"""
         添加模型到view里
@@ -84,9 +85,6 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
             return
 
 
-
-
-
     def cmd_custom_widget_clk (self , item) :
         u"""
         用来连接custom_widget单击所连接的功能槽函数。
@@ -100,7 +98,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         self.setting_stack.setCurrentIndex (selected_index + 1)
 
 
-    def cmd_custom_widget_dbclk(self,item):
+    def cmd_custom_widget_dbclk (self , item) :
         """
         用来连接custom_widget双击所连接的功能槽函数。
         双击的时候可以修改item的名称，并且在离开聚焦的时候取消重命名
@@ -113,7 +111,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         用来创建custom_widget右键的菜单
         """
         custom_menu = QMenu ()
-        #添加右键菜单的设置
+        # 添加右键菜单的设置
         custom_menu.addActions ([
             self.action_Mirror_select ,
             self.action_Mirror ,
@@ -184,7 +182,7 @@ if __name__ == "__main__" :
     # 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口
     try :
         window.close ()
-        window.deleteLater()
+        window.deleteLater ()
     except :
         pass
     window.setAttribute (Qt.WA_DeleteOnClose)

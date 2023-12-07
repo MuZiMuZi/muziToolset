@@ -1,26 +1,27 @@
+from importlib import reload
+
 from PySide2 import QtWidgets
 
+from . import base_ui
 from ..widget import bone_widget
 from ...config import Side
-from . import base_ui
 from ....bind.module.base import base
-from importlib import reload
 
 
 reload (bone_widget)
-reload(base)
+reload (base)
+reload (base_ui)
 
 
 class Base_Widget (base_ui.Ui_MainWindow , QtWidgets.QMainWindow) :
 
 
-    def __init__ (self , *args , **kwargs ) :
+    def __init__ (self , *args , **kwargs) :
         '''
         使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 
         '''
         super ().__init__ (*args , **kwargs)
-
 
         self.name = None
         self.side = None
@@ -28,7 +29,8 @@ class Base_Widget (base_ui.Ui_MainWindow , QtWidgets.QMainWindow) :
         self.jnt_parent = None
         self.control_parent = None
 
-        self.init_base()
+        self.init_base ()
+
 
     def init_base (self) :
         """
@@ -40,8 +42,7 @@ class Base_Widget (base_ui.Ui_MainWindow , QtWidgets.QMainWindow) :
         # 添加边的combox
         for side in Side :
             self.side_cbox.addItem (side.value)
-        self.add_connect()
-
+        self.add_connect ()
 
 
     def add_connect (self) :
@@ -53,8 +54,9 @@ class Base_Widget (base_ui.Ui_MainWindow , QtWidgets.QMainWindow) :
         # self.base_widget.delete_btn.clicked.connect (self.delete_setup)
 
 
-    def print_test(self,zz):
-        print(zz)
+    def print_test (self , zz) :
+        print (zz)
+
 
     def parse_base (self , zzz) :
         """
