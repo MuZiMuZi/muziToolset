@@ -17,7 +17,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(854, 789)
+        MainWindow.resize(832, 772)
         self.actionRefersh = QAction(MainWindow)
         self.actionRefersh.setObjectName(u"actionRefersh")
         self.action_Mirror_select = QAction(MainWindow)
@@ -64,15 +64,12 @@ class Ui_MainWindow(object):
 
         self.scrollArea = QScrollArea(self.centralwidget)
         self.scrollArea.setObjectName(u"scrollArea")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.scrollArea.sizePolicy().hasHeightForWidth())
-        self.scrollArea.setSizePolicy(sizePolicy1)
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 258, 690))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 202, 673))
+        sizePolicy.setHeightForWidth(self.scrollAreaWidgetContents.sizePolicy().hasHeightForWidth())
+        self.scrollAreaWidgetContents.setSizePolicy(sizePolicy)
         self.gridLayout_2 = QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
@@ -89,6 +86,8 @@ class Ui_MainWindow(object):
         __qlistwidgetitem1.setForeground(brush1);
         __qlistwidgetitem2 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem2.setFlags(Qt.NoItemFlags);
+        icon = QIcon()
+        icon.addFile(u"../../../tools/icon/componentFK_64.png", QSize(), QIcon.Normal, QIcon.Off)
         brush2 = QBrush(QColor(255, 137, 153, 255))
         brush2.setStyle(Qt.SolidPattern)
         brush3 = QBrush(QColor(0, 0, 0, 255))
@@ -96,18 +95,25 @@ class Ui_MainWindow(object):
         __qlistwidgetitem3 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem3.setBackground(brush3);
         __qlistwidgetitem3.setForeground(brush2);
+        __qlistwidgetitem3.setIcon(icon);
+        icon1 = QIcon()
+        icon1.addFile(u"../../../tools/icon/chain.png", QSize(), QIcon.Normal, QIcon.Off)
         __qlistwidgetitem4 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem4.setForeground(brush2);
+        __qlistwidgetitem4.setIcon(icon1);
         font1 = QFont()
         font1.setKerning(True)
         __qlistwidgetitem5 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem5.setTextAlignment(Qt.AlignLeading|Qt.AlignVCenter);
         __qlistwidgetitem5.setFont(font1);
         __qlistwidgetitem5.setForeground(brush2);
+        __qlistwidgetitem5.setIcon(icon1);
         __qlistwidgetitem6 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem6.setForeground(brush2);
+        __qlistwidgetitem6.setIcon(icon1);
         __qlistwidgetitem7 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem7.setForeground(brush2);
+        __qlistwidgetitem7.setIcon(icon1);
         __qlistwidgetitem8 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem8.setFlags(Qt.NoItemFlags);
         brush4 = QBrush(QColor(88, 76, 255, 255))
@@ -141,11 +147,11 @@ class Ui_MainWindow(object):
         __qlistwidgetitem21 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem21.setForeground(brush5);
         self.proxy_widget.setObjectName(u"proxy_widget")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.proxy_widget.sizePolicy().hasHeightForWidth())
-        self.proxy_widget.setSizePolicy(sizePolicy2)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.proxy_widget.sizePolicy().hasHeightForWidth())
+        self.proxy_widget.setSizePolicy(sizePolicy1)
         self.proxy_widget.setBaseSize(QSize(0, 0))
         font2 = QFont()
         font2.setFamily(u"Arial Narrow")
@@ -216,6 +222,7 @@ class Ui_MainWindow(object):
         self.jointAxis_off_radio = QRadioButton(self.scrollAreaWidgetContents)
         self.jointAxis_off_radio.setObjectName(u"jointAxis_off_radio")
         self.jointAxis_off_radio.setFont(font4)
+        self.jointAxis_off_radio.setChecked(True)
 
         self.horizontalLayout_5.addWidget(self.jointAxis_off_radio)
 
@@ -248,7 +255,7 @@ class Ui_MainWindow(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 167, 324))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 201, 316))
         self.gridLayout_5 = QGridLayout(self.scrollAreaWidgetContents_5)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
         self.gridLayout_5.setContentsMargins(0, 0, 0, 0)
@@ -287,7 +294,7 @@ class Ui_MainWindow(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scrollAreaWidgetContents_3 = QWidget()
         self.scrollAreaWidgetContents_3.setObjectName(u"scrollAreaWidgetContents_3")
-        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 167, 324))
+        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 201, 315))
         sizePolicy.setHeightForWidth(self.scrollAreaWidgetContents_3.sizePolicy().hasHeightForWidth())
         self.scrollAreaWidgetContents_3.setSizePolicy(sizePolicy)
         self.gridLayout_4 = QGridLayout(self.scrollAreaWidgetContents_3)
@@ -295,11 +302,11 @@ class Ui_MainWindow(object):
         self.gridLayout_4.setContentsMargins(0, 0, 0, 0)
         self.custom_widget = QListWidget(self.scrollAreaWidgetContents_3)
         self.custom_widget.setObjectName(u"custom_widget")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.custom_widget.sizePolicy().hasHeightForWidth())
-        self.custom_widget.setSizePolicy(sizePolicy3)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.custom_widget.sizePolicy().hasHeightForWidth())
+        self.custom_widget.setSizePolicy(sizePolicy2)
         font6 = QFont()
         font6.setFamily(u"Arial Narrow")
         font6.setPointSize(14)
@@ -483,6 +490,9 @@ class Ui_MainWindow(object):
         self.buttonGroup_5.addButton(self.orient_button)
         self.orient_button.setObjectName(u"orient_button")
         self.orient_button.setFont(font4)
+        icon2 = QIcon()
+        icon2.addFile(u"../../../tools/icon/assign.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.orient_button.setIcon(icon2)
 
         self.horizontalLayout_9.addWidget(self.orient_button)
 
@@ -493,12 +503,18 @@ class Ui_MainWindow(object):
         font7.setFamily(u"Arial")
         font7.setPointSize(10)
         self.delete_button.setFont(font7)
+        icon3 = QIcon()
+        icon3.addFile(u"../../../tools/icon/delete.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.delete_button.setIcon(icon3)
 
         self.horizontalLayout_9.addWidget(self.delete_button)
 
         self.ctrl_button = QPushButton(self.centralwidget)
         self.ctrl_button.setObjectName(u"ctrl_button")
         self.ctrl_button.setFont(font7)
+        icon4 = QIcon()
+        icon4.addFile(u"../../../tools/icon/reset.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.ctrl_button.setIcon(icon4)
 
         self.horizontalLayout_9.addWidget(self.ctrl_button)
 
@@ -511,6 +527,10 @@ class Ui_MainWindow(object):
         font8.setFamily(u"Arial")
         font8.setPointSize(20)
         self.build_button.setFont(font8)
+        self.build_button.setStyleSheet(u"")
+        icon5 = QIcon()
+        icon5.addFile(u"../../../tools/icon/copy.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.build_button.setIcon(icon5)
 
         self.verticalLayout_6.addWidget(self.build_button)
 
@@ -532,7 +552,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 854, 23))
+        self.menubar.setGeometry(QRect(0, 0, 832, 23))
         self.menuWindow = QMenu(self.menubar)
         self.menuWindow.setObjectName(u"menuWindow")
         self.menuCustom = QMenu(self.menubar)

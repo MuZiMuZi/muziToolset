@@ -44,13 +44,6 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format ('manjaroMix')))
 
 
-    def apply_model (self) :
-        u"""
-        添加模型到view里
-        """
-        pass
-
-
     def add_connect (self) :
         u"""
         用来添加连接的槽函数
@@ -64,6 +57,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         self.custom_widget.itemClicked.connect (self.cmd_custom_widget_clk)
 
 
+    # 用来连接proxy_widget双击所连接的功能槽函数,双击的时候将模版库的模版添加到自定义模块里
     def cmd_proxy_widget_dbclk (self) :
         u"""
         用来连接proxy_widget双击所连接的功能槽函数,双击的时候将模版库的模版添加到自定义模块里
@@ -73,22 +67,26 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         index = self.proxy_widget.currentIndex ()
         # 如果index.isValid的返回值有值的话，说明选择了可以点击的文件，不是的话则是空白的物体
         if index.isValid () :
-            select_index = index.row ()
             # 获得proxy_widget里所选择的item_name
             item_name = self.proxy_widget.currentItem ().text () [0 :-3]
             # 在custom_widget里添加这个item
             item = QListWidgetItem (item_name)
             self.custom_widget.addItem (item)
+            # 添加完成item后设置为选中模式
+            self.custom_widget.setCurrentItem (item)
+            # 设置字体颜色为红色
+            item.setForeground (QColor (255 , 0 , 0))
+
             item.text = item_name
             self.update_current (item)
         else :
             return
 
 
+    # 用来连接custom_widget单击所连接的功能槽函数。单击按钮的时候可以切换到对应的模块设置
     def cmd_custom_widget_clk (self , item) :
         u"""
-        用来连接custom_widget单击所连接的功能槽函数。
-        单击按钮的时候可以切换到对应的模块设置
+        用来连接custom_widget单击所连接的功能槽函数。单击按钮的时候可以切换到对应的模块设置
         item：鼠标单击的时候所在的位置
         """
         # 获取当前选中项目的索引
@@ -98,14 +96,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         self.setting_stack.setCurrentIndex (selected_index + 1)
 
 
-    def cmd_custom_widget_dbclk (self , item) :
-        """
-        用来连接custom_widget双击所连接的功能槽函数。
-        双击的时候可以修改item的名称，并且在离开聚焦的时候取消重命名
-        """
-        self.proxy_widget.currentItem ().text () [0 :-3]
-
-
+    # 用来创建custom_widget右键的菜单
     def cmd_custom_widget_menu (self) :
         """
         用来创建custom_widget右键的菜单
@@ -128,14 +119,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         custom_menu.exec_ (cursor.pos ())
 
 
-    def close_edit (self) :
-        u"""
-        关闭edit
-        """
-        if not self.edited_item :
-            self.closePersistentEditor (self.edited_item)
-
-
+    # 获取proxy_widget所选择的项目，从而更新set_layout的面板
     def update_current (self , item) :
         u"""
         获取proxy_widget所选择的项目，从而更新set_layout的面板
@@ -152,6 +136,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         self.setting_stack.setCurrentIndex (index)
 
 
+    # 根据所得知的item，创建setting_layout里对应的设置面板
     def initialize_field (self , item) :
         u"""
         根据所得知的item，创建对应的设置面板

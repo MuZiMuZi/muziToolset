@@ -217,6 +217,10 @@
                    </color>
                   </brush>
                  </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>../../../tools/icon/componentFK_64.png</normaloff>../../../tools/icon/componentFK_64.png</iconset>
+                 </property>
                 </item>
                 <item>
                  <property name="text">
@@ -230,6 +234,10 @@
                     <blue>153</blue>
                    </color>
                   </brush>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>../../../tools/icon/chain.png</normaloff>../../../tools/icon/chain.png</iconset>
                  </property>
                 </item>
                 <item>
@@ -253,6 +261,10 @@
                    </color>
                   </brush>
                  </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>../../../tools/icon/chain.png</normaloff>../../../tools/icon/chain.png</iconset>
+                 </property>
                 </item>
                 <item>
                  <property name="text">
@@ -267,6 +279,10 @@
                    </color>
                   </brush>
                  </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>../../../tools/icon/chain.png</normaloff>../../../tools/icon/chain.png</iconset>
+                 </property>
                 </item>
                 <item>
                  <property name="text">
@@ -280,6 +296,10 @@
                     <blue>153</blue>
                    </color>
                   </brush>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>../../../tools/icon/chain.png</normaloff>../../../tools/icon/chain.png</iconset>
                  </property>
                 </item>
                 <item>
@@ -1008,6 +1028,10 @@
                   <property name="text">
                    <string>Orient</string>
                   </property>
+                  <property name="icon">
+                   <iconset>
+                    <normaloff>../../../tools/icon/assign.png</normaloff>../../../tools/icon/assign.png</iconset>
+                  </property>
                   <attribute name="buttonGroup">
                    <string notr="true">buttonGroup_5</string>
                   </attribute>
@@ -1024,6 +1048,10 @@
                   <property name="text">
                    <string>Delete</string>
                   </property>
+                  <property name="icon">
+                   <iconset>
+                    <normaloff>../../../tools/icon/delete.png</normaloff>../../../tools/icon/delete.png</iconset>
+                  </property>
                   <attribute name="buttonGroup">
                    <string notr="true">buttonGroup_5</string>
                   </attribute>
@@ -1039,6 +1067,10 @@
                   </property>
                   <property name="text">
                    <string>Reset</string>
+                  </property>
+                  <property name="icon">
+                   <iconset>
+                    <normaloff>../../../tools/icon/reset.png</normaloff>../../../tools/icon/reset.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -1057,6 +1089,10 @@
                 </property>
                 <property name="text">
                  <string>Build</string>
+                </property>
+                <property name="icon">
+                 <iconset>
+                  <normaloff>../../../tools/icon/copy.png</normaloff>../../../tools/icon/copy.png</iconset>
                 </property>
                </widget>
               </item>
