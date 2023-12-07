@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>768</width>
-    <height>641</height>
+    <width>822</width>
+    <height>677</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -69,8 +69,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>171</width>
-             <height>525</height>
+             <width>197</width>
+             <height>578</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
@@ -468,8 +468,9 @@
                  <widget class="QLabel" name="jointRadius_label">
                   <property name="font">
                    <font>
-                    <family>Agency FB</family>
-                    <pointsize>14</pointsize>
+                    <family>Arial</family>
+                    <pointsize>9</pointsize>
+                    <kerning>true</kerning>
                    </font>
                   </property>
                   <property name="text">
@@ -508,15 +509,37 @@
                <layout class="QHBoxLayout" name="horizontalLayout_5">
                 <item>
                  <widget class="QLabel" name="jointAxis_label">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>JointAxis:</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QRadioButton" name="radioButton">
+                 <widget class="QRadioButton" name="jointAxis_on_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="text">
-                   <string>jointAxis_btn</string>
+                   <string>On</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="jointAxis_off_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Off</string>
                   </property>
                  </widget>
                 </item>
@@ -560,8 +583,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>169</width>
-               <height>250</height>
+               <width>196</width>
+               <height>268</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_5">
@@ -644,8 +667,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>169</width>
-               <height>250</height>
+               <width>196</width>
+               <height>268</height>
               </rect>
              </property>
              <property name="sizePolicy">
@@ -752,6 +775,11 @@
                <layout class="QHBoxLayout" name="horizontalLayout_8">
                 <item>
                  <widget class="QLabel" name="bpjnt_label">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="layoutDirection">
                    <enum>Qt::LeftToRight</enum>
                   </property>
@@ -762,8 +790,16 @@
                 </item>
                 <item>
                  <widget class="QRadioButton" name="bpjnt_on_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>On</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
                   </property>
                   <attribute name="buttonGroup">
                    <string notr="true">buttonGroup</string>
@@ -772,6 +808,11 @@
                 </item>
                 <item>
                  <widget class="QRadioButton" name="bpjnt_off_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>Off</string>
                   </property>
@@ -786,6 +827,11 @@
                <layout class="QHBoxLayout" name="horizontalLayout_7">
                 <item>
                  <widget class="QLabel" name="mesh_label">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>Mesh</string>
                   </property>
@@ -793,6 +839,11 @@
                 </item>
                 <item>
                  <widget class="QRadioButton" name="mesh_on_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>On</string>
                   </property>
@@ -803,8 +854,16 @@
                 </item>
                 <item>
                  <widget class="QRadioButton" name="mesh_off_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>Off</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
                   </property>
                   <attribute name="buttonGroup">
                    <string notr="true">buttonGroup_2</string>
@@ -817,6 +876,11 @@
                <layout class="QHBoxLayout" name="horizontalLayout_6">
                 <item>
                  <widget class="QLabel" name="joint_label">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>Joint</string>
                   </property>
@@ -824,6 +888,11 @@
                 </item>
                 <item>
                  <widget class="QRadioButton" name="joint_on_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>On</string>
                   </property>
@@ -834,8 +903,16 @@
                 </item>
                 <item>
                  <widget class="QRadioButton" name="joint_off_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>Off</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
                   </property>
                   <attribute name="buttonGroup">
                    <string notr="true">buttonGroup_3</string>
@@ -848,6 +925,11 @@
                <layout class="QHBoxLayout" name="horizontalLayout_2">
                 <item>
                  <widget class="QLabel" name="control_label">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>Control</string>
                   </property>
@@ -855,6 +937,11 @@
                 </item>
                 <item>
                  <widget class="QRadioButton" name="control_on_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>On</string>
                   </property>
@@ -865,8 +952,16 @@
                 </item>
                 <item>
                  <widget class="QRadioButton" name="control_off_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>Off</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
                   </property>
                   <attribute name="buttonGroup">
                    <string notr="true">buttonGroup_4</string>
@@ -883,6 +978,11 @@
                <layout class="QHBoxLayout" name="horizontalLayout_9">
                 <item>
                  <widget class="QPushButton" name="orient_button">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>Orient</string>
                   </property>
@@ -895,7 +995,7 @@
                  <widget class="QPushButton" name="delete_button">
                   <property name="font">
                    <font>
-                    <family>Agency FB</family>
+                    <family>Arial</family>
                     <pointsize>10</pointsize>
                    </font>
                   </property>
@@ -911,7 +1011,7 @@
                  <widget class="QPushButton" name="ctrl_button">
                   <property name="font">
                    <font>
-                    <family>Agency FB</family>
+                    <family>Arial</family>
                     <pointsize>10</pointsize>
                    </font>
                   </property>
@@ -926,7 +1026,7 @@
                <widget class="QPushButton" name="build_button">
                 <property name="font">
                  <font>
-                  <family>Agency FB</family>
+                  <family>Arial</family>
                   <pointsize>20</pointsize>
                  </font>
                 </property>
@@ -952,7 +1052,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>768</width>
+     <width>822</width>
      <height>23</height>
     </rect>
    </property>

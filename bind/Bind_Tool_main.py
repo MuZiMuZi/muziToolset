@@ -42,7 +42,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         self.add_connect ()
 
         #设置qss样式表
-        self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format ('black')))
+        self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format ('manjaroMix')))
     def apply_model (self) :
         u"""
         添加模型到view里

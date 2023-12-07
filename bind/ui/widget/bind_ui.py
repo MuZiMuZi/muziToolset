@@ -17,7 +17,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(768, 641)
+        MainWindow.resize(822, 677)
         self.actionRefersh = QAction(MainWindow)
         self.actionRefersh.setObjectName(u"actionRefersh")
         self.action_Mirror_select = QAction(MainWindow)
@@ -67,7 +67,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 171, 525))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 197, 578))
         self.gridLayout_2 = QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
@@ -170,7 +170,11 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.jointRadius_label = QLabel(self.scrollAreaWidgetContents)
         self.jointRadius_label.setObjectName(u"jointRadius_label")
-        self.jointRadius_label.setFont(font)
+        font3 = QFont()
+        font3.setFamily(u"Arial")
+        font3.setPointSize(9)
+        font3.setKerning(True)
+        self.jointRadius_label.setFont(font3)
 
         self.horizontalLayout_4.addWidget(self.jointRadius_label)
 
@@ -192,13 +196,23 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.jointAxis_label = QLabel(self.scrollAreaWidgetContents)
         self.jointAxis_label.setObjectName(u"jointAxis_label")
+        font4 = QFont()
+        font4.setFamily(u"Arial")
+        self.jointAxis_label.setFont(font4)
 
         self.horizontalLayout_5.addWidget(self.jointAxis_label)
 
-        self.radioButton = QRadioButton(self.scrollAreaWidgetContents)
-        self.radioButton.setObjectName(u"radioButton")
+        self.jointAxis_on_radio = QRadioButton(self.scrollAreaWidgetContents)
+        self.jointAxis_on_radio.setObjectName(u"jointAxis_on_radio")
+        self.jointAxis_on_radio.setFont(font4)
 
-        self.horizontalLayout_5.addWidget(self.radioButton)
+        self.horizontalLayout_5.addWidget(self.jointAxis_on_radio)
+
+        self.jointAxis_off_radio = QRadioButton(self.scrollAreaWidgetContents)
+        self.jointAxis_off_radio.setObjectName(u"jointAxis_off_radio")
+        self.jointAxis_off_radio.setFont(font4)
+
+        self.horizontalLayout_5.addWidget(self.jointAxis_off_radio)
 
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_5)
@@ -229,7 +243,7 @@ class Ui_MainWindow(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 169, 250))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 196, 268))
         self.gridLayout_5 = QGridLayout(self.scrollAreaWidgetContents_5)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
         self.gridLayout_5.setContentsMargins(0, 0, 0, 0)
@@ -238,9 +252,9 @@ class Ui_MainWindow(object):
         QListWidgetItem(self.preset_widget)
         QListWidgetItem(self.preset_widget)
         self.preset_widget.setObjectName(u"preset_widget")
-        font3 = QFont()
-        font3.setPointSize(14)
-        self.preset_widget.setFont(font3)
+        font5 = QFont()
+        font5.setPointSize(14)
+        self.preset_widget.setFont(font5)
         self.preset_widget.setStyleSheet(u"")
         self.preset_widget.setSelectionMode(QAbstractItemView.SingleSelection)
         self.preset_widget.setSelectionRectVisible(False)
@@ -268,7 +282,7 @@ class Ui_MainWindow(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scrollAreaWidgetContents_3 = QWidget()
         self.scrollAreaWidgetContents_3.setObjectName(u"scrollAreaWidgetContents_3")
-        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 169, 250))
+        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 196, 268))
         sizePolicy.setHeightForWidth(self.scrollAreaWidgetContents_3.sizePolicy().hasHeightForWidth())
         self.scrollAreaWidgetContents_3.setSizePolicy(sizePolicy)
         self.gridLayout_4 = QGridLayout(self.scrollAreaWidgetContents_3)
@@ -281,10 +295,10 @@ class Ui_MainWindow(object):
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.custom_widget.sizePolicy().hasHeightForWidth())
         self.custom_widget.setSizePolicy(sizePolicy2)
-        font4 = QFont()
-        font4.setFamily(u"Arial Narrow")
-        font4.setPointSize(14)
-        self.custom_widget.setFont(font4)
+        font6 = QFont()
+        font6.setFamily(u"Arial Narrow")
+        font6.setPointSize(14)
+        self.custom_widget.setFont(font6)
         self.custom_widget.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed)
         self.custom_widget.setDragEnabled(True)
         self.custom_widget.setDragDropOverwriteMode(True)
@@ -338,6 +352,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.bpjnt_label = QLabel(self.centralwidget)
         self.bpjnt_label.setObjectName(u"bpjnt_label")
+        self.bpjnt_label.setFont(font4)
         self.bpjnt_label.setLayoutDirection(Qt.LeftToRight)
 
         self.horizontalLayout_8.addWidget(self.bpjnt_label)
@@ -347,12 +362,15 @@ class Ui_MainWindow(object):
         self.buttonGroup.setObjectName(u"buttonGroup")
         self.buttonGroup.addButton(self.bpjnt_on_radio)
         self.bpjnt_on_radio.setObjectName(u"bpjnt_on_radio")
+        self.bpjnt_on_radio.setFont(font4)
+        self.bpjnt_on_radio.setChecked(True)
 
         self.horizontalLayout_8.addWidget(self.bpjnt_on_radio)
 
         self.bpjnt_off_radio = QRadioButton(self.centralwidget)
         self.buttonGroup.addButton(self.bpjnt_off_radio)
         self.bpjnt_off_radio.setObjectName(u"bpjnt_off_radio")
+        self.bpjnt_off_radio.setFont(font4)
 
         self.horizontalLayout_8.addWidget(self.bpjnt_off_radio)
 
@@ -363,6 +381,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
         self.mesh_label = QLabel(self.centralwidget)
         self.mesh_label.setObjectName(u"mesh_label")
+        self.mesh_label.setFont(font4)
 
         self.horizontalLayout_7.addWidget(self.mesh_label)
 
@@ -371,12 +390,15 @@ class Ui_MainWindow(object):
         self.buttonGroup_2.setObjectName(u"buttonGroup_2")
         self.buttonGroup_2.addButton(self.mesh_on_radio)
         self.mesh_on_radio.setObjectName(u"mesh_on_radio")
+        self.mesh_on_radio.setFont(font4)
 
         self.horizontalLayout_7.addWidget(self.mesh_on_radio)
 
         self.mesh_off_radio = QRadioButton(self.centralwidget)
         self.buttonGroup_2.addButton(self.mesh_off_radio)
         self.mesh_off_radio.setObjectName(u"mesh_off_radio")
+        self.mesh_off_radio.setFont(font4)
+        self.mesh_off_radio.setChecked(True)
 
         self.horizontalLayout_7.addWidget(self.mesh_off_radio)
 
@@ -387,6 +409,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.joint_label = QLabel(self.centralwidget)
         self.joint_label.setObjectName(u"joint_label")
+        self.joint_label.setFont(font4)
 
         self.horizontalLayout_6.addWidget(self.joint_label)
 
@@ -395,12 +418,15 @@ class Ui_MainWindow(object):
         self.buttonGroup_3.setObjectName(u"buttonGroup_3")
         self.buttonGroup_3.addButton(self.joint_on_radio)
         self.joint_on_radio.setObjectName(u"joint_on_radio")
+        self.joint_on_radio.setFont(font4)
 
         self.horizontalLayout_6.addWidget(self.joint_on_radio)
 
         self.joint_off_radio = QRadioButton(self.centralwidget)
         self.buttonGroup_3.addButton(self.joint_off_radio)
         self.joint_off_radio.setObjectName(u"joint_off_radio")
+        self.joint_off_radio.setFont(font4)
+        self.joint_off_radio.setChecked(True)
 
         self.horizontalLayout_6.addWidget(self.joint_off_radio)
 
@@ -411,6 +437,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.control_label = QLabel(self.centralwidget)
         self.control_label.setObjectName(u"control_label")
+        self.control_label.setFont(font4)
 
         self.horizontalLayout_2.addWidget(self.control_label)
 
@@ -419,12 +446,15 @@ class Ui_MainWindow(object):
         self.buttonGroup_4.setObjectName(u"buttonGroup_4")
         self.buttonGroup_4.addButton(self.control_on_radio)
         self.control_on_radio.setObjectName(u"control_on_radio")
+        self.control_on_radio.setFont(font4)
 
         self.horizontalLayout_2.addWidget(self.control_on_radio)
 
         self.control_off_radio = QRadioButton(self.centralwidget)
         self.buttonGroup_4.addButton(self.control_off_radio)
         self.control_off_radio.setObjectName(u"control_off_radio")
+        self.control_off_radio.setFont(font4)
+        self.control_off_radio.setChecked(True)
 
         self.horizontalLayout_2.addWidget(self.control_off_radio)
 
@@ -443,22 +473,23 @@ class Ui_MainWindow(object):
         self.buttonGroup_5.setObjectName(u"buttonGroup_5")
         self.buttonGroup_5.addButton(self.orient_button)
         self.orient_button.setObjectName(u"orient_button")
+        self.orient_button.setFont(font4)
 
         self.horizontalLayout_9.addWidget(self.orient_button)
 
         self.delete_button = QPushButton(self.centralwidget)
         self.buttonGroup_5.addButton(self.delete_button)
         self.delete_button.setObjectName(u"delete_button")
-        font5 = QFont()
-        font5.setFamily(u"Agency FB")
-        font5.setPointSize(10)
-        self.delete_button.setFont(font5)
+        font7 = QFont()
+        font7.setFamily(u"Arial")
+        font7.setPointSize(10)
+        self.delete_button.setFont(font7)
 
         self.horizontalLayout_9.addWidget(self.delete_button)
 
         self.ctrl_button = QPushButton(self.centralwidget)
         self.ctrl_button.setObjectName(u"ctrl_button")
-        self.ctrl_button.setFont(font5)
+        self.ctrl_button.setFont(font7)
 
         self.horizontalLayout_9.addWidget(self.ctrl_button)
 
@@ -467,10 +498,10 @@ class Ui_MainWindow(object):
 
         self.build_button = QPushButton(self.centralwidget)
         self.build_button.setObjectName(u"build_button")
-        font6 = QFont()
-        font6.setFamily(u"Agency FB")
-        font6.setPointSize(20)
-        self.build_button.setFont(font6)
+        font8 = QFont()
+        font8.setFamily(u"Arial")
+        font8.setPointSize(20)
+        self.build_button.setFont(font8)
 
         self.verticalLayout_6.addWidget(self.build_button)
 
@@ -492,7 +523,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 768, 23))
+        self.menubar.setGeometry(QRect(0, 0, 822, 23))
         self.menuWindow = QMenu(self.menubar)
         self.menuWindow.setObjectName(u"menuWindow")
         self.menuCustom = QMenu(self.menubar)
@@ -582,7 +613,8 @@ class Ui_MainWindow(object):
 
         self.jointRadius_label.setText(QCoreApplication.translate("MainWindow", u"Joint Radius:", None))
         self.jointAxis_label.setText(QCoreApplication.translate("MainWindow", u"JointAxis:", None))
-        self.radioButton.setText(QCoreApplication.translate("MainWindow", u"jointAxis_btn", None))
+        self.jointAxis_on_radio.setText(QCoreApplication.translate("MainWindow", u"On", None))
+        self.jointAxis_off_radio.setText(QCoreApplication.translate("MainWindow", u"Off", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Presets", None))
 
         __sortingEnabled1 = self.preset_widget.isSortingEnabled()
