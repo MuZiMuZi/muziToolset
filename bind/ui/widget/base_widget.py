@@ -1,12 +1,9 @@
-import os
-from PySide2 import QtCore , QtWidgets , QtGui
+from PySide2 import QtWidgets
 
-from PySide2.QtCore import Qt
-from PySide2.QtUiTools import QUiLoader
 from ..widget import bone_widget
-from ..config import Side , ui_dir
-from ..ui import bind_ui , base_ui
-from .....bind.module.base import base
+from ...config import Side
+from . import base_ui
+from ....bind.module.base import base
 from importlib import reload
 
 

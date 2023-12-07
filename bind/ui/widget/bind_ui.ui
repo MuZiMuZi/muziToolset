@@ -765,6 +765,9 @@
                   <property name="text">
                    <string>On</string>
                   </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup</string>
+                  </attribute>
                  </widget>
                 </item>
                 <item>
@@ -772,6 +775,9 @@
                   <property name="text">
                    <string>Off</string>
                   </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup</string>
+                  </attribute>
                  </widget>
                 </item>
                </layout>
@@ -790,6 +796,9 @@
                   <property name="text">
                    <string>On</string>
                   </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_2</string>
+                  </attribute>
                  </widget>
                 </item>
                 <item>
@@ -797,6 +806,9 @@
                   <property name="text">
                    <string>Off</string>
                   </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_2</string>
+                  </attribute>
                  </widget>
                 </item>
                </layout>
@@ -815,6 +827,9 @@
                   <property name="text">
                    <string>On</string>
                   </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_3</string>
+                  </attribute>
                  </widget>
                 </item>
                 <item>
@@ -822,6 +837,9 @@
                   <property name="text">
                    <string>Off</string>
                   </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_3</string>
+                  </attribute>
                  </widget>
                 </item>
                </layout>
@@ -840,6 +858,9 @@
                   <property name="text">
                    <string>On</string>
                   </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_4</string>
+                  </attribute>
                  </widget>
                 </item>
                 <item>
@@ -847,6 +868,9 @@
                   <property name="text">
                    <string>Off</string>
                   </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_4</string>
+                  </attribute>
                  </widget>
                 </item>
                </layout>
@@ -862,6 +886,9 @@
                   <property name="text">
                    <string>Orient</string>
                   </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_5</string>
+                  </attribute>
                  </widget>
                 </item>
                 <item>
@@ -875,6 +902,9 @@
                   <property name="text">
                    <string>Delete</string>
                   </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_5</string>
+                  </attribute>
                  </widget>
                 </item>
                 <item>
@@ -993,4 +1023,11 @@
  </widget>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_3"/>
+  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup_5"/>
+ </buttongroups>
 </ui>

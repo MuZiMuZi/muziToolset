@@ -7,13 +7,13 @@ project_root = os.path.dirname(__file__)
 ui_dir = os.path.join(project_root , 'ui')
 icon_dir = os.path.join(project_root , 'icon')
 
-bind_root = os.path.abspath(__file__ + "/../../../../bind")
-base_dir = os.path.join(bind_root , 'base')
-chain_dir = os.path.join(bind_root , 'chain')
-limb_dir = os.path.join(bind_root , 'limb')
+bind_root = os.path.abspath(__file__ + "/..")
+base_dir = os.path.join(bind_root , 'module/base')
+chain_dir = os.path.join(bind_root , 'module/chain')
+limb_dir = os.path.join(bind_root , 'module/limb')
 module_dir = os.path.join(bind_root , 'module')
-
-
+qss_dir = os.path.abspath (__file__ + "/../../tools/qss")
+print(chain_dir)
 
 @unique
 class Side(Enum) :

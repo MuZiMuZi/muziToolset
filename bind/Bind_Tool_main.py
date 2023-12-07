@@ -8,8 +8,10 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 
-from bind.ui.widget import base_widget , chainEP_widget , chain_widget , limb_widget, Bind_Tool
-from .....core import qtUtils
+from .ui.widget import base_widget , chainEP_widget , chain_widget , limb_widget
+from .ui.widget import bind_ui
+from ..core import qtUtils
+from . import config
 
 
 rigtype_custom = ['base']
@@ -19,10 +21,9 @@ rigtype_limb = ['arm' , 'leg' , 'hand' , 'tail' , 'spine']
 
 reload (base_widget)
 reload (chain_widget)
-reload (bind_ui)
 reload (limb_widget)
 reload (chainEP_widget)
-reload(Bind_Tool)
+reload(bind_ui)
 
 
 class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
@@ -40,7 +41,8 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
 
         self.add_connect ()
 
-
+        #设置qss样式表
+        self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format ('black')))
     def apply_model (self) :
         u"""
         添加模型到view里

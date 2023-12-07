@@ -1,7 +1,7 @@
 from PySide2 import QtWidgets
 
 from . import chain_widget
-from ..ui import limb_ui
+from . import limb_ui
 from importlib import reload
 
 

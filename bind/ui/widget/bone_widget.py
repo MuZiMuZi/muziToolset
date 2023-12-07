@@ -1,12 +1,9 @@
 import os
 from functools import wraps
 
-from PySide2 import QtWidgets , QtGui , QtCore
+from PySide2 import QtWidgets , QtGui
 
-from ..config import icon_dir
-
-from ..ui import bind_ui
-
+from ...config import icon_dir
 
 
 def update_base_name(func) :

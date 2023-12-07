@@ -1,10 +1,5 @@
-import os
-
-from PySide2.QtUiTools import QUiLoader
-from ..widget import base_widget
-from ..config import Side , ui_dir , Direction
-from ..ui import bind_ui , base_ui , chain_ui,chainEP_ui
-from . import base_widget,chain_widget
+from . import chainEP_ui
+from . import chain_widget
 from importlib import reload
 
 
