@@ -50,15 +50,11 @@ class Base_Widget (base_ui.Ui_MainWindow , QtWidgets.QMainWindow) :
         用来添加连接的槽函数
         """
         # self.create_btn.clicked.connect (lambda :print(12))
-        self.create_btn.clicked.connect (self.print_test)
         # self.base_widget.delete_btn.clicked.connect (self.delete_setup)
 
 
-    def print_test (self , zz) :
-        print (zz)
 
-
-    def parse_base (self , zzz) :
+    def parse_base (self , *args) :
         """
         分析base_widget中的输入并将其作为参数返回
         """
@@ -67,15 +63,11 @@ class Base_Widget (base_ui.Ui_MainWindow , QtWidgets.QMainWindow) :
         self.jnt_number = self.jnt_number_sbox.currentText ()
         self.jnt_parent = self.jnt_parent_edit.text ()
         self.control_parent = self.control_parent_edit.text ()
-        print ('parse_base')
 
 
     def build_setup (self) :
         # 读取输入信息
-        print (1)
         self.parse_base ()
-        print (self.name)
-        print (self.jnt_number)
         #
         # # 生成定位关节系统
         # self.setup = base.Base (self.side , self.name , self.joint_number , self.joint_parent , self.control_parent)

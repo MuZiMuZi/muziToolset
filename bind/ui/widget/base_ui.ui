@@ -258,6 +258,9 @@
         </item>
         <item>
          <widget class="QPushButton" name="delete_btn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -272,6 +275,12 @@
           </property>
           <property name="text">
            <string>delete</string>
+          </property>
+          <property name="checkable">
+           <bool>false</bool>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
           </property>
          </widget>
         </item>
