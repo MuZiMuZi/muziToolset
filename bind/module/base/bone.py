@@ -129,13 +129,15 @@ class Bone (object) :
         :param joint_parent(str): 生成的关节的父层级
         :param control_parent(str): 生成的控制器的父层级
         """
-        # 创建层级结构
+        # 创建层级结构，当场景里不存在最高级层级组的时候，自动创建最高级层级组
         main_group = 'grp_m_group_001'
         if cmds.objExists (main_group) :
             pass
         else :
             hierarchyUtils.Hierarchy.create_rig_grp ()
-        self._side = side
+        #初始化组件的边和关节数量
+        self.side = side
+        self.name = name
         self.joint_number = joint_number
 
         # 设置关节的父层级和控制器的父层级
@@ -146,9 +148,9 @@ class Bone (object) :
         if not self.control_parent :
             self.control_parent = 'grp_m_control_001'
         self.bpjnt_grp = 'grp_m_bpjnt_001'
+        
         # 生成的绑定类型
-        self._rtype = ''
-        self._name = name
+        self.rtype = ''
         self.shape = 'circle'
         self.radius = 5
 
@@ -182,50 +184,31 @@ class Bone (object) :
         self.logger.setLevel (logging.DEBUG)
 
 
-    @property
-    def name (self) :
-        return self._name
-
-
-    @property
-    def side (self) :
-        return self._side
-
-
-    @property
-    def type (self) :
-        return self._rtype
-
-
-    @property
-    def scale (self) :
-        return self._scale
-
-
+    #设置控制器形状
     def set_shape (self , shape) :
         u'''
         设置控制器形状
         '''
         self.shape = shape
 
-
+    #根据给定的side，name等属性，创建名称进行规范整理
     def create_namespace (self) :
         u"""
-        创建名称规范整理
+        创建名称进行规范整理
         """
         for i in range (self.joint_number) :
-            self.bpjnt_list.append ('bpjnt_{}_{}{}_{:03d}'.format (self._side , self._name , self._rtype , i + 1))
-            self.jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self._side , self._name , self._rtype , i + 1))
-            self.zero_list.append ('zero_{}_{}{}_{:03d}'.format (self._side , self._name , self._rtype , i + 1))
-            self.driven_list.append ('driven_{}_{}{}_{:03d}'.format (self._side , self._name , self._rtype , i + 1))
-            self.connect_list.append ('connect_{}_{}{}_{:03d}'.format (self._side , self._name , self._rtype , i + 1))
-            self.offset_list.append ('offset_{}_{}{}_{:03d}'.format (self._side , self._name , self._rtype , i + 1))
-            self.ctrl_list.append ('ctrl_{}_{}{}_{:03d}'.format (self._side , self._name , self._rtype , i + 1))
-            self.subctrl_list.append ('ctrl_{}_{}{}Sub_{:03d}'.format (self._side , self._name , self._rtype , i + 1))
-            self.output_list.append ('output_{}_{}{}_{:03d}'.format (self._side , self._name , self._rtype , i + 1))
-        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self._side , self._name , self._rtype))
+            self.bpjnt_list.append ('bpjnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.zero_list.append ('zero_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.driven_list.append ('driven_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.connect_list.append ('connect_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.offset_list.append ('offset_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.ctrl_list.append ('ctrl_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.subctrl_list.append ('ctrl_{}_{}{}Sub_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.output_list.append ('output_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rtype))
 
-
+    #根据给定的名称规范，创建定位的bp关节
     def create_bpjnt (self) :
         """
         根据名称规范，创建定位的bp关节
@@ -241,16 +224,17 @@ class Bone (object) :
                 cmds.setAttr (self.bpjnt + '.overrideColor' , 13)
                 # 将bp关节添加到选择集里方便进行选择
                 pipelineUtils.Pipeline.create_set (self.bpjnt ,
-                                                   set_name = '{}_{}{}_bpjnt_set'.format (self._side , self._name ,
-                                                                                          self._rtype) ,
+                                                   set_name = '{}_{}{}_bpjnt_set'.format (self.side , self.name ,
+                                                                                          self.rtype) ,
                                                    set_parent = 'bpjnt_set')
         # 进行关节定向
         jointUtils.Joint.joint_orientation (self.bpjnt_list)
 
-
-    def hide_bpjnt (self) :
+    #设置bp关节的可见性，用于切换状态，当绑定系统创建完成的时候设置bp关节为隐藏状态，当绑定系统删除的时候则设置bp关节为显示状态
+    def set_bpjnt_vis (self, vis_bool) :
         """
-        定位完成后隐藏bpjnt关节
+        设置bp关节的可见性，用于切换状态，当绑定系统创建完成的时候设置bp关节为隐藏状态，当绑定系统删除的时候则设置bp关节为显示状态
+        vis_bool(bool):bp关节的可见性
         """
         # 选择bp选择集
         cmds.select (clear = True)
@@ -259,7 +243,7 @@ class Bone (object) :
         bpjnts_list = cmds.ls (sl = True , type = 'joint')
         # 对bpjnt关节列表做循环，设置他们的可见性
         for bpjnt in bpjnts_list :
-            cmds.setAttr (bpjnt + '.visibility' , 0)
+            cmds.setAttr (bpjnt + '.visibility' , vis_bool)
 
 
     def create_joint (self) :
@@ -288,8 +272,8 @@ class Bone (object) :
             jnt = cmds.createNode ('joint' , name = jnt , parent = self.joint_parent)
             # 将蒙皮关节添加到选择集里方便进行选择
             pipelineUtils.Pipeline.create_set (jnt ,
-                                               set_name = '{}_{}{}_jnt_set'.format (self._side , self._name ,
-                                                                                    self._rtype) ,
+                                               set_name = '{}_{}{}_jnt_set'.format (self.side , self.name ,
+                                                                                    self.rtype) ,
                                                set_parent = 'jnt_set')
             cmds.matchTransform (jnt , bpjnt)
 
