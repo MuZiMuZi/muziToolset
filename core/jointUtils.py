@@ -351,17 +351,20 @@ class Joint (object) :
     def create_child_joint () :
         """
         在选择对象的下层创建子关节
+        返回：
+            child_jnt：子关节
         """
         objs_list = cmds.ls (selection = True , flatten = True)
+        child_jnt_list = []
         if len (objs_list) >= 1 :
             for obj in objs_list :
                 child_jnt = cmds.createNode ('joint' , name = obj + '_childJoint')
                 cmds.matchTransform (child_jnt , obj)
                 cmds.parent (child_jnt , obj)
+                child_jnt_list.append(child_jnt)
         else :
             cmds.warning ("请选择一个或以上的物体")
-
-
+        return child_jnt_list
     @staticmethod
     def create_more_joint () :
         try :
@@ -528,17 +531,27 @@ class Joint (object) :
         创建次级控制器的次级关节，用于做衣服的次级控制器
         思路：在关节下面创建一个子关节，子关节保持和父关节相同的位置，然后被次级控制器连接所有属性
         """
+        #选择需要创建次级控制器的关节
         jnts = cmds.ls (sl = True , type = 'joint')
 
+        #对关节创建控制器
+        pipelineUtils.Pipeline.batch_Constraints_joint ()
+
+        #断开关节的约束
+        cmds.select(jnts,replace = True)
+        pipelineUtils.Pipeline.delete_constraints ()
+
+        #对所有选中的关节进行循环，对其创建子关节并且连接子关节的属性
+        #在选择的关节下创建子关节
+        Joint.create_child_joint()
         for jnt in jnts :
-            child_jnt = cmds.createNode ('joint' , name = '{}_child'.format (jnt))
-            cmds.parent (child_jnt , jnt)
             for attr in ['translate' , 'rotate'] :
-                for axis in ['x' , 'y' , 'z'] :
-                    # 将属性清空
+                for axis in ['X' , 'Y' , 'Z'] :
+                    ctrl = 'ctrl_' + jnt
+                    child_jnt = jnt +  '_childJoint'
+                    # 将子关节的属性清空
                     cmds.setAttr (child_jnt + '.{}{}'.format (attr , axis) , 0)
                     # 将次级控制器的属性与生成的次级关节进行连接
-                    ctrl = 'ctrl_' + jnt
                     cmds.connectAttr (ctrl + '.{}{}'.format (attr , axis) , child_jnt + '.{}{}'.format (attr , axis))
 
 
