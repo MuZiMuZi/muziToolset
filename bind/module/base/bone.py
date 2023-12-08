@@ -135,7 +135,7 @@ class Bone (object) :
             pass
         else :
             hierarchyUtils.Hierarchy.create_rig_grp ()
-        #初始化组件的边和关节数量
+        # 初始化组件的边和关节数量
         self.side = side
         self.name = name
         self.joint_number = joint_number
@@ -148,7 +148,7 @@ class Bone (object) :
         if not self.control_parent :
             self.control_parent = 'grp_m_control_001'
         self.bpjnt_grp = 'grp_m_bpjnt_001'
-        
+
         # 生成的绑定类型
         self.rtype = ''
         self.shape = 'circle'
@@ -184,14 +184,15 @@ class Bone (object) :
         self.logger.setLevel (logging.DEBUG)
 
 
-    #设置控制器形状
+    # 设置控制器形状
     def set_shape (self , shape) :
         u'''
         设置控制器形状
         '''
         self.shape = shape
 
-    #根据给定的side，name等属性，创建名称进行规范整理
+
+    # 根据给定的side，name等属性，创建名称进行规范整理
     def create_namespace (self) :
         u"""
         创建名称进行规范整理
@@ -208,7 +209,8 @@ class Bone (object) :
             self.output_list.append ('output_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
         self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rtype))
 
-    #根据给定的名称规范，创建定位的bp关节
+
+    # 根据给定的名称规范，创建定位的bp关节
     def create_bpjnt (self) :
         """
         根据名称规范，创建定位的bp关节
@@ -230,11 +232,12 @@ class Bone (object) :
         # 进行关节定向
         jointUtils.Joint.joint_orientation (self.bpjnt_list)
 
-    #设置bp关节的可见性，用于切换状态，当绑定系统创建完成的时候设置bp关节为隐藏状态，当绑定系统删除的时候则设置bp关节为显示状态
-    def set_bpjnt_vis (self, vis_bool) :
+
+    # 设置bp关节的可见性，用于切换状态，当绑定系统创建完成的时候设置bp关节为隐藏状态，当绑定系统删除的时候则设置bp关节为显示状态
+    def set_bpjnt_vis (self , vis_bool) :
         """
         设置bp关节的可见性，用于切换状态，当绑定系统创建完成的时候设置bp关节为隐藏状态，当绑定系统删除的时候则设置bp关节为显示状态
-        vis_bool(bool):bp关节的可见性
+        vis_bool(bool):bp关节的可见性,0为不可见，1为可见
         """
         # 选择bp选择集
         cmds.select (clear = True)
@@ -246,12 +249,13 @@ class Bone (object) :
             cmds.setAttr (bpjnt + '.visibility' , vis_bool)
 
 
+    # 根据定位的bp关节创建绑定关节
     def create_joint (self) :
         '''
-        根据定位的bp关节创建关节
+        根据定位的bp关节创建绑定关节
         '''
         # 隐藏bp的定位关节
-        self.hide_bpjnt ()
+        self.set_bpjnt_vis (vis_bool = 0)
 
         # 根据bp关节创建新的关节,需要做生成关节的准备，断掉bp关节上的所有属性链接
         for bpjnt in self.bpjnt_list :
@@ -275,12 +279,14 @@ class Bone (object) :
                                                set_name = '{}_{}{}_jnt_set'.format (self.side , self.name ,
                                                                                     self.rtype) ,
                                                set_parent = 'jnt_set')
+            # 吸附绑定关节与定位关节的位置
             cmds.matchTransform (jnt , bpjnt)
 
 
+    # 根据绑定关节来创建对应的控制器
     def create_ctrl (self) :
         u"""
-        创建控制器
+        根据绑定关节来创建对应的控制器
         """
         self.set_shape (self.shape)
         # 创建整体的控制器层级组
@@ -292,6 +298,7 @@ class Bone (object) :
         else :
             self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.control_parent)
 
+        # 对控制器组和关节组进行循环，创建对应关节的控制器以及吸附到对应的位置
         for ctrl , jnt in zip (self.ctrl_list , self.jnt_list) :
             self.ctrl = controlUtils.Control.create_ctrl (ctrl , shape = self.shape ,
                                                           radius = self.radius ,
@@ -302,9 +309,10 @@ class Bone (object) :
                 cmds.setAttr (ctrl.replace ('ctrl' , 'offset') + '.scaleX' , -1)
 
 
+    # 对应的控制器与绑定关节之间创建连接
     def add_constraint (self) :
         '''
-        添加约束
+        对应的控制器与绑定关节之间创建连接
         '''
         for ctrl , jnt in zip (self.ctrl_list , self.jnt_list) :
             pipelineUtils.Pipeline.create_constraint (ctrl.replace (' ctrl' , 'output') , jnt ,
@@ -314,6 +322,7 @@ class Bone (object) :
                                                       mo_value = True)
 
 
+    # 创建bp的定位关节,生成准备
     def build_setup (self) :
         """
         创建bp的定位关节,生成准备
@@ -321,15 +330,17 @@ class Bone (object) :
         self.create_bpjnt ()
 
 
+    # 根据生成的bp定位关节，创建绑定系统
     def build_rig (self) :
         """
-        创建绑定系统
+        根据生成的bp定位关节，创建绑定系统
         """
         self.create_joint ()
         self.create_ctrl ()
         self.add_constraint ()
 
 
+    # 删除已经创建好的绑定系统
     def delete_rig (self) :
         """
         删除已经创建好的绑定系统
@@ -337,11 +348,11 @@ class Bone (object) :
         # 删除已经创建好的关节
         for jnt in self.jnt_list :
             if cmds.objExists (jnt) :
-                # 删除过去的关节后，并重新创建关节
+                # 删除过去的关节后，再重新创建关节
                 cmds.delete (jnt)
         else :
             pass
-
+        # 如果对应的控制器组存在则删除控制器组
         if cmds.objExists (self.ctrl_grp) :
             cmds.delete (self.ctrl_grp)
         else :
