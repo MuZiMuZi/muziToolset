@@ -132,7 +132,6 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         Returns:
 
         """
-        self.item = item
         self.initialize_field (item)
         # 获取custom_widget 里的item数量，切换到对应的设置面板
         index = self.custom_widget.count ()
@@ -146,10 +145,11 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         Returns:
 
         """
-        base = base_widget.Base_Widget ()
-        self.base_widget = base.base_widget
-        base.module_edit.setText ('{}'.format (item.text))
-        self.setting_stack.addWidget (self.base_widget)
+        print(item)
+        base = base_widget.Setting_Widget (item.name)
+        self.setting_stack.addWidget (base.ui)
+
+        # self.item_layout = QVBoxLayout()
 
 
 def show () :

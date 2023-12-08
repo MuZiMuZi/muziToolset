@@ -48,7 +48,7 @@ class RigItem (QListWidgetItem) :
         # 根据给定的名称初始化图标的名称
         self.icon = '{}.png'.format (name)
         # 获取config配置文件里的ui路径来设置图标
-        icon = QtGui.QIcon ()
+        icon = QIcon ()
         path = os.path.join (config.icon_dir , self.icon)
         icon.addFile (path)
         self.setIcon (icon)

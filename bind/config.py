@@ -4,7 +4,7 @@ from enum import Enum , unique
 
 
 project_root = os.path.dirname(__file__)
-ui_dir = os.path.join(project_root , 'ui')
+ui_dir = os.path.join(project_root , 'ui/widget')
 icon_dir = os.path.join(project_root , 'icon')
 
 bind_root = os.path.abspath(__file__ + "/..")

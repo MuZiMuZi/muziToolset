@@ -8,6 +8,7 @@ try :
     from PySide2.QtCore import *
     from PySide2.QtGui import *
     from PySide2.QtWidgets import *
+    from PySide2.QtUiTools import QUiLoader
     from PySide2 import __version__
     from shiboken2 import wrapInstance
 
@@ -20,9 +21,9 @@ except ImportError :
 from importlib import reload
 import os
 from . import bone
-
-
+from ....bind import config
 reload (bone)
+reload(config)
 
 
 class BaseItem (bone.RigItem) :
@@ -40,10 +41,12 @@ class BaseItem (bone.RigItem) :
         # 初始化作为QWidget对象的extra_widget属性,用于设置绑定组件的特殊属性，比如(长度，朝向，拉伸，IK启用，FK启用,twist启用)等属性
         # （Length, orientation, stretch, IK enabled, FK enabled, twist enabled）
         self.base_widget = QWidget ()
-        uic.loadUi (os.path.join (UI_DIR , self.base_ui) , self.base_widget)
-
-        for side in Side :
-            self.base_widget.side_cbox.addItem (side.value)
+        self.ui_path = os.path.join (config.ui_dir , self.base_ui)
+        print(self.ui_path)
+        # Use the custom loadUi function
+        self.ui = QUiLoader ().load (self.ui_path)
+        for side in config.Side :
+            self.ui.side_cbox.addItem (side.value)
 
 
     # 分析base_widget中的输入并将其作为参数返回
