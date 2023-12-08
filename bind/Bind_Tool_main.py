@@ -44,6 +44,10 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format ('manjaroMix')))
 
 
+    def apply_model () :
+        pass
+
+
     def add_connect (self) :
         u"""
         用来添加连接的槽函数

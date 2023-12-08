@@ -1,18 +1,18 @@
-import os
+from PySide2.QtCore import *
+from importlib import reload
+
+import maya.cmds as cmds
+import maya.mel as mel
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
-import pymel.core as pm
-from .config import ui_dir , icon_dir
-from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils , hierarchyUtils
-from importlib import reload
-import maya.mel as mel
-import maya.cmds as cmds
+
+from ..core import pipelineUtils , jointUtils,weightsUtils
 
 
 reload (jointUtils)
 reload (pipelineUtils)
-
+reload(weightsUtils)
 
 class Joint_Tool (QWidget) :
     """
@@ -91,21 +91,18 @@ class Joint_Tool (QWidget) :
         self.delete_skin_btn = QPushButton (QIcon (':detachSkin.png') , '取消绑定蒙皮')
         self.artPaint_skin_btn = QPushButton (QIcon (':paintSkinWeights.png') , '绘制蒙皮权重')
         self.mirror_skin_btn = QPushButton (QIcon (':mirrorSkinWeight.png') , '镜像蒙皮权重')
-        self.copy_skin_btn = QPushButton (QIcon (':copySkinWeight.png') , '复制蒙皮权重')
 
         # 设置文本提示
         self.bind_skin_btn.setToolTip ('打开绑定蒙皮窗口')
         self.delete_skin_btn.setToolTip ('打开取消绑定蒙皮窗口')
         self.artPaint_skin_btn.setToolTip ('打开绘制蒙皮权重窗口')
         self.mirror_skin_btn.setToolTip ('打开镜像蒙皮权重窗口')
-        self.copy_skin_btn.setToolTip ('打开复制蒙皮权重窗口')
 
         self.skin_setting_buttons = [self.bind_skin_btn ,
                                      self.delete_skin_btn ,
                                      self.artPaint_skin_btn ,
 
-                                     self.mirror_skin_btn ,
-                                     self.copy_skin_btn]
+                                     self.mirror_skin_btn]
 
         # 关节工具的部件
         self.joint_tool_label = QLabel ('---------------关节工具----------------')
@@ -126,6 +123,7 @@ class Joint_Tool (QWidget) :
         self.hide_joint_orient_btn = QPushButton (QIcon (':menuIconModify.png') , '隐藏关节定向')
         self.clear_joint_orient_btn = QPushButton (QIcon (':menuIconModify.png') , '归零关节定向')
         self.create_curve_on_joints_btn = QPushButton (QIcon (':curveEP.png') , '选择关节链条创建曲线')
+        self.copy_skin_btn = QPushButton (QIcon (':copySkinWeight.png') , '复制蒙皮权重')
 
         # 设置文本提示
         self.create_snap_joint_btn.setToolTip ('根据吸附的物体中心创建关节')
@@ -144,6 +142,7 @@ class Joint_Tool (QWidget) :
         self.hide_joint_orient_btn.setToolTip ('隐藏所选择的关节的关节定向在通道盒里')
         self.clear_joint_orient_btn.setToolTip ('归零所选择的关节的关节定向')
 
+        self.copy_skin_btn.setToolTip ('复制权重，先选择需要复制的蒙皮权重物体，再加选需要复制权重的物体')
         self.joint_tool_buttons = [self.create_snap_joint_btn ,
                                    self.create_child_joint_btn ,
                                    self.create_more_joint_btn ,
@@ -159,7 +158,8 @@ class Joint_Tool (QWidget) :
                                    self.show_joint_orient_btn ,
                                    self.hide_joint_orient_btn ,
                                    self.clear_joint_orient_btn ,
-                                   self.create_curve_on_joints_btn]
+                                   self.create_curve_on_joints_btn ,
+                                   self.copy_skin_btn]
 
 
     def create_layouts (self) :
@@ -261,7 +261,6 @@ class Joint_Tool (QWidget) :
         self.delete_skin_btn.clicked.connect (lambda : mel.eval ("DetachSkinOptions;"))
         self.artPaint_skin_btn.clicked.connect (lambda : mel.eval ("ArtPaintSkinWeightsToolOptions;"))
         self.mirror_skin_btn.clicked.connect (lambda : mel.eval ("MirrorSkinWeightsOptions;"))
-        self.copy_skin_btn.clicked.connect (lambda : mel.eval ("CopySkinWeightsOptions;"))
 
         # 创建关节工具面板的按钮的连接
         self.create_connections_joint_tool_layout ()
@@ -286,7 +285,8 @@ class Joint_Tool (QWidget) :
         self.show_joint_orient_btn.clicked.connect (lambda : jointUtils.Joint.show_joint_orient ())
         self.hide_joint_orient_btn.clicked.connect (lambda : jointUtils.Joint.hide_joint_orient ())
         self.clear_joint_orient_btn.clicked.connect (lambda : jointUtils.Joint.clear_joint_orient ())
-        self.create_curve_on_joints_btn.clicked.connect (self.clicked_create_curve_on_joints_btn )
+        self.create_curve_on_joints_btn.clicked.connect (self.clicked_create_curve_on_joints_btn)
+        self.copy_skin_btn.clicked.connect(lambda : weightsUtils.Weights.copy_weight ())
 
 
     def set_joint_size_line (self) :
@@ -299,10 +299,10 @@ class Joint_Tool (QWidget) :
         选择关节链条，在对应的关节点上创建曲线
         """
         jnts = cmds.ls (sl = True , type = 'joint')
-        #对所有选中的关节做循环
-        for jnt in jnts:
-            #获取所有选中的关节下方的所有关节链
-            jnt_list = cmds.listRelatives (jnt , children = True , allDescendents = True,type = 'joint')
+        # 对所有选中的关节做循环
+        for jnt in jnts :
+            # 获取所有选中的关节下方的所有关节链
+            jnt_list = cmds.listRelatives (jnt , children = True , allDescendents = True , type = 'joint')
             jnt_list.append (jnt)
             jnt_list.reverse ()
             pipelineUtils.Pipeline.create_curve_on_joints (jnt_list , 'crv' + jnt , degree = 3)
