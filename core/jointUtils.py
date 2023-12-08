@@ -15,16 +15,14 @@ create_chain：通过放置的模板关节生成相应的IK、FK和Bindjoint
 create_mateHuman_chain：通过放置的模板关节创建mateHuman的IK,FK 的关节链
 
 """
-import sys
 
 import maya.cmds as cmds
-from . import nameUtils
 import pymel.core as pm
-from pymel.core.nodetypes import Joint
-from PySide2.QtCore import *
-from PySide2.QtGui import *
 from PySide2.QtWidgets import *
+from pymel.core.nodetypes import Joint
+
 from . import controlUtils , pipelineUtils , qtUtils , hierarchyUtils , snapUtils
+from . import nameUtils
 
 
 class Joint (object) :
@@ -53,6 +51,7 @@ class Joint (object) :
         print (self.jnt_obj.getAngleZ ())
 
 
+    #    在选定的关节上创建新的avg关节用于旋转约束连接
     def avg_joint (self , driven_joint , weight = 0.5) :
         """
         在选定的关节上创建新的avg关节用于旋转约束连接
@@ -93,6 +92,7 @@ class Joint (object) :
         cmds.setAttr ('{}.{}W1'.format (cons_node , self.driven_joint) , 1 - weight)
 
 
+    # 基于曲线上的点创建关节(rigging版本)
     @staticmethod
     def create_joints_on_curve_rigging () :
         u"""基于曲线上的点创建关节(rigging版本)
@@ -129,7 +129,7 @@ class Joint (object) :
             cmds.xform (jnt , translation = cv_pos , worldSpace = True)
             cmds.parent (jnt , grp_jnts)
 
-
+    #基于曲线上的点创建关节(通用版本)
     @staticmethod
     def create_joints_on_curve (is_parent = True) :
         u"""基于曲线上的点创建关节(通用版本)
@@ -182,7 +182,7 @@ class Joint (object) :
         }
         return jnt_dict
 
-
+    #通过放置的模板关节生成相应的IK、FK和Bindjoint
     @staticmethod
     def create_chain (bp_joints , suffix , joint_parent = None) :
         '''通过放置的模板关节生成相应的IK、FK和Bindjoint
@@ -210,7 +210,7 @@ class Joint (object) :
         cmds.setAttr (bp_joints [0] + '.visibility' , 0)
         return joints_chain
 
-
+    #创建mateHuman的IK,FK 的关节链
     @staticmethod
     def create_mateHuman_chain (drv_jnts , prefix , joint_parent = None , constraint = False) :
         '''创建mateHuman的IK,FK 的关节链
@@ -240,7 +240,7 @@ class Joint (object) :
         cmds.setAttr (joints_chain [0] + '.visibility' , 0)
         return joints_chain
 
-
+    #给定关节的列表自动进行关节定向,正常关节定向为X轴指向下一关节，末端关节定向为世界方向
     @staticmethod
     def joint_orientation (jnt_list) :
         u'''
@@ -267,6 +267,9 @@ class Joint (object) :
 
     @staticmethod
     def show_joint_axis_select () :
+        """
+        显示指定的关节的关节方向
+        """
         joints = cmds.ls (sl = True , type = 'joint')
         for jnt in joints :
             cmds.setAttr (jnt + '.displayLocalAxis' , 1)
@@ -361,10 +364,12 @@ class Joint (object) :
                 child_jnt = cmds.createNode ('joint' , name = obj + '_childJoint')
                 cmds.matchTransform (child_jnt , obj)
                 cmds.parent (child_jnt , obj)
-                child_jnt_list.append(child_jnt)
+                child_jnt_list.append (child_jnt)
         else :
             cmds.warning ("请选择一个或以上的物体")
         return child_jnt_list
+
+
     @staticmethod
     def create_more_joint () :
         try :
@@ -531,24 +536,24 @@ class Joint (object) :
         创建次级控制器的次级关节，用于做衣服的次级控制器
         思路：在关节下面创建一个子关节，子关节保持和父关节相同的位置，然后被次级控制器连接所有属性
         """
-        #选择需要创建次级控制器的关节
+        # 选择需要创建次级控制器的关节
         jnts = cmds.ls (sl = True , type = 'joint')
 
-        #对关节创建控制器
+        # 对关节创建控制器
         pipelineUtils.Pipeline.batch_Constraints_joint ()
 
-        #断开关节的约束
-        cmds.select(jnts,replace = True)
+        # 断开关节的约束
+        cmds.select (jnts , replace = True)
         pipelineUtils.Pipeline.delete_constraints ()
 
-        #对所有选中的关节进行循环，对其创建子关节并且连接子关节的属性
-        #在选择的关节下创建子关节
-        Joint.create_child_joint()
+        # 对所有选中的关节进行循环，对其创建子关节并且连接子关节的属性
+        # 在选择的关节下创建子关节
+        Joint.create_child_joint ()
         for jnt in jnts :
             for attr in ['translate' , 'rotate'] :
                 for axis in ['X' , 'Y' , 'Z'] :
                     ctrl = 'ctrl_' + jnt
-                    child_jnt = jnt +  '_childJoint'
+                    child_jnt = jnt + '_childJoint'
                     # 将子关节的属性清空
                     cmds.setAttr (child_jnt + '.{}{}'.format (attr , axis) , 0)
                     # 将次级控制器的属性与生成的次级关节进行连接
