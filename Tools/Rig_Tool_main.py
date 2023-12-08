@@ -16,7 +16,7 @@ reload (qtUtils)
 reload (controlUtils)
 reload (attrUtils)
 reload (fileUtils)
-
+reload(jointUtils)
 
 class Rig_Tool (QWidget) :
     """
@@ -98,6 +98,8 @@ class Rig_Tool (QWidget) :
                                                     "导出动画")
         self.import_animation_button = QPushButton (QIcon (':setKeyOnAnim.png') ,
                                                     "导入动画")
+
+        self.create_secondary_joint_button = QPushButton (QIcon (':parentConstraint.png') , "批量约束_次级")
         # 添加文本提示
         self.clear_keys_button.setToolTip ('将场景内所有的动画关键帧删除')
 
@@ -124,6 +126,8 @@ class Rig_Tool (QWidget) :
         self.snap_modle_button.setToolTip ('选择物体，将最后的物体吸附到前面物体的中心')
         self.export_animation_button.setToolTip ('选择控制器导出到动画到对应的json文件里')
 
+        self.create_secondary_joint_button.setToolTip('选择需要创建次级控制器的关节创建次级控制器')
+
         self.tool_buttons = [self.clear_keys_button , self.reset_attr_button , self.batch_Constraints_modle_button ,
                              self.batch_Constraints_joint_button , self.default_grp_button ,
                              self.control_hierarchy_button ,
@@ -131,7 +135,8 @@ class Rig_Tool (QWidget) :
                              self.load_skinWeights_button , self.select_sub_objects_button ,
                              self.print_duplicate_object_button ,
                              self.rename_duplicate_object_button , self.create_dynamic_curve_driven_button ,
-                             self.snap_modle_button , self.export_animation_button , self.import_animation_button]
+                             self.snap_modle_button , self.export_animation_button , self.import_animation_button,
+                             self.create_secondary_joint_button]
 
 
     def create_layouts (self) :
@@ -172,7 +177,7 @@ class Rig_Tool (QWidget) :
 
     def create_tool_layouts (self) :
         # 添加按钮
-        positions = [(i , j) for i in range (5) for j in range (3)]
+        positions = [(i , j) for i in range (6) for j in range (3)]
 
         for position , button in zip (positions , self.tool_buttons) :
             self.tool_layout.addWidget (button , *position)
@@ -232,6 +237,7 @@ class Rig_Tool (QWidget) :
 
         self.export_animation_button.clicked.connect (lambda *args : fileUtils.File.export_animation ())
         self.import_animation_button.clicked.connect (lambda *args : fileUtils.File.import_animation ())
+        self.create_secondary_joint_button.clicked.connect(lambda *args : jointUtils.Joint.create_secondary_joint())
 
 
     def save_skinWeights (self) :
