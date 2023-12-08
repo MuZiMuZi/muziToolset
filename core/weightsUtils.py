@@ -13,6 +13,7 @@ bind_chain_rig:创建混合IKFk链的bind链控制器绑定
 from importlib import reload
 import json
 import os
+import maya.mel as mel
 
 import maya.cmds as cmds
 
