@@ -44,7 +44,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format ('manjaroMix')))
 
 
-    def apply_model () :
+    def apply_model (self) :
         pass
 
 
@@ -57,7 +57,6 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         # custom_widget 的连接
         self.custom_widget.setContextMenuPolicy (Qt.CustomContextMenu)
         self.custom_widget.customContextMenuRequested.connect (self.cmd_custom_widget_menu)
-        # self.custom_widget.itemDoubleClicked.connect(self.cmd_custom_widget_menu)
         self.custom_widget.itemClicked.connect (self.cmd_custom_widget_clk)
 
 

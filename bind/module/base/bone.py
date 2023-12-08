@@ -1,14 +1,106 @@
 # coding=utf-8
 import logging
-from importlib import reload
+import os
 
 import maya.cmds as cmds
 
+from ... import config
 from ....core import controlUtils , hierarchyUtils , jointUtils , pipelineUtils
-from importlib import reload
-import os
 
 
+class RigItem (QtWidgets.QListWidgetItem) :
+    """
+    定义了一个名为 RigItem 的类，它是 QtWidgets.QListWidgetItem 的子类，用于表示一个骨骼组件
+    """
+
+
+    # 表示一个骨骼组件的列表项，初始化了列表项的一些属性，包括名称、图标
+    def __init__ (self , name) :
+        """
+        表示一个骨骼组件的列表项，初始化了列表项的一些属性，包括名称、图标
+
+        :param name(str):根据给定的模块名称初始化属性，包括名称、图标
+        """
+        super (RigItem , self).__init__ ()
+
+        # 初始化ui的文件
+        self.base_ui = None
+        self.extra_ui = None
+
+        # 根据给定的名称初始化图标的名称
+        self.icon = '{}.png'.format (name)
+        # 获取config配置文件里的ui路径来设置图标
+        icon = QtGui.QIcon ()
+        path = os.path.join (config.icon_dir , self.icon)
+        icon.addFile (path)
+        self.setIcon (icon)
+
+        # 绑定属性的小部件
+        self.base_widget = None
+        self.extra_widget = None
+
+        # 绑定的组件对象
+        self._obj = None
+
+
+    # 初始化作为QWidget对象的base_widget属性，用于设置绑定组件的基础属性，比如（边，名称，关节数量，关节的父物体，控制器的父物体）等属性
+    # （side,name,jnt_number,jnt_parent,control_parent）
+    def create_base_widget (self) :
+        """
+        初始化作为QWidget对象的base_widget属性，用于设置绑定组件的边，名称，关节数量，关节的父物体，控制器的父物体等属性
+        side,name,jnt_number,jnt_parent,control_parent
+        """
+        pass
+
+
+    # 初始化作为QWidget对象的extra_widget属性,用于设置绑定组件的特殊属性，比如(长度，朝向，拉伸，IK启用，FK启用,twist启用)等属性
+    # （Length, orientation, stretch, IK enabled, FK enabled, twist enabled）
+
+    def create_extra_widget (self) :
+        """
+        #初始化作为QWidget对象的extra_widget属性,用于设置绑定组件的特殊属性，比如(长度，朝向，拉伸，IK启用，FK启用,twist启用)等属性
+        #（Length, orientation, stretch, IK enabled, FK enabled, twist enabled）
+        """
+        pass
+
+
+    # 分析base_widget中的输入并将其作为参数返回
+    def parse_base_widget (self) :
+        """
+        分析base_widget中的输入并将其作为参数返回
+        """
+        pass
+
+
+    # 分析extra_widget中的输入并将其作为参数返回
+    def parse_extra_widget (self) :
+        """
+        #分析extra_widget中的输入并将其作为参数返回
+        """
+        pass
+
+
+    # 根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备
+    def build_setup (self , *args , **kwargs) :
+        """
+        根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备
+        """
+        pass
+
+
+    # 根据base_widget和extra_widget返回的参数，创建绑定系统
+    def build_rig (self , *args , **kwargs) :
+        """
+        根据base_widget和extra_widget返回的参数，创建绑定系统
+        """
+
+
+    # 根据base_widget和extra_widget返回的参数，删除绑定系统
+    def delete_rig (self) :
+        """
+        根据base_widget和extra_widget返回的参数，删除绑定系统
+        """
+        pass
 
 
 class Bone (object) :
@@ -31,17 +123,17 @@ class Bone (object) :
         """
         根据给定的变量创建关节和控制器
 
-        :param side: 关节的边
-        :param name: 关节的模块名称
-        :param joint_number: 关节的数量
-        :param joint_parent: 生成的关节的父层级
-        :param control_parent: 生成的控制器的父层级
+        :param side(str): 关节的边
+        :param name(str): 关节的模块名称
+        :param joint_number(int): 关节的数量
+        :param joint_parent(str): 生成的关节的父层级
+        :param control_parent(str): 生成的控制器的父层级
         """
         # 创建层级结构
         main_group = 'grp_m_group_001'
-        if cmds.objExists(main_group):
+        if cmds.objExists (main_group) :
             pass
-        else:
+        else :
             hierarchyUtils.Hierarchy.create_rig_grp ()
         self._side = side
         self.joint_number = joint_number
@@ -88,7 +180,6 @@ class Bone (object) :
                                                formatter = '%(asctime)s -%(name)s - %(levelname)s - %(message)s')
         self.logger = logging.getLogger (self.logger_name)
         self.logger.setLevel (logging.DEBUG)
-
 
 
     @property
@@ -141,9 +232,9 @@ class Bone (object) :
         """
         for bpjnt in self.bpjnt_list :
             # 判断是否已经生成过定位关节，如果没有生成过定位关节的话则生成定位关节
-            if cmds.objExists(bpjnt):
-                cmds.delete(bpjnt)
-            else:
+            if cmds.objExists (bpjnt) :
+                cmds.delete (bpjnt)
+            else :
                 self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.bpjnt_grp)
                 # 给bp定位关节设置颜色方便识别
                 cmds.setAttr (self.bpjnt + '.overrideEnabled' , 1)
@@ -186,7 +277,7 @@ class Bone (object) :
                 if plug :
                     cmds.disconnectAttr (plug [0] , bpjnt + attr)
         # 判断场景里是否已经存在对应的关节，重建的情况
-        for jnt in self.jnt_list:
+        for jnt in self.jnt_list :
             if cmds.objExists (jnt) :
                 # 删除过去的关节后，并重新创建关节
                 cmds.delete (jnt)
