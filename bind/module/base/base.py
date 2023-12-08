@@ -63,13 +63,14 @@ class BaseItem (bone.RigItem) :
     ## 根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备
     def build_setup (self , side , name , joint_number , jnt_parent , control_parent) :
         """根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备"""
-        #分析base_widget中的输入并将其作为参数返回
-        side , name , joint_number , jnt_parent , control_parent = self.parse_base_widget()
-        #根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备
-        self.obj = Base (side ,name , joint_number , jnt_parent , control_parent)
+        # 分析base_widget中的输入并将其作为参数返回
+        side , name , joint_number , jnt_parent , control_parent = self.parse_base_widget ()
+        # 根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备
+        self.obj = Base (side , name , joint_number , jnt_parent , control_parent)
         self.obj.build_setup ()
 
-    #根据base_widget和extra_widget返回的参数,创建绑定系统
+
+    # 根据base_widget和extra_widget返回的参数,创建绑定系统
     def build_rig (self) :
         """
         根据生成的bp定位关节，创建绑定系统
@@ -78,12 +79,15 @@ class BaseItem (bone.RigItem) :
         # 根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备
         self.obj = Base (side , name , joint_number , jnt_parent , control_parent)
         self.obj.build_rig ()
-    #删除已经创建好的绑定系统
-    def delete_rig(self):
+
+
+    # 删除已经创建好的绑定系统
+    def delete_rig (self) :
         side , name , joint_number , jnt_parent , control_parent = self.parse_base_widget ()
         # 删除已经创建好的绑定系统
         self.obj = Base (side , name , joint_number , jnt_parent , control_parent)
-        self.obj.delete_rig()
+        self.obj.delete_rig ()
+
 
 class Base (bone.Bone) :
     u"""
