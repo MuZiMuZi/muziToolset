@@ -37,7 +37,7 @@ class Base_Widget (base_ui.Ui_MainWindow , QtWidgets.QMainWindow) :
         初始化作为QWidget对象的base_widget属性,用于设置绑定的基础属性（例如名称，边，关节数量，关节的父对象，控制器的父对象）
         """
         # 调用父类的ui方法，来运行ui
-        self.setupUi (self)
+        # self.setupUi (self)
         self.base_widget = self.centralwidget
         # 添加边的combox
         for side in Side :

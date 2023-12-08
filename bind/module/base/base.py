@@ -39,7 +39,7 @@ class BaseItem (bone.RigItem) :
     def create_base_widget (self) :
         # 初始化作为QWidget对象的extra_widget属性,用于设置绑定组件的特殊属性，比如(长度，朝向，拉伸，IK启用，FK启用,twist启用)等属性
         # （Length, orientation, stretch, IK enabled, FK enabled, twist enabled）
-        self.base_widget = QtWidgets.QWidget ()
+        self.base_widget = QWidget ()
         uic.loadUi (os.path.join (UI_DIR , self.base_ui) , self.base_widget)
 
         for side in Side :
