@@ -1,4 +1,22 @@
 # coding=utf-8
+# 导入所有需要的模块
+
+from __future__ import unicode_literals , print_function
+
+
+try :
+    from PySide2.QtCore import *
+    from PySide2.QtGui import *
+    from PySide2.QtWidgets import *
+    from PySide2 import __version__
+    from shiboken2 import wrapInstance
+
+except ImportError :
+    from PySide.QtCore import *
+    from PySide.QtGui import *
+    from PySide.QtWidgets import *
+    from PySide import __version__
+    from shiboken import wrapInstance
 import logging
 import os
 
@@ -8,7 +26,7 @@ from ... import config
 from ....core import controlUtils , hierarchyUtils , jointUtils , pipelineUtils
 
 
-class RigItem (QtWidgets.QListWidgetItem) :
+class RigItem (QListWidgetItem) :
     """
     定义了一个名为 RigItem 的类，它是 QtWidgets.QListWidgetItem 的子类，用于表示一个骨骼组件
     """
