@@ -1,3 +1,23 @@
+# coding=utf-8
+# 导入所有需要的模块
+
+from __future__ import unicode_literals , print_function
+
+
+try :
+    from PySide2.QtCore import *
+    from PySide2.QtGui import *
+    from PySide2.QtWidgets import *
+    from PySide2 import __version__
+    from shiboken2 import wrapInstance
+
+except ImportError :
+    from PySide.QtCore import *
+    from PySide.QtGui import *
+    from PySide.QtWidgets import *
+    from PySide import __version__
+    from shiboken import wrapInstance
+import os
 import maya.cmds as cmds
 
 from ....core import jointUtils , pipelineUtils
@@ -7,6 +27,39 @@ from importlib import reload
 
 reload (jointUtils)
 reload (base)
+
+
+class ChainItem (base.BaseItem) :
+
+    def __init__ (self , name = 'chain') :
+        """Override"""
+        super (ChainItem , self).__init__ (name)
+        self.extra_ui = 'chain.ui'
+        self.init_extra ()
+
+
+    # 初始化作为QWidget对象的extra_widget属性,用于设置绑定组件的特殊属性，比如(长度，朝向，拉伸，IK启用，FK启用,twist启用)等属性
+    # （Length, orientation, stretch, IK enabled, FK enabled, twist enabled）
+
+    def create_extra_widget (self) :
+        """
+        #初始化作为QWidget对象的extra_widget属性,用于设置绑定组件的特殊属性，比如(长度，朝向，拉伸，IK启用，FK启用,twist启用)等属性
+        #（Length, orientation, stretch, IK enabled, FK enabled, twist enabled）
+        """
+        self.extra_widget = QWidget ()
+        uic.loadUi (os.path.join (UI_DIR , self.extra_ui) , self.extra_widget)
+
+        for direction in Direction :
+            self.extra_widget.length_sbox.addItem (str (direction.value))
+
+
+    def parse_extra (self) :
+        """Override"""
+        seg = self.extra_widget.ui_seg_sbox.value ()
+        length = self.extra_widget.ui_len_sbox.value ()
+        direction = ast.literal_eval (self.extra_widget.ui_dir_cbox.currentText ())
+
+        return [seg , length , direction]
 
 
 class Chain (base.Base) :
@@ -34,7 +87,7 @@ class Chain (base.Base) :
             # 判断是否已经生成过定位关节，如果没有生成过定位关节的话则生成定位关节
             if cmds.objExists (bpjnt) :
                 cmds.delete (bpjnt)
-                print(bpjnt)
+                print (bpjnt)
             else :
                 self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.joint_parent)
                 # 给bp定位关节设置颜色方便识别
@@ -43,7 +96,7 @@ class Chain (base.Base) :
                 # 指定关节的父层级为上一轮创建出来的关节
                 self.joint_parent = self.bpjnt
                 # 调整距离
-                cmds.setAttr(self.bpjnt + '.translateX', self.length/self.joint_number)
+                cmds.setAttr (self.bpjnt + '.translateX' , self.length / self.joint_number)
                 # 将bp关节添加到选择集里方便进行选择
                 pipelineUtils.Pipeline.create_set (self.bpjnt ,
                                                    set_name = '{}_{}{}_bpjnt_set'.format (self._side , self._name ,
@@ -51,7 +104,7 @@ class Chain (base.Base) :
                                                    set_parent = 'bpjnt_set')
         # 进行关节定向
         jointUtils.Joint.joint_orientation (self.bpjnt_list)
-        cmds.setAttr (self.bpjnt_list[0] + '.translateX' , 0)
+        cmds.setAttr (self.bpjnt_list [0] + '.translateX' , 0)
 
 
     def create_joint (self) :
