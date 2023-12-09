@@ -16,7 +16,7 @@ import os
 import maya.mel as mel
 
 import maya.cmds as cmds
-
+from . import pipelineUtils
 
 class Weights (object) :
 
@@ -131,10 +131,10 @@ class Weights (object) :
             # 复制蒙皮权重
             cmds.copySkinWeights (sourceSkin = source_skin , destinationSkin = target_skin , noMirror = True ,
                                   surfaceAssociation = 'closestPoint' , influenceAssociation = ['label' , 'oneToOne'])
-
-            # 重命名对象蒙皮
-            cmds.select (sel)
-            Pipeline.rename_bs_sc ()
+            #
+            # # 重命名对象蒙皮
+            # cmds.select (sel)
+            # pipelineUtils.Pipeline.rename_bs_sc ()
 
 
     # 批量重命名对象的蒙皮和混合变形节点
