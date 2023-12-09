@@ -8,7 +8,7 @@ import maya.OpenMaya as om
 import maya.cmds as cmds
 from importlib import reload
 from . import qtUtils
-import maya.cmds as cmds
+import os
 import json
 
 
@@ -126,7 +126,8 @@ class File (object) :
         """
 
         # 从文本文件中读取动画数据并赋予 blendshape B
-        fpath1 = r"D:\animation.json"
+        project_root = os.path.dirname (__file__)
+        fpath1 = os.path.abspath (__file__ + "/../animation.json")
 
         # Open the file and read the JSON data
         with open (fpath1 , "r") as f :
@@ -147,12 +148,14 @@ class File (object) :
                 ctrl = x [0]
                 attrX = x [1]
                 if i == 0 :
-                    cmds.setKeyframe (ctrl , at = attrX , time = (keyframeInfo [0] , keyframeInfo [0]) ,
-                                      value = keyframeInfo [1])
+                    if cmds.objExists (ctrl) :
+                        cmds.setKeyframe (ctrl , at = attrX , time = (keyframeInfo [0] , keyframeInfo [0]) ,
+                                          value = keyframeInfo [1])
                 else :
-                    cmds.setKeyframe (ctrl , at = attrX ,
-                                      time = (int (keyframeInfo [i * 2]) , int (keyframeInfo [i * 2])) ,
-                                      value = keyframeInfo [i * 2 + 1])
+                    if cmds.objExists (ctrl) :
+                        cmds.setKeyframe (ctrl , at = attrX ,
+                                          time = (int (keyframeInfo [i * 2]) , int (keyframeInfo [i * 2])) ,
+                                          value = keyframeInfo [i * 2 + 1])
 
         # 获取第 10 帧到第 20 帧之间的关键帧信息
 
