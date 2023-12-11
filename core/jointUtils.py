@@ -264,7 +264,7 @@ class Joint (object) :
             else :
                 cmds.joint (jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')
 
-
+    #显示选择的关节的关节方向
     @staticmethod
     def show_joint_axis_select () :
         """
@@ -274,7 +274,7 @@ class Joint (object) :
         for jnt in joints :
             cmds.setAttr (jnt + '.displayLocalAxis' , 1)
 
-
+    #显示选择的层级关节的关节轴向
     @staticmethod
     def show_joint_axis_hirerarchy () :
         """
@@ -283,6 +283,7 @@ class Joint (object) :
         joints = cmds.ls (sl = True , type = 'joint')
         for jnt in joints :
             cmds.setAttr (jnt + '.displayLocalAxis' , 1)
+            #获取选定的关节底下是否还有子关节
             child_list = cmds.listRelatives (jnt , children = True , type = 'joint' , allDescendents = True)
             if child_list :
                 for child in child_list :
@@ -291,15 +292,22 @@ class Joint (object) :
                 return
 
 
+    # 显示场景里所有关节的关节轴向
     @staticmethod
     def show_joint_axis_all () :
+        """
+        显示场景里所有关节的关节轴向
+        """
         joints = cmds.ls (type = 'joint')
         for jnt in joints :
             cmds.setAttr (jnt + '.displayLocalAxis' , 1)
 
-
+    #隐藏选择的关节的关节方向
     @staticmethod
     def hide_joint_axis_select () :
+        """
+        隐藏选择的关节的关节方向
+        """
         joints = cmds.ls (sl = True , type = 'joint')
         for jnt in joints :
             cmds.setAttr (jnt + '.displayLocalAxis' , 0)
