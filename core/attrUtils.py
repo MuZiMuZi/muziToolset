@@ -270,7 +270,7 @@ class Attr () :
         #     print ("--------")
 
 
-    #从Maya的主通道框中检索选定属性的长名称，可以选择通道盒上的属性，也可以选择历史记录上的属性，也可以选择形状历史上的属性
+    # 从Maya的主通道框中检索选定属性的长名称，可以选择通道盒上的属性，也可以选择历史记录上的属性，也可以选择形状历史上的属性
     @staticmethod
     def get_channelBox_attrs () :
         """从Maya的主通道框中检索选定属性的长名称，可以选择通道盒上的属性，也可以选择历史记录上的属性，也可以选择形状历史上的属性
@@ -318,7 +318,8 @@ class Attr () :
             cmds.warning ("请在通道盒中选择属性")
         return attr_names
 
-    #获取通道盒内所有的属性列表，查询需要位移的属性在列表的位置信息，之后进行通道盒属性位移
+
+    # 获取通道盒内所有的属性列表，查询需要位移的属性在列表的位置信息，之后进行通道盒属性位移
     @staticmethod
     def move_channelBox_attr (up = True , down = False) :
         """
@@ -377,10 +378,11 @@ class Attr () :
                         cmds.undo ()
 
 
+    # 锁住物体需要隐藏的属性
     @staticmethod
     def set_lock_attr (node , attr , lock = True) :
         """
-        锁住属性
+        锁住物体需要隐藏的属性
         node(str):maya节点
         attr(str):需要隐藏的属性
         hide(bool):是否进行隐藏
@@ -389,10 +391,11 @@ class Attr () :
         cmds.setAttr ("{}.{}".format (node , attr) , lock = lock , keyable = True)
 
 
+    # 隐藏物体需要隐藏的属性
     @staticmethod
     def set_hide_attr (node , attr , hide = True) :
         """
-        隐藏属性
+        隐藏物体需要隐藏的属性
         node(str):maya节点
         attr(str):需要隐藏的属性
         hide(bool):是否进行隐藏
@@ -405,11 +408,12 @@ class Attr () :
             cmds.setAttr ("{}.{}".format (node , attr) , keyable = True)
 
 
+    # 设置属性是否可以k动画帧
     @staticmethod
     def set_key_attr (node , attr , keyable = True) :
         """
-        属性是否可以k动画帧
-        node(str):maya节点
+        设置属性是否可以k动画帧
+        node(str):maya节点，需要锁定或隐藏属性的物体
         attr(str):需要隐藏的属性
         hide(bool):是否进行隐藏
         keyable(bool):是否能够k动画帧
@@ -417,25 +421,40 @@ class Attr () :
         cmds.setAttr ("{}.{}".format (node , attr) , keyable = keyable)
 
 
+    # 锁定或隐藏需要的属性
     @staticmethod
     def lock_hide_attr (node , attr , lock = True , hide = True) :
+        '''
+        锁定或隐藏需要的属性
+        node(str):需要锁定或隐藏属性的物体
+        attr(str)：需要锁定或隐藏属性的属性
+        '''
         Attr.set_lock_attr (node , attr , lock = lock)
         Attr.set_hide_attr (node , attr , hide = hide)
 
 
+    # 重置所选择的物体的默认属性
     @staticmethod
     def reset_attr (node) :
+
         """
         重置所选择的物体的默认属性
         """
+        # 重置 X、Y、Z 轴的平移和旋转属性
         for attr in ['translate' , 'rotate'] :
             for axis in ['X' , 'Y' , 'Z'] :
                 try :
+                    # 尝试将属性设置为 0
                     cmds.setAttr (node + '.{}{}'.format (attr , axis) , 0)
                 except :
+                    # 如果属性不存在，则捕获异常
                     pass
+
+        # 重置 X、Y、Z 轴的缩放属性
         for axis in ['X' , 'Y' , 'Z'] :
             try :
+                # 尝试将属性设置为 1
                 cmds.setAttr (node + '.scale{}'.format (axis) , 1)
             except :
+                # 如果属性不存在，则捕获异常
                 pass
