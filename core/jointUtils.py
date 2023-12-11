@@ -129,7 +129,8 @@ class Joint (object) :
             cmds.xform (jnt , translation = cv_pos , worldSpace = True)
             cmds.parent (jnt , grp_jnts)
 
-    #基于曲线上的点创建关节(通用版本)
+
+    # 基于曲线上的点创建关节(通用版本)
     @staticmethod
     def create_joints_on_curve (is_parent = True) :
         u"""基于曲线上的点创建关节(通用版本)
@@ -182,7 +183,8 @@ class Joint (object) :
         }
         return jnt_dict
 
-    #通过放置的模板关节生成相应的IK、FK和Bindjoint
+
+    # 通过放置的模板关节生成相应的IK、FK和Bindjoint
     @staticmethod
     def create_chain (bp_joints , suffix , joint_parent = None) :
         '''通过放置的模板关节生成相应的IK、FK和Bindjoint
@@ -210,7 +212,8 @@ class Joint (object) :
         cmds.setAttr (bp_joints [0] + '.visibility' , 0)
         return joints_chain
 
-    #创建mateHuman的IK,FK 的关节链
+
+    # 创建mateHuman的IK,FK 的关节链
     @staticmethod
     def create_mateHuman_chain (drv_jnts , prefix , joint_parent = None , constraint = False) :
         '''创建mateHuman的IK,FK 的关节链
@@ -240,7 +243,8 @@ class Joint (object) :
         cmds.setAttr (joints_chain [0] + '.visibility' , 0)
         return joints_chain
 
-    #给定关节的列表自动进行关节定向,正常关节定向为X轴指向下一关节，末端关节定向为世界方向
+
+    # 给定关节的列表自动进行关节定向,正常关节定向为X轴指向下一关节，末端关节定向为世界方向
     @staticmethod
     def joint_orientation (jnt_list) :
         u'''
@@ -264,7 +268,8 @@ class Joint (object) :
             else :
                 cmds.joint (jnt , zeroScaleOrient = 1 , children = 1 , e = 1 , orientJoint = 'none')
 
-    #显示选择的关节的关节方向
+
+    # 显示选择的关节的关节方向
     @staticmethod
     def show_joint_axis_select () :
         """
@@ -274,7 +279,8 @@ class Joint (object) :
         for jnt in joints :
             cmds.setAttr (jnt + '.displayLocalAxis' , 1)
 
-    #显示选择的层级关节的关节轴向
+
+    # 显示选择的层级关节的关节轴向
     @staticmethod
     def show_joint_axis_hirerarchy () :
         """
@@ -283,7 +289,7 @@ class Joint (object) :
         joints = cmds.ls (sl = True , type = 'joint')
         for jnt in joints :
             cmds.setAttr (jnt + '.displayLocalAxis' , 1)
-            #获取选定的关节底下是否还有子关节
+            # 获取选定的关节底下是否还有子关节
             child_list = cmds.listRelatives (jnt , children = True , type = 'joint' , allDescendents = True)
             if child_list :
                 for child in child_list :
@@ -302,7 +308,8 @@ class Joint (object) :
         for jnt in joints :
             cmds.setAttr (jnt + '.displayLocalAxis' , 1)
 
-    #隐藏选择的关节的关节方向
+
+    # 隐藏选择的关节的关节方向
     @staticmethod
     def hide_joint_axis_select () :
         """
@@ -313,6 +320,7 @@ class Joint (object) :
             cmds.setAttr (jnt + '.displayLocalAxis' , 0)
 
 
+    # 隐藏选择的层级关节的关节轴向
     @staticmethod
     def hide_joint_axis_hirerarchy () :
         """
@@ -329,13 +337,16 @@ class Joint (object) :
                 return
 
 
+    # 隐藏场景里所有关节的关节轴向
     @staticmethod
     def hide_joint_axis_all () :
+        # 隐藏场景里所有关节的关节轴向
         joints = cmds.ls (type = 'joint')
         for jnt in joints :
             cmds.setAttr (jnt + '.displayLocalAxis' , 0)
 
 
+    # 设置场景里所有关节的关节大小
     @staticmethod
     def set_jointSize (value) :
         joints = cmds.ls (type = 'joint')
@@ -343,10 +354,11 @@ class Joint (object) :
             cmds.setAttr (joint + '.radius' , value)
 
 
+    # 选择点或者物体组件创建关节
     @staticmethod
     def create_snap_joint () :
         """
-        吸附创建——关节
+        选择点或者物体组件创建关节
         """
         objs_list = cmds.ls (selection = True , flatten = True)
         if len (objs_list) >= 1 :
@@ -358,6 +370,7 @@ class Joint (object) :
             cmds.warning ("请选择一个或以上的物体或者Cv点")
 
 
+    # 在选择对象的下层创建子关节
     @staticmethod
     def create_child_joint () :
         """
@@ -378,8 +391,12 @@ class Joint (object) :
         return child_jnt_list
 
 
+    # 关节重采样工具
     @staticmethod
     def create_more_joint () :
+        """
+        关节重采样工具
+        """
         try :
             window.close ()  # 关闭窗口
             window.deleteLater ()  # 删除窗口
@@ -389,6 +406,7 @@ class Joint (object) :
         window.show ()  # 显示窗口
 
 
+    # 关节重采样，选择起始关节和末端关节，在二者中间重新构建指定数量的关节链条
     @staticmethod
     def resample_joint (startJoint , endJoint , joint_number) :
         """
@@ -416,6 +434,7 @@ class Joint (object) :
         cmds.parent (endJoint , startJoint + '_{:03d}'.format (joint_number - 1))
 
 
+    # 按照选择的顺序将关节组成关节链条
     @staticmethod
     def joint_To_Chain_Selection () :
         """
@@ -426,6 +445,7 @@ class Joint (object) :
             pm.parent (jnt_list [i] , jnt_list [i - 1])
 
 
+    # 根据模型上所选择的边生成新的曲线，生成关节链条
     @staticmethod
     def create_chain_on_polyToCurve () :
         """
@@ -438,6 +458,7 @@ class Joint (object) :
         Joint.create_joints_on_curve ()
 
 
+    # 打开选择的关节的分段比例补偿
     @staticmethod
     def open_joint_scaleCompensate () :
         """
@@ -448,6 +469,7 @@ class Joint (object) :
             cmds.setAttr (jnt + '.segmentScaleCompensate' , 1)
 
 
+    # 关闭选择的关节的分段比例补偿
     @staticmethod
     def close_joint_scaleCompensate () :
         """
@@ -458,6 +480,7 @@ class Joint (object) :
             cmds.setAttr (jnt + '.segmentScaleCompensate' , 0)
 
 
+    # 选择关节，批量制作约束。不需要新添加创建关节来蒙皮物体
     @staticmethod
     def batch_Constraints_joint () :
         u"""
@@ -502,6 +525,7 @@ class Joint (object) :
             cmds.undoInfo (openChunk = False)  # 批量撤销的开头
 
 
+    # 将选中的关节的关节定向数值添加到通道盒里
     @staticmethod
     def show_joint_orient () :
         """
@@ -514,6 +538,7 @@ class Joint (object) :
             cmds.setAttr (jnt + '.jointOrientZ' , keyable = True)
 
 
+    # 将选中的关节的关节定向数值从通道盒里隐藏
     @staticmethod
     def hide_joint_orient () :
         """
@@ -526,6 +551,7 @@ class Joint (object) :
             cmds.setAttr (jnt + '.jointOrientZ' , keyable = False)
 
 
+    # 将选中的关节的关节定向数值清零
     @staticmethod
     def clear_joint_orient () :
         """
@@ -538,6 +564,8 @@ class Joint (object) :
             cmds.setAttr (jnt + '.jointOrientZ' , 0)
 
 
+    # 创建次级控制器的次级关节，用于做衣服的次级控制器
+    # 思路：在关节下面创建一个子关节，子关节保持和父关节相同的位置，然后被次级控制器连接所有属性
     @staticmethod
     def create_secondary_joint () :
         """
@@ -664,6 +692,7 @@ class Joint_Resampling (QDialog) :
         self.resample_btn.clicked.connect (self.clicked_resample_btn)
 
 
+    # 拾取起始关节
     def pick_startJoint_line (self) :
         """
         拾取起始关节
@@ -677,6 +706,7 @@ class Joint_Resampling (QDialog) :
             pm.warning ("设定了{}为关节重采样的起始关节 ".format (startJoint [0]))
 
 
+    # 拾取末端关节
     def pick_endJoint_line (self) :
         """
                 拾取末端关节
