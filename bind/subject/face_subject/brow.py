@@ -28,18 +28,18 @@ class Brow(base.Base) :
 		super().__init__(side , name , joint_number , joint_parent , control_parent)
 		self.radius = 0.25
 		self.shape = 'ball'
-		self._rtype = 'Brow'
+		self.rtype = 'Brow'
 		
 		# 创建两边的眉毛系统
 		self.brow_l = base.Base(side = 'l' , name = '' , joint_number = 4 , joint_parent = None , control_parent =
 		None)
-		self.brow_l._rtype = 'Brow'
+		self.brow_l.rtype = 'Brow'
 		self.brow_l.shape = 'cube'
 		self.brow_l.radius = 0.1
 		
 		self.brow_r = base.Base(side = 'r' , name = '' , joint_number = 4 , joint_parent = None , control_parent =
 		None)
-		self.brow_r._rtype = 'Brow'
+		self.brow_r.rtype = 'Brow'
 		self.brow_r.shape = 'cube'
 		self.brow_r.radius = 0.1
 	
@@ -54,12 +54,12 @@ class Brow(base.Base) :
 		self.brow_l.drive_crv = self.brow_l.bpjnt_list[0].replace('bpjnt' , 'crv')
 		self.brow_l.drive_suf = self.brow_l.bpjnt_list[0].replace('bpjnt' , 'suf')
 		# 创建左边的眉毛的整体控制器
-		self.brow_l.master_ctrl = ('ctrl_{}_{}{}Master_001'.format('l' , self._name , self._rtype))
+		self.brow_l.master_ctrl = ('ctrl_{}_{}{}Master_001'.format('l' , self.name , self.rtype))
 		
 		# 创建右边的眉毛曲线和曲面名称
 		self.brow_r.drive_crv = self.brow_r.bpjnt_list[0].replace('bpjnt' , 'crv')
 		self.brow_r.drive_suf = self.brow_r.bpjnt_list[0].replace('bpjnt' , 'suf')
-		self.brow_r.master_ctrl = ('ctrl_{}_{}{}Master_001'.format('r' , self._name , self._rtype))
+		self.brow_r.master_ctrl = ('ctrl_{}_{}{}Master_001'.format('r' , self.name , self.rtype))
 	
 	
 	
@@ -125,13 +125,13 @@ class Brow(base.Base) :
 		# 创建左边的曲面上的毛囊和权重关节
 		self.brow_l.follicle_dict = pipelineUtils.Pipeline.create_joint_follicle_on_surface(self.brow_l.drive_suf ,
 		                                                                                    self.brow_l.side ,
-		                                                                                    self.brow_l._rtype ,
+		                                                                                    self.brow_l.rtype ,
 		                                                                                    joint_number = 6)
 		
 		# 创建右边的曲面上的毛囊和权重关节
 		self.brow_r.follicle_dict = pipelineUtils.Pipeline.create_joint_follicle_on_surface(self.brow_r.drive_suf ,
 		                                                                                    self.brow_r.side ,
-		                                                                                    self.brow_r._rtype ,
+		                                                                                    self.brow_r.rtype ,
 		                                                                                    joint_number = 6)
 	
 	

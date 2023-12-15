@@ -259,12 +259,13 @@ class Bone (object) :
         """
         # 选择bp选择集
         cmds.select (clear = True)
-        bpjnts_set = cmds.select ('bpjnt_set')
-        # 选择bp选择集下所有子对象关节
-        bpjnts_list = cmds.ls (sl = True , type = 'joint')
-        # 对bpjnt关节列表做循环，设置他们的可见性
-        for bpjnt in bpjnts_list :
-            cmds.setAttr (bpjnt + '.visibility' , vis_bool)
+        if cmds.objExists('bpjnt_set'):
+            bpjnts_set = cmds.select ('bpjnt_set')
+            # 选择bp选择集下所有子对象关节
+            bpjnts_list = cmds.ls (sl = True , type = 'joint')
+            # 对bpjnt关节列表做循环，设置他们的可见性
+            for bpjnt in bpjnts_list :
+                cmds.setAttr (bpjnt + '.visibility' , vis_bool)
 
 
     # 根据定位的bp关节创建绑定关节
@@ -334,8 +335,8 @@ class Bone (object) :
         '''
         for ctrl , jnt in zip (self.ctrl_list , self.jnt_list) :
             pipelineUtils.Pipeline.create_constraint (ctrl.replace (' ctrl' , 'output') , jnt ,
-                                                      point_value = True ,
-                                                      orient_value = True , scale_value =
+                                                      point_value = False ,
+                                                      orient_value = False , parent_value = True,scale_value =
                                                       True ,
                                                       mo_value = True)
 
