@@ -590,9 +590,9 @@ class Pipeline (object) :
         return:
             返回曲面的节点
         """
-        # 重建曲线
-        cmds.rebuildCurve (curve , ch = 1 , rpo = 1 , rt = 0 , end = 1 , kr = 0 , kcp = 0 , kep = 1 ,
-                           kt = 0 , spans = spans , d = 3 , tol = 0.01)
+        # # 重建曲线
+        # cmds.rebuildCurve (curve , ch = 1 , rpo = 1 , rt = 0 , end = 1 , kr = 0 , kcp = 0 , kep = 1 ,
+        #                    kt = 0 , spans = spans , d = 3 , tol = 0.01)
         duplicate_crv = cmds.duplicate (curve) [0]
         # 移动定位眉毛曲线和复制出来的曲线准备放样曲线生成曲面
         cmds.setAttr (curve + '.translateY' , offset)
@@ -1080,7 +1080,7 @@ class Pipeline (object) :
 
     # 制作需要调整权重值的约束，驱动的物体和控制器的zero组去约束driven组，并且调整权重值
     @staticmethod
-    def create_doble_constraint (driver , ctrl , weight) :
+    def create_doble_constraint (driver , ctrl , weight = 0.5) :
         u"""
         制作需要调整权重值的约束，驱动的物体和控制器的zero组去约束driven组，并且调整权重值
         driver(str):驱动的物体

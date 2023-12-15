@@ -167,6 +167,7 @@ class Bone (object) :
             self.control_parent = 'grp_m_control_001'
         self.bpjnt_grp = 'grp_m_bpjnt_001'
 
+        cmds.setAttr(self.bpjnt_grp + '.visibility',0)
         # 生成的绑定类型
         self.rtype = ''
         self.shape = 'circle'
@@ -300,7 +301,9 @@ class Bone (object) :
                                                set_parent = 'jnt_set')
             # 吸附绑定关节与定位关节的位置
             cmds.matchTransform (jnt , bpjnt)
-
+        #将bp关节放到bp关节组里隐藏
+        for bpjnt in self.bpjnt_list:
+            hierarchyUtils.Hierarchy.parent(bpjnt,self.bpjnt_grp)
 
     # 根据绑定关节来创建对应的控制器
     def create_ctrl (self) :
