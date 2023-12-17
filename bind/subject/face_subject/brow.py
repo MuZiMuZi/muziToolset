@@ -48,11 +48,13 @@ class Brow (base.Base) :
         self.brow_l.ctrl_follow_list = []
         self.brow_l.connect_follow_list = []
         self.brow_l.output_follow_list = []
+        self.brow_l.offset_follow_list = []
 
         self.brow_r.bpjnt_follow_list = []
         self.brow_r.ctrl_follow_list = []
         self.brow_r.connect_follow_list = []
         self.brow_r.output_follow_list = []
+        self.brow_r.offset_follow_list = []
 
         for i in range (4) :
             self.brow_l.bpjnt_follow_list.append (
@@ -75,7 +77,7 @@ class Brow (base.Base) :
             self.brow_r.output_follow_list.append (
                 'output_{}_{}{}Follow_{:03d}'.format ('r' , self.name , self.rtype , i + 1))
             self.brow_r.offset_follow_list.append (
-                'offset_{}_{}{}Follow_{:03d}'.format ('l' , self.name , self.rtype , i + 1))
+                'offset_{}_{}{}Follow_{:03d}'.format ('r' , self.name , self.rtype , i + 1))
 
         # 创建左边的眉毛曲线和曲面名称
         self.brow_l.bpjnt_crv = self.brow_l.bpjnt_list [0].replace ('bpjnt' , 'bpcrv')
@@ -186,10 +188,13 @@ class Brow (base.Base) :
         ##右边
         # 创建眉毛右边的控制器 分为三层控制器： Master——Follow——ctrl
         # 创建眉毛右边的Master控制器
+        # 右边控制器的offset组都要设置缩放X为-1，才可以进行对称运动
         self.brow_r.master_ctrl = controlUtils.Control.create_ctrl (self.brow_r.master_ctrl , shape = 'square' ,
                                                                     radius = 2 ,
                                                                     axis = 'X+' , pos = self.brow_r.jnt_list [1] ,
                                                                     parent = self.control_parent)
+        cmds.setAttr (self.brow_r.master_ctrl.replace ('ctrl' , 'offset') + '.scaleX' , -1)
+
         # 创建眉毛右边的Follow控制器
         for follow_ctrl , follow_jnt in zip (self.brow_r.ctrl_follow_list , self.brow_r.bpjnt_follow_list) :
             self.brow_r.follow_ctrl = controlUtils.Control.create_ctrl (follow_ctrl , shape = 'square' ,
@@ -197,15 +202,15 @@ class Brow (base.Base) :
                                                                         axis = 'X+' , pos = follow_jnt ,
                                                                         parent = self.brow_r.master_ctrl.replace (
                                                                             'ctrl' , 'output'))
-
-        # 创建眉毛右边的蒙皮控制器
-        self.brow_r.create_ctrl ()
         # 右边控制器的offset组都要设置缩放X为-1，才可以进行对称运动
         for follow_offset in self.brow_r.offset_follow_list :
             cmds.setAttr (follow_offset + '.scaleX' , -1)
-        for ctrl_offset in self.brow_r.offset_list :
-            cmds.setAttr (ctrl_offset + '.scaleX' , -1)
-        cmds.setAttr (self.brow_r.master_ctrl.replace ('ctrl' , 'offset') + '.scaleX' , -1)
+
+        # 创建眉毛右边的蒙皮控制器
+        self.brow_r.create_ctrl ()
+        # for ctrl_offset in self.brow_r.offset_list :
+        #     cmds.setAttr (ctrl_offset + '.scaleX' , -1)
+
 
         # 整理眉毛右边的控制器层级结构
         cmds.parent (self.brow_r.drive_suf , self.brow_r.ctrl_grp)
@@ -235,7 +240,7 @@ class Brow (base.Base) :
         cmds.parentConstraint (brow_l_output , brow_r_output , self.driven_list [0] , mo = True)
 
         # 左边眉毛的整体控制器连接follow控制器
-        self.create_connect (self.brow_r.master_ctrl , self.brow_r.connect_follow_list)
+        self.create_connect (self.brow_r.master_ctrl , self.brow_r.connect_follow_list , side_value = -1)
 
         # 左边眉毛的整体控制器连接子级控制器的显示
         for zero in self.brow_r.zero_list :
@@ -304,28 +309,54 @@ class Brow (base.Base) :
                                mo = True)
 
 
-    def create_connect (self , driver , driven) :
+    def create_connect (self , driver , driven , side_value = 1) :
         u"""
         创建眉毛整体控制器与子级控制器的连接,连接控制器显示和跟随的值
         driver：驱动者
         driven：被驱动者
+        side_value:左右两边因为需要镜像的缘故，控制器位移的数值是相反的，因此需要乘上side_value,L边为1，R边为-1
         """
+        """
+           创建眉毛整体控制器与子级控制器的连接，连接控制器显示和跟随的值
+           driver：驱动者
+           driven：被驱动者列表
+           side_value: 左右两边因为需要镜像的缘故，控制器位移的数值是相反的，因此需要乘上side_value，L边为1，R边为-1
+           """
+
+        # 对于每个轴（X、Y、Z）进行处理
         for index in range (4) :
             # 创建位移的乘除节点
+            trans_side_node = cmds.createNode ('multDoubleLinear' ,
+                                               name = driven [index].replace ('connect' , 'transMult'))
+
             trans_node = cmds.createNode ('multiplyDivide' ,
                                           name = driven [index].replace ('connect' , 'trans'))
+            # 创建位移的乘除节点的连接
             cmds.connectAttr (driver + '.translate' , trans_node + '.input1')
-            for axis in ['X' , 'Y' , 'Z'] :
+
+            cmds.connectAttr (driver + '.Follow{:02d}'.format (index + 1) , trans_side_node + '.input1')
+            cmds.setAttr (trans_side_node + '.input2' , side_value)
+            for axis in ['Y' , 'Z'] :
                 cmds.connectAttr (driver + '.Follow{:02d}'.format (index + 1) , trans_node + '.input2{}'.format (axis))
+            cmds.connectAttr (trans_side_node + '.output' , trans_node + '.input2X')
+
             # 将位移的乘除节点连接给对应的控制器
             cmds.connectAttr (trans_node + '.output' , driven [index] + '.translate')
 
             # 创建旋转的乘除节点
+
+            rotate_side_node = cmds.createNode ('multDoubleLinear' ,
+                                                name = driven [index].replace ('connect' , 'rotateMult'))
             rotate_node = cmds.createNode ('multiplyDivide' ,
                                            name = driven [index].replace ('connect' , 'rotate'))
+            # 设置旋转的乘除节点的连接
             cmds.connectAttr (driver + '.rotate' , rotate_node + '.input1')
-            for axis in ['X' , 'Y' , 'Z'] :
+            cmds.connectAttr (driver + '.Follow{:02d}'.format (index + 1) , rotate_side_node + '.input1')
+            cmds.setAttr (rotate_side_node + '.input2' , side_value)
+
+            for axis in ['Y' , 'Z'] :
                 cmds.connectAttr (driver + '.Follow{:02d}'.format (index + 1) , rotate_node + '.input2{}'.format (axis))
+            cmds.connectAttr (rotate_side_node + '.output' , rotate_node + '.input2X')
             cmds.connectAttr (rotate_node + '.output' , driven [index] + '.rotate')
 
 
