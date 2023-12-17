@@ -63,6 +63,8 @@ class Brow (base.Base) :
                 'connect_{}_{}{}Follow_{:03d}'.format ('l' , self.name , self.rtype , i + 1))
             self.brow_l.output_follow_list.append (
                 'output_{}_{}{}Follow_{:03d}'.format ('l' , self.name , self.rtype , i + 1))
+            self.brow_l.offset_follow_list.append (
+                'offset_{}_{}{}Follow_{:03d}'.format ('l' , self.name , self.rtype , i + 1))
 
             self.brow_r.bpjnt_follow_list.append (
                 'bpjnt_{}_{}{}Follow_{:03d}'.format ('r' , self.name , self.rtype , i + 1))
@@ -72,6 +74,8 @@ class Brow (base.Base) :
                 'connect_{}_{}{}Follow_{:03d}'.format ('r' , self.name , self.rtype , i + 1))
             self.brow_r.output_follow_list.append (
                 'output_{}_{}{}Follow_{:03d}'.format ('r' , self.name , self.rtype , i + 1))
+            self.brow_r.offset_follow_list.append (
+                'offset_{}_{}{}Follow_{:03d}'.format ('l' , self.name , self.rtype , i + 1))
 
         # 创建左边的眉毛曲线和曲面名称
         self.brow_l.bpjnt_crv = self.brow_l.bpjnt_list [0].replace ('bpjnt' , 'bpcrv')
@@ -179,7 +183,6 @@ class Brow (base.Base) :
         cmds.parent (self.brow_l.master_ctrl.replace ('ctrl' , 'zero') , self.brow_l.ctrl_grp)
         cmds.parent (self.brow_l.follicle_dict ['deform_grp'] , self.brow_l.ctrl_grp)
 
-
         ##右边
         # 创建眉毛右边的控制器 分为三层控制器： Master——Follow——ctrl
         # 创建眉毛右边的Master控制器
@@ -194,8 +197,15 @@ class Brow (base.Base) :
                                                                         axis = 'X+' , pos = follow_jnt ,
                                                                         parent = self.brow_r.master_ctrl.replace (
                                                                             'ctrl' , 'output'))
+
         # 创建眉毛右边的蒙皮控制器
         self.brow_r.create_ctrl ()
+        # 右边控制器的offset组都要设置缩放X为-1，才可以进行对称运动
+        for follow_offset in self.brow_r.offset_follow_list :
+            cmds.setAttr (follow_offset + '.scaleX' , -1)
+        for ctrl_offset in self.brow_r.offset_list :
+            cmds.setAttr (ctrl_offset + '.scaleX' , -1)
+        cmds.setAttr (self.brow_r.master_ctrl.replace ('ctrl' , 'offset') + '.scaleX' , -1)
 
         # 整理眉毛右边的控制器层级结构
         cmds.parent (self.brow_r.drive_suf , self.brow_r.ctrl_grp)
@@ -235,29 +245,29 @@ class Brow (base.Base) :
         # 左边眉毛的follow控制器组连接蒙皮控制器
         # follow_001控制器约束ctrl_001
         cmds.parentConstraint (self.brow_r.output_follow_list [0] , self.brow_r.driven_list [0] ,
-                                         mo = True)
+                               mo = True)
         # follow_001控制器和follow_002控制器约束ctrl_002
-        cmds.parentConstraint(self.brow_r.output_follow_list [0] , self.brow_r.output_follow_list [1] ,
-                                         self.brow_r.driven_list [1] ,
-                              mo = True)
-        #follow_002控制器约束ctrl_003
+        cmds.parentConstraint (self.brow_r.output_follow_list [0] , self.brow_r.output_follow_list [1] ,
+                               self.brow_r.driven_list [1] ,
+                               mo = True)
+        # follow_002控制器约束ctrl_003
         cmds.parentConstraint (self.brow_r.output_follow_list [1] , self.brow_r.driven_list [2] ,
-                                                  mo = True)
+                               mo = True)
         # follow_002控制器和follow_003控制器约束ctrl_004
         cmds.parentConstraint (self.brow_r.output_follow_list [1] , self.brow_r.output_follow_list [2] ,
-                                         self.brow_r.driven_list [3] ,
-                                                  mo = True)
+                               self.brow_r.driven_list [3] ,
+                               mo = True)
         # follow_003控制器约束ctrl_005
         cmds.parentConstraint (self.brow_r.output_follow_list [2] , self.brow_r.driven_list [4] ,
-                                                  mo = True)
+                               mo = True)
         # follow_003控制器和follow_004控制器约束ctrl_006
         cmds.parentConstraint (self.brow_r.output_follow_list [2] , self.brow_r.output_follow_list [3] ,
-                                         self.brow_r.driven_list [5] ,
-                                                  mo = True)
+                               self.brow_r.driven_list [5] ,
+                               mo = True)
 
         # follow_004控制器约束ctrl_007
-        cmds.parentConstraint(self.brow_r.output_follow_list [3] , self.brow_r.driven_list [6] ,
-                                                  mo = True)
+        cmds.parentConstraint (self.brow_r.output_follow_list [3] , self.brow_r.driven_list [6] ,
+                               mo = True)
 
         ###右边
         # 右边眉毛的整体控制器连接follow控制器
@@ -292,6 +302,7 @@ class Brow (base.Base) :
         # follow_004控制器约束ctrl_007
         cmds.parentConstraint (self.brow_l.output_follow_list [3] , self.brow_l.driven_list [6] ,
                                mo = True)
+
 
     def create_connect (self , driver , driven) :
         u"""
