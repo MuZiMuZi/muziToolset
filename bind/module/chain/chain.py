@@ -66,18 +66,17 @@ class Chain (base.Base) :
 
 
     def __init__ (self , side , name , joint_number , length = 10 , joint_parent = None , control_parent = None) :
-        base.Base.__init__ (self , side , name , joint_number , joint_parent , control_parent)
         '''
         length：关节的总长度
         
         '''
+        super ().__init__ (self , side , name , joint_number , joint_parent , control_parent)
         self.rtype = 'Chain'
 
         self.length = length
         self.interval = None
         self.direction = None
         self.curve = None
-
 
     def create_bpjnt (self) :
         """
@@ -87,7 +86,6 @@ class Chain (base.Base) :
             # 判断是否已经生成过定位关节，如果没有生成过定位关节的话则生成定位关节
             if cmds.objExists (bpjnt) :
                 cmds.delete (bpjnt)
-                print (bpjnt)
             else :
                 self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.joint_parent)
                 # 给bp定位关节设置颜色方便识别
@@ -128,7 +126,6 @@ class Chain (base.Base) :
         for bpjnt , jnt in zip (self.bpjnt_list , self.jnt_list) :
             # 场景里没有存在对应的关节，第一次创建绑定的情况
             self.jnt = cmds.createNode ('joint' , name = jnt , parent = self.joint_parent)
-            print(self.jnt)
             cmds.matchTransform (jnt , bpjnt)
             # 指定关节的父层级为上一轮创建出来的关节
             self.joint_parent = self.jnt

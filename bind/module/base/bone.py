@@ -174,7 +174,7 @@ class Bone (object) :
 
         cmds.setAttr (self.top_bpjnt_grp + '.visibility' , 0)
         # 生成的绑定类型
-        self.rtype = ''
+        self.rtype = 'bone'
         self.shape = 'circle'
         self.radius = 5
 
@@ -207,8 +207,7 @@ class Bone (object) :
         self.logger = logging.getLogger (self.logger_name)
         self.logger.setLevel (logging.DEBUG)
 
-        # 根据给定的side，name等属性，创建名称进行规范整理
-        self.create_namespace()
+
 
 
     # 设置控制器形状
@@ -358,6 +357,8 @@ class Bone (object) :
         """
         创建bp的定位关节,生成准备
         """
+        # 根据给定的side，name等属性，创建名称进行规范整理
+        self.create_namespace ()
         self.create_bpjnt ()
 
 
@@ -366,6 +367,7 @@ class Bone (object) :
         """
         根据生成的bp定位关节，创建绑定系统
         """
+
         self.create_joint ()
         self.create_ctrl ()
         self.add_constraint ()
