@@ -78,6 +78,7 @@ class Chain (base.Base) :
         self.direction = None
         self.curve = None
 
+
     def create_bpjnt (self) :
         """
         创建定位的bp关节

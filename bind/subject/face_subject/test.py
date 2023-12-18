@@ -65,3 +65,14 @@ cheek_m = cheek.Cheek (side = 'm' , name = '' , joint_number = 8 , joint_parent 
                        control_parent = None)
 cheek_m.build_setup ()
 cheek_m.build_rig ()
+
+# jaw
+import muziToolset.bind.subject.face_subject.jaw as jaw
+from importlib import reload
+
+
+reload (jaw)
+jaw_m = jaw.Jaw (side = 'm' , name = '' , joint_number = 2 , joint_parent = None ,
+                       control_parent = None)
+jaw_m.build_setup ()
+jaw_m.build_rig ()
