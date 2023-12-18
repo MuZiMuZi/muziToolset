@@ -17,7 +17,7 @@ class ChainFK(chain.Chain) :
 		length(int)：关节的总长度
 		direction（list）:从根节点到顶部节点的方向例如[1,0,0]或者[0,1,0]
 		"""
-		super().__init__ (self , side , name , joint_number , length , joint_parent , control_parent)
+		super (ChainFK , self).__init__ (side , name , joint_number , joint_parent , control_parent)
 		self.rtype = 'ChainFK'
 		
 		self.interval = length / (self.joint_number - 1)

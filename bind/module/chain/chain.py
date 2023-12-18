@@ -70,7 +70,8 @@ class Chain (base.Base) :
         length：关节的总长度
         
         '''
-        super ().__init__ (self , side , name , joint_number , joint_parent , control_parent)
+        base.Base.__init__ (self , side , name , joint_number , joint_parent , control_parent)
+
         self.rtype = 'Chain'
 
         self.length = length

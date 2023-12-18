@@ -252,8 +252,9 @@ class Joint (object) :
         jnt_list（list）:需要进行关节定向的列表
         '''
         # 删除关节上的约束信息
-        cmds.select (jnt_list)
+        cmds.select (jnt_list,replace = True)
         pipelineUtils.Pipeline.delete_constraints ()
+
         # 判断关节是否具有子关节
         for jnt in jnt_list :
             cmds.makeIdentity (jnt , apply = True , translate = 1 , rotate = 1 , scale = 1 , normal = 0 ,

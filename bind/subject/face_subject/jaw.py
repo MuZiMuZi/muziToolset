@@ -3,21 +3,25 @@
 下巴的绑定系统创建
 '''
 import os
+from importlib import reload
 
 import maya.cmds as cmds
 
 from ...module.chain import chainFK
 from ....core import hierarchyUtils
-from importlib import reload
-reload(chainFK)
+
+
+reload (chainFK)
+
 
 class Jaw (chainFK.ChainFK) :
 
 
-    def __init__ (self , side = 'm' , name ='' , joint_number =2 , direction = [-1 , 0 , 0] , length = 5 , joint_parent = None ,
+    def __init__ (self , side = 'm' , name = '' , joint_number = 2 , direction = [-1 , 0 , 0] , length = 5 ,
+                  joint_parent = None ,
                   control_parent = None) :
-        super ().__init__ (side , name , joint_number , direction , length , joint_parent ,
-                           control_parent)
+        super (Jaw , self) (side , name , joint_number , direction , length , joint_parent ,
+                            control_parent)
         self.shape = 'circle'
         self.rtype = 'Jaw'
         self.radius = 0.4

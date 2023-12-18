@@ -22,10 +22,10 @@ class EyeLid (base.Base) :
     def __init__ (self , side , name , joint_number = 7 , joint_parent = None , control_parent = None) :
         super ().__init__ (side , name , joint_number , joint_parent , control_parent)
         # 定位用的曲线
-        self.skin_curve = 'crv_{}_{}{}Skin_001'.format (self._side , self._name , self._rtype)
-        self._name = name
+        self.skin_curve = 'crv_{}_{}{}Skin_001'.format (self.side , self.name , self.rtype)
+        self.name = name
         self.shape = 'cube'
-        self._rtype = 'EyeLid'
+        self.rtype = 'EyeLid'
         self.radius = 0.05
         self.joint_number = joint_number
         self.curve_jnt_list = []
@@ -52,36 +52,36 @@ class EyeLid (base.Base) :
         """
         super ().create_namespace ()
         # 整理与控制器有关的曲线的名称规范层级结构
-        self.curve = 'crv_{}_{}{}_001'.format (self._side , self._name , self._rtype)
-        for index in range (7) :
-            self.curve_jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self._side , self._name , self._rtype , index + 1))
-        self.curve_jnt_grp = 'grp_{}_{}{}Jnts_001'.format (self._side , self._name , self._rtype)
-        self.curve_nodes_grp = 'grp_{}_{}{}RigNodes_001'.format (self._side , self._name , self._rtype)
+        self.curve = 'crv_{}_{}{}_001'.format (self.side , self.name , self.rtype)
+        for index in range (self.joint_number) :
+            self.curve_jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , index + 1))
+        self.curve_jnt_grp = 'grp_{}_{}{}Jnts_001'.format (self.side , self.name , self.rtype)
+        self.curve_nodes_grp = 'grp_{}_{}{}RigNodes_001'.format (self.side , self.name , self.rtype)
 
         # 整理与蒙皮关节有关的曲线名称规范层级结构
-        self.skin_curve = 'crv_{}_{}{}Skin_001'.format (self._side , self._name , self._rtype)
-        self.skin_jnt_grp = 'grp_{}_{}{}SkinJnts_001'.format (self._side , self._name , self._rtype)
-        self.skin_nodes_grp = 'grp_{}_{}{}SkinRigNodes_001'.format (self._side , self._name , self._rtype)
+        self.skin_curve = 'crv_{}_{}{}Skin_001'.format (self.side , self.name , self.rtype)
+        self.skin_jnt_grp = 'grp_{}_{}{}SkinJnts_001'.format (self.side , self.name , self.rtype)
+        self.skin_nodes_grp = 'grp_{}_{}{}SkinRigNodes_001'.format (self.side , self.name , self.rtype)
         # 整理眼睛的关节和向上方向的参考向量的名称规范层级结构
-        self.eye_jnt = 'jnt_{}_Eye_001'.format (self._side)
-        self.eye_up_loc = 'loc_{}_EyeUp_001'.format (self._side)
-        self.eye_up_zero = 'zero_{}_EyeUp_001'.format (self._side)
+        self.eye_jnt = 'jnt_{}_Eye_001'.format (self.side)
+        self.eye_up_loc = 'loc_{}_EyeUp_001'.format (self.side)
+        self.eye_up_zero = 'zero_{}_EyeUp_001'.format (self.side)
         # 添加眼袋的名称规范
         for i in range (3) :
             self.pouch_ctrl_list.append (
-                'ctrl_{}_{}{}Pouch_{:03d}'.format (self._side , self._name , self._rtype , i + 1))
+                'ctrl_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
             self.pouch_jnt_list.append (
-                'jnt_{}_{}{}Pouch_{:03d}'.format (self._side , self._name , self._rtype , i + 1))
+                'jnt_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
             self.pouch_zero_list.append (
-                'zero_{}_{}{}Pouch_{:03d}'.format (self._side , self._name , self._rtype , i + 1))
-            self.pouch_bpjnt_list.append ('bpjnt_{}_{}{}Pouch_{:03d}'.format (self._side , self._name , self._rtype ,
+                'zero_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.pouch_bpjnt_list.append ('bpjnt_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rtype ,
                                                                               i + 1))
-            self.pouch_output_list.append ('output_{}_{}{}Pouch_{:03d}'.format (self._side , self._name , self._rtype ,
+            self.pouch_output_list.append ('output_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rtype ,
                                                                                 i + 1))
-        self.pouch_master_ctrl = 'ctrl_{}_{}{}PouchMaster_001'.format (self._side , self._name , self._rtype)
+        self.pouch_master_ctrl = 'ctrl_{}_{}{}PouchMaster_001'.format (self.side , self.name , self.rtype)
         # 整理节点的层级结构
-        self.node_grp = 'grp_{}_{}{}Nodes_001'.format (self._side , self._name , self._rtype)
-        self.pouch_jnt_grp = 'grp_{}_{}{}PouchJnts_001'.format (self._side , self._name , self._rtype)
+        self.node_grp = 'grp_{}_{}{}Nodes_001'.format (self.side , self.name , self.rtype)
+        self.pouch_jnt_grp = 'grp_{}_{}{}PouchJnts_001'.format (self.side , self.name , self.rtype)
 
 
     def create_bpjnt (self) :
@@ -151,18 +151,17 @@ class EyeLid (base.Base) :
         pipelineUtils.Pipeline.create_eyelid_joints_on_curve (self.skin_curve , self.eye_jnt , self.eye_up_loc)
 
         # 整理节点的层级结构
-        self.node_grp = cmds.createNode ('transform' , name = self.node_grp , parent = '_node')
+        self.node_grp = cmds.createNode ('transform' , name = self.node_grp , parent = self.top_node_grp)
         cmds.parent (self.curve_nodes_grp , self.skin_nodes_grp , self.node_grp)
-        cmds.parent (self.skin_jnt_grp , '_joint')
+        cmds.parent (self.skin_jnt_grp , self.top_jnt_grp)
         # 整理关节层级结构
         self.pouch_jnt_grp = cmds.createNode ('transform' , name = self.pouch_jnt_grp)
-        cmds.parent (self.pouch_jnt_grp , '_joint')
+        cmds.parent (self.pouch_jnt_grp , self.top_jnt_grp)
 
         # 根据眼袋的bp关节的位置创建眼袋关节
         for bpjnt , jnt in zip (self.pouch_bpjnt_list , self.pouch_jnt_list) :
             jnt = cmds.createNode ('joint' , name = jnt)
             cmds.matchTransform (jnt , bpjnt)
-            cmds.delete (bpjnt)
             cmds.parent (jnt , self.pouch_jnt_grp)
 
 
@@ -227,7 +226,7 @@ class EyeLid (base.Base) :
                                                       mo_value = True)
 
         # 曲线控制器与曲线关节之间进行约束
-        for output , jnt in zip (self.output_list , self.curve_jnt_grp) :
+        for output , jnt in zip (self.output_list , self.curve_jnt_list) :
             pipelineUtils.Pipeline.create_constraint (output , jnt , point_value = False , orient_value = False ,
                                                       parent_value = True ,
                                                       scale_value = False ,
