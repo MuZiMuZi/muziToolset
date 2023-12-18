@@ -9,16 +9,19 @@ import maya.cmds as cmds
 from .... core import controlUtils , jointUtils , pipelineUtils
 from ...module.base import base
 
+from importlib import reload
 
+
+reload (base)
 
 class Nose(base.Base) :
 	
 	
 	
-	def __init__(self , side = 'm' , name = '' , joint_number = 3 , joint_parent = None , control_parent = None) :
+	def __init__(self , side = 'm' , name = '' , joint_number = 2 , joint_parent = None , control_parent = None) :
 		super().__init__(side , name , joint_number , joint_parent , control_parent)
 		self.shape = 'cube'
-		self._rtype = 'Nose'
+		self.rtype = 'Nose'
 		self.radius = 0.2
 		
 		self.side_bpjnt_list = list()
@@ -27,7 +30,6 @@ class Nose(base.Base) :
 	
 	
 	def create_namespace(self) :
-		super().create_namespace()
 		# 创建用于定位的四边的鼻子关节
 		self.bottom_bpjnt = 'bpjnt_m_Nose{}_001'.format('Bottom')
 		self.front_bpjnt = 'bpjnt_m_Nose{}_001'.format('Front')
@@ -38,6 +40,7 @@ class Nose(base.Base) :
 		
 		for bpjnt in self.side_bpjnt_list :
 			self.side_jnt_list.append(bpjnt.replace('bpjnt' , 'jnt'))
+		super ().create_namespace ()
 	
 	
 	
@@ -108,8 +111,8 @@ class Nose(base.Base) :
 			output_ctrl = bpjnt.replace('bpjnt' , 'output')
 			jnt = bpjnt.replace('bpjnt' , 'jnt')
 			pipelineUtils.Pipeline.create_constraint(output_ctrl , jnt ,
-			                                         point_value = True ,
-			                                         orient_value = True , scale_value =
+			                                         point_value = False ,
+			                                         orient_value = False , parent_value = True,scale_value =
 			                                         True ,
 			                                         mo_value = True)
 

@@ -29,3 +29,13 @@ mouth_m = mouth.Mouth (side = 'm' , name = '' , joint_number = 2 , joint_parent 
 mouth_m.build_setup ()
 
 mouth_m.build_rig ()
+
+import muziToolset.bind.subject.face_subject.nose as nose
+from importlib import reload
+
+
+reload (nose)
+
+nose_m = nose.Nose (joint_parent = None , control_parent = None)
+nose_m.build_setup ()
+nose_m.build_rig ()
