@@ -95,8 +95,8 @@ class Eye (chain.Chain) :
             cmds.delete(cons)
 
         # 进行关节定向
-        jointUtils.Joint.joint_orientation (self.jnt_list)
-        jointUtils.Joint.joint_orientation (self.iris_jnt_list)
+        # jointUtils.Joint.joint_orientation (self.jnt_list)
+        # jointUtils.Joint.joint_orientation (self.iris_jnt_list)
 
         self.eye_lid_upper.create_joint ()
         self.eye_lid_lower.create_joint ()

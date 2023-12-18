@@ -133,6 +133,7 @@ class EyeLid (base.Base) :
         u'''
         创建眼皮的权重关节在曲线上
         '''
+
         # 控制器曲线对蒙皮曲线做wire变形，让控制器曲线控制蒙皮曲线,注意如果是两条曲线做wire变形器的话，被控制的曲线需要给个w参数
         wire_node = cmds.wire (self.skin_curve , w = self.curve , gw = False , en = 1.000000 , ce = 0.000000 ,
                                li = 0.000000) [0]

@@ -366,7 +366,7 @@ class Bone (object) :
         """
         根据生成的bp定位关节，创建绑定系统
         """
-
+        self.create_namespace ()
         self.create_joint ()
         self.create_ctrl ()
         self.add_constraint ()
