@@ -80,26 +80,15 @@ jaw_m.build_rig ()
 #eye
 import muziToolset.bind.subject.face_subject.eye as eye
 from importlib import reload
-reload(eye)
-def build_setup () :
-    eye_l = eye.Eye (side = 'l' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
-                     control_parent = None)
-    eye_l.build_setup ()
-
-    eye_r = eye.Eye (side = 'r' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
-                     control_parent = None)
-    eye_r.build_setup ()
 
 
-def build_rig () :
-    eye_l = eye.Eye (side = 'l' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
-                     control_parent = None)
-    eye_l.build_rig ()
+reload (eye)
+eye_l = eye.Eye (side = 'l' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+                 control_parent = None)
+eye_l.build_setup ()
+eye_r = eye.Eye (side = 'r' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+                 control_parent = None)
+eye_r.build_setup ()
 
-    eye_r = eye.Eye (side = 'r' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
-                     control_parent = None)
-    eye_r.build_rig ()
-
-
-build_setup ()
-build_rig ()
+eye_l.build_rig ()
+eye_r.build_rig ()

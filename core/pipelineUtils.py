@@ -805,7 +805,7 @@ class Pipeline (object) :
             # 设置关节点的位置信息
             cmds.xform (jnt , translation = cv_pos , worldSpace = True)
 
-            # 获取曲线上最接近的参数，创建nearestPointOnCurve节点查找最经典
+            # 获取曲线上最接近的参数，创建nearestPointOnCurve节点查找最近点
             npoc = cmds.createNode ('nearestPointOnCurve')
             cmds.connectAttr (curve_shape + '.worldSpace[0]' , npoc + '.inputCurve')
             cmds.connectAttr (jnt + '.translate' , npoc + '.inPosition')

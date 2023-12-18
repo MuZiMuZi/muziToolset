@@ -126,16 +126,18 @@ class EyeLid (base.Base) :
         # 蒙皮曲线
         cmds.skinCluster (self.curve_jnt_list , self.curve)
 
-        # 控制器曲线对蒙皮曲线做wire变形，让控制器曲线控制蒙皮曲线,注意如果是两条曲线做wire变形器的话，被控制的曲线需要给个w参数
-        wire_node = cmds.wire (self.skin_curve , w = self.curve , gw = False , en = 1.000000 , ce = 0.000000 ,
-                               li = 0.000000) [0]
-        cmds.setAttr (wire_node + '.dropoffDistance[0]' , 200)
+
 
 
     def create_joint (self) :
         u'''
         创建眼皮的权重关节在曲线上
         '''
+        # 控制器曲线对蒙皮曲线做wire变形，让控制器曲线控制蒙皮曲线,注意如果是两条曲线做wire变形器的话，被控制的曲线需要给个w参数
+        wire_node = cmds.wire (self.skin_curve , w = self.curve , gw = False , en = 1.000000 , ce = 0.000000 ,
+                               li = 0.000000) [0]
+        cmds.setAttr (wire_node + '.dropoffDistance[0]' , 200)
+
         # 将控制器的关节进行隐藏
         cmds.setAttr (self.curve_jnt_grp + '.visibility' , 0)
         # 判断向上的目标物体是否存在，如果不存在的话则创建
@@ -194,25 +196,25 @@ class EyeLid (base.Base) :
         # [4,5,6]
 
 
-        # 约束中间的控制器[0,2,3]，两侧的控制器约束中间的控制器
-        cmds.pointConstraint (self.output_list [0] , self.output_list [3] , self.driven_list [2] , mo = True)
-
-        # 约束中间的控制器[0,1,2]，两侧的控制器约束中间的控制器
-        cmds.pointConstraint (self.output_list [0] , self.output_list [2] , self.driven_list [1] , mo = True)
-
-        # 约束中间的控制器[3,4,6]，两侧的控制器约束中间的控制器
-        cmds.pointConstraint (self.output_list [3] , self.output_list [6] , self.driven_list [4] , mo = True)
-
-        # 约束中间的控制器[4,5,6]，两侧的控制器约束中间的控制器
-        cmds.pointConstraint (self.output_list [4] , self.output_list [6] , self.driven_list [5] , mo = True)
+        # # 约束中间的控制器[0,2,3]，两侧的控制器约束中间的控制器
+        # cmds.parentConstraint (self.output_list [0] , self.output_list [3] , self.driven_list [2] , mo = True)
+        #
+        # # 约束中间的控制器[0,1,2]，两侧的控制器约束中间的控制器
+        # cmds.parentConstraint (self.output_list [0] , self.output_list [2] , self.driven_list [1] , mo = True)
+        #
+        # # 约束中间的控制器[3,4,6]，两侧的控制器约束中间的控制器
+        # cmds.parentConstraint (self.output_list [3] , self.output_list [6] , self.driven_list [4] , mo = True)
+        #
+        # # 约束中间的控制器[4,5,6]，两侧的控制器约束中间的控制器
+        # cmds.parentConstraint (self.output_list [4] , self.output_list [6] , self.driven_list [5] , mo = True)
 
         # 第二个控制器和第六个控制器是为了调整小的形态，默认是隐藏的,连接他们的可见性到中间的控制器上
         cmds.addAttr (self.ctrl_list [3] , attributeType = 'bool' , longName = 'LidSubCtrlVis' , keyable = 1 ,
                       defaultValue = 0)
 
-        # 连接可见性
-        cmds.connectAttr (self.ctrl_list [3] + '.LidSubCtrlVis' , self.ctrl_list [1] + '.visibility')
-        cmds.connectAttr (self.ctrl_list [3] + '.LidSubCtrlVis' , self.ctrl_list [5] + '.visibility')
+        # # 连接可见性
+        # cmds.connectAttr (self.ctrl_list [3] + '.LidSubCtrlVis' , self.ctrl_list [1] + '.visibility')
+        # cmds.connectAttr (self.ctrl_list [3] + '.LidSubCtrlVis' , self.ctrl_list [5] + '.visibility')
 
         # 设置曲线的可见性
         cmds.setAttr (self.curve + '.v' , 0)
