@@ -7,8 +7,10 @@ import os
 import maya.cmds as cmds
 
 from ...module.base import base
+from importlib import reload
 
 
+reload (base)
 
 class Cheek(base.Base) :
 	
@@ -19,28 +21,11 @@ class Cheek(base.Base) :
 	def __init__(self , side , name , joint_number = 8 , joint_parent = None , control_parent = None) :
 		super().__init__(side , name , joint_number , joint_parent , control_parent)
 		
-		self._rtype = ''
+		self.rtype = ''
 		self.radius = 0.1
 		self.shape = 'pPlatonic'
-		# 创建列表来存储命名规范
-		self.bpjnt_list = list()
-		self.jnt_list = list()
-		self.ctrl_list = list()
-		
-		# 颧骨关节三个
-		self.cheekbone_bpjnt_list = list()
-		self.cheekbone_jnt_list = list()
-		self.cheekbone_ctrl_list = list()
-		
-		# 法令纹关节三个
-		self.nasolabial_bpjnt_list = list()
-		self.nasolabial_jnt_list = list()
-		self.nasolabial_ctrl_list = list()
-		
-		# 脸颊关节两个
-		self.cheek_bpjnt_list = list()
-		self.cheek_jnt_list = list()
-		self.cheek_ctrl_list = list()
+
+
 	
 	
 	
@@ -48,38 +33,52 @@ class Cheek(base.Base) :
 		u"""
 		创建名称规范整理
 		"""
+		# 颧骨关节三个
+		self.cheekbone_bpjnt_list = list ()
+		self.cheekbone_jnt_list = list ()
+		self.cheekbone_ctrl_list = list ()
+
+		# 法令纹关节三个
+		self.nasolabial_bpjnt_list = list ()
+		self.nasolabial_jnt_list = list ()
+		self.nasolabial_ctrl_list = list ()
+
+		# 脸颊关节两个
+		self.cheek_bpjnt_list = list ()
+		self.cheek_jnt_list = list ()
+		self.cheek_ctrl_list = list ()
 		# 颧骨层级名称整理,颧骨关节三个
 		for side in ['l' , 'r'] :
 			for i in range(3) :
 				self.cheekbone_bpjnt_list.append(
-						'bpjnt_{}_{}{}CheekBone_{:03d}'.format(side , self.name , self._rtype , i + 1))
+						'bpjnt_{}_{}{}CheekBone_{:03d}'.format(side , self.name , self.rtype , i + 1))
 				self.cheekbone_jnt_list.append(
-						'jnt_{}_{}{}CheekBone_{:03d}'.format(side , self.name , self._rtype , i + 1))
+						'jnt_{}_{}{}CheekBone_{:03d}'.format(side , self.name , self.rtype , i + 1))
 				self.cheekbone_ctrl_list.append(
-						'ctrl_{}_{}{}CheekBone_{:03d}'.format(side , self.name , self._rtype , i + 1))
+						'ctrl_{}_{}{}CheekBone_{:03d}'.format(side , self.name , self.rtype , i + 1))
 			# 法令纹层级名称整理，法令纹关节三个
 			for i in range(3) :
 				self.nasolabial_bpjnt_list.append(
-						'bpjnt_{}_{}{}Nasolabial_{:03d}'.format(side , self.name , self._rtype , i + 1))
+						'bpjnt_{}_{}{}Nasolabial_{:03d}'.format(side , self.name , self.rtype , i + 1))
 				self.nasolabial_jnt_list.append(
-						'jnt_{}_{}{}Nasolabial_{:03d}'.format(side , self.name , self._rtype , i + 1))
+						'jnt_{}_{}{}Nasolabial_{:03d}'.format(side , self.name , self.rtype , i + 1))
 				self.nasolabial_ctrl_list.append(
-						'ctrl_{}_{}{}Nasolabial_{:03d}'.format(side , self.name , self._rtype , i + 1))
+						'ctrl_{}_{}{}Nasolabial_{:03d}'.format(side , self.name , self.rtype , i + 1))
 			
 			# 脸颊层级名称整理，脸颊关节两个
 			for i in range(2) :
 				self.cheek_bpjnt_list.append(
-						'bpjnt_{}_{}{}Cheek_{:03d}'.format(side , self.name , self._rtype , i + 1))
+						'bpjnt_{}_{}{}Cheek_{:03d}'.format(side , self.name , self.rtype , i + 1))
 				self.cheek_jnt_list.append(
-						'jnt_{}_{}{}Cheek_{:03d}'.format(side , self.name , self._rtype , i + 1))
+						'jnt_{}_{}{}Cheek_{:03d}'.format(side , self.name , self.rtype , i + 1))
 				self.cheek_ctrl_list.append(
-						'ctrl_{}_{}{}Cheek_{:03d}'.format(side , self.name , self._rtype , i + 1))
+						'ctrl_{}_{}{}Cheek_{:03d}'.format(side , self.name , self.rtype , i + 1))
 		
 		# 整理所有的层级名称
 		self.bpjnt_list = self.cheekbone_bpjnt_list + self.nasolabial_bpjnt_list + self.cheek_bpjnt_list
 		self.jnt_list = self.cheekbone_jnt_list + self.nasolabial_jnt_list + self.cheek_jnt_list
 		self.ctrl_list = self.cheekbone_ctrl_list + self.nasolabial_ctrl_list + self.cheek_ctrl_list
-		self.ctrl_grp = ('grp_{}_{}{}_001'.format(self._side , self._name , self._rtype))
+		self.ctrl_grp = ('grp_{}_{}{}_001'.format(self.side , self.name , self.rtype))
 	
 	
 	
@@ -89,6 +88,13 @@ class Cheek(base.Base) :
 		# 导入关节
 		cmds.file(self.cheek_bpjnt_path , i = True , rnn = True)
 
+	def create_ctrl(self):
+		super().create_ctrl()
+		# 右边控制器的offset组都要设置缩放X为-1，才可以进行对称运动
+		for ctrl in self.ctrl_list :
+			#判断当边为'_r_'的时候设置缩放X
+			if ctrl.count ('_r_')!=0:
+				cmds.setAttr (ctrl.replace('ctrl_','offset_') + '.scaleX' , -1)
 
 
 if __name__ == "__main__" :

@@ -53,3 +53,15 @@ tongue_m = tongue.Tongue (side = 'm' , name = '' , joint_number = 5 , direction 
                           control_parent = None)
 tongue_m.build_setup ()
 tongue_m.build_rig ()
+
+
+#cheek
+import muziToolset.bind.subject.face_subject.cheek as cheek
+from importlib import reload
+
+
+reload (cheek)
+cheek_m = cheek.Cheek (side = 'm' , name = '' , joint_number = 8 , joint_parent = None ,
+                       control_parent = None)
+cheek_m.build_setup ()
+cheek_m.build_rig ()

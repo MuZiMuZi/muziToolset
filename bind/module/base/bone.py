@@ -150,14 +150,14 @@ class Bone (object) :
         # 创建层级结构，当场景里不存在最高级层级组的时候，自动创建最高级层级组
         main_group = 'grp_m_group_001'
         if cmds.objExists (main_group) :
-            self.main_group = 'grp_m_group_001'
-            self.bpjnt_grp = 'grp_m_bpjnt_001'
-            self.ctrl_grp = 'grp_m_control_001'
-            self.jnt_grp = 'grp_m_jnt_001'
-            self.mesh_grp = 'grp_m_mesh_001'
-            self.node_grp = 'grp_m_node_001'
+            self.top_main_group = 'grp_m_group_001'
+            self.top_bpjnt_grp = 'grp_m_bpjnt_001'
+            self.top_ctrl_grp = 'grp_m_control_001'
+            self.top_jnt_grp = 'grp_m_jnt_001'
+            self.top_mesh_grp = 'grp_m_mesh_001'
+            self.top_node_grp = 'grp_m_node_001'
         else :
-            self.bpjnt_grp , self.ctrl_grp , self.jnt_grp , self.mesh_grp , self.node_grp , self.main_group = hierarchyUtils.Hierarchy.create_rig_grp ()
+            self.top_bpjnt_grp , self.top_ctrl_grp , self.top_jnt_grp , self.top_mesh_grp , self.top_node_grp , self.top_main_group = hierarchyUtils.Hierarchy.create_rig_grp ()
         # 初始化组件的边和关节数量
         self.side = side
         self.name = name
@@ -167,12 +167,12 @@ class Bone (object) :
         self.joint_parent = joint_parent
         self.control_parent = control_parent
         if not self.joint_parent :
-            self.joint_parent = 'grp_m_jnt_001'
+            self.joint_parent = self.top_jnt_grp
         if not self.control_parent :
-            self.control_parent = 'grp_m_control_001'
-        self.bpjnt_grp = 'grp_m_bpjnt_001'
+            self.control_parent = self.top_ctrl_grp
+        self.top_bpjnt_grp = 'grp_m_bpjnt_001'
 
-        cmds.setAttr (self.bpjnt_grp + '.visibility' , 0)
+        cmds.setAttr (self.top_bpjnt_grp + '.visibility' , 0)
         # 生成的绑定类型
         self.rtype = ''
         self.shape = 'circle'
@@ -206,6 +206,9 @@ class Bone (object) :
                                                formatter = '%(asctime)s -%(name)s - %(levelname)s - %(message)s')
         self.logger = logging.getLogger (self.logger_name)
         self.logger.setLevel (logging.DEBUG)
+
+        # 根据给定的side，name等属性，创建名称进行规范整理
+        self.create_namespace()
 
 
     # 设置控制器形状
@@ -308,7 +311,7 @@ class Bone (object) :
             cmds.matchTransform (jnt , bpjnt)
         # 将bp关节放到bp关节组里隐藏
         for bpjnt in self.bpjnt_list :
-            hierarchyUtils.Hierarchy.parent (bpjnt , self.bpjnt_grp)
+            hierarchyUtils.Hierarchy.parent (bpjnt , self.top_bpjnt_grp)
 
 
     # 根据绑定关节来创建对应的控制器
@@ -355,7 +358,6 @@ class Bone (object) :
         """
         创建bp的定位关节,生成准备
         """
-        self.create_namespace ()
         self.create_bpjnt ()
 
 
