@@ -150,9 +150,14 @@ class Bone (object) :
         # 创建层级结构，当场景里不存在最高级层级组的时候，自动创建最高级层级组
         main_group = 'grp_m_group_001'
         if cmds.objExists (main_group) :
-            pass
+            self.main_group = 'grp_m_group_001'
+            self.bpjnt_grp = 'grp_m_bpjnt_001'
+            self.ctrl_grp = 'grp_m_control_001'
+            self.jnt_grp = 'grp_m_jnt_001'
+            self.mesh_grp = 'grp_m_mesh_001'
+            self.node_grp = 'grp_m_node_001'
         else :
-            hierarchyUtils.Hierarchy.create_rig_grp ()
+            self.bpjnt_grp , self.ctrl_grp , self.jnt_grp , self.mesh_grp , self.node_grp , self.main_group = hierarchyUtils.Hierarchy.create_rig_grp ()
         # 初始化组件的边和关节数量
         self.side = side
         self.name = name
@@ -167,7 +172,7 @@ class Bone (object) :
             self.control_parent = 'grp_m_control_001'
         self.bpjnt_grp = 'grp_m_bpjnt_001'
 
-        cmds.setAttr(self.bpjnt_grp + '.visibility',0)
+        cmds.setAttr (self.bpjnt_grp + '.visibility' , 0)
         # 生成的绑定类型
         self.rtype = ''
         self.shape = 'circle'
@@ -260,7 +265,7 @@ class Bone (object) :
         """
         # 选择bp选择集
         cmds.select (clear = True)
-        if cmds.objExists('bpjnt_set'):
+        if cmds.objExists ('bpjnt_set') :
             bpjnts_set = cmds.select ('bpjnt_set')
             # 选择bp选择集下所有子对象关节
             bpjnts_list = cmds.ls (sl = True , type = 'joint')
@@ -301,9 +306,10 @@ class Bone (object) :
                                                set_parent = 'jnt_set')
             # 吸附绑定关节与定位关节的位置
             cmds.matchTransform (jnt , bpjnt)
-        #将bp关节放到bp关节组里隐藏
-        for bpjnt in self.bpjnt_list:
-            hierarchyUtils.Hierarchy.parent(bpjnt,self.bpjnt_grp)
+        # 将bp关节放到bp关节组里隐藏
+        for bpjnt in self.bpjnt_list :
+            hierarchyUtils.Hierarchy.parent (bpjnt , self.bpjnt_grp)
+
 
     # 根据绑定关节来创建对应的控制器
     def create_ctrl (self) :
@@ -339,7 +345,7 @@ class Bone (object) :
         for ctrl , jnt in zip (self.ctrl_list , self.jnt_list) :
             pipelineUtils.Pipeline.create_constraint (ctrl.replace (' ctrl' , 'output') , jnt ,
                                                       point_value = False ,
-                                                      orient_value = False , parent_value = True,scale_value =
+                                                      orient_value = False , parent_value = True , scale_value =
                                                       True ,
                                                       mo_value = True)
 
@@ -349,6 +355,7 @@ class Bone (object) :
         """
         创建bp的定位关节,生成准备
         """
+        self.create_namespace ()
         self.create_bpjnt ()
 
 

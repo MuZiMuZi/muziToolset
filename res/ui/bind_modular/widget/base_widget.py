@@ -73,10 +73,9 @@ class Base_Widget (base_ui.Ui_MainWindow , QtWidgets.QMainWindow) :
 
     def build_setup (self) :
         # 读取输入信息
-        print (1)
+
         self.parse_base ()
-        print (self.name)
-        print (self.jnt_number)
+
         #
         # # 生成定位关节系统
         # self.setup = base.Base (self.side , self.name , self.joint_number , self.joint_parent , self.control_parent)

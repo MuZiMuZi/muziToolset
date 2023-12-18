@@ -200,6 +200,7 @@ class Hierarchy (object) :
 
         cmds.parent (bpjnt_grp , ctrl_grp , jnt_grp , mesh_grp , node_grp , main_group)
 
+        return bpjnt_grp , ctrl_grp , jnt_grp , mesh_grp , node_grp , main_group
 
     # 添加绑定的初始层级组，并隐藏连接对应的属性
     @staticmethod

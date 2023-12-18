@@ -19,3 +19,13 @@ brow_m = brow.Brow (side = 'm' , joint_parent = None , control_parent = None)
 brow_m.build_setup ()
 brow_m.build_rig ()
 
+import muziToolset.bind.subject.face_subject.mouth as mouth
+from importlib import reload
+
+
+reload (mouth)
+mouth_m = mouth.Mouth (side = 'm' , name = '' , joint_number = 2 , joint_parent = None ,
+                       control_parent = None)
+mouth_m.build_setup ()
+
+mouth_m.build_rig ()
