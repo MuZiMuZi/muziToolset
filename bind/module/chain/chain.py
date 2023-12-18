@@ -71,7 +71,7 @@ class Chain (base.Base) :
         length：关节的总长度
         
         '''
-        self._rtype = 'Chain'
+        self.rtype = 'Chain'
 
         self.length = length
         self.interval = None
@@ -99,8 +99,8 @@ class Chain (base.Base) :
                 cmds.setAttr (self.bpjnt + '.translateX' , self.length / self.joint_number)
                 # 将bp关节添加到选择集里方便进行选择
                 pipelineUtils.Pipeline.create_set (self.bpjnt ,
-                                                   set_name = '{}_{}{}_bpjnt_set'.format (self._side , self._name ,
-                                                                                          self._rtype) ,
+                                                   set_name = '{}_{}{}_bpjnt_set'.format (self.side , self.name ,
+                                                                                          self.rtype) ,
                                                    set_parent = 'bpjnt_set')
         # 进行关节定向
         jointUtils.Joint.joint_orientation (self.bpjnt_list)
@@ -111,8 +111,6 @@ class Chain (base.Base) :
         '''
         根据定位的bp关节创建关节
         '''
-        # 隐藏bp的定位关节
-        self.hide_bpjnt ()
         # 根据bp关节创建新的关节
         for bpjnt in self.bpjnt_list :
             for attr in ['.translate' , '.rotate' , '.scale'] :
@@ -130,13 +128,14 @@ class Chain (base.Base) :
         for bpjnt , jnt in zip (self.bpjnt_list , self.jnt_list) :
             # 场景里没有存在对应的关节，第一次创建绑定的情况
             self.jnt = cmds.createNode ('joint' , name = jnt , parent = self.joint_parent)
+            print(self.jnt)
             cmds.matchTransform (jnt , bpjnt)
             # 指定关节的父层级为上一轮创建出来的关节
             self.joint_parent = self.jnt
             # 将蒙皮关节添加到选择集里方便进行选择
             pipelineUtils.Pipeline.create_set (jnt ,
-                                               set_name = '{}_{}{}_jnt_set'.format (self._side , self._name ,
-                                                                                    self._rtype) ,
+                                               set_name = '{}_{}{}_jnt_set'.format (self.side , self.name ,
+                                                                                    self.rtype) ,
                                                set_parent = 'jnt_set')
 
         # 进行关节定向

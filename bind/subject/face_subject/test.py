@@ -18,7 +18,7 @@ reload (brow)
 brow_m = brow.Brow (side = 'm' , joint_parent = None , control_parent = None)
 brow_m.build_setup ()
 brow_m.build_rig ()
-
+#mouth
 import muziToolset.bind.subject.face_subject.mouth as mouth
 from importlib import reload
 
@@ -30,6 +30,7 @@ mouth_m.build_setup ()
 
 mouth_m.build_rig ()
 
+#nose
 import muziToolset.bind.subject.face_subject.nose as nose
 from importlib import reload
 
@@ -39,3 +40,16 @@ reload (nose)
 nose_m = nose.Nose (joint_parent = None , control_parent = None)
 nose_m.build_setup ()
 nose_m.build_rig ()
+
+
+#tongue
+import muziToolset.bind.subject.face_subject.tongue as tongue
+from importlib import reload
+
+
+reload (tongue)
+tongue_m = tongue.Tongue (side = 'm' , name = '' , joint_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
+                          joint_parent = None ,
+                          control_parent = None)
+tongue_m.build_setup ()
+tongue_m.build_rig ()

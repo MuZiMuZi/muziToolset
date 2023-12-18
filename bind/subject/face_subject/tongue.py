@@ -20,7 +20,7 @@ class Tongue(chainFK.ChainFK) :
 	             joint_parent = None ,
 	             control_parent = None) :
 		super().__init__(side , name , joint_number , direction , length , joint_parent , control_parent)
-		self._rtype = 'Tongue'
+		self.rtype = 'Tongue'
 		self.radius = 0.35
 	
 	
