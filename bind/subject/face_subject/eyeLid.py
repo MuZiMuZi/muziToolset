@@ -26,7 +26,7 @@ class EyeLid (base.Base) :
         self.name = name
         self.shape = 'cube'
         self.rtype = 'EyeLid'
-        self.radius = 0.05
+        self.radius = 1
         self.joint_number = joint_number
         self.curve_jnt_list = []
         # 创建眼袋的名称列表
@@ -182,6 +182,10 @@ class EyeLid (base.Base) :
                                                                 axis = 'X+' , pos = jnt ,
                                                                 parent = self.pouch_master_ctrl.replace ('ctrl' ,
                                                                                                          'output'))
+            # 右边控制器的offset组都要设置缩放X为-1，才可以进行对称运动
+            # 判断当边为'_r_'的时候设置缩放X
+            if self.side == 'r' :
+                cmds.setAttr (self.pouch_ctrl.replace ('ctrl_' , 'offset_') + '.scaleX' , -1)
 
 
     def add_constraint (self) :
