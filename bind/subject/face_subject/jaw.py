@@ -20,7 +20,7 @@ class Jaw (chainFK.ChainFK) :
     def __init__ (self , side = 'm' , name = '' , joint_number = 2 , direction = [-1 , 0 , 0] , length = 5 ,
                   joint_parent = None ,
                   control_parent = None) :
-        super (Jaw , self) (side , name , joint_number , direction , length , joint_parent ,
+        super (Jaw , self).__init__ (side , name , joint_number , direction , length , joint_parent ,
                             control_parent)
         self.shape = 'circle'
         self.rtype = 'Jaw'
@@ -72,6 +72,7 @@ class Jaw (chainFK.ChainFK) :
         self.offsetrot_loc = cmds.spaceLocator (name = self.offsetrot_loc) [0]
         self.offsetrot_zero = hierarchyUtils.Hierarchy.add_extra_group (self.offsetrot_loc , self.offsetrot_zero ,
                                                                         world_orient = False)
+        cmds.matchTransform(self.offsetrot_zero,self.jnt_list[0])
         cmds.parent (self.offsetrot_zero , self.ctrl_grp)
 
         # 偏移组的子层级对loc进行旋转约束来记录数值
