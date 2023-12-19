@@ -130,7 +130,7 @@ class MouthLip (base.Base) :
         cmds.setAttr (self.up_curve + '.visibility' , 0)
         cmds.setAttr (self.up_curve + '.translateY' , lock = False)
         # 向上曲线的位置距离可以适当调整大一点，防止翻转曲线的轴向
-        cmds.setAttr (self.up_curve + '.translateY' , cmds.getAttr (self.up_curve + '.translateY') + self.Y_value*1)
+        cmds.setAttr (self.up_curve + '.translateY' , cmds.getAttr (self.up_curve + '.translateY') + 1)
         # 创建三条曲线的目标约束
         con_dict = pipelineUtils.Pipeline.attach_joints_on_curve (self.skin_jnt_list , self.curve , self.aim_curve ,
                                                                   self.up_curve ,
