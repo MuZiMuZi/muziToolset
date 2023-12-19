@@ -105,17 +105,18 @@ class MouthLip (base.Base) :
         self.skin_nodes_grp = cmds.rename (self.skin_jnt_dict ['node_grp'] , self.skin_nodes_grp)
         for index , jnt in enumerate (skin_jnt_list) :
             cmds.rename (jnt , self.skin_jnt_list [index])
-        # 控制器曲线对蒙皮曲线做wire变形，让控制器曲线控制蒙皮曲线,注意如果是两条曲线做wire变形器的话，被控制的曲线需要给个w参数
-        wire_node = cmds.wire (self.skin_curve , w = self.curve , gw = False , en = 1.000000 , ce = 0.000000 ,
-                               li = 0.000000) [0]
-        cmds.setAttr (wire_node + '.dropoffDistance[0]' , 200)
-        cmds.setAttr (self.skin_jnt_grp + '.v' , 0)
 
 
     def create_joint (self) :
         u'''
         创建嘴唇的权重关节在曲线上
         '''
+        # 控制器曲线对蒙皮曲线做wire变形，让控制器曲线控制蒙皮曲线,注意如果是两条曲线做wire变形器的话，被控制的曲线需要给个w参数
+        wire_node = cmds.wire (self.skin_curve , w = self.curve , gw = False , en = 1.000000 , ce = 0.000000 ,
+                               li = 0.000000) [0]
+        cmds.setAttr (wire_node + '.dropoffDistance[0]' , 200)
+        cmds.setAttr (self.skin_jnt_grp + '.v' , 0)
+
         #将控制器的关节进行隐藏
         cmds.setAttr (self.curve_jnt_grp + '.visibility' , 0)
         # 根据curve来制作aim_curve，用于制作控制器的目标曲线,并且移动目标曲线的位置
@@ -139,7 +140,7 @@ class MouthLip (base.Base) :
         # 整理节点的层级结构
         self.node_grp = cmds.createNode ('transform' , name = self.node_grp , parent = 'grp_m_node_001')
         cmds.parent (self.skin_nodes_grp , self.curve_nodes_grp , self.con_nodes_grp , self.node_grp)
-        cmds.parent (self.skin_jnt_grp , self.jnt_grp)
+        cmds.parent (self.skin_jnt_grp , self.top_jnt_grp)
 
 
     def create_ctrl (self) :

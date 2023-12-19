@@ -113,7 +113,7 @@ class Mouth (base.Base) :
         self.zip_lip_dict = pipelineUtils.Pipeline.create_zip_lip (lip_ctrls , jaw_ctrl , upper_jnts , lower_jnts ,
                                                                    zip_height = 0.5 ,
                                                                    falloff = 3)
-        cmds.parent (self.zip_lip_dict ['node_grp'] , self.node_grp)
+        cmds.parent (self.zip_lip_dict ['node_grp'] , self.top_node_grp)
 
 
 if __name__ == '__main__' :

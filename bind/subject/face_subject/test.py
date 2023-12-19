@@ -92,3 +92,24 @@ eye_r.build_setup ()
 
 eye_l.build_rig ()
 eye_r.build_rig ()
+
+#ear
+import muziToolset.bind.subject.face_subject.ear as ear
+from importlib import reload
+
+
+reload (ear)
+ear_l = ear.Ear (side = 'l' , joint_parent = None , control_parent = None)
+ear_l.build_setup ()
+
+ear_r = ear.Ear (side = 'r' , joint_parent = None , control_parent = None)
+ear_r.build_setup ()
+
+
+
+ear_l.build_rig ()
+
+
+ear_r.build_rig ()
+
+
