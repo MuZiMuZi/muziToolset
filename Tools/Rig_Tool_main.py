@@ -235,10 +235,19 @@ class Rig_Tool (QWidget) :
 
         self.snap_modle_button.clicked.connect (lambda *args : snapUtils.Snap.push_snip ())
 
-        self.export_animation_button.clicked.connect (lambda *args : fileUtils.File.export_animation ())
-        self.import_animation_button.clicked.connect (lambda *args : fileUtils.File.import_animation ())
+        self.export_animation_button.clicked.connect (self.clicked_export_animation)
+        self.import_animation_button.clicked.connect (self.clicked_import_animation)
         self.create_secondary_joint_button.clicked.connect(lambda *args : jointUtils.Joint.create_secondary_joint())
 
+    def clicked_export_animation(self):
+        #连接选择控制器进行导出动画的按钮
+        file = fileUtils.File()
+        file.export_animation_json()
+
+    def clicked_import_animation (self) :
+        # 连接选择导入控制器动画的按钮
+        file = fileUtils.File ()
+        file.import_animation_json ()
 
     def save_skinWeights (self) :
         """

@@ -1,55 +1,54 @@
 # coding:utf-8
+import json
+import os
+
+import maya.cmds as cmds
 from PySide2 import QtCore
 from PySide2 import QtWidgets
-from PySide2 import QtGui
-from shiboken2 import wrapInstance
-import maya.OpenMayaUI as omui
-import maya.OpenMaya as om
-import maya.cmds as cmds
-from importlib import reload
+
 from . import qtUtils
-import os
-import json
 
 
 class File (object) :
     """
-    对于文件操作的类
+    文件操作的类
     """
 
 
-    def __init__ (self , file_path) :
+    def __init__ (self , file_path = None) :
         self.file_path = file_path
         # 设置文件的选择类型过滤器
         self.file_filter = "Maya(*.ma *.mb);;Maya ASCII (*.ma);;Maya Binary (*.mb);;All Files (*.*)"  # 全部的过滤项
-
         self.selected_filter = "Maya (*.ma *.mb)"  # 记录选择的过滤项，每次更改过滤项的同时会更改这个全局变量的值
 
 
     def show_file_select_dialog (self) :
         '''
-        打开文件资源浏览器
+        打开文件资源浏览器，让用户选择文件
         '''
         # 打开一个文件资源浏览器，file_path 是所选择的文件路径,selected_filter是选择过滤的文件类型
-        self.file_path , self.selected_filter = QtWidgets.QFileDialog.getOpenFileName (qtUtils.get_maya_window () ,
-                                                                                       "Select File" , "" ,
-                                                                                       self.file_filter ,
-                                                                                       self.selected_filter)
+        self.file_path , self.selected_filter = QtWidgets.QFileDialog.getOpenFileName (
+            qtUtils.get_maya_window () ,
+            "选择文件" , "" ,
+            self.file_filter ,
+            self.selected_filter
+        )
         return self.file_path
 
 
     def load_file (self , load_method) :
         """
         读取文件
-        load_method(str):三种不同的读取方式，open,import,reference
+        load_method(str): 三种不同的读取方式，open, import, reference
         """
         # 检查文件路径是否存在，如果不存在则返回
         if not self.file_path :
             return
+
         # 判断给定的文件路径是否正确有对应的文件
         file_info = QtCore.QFileInfo (self.file_path)
         if not file_info.exists () :
-            om.MGlobal.displayError ('这个路径的文件不存在：{}'.format (self.file_path))
+            cmds.warning ('文件不存在：{}'.format (self.file_path))
             return
 
         # 根据读取方式读取对应的文件
@@ -66,8 +65,12 @@ class File (object) :
         force = False
         # 弹出一个对话框来让用户确认是否已经保存文件
         if not force and cmds.file (q = True , modified = True) :
-            result = QtWidgets.QMessageBox.question (qtUtils.get_maya_window () , "提示" ,
-                                                     "当前场景有未保存的更改。是否确定打开新文件？")
+            result = QtWidgets.QMessageBox.question (
+                qtUtils.get_maya_window () ,
+                "提示" ,
+                "当前场景有未保存的更改。是否确定打开新文件？" ,
+                QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No
+            )
             if result == QtWidgets.QMessageBox.StandardButton.Yes :
                 force = True
             else :
@@ -76,90 +79,122 @@ class File (object) :
 
 
     def import_file (self) :
+        # 导入文件
         cmds.file (self.file_path , i = True , ignoreVersion = True)
 
 
     def reference_file (self) :
+        """
+        引用文件
+        """
         cmds.file (self.file_path , r = True , ignoreVersion = True)
 
 
-    @staticmethod
-    def export_animation () :
+    def load_from_given_path (self) :
+        try :
+            # 读取JSON文件
+            with open (self.file_path , "r") as file :
+                json_data = file.read ()
+            # 解析JSON数据
+            self.anim_data = json.loads (json_data)
+            cmds.warning ("成功加载动画数据：{}".format (self.anim_data))
+        except Exception as e :
+            cmds.warning ("加载动画数据时发生错误：{}".format (str (e)))
+
+        return self.anim_data
+
+
+    # 导出所选控制器的动画到 JSON 文件
+
+    def export_animation_json (self) :
         """
-        选择所有需要导出动画的控制器导出动画,来源37佬
+        导出所选控制器的动画到 JSON 文件
+        来源: 37佬
         """
 
-        # 获取所有控制器的列表
-        ctrlList = cmds.ls (sl = True)
+        # 获取所有选择的控制器列表
+        ctrl_list = cmds.ls (sl = True)
 
         # 初始化动画数据字典
-        animData = {}
+        anim_data = {}
 
-        # 对列表中的每个控制器执行循环
-        for ctrl in ctrlList :
+        # 对每个控制器执行循环
+        for ctrl in ctrl_list :
             attributes = []
-            allAttrs = cmds.listAttr (ctrl)
-            cbAttrs = cmds.listAnimatable (ctrl)
-            if allAttrs and cbAttrs :
-                orderedAttrs = [attr for attr in allAttrs for cb in cbAttrs if cb.endswith (attr)]
-                attributes.extend (orderedAttrs)
-            # print(orderedAttrs)
-            # 对列表中的每个属性执行循环
-            for attr in orderedAttrs :
+            all_attrs = cmds.listAttr (ctrl)
+            cb_attrs = cmds.listAnimatable (ctrl)
+            if all_attrs and cb_attrs :
+                ordered_attrs = [attr for attr in all_attrs for cb in cb_attrs if cb.endswith (attr)]
+                attributes.extend (ordered_attrs)
+
+            # 对每个属性执行循环
+            for attr in ordered_attrs :
                 # 获取属性的关键帧信息
-                keyframeInfo = cmds.keyframe (ctrl , attribute = attr , query = True , timeChange = True ,
-                                              valueChange = True)
+                keyframe_info = cmds.keyframe (ctrl , attribute = attr , query = True , timeChange = True ,
+                                               valueChange = True)
                 # 将关键帧信息存储到动画数据字典中
-                animData [ctrl + "." + attr] = keyframeInfo
+                anim_data [ctrl + "." + attr] = keyframe_info
 
-        # 使用 json.dumps 函数将动画数据存储在 JSON 文件中
-        fpath1 = r"D:\animation.json"
+        # 如果指定了需要保存json文件的路径的话，则保存在对应的路径下
+        # 没有指定文件路径的话则保存在当前打开的maya文件的同路径下
+        if self.file_path :
+            # 写入JSON数据到文件
+            with open (self.file_path , "w") as file :
+                file.write (json.dumps (anim_data))
+        else :
+            current_file_path = cmds.file (q = True , sceneName = True)
+            # 构建保存JSON文件的路径，命名为'animation.json'
+            self.file_path = os.path.join (os.path.dirname (current_file_path) , 'animation.json')
+            # 写入JSON数据到文件
+            with open (self.file_path , "w") as file :
+                file.write (json.dumps (anim_data))
 
-        with open (fpath1 , "w") as f :
-            f.write (json.dumps (animData))
 
-
-    @staticmethod
-    def import_animation () :
+    # 从 JSON 文件导入动画数据并应用到相应的控制器
+    def import_animation_json (self) :
         """
-        根据json文件里的动画来导入动画文件测试,来源37佬
+        从 JSON 文件导入动画数据并应用到相应的控制器
         """
+        """
+          从 JSON 文件导入动画数据并应用到相应的控制器
+          """
+        # 判断是否给定了动画数据JSON文件的路径名称
+        if self.file_path :
+            # 从指定路径加载JSON文件的参数
+            self.anim_data = self.load_from_given_path ()
+        else :
+            # 获取当前Maya文件的路径
+            current_file_path = cmds.file (q = True , sceneName = True)
+            json_file_path_in_current_folder = os.path.join (os.path.dirname (current_file_path) , 'animation.json')
 
-        # 从文本文件中读取动画数据并赋予 blendshape B
-        project_root = os.path.dirname (__file__)
-        fpath1 = os.path.abspath (__file__ + "/../animation.json")
-
-        # Open the file and read the JSON data
-        with open (fpath1 , "r") as f :
-            data = f.read ()
-
-        # Load the JSON data into a Python dictionary
-        animData = json.loads (data)
+            # 判断动画数据JSON文件是否在Maya文件的同路径下存在
+            if os.path.exists (json_file_path_in_current_folder) :
+                # 从当前Maya文件路径下的JSON文件加载参数
+                self.file_path = json_file_path_in_current_folder
+                self.anim_data = self.load_from_given_path ()
+            else :
+                cmds.warning ("未找到动画数据JSON文件，请指定正确的路径或确保JSON文件与Maya文件在同一目录下。")
+                return
 
         # 遍历字典中的每个属性
-        for attr , keyframeInfo in animData.items () :
+        for attr , keyframe_info in self.anim_data.items () :
             # 使用 keyframe 命令将关键帧数据添加到控制器中
-            if keyframeInfo == None :
+            if keyframe_info is None :
                 continue
 
-            for i in range ((int (len (keyframeInfo) / 2))) :
-                #   print(len(keyframeInfo))
+            for i in range (int (len (keyframe_info) / 2)) :
                 x = attr.split ('.' , 1)
                 ctrl = x [0]
-                attrX = x [1]
+                attr_x = x [1]
                 if i == 0 :
                     if cmds.objExists (ctrl) :
-                        cmds.setKeyframe (ctrl , at = attrX , time = (keyframeInfo [0] , keyframeInfo [0]) ,
-                                          value = keyframeInfo [1])
+                        cmds.setKeyframe (ctrl , at = attr_x , time = (keyframe_info [0] , keyframe_info [0]) ,
+                                          value = keyframe_info [1])
                 else :
                     if cmds.objExists (ctrl) :
-                        cmds.setKeyframe (ctrl , at = attrX ,
-                                          time = (int (keyframeInfo [i * 2]) , int (keyframeInfo [i * 2])) ,
-                                          value = keyframeInfo [i * 2 + 1])
-
-        # 获取第 10 帧到第 20 帧之间的关键帧信息
-
-        #  keyframeInfo = cmds.keyframe(ctrl, attribute=attr, query=True, time=(keyframeInfo[0], keyframeInfo[2]), timeChange=True, valueChange=True)
+                        cmds.setKeyframe (ctrl , at = attr_x ,
+                                          time = (int (keyframe_info [i * 2]) , int (keyframe_info [i * 2])) ,
+                                          value = keyframe_info [i * 2 + 1])
 
 
     # 获取当前文件的绝对路径
