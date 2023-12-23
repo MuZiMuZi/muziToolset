@@ -22,8 +22,10 @@ from importlib import reload
 import os
 from . import bone
 from ....bind import config
+
+
 reload (bone)
-reload(config)
+reload (config)
 
 
 class BaseItem (bone.RigItem) :
@@ -42,7 +44,7 @@ class BaseItem (bone.RigItem) :
         # （Length, orientation, stretch, IK enabled, FK enabled, twist enabled）
         self.base_widget = QWidget ()
         self.ui_path = os.path.join (config.ui_dir , self.base_ui)
-        print(self.ui_path)
+        print (self.ui_path)
         # Use the custom loadUi function
         self.ui = QUiLoader ().load (self.ui_path)
         for side in config.Side :

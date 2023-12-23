@@ -2,24 +2,26 @@
 
 bpjnt目录 : 是用来定位的关节的ma文件,通过导入模板文件进行绑定
 
-base目录 : 针对单一关节的绑定(父类)
-    bone.py : 基础类,用于后面继承的抽象类,规定了流程和方法函数
-    base.py : 继承至bone.Bone,基础的关节和控制器绑定
+
+module目录 : 模块目录。
+    base目录 : 针对单一关节的绑定(父类)
+        bone.py : 基础类,用于后面继承的抽象类,规定了流程和方法函数
+        base.py : 继承至bone.Bone,基础的关节和控制器绑定
 
 
-chain目录 : 是针对关节链条的绑定
-    chain.py : 继承至base.Base,针对关节链条的绑定
-    chainEP.py : 继承至chain.Chain,给定一根曲线,根据曲线的长度来创建关节和控制器
-    chainFK.py : 继承至chain.Chain,用来创建fk关节链条的绑定
-    chainIK.py : 继承至chain.Chain,用来创建ik关节Spline链条的绑定
-    chainIKFK.py : 继承至chain.Chain,创建ikfk的关节链条的绑定系统,由三条关节链组成,ik关节链条,fk关节链条和ikfk关节链条组成
+    chain目录 : 是针对关节链条的绑定
+        chain.py : 继承至base.Base,针对关节链条的绑定
+        chainEP.py : 继承至chain.Chain,给定一根曲线,根据曲线的长度来创建关节和控制器
+        chainFK.py : 继承至chain.Chain,用来创建fk关节链条的绑定
+        chainIK.py : 继承至chain.Chain,用来创建ik关节Spline链条的绑定
+        chainIKFK.py : 继承至chain.Chain,创建ikfk的关节链条的绑定系统,由三条关节链组成,ik关节链条,fk关节链条和ikfk关节链条组成
 
-limb目录 : 针对创建手臂或者是腿部的四肢关节的绑定
-    limbFK.py : 继承至chainFK.ChainFK,创建手臂或者是腿部的四肢关节的FK绑定
-    limbIK.py : 继承至chainIK.ChainIK,创建手臂或者是腿部的四肢关节的IK绑定,IK绑定需要创建极向量控制器和ikHandle
-    limbIKFK.py : 继承至chainIKFK.ChainIKFK,创建手臂或者是腿部的四肢关节的绑定系统,由三条关节链组成,ik关节链条,fk关节链条和ikfk关节链条组成
+    limb目录 : 针对创建手臂或者是腿部的四肢关节的绑定
+        limbFK.py : 继承至chainFK.ChainFK,创建手臂或者是腿部的四肢关节的FK绑定
+        limbIK.py : 继承至chainIK.ChainIK,创建手臂或者是腿部的四肢关节的IK绑定,IK绑定需要创建极向量控制器和ikHandle
+        limbIKFK.py : 继承至chainIKFK.ChainIKFK,创建手臂或者是腿部的四肢关节的绑定系统,由三条关节链组成,ik关节链条,fk关节链条和ikfk关节链条组成
 
-subject目录 : 是针对各模块的绑定
+subject目录 : 是针对各组件的绑定
     body_subject目录 : 身体的模块绑定
         finger.py : 调用chainFK.ChainFK,创建手指的绑定
         hand.py : 调用finger.Finger,创建手掌的绑定
