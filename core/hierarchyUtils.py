@@ -187,20 +187,20 @@ class Hierarchy (object) :
         """
         创建绑定的默认层级组
         """
-        main_group = 'grp_m_group_001'
-        bpjnt_grp = 'grp_m_bpjnt_001'
-        ctrl_grp = 'grp_m_control_001'
-        jnt_grp = 'grp_m_jnt_001'
-        mesh_grp = 'grp_m_mesh_001'
-        node_grp = 'grp_m_node_001'
+        top_main_group = 'grp_m_group_001'
+        top_bpjnt_grp = 'grp_m_bpjnt_001'
+        top_ctrl_grp = 'grp_m_control_001'
+        top_jnt_grp = 'grp_m_jnt_001'
+        top_mesh_grp = 'grp_m_mesh_001'
+        top_node_grp = 'grp_m_node_001'
 
-        for grp in [main_group , bpjnt_grp , ctrl_grp , jnt_grp , mesh_grp , node_grp] :
+        for grp in [top_main_group , top_bpjnt_grp , top_ctrl_grp , top_jnt_grp , top_mesh_grp , top_node_grp] :
             if not cmds.ls (grp) :
                 cmds.group (em = 1 , name = grp)
 
-        cmds.parent (bpjnt_grp , ctrl_grp , jnt_grp , mesh_grp , node_grp , main_group)
+        cmds.parent (top_bpjnt_grp , top_ctrl_grp , top_jnt_grp , top_mesh_grp , top_node_grp , top_main_group)
 
-        return bpjnt_grp , ctrl_grp , jnt_grp , mesh_grp , node_grp , main_group
+        return top_bpjnt_grp , top_ctrl_grp , top_jnt_grp , top_mesh_grp , top_node_grp , top_main_group
 
     # 添加绑定的初始层级组，并隐藏连接对应的属性
     @staticmethod
