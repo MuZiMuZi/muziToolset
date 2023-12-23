@@ -1,18 +1,9 @@
 from __future__ import unicode_literals , print_function
 
-import json
-import os.path
-import sys
-from PySide2.QtCore import *
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from shiboken2 import wrapInstance
-import maya.cmds as cmds
-import maya.OpenMayaUI as omui
-import maya.mel as mel
-from importlib import reload
-from ..core import pipelineUtils , attrUtils
 import maya.api.OpenMaya as om
+import maya.cmds as cmds
+
+from ..core import attrUtils
 
 
 """
@@ -266,14 +257,12 @@ class Connection () :
         for driven in drivens :
             for driven_attr in driven_attrs :
                 # 获取driven_attr的上游属性连接
-                driver_obj_attr = cmds.connectionInfo(driven + '.'+driven_attr,sourceFromDestination = True)
-                #断开选择的属性连接
-                try:
+                driver_obj_attr = cmds.connectionInfo (driven + '.' + driven_attr , sourceFromDestination = True)
+                # 断开选择的属性连接
+                try :
                     cmds.disconnectAttr (driver_obj_attr , '{}.{}'.format (driven , driven_attr))
-                except:
+                except :
                     pass
-
-
 
 
     # 断开驱动者的属性和被驱动者的属性连接
