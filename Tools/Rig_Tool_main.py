@@ -1,22 +1,22 @@
-import os
-
-from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtWidgets import *
-import pymel.core as pm
-from .config import ui_dir , icon_dir
-from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils , snapUtils , attrUtils , fileUtils , \
-    hierarchyUtils , weightsUtils
+import sys
 from importlib import reload
 
 import maya.cmds as cmds
+import pymel.core as pm
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
+
+from .config import icon_dir
+from ..core import pipelineUtils , nameUtils , jointUtils , qtUtils , controlUtils , snapUtils , attrUtils , fileUtils , \
+    hierarchyUtils , weightsUtils
 
 
 reload (qtUtils)
 reload (controlUtils)
 reload (attrUtils)
 reload (fileUtils)
-reload(jointUtils)
+reload (jointUtils)
+
 
 class Rig_Tool (QWidget) :
     """
@@ -126,7 +126,7 @@ class Rig_Tool (QWidget) :
         self.snap_modle_button.setToolTip ('选择物体，将最后的物体吸附到前面物体的中心')
         self.export_animation_button.setToolTip ('选择控制器导出到动画到对应的json文件里')
 
-        self.create_secondary_joint_button.setToolTip('选择需要创建次级控制器的关节创建次级控制器')
+        self.create_secondary_joint_button.setToolTip ('选择需要创建次级控制器的关节创建次级控制器')
 
         self.tool_buttons = [self.clear_keys_button , self.reset_attr_button , self.batch_Constraints_modle_button ,
                              self.batch_Constraints_joint_button , self.default_grp_button ,
@@ -135,7 +135,7 @@ class Rig_Tool (QWidget) :
                              self.load_skinWeights_button , self.select_sub_objects_button ,
                              self.print_duplicate_object_button ,
                              self.rename_duplicate_object_button , self.create_dynamic_curve_driven_button ,
-                             self.snap_modle_button , self.export_animation_button , self.import_animation_button,
+                             self.snap_modle_button , self.export_animation_button , self.import_animation_button ,
                              self.create_secondary_joint_button]
 
 
@@ -237,17 +237,20 @@ class Rig_Tool (QWidget) :
 
         self.export_animation_button.clicked.connect (self.clicked_export_animation)
         self.import_animation_button.clicked.connect (self.clicked_import_animation)
-        self.create_secondary_joint_button.clicked.connect(lambda *args : jointUtils.Joint.create_secondary_joint())
+        self.create_secondary_joint_button.clicked.connect (lambda *args : jointUtils.Joint.create_secondary_joint ())
 
-    def clicked_export_animation(self):
-        #连接选择控制器进行导出动画的按钮
-        file = fileUtils.File()
-        file.export_animation_json()
+
+    def clicked_export_animation (self) :
+        # 连接选择控制器进行导出动画的按钮
+        file = fileUtils.File ()
+        file.export_animation_json ()
+
 
     def clicked_import_animation (self) :
         # 连接选择导入控制器动画的按钮
         file = fileUtils.File ()
         file.import_animation_json ()
+
 
     def save_skinWeights (self) :
         """
