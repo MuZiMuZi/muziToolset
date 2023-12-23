@@ -1,5 +1,4 @@
 # coding=utf-8
-from importlib import reload
 import maya.cmds as cmds
 
 
@@ -17,13 +16,13 @@ get_child_object:获取对象的所有子物体包括对象本身
 
 class Hierarchy (object) :
 
-
+    #先查找子物体和父物体之间是否有父子层级关系，没有的话制作父子层级关系
     @staticmethod
     def parent (child_node , parent_node) :
         u"""
-        查找子物体和父物体之间是否有父子层级关系
-        :param child_node:
-        :param parent_node:
+        先查找子物体和父物体之间是否有父子层级关系，没有的话制作父子层级关系
+        :param child_node（str）:子物体的节点名称
+        :param parent_nodestr）:父物体的节点名称
         :return:
         """
         if parent_node :
@@ -35,7 +34,7 @@ class Hierarchy (object) :
         else :
             cmds.warning (u'没有给定父物体节点')
 
-
+    #在对象上方添加一个额外的组.
     @staticmethod
     def add_extra_group (obj , grp_name , world_orient = False) :
         u"""在对象上方添加一个额外的组.
@@ -69,7 +68,7 @@ class Hierarchy (object) :
 
         return obj_grp
 
-
+    #自定义的预设控制器打组
     @staticmethod
     def control_hierarchy () :
         """Add an upper level group to the controller.
@@ -150,18 +149,20 @@ class Hierarchy (object) :
                 # get shape node
                 shape_node = cmds.listRelatives (ctrl_node , shapes = True) [0]
             # set color
-            # cmds.setAttr(shape_node + '.overrideEnabled', 1)
-            # cmds.setAttr(shape_node + '.overrideColor', col_idx)
+            cmds.setAttr(shape_node + '.overrideEnabled', 1)
+            cmds.setAttr(shape_node + '.overrideColor', col_idx)
 
 
+    # 获取对象的所有子物体包括对象本身,可以指定需要获取的对象类型
     @staticmethod
-    def get_child_object (object) :
+    def get_child_object (object,type = 'joint') :
         u'''
         获取对象的所有子物体包括对象本身
         :param object: 需要获取所有子物体的对象
-        :return: 所有子物体的名称列表
+        type（str）:需要获取对象的类型
+        return: 所有子物体的名称列表
         '''
-        object_list = cmds.listRelatives (object , children = True , allDescendents = True)
+        object_list = cmds.listRelatives (object , type = type,children = True , allDescendents = True)
         object_list.append (object)
         object_list.reverse ()
         return object_list
@@ -182,6 +183,7 @@ class Hierarchy (object) :
         return selection
 
 
+    # 创建绑定的默认层级组
     @staticmethod
     def create_rig_grp () :
         """
@@ -201,6 +203,7 @@ class Hierarchy (object) :
         cmds.parent (top_bpjnt_grp , top_ctrl_grp , top_jnt_grp , top_mesh_grp , top_node_grp , top_main_group)
 
         return top_bpjnt_grp , top_ctrl_grp , top_jnt_grp , top_mesh_grp , top_node_grp , top_main_group
+
 
     # 添加绑定的初始层级组，并隐藏连接对应的属性
     @staticmethod

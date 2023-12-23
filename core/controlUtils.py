@@ -787,7 +787,7 @@ class Control (object) :
 
         """
         # 获取startjnt底下所有的子物体关节作为列表
-        startjnt_child_list = hierarchyUtils.Hierarchy.get_child_object (startIK_jnt)
+        startjnt_child_list = hierarchyUtils.Hierarchy.get_child_object (startIK_jnt,type = 'joint')
         # 获取endIK_jnt在这个关节列表里的索引值
         enjnt_index = startjnt_child_list.index (endIK_jnt)
         # ik关节链则是从0到endIK_jnt关节索引值
