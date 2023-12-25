@@ -250,7 +250,20 @@ class Name (object) :
         Returns:
 
         """
-        cmds.rename (self._name , self._name.replace (search , replace))
+        # 获取节点真正的名称
+        object_name = self._name.split ("|") [-1]
+        new_name = object_name.replace (search , replace)
+        try :
+            # 尝试进行重命名
+            cmds.rename (object_name , new_name )
+        except RuntimeError as e :
+            # 如果重命名失败，可能是由于重名，生成一个唯一的名称并重试
+            unique_name = cmds.ls (new_name + "*" , long = True)
+            if unique_name :
+                new_name = unique_name [0]
+                cmds.rename (object_name , new_name )
+            else :
+                raise e
 
 
     def rename_to_name (self , new_name) :
