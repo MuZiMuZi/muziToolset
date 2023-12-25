@@ -22,8 +22,8 @@ nameutils:这是一个命名类。用来对命名进行一系列修改的操作�
 from __future__ import print_function
 
 import re
-
 from importlib import reload
+
 import maya.cmds as cmds
 
 from . import pipelineUtils
@@ -255,13 +255,13 @@ class Name (object) :
         new_name = object_name.replace (search , replace)
         try :
             # 尝试进行重命名
-            cmds.rename (object_name , new_name )
+            cmds.rename (object_name , new_name)
         except RuntimeError as e :
             # 如果重命名失败，可能是由于重名，生成一个唯一的名称并重试
             unique_name = cmds.ls (new_name + "*" , long = True)
             if unique_name :
                 new_name = unique_name [0]
-                cmds.rename (object_name , new_name )
+                cmds.rename (object_name , new_name)
             else :
                 raise e
 
@@ -275,8 +275,6 @@ class Name (object) :
         Returns:
         """
         cmds.rename (self._name , new_name)
-
-
 
 
     def regex_search_replace_name (self , search , replace) :
