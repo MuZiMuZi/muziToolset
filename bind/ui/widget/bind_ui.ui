@@ -69,7 +69,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>202</width>
+             <width>261</width>
              <height>673</height>
             </rect>
            </property>
@@ -235,10 +235,6 @@
                    </color>
                   </brush>
                  </property>
-                 <property name="icon">
-                  <iconset>
-                   <normaloff>../../../tools/icon/chain.png</normaloff>../../../tools/icon/chain.png</iconset>
-                 </property>
                 </item>
                 <item>
                  <property name="text">
@@ -261,10 +257,6 @@
                    </color>
                   </brush>
                  </property>
-                 <property name="icon">
-                  <iconset>
-                   <normaloff>../../../tools/icon/chain.png</normaloff>../../../tools/icon/chain.png</iconset>
-                 </property>
                 </item>
                 <item>
                  <property name="text">
@@ -279,10 +271,6 @@
                    </color>
                   </brush>
                  </property>
-                 <property name="icon">
-                  <iconset>
-                   <normaloff>../../../tools/icon/chain.png</normaloff>../../../tools/icon/chain.png</iconset>
-                 </property>
                 </item>
                 <item>
                  <property name="text">
@@ -296,10 +284,6 @@
                     <blue>153</blue>
                    </color>
                   </brush>
-                 </property>
-                 <property name="icon">
-                  <iconset>
-                   <normaloff>../../../tools/icon/chain.png</normaloff>../../../tools/icon/chain.png</iconset>
                  </property>
                 </item>
                 <item>
@@ -382,7 +366,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>jawRig</string>
+                  <string>jaw</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -612,7 +596,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>201</width>
+               <width>259</width>
                <height>316</height>
               </rect>
              </property>
@@ -696,7 +680,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>201</width>
+               <width>259</width>
                <height>315</height>
               </rect>
              </property>
@@ -1020,17 +1004,28 @@
                <layout class="QHBoxLayout" name="horizontalLayout_9">
                 <item>
                  <widget class="QPushButton" name="orient_button">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="font">
                    <font>
                     <family>Arial</family>
                    </font>
                   </property>
-                  <property name="text">
-                   <string>Orient</string>
+                  <property name="toolTip">
+                   <string>关节定向</string>
                   </property>
-                  <property name="icon">
-                   <iconset>
-                    <normaloff>../../../tools/icon/assign.png</normaloff>../../../tools/icon/assign.png</iconset>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>36</width>
+                    <height>46</height>
+                   </size>
                   </property>
                   <attribute name="buttonGroup">
                    <string notr="true">buttonGroup_5</string>
@@ -1039,18 +1034,29 @@
                 </item>
                 <item>
                  <widget class="QPushButton" name="delete_button">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="font">
                    <font>
                     <family>Arial</family>
                     <pointsize>10</pointsize>
                    </font>
                   </property>
-                  <property name="text">
-                   <string>Delete</string>
+                  <property name="toolTip">
+                   <string>删除绑定</string>
                   </property>
-                  <property name="icon">
-                   <iconset>
-                    <normaloff>../../../tools/icon/delete.png</normaloff>../../../tools/icon/delete.png</iconset>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>36</width>
+                    <height>46</height>
+                   </size>
                   </property>
                   <attribute name="buttonGroup">
                    <string notr="true">buttonGroup_5</string>
@@ -1058,19 +1064,36 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="ctrl_button">
+                 <widget class="QPushButton" name="reset_button">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="font">
                    <font>
                     <family>Arial</family>
                     <pointsize>10</pointsize>
                    </font>
                   </property>
-                  <property name="text">
-                   <string>Reset</string>
+                  <property name="toolTip">
+                   <string>重置控制器</string>
                   </property>
-                  <property name="icon">
-                   <iconset>
-                    <normaloff>../../../tools/icon/reset.png</normaloff>../../../tools/icon/reset.png</iconset>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>36</width>
+                    <height>46</height>
+                   </size>
+                  </property>
+                  <property name="checkable">
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -1078,21 +1101,32 @@
               </item>
               <item>
                <widget class="QPushButton" name="build_button">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="font">
                  <font>
                   <family>Arial</family>
                   <pointsize>20</pointsize>
                  </font>
                 </property>
+                <property name="toolTip">
+                 <string>创建绑定</string>
+                </property>
                 <property name="styleSheet">
                  <string notr="true"/>
                 </property>
                 <property name="text">
-                 <string>Build</string>
+                 <string/>
                 </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>../../../tools/icon/copy.png</normaloff>../../../tools/icon/copy.png</iconset>
+                <property name="iconSize">
+                 <size>
+                  <width>122</width>
+                  <height>48</height>
+                 </size>
                 </property>
                </widget>
               </item>

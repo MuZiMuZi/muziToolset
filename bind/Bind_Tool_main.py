@@ -13,7 +13,7 @@ from .ui.widget import bind_ui
 from ..core import qtUtils
 
 
-rigtype_custom = ['base',]
+rigtype_custom = ['base' , ]
 rigtype_chain = ['chainFK' , 'chainIK' , 'chainIKFK' , 'finger' , 'spine']
 rigtype_chainEP = ['chainEP']
 rigtype_limb = ['arm' , 'leg' , 'hand' , 'tail' , 'spine']
@@ -40,8 +40,29 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
 
         self.add_connect ()
 
+        self.set_icon ()
         # 设置qss样式表
         self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format ('manjaroMix')))
+
+
+    def set_icon (self) :
+        # 设置按钮的图标，美化界面
+
+        orient_icon = QIcon (config.icon_dir + '/directions.png')
+        self.orient_button.setIcon (orient_icon)
+        # self.orient_button.setIconSize (orient_icon.actualSize (self.orient_button.size ()))
+
+        delete_icon = QIcon (config.icon_dir + '/delete.png')
+        self.delete_button.setIcon (delete_icon)
+        # self.delete_button.setIconSize (delete_icon.actualSize (self.delete_button.size ()))
+
+        reset_icon = QIcon (config.icon_dir + '/reset.png')
+        self.reset_button.setIcon (reset_icon)
+        # self.reset_button.setIconSize (reset_icon.actualSize (self.reset_button.size ()))
+
+        build_icon = QIcon (config.icon_dir + '/control.png')
+        self.build_button.setIcon (build_icon)
+        self.build_button.setIconSize (build_icon.actualSize (self.build_button.size ()))
 
 
     def apply_model (self) :
@@ -71,7 +92,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         # 如果index.isValid的返回值有值的话，说明选择了可以点击的文件，不是的话则是空白的物体
         if index.isValid () :
             # 获得proxy_widget里所选择的item_name
-            item_name = self.proxy_widget.currentItem ().text ()
+            item_name = 'side_{}_bpjnt'.format (self.proxy_widget.currentItem ().text ())
             # 在custom_widget里添加这个item
             item = QListWidgetItem (item_name)
             self.custom_widget.addItem (item)
@@ -146,11 +167,22 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         Returns:
 
         """
-        #判断item的类型
+        rigtype_custom = ['base' , 'master' , 'brow' , 'nose' , 'cheek' , 'jaw']
 
-        self.base_widget = base_widget.main()
-        self.base_widget.module_edit.setText ('{}'.format (item.text))
-        self.setting_stack.addWidget (self.base_widget)
+        rigtype_chain = ['chainFK' , 'chainIK' , 'chainIKFK' , 'finger' , 'spine']
+        rigtype_chainEP = ['chainEP']
+        rigtype_limb = ['arm' , 'leg' , 'hand' , 'tail' , 'spine']
+        rigtype_face = ['eye' , 'mouth']
+        # 判断item的类型
+        if item.text in rigtype_custom :
+            self.setting_widget = base_widget.main ()
+        elif item.text in rigtype_chain :
+            self.setting_widget = base_widget.main ()
+        elif item.text in rigtype_chain :
+            self.setting_widget = base_widget.main ()
+
+        self.setting_widget.module_edit.setText ('{}'.format (item.text))
+        self.setting_stack.addWidget (self.setting_widget)
 
 
 def show () :

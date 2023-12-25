@@ -67,7 +67,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 202, 673))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 261, 673))
         sizePolicy.setHeightForWidth(self.scrollAreaWidgetContents.sizePolicy().hasHeightForWidth())
         self.scrollAreaWidgetContents.setSizePolicy(sizePolicy)
         self.gridLayout_2 = QGridLayout(self.scrollAreaWidgetContents)
@@ -96,24 +96,18 @@ class Ui_MainWindow(object):
         __qlistwidgetitem3.setBackground(brush3);
         __qlistwidgetitem3.setForeground(brush2);
         __qlistwidgetitem3.setIcon(icon);
-        icon1 = QIcon()
-        icon1.addFile(u"../../../tools/icon/chain.png", QSize(), QIcon.Normal, QIcon.Off)
         __qlistwidgetitem4 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem4.setForeground(brush2);
-        __qlistwidgetitem4.setIcon(icon1);
         font1 = QFont()
         font1.setKerning(True)
         __qlistwidgetitem5 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem5.setTextAlignment(Qt.AlignLeading|Qt.AlignVCenter);
         __qlistwidgetitem5.setFont(font1);
         __qlistwidgetitem5.setForeground(brush2);
-        __qlistwidgetitem5.setIcon(icon1);
         __qlistwidgetitem6 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem6.setForeground(brush2);
-        __qlistwidgetitem6.setIcon(icon1);
         __qlistwidgetitem7 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem7.setForeground(brush2);
-        __qlistwidgetitem7.setIcon(icon1);
         __qlistwidgetitem8 = QListWidgetItem(self.proxy_widget)
         __qlistwidgetitem8.setFlags(Qt.NoItemFlags);
         brush4 = QBrush(QColor(88, 76, 255, 255))
@@ -255,7 +249,7 @@ class Ui_MainWindow(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 201, 316))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 259, 316))
         self.gridLayout_5 = QGridLayout(self.scrollAreaWidgetContents_5)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
         self.gridLayout_5.setContentsMargins(0, 0, 0, 0)
@@ -294,7 +288,7 @@ class Ui_MainWindow(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scrollAreaWidgetContents_3 = QWidget()
         self.scrollAreaWidgetContents_3.setObjectName(u"scrollAreaWidgetContents_3")
-        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 201, 315))
+        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 259, 315))
         sizePolicy.setHeightForWidth(self.scrollAreaWidgetContents_3.sizePolicy().hasHeightForWidth())
         self.scrollAreaWidgetContents_3.setSizePolicy(sizePolicy)
         self.gridLayout_4 = QGridLayout(self.scrollAreaWidgetContents_3)
@@ -489,48 +483,50 @@ class Ui_MainWindow(object):
         self.buttonGroup_5.setObjectName(u"buttonGroup_5")
         self.buttonGroup_5.addButton(self.orient_button)
         self.orient_button.setObjectName(u"orient_button")
+        sizePolicy.setHeightForWidth(self.orient_button.sizePolicy().hasHeightForWidth())
+        self.orient_button.setSizePolicy(sizePolicy)
         self.orient_button.setFont(font4)
-        icon2 = QIcon()
-        icon2.addFile(u"../../../tools/icon/assign.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.orient_button.setIcon(icon2)
+        self.orient_button.setIconSize(QSize(36, 46))
 
         self.horizontalLayout_9.addWidget(self.orient_button)
 
         self.delete_button = QPushButton(self.centralwidget)
         self.buttonGroup_5.addButton(self.delete_button)
         self.delete_button.setObjectName(u"delete_button")
+        sizePolicy.setHeightForWidth(self.delete_button.sizePolicy().hasHeightForWidth())
+        self.delete_button.setSizePolicy(sizePolicy)
         font7 = QFont()
         font7.setFamily(u"Arial")
         font7.setPointSize(10)
         self.delete_button.setFont(font7)
-        icon3 = QIcon()
-        icon3.addFile(u"../../../tools/icon/delete.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.delete_button.setIcon(icon3)
+        self.delete_button.setIconSize(QSize(36, 46))
 
         self.horizontalLayout_9.addWidget(self.delete_button)
 
-        self.ctrl_button = QPushButton(self.centralwidget)
-        self.ctrl_button.setObjectName(u"ctrl_button")
-        self.ctrl_button.setFont(font7)
-        icon4 = QIcon()
-        icon4.addFile(u"../../../tools/icon/reset.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.ctrl_button.setIcon(icon4)
+        self.reset_button = QPushButton(self.centralwidget)
+        self.reset_button.setObjectName(u"reset_button")
+        self.reset_button.setEnabled(True)
+        sizePolicy.setHeightForWidth(self.reset_button.sizePolicy().hasHeightForWidth())
+        self.reset_button.setSizePolicy(sizePolicy)
+        self.reset_button.setFont(font7)
+        self.reset_button.setIconSize(QSize(36, 46))
+        self.reset_button.setCheckable(False)
 
-        self.horizontalLayout_9.addWidget(self.ctrl_button)
+        self.horizontalLayout_9.addWidget(self.reset_button)
 
 
         self.verticalLayout_6.addLayout(self.horizontalLayout_9)
 
         self.build_button = QPushButton(self.centralwidget)
         self.build_button.setObjectName(u"build_button")
+        sizePolicy.setHeightForWidth(self.build_button.sizePolicy().hasHeightForWidth())
+        self.build_button.setSizePolicy(sizePolicy)
         font8 = QFont()
         font8.setFamily(u"Arial")
         font8.setPointSize(20)
         self.build_button.setFont(font8)
         self.build_button.setStyleSheet(u"")
-        icon5 = QIcon()
-        icon5.addFile(u"../../../tools/icon/copy.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.build_button.setIcon(icon5)
+        self.build_button.setIconSize(QSize(122, 48))
 
         self.verticalLayout_6.addWidget(self.build_button)
 
@@ -623,7 +619,7 @@ class Ui_MainWindow(object):
         ___qlistwidgetitem13 = self.proxy_widget.item(13)
         ___qlistwidgetitem13.setText(QCoreApplication.translate("MainWindow", u"cheek", None));
         ___qlistwidgetitem14 = self.proxy_widget.item(14)
-        ___qlistwidgetitem14.setText(QCoreApplication.translate("MainWindow", u"jawRig", None));
+        ___qlistwidgetitem14.setText(QCoreApplication.translate("MainWindow", u"jaw", None));
         ___qlistwidgetitem15 = self.proxy_widget.item(15)
         ___qlistwidgetitem15.setText(QCoreApplication.translate("MainWindow", u"\u2014\u2014\u2014body\u2014\u2014\u2014", None));
         ___qlistwidgetitem16 = self.proxy_widget.item(16)
@@ -670,10 +666,22 @@ class Ui_MainWindow(object):
         self.control_label.setText(QCoreApplication.translate("MainWindow", u"Control", None))
         self.control_on_radio.setText(QCoreApplication.translate("MainWindow", u"On", None))
         self.control_off_radio.setText(QCoreApplication.translate("MainWindow", u"Off", None))
-        self.orient_button.setText(QCoreApplication.translate("MainWindow", u"Orient", None))
-        self.delete_button.setText(QCoreApplication.translate("MainWindow", u"Delete", None))
-        self.ctrl_button.setText(QCoreApplication.translate("MainWindow", u"Reset", None))
-        self.build_button.setText(QCoreApplication.translate("MainWindow", u"Build", None))
+#if QT_CONFIG(tooltip)
+        self.orient_button.setToolTip(QCoreApplication.translate("MainWindow", u"\u5173\u8282\u5b9a\u5411", None))
+#endif // QT_CONFIG(tooltip)
+        self.orient_button.setText("")
+#if QT_CONFIG(tooltip)
+        self.delete_button.setToolTip(QCoreApplication.translate("MainWindow", u"\u5220\u9664\u7ed1\u5b9a", None))
+#endif // QT_CONFIG(tooltip)
+        self.delete_button.setText("")
+#if QT_CONFIG(tooltip)
+        self.reset_button.setToolTip(QCoreApplication.translate("MainWindow", u"\u91cd\u7f6e\u63a7\u5236\u5668", None))
+#endif // QT_CONFIG(tooltip)
+        self.reset_button.setText("")
+#if QT_CONFIG(tooltip)
+        self.build_button.setToolTip(QCoreApplication.translate("MainWindow", u"\u521b\u5efa\u7ed1\u5b9a", None))
+#endif // QT_CONFIG(tooltip)
+        self.build_button.setText("")
         self.menuWindow.setTitle(QCoreApplication.translate("MainWindow", u"Window", None))
         self.menuCustom.setTitle(QCoreApplication.translate("MainWindow", u"Custom", None))
     # retranslateUi
