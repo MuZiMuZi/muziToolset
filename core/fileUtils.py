@@ -148,6 +148,7 @@ class File (object) :
             # 写入JSON数据到文件
             with open (self.file_path , "w") as file :
                 file.write (json.dumps (anim_data))
+            cmds.warning ("成功导出动画数据为json放置在maya的同路径下。")
 
 
     # 从 JSON 文件导入动画数据并应用到相应的控制器
