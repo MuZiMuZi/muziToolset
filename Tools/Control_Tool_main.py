@@ -2,20 +2,14 @@
 # 导入所有需要的模块
 
 from __future__ import unicode_literals , print_function
-from importlib import reload
 
 import os
+
+import muziToolset.core.controlUtils as controlUtils
+import pymel.core as pm
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
-
-import pymel.core as pm
-import maya.cmds as cmds
-
-import muziToolset.core.controlUtils as controlUtils
-
-
-
 
 
 class ShapeWidget (QListWidget) :
@@ -193,6 +187,7 @@ class ControlsWidget (QWidget) :
 
         # 创建旋转角度的输入框
         self.rotate_text = QLineEdit ()
+        self.rotate_text.setText(str (90))
 
         self.rotate_button_layout = QHBoxLayout (self)
         self.rotate_rx_cb = QCheckBox ("旋转x轴")
