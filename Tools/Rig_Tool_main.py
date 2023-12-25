@@ -18,7 +18,6 @@ reload (fileUtils)
 reload (jointUtils)
 
 
-
 class Rig_Tool (QWidget) :
     """
     一个绑定工具的类
@@ -96,9 +95,9 @@ class Rig_Tool (QWidget) :
                                               "吸附物体")
 
         self.export_animation_button = QPushButton (QIcon (':setKeyframe.png') ,
-                                                    "导出动画")
+                                                    "导出选择的动画")
         self.import_animation_button = QPushButton (QIcon (':setKeyOnAnim.png') ,
-                                                    "导入动画")
+                                                    "导入选择的动画")
 
         self.create_secondary_joint_button = QPushButton (QIcon (':parentConstraint.png') , "批量约束_次级")
         # 添加文本提示
@@ -125,7 +124,9 @@ class Rig_Tool (QWidget) :
 
         self.create_dynamic_curve_driven_button.setToolTip ('选择曲线，创建动力学曲线驱动')
         self.snap_modle_button.setToolTip ('选择物体，将最后的物体吸附到前面物体的中心')
+
         self.export_animation_button.setToolTip ('选择控制器导出到动画到对应的json文件里')
+        self.import_animation_button.setToolTip ('从对应的json文件里导入动画到对应的控制器上')
 
         self.create_secondary_joint_button.setToolTip ('选择需要创建次级控制器的关节创建次级控制器')
 
