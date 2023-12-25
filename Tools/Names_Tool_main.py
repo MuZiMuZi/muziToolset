@@ -11,7 +11,7 @@ from importlib import reload
 import maya.cmds as cmds
 
 
-
+reload(nameUtils)
 
 class Names_Tool (Names_Tool.Ui_MainWindow , QMainWindow) :
 
