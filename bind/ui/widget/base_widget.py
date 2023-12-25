@@ -48,24 +48,15 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         self.jnt_number = None
         self.jnt_parent = None
         self.control_parent = None
-
+        self.init_base()
         # self.create_widget ()
         # self.create_layout ()
 
 
-    def create_widget (self) :
-        """
-        初始化作为QWidget对象的base_widget属性,用于设置绑定的基础属性（例如名称，边，关节数量，关节的父对象，控制器的父对象）
-        """
-        # 调用父类的ui方法，来运行ui
-        pass
-
-
-    def create_layout (self) :
-        self.main_layout = QHBoxLayout (self)
-        self.main_layout.addWidget (self.base_widget)
-        if self.extra_widget :
-            self.main_layout.addWidget (self.extra_widget)
+    def init_base (self) :
+        # 初始化参数
+        for side in config.Side :
+            self.side_cbox.addItem (side.value)
 
 
     def add_connect (self) :
@@ -98,6 +89,7 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
 
 def main () :
     return Base_Widget ()
+
 
 class Setting_Widget (QMainWindow) :
 

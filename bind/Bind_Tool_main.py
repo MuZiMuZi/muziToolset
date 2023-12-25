@@ -13,11 +13,6 @@ from .ui.widget import bind_ui
 from ..core import qtUtils
 
 
-rigtype_custom = ['base' , ]
-rigtype_chain = ['chainFK' , 'chainIK' , 'chainIKFK' , 'finger' , 'spine']
-rigtype_chainEP = ['chainEP']
-rigtype_limb = ['arm' , 'leg' , 'hand' , 'tail' , 'spine']
-
 reload (base_widget)
 reload (chain_widget)
 reload (limb_widget)
@@ -101,7 +96,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
             # 设置字体颜色为红色
             item.setForeground (QColor (255 , 0 , 0))
 
-            item.text = item_name
+            item.text = self.proxy_widget.currentItem ().text ()
             self.update_current (item)
         else :
             return
@@ -167,19 +162,18 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         Returns:
 
         """
-        rigtype_custom = ['base' , 'master' , 'brow' , 'nose' , 'cheek' , 'jaw']
-
-        rigtype_chain = ['chainFK' , 'chainIK' , 'chainIKFK' , 'finger' , 'spine']
-        rigtype_chainEP = ['chainEP']
-        rigtype_limb = ['arm' , 'leg' , 'hand' , 'tail' , 'spine']
-        rigtype_face = ['eye' , 'mouth']
-        # 判断item的类型
-        if item.text in rigtype_custom :
+        # 判断item的类型,根据item的类型选择生成哪个界面
+        rigtype = config.Rigtype(item.text)
+        if rigtype == 'custom':
             self.setting_widget = base_widget.main ()
-        elif item.text in rigtype_chain :
-            self.setting_widget = base_widget.main ()
-        elif item.text in rigtype_chain :
-            self.setting_widget = base_widget.main ()
+        elif rigtype == 'chain' :
+            self.setting_widget = chain_widget.main ()
+        elif rigtype == 'chainEP' :
+            self.setting_widget = chainEP_widget.main ()
+        elif rigtype == 'limb' :
+            self.setting_widget = limb_widget.main ()
+        elif rigtype == 'face' :
+            self.setting_widget = face_widget.main ()
 
         self.setting_widget.module_edit.setText ('{}'.format (item.text))
         self.setting_stack.addWidget (self.setting_widget)
