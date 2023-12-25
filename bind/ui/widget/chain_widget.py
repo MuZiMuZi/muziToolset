@@ -49,10 +49,8 @@ class Chain_Widget (chain_ui.Ui_MainWindow , QMainWindow) :
 		self.jnt_parent = None
 		self.control_parent = None
 		self.init_base ()
-
-
-	# self.create_widget ()
-	# self.create_layout ()
+		# self.create_widget ()
+		# self.create_layout ()
 
 
 	def init_base (self) :
@@ -65,10 +63,8 @@ class Chain_Widget (chain_ui.Ui_MainWindow , QMainWindow) :
 		u"""
         用来添加连接的槽函数
         """
-
-
-	# self.create_btn.clicked.connect (lambda :print(12))
-	# self.base_widget.delete_btn.clicked.connect (self.delete_setup)
+		# self.create_btn.clicked.connect (lambda :print(12))
+		# self.base_widget.delete_btn.clicked.connect (self.delete_setup)
 
 
 	def parse_base (self , *args) :
@@ -97,4 +93,4 @@ class Chain_Widget (chain_ui.Ui_MainWindow , QMainWindow) :
 
 
 def main () :
-	return Base_Widget ()
+	return Chain_Widget ()
