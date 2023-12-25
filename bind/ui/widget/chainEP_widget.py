@@ -1,7 +1,7 @@
 from . import chainEP_ui
 from . import chain_widget
 from importlib import reload
-
+from ... import config
 
 
 reload(chain_widget)

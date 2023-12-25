@@ -2,7 +2,7 @@ from ...config import Direction
 from . import chain_ui
 from . import base_widget
 from importlib import reload
-
+from ... import config
 
 
 reload(base_widget)

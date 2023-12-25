@@ -18,10 +18,12 @@ except ImportError :
     from PySide import __version__
     from shiboken import wrapInstance
 from importlib import reload
-
+import os
+from ... import config
 from . import base_ui
 from ..widget import bone_widget
 from ....bind.module.base import base
+from ....core import qtUtils
 
 
 reload (bone_widget)
@@ -29,7 +31,7 @@ reload (base)
 reload (base_ui)
 
 
-class Base_Widget (QMainWindow) :
+class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
 
 
     def __init__ (self , parent = None , *args , **kwargs) :
@@ -38,6 +40,8 @@ class Base_Widget (QMainWindow) :
 
         '''
         super ().__init__ (parent , *args , **kwargs)
+        # 调用父类的ui方法，来运行ui
+        self.setupUi (self)
 
         self.name = None
         self.side = None
@@ -54,10 +58,7 @@ class Base_Widget (QMainWindow) :
         初始化作为QWidget对象的base_widget属性,用于设置绑定的基础属性（例如名称，边，关节数量，关节的父对象，控制器的父对象）
         """
         # 调用父类的ui方法，来运行ui
-        # self.setupUi (self)
-        self.base = base_widget.Base_Widget (parent = self)
-        self.base_widget = self.base.create_base_widget ()
-        self.extra_widget = self.base.create_extra_widget ()
+        pass
 
 
     def create_layout (self) :
@@ -95,11 +96,14 @@ class Base_Widget (QMainWindow) :
         # self.setup.build_setup ()
 
 
+def main () :
+    return Base_Widget ()
+
 class Setting_Widget (QMainWindow) :
 
     def __init__ (self , name , *args , **kwargs) :
         """Override"""
-        super (Setting_Widget , self).__init__ ( *args , **kwargs)
+        super (Setting_Widget , self).__init__ (*args , **kwargs)
         self.base_ui = '{}.ui'.format (name)
         self.create_base_widget ()
 
@@ -111,9 +115,8 @@ class Setting_Widget (QMainWindow) :
         # （Length, orientation, stretch, IK enabled, FK enabled, twist enabled）
         self.base_widget = QWidget ()
         self.ui_path = os.path.join (config.ui_dir , self.base_ui)
-        print (self.ui_path)
         # Use the custom loadUi function
-        self.ui = QUiLoader ().load (self.ui_path)
+        self.ui = qtUtils.load_ui (self.ui_path)
         for side in config.Side :
             self.ui.side_cbox.addItem (side.value)
 

@@ -2,7 +2,7 @@ import os
 from functools import wraps
 
 from PySide2 import QtWidgets , QtGui
-
+from ... import config
 from ...config import icon_dir
 
 

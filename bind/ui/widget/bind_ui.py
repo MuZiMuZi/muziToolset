@@ -595,49 +595,49 @@ class Ui_MainWindow(object):
         __sortingEnabled = self.proxy_widget.isSortingEnabled()
         self.proxy_widget.setSortingEnabled(False)
         ___qlistwidgetitem = self.proxy_widget.item(0)
-        ___qlistwidgetitem.setText(QCoreApplication.translate("MainWindow", u"masterRig", None));
+        ___qlistwidgetitem.setText(QCoreApplication.translate("MainWindow", u"master", None));
         ___qlistwidgetitem1 = self.proxy_widget.item(1)
-        ___qlistwidgetitem1.setText(QCoreApplication.translate("MainWindow", u"baseRig", None));
+        ___qlistwidgetitem1.setText(QCoreApplication.translate("MainWindow", u"base", None));
         ___qlistwidgetitem2 = self.proxy_widget.item(2)
         ___qlistwidgetitem2.setText(QCoreApplication.translate("MainWindow", u"\u2014\u2014\u2014chain\u2014\u2014\u2014", None));
         ___qlistwidgetitem3 = self.proxy_widget.item(3)
-        ___qlistwidgetitem3.setText(QCoreApplication.translate("MainWindow", u"chainFKRig", None));
+        ___qlistwidgetitem3.setText(QCoreApplication.translate("MainWindow", u"chainFK", None));
         ___qlistwidgetitem4 = self.proxy_widget.item(4)
-        ___qlistwidgetitem4.setText(QCoreApplication.translate("MainWindow", u"chainIKRig", None));
+        ___qlistwidgetitem4.setText(QCoreApplication.translate("MainWindow", u"chainIK", None));
         ___qlistwidgetitem5 = self.proxy_widget.item(5)
-        ___qlistwidgetitem5.setText(QCoreApplication.translate("MainWindow", u"chainIKFKRig", None));
+        ___qlistwidgetitem5.setText(QCoreApplication.translate("MainWindow", u"chainIKFK", None));
         ___qlistwidgetitem6 = self.proxy_widget.item(6)
-        ___qlistwidgetitem6.setText(QCoreApplication.translate("MainWindow", u"chainEPRig", None));
+        ___qlistwidgetitem6.setText(QCoreApplication.translate("MainWindow", u"chainEP", None));
         ___qlistwidgetitem7 = self.proxy_widget.item(7)
-        ___qlistwidgetitem7.setText(QCoreApplication.translate("MainWindow", u"fingerRig", None));
+        ___qlistwidgetitem7.setText(QCoreApplication.translate("MainWindow", u"finger", None));
         ___qlistwidgetitem8 = self.proxy_widget.item(8)
         ___qlistwidgetitem8.setText(QCoreApplication.translate("MainWindow", u"\u2014\u2014\u2014face\u2014\u2014\u2014", None));
         ___qlistwidgetitem9 = self.proxy_widget.item(9)
-        ___qlistwidgetitem9.setText(QCoreApplication.translate("MainWindow", u"browRig", None));
+        ___qlistwidgetitem9.setText(QCoreApplication.translate("MainWindow", u"brow", None));
         ___qlistwidgetitem10 = self.proxy_widget.item(10)
-        ___qlistwidgetitem10.setText(QCoreApplication.translate("MainWindow", u"eyeRig", None));
+        ___qlistwidgetitem10.setText(QCoreApplication.translate("MainWindow", u"eye", None));
         ___qlistwidgetitem11 = self.proxy_widget.item(11)
-        ___qlistwidgetitem11.setText(QCoreApplication.translate("MainWindow", u"noseRig", None));
+        ___qlistwidgetitem11.setText(QCoreApplication.translate("MainWindow", u"nose", None));
         ___qlistwidgetitem12 = self.proxy_widget.item(12)
-        ___qlistwidgetitem12.setText(QCoreApplication.translate("MainWindow", u"mouthRig", None));
+        ___qlistwidgetitem12.setText(QCoreApplication.translate("MainWindow", u"mouth", None));
         ___qlistwidgetitem13 = self.proxy_widget.item(13)
-        ___qlistwidgetitem13.setText(QCoreApplication.translate("MainWindow", u"cheekRig", None));
+        ___qlistwidgetitem13.setText(QCoreApplication.translate("MainWindow", u"cheek", None));
         ___qlistwidgetitem14 = self.proxy_widget.item(14)
         ___qlistwidgetitem14.setText(QCoreApplication.translate("MainWindow", u"jawRig", None));
         ___qlistwidgetitem15 = self.proxy_widget.item(15)
         ___qlistwidgetitem15.setText(QCoreApplication.translate("MainWindow", u"\u2014\u2014\u2014body\u2014\u2014\u2014", None));
         ___qlistwidgetitem16 = self.proxy_widget.item(16)
-        ___qlistwidgetitem16.setText(QCoreApplication.translate("MainWindow", u"armRig", None));
+        ___qlistwidgetitem16.setText(QCoreApplication.translate("MainWindow", u"arm", None));
         ___qlistwidgetitem17 = self.proxy_widget.item(17)
-        ___qlistwidgetitem17.setText(QCoreApplication.translate("MainWindow", u"handRig", None));
+        ___qlistwidgetitem17.setText(QCoreApplication.translate("MainWindow", u"hand", None));
         ___qlistwidgetitem18 = self.proxy_widget.item(18)
-        ___qlistwidgetitem18.setText(QCoreApplication.translate("MainWindow", u"spineRig", None));
+        ___qlistwidgetitem18.setText(QCoreApplication.translate("MainWindow", u"spine", None));
         ___qlistwidgetitem19 = self.proxy_widget.item(19)
-        ___qlistwidgetitem19.setText(QCoreApplication.translate("MainWindow", u"legRig", None));
+        ___qlistwidgetitem19.setText(QCoreApplication.translate("MainWindow", u"leg", None));
         ___qlistwidgetitem20 = self.proxy_widget.item(20)
-        ___qlistwidgetitem20.setText(QCoreApplication.translate("MainWindow", u"footRig", None));
+        ___qlistwidgetitem20.setText(QCoreApplication.translate("MainWindow", u"foot", None));
         ___qlistwidgetitem21 = self.proxy_widget.item(21)
-        ___qlistwidgetitem21.setText(QCoreApplication.translate("MainWindow", u"tailRig", None));
+        ___qlistwidgetitem21.setText(QCoreApplication.translate("MainWindow", u"tail", None));
         self.proxy_widget.setSortingEnabled(__sortingEnabled)
 
         self.jointRadius_label.setText(QCoreApplication.translate("MainWindow", u"Joint Radius:", None))

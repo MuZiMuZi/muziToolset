@@ -416,3 +416,27 @@ class Editable_ListWidget_Item (QListWidgetItem) :
             self.current_item.hide_editor ()
             self.current_item.setFlags (self.current_item.flags () & ~Qt.ItemIsEditable)
             self.current_item = None
+
+#用来读取ui文件
+def load_ui (file_path) :
+    # 创建一个应用程序对象
+    app = QApplication ([])
+
+    # 创建QUiLoader实例
+    loader = QUiLoader ()
+
+    # 使用QUiLoader加载UI文件
+    ui_file = QFile (file_path)
+    ui_file.open (QFile.ReadOnly)
+    ui_widget = loader.load (ui_file)
+    ui_file.close ()
+
+    # 返回加载的UI部件
+    return ui_widget
+    # #示例
+    # # 加载UI文件
+    # ui_file_path = "your_ui_file.ui"  # 替换为你的UI文件路径
+    # ui_widget = load_ui (ui_file_path)
+    #
+    # # 设置UI部件为主窗口的中心部件
+    # self.setCentralWidget (ui_widget)

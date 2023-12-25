@@ -13,7 +13,7 @@ from .ui.widget import bind_ui
 from ..core import qtUtils
 
 
-rigtype_custom = ['base']
+rigtype_custom = ['base',]
 rigtype_chain = ['chainFK' , 'chainIK' , 'chainIKFK' , 'finger' , 'spine']
 rigtype_chainEP = ['chainEP']
 rigtype_limb = ['arm' , 'leg' , 'hand' , 'tail' , 'spine']
@@ -71,7 +71,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         # 如果index.isValid的返回值有值的话，说明选择了可以点击的文件，不是的话则是空白的物体
         if index.isValid () :
             # 获得proxy_widget里所选择的item_name
-            item_name = self.proxy_widget.currentItem ().text () [0 :-3]
+            item_name = self.proxy_widget.currentItem ().text ()
             # 在custom_widget里添加这个item
             item = QListWidgetItem (item_name)
             self.custom_widget.addItem (item)
@@ -132,6 +132,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         Returns:
 
         """
+        self.item = item
         self.initialize_field (item)
         # 获取custom_widget 里的item数量，切换到对应的设置面板
         index = self.custom_widget.count ()
@@ -145,11 +146,11 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         Returns:
 
         """
-        print(item)
-        base = base_widget.Setting_Widget (item.name)
-        self.setting_stack.addWidget (base.ui)
+        #判断item的类型
 
-        # self.item_layout = QVBoxLayout()
+        self.base_widget = base_widget.main()
+        self.base_widget.module_edit.setText ('{}'.format (item.text))
+        self.setting_stack.addWidget (self.base_widget)
 
 
 def show () :

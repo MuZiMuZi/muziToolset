@@ -161,7 +161,7 @@
                 </property>
                 <item>
                  <property name="text">
-                  <string>masterRig</string>
+                  <string>master</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -175,7 +175,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>baseRig</string>
+                  <string>base</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -197,7 +197,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>chainFKRig</string>
+                  <string>chainFK</string>
                  </property>
                  <property name="background">
                   <brush brushstyle="NoBrush">
@@ -224,7 +224,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>chainIKRig</string>
+                  <string>chainIK</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -242,7 +242,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>chainIKFKRig</string>
+                  <string>chainIKFK</string>
                  </property>
                  <property name="font">
                   <font>
@@ -268,7 +268,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>chainEPRig</string>
+                  <string>chainEP</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -286,7 +286,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>fingerRig</string>
+                  <string>finger</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -312,7 +312,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>browRig</string>
+                  <string>brow</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -326,7 +326,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>eyeRig</string>
+                  <string>eye</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -340,7 +340,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>noseRig</string>
+                  <string>nose</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -354,7 +354,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>mouthRig</string>
+                  <string>mouth</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -368,7 +368,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>cheekRig</string>
+                  <string>cheek</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -404,7 +404,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>armRig</string>
+                  <string>arm</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -418,7 +418,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>handRig</string>
+                  <string>hand</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -432,7 +432,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>spineRig</string>
+                  <string>spine</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -446,7 +446,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>legRig</string>
+                  <string>leg</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -460,7 +460,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>footRig</string>
+                  <string>foot</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -474,7 +474,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>tailRig</string>
+                  <string>tail</string>
                  </property>
                  <property name="foreground">
                   <brush brushstyle="SolidPattern">
@@ -1185,10 +1185,10 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_3"/>
   <buttongroup name="buttonGroup_4"/>
   <buttongroup name="buttonGroup_5"/>
-  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_3"/>
   <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup"/>
  </buttongroups>
 </ui>
