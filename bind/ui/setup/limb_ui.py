@@ -148,11 +148,11 @@ class Ui_MainWindow (object) :
 
         self.horizontalLayout_6.addWidget (self.label_7)
 
-        self.control_parent_edit = QLineEdit (self.centralwidget)
-        self.control_parent_edit.setObjectName (u"control_parent_edit")
-        self.control_parent_edit.setFont (font5)
+        self.ctrl_parent_edit = QLineEdit (self.centralwidget)
+        self.ctrl_parent_edit.setObjectName (u"ctrl_parent_edit")
+        self.ctrl_parent_edit.setFont (font5)
 
-        self.horizontalLayout_6.addWidget (self.control_parent_edit)
+        self.horizontalLayout_6.addWidget (self.ctrl_parent_edit)
 
         self.verticalLayout.addLayout (self.horizontalLayout_6)
 
@@ -303,8 +303,8 @@ class Ui_MainWindow (object) :
         self.label_4.setText (QCoreApplication.translate ("MainWindow" , u"name\uff1a" , None))
         self.label_6.setText (QCoreApplication.translate ("MainWindow" , u"jnt_parent\uff1a" , None))
         self.jnt_parent_edit.setText (QCoreApplication.translate ("MainWindow" , u"None" , None))
-        self.label_7.setText (QCoreApplication.translate ("MainWindow" , u"control_parent\uff1a" , None))
-        self.control_parent_edit.setText (QCoreApplication.translate ("MainWindow" , u"None" , None))
+        self.label_7.setText (QCoreApplication.translate ("MainWindow" , u"ctrl_parent\uff1a" , None))
+        self.ctrl_parent_edit.setText (QCoreApplication.translate ("MainWindow" , u"None" , None))
         self.ikCtrl_label.setText (QCoreApplication.translate ("MainWindow" , u"ikCtrll:" , None))
         self.ikCtrl_cbox.setText ("")
         self.fkCtrl_label.setText (QCoreApplication.translate ("MainWindow" , u"fkCtrl:" , None))

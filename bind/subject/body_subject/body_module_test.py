@@ -11,14 +11,14 @@ reload (arm)
 def build_setup () :
     arm_l = arm.Arm (side = 'l' , name = 'arm' , jnt_number = 3 , direction = [1 , 0 , 0] , length = 10 ,
                      is_stretch = 1 , jnt_parent = None ,
-                     control_parent = None)
+                     ctrl_parent = None)
     arm_l.build_setup ()
 
 
 def build_rig () :
     arm_l = arm.Arm (side = 'l' , name = 'arm' , jnt_number = 3 , direction = [1 , 0 , 0] , length = 10 ,
                      is_stretch = 1 , jnt_parent = None ,
-                     control_parent = None)
+                     ctrl_parent = None)
     arm_l.build_rig ()
 
 

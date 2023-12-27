@@ -18,8 +18,8 @@ class Tongue (chainFK.ChainFK) :
 
     def __init__ (self , side = 'm' , name = '' , jnt_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
                   jnt_parent = None ,
-                  control_parent = None) :
-        super ().__init__ (side , name , jnt_number , direction , length , jnt_parent , control_parent)
+                  ctrl_parent = None) :
+        super ().__init__ (side , name , jnt_number , direction , length , jnt_parent , ctrl_parent)
         self.rtype = 'Tongue'
         self.radius = 0.35
 
@@ -54,14 +54,14 @@ if __name__ == '__main__' :
     def build_setup () :
         tongue_m = tongue.Tongue (side = 'm' , name = '' , jnt_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
                                   jnt_parent = None ,
-                                  control_parent = None)
+                                  ctrl_parent = None)
         tongue_m.build_setup ()
 
 
     def build_rig () :
         tongue_m = tongue.Tongue (side = 'm' , name = '' , jnt_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
                                   jnt_parent = None ,
-                                  control_parent = None)
+                                  ctrl_parent = None)
         tongue_m.build_rig ()
 
 

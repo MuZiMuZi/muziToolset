@@ -18,8 +18,8 @@ class MouthLip (base.Base) :
     skin_curve = ['crv_m_upperMouthLipSkin_001' , 'crv_m_lowerMouthLipSkin_001']
 
 
-    def __init__ (self , side , name , jnt_number = 7 , jnt_parent = None , control_parent = None) :
-        super ().__init__ (side , name , jnt_number , jnt_parent , control_parent)
+    def __init__ (self , side , name , jnt_number = 7 , jnt_parent = None , ctrl_parent = None) :
+        super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
         # 定位用的曲线
         self.name = name
         self.shape = 'cube'

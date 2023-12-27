@@ -17,8 +17,8 @@ reload (base)
 class Nose (base.Base) :
 
 
-    def __init__ (self , side = 'm' , name = '' , jnt_number = 2 , jnt_parent = None , control_parent = None) :
-        super ().__init__ (side , name , jnt_number , jnt_parent , control_parent)
+    def __init__ (self , side = 'm' , name = '' , jnt_number = 2 , jnt_parent = None , ctrl_parent = None) :
+        super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
         self.shape = 'cube'
         self.rtype = 'Nose'
         self.radius = 0.2
@@ -80,7 +80,7 @@ class Nose (base.Base) :
         """
         self.set_shape (self.shape)
         # 创建整体的控制器层级组
-        self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.control_parent)
+        self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
         parent = self.ctrl_grp
         for ctrl , jnt in zip (self.ctrl_list , self.jnt_list) :
             self.ctrl = controlUtils.Control.create_ctrl (ctrl , shape = self.shape ,
@@ -113,12 +113,12 @@ class Nose (base.Base) :
 
 if __name__ == "__main__" :
     def build_setup () :
-        nose_m = nose.Nose (jnt_parent = None , control_parent = None)
+        nose_m = nose.Nose (jnt_parent = None , ctrl_parent = None)
         nose_m.build_setup ()
 
 
     def build_rig () :
-        nose_m = nose.Nose (jnt_parent = None , control_parent = None)
+        nose_m = nose.Nose (jnt_parent = None , ctrl_parent = None)
         nose_m.build_rig ()
 
 

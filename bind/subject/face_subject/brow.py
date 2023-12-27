@@ -18,20 +18,20 @@ reload (base)
 class Brow (base.Base) :
 
 
-    def __init__ (self , side = '' , name = '' , jnt_number = 1 , jnt_parent = None , control_parent = None) :
-        super ().__init__ (side , name , jnt_number , jnt_parent , control_parent)
+    def __init__ (self , side = '' , name = '' , jnt_number = 1 , jnt_parent = None , ctrl_parent = None) :
+        super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
         self.radius = 0.25
         self.shape = 'ball'
         self.rtype = 'Brow'
 
         # 创建两边的眉毛系统
-        self.brow_l = base.Base (side = 'l' , name = '' , jnt_number = 7 , jnt_parent = None , control_parent =
+        self.brow_l = base.Base (side = 'l' , name = '' , jnt_number = 7 , jnt_parent = None , ctrl_parent =
         None)
         self.brow_l.rtype = 'Brow'
         self.brow_l.shape = 'cube'
         self.brow_l.radius = 0.2
 
-        self.brow_r = base.Base (side = 'r' , name = '' , jnt_number = 7 , jnt_parent = None , control_parent =
+        self.brow_r = base.Base (side = 'r' , name = '' , jnt_number = 7 , jnt_parent = None , ctrl_parent =
         None)
         self.brow_r.rtype = 'Brow'
         self.brow_r.shape = 'cube'
@@ -169,7 +169,7 @@ class Brow (base.Base) :
         self.brow_l.master_ctrl = controlUtils.Control.create_ctrl (self.brow_l.master_ctrl , shape = 'square' ,
                                                                     radius = 2 ,
                                                                     axis = 'X+' , pos = self.brow_l.jnt_list [1] ,
-                                                                    parent = self.control_parent)
+                                                                    parent = self.ctrl_parent)
         # 创建眉毛左边的Follow控制器
         for follow_ctrl , follow_jnt in zip (self.brow_l.ctrl_follow_list , self.brow_l.bpjnt_follow_list) :
             self.brow_l.follow_ctrl = controlUtils.Control.create_ctrl (follow_ctrl , shape = 'square' ,
@@ -192,7 +192,7 @@ class Brow (base.Base) :
         self.brow_r.master_ctrl = controlUtils.Control.create_ctrl (self.brow_r.master_ctrl , shape = 'square' ,
                                                                     radius = 2 ,
                                                                     axis = 'X+' , pos = self.brow_r.jnt_list [1] ,
-                                                                    parent = self.control_parent)
+                                                                    parent = self.ctrl_parent)
         cmds.setAttr (self.brow_r.master_ctrl.replace ('ctrl' , 'offset') + '.scaleX' , -1)
 
         # 创建眉毛右边的Follow控制器
@@ -374,12 +374,12 @@ class Brow (base.Base) :
 
 if __name__ == "__main__" :
     def build_setup () :
-        brow_m = brow.Brow (side = 'm' , jnt_parent = None , control_parent = None)
+        brow_m = brow.Brow (side = 'm' , jnt_parent = None , ctrl_parent = None)
         brow_m.build_setup ()
 
 
     def build_rig () :
-        brow_m = brow.Brow (side = 'm' , jnt_parent = None , control_parent = None)
+        brow_m = brow.Brow (side = 'm' , jnt_parent = None , ctrl_parent = None)
         brow_m.build_rig ()
 
 

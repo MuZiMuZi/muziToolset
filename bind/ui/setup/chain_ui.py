@@ -203,11 +203,11 @@ class Ui_MainWindow (object) :
 
         self.horizontalLayout_6.addWidget (self.label_7)
 
-        self.control_parent_edit = QLineEdit (self.centralwidget)
-        self.control_parent_edit.setObjectName (u"control_parent_edit")
-        self.control_parent_edit.setFont (font4)
+        self.ctrl_parent_edit = QLineEdit (self.centralwidget)
+        self.ctrl_parent_edit.setObjectName (u"ctrl_parent_edit")
+        self.ctrl_parent_edit.setFont (font4)
 
-        self.horizontalLayout_6.addWidget (self.control_parent_edit)
+        self.horizontalLayout_6.addWidget (self.ctrl_parent_edit)
 
         self.verticalLayout.addLayout (self.horizontalLayout_6)
 
@@ -265,8 +265,8 @@ class Ui_MainWindow (object) :
         self.direction_label.setText (QCoreApplication.translate ("MainWindow" , u"direction:" , None))
         self.label_6.setText (QCoreApplication.translate ("MainWindow" , u"jnt_parent\uff1a" , None))
         self.jnt_parent_edit.setText (QCoreApplication.translate ("MainWindow" , u"None" , None))
-        self.label_7.setText (QCoreApplication.translate ("MainWindow" , u"control_parent\uff1a" , None))
-        self.control_parent_edit.setText (QCoreApplication.translate ("MainWindow" , u"None" , None))
+        self.label_7.setText (QCoreApplication.translate ("MainWindow" , u"ctrl_parent\uff1a" , None))
+        self.ctrl_parent_edit.setText (QCoreApplication.translate ("MainWindow" , u"None" , None))
         self.create_btn.setText (QCoreApplication.translate ("MainWindow" , u"Create" , None))
         self.delete_btn.setText (QCoreApplication.translate ("MainWindow" , u"Delete" , None))
     # retranslateUi

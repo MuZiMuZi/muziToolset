@@ -71,7 +71,7 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         self.parse_base ()
         #
         # # 生成定位关节系统
-        # self.setup = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.control_parent)
+        # self.setup = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
         # self.setup.build_setup ()
 
 

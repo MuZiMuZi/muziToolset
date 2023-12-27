@@ -21,8 +21,8 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
 
     def __init__ (self , side , name , jnt_number , direction , is_stretch = 1 , length = 10 , limbtype = None ,
                   jnt_parent = None ,
-                  control_parent = None) :
-        super ().__init__ (side , name , jnt_number , direction , is_stretch , length , jnt_parent , control_parent)
+                  ctrl_parent = None) :
+        super ().__init__ (side , name , jnt_number , direction , is_stretch , length , jnt_parent , ctrl_parent)
 
         self._rtype = 'LimbIKFK'
         jnt_number = 3
@@ -116,9 +116,9 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         if cmds.objExists (self.ctrl_grp) :
             # 删除过去的控制器层级组后，并重新创建控制器
             cmds.delete (self.ctrl_grp)
-            self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.control_parent)
+            self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
         else :
-            self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.control_parent)
+            self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
         self.ik_limb.create_ctrl ()
         self.fk_limb.create_ctrl ()
         # 创建用于ikfk切换的控制器
@@ -200,7 +200,7 @@ if __name__ == '__main__' :
                                     is_stretch = 1 ,
                                     limbtype = 'arm' ,
                                     jnt_parent = None ,
-                                    control_parent = None)
+                                    ctrl_parent = None)
         custom.build_setup ()
 
 
@@ -209,7 +209,7 @@ if __name__ == '__main__' :
                                     length = 10 ,
                                     limbtype = 'arm' ,
                                     jnt_parent = None ,
-                                    control_parent = None)
+                                    ctrl_parent = None)
         custom.build_rig ()
 
 

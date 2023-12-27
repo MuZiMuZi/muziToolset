@@ -65,12 +65,12 @@ class ChainItem (base.BaseItem) :
 class Chain (base.Base) :
 
 
-    def __init__ (self , side , name , jnt_number , length = 10 , jnt_parent = None , control_parent = None) :
+    def __init__ (self , side , name , jnt_number , length = 10 , jnt_parent = None , ctrl_parent = None) :
         '''
         length：关节的总长度
         
         '''
-        base.Base.__init__ (self , side , name , jnt_number , jnt_parent , control_parent)
+        base.Base.__init__ (self , side , name , jnt_number , jnt_parent , ctrl_parent)
 
         self.rtype = 'Chain'
 

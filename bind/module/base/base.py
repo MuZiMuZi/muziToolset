@@ -54,24 +54,24 @@ class BaseItem (bone.RigItem) :
     # 分析base_widget中的输入并将其作为参数返回
     def parse_base_widget (self) :
         """ 分析base_widget中的输入并将其作为参数返回
-        获取Side (side) , name,jnt_number,jnt_parent,control_parent
+        获取Side (side) , name,jnt_number,jnt_parent,ctrl_parent
         """
         side = self.base_widget.side_cbox.currentText ()
         name = self.base_widget.name_edit.text ()
         jnt_number = self.base_widget.jnt_number_sbox.currentText ()
         jnt_parent = self.base_widget.jnt_parent_edit.text ()
-        control_parent = self.base_widget.control_parent_edit.text ()
+        ctrl_parent = self.base_widget.ctrl_parent_edit.text ()
 
-        return [Side (side) , name , jnt_number , jnt_parent , control_parent]
+        return [Side (side) , name , jnt_number , jnt_parent , ctrl_parent]
 
 
     ## 根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备
-    def build_setup (self , side , name , jnt_number , jnt_parent , control_parent) :
+    def build_setup (self , side , name , jnt_number , jnt_parent , ctrl_parent) :
         """根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备"""
         # 分析base_widget中的输入并将其作为参数返回
-        side , name , jnt_number , jnt_parent , control_parent = self.parse_base_widget ()
+        side , name , jnt_number , jnt_parent , ctrl_parent = self.parse_base_widget ()
         # 根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备
-        self.obj = Base (side , name , jnt_number , jnt_parent , control_parent)
+        self.obj = Base (side , name , jnt_number , jnt_parent , ctrl_parent)
         self.obj.build_setup ()
 
 
@@ -80,17 +80,17 @@ class BaseItem (bone.RigItem) :
         """
         根据生成的bp定位关节，创建绑定系统
         """
-        side , name , jnt_number , jnt_parent , control_parent = self.parse_base_widget ()
+        side , name , jnt_number , jnt_parent , ctrl_parent = self.parse_base_widget ()
         # 根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备
-        self.obj = Base (side , name , jnt_number , jnt_parent , control_parent)
+        self.obj = Base (side , name , jnt_number , jnt_parent , ctrl_parent)
         self.obj.build_rig ()
 
 
     # 删除已经创建好的绑定系统
     def delete_rig (self) :
-        side , name , jnt_number , jnt_parent , control_parent = self.parse_base_widget ()
+        side , name , jnt_number , jnt_parent , ctrl_parent = self.parse_base_widget ()
         # 删除已经创建好的绑定系统
-        self.obj = Base (side , name , jnt_number , jnt_parent , control_parent)
+        self.obj = Base (side , name , jnt_number , jnt_parent , ctrl_parent)
         self.obj.delete_rig ()
 
 
@@ -100,6 +100,6 @@ class Base (bone.Bone) :
     """
 
 
-    def __init__ (self , side , name , jnt_number , jnt_parent = None , control_parent = None) :
-        bone.Bone.__init__ (self , side , name , jnt_number , jnt_parent , control_parent)
+    def __init__ (self , side , name , jnt_number , jnt_parent = None , ctrl_parent = None) :
+        bone.Bone.__init__ (self , side , name , jnt_number , jnt_parent , ctrl_parent)
         self.rtype = 'Base'

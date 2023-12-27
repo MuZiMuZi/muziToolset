@@ -211,7 +211,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
             module = item.widget.module_edit.text ()
             side = item.widget.side
             name = item.widget.name
-            item.setText ('{}_{}{}_bpjnt'.format (module , side , name))
+            item.setText ('bp_{}_{}{}'.format (side , module , name))
 
 
 def show () :

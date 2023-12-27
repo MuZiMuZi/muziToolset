@@ -62,11 +62,11 @@ class RigItem (QListWidgetItem) :
 
 
     # 初始化作为QWidget对象的base_widget属性，用于设置绑定组件的基础属性，比如（边，名称，关节数量，关节的父物体，控制器的父物体）等属性
-    # （side,name,jnt_number,jnt_parent,control_parent）
+    # （side,name,jnt_number,jnt_parent,ctrl_parent）
     def create_base_widget (self) :
         """
         初始化作为QWidget对象的base_widget属性，用于设置绑定组件的边，名称，关节数量，关节的父物体，控制器的父物体等属性
-        side,name,jnt_number,jnt_parent,control_parent
+        side,name,jnt_number,jnt_parent,ctrl_parent
         """
         pass
 
@@ -145,7 +145,7 @@ class Bone (object) :
     ]
 
 
-    def __init__ (self , side , name , jnt_number , jnt_parent = None , control_parent = None) :
+    def __init__ (self , side , name , jnt_number , jnt_parent = None , ctrl_parent = None) :
         """
         根据给定的变量创建关节和控制器
 
@@ -153,7 +153,7 @@ class Bone (object) :
         :param name(str): 关节的模块名称
         :param jnt_number(int): 关节的数量
         :param jnt_parent(str): 生成的关节的父层级
-        :param control_parent(str): 生成的控制器的父层级
+        :param ctrl_parent(str): 生成的控制器的父层级
         """
         # 初始化最高层级组结构
         self._setup_top_groups ()
@@ -165,11 +165,11 @@ class Bone (object) :
 
         # 设置关节的父层级和控制器的父层级
         self.jnt_parent = jnt_parent
-        self.control_parent = control_parent
+        self.ctrl_parent = ctrl_parent
         if not self.jnt_parent :
             self.jnt_parent = self.top_jnt_grp
-        if not self.control_parent :
-            self.control_parent = self.top_ctrl_grp
+        if not self.ctrl_parent :
+            self.ctrl_parent = self.top_ctrl_grp
 
         # 生成的绑定类型
         self.rtype = 'bone'
@@ -362,9 +362,9 @@ class Bone (object) :
         if cmds.objExists (self.ctrl_grp) :
             # 删除过去的控制器层级组后，并重新创建控制器
             cmds.delete (self.ctrl_grp)
-            self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.control_parent)
+            self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
         else :
-            self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.control_parent)
+            self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
 
         # 对控制器组和关节组进行循环，创建对应关节的控制器以及吸附到对应的位置
         for ctrl , jnt in zip (self.ctrl_list , self.jnt_list) :

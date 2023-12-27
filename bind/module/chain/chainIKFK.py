@@ -17,8 +17,8 @@ class ChainIKFK (chain.Chain) :
 
 
     def __init__ (self , side , name , jnt_number , direction , is_stretch = 1 , length = 10 , jnt_parent = None ,
-                  control_parent = None) :
-        chain.Chain.__init__ (self , side , name , jnt_number , length , jnt_parent , control_parent)
+                  ctrl_parent = None) :
+        chain.Chain.__init__ (self , side , name , jnt_number , length , jnt_parent , ctrl_parent)
 
         # 初始化ik关节链条和fk关节链条
         self.ik_chain = chainIK.ChainIK (side , name , jnt_number , direction , length , is_stretch)
@@ -95,7 +95,7 @@ class ChainIKFK (chain.Chain) :
         self.fk_chain.create_ctrl ()
 
         # 创建整体的控制器层级组
-        self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.control_parent)
+        self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
 
         # 创建用于ikfk切换的控制器
         self.ctrl = controlUtils.Control.create_ctrl (self.ctrl_list [0] , shape = 'pPlatonic' ,
@@ -144,13 +144,13 @@ class ChainIKFK (chain.Chain) :
 if __name__ == '__main__' :
     def build_setup () :
         chain_ikfk = chainIKFK.ChainIKFK (side = 'l' , name = 'zz' , jnt_number = 5 , direction = [1 , 0 , 0] ,
-                                          jnt_parent = None , control_parent = None)
+                                          jnt_parent = None , ctrl_parent = None)
         chain_ikfk.build_setup ()
 
 
     def y () :
         chain_ikfk = chainIKFK.ChainIKFK (side = 'l' , name = 'zz' , jnt_number = 5 , direction = [1 , 0 , 0] ,
-                                          jnt_parent = None , control_parent = None)
+                                          jnt_parent = None , ctrl_parent = None)
         chain_ikfk.build_rig ()
 
 

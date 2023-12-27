@@ -346,7 +346,7 @@
                                             <enum>Qt::LeftToRight</enum>
                                         </property>
                                         <property name="text">
-                                            <string>control_parent：</string>
+                                            <string>ctrl_parent：</string>
                                         </property>
                                         <property name="alignment">
                                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -354,7 +354,7 @@
                                     </widget>
                                 </item>
                                 <item>
-                                    <widget class="QLineEdit" name="control_parent_edit">
+                                    <widget class="QLineEdit" name="ctrl_parent_edit">
                                         <property name="font">
                                             <font>
                                                 <family>Arial Narrow</family>

@@ -21,8 +21,8 @@ class Eye (chain.Chain) :
 
 
     def __init__ (self , side , name = '' , jnt_number = 2 , length = 10 , jnt_parent = None ,
-                  control_parent = None) :
-        super (Eye , self).__init__ (side , name , jnt_number , length , jnt_parent , control_parent)
+                  ctrl_parent = None) :
+        super (Eye , self).__init__ (side , name , jnt_number , length , jnt_parent , ctrl_parent)
         self.shape = 'circle'
         self.rtype = 'Eye'
         self.radius = 0.3
@@ -33,11 +33,11 @@ class Eye (chain.Chain) :
 
         # 生成上部分的眼皮
         self.eye_lid_upper = eyeLid.EyeLid (side = self.side , name = 'upper' , jnt_number = 7 , jnt_parent = None ,
-                                            control_parent = None)
+                                            ctrl_parent = None)
 
         # 生成下部分的眼皮
         self.eye_lid_lower = eyeLid.EyeLid (side = self.side , name = 'lower' , jnt_number = 7 , jnt_parent = None ,
-                                            control_parent = None)
+                                            ctrl_parent = None)
 
 
     def create_namespace (self) :
@@ -106,7 +106,7 @@ class Eye (chain.Chain) :
     def create_ctrl (self) :
 
         # 创建控制器总体的层级组
-        self.ctrl_grp = cmds.createNode ('transform' , parent = self.control_parent , name = self.ctrl_grp)
+        self.ctrl_grp = cmds.createNode ('transform' , parent = self.ctrl_parent , name = self.ctrl_grp)
         # 创建控制器
         self.ctrl = controlUtils.Control.create_ctrl (self.ctrl_list [0] , shape = 'circle' ,
                                                       radius = self.radius ,
@@ -359,21 +359,21 @@ class Eye (chain.Chain) :
 if __name__ == "__main__" :
     def build_setup () :
         eye_l = eye.Eye (side = 'l' , name = '' , jnt_number = 2 , length = 10 , jnt_parent = None ,
-                         control_parent = None)
+                         ctrl_parent = None)
         eye_l.build_setup ()
 
         eye_r = eye.Eye (side = 'r' , name = '' , jnt_number = 2 , length = 10 , jnt_parent = None ,
-                         control_parent = None)
+                         ctrl_parent = None)
         eye_r.build_setup ()
 
 
     def build_rig () :
         eye_l = eye.Eye (side = 'l' , name = '' , jnt_number = 2 , length = 10 , jnt_parent = None ,
-                         control_parent = None)
+                         ctrl_parent = None)
         eye_l.build_rig ()
 
         eye_r = eye.Eye (side = 'r' , name = '' , jnt_number = 2 , length = 10 , jnt_parent = None ,
-                         control_parent = None)
+                         ctrl_parent = None)
         eye_r.build_rig ()
 
 

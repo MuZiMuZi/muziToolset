@@ -19,9 +19,9 @@ class Jaw (chainFK.ChainFK) :
 
     def __init__ (self , side = 'm' , name = '' , jnt_number = 2 , direction = [-1 , 0 , 0] , length = 5 ,
                   jnt_parent = None ,
-                  control_parent = None) :
+                  ctrl_parent = None) :
         super (Jaw , self).__init__ (side , name , jnt_number , direction , length , jnt_parent ,
-                                     control_parent)
+                                     ctrl_parent)
         self.shape = 'circle'
         self.rtype = 'Jaw'
         self.radius = 0.4
@@ -109,12 +109,12 @@ class Jaw (chainFK.ChainFK) :
 
 if __name__ == "__main__" :
     def build_setup () :
-        jaw_m = jaw.Jaw (side = 'm' , jnt_parent = None , control_parent = None)
+        jaw_m = jaw.Jaw (side = 'm' , jnt_parent = None , ctrl_parent = None)
         jaw_m.build_setup ()
 
 
     def build_rig () :
-        jaw_m = jaw.Jaw (side = 'm' , jnt_parent = None , control_parent = None)
+        jaw_m = jaw.Jaw (side = 'm' , jnt_parent = None , ctrl_parent = None)
         jaw_m.build_rig ()
 
 

@@ -57,7 +57,7 @@ class Limb_Widget (limb_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow
         self.name = self.name_edit.text ()
         self.side = self.side_cbox.currentText ()
         self.jnt_parent = self.jnt_parent_edit.text ()
-        self.control_parent = self.control_parent_edit.text ()
+        self.ctrl_parent = self.ctrl_parent_edit.text ()
 
 
     def build_setup (self) :
@@ -65,7 +65,7 @@ class Limb_Widget (limb_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow
         self.parse_base ()
         #
         # # 生成定位关节系统
-        # self.setup = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.control_parent)
+        # self.setup = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
         # self.setup.build_setup ()
 
 

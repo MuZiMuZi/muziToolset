@@ -18,7 +18,7 @@ class Face_rig () :
         self.tongue_m = tongue.Tongue (side = 'm' , name = '' , jnt_number = 5 , direction = [-1 , 0 , 0] ,
                                        length = 10 ,
                                        jnt_parent = None ,
-                                       control_parent = None)
+                                       ctrl_parent = None)
 
 
     def build_setup (self) :

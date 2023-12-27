@@ -61,7 +61,7 @@ class ChainEP_Widget (chainEP_ui.Ui_MainWindow , chain_widget.Chain_Widget , QMa
         self.parse_base ()
         #
         # # 生成定位关节系统
-        # self.setup = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.control_parent)
+        # self.setup = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
         # self.setup.build_setup ()
 
 

@@ -13,13 +13,13 @@ class ChainFK (chain.Chain) :
 
 
     def __init__ (self , side , name , jnt_number , direction = [-1 , 0 , 0] , length = 10 , jnt_parent = None ,
-                  control_parent = None) :
+                  ctrl_parent = None) :
         u"""
         用来创建fk关节链条的绑定
         length(int)：关节的总长度
         direction（list）:从根节点到顶部节点的方向例如[1,0,0]或者[0,1,0]
         """
-        super (ChainFK , self).__init__ (side , name , jnt_number , jnt_parent , control_parent)
+        super (ChainFK , self).__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
         self.rtype = 'ChainFK'
 
         self.interval = length / (self.jnt_number - 1)
@@ -35,9 +35,9 @@ class ChainFK (chain.Chain) :
         if cmds.objExists (self.ctrl_grp) :
             # 删除过去的控制器层级组后，并重新创建控制器
             cmds.delete (self.ctrl_grp)
-            self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.control_parent)
+            self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
         else :
-            self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.control_parent)
+            self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
 
         self.set_shape (self.shape)
 

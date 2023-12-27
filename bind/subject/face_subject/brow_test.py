@@ -21,8 +21,8 @@ class Side_Brow (base.Base) :
     """
 
 
-    def __init__ (self , side = '' , name = '' , jnt_number = 7 , jnt_parent = None , control_parent = None) :
-        super ().__init__ (side , name , jnt_number , jnt_parent , control_parent)
+    def __init__ (self , side = '' , name = '' , jnt_number = 7 , jnt_parent = None , ctrl_parent = None) :
+        super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
         self.radius = 0.25
         self.shape = 'ball'
 
@@ -146,7 +146,7 @@ class Side_Brow (base.Base) :
         self.master_ctrl = controlUtils.Control.create_ctrl (self.master_ctrl , shape = 'square' ,
                                                              radius = 2 ,
                                                              axis = 'X+' , pos = self.jnt_list [1] ,
-                                                             parent = self.control_parent)
+                                                             parent = self.ctrl_parent)
         # 创建眉毛左边的Follow控制器
         for follow_ctrl , follow_jnt in zip (self.ctrl_follow_list , self.bpjnt_follow_list) :
             self.follow_ctrl = controlUtils.Control.create_ctrl (follow_ctrl , shape = 'square' ,
@@ -168,7 +168,7 @@ class Side_Brow (base.Base) :
         self.brow_r.master_ctrl = controlUtils.Control.create_ctrl (self.brow_r.master_ctrl , shape = 'square' ,
                                                                     radius = 2 ,
                                                                     axis = 'X+' , pos = self.brow_r.jnt_list [1] ,
-                                                                    parent = self.control_parent)
+                                                                    parent = self.ctrl_parent)
         # 创建眉毛右边的Follow控制器
         for follow_ctrl , follow_jnt in zip (self.brow_r.ctrl_follow_list , self.brow_r.bpjnt_follow_list) :
             self.brow_r.follow_ctrl = controlUtils.Control.create_ctrl (follow_ctrl , shape = 'square' ,
@@ -315,12 +315,12 @@ class Side_Brow (base.Base) :
 
 if __name__ == "__main__" :
     def build_setup () :
-        brow_m = brow.Brow (side = 'm' , jnt_parent = None , control_parent = None)
+        brow_m = brow.Brow (side = 'm' , jnt_parent = None , ctrl_parent = None)
         brow_m.build_setup ()
 
 
     def build_rig () :
-        brow_m = brow.Brow (side = 'm' , jnt_parent = None , control_parent = None)
+        brow_m = brow.Brow (side = 'm' , jnt_parent = None , ctrl_parent = None)
         brow_m.build_rig ()
 
 

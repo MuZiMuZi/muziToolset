@@ -16,16 +16,16 @@ class Leg (base.Base) :
 
     def __init__ (self , side , name , jnt_number = 3 , direction = [0 , -1 , 0] , is_stretch = 1 , length = 15 ,
                   limbtype = 'leg' ,
-                  jnt_parent = None , control_parent = None) :
+                  jnt_parent = None , ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , direction , is_stretch , length , limbtype , jnt_parent ,
-                           control_parent)
+                           ctrl_parent)
         self._side = side
         self._name = name
         self._rtype = 'Leg'
         self.axis = 'Z+'
         # 初始化脚掌的模块
         self.foot_limb = foot.Foot (side , name , jnt_number = 3 , length = 6 , jnt_parent = None ,
-                                    control_parent = None)
+                                    ctrl_parent = None)
 
 
     def create_namespace (self) :
@@ -60,14 +60,14 @@ if __name__ == '__main__' :
     def build_setup () :
         leg_l = leg.Leg (side = 'l' , name = 'zz' , jnt_number = 3 , direction = [0 , -1 , 0] , length = 10 ,
                          is_stretch = 1 , jnt_parent = None ,
-                         control_parent = None)
+                         ctrl_parent = None)
         leg_l.build_setup ()
 
 
     def build_rig () :
         leg_l = leg.Leg (side = 'l' , name = 'zz' , jnt_number = 3 , direction = [0 , -1 , 0] , length = 10 ,
                          is_stretch = 1 , jnt_parent = None ,
-                         control_parent = None)
+                         ctrl_parent = None)
         leg_l.build_rig ()
 
 

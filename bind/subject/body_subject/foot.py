@@ -7,8 +7,8 @@ from ....core import controlUtils , jointUtils
 class Foot (chain.Chain) :
 
 
-    def __init__ (self , side , name , jnt_number = 3 , length = 6 , jnt_parent = None , control_parent = None) :
-        super ().__init__ (side , name , jnt_number , jnt_parent , control_parent)
+    def __init__ (self , side , name , jnt_number = 3 , length = 6 , jnt_parent = None , ctrl_parent = None) :
+        super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
         self.length = length
         # 整理命名规范的列表
         self.parts = ['Ankle' , 'Ball' , 'Toe']
@@ -25,10 +25,10 @@ class Foot (chain.Chain) :
         self.foot_fk = chainFK.ChainFK (self.side , self.name , self.jnt_number ,
                                         direction = [0 , 0 , -1] ,
                                         length = self.length ,
-                                        jnt_parent = self.jnt_parent , control_parent = self.control_parent)
+                                        jnt_parent = self.jnt_parent , ctrl_parent = self.ctrl_parent)
         self.foot_ik = chainIK.ChainIK (self.side , self.name , self.jnt_number , direction = [0 , 0 , -1] ,
                                         length = self.length ,
-                                        jnt_parent = self.jnt_parent , control_parent = self.control_parent)
+                                        jnt_parent = self.jnt_parent , ctrl_parent = self.ctrl_parent)
         # 设置foot_fk的基础属性,控制器大小，前缀和控制器朝向
         self.foot_fk._rtype = 'footFK'
         self.foot_fk.axis = 'X+'
@@ -186,7 +186,7 @@ class Foot (chain.Chain) :
 
     def create_ctrl (self) :
         # 创建整体的控制器层级组
-        self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.control_parent)
+        self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
 
         # 创建脚部的fk，ik控制器
         self.foot_fk.create_ctrl ()
@@ -271,12 +271,12 @@ class Foot (chain.Chain) :
 
 if __name__ == '__main__' :
     def build_setup () :
-        foot_l = foot.Foot (side = 'l' , name = 'zz' , jnt_parent = None , control_parent = None)
+        foot_l = foot.Foot (side = 'l' , name = 'zz' , jnt_parent = None , ctrl_parent = None)
         foot_l.build_setup ()
 
 
     def build_rig () :
-        foot_l = foot.Foot (side = 'l' , name = 'zz' , jnt_parent = None , control_parent = None)
+        foot_l = foot.Foot (side = 'l' , name = 'zz' , jnt_parent = None , ctrl_parent = None)
         foot_l.build_rig ()
 
 

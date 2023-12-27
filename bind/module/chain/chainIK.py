@@ -13,8 +13,8 @@ class ChainIK (chain.Chain) :
 
 
     def __init__ (self , side , name , jnt_number , direction , length = 10 , is_stretch = 1 , jnt_parent = None ,
-                  control_parent = None) :
-        super ().__init__ (side , name , jnt_number , length , jnt_parent , control_parent)
+                  ctrl_parent = None) :
+        super ().__init__ (side , name , jnt_number , length , jnt_parent , ctrl_parent)
         u"""
         用来创建ik关节Spline链条的绑定
         length(int)：关节的总长度
@@ -65,13 +65,13 @@ class ChainIK (chain.Chain) :
 
         # inherit变换将导致曲线移动/缩放两倍
         cmds.inheritTransform (self.ik_curve , off = 1)
-        cmds.parent (self.ik_curve , self.control_parent)
+        cmds.parent (self.ik_curve , self.ctrl_parent)
 
         # 选择曲线上所有点来创建cluster
         cvs = cmds.ls (self.ik_curve + '.cv[0:]' , fl = 1)
         for jnt_number , cv in enumerate (cvs) :
             cluster = cmds.cluster (cv , n = self.cluster_list [jnt_number]) [-1]
-            cmds.parent (cluster , self.control_parent)
+            cmds.parent (cluster , self.ctrl_parent)
             cmds.setAttr (cluster + '.v' , 0)
 
         # 创建ikSplineSolverHandle
@@ -81,7 +81,7 @@ class ChainIK (chain.Chain) :
                        pcv = 1 , roc = 1 , sol = 'ikSplineSolver')
 
         cmds.setAttr (self.ik_handle + '.v' , 0)
-        cmds.parent (self.ik_handle , self.control_parent)
+        cmds.parent (self.ik_handle , self.ctrl_parent)
 
 
     def add_constraint (self) :
@@ -130,7 +130,7 @@ class ChainIK (chain.Chain) :
         arc_len = cmds.arclen (self.ik_curve , constructionHistory = 1)
         ik_info = self.ik_curve.replace ('curve' , 'info')
         cmds.rename (arc_len , ik_info)
-        cmds.parent (self.ik_curve , self.control_parent)
+        cmds.parent (self.ik_curve , self.ctrl_parent)
         cmds.setAttr (self.ik_curve + '.v' , 0)
 
         # 获取曲线的长度，并且创建相乘节点来链接关节的缩放
@@ -155,13 +155,13 @@ class ChainIK (chain.Chain) :
 if __name__ == '__main__' :
     def x () :
         custom = chainIK.ChainIK (side = 'l' , name = 'zz' , jnt_number = 5 , direction = [1 , 0 , 0] ,
-                                  jnt_parent = None , control_parent = None)
+                                  jnt_parent = None , ctrl_parent = None)
         custom.build_setup ()
 
 
     def y () :
         custom = chainIK.ChainIK (side = 'l' , name = 'zz' , jnt_number = 5 , direction = [1 , 0 , 0] ,
-                                  jnt_parent = None , control_parent = None)
+                                  jnt_parent = None , ctrl_parent = None)
         custom.build_rig ()
 
 

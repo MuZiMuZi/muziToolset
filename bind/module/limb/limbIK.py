@@ -18,12 +18,12 @@ class LimbIK (chainIK.ChainIK) :
     def __init__ (self , side , name , jnt_number = 3 , direction = [-1 , 0 , 0] , length = 10 , is_stretch = 1 ,
                   limbtype = None ,
                   jnt_parent = None ,
-                  control_parent = None) :
+                  ctrl_parent = None) :
         u"""
         创建手臂或者是腿部的四肢关节的IK绑定
         limbtype(str):给定的limbtype 是手臂还是腿部
         """
-        super ().__init__ (side , name , jnt_number , direction , length , is_stretch , jnt_parent , control_parent)
+        super ().__init__ (side , name , jnt_number , direction , length , is_stretch , jnt_parent , ctrl_parent)
         self._rtype = 'LimbIK'
         self.jnt_number = jnt_number
         # 判断给定的limbtype 是手臂还是腿部
@@ -286,7 +286,7 @@ if __name__ == '__main__' :
                                 is_stretch = 1 ,
                                 limbtype = 'arm' ,
                                 jnt_parent = None ,
-                                control_parent = None)
+                                ctrl_parent = None)
         custom.build_setup ()
 
 
@@ -294,7 +294,7 @@ if __name__ == '__main__' :
         custom = limbIK.LimbIK (side = 'l' , name = 'zz' , jnt_number = 3 , direction = [-1 , 0 , 0] , length = 10 ,
                                 limbtype = 'arm' ,
                                 jnt_parent = None ,
-                                control_parent = None)
+                                ctrl_parent = None)
         custom.build_rig ()
 
 

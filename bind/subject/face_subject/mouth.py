@@ -18,19 +18,19 @@ reload (base)
 class Mouth (base.Base) :
 
 
-    def __init__ (self , side , name , jnt_number = 7 , jnt_parent = None , control_parent = None) :
-        super ().__init__ (side , name , jnt_number , jnt_parent , control_parent)
+    def __init__ (self , side , name , jnt_number = 7 , jnt_parent = None , ctrl_parent = None) :
+        super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
 
         self.rtype = 'Mouth'
         # 生成上部分的嘴唇
         self.mouth_lip_upper = mouthLip.MouthLip (side = self.side , name = 'upper' , jnt_number = 10 ,
                                                   jnt_parent = None ,
-                                                  control_parent = None)
+                                                  ctrl_parent = None)
 
         # 生成下部分的嘴唇
         self.mouth_lip_lower = mouthLip.MouthLip (side = self.side , name = 'lower' , jnt_number = 10 ,
                                                   jnt_parent = None ,
-                                                  control_parent = None)
+                                                  ctrl_parent = None)
 
 
     def create_namespace (self) :
@@ -56,7 +56,7 @@ class Mouth (base.Base) :
 
     def create_ctrl (self) :
         # 创建整体的控制器层级组
-        self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.control_parent)
+        self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
         # 创建上下嘴唇的控制器
         self.mouth_lip_upper.create_ctrl ()
         self.mouth_lip_lower.create_ctrl ()
@@ -119,13 +119,13 @@ class Mouth (base.Base) :
 if __name__ == '__main__' :
     def build_setup () :
         mouth_m = mouth.Mouth (side = 'm' , name = '' , jnt_number = 2 , jnt_parent = None ,
-                               control_parent = None)
+                               ctrl_parent = None)
         mouth_m.build_setup ()
 
 
     def build_rig () :
         mouth_m = mouth.Mouth (side = 'm' , name = '' , jnt_number = 2 , jnt_parent = None ,
-                               control_parent = None)
+                               ctrl_parent = None)
         mouth_m.build_rig ()
 
 

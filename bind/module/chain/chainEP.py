@@ -13,8 +13,8 @@ class ChainEP (chain.Chain) :
 
 
     def __init__ (self , side , name , jnt_number , ctrl_number , curve , jnt_parent = None ,
-                  control_parent = None) :
-        super ().__init__ (side , name , jnt_number , jnt_parent , control_parent)
+                  ctrl_parent = None) :
+        super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
         u'''给定一根曲线，根据曲线的长度来创建关节和控制器
         jnt_number：生成的关节数量
         ctrl_number：生成的控制器数量
@@ -69,12 +69,12 @@ class ChainEP (chain.Chain) :
     def create_ctrl (self) :
         self.set_shape (self.shape)
         # 创建整体的控制器层级组
-        self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.control_parent)
+        self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
         for index in (self.cvs) :
             self.ctrl = controlUtils.Control.create_ctrl (self.ctrl_list [index] , shape = self.shape ,
                                                           radius = self.radius ,
                                                           axis = 'X+' , pos = self.jnt_list [index] ,
-                                                          parent = self.control_parent)
+                                                          parent = self.ctrl_parent)
 
 
     def add_constraint (self) :
@@ -116,11 +116,11 @@ class ChainEP (chain.Chain) :
 if __name__ == '__main__' :
     def x () :
         custom = chainEP.ChainEP (side = 'l' , name = 'zz' , jnt_number = 20 , ctrl_number = 20 , curve = 'curve1' ,
-                                  jnt_parent = None , control_parent = None)
+                                  jnt_parent = None , ctrl_parent = None)
         custom.build_setup ()
 
 
     def y () :
         custom = chainEP.ChainEP (side = 'l' , name = 'zz' , jnt_number = 20 , ctrl_number = 20 , curve = 'curve1' ,
-                                  jnt_parent = None , control_parent = None)
+                                  jnt_parent = None , ctrl_parent = None)
         custom.build_rig ()

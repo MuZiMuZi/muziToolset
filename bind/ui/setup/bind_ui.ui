@@ -1,1262 +1,1245 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <class>MainWindow</class>
-    <widget class="QMainWindow" name="MainWindow">
-        <property name="geometry">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>832</width>
+    <height>772</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MuZi_BindingSystem</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <layout class="QVBoxLayout" name="proxy_layout">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
+        <item>
+         <widget class="QLabel" name="proxy_label">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="sizeIncrement">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Agency FB</family>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="contextMenuPolicy">
+           <enum>Qt::DefaultContextMenu</enum>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="text">
+           <string>Proxy_Library</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QScrollArea" name="scrollArea">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+           <property name="geometry">
             <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>832</width>
-                <height>772</height>
+             <x>0</x>
+             <y>0</y>
+             <width>250</width>
+             <height>673</height>
             </rect>
-        </property>
-        <property name="windowTitle">
-            <string>MuZi_BindingSystem</string>
-        </property>
-        <widget class="QWidget" name="centralwidget">
-            <layout class="QGridLayout" name="gridLayout">
-                <item row="0" column="0">
-                    <layout class="QHBoxLayout" name="horizontalLayout">
-                        <item>
-                            <layout class="QVBoxLayout" name="proxy_layout">
-                                <property name="sizeConstraint">
-                                    <enum>QLayout::SetDefaultConstraint</enum>
-                                </property>
-                                <item>
-                                    <widget class="QLabel" name="proxy_label">
-                                        <property name="enabled">
-                                            <bool>true</bool>
-                                        </property>
-                                        <property name="sizePolicy">
-                                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                                                <horstretch>0</horstretch>
-                                                <verstretch>0</verstretch>
-                                            </sizepolicy>
-                                        </property>
-                                        <property name="sizeIncrement">
-                                            <size>
-                                                <width>0</width>
-                                                <height>0</height>
-                                            </size>
-                                        </property>
-                                        <property name="font">
-                                            <font>
-                                                <family>Agency FB</family>
-                                                <pointsize>14</pointsize>
-                                            </font>
-                                        </property>
-                                        <property name="contextMenuPolicy">
-                                            <enum>Qt::DefaultContextMenu</enum>
-                                        </property>
-                                        <property name="layoutDirection">
-                                            <enum>Qt::LeftToRight</enum>
-                                        </property>
-                                        <property name="text">
-                                            <string>Proxy_Library</string>
-                                        </property>
-                                        <property name="alignment">
-                                            <set>Qt::AlignCenter</set>
-                                        </property>
-                                    </widget>
-                                </item>
-                                <item>
-                                    <widget class="QScrollArea" name="scrollArea">
-                                        <property name="widgetResizable">
-                                            <bool>true</bool>
-                                        </property>
-                                        <widget class="QWidget" name="scrollAreaWidgetContents">
-                                            <property name="geometry">
-                                                <rect>
-                                                    <x>0</x>
-                                                    <y>0</y>
-                                                    <width>250</width>
-                                                    <height>673</height>
-                                                </rect>
-                                            </property>
-                                            <property name="sizePolicy">
-                                                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                                                    <horstretch>0</horstretch>
-                                                    <verstretch>0</verstretch>
-                                                </sizepolicy>
-                                            </property>
-                                            <layout class="QGridLayout" name="gridLayout_2">
-                                                <property name="leftMargin">
-                                                    <number>0</number>
-                                                </property>
-                                                <property name="topMargin">
-                                                    <number>0</number>
-                                                </property>
-                                                <property name="rightMargin">
-                                                    <number>0</number>
-                                                </property>
-                                                <property name="bottomMargin">
-                                                    <number>0</number>
-                                                </property>
-                                                <item row="0" column="0">
-                                                    <layout class="QVBoxLayout" name="verticalLayout_2">
-                                                        <item>
-                                                            <widget class="QListWidget" name="proxy_widget">
-                                                                <property name="sizePolicy">
-                                                                    <sizepolicy hsizetype="Preferred"
-                                                                                vsizetype="Expanding">
-                                                                        <horstretch>0</horstretch>
-                                                                        <verstretch>0</verstretch>
-                                                                    </sizepolicy>
-                                                                </property>
-                                                                <property name="baseSize">
-                                                                    <size>
-                                                                        <width>0</width>
-                                                                        <height>0</height>
-                                                                    </size>
-                                                                </property>
-                                                                <property name="font">
-                                                                    <font>
-                                                                        <family>Arial Narrow</family>
-                                                                        <pointsize>14</pointsize>
-                                                                        <weight>75</weight>
-                                                                        <italic>false</italic>
-                                                                        <bold>true</bold>
-                                                                    </font>
-                                                                </property>
-                                                                <property name="mouseTracking">
-                                                                    <bool>false</bool>
-                                                                </property>
-                                                                <property name="focusPolicy">
-                                                                    <enum>Qt::StrongFocus</enum>
-                                                                </property>
-                                                                <property name="layoutDirection">
-                                                                    <enum>Qt::LeftToRight</enum>
-                                                                </property>
-                                                                <property name="autoFillBackground">
-                                                                    <bool>false</bool>
-                                                                </property>
-                                                                <property name="styleSheet">
-                                                                    <string notr="true"/>
-                                                                </property>
-                                                                <property name="lineWidth">
-                                                                    <number>0</number>
-                                                                </property>
-                                                                <property name="autoScroll">
-                                                                    <bool>true</bool>
-                                                                </property>
-                                                                <property name="editTriggers">
-                                                                    <set>
-                                                                        QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed
-                                                                    </set>
-                                                                </property>
-                                                                <property name="dragEnabled">
-                                                                    <bool>false</bool>
-                                                                </property>
-                                                                <property name="dragDropOverwriteMode">
-                                                                    <bool>false</bool>
-                                                                </property>
-                                                                <property name="dragDropMode">
-                                                                    <enum>QAbstractItemView::NoDragDrop</enum>
-                                                                </property>
-                                                                <property name="selectionMode">
-                                                                    <enum>QAbstractItemView::SingleSelection</enum>
-                                                                </property>
-                                                                <property name="selectionRectVisible">
-                                                                    <bool>false</bool>
-                                                                </property>
-                                                                <property name="sortingEnabled">
-                                                                    <bool>false</bool>
-                                                                </property>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>master</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>247</red>
-                                                                                <green>255</green>
-                                                                                <blue>152</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>base</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>255</red>
-                                                                                <green>183</green>
-                                                                                <blue>248</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>———chain———</string>
-                                                                    </property>
-                                                                    <property name="flags">
-                                                                        <set>NoItemFlags</set>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>chainFK</string>
-                                                                    </property>
-                                                                    <property name="background">
-                                                                        <brush brushstyle="NoBrush">
-                                                                            <color alpha="255">
-                                                                                <red>0</red>
-                                                                                <green>0</green>
-                                                                                <blue>0</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>255</red>
-                                                                                <green>137</green>
-                                                                                <blue>153</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                    <property name="icon">
-                                                                        <iconset>
-                                                                            <normaloff>
-                                                                                ../../../tools/icon/componentFK_64.png</normaloff>
-                                                                            ../../../tools/icon/componentFK_64.png
-                                                                        </iconset>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>chainIK</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>255</red>
-                                                                                <green>137</green>
-                                                                                <blue>153</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>chainIKFK</string>
-                                                                    </property>
-                                                                    <property name="font">
-                                                                        <font>
-                                                                            <kerning>true</kerning>
-                                                                        </font>
-                                                                    </property>
-                                                                    <property name="textAlignment">
-                                                                        <set>AlignLeading|AlignVCenter</set>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>255</red>
-                                                                                <green>137</green>
-                                                                                <blue>153</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>chainEP</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>255</red>
-                                                                                <green>137</green>
-                                                                                <blue>153</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>finger</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>255</red>
-                                                                                <green>137</green>
-                                                                                <blue>153</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>———face———</string>
-                                                                    </property>
-                                                                    <property name="flags">
-                                                                        <set>NoItemFlags</set>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>brow</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>88</red>
-                                                                                <green>76</green>
-                                                                                <blue>255</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>eye</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>88</red>
-                                                                                <green>76</green>
-                                                                                <blue>255</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>nose</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>88</red>
-                                                                                <green>76</green>
-                                                                                <blue>255</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>mouth</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>88</red>
-                                                                                <green>76</green>
-                                                                                <blue>255</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>cheek</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>88</red>
-                                                                                <green>76</green>
-                                                                                <blue>255</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>jaw</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>88</red>
-                                                                                <green>76</green>
-                                                                                <blue>255</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>———body———</string>
-                                                                    </property>
-                                                                    <property name="flags">
-                                                                        <set>NoItemFlags</set>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>arm</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>255</red>
-                                                                                <green>79</green>
-                                                                                <blue>79</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>hand</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>255</red>
-                                                                                <green>79</green>
-                                                                                <blue>79</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>spine</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>255</red>
-                                                                                <green>79</green>
-                                                                                <blue>79</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>leg</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>255</red>
-                                                                                <green>79</green>
-                                                                                <blue>79</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>foot</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>255</red>
-                                                                                <green>79</green>
-                                                                                <blue>79</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>tail</string>
-                                                                    </property>
-                                                                    <property name="foreground">
-                                                                        <brush brushstyle="SolidPattern">
-                                                                            <color alpha="255">
-                                                                                <red>255</red>
-                                                                                <green>79</green>
-                                                                                <blue>79</blue>
-                                                                            </color>
-                                                                        </brush>
-                                                                    </property>
-                                                                </item>
-                                                            </widget>
-                                                        </item>
-                                                        <item>
-                                                            <layout class="QHBoxLayout" name="horizontalLayout_4">
-                                                                <item>
-                                                                    <widget class="QLabel" name="jointRadius_label">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                                <pointsize>9</pointsize>
-                                                                                <kerning>true</kerning>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>Joint Radius:</string>
-                                                                        </property>
-                                                                    </widget>
-                                                                </item>
-                                                                <item>
-                                                                    <widget class="QSlider" name="jointRadius_Slider">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Agency FB</family>
-                                                                                <pointsize>14</pointsize>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="contextMenuPolicy">
-                                                                            <enum>Qt::DefaultContextMenu</enum>
-                                                                        </property>
-                                                                        <property name="layoutDirection">
-                                                                            <enum>Qt::LeftToRight</enum>
-                                                                        </property>
-                                                                        <property name="minimum">
-                                                                            <number>1</number>
-                                                                        </property>
-                                                                        <property name="maximum">
-                                                                            <number>50</number>
-                                                                        </property>
-                                                                        <property name="orientation">
-                                                                            <enum>Qt::Horizontal</enum>
-                                                                        </property>
-                                                                    </widget>
-                                                                </item>
-                                                            </layout>
-                                                        </item>
-                                                        <item>
-                                                            <layout class="QHBoxLayout" name="horizontalLayout_5">
-                                                                <item>
-                                                                    <widget class="QLabel" name="jointAxis_label">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>JointAxis:</string>
-                                                                        </property>
-                                                                    </widget>
-                                                                </item>
-                                                                <item>
-                                                                    <widget class="QRadioButton"
-                                                                            name="jointAxis_on_radio">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>On</string>
-                                                                        </property>
-                                                                    </widget>
-                                                                </item>
-                                                                <item>
-                                                                    <widget class="QRadioButton"
-                                                                            name="jointAxis_off_radio">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>Off</string>
-                                                                        </property>
-                                                                        <property name="checked">
-                                                                            <bool>true</bool>
-                                                                        </property>
-                                                                    </widget>
-                                                                </item>
-                                                            </layout>
-                                                        </item>
-                                                    </layout>
-                                                </item>
-                                            </layout>
-                                        </widget>
-                                    </widget>
-                                </item>
-                            </layout>
-                        </item>
-                        <item>
-                            <layout class="QVBoxLayout" name="verticalLayout_3">
-                                <item>
-                                    <layout class="QVBoxLayout" name="preset_layout">
-                                        <item>
-                                            <widget class="QLabel" name="label">
-                                                <property name="font">
-                                                    <font>
-                                                        <family>Agency FB</family>
-                                                        <pointsize>14</pointsize>
-                                                    </font>
-                                                </property>
-                                                <property name="text">
-                                                    <string>Presets</string>
-                                                </property>
-                                                <property name="alignment">
-                                                    <set>Qt::AlignCenter</set>
-                                                </property>
-                                            </widget>
-                                        </item>
-                                        <item>
-                                            <widget class="QScrollArea" name="scrollArea_2">
-                                                <property name="widgetResizable">
-                                                    <bool>true</bool>
-                                                </property>
-                                                <widget class="QWidget" name="scrollAreaWidgetContents_5">
-                                                    <property name="geometry">
-                                                        <rect>
-                                                            <x>0</x>
-                                                            <y>0</y>
-                                                            <width>249</width>
-                                                            <height>316</height>
-                                                        </rect>
-                                                    </property>
-                                                    <layout class="QGridLayout" name="gridLayout_5">
-                                                        <property name="leftMargin">
-                                                            <number>0</number>
-                                                        </property>
-                                                        <property name="topMargin">
-                                                            <number>0</number>
-                                                        </property>
-                                                        <property name="rightMargin">
-                                                            <number>0</number>
-                                                        </property>
-                                                        <property name="bottomMargin">
-                                                            <number>0</number>
-                                                        </property>
-                                                        <item row="0" column="0">
-                                                            <widget class="QListWidget" name="preset_widget">
-                                                                <property name="font">
-                                                                    <font>
-                                                                        <pointsize>14</pointsize>
-                                                                    </font>
-                                                                </property>
-                                                                <property name="styleSheet">
-                                                                    <string notr="true"/>
-                                                                </property>
-                                                                <property name="selectionMode">
-                                                                    <enum>QAbstractItemView::SingleSelection</enum>
-                                                                </property>
-                                                                <property name="selectionRectVisible">
-                                                                    <bool>false</bool>
-                                                                </property>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>human</string>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>face</string>
-                                                                    </property>
-                                                                </item>
-                                                                <item>
-                                                                    <property name="text">
-                                                                        <string>quadruped</string>
-                                                                    </property>
-                                                                </item>
-                                                            </widget>
-                                                        </item>
-                                                    </layout>
-                                                </widget>
-                                            </widget>
-                                        </item>
-                                    </layout>
-                                </item>
-                                <item>
-                                    <layout class="QVBoxLayout" name="custom_layout">
-                                        <item>
-                                            <widget class="QLabel" name="custom_label">
-                                                <property name="font">
-                                                    <font>
-                                                        <family>Agency FB</family>
-                                                        <pointsize>14</pointsize>
-                                                    </font>
-                                                </property>
-                                                <property name="text">
-                                                    <string>Custom</string>
-                                                </property>
-                                                <property name="alignment">
-                                                    <set>Qt::AlignCenter</set>
-                                                </property>
-                                            </widget>
-                                        </item>
-                                        <item>
-                                            <widget class="QScrollArea" name="scrollArea_3">
-                                                <property name="widgetResizable">
-                                                    <bool>true</bool>
-                                                </property>
-                                                <widget class="QWidget" name="scrollAreaWidgetContents_3">
-                                                    <property name="geometry">
-                                                        <rect>
-                                                            <x>0</x>
-                                                            <y>0</y>
-                                                            <width>249</width>
-                                                            <height>315</height>
-                                                        </rect>
-                                                    </property>
-                                                    <property name="sizePolicy">
-                                                        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                                                            <horstretch>0</horstretch>
-                                                            <verstretch>0</verstretch>
-                                                        </sizepolicy>
-                                                    </property>
-                                                    <layout class="QGridLayout" name="gridLayout_4">
-                                                        <property name="leftMargin">
-                                                            <number>0</number>
-                                                        </property>
-                                                        <property name="topMargin">
-                                                            <number>0</number>
-                                                        </property>
-                                                        <property name="rightMargin">
-                                                            <number>0</number>
-                                                        </property>
-                                                        <property name="bottomMargin">
-                                                            <number>0</number>
-                                                        </property>
-                                                        <item row="1" column="0">
-                                                            <widget class="QListWidget" name="custom_widget">
-                                                                <property name="sizePolicy">
-                                                                    <sizepolicy hsizetype="Expanding"
-                                                                                vsizetype="Expanding">
-                                                                        <horstretch>0</horstretch>
-                                                                        <verstretch>0</verstretch>
-                                                                    </sizepolicy>
-                                                                </property>
-                                                                <property name="font">
-                                                                    <font>
-                                                                        <family>Arial Narrow</family>
-                                                                        <pointsize>14</pointsize>
-                                                                    </font>
-                                                                </property>
-                                                                <property name="editTriggers">
-                                                                    <set>
-                                                                        QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed
-                                                                    </set>
-                                                                </property>
-                                                                <property name="dragEnabled">
-                                                                    <bool>true</bool>
-                                                                </property>
-                                                                <property name="dragDropOverwriteMode">
-                                                                    <bool>true</bool>
-                                                                </property>
-                                                                <property name="dragDropMode">
-                                                                    <enum>QAbstractItemView::InternalMove</enum>
-                                                                </property>
-                                                            </widget>
-                                                        </item>
-                                                    </layout>
-                                                </widget>
-                                            </widget>
-                                        </item>
-                                    </layout>
-                                </item>
-                            </layout>
-                        </item>
-                        <item>
-                            <layout class="QVBoxLayout" name="setting_layout">
-                                <item>
-                                    <layout class="QVBoxLayout" name="verticalLayout_4">
-                                        <item>
-                                            <widget class="QLabel" name="label_3">
-                                                <property name="font">
-                                                    <font>
-                                                        <family>Agency FB</family>
-                                                        <pointsize>14</pointsize>
-                                                    </font>
-                                                </property>
-                                                <property name="text">
-                                                    <string>Setting</string>
-                                                </property>
-                                                <property name="alignment">
-                                                    <set>Qt::AlignCenter</set>
-                                                </property>
-                                            </widget>
-                                        </item>
-                                        <item>
-                                            <widget class="QStackedWidget" name="setting_stack">
-                                                <widget class="QWidget" name="Page1">
-                                                    <layout class="QVBoxLayout" name="set_layout">
-                                                        <property name="topMargin">
-                                                            <number>9</number>
-                                                        </property>
-                                                        <property name="bottomMargin">
-                                                            <number>9</number>
-                                                        </property>
-                                                    </layout>
-                                                </widget>
-                                            </widget>
-                                        </item>
-                                        <item>
-                                            <spacer name="verticalSpacer">
-                                                <property name="orientation">
-                                                    <enum>Qt::Vertical</enum>
-                                                </property>
-                                                <property name="sizeHint" stdset="0">
-                                                    <size>
-                                                        <width>20</width>
-                                                        <height>40</height>
-                                                    </size>
-                                                </property>
-                                            </spacer>
-                                        </item>
-                                    </layout>
-                                </item>
-                                <item>
-                                    <layout class="QVBoxLayout" name="verticalLayout">
-                                        <property name="spacing">
-                                            <number>6</number>
-                                        </property>
-                                        <item>
-                                            <layout class="QHBoxLayout" name="horizontalLayout_3">
-                                                <item>
-                                                    <layout class="QVBoxLayout" name="verticalLayout_5">
-                                                        <item>
-                                                            <layout class="QHBoxLayout" name="horizontalLayout_8">
-                                                                <item>
-                                                                    <widget class="QLabel" name="bpjnt_label">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="layoutDirection">
-                                                                            <enum>Qt::LeftToRight</enum>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>Bpjnt</string>
-                                                                        </property>
-                                                                    </widget>
-                                                                </item>
-                                                                <item>
-                                                                    <widget class="QRadioButton" name="bpjnt_on_radio">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>On</string>
-                                                                        </property>
-                                                                        <property name="checked">
-                                                                            <bool>true</bool>
-                                                                        </property>
-                                                                        <attribute name="buttonGroup">
-                                                                            <string notr="true">buttonGroup</string>
-                                                                        </attribute>
-                                                                    </widget>
-                                                                </item>
-                                                                <item>
-                                                                    <widget class="QRadioButton" name="bpjnt_off_radio">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>Off</string>
-                                                                        </property>
-                                                                        <attribute name="buttonGroup">
-                                                                            <string notr="true">buttonGroup</string>
-                                                                        </attribute>
-                                                                    </widget>
-                                                                </item>
-                                                            </layout>
-                                                        </item>
-                                                        <item>
-                                                            <layout class="QHBoxLayout" name="horizontalLayout_7">
-                                                                <item>
-                                                                    <widget class="QLabel" name="mesh_label">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>Mesh</string>
-                                                                        </property>
-                                                                    </widget>
-                                                                </item>
-                                                                <item>
-                                                                    <widget class="QRadioButton" name="mesh_on_radio">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>On</string>
-                                                                        </property>
-                                                                        <property name="checked">
-                                                                            <bool>true</bool>
-                                                                        </property>
-                                                                        <attribute name="buttonGroup">
-                                                                            <string notr="true">buttonGroup_2</string>
-                                                                        </attribute>
-                                                                    </widget>
-                                                                </item>
-                                                                <item>
-                                                                    <widget class="QRadioButton" name="mesh_off_radio">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>Off</string>
-                                                                        </property>
-                                                                        <property name="checked">
-                                                                            <bool>false</bool>
-                                                                        </property>
-                                                                        <attribute name="buttonGroup">
-                                                                            <string notr="true">buttonGroup_2</string>
-                                                                        </attribute>
-                                                                    </widget>
-                                                                </item>
-                                                            </layout>
-                                                        </item>
-                                                        <item>
-                                                            <layout class="QHBoxLayout" name="horizontalLayout_6">
-                                                                <item>
-                                                                    <widget class="QLabel" name="joint_label">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>Joint</string>
-                                                                        </property>
-                                                                    </widget>
-                                                                </item>
-                                                                <item>
-                                                                    <widget class="QRadioButton" name="joint_on_radio">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>On</string>
-                                                                        </property>
-                                                                        <attribute name="buttonGroup">
-                                                                            <string notr="true">buttonGroup_3</string>
-                                                                        </attribute>
-                                                                    </widget>
-                                                                </item>
-                                                                <item>
-                                                                    <widget class="QRadioButton" name="joint_off_radio">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>Off</string>
-                                                                        </property>
-                                                                        <property name="checked">
-                                                                            <bool>true</bool>
-                                                                        </property>
-                                                                        <attribute name="buttonGroup">
-                                                                            <string notr="true">buttonGroup_3</string>
-                                                                        </attribute>
-                                                                    </widget>
-                                                                </item>
-                                                            </layout>
-                                                        </item>
-                                                        <item>
-                                                            <layout class="QHBoxLayout" name="horizontalLayout_2">
-                                                                <item>
-                                                                    <widget class="QLabel" name="control_label">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>Control</string>
-                                                                        </property>
-                                                                    </widget>
-                                                                </item>
-                                                                <item>
-                                                                    <widget class="QRadioButton"
-                                                                            name="control_on_radio">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>On</string>
-                                                                        </property>
-                                                                        <attribute name="buttonGroup">
-                                                                            <string notr="true">buttonGroup_4</string>
-                                                                        </attribute>
-                                                                    </widget>
-                                                                </item>
-                                                                <item>
-                                                                    <widget class="QRadioButton"
-                                                                            name="control_off_radio">
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string>Off</string>
-                                                                        </property>
-                                                                        <property name="checked">
-                                                                            <bool>true</bool>
-                                                                        </property>
-                                                                        <attribute name="buttonGroup">
-                                                                            <string notr="true">buttonGroup_4</string>
-                                                                        </attribute>
-                                                                    </widget>
-                                                                </item>
-                                                            </layout>
-                                                        </item>
-                                                    </layout>
-                                                </item>
-                                                <item>
-                                                    <layout class="QVBoxLayout" name="verticalLayout_6">
-                                                        <item>
-                                                            <layout class="QHBoxLayout" name="horizontalLayout_9">
-                                                                <item>
-                                                                    <widget class="QToolButton" name="orient_button">
-                                                                        <property name="sizePolicy">
-                                                                            <sizepolicy hsizetype="Preferred"
-                                                                                        vsizetype="Preferred">
-                                                                                <horstretch>0</horstretch>
-                                                                                <verstretch>0</verstretch>
-                                                                            </sizepolicy>
-                                                                        </property>
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="toolTip">
-                                                                            <string>关节定向</string>
-                                                                        </property>
-                                                                        <property name="autoFillBackground">
-                                                                            <bool>false</bool>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string/>
-                                                                        </property>
-                                                                        <property name="iconSize">
-                                                                            <size>
-                                                                                <width>36</width>
-                                                                                <height>46</height>
-                                                                            </size>
-                                                                        </property>
-                                                                        <property name="checkable">
-                                                                            <bool>false</bool>
-                                                                        </property>
-                                                                        <property name="autoRaise">
-                                                                            <bool>false</bool>
-                                                                        </property>
-                                                                    </widget>
-                                                                </item>
-                                                                <item>
-                                                                    <widget class="QToolButton" name="delete_button">
-                                                                        <property name="sizePolicy">
-                                                                            <sizepolicy hsizetype="Preferred"
-                                                                                        vsizetype="Preferred">
-                                                                                <horstretch>0</horstretch>
-                                                                                <verstretch>0</verstretch>
-                                                                            </sizepolicy>
-                                                                        </property>
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                                <pointsize>10</pointsize>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="toolTip">
-                                                                            <string>删除绑定</string>
-                                                                        </property>
-                                                                        <property name="autoFillBackground">
-                                                                            <bool>false</bool>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string/>
-                                                                        </property>
-                                                                        <property name="iconSize">
-                                                                            <size>
-                                                                                <width>36</width>
-                                                                                <height>46</height>
-                                                                            </size>
-                                                                        </property>
-                                                                        <property name="checkable">
-                                                                            <bool>false</bool>
-                                                                        </property>
-                                                                    </widget>
-                                                                </item>
-                                                                <item>
-                                                                    <widget class="QToolButton" name="reset_button">
-                                                                        <property name="enabled">
-                                                                            <bool>true</bool>
-                                                                        </property>
-                                                                        <property name="sizePolicy">
-                                                                            <sizepolicy hsizetype="Preferred"
-                                                                                        vsizetype="Preferred">
-                                                                                <horstretch>0</horstretch>
-                                                                                <verstretch>0</verstretch>
-                                                                            </sizepolicy>
-                                                                        </property>
-                                                                        <property name="font">
-                                                                            <font>
-                                                                                <family>Arial</family>
-                                                                                <pointsize>10</pointsize>
-                                                                            </font>
-                                                                        </property>
-                                                                        <property name="toolTip">
-                                                                            <string>重置控制器</string>
-                                                                        </property>
-                                                                        <property name="autoFillBackground">
-                                                                            <bool>true</bool>
-                                                                        </property>
-                                                                        <property name="text">
-                                                                            <string/>
-                                                                        </property>
-                                                                        <property name="iconSize">
-                                                                            <size>
-                                                                                <width>36</width>
-                                                                                <height>46</height>
-                                                                            </size>
-                                                                        </property>
-                                                                    </widget>
-                                                                </item>
-                                                            </layout>
-                                                        </item>
-                                                        <item>
-                                                            <widget class="QToolButton" name="build_button">
-                                                                <property name="sizePolicy">
-                                                                    <sizepolicy hsizetype="Preferred"
-                                                                                vsizetype="Preferred">
-                                                                        <horstretch>0</horstretch>
-                                                                        <verstretch>0</verstretch>
-                                                                    </sizepolicy>
-                                                                </property>
-                                                                <property name="font">
-                                                                    <font>
-                                                                        <family>Arial</family>
-                                                                        <pointsize>20</pointsize>
-                                                                    </font>
-                                                                </property>
-                                                                <property name="toolTip">
-                                                                    <string>创建绑定</string>
-                                                                </property>
-                                                                <property name="autoFillBackground">
-                                                                    <bool>true</bool>
-                                                                </property>
-                                                                <property name="styleSheet">
-                                                                    <string notr="true"/>
-                                                                </property>
-                                                                <property name="text">
-                                                                    <string/>
-                                                                </property>
-                                                                <property name="iconSize">
-                                                                    <size>
-                                                                        <width>122</width>
-                                                                        <height>48</height>
-                                                                    </size>
-                                                                </property>
-                                                                <property name="toolButtonStyle">
-                                                                    <enum>Qt::ToolButtonIconOnly</enum>
-                                                                </property>
-                                                            </widget>
-                                                        </item>
-                                                    </layout>
-                                                </item>
-                                            </layout>
-                                        </item>
-                                    </layout>
-                                </item>
-                            </layout>
-                        </item>
-                    </layout>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_2">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item row="0" column="0">
+             <layout class="QVBoxLayout" name="verticalLayout_2">
+              <item>
+               <widget class="QListWidget" name="proxy_widget">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="baseSize">
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Arial Narrow</family>
+                  <pointsize>14</pointsize>
+                  <weight>75</weight>
+                  <italic>false</italic>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="mouseTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="focusPolicy">
+                 <enum>Qt::StrongFocus</enum>
+                </property>
+                <property name="layoutDirection">
+                 <enum>Qt::LeftToRight</enum>
+                </property>
+                <property name="autoFillBackground">
+                 <bool>false</bool>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true"/>
+                </property>
+                <property name="lineWidth">
+                 <number>0</number>
+                </property>
+                <property name="autoScroll">
+                 <bool>true</bool>
+                </property>
+                <property name="editTriggers">
+                 <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+                </property>
+                <property name="dragEnabled">
+                 <bool>false</bool>
+                </property>
+                <property name="dragDropOverwriteMode">
+                 <bool>false</bool>
+                </property>
+                <property name="dragDropMode">
+                 <enum>QAbstractItemView::NoDragDrop</enum>
+                </property>
+                <property name="selectionMode">
+                 <enum>QAbstractItemView::SingleSelection</enum>
+                </property>
+                <property name="selectionRectVisible">
+                 <bool>false</bool>
+                </property>
+                <property name="sortingEnabled">
+                 <bool>false</bool>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>master</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>247</red>
+                    <green>255</green>
+                    <blue>152</blue>
+                   </color>
+                  </brush>
+                 </property>
                 </item>
-            </layout>
-        </widget>
-        <widget class="QMenuBar" name="menubar">
-            <property name="geometry">
-                <rect>
-                    <x>0</x>
-                    <y>0</y>
-                    <width>832</width>
-                    <height>23</height>
-                </rect>
+                <item>
+                 <property name="text">
+                  <string>base</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>255</red>
+                    <green>183</green>
+                    <blue>248</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>———chain———</string>
+                 </property>
+                 <property name="flags">
+                  <set>NoItemFlags</set>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>chainFK</string>
+                 </property>
+                 <property name="background">
+                  <brush brushstyle="NoBrush">
+                   <color alpha="255">
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                   </color>
+                  </brush>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>255</red>
+                    <green>137</green>
+                    <blue>153</blue>
+                   </color>
+                  </brush>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>../../../tools/icon/componentFK_64.png</normaloff>../../../tools/icon/componentFK_64.png</iconset>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>chainIK</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>255</red>
+                    <green>137</green>
+                    <blue>153</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>chainIKFK</string>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <kerning>true</kerning>
+                  </font>
+                 </property>
+                 <property name="textAlignment">
+                  <set>AlignLeading|AlignVCenter</set>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>255</red>
+                    <green>137</green>
+                    <blue>153</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>chainEP</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>255</red>
+                    <green>137</green>
+                    <blue>153</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>finger</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>255</red>
+                    <green>137</green>
+                    <blue>153</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>———face———</string>
+                 </property>
+                 <property name="flags">
+                  <set>NoItemFlags</set>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>brow</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>88</red>
+                    <green>76</green>
+                    <blue>255</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>eye</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>88</red>
+                    <green>76</green>
+                    <blue>255</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>nose</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>88</red>
+                    <green>76</green>
+                    <blue>255</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>mouth</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>88</red>
+                    <green>76</green>
+                    <blue>255</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>cheek</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>88</red>
+                    <green>76</green>
+                    <blue>255</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>jaw</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>88</red>
+                    <green>76</green>
+                    <blue>255</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>———body———</string>
+                 </property>
+                 <property name="flags">
+                  <set>NoItemFlags</set>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>arm</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>255</red>
+                    <green>79</green>
+                    <blue>79</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>hand</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>255</red>
+                    <green>79</green>
+                    <blue>79</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>spine</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>255</red>
+                    <green>79</green>
+                    <blue>79</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>leg</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>255</red>
+                    <green>79</green>
+                    <blue>79</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>foot</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>255</red>
+                    <green>79</green>
+                    <blue>79</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>tail</string>
+                 </property>
+                 <property name="foreground">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>255</red>
+                    <green>79</green>
+                    <blue>79</blue>
+                   </color>
+                  </brush>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_4">
+                <item>
+                 <widget class="QLabel" name="jointRadius_label">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <pointsize>9</pointsize>
+                    <kerning>true</kerning>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Joint Radius:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QSlider" name="jointRadius_Slider">
+                  <property name="font">
+                   <font>
+                    <family>Agency FB</family>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="contextMenuPolicy">
+                   <enum>Qt::DefaultContextMenu</enum>
+                  </property>
+                  <property name="layoutDirection">
+                   <enum>Qt::LeftToRight</enum>
+                  </property>
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
+                  <property name="maximum">
+                   <number>50</number>
+                  </property>
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_5">
+                <item>
+                 <widget class="QLabel" name="jointAxis_label">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>JointAxis:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="jointAxis_on_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>On</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="jointAxis_off_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Off</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <layout class="QVBoxLayout" name="preset_layout">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="font">
+             <font>
+              <family>Agency FB</family>
+              <pointsize>14</pointsize>
+             </font>
             </property>
-            <widget class="QMenu" name="menuWindow">
-                <property name="title">
-                    <string>Window</string>
+            <property name="text">
+             <string>Presets</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QScrollArea" name="scrollArea_2">
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="scrollAreaWidgetContents_5">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>249</width>
+               <height>316</height>
+              </rect>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_5">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item row="0" column="0">
+               <widget class="QListWidget" name="preset_widget">
+                <property name="font">
+                 <font>
+                  <pointsize>14</pointsize>
+                 </font>
                 </property>
-                <addaction name="action_Refersh"/>
-            </widget>
-            <widget class="QMenu" name="menuCustom">
-                <property name="title">
-                    <string>Custom</string>
+                <property name="styleSheet">
+                 <string notr="true"/>
                 </property>
-                <addaction name="action_Mirror_select"/>
-                <addaction name="action_Mirror"/>
-                <addaction name="separator"/>
-                <addaction name="action_Upward"/>
-                <addaction name="action_Lowward"/>
-                <addaction name="action_Rename"/>
-                <addaction name="separator"/>
-                <addaction name="action_Delete"/>
-                <addaction name="action_Clear"/>
+                <property name="selectionMode">
+                 <enum>QAbstractItemView::SingleSelection</enum>
+                </property>
+                <property name="selectionRectVisible">
+                 <bool>false</bool>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>human</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>face</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>quadruped</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
             </widget>
-            <addaction name="menuWindow"/>
-            <addaction name="menuCustom"/>
-        </widget>
-        <widget class="QStatusBar" name="statusbar"/>
-        <action name="action_Refersh">
-            <property name="text">
-                <string>Refersh</string>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="custom_layout">
+          <item>
+           <widget class="QLabel" name="custom_label">
+            <property name="font">
+             <font>
+              <family>Agency FB</family>
+              <pointsize>14</pointsize>
+             </font>
             </property>
-        </action>
-        <action name="action_Mirror_select">
             <property name="text">
-                <string>Mirror_selection</string>
+             <string>Custom</string>
             </property>
-        </action>
-        <action name="action_Mirror">
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QScrollArea" name="scrollArea_3">
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="scrollAreaWidgetContents_3">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>249</width>
+               <height>315</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_4">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item row="1" column="0">
+               <widget class="QListWidget" name="custom_widget">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Arial Narrow</family>
+                  <pointsize>14</pointsize>
+                 </font>
+                </property>
+                <property name="editTriggers">
+                 <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+                </property>
+                <property name="dragEnabled">
+                 <bool>true</bool>
+                </property>
+                <property name="dragDropOverwriteMode">
+                 <bool>true</bool>
+                </property>
+                <property name="dragDropMode">
+                 <enum>QAbstractItemView::InternalMove</enum>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="setting_layout">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QLabel" name="label_3">
+            <property name="font">
+             <font>
+              <family>Agency FB</family>
+              <pointsize>14</pointsize>
+             </font>
+            </property>
             <property name="text">
-                <string>Mirror_All</string>
+             <string>Setting</string>
             </property>
-        </action>
-        <action name="action_Upward">
-            <property name="text">
-                <string>Upward</string>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
-        </action>
-        <action name="action_Lowward">
-            <property name="text">
-                <string>Downward</string>
+           </widget>
+          </item>
+          <item>
+           <widget class="QStackedWidget" name="setting_stack">
+            <widget class="QWidget" name="Page1">
+             <layout class="QVBoxLayout" name="set_layout">
+              <property name="topMargin">
+               <number>9</number>
+              </property>
+              <property name="bottomMargin">
+               <number>9</number>
+              </property>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
             </property>
-        </action>
-        <action name="action_Rename">
-            <property name="text">
-                <string>Rename</string>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
             </property>
-        </action>
-        <action name="action_Delete">
-            <property name="text">
-                <string>Delete</string>
-            </property>
-        </action>
-        <action name="action_Clear">
-            <property name="text">
-                <string>Clear</string>
-            </property>
-        </action>
-    </widget>
-    <resources/>
-    <connections/>
-    <buttongroups>
-        <buttongroup name="buttonGroup_2"/>
-        <buttongroup name="buttonGroup_4"/>
-        <buttongroup name="buttonGroup_3"/>
-        <buttongroup name="buttonGroup"/>
-    </buttongroups>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <property name="spacing">
+           <number>6</number>
+          </property>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_5">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_8">
+                <item>
+                 <widget class="QLabel" name="bpjnt_label">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="layoutDirection">
+                   <enum>Qt::LeftToRight</enum>
+                  </property>
+                  <property name="text">
+                   <string>Bpjnt</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="bpjnt_on_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>On</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="bpjnt_off_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Off</string>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup</string>
+                  </attribute>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_7">
+                <item>
+                 <widget class="QLabel" name="mesh_label">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Mesh</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="mesh_on_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>On</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_2</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="mesh_off_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Off</string>
+                  </property>
+                  <property name="checked">
+                   <bool>false</bool>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_2</string>
+                  </attribute>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_6">
+                <item>
+                 <widget class="QLabel" name="joint_label">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Joint</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="joint_on_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>On</string>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_3</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="joint_off_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Off</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_3</string>
+                  </attribute>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_2">
+                <item>
+                 <widget class="QLabel" name="control_label">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Control</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="control_on_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>On</string>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_4</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="control_off_radio">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Off</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_4</string>
+                  </attribute>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_6">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_9">
+                <item>
+                 <widget class="QToolButton" name="orient_button">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                   </font>
+                  </property>
+                  <property name="toolTip">
+                   <string>关节定向</string>
+                  </property>
+                  <property name="autoFillBackground">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>36</width>
+                    <height>46</height>
+                   </size>
+                  </property>
+                  <property name="checkable">
+                   <bool>false</bool>
+                  </property>
+                  <property name="autoRaise">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="delete_button">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="toolTip">
+                   <string>删除绑定</string>
+                  </property>
+                  <property name="autoFillBackground">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>36</width>
+                    <height>46</height>
+                   </size>
+                  </property>
+                  <property name="checkable">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="reset_button">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="toolTip">
+                   <string>重置控制器</string>
+                  </property>
+                  <property name="autoFillBackground">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>36</width>
+                    <height>46</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QToolButton" name="build_button">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Arial</family>
+                  <pointsize>20</pointsize>
+                 </font>
+                </property>
+                <property name="toolTip">
+                 <string>创建绑定</string>
+                </property>
+                <property name="autoFillBackground">
+                 <bool>true</bool>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true"/>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>122</width>
+                  <height>48</height>
+                 </size>
+                </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonIconOnly</enum>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>832</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>Window</string>
+    </property>
+    <addaction name="action_Refersh"/>
+   </widget>
+   <widget class="QMenu" name="menuCustom">
+    <property name="title">
+     <string>Custom</string>
+    </property>
+    <addaction name="action_Mirror_select"/>
+    <addaction name="action_Mirror"/>
+    <addaction name="separator"/>
+    <addaction name="action_Upward"/>
+    <addaction name="action_Lowward"/>
+    <addaction name="action_Rename"/>
+    <addaction name="separator"/>
+    <addaction name="action_Delete"/>
+    <addaction name="action_Clear"/>
+   </widget>
+   <addaction name="menuWindow"/>
+   <addaction name="menuCustom"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_Refersh">
+   <property name="text">
+    <string>Refersh</string>
+   </property>
+  </action>
+  <action name="action_Mirror_select">
+   <property name="text">
+    <string>Mirror_selection</string>
+   </property>
+  </action>
+  <action name="action_Mirror">
+   <property name="text">
+    <string>Mirror_All</string>
+   </property>
+  </action>
+  <action name="action_Upward">
+   <property name="text">
+    <string>Upward</string>
+   </property>
+  </action>
+  <action name="action_Lowward">
+   <property name="text">
+    <string>Downward</string>
+   </property>
+  </action>
+  <action name="action_Rename">
+   <property name="text">
+    <string>Rename</string>
+   </property>
+  </action>
+  <action name="action_Delete">
+   <property name="text">
+    <string>Delete</string>
+   </property>
+  </action>
+  <action name="action_Clear">
+   <property name="text">
+    <string>Clear</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup_3"/>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>
