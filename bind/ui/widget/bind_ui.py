@@ -67,7 +67,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 261, 673))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 250, 673))
         sizePolicy.setHeightForWidth(self.scrollAreaWidgetContents.sizePolicy().hasHeightForWidth())
         self.scrollAreaWidgetContents.setSizePolicy(sizePolicy)
         self.gridLayout_2 = QGridLayout(self.scrollAreaWidgetContents)
@@ -249,7 +249,7 @@ class Ui_MainWindow(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 259, 316))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 249, 316))
         self.gridLayout_5 = QGridLayout(self.scrollAreaWidgetContents_5)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
         self.gridLayout_5.setContentsMargins(0, 0, 0, 0)
@@ -288,7 +288,7 @@ class Ui_MainWindow(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scrollAreaWidgetContents_3 = QWidget()
         self.scrollAreaWidgetContents_3.setObjectName(u"scrollAreaWidgetContents_3")
-        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 259, 315))
+        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 249, 315))
         sizePolicy.setHeightForWidth(self.scrollAreaWidgetContents_3.sizePolicy().hasHeightForWidth())
         self.scrollAreaWidgetContents_3.setSizePolicy(sizePolicy)
         self.gridLayout_4 = QGridLayout(self.scrollAreaWidgetContents_3)
@@ -401,6 +401,7 @@ class Ui_MainWindow(object):
         self.buttonGroup_2.addButton(self.mesh_on_radio)
         self.mesh_on_radio.setObjectName(u"mesh_on_radio")
         self.mesh_on_radio.setFont(font4)
+        self.mesh_on_radio.setChecked(True)
 
         self.horizontalLayout_7.addWidget(self.mesh_on_radio)
 
@@ -408,7 +409,7 @@ class Ui_MainWindow(object):
         self.buttonGroup_2.addButton(self.mesh_off_radio)
         self.mesh_off_radio.setObjectName(u"mesh_off_radio")
         self.mesh_off_radio.setFont(font4)
-        self.mesh_off_radio.setChecked(True)
+        self.mesh_off_radio.setChecked(False)
 
         self.horizontalLayout_7.addWidget(self.mesh_off_radio)
 
@@ -478,20 +479,19 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
         self.horizontalLayout_9 = QHBoxLayout()
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
-        self.orient_button = QPushButton(self.centralwidget)
-        self.buttonGroup_5 = QButtonGroup(MainWindow)
-        self.buttonGroup_5.setObjectName(u"buttonGroup_5")
-        self.buttonGroup_5.addButton(self.orient_button)
+        self.orient_button = QToolButton(self.centralwidget)
         self.orient_button.setObjectName(u"orient_button")
         sizePolicy.setHeightForWidth(self.orient_button.sizePolicy().hasHeightForWidth())
         self.orient_button.setSizePolicy(sizePolicy)
         self.orient_button.setFont(font4)
+        self.orient_button.setAutoFillBackground(False)
         self.orient_button.setIconSize(QSize(36, 46))
+        self.orient_button.setCheckable(False)
+        self.orient_button.setAutoRaise(False)
 
         self.horizontalLayout_9.addWidget(self.orient_button)
 
-        self.delete_button = QPushButton(self.centralwidget)
-        self.buttonGroup_5.addButton(self.delete_button)
+        self.delete_button = QToolButton(self.centralwidget)
         self.delete_button.setObjectName(u"delete_button")
         sizePolicy.setHeightForWidth(self.delete_button.sizePolicy().hasHeightForWidth())
         self.delete_button.setSizePolicy(sizePolicy)
@@ -499,25 +499,27 @@ class Ui_MainWindow(object):
         font7.setFamily(u"Arial")
         font7.setPointSize(10)
         self.delete_button.setFont(font7)
+        self.delete_button.setAutoFillBackground(False)
         self.delete_button.setIconSize(QSize(36, 46))
+        self.delete_button.setCheckable(False)
 
         self.horizontalLayout_9.addWidget(self.delete_button)
 
-        self.reset_button = QPushButton(self.centralwidget)
+        self.reset_button = QToolButton(self.centralwidget)
         self.reset_button.setObjectName(u"reset_button")
         self.reset_button.setEnabled(True)
         sizePolicy.setHeightForWidth(self.reset_button.sizePolicy().hasHeightForWidth())
         self.reset_button.setSizePolicy(sizePolicy)
         self.reset_button.setFont(font7)
+        self.reset_button.setAutoFillBackground(True)
         self.reset_button.setIconSize(QSize(36, 46))
-        self.reset_button.setCheckable(False)
 
         self.horizontalLayout_9.addWidget(self.reset_button)
 
 
         self.verticalLayout_6.addLayout(self.horizontalLayout_9)
 
-        self.build_button = QPushButton(self.centralwidget)
+        self.build_button = QToolButton(self.centralwidget)
         self.build_button.setObjectName(u"build_button")
         sizePolicy.setHeightForWidth(self.build_button.sizePolicy().hasHeightForWidth())
         self.build_button.setSizePolicy(sizePolicy)
@@ -525,8 +527,10 @@ class Ui_MainWindow(object):
         font8.setFamily(u"Arial")
         font8.setPointSize(20)
         self.build_button.setFont(font8)
+        self.build_button.setAutoFillBackground(True)
         self.build_button.setStyleSheet(u"")
         self.build_button.setIconSize(QSize(122, 48))
+        self.build_button.setToolButtonStyle(Qt.ToolButtonIconOnly)
 
         self.verticalLayout_6.addWidget(self.build_button)
 

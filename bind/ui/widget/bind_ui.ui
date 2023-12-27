@@ -69,7 +69,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>261</width>
+             <width>250</width>
              <height>673</height>
             </rect>
            </property>
@@ -596,7 +596,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>259</width>
+               <width>249</width>
                <height>316</height>
               </rect>
              </property>
@@ -680,7 +680,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>259</width>
+               <width>249</width>
                <height>315</height>
               </rect>
              </property>
@@ -873,6 +873,9 @@
                   <property name="text">
                    <string>On</string>
                   </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
                   <attribute name="buttonGroup">
                    <string notr="true">buttonGroup_2</string>
                   </attribute>
@@ -889,7 +892,7 @@
                    <string>Off</string>
                   </property>
                   <property name="checked">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                   <attribute name="buttonGroup">
                    <string notr="true">buttonGroup_2</string>
@@ -1003,7 +1006,7 @@
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_9">
                 <item>
-                 <widget class="QPushButton" name="orient_button">
+                 <widget class="QToolButton" name="orient_button">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1018,6 +1021,9 @@
                   <property name="toolTip">
                    <string>关节定向</string>
                   </property>
+                  <property name="autoFillBackground">
+                   <bool>false</bool>
+                  </property>
                   <property name="text">
                    <string/>
                   </property>
@@ -1027,13 +1033,16 @@
                     <height>46</height>
                    </size>
                   </property>
-                  <attribute name="buttonGroup">
-                   <string notr="true">buttonGroup_5</string>
-                  </attribute>
+                  <property name="checkable">
+                   <bool>false</bool>
+                  </property>
+                  <property name="autoRaise">
+                   <bool>false</bool>
+                  </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="delete_button">
+                 <widget class="QToolButton" name="delete_button">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1049,6 +1058,9 @@
                   <property name="toolTip">
                    <string>删除绑定</string>
                   </property>
+                  <property name="autoFillBackground">
+                   <bool>false</bool>
+                  </property>
                   <property name="text">
                    <string/>
                   </property>
@@ -1058,13 +1070,13 @@
                     <height>46</height>
                    </size>
                   </property>
-                  <attribute name="buttonGroup">
-                   <string notr="true">buttonGroup_5</string>
-                  </attribute>
+                  <property name="checkable">
+                   <bool>false</bool>
+                  </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="reset_button">
+                 <widget class="QToolButton" name="reset_button">
                   <property name="enabled">
                    <bool>true</bool>
                   </property>
@@ -1083,6 +1095,9 @@
                   <property name="toolTip">
                    <string>重置控制器</string>
                   </property>
+                  <property name="autoFillBackground">
+                   <bool>true</bool>
+                  </property>
                   <property name="text">
                    <string/>
                   </property>
@@ -1092,15 +1107,12 @@
                     <height>46</height>
                    </size>
                   </property>
-                  <property name="checkable">
-                   <bool>false</bool>
-                  </property>
                  </widget>
                 </item>
                </layout>
               </item>
               <item>
-               <widget class="QPushButton" name="build_button">
+               <widget class="QToolButton" name="build_button">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                   <horstretch>0</horstretch>
@@ -1116,6 +1128,9 @@
                 <property name="toolTip">
                  <string>创建绑定</string>
                 </property>
+                <property name="autoFillBackground">
+                 <bool>true</bool>
+                </property>
                 <property name="styleSheet">
                  <string notr="true"/>
                 </property>
@@ -1127,6 +1142,9 @@
                   <width>122</width>
                   <height>48</height>
                  </size>
+                </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonIconOnly</enum>
                 </property>
                </widget>
               </item>
@@ -1219,10 +1237,10 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_4"/>
-  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup"/>
   <buttongroup name="buttonGroup_3"/>
   <buttongroup name="buttonGroup_2"/>
-  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_4"/>
  </buttongroups>
 </ui>
