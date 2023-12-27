@@ -19,7 +19,7 @@ except ImportError :
     from shiboken import wrapInstance
 
 from . import base_widget
-from bind.ui.setup import limb_ui
+from ..setup import limb_ui
 from importlib import reload
 
 
