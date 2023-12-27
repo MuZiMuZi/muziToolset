@@ -230,7 +230,9 @@ class Ui_MainWindow(object):
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"name\uff1a", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"jnt_number\uff1a", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"jnt_parent\uff1a", None))
+        self.jnt_parent_edit.setText(QCoreApplication.translate("MainWindow", u"None", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"control_parent\uff1a", None))
+        self.control_parent_edit.setText(QCoreApplication.translate("MainWindow", u"None", None))
         self.create_btn.setText(QCoreApplication.translate("MainWindow", u"Create", None))
         self.delete_btn.setText(QCoreApplication.translate("MainWindow", u"Delete", None))
     # retranslateUi

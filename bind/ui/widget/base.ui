@@ -120,6 +120,9 @@
            <pointsize>16</pointsize>
           </font>
          </property>
+         <property name="text">
+          <string>None</string>
+         </property>
         </widget>
        </item>
        <item row="1" column="0">
@@ -229,6 +232,9 @@
            <family>Arial Narrow</family>
            <pointsize>16</pointsize>
           </font>
+         </property>
+         <property name="text">
+          <string>None</string>
          </property>
         </widget>
        </item>
