@@ -182,6 +182,7 @@ class Ui_MainWindow(object):
         sizePolicy3.setVerticalStretch(0)
         sizePolicy3.setHeightForWidth(self.ikCtrl_cbox.sizePolicy().hasHeightForWidth())
         self.ikCtrl_cbox.setSizePolicy(sizePolicy3)
+        self.ikCtrl_cbox.setChecked(True)
 
         self.horizontalLayout_11.addWidget(self.ikCtrl_cbox)
 
@@ -197,6 +198,7 @@ class Ui_MainWindow(object):
         self.fkCtrl_cbox.setObjectName(u"fkCtrl_cbox")
         sizePolicy3.setHeightForWidth(self.fkCtrl_cbox.sizePolicy().hasHeightForWidth())
         self.fkCtrl_cbox.setSizePolicy(sizePolicy3)
+        self.fkCtrl_cbox.setChecked(True)
 
         self.horizontalLayout_11.addWidget(self.fkCtrl_cbox)
 
@@ -217,6 +219,7 @@ class Ui_MainWindow(object):
         self.stretch_cbox.setObjectName(u"stretch_cbox")
         sizePolicy3.setHeightForWidth(self.stretch_cbox.sizePolicy().hasHeightForWidth())
         self.stretch_cbox.setSizePolicy(sizePolicy3)
+        self.stretch_cbox.setChecked(True)
 
         self.horizontalLayout_9.addWidget(self.stretch_cbox)
 
