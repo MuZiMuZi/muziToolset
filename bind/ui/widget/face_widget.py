@@ -73,4 +73,4 @@ class Face_widget (face_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow
 
 
 def main () :
-    return Chain_Widget ()
+    return Face_widget ()
