@@ -9,7 +9,7 @@ from PySide2.QtWidgets import *
 
 from . import config
 from .ui.setup import bind_ui
-from .ui.widget import base_widget , chainEP_widget , chain_widget , limb_widget,face_widget
+from .ui.widget import base_widget , chainEP_widget , chain_widget , limb_widget , face_widget
 from ..core import qtUtils
 
 
@@ -18,7 +18,7 @@ reload (chain_widget)
 reload (limb_widget)
 reload (chainEP_widget)
 reload (bind_ui)
-reload(face_widget)
+reload (face_widget)
 
 
 class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
@@ -93,8 +93,19 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         index = self.proxy_widget.currentIndex ()
         # 如果index.isValid的返回值有值的话，说明选择了可以点击的文件，不是的话则是空白的物体
         if index.isValid () :
+            # 1.获取self.custom_widget里所拥有的所有item
+            all_items = self.custom_widget.findItems ("*" , Qt.MatchWildcard)
+            all_items_texts = []
+            # 对所有item做循环遍历，获取所有item的名称
+            for custom_item in all_items :
+                all_items_texts.append (custom_item.text ())
+            # 获取item的模块名称
+            item_text = self.proxy_widget.currentItem ().text ()
+            # 利用count方法来获取item的模块名称出现过的次数
+            item_index = all_items_texts.count ('side_{}'.format (item_text))
+
             # 获得proxy_widget里所选择的item_name
-            item_name = 'side_{}_bpjnt'.format (self.proxy_widget.currentItem ().text ())
+            item_name = 'bp_side_{}_{:03d}'.format (item_text , item_index + 1)
             # 在custom_widget里添加这个item
             item = QListWidgetItem (item_name)
             self.custom_widget.addItem (item)
@@ -104,6 +115,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
             item.setForeground (QColor (255 , 0 , 0))
 
             item.text = self.proxy_widget.currentItem ().text ()
+            item.index = item_index
             self.update_current (item)
         else :
             return
@@ -184,6 +196,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
             item.widget = face_widget.main ()
 
         item.widget.module_edit.setText ('{}'.format (item.text))
+        item.widget.index_edit.setText ('{}'.format (item.index + 1))
         self.setting_stack.addWidget (item.widget)
 
 
@@ -206,13 +219,17 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         """
         # 1.获取self.custom_widget里所拥有的所有item
         all_items = self.custom_widget.findItems ("*" , Qt.MatchWildcard)
-
+        all_items_texts = []
         # 对所有item做循环遍历，获取item.widget里的组件信息，module，side和name，用于重新命名item
         for item in all_items :
+            all_items_texts.append (item.text ())
             module = item.widget.module_edit.text ()
             side = item.widget.side
             name = item.widget.name
-            item.setText ('bp_{}_{}{}'.format (side , module , name))
+            # 利用count方法来获取item的模块名称出现过的次数
+            item_index = all_items_texts.count ('{}_{}'.format (side , item_text))
+
+            item.setText ('bp_{}_{}{}_{:03d}'.format (side , module , name , item_index + 1))
 
 
 def show () :

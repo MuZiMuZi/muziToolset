@@ -128,14 +128,14 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_8.addWidget(self.index_label)
 
-        self.lineEdit = QLineEdit(self.centralwidget)
-        self.lineEdit.setObjectName(u"lineEdit")
-        self.lineEdit.setEnabled(False)
-        sizePolicy.setHeightForWidth(self.lineEdit.sizePolicy().hasHeightForWidth())
-        self.lineEdit.setSizePolicy(sizePolicy)
-        self.lineEdit.setFont(font3)
+        self.index_edit = QLineEdit(self.centralwidget)
+        self.index_edit.setObjectName(u"index_edit")
+        self.index_edit.setEnabled(False)
+        sizePolicy.setHeightForWidth(self.index_edit.sizePolicy().hasHeightForWidth())
+        self.index_edit.setSizePolicy(sizePolicy)
+        self.index_edit.setFont(font3)
 
-        self.horizontalLayout_8.addWidget(self.lineEdit)
+        self.horizontalLayout_8.addWidget(self.index_edit)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_8)
@@ -215,6 +215,11 @@ class Ui_MainWindow(object):
         self.create_btn = QToolButton(self.centralwidget)
         self.create_btn.setObjectName(u"create_btn")
         self.create_btn.setEnabled(True)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.create_btn.sizePolicy().hasHeightForWidth())
+        self.create_btn.setSizePolicy(sizePolicy1)
         self.create_btn.setFont(font4)
         self.create_btn.setIconSize(QSize(40, 40))
 
@@ -223,9 +228,6 @@ class Ui_MainWindow(object):
         self.delete_btn = QToolButton(self.centralwidget)
         self.delete_btn.setObjectName(u"delete_btn")
         self.delete_btn.setEnabled(True)
-        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.delete_btn.sizePolicy().hasHeightForWidth())
         self.delete_btn.setSizePolicy(sizePolicy1)
         self.delete_btn.setFont(font4)

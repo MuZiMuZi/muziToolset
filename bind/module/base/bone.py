@@ -282,7 +282,7 @@ class Bone (object) :
             if cmds.objExists (bpjnt) :
                 cmds.delete (bpjnt)
             else :
-                self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.top_main_group)
+                self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.top_bpjnt_grp)
                 # 设置bp关节的位置，防止多个关节聚集在一起不好选择
                 cmds.setAttr (self.bpjnt + '.translateX' , self.bpjnt_list.index (self.bpjnt) * 3)
                 # 给bp定位关节设置颜色方便识别
