@@ -6,7 +6,7 @@ from enum import Enum , unique
 project_root = os.path.dirname (__file__)
 
 # UI文件存放目录
-ui_dir = os.path.join (project_root , 'ui/widget')
+ui_dir = os.path.join (project_root , 'ui')
 
 # 图标文件存放目录
 icon_dir = os.path.abspath (__file__ + "/../../tools/icon")

@@ -20,13 +20,12 @@ except ImportError :
 from importlib import reload
 import os
 from ... import config
-from . import base_ui
-from ..widget import bone_widget
+from bind.ui import base_ui
+
 from ....bind.module.base import base
 from ....core import qtUtils
 
 
-reload (bone_widget)
 reload (base)
 reload (base_ui)
 
@@ -84,7 +83,7 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         self.delete_btn.setVisible (True)
         # Todo
         # 3，将获取组件的属性用来创建用于关节定位的bp关节
-        self.parse_base()
+        self.parse_base ()
         # 4.获取组件的属性来修改custom_widget里item的名称
 
 

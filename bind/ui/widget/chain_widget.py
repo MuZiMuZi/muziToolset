@@ -19,7 +19,7 @@ except ImportError :
     from shiboken import wrapInstance
 from importlib import reload
 from ... import config
-from . import chain_ui
+from bind.ui import chain_ui
 from ..widget import base_widget
 from ....bind.module.base import base
 

@@ -17,7 +17,7 @@ except ImportError :
     from PySide.QtWidgets import *
     from PySide import __version__
     from shiboken import wrapInstance
-from . import chainEP_ui
+from bind.ui import chainEP_ui
 from . import chain_widget
 from importlib import reload
 
@@ -26,7 +26,7 @@ reload (chain_widget)
 reload (chainEP_ui)
 
 
-class ChainEP_Widget ( chainEP_ui.Ui_MainWindow , chain_widget.Chain_Widget,QMainWindow ) :
+class ChainEP_Widget (chainEP_ui.Ui_MainWindow , chain_widget.Chain_Widget, QMainWindow) :
 
 
     def __init__ (self , parent = None , *args , **kwargs) :

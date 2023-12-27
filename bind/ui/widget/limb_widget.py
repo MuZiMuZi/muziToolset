@@ -18,7 +18,8 @@ except ImportError :
     from PySide import __version__
     from shiboken import wrapInstance
 
-from . import limb_ui , base_widget
+from . import base_widget
+from bind.ui import limb_ui
 from importlib import reload
 
 
