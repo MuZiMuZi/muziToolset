@@ -43,12 +43,15 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         # 调用父类的ui方法，来运行ui
         self.setupUi (self)
 
+        #默认情况下删除按钮为隐藏状态
+        self.delete_btn.setVisible(False)
         self.name = None
         self.side = None
         self.jnt_number = None
         self.jnt_parent = None
         self.control_parent = None
         self.init_base()
+        self.add_connect()
         # self.create_widget ()
         # self.create_layout ()
 
@@ -63,9 +66,24 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         u"""
         用来添加连接的槽函数
         """
-        # self.create_btn.clicked.connect (lambda :print(12))
+        self.create_btn.clicked.connect (self.clicked_create_btn)
         # self.base_widget.delete_btn.clicked.connect (self.delete_setup)
 
+    def clicked_create_btn(self):
+        """
+        连接创建按钮的槽函数，当按下创建按钮函数的时候会做以下操作
+        1，将创建按钮变成不可操作的模式，防止误触
+        2.将删除按钮从隐藏状态下显示出来，用于删除不需要的绑定
+        3，将获取组件的属性用来创建用于关节定位的bp关节
+        4.获取组件的属性来修改custom_widget里item的名称
+        """
+        #1.将创建按钮变成不可操作的模式，防止误触
+        self.create_btn.setEnabled(False)
+        #2.将删除按钮从隐藏状态下显示出来，用于删除不需要的绑定
+        self.delete_btn.setVisible(True)
+        #Todo
+        # 3，将获取组件的属性用来创建用于关节定位的bp关节
+        # 4.获取组件的属性来修改custom_widget里item的名称
 
     def parse_base (self , *args) :
         """
