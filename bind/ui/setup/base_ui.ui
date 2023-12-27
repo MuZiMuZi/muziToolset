@@ -179,7 +179,7 @@
            <enum>Qt::LeftToRight</enum>
           </property>
           <property name="text">
-           <string>jnt_number：</string>
+           <string>jnt _number：</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

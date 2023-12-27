@@ -135,6 +135,14 @@ class Bone (object) :
         4.add_constraint() :控制器和蒙皮关节创建约束或者连接控制
 
     """
+    TOP_GROUP_NAMES = [
+        'grp_m_group_001' ,
+        'grp_m_bpjnt_001' ,
+        'grp_m_control_001' ,
+        'grp_m_jnt_001' ,
+        'grp_m_mesh_001' ,
+        'grp_m_node_001'
+    ]
 
 
     def __init__ (self , side , name , jnt_number , jnt_parent = None , control_parent = None) :
@@ -147,18 +155,9 @@ class Bone (object) :
         :param jnt_parent(str): 生成的关节的父层级
         :param control_parent(str): 生成的控制器的父层级
         """
-        self.top_main_group = 'grp_m_group_001'
-        self.top_bpjnt_grp = 'grp_m_bpjnt_001'
-        self.top_ctrl_grp = 'grp_m_control_001'
-        self.top_jnt_grp = 'grp_m_jnt_001'
-        self.top_mesh_grp = 'grp_m_mesh_001'
-        self.top_node_grp = 'grp_m_node_001'
-        # 创建层级结构，当场景里不存在最高级层级组的时候，自动创建最高级层级组
-        if cmds.objExists (self.top_main_group) :
-            pass
-        else :
-            (self.top_bpjnt_grp , self.top_ctrl_grp , self.top_jnt_grp , self.top_mesh_grp , self.top_node_grp ,
-             self.top_main_group) = hierarchyUtils.Hierarchy.create_rig_grp ()
+        # 初始化最高层级组结构
+        self._setup_top_groups ()
+
         # 初始化组件的边和关节数量
         self.side = side
         self.name = name
@@ -171,14 +170,35 @@ class Bone (object) :
             self.jnt_parent = self.top_jnt_grp
         if not self.control_parent :
             self.control_parent = self.top_ctrl_grp
-        self.top_bpjnt_grp = 'grp_m_bpjnt_001'
 
-        cmds.setAttr (self.top_bpjnt_grp + '.visibility' , 0)
         # 生成的绑定类型
         self.rtype = 'bone'
         self.shape = 'circle'
         self.radius = 5
 
+        # 根据给定的边，名称和jnt_number生成列表来存储创建的名称
+        self._setup_list ()
+
+        # 根据给定的边，初始化side_value的值，用于镜像控制器以及位移
+        self.side_value = self._setup_side_value ()
+
+        # 创建一个logger日志用来排查错误
+        # 创建logger日志来排查错误
+        self.logger = self._setup_logger ()
+
+
+    def _setup_top_groups (self) :
+        """
+        初始化最高层级组结构
+        """
+        if cmds.objExists (self.TOP_GROUP_NAMES [0]) :
+            return
+        else :
+            hierarchy_names = hierarchyUtils.Hierarchy.create_rig_grp ()
+            self.top_bpjnt_grp , self.top_ctrl_grp , self.top_jnt_grp , self.top_mesh_grp , self.top_node_grp , self.top_main_group = hierarchy_names
+
+
+    def _setup_list (self) :
         # 根据给定的边，名称和jnt_number生成列表来存储创建的名称
         self.bpjnt_list = list ()
         self.jnt_list = list ()
@@ -189,24 +209,34 @@ class Bone (object) :
         self.ctrl_list = list ()
         self.subctrl_list = list ()
         self.output_list = list ()
+        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rtype))
 
+
+    def _setup_side_value (self) :
+        '''
+        根据给定的边，初始化side_value的值，用于镜像控制器以及位移
+        '''
         # 判断边为'l'还是'r'
-        if side == 'l' :
-            self.side_value = 1
-        elif side == 'r' :
-            self.side_value = -1
+        if self.side == 'l' :
+            return 1
+        elif self.side == 'r' :
+            return -1
         else :
-            self.side_value = 0
+            return 0
 
+
+    def _setup_logger (self) :
+        """
         # 创建一个logger日志用来排查错误
         # 创建logger日志来排查错误
-        self.logger_name = '{}_logger'.format (self.__class__.__name__)
-        self.file_name = os.path.abspath (__file__ + "/../../../../log/bind.log")
-
-        pipelineUtils.Pipeline.create_logging (logger_name = self.logger_name , file_name = self.file_name ,
+        """
+        logger_name = f'{self.__class__.__name__}_logger'
+        file_name = os.path.abspath (__file__ + "/../../../../log/bind.log")
+        pipelineUtils.Pipeline.create_logging (logger_name = logger_name , file_name = file_name ,
                                                formatter = '%(asctime)s -%(name)s - %(levelname)s - %(message)s')
-        self.logger = logging.getLogger (self.logger_name)
-        self.logger.setLevel (logging.DEBUG)
+        logger = logging.getLogger (logger_name)
+        logger.setLevel (logging.DEBUG)
+        return logger
 
 
     # 设置控制器形状
@@ -232,7 +262,6 @@ class Bone (object) :
             self.ctrl_list.append ('ctrl_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
             self.subctrl_list.append ('ctrl_{}_{}{}Sub_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
             self.output_list.append ('output_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rtype))
 
 
     # 根据给定的名称规范，创建定位的bp关节
@@ -246,6 +275,8 @@ class Bone (object) :
                 cmds.delete (bpjnt)
             else :
                 self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.top_main_group)
+                # 设置bp关节的位置，防止多个关节聚集在一起不好选择
+                cmds.setAttr (self.bpjnt + '.translateX' , self.bpjnt_list.index (self.bpjnt) * 3)
                 # 给bp定位关节设置颜色方便识别
                 cmds.setAttr (self.bpjnt + '.overrideEnabled' , 1)
                 cmds.setAttr (self.bpjnt + '.overrideColor' , 13)
