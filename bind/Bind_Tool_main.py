@@ -9,7 +9,7 @@ from PySide2.QtWidgets import *
 
 from . import config
 from .ui.widget import base_widget , chainEP_widget , chain_widget , limb_widget
-from bind.ui import bind_ui
+from bind.ui.setup import bind_ui
 from ..core import qtUtils
 
 

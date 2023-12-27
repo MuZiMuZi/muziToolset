@@ -20,7 +20,7 @@ except ImportError :
 from importlib import reload
 import os
 from ... import config
-from bind.ui import base_ui
+from bind.ui.setup import base_ui
 
 from ....bind.module.base import base
 from ....core import qtUtils
