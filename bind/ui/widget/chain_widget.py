@@ -20,16 +20,16 @@ except ImportError :
 from importlib import reload
 from ... import config
 from . import chain_ui
-from ..widget import bone_widget
+from ..widget import base_widget
 from ....bind.module.base import base
 
 
-reload (bone_widget)
+reload (base_widget)
 reload (base)
 reload (chain_ui)
 
 
-class Chain_Widget (chain_ui.Ui_MainWindow , QMainWindow) :
+class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow) :
 
 
     def __init__ (self , parent = None , *args , **kwargs) :
@@ -37,48 +37,34 @@ class Chain_Widget (chain_ui.Ui_MainWindow , QMainWindow) :
         使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 
         '''
+        #返回组件的参数
+        self.length = None
+        self.direction = None
         super ().__init__ (parent , *args , **kwargs)
-        # 调用父类的ui方法，来运行ui
-        self.setupUi (self)
 
-        self.name = None
-        self.side = None
-        self.jnt_number = None
-        self.jnt_parent = None
-        self.control_parent = None
-        self.init_base ()
-
-
-    # self.create_widget ()
-    # self.create_layout ()
 
 
     def init_base (self) :
-        # 初始化参数
-        for side in config.Side :
-            self.side_cbox.addItem (side.value)
+        # 继承base_widget.Base_Widget的init_base方法
+        super ().init_base ()
+        for direciton in config.Direction :
+            self.direction_cbox.addItem (str (direciton.value))
 
 
     def add_connect (self) :
         u"""
         用来添加连接的槽函数
         """
-        pass
-
-    # self.create_btn.clicked.connect (lambda :print(12))
-    # self.base_widget.delete_btn.clicked.connect (self.delete_setup)
+        super ().add_connect ()
 
 
     def parse_base (self , *args) :
         """
         分析base_widget中的输入并将其作为参数返回
         """
-        self.name = self.name_edit.text ()
-        self.side = self.side_cbox.currentText ()
-        self.jnt_number = self.jnt_number_sbox.currentText ()
-        self.jnt_parent = self.jnt_parent_edit.text ()
-        self.control_parent = self.control_parent_edit.text ()
-
+        super().parse_base()
+        self.length = self.length_sbox.value ()
+        self.direction = self.direction_cbox.currentText ()
 
     def build_setup (self) :
         # 读取输入信息
@@ -87,7 +73,6 @@ class Chain_Widget (chain_ui.Ui_MainWindow , QMainWindow) :
         # # 生成定位关节系统
         # self.setup = base.Base (self.side , self.name , self.joint_number , self.joint_parent , self.control_parent)
         # self.setup.build_setup ()
-
 
 
 def main () :
