@@ -29,9 +29,9 @@ chest_bp_joints = ['bpjnt_l_shoulder_001' , 'bpjnt_l_elbow_001' , ' bpjnt_l_wris
 class Chest_Rig (ikfk_rig.IKFK_Rig) :
 
 
-    def __init__ (self , bp_joints = None , joint_parent = None , control_parent = None , mirror = False ,
+    def __init__ (self , bp_joints = None , jnt_parent = None , control_parent = None , mirror = False ,
                   space_list = None) :
-        super (Chest_Rig , self).__init__ (bp_joints = bp_joints , joint_parent = joint_parent ,
+        super (Chest_Rig , self).__init__ (bp_joints = bp_joints , jnt_parent = jnt_parent ,
                                            control_parent = control_parent , space_list = space_list)
 
         self.chest_jnt = 'jnt_m_chest_001'

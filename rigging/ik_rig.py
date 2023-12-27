@@ -25,10 +25,10 @@ import muziToolset.core.snapUtils as snapUtils
 class IK_Rig(base_rig.Base_Rig) :
 
 
-    def __init__(self , bp_joints = None , joint_parent = None , control_parent = None , space_list = None) :
+    def __init__(self , bp_joints = None , jnt_parent = None , control_parent = None , space_list = None) :
         super(IK_Rig , self).__init__()
         self.bp_joints = bp_joints
-        self.joint_parent = joint_parent
+        self.jnt_parent = jnt_parent
         self.control_parent = control_parent
         self.space_list = space_list
 

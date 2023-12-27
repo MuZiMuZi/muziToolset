@@ -18,8 +18,8 @@ class Cheek(base.Base) :
 	
 	# 脸颊的绑定靠定位关节点来绑定，
 	
-	def __init__(self , side , name , joint_number = 8 , joint_parent = None , control_parent = None) :
-		super().__init__(side , name , joint_number , joint_parent , control_parent)
+	def __init__(self , side , name , jnt_number = 8 , jnt_parent = None , control_parent = None) :
+		super().__init__(side , name , jnt_number , jnt_parent , control_parent)
 		
 		self.rtype = ''
 		self.radius = 0.1
@@ -99,14 +99,14 @@ class Cheek(base.Base) :
 
 if __name__ == "__main__" :
 	def build_setup() :
-		cheek_m = cheek.Cheek(side = 'm' , name = '' , joint_number = 8 , joint_parent = None ,
+		cheek_m = cheek.Cheek(side = 'm' , name = '' , jnt_number = 8 , jnt_parent = None ,
 		                      control_parent = None)
 		cheek_m.build_setup()
 	
 	
 	
 	def build_rig() :
-		cheek_m = cheek.Cheek(side = 'm' , name = '' , joint_number = 8 , joint_parent = None ,
+		cheek_m = cheek.Cheek(side = 'm' , name = '' , jnt_number = 8 , jnt_parent = None ,
 		                      control_parent = None)
 		cheek_m.build_rig()
 	

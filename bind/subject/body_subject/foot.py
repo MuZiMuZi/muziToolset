@@ -9,8 +9,8 @@ class Foot(chain.Chain) :
 	
 	
 	
-	def __init__(self , side , name , joint_number = 3 , length = 6 , joint_parent = None , control_parent = None) :
-		super().__init__(side , name , joint_number , joint_parent , control_parent)
+	def __init__(self , side , name , jnt_number = 3 , length = 6 , jnt_parent = None , control_parent = None) :
+		super().__init__(side , name , jnt_number , jnt_parent , control_parent)
 		self.length = length
 		# 整理命名规范的列表
 		self.parts = ['Ankle' , 'Ball' , 'Toe']
@@ -20,17 +20,17 @@ class Foot(chain.Chain) :
 		self.rvs_ctrl_list = list()
 		self.rvs_output_list = list()
 		
-		self.joint_number = joint_number
-		self.value = length / joint_number
+		self.jnt_number = jnt_number
+		self.value = length / jnt_number
 		self.radius = 3
 		# 初始化foot的ik和fk系统
-		self.foot_fk = chainFK.ChainFK(self.side , self.name , self.joint_number ,
+		self.foot_fk = chainFK.ChainFK(self.side , self.name , self.jnt_number ,
 		                               direction = [0 , 0 , -1] ,
 		                               length = self.length ,
-		                               joint_parent = self.joint_parent , control_parent = self.control_parent)
-		self.foot_ik = chainIK.ChainIK(self.side , self.name , self.joint_number , direction = [0 , 0 , -1] ,
+		                               jnt_parent = self.jnt_parent , control_parent = self.control_parent)
+		self.foot_ik = chainIK.ChainIK(self.side , self.name , self.jnt_number , direction = [0 , 0 , -1] ,
 		                               length = self.length ,
-		                               joint_parent = self.joint_parent , control_parent = self.control_parent)
+		                               jnt_parent = self.jnt_parent , control_parent = self.control_parent)
 		# 设置foot_fk的基础属性,控制器大小，前缀和控制器朝向
 		self.foot_fk._rtype = 'footFK'
 		self.foot_fk.axis = 'X+'
@@ -89,9 +89,9 @@ class Foot(chain.Chain) :
 		cmds.setAttr(self.foot_ik.bpjnt_list[0] + '.v' , 0)
 		# 创建用来混合的关节
 		for index , bpjnt in enumerate(self.bpjnt_list) :
-			self.bpjnt = cmds.createNode('joint' , name = bpjnt , parent = self.joint_parent)
+			self.bpjnt = cmds.createNode('joint' , name = bpjnt , parent = self.jnt_parent)
 			# 指定关节的父层级为上一轮创建出来的关节
-			self.joint_parent = self.bpjnt
+			self.jnt_parent = self.bpjnt
 			# 调整距离
 			cmds.setAttr(self.bpjnt + '.translate' , 0 , 0 , self.value)
 			# 约束ik定位的关节链
@@ -249,11 +249,11 @@ class Foot(chain.Chain) :
 			cmds.parentConstraint(self.rvs_output_list[index] , jnt)
 			
 			# IK关节链，FK关节链来约束IKFK关节链
-			for joint_number in range(self.joint_number) :
+			for jnt_number in range(self.jnt_number) :
 				cons = cmds.parentConstraint(
-						self.foot_ik.jnt_list[joint_number] ,
-						self.foot_fk.jnt_list[joint_number] ,
-						self.jnt_list[joint_number])[0]
+						self.foot_ik.jnt_list[jnt_number] ,
+						self.foot_fk.jnt_list[jnt_number] ,
+						self.jnt_list[jnt_number])[0]
 				# 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
 				cmds.setDrivenKeyframe(
 						'{}.w0'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 0)
@@ -264,13 +264,13 @@ class Foot(chain.Chain) :
 				cmds.setDrivenKeyframe(
 						'{}.w1'.format(cons) , cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 0)
 				
-				cmds.setDrivenKeyframe(self.foot_ik.ctrl_list[joint_number] + '.v' ,
+				cmds.setDrivenKeyframe(self.foot_ik.ctrl_list[jnt_number] + '.v' ,
 				                       cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 1)
-				cmds.setDrivenKeyframe(self.foot_ik.ctrl_list[joint_number] + '.v' ,
+				cmds.setDrivenKeyframe(self.foot_ik.ctrl_list[jnt_number] + '.v' ,
 				                       cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 0)
-				cmds.setDrivenKeyframe(self.foot_fk.ctrl_list[joint_number] + '.v' ,
+				cmds.setDrivenKeyframe(self.foot_fk.ctrl_list[jnt_number] + '.v' ,
 				                       cd = self.ctrl_list[0] + '.Switch' , dv = 0 , v = 1)
-				cmds.setDrivenKeyframe(self.foot_fk.ctrl_list[joint_number] + '.v' ,
+				cmds.setDrivenKeyframe(self.foot_fk.ctrl_list[jnt_number] + '.v' ,
 				                       cd = self.ctrl_list[0] + '.Switch' , dv = 1 , v = 0)
 	
 	
@@ -282,13 +282,13 @@ class Foot(chain.Chain) :
 
 if __name__ == '__main__' :
 	def build_setup() :
-		foot_l = foot.Foot(side = 'l' , name = 'zz' , joint_parent = None , control_parent = None)
+		foot_l = foot.Foot(side = 'l' , name = 'zz' , jnt_parent = None , control_parent = None)
 		foot_l.build_setup()
 	
 	
 	
 	def build_rig() :
-		foot_l = foot.Foot(side = 'l' , name = 'zz' , joint_parent = None , control_parent = None)
+		foot_l = foot.Foot(side = 'l' , name = 'zz' , jnt_parent = None , control_parent = None)
 		foot_l.build_rig()
 	
 	

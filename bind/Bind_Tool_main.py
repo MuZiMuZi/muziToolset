@@ -37,7 +37,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
 
         self.set_icon ()
         # 设置qss样式表
-        self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format ('qDarkStyleSheet')))
+        self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format ('amoled')))
 
 
     def set_icon (self) :

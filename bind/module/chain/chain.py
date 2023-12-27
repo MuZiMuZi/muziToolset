@@ -65,12 +65,12 @@ class ChainItem (base.BaseItem) :
 class Chain (base.Base) :
 
 
-    def __init__ (self , side , name , joint_number , length = 10 , joint_parent = None , control_parent = None) :
+    def __init__ (self , side , name , jnt_number , length = 10 , jnt_parent = None , control_parent = None) :
         '''
         length：关节的总长度
         
         '''
-        base.Base.__init__ (self , side , name , joint_number , joint_parent , control_parent)
+        base.Base.__init__ (self , side , name , jnt_number , jnt_parent , control_parent)
 
         self.rtype = 'Chain'
 
@@ -89,14 +89,14 @@ class Chain (base.Base) :
             if cmds.objExists (bpjnt) :
                 cmds.delete (bpjnt)
             else :
-                self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.joint_parent)
+                self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.jnt_parent)
                 # 给bp定位关节设置颜色方便识别
                 cmds.setAttr (self.bpjnt + '.overrideEnabled' , 1)
                 cmds.setAttr (self.bpjnt + '.overrideColor' , 13)
                 # 指定关节的父层级为上一轮创建出来的关节
-                self.joint_parent = self.bpjnt
+                self.jnt_parent = self.bpjnt
                 # 调整距离
-                cmds.setAttr (self.bpjnt + '.translateX' , self.length / self.joint_number)
+                cmds.setAttr (self.bpjnt + '.translateX' , self.length / self.jnt_number)
                 # 将bp关节添加到选择集里方便进行选择
                 pipelineUtils.Pipeline.create_set (self.bpjnt ,
                                                    set_name = '{}_{}{}_bpjnt_set'.format (self.side , self.name ,
@@ -127,10 +127,10 @@ class Chain (base.Base) :
             pass
         for bpjnt , jnt in zip (self.bpjnt_list , self.jnt_list) :
             # 场景里没有存在对应的关节，第一次创建绑定的情况
-            self.jnt = cmds.createNode ('joint' , name = jnt , parent = self.joint_parent)
+            self.jnt = cmds.createNode ('joint' , name = jnt , parent = self.jnt_parent)
             cmds.matchTransform (jnt , bpjnt)
             # 指定关节的父层级为上一轮创建出来的关节
-            self.joint_parent = self.jnt
+            self.jnt_parent = self.jnt
             # 将蒙皮关节添加到选择集里方便进行选择
             pipelineUtils.Pipeline.create_set (jnt ,
                                                set_name = '{}_{}{}_jnt_set'.format (self.side , self.name ,

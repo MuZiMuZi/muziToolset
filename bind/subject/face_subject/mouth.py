@@ -18,18 +18,18 @@ reload (base)
 class Mouth (base.Base) :
 
 
-    def __init__ (self , side , name , joint_number = 7 , joint_parent = None , control_parent = None) :
-        super ().__init__ (side , name , joint_number , joint_parent , control_parent)
+    def __init__ (self , side , name , jnt_number = 7 , jnt_parent = None , control_parent = None) :
+        super ().__init__ (side , name , jnt_number , jnt_parent , control_parent)
 
         self.rtype = 'Mouth'
         # 生成上部分的嘴唇
-        self.mouth_lip_upper = mouthLip.MouthLip (side = self.side , name = 'upper' , joint_number = 10,
-                                                  joint_parent = None ,
+        self.mouth_lip_upper = mouthLip.MouthLip (side = self.side , name = 'upper' , jnt_number = 10,
+                                                  jnt_parent = None ,
                                                   control_parent = None)
 
         # 生成下部分的嘴唇
-        self.mouth_lip_lower = mouthLip.MouthLip (side = self.side , name = 'lower' , joint_number = 10 ,
-                                                  joint_parent = None ,
+        self.mouth_lip_lower = mouthLip.MouthLip (side = self.side , name = 'lower' , jnt_number = 10 ,
+                                                  jnt_parent = None ,
                                                   control_parent = None)
 
 
@@ -118,13 +118,13 @@ class Mouth (base.Base) :
 
 if __name__ == '__main__' :
     def build_setup () :
-        mouth_m = mouth.Mouth (side = 'm' , name = '' , joint_number = 2 , joint_parent = None ,
+        mouth_m = mouth.Mouth (side = 'm' , name = '' , jnt_number = 2 , jnt_parent = None ,
                                control_parent = None)
         mouth_m.build_setup ()
 
 
     def build_rig () :
-        mouth_m = mouth.Mouth (side = 'm' , name = '' , joint_number = 2 , joint_parent = None ,
+        mouth_m = mouth.Mouth (side = 'm' , name = '' , jnt_number = 2 , jnt_parent = None ,
                                control_parent = None)
         mouth_m.build_rig ()
 

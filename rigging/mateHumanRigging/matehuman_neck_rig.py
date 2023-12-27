@@ -39,7 +39,7 @@ class Neck_Rig(matehuman_base_rig.Base_Rig) :
 	
 	def create_neck_rig(self) :
 		# 创建脖子的fk绑定系统
-		neck_system = matehuman_ikfk_rig.FK_Rig(self.drv_jnts , self.joint_parent , self.control_parent)
+		neck_system = matehuman_ikfk_rig.FK_Rig(self.drv_jnts , self.jnt_parent , self.control_parent)
 		neck_system._create_fk_chain_system(constraint = True)
 		
 		self.neck_zero = 'fkzero_' + self.drv_jnts[0]
@@ -48,6 +48,6 @@ class Neck_Rig(matehuman_base_rig.Base_Rig) :
 
 
 # example
-# m_neck = Neck_Rig(joint_parent , space_list )
+# m_neck = Neck_Rig(jnt_parent , space_list )
 #
 # m_neck.create_neck_rig()

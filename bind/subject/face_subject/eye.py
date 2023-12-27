@@ -19,9 +19,9 @@ reload(jointUtils)
 class Eye (chain.Chain) :
 	
 
-    def __init__ (self , side , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+    def __init__ (self , side , name = '' , jnt_number = 2 , length = 10 , jnt_parent = None ,
                   control_parent = None) :
-        super(Eye,self).__init__ (side , name , joint_number , length , joint_parent , control_parent)
+        super(Eye,self).__init__ (side , name , jnt_number , length , jnt_parent , control_parent)
         self.shape = 'circle'
         self.rtype = 'Eye'
         self.radius = 0.3
@@ -31,11 +31,11 @@ class Eye (chain.Chain) :
         self.iris_jnt_list = list ()
 
         # 生成上部分的眼皮
-        self.eye_lid_upper = eyeLid.EyeLid (side = self.side , name = 'upper' , joint_number = 7 , joint_parent = None ,
+        self.eye_lid_upper = eyeLid.EyeLid (side = self.side , name = 'upper' , jnt_number = 7 , jnt_parent = None ,
                                             control_parent = None)
 
         # 生成下部分的眼皮
-        self.eye_lid_lower = eyeLid.EyeLid (side = self.side , name = 'lower' , joint_number = 7 , joint_parent = None ,
+        self.eye_lid_lower = eyeLid.EyeLid (side = self.side , name = 'lower' , jnt_number = 7 , jnt_parent = None ,
                                             control_parent = None)
 
 
@@ -82,11 +82,11 @@ class Eye (chain.Chain) :
     def create_joint (self) :
         # 创建眼球的关节
         for bpjnt , jnt in zip (self.bpjnt_list , self.jnt_list) :
-            self.jnt = cmds.createNode ('joint' , name = jnt , parent = self.joint_parent)
+            self.jnt = cmds.createNode ('joint' , name = jnt , parent = self.jnt_parent)
             cons = cmds.parentConstraint (bpjnt , self.jnt , mo = False)
             cmds.delete (cons)
             # 指定关节的父层级为上一轮创建出来的关节
-            self.joint_parent = self.jnt
+            self.jnt_parent = self.jnt
 
         # 创建iris的关节
         for bpjnt , jnt in zip (self.iris_bpjnt_list , self.iris_jnt_list) :
@@ -357,21 +357,21 @@ class Eye (chain.Chain) :
 
 if __name__ == "__main__" :
     def build_setup () :
-        eye_l = eye.Eye (side = 'l' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+        eye_l = eye.Eye (side = 'l' , name = '' , jnt_number = 2 , length = 10 , jnt_parent = None ,
                          control_parent = None)
         eye_l.build_setup ()
 
-        eye_r = eye.Eye (side = 'r' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+        eye_r = eye.Eye (side = 'r' , name = '' , jnt_number = 2 , length = 10 , jnt_parent = None ,
                          control_parent = None)
         eye_r.build_setup ()
 
 
     def build_rig () :
-        eye_l = eye.Eye (side = 'l' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+        eye_l = eye.Eye (side = 'l' , name = '' , jnt_number = 2 , length = 10 , jnt_parent = None ,
                          control_parent = None)
         eye_l.build_rig ()
 
-        eye_r = eye.Eye (side = 'r' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+        eye_r = eye.Eye (side = 'r' , name = '' , jnt_number = 2 , length = 10 , jnt_parent = None ,
                          control_parent = None)
         eye_r.build_rig ()
 

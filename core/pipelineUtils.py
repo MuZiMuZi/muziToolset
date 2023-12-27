@@ -611,13 +611,13 @@ class Pipeline (object) :
 
     # 在给定的曲面上创建毛囊节点和关节节点
     @staticmethod
-    def create_joint_follicle_on_surface (surf_node , side , description , joint_number) :
+    def create_joint_follicle_on_surface (surf_node , side , description , jnt_number) :
         """
         在给定的曲面上创建毛囊节点和关节节点
         surf_node（str）:给定的曲面，需要创建毛囊节点和关节节点的曲面
         side（str）:边
         description(str)：描述
-        joint_number(int):需要创建的关节节点数量
+        jnt_number(int):需要创建的关节节点数量
 
         return:follicle_dict:存储数据,fol_grp,jnt_grp,ctrl_grp,connect_list
 
@@ -653,7 +653,7 @@ class Pipeline (object) :
             cmds.sets (make_skin_jnt_set , edit = True , forceElement = skin_jnt_set)
 
         # 循环制作
-        for index in range (joint_number) :
+        for index in range (jnt_number) :
             # 创建毛囊
             fol_shape = cmds.createNode ('follicle' , name = 'fol_{}_{}_{:03d}Shape'.format (side , description ,
                                                                                              index + 1))
@@ -669,7 +669,7 @@ class Pipeline (object) :
             cmds.connectAttr (fol_shape + '.outRotate' , fol_node + '.rotate')
             # 设置uv值
             cmds.setAttr (fol_shape + '.parameterU' , 0.5)
-            cmds.setAttr (fol_shape + '.parameterV' , float (index) / (joint_number - 1))
+            cmds.setAttr (fol_shape + '.parameterV' , float (index) / (jnt_number - 1))
 
             # 创建关节
             jnt = cmds.createNode ('joint' , name = 'jnt_{}_{}Skin_{:03d}'.format (side , description ,

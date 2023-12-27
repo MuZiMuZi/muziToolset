@@ -15,17 +15,17 @@ class LimbIK (chainIK.ChainIK) :
     """
 
 
-    def __init__ (self , side , name , joint_number = 3 , direction = [-1 , 0 , 0] , length = 10 , is_stretch = 1 ,
+    def __init__ (self , side , name , jnt_number = 3 , direction = [-1 , 0 , 0] , length = 10 , is_stretch = 1 ,
                   limbtype = None ,
-                  joint_parent = None ,
+                  jnt_parent = None ,
                   control_parent = None) :
         u"""
         创建手臂或者是腿部的四肢关节的IK绑定
         limbtype(str):给定的limbtype 是手臂还是腿部
         """
-        super ().__init__ (side , name , joint_number , direction , length , is_stretch , joint_parent , control_parent)
+        super ().__init__ (side , name , jnt_number , direction , length , is_stretch , jnt_parent , control_parent)
         self._rtype = 'LimbIK'
-        self.joint_number = joint_number
+        self.jnt_number = jnt_number
         # 判断给定的limbtype 是手臂还是腿部
         if limbtype == 'arm' :
             self.z_value = 1
@@ -49,7 +49,7 @@ class LimbIK (chainIK.ChainIK) :
 
         # 添加一个末端的iK关节用来制作singleIKhandle，
         self.endIK_handle = ('handle_{}_{}{}End_001'.format (self._side , self._name , self._rtype))
-        self.endIK_jnt = 'jnt_{}_{}{}_{:03d}'.format (self._side , self._name , self._rtype , self.joint_number + 1)
+        self.endIK_jnt = 'jnt_{}_{}{}_{:03d}'.format (self._side , self._name , self._rtype , self.jnt_number + 1)
 
 
     def create_joint (self) :
@@ -282,18 +282,18 @@ class LimbIK (chainIK.ChainIK) :
 
 if __name__ == '__main__' :
     def build_setup () :
-        custom = limbIK.LimbIK (side = 'l' , name = 'zz' , joint_number = 3 , direction = [-1 , 0 , 0] , length = 10 ,
+        custom = limbIK.LimbIK (side = 'l' , name = 'zz' , jnt_number = 3 , direction = [-1 , 0 , 0] , length = 10 ,
                                 is_stretch = 1 ,
                                 limbtype = 'arm' ,
-                                joint_parent = None ,
+                                jnt_parent = None ,
                                 control_parent = None)
         custom.build_setup ()
 
 
     def build_rig () :
-        custom = limbIK.LimbIK (side = 'l' , name = 'zz' , joint_number = 3 , direction = [-1 , 0 , 0] , length = 10 ,
+        custom = limbIK.LimbIK (side = 'l' , name = 'zz' , jnt_number = 3 , direction = [-1 , 0 , 0] , length = 10 ,
                                 limbtype = 'arm' ,
-                                joint_parent = None ,
+                                jnt_parent = None ,
                                 control_parent = None)
         custom.build_rig ()
 

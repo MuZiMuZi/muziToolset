@@ -3,7 +3,7 @@ from importlib import reload
 
 
 reload (eyeLid)
-eye_lid_upper = eyeLid.EyeLid (side = 'l' , name = 'upper' , joint_number = 7 , joint_parent = None ,
+eye_lid_upper = eyeLid.EyeLid (side = 'l' , name = 'upper' , jnt_number = 7 , jnt_parent = None ,
                                control_parent = None)
 # eye_lid_upper.build_setup ()
 eye_lid_upper.build_rig ()
@@ -15,7 +15,7 @@ from importlib import reload
 
 
 reload (brow)
-brow_m = brow.Brow (side = 'm' , joint_parent = None , control_parent = None)
+brow_m = brow.Brow (side = 'm' , jnt_parent = None , control_parent = None)
 brow_m.build_setup ()
 brow_m.build_rig ()
 #mouth
@@ -24,7 +24,7 @@ from importlib import reload
 
 
 reload (mouth)
-mouth_m = mouth.Mouth (side = 'm' , name = '' , joint_number = 2 , joint_parent = None ,
+mouth_m = mouth.Mouth (side = 'm' , name = '' , jnt_number = 2 , jnt_parent = None ,
                        control_parent = None)
 mouth_m.build_setup ()
 
@@ -37,7 +37,7 @@ from importlib import reload
 
 reload (nose)
 
-nose_m = nose.Nose (joint_parent = None , control_parent = None)
+nose_m = nose.Nose (jnt_parent = None , control_parent = None)
 nose_m.build_setup ()
 nose_m.build_rig ()
 
@@ -48,8 +48,8 @@ from importlib import reload
 
 
 reload (tongue)
-tongue_m = tongue.Tongue (side = 'm' , name = '' , joint_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
-                          joint_parent = None ,
+tongue_m = tongue.Tongue (side = 'm' , name = '' , jnt_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
+                          jnt_parent = None ,
                           control_parent = None)
 tongue_m.build_setup ()
 tongue_m.build_rig ()
@@ -61,7 +61,7 @@ from importlib import reload
 
 
 reload (cheek)
-cheek_m = cheek.Cheek (side = 'm' , name = '' , joint_number = 8 , joint_parent = None ,
+cheek_m = cheek.Cheek (side = 'm' , name = '' , jnt_number = 8 , jnt_parent = None ,
                        control_parent = None)
 cheek_m.build_setup ()
 cheek_m.build_rig ()
@@ -72,7 +72,7 @@ from importlib import reload
 
 
 reload (jaw)
-jaw_m = jaw.Jaw (side = 'm' , name = '' , joint_number = 2 , joint_parent = None ,
+jaw_m = jaw.Jaw (side = 'm' , name = '' , jnt_number = 2 , jnt_parent = None ,
                        control_parent = None)
 jaw_m.build_setup ()
 jaw_m.build_rig ()
@@ -83,10 +83,10 @@ from importlib import reload
 
 
 reload (eye)
-eye_l = eye.Eye (side = 'l' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+eye_l = eye.Eye (side = 'l' , name = '' , jnt_number = 2 , length = 10 , jnt_parent = None ,
                  control_parent = None)
 eye_l.build_setup ()
-eye_r = eye.Eye (side = 'r' , name = '' , joint_number = 2 , length = 10 , joint_parent = None ,
+eye_r = eye.Eye (side = 'r' , name = '' , jnt_number = 2 , length = 10 , jnt_parent = None ,
                  control_parent = None)
 eye_r.build_setup ()
 
@@ -99,10 +99,10 @@ from importlib import reload
 
 
 reload (ear)
-ear_l = ear.Ear (side = 'l' , joint_parent = None , control_parent = None)
+ear_l = ear.Ear (side = 'l' , jnt_parent = None , control_parent = None)
 ear_l.build_setup ()
 
-ear_r = ear.Ear (side = 'r' , joint_parent = None , control_parent = None)
+ear_r = ear.Ear (side = 'r' , jnt_parent = None , control_parent = None)
 ear_r.build_setup ()
 
 

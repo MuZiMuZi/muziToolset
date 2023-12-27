@@ -18,14 +18,14 @@ class MouthLip (base.Base) :
     skin_curve = ['crv_m_upperMouthLipSkin_001' , 'crv_m_lowerMouthLipSkin_001']
 
 
-    def __init__ (self , side , name , joint_number = 7 , joint_parent = None , control_parent = None) :
-        super ().__init__ (side , name , joint_number , joint_parent , control_parent)
+    def __init__ (self , side , name , jnt_number = 7 , jnt_parent = None , control_parent = None) :
+        super ().__init__ (side , name , jnt_number , jnt_parent , control_parent)
         # 定位用的曲线
         self.name = name
         self.shape = 'cube'
         self.rtype = 'MouthLip'
         self.radius = 0.1
-        self.joint_number = joint_number
+        self.jnt_number = jnt_number
 
         self.curve_jnt_list = list ()
         self.skin_jnt_list = list ()
@@ -42,7 +42,7 @@ class MouthLip (base.Base) :
         super ().create_namespace ()
         # 整理与控制器有关的曲线的名称规范层级结构
         self.curve = 'crv_{}_{}{}_001'.format (self.side , self.name , self.rtype)
-        for index in range (self.joint_number) :
+        for index in range (self.jnt_number) :
             self.curve_jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , index + 1))
         self.curve_jnt_grp = 'grp_{}_{}{}Jnts_001'.format (self.side , self.name , self.rtype)
         self.curve_nodes_grp = 'grp_{}_{}{}RigNodes_001'.format (self.side , self.name , self.rtype)
@@ -82,7 +82,7 @@ class MouthLip (base.Base) :
         # 重建self.curve用来控制曲线
         self.curve = \
             cmds.rebuildCurve (self.curve , ch = 1 , rpo = 1 , rt = 0 , end = 1 , kr = 0 , kcp = 0 , kep = 1 , kt = 0 ,
-                               s = self.joint_number-3 , d = 3 , tol = 0.01) [0]
+                               s = self.jnt_number-3 , d = 3 , tol = 0.01) [0]
         cmds.setAttr (self.curve + '.visibility' , 1)
 
         # 在曲线上创建关节用来蒙皮曲线创建控制器的约束

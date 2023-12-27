@@ -18,8 +18,8 @@ class Side_Brow(base.Base):
     """
     用来创建单边的眉毛
     """
-    def __init__ (self ,side = '' , name = '' , joint_number = 7 , joint_parent = None , control_parent = None):
-        super ().__init__ (side , name , joint_number , joint_parent , control_parent)
+    def __init__ (self ,side = '' , name = '' , jnt_number = 7 , jnt_parent = None , control_parent = None):
+        super ().__init__ (side , name , jnt_number , jnt_parent , control_parent)
         self.radius = 0.25
         self.shape = 'ball'
 
@@ -127,13 +127,13 @@ class Side_Brow(base.Base):
         self.follicle_dict = pipelineUtils.Pipeline.create_joint_follicle_on_surface (self.drive_suf ,
                                                                                              self.side ,
                                                                                              self.rtype ,
-                                                                                             joint_number = 7)
+                                                                                             jnt_number = 7)
 
         # 创建右边的曲面上的毛囊和权重关节
         self.brow_r.follicle_dict = pipelineUtils.Pipeline.create_joint_follicle_on_surface (self.brow_r.drive_suf ,
                                                                                              self.brow_r.side ,
                                                                                              self.brow_r.rtype ,
-                                                                                             joint_number = 7)
+                                                                                             jnt_number = 7)
 
 
     def create_ctrl (self) :
@@ -313,12 +313,12 @@ class Side_Brow(base.Base):
 
 if __name__ == "__main__" :
     def build_setup () :
-        brow_m = brow.Brow (side = 'm' , joint_parent = None , control_parent = None)
+        brow_m = brow.Brow (side = 'm' , jnt_parent = None , control_parent = None)
         brow_m.build_setup ()
 
 
     def build_rig () :
-        brow_m = brow.Brow (side = 'm' , joint_parent = None , control_parent = None)
+        brow_m = brow.Brow (side = 'm' , jnt_parent = None , control_parent = None)
         brow_m.build_rig ()
 
 

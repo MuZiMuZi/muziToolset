@@ -30,9 +30,9 @@ from .import ikfk_rig
 class Foot_Rig(leg_rig.Leg_Rig) :
 
 
-    def __init__(self , bp_joints = None , joint_parent = None , control_parent = None , mirror = True ,
+    def __init__(self , bp_joints = None , jnt_parent = None , control_parent = None , mirror = True ,
                  space_list = None) :
-        super(Foot_Rig , self).__init__(bp_joints = bp_joints , joint_parent = joint_parent ,
+        super(Foot_Rig , self).__init__(bp_joints = bp_joints , jnt_parent = jnt_parent ,
                                         control_parent = control_parent , space_list = space_list)
         self.mirror = mirror
         self.foot_bp_joints = self.get_modular_bp_joints(self.foot_rig)

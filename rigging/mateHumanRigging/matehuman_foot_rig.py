@@ -43,7 +43,7 @@ class Foot_Rig(matehuman_base_rig.Base_Rig) :
 		
 		self.foot_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('foot_{}'.format(self.side))
 		self.ball_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('ball_{}'.format(self.side))
-		self.joint_parent = 'ikfkjnt_' + self.foot_drv
+		self.jnt_parent = 'ikfkjnt_' + self.foot_drv
 	
 	
 	def create_foot_rig(self) :
@@ -101,23 +101,23 @@ class Foot_Rig(matehuman_base_rig.Base_Rig) :
 		
 		# 创建脚趾各模块的FK关节链
 		
-		bigtoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.bigtoe_drv , self.joint_parent , self.ball_ctrl_output ,
+		bigtoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.bigtoe_drv , self.jnt_parent , self.ball_ctrl_output ,
 		                                             redius = 3)
 		bigtoe_fk_system._create_fk_chain_system(constraint = True)
 		
-		indextoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.indextoe_drv , self.joint_parent , self.ball_ctrl_output ,
+		indextoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.indextoe_drv , self.jnt_parent , self.ball_ctrl_output ,
 		                                               redius = 3)
 		indextoe_fk_system._create_fk_chain_system(constraint = True)
 		
-		middletoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.middletoe_drv , self.joint_parent , self.ball_ctrl_output ,
+		middletoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.middletoe_drv , self.jnt_parent , self.ball_ctrl_output ,
 		                                                redius = 3)
 		middletoe_fk_system._create_fk_chain_system(constraint = True)
 		
-		littletoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.littletoe_drv , self.joint_parent , self.ball_ctrl_output ,
+		littletoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.littletoe_drv , self.jnt_parent , self.ball_ctrl_output ,
 		                                                redius = 3)
 		littletoe_fk_system._create_fk_chain_system(constraint = True)
 		
-		ringtoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.ringtoe_drv , self.joint_parent , self.ball_ctrl_output ,
+		ringtoe_fk_system = matehuman_ikfk_rig.FK_Rig(self.ringtoe_drv , self.jnt_parent , self.ball_ctrl_output ,
 		                                              redius = 3)
 		ringtoe_fk_system._create_fk_chain_system(constraint = True)
 

@@ -1016,7 +1016,7 @@ class Control (object) :
 
 
     @staticmethod
-    def create_ribbon (name , control_parent , joint_number = 5) :
+    def create_ribbon (name , control_parent , jnt_number = 5) :
         """
         创建ribbon控制器，给动画师更细致的动画效果
         思路：通过给定关节的名称来创建ribbon控制，通过曲线来生成曲面制作ribbon绑定，然后让生成的关节绑定在曲面上
@@ -1026,7 +1026,7 @@ class Control (object) :
             ribbon.side (str): ribbon's ribbon.side
             ribbon.description (str): ribbon's ribbon.description
             ribbon.index (int): ribbon's ribbon.index
-            joint_number (int): how many joints need to be attached to the ribbon, default is 9
+            jnt_number (int): how many joints need to be attached to the ribbon, default is 9
             control_parent:
 
         """
@@ -1074,7 +1074,7 @@ class Control (object) :
         cmds.rebuildCurve (temp_curve , degree = 3 , replaceOriginal = True , rebuildType = 0 , endKnots = 1 ,
                            keepRange = 0 ,
                            keepControlPoints = False , keepEndPoints = True , keepTangents = False ,
-                           spans = joint_number + 1)
+                           spans = jnt_number + 1)
         # 复制这条曲线
         temp_curve_02 = cmds.duplicate (temp_curve) [0]
         # 移动两条曲线的位置来制作曲面
@@ -1111,7 +1111,7 @@ class Control (object) :
         else :
             cmds.sets (make_ribbon_jnt_set , edit = True , forceElement = ribbon_jnt_set)
 
-        for i in range (joint_number) :
+        for i in range (jnt_number) :
             # 创建毛囊
             fol_shape = cmds.createNode ('follicle' , name = 'fol_{}_{}Ribbon{:03d}_{:03d}Shape'.format (ribbon.side ,
                                                                                                          ribbon.description ,
@@ -1129,7 +1129,7 @@ class Control (object) :
             cmds.connectAttr (fol_shape + '.outRotate' , fol + '.rotate')
             # 设置uv值
             cmds.setAttr (fol_shape + '.parameterU' , 0.5)
-            cmds.setAttr (fol_shape + '.parameterV' , float (i) / (joint_number - 1))
+            cmds.setAttr (fol_shape + '.parameterV' , float (i) / (jnt_number - 1))
 
             # 创建关节
             jnt = cmds.createNode ('joint' ,

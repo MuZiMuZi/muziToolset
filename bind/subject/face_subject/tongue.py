@@ -16,10 +16,10 @@ class Tongue(chainFK.ChainFK) :
 	
 	
 	
-	def __init__(self , side = 'm' , name = '' , joint_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
-	             joint_parent = None ,
+	def __init__(self , side = 'm' , name = '' , jnt_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
+	             jnt_parent = None ,
 	             control_parent = None) :
-		super().__init__(side , name , joint_number , direction , length , joint_parent , control_parent)
+		super().__init__(side , name , jnt_number , direction , length , jnt_parent , control_parent)
 		self.rtype = 'Tongue'
 		self.radius = 0.35
 	
@@ -56,16 +56,16 @@ class Tongue(chainFK.ChainFK) :
 
 if __name__ == '__main__' :
 	def build_setup() :
-		tongue_m = tongue.Tongue(side = 'm' , name = '' , joint_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
-		                         joint_parent = None ,
+		tongue_m = tongue.Tongue(side = 'm' , name = '' , jnt_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
+		                         jnt_parent = None ,
 		                         control_parent = None)
 		tongue_m.build_setup()
 	
 	
 	
 	def build_rig() :
-		tongue_m = tongue.Tongue(side = 'm' , name = '' , joint_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
-		                         joint_parent = None ,
+		tongue_m = tongue.Tongue(side = 'm' , name = '' , jnt_number = 5 , direction = [-1 , 0 , 0] , length = 10 ,
+		                         jnt_parent = None ,
 		                         control_parent = None)
 		tongue_m.build_rig()
 	

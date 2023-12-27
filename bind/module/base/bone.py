@@ -137,14 +137,14 @@ class Bone (object) :
     """
 
 
-    def __init__ (self , side , name , joint_number , joint_parent = None , control_parent = None) :
+    def __init__ (self , side , name , jnt_number , jnt_parent = None , control_parent = None) :
         """
         根据给定的变量创建关节和控制器
 
         :param side(str): 关节的边
         :param name(str): 关节的模块名称
-        :param joint_number(int): 关节的数量
-        :param joint_parent(str): 生成的关节的父层级
+        :param jnt_number(int): 关节的数量
+        :param jnt_parent(str): 生成的关节的父层级
         :param control_parent(str): 生成的控制器的父层级
         """
         self.top_main_group = 'grp_m_group_001'
@@ -162,13 +162,13 @@ class Bone (object) :
         # 初始化组件的边和关节数量
         self.side = side
         self.name = name
-        self.joint_number = joint_number
+        self.jnt_number = jnt_number
 
         # 设置关节的父层级和控制器的父层级
-        self.joint_parent = joint_parent
+        self.jnt_parent = jnt_parent
         self.control_parent = control_parent
-        if not self.joint_parent :
-            self.joint_parent = self.top_jnt_grp
+        if not self.jnt_parent :
+            self.jnt_parent = self.top_jnt_grp
         if not self.control_parent :
             self.control_parent = self.top_ctrl_grp
         self.top_bpjnt_grp = 'grp_m_bpjnt_001'
@@ -179,7 +179,7 @@ class Bone (object) :
         self.shape = 'circle'
         self.radius = 5
 
-        # 根据给定的边，名称和joint_number生成列表来存储创建的名称
+        # 根据给定的边，名称和jnt_number生成列表来存储创建的名称
         self.bpjnt_list = list ()
         self.jnt_list = list ()
         self.zero_list = list ()
@@ -222,7 +222,7 @@ class Bone (object) :
         u"""
         创建名称进行规范整理
         """
-        for i in range (self.joint_number) :
+        for i in range (self.jnt_number) :
             self.bpjnt_list.append ('bpjnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
             self.jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
             self.zero_list.append ('zero_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
@@ -245,7 +245,7 @@ class Bone (object) :
             if cmds.objExists (bpjnt) :
                 cmds.delete (bpjnt)
             else :
-                self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.bpjnt_grp)
+                self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.top_main_group)
                 # 给bp定位关节设置颜色方便识别
                 cmds.setAttr (self.bpjnt + '.overrideEnabled' , 1)
                 cmds.setAttr (self.bpjnt + '.overrideColor' , 13)
@@ -299,7 +299,7 @@ class Bone (object) :
             pass
         for bpjnt , jnt in zip (self.bpjnt_list , self.jnt_list) :
             # 场景里没有存在对应的关节，第一次创建绑定的情况
-            jnt = cmds.createNode ('joint' , name = jnt , parent = self.joint_parent)
+            jnt = cmds.createNode ('joint' , name = jnt , parent = self.jnt_parent)
             # 将蒙皮关节添加到选择集里方便进行选择
             pipelineUtils.Pipeline.create_set (jnt ,
                                                set_name = '{}_{}{}_jnt_set'.format (self.side , self.name ,

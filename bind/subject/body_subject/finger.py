@@ -8,11 +8,11 @@ class Finger(chainFK.ChainFK) :
 	
 	
 	
-	def __init__(self , side , name , joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 , joint_parent = None ,
+	def __init__(self , side , name , jnt_number = 4 , direction = [-1 , 0 , 0] , length = 10 , jnt_parent = None ,
 	             control_parent = None) :
 		if side == 'r' :
 			direction = [1 , 0 , 0]
-		super().__init__(side , name , joint_number , direction , length , joint_parent , control_parent)
+		super().__init__(side , name , jnt_number , direction , length , jnt_parent , control_parent)
 		
 		self._rtype = 'Finger'
 		self.radius = 2
@@ -45,15 +45,15 @@ class Finger(chainFK.ChainFK) :
 
 if __name__ == '__main__' :
 	def x() :
-		finger_l = finger.Finger(side = 'l' , name = 'zz' , joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
-		                         joint_parent = None , control_parent = None)
+		finger_l = finger.Finger(side = 'l' , name = 'zz' , jnt_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
+		                         jnt_parent = None , control_parent = None)
 		finger_l.build_setup()
 	
 	
 	
 	def y() :
-		finger_l = finger.Finger(side = 'l' , name = 'zz' , joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
-		                         joint_parent = None , control_parent = None)
+		finger_l = finger.Finger(side = 'l' , name = 'zz' , jnt_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
+		                         jnt_parent = None , control_parent = None)
 		finger_l.build_rig()
 	
 	

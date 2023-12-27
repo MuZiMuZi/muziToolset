@@ -18,8 +18,8 @@ class Nose(base.Base) :
 	
 	
 	
-	def __init__(self , side = 'm' , name = '' , joint_number = 2 , joint_parent = None , control_parent = None) :
-		super().__init__(side , name , joint_number , joint_parent , control_parent)
+	def __init__(self , side = 'm' , name = '' , jnt_number = 2 , jnt_parent = None , control_parent = None) :
+		super().__init__(side , name , jnt_number , jnt_parent , control_parent)
 		self.shape = 'cube'
 		self.rtype = 'Nose'
 		self.radius = 0.2
@@ -57,7 +57,7 @@ class Nose(base.Base) :
 		根据定位的bp关节创建关节
 		'''
 		# 根据bp关节创建新的关节
-		parent = self.joint_parent
+		parent = self.jnt_parent
 		for bpjnt , jnt in zip(self.bpjnt_list , self.jnt_list) :
 			jnt = cmds.createNode('joint' , name = jnt , parent = parent)
 			cmds.matchTransform(jnt , bpjnt)
@@ -120,13 +120,13 @@ class Nose(base.Base) :
 
 if __name__ == "__main__" :
 	def build_setup() :
-		nose_m = nose.Nose(joint_parent = None , control_parent = None)
+		nose_m = nose.Nose(jnt_parent = None , control_parent = None)
 		nose_m.build_setup()
 	
 	
 	
 	def build_rig() :
-		nose_m = nose.Nose(joint_parent = None , control_parent = None)
+		nose_m = nose.Nose(jnt_parent = None , control_parent = None)
 		nose_m.build_rig()
 	
 	

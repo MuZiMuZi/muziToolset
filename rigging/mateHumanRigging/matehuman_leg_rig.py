@@ -40,7 +40,7 @@ class Leg_rig(matehuman_base_rig.Base_Rig) :
 		:return:
 		'''
 		# 创建腿部位的绑定
-		leg_system = matehuman_ikfk_rig.IKFK_Rig(self.drv_jnts , self.joint_parent , self.control_parent ,
+		leg_system = matehuman_ikfk_rig.IKFK_Rig(self.drv_jnts , self.jnt_parent , self.control_parent ,
 		                                            self.space_list , self.stretch, redius = 12)
 		leg_system.create_ikfk_chain_rig(Y_value = -1)
 		
@@ -56,6 +56,6 @@ class Leg_rig(matehuman_base_rig.Base_Rig) :
 		
 
 # example
-# l_leg = matehuman_leg_rig.Leg_rig( 'l',joint_parent , space_list = None,stretch = True)
+# l_leg = matehuman_leg_rig.Leg_rig( 'l',jnt_parent , space_list = None,stretch = True)
 #
 # l_leg.create_leg_rig()

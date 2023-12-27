@@ -42,7 +42,7 @@ class Arm_rig(matehuman_base_rig.Base_Rig) :
 		# 创建锁骨部位的绑定
 		self.create_clavicle_rig()
 		# 创建手臂部位的绑定
-		arm_system = matehuman_ikfk_rig.IKFK_Rig(self.drv_jnts , self.joint_parent , self.clavicle_output ,
+		arm_system = matehuman_ikfk_rig.IKFK_Rig(self.drv_jnts , self.jnt_parent , self.clavicle_output ,
 		                                         self.space_list , self.stretch , redius = 12)
 		arm_system.create_ikfk_chain_rig(Y_value = 1)
 		
@@ -78,6 +78,6 @@ class Arm_rig(matehuman_base_rig.Base_Rig) :
 
 
 # example
-# l_arm = matehuman_arm_rig.Arm_rig( 'l',joint_parent  , space_list = None,stretch = True)
+# l_arm = matehuman_arm_rig.Arm_rig( 'l',jnt_parent  , space_list = None,stretch = True)
 #
 # l_arm.create_arm_rig()

@@ -36,7 +36,7 @@ class Joint (object) :
         """
         self.jnt = jnt
         self.suffix = None
-        self.joint_parent = None
+        self.jnt_parent = None
         self.joints_chain = None
         self.driven_joint = None
         self.driver_joint = None
@@ -186,12 +186,12 @@ class Joint (object) :
 
     # 通过放置的模板关节生成相应的IK、FK和Bindjoint
     @staticmethod
-    def create_chain (bp_joints , suffix , joint_parent = None) :
+    def create_chain (bp_joints , suffix , jnt_parent = None) :
         '''通过放置的模板关节生成相应的IK、FK和Bindjoint
 
         bp_joints(list): 用于放置模板的关节列表。
         suffix(str):要添加到关节的后缀.
-        joint_parent(str):关节的父层级物体.
+        jnt_parent(str):关节的父层级物体.
 
         :return(list):生成的关节列表.
         '''
@@ -205,9 +205,9 @@ class Joint (object) :
             jnt_new = cmds.createNode ('joint' , name = jnt_new_name.name)
             cmds.matchTransform (jnt_new , jnt , position = True , rotation = True)
             cmds.makeIdentity (jnt_new , apply = True , translate = True , rotate = True , scale = True)
-            if joint_parent :
-                cmds.parent (jnt_new , joint_parent)
-            joint_parent = jnt_new
+            if jnt_parent :
+                cmds.parent (jnt_new , jnt_parent)
+            jnt_parent = jnt_new
             joints_chain.append (jnt_new)
         cmds.setAttr (bp_joints [0] + '.visibility' , 0)
         return joints_chain
@@ -215,12 +215,12 @@ class Joint (object) :
 
     # 创建mateHuman的IK,FK 的关节链
     @staticmethod
-    def create_mateHuman_chain (drv_jnts , prefix , joint_parent = None , constraint = False) :
+    def create_mateHuman_chain (drv_jnts , prefix , jnt_parent = None , constraint = False) :
         '''创建mateHuman的IK,FK 的关节链
 
         drv_jnts(list): 用于放置模板的关节列表。mateHuman的drv_jnts
         prefix(str):要添加到关节的前缀.
-        joint_parent(str):关节的父层级物体.
+        jnt_parent(str):关节的父层级物体.
         constraint(bool)：新创建出来的关节是否需要与旧关节做约束
 
         :return(list):生成的关节列表.
@@ -236,9 +236,9 @@ class Joint (object) :
             if constraint :
                 cmds.parentConstraint (jnt_new , jnt , mo = True)
                 cmds.scaleConstraint (jnt_new , jnt , mo = True)
-            if joint_parent :
-                cmds.parent (jnt_new , joint_parent)
-            joint_parent = jnt_new
+            if jnt_parent :
+                cmds.parent (jnt_new , jnt_parent)
+            jnt_parent = jnt_new
             joints_chain.append (jnt_new)
         cmds.setAttr (joints_chain [0] + '.visibility' , 0)
         return joints_chain
@@ -409,12 +409,12 @@ class Joint (object) :
 
     # 关节重采样，选择起始关节和末端关节，在二者中间重新构建指定数量的关节链条
     @staticmethod
-    def resample_joint (startJoint , endJoint , joint_number) :
+    def resample_joint (startJoint , endJoint , jnt_number) :
         """
         关节重采样，选择起始关节和末端关节，在二者中间重新构建指定数量的关节链条
         startJoint(str):起始关节
         endJoint(str):末端关节
-        joint_number(int)：指定数量的关节链条
+        jnt_number(int)：指定数量的关节链条
         """
         jnt_parent = startJoint
         # 获取起始关节与末端关节之间的距离
@@ -422,17 +422,17 @@ class Joint (object) :
             cmds.parent (endJoint , startJoint)
         except :
             pass
-        tx_value = cmds.getAttr (endJoint + '.translateX') / joint_number
+        tx_value = cmds.getAttr (endJoint + '.translateX') / jnt_number
         cmds.parent (endJoint , world = True)
         cmds.delete (cmds.listRelatives (startJoint , children = True))
         # 根据指定的关节数量，循环创建对应的关节
-        for index in range (joint_number) :
+        for index in range (jnt_number) :
             jnt = cmds.createNode ('joint' , name = startJoint + '_{:03d}'.format (index))
             cmds.matchTransform (jnt , startJoint)
             cmds.parent (jnt , jnt_parent)
             cmds.setAttr (jnt + '.translateX' , tx_value)
             jnt_parent = jnt
-        cmds.parent (endJoint , startJoint + '_{:03d}'.format (joint_number - 1))
+        cmds.parent (endJoint , startJoint + '_{:03d}'.format (jnt_number - 1))
 
 
     # 按照选择的顺序将关节组成关节链条
@@ -652,10 +652,10 @@ class Joint_Resampling (QDialog) :
         self.end_line = QLineEdit ()
         self.end_pick_btn = QPushButton ('拾取末端关节')
 
-        # 在joint_number_layout 里面添加控件
-        self.joint_number_label = QLabel ('joint_number:')
-        self.joint_number_spine = QSpinBox ()
-        self.joint_number_spine.setValue (2)
+        # 在jnt_number_layout 里面添加控件
+        self.jnt_number_label = QLabel ('jnt_number:')
+        self.jnt_number_spine = QSpinBox ()
+        self.jnt_number_spine.setValue (2)
 
         #
         self.resample_btn = QPushButton ('resample')
@@ -674,8 +674,8 @@ class Joint_Resampling (QDialog) :
         self.end_layout.addWidget (self.end_pick_btn)
 
         self.joint_layout = QHBoxLayout ()
-        self.joint_layout.addWidget (self.joint_number_label)
-        self.joint_layout.addWidget (self.joint_number_spine)
+        self.joint_layout.addWidget (self.jnt_number_label)
+        self.joint_layout.addWidget (self.jnt_number_spine)
         self.joint_layout.addStretch ()
 
         self.main_layout = QVBoxLayout (self)
@@ -724,6 +724,6 @@ class Joint_Resampling (QDialog) :
     def clicked_resample_btn (self) :
         startJoint = self.start_line.text ()
         endJoint = self.end_line.text ()
-        joint_number = self.joint_number_spine.value ()
+        jnt_number = self.jnt_number_spine.value ()
 
-        Joint.resample_joint (startJoint , endJoint , joint_number)
+        Joint.resample_joint (startJoint , endJoint , jnt_number)

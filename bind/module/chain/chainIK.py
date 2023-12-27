@@ -12,9 +12,9 @@ reload (chain)
 class ChainIK (chain.Chain) :
 
 
-    def __init__ (self , side , name , joint_number , direction , length = 10 , is_stretch = 1 , joint_parent = None ,
+    def __init__ (self , side , name , jnt_number , direction , length = 10 , is_stretch = 1 , jnt_parent = None ,
                   control_parent = None) :
-        super ().__init__ (side , name , joint_number , length , joint_parent , control_parent)
+        super ().__init__ (side , name , jnt_number , length , jnt_parent , control_parent)
         u"""
         用来创建ik关节Spline链条的绑定
         length(int)：关节的总长度
@@ -24,13 +24,13 @@ class ChainIK (chain.Chain) :
 
         self._rtype = 'ChainIK'
 
-        self.interval = length / (self.joint_number - 1)
+        self.interval = length / (self.jnt_number - 1)
         self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
         self.is_stretch = is_stretch
 
         self.set_shape ('cube')
         self.radius = 2
-        # 根据给定的边，名称和joint_number生成列表来存储创建的名称
+        # 根据给定的边，名称和jnt_number生成列表来存储创建的名称
         self.cluster_list = list ()
         self.ik_curve = None
         self.ik_handle = None
@@ -42,7 +42,7 @@ class ChainIK (chain.Chain) :
         创建ik绑定系统的命名规范
         '''
         super ().create_namespace ()
-        for i in range (self.joint_number) :
+        for i in range (self.jnt_number) :
             self.cluster_list.append ('cluster_{}_{}{}_{:03d}'.format (self._side , self._name , self._rtype , i + 1))
 
         self.ik_curve = ('curve_{}_{}{}_001'.format (self._side , self._name , self._rtype))
@@ -56,7 +56,7 @@ class ChainIK (chain.Chain) :
 
         curve_points = list ()
         # 查询所有关节的位置信息，将所有关节的位置信息保存到curve_points里
-        for joint_number , jnt in enumerate (self.jnt_list) :
+        for jnt_number , jnt in enumerate (self.jnt_list) :
             pos = cmds.xform (jnt , q = 1 , t = 1 , ws = 1)
             curve_points.append (pos)
         # 创建ik曲线
@@ -69,8 +69,8 @@ class ChainIK (chain.Chain) :
 
         # 选择曲线上所有点来创建cluster
         cvs = cmds.ls (self.ik_curve + '.cv[0:]' , fl = 1)
-        for joint_number , cv in enumerate (cvs) :
-            cluster = cmds.cluster (cv , n = self.cluster_list [joint_number]) [-1]
+        for jnt_number , cv in enumerate (cvs) :
+            cluster = cmds.cluster (cv , n = self.cluster_list [jnt_number]) [-1]
             cmds.parent (cluster , self.control_parent)
             cmds.setAttr (cluster + '.v' , 0)
 
@@ -93,8 +93,8 @@ class ChainIK (chain.Chain) :
         self.build_ikSpline ()
 
         # 将创建好的cluster 放到对应的控制器层级组下
-        for joint_number , cluster in enumerate (self.cluster_list) :
-            cmds.parent (cluster + 'Handle' , self.ctrl_list [joint_number])
+        for jnt_number , cluster in enumerate (self.cluster_list) :
+            cmds.parent (cluster + 'Handle' , self.ctrl_list [jnt_number])
 
         # 启用ikhandle的高级扭曲控制
         cmds.setAttr (self.ik_handle + '.dTwistControlEnable' , 1)
@@ -119,9 +119,9 @@ class ChainIK (chain.Chain) :
         """
 
         # 设置中间的cluster的权重
-        for joint_number , driven in enumerate (self.driven_list) :
-            if self.ctrl_list [joint_number] not in [self.ctrl_list [0] , self.ctrl_list [-1]] :
-                weight = (1.00 / (self.joint_number - 1)) * joint_number
+        for jnt_number , driven in enumerate (self.driven_list) :
+            if self.ctrl_list [jnt_number] not in [self.ctrl_list [0] , self.ctrl_list [-1]] :
+                weight = (1.00 / (self.jnt_number - 1)) * jnt_number
                 cmds.pointConstraint (self.ctrl_list [-1] , driven , w = weight , mo = 1)
                 cmds.pointConstraint (self.ctrl_list [0] , driven , w = 1 - weight , mo = 1)
         #
@@ -144,7 +144,7 @@ class ChainIK (chain.Chain) :
         cmds.connectAttr ('{}.arcLength'.format (ik_info) , stretch_node + '.input1X')
 
         # 将曲线缩放的倍数连接回来链接关节的缩放
-        for i in range (self.joint_number) :
+        for i in range (self.jnt_number) :
             mult_node = cmds.createNode ('multDoubleLinear' , name = self.jnt_list [i].replace (' jnt' , 'mult'))
             tx_value = cmds.getAttr (self.jnt_list [i] + '.translateX')
             cmds.setAttr (mult_node + '.input2' , tx_value)
@@ -154,14 +154,14 @@ class ChainIK (chain.Chain) :
 
 if __name__ == '__main__' :
     def x () :
-        custom = chainIK.ChainIK (side = 'l' , name = 'zz' , joint_number = 5 , direction = [1 , 0 , 0] ,
-                                  joint_parent = None , control_parent = None)
+        custom = chainIK.ChainIK (side = 'l' , name = 'zz' , jnt_number = 5 , direction = [1 , 0 , 0] ,
+                                  jnt_parent = None , control_parent = None)
         custom.build_setup ()
 
 
     def y () :
-        custom = chainIK.ChainIK (side = 'l' , name = 'zz' , joint_number = 5 , direction = [1 , 0 , 0] ,
-                                  joint_parent = None , control_parent = None)
+        custom = chainIK.ChainIK (side = 'l' , name = 'zz' , jnt_number = 5 , direction = [1 , 0 , 0] ,
+                                  jnt_parent = None , control_parent = None)
         custom.build_rig ()
 
 

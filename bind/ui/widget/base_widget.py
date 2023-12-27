@@ -83,7 +83,11 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         self.delete_btn.setVisible (True)
         # Todo
         # 3，将获取组件的属性用来创建用于关节定位的bp关节
+        #获取组件的属性
         self.parse_base ()
+        #创建用来定位的bp关节
+        self.build_setup()
+
         # 4.获取组件的属性来修改custom_widget里item的名称
 
 
@@ -99,12 +103,9 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
 
 
     def build_setup (self) :
-        # 读取输入信息
-        self.parse_base ()
-        #
         # # 生成定位关节系统
-        # self.setup = base.Base (self.side , self.name , self.joint_number , self.joint_parent , self.control_parent)
-        # self.setup.build_setup ()
+        self.setup = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.control_parent)
+        self.setup.build_setup ()
 
 
 def main () :
@@ -136,24 +137,24 @@ class Setting_Widget (QMainWindow) :
     # 分析base_widget中的输入并将其作为参数返回
     def parse_base_widget (self) :
         """ 分析base_widget中的输入并将其作为参数返回
-        获取Side (side) , name,joint_number,jnt_parent,control_parent
+        获取Side (side) , name,jnt_number,jnt_parent,control_parent
         """
         side = self.base_widget.side_cbox.currentText ()
         name = self.base_widget.name_edit.text ()
-        joint_number = self.base_widget.jnt_number_sbox.currentText ()
+        jnt_number = self.base_widget.jnt_number_sbox.currentText ()
         jnt_parent = self.base_widget.jnt_parent_edit.text ()
         control_parent = self.base_widget.control_parent_edit.text ()
 
-        return [Side (side) , name , joint_number , jnt_parent , control_parent]
+        return [Side (side) , name , jnt_number , jnt_parent , control_parent]
 
 
     ## 根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备
-    def build_setup (self , side , name , joint_number , jnt_parent , control_parent) :
+    def build_setup (self , side , name , jnt_number , jnt_parent , control_parent) :
         """根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备"""
         # 分析base_widget中的输入并将其作为参数返回
-        side , name , joint_number , jnt_parent , control_parent = self.parse_base_widget ()
+        side , name , jnt_number , jnt_parent , control_parent = self.parse_base_widget ()
         # 根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备
-        self.obj = Base (side , name , joint_number , jnt_parent , control_parent)
+        self.obj = Base (side , name , jnt_number , jnt_parent , control_parent)
         self.obj.build_setup ()
 
 
@@ -162,15 +163,15 @@ class Setting_Widget (QMainWindow) :
         """
         根据生成的bp定位关节，创建绑定系统
         """
-        side , name , joint_number , jnt_parent , control_parent = self.parse_base_widget ()
+        side , name , jnt_number , jnt_parent , control_parent = self.parse_base_widget ()
         # 根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备
-        self.obj = Base (side , name , joint_number , jnt_parent , control_parent)
+        self.obj = Base (side , name , jnt_number , jnt_parent , control_parent)
         self.obj.build_rig ()
 
 
     # 删除已经创建好的绑定系统
     def delete_rig (self) :
-        side , name , joint_number , jnt_parent , control_parent = self.parse_base_widget ()
+        side , name , jnt_number , jnt_parent , control_parent = self.parse_base_widget ()
         # 删除已经创建好的绑定系统
-        self.obj = Base (side , name , joint_number , jnt_parent , control_parent)
+        self.obj = Base (side , name , jnt_number , jnt_parent , control_parent)
         self.obj.delete_rig ()

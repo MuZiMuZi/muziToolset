@@ -16,19 +16,19 @@ class ChainIKFK (chain.Chain) :
     '''
 
 
-    def __init__ (self , side , name , joint_number , direction , is_stretch = 1 , length = 10 , joint_parent = None ,
+    def __init__ (self , side , name , jnt_number , direction , is_stretch = 1 , length = 10 , jnt_parent = None ,
                   control_parent = None) :
-        chain.Chain.__init__ (self , side , name , joint_number , length , joint_parent , control_parent)
+        chain.Chain.__init__ (self , side , name , jnt_number , length , jnt_parent , control_parent)
 
         # 初始化ik关节链条和fk关节链条
-        self.ik_chain = chainIK.ChainIK (side , name , joint_number , direction , length , is_stretch)
+        self.ik_chain = chainIK.ChainIK (side , name , jnt_number , direction , length , is_stretch)
 
-        self.fk_chain = chainFK.ChainFK (side , name , joint_number , direction , length)
+        self.fk_chain = chainFK.ChainFK (side , name , jnt_number , direction , length)
 
         self._rtype = 'ChainIKFK'
         self.radius = 6
         # 获取初始的位置
-        self.interval = length / (self.joint_number - 1)
+        self.interval = length / (self.jnt_number - 1)
         self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
         self.is_stretch = is_stretch
         self.axis = vectorUtils.Vector (direction).axis
@@ -72,9 +72,9 @@ class ChainIKFK (chain.Chain) :
             pass
         # 创建ikfk的关节
         cmds.select (clear = True)
-        for joint_number , bpjnt in enumerate (self.bpjnt_list) :
+        for jnt_number , bpjnt in enumerate (self.bpjnt_list) :
             pos = cmds.xform (bpjnt , q = 1 , t = 1 , ws = 1)
-            cmds.joint (p = pos , name = self.jnt_list [joint_number])
+            cmds.joint (p = pos , name = self.jnt_list [jnt_number])
         # 进行关节定向
         jointUtils.Joint.joint_orientation (self.jnt_list)
 
@@ -84,7 +84,7 @@ class ChainIKFK (chain.Chain) :
         cmds.setAttr (self.ik_chain.jnt_list [0] + '.v' , 0)
         cmds.setAttr (self.fk_chain.jnt_list [0] + '.v' , 0)
 
-        cmds.parent (self.jnt_list [0] , self.joint_parent)
+        cmds.parent (self.jnt_list [0] , self.jnt_parent)
 
 
     def create_ctrl (self) :
@@ -116,11 +116,11 @@ class ChainIKFK (chain.Chain) :
         self.fk_chain.add_constraint ()
 
         # IK关节链，FK关节链来约束IKFK关节链
-        for joint_number in range (self.joint_number) :
+        for jnt_number in range (self.jnt_number) :
             cons = cmds.parentConstraint (
-                self.ik_chain.jnt_list [joint_number] ,
-                self.fk_chain.jnt_list [joint_number] ,
-                self.jnt_list [joint_number]) [0]
+                self.ik_chain.jnt_list [jnt_number] ,
+                self.fk_chain.jnt_list [jnt_number] ,
+                self.jnt_list [jnt_number]) [0]
             # 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
             cmds.setDrivenKeyframe (
                 '{}.w0'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 1)
@@ -131,26 +131,26 @@ class ChainIKFK (chain.Chain) :
             cmds.setDrivenKeyframe (
                 '{}.w1'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 1)
 
-            cmds.setDrivenKeyframe (self.ik_chain.ctrl_list [joint_number] + '.v' ,
+            cmds.setDrivenKeyframe (self.ik_chain.ctrl_list [jnt_number] + '.v' ,
                                     cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 1)
-            cmds.setDrivenKeyframe (self.ik_chain.ctrl_list [joint_number] + '.v' ,
+            cmds.setDrivenKeyframe (self.ik_chain.ctrl_list [jnt_number] + '.v' ,
                                     cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 0)
-            cmds.setDrivenKeyframe (self.fk_chain.ctrl_list [joint_number] + '.v' ,
+            cmds.setDrivenKeyframe (self.fk_chain.ctrl_list [jnt_number] + '.v' ,
                                     cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 1)
-            cmds.setDrivenKeyframe (self.fk_chain.ctrl_list [joint_number] + '.v' ,
+            cmds.setDrivenKeyframe (self.fk_chain.ctrl_list [jnt_number] + '.v' ,
                                     cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 0)
 
 
 if __name__ == '__main__' :
     def build_setup () :
-        chain_ikfk = chainIKFK.ChainIKFK (side = 'l' , name = 'zz' , joint_number = 5 , direction = [1 , 0 , 0] ,
-                                          joint_parent = None , control_parent = None)
+        chain_ikfk = chainIKFK.ChainIKFK (side = 'l' , name = 'zz' , jnt_number = 5 , direction = [1 , 0 , 0] ,
+                                          jnt_parent = None , control_parent = None)
         chain_ikfk.build_setup ()
 
 
     def y () :
-        chain_ikfk = chainIKFK.ChainIKFK (side = 'l' , name = 'zz' , joint_number = 5 , direction = [1 , 0 , 0] ,
-                                          joint_parent = None , control_parent = None)
+        chain_ikfk = chainIKFK.ChainIKFK (side = 'l' , name = 'zz' , jnt_number = 5 , direction = [1 , 0 , 0] ,
+                                          jnt_parent = None , control_parent = None)
         chain_ikfk.build_rig ()
 
 

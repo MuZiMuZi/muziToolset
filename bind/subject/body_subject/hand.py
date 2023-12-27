@@ -8,29 +8,29 @@ class Hand(finger.Finger) :
 	
 	
 	
-	def __init__(self , side , name , joint_number = 4 , direction = [-1 , 0 , 0] , length = 3 , joint_parent = None ,
+	def __init__(self , side , name , jnt_number = 4 , direction = [-1 , 0 , 0] , length = 3 , jnt_parent = None ,
 	             control_parent = None) :
-		super().__init__(side , name , joint_number , direction , length , joint_parent , control_parent)
+		super().__init__(side , name , jnt_number , direction , length , jnt_parent , control_parent)
 		self._rtype = ''
 		# 初始化手指的模块
-		self.thumb_finger = finger.Finger(self.side , 'thumb' , joint_number = 3 , direction = self.direction ,
-		                                  length = self.length , joint_parent = self.joint_parent ,
+		self.thumb_finger = finger.Finger(self.side , 'thumb' , jnt_number = 3 , direction = self.direction ,
+		                                  length = self.length , jnt_parent = self.jnt_parent ,
 		                                  control_parent = self.control_parent)
 		
-		self.index_finger = finger.Finger(self.side , 'index' , joint_number = 4 , direction = self.direction ,
-		                                  length = self.length , joint_parent = self.joint_parent ,
+		self.index_finger = finger.Finger(self.side , 'index' , jnt_number = 4 , direction = self.direction ,
+		                                  length = self.length , jnt_parent = self.jnt_parent ,
 		                                  control_parent = self.control_parent)
 		
-		self.middle_finger = finger.Finger(self.side , 'middle' , joint_number = 4 , direction = self.direction ,
-		                                   length = self.length , joint_parent = self.joint_parent ,
+		self.middle_finger = finger.Finger(self.side , 'middle' , jnt_number = 4 , direction = self.direction ,
+		                                   length = self.length , jnt_parent = self.jnt_parent ,
 		                                   control_parent = self.control_parent)
 		
-		self.ring_finger = finger.Finger(self.side , 'ring' , joint_number = 4 , direction = self.direction ,
-		                                 length = self.length , joint_parent = self.joint_parent ,
+		self.ring_finger = finger.Finger(self.side , 'ring' , jnt_number = 4 , direction = self.direction ,
+		                                 length = self.length , jnt_parent = self.jnt_parent ,
 		                                 control_parent = self.control_parent)
 		
-		self.pinky_finger = finger.Finger(self.side , 'pinky' , joint_number = 4 , direction = self.direction ,
-		                                  length = self.length , joint_parent = self.joint_parent ,
+		self.pinky_finger = finger.Finger(self.side , 'pinky' , jnt_number = 4 , direction = self.direction ,
+		                                  length = self.length , jnt_parent = self.jnt_parent ,
 		                                  control_parent = self.control_parent)
 		self.finger_list = [self.thumb_finger , self.index_finger , self.middle_finger , self.ring_finger ,
 		                    self.pinky_finger]
@@ -79,16 +79,16 @@ class Hand(finger.Finger) :
 
 if __name__ == '__main__' :
 	def build_setup() :
-		finger_l = hand.Hand(side = 'l' , name = 'zz' , joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
-		                     joint_parent = None ,
+		finger_l = hand.Hand(side = 'l' , name = 'zz' , jnt_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
+		                     jnt_parent = None ,
 		                     control_parent = None)
 		finger_l.build_setup()
 	
 	
 	
 	def build_rig() :
-		finger_l = hand.Hand(side = 'l' , name = 'zz' , joint_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
-		                     joint_parent = None ,
+		finger_l = hand.Hand(side = 'l' , name = 'zz' , jnt_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
+		                     jnt_parent = None ,
 		                     control_parent = None)
 		finger_l.build_rig()
 	

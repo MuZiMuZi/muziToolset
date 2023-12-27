@@ -120,7 +120,7 @@ class Base_Rig(object) :
 		main.name = 'rigModule_' + main.name
 		self.control_parent = cmds.group(name = main.name.replace('rigModule_' , 'ctrlgrp_') , em = True ,
 		                                 parent = self.cog_ctrl.replace('ctrl_' , 'output_'))
-		self.joint_parent = cmds.group(name = main.name.replace('rigModule_' , 'jntgrp_') , em = True ,
+		self.jnt_parent = cmds.group(name = main.name.replace('rigModule_' , 'jntgrp_') , em = True ,
 		                               parent = self.joint)
 		self.rigNodes_Local_grp = cmds.group(name = main.name.replace('rigModule_' , 'rigNodesLocal_') , em = True ,
 		                                     parent = self.rigNode_Local)

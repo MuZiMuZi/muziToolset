@@ -12,11 +12,11 @@ reload (base)
 class ChainEP (chain.Chain) :
 
 
-    def __init__ (self , side , name , joint_number , ctrl_number , curve , joint_parent = None ,
+    def __init__ (self , side , name , jnt_number , ctrl_number , curve , jnt_parent = None ,
                   control_parent = None) :
-        super ().__init__ (side , name , joint_number , joint_parent , control_parent)
+        super ().__init__ (side , name , jnt_number , jnt_parent , control_parent)
         u'''给定一根曲线，根据曲线的长度来创建关节和控制器
-        joint_number：生成的关节数量
+        jnt_number：生成的关节数量
         ctrl_number：生成的控制器数量
         crv_node：需要创建控制器与关节的曲线
         '''
@@ -28,10 +28,10 @@ class ChainEP (chain.Chain) :
 
         # 根据给定的控制器数量，获取控制对应的百分比信息
         if not ctrl_number :
-            ctrl_number = self.joint_number
+            ctrl_number = self.jnt_number
         if ctrl_number < 2 :
             raise ValueError (u"请有足够的控制点")
-        if ctrl_number < joint_number :
+        if ctrl_number < jnt_number :
             raise ValueError (u"控制器的数量请大于关节的数量")
 
         self.guide_curve = None
@@ -39,7 +39,7 @@ class ChainEP (chain.Chain) :
 
         percents = pipelineUtils.Pipeline.get_percentages (ctrl_number)
         for p in percents :
-            integer = int (round (p * (self.joint_number - 1)))
+            integer = int (round (p * (self.jnt_number - 1)))
             self.cvs.append (integer)
 
 
@@ -47,21 +47,21 @@ class ChainEP (chain.Chain) :
         """
         创建定位的bp关节
         """
-        bpjnt_list = pipelineUtils.Pipeline.create_joints_on_curve (self.curve , self.joint_number)
-        for joint_number , bpjnt in enumerate (bpjnt_list) :
-            bpjnt = cmds.rename (bpjnt , self.bpjnt_list [joint_number])
-            cmds.parent (bpjnt , self.joint_parent)
+        bpjnt_list = pipelineUtils.Pipeline.create_joints_on_curve (self.curve , self.jnt_number)
+        for jnt_number , bpjnt in enumerate (bpjnt_list) :
+            bpjnt = cmds.rename (bpjnt , self.bpjnt_list [jnt_number])
+            cmds.parent (bpjnt , self.jnt_parent)
             # 指定关节的父层级为上一轮创建出来的关节
-            self.joint_parent = bpjnt
+            self.jnt_parent = bpjnt
 
 
     def create_joint (self) :
         # 根据bp关节创建新的关节
         for bpjnt , jnt in zip (self.bpjnt_list , self.jnt_list) :
-            jnt = cmds.createNode ('joint' , name = jnt , parent = self.joint_parent)
+            jnt = cmds.createNode ('joint' , name = jnt , parent = self.jnt_parent)
             cmds.matchTransform (jnt , bpjnt)
             # 指定关节的父层级为上一轮创建出来的关节
-            self.joint_parent = jnt
+            self.jnt_parent = jnt
         # 隐藏bp的定位关节
         cmds.setAttr (self.bpjnt_list [0] + '.visibility' , 0)
 
@@ -115,12 +115,12 @@ class ChainEP (chain.Chain) :
 
 if __name__ == '__main__' :
     def x () :
-        custom = chainEP.ChainEP (side = 'l' , name = 'zz' , joint_number = 20 , ctrl_number = 20 , curve = 'curve1' ,
-                                  joint_parent = None , control_parent = None)
+        custom = chainEP.ChainEP (side = 'l' , name = 'zz' , jnt_number = 20 , ctrl_number = 20 , curve = 'curve1' ,
+                                  jnt_parent = None , control_parent = None)
         custom.build_setup ()
 
 
     def y () :
-        custom = chainEP.ChainEP (side = 'l' , name = 'zz' , joint_number = 20 , ctrl_number = 20 , curve = 'curve1' ,
-                                  joint_parent = None , control_parent = None)
+        custom = chainEP.ChainEP (side = 'l' , name = 'zz' , jnt_number = 20 , ctrl_number = 20 , curve = 'curve1' ,
+                                  jnt_parent = None , control_parent = None)
         custom.build_rig ()

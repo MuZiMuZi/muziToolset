@@ -17,10 +17,10 @@ reload (chainFK)
 class Jaw (chainFK.ChainFK) :
 
 
-    def __init__ (self , side = 'm' , name = '' , joint_number = 2 , direction = [-1 , 0 , 0] , length = 5 ,
-                  joint_parent = None ,
+    def __init__ (self , side = 'm' , name = '' , jnt_number = 2 , direction = [-1 , 0 , 0] , length = 5 ,
+                  jnt_parent = None ,
                   control_parent = None) :
-        super (Jaw , self).__init__ (side , name , joint_number , direction , length , joint_parent ,
+        super (Jaw , self).__init__ (side , name , jnt_number , direction , length , jnt_parent ,
                             control_parent)
         self.shape = 'circle'
         self.rtype = 'Jaw'
@@ -109,12 +109,12 @@ class Jaw (chainFK.ChainFK) :
 
 if __name__ == "__main__" :
     def build_setup () :
-        jaw_m = jaw.Jaw (side = 'm' , joint_parent = None , control_parent = None)
+        jaw_m = jaw.Jaw (side = 'm' , jnt_parent = None , control_parent = None)
         jaw_m.build_setup ()
 
 
     def build_rig () :
-        jaw_m = jaw.Jaw (side = 'm' , joint_parent = None , control_parent = None)
+        jaw_m = jaw.Jaw (side = 'm' , jnt_parent = None , control_parent = None)
         jaw_m.build_rig ()
 
 

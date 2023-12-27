@@ -34,17 +34,17 @@ class FK_Rig(matehuman_base_rig.Base_Rig) :
 	"""
 	
 	
-	def __init__(self , drv_jnts , joint_parent , control_parent , redius = 10) :
+	def __init__(self , drv_jnts , jnt_parent , control_parent , redius = 10) :
 		super(FK_Rig , self).__init__()
 		self.drv_jnts = drv_jnts
-		self.joint_parent = joint_parent
+		self.jnt_parent = jnt_parent
 		self.control_parent = control_parent
 		self.redius = redius
 	
 	
 	def create_fk_chain(self , constraint = False) :
 		# 根据self.drv_jnts生成fk关节链
-		self.fk_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'fkjnt_' , self.joint_parent ,
+		self.fk_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'fkjnt_' , self.jnt_parent ,
 		                                                        constraint)
 		
 		return self.fk_chain
@@ -97,10 +97,10 @@ class FK_Rig(matehuman_base_rig.Base_Rig) :
 class IK_Rig(matehuman_base_rig.Base_Rig) :
 	
 	
-	def __init__(self , drv_jnts , joint_parent , control_parent , space_list , stretch = False) :
+	def __init__(self , drv_jnts , jnt_parent , control_parent , space_list , stretch = False) :
 		super(IK_Rig , self).__init__()
 		self.drv_jnts = drv_jnts
-		self.joint_parent = joint_parent
+		self.jnt_parent = jnt_parent
 		self.control_parent = control_parent
 		self.space_list = space_list
 		self.stretch = stretch
@@ -108,7 +108,7 @@ class IK_Rig(matehuman_base_rig.Base_Rig) :
 	
 	def create_ik_chain(self , constraint = False) :
 		# 根据self.drv_jnts生成ik关节链
-		self.ik_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'ikjnt_' , self.joint_parent ,
+		self.ik_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'ikjnt_' , self.jnt_parent ,
 		                                                        constraint)
 		
 		return self.ik_chain
@@ -530,10 +530,10 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 	"""
 	
 	
-	def __init__(self , drv_jnts , joint_parent , control_parent , space_list , stretch = False , redius = 15) :
+	def __init__(self , drv_jnts , jnt_parent , control_parent , space_list , stretch = False , redius = 15) :
 		super(IKFK_Rig , self).__init__()
 		self.drv_jnts = drv_jnts
-		self.joint_parent = joint_parent
+		self.jnt_parent = jnt_parent
 		self.control_parent = control_parent
 		self.space_list = space_list
 		self.stretch = stretch
@@ -542,7 +542,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 	
 	def create_ikfk_chain(self) :
 		# 根据self.drv_jnts生成ik关节链
-		self.ikfk_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'ikfkjnt_' , self.joint_parent ,
+		self.ikfk_chain = jointUtils.Joint.create_mateHuman_chain(self.drv_jnts , 'ikfkjnt_' , self.jnt_parent ,
 		                                                          constraint = True)
 		
 		return self.ikfk_chain
@@ -631,7 +631,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		创建fk链条绑定系统
 		:return:
 		'''
-		self.fk_systeam = FK_Rig(self.drv_jnts , self.joint_parent , self.control_parent , self.redius)
+		self.fk_systeam = FK_Rig(self.drv_jnts , self.jnt_parent , self.control_parent , self.redius)
 		self.fk_systeam_chain = self.fk_systeam.create_fk_chain()
 		self.fk_systeam_rig = self.fk_systeam.fk_chain_rig()
 	
@@ -641,7 +641,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		创建ik链条绑定系统
 		:return:
 		'''
-		self.ik_systeam = IK_Rig(self.drv_jnts , self.joint_parent , self.control_parent , self.space_list ,
+		self.ik_systeam = IK_Rig(self.drv_jnts , self.jnt_parent , self.control_parent , self.space_list ,
 		                         self.stretch)
 		self.ik_systeam_chain = self.ik_systeam.create_ik_chain()
 		self.ik_systeam_rig = self.ik_systeam.ik_chain_rig(Y_value)
@@ -652,7 +652,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		创建ikSpine绑定系统
 		:return:
 		'''
-		self.ik_systeam = IK_Rig(self.drv_jnts , self.joint_parent , self.control_parent , self.space_list ,
+		self.ik_systeam = IK_Rig(self.drv_jnts , self.jnt_parent , self.control_parent , self.space_list ,
 		                         self.stretch)
 		self.ik_systeam_chain = self.ik_systeam.create_ik_chain()
 		self.ik_systeam_rig = self.ik_systeam.ik_spine_rig()
@@ -690,7 +690,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		self.ikfk_chain_rig(self.fk_systeam_chain , self.ik_systeam_chain)
 	
 	
-	def ribbon_rig(self , name , control_parent , joint_parent , joint_number = 5) :
+	def ribbon_rig(self , name , control_parent , jnt_parent , jnt_number = 5) :
 		u"""
 		创建ribbon控制器，给动画师更细致的动画效果
 		思路：通过给定关节的名称来创建ribbon控制，通过曲线来生成曲面制作ribbon绑定，然后让生成的关节绑定在曲面上
@@ -699,8 +699,8 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		Args:
 			name(object):创建ribbon关节控制的名称
 			self.control_parent:控制器组的父层级
-			self.joint_parent:ribbon关节组的父层级
-			joint_number (int): 需要创建的ribbon关节数量
+			self.jnt_parent:ribbon关节组的父层级
+			jnt_number (int): 需要创建的ribbon关节数量
 
 		"""
 		# 从名称中获取ribbon控制器的边，描述，和编号
@@ -720,7 +720,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		ribbon_jnt_grp = cmds.createNode('transform' ,
 		                                 name = 'grp_{}_{}RibbonJnts_{:03d}'.format(ribbon.side , ribbon.description ,
 		                                                                            ribbon.index) ,
-		                                 parent = self.joint_parent)
+		                                 parent = self.jnt_parent)
 		nodes_local_grp = cmds.createNode('transform' ,
 		                                  name = 'grp_{}_{}RibbonNodesLocal_{:03d}'.format(ribbon.side ,
 		                                                                                   ribbon.description ,
@@ -744,7 +744,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		cmds.rebuildCurve(temp_curve , degree = 3 , replaceOriginal = True , rebuildType = 0 , endKnots = 1 ,
 		                  keepRange = 0 ,
 		                  keepControlPoints = False , keepEndPoints = True , keepTangents = False ,
-		                  spans = joint_number + 1)
+		                  spans = jnt_number + 1)
 		# 复制这条曲线
 		temp_curve_02 = cmds.duplicate(temp_curve)[0]
 		# 移动两条曲线的位置来制作曲面
@@ -781,7 +781,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 		else :
 			cmds.sets(make_ribbon_jnt_set , edit = True , forceElement = ribbon_jnt_set)
 		
-		for i in range(joint_number) :
+		for i in range(jnt_number) :
 			# 创建毛囊
 			fol_shape = cmds.createNode('follicle' , name = 'fol_{}_{}Ribbon{:03d}_{:03d}Shape'.format(ribbon.side ,
 			                                                                                           ribbon.description ,
@@ -799,7 +799,7 @@ class IKFK_Rig(matehuman_base_rig.Base_Rig) :
 			cmds.connectAttr(fol_shape + '.outRotate' , fol + '.rotate')
 			# 设置uv值
 			cmds.setAttr(fol_shape + '.parameterU' , 0.5)
-			cmds.setAttr(fol_shape + '.parameterV' , float(i) / (joint_number - 1))
+			cmds.setAttr(fol_shape + '.parameterV' , float(i) / (jnt_number - 1))
 			
 			# 创建关节
 			jnt = cmds.createNode('joint' ,

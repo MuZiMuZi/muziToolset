@@ -430,7 +430,7 @@ color: rgb(0, 0, 0);</string>
       <string>neck</string>
      </property>
     </widget>
-    <widget class="QLabel" name="neck_rig_joint_parent_label">
+    <widget class="QLabel" name="neck_rig_jnt_parent_label">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -440,7 +440,7 @@ color: rgb(0, 0, 0);</string>
       </rect>
      </property>
      <property name="text">
-      <string>joint_parent</string>
+      <string>jnt_parent</string>
      </property>
     </widget>
     <widget class="QLabel" name="spine_rig_control_parent_lebel">
@@ -536,7 +536,7 @@ color: rgb(0, 0, 0);</string>
       <string>None</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="neck_rig_joint_parent_lineEdit">
+    <widget class="QLineEdit" name="neck_rig_jnt_parent_lineEdit">
      <property name="geometry">
       <rect>
        <x>132</x>
@@ -764,7 +764,7 @@ color: rgb(0, 0, 0);</string>
       <string>control_parent</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="spine_rig_joint_parent_lineEdit">
+    <widget class="QLineEdit" name="spine_rig_jnt_parent_lineEdit">
      <property name="geometry">
       <rect>
        <x>132</x>
@@ -853,7 +853,7 @@ color: rgb(0, 0, 0);</string>
       <string>True</string>
      </property>
     </widget>
-    <widget class="QLabel" name="spine_rig_joint_parent_label">
+    <widget class="QLabel" name="spine_rig_jnt_parent_label">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -863,7 +863,7 @@ color: rgb(0, 0, 0);</string>
       </rect>
      </property>
      <property name="text">
-      <string>joint_parent</string>
+      <string>jnt_parent</string>
      </property>
     </widget>
    </widget>
@@ -1007,7 +1007,7 @@ color: rgb(0, 0, 0);</string>
       <string>control_parent</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="chest_rig_joint_parent_lineEdit">
+    <widget class="QLineEdit" name="chest_rig_jnt_parent_lineEdit">
      <property name="geometry">
       <rect>
        <x>132</x>
@@ -1083,7 +1083,7 @@ color: rgb(0, 0, 0);</string>
       <string>描述</string>
      </property>
     </widget>
-    <widget class="QLabel" name="chest_rig_joint_parent_label">
+    <widget class="QLabel" name="chest_rig_jnt_parent_label">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -1093,7 +1093,7 @@ color: rgb(0, 0, 0);</string>
       </rect>
      </property>
      <property name="text">
-      <string>joint_parent</string>
+      <string>jnt_parent</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="chest_rig_ribbonCtrl_checkBox">
@@ -1161,7 +1161,7 @@ color: rgb(0, 0, 0);</string>
       <string>arm</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="arm_rig_joint_parent_lineEdit">
+    <widget class="QLineEdit" name="arm_rig_jnt_parent_lineEdit">
      <property name="geometry">
       <rect>
        <x>132</x>
@@ -1312,7 +1312,7 @@ color: rgb(0, 0, 0);</string>
       <string>control_parent</string>
      </property>
     </widget>
-    <widget class="QLabel" name="arm_rig_joint_parent_label">
+    <widget class="QLabel" name="arm_rig_jnt_parent_label">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -1322,7 +1322,7 @@ color: rgb(0, 0, 0);</string>
       </rect>
      </property>
      <property name="text">
-      <string>joint_parent</string>
+      <string>jnt_parent</string>
      </property>
     </widget>
     <widget class="QLabel" name="arm_rig_ribbonCtrl_label">
@@ -1419,7 +1419,7 @@ color: rgb(0, 0, 0);</string>
       <string>hand</string>
      </property>
     </widget>
-    <widget class="QLabel" name="hand_rig_joint_parent_label">
+    <widget class="QLabel" name="hand_rig_jnt_parent_label">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -1429,7 +1429,7 @@ color: rgb(0, 0, 0);</string>
       </rect>
      </property>
      <property name="text">
-      <string>joint_parent</string>
+      <string>jnt_parent</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="hand_rig_control_parent_lineEdit">
@@ -1449,7 +1449,7 @@ color: rgb(0, 0, 0);</string>
       <string>None</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="hand_rig_joint_parent_lineEdit">
+    <widget class="QLineEdit" name="hand_rig_jnt_parent_lineEdit">
      <property name="geometry">
       <rect>
        <x>132</x>
@@ -1656,7 +1656,7 @@ color: rgb(0, 0, 0);</string>
       <string>leg</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="leg_rig_joint_parent_lineEdit">
+    <widget class="QLineEdit" name="leg_rig_jnt_parent_lineEdit">
      <property name="geometry">
       <rect>
        <x>132</x>
@@ -1807,7 +1807,7 @@ color: rgb(0, 0, 0);</string>
       <string>control_parent</string>
      </property>
     </widget>
-    <widget class="QLabel" name="leg_rig_joint_parent_label">
+    <widget class="QLabel" name="leg_rig_jnt_parent_label">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -1817,7 +1817,7 @@ color: rgb(0, 0, 0);</string>
       </rect>
      </property>
      <property name="text">
-      <string>joint_parent</string>
+      <string>jnt_parent</string>
      </property>
     </widget>
     <widget class="QLabel" name="leg_rig_ribbonCtrl_label">
@@ -2056,7 +2056,7 @@ color: rgb(0, 0, 0);</string>
       <string>描述</string>
      </property>
     </widget>
-    <widget class="QLabel" name="foot_rig_joint_parent_label">
+    <widget class="QLabel" name="foot_rig_jnt_parent_label">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -2066,10 +2066,10 @@ color: rgb(0, 0, 0);</string>
       </rect>
      </property>
      <property name="text">
-      <string>joint_parent</string>
+      <string>jnt_parent</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="foot_rig_joint_parent_lineEdit">
+    <widget class="QLineEdit" name="foot_rig_jnt_parent_lineEdit">
      <property name="geometry">
       <rect>
        <x>132</x>

@@ -19,15 +19,15 @@ class EyeLid (base.Base) :
     example_curve = ['crv_l_upperEyeLidSkin_001' , 'crv_l_lowerEyeLidSkin_001']
 
 
-    def __init__ (self , side , name , joint_number = 7 , joint_parent = None , control_parent = None) :
-        super ().__init__ (side , name , joint_number , joint_parent , control_parent)
+    def __init__ (self , side , name , jnt_number = 7 , jnt_parent = None , control_parent = None) :
+        super ().__init__ (side , name , jnt_number , jnt_parent , control_parent)
         # 定位用的曲线
         self.skin_curve = 'crv_{}_{}{}Skin_001'.format (self.side , self.name , self.rtype)
         self.name = name
         self.shape = 'cube'
         self.rtype = 'EyeLid'
         self.radius = 1
-        self.joint_number = joint_number
+        self.jnt_number = jnt_number
         self.curve_jnt_list = []
         # 创建眼袋的名称列表
         self.pouch_ctrl_list = []
@@ -53,7 +53,7 @@ class EyeLid (base.Base) :
         super ().create_namespace ()
         # 整理与控制器有关的曲线的名称规范层级结构
         self.curve = 'crv_{}_{}{}_001'.format (self.side , self.name , self.rtype)
-        for index in range (self.joint_number) :
+        for index in range (self.jnt_number) :
             self.curve_jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , index + 1))
         self.curve_jnt_grp = 'grp_{}_{}{}Jnts_001'.format (self.side , self.name , self.rtype)
         self.curve_nodes_grp = 'grp_{}_{}{}RigNodes_001'.format (self.side , self.name , self.rtype)

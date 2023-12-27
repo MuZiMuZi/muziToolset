@@ -5,7 +5,7 @@ import muziToolset.bind.module.base.base as base
 
 reload (base)
 
-bone = base.Base (side = 'l' , name = 'test' , joint_number = 4)
+bone = base.Base (side = 'l' , name = 'test' , jnt_number = 4)
 
 # 创建定位系统
 bone.build_setup ()

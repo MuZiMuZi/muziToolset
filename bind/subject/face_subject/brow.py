@@ -18,20 +18,20 @@ reload (base)
 class Brow (base.Base) :
 
 
-    def __init__ (self , side = '' , name = '' , joint_number = 1 , joint_parent = None , control_parent = None) :
-        super ().__init__ (side , name , joint_number , joint_parent , control_parent)
+    def __init__ (self , side = '' , name = '' , jnt_number = 1 , jnt_parent = None , control_parent = None) :
+        super ().__init__ (side , name , jnt_number , jnt_parent , control_parent)
         self.radius = 0.25
         self.shape = 'ball'
         self.rtype = 'Brow'
 
         # 创建两边的眉毛系统
-        self.brow_l = base.Base (side = 'l' , name = '' , joint_number = 7 , joint_parent = None , control_parent =
+        self.brow_l = base.Base (side = 'l' , name = '' , jnt_number = 7 , jnt_parent = None , control_parent =
         None)
         self.brow_l.rtype = 'Brow'
         self.brow_l.shape = 'cube'
         self.brow_l.radius = 0.2
 
-        self.brow_r = base.Base (side = 'r' , name = '' , joint_number = 7 , joint_parent = None , control_parent =
+        self.brow_r = base.Base (side = 'r' , name = '' , jnt_number = 7 , jnt_parent = None , control_parent =
         None)
         self.brow_r.rtype = 'Brow'
         self.brow_r.shape = 'cube'
@@ -152,13 +152,13 @@ class Brow (base.Base) :
         self.brow_l.follicle_dict = pipelineUtils.Pipeline.create_joint_follicle_on_surface (self.brow_l.drive_suf ,
                                                                                              self.brow_l.side ,
                                                                                              self.brow_l.rtype ,
-                                                                                             joint_number = 7)
+                                                                                             jnt_number = 7)
 
         # 创建右边的曲面上的毛囊和权重关节
         self.brow_r.follicle_dict = pipelineUtils.Pipeline.create_joint_follicle_on_surface (self.brow_r.drive_suf ,
                                                                                              self.brow_r.side ,
                                                                                              self.brow_r.rtype ,
-                                                                                             joint_number = 7)
+                                                                                             jnt_number = 7)
 
 
     def create_ctrl (self) :
@@ -374,12 +374,12 @@ class Brow (base.Base) :
 
 if __name__ == "__main__" :
     def build_setup () :
-        brow_m = brow.Brow (side = 'm' , joint_parent = None , control_parent = None)
+        brow_m = brow.Brow (side = 'm' , jnt_parent = None , control_parent = None)
         brow_m.build_setup ()
 
 
     def build_rig () :
-        brow_m = brow.Brow (side = 'm' , joint_parent = None , control_parent = None)
+        brow_m = brow.Brow (side = 'm' , jnt_parent = None , control_parent = None)
         brow_m.build_rig ()
 
 

@@ -5,7 +5,7 @@ import muziToolset.bind.module.chain.chain as chain
 
 reload (chain)
 
-chain = chain.Chain (side = 'l' , name = 'test' , joint_number = 4 , length = 10 , joint_parent = None ,
+chain = chain.Chain (side = 'l' , name = 'test' , jnt_number = 4 , length = 10 , jnt_parent = None ,
                      control_parent = None)
 
 # 创建定位系统

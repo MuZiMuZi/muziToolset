@@ -19,13 +19,13 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
     '''
 
 
-    def __init__ (self , side , name , joint_number , direction , is_stretch = 1 , length = 10 , limbtype = None ,
-                  joint_parent = None ,
+    def __init__ (self , side , name , jnt_number , direction , is_stretch = 1 , length = 10 , limbtype = None ,
+                  jnt_parent = None ,
                   control_parent = None) :
-        super ().__init__ (side , name , joint_number , direction , is_stretch , length , joint_parent , control_parent)
+        super ().__init__ (side , name , jnt_number , direction , is_stretch , length , jnt_parent , control_parent)
 
         self._rtype = 'LimbIKFK'
-        joint_number = 3
+        jnt_number = 3
         # 判断给定的limbtype 是手臂还是腿部
         if limbtype == 'arm' :
             self.z_value = 1
@@ -41,8 +41,8 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         self.radius = 5
 
         # 初始化ik关节链条和fk关节链条
-        self.ik_limb = limbIK.LimbIK (side , name , joint_number , direction , length , is_stretch , limbtype)
-        self.fk_limb = limbFK.LimbFK (side , name , joint_number , direction , length)
+        self.ik_limb = limbIK.LimbIK (side , name , jnt_number , direction , length , is_stretch , limbtype)
+        self.fk_limb = limbFK.LimbFK (side , name , jnt_number , direction , length)
 
 
     def create_namespace (self) :
@@ -92,9 +92,9 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
             pass
         # 创建ikfk的关节
         cmds.select (clear = True)
-        for joint_number , bpjnt in enumerate (self.bpjnt_list) :
+        for jnt_number , bpjnt in enumerate (self.bpjnt_list) :
             pos = cmds.xform (bpjnt , q = 1 , t = 1 , ws = 1)
-            cmds.joint (p = pos , name = self.jnt_list [joint_number])
+            cmds.joint (p = pos , name = self.jnt_list [jnt_number])
         # 进行关节定向
         jointUtils.Joint.joint_orientation (self.jnt_list)
         # 隐藏bp的定位关节
@@ -103,7 +103,7 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         cmds.setAttr (self.ik_limb.jnt_list [0] + '.v' , 0)
         cmds.setAttr (self.fk_limb.jnt_list [0] + '.v' , 0)
 
-        cmds.parent (self.jnt_list [0] , self.joint_parent)
+        cmds.parent (self.jnt_list [0] , self.jnt_parent)
         # 创建logging用来记录日志
         self.logger.debug (u'{}_{}  :  Skin joint creation completed'.format (self.name , self.side))
 
@@ -146,11 +146,11 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         self.fk_limb.add_constraint ()
 
         # IK关节链，FK关节链来约束IKFK关节链
-        for joint_number in range (self.joint_number) :
+        for jnt_number in range (self.jnt_number) :
             cons = cmds.parentConstraint (
-                self.ik_limb.jnt_list [joint_number] ,
-                self.fk_limb.jnt_list [joint_number] ,
-                self.jnt_list [joint_number]) [0]
+                self.ik_limb.jnt_list [jnt_number] ,
+                self.fk_limb.jnt_list [jnt_number] ,
+                self.jnt_list [jnt_number]) [0]
             # 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
             cmds.setDrivenKeyframe (
                 '{}.w0'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 1)
@@ -195,20 +195,20 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
 
 if __name__ == '__main__' :
     def build_setup () :
-        custom = limbIKFK.LimbIKFK (side = 'l' , name = 'zz' , joint_number = 3 , direction = [-1 , 0 , 0] ,
+        custom = limbIKFK.LimbIKFK (side = 'l' , name = 'zz' , jnt_number = 3 , direction = [-1 , 0 , 0] ,
                                     length = 10 ,
                                     is_stretch = 1 ,
                                     limbtype = 'arm' ,
-                                    joint_parent = None ,
+                                    jnt_parent = None ,
                                     control_parent = None)
         custom.build_setup ()
 
 
     def build_rig () :
-        custom = limbIKFK.LimbIKFK (side = 'l' , name = 'zz' , joint_number = 3 , direction = [-1 , 0 , 0] ,
+        custom = limbIKFK.LimbIKFK (side = 'l' , name = 'zz' , jnt_number = 3 , direction = [-1 , 0 , 0] ,
                                     length = 10 ,
                                     limbtype = 'arm' ,
-                                    joint_parent = None ,
+                                    jnt_parent = None ,
                                     control_parent = None)
         custom.build_rig ()
 

@@ -23,14 +23,14 @@ import muziToolset.core.pipelineUtils as pipelineUtils
 class Leg_Rig(ikfk_rig.IKFK_Rig) :
 
 
-    def __init__(self , bp_joints = None , joint_parent = None , control_parent = None , ribbon = True ,
-                 joint_number = 5 , space_list = None) :
-        super(Leg_Rig , self).__init__(bp_joints = bp_joints , joint_parent = joint_parent ,
+    def __init__(self , bp_joints = None , jnt_parent = None , control_parent = None , ribbon = True ,
+                 jnt_number = 5 , space_list = None) :
+        super(Leg_Rig , self).__init__(bp_joints = bp_joints , jnt_parent = jnt_parent ,
                                        control_parent = control_parent , space_list = space_list)
         self.leg_bp_joints = self.get_modular_bp_joints(self.leg_rig)
         self.bp_joints = self.leg_bp_joints
         self.ribbon = ribbon
-        self.joint_number = joint_number
+        self.jnt_number = jnt_number
         self.obj = nameUtils.Name(name = self.leg_bp_joints[0])
         self.side = self.obj.side
 
@@ -38,4 +38,4 @@ class Leg_Rig(ikfk_rig.IKFK_Rig) :
     def create_leg_rig(self) :
         self.create_ikfk_chain_rig()
         if self.ribbon == True :
-            self.create_ribbon_Rig(self.ikfk_chain , self.control_parent , self.joint_parent , self.joint_number)
+            self.create_ribbon_Rig(self.ikfk_chain , self.control_parent , self.jnt_parent , self.jnt_number)

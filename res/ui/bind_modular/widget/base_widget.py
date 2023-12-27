@@ -78,5 +78,5 @@ class Base_Widget (base_ui.Ui_MainWindow , QtWidgets.QMainWindow) :
 
         #
         # # 生成定位关节系统
-        # self.setup = base.Base (self.side , self.name , self.joint_number , self.joint_parent , self.control_parent)
+        # self.setup = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.control_parent)
         # self.setup.build_setup ()

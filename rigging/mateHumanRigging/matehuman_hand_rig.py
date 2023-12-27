@@ -45,7 +45,7 @@ class Hand_Rig(matehuman_base_rig.Base_Rig) :
 			self.side_value = -1
 		self.hand_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('hand_{}'.format(self.side))
 		self.wrist_drv = matehumanUtils.MateHuman.get_mateHuman_drv_jnt('wrist_{}'.format(self.side))
-		self.joint_parent = 'ikfkjnt_' + self.hand_drv
+		self.jnt_parent = 'ikfkjnt_' + self.hand_drv
 	
 	
 	def create_hand_rig(self) :
@@ -69,7 +69,7 @@ class Hand_Rig(matehuman_base_rig.Base_Rig) :
 		# 创建控制器的层级组
 		self.hand_ctrl_grp = cmds.createNode('transform' , name = 'ctrlgrp_' + self.hand_drv)
 		cmds.matchTransform(self.hand_ctrl_grp , self.hand_drv , position = True , rotation = True , scale = True)
-		cmds.parentConstraint(self.joint_parent , self.hand_ctrl_grp , mo = True)
+		cmds.parentConstraint(self.jnt_parent , self.hand_ctrl_grp , mo = True)
 		clavicle_output = 'output_' + matehumanUtils.MateHuman.get_mateHuman_drv_jnt(
 				'clavicle_{}'.format(self.side))
 		cmds.parent(self.hand_ctrl_grp , clavicle_output)
@@ -83,23 +83,23 @@ class Hand_Rig(matehuman_base_rig.Base_Rig) :
 		
 		# 创建手指各模块的FK关节链
 		
-		thumbHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.thumbHand_drv , self.joint_parent , self.hand_ctrl_grp ,
+		thumbHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.thumbHand_drv , self.jnt_parent , self.hand_ctrl_grp ,
 		                                                redius = 2)
 		thumbHand_fk_system._create_fk_chain_system(constraint = True)
 		
-		indexHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.indexHand_drv , self.joint_parent , self.hand_ctrl_grp ,
+		indexHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.indexHand_drv , self.jnt_parent , self.hand_ctrl_grp ,
 		                                                redius = 2)
 		indexHand_fk_system._create_fk_chain_system(constraint = True)
 		
-		middleHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.middleHand_drv , self.joint_parent , self.hand_ctrl_grp ,
+		middleHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.middleHand_drv , self.jnt_parent , self.hand_ctrl_grp ,
 		                                                 redius = 2)
 		middleHand_fk_system._create_fk_chain_system(constraint = True)
 		
-		ringHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.ringHand_drv , self.joint_parent , self.hand_ctrl_grp ,
+		ringHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.ringHand_drv , self.jnt_parent , self.hand_ctrl_grp ,
 		                                               redius = 2)
 		ringHand_fk_system._create_fk_chain_system(constraint = True)
 		
-		pinkyHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.pinkyHand_drv , self.joint_parent , self.hand_ctrl_grp ,
+		pinkyHand_fk_system = matehuman_ikfk_rig.FK_Rig(self.pinkyHand_drv , self.jnt_parent , self.hand_ctrl_grp ,
 		                                                redius = 2)
 		pinkyHand_fk_system._create_fk_chain_system(constraint = True)
 	

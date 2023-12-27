@@ -14,9 +14,9 @@ class Ear(chainFK.ChainFK) :
 	
 	
 	
-	def __init__(self , side , name = '' , joint_number = 3 , direction = [-1 , 0 , 0] ,
-	             length = 5 , joint_parent = None , control_parent = None) :
-		super().__init__(side , name , joint_number , direction , length , joint_parent , control_parent)
+	def __init__(self , side , name = '' , jnt_number = 3 , direction = [-1 , 0 , 0] ,
+	             length = 5 , jnt_parent = None , control_parent = None) :
+		super().__init__(side , name , jnt_number , direction , length , jnt_parent , control_parent)
 		self.shape = 'circle'
 		self._rtype = 'Ear'
 		self.radius = 0.5
@@ -38,19 +38,19 @@ class Ear(chainFK.ChainFK) :
 
 if __name__ == "__main__" :
 	def build_setup() :
-		ear_l = ear.Ear(side = 'l' , joint_parent = None , control_parent = None)
+		ear_l = ear.Ear(side = 'l' , jnt_parent = None , control_parent = None)
 		ear_l.build_setup()
 		
-		ear_r = ear.Ear(side = 'r' , joint_parent = None , control_parent = None)
+		ear_r = ear.Ear(side = 'r' , jnt_parent = None , control_parent = None)
 		ear_r.build_setup()
 	
 	
 	
 	def build_rig() :
-		ear_l = ear.Ear(side = 'l' , joint_parent = None , control_parent = None)
+		ear_l = ear.Ear(side = 'l' , jnt_parent = None , control_parent = None)
 		ear_l.build_rig()
 		
-		ear_r = ear.Ear(side = 'r' , joint_parent = None , control_parent = None)
+		ear_r = ear.Ear(side = 'r' , jnt_parent = None , control_parent = None)
 		ear_r.build_rig()
 	
 	

@@ -29,15 +29,15 @@ from . import ikfk_rig
 class Arm_Rig(ikfk_rig.IKFK_Rig) :
 
 
-    def __init__(self , bp_joints = None , joint_parent = None , control_parent = None , mirror = True , ribbon = True ,
-                 joint_number = 5 , space_list = None) :
-        super(Arm_Rig , self).__init__(bp_joints = bp_joints , joint_parent = joint_parent ,
+    def __init__(self , bp_joints = None , jnt_parent = None , control_parent = None , mirror = True , ribbon = True ,
+                 jnt_number = 5 , space_list = None) :
+        super(Arm_Rig , self).__init__(bp_joints = bp_joints , jnt_parent = jnt_parent ,
                                        control_parent = control_parent , space_list = space_list)
         self.mirror = mirror
         self.arm_bp_joints = ['bpjnt_l_shoulder_001' , 'bpjnt_l_elbow_001' , ' bpjnt_l_wrist_001']
         self.bp_joints = self.arm_bp_joints
         self.ribbon = ribbon
-        self.joint_number = joint_number
+        self.jnt_number = jnt_number
         self.clavicle_jnt = 'jnt_l_clavicle_001'
         self.scapula_jnt = 'jnt_l_scapula_001'
         self.shrug_jnt = 'jnt_l_shrug_001'
@@ -114,6 +114,6 @@ class Arm_Rig(ikfk_rig.IKFK_Rig) :
 
         self.create_ikfk_chain_rig()
         if self.ribbon == True :
-            self.create_ribbon_Rig(self.ikfk_chain , self.control_parent , self.joint_parent , self.joint_number)
-            self.create_ribbon_Rig(self.ikfk_chain_mirror , self.control_parent_mirror , self.joint_parent_mirror ,
-                                   self.joint_number)
+            self.create_ribbon_Rig(self.ikfk_chain , self.control_parent , self.jnt_parent , self.jnt_number)
+            self.create_ribbon_Rig(self.ikfk_chain_mirror , self.control_parent_mirror , self.jnt_parent_mirror ,
+                                   self.jnt_number)

@@ -32,9 +32,9 @@ reload(hierarchyUtils)
 class Hand_Rig(arm_rig.Arm_Rig) :
 
 
-    def __init__(self , bp_joints = None , joint_parent = None , control_parent = None , mirror = True ,
+    def __init__(self , bp_joints = None , jnt_parent = None , control_parent = None , mirror = True ,
                  space_list = None) :
-        super(Hand_Rig , self).__init__(bp_joints = bp_joints , joint_parent = joint_parent ,
+        super(Hand_Rig , self).__init__(bp_joints = bp_joints , jnt_parent = jnt_parent ,
                                         control_parent = control_parent , space_list = space_list)
         self.mirror = mirror
         self.bp_joints = bp_joints
@@ -65,23 +65,23 @@ class Hand_Rig(arm_rig.Arm_Rig) :
 
         # 创建手指各模块的FK关节链
         thumbHand_fk_chain = jointUtils.Joint.create_chain(thumbHand_bp_joints , suffix = 'Bind' ,
-                                                           joint_parent = hand_jnt_grp)
+                                                           jnt_parent = hand_jnt_grp)
         thumbHand_fk_chain_mirror = cmds.mirrorJoint(thumbHand_fk_chain[0] , mirrorYZ = True , mirrorBehavior = True ,
                                                      searchReplace = ['_l_' , '_r_'])
         indexHand_fk_chain = jointUtils.Joint.create_chain(indexHand_bp_joints , suffix = 'Bind' ,
-                                                           joint_parent = hand_jnt_grp)
+                                                           jnt_parent = hand_jnt_grp)
         indexHand_fk_chain_mirror = cmds.mirrorJoint(indexHand_fk_chain[0] , mirrorYZ = True , mirrorBehavior = True ,
                                                      searchReplace = ['_l_' , '_r_'])
         middleHand_fk_chain = jointUtils.Joint.create_chain(middleHand_bp_joints , suffix = 'Bind' ,
-                                                            joint_parent = hand_jnt_grp)
+                                                            jnt_parent = hand_jnt_grp)
         middleHand_fk_chain_mirror = cmds.mirrorJoint(middleHand_fk_chain[0] , mirrorYZ = True , mirrorBehavior = True ,
                                                       searchReplace = ['_l_' , '_r_'])
         ringHand_fk_chain = jointUtils.Joint.create_chain(ringHand_bp_joints , suffix = 'Bind' ,
-                                                          joint_parent = hand_jnt_grp)
+                                                          jnt_parent = hand_jnt_grp)
         ringHand_fk_chain_mirror = cmds.mirrorJoint(ringHand_fk_chain[0] , mirrorYZ = True , mirrorBehavior = True ,
                                                     searchReplace = ['_l_' , '_r_'])
         pinkyHand_fk_chain = jointUtils.Joint.create_chain(pinkyHand_bp_joints , suffix = 'Bind' ,
-                                                           joint_parent = hand_jnt_grp)
+                                                           jnt_parent = hand_jnt_grp)
         pinkyHand_fk_chain_mirror = cmds.mirrorJoint(pinkyHand_fk_chain[0] , mirrorYZ = True , mirrorBehavior = True ,
                                                      searchReplace = ['_l_' , '_r_'])
         # 根据手指各模块的FK关节链创建FK控制器

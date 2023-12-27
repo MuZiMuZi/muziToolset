@@ -32,9 +32,9 @@ bpcrv = 'bpcrv_m_neck_001'
 class Neck_Rig(ikfk_rig.IKFK_Rig) :
 
 
-    def __init__(self , bp_joints = None , joint_parent = None , control_parent = None , mirror = True ,
+    def __init__(self , bp_joints = None , jnt_parent = None , control_parent = None , mirror = True ,
                  space_list = None) :
-        super(Neck_Rig , self).__init__(bp_joints = bp_joints , joint_parent = joint_parent ,
+        super(Neck_Rig , self).__init__(bp_joints = bp_joints , jnt_parent = jnt_parent ,
                                         control_parent = control_parent , space_list = space_list)
         self.mirror = mirror
         self.neck_bp_joints = self.get_modular_bp_joints(self.neck_rig)
