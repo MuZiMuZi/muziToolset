@@ -176,8 +176,8 @@ class Bone (object) :
         self.shape = 'circle'
         self.radius = 5
 
-        # 根据给定的边，名称和jnt_number生成列表来存储创建的名称
-        self._setup_list ()
+        # 根据给定的side，name等属性，创建名称进行规范整理
+        self.create_namespace()
 
         # 根据给定的边，初始化side_value的值，用于镜像控制器以及位移
         self.side_value = self._setup_side_value ()
@@ -192,7 +192,12 @@ class Bone (object) :
         初始化最高层级组结构
         """
         if cmds.objExists (self.TOP_GROUP_NAMES [0]) :
-            return
+            self.top_main_group = 'grp_m_group_001'
+            self.top_bpjnt_grp = 'grp_m_bpjnt_001'
+            self.top_ctrl_grp = 'grp_m_control_001'
+            self.top_jnt_grp = 'grp_m_jnt_001'
+            self.top_mesh_grp = 'grp_m_mesh_001'
+            self.top_node_grp = 'grp_m_node_001'
         else :
             hierarchy_names = hierarchyUtils.Hierarchy.create_rig_grp ()
             self.top_bpjnt_grp , self.top_ctrl_grp , self.top_jnt_grp , self.top_mesh_grp , self.top_node_grp , self.top_main_group = hierarchy_names
@@ -252,6 +257,9 @@ class Bone (object) :
         u"""
         创建名称进行规范整理
         """
+        #  根据给定的边，名称和jnt_number生成列表来存储创建的名称
+        self._setup_list()
+
         for i in range (self.jnt_number) :
             self.bpjnt_list.append ('bpjnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
             self.jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
@@ -387,8 +395,6 @@ class Bone (object) :
         """
         创建bp的定位关节,生成准备
         """
-        # 根据给定的side，name等属性，创建名称进行规范整理
-        self.create_namespace ()
         self.create_bpjnt ()
 
 
@@ -397,7 +403,6 @@ class Bone (object) :
         """
         根据生成的bp定位关节，创建绑定系统
         """
-        self.create_namespace ()
         self.create_joint ()
         self.create_ctrl ()
         self.add_constraint ()

@@ -107,6 +107,12 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         self.setup = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.control_parent)
         self.setup.build_setup ()
 
+     # 根据base_widget和extra_widget返回的参数,创建绑定系统
+    def build_rig(self):
+        # 删除已经创建好的绑定系统
+        self.rig = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.control_parent)
+        self.rig.build_rig ()
+
 
 def main () :
     return Base_Widget ()

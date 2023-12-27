@@ -75,6 +75,8 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         self.custom_widget.customContextMenuRequested.connect (self.cmd_custom_widget_menu)
         self.custom_widget.itemClicked.connect (self.cmd_custom_widget_clk)
 
+        #连接创建绑定的槽函数
+        self.build_button.clicked.connect(self.clicked_build_btn)
 
     # 用来连接proxy_widget双击所连接的功能槽函数,双击的时候将模版库的模版添加到自定义模块里
     def cmd_proxy_widget_dbclk (self) :
@@ -165,19 +167,31 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         # 判断item的类型,根据item的类型选择生成哪个界面
         rigtype = config.Rigtype(item.text)
         if rigtype == 'custom':
-            self.setting_widget = base_widget.main ()
+            item.widget = base_widget.main ()
         elif rigtype == 'chain' :
-            self.setting_widget = chain_widget.main ()
+            item.widget = chain_widget.main ()
         elif rigtype == 'chainEP' :
-            self.setting_widget = chainEP_widget.main ()
+            item.widget = chainEP_widget.main ()
         elif rigtype == 'limb' :
-            self.setting_widget = limb_widget.main ()
+            item.widget = limb_widget.main ()
         elif rigtype == 'face' :
-            self.setting_widget = face_widget.main ()
+            item.widget = face_widget.main ()
 
-        self.setting_widget.module_edit.setText ('{}'.format (item.text))
-        self.setting_stack.addWidget (self.setting_widget)
 
+        item.widget.module_edit.setText ('{}'.format (item.text))
+        self.setting_stack.addWidget (item.widget)
+
+    def clicked_build_btn(self):
+        """
+        连接创建绑定按钮的槽函数
+        """
+
+        #1.获取self.custom_widget里所拥有的所有item
+        all_items = self.custom_widget.findItems ("*" , Qt.MatchWildcard)
+
+        #对所有item做循环遍历，获取item里存储的组件模块信息
+        for item in all_items:
+            item.widget.build_rig()
 
 def show () :
     # 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口
