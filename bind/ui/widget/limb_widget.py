@@ -18,14 +18,15 @@ except ImportError :
     from PySide import __version__
     from shiboken import wrapInstance
 
-from . import limb_ui
+from . import limb_ui , base_widget
 from importlib import reload
 
 
 reload (limb_ui)
+reload (base_widget)
 
 
-class Limb_Widget (limb_ui.Ui_MainWindow , QMainWindow) :
+class Limb_Widget (limb_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow) :
 
 
     def __init__ (self , parent = None , *args , **kwargs) :
@@ -34,36 +35,18 @@ class Limb_Widget (limb_ui.Ui_MainWindow , QMainWindow) :
 
         '''
         super ().__init__ (parent , *args , **kwargs)
-        # 调用父类的ui方法，来运行ui
-        self.setupUi (self)
-
-        self.name = None
-        self.side = None
-        self.jnt_number = None
-        self.jnt_parent = None
-        self.control_parent = None
-        self.init_base ()
-
-
-    # self.create_widget ()
-    # self.create_layout ()
 
 
     def init_base (self) :
-        # 初始化参数
-        for side in config.Side :
-            self.side_cbox.addItem (side.value)
+        # 继承base_widget.Base_Widget的init_base方法
+        super ().init_base ()
 
 
     def add_connect (self) :
         u"""
         用来添加连接的槽函数
         """
-        pass
-
-
-    # self.create_btn.clicked.connect (lambda :print(12))
-    # self.base_widget.delete_btn.clicked.connect (self.delete_setup)
+        super ().add_connect ()
 
 
     def parse_base (self , *args) :
@@ -72,7 +55,6 @@ class Limb_Widget (limb_ui.Ui_MainWindow , QMainWindow) :
         """
         self.name = self.name_edit.text ()
         self.side = self.side_cbox.currentText ()
-        self.jnt_number = self.jnt_number_sbox.currentText ()
         self.jnt_parent = self.jnt_parent_edit.text ()
         self.control_parent = self.control_parent_edit.text ()
 
@@ -80,10 +62,14 @@ class Limb_Widget (limb_ui.Ui_MainWindow , QMainWindow) :
     def build_setup (self) :
         # 读取输入信息
         self.parse_base ()
-    #
-    # # 生成定位关节系统
-    # self.setup = base.Base (self.side , self.name , self.joint_number , self.joint_parent , self.control_parent)
-    # self.setup.build_setup ()
+        #
+        # # 生成定位关节系统
+        # self.setup = base.Base (self.side , self.name , self.joint_number , self.joint_parent , self.control_parent)
+        # self.setup.build_setup ()
+
+
+def main () :
+    return Chain_Widget ()
 
 
 def main () :
