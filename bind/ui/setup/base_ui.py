@@ -52,7 +52,7 @@ class Ui_MainWindow(object):
         self.side_cbox.setSizePolicy(sizePolicy)
         font1 = QFont()
         font1.setFamily(u"Arial Narrow")
-        font1.setPointSize(16)
+        font1.setPointSize(18)
         font1.setBold(False)
         font1.setWeight(50)
         self.side_cbox.setFont(font1)
@@ -84,7 +84,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.module_edit.sizePolicy().hasHeightForWidth())
         self.module_edit.setSizePolicy(sizePolicy)
         font3 = QFont()
-        font3.setPointSize(16)
+        font3.setPointSize(18)
         self.module_edit.setFont(font3)
 
         self.horizontalLayout.addWidget(self.module_edit)
@@ -110,7 +110,7 @@ class Ui_MainWindow(object):
         self.name_edit.setSizePolicy(sizePolicy)
         font4 = QFont()
         font4.setFamily(u"Arial Narrow")
-        font4.setPointSize(16)
+        font4.setPointSize(18)
         self.name_edit.setFont(font4)
 
         self.horizontalLayout_3.addWidget(self.name_edit)
@@ -124,16 +124,16 @@ class Ui_MainWindow(object):
         self.index_label.setObjectName(u"index_label")
         sizePolicy.setHeightForWidth(self.index_label.sizePolicy().hasHeightForWidth())
         self.index_label.setSizePolicy(sizePolicy)
-        font5 = QFont()
-        font5.setPointSize(18)
-        self.index_label.setFont(font5)
+        self.index_label.setFont(font3)
 
         self.horizontalLayout_8.addWidget(self.index_label)
 
         self.lineEdit = QLineEdit(self.centralwidget)
         self.lineEdit.setObjectName(u"lineEdit")
+        self.lineEdit.setEnabled(False)
         sizePolicy.setHeightForWidth(self.lineEdit.sizePolicy().hasHeightForWidth())
         self.lineEdit.setSizePolicy(sizePolicy)
+        self.lineEdit.setFont(font3)
 
         self.horizontalLayout_8.addWidget(self.lineEdit)
 
@@ -215,10 +215,7 @@ class Ui_MainWindow(object):
         self.create_btn = QToolButton(self.centralwidget)
         self.create_btn.setObjectName(u"create_btn")
         self.create_btn.setEnabled(True)
-        font6 = QFont()
-        font6.setFamily(u"Arial Narrow")
-        font6.setPointSize(25)
-        self.create_btn.setFont(font6)
+        self.create_btn.setFont(font4)
         self.create_btn.setIconSize(QSize(40, 40))
 
         self.horizontalLayout_7.addWidget(self.create_btn)
@@ -231,7 +228,7 @@ class Ui_MainWindow(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.delete_btn.sizePolicy().hasHeightForWidth())
         self.delete_btn.setSizePolicy(sizePolicy1)
-        self.delete_btn.setFont(font6)
+        self.delete_btn.setFont(font4)
         self.delete_btn.setIconSize(QSize(40, 40))
         self.delete_btn.setChecked(False)
 
