@@ -127,8 +127,6 @@ class EyeLid (base.Base) :
         cmds.skinCluster (self.curve_jnt_list , self.curve)
 
 
-
-
     def create_joint (self) :
         u'''
         创建眼皮的权重关节在曲线上

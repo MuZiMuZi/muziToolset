@@ -1,6 +1,9 @@
-import muziToolset.bind.Bind_Tool_main as Bind_Tool_main
 from importlib import reload
-reload(Bind_Tool_main)
+
+import muziToolset.bind.Bind_Tool_main as Bind_Tool_main
+
+
+reload (Bind_Tool_main)
 
 try :
     win.close ()

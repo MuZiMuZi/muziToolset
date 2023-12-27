@@ -23,7 +23,7 @@ class Mouth (base.Base) :
 
         self.rtype = 'Mouth'
         # 生成上部分的嘴唇
-        self.mouth_lip_upper = mouthLip.MouthLip (side = self.side , name = 'upper' , jnt_number = 10,
+        self.mouth_lip_upper = mouthLip.MouthLip (side = self.side , name = 'upper' , jnt_number = 10 ,
                                                   jnt_parent = None ,
                                                   control_parent = None)
 
@@ -63,7 +63,7 @@ class Mouth (base.Base) :
 
         # 创建嘴内侧与嘴外侧的控制器
 
-        self.inn_ctrl = controlUtils.Control.create_ctrl (self.inn_ctrl , shape = 'ball' , axis = 'X+' , radius = 1,
+        self.inn_ctrl = controlUtils.Control.create_ctrl (self.inn_ctrl , shape = 'ball' , axis = 'X+' , radius = 1 ,
                                                           pos = self.mouth_lip_upper.zero_list [0] ,
                                                           parent = self.ctrl_grp)
         self.out_ctrl = controlUtils.Control.create_ctrl (self.out_ctrl , shape = 'ball' , axis = 'X+' , radius = 1 ,
@@ -86,16 +86,16 @@ class Mouth (base.Base) :
                                mo = True)
 
         # # 隐藏上下嘴唇的内侧控制器
-        cmds.setAttr(self.mouth_lip_upper.zero_list[0] + '.visibility' , 0)
-        cmds.setAttr(self.mouth_lip_lower.zero_list[0] + '.visibility' , 0)
+        cmds.setAttr (self.mouth_lip_upper.zero_list [0] + '.visibility' , 0)
+        cmds.setAttr (self.mouth_lip_lower.zero_list [0] + '.visibility' , 0)
         # 嘴角外侧控制器对上下嘴唇的外侧控制器做约束
         cmds.parentConstraint (self.out_ctrl.replace ('ctrl' , 'output') , self.mouth_lip_upper.driven_list [-1] ,
                                mo = True)
         cmds.parentConstraint (self.out_ctrl.replace ('ctrl' , 'output') , self.mouth_lip_lower.driven_list [-1] ,
                                mo = True)
         # # 隐藏上下嘴唇的外侧控制器
-        cmds.setAttr(self.mouth_lip_upper.zero_list[-1] + '.visibility' , 0)
-        cmds.setAttr(self.mouth_lip_lower.zero_list[-1] + '.visibility' , 0)
+        cmds.setAttr (self.mouth_lip_upper.zero_list [-1] + '.visibility' , 0)
+        cmds.setAttr (self.mouth_lip_lower.zero_list [-1] + '.visibility' , 0)
         #
         # 添加拉链嘴的绑定效果
         self.add_zip_lip ()

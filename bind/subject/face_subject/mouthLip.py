@@ -82,7 +82,7 @@ class MouthLip (base.Base) :
         # 重建self.curve用来控制曲线
         self.curve = \
             cmds.rebuildCurve (self.curve , ch = 1 , rpo = 1 , rt = 0 , end = 1 , kr = 0 , kcp = 0 , kep = 1 , kt = 0 ,
-                               s = self.jnt_number-3 , d = 3 , tol = 0.01) [0]
+                               s = self.jnt_number - 3 , d = 3 , tol = 0.01) [0]
         cmds.setAttr (self.curve + '.visibility' , 1)
 
         # 在曲线上创建关节用来蒙皮曲线创建控制器的约束
@@ -98,7 +98,7 @@ class MouthLip (base.Base) :
         cmds.skinCluster (self.curve_jnt_list , self.curve)
 
         # 根据skin_curve来创建蒙皮关节
-        cmds.select (self.skin_curve,replace = True)
+        cmds.select (self.skin_curve , replace = True)
         self.skin_jnt_dict = jointUtils.Joint.create_joints_on_curve (is_parent = False)
         skin_jnt_list = self.skin_jnt_dict ['jnt_list']
         self.skin_jnt_grp = cmds.rename (self.skin_jnt_dict ['jnt_grp'] , self.skin_jnt_grp)
@@ -117,7 +117,7 @@ class MouthLip (base.Base) :
         cmds.setAttr (wire_node + '.dropoffDistance[0]' , 200)
         cmds.setAttr (self.skin_jnt_grp + '.v' , 0)
 
-        #将控制器的关节进行隐藏
+        # 将控制器的关节进行隐藏
         cmds.setAttr (self.curve_jnt_grp + '.visibility' , 0)
         # 根据curve来制作aim_curve，用于制作控制器的目标曲线,并且移动目标曲线的位置
         self.aim_curve = cmds.duplicate (self.curve , name = self.aim_curve) [0]
@@ -173,8 +173,6 @@ class MouthLip (base.Base) :
         # cmds.pointConstraint (self.output_list [3] , self.output_list [5] , self.driven_list [4] , mo = True)
 
 
-
-
         # # 第二个控制器和第六个控制器是为了调整小的形态，默认是隐藏的,连接他们的可见性到中间的控制器上
         # cmds.addAttr (self.ctrl_list [3] , attributeType = 'bool' , longName = 'LidSubCtrlVis' , keyable = 1 ,
         #               defaultValue = 0)
@@ -189,6 +187,3 @@ class MouthLip (base.Base) :
         # 设置关节的可见性
         cmds.setAttr (self.skin_jnt_grp + '.v' , 1)
         cmds.setAttr (self.curve_jnt_grp + '.v' , 0)
-
-
-

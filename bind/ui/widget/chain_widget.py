@@ -37,11 +37,10 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 
         '''
-        #返回组件的参数
+        # 返回组件的参数
         self.length = None
         self.direction = None
         super ().__init__ (parent , *args , **kwargs)
-
 
 
     def init_base (self) :
@@ -62,9 +61,10 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         """
         分析base_widget中的输入并将其作为参数返回
         """
-        super().parse_base()
+        super ().parse_base ()
         self.length = self.length_sbox.value ()
         self.direction = self.direction_cbox.currentText ()
+
 
     def build_setup (self) :
         # 读取输入信息

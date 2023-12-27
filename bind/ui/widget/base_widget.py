@@ -78,15 +78,15 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         4.获取组件的属性来修改custom_widget里item的名称
         """
         # 1.将创建按钮变成不可操作的模式，防止误触
-        self.create_btn.setEnabled (False)
+        self.create_btn.setVisible (False)
         # 2.将删除按钮从隐藏状态下显示出来，用于删除不需要的绑定
         self.delete_btn.setVisible (True)
         # Todo
         # 3，将获取组件的属性用来创建用于关节定位的bp关节
-        #获取组件的属性
+        # 获取组件的属性
         self.parse_base ()
-        #创建用来定位的bp关节
-        self.build_setup()
+        # 创建用来定位的bp关节
+        self.build_setup ()
 
         # 4.获取组件的属性来修改custom_widget里item的名称
 
@@ -107,8 +107,9 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         self.setup = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.control_parent)
         self.setup.build_setup ()
 
-     # 根据base_widget和extra_widget返回的参数,创建绑定系统
-    def build_rig(self):
+
+    # 根据base_widget和extra_widget返回的参数,创建绑定系统
+    def build_rig (self) :
         # 删除已经创建好的绑定系统
         self.rig = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.control_parent)
         self.rig.build_rig ()

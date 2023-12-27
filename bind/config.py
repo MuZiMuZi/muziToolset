@@ -65,9 +65,9 @@ def Rigtype (value) :
     """
     # 定义不同的绑定类型的值列表
     rigtype_custom = ['base' , 'master' , 'brow' , 'nose' , 'cheek' , 'jaw']
-    rigtype_chain = ['chainFK' , 'chainIK' , 'chainIKFK' , 'finger' , 'spine', 'hand' ,'tail', 'spine']
+    rigtype_chain = ['chainFK' , 'chainIK' , 'chainIKFK' , 'finger' , 'spine' , 'hand' , 'tail' , 'spine']
     rigtype_chainEP = ['chainEP']
-    rigtype_limb = ['arm' , 'leg' ]
+    rigtype_limb = ['arm' , 'leg']
     rigtype_face = ['eye' , 'mouth']
 
     # 创建一个包含绑定类型的字典

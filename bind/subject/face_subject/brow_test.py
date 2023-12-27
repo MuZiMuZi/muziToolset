@@ -14,11 +14,14 @@ from ....core import controlUtils , pipelineUtils
 reload (pipelineUtils)
 reload (base)
 
-class Side_Brow(base.Base):
+
+class Side_Brow (base.Base) :
     """
     用来创建单边的眉毛
     """
-    def __init__ (self ,side = '' , name = '' , jnt_number = 7 , jnt_parent = None , control_parent = None):
+
+
+    def __init__ (self , side = '' , name = '' , jnt_number = 7 , jnt_parent = None , control_parent = None) :
         super ().__init__ (side , name , jnt_number , jnt_parent , control_parent)
         self.radius = 0.25
         self.shape = 'ball'
@@ -33,7 +36,6 @@ class Side_Brow(base.Base):
         self.ctrl_follow_list = []
         self.connect_follow_list = []
         self.output_follow_list = []
-
 
         for i in range (4) :
             self.bpjnt_follow_list.append (
@@ -87,8 +89,8 @@ class Side_Brow(base.Base):
         # 放样曲线出曲面
         # 通过两条曲线来放样制作左边眉毛的曲面
         self.drive_suf = pipelineUtils.Pipeline.create_surface_on_curve (self.drive_crv ,
-                                                                                self.drive_suf , spans = 6 ,
-                                                                                offset = 0.2)
+                                                                         self.drive_suf , spans = 6 ,
+                                                                         offset = 0.2)
 
         # 创建右边的bp定位眉毛曲线
         self.brow_r.drive_crv = cmds.duplicate (self.brow_r.bpjnt_crv , name = self.brow_r.drive_crv) [0]
@@ -125,9 +127,9 @@ class Side_Brow(base.Base):
         """
         # 创建左边的曲面上的毛囊和权重关节
         self.follicle_dict = pipelineUtils.Pipeline.create_joint_follicle_on_surface (self.drive_suf ,
-                                                                                             self.side ,
-                                                                                             self.rtype ,
-                                                                                             jnt_number = 7)
+                                                                                      self.side ,
+                                                                                      self.rtype ,
+                                                                                      jnt_number = 7)
 
         # 创建右边的曲面上的毛囊和权重关节
         self.brow_r.follicle_dict = pipelineUtils.Pipeline.create_joint_follicle_on_surface (self.brow_r.drive_suf ,
@@ -142,16 +144,16 @@ class Side_Brow(base.Base):
         # 创建眉毛左边的控制器 分为三层控制器： Master——Follow——ctrl
         # 创建眉毛左边的Master控制器
         self.master_ctrl = controlUtils.Control.create_ctrl (self.master_ctrl , shape = 'square' ,
-                                                                    radius = 2 ,
-                                                                    axis = 'X+' , pos = self.jnt_list [1] ,
-                                                                    parent = self.control_parent)
+                                                             radius = 2 ,
+                                                             axis = 'X+' , pos = self.jnt_list [1] ,
+                                                             parent = self.control_parent)
         # 创建眉毛左边的Follow控制器
         for follow_ctrl , follow_jnt in zip (self.ctrl_follow_list , self.bpjnt_follow_list) :
             self.follow_ctrl = controlUtils.Control.create_ctrl (follow_ctrl , shape = 'square' ,
-                                                                        radius = 1 ,
-                                                                        axis = 'X+' , pos = follow_jnt ,
-                                                                        parent = self.master_ctrl.replace (
-                                                                            'ctrl' , 'output'))
+                                                                 radius = 1 ,
+                                                                 axis = 'X+' , pos = follow_jnt ,
+                                                                 parent = self.master_ctrl.replace (
+                                                                     'ctrl' , 'output'))
         # 创建眉毛左边的蒙皮控制器
         self.create_ctrl ()
 

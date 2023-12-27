@@ -13,15 +13,16 @@ from ....core import controlUtils , jointUtils , nameUtils , pipelineUtils
 
 
 reload (eyeLid)
-reload(chain)
-reload(jointUtils)
+reload (chain)
+reload (jointUtils)
+
 
 class Eye (chain.Chain) :
-	
+
 
     def __init__ (self , side , name = '' , jnt_number = 2 , length = 10 , jnt_parent = None ,
                   control_parent = None) :
-        super(Eye,self).__init__ (side , name , jnt_number , length , jnt_parent , control_parent)
+        super (Eye , self).__init__ (side , name , jnt_number , length , jnt_parent , control_parent)
         self.shape = 'circle'
         self.rtype = 'Eye'
         self.radius = 0.3
@@ -92,7 +93,7 @@ class Eye (chain.Chain) :
         for bpjnt , jnt in zip (self.iris_bpjnt_list , self.iris_jnt_list) :
             self.jnt = cmds.createNode ('joint' , name = jnt , parent = self.jnt_list [0])
             cons = cmds.parentConstraint (bpjnt , self.jnt , mo = False)
-            cmds.delete(cons)
+            cmds.delete (cons)
 
         # 进行关节定向
         # jointUtils.Joint.joint_orientation (self.jnt_list)
@@ -175,7 +176,7 @@ class Eye (chain.Chain) :
         """
         pipelineUtils.Pipeline.create_constraint (self.ctrl_list [0].replace ('ctrl' , 'output') , self.jnt_list [0] ,
                                                   point_value = False ,
-                                                  orient_value = False , parent_value = True,scale_value =
+                                                  orient_value = False , parent_value = True , scale_value =
                                                   True ,
                                                   mo_value = True)
 
@@ -186,8 +187,8 @@ class Eye (chain.Chain) :
 
                 0 , 1 , 0) , worldUpType = "vector" , worldUpVector = (0 , 1 , 0))
 
-        self.eye_lid_upper.add_constraint()
-        self.eye_lid_lower.add_constraint()
+        self.eye_lid_upper.add_constraint ()
+        self.eye_lid_lower.add_constraint ()
 
         # 添加闭合眼皮曲线的功能
         self.add_blink ()

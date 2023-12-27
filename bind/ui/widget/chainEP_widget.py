@@ -26,7 +26,7 @@ reload (chain_widget)
 reload (chainEP_ui)
 
 
-class ChainEP_Widget (chainEP_ui.Ui_MainWindow , chain_widget.Chain_Widget, QMainWindow) :
+class ChainEP_Widget (chainEP_ui.Ui_MainWindow , chain_widget.Chain_Widget , QMainWindow) :
 
 
     def __init__ (self , parent = None , *args , **kwargs) :

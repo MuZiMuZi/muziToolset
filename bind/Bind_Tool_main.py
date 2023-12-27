@@ -8,8 +8,8 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from . import config
-from .ui.widget import base_widget , chainEP_widget , chain_widget , limb_widget
 from .ui.setup import bind_ui
+from .ui.widget import base_widget , chainEP_widget , chain_widget , limb_widget
 from ..core import qtUtils
 
 
@@ -68,18 +68,22 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         u"""
         用来添加连接的槽函数
         """
-        self.proxy_widget.doubleClicked.connect (self.cmd_proxy_widget_dbclk)
+        self.proxy_widget.doubleClicked.connect (self.clicked_proxy_widget_dbclk)
 
         # custom_widget 的连接
         self.custom_widget.setContextMenuPolicy (Qt.CustomContextMenu)
-        self.custom_widget.customContextMenuRequested.connect (self.cmd_custom_widget_menu)
-        self.custom_widget.itemClicked.connect (self.cmd_custom_widget_clk)
+        self.custom_widget.customContextMenuRequested.connect (self.clicked_custom_widget_menu)
+        self.custom_widget.itemClicked.connect (self.clicked_custom_widget_clk)
 
-        #连接创建绑定的槽函数
-        self.build_button.clicked.connect(self.clicked_build_btn)
+        # 连接action的槽函数
+        self.action_Refersh.triggered.connect (self.triggered_action_Refersh)
+
+        # 连接创建绑定的槽函数
+        self.build_button.clicked.connect (self.clicked_build_btn)
+
 
     # 用来连接proxy_widget双击所连接的功能槽函数,双击的时候将模版库的模版添加到自定义模块里
-    def cmd_proxy_widget_dbclk (self) :
+    def clicked_proxy_widget_dbclk (self) :
         u"""
         用来连接proxy_widget双击所连接的功能槽函数,双击的时候将模版库的模版添加到自定义模块里
         index：鼠标双击的时候所在的位置
@@ -105,7 +109,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
 
 
     # 用来连接custom_widget单击所连接的功能槽函数。单击按钮的时候可以切换到对应的模块设置
-    def cmd_custom_widget_clk (self , item) :
+    def clicked_custom_widget_clk (self , item) :
         u"""
         用来连接custom_widget单击所连接的功能槽函数。单击按钮的时候可以切换到对应的模块设置
         item：鼠标单击的时候所在的位置
@@ -118,7 +122,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
 
 
     # 用来创建custom_widget右键的菜单
-    def cmd_custom_widget_menu (self) :
+    def clicked_custom_widget_menu (self) :
         """
         用来创建custom_widget右键的菜单
         """
@@ -133,7 +137,8 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
             self.action_Rename ,
             custom_menu.addSeparator () ,
             self.action_Delete ,
-            self.action_Clear
+            self.action_Clear ,
+            self.action_Refersh
         ])
         # 创建一个光标对象，在光标对象右击的位置运行这个右键菜单
         cursor = QCursor ()
@@ -165,8 +170,8 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
 
         """
         # 判断item的类型,根据item的类型选择生成哪个界面
-        rigtype = config.Rigtype(item.text)
-        if rigtype == 'custom':
+        rigtype = config.Rigtype (item.text)
+        if rigtype == 'custom' :
             item.widget = base_widget.main ()
         elif rigtype == 'chain' :
             item.widget = chain_widget.main ()
@@ -177,21 +182,37 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         elif rigtype == 'face' :
             item.widget = face_widget.main ()
 
-
         item.widget.module_edit.setText ('{}'.format (item.text))
         self.setting_stack.addWidget (item.widget)
 
-    def clicked_build_btn(self):
+
+    def clicked_build_btn (self) :
         """
         连接创建绑定按钮的槽函数
         """
 
-        #1.获取self.custom_widget里所拥有的所有item
+        # 1.获取self.custom_widget里所拥有的所有item
         all_items = self.custom_widget.findItems ("*" , Qt.MatchWildcard)
 
-        #对所有item做循环遍历，获取item里存储的组件模块信息
-        for item in all_items:
-            item.widget.build_rig()
+        # 对所有item做循环遍历，根据item里面的信息来创建对应的绑定结构
+        for item in all_items :
+            item.widget.build_rig ()
+
+
+    def triggered_action_Refersh (self) :
+        """
+        连接action_Refersh行为的槽函数，当按下这个行为键的时候刷新self.custom_widget里所有item的命名
+        """
+        # 1.获取self.custom_widget里所拥有的所有item
+        all_items = self.custom_widget.findItems ("*" , Qt.MatchWildcard)
+
+        # 对所有item做循环遍历，获取item.widget里的组件信息，module，side和name，用于重新命名item
+        for item in all_items :
+            module = item.widget.module_edit.text ()
+            side = item.widget.side
+            name = item.widget.name
+            item.setText ('{}_{}{}_bpjnt'.format (module , side , name))
+
 
 def show () :
     # 添加了销毁机制，如果之前有创建过这个窗口的话则先删除再创建新的窗口

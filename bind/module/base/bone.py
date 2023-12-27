@@ -177,7 +177,7 @@ class Bone (object) :
         self.radius = 5
 
         # 根据给定的side，name等属性，创建名称进行规范整理
-        self.create_namespace()
+        self.create_namespace ()
 
         # 根据给定的边，初始化side_value的值，用于镜像控制器以及位移
         self.side_value = self._setup_side_value ()
@@ -258,7 +258,7 @@ class Bone (object) :
         创建名称进行规范整理
         """
         #  根据给定的边，名称和jnt_number生成列表来存储创建的名称
-        self._setup_list()
+        self._setup_list ()
 
         for i in range (self.jnt_number) :
             self.bpjnt_list.append ('bpjnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
