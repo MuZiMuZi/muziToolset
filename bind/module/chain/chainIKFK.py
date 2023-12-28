@@ -71,7 +71,7 @@ class ChainIKFK (chain.Chain) :
             cmds.delete (self.jnt_list [0])
 
         # 创建ikfk的关节
-        self.create_ikfk_joints ()
+        self._create_ikfk_joints ()
 
         # 进行关节定向
         jointUtils.Joint.joint_orientation (self.jnt_list)
@@ -85,7 +85,7 @@ class ChainIKFK (chain.Chain) :
         cmds.parent (self.jnt_list [0] , self.jnt_parent)
 
 
-    def create_ikfk_joints (self) :
+    def _create_ikfk_joints (self) :
         """
         创建ikfk的关节
         """
@@ -107,11 +107,11 @@ class ChainIKFK (chain.Chain) :
         self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
 
         # 创建用于ikfk切换的控制器
-        self.create_ikfk_switch_ctrl ()
+        self._create_ikfk_switch_ctrl ()
 
 
     # 创建IKFK切换控制器
-    def create_ikfk_switch_ctrl (self) :
+    def _create_ikfk_switch_ctrl (self) :
         """
         创建IKFK切换控制器
         """
@@ -134,13 +134,12 @@ class ChainIKFK (chain.Chain) :
 
         # IK关节链，FK关节链来约束IKFK关节链
         for jnt_number in range (self.jnt_number) :
-            cons = self.create_ikfk_constraint (jnt_number)
+            cons = self._create_ikfk_constraint (jnt_number)
             # 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
-            self.set_ikfk_driven_keyframes (cons , jnt_number)
-
+            self._set_ikfk_driven_keyframes (cons , jnt_number)
 
     ## IK关节链，FK关节链来约束IKFK关节链
-    def create_ikfk_constraint (self , jnt_number) :
+    def _create_ikfk_constraint (self , jnt_number) :
         """
         创建IKFK约束
         """
@@ -150,9 +149,8 @@ class ChainIKFK (chain.Chain) :
             self.jnt_list [jnt_number]) [0]
         return cons
 
-
-    # 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条，设置IKFK切换的驱动关键帧
-    def set_ikfk_driven_keyframes (self , cons , jnt_number) :
+    #连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条，设置IKFK切换的驱动关键帧
+    def _set_ikfk_driven_keyframes (self , cons , jnt_number) :
         """
         设置IKFK切换的驱动关键帧
         """
