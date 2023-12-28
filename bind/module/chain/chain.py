@@ -117,6 +117,8 @@ class Chain (base.Base) :
         '''
         根据定位的bp关节创建关节
         '''
+        #设置定位关节的可见性
+        cmds.setAttr(self.top_bpjnt_grp + '.visibility',0)
         # 根据bp关节创建新的关节
         for bpjnt in self.bpjnt_list :
             # 断掉上面的属性链接

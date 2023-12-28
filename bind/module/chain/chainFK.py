@@ -22,14 +22,10 @@ class ChainFK (chain.Chain) :
         self.interval = length / (self.jnt_number - 1)
         self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
 
-        self.shape = 'circle'
+        self.shape = 'hexagon'
         self.axis = vectorUtils.Vector (direction).axis
-        self.radius = 4
+        self.radius = 2
 
-        # 初始化属性应该放在构造函数的开始部分
-        self.ctrl_grp = None
-        self.ctrl_list = []
-        self.ctrl = None
 
 
     def create_ctrl (self) :
