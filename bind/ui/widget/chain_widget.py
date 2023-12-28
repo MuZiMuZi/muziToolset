@@ -28,6 +28,7 @@ from ....bind.module.chain import chainFK , chainIK , chainIKFK
 reload (base_widget)
 reload (base)
 reload (chain_ui)
+reload (chainFK)
 
 
 class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow) :
@@ -70,7 +71,8 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         """
         super ().parse_base ()
         self.length = self.length_sbox.value ()
-        self.direction = self.direction_cbox.currentText ()
+        # 传递参数时，参数本身是一个包含字符串的元组 ('[0, 1, 0]',)，而不是一个包含数字的列表 [0, 1, 0]。因此使用eval方法将其解析成为一个列表
+        self.direction = eval (self.direction_cbox.currentText ())
         self.module = self.module_edit.text ()
 
 
@@ -78,7 +80,6 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         # 根据self.module来判断是需要生成哪个模块的绑定
         if self.module in self.chain_modules :
             module_class = self.chain_modules [self.module]
-            print(self.direction)
             self.setup = module_class (self.side , self.name , self.jnt_number , self.direction , self.length ,
                                        self.jnt_parent , self.ctrl_parent)
             self.setup.build_setup ()

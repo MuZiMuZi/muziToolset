@@ -4,13 +4,13 @@ from ....core import controlUtils , vectorUtils
 
 from . import chain
 
-
+reload(vectorUtils)
 reload (chain)
 
 
 class ChainFK (chain.Chain) :
 
-    def __init__ (self , side , name , jnt_number , direction = [-1 , 0 , 0] , length = 10 , jnt_parent = None ,
+    def __init__ (self , side , name , jnt_number , direction = None , length = 10 , jnt_parent = None ,
                   ctrl_parent = None) :
         u"""
         用来创建fk关节链条的绑定
@@ -20,9 +20,11 @@ class ChainFK (chain.Chain) :
         super (ChainFK , self).__init__ (side , name , jnt_number , length , jnt_parent , ctrl_parent)
         self.rtype = 'ChainFK'
         self.interval = length / (self.jnt_number - 1)
-        self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
+        self.direction = direction
+        # self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
+
         self.shape = 'circle'
-        self.axis = vectorUtils.Vector (direction).axis
+        self.axis = vectorUtils.Vector (self.direction).axis
         self.radius = 4
 
         # 初始化属性应该放在构造函数的开始部分
