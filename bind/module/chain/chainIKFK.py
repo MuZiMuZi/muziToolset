@@ -58,23 +58,21 @@ class ChainIKFK (chain.Chain) :
 
 
     def create_joint (self) :
-        '''
+        """
         根据定位的bp关节创建关节
-        '''
+        """
         # 创建ik关节链条和fk关节链条的关节
         self.ik_chain.create_joint ()
         self.fk_chain.create_joint ()
+
         # 判断场景里是否已经存在对应的关节，重建的情况
         if cmds.objExists (self.jnt_list [0]) :
             # 删除过去的关节后，并重新创建关节
             cmds.delete (self.jnt_list [0])
-        else :
-            pass
+
         # 创建ikfk的关节
-        cmds.select (clear = True)
-        for jnt_number , bpjnt in enumerate (self.bpjnt_list) :
-            pos = cmds.xform (bpjnt , q = 1 , t = 1 , ws = 1)
-            cmds.joint (p = pos , name = self.jnt_list [jnt_number])
+        self.create_ikfk_joints ()
+
         # 进行关节定向
         jointUtils.Joint.joint_orientation (self.jnt_list)
 
@@ -87,10 +85,21 @@ class ChainIKFK (chain.Chain) :
         cmds.parent (self.jnt_list [0] , self.jnt_parent)
 
 
+    def create_ikfk_joints (self) :
+        """
+        创建ikfk的关节
+        """
+        cmds.select (clear = True)
+        for jnt_number , bpjnt in enumerate (self.bpjnt_list) :
+            pos = cmds.xform (bpjnt , q = 1 , t = 1 , ws = 1)
+            cmds.joint (p = pos , name = self.jnt_list [jnt_number])
+
+
+    # 创建控制器
     def create_ctrl (self) :
-        u'''
+        """
         创建控制器绑定
-        '''
+        """
         self.ik_chain.create_ctrl ()
         self.fk_chain.create_ctrl ()
 
@@ -98,6 +107,14 @@ class ChainIKFK (chain.Chain) :
         self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
 
         # 创建用于ikfk切换的控制器
+        self.create_ikfk_switch_ctrl ()
+
+
+    # 创建IKFK切换控制器
+    def create_ikfk_switch_ctrl (self) :
+        """
+        创建IKFK切换控制器
+        """
         self.ctrl = controlUtils.Control.create_ctrl (self.ctrl_list [0] , shape = 'pPlatonic' ,
                                                       radius = self.radius * 1.2 ,
                                                       axis = self.axis , pos = self.jnt_list [0] ,
@@ -109,36 +126,53 @@ class ChainIKFK (chain.Chain) :
 
 
     def add_constraint (self) :
-        '''
+        """
         添加约束,ikfk关节链的约束比较特别，需要连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
-        '''
+        """
         self.ik_chain.add_constraint ()
         self.fk_chain.add_constraint ()
 
         # IK关节链，FK关节链来约束IKFK关节链
         for jnt_number in range (self.jnt_number) :
-            cons = cmds.parentConstraint (
-                self.ik_chain.jnt_list [jnt_number] ,
-                self.fk_chain.jnt_list [jnt_number] ,
-                self.jnt_list [jnt_number]) [0]
+            cons = self.create_ikfk_constraint (jnt_number)
             # 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
-            cmds.setDrivenKeyframe (
-                '{}.w0'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 1)
-            cmds.setDrivenKeyframe (
-                '{}.w1'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 0)
-            cmds.setDrivenKeyframe (
-                '{}.w0'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 0)
-            cmds.setDrivenKeyframe (
-                '{}.w1'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 1)
+            self.set_ikfk_driven_keyframes (cons , jnt_number)
 
-            cmds.setDrivenKeyframe (self.ik_chain.ctrl_list [jnt_number] + '.v' ,
-                                    cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 1)
-            cmds.setDrivenKeyframe (self.ik_chain.ctrl_list [jnt_number] + '.v' ,
-                                    cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 0)
-            cmds.setDrivenKeyframe (self.fk_chain.ctrl_list [jnt_number] + '.v' ,
-                                    cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 1)
-            cmds.setDrivenKeyframe (self.fk_chain.ctrl_list [jnt_number] + '.v' ,
-                                    cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 0)
+
+    ## IK关节链，FK关节链来约束IKFK关节链
+    def create_ikfk_constraint (self , jnt_number) :
+        """
+        创建IKFK约束
+        """
+        cons = cmds.parentConstraint (
+            self.ik_chain.jnt_list [jnt_number] ,
+            self.fk_chain.jnt_list [jnt_number] ,
+            self.jnt_list [jnt_number]) [0]
+        return cons
+
+
+    # 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条，设置IKFK切换的驱动关键帧
+    def set_ikfk_driven_keyframes (self , cons , jnt_number) :
+        """
+        设置IKFK切换的驱动关键帧
+        """
+        cmds.setDrivenKeyframe (
+            '{}.w0'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 1)
+        cmds.setDrivenKeyframe (
+            '{}.w1'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 0)
+        cmds.setDrivenKeyframe (
+            '{}.w0'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 0)
+        cmds.setDrivenKeyframe (
+            '{}.w1'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 1)
+
+        cmds.setDrivenKeyframe (self.ik_chain.ctrl_list [jnt_number] + '.v' ,
+                                cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 1)
+        cmds.setDrivenKeyframe (self.ik_chain.ctrl_list [jnt_number] + '.v' ,
+                                cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 0)
+        cmds.setDrivenKeyframe (self.fk_chain.ctrl_list [jnt_number] + '.v' ,
+                                cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 1)
+        cmds.setDrivenKeyframe (self.fk_chain.ctrl_list [jnt_number] + '.v' ,
+                                cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 0)
 
 
 if __name__ == '__main__' :
