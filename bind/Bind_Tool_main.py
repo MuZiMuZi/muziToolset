@@ -20,7 +20,8 @@ reload (chainEP_widget)
 reload (bind_ui)
 reload (face_widget)
 
-#item里存储的数据
+
+# item里存储的数据
 # item_widget = item.data (Qt.UserRole)
 # item_text = item.data (Qt.UserRole + 1)
 # item_index = item.data (Qt.UserRole + 2)
@@ -118,8 +119,8 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
             item.setForeground (QColor (255 , 0 , 0))
 
             # 设置item的文本和索引
-            #存储item的名称为item_text在Qt.UserRole + 1 里
-            #存储item的序号为item_index在Qt.UserRole + 2里
+            # 存储item的名称为item_text在Qt.UserRole + 1 里
+            # 存储item的序号为item_index在Qt.UserRole + 2里
             item.setData (Qt.UserRole + 1 , item_text)
             item.setData (Qt.UserRole + 2 , item_index)  # 存储索引值
             self.update_current (item)
@@ -187,23 +188,22 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         根据所得知的item，创建对应的设置面板
         Returns:
         """
-        #从item的data中获取对应的信息
+        # 从item的data中获取对应的信息
         item_text = item.data (Qt.UserRole + 1)
         item_index = item.data (Qt.UserRole + 2)
         # 判断item的类型，根据item的类型选择生成哪个界面
         rigtype = config.Rigtype (item_text)
 
-
         if rigtype == 'custom' :
-            item_widget = base_item_widget.main ()
+            item_widget = base_widget.main ()
         elif rigtype == 'chain' :
-            item_widget = chain_item_widget.main ()
+            item_widget = chain_widget.main ()
         elif rigtype == 'chainEP' :
-            item_widget = chainEP_item_widget.main ()
+            item_widget = chainEP_widget.main ()
         elif rigtype == 'limb' :
-            item_widget = limb_item_widget.main ()
+            item_widget = limb_widget.main ()
         elif rigtype == 'face' :
-            item_widget = face_item_widget.main ()
+            item_widget = face_widget.main ()
 
         # 将item_widget与item关联
         item.setData (Qt.UserRole , item_widget)
@@ -212,7 +212,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         item_widget = item.data (Qt.UserRole)
         item_widget.module_edit.setText ('{}'.format (item_text))
         item_widget.index_edit.setText ('{}'.format (item_index + 1))
-        self.setting_stack.additem_widget (item_widget)
+        self.setting_stack.addWidget (item_widget)
 
 
     def clicked_build_btn (self) :
@@ -225,7 +225,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
 
         # 对所有item做循环遍历，根据item里面的信息来创建对应的绑定结构
         for item in all_items :
-            item_widget = item.data(Qt.UserRole)
+            item_widget = item.data (Qt.UserRole)
             item_widget.build_rig ()
 
 
