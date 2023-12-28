@@ -20,7 +20,7 @@ class ChainEP (chain.Chain) :
         ctrl_number：生成的控制器数量
         crv_node：需要创建控制器与关节的曲线
         '''
-        self._rtype = 'ChainEP'
+        self.rtype = 'ChainEP'
         self.ctrl_number = ctrl_number
         self.curve = curve
         self.radius = 3

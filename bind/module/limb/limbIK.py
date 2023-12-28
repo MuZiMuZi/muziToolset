@@ -24,7 +24,7 @@ class LimbIK (chainIK.ChainIK) :
         limbtype(str):给定的limbtype 是手臂还是腿部
         """
         super ().__init__ (side , name , jnt_number , direction , length , is_stretch , jnt_parent , ctrl_parent)
-        self._rtype = 'LimbIK'
+        self.rtype = 'LimbIK'
         self.jnt_number = jnt_number
         # 判断给定的limbtype 是手臂还是腿部
         if limbtype == 'arm' :
@@ -39,17 +39,17 @@ class LimbIK (chainIK.ChainIK) :
 
     def create_namespace (self) :
         super ().create_namespace ()
-        self.pv_ctrl = ('ctrl_{}_{}{}PV_001'.format (self._side , self._name , self._rtype))
-        self.pv_loc = ('loc_{}_{}{}PV_001'.format (self._side , self._name , self._rtype))
-        self.jnt_loc = ('jnt_{}_{}{}PV_001'.format (self._side , self._name , self._rtype))
-        self.pv_curve = ('crv_{}_{}{}PV_001'.format (self._side , self._name , self._rtype))
-        self.local_ctrl = ('ctrl_{}_{}{}Local_001'.format (self._side , self._name , self._rtype))
+        self.pv_ctrl = ('ctrl_{}_{}{}PV_001'.format (self.side , self.name , self.rtype))
+        self.pv_loc = ('loc_{}_{}{}PV_001'.format (self.side , self.name , self.rtype))
+        self.jnt_loc = ('jnt_{}_{}{}PV_001'.format (self.side , self.name , self.rtype))
+        self.pv_curve = ('crv_{}_{}{}PV_001'.format (self.side , self.name , self.rtype))
+        self.local_ctrl = ('ctrl_{}_{}{}Local_001'.format (self.side , self.name , self.rtype))
         self.startIK_pos_loc = self.jnt_list [0].replace ('jnt' , 'loc')
         self.endIK_pos_loc = self.jnt_list [-1].replace ('jnt' , 'loc')
 
         # 添加一个末端的iK关节用来制作singleIKhandle，
-        self.endIK_handle = ('handle_{}_{}{}End_001'.format (self._side , self._name , self._rtype))
-        self.endIK_jnt = 'jnt_{}_{}{}_{:03d}'.format (self._side , self._name , self._rtype , self.jnt_number + 1)
+        self.endIK_handle = ('handle_{}_{}{}End_001'.format (self.side , self.name , self.rtype))
+        self.endIK_jnt = 'jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , self.jnt_number + 1)
 
 
     def create_joint (self) :

@@ -22,7 +22,7 @@ class ChainIK (chain.Chain) :
         is_stretch(bool):是否允许ik关节链条进行拉伸
         """
 
-        self._rtype = 'ChainIK'
+        self.rtype = 'ChainIK'
 
         self.interval = length / (self.jnt_number - 1)
         self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
@@ -30,10 +30,6 @@ class ChainIK (chain.Chain) :
 
         self.set_shape ('cube')
         self.radius = 2
-        # 根据给定的边，名称和jnt_number生成列表来存储创建的名称
-        self.cluster_list = list ()
-        self.ik_curve = None
-        self.ik_handle = None
         self.axis = vectorUtils.Vector (direction).axis
 
 
@@ -42,11 +38,15 @@ class ChainIK (chain.Chain) :
         创建ik绑定系统的命名规范
         '''
         super ().create_namespace ()
+        # 根据给定的边，名称和jnt_number生成列表来存储创建的名称
+        self.cluster_list = list ()
+        self.ik_curve = None
+        self.ik_handle = None
         for i in range (self.jnt_number) :
-            self.cluster_list.append ('cluster_{}_{}{}_{:03d}'.format (self._side , self._name , self._rtype , i + 1))
+            self.cluster_list.append ('cluster_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
 
-        self.ik_curve = ('curve_{}_{}{}_001'.format (self._side , self._name , self._rtype))
-        self.ik_handle = ('handle_{}_{}{}_001'.format (self._side , self._name , self._rtype))
+        self.ik_curve = ('curve_{}_{}{}_001'.format (self.side , self.name , self.rtype))
+        self.ik_handle = ('handle_{}_{}{}_001'.format (self.side , self.name , self.rtype))
 
 
     def build_ikSpline (self) :

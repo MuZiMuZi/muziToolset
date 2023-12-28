@@ -16,7 +16,7 @@ class LimbFK (chainFK.ChainFK) :
         limbtype(str):给定的limbtype 是手臂还是腿部
         """
         super ().__init__ (side , name , jnt_number , direction , length , jnt_parent , ctrl_parent)
-        self._rtype = 'LimbFK'
+        self.rtype = 'LimbFK'
 
 
     def create_joint (self) :

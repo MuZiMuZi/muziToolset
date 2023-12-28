@@ -25,7 +25,7 @@ class ChainIKFK (chain.Chain) :
 
         self.fk_chain = chainFK.ChainFK (side , name , jnt_number , direction , length)
 
-        self._rtype = 'ChainIKFK'
+        self.rtype = 'ChainIKFK'
         self.radius = 6
         # 获取初始的位置
         self.interval = length / (self.jnt_number - 1)

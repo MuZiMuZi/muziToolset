@@ -19,9 +19,9 @@ class Leg (base.Base) :
                   jnt_parent = None , ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , direction , is_stretch , length , limbtype , jnt_parent ,
                            ctrl_parent)
-        self._side = side
-        self._name = name
-        self._rtype = 'Leg'
+        self.side = side
+        self.name = name
+        self.rtype = 'Leg'
         self.axis = 'Z+'
         # 初始化脚掌的模块
         self.foot_limb = foot.Foot (side , name , jnt_number = 3 , length = 6 , jnt_parent = None ,

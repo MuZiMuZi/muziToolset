@@ -9,7 +9,7 @@ class Hand (finger.Finger) :
     def __init__ (self , side , name , jnt_number = 4 , direction = [-1 , 0 , 0] , length = 3 , jnt_parent = None ,
                   ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , direction , length , jnt_parent , ctrl_parent)
-        self._rtype = ''
+        self.rtype = ''
         # 初始化手指的模块
         self.thumb_finger = finger.Finger (self.side , 'thumb' , jnt_number = 3 , direction = self.direction ,
                                            length = self.length , jnt_parent = self.jnt_parent ,
@@ -38,7 +38,7 @@ class Hand (finger.Finger) :
         # 创建手指各模块的定位关节
         for finger in self.finger_list :
             finger.create_namespace ()
-        self.finger_grp = ('grp_{}_{}Finger_001'.format (self._side , self._name))
+        self.finger_grp = ('grp_{}_{}Finger_001'.format (self.side , self.name))
 
 
     def create_bpjnt (self) :

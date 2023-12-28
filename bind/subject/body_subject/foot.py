@@ -47,30 +47,30 @@ class Foot (chain.Chain) :
         self.foot_fk.create_namespace ()
         self.foot_ik.create_namespace ()
         for part in self.parts :
-            self.bpjnt_list.append ('bpjnt_{}_{}{}_001'.format (self._side , self._name , part))
-            self.jnt_list.append ('jnt_{}_{}{}_001'.format (self._side , self._name , part))
-            self.zero_list.append ('zero_{}_{}{}_001'.format (self._side , self._name , part))
-            self.driven_list.append ('driven_{}_{}{}_001'.format (self._side , self._name , part))
-            self.ctrl_list.append ('ctrl_{}_{}{}_001'.format (self._side , self._name , part))
-            self.output_list.append ('output_{}_{}{}_001'.format (self._side , self._name , part))
-        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self._side , self._name , self._rtype))
+            self.bpjnt_list.append ('bpjnt_{}_{}{}_001'.format (self.side , self.name , part))
+            self.jnt_list.append ('jnt_{}_{}{}_001'.format (self.side , self.name , part))
+            self.zero_list.append ('zero_{}_{}{}_001'.format (self.side , self.name , part))
+            self.driven_list.append ('driven_{}_{}{}_001'.format (self.side , self.name , part))
+            self.ctrl_list.append ('ctrl_{}_{}{}_001'.format (self.side , self.name , part))
+            self.output_list.append ('output_{}_{}{}_001'.format (self.side , self.name , part))
+        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rtype))
         # 创建用来定位旋转轴心点的关节
         for part in self.rvs_jnt_parts :
-            self.rvs_bpjnt_list.append ('bpjnt_{}_{}{}_001'.format (self._side , self._name , part))
-            self.rvs_jnt_list.append ('jnt_{}_{}{}_001'.format (self._side , self._name , part))
-            self.rvs_ctrl_list.append ('ctrl_{}_{}{}_001'.format (self._side , self._name , part))
-            self.rvs_output_list.append ('output_{}_{}{}_001'.format (self._side , self._name , part))
+            self.rvs_bpjnt_list.append ('bpjnt_{}_{}{}_001'.format (self.side , self.name , part))
+            self.rvs_jnt_list.append ('jnt_{}_{}{}_001'.format (self.side , self.name , part))
+            self.rvs_ctrl_list.append ('ctrl_{}_{}{}_001'.format (self.side , self.name , part))
+            self.rvs_output_list.append ('output_{}_{}{}_001'.format (self.side , self.name , part))
 
-        self.heel_bpjnt = ('bpjnt_{}_{}Heel_001'.format (self._side , self._name))
-        self.tiptoe_bpjnt = ('bpjnt_{}_{}Tiptoe_001'.format (self._side , self._name))
-        self.inn_bpjnt = ('bpjnt_{}_{}Inn_001'.format (self._side , self._name))
-        self.out_bpjnt = ('bpjnt_{}_{}Out_001'.format (self._side , self._name))
+        self.heel_bpjnt = ('bpjnt_{}_{}Heel_001'.format (self.side , self.name))
+        self.tiptoe_bpjnt = ('bpjnt_{}_{}Tiptoe_001'.format (self.side , self.name))
+        self.inn_bpjnt = ('bpjnt_{}_{}Inn_001'.format (self.side , self.name))
+        self.out_bpjnt = ('bpjnt_{}_{}Out_001'.format (self.side , self.name))
 
         # 创建 IKhandle 的名称规范
         self.ball_ikhandle = self.jnt_list [1].replace ('jnt' , 'ikhandle')
         self.toe_ikhandle = self.jnt_list [-1].replace ('jnt' , 'ikhandle')
         # 创建整体的控制器层级组
-        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self._side , self._name , self._rtype))
+        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rtype))
 
 
     def create_bpjnt (self) :

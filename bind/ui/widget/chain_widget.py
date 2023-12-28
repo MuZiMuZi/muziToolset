@@ -29,6 +29,7 @@ reload (base_widget)
 reload (base)
 reload (chain_ui)
 reload (chainFK)
+reload(chainIK)
 
 
 class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow) :

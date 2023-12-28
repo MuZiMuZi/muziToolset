@@ -24,7 +24,7 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
                   ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , direction , is_stretch , length , jnt_parent , ctrl_parent)
 
-        self._rtype = 'LimbIKFK'
+        self.rtype = 'LimbIKFK'
         jnt_number = 3
         # 判断给定的limbtype 是手臂还是腿部
         if limbtype == 'arm' :

@@ -12,7 +12,7 @@ class Finger (chainFK.ChainFK) :
             direction = [1 , 0 , 0]
         super ().__init__ (side , name , jnt_number , direction , length , jnt_parent , ctrl_parent)
 
-        self._rtype = 'Finger'
+        self.rtype = 'Finger'
         self.radius = 2
 
 
