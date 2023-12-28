@@ -166,9 +166,12 @@ class Bone (object) :
         # 设置关节的父层级和控制器的父层级
         self.jnt_parent = jnt_parent
         self.ctrl_parent = ctrl_parent
-        if not self.jnt_parent :
+        #判断当没有输入关节的父层级或者关节的父层级不存在于场景里的时候，则将关节父层级自动设置成为世界的关节总组
+        if not self.jnt_parent or not cmds.objExists(self.jnt_parent):
             self.jnt_parent = self.top_jnt_grp
-        if not self.ctrl_parent :
+
+        # 判断当没有输入控制器的父层级或者控制器的父层级不存在于场景里的时候，则将控制器父层级自动设置成为世界的控制器总组
+        if not self.ctrl_parent or not cmds.objExists(self.ctrl_parent):
             self.ctrl_parent = self.top_ctrl_grp
 
         # 生成的绑定类型
