@@ -246,6 +246,20 @@ class Connection () :
     """
 
 
+    @staticmethod
+    #给定需要断开链接的属性列表进行断开链接
+    def disconnect_attributes (node , attribute_list) :
+        '''
+        #给定需要断开链接的属性列表进行断开链接
+        '''
+        for attr in attribute_list :
+            plug = cmds.listConnections (node + attr , s = True , d = False , p = True)
+            if plug :
+                cmds.disconnectAttr (plug [0] , node + attr)
+
+        #实例
+        #disconnect_attributes (bpjnt , ['.translate' , '.rotate' , '.scale'])
+
     # 断开所选择的通道盒上的属性的属性连接
     def break_attr_connections (self) :
         """
