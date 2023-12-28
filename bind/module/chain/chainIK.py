@@ -28,8 +28,8 @@ class ChainIK (chain.Chain) :
         self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
         self.is_stretch = is_stretch
 
-        self.set_shape ('cube')
-        self.radius = 2
+        self.set_shape ('ball')
+        self.radius = 1
         self.axis = vectorUtils.Vector (direction).axis
 
 
