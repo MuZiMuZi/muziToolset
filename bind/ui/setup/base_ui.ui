@@ -303,7 +303,7 @@
            </font>
           </property>
           <property name="text">
-           <string>None</string>
+           <string/>
           </property>
          </widget>
         </item>
@@ -351,9 +351,6 @@
             <family>Arial Narrow</family>
             <pointsize>18</pointsize>
            </font>
-          </property>
-          <property name="text">
-           <string>None</string>
           </property>
          </widget>
         </item>

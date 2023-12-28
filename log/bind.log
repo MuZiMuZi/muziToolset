@@ -874,3 +874,28 @@ abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT032/Cache/EP002_
 2023-11-28 17:40:55,652 -root - WARNING - 确保一个3D视图面板被激活
 2023-11-28 17:41:24,679 -root - WARNING - 确保一个3D视图面板被激活
 2023-11-28 17:43:40,694 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT022b\Hair\EP002_SC001_CUT022b_v001.mov输出完成
+2023-12-27 18:36:22,882 -root - INFO - 没有需要缓存的物体
+2023-12-27 18:36:44,802 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT112/Cache/LaoLv_LaoLv_geo_grp_abc.abc"
+2023-12-27 18:36:44,802 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT112/Cache/LaoLv_LaoLv_geo_grp_abc.abc"
+2023-12-27 18:36:50,396 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT112/Cache/LaoLv_LaoLv_geo_grp_abc.abc
+2023-12-27 18:40:15,271 -root - INFO - 没有需要缓存的物体
+2023-12-27 18:40:28,677 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT136/Cache/LaoLv_LaoLv_geo_grp_abc.abc"
+2023-12-27 18:40:28,677 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT136/Cache/LaoLv_LaoLv_geo_grp_abc.abc"
+2023-12-27 18:40:30,400 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT136/Cache/LaoLv_LaoLv_geo_grp_abc.abc
+2023-12-27 18:43:56,438 -root - INFO - 没有需要缓存的物体
+2023-12-27 18:44:17,489 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT139/Cache/LaoLv_LaoLv_geo_grp_abc.abc"
+2023-12-27 18:44:17,490 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT139/Cache/LaoLv_LaoLv_geo_grp_abc.abc"
+2023-12-27 18:44:19,316 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT139/Cache/LaoLv_LaoLv_geo_grp_abc.abc
+2023-12-27 18:47:20,083 -root - INFO - 没有需要缓存的物体
+2023-12-27 18:51:24,633 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT160/Cache/LaoLv_LaoLv_geo_grp_abc.abc"
+2023-12-27 18:51:24,633 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT160/Cache/LaoLv_LaoLv_geo_grp_abc.abc"
+2023-12-27 18:51:25,918 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT160/Cache/LinQin_LinQin_geo_grp_abc.abc"
+2023-12-27 18:51:25,918 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT160/Cache/LinQin_LinQin_geo_grp_abc.abc"

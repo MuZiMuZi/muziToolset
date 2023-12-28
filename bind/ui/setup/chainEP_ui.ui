@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>703</width>
-    <height>619</height>
+    <height>620</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -437,9 +437,6 @@
             <pointsize>18</pointsize>
            </font>
           </property>
-          <property name="text">
-           <string>None</string>
-          </property>
          </widget>
         </item>
        </layout>
@@ -486,9 +483,6 @@
             <family>Arial Narrow</family>
             <pointsize>18</pointsize>
            </font>
-          </property>
-          <property name="text">
-           <string>None</string>
           </property>
          </widget>
         </item>
