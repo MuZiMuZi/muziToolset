@@ -22,6 +22,7 @@ from ... import config
 from ..setup import chain_ui
 from ..widget import base_widget
 from ....bind.module.base import base
+from ....bind.module.chain import chainFK , chainIK , chainIKFK
 
 
 reload (base_widget)
@@ -30,6 +31,12 @@ reload (chain_ui)
 
 
 class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow) :
+    chain_modules = {
+        'chainFK' : chainFK.ChainFK ,
+        'chainIK' : chainIK.ChainIK ,
+        'chainIKFK' : chainIKFK.ChainIKFK ,
+        # 添加其他模块类型
+    }
 
 
     def __init__ (self , parent = None , *args , **kwargs) :
@@ -64,15 +71,27 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         super ().parse_base ()
         self.length = self.length_sbox.value ()
         self.direction = self.direction_cbox.currentText ()
+        self.module = self.module_edit.text ()
 
 
     def build_setup (self) :
-        # 读取输入信息
-        self.parse_base ()
-        #
-        # # 生成定位关节系统
-        # self.setup = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
-        # self.setup.build_setup ()
+        # 根据self.module来判断是需要生成哪个模块的绑定
+        if self.module in self.chain_modules :
+            module_class = self.chain_modules [self.module]
+            print(self.direction)
+            self.setup = module_class (self.side , self.name , self.jnt_number , self.direction , self.length ,
+                                       self.jnt_parent , self.ctrl_parent)
+            self.setup.build_setup ()
+
+
+    # 根据base_widget和extra_widget返回的参数,创建绑定系统
+    def build_rig (self) :
+        # 根据self.module来判断是需要生成哪个模块的绑定
+        if self.module in self.chain_modules :
+            module_class = self.chain_modules [self.module]
+            self.rig = module_class (self.side , self.name , self.jnt_number , self.direction , self.length ,
+                                     self.jnt_parent , self.ctrl_parent)
+            self.rig.build_rig ()
 
 
 def main () :

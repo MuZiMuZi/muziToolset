@@ -1,16 +1,14 @@
 from importlib import reload
-
 import maya.cmds as cmds
+from ....core import controlUtils , vectorUtils
 
 from . import chain
-from ....core import controlUtils , vectorUtils
 
 
 reload (chain)
 
 
 class ChainFK (chain.Chain) :
-
 
     def __init__ (self , side , name , jnt_number , direction = [-1 , 0 , 0] , length = 10 , jnt_parent = None ,
                   ctrl_parent = None) :
@@ -21,13 +19,16 @@ class ChainFK (chain.Chain) :
         """
         super (ChainFK , self).__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
         self.rtype = 'ChainFK'
-
         self.interval = length / (self.jnt_number - 1)
         self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
         self.shape = 'circle'
         self.axis = vectorUtils.Vector (direction).axis
-
         self.radius = 4
+
+        # 初始化属性应该放在构造函数的开始部分
+        self.ctrl_grp = None
+        self.ctrl_list = []
+        self.ctrl = None
 
 
     def create_ctrl (self) :
@@ -43,10 +44,8 @@ class ChainFK (chain.Chain) :
 
         parent = self.ctrl_grp
         for ctrl , jnt in zip (self.ctrl_list , self.jnt_list) :
-            self.ctrl = controlUtils.Control.create_ctrl (ctrl , shape = self.shape ,
-                                                          radius = self.radius ,
-                                                          axis = self.axis , pos = jnt ,
-                                                          parent = parent)
+            self.ctrl = controlUtils.Control.create_ctrl (ctrl , shape = self.shape , radius = self.radius ,
+                                                          axis = self.axis , pos = jnt , parent = parent)
             # 指定关节的父层级为上一轮创建出来的控制器层级组
             parent = ctrl.replace ('ctrl' , 'output')
 

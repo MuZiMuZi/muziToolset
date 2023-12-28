@@ -88,7 +88,6 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         # 创建用来定位的bp关节
         self.build_setup ()
 
-        # 4.获取组件的属性来修改custom_widget里item的名称
 
 
     def parse_base (self , *args) :
