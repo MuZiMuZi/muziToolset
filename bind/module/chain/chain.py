@@ -71,8 +71,8 @@ class Chain (base.Base) :
         length：关节的总长度
         
         '''
-        super ().__init__ (self , side , name , jnt_number , jnt_parent , ctrl_parent)
-        #初始化给定的参数值
+        super().__init__(side , name , jnt_number , jnt_parent , ctrl_parent)
+
         self.rtype = 'Chain'
 
         self.length = length
@@ -99,10 +99,10 @@ class Chain (base.Base) :
                 # 指定关节的父层级为上一轮创建出来的关节
                 self.jnt_parent = self.bpjnt
                 # 调整距离,调整关节的朝向距离
-                # 获取关节的位置信息，例如self.interval是关节的长度，self。direction是空间位置比如[0.0, 1, 0.0]
-                # 他们相乘获得到distance，将关节为位移到对应的位置信息上
+                #获取关节的位置信息，例如self.interval是关节的长度，self。direction是空间位置比如[0.0, 1, 0.0]
+                #他们相乘获得到distance，将关节为位移到对应的位置信息上
                 distance = [element * self.interval for element in self.direction]
-                pipelineUtils.Pipeline.move (bpjnt , distance)
+                pipelineUtils.Pipeline.move (bpjnt, distance)
                 # 将bp关节添加到选择集里方便进行选择
                 pipelineUtils.Pipeline.create_set (self.bpjnt ,
                                                    set_name = '{}_{}{}_bpjnt_set'.format (self.side , self.name ,
@@ -117,8 +117,8 @@ class Chain (base.Base) :
         '''
         根据定位的bp关节创建关节
         '''
-        # 设置定位关节的可见性
-        cmds.setAttr (self.top_bpjnt_grp + '.visibility' , 0)
+        #设置定位关节的可见性
+        cmds.setAttr(self.top_bpjnt_grp + '.visibility',0)
         # 根据bp关节创建新的关节
         for bpjnt in self.bpjnt_list :
             # 断掉上面的属性链接

@@ -1,10 +1,12 @@
 from importlib import reload
+
 import maya.cmds as cmds
-from ....core import controlUtils , vectorUtils
 
 from . import chain
+from ....core import controlUtils , vectorUtils
 
-reload(vectorUtils)
+
+reload (vectorUtils)
 reload (chain)
 
 
@@ -17,7 +19,7 @@ class ChainFK (chain.Chain) :
         length(int)：关节的总长度
         direction（list）:从根节点到顶部节点的方向例如[1,0,0]或者[0,1,0]
         """
-        super (ChainFK , self).__init__ (side , name , jnt_number , length , jnt_parent , ctrl_parent)
+        super ().__init__ (side , name , jnt_number , length , jnt_parent , ctrl_parent)
         self.rtype = 'ChainFK'
         self.interval = length / (self.jnt_number - 1)
         self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
@@ -25,7 +27,6 @@ class ChainFK (chain.Chain) :
         self.shape = 'shrug'
         self.axis = vectorUtils.Vector (direction).axis
         self.radius = 2
-
 
 
     def create_ctrl (self) :
@@ -53,8 +54,7 @@ class ChainFK (chain.Chain) :
             cmds.scaleConstraint (self.ctrl_list [jnt_number] , jnt)
 
 
-
-#示例
+# 示例
 # import muziToolset.bind.module.chain.chainFK as chainFK
 # from importlib import reload
 #

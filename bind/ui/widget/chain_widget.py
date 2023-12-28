@@ -29,7 +29,7 @@ reload (base_widget)
 reload (base)
 reload (chain_ui)
 reload (chainFK)
-reload(chainIK)
+reload (chainIK)
 
 
 class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow) :
@@ -83,6 +83,7 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
             module_class = self.chain_modules [self.module]
             self.setup = module_class (self.side , self.name , self.jnt_number , self.direction , self.length ,
                                        self.jnt_parent , self.ctrl_parent)
+
             self.setup.build_setup ()
 
 

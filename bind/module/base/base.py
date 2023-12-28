@@ -101,5 +101,5 @@ class Base (bone.Bone) :
 
 
     def __init__ (self , side , name , jnt_number , jnt_parent = None , ctrl_parent = None) :
-        bone.Bone.__init__ (self , side , name , jnt_number , jnt_parent , ctrl_parent)
+        super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
         self.rtype = 'Base'
