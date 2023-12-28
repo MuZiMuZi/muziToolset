@@ -239,11 +239,12 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         # 对所有item做循环遍历，获取item.widget里的组件信息，module，side和name，用于重新命名item
         for item in all_items :
             all_items_texts.append (item.text ())
-            module = item.widget.module_edit.text ()
-            side = item.widget.side
-            name = item.widget.name
+            item_widget = item.data (Qt.UserRole)
+            module = item_widget.module_edit.text ()
+            side = item_widget.side
+            name = item_widget.name
             # 利用count方法来获取item的模块名称出现过的次数
-            item_index = all_items_texts.count ('{}_{}'.format (side , item_text))
+            item_index = all_items_texts.count ('{}_{}'.format (side , item.text ()))
 
             item.setText ('bp_{}_{}{}_{:03d}'.format (side , module , name , item_index + 1))
 

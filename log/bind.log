@@ -939,3 +939,15 @@ abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT075/Cache/RenZhu
 导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT075/Cache/YanZhao_YanZhao_geo_grp_abc.abc"
 2023-12-28 16:41:04,876 -root - INFO - 
 abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT075/Cache/YanZhao_YanZhao_geo_grp_abc.abc
+2023-12-28 16:56:34,523 -root - INFO - 没有需要缓存的物体
+2023-12-28 16:56:56,098 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT122a/Cache/RenZhu1_RenZhu_geo_grp_abc.abc"
+2023-12-28 16:56:56,098 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT122a/Cache/RenZhu1_RenZhu_geo_grp_abc.abc"
+2023-12-28 16:56:56,529 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT122a/Cache/RenZhu1_RenZhu_geo_grp_abc.abc
+2023-12-28 17:00:33,366 -root - INFO - 没有需要缓存的物体
+2023-12-28 17:01:17,411 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT184/Cache/RenZhu1_RenZhu_geo_grp_abc.abc"
+2023-12-28 17:01:17,411 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT184/Cache/RenZhu1_RenZhu_geo_grp_abc.abc"
+2023-12-28 17:01:18,763 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT184/Cache/RenZhu1_RenZhu_geo_grp_abc.abc
