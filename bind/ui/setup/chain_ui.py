@@ -159,7 +159,7 @@ class Ui_MainWindow(object):
         self.jnt_number_sbox.setSizePolicy(sizePolicy)
         self.jnt_number_sbox.setFont(font4)
         self.jnt_number_sbox.setMinimum(2)
-        self.jnt_number_sbox.setValue(2)
+        self.jnt_number_sbox.setValue(3)
 
         self.horizontalLayout_4.addWidget(self.jnt_number_sbox)
 
@@ -181,7 +181,9 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.length_sbox.sizePolicy().hasHeightForWidth())
         self.length_sbox.setSizePolicy(sizePolicy)
         self.length_sbox.setFont(font3)
-        self.length_sbox.setValue(1.000000000000000)
+        self.length_sbox.setDecimals(2)
+        self.length_sbox.setMaximum(1000000000000.000000000000000)
+        self.length_sbox.setValue(3.000000000000000)
 
         self.horizontalLayout_9.addWidget(self.length_sbox)
 

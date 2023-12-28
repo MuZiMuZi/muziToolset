@@ -77,7 +77,7 @@ class Chain (base.Base) :
 
         self.length = length
         self.interval = None
-        self.direction = [-1 , 0 , 0]
+        self.direction = None
         self.curve = None
 
 
@@ -85,6 +85,8 @@ class Chain (base.Base) :
         """
         创建定位的bp关节
         """
+        # 设置bpjnt创建出来的位置放置在top_bpjnt_grp的层级下
+        self.jnt_parent = self.top_bpjnt_grp
         for bpjnt in self.bpjnt_list :
             # 判断是否已经生成过定位关节，如果没有生成过定位关节的话则生成定位关节
             if cmds.objExists (bpjnt) :
@@ -96,8 +98,11 @@ class Chain (base.Base) :
                 cmds.setAttr (self.bpjnt + '.overrideColor' , 13)
                 # 指定关节的父层级为上一轮创建出来的关节
                 self.jnt_parent = self.bpjnt
-                # 调整距离
-                cmds.setAttr (self.bpjnt + '.translateX' , float (self.length / self.jnt_number))
+                # 调整距离,调整关节的朝向距离
+                #获取关节的位置信息，例如self.interval是关节的长度，self。direction是空间位置比如[0.0, 1, 0.0]
+                #他们相乘获得到distance，将关节为位移到对应的位置信息上
+                distance = [element * self.interval for element in self.direction]
+                pipelineUtils.Pipeline.move (bpjnt, distance)
                 # 将bp关节添加到选择集里方便进行选择
                 pipelineUtils.Pipeline.create_set (self.bpjnt ,
                                                    set_name = '{}_{}{}_bpjnt_set'.format (self.side , self.name ,
@@ -114,7 +119,7 @@ class Chain (base.Base) :
         '''
         # 根据bp关节创建新的关节
         for bpjnt in self.bpjnt_list :
-            #断掉上面的属性链接
+            # 断掉上面的属性链接
             connectionUtils.Connection.disconnect_attributes (bpjnt , ['.translate' , '.rotate' , '.scale'])
 
         # 判断场景里是否已经存在对应的关节，重建的情况

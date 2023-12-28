@@ -23,7 +23,6 @@ class Vector (object) :
         # 判断给定的参数为三个独立的数值的情况
         elif len (args) == 3 :
             self._vector = args
-        print(self._vector)
         if not self._vector :
             raise TypeError (u'初始化失败，检查输入类型')
 

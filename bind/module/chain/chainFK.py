@@ -20,11 +20,10 @@ class ChainFK (chain.Chain) :
         super (ChainFK , self).__init__ (side , name , jnt_number , length , jnt_parent , ctrl_parent)
         self.rtype = 'ChainFK'
         self.interval = length / (self.jnt_number - 1)
-        self.direction = direction
-        # self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
+        self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
 
         self.shape = 'circle'
-        self.axis = vectorUtils.Vector (self.direction).axis
+        self.axis = vectorUtils.Vector (direction).axis
         self.radius = 4
 
         # 初始化属性应该放在构造函数的开始部分
