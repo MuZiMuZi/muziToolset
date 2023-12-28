@@ -17,7 +17,7 @@ class ChainFK (chain.Chain) :
         length(int)：关节的总长度
         direction（list）:从根节点到顶部节点的方向例如[1,0,0]或者[0,1,0]
         """
-        super (ChainFK , self).__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
+        super (ChainFK , self).__init__ (side , name , jnt_number , length , jnt_parent , ctrl_parent)
         self.rtype = 'ChainFK'
         self.interval = length / (self.jnt_number - 1)
         self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
@@ -54,3 +54,18 @@ class ChainFK (chain.Chain) :
         for jnt_number , jnt in enumerate (self.jnt_list) :
             cmds.parentConstraint (self.ctrl_list [jnt_number] , jnt)
             cmds.scaleConstraint (self.ctrl_list [jnt_number] , jnt)
+
+
+
+#示例
+# import muziToolset.bind.module.chain.chainFK as chainFK
+# from importlib import reload
+#
+#
+# reload (chainFK)
+#
+# ch = chainFK.ChainFK (side = 'r' , name = '' , jnt_number = 4 , direction = [-1 , 0 , 0] , length = 10 ,
+#                       jnt_parent = None ,
+#                       ctrl_parent = None)
+#
+# ch.build_setup ()

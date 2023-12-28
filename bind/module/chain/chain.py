@@ -20,11 +20,12 @@ except ImportError :
 import os
 import maya.cmds as cmds
 
-from ....core import jointUtils , pipelineUtils
+from ....core import jointUtils , pipelineUtils , connectionUtils
 from ..base import base
 from importlib import reload
 
 
+reload (connectionUtils)
 reload (jointUtils)
 reload (base)
 
@@ -76,7 +77,7 @@ class Chain (base.Base) :
 
         self.length = length
         self.interval = None
-        self.direction = None
+        self.direction = [-1 , 0 , 0]
         self.curve = None
 
 
@@ -96,7 +97,7 @@ class Chain (base.Base) :
                 # 指定关节的父层级为上一轮创建出来的关节
                 self.jnt_parent = self.bpjnt
                 # 调整距离
-                cmds.setAttr (self.bpjnt + '.translateX' , self.length / self.jnt_number)
+                cmds.setAttr (self.bpjnt + '.translateX' , float (self.length / self.jnt_number))
                 # 将bp关节添加到选择集里方便进行选择
                 pipelineUtils.Pipeline.create_set (self.bpjnt ,
                                                    set_name = '{}_{}{}_bpjnt_set'.format (self.side , self.name ,
@@ -113,11 +114,8 @@ class Chain (base.Base) :
         '''
         # 根据bp关节创建新的关节
         for bpjnt in self.bpjnt_list :
-            for attr in ['.translate' , '.rotate' , '.scale'] :
-                # 判断bp关节上有没有连接的属性，如果有的话则断掉
-                plug = cmds.listConnections (bpjnt + attr , s = True , d = False , p = True)
-                if plug :
-                    cmds.disconnectAttr (plug [0] , bpjnt + attr)
+            #断掉上面的属性链接
+            connectionUtils.Connection.disconnect_attributes (bpjnt , ['.translate' , '.rotate' , '.scale'])
 
         # 判断场景里是否已经存在对应的关节，重建的情况
         if cmds.objExists (self.jnt_list [0]) :
