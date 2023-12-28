@@ -22,7 +22,7 @@ class ChainFK (chain.Chain) :
         self.interval = length / (self.jnt_number - 1)
         self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
 
-        self.shape = 'hexagon'
+        self.shape = 'shrug'
         self.axis = vectorUtils.Vector (direction).axis
         self.radius = 2
 
