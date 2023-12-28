@@ -166,12 +166,12 @@ class Bone (object) :
         # 设置关节的父层级和控制器的父层级
         self.jnt_parent = jnt_parent
         self.ctrl_parent = ctrl_parent
-        #判断当没有输入关节的父层级或者关节的父层级不存在于场景里的时候，则将关节父层级自动设置成为世界的关节总组
-        if not self.jnt_parent or not cmds.objExists(self.jnt_parent):
+        # 判断当没有输入关节的父层级或者关节的父层级不存在于场景里的时候，则将关节父层级自动设置成为世界的关节总组
+        if not self.jnt_parent or not cmds.objExists (self.jnt_parent) :
             self.jnt_parent = self.top_jnt_grp
 
         # 判断当没有输入控制器的父层级或者控制器的父层级不存在于场景里的时候，则将控制器父层级自动设置成为世界的控制器总组
-        if not self.ctrl_parent or not cmds.objExists(self.ctrl_parent):
+        if not self.ctrl_parent or not cmds.objExists (self.ctrl_parent) :
             self.ctrl_parent = self.top_ctrl_grp
 
         # 生成的绑定类型
@@ -275,29 +275,36 @@ class Bone (object) :
             self.output_list.append ('output_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
 
 
-    # 根据给定的名称规范，创建定位的bp关节
     def create_bpjnt (self) :
         """
         根据名称规范，创建定位的bp关节
         """
-        for bpjnt in self.bpjnt_list :
-            # 判断是否已经生成过定位关节，如果没有生成过定位关节的话则生成定位关节
-            if cmds.objExists (bpjnt) :
-                cmds.delete (bpjnt)
-            else :
-                self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.top_bpjnt_grp)
-                # 设置bp关节的位置，防止多个关节聚集在一起不好选择
-                cmds.setAttr (self.bpjnt + '.translateX' , self.bpjnt_list.index (self.bpjnt) * 3)
-                # 给bp定位关节设置颜色方便识别
-                cmds.setAttr (self.bpjnt + '.overrideEnabled' , 1)
-                cmds.setAttr (self.bpjnt + '.overrideColor' , 13)
-                # 将bp关节添加到选择集里方便进行选择
-                pipelineUtils.Pipeline.create_set (self.bpjnt ,
-                                                   set_name = '{}_{}{}_bpjnt_set'.format (self.side , self.name ,
-                                                                                          self.rtype) ,
-                                                   set_parent = 'bpjnt_set')
+        for index , bpjnt in enumerate (self.bpjnt_list) :
+            self._create_single_bpjnt (bpjnt , index)
+
         # 进行关节定向
         jointUtils.Joint.joint_orientation (self.bpjnt_list)
+
+
+    def _create_single_bpjnt (self , bpjnt , index) :
+        """
+        创建单个bp关节
+        """
+        # 判断是否已经生成过定位关节，如果没有生成过定位关节的话则生成定位关节
+        if cmds.objExists (bpjnt) :
+            cmds.delete (bpjnt)
+        else :
+            self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.top_bpjnt_grp)
+            # 设置bp关节的位置，防止多个关节聚集在一起不好选择
+            cmds.setAttr (self.bpjnt + '.translateX' , index * 3)
+            # 给bp定位关节设置颜色方便识别
+            cmds.setAttr (self.bpjnt + '.overrideEnabled' , 1)
+            cmds.setAttr (self.bpjnt + '.overrideColor' , 13)
+            # 将bp关节添加到选择集里方便进行选择
+            pipelineUtils.Pipeline.create_set (self.bpjnt ,
+                                               set_name = '{}_{}{}_bpjnt_set'.format (self.side , self.name ,
+                                                                                      self.rtype) ,
+                                               set_parent = 'bpjnt_set')
 
 
     # 设置bp关节的可见性，用于切换状态，当绑定系统创建完成的时候设置bp关节为隐藏状态，当绑定系统删除的时候则设置bp关节为显示状态
@@ -421,10 +428,6 @@ class Bone (object) :
             if cmds.objExists (jnt) :
                 # 删除过去的关节后，再重新创建关节
                 cmds.delete (jnt)
-        else :
-            pass
-        # 如果对应的控制器组存在则删除控制器组
+        # 删除控制器组
         if cmds.objExists (self.ctrl_grp) :
             cmds.delete (self.ctrl_grp)
-        else :
-            pass
