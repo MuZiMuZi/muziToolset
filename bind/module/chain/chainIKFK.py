@@ -14,25 +14,25 @@ class ChainIKFK (chain.Chain) :
     创建ikfk的关节链条的绑定系统
     由三条关节链组成，ik关节链条，fk关节链条和ikfk关节链条组成
     '''
+    rtype = 'ChainIKFK'
 
-
-    def __init__ (self , side , name , jnt_number , direction , is_stretch = 1 , length = 10 , jnt_parent = None ,
+    def __init__ (self , side , name , jnt_number , direction = [0 , 1 , 0] , length = 10 , is_stretch = 1 ,
+                  jnt_parent = None ,
                   ctrl_parent = None) :
-        chain.Chain.__init__ (self , side , name , jnt_number , length , jnt_parent , ctrl_parent)
 
         # 初始化ik关节链条和fk关节链条
         self.ik_chain = chainIK.ChainIK (side , name , jnt_number , direction , length , is_stretch)
 
         self.fk_chain = chainFK.ChainFK (side , name , jnt_number , direction , length)
-
         self.rtype = 'ChainIKFK'
         self.radius = 6
+
+        super ().__init__ (side , name , jnt_number , length , jnt_parent = None , ctrl_parent = None)
         # 获取初始的位置
         self.interval = length / (self.jnt_number - 1)
         self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
         self.is_stretch = is_stretch
         self.axis = vectorUtils.Vector (direction).axis
-
 
     def create_bpjnt (self) :
         super ().create_bpjnt ()
@@ -51,10 +51,12 @@ class ChainIKFK (chain.Chain) :
         u"""
             创建名称进行规范整理
             """
-        super ().create_namespace ()
         # 初始化ik关节链条和fk关节链条的命名规范
         self.ik_chain.create_namespace ()
         self.fk_chain.create_namespace ()
+        super ().create_namespace ()
+        print(self.ctrl_list)
+        print(self.rtype)
 
 
     def create_joint (self) :
@@ -138,6 +140,7 @@ class ChainIKFK (chain.Chain) :
             # 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
             self._set_ikfk_driven_keyframes (cons , jnt_number)
 
+
     ## IK关节链，FK关节链来约束IKFK关节链
     def _create_ikfk_constraint (self , jnt_number) :
         """
@@ -149,7 +152,8 @@ class ChainIKFK (chain.Chain) :
             self.jnt_list [jnt_number]) [0]
         return cons
 
-    #连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条，设置IKFK切换的驱动关键帧
+
+    # 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条，设置IKFK切换的驱动关键帧
     def _set_ikfk_driven_keyframes (self , cons , jnt_number) :
         """
         设置IKFK切换的驱动关键帧
