@@ -10,7 +10,7 @@ reload (chain)
 
 
 class ChainIK (chain.Chain) :
-
+    rtype = 'ChainIK'
 
     def __init__ (self , side , name , jnt_number , direction , length = 10 , is_stretch = 1 , jnt_parent = None ,
                   ctrl_parent = None) :
@@ -22,7 +22,6 @@ class ChainIK (chain.Chain) :
         is_stretch(bool):是否允许ik关节链条进行拉伸
         """
 
-        self.rtype = 'ChainIK'
 
         self.interval = length / (self.jnt_number - 1)
         self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
