@@ -97,15 +97,20 @@ class ChainEP_Widget (chainEP_ui.Ui_MainWindow , chain_widget.Chain_Widget , QMa
         self.jnt_parent = self.jnt_parent_edit.text ()
         self.ctrl_parent = self.ctrl_parent_edit.text ()
 
+        # 判断给定的参数是否正确
+        if self.ctrl_number < 2 :
+            raise ValueError (u"请有足够的控制点")
+        if self.ctrl_number > self.jnt_number :
+            raise ValueError (u"控制器的数量请小于关节的数量")
+        if not self.curve :
+            raise ValueError (u"请给定需要创建控制器和关节的曲线")
+
 
     def build_setup (self) :
         # 根据self.module来判断是需要生成哪个模块的绑定
         self.setup = chainEP.ChainEP (self.side , self.name , self.jnt_number , self.ctrl_number , self.curve ,
                                       self.jnt_parent , self.ctrl_parent)
         self.setup.build_setup ()
-
-
-        # 根据base_widget和extra_widget返回的参数,创建绑定系统
 
 
     def build_rig (self) :

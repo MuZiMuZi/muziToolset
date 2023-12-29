@@ -19,7 +19,10 @@ class ChainEP (chain.Chain) :
     def __init__ (self , side , name , jnt_number , ctrl_number , curve , jnt_parent = None ,
                   ctrl_parent = None) :
 
-        u'''给定一根曲线，根据曲线的长度来创建关节和控制器
+        u'''
+        给定一根曲线，根据曲线的长度来创建关节和控制器
+        用来创建类似绳子物体的绑定
+        需要注意的点有，生成的关节数量需要大于生成的控制器数量
         jnt_number：生成的关节数量
         ctrl_number：生成的控制器数量
         crv_node：需要创建控制器与关节的曲线
@@ -32,10 +35,10 @@ class ChainEP (chain.Chain) :
         self.set_shape ('ball')
 
         # 根据给定的控制器数量，获取控制对应的百分比信息
-        if ctrl_number < 2 :
-            raise ValueError (u"请有足够的控制点")
-        if ctrl_number < jnt_number :
-            raise ValueError (u"控制器的数量请大于关节的数量")
+        if self.ctrl_number < 2 :
+            raise ValueError (u"请有足够的控制控制器数量")
+        if self.ctrl_number > self.jnt_number :
+            raise ValueError (u"控制器的数量请小于关节的数量")
 
         self.guide_curve = None
         self.cvs = list ()
@@ -55,9 +58,6 @@ class ChainEP (chain.Chain) :
         for i in range (self.jnt_number) :
             self.bpjnt_list.append ('bpjnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
             self.jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-
-        # 根据给定的边，名称和jnt_number生成列表来存储控制器组创建的名称
-        for i in range (self.ctrl_number) :
             self.zero_list.append ('zero_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
             self.driven_list.append ('driven_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
             self.connect_list.append ('connect_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
