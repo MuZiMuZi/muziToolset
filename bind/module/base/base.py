@@ -98,8 +98,9 @@ class Base (bone.Bone) :
     u"""
     基础的关节和控制器绑定，继承于bone
     """
+    # 生成的绑定类型
+    rtype = 'Base'
 
 
     def __init__ (self , side , name , jnt_number , jnt_parent = None , ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
-        self.rtype = 'Base'
