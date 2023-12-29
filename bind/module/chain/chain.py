@@ -84,18 +84,18 @@ class Chain (base.Base) :
         创建定位的bp关节
         """
         # 设置bpjnt创建出来的位置放置在top_bpjnt_grp的层级下
-        self.jnt_parent = self.top_bpjnt_grp
+        self.bpjnt_parent = self.top_bpjnt_grp
         for bpjnt in self.bpjnt_list :
             # 判断是否已经生成过定位关节，如果没有生成过定位关节的话则生成定位关节
             if cmds.objExists (bpjnt) :
                 cmds.delete (bpjnt)
             else :
-                self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.jnt_parent)
+                self.bpjnt = cmds.createNode ('joint' , name = bpjnt , parent = self.bpjnt_parent)
                 # 给bp定位关节设置颜色方便识别
                 cmds.setAttr (self.bpjnt + '.overrideEnabled' , 1)
                 cmds.setAttr (self.bpjnt + '.overrideColor' , 13)
                 # 指定关节的父层级为上一轮创建出来的关节
-                self.jnt_parent = self.bpjnt
+                self.bpjnt_parent = self.bpjnt
                 # 调整距离,调整关节的朝向距离
                 #获取关节的位置信息，例如self.interval是关节的长度，self。direction是空间位置比如[0.0, 1, 0.0]
                 #他们相乘获得到distance，将关节为位移到对应的位置信息上

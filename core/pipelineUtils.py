@@ -418,7 +418,7 @@ class Pipeline (object) :
         :return: list. 返回每个点的位置信息
         """
         if sample_count <= 1 :
-            return
+            return []  # 返回空列表而不是 None
 
         outputs = list ()
         gap = 1.00 / (sample_count - 1)

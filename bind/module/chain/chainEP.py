@@ -9,6 +9,7 @@ from ....core import controlUtils , pipelineUtils
 
 reload (base)
 reload (chain)
+reload (pipelineUtils)
 
 
 class ChainEP (chain.Chain) :
@@ -17,20 +18,20 @@ class ChainEP (chain.Chain) :
 
     def __init__ (self , side , name , jnt_number , ctrl_number , curve , jnt_parent = None ,
                   ctrl_parent = None) :
-        super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
+
         u'''给定一根曲线，根据曲线的长度来创建关节和控制器
         jnt_number：生成的关节数量
         ctrl_number：生成的控制器数量
         crv_node：需要创建控制器与关节的曲线
         '''
         self.ctrl_number = ctrl_number
+        super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
+
         self.curve = curve
         self.radius = 3
         self.set_shape ('ball')
 
         # 根据给定的控制器数量，获取控制对应的百分比信息
-        if not ctrl_number :
-            ctrl_number = self.jnt_number
         if ctrl_number < 2 :
             raise ValueError (u"请有足够的控制点")
         if ctrl_number < jnt_number :
@@ -39,22 +40,45 @@ class ChainEP (chain.Chain) :
         self.guide_curve = None
         self.cvs = list ()
 
-        percents = pipelineUtils.Pipeline.get_percentages (ctrl_number)
+        # # 曲线的总长度为1，给定需要平分的点数量，返回每个点的位置信息
+        percents = pipelineUtils.Pipeline.get_percentages (self.ctrl_number)
         for p in percents :
             integer = int (round (p * (self.jnt_number - 1)))
             self.cvs.append (integer)
+
+
+    def create_namespace (self) :
+        #  根据给定的边，名称和jnt_number生成列表来存储创建的名称
+        self._setup_list ()
+
+        # 根据给定的边，名称和jnt_number生成列表来存储关节组创建的名称
+        for i in range (self.jnt_number) :
+            self.bpjnt_list.append ('bpjnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+
+        # 根据给定的边，名称和jnt_number生成列表来存储控制器组创建的名称
+        for i in range (self.ctrl_number) :
+            self.zero_list.append ('zero_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.driven_list.append ('driven_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.connect_list.append ('connect_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.offset_list.append ('offset_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.ctrl_list.append ('ctrl_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.subctrl_list.append ('ctrl_{}_{}{}Sub_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.output_list.append ('output_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
 
 
     def create_bpjnt (self) :
         """
         创建定位的bp关节
         """
+        # 设置bpjnt创建出来的位置放置在top_bpjnt_grp的层级下
+        self.bpjnt_parent = self.top_bpjnt_grp
         bpjnt_list = pipelineUtils.Pipeline.create_joints_on_curve (self.curve , self.jnt_number)
         for jnt_number , bpjnt in enumerate (bpjnt_list) :
             bpjnt = cmds.rename (bpjnt , self.bpjnt_list [jnt_number])
-            cmds.parent (bpjnt , self.jnt_parent)
+            cmds.parent (bpjnt , self.bpjnt_parent)
             # 指定关节的父层级为上一轮创建出来的关节
-            self.jnt_parent = bpjnt
+            self.bpjnt_parent = bpjnt
 
 
     def create_joint (self) :
@@ -72,35 +96,39 @@ class ChainEP (chain.Chain) :
         self.set_shape (self.shape)
         # 创建整体的控制器层级组
         self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
-        for index in (self.cvs) :
-            self.ctrl = controlUtils.Control.create_ctrl (self.ctrl_list [index] , shape = self.shape ,
-                                                          radius = self.radius ,
-                                                          axis = 'X+' , pos = self.jnt_list [index] ,
-                                                          parent = self.ctrl_parent)
+
+        # 使用列表存储控制器
+        self.ctrl_instances = []
+
+        for index in self.cvs :
+            ctrl_instance = controlUtils.Control.create_ctrl (
+                self.ctrl_list [index] , shape = self.shape , radius = self.radius ,
+                axis = 'X+' , pos = self.jnt_list [index] , parent = self.ctrl_parent
+            )
+            # 将控制器实例添加到列表中
+            self.ctrl_instances.append (ctrl_instance)
 
 
     def add_constraint (self) :
         '''
         在关节和控制器之间添加平滑衰减约束
         '''
-        for index in self.cvs :
+        for cv_index in self.cvs :
             # 开头的关节进行约束
-            if index == 0 :
-                cmds.pointConstraint (self.ctrl_list [index] , self.jnt_list [index] ,
-                                      mo = 1)
-                cmds.orientConstraint (self.ctrl_list [index] , self.jnt_list [index] ,
-                                       mo = 1)
+            if cv_index == 0 :
+                cmds.pointConstraint (self.ctrl_list [cv_index] , self.jnt_list [cv_index] , mo = 1)
+                cmds.orientConstraint (self.ctrl_list [cv_index] , self.jnt_list [cv_index] , mo = 1)
 
             # 结尾的关节进行约束
-            elif index == self.cvs [-1] :
-                cmds.pointConstraint (self.ctrl_list [index] , self.jnt_list [-1] ,
-                                      mo = 1)
-                cmds.orientConstraint (self.ctrl_list [index] , self.jnt_list [- 1])
+            elif cv_index == self.cvs [-1] :
+                cmds.pointConstraint (self.ctrl_list [cv_index] , self.jnt_list [-1] , mo = 1)
+                cmds.orientConstraint (self.ctrl_list [cv_index] , self.jnt_list [-1])
+
             # 中间的关节进行约束
             else :
-                for index in range (len (self.cvs) - 1) :
-                    head = self.cvs [index]
-                    tail = self.cvs [index + 1]
+                for jnt_index in range (self.cvs.index (cv_index) , self.cvs.index (cv_index) + 1) :
+                    head = cv_index
+                    tail = self.cvs [self.cvs.index (cv_index) + 1]
                     for jnt in range (head , tail + 1) :
                         gap = 1.00 / (tail - head)
 
