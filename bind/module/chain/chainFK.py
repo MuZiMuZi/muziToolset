@@ -11,7 +11,7 @@ reload (chain)
 
 
 class ChainFK (chain.Chain) :
-
+    rtype = 'ChainFK'
     def __init__ (self , side , name , jnt_number , direction = None , length = 10 , jnt_parent = None ,
                   ctrl_parent = None) :
         u"""
@@ -20,7 +20,6 @@ class ChainFK (chain.Chain) :
         direction（list）:从根节点到顶部节点的方向例如[1,0,0]或者[0,1,0]
         """
         super ().__init__ (side , name , jnt_number , length , jnt_parent , ctrl_parent)
-        self.rtype = 'ChainFK'
         self.interval = length / (self.jnt_number - 1)
         self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
 
