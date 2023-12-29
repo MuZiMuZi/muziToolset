@@ -61,21 +61,18 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
             self.direction_cbox.addItem (str (direciton.value))
 
 
-    def add_connect (self) :
-        u"""
-        用来添加连接的槽函数
-        """
-        super ().add_connect ()
-
-
     def parse_base (self , *args) :
         """
         分析base_widget中的输入并将其作为参数返回
         """
         super ().parse_base ()
         self.length = self.length_sbox.value ()
+
         # 传递参数时，参数本身是一个包含字符串的元组 ('[0, 1, 0]',)，而不是一个包含数字的列表 [0, 1, 0]。因此使用eval方法将其解析成为一个列表
         self.direction = eval (self.direction_cbox.currentText ())
+
+        # 根据self.module来判断是哪个模块的绑定
+        self.module = self.module_edit.text ()
 
         # 将以上参数也添加到self.base_parameters 里，后续判断这些参数是否有值
         self.base_parameters.append (self.length , self.direction)
@@ -99,6 +96,16 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
             self.rig = module_class (self.side , self.name , self.jnt_number , self.direction , self.length ,
                                      self.jnt_parent , self.ctrl_parent)
             self.rig.build_rig ()
+
+
+    ## 根据self.module来判断是需要删除哪个模块的绑定
+    def delete_rig (self) :
+        # 根据self.module来判断是需要删除哪个模块的绑定
+        if self.module in self.chain_modules :
+            module_class = self.chain_modules [self.module]
+            self.delete = module_class (self.side , self.name , self.jnt_number , self.direction , self.length ,
+                                        self.jnt_parent , self.ctrl_parent)
+            self.delete.delete_rig ()
 
 
 def main () :
