@@ -50,23 +50,6 @@ class ChainEP (chain.Chain) :
             self.cvs.append (integer)
 
 
-    def create_namespace (self) :
-        #  根据给定的边，名称和jnt_number生成列表来存储创建的名称
-        self._setup_list ()
-
-        # 根据给定的边，名称和jnt_number生成列表来存储关节组创建的名称
-        for i in range (self.jnt_number) :
-            self.bpjnt_list.append ('bpjnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.zero_list.append ('zero_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.driven_list.append ('driven_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.connect_list.append ('connect_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.offset_list.append ('offset_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.ctrl_list.append ('ctrl_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.subctrl_list.append ('ctrl_{}_{}{}Sub_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.output_list.append ('output_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-
-
     def create_bpjnt (self) :
         """
         创建定位的bp关节
