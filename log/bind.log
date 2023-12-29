@@ -970,3 +970,15 @@ abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT147/Cache/QiXia_
 导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT147/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc"
 2023-12-29 14:16:15,791 -root - INFO - 
 abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT147/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc
+2023-12-29 14:49:22,560 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT136\Hair\EP002_SC001_CUT136.mov输出完成
+2023-12-29 14:49:50,611 -root - INFO - 没有需要缓存的物体
+2023-12-29 14:50:47,388 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT136/Cache/LaoLv_LaoLv_geo_grp_abc.abc"
+2023-12-29 14:50:47,388 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT136/Cache/LaoLv_LaoLv_geo_grp_abc.abc"
+2023-12-29 14:50:48,165 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT136/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc"
+2023-12-29 14:50:48,165 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT136/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc"
+2023-12-29 14:50:49,328 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT136/Cache/LaoLv_LaoLv_geo_grp_abc.abc
+2023-12-29 14:50:49,360 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT136/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc

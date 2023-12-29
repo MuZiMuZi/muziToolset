@@ -2,14 +2,17 @@ from importlib import reload
 
 import maya.cmds as cmds
 
+from . import chain
 from ..base import base
 from ....core import controlUtils , pipelineUtils
 
 
 reload (base)
+reload (chain)
 
 
 class ChainEP (chain.Chain) :
+    rtype = 'ChainEP'
 
 
     def __init__ (self , side , name , jnt_number , ctrl_number , curve , jnt_parent = None ,
@@ -20,7 +23,6 @@ class ChainEP (chain.Chain) :
         ctrl_number：生成的控制器数量
         crv_node：需要创建控制器与关节的曲线
         '''
-        self.rtype = 'ChainEP'
         self.ctrl_number = ctrl_number
         self.curve = curve
         self.radius = 3

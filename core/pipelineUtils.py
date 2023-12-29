@@ -28,27 +28,18 @@ create_native_script_job:创建回调函数在新场景打开的时候执行回�
 fbxExport:所选择的物体导出成为fbx文件
 
 """
+import logging
 import math
-import os
-import re
-import sys
 from functools import partial
 from functools import wraps
-import logging
-import os
+from importlib import reload
 
 import maya.cmds as cmds
-import maya.mel as mel
 import pymel.core as pm
-from PySide2 import QtWidgets
 # noinspection PyUnresolvedReferences
 from maya import OpenMaya as om
-from maya import OpenMayaUI as omui
-from maya import mel
-from pymel.util import path
-from shiboken2 import wrapInstance
-from importlib import reload
-from . import controlUtils , hierarchyUtils , qtUtils , jointUtils, nameUtils
+
+from . import controlUtils , hierarchyUtils , jointUtils , nameUtils
 
 
 reload (jointUtils)
@@ -1275,3 +1266,24 @@ class Pipeline (object) :
         outputCurves_grp = cmds.ls ('hairSystem*OutputCurves' , type = 'transform')
         for outputCurve_grp in outputCurves_grp :
             hierarchyUtils.Hierarchy.parent (outputCurve_grp , nhair_rigNode_grp)
+
+
+    # 获取当前所选择的物体，并且判断是否是已经给定的规定类型
+    # 如果是已经给定的规定类型的话则正常
+    # 如果不是给定的规定类型则报错并且提示物体的类型
+    @staticmethod
+    def get_selected_type (type = 'transform') :
+        '''
+        # 获取当前所选择的物体，并且判断是否是已经给定的规定类型
+        # 如果是已经给定的规定类型的话则正常
+        # 如果不是给定的规定类型则报错并且提示物体的类型
+        '''
+        # 获取当前选择的物体
+        obj = cmds.ls (selection = True) [0]
+
+        # 遍历选择的物体
+        # 判断物体是否为曲线
+        if cmds.objectType (obj) == type :
+            return obj
+        else :
+            cmds.warning ('{}不是给定的类型{}，而是这个类型｛｝'.format (obj , type , cmds.objectType (obj)))

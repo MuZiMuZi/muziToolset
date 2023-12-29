@@ -253,7 +253,7 @@
            </font>
           </property>
           <property name="value">
-           <number>5</number>
+           <number>3</number>
           </property>
          </widget>
         </item>
@@ -262,7 +262,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_9">
         <item>
-         <widget class="QLabel" name="length_label">
+         <widget class="QLabel" name="ctrl_number_label">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -275,12 +275,12 @@
            </font>
           </property>
           <property name="text">
-           <string>length:</string>
+           <string>ctrl_number:</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="length_sbox">
+         <widget class="QSpinBox" name="ctrl_number_sbox">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -293,44 +293,7 @@
            </font>
           </property>
           <property name="value">
-           <double>10.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_10">
-        <item>
-         <widget class="QLabel" name="direction_label">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>18</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>direction:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="direction_cbox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>18</pointsize>
-           </font>
+           <number>5</number>
           </property>
          </widget>
         </item>
@@ -339,7 +302,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_8">
         <item>
-         <widget class="QLabel" name="curce_label">
+         <widget class="QLabel" name="curve_label">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -357,7 +320,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="curce_Edit">
+         <widget class="QLineEdit" name="curve_Edit">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -375,7 +338,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="curce_btn">
+         <widget class="QPushButton" name="curve_btn">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
