@@ -21,7 +21,7 @@ from importlib import reload
 import os
 from ... import config
 from ..setup import base_ui
-
+import maya.cmds as cmds
 from ....bind.module.base import base
 from ....core import qtUtils
 
@@ -89,8 +89,6 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
 
         # 判断self.is_info_base的值是否存在，当这个值不存在的时候，说明参数收集还未完成，不进行下一步
         if not self.is_info_base :
-            raise ValueError ("组件还未给定所有需要的参数，请重新设置".format (self.module_edit.text ()))
-            cmds.warning ("组件还未给定所有需要的参数，请重新设置".format (self.module_edit.text ()))
             return
         else :
             # 如果参数已经全部收集完毕符合可以创建绑定的条件的时候，则开始进行下一步
@@ -114,7 +112,7 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         self.ctrl_parent = self.ctrl_parent_edit.text ()
 
         # 组件需要给定数值的输入，
-        self.base_parameters = [self.side , self.jnt_number , self.jnt_parent]
+        self.base_parameters = [self.side , self.jnt_number ]
 
 
     # 判断组件需要给定数值的组件参数是否存在，如果都符合要求的话，则进行下一步
@@ -122,8 +120,12 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         for parameter in self.base_parameters :
             # 判断组件需要给定数值的组件参数是否存在
             if not parameter :
-                raise ValueError ("{}参数缺少值".format (parameter))
-                cmds.warning ("{}参数缺少值".format (parameter))
+                cmds.warning ("{}_{}_{}_{:03d}组件还未给定所有需要的参数，请重新设置".format (self.side , self.name ,
+                                                                                         self.module_edit.text () ,
+                                                                                         int(self.index_edit.text ())))
+                raise ValueError ("{}_{}_{}_{:03d}组件还未给定所有需要的参数，请重新设置".format (self.side , self.name ,
+                                                                                             self.module_edit.text () ,
+                                                                                             int(self.index_edit.text ())))
 
         # 如果都符合要求的话，则进行下一步
         self.is_info_base = True
