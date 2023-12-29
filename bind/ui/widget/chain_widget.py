@@ -74,8 +74,11 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         # 根据self.module来判断是哪个模块的绑定
         self.module = self.module_edit.text ()
 
-        # 将以上参数也添加到self.base_parameters 里，后续判断这些参数是否有值
-        self.base_parameters.append (self.length , self.direction)
+        # 将两个参数封装到列表中
+        parameters_to_add = [self.length , self.direction,self.module]
+
+        # 使用 extend() 方法将列表添加到 base_parameters 中，后续判断这些参数是否有值
+        self.base_parameters.extend (parameters_to_add)
 
 
     def build_setup (self) :
