@@ -964,3 +964,9 @@ abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT129c/Cache/RenZh
 导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT147/Cache/QiXia_QiXia_geo_grp_abc.abc"
 2023-12-29 11:46:19,395 -root - INFO - 
 abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT147/Cache/QiXia_QiXia_geo_grp_abc.abc
+2023-12-29 14:15:40,178 -root - INFO - 没有需要缓存的物体
+2023-12-29 14:16:15,092 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT147/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc"
+2023-12-29 14:16:15,092 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT147/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc"
+2023-12-29 14:16:15,791 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT147/Cache/QiZi_Hei_QiZi_Hei_geo_grp_abc.abc

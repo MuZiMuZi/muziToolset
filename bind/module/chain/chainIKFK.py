@@ -7,7 +7,7 @@ from ....core import controlUtils , jointUtils , vectorUtils
 
 
 reload (chain)
-reload(chainIK)
+reload (chainIK)
 
 
 class ChainIKFK (chain.Chain) :
