@@ -7,6 +7,7 @@ from ....core import controlUtils , jointUtils , vectorUtils
 
 
 reload (chain)
+reload(chainIK)
 
 
 class ChainIKFK (chain.Chain) :
@@ -15,6 +16,7 @@ class ChainIKFK (chain.Chain) :
     由三条关节链组成，ik关节链条，fk关节链条和ikfk关节链条组成
     '''
     rtype = 'ChainIKFK'
+
 
     def __init__ (self , side , name , jnt_number , direction = [0 , 1 , 0] , length = 10 , is_stretch = 1 ,
                   jnt_parent = None ,
@@ -34,6 +36,7 @@ class ChainIKFK (chain.Chain) :
         self.is_stretch = is_stretch
         self.axis = vectorUtils.Vector (direction).axis
 
+
     def create_bpjnt (self) :
         super ().create_bpjnt ()
 
@@ -45,6 +48,9 @@ class ChainIKFK (chain.Chain) :
         for bpjnt , ik_bpjnt , fk_bpjnt in zip (self.bpjnt_list , self.ik_chain.bpjnt_list , self.fk_chain.bpjnt_list) :
             cmds.parentConstraint (bpjnt , ik_bpjnt , mo = False)
             cmds.parentConstraint (bpjnt , fk_bpjnt , mo = False)
+        # 将ik关节链条和fk关节链条进行隐藏可见性，方便选择和调整位置
+        cmds.setAttr (self.ik_chain.bpjnt_list [0] + '.visibility' , 0)
+        cmds.setAttr (self.fk_chain.bpjnt_list [0] + '.visibility' , 0)
 
 
     def create_namespace (self) :
@@ -55,8 +61,8 @@ class ChainIKFK (chain.Chain) :
         self.ik_chain.create_namespace ()
         self.fk_chain.create_namespace ()
         super ().create_namespace ()
-        print(self.ctrl_list)
-        print(self.rtype)
+        print (self.ctrl_list)
+        print (self.rtype)
 
 
     def create_joint (self) :

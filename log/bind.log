@@ -957,3 +957,10 @@ abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT184/Cache/RenZhu
 导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT129c/Cache/RenZhu_RenZhu_geo_grp_abc.abc"
 2023-12-28 17:42:30,489 -root - INFO - 
 abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT129c/Cache/RenZhu_RenZhu_geo_grp_abc.abc
+2023-12-29 11:44:57,715 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT147\Hair\EP002_SC001_CUT147.mov输出完成
+2023-12-29 11:45:11,512 -root - INFO - 没有需要缓存的物体
+2023-12-29 11:46:18,093 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT147/Cache/QiXia_QiXia_geo_grp_abc.abc"
+2023-12-29 11:46:18,093 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT147/Cache/QiXia_QiXia_geo_grp_abc.abc"
+2023-12-29 11:46:19,395 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT147/Cache/QiXia_QiXia_geo_grp_abc.abc

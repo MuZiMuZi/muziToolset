@@ -12,6 +12,7 @@ reload (chain)
 class ChainIK (chain.Chain) :
     rtype = 'ChainIK'
 
+
     def __init__ (self , side , name , jnt_number , direction , length = 10 , is_stretch = 1 , jnt_parent = None ,
                   ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , length , jnt_parent , ctrl_parent)
@@ -21,7 +22,6 @@ class ChainIK (chain.Chain) :
         direction（list）:从根节点到顶部节点的方向例如[1,0,0]或者[0,1,0]
         is_stretch(bool):是否允许ik关节链条进行拉伸
         """
-
 
         self.interval = length / (self.jnt_number - 1)
         self.direction = list (vectorUtils.Vector (direction).mult_interval (self.interval))
@@ -53,34 +53,55 @@ class ChainIK (chain.Chain) :
         创建ikSpline的绑定系统
         '''
 
-        curve_points = list ()
-        # 查询所有关节的位置信息，将所有关节的位置信息保存到curve_points里
-        for jnt_number , jnt in enumerate (self.jnt_list) :
-            pos = cmds.xform (jnt , q = 1 , t = 1 , ws = 1)
-            curve_points.append (pos)
-        # 创建ik曲线
-        self.ik_curve = cmds.curve (p = curve_points , name = self.ik_curve)
+        # 创建ikSplineSolverHandle,选择自动创建曲线，防止出现关节位置的偏移
+        cmds.ikHandle (sj = self.jnt_list [0] ,
+                       ee = self.jnt_list [-1] ,
+                       n = self.ik_handle , scv = False , sol = 'ikSplineSolver')
+        # 获取ikhandle的输入曲线
+        self.ik_curve = self._get_ikhandle_curve ()
         cmds.setAttr (self.ik_curve + '.v' , 0)
 
         # inherit变换将导致曲线移动/缩放两倍
         cmds.inheritTransform (self.ik_curve , off = 1)
         cmds.parent (self.ik_curve , self.ctrl_parent)
 
-        # 选择曲线上所有点来创建cluster
+        # 选择self.ik_curve曲线上所有点来创建cluster
         cvs = cmds.ls (self.ik_curve + '.cv[0:]' , fl = 1)
-        for jnt_number , cv in enumerate (cvs) :
+        # 去掉第二个点和倒数第二个点，第二个点和倒数第二个曲线点是用来平滑曲线的，并不用来设置关节点位置
+        modified_curve_cvs = cvs [:1] + cvs [2 :-2] + cvs [-1 :]
+
+        #从self.ik_curve第二个点和倒数第二个点后的列表里创建cluster用来控制曲线的位置
+        for jnt_number , cv in enumerate (modified_curve_cvs) :
             cluster = cmds.cluster (cv , n = self.cluster_list [jnt_number]) [-1]
             cmds.parent (cluster , self.ctrl_parent)
             cmds.setAttr (cluster + '.v' , 0)
 
-        # 创建ikSplineSolverHandle
-        cmds.ikHandle (sj = self.jnt_list [0] ,
-                       ee = self.jnt_list [-1] ,
-                       n = self.ik_handle , c = self.ik_curve , ccv = False ,
-                       pcv = 1 , roc = 1 , sol = 'ikSplineSolver')
-
         cmds.setAttr (self.ik_handle + '.v' , 0)
         cmds.parent (self.ik_handle , self.ctrl_parent)
+
+
+    # 获取ikhandle的输入曲线
+    def _get_ikhandle_curve (self) :
+        """
+
+        """
+        # 获取 IK Spline Handle 的输入曲线
+        input_curve = cmds.ikHandle (self.ik_handle , q = True , c = True)
+
+        # 获取曲线的选择集
+        curve_selection = cmds.ls (input_curve , type = 'nurbsCurve')
+
+        # 检查是否找到了曲线
+        if curve_selection :
+            # 获取曲线的变换节点
+            curve_transform = cmds.listRelatives (curve_selection [0] , parent = True) [0]
+            # 修改重命名ik输入曲线的名称为
+            cmds.rename (curve_transform , self.ik_curve)
+
+        else :
+            print ("创建｛｝不成功，没有找到对应的输入曲线".format (self.ik_handle))
+
+        return self.ik_curve
 
 
     def add_constraint (self) :
