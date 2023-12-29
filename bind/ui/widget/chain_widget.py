@@ -34,11 +34,12 @@ reload (chainIKFK)
 
 
 class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow) :
+    # 添加其他模块类型
     chain_modules = {
         'chainFK' : chainFK.ChainFK ,
         'chainIK' : chainIK.ChainIK ,
         'chainIKFK' : chainIKFK.ChainIKFK ,
-        # 添加其他模块类型
+
     }
 
 
@@ -75,7 +76,9 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         self.length = self.length_sbox.value ()
         # 传递参数时，参数本身是一个包含字符串的元组 ('[0, 1, 0]',)，而不是一个包含数字的列表 [0, 1, 0]。因此使用eval方法将其解析成为一个列表
         self.direction = eval (self.direction_cbox.currentText ())
-        self.module = self.module_edit.text ()
+
+        # 将以上参数也添加到self.base_parameters 里，后续判断这些参数是否有值
+        self.base_parameters.append (self.length , self.direction)
 
 
     def build_setup (self) :
