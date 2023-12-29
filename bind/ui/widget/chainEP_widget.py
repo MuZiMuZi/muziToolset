@@ -97,13 +97,19 @@ class ChainEP_Widget (chainEP_ui.Ui_MainWindow , chain_widget.Chain_Widget , QMa
         self.jnt_parent = self.jnt_parent_edit.text ()
         self.ctrl_parent = self.ctrl_parent_edit.text ()
 
-        # 判断给定的参数是否正确
+        # 判断给定的参数是否正确,如果正确的话才进行之后的创建
         if self.ctrl_number < 2 :
             raise ValueError (u"请有足够的控制点")
+            cmds.warning (u"请有足够的控制点")
         if self.ctrl_number > self.jnt_number :
             raise ValueError (u"控制器的数量请小于关节的数量")
+            cmds.warning (u"控制器的数量请小于关节的数量")
         if not self.curve :
             raise ValueError (u"请给定需要创建控制器和关节的曲线")
+            cmds.warning (u"请给定需要创建控制器和关节的曲线")
+
+        # 给定一个用来采集信息收集的变量
+        self.is_info_base = True
 
 
     def build_setup (self) :

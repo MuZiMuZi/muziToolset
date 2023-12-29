@@ -44,15 +44,12 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
 
         # 默认情况下删除按钮为隐藏状态
         self.delete_btn.setVisible (False)
-        self.name = None
-        self.side = None
-        self.jnt_number = None
-        self.jnt_parent = None
-        self.ctrl_parent = None
         self.init_base ()
+
+        # 给定一个用来采集信息收集的变量,判断是否已经采集了所有组件的参数信息并返回，当参数信息没有采集完毕的时候不进行下一步
+        self.is_info_base = False
+
         self.add_connect ()
-        # self.create_widget ()
-        # self.create_layout ()
 
 
     def init_base (self) :
@@ -77,17 +74,25 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         3，将获取组件的属性用来创建用于关节定位的bp关节
         4.获取组件的属性来修改custom_widget里item的名称
         """
-        # 1.将创建按钮变成不可操作的模式，防止误触
-        self.create_btn.setVisible (False)
-        # 2.将删除按钮从隐藏状态下显示出来，用于删除不需要的绑定
-        self.delete_btn.setVisible (True)
-        # Todo
-        # 3，将获取组件的属性用来创建用于关节定位的bp关节
+
+        # 获取填写的组件的参数信息
         # 获取组件的属性
         self.parse_base ()
-        # 创建用来定位的bp关节
-        self.build_setup ()
 
+        # 判断self.is_info_base的值是否存在，当这个值不存在的时候，说明参数收集还未完成，不进行下一步
+        if not self.is_info_base :
+            raise ValueError ("组件还未给定所有需要的参数，请重新设置".format (self.module_edit.text ()))
+            cmds.warning ("组件还未给定所有需要的参数，请重新设置".format (self.module_edit.text ()))
+            return
+        else :
+            # 如果参数已经全部收集完毕符合可以创建绑定的条件的时候，则开始进行下一步
+            # 1.将创建按钮变成不可操作的模式，防止误触
+            self.create_btn.setVisible (False)
+            # 2.将删除按钮从隐藏状态下显示出来，用于删除不需要的绑定
+            self.delete_btn.setVisible (True)
+            # 3，将获取组件的属性用来创建用于关节定位的bp关节
+            # 创建用来定位的bp关节
+            self.build_setup ()
 
 
     def parse_base (self , *args) :
@@ -99,6 +104,24 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         self.jnt_number = self.jnt_number_sbox.value ()
         self.jnt_parent = self.jnt_parent_edit.text ()
         self.ctrl_parent = self.ctrl_parent_edit.text ()
+
+        # 组件需要给定数值的输入，
+        self.base_parameters = [self.side , self.jnt_number , self.jnt_parent]
+
+        # 判断组件需要给定数值的组件参数是否存在，如果都符合要求的话，则进行下一步
+        self.check_parameters ()
+
+
+    # 判断组件需要给定数值的组件参数是否存在，如果都符合要求的话，则进行下一步
+    def check_parameters (self) :
+        for parameter in self.base_parameters :
+            # 判断组件需要给定数值的组件参数是否存在
+            if not parameter :
+                raise ValueError ("{}参数缺少值".format (parameter))
+                cmds.warning ("{}参数缺少值".format (parameter))
+
+        # 如果都符合要求的话，则进行下一步
+        self.is_info_base = True
 
 
     def build_setup (self) :
@@ -113,6 +136,11 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         self.rig = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
         self.rig.build_rig ()
 
+
+    # 删除已经创建好的绑定系统
+    def delete_rig (self) :
+        self.delete = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
+        self.delete.delete_rig ()
 
 def main () :
     return Base_Widget ()
