@@ -143,7 +143,10 @@ class Bone (object) :
         'grp_m_mesh_001' ,
         'grp_m_node_001'
     ]
-
+    # 生成的绑定类型
+    rtype = 'bone'
+    shape = 'circle'
+    radius = 5
 
     def __init__ (self , side , name , jnt_number , jnt_parent = None , ctrl_parent = None) :
         """
@@ -174,13 +177,10 @@ class Bone (object) :
         if not self.ctrl_parent or not cmds.objExists (self.ctrl_parent) :
             self.ctrl_parent = self.top_ctrl_grp
 
-        # 生成的绑定类型
-        self.rtype = 'bone'
-        self.shape = 'circle'
-        self.radius = 5
 
         # 根据给定的side，name等属性，创建名称进行规范整理
         self.create_namespace ()
+
 
         # 根据给定的边，初始化side_value的值，用于镜像控制器以及位移
         self.side_value = self._setup_side_value ()
@@ -190,6 +190,7 @@ class Bone (object) :
         self.logger = self._setup_logger ()
 
 
+    # 初始化最高层级组结构
     def _setup_top_groups (self) :
         """
         初始化最高层级组结构
@@ -206,6 +207,7 @@ class Bone (object) :
             self.top_bpjnt_grp , self.top_ctrl_grp , self.top_jnt_grp , self.top_mesh_grp , self.top_node_grp , self.top_main_group = hierarchy_names
 
 
+    # # 根据给定的边，名称和jnt_number生成列表来存储创建的名称
     def _setup_list (self) :
         # 根据给定的边，名称和jnt_number生成列表来存储创建的名称
         self.bpjnt_list = list ()
@@ -220,6 +222,7 @@ class Bone (object) :
         self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rtype))
 
 
+    # 根据给定的边，初始化side_value的值，用于镜像控制器以及位移
     def _setup_side_value (self) :
         '''
         根据给定的边，初始化side_value的值，用于镜像控制器以及位移
@@ -233,6 +236,8 @@ class Bone (object) :
             return 0
 
 
+    # 创建一个logger日志用来排查错误
+    # 创建logger日志来排查错误
     def _setup_logger (self) :
         """
         # 创建一个logger日志用来排查错误
@@ -275,17 +280,20 @@ class Bone (object) :
             self.output_list.append ('output_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
 
 
+    # 根据名称规范，创建定位的bp关节
     def create_bpjnt (self) :
         """
         根据名称规范，创建定位的bp关节
         """
         for index , bpjnt in enumerate (self.bpjnt_list) :
+            # 创建单个bp关节
             self._create_single_bpjnt (bpjnt , index)
 
         # 进行关节定向
         jointUtils.Joint.joint_orientation (self.bpjnt_list)
 
 
+    # 创建单个bp关节
     def _create_single_bpjnt (self , bpjnt , index) :
         """
         创建单个bp关节
