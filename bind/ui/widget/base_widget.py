@@ -69,15 +69,23 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
     def clicked_create_btn (self) :
         """
         连接创建按钮的槽函数，当按下创建按钮函数的时候会做以下操作
-        1，将创建按钮变成不可操作的模式，防止误触
-        2.将删除按钮从隐藏状态下显示出来，用于删除不需要的绑定
-        3，将获取组件的属性用来创建用于关节定位的bp关节
-        4.获取组件的属性来修改custom_widget里item的名称
+        1.将获取已经给定的组件的属性
+        2.判断组件需要给定数值的组件参数是否存在，如果都符合要求的话，则开始进行生成绑定
+         # 如果参数已经全部收集完毕符合可以创建绑定的条件的时候，则开始生成绑定
+            # 1.将创建按钮变成不可操作的模式，防止误触
+            self.create_btn.setVisible (False)
+            # 2.将删除按钮从隐藏状态下显示出来，用于删除不需要的绑定
+            self.delete_btn.setVisible (True)
+            # 3，将获取组件的属性用来创建用于关节定位的bp关节
+            # 创建用来定位的bp关节
         """
 
         # 获取填写的组件的参数信息
         # 获取组件的属性
         self.parse_base ()
+
+        # 判断组件需要给定数值的组件参数是否存在，如果都符合要求的话，则进行下一步
+        self.check_parameters ()
 
         # 判断self.is_info_base的值是否存在，当这个值不存在的时候，说明参数收集还未完成，不进行下一步
         if not self.is_info_base :
@@ -108,9 +116,6 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         # 组件需要给定数值的输入，
         self.base_parameters = [self.side , self.jnt_number , self.jnt_parent]
 
-        # 判断组件需要给定数值的组件参数是否存在，如果都符合要求的话，则进行下一步
-        self.check_parameters ()
-
 
     # 判断组件需要给定数值的组件参数是否存在，如果都符合要求的话，则进行下一步
     def check_parameters (self) :
@@ -124,6 +129,7 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         self.is_info_base = True
 
 
+    # 根据给定的参数信息，生成绑定准备，创建用来定位的bp关节
     def build_setup (self) :
         # # 生成定位关节系统
         self.setup = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
@@ -141,6 +147,7 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
     def delete_rig (self) :
         self.delete = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
         self.delete.delete_rig ()
+
 
 def main () :
     return Base_Widget ()
