@@ -64,6 +64,7 @@ class ChainItem (base.BaseItem) :
 
 
 class Chain (base.Base) :
+    rtype = 'Chain'
 
 
     def __init__ (self , side , name , jnt_number , length = 10 , jnt_parent = None , ctrl_parent = None) :
@@ -72,9 +73,6 @@ class Chain (base.Base) :
         
         '''
         super().__init__(side , name , jnt_number , jnt_parent , ctrl_parent)
-
-        self.rtype = 'Chain'
-
         self.length = length
         self.interval = None
         self.direction = None
