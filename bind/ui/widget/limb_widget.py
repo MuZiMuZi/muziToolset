@@ -5,7 +5,7 @@ from importlib import reload
 import maya.cmds as cmds
 from PySide2.QtWidgets import *
 
-from . import chain_widget
+from . import base_widget
 from ..setup import limb_ui
 from ... import config
 from ....bind.subject.body_subject import arm,leg,spine
@@ -30,6 +30,7 @@ class Limb_Widget (limb_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow
         '''
         # 针对身体四肢模块的绑定模块
         rigtype_limb = ['arm' , 'leg' , 'spine']
+         # 组件需要的参数有[side,name,jnt_number,ikctrl_value,fkctrl_value,stretch_value,up_ribbon_value,down_ribbon_value,jnt_parent,ctrl_parent]
         使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 
         '''
@@ -38,24 +39,15 @@ class Limb_Widget (limb_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow
 
     def parse_base (self) :
         super ().parse_base ()
-        # 分析ikfk控制器是否创建的参数并返回
-        self.ikCtrl_value = self.ikCtrl_cbox.value ()
-        self.fkCtrl_value = self.fkCtrl_cbox.value ()
-        # 分析是否需要拉伸的参数并返回
-        self.stretch_value = self.stretch_cbox.value ()
 
-        # 分析ribbon关节的参数并返回
-        self.up_ribbon_value = self.up_ribbon_sbox.value ()
-        self.down_ribbon_value = self.down_ribbon_sbox.value ()
 
 
     def build_setup (self) :
-        # 读取输入信息
-        self.parse_base ()
-        #
-        # # 生成定位关节系统
-        # self.setup = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
-        # self.setup.build_setup ()
+        # 根据self.module来判断是需要生成哪个模块的绑定
+        if self.limb in self.limb_modules :
+            limb_class = self.chain_modules [self.module]
+            self.limb = limb_class (self.side , self.name , self.jnt_number , self.direction , self.length ,
+                                        self.jnt_parent , self.ctrl_parent)
 
 
 def main () :

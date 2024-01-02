@@ -38,7 +38,6 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         super ().__init__ (parent)
         # 调用父层级的创建ui方法
         self.setupUi (self)
-        self.apply_model ()
 
         self.add_connect ()
 
@@ -48,24 +47,24 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
 
 
     # 设置按钮的图标
-    def set_icon (self , button , icon_name) :
-        """
-        设置按钮的图标
-        """
-        icon = QIcon (config.icon_dir + '/' + icon_name)
-        button.setIcon (icon)
-        # button.setIconSize(icon.actualSize(button.size()))  # 可以考虑是否需要设置图标大小
+    def set_icon (self) :
+        # 设置按钮的图标，美化界面
 
+        orient_icon = QIcon (config.icon_dir + '/directions.png')
+        self.orient_button.setIcon (orient_icon)
+        # self.orient_button.setIconSize (orient_icon.actualSize (self.orient_button.size ()))
 
-    # 设置所有按钮的图标
-    def set_icons (self) :
-        """
-        设置所有按钮的图标
-        """
-        self.set_icon (self.orient_button , 'directions.png')
-        self.set_icon (self.delete_button , 'delete.png')
-        self.set_icon (self.reset_button , 'reset.png')
-        self.set_icon (self.build_button , 'control.png')
+        delete_icon = QIcon (config.icon_dir + '/delete.png')
+        self.delete_button.setIcon (delete_icon)
+        # self.delete_button.setIconSize (delete_icon.actualSize (self.delete_button.size ()))
+
+        reset_icon = QIcon (config.icon_dir + '/reset.png')
+        self.reset_button.setIcon (reset_icon)
+        # self.reset_button.setIconSize (reset_icon.actualSize (self.reset_button.size ()))
+
+        build_icon = QIcon (config.icon_dir + '/control.png')
+        self.build_button.setIcon (build_icon)
+        self.build_button.setIconSize (build_icon.actualSize (self.build_button.size ()))
 
 
     # 用来添加连接的槽函数
