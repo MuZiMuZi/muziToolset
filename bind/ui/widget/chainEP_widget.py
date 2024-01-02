@@ -36,6 +36,8 @@ class ChainEP_Widget (chainEP_ui.Ui_MainWindow , chain_widget.Chain_Widget , QMa
 
     def __init__ (self , parent = None , *args , **kwargs) :
         '''
+        # 针对EP曲线关节链条的绑定模块，
+        # 组件需要的参数有[side,name,jnt_number,ctrl_number,curve,jnt_parent,ctrl_parent]
         使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 
         '''
@@ -133,9 +135,11 @@ class ChainEP_Widget (chainEP_ui.Ui_MainWindow , chain_widget.Chain_Widget , QMa
         # 创建完整的绑定
         self.chainEP.build_rig ()
 
-    def delete_rig(self):
-        #删除绑定
-        self.chainEP.delete_rig()
+
+    def delete_rig (self) :
+        # 删除绑定
+        self.chainEP.delete_rig ()
+
 
 def main () :
     return Chain_Widget ()

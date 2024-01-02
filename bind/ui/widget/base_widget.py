@@ -21,6 +21,8 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
 
     def __init__ (self , parent = None , *args , **kwargs) :
         '''
+        # 针对不需要预设属性设置修改的绑定模块，
+        # 组件需要的参数有[side,name,jnt_parent,ctrl_parent]
         使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 
         '''

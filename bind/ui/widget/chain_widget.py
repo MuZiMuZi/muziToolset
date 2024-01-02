@@ -22,6 +22,7 @@ reload (finger)
 
 
 class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow) :
+
     # 添加其他模块类型
     chain_modules = {
         'chainFK' : chainFK.ChainFK ,
@@ -34,6 +35,8 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
 
     def __init__ (self , parent = None , *args , **kwargs) :
         '''
+        # 针对关节链条的绑定模块，
+        # 组件需要的参数有[side,name,length,direction,jnt_parent,ctrl_parent]
         使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 
         '''

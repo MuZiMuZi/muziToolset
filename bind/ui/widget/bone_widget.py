@@ -16,12 +16,13 @@ reload (bone_ui)
 
 class Bone_Widget (bone_ui.Ui_MainWindow , QMainWindow) :
 
-    # 针对多个关节点的绑定模块，
-    # 组件需要的参数有[side,name,jnt_number,jnt_parent,ctrl_parent]
+
     # rigtype_bone = ['bone']
 
     def __init__ (self , parent = None , *args , **kwargs) :
         '''
+        # 针对多个关节点的绑定模块，
+        # 组件需要的参数有[side,name,jnt_number,jnt_parent,ctrl_parent]
         使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 
         '''
