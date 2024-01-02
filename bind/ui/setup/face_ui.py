@@ -301,9 +301,7 @@ class Ui_MainWindow(object):
         self.down_curce_label.setText(QCoreApplication.translate("MainWindow", u"down_curce:", None))
         self.down_curce_btn.setText(QCoreApplication.translate("MainWindow", u"pick", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"jnt_parent\uff1a", None))
-        self.jnt_parent_edit.setText(QCoreApplication.translate("MainWindow", u"None", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"ctrl_parent\uff1a", None))
-        self.ctrl_parent_edit.setText(QCoreApplication.translate("MainWindow", u"None", None))
         self.create_btn.setText(QCoreApplication.translate("MainWindow", u"Create", None))
         self.delete_btn.setText(QCoreApplication.translate("MainWindow", u"Delete", None))
     # retranslateUi

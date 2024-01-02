@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'limb_ui.ui'
+## Form generated from reading UI file 'bone_ui.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
@@ -140,6 +140,30 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_8)
 
+        self.horizontalLayout_4 = QHBoxLayout()
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.label_5 = QLabel(self.centralwidget)
+        self.label_5.setObjectName(u"label_5")
+        sizePolicy.setHeightForWidth(self.label_5.sizePolicy().hasHeightForWidth())
+        self.label_5.setSizePolicy(sizePolicy)
+        self.label_5.setFont(font)
+        self.label_5.setLayoutDirection(Qt.LeftToRight)
+        self.label_5.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+
+        self.horizontalLayout_4.addWidget(self.label_5)
+
+        self.jnt_number_sbox = QSpinBox(self.centralwidget)
+        self.jnt_number_sbox.setObjectName(u"jnt_number_sbox")
+        sizePolicy.setHeightForWidth(self.jnt_number_sbox.sizePolicy().hasHeightForWidth())
+        self.jnt_number_sbox.setSizePolicy(sizePolicy)
+        self.jnt_number_sbox.setFont(font4)
+        self.jnt_number_sbox.setValue(1)
+
+        self.horizontalLayout_4.addWidget(self.jnt_number_sbox)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_4)
+
         self.horizontalLayout_5 = QHBoxLayout()
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.label_6 = QLabel(self.centralwidget)
@@ -186,105 +210,16 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_6)
 
-        self.horizontalLayout_11 = QHBoxLayout()
-        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
-        self.ikCtrl_label = QLabel(self.centralwidget)
-        self.ikCtrl_label.setObjectName(u"ikCtrl_label")
-        sizePolicy.setHeightForWidth(self.ikCtrl_label.sizePolicy().hasHeightForWidth())
-        self.ikCtrl_label.setSizePolicy(sizePolicy)
-        self.ikCtrl_label.setFont(font3)
-
-        self.horizontalLayout_11.addWidget(self.ikCtrl_label)
-
-        self.ikCtrl_cbox = QCheckBox(self.centralwidget)
-        self.ikCtrl_cbox.setObjectName(u"ikCtrl_cbox")
-        sizePolicy.setHeightForWidth(self.ikCtrl_cbox.sizePolicy().hasHeightForWidth())
-        self.ikCtrl_cbox.setSizePolicy(sizePolicy)
-        self.ikCtrl_cbox.setFont(font3)
-        self.ikCtrl_cbox.setChecked(True)
-
-        self.horizontalLayout_11.addWidget(self.ikCtrl_cbox)
-
-        self.fkCtrl_label = QLabel(self.centralwidget)
-        self.fkCtrl_label.setObjectName(u"fkCtrl_label")
-        sizePolicy.setHeightForWidth(self.fkCtrl_label.sizePolicy().hasHeightForWidth())
-        self.fkCtrl_label.setSizePolicy(sizePolicy)
-        self.fkCtrl_label.setFont(font3)
-
-        self.horizontalLayout_11.addWidget(self.fkCtrl_label)
-
-        self.fkCtrl_cbox = QCheckBox(self.centralwidget)
-        self.fkCtrl_cbox.setObjectName(u"fkCtrl_cbox")
-        sizePolicy.setHeightForWidth(self.fkCtrl_cbox.sizePolicy().hasHeightForWidth())
-        self.fkCtrl_cbox.setSizePolicy(sizePolicy)
-        self.fkCtrl_cbox.setFont(font3)
-        self.fkCtrl_cbox.setChecked(True)
-
-        self.horizontalLayout_11.addWidget(self.fkCtrl_cbox)
-
-
-        self.verticalLayout.addLayout(self.horizontalLayout_11)
-
-        self.horizontalLayout_9 = QHBoxLayout()
-        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
-        self.stretch_label = QLabel(self.centralwidget)
-        self.stretch_label.setObjectName(u"stretch_label")
-        sizePolicy.setHeightForWidth(self.stretch_label.sizePolicy().hasHeightForWidth())
-        self.stretch_label.setSizePolicy(sizePolicy)
-        self.stretch_label.setFont(font3)
-
-        self.horizontalLayout_9.addWidget(self.stretch_label)
-
-        self.stretch_cbox = QCheckBox(self.centralwidget)
-        self.stretch_cbox.setObjectName(u"stretch_cbox")
-        sizePolicy.setHeightForWidth(self.stretch_cbox.sizePolicy().hasHeightForWidth())
-        self.stretch_cbox.setSizePolicy(sizePolicy)
-        self.stretch_cbox.setFont(font3)
-        self.stretch_cbox.setChecked(True)
-
-        self.horizontalLayout_9.addWidget(self.stretch_cbox)
-
-
-        self.verticalLayout.addLayout(self.horizontalLayout_9)
-
-        self.horizontalLayout_4 = QHBoxLayout()
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.ribbon_label = QLabel(self.centralwidget)
-        self.ribbon_label.setObjectName(u"ribbon_label")
-        sizePolicy.setHeightForWidth(self.ribbon_label.sizePolicy().hasHeightForWidth())
-        self.ribbon_label.setSizePolicy(sizePolicy)
-        self.ribbon_label.setFont(font3)
-
-        self.horizontalLayout_4.addWidget(self.ribbon_label)
-
-        self.up_ribbon_sbox = QSpinBox(self.centralwidget)
-        self.up_ribbon_sbox.setObjectName(u"up_ribbon_sbox")
-        sizePolicy.setHeightForWidth(self.up_ribbon_sbox.sizePolicy().hasHeightForWidth())
-        self.up_ribbon_sbox.setSizePolicy(sizePolicy)
-        self.up_ribbon_sbox.setFont(font3)
-        self.up_ribbon_sbox.setMinimum(1)
-        self.up_ribbon_sbox.setValue(5)
-
-        self.horizontalLayout_4.addWidget(self.up_ribbon_sbox)
-
-        self.down_ribbon_sbox = QSpinBox(self.centralwidget)
-        self.down_ribbon_sbox.setObjectName(u"down_ribbon_sbox")
-        sizePolicy.setHeightForWidth(self.down_ribbon_sbox.sizePolicy().hasHeightForWidth())
-        self.down_ribbon_sbox.setSizePolicy(sizePolicy)
-        self.down_ribbon_sbox.setFont(font3)
-        self.down_ribbon_sbox.setMinimum(1)
-        self.down_ribbon_sbox.setValue(5)
-
-        self.horizontalLayout_4.addWidget(self.down_ribbon_sbox)
-
-
-        self.verticalLayout.addLayout(self.horizontalLayout_4)
-
         self.horizontalLayout_7 = QHBoxLayout()
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
         self.create_btn = QToolButton(self.centralwidget)
         self.create_btn.setObjectName(u"create_btn")
         self.create_btn.setEnabled(True)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.create_btn.sizePolicy().hasHeightForWidth())
+        self.create_btn.setSizePolicy(sizePolicy1)
         self.create_btn.setFont(font4)
         self.create_btn.setIconSize(QSize(40, 40))
 
@@ -293,9 +228,6 @@ class Ui_MainWindow(object):
         self.delete_btn = QToolButton(self.centralwidget)
         self.delete_btn.setObjectName(u"delete_btn")
         self.delete_btn.setEnabled(True)
-        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.delete_btn.sizePolicy().hasHeightForWidth())
         self.delete_btn.setSizePolicy(sizePolicy1)
         self.delete_btn.setFont(font4)
@@ -330,14 +262,10 @@ class Ui_MainWindow(object):
         self.label.setText(QCoreApplication.translate("MainWindow", u"module\uff1a", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"name\uff1a", None))
         self.index_label.setText(QCoreApplication.translate("MainWindow", u"index:", None))
+        self.label_5.setText(QCoreApplication.translate("MainWindow", u"jnt _number\uff1a", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"jnt_parent\uff1a", None))
+        self.jnt_parent_edit.setText("")
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"ctrl_parent\uff1a", None))
-        self.ikCtrl_label.setText(QCoreApplication.translate("MainWindow", u"ikCtrl:", None))
-        self.ikCtrl_cbox.setText("")
-        self.fkCtrl_label.setText(QCoreApplication.translate("MainWindow", u"fkCtrl:", None))
-        self.stretch_label.setText(QCoreApplication.translate("MainWindow", u"stretch:", None))
-        self.stretch_cbox.setText("")
-        self.ribbon_label.setText(QCoreApplication.translate("MainWindow", u"ribbon:", None))
         self.create_btn.setText(QCoreApplication.translate("MainWindow", u"Create", None))
         self.delete_btn.setText(QCoreApplication.translate("MainWindow", u"Delete", None))
     # retranslateUi

@@ -140,30 +140,6 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_8)
 
-        self.horizontalLayout_4 = QHBoxLayout()
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.label_5 = QLabel(self.centralwidget)
-        self.label_5.setObjectName(u"label_5")
-        sizePolicy.setHeightForWidth(self.label_5.sizePolicy().hasHeightForWidth())
-        self.label_5.setSizePolicy(sizePolicy)
-        self.label_5.setFont(font)
-        self.label_5.setLayoutDirection(Qt.LeftToRight)
-        self.label_5.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
-
-        self.horizontalLayout_4.addWidget(self.label_5)
-
-        self.jnt_number_sbox = QSpinBox(self.centralwidget)
-        self.jnt_number_sbox.setObjectName(u"jnt_number_sbox")
-        sizePolicy.setHeightForWidth(self.jnt_number_sbox.sizePolicy().hasHeightForWidth())
-        self.jnt_number_sbox.setSizePolicy(sizePolicy)
-        self.jnt_number_sbox.setFont(font4)
-        self.jnt_number_sbox.setValue(1)
-
-        self.horizontalLayout_4.addWidget(self.jnt_number_sbox)
-
-
-        self.verticalLayout.addLayout(self.horizontalLayout_4)
-
         self.horizontalLayout_5 = QHBoxLayout()
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.label_6 = QLabel(self.centralwidget)
@@ -262,7 +238,6 @@ class Ui_MainWindow(object):
         self.label.setText(QCoreApplication.translate("MainWindow", u"module\uff1a", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"name\uff1a", None))
         self.index_label.setText(QCoreApplication.translate("MainWindow", u"index:", None))
-        self.label_5.setText(QCoreApplication.translate("MainWindow", u"jnt _number\uff1a", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"jnt_parent\uff1a", None))
         self.jnt_parent_edit.setText("")
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"ctrl_parent\uff1a", None))
