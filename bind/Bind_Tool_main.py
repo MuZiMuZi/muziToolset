@@ -9,7 +9,7 @@ from PySide2.QtWidgets import *
 
 from . import config
 from .ui.setup import bind_ui
-from .ui.widget import base_widget , chainEP_widget , chain_widget , limb_widget , face_widget,bone_widget
+from .ui.widget import base_widget , chainEP_widget , chain_widget , limb_widget , face_widget , bone_widget
 from ..core import qtUtils
 
 
@@ -19,10 +19,7 @@ reload (limb_widget)
 reload (chainEP_widget)
 reload (bind_ui)
 reload (face_widget)
-reload(bone_widget)
-
-
-
+reload (bone_widget)
 
 
 class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
