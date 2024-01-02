@@ -47,37 +47,36 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         self.setStyleSheet (qtUtils.QSSLoader.read_qss_file (config.qss_dir + './{}.qss'.format ('amoled')))
 
 
-    def set_icon (self) :
-        # 设置按钮的图标，美化界面
-
-        orient_icon = QIcon (config.icon_dir + '/directions.png')
-        self.orient_button.setIcon (orient_icon)
-        # self.orient_button.setIconSize (orient_icon.actualSize (self.orient_button.size ()))
-
-        delete_icon = QIcon (config.icon_dir + '/delete.png')
-        self.delete_button.setIcon (delete_icon)
-        # self.delete_button.setIconSize (delete_icon.actualSize (self.delete_button.size ()))
-
-        reset_icon = QIcon (config.icon_dir + '/reset.png')
-        self.reset_button.setIcon (reset_icon)
-        # self.reset_button.setIconSize (reset_icon.actualSize (self.reset_button.size ()))
-
-        build_icon = QIcon (config.icon_dir + '/control.png')
-        self.build_button.setIcon (build_icon)
-        self.build_button.setIconSize (build_icon.actualSize (self.build_button.size ()))
+    # 设置按钮的图标
+    def set_icon (self , button , icon_name) :
+        """
+        设置按钮的图标
+        """
+        icon = QIcon (config.icon_dir + '/' + icon_name)
+        button.setIcon (icon)
+        # button.setIconSize(icon.actualSize(button.size()))  # 可以考虑是否需要设置图标大小
 
 
-    def apply_model (self) :
-        pass
+    # 设置所有按钮的图标
+    def set_icons (self) :
+        """
+        设置所有按钮的图标
+        """
+        self.set_icon (self.orient_button , 'directions.png')
+        self.set_icon (self.delete_button , 'delete.png')
+        self.set_icon (self.reset_button , 'reset.png')
+        self.set_icon (self.build_button , 'control.png')
 
 
+    # 用来添加连接的槽函数
     def add_connect (self) :
-        u"""
+        """
         用来添加连接的槽函数
         """
+        # 连接proxy_widget的双击槽函数
         self.proxy_widget.doubleClicked.connect (self.clicked_proxy_widget_dbclk)
 
-        # custom_widget 的连接
+        # 连接custom_widget的右键菜单和点击槽函数
         self.custom_widget.setContextMenuPolicy (Qt.CustomContextMenu)
         self.custom_widget.customContextMenuRequested.connect (self.clicked_custom_widget_menu)
         self.custom_widget.itemClicked.connect (self.clicked_custom_widget_clk)
@@ -94,30 +93,34 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
 
     # 用来连接proxy_widget双击所连接的功能槽函数,双击的时候将模版库的模版添加到自定义模块里
     def clicked_proxy_widget_dbclk (self) :
-        u"""
-            用来连接proxy_widget双击所连接的功能槽函数,双击的时候将模版库的模版添加到自定义模块里
-            index：鼠标双击的时候所在的位置
-            """
+        """
+        用来连接proxy_widget双击所连接的功能槽函数,双击的时候将模版库的模版添加到自定义模块里
+        """
         # 获取proxy_view双击时候的位置信息
         index = self.proxy_widget.currentIndex ()
+
         # 如果index.isValid的返回值有值的话，说明选择了可以点击的文件，不是的话则是空白的物体
         if index.isValid () :
-            # 1.获取self.custom_widget里所拥有的所有item
+            # 获取item的模块名称
+            item_text = self.proxy_widget.currentItem ().text ()
+
+            # 获取self.custom_widget里所拥有的所有item
             all_items = self.custom_widget.findItems ("*" , Qt.MatchWildcard)
             all_items_texts = [custom_item.text () for custom_item in all_items]
 
-            # 获取item的模块名称
-            item_text = self.proxy_widget.currentItem ().text ()
             # 利用count方法来获取item的模块名称出现过的次数
             item_index = all_items_texts.count ('side_{}'.format (item_text))
 
             # 获得proxy_widget里所选择的item_name
             item_name = 'bp_side_{}_{:03d}'.format (item_text , item_index + 1)
+
             # 在custom_widget里添加这个item
             item = QListWidgetItem (item_name)
             self.custom_widget.addItem (item)
+
             # 添加完成item后设置为选中模式
             self.custom_widget.setCurrentItem (item)
+
             # 设置字体颜色为红色
             item.setForeground (QColor (255 , 0 , 0))
 
@@ -126,6 +129,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
             # 存储item的序号为item_index在Qt.UserRole + 2里
             item.setData (Qt.UserRole + 1 , item_text)
             item.setData (Qt.UserRole + 2 , item_index)  # 存储索引值
+
             self.update_current (item)
         else :
             return
@@ -216,6 +220,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
             cmds.warning ("未知的rigtype：{}".format (rigtype))
 
 
+    # 根据提供的处理函数对self.custom_widget中的所有item进行处理
     def process_items (self , process_function) :
         """
         根据提供的处理函数对self.custom_widget中的所有item进行处理
@@ -227,6 +232,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
             process_function (item_widget)
 
 
+    # 连接创建绑定按钮的槽函数
     def clicked_build_btn (self) :
         """
         连接创建绑定按钮的槽函数
@@ -234,6 +240,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         self.process_items (lambda item_widget : item_widget.build_rig ())
 
 
+    # 连接删除绑定按钮的槽函数
     def clicked_delete_btn (self) :
         """
         连接删除绑定按钮的槽函数
@@ -241,24 +248,33 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         self.process_items (lambda item_widget : item_widget.delete_rig ())
 
 
-    def triggered_action_Refersh (self) :
+    # 刷新self.custom_widget里所有item的命名
+    def refresh_custom_widget_items (self) :
         """
-        连接action_Refersh行为的槽函数，当按下这个行为键的时候刷新self.custom_widget里所有item的命名
+        刷新self.custom_widget里所有item的命名
         """
-        # 1.获取self.custom_widget里所拥有的所有item
         all_items = self.custom_widget.findItems ("*" , Qt.MatchWildcard)
         all_items_texts = []
-        # 对所有item做循环遍历，获取item.widget里的组件信息，module，side和name，用于重新命名item
+
         for item in all_items :
             all_items_texts.append (item.text ())
             item_widget = item.data (Qt.UserRole)
             module = item_widget.module_edit.text ()
             side = item_widget.side
             name = item_widget.name
+
             # 利用count方法来获取item的模块名称出现过的次数
             item_index = all_items_texts.count ('{}_{}'.format (side , item.text ()))
 
             item.setText ('bp_{}_{}{}_{:03d}'.format (side , module , name , item_index + 1))
+
+
+    # 连接action_Refersh行为的槽函数，当按下这个行为键的时候刷新self.custom_widget里所有item的命名
+    def triggered_action_Refersh (self) :
+        """
+        连接action_Refersh行为的槽函数，当按下这个行为键的时候刷新self.custom_widget里所有item的命名
+        """
+        self.refresh_custom_widget_items ()
 
 
 def show () :
