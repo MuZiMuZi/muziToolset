@@ -89,30 +89,22 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         # 根据self.module来判断是需要生成哪个模块的绑定
         if self.module in self.chain_modules :
             module_class = self.chain_modules [self.module]
-            self.setup = module_class (self.side , self.name , self.jnt_number , self.direction , self.length ,
-                                       self.jnt_parent , self.ctrl_parent)
+            self.module = module_class (self.side , self.name , self.jnt_number , self.direction , self.length ,
+                                        self.jnt_parent , self.ctrl_parent)
 
-            self.setup.build_setup ()
+            self.module.build_setup ()
 
 
     # 根据base_widget和extra_widget返回的参数,创建绑定系统
     def build_rig (self) :
-        # 根据self.module来判断是需要生成哪个模块的绑定
-        if self.module in self.chain_modules :
-            module_class = self.chain_modules [self.module]
-            self.rig = module_class (self.side , self.name , self.jnt_number , self.direction , self.length ,
-                                     self.jnt_parent , self.ctrl_parent)
-            self.rig.build_rig ()
+        # 创建绑定
+        self.module.build_rig ()
 
 
-    ## 根据self.module来判断是需要删除哪个模块的绑定
+    ## 删除绑定
     def delete_rig (self) :
-        # 根据self.module来判断是需要删除哪个模块的绑定
-        if self.module in self.chain_modules :
-            module_class = self.chain_modules [self.module]
-            self.delete = module_class (self.side , self.name , self.jnt_number , self.direction , self.length ,
-                                        self.jnt_parent , self.ctrl_parent)
-            self.delete.delete_rig ()
+        # 删除绑定
+        self.module.delete_rig ()
 
 
 def main () :
