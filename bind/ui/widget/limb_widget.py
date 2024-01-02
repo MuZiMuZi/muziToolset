@@ -38,27 +38,17 @@ class Limb_Widget (limb_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow
         super ().__init__ (parent , *args , **kwargs)
 
 
-    def init_base (self) :
-        # 继承base_widget.Base_Widget的init_base方法
-        super ().init_base ()
-
-
-    def add_connect (self) :
-        u"""
-        用来添加连接的槽函数
-        """
-        super ().add_connect ()
-
-
-    def parse_base (self ) :
+    def parse_base (self) :
         super ().parse_base ()
-        # 分析base_widget中的输入并将其作为参数返回
+        # 分析ikfk控制器是否创建的参数并返回
         self.ikCtrl_value = self.ikCtrl_cbox.value ()
-        self.fkCtrl_value = self.fkCtrl_cbox.value()
-        self.stretch_value = self.stretch_cbox.value()
+        self.fkCtrl_value = self.fkCtrl_cbox.value ()
+        # 分析是否需要拉伸的参数并返回
+        self.stretch_value = self.stretch_cbox.value ()
 
-
-
+        # 分析ribbon关节的参数并返回
+        self.up_ribbon_value = self.up_ribbon_sbox.value ()
+        self.down_ribbon_value = self.down_ribbon_sbox.value ()
 
 
     def build_setup (self) :
