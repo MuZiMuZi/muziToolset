@@ -61,8 +61,7 @@ class ChainIKFK (chain.Chain) :
         self.ik_chain.create_namespace ()
         self.fk_chain.create_namespace ()
         super ().create_namespace ()
-        print (self.ctrl_list)
-        print (self.rtype)
+
 
 
     def create_joint (self) :
