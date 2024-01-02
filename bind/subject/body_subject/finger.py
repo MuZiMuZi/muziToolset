@@ -27,14 +27,16 @@ class Finger (chainFK.ChainFK) :
 
 
     def add_curl (self) :
-        u"""
+        """
         添加手指弯曲的效果
         """
+        curl_attr = self.ctrl_list [0] + '.Curl'
+
         for ctrl in self.ctrl_list [1 :-1] :
             mult_node = cmds.createNode ('multDoubleLinear' , name = ctrl.replace ('ctrl' , 'mult'))
             cmds.setAttr (mult_node + '.input2' , 9)
-            cmds.connectAttr (self.ctrl_list [0] + '.Curl' , mult_node + '.input1')
-            cmds.connectAttr (mult_node + '.output' , ctrl + '.rotateZ')
+            cmds.connectAttr (curl_attr , mult_node + '.input1')
+            cmds.connectAttr (mult_node + '.output' , ctrl.replace ('ctrl' , 'connect') + '.rotateZ')
 
 
 if __name__ == '__main__' :
