@@ -1,27 +1,14 @@
 # coding=utf-8
 # 导入所有需要的模块
-
-from __future__ import unicode_literals , print_function
-
-
-try :
-    from PySide2.QtCore import *
-    from PySide2.QtGui import *
-    from PySide2.QtWidgets import *
-    from PySide2 import __version__
-    from shiboken2 import wrapInstance
-
-except ImportError :
-    from PySide.QtCore import *
-    from PySide.QtGui import *
-    from PySide.QtWidgets import *
-    from PySide import __version__
-    from shiboken import wrapInstance
-from ..setup import chainEP_ui
-from . import chain_widget
 from importlib import reload
-from ....bind.module.chain import chainEP
+
 import maya.cmds as cmds
+from PySide2.QtWidgets import *
+
+from . import chain_widget
+from ..setup import chainEP_ui
+from ... import config
+from ....bind.module.chain import chainEP
 from ....core import pipelineUtils
 
 
