@@ -187,55 +187,33 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
 
     # 根据所得知的item，创建setting_layout里对应的设置面板
     def initialize_field (self , item) :
-        u"""
+        """
         根据所得知的item，创建对应的设置面板
-        Returns:
         """
         # 从item的data中获取对应的信息
         item_text = item.data (Qt.UserRole + 1)
         item_index = item.data (Qt.UserRole + 2)
-        # 判断item的类型，根据item的类型选择生成哪个界面
+
+        # 根据item的类型选择生成哪个界面
         rigtype = config.Rigtype (item_text)
-        # 针对多个关节点的绑定模块，
-        # 组件需要的参数有[side,name,jnt_number,jnt_parent,ctrl_parent]
-        # rigtype_bone = ['bone']
-        if rigtype == 'bone' :
-            item_widget = bone_widget.main ()
+        widget_mapping = {
+            'bone' : bone_widget.main ,
+            'base' : base_widget.main ,
+            'chain' : chain_widget.main ,
+            'chainEP' : chainEP_widget.main ,
+            'limb' : limb_widget.main ,
+            'face' : face_widget.main ,
+        }
 
-        # 针对不需要预设属性设置修改的绑定模块，
-        # 组件需要的参数有[side,name,jnt_parent,ctrl_parent]
-        elif rigtype == 'base' :
-            item_widget = base_widget.main ()
-        # 针对关节链条的绑定模块，
-        # 组件需要的参数有[side,name,length,direction,jnt_parent,ctrl_parent]
-        elif rigtype == 'chain' :
-            item_widget = chain_widget.main ()
-
-        # 针对EP曲线关节链条的绑定模块，
-        # 组件需要的参数有[side,name,jnt_number,ctrl_number,curve,jnt_parent,ctrl_parent]
-        elif rigtype == 'chainEP' :
-            item_widget = chainEP_widget.main ()
-
-        # 针对身体四肢模块的绑定模块
-        # 组件需要的参数有[side,name,jnt_number,ikctrl_value,fkctrl_value,stretch_value,up_ribbon_value,down_ribbon_value,jnt_parent,ctrl_parent]
-        # rigtype_limb = ['arm' , 'leg' , 'spine']
-        elif rigtype == 'limb' :
-            item_widget = limb_widget.main ()
-
-        # 针对需要选择上下曲线的脸部的绑定模块，
-        # 组件需要的参数有[side,name,up_curve,down_curve,jnt_parent,ctrl_parent]
-        # rigtype_face = ['eye' , 'mouth']
-        elif rigtype == 'face' :
-            item_widget = face_widget.main ()
-
-        # 将item_widget与item关联
-        item.setData (Qt.UserRole , item_widget)
-
-        # 从item中获取关联的item_widget
-        item_widget = item.data (Qt.UserRole)
-        item_widget.module_edit.setText ('{}'.format (item_text))
-        item_widget.index_edit.setText ('{}'.format (item_index + 1))
-        self.setting_stack.addWidget (item_widget)
+        if rigtype in widget_mapping :
+            # 使用映射表来获取对应的组件
+            item_widget = widget_mapping [rigtype] ()
+            item_widget.module_edit.setText ('{}'.format (item_text))
+            item_widget.index_edit.setText ('{}'.format (item_index + 1))
+            item.setData (Qt.UserRole , item_widget)
+            self.setting_stack.addWidget (item_widget)
+        else :
+            cmds.warning ("未知的rigtype：{}".format (rigtype))
 
 
     def process_items (self , process_function) :
