@@ -7,7 +7,6 @@ from PySide2.QtWidgets import *
 
 from . import chain_widget
 from ..setup import chainEP_ui
-from ... import config
 from ....bind.module.chain import chainEP
 from ....core import pipelineUtils
 
@@ -32,14 +31,6 @@ class ChainEP_Widget (chainEP_ui.Ui_MainWindow , chain_widget.Chain_Widget , QMa
         self.length = None
         self.direction = None
         super ().__init__ (parent , *args , **kwargs)
-
-
-    # 初始化参数
-    def init_base (self) :
-        # 继承base_widget.Base_Widget的init_base方法
-        # 初始化参数
-        for side in config.Side :
-            self.side_cbox.addItem (side.value)
 
 
     # 用来添加连接的槽函数
@@ -74,24 +65,24 @@ class ChainEP_Widget (chainEP_ui.Ui_MainWindow , chain_widget.Chain_Widget , QMa
                 return  # 如果找到曲线就结束循环
 
 
-    # 分析base_widget中的输入并将其作为参数返回
-    def parse_base (self , *args) :
-        """
-        分析base_widget中的输入并将其作为参数返回
-        """
-        # 获取用户输入的参数并将其返回
-        self.side = self.side_cbox.currentText ()
-        self.name = self.name_edit.text ()
+    # 分析组件里额外的输入内容输入并将其作为参数返回
+    def parse_extra (self) :
+        '''
+        分析组件里额外的输入内容输入并将其作为参数返回
+        '''
+        # 分析组件里额外的输入内容输入
         self.jnt_number = self.jnt_number_sbox.value ()
         self.ctrl_number = self.ctrl_number_sbox.value ()
         self.curve = self.curve_Edit.text ()
-        self.jnt_parent = self.jnt_parent_edit.text ()
-        self.ctrl_parent = self.ctrl_parent_edit.text ()
 
-        # 组件需要给定数值的输入，
-        self.base_parameters = [self.side , self.jnt_number , self.ctrl_number , self.curve]
+        # 将需要检查参数存在的值封装到列表中
+        parameters_to_add = [self.jnt_number , self.ctrl_number , self.curve]
+
+        # 使用 extend() 方法将列表添加到 base_parameters 中，后续通过check_parameters这个方法判断这些参数是否有值
+        self.base_parameters.extend (parameters_to_add)
 
 
+    # # 判断给定的参数是否正确,如果正确的话才进行之后的创建
     def check_parameters (self) :
         super ().check_parameters ()
         # 判断给定的参数是否正确,如果正确的话才进行之后的创建
@@ -110,7 +101,7 @@ class ChainEP_Widget (chainEP_ui.Ui_MainWindow , chain_widget.Chain_Widget , QMa
         return self.is_info_base
 
 
-    # 创建绑定
+    # 创建绑定的定位关节
     def build_setup (self) :
         # 创建绑定准备，生成定位关节
         self.chainEP = chainEP.ChainEP (self.side , self.name , self.jnt_number , self.ctrl_number , self.curve ,
@@ -118,11 +109,13 @@ class ChainEP_Widget (chainEP_ui.Ui_MainWindow , chain_widget.Chain_Widget , QMa
         self.chainEP.build_setup ()
 
 
+    # 创建完整的绑定
     def build_rig (self) :
         # 创建完整的绑定
         self.chainEP.build_rig ()
 
 
+    # 删除创建好的绑定
     def delete_rig (self) :
         # 删除绑定
         self.chainEP.delete_rig ()

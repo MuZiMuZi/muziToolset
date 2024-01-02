@@ -172,13 +172,13 @@ class ChainIKFK (chain.Chain) :
         cmds.setDrivenKeyframe (
             '{}.w1'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 1)
 
-        cmds.setDrivenKeyframe (self.ik_chain.ctrl_list [jnt_number] + '.v' ,
+        cmds.setDrivenKeyframe (self.ik_chain.zero_list [jnt_number] + '.v' ,
                                 cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 1)
-        cmds.setDrivenKeyframe (self.ik_chain.ctrl_list [jnt_number] + '.v' ,
+        cmds.setDrivenKeyframe (self.ik_chain.zero_list [jnt_number] + '.v' ,
                                 cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 0)
-        cmds.setDrivenKeyframe (self.fk_chain.ctrl_list [jnt_number] + '.v' ,
+        cmds.setDrivenKeyframe (self.fk_chain.zero_list [jnt_number] + '.v' ,
                                 cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 1)
-        cmds.setDrivenKeyframe (self.fk_chain.ctrl_list [jnt_number] + '.v' ,
+        cmds.setDrivenKeyframe (self.fk_chain.zero_list [jnt_number] + '.v' ,
                                 cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 0)
 
 
