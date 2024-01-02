@@ -144,7 +144,7 @@ class Bone (object) :
         'grp_m_node_001'
     ]
     # 生成的绑定类型
-    rtype = 'bone'
+    rigType = 'bone'
     shape = 'circle'
     radius = 10
 
@@ -219,7 +219,7 @@ class Bone (object) :
         self.ctrl_list = list ()
         self.subctrl_list = list ()
         self.output_list = list ()
-        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rtype))
+        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rigType))
 
 
     # 根据给定的边，初始化side_value的值，用于镜像控制器以及位移
@@ -269,15 +269,15 @@ class Bone (object) :
         self._setup_list ()
 
         for i in range (self.jnt_number) :
-            self.bpjnt_list.append ('bpjnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.zero_list.append ('zero_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.driven_list.append ('driven_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.connect_list.append ('connect_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.offset_list.append ('offset_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.ctrl_list.append ('ctrl_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.subctrl_list.append ('ctrl_{}_{}{}Sub_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.output_list.append ('output_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.bpjnt_list.append ('bpjnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
+            self.jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
+            self.zero_list.append ('zero_{}_{}{}_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
+            self.driven_list.append ('driven_{}_{}{}_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
+            self.connect_list.append ('connect_{}_{}{}_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
+            self.offset_list.append ('offset_{}_{}{}_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
+            self.ctrl_list.append ('ctrl_{}_{}{}_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
+            self.subctrl_list.append ('ctrl_{}_{}{}Sub_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
+            self.output_list.append ('output_{}_{}{}_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
 
 
     # 根据名称规范，创建定位的bp关节
@@ -311,7 +311,7 @@ class Bone (object) :
             # 将bp关节添加到选择集里方便进行选择
             pipelineUtils.Pipeline.create_set (self.bpjnt ,
                                                set_name = '{}_{}{}_bpjnt_set'.format (self.side , self.name ,
-                                                                                      self.rtype) ,
+                                                                                      self.rigType) ,
                                                set_parent = 'bpjnt_set')
 
 
@@ -360,7 +360,7 @@ class Bone (object) :
             # 将蒙皮关节添加到选择集里方便进行选择
             pipelineUtils.Pipeline.create_set (jnt ,
                                                set_name = '{}_{}{}_jnt_set'.format (self.side , self.name ,
-                                                                                    self.rtype) ,
+                                                                                    self.rigType) ,
                                                set_parent = 'jnt_set')
             # 吸附绑定关节与定位关节的位置
             cmds.matchTransform (jnt , bpjnt)

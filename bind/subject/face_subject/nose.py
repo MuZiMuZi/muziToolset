@@ -20,7 +20,7 @@ class Nose (base.Base) :
     def __init__ (self , side = 'm' , name = '' , jnt_number = 2 , jnt_parent = None , ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
         self.shape = 'cube'
-        self.rtype = 'Nose'
+        self.rigType = 'Nose'
         self.radius = 0.2
 
         self.side_bpjnt_list = list ()

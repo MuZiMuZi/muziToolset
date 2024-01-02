@@ -7,7 +7,7 @@ class Tail (chainIKFK.ChainIKFK) :
     def __init__ (self , side , name , jnt_number , direction , is_stretch = 1 , length = 10 , jnt_parent = None ,
                   ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , direction , is_stretch , length , jnt_parent , ctrl_parent)
-        self.rtype = 'Tail'
+        self.rigType = 'Tail'
 
 
 if __name__ == '__main__' :

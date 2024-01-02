@@ -99,7 +99,7 @@ class Base (bone.Bone) :
     基础的关节和控制器绑定，继承于bone
     """
     # 生成的绑定类型
-    rtype = 'Base'
+    rigType = 'Base'
 
 
     def __init__ (self , side , name , jnt_number , jnt_parent = None , ctrl_parent = None) :

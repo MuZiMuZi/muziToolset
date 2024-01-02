@@ -64,7 +64,7 @@ class ChainItem (base.BaseItem) :
 
 
 class Chain (base.Base) :
-    rtype = 'Chain'
+    rigType = 'Chain'
 
 
     def __init__ (self , side , name , jnt_number , length = 10 , jnt_parent = None , ctrl_parent = None) :
@@ -104,7 +104,7 @@ class Chain (base.Base) :
                 # 将bp关节添加到选择集里方便进行选择
                 pipelineUtils.Pipeline.create_set (self.bpjnt ,
                                                    set_name = '{}_{}{}_bpjnt_set'.format (self.side , self.name ,
-                                                                                          self.rtype) ,
+                                                                                          self.rigType) ,
                                                    set_parent = 'bpjnt_set')
         # 进行关节定向
         jointUtils.Joint.joint_orientation (self.bpjnt_list)
@@ -137,7 +137,7 @@ class Chain (base.Base) :
             # 将蒙皮关节添加到选择集里方便进行选择
             pipelineUtils.Pipeline.create_set (jnt ,
                                                set_name = '{}_{}{}_jnt_set'.format (self.side , self.name ,
-                                                                                    self.rtype) ,
+                                                                                    self.rigType) ,
                                                set_parent = 'jnt_set')
 
         # 进行关节定向

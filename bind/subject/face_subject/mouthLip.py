@@ -23,13 +23,13 @@ class MouthLip (base.Base) :
         # 定位用的曲线
         self.name = name
         self.shape = 'cube'
-        self.rtype = 'MouthLip'
+        self.rigType = 'MouthLip'
         self.radius = 0.1
         self.jnt_number = jnt_number
 
         self.curve_jnt_list = list ()
         self.skin_jnt_list = list ()
-        self.skin_curve = 'crv_{}_{}{}Skin_001'.format (self.side , self.name , self.rtype)
+        self.skin_curve = 'crv_{}_{}{}Skin_001'.format (self.side , self.name , self.rigType)
 
         # 判断是否为下部分的嘴唇,如果为下部分的嘴唇的话，scaleY需要设置成-1，这样上下运动的时候才可匹配
         if self.name == 'lower' :
@@ -41,33 +41,33 @@ class MouthLip (base.Base) :
     def create_namespace (self) :
         super ().create_namespace ()
         # 整理与控制器有关的曲线的名称规范层级结构
-        self.curve = 'crv_{}_{}{}_001'.format (self.side , self.name , self.rtype)
+        self.curve = 'crv_{}_{}{}_001'.format (self.side , self.name , self.rigType)
         for index in range (self.jnt_number) :
-            self.curve_jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , index + 1))
-        self.curve_jnt_grp = 'grp_{}_{}{}Jnts_001'.format (self.side , self.name , self.rtype)
-        self.curve_nodes_grp = 'grp_{}_{}{}RigNodes_001'.format (self.side , self.name , self.rtype)
+            self.curve_jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rigType , index + 1))
+        self.curve_jnt_grp = 'grp_{}_{}{}Jnts_001'.format (self.side , self.name , self.rigType)
+        self.curve_nodes_grp = 'grp_{}_{}{}RigNodes_001'.format (self.side , self.name , self.rigType)
 
         # 整理与蒙皮关节有关的曲线名称规范层级结构
         # 获取蒙皮曲线的关节点数量
         self.skin_number = pipelineUtils.Pipeline.get_curve_number (self.skin_curve)
         for index in range (self.skin_number) :
             self.skin_jnt_list.append (
-                'jnt_{}_{}{}Skin_{:03d}'.format (self.side , self.name , self.rtype , index + 1))
-        self.skin_jnt_grp = 'grp_{}_{}{}SkinJnts_001'.format (self.side , self.name , self.rtype)
-        self.skin_nodes_grp = 'grp_{}_{}{}SkinRigNodes_001'.format (self.side , self.name , self.rtype)
+                'jnt_{}_{}{}Skin_{:03d}'.format (self.side , self.name , self.rigType , index + 1))
+        self.skin_jnt_grp = 'grp_{}_{}{}SkinJnts_001'.format (self.side , self.name , self.rigType)
+        self.skin_nodes_grp = 'grp_{}_{}{}SkinRigNodes_001'.format (self.side , self.name , self.rigType)
 
         # 整理与目标曲线有关的曲线名称规范层级结构
-        self.aim_curve = 'crv_{}_{}{}Aim_001'.format (self.side , self.name , self.rtype)
-        self.aim_jnt_grp = 'grp_{}_{}{}AimJnts_001'.format (self.side , self.name , self.rtype)
-        self.aim_nodes_grp = 'grp_{}_{}{}AimRigNodes_001'.format (self.side , self.name , self.rtype)
+        self.aim_curve = 'crv_{}_{}{}Aim_001'.format (self.side , self.name , self.rigType)
+        self.aim_jnt_grp = 'grp_{}_{}{}AimJnts_001'.format (self.side , self.name , self.rigType)
+        self.aim_nodes_grp = 'grp_{}_{}{}AimRigNodes_001'.format (self.side , self.name , self.rigType)
 
         # 整理与向上向量曲线有关的曲线名称规范层级结构
-        self.up_curve = 'crv_{}_{}{}Up_001'.format (self.side , self.name , self.rtype)
-        self.up_jnt_grp = 'grp_{}_{}{}UpJnts_001'.format (self.side , self.name , self.rtype)
-        self.up_nodes_grp = 'grp_{}_{}{}UpRigNodes_001'.format (self.side , self.name , self.rtype)
+        self.up_curve = 'crv_{}_{}{}Up_001'.format (self.side , self.name , self.rigType)
+        self.up_jnt_grp = 'grp_{}_{}{}UpJnts_001'.format (self.side , self.name , self.rigType)
+        self.up_nodes_grp = 'grp_{}_{}{}UpRigNodes_001'.format (self.side , self.name , self.rigType)
 
         # 整理节点的层级结构
-        self.node_grp = 'grp_{}_{}{}Nodes_001'.format (self.side , self.name , self.rtype)
+        self.node_grp = 'grp_{}_{}{}Nodes_001'.format (self.side , self.name , self.rigType)
 
 
     def build_curve (self) :

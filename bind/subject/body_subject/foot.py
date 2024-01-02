@@ -30,11 +30,11 @@ class Foot (chain.Chain) :
                                         length = self.length ,
                                         jnt_parent = self.jnt_parent , ctrl_parent = self.ctrl_parent)
         # 设置foot_fk的基础属性,控制器大小，前缀和控制器朝向
-        self.foot_fk._rtype = 'footFK'
+        self.foot_fk._rigType = 'footFK'
         self.foot_fk.axis = 'X+'
         self.foot_fk.radius = 2
         # 设置foot_ik的基础属性,控制器形状，前缀
-        self.foot_ik._rtype = 'footIK'
+        self.foot_ik._rigType = 'footIK'
         self.foot_ik.set_shape ('cube')
         self.foot_ik.radius = 2
 
@@ -53,7 +53,7 @@ class Foot (chain.Chain) :
             self.driven_list.append ('driven_{}_{}{}_001'.format (self.side , self.name , part))
             self.ctrl_list.append ('ctrl_{}_{}{}_001'.format (self.side , self.name , part))
             self.output_list.append ('output_{}_{}{}_001'.format (self.side , self.name , part))
-        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rtype))
+        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rigType))
         # 创建用来定位旋转轴心点的关节
         for part in self.rvs_jnt_parts :
             self.rvs_bpjnt_list.append ('bpjnt_{}_{}{}_001'.format (self.side , self.name , part))
@@ -70,7 +70,7 @@ class Foot (chain.Chain) :
         self.ball_ikhandle = self.jnt_list [1].replace ('jnt' , 'ikhandle')
         self.toe_ikhandle = self.jnt_list [-1].replace ('jnt' , 'ikhandle')
         # 创建整体的控制器层级组
-        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rtype))
+        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rigType))
 
 
     def create_bpjnt (self) :

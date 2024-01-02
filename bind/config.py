@@ -53,7 +53,7 @@ class Direction (Enum) :
     z_positive = [0 , 0 , 1]
 
 
-def Rigtype (value) :
+def rigType (value) :
     """
     根据给定的值返回相应的绑定类型。
 
@@ -66,39 +66,39 @@ def Rigtype (value) :
     # 定义不同的绑定类型的值列表
     # 针对多个关节点的绑定模块，
     # 组件需要的参数有[side,name,jnt_number,jnt_parent,ctrl_parent]
-    rigtype_bone = ['bone']
+    rigType_bone = ['bone']
 
     # 针对不需要预设属性设置修改的绑定模块，
     # 组件需要的参数有[side,name,jnt_parent,ctrl_parent]
-    rigtype_base = ['master' , 'brow' , 'nose' , 'cheek' , 'jaw' , 'hand' , 'foot']
+    rigType_base = ['master' , 'brow' , 'nose' , 'cheek' , 'jaw' , 'hand' , 'foot']
 
     # 针对关节链条的绑定模块，
     # 组件需要的参数有[side,name,length,direction,jnt_parent,ctrl_parent]
-    rigtype_chain = ['chainFK' , 'chainIK' , 'chainIKFK' , 'finger' , 'tail']
+    rigType_chain = ['chainFK' , 'chainIK' , 'chainIKFK' , 'finger' , 'tail']
 
     # 针对EP曲线关节链条的绑定模块，
     # 组件需要的参数有[side,name,jnt_number,ctrl_number,curve,jnt_parent,ctrl_parent]
-    rigtype_chainEP = ['chainEP']
+    rigType_chainEP = ['chainEP']
 
     # 针对身体四肢模块的绑定模块，
     # 组件需要的参数有[side,name,jnt_number,ikctrl_value,fkctrl_value,stretch_value,up_ribbon_value,down_ribbon_value,jnt_parent,ctrl_parent]
-    rigtype_limb = ['arm' , 'leg' , 'spine']
+    rigType_limb = ['arm' , 'leg' , 'spine']
 
     # 针对需要选择上下曲线的脸部的绑定模块，组件需要的参数有[side,name,up_curve,down_curve,jnt_parent,ctrl_parent]
-    rigtype_face = ['eye' , 'mouth']
+    rigType_face = ['eye' , 'mouth']
 
     # 创建一个包含绑定类型的字典
-    rigtype_dict = {
-        'bone' : rigtype_bone ,
-        'base' : rigtype_base ,
-        'chain' : rigtype_chain ,
-        'chainEP' : rigtype_chainEP ,
-        'limb' : rigtype_limb ,
-        'face' : rigtype_face
+    rigType_dict = {
+        'bone' : rigType_bone ,
+        'base' : rigType_base ,
+        'chain' : rigType_chain ,
+        'chainEP' : rigType_chainEP ,
+        'limb' : rigType_limb ,
+        'face' : rigType_face
     }
 
     # 遍历字典，查找值所在的绑定类型
-    for key , val_list in rigtype_dict.items () :
+    for key , val_list in rigType_dict.items () :
         if value in val_list :
             return key  # 如果找到匹配的值，返回相应的键
 

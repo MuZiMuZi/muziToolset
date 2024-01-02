@@ -78,16 +78,16 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.label)
 
-        self.rtype_edit = QLineEdit(self.centralwidget)
-        self.rtype_edit.setObjectName(u"rtype_edit")
-        self.rtype_edit.setEnabled(False)
-        sizePolicy.setHeightForWidth(self.rtype_edit.sizePolicy().hasHeightForWidth())
-        self.rtype_edit.setSizePolicy(sizePolicy)
+        self.rigType_edit = QLineEdit(self.centralwidget)
+        self.rigType_edit.setObjectName(u"rigType_edit")
+        self.rigType_edit.setEnabled(False)
+        sizePolicy.setHeightForWidth(self.rigType_edit.sizePolicy().hasHeightForWidth())
+        self.rigType_edit.setSizePolicy(sizePolicy)
         font3 = QFont()
         font3.setPointSize(18)
-        self.rtype_edit.setFont(font3)
+        self.rigType_edit.setFont(font3)
 
-        self.horizontalLayout.addWidget(self.rtype_edit)
+        self.horizontalLayout.addWidget(self.rigType_edit)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout)
@@ -311,7 +311,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.side_label.setText(QCoreApplication.translate("MainWindow", u"side\uff1a", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"rtype\uff1a", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"rigType\uff1a", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"name\uff1a", None))
         self.index_label.setText(QCoreApplication.translate("MainWindow", u"index:", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"jnt_number\uff1a", None))

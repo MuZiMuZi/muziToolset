@@ -9,7 +9,7 @@ class Hand (finger.Finger) :
     def __init__ (self , side , name , jnt_number = 4 , direction = [-1 , 0 , 0] , length = 3 , jnt_parent = None ,
                   ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , direction , length , jnt_parent , ctrl_parent)
-        self.rtype = ''
+        self.rigType = ''
         # 初始化手指的模块
         self.thumb_finger = finger.Finger (self.side , 'thumb' , jnt_number = 3 , direction = self.direction ,
                                            length = self.length , jnt_parent = self.jnt_parent ,

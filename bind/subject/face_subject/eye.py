@@ -24,7 +24,7 @@ class Eye (chain.Chain) :
                   ctrl_parent = None) :
         super (Eye , self).__init__ (side , name , jnt_number , length , jnt_parent , ctrl_parent)
         self.shape = 'circle'
-        self.rtype = 'Eye'
+        self.rigType = 'Eye'
         self.radius = 0.3
 
         # iris的缩放关节
@@ -43,17 +43,17 @@ class Eye (chain.Chain) :
     def create_namespace (self) :
         super ().create_namespace ()
         # 创建眼睛部位的命名规范
-        self.aim_ctrl = ('ctrl_{}_{}{}Aim_001'.format (self.side , self.name , self.rtype))
-        self.aim_loc = ('loc_{}_{}{}Aim_001'.format (self.side , self.name , self.rtype))
-        self.jnt_loc = ('loc_{}_{}{}Jnt_001'.format (self.side , self.name , self.rtype))
-        self.aim_crv = ('crv_{}_{}{}Aim_001'.format (self.side , self.name , self.rtype))
+        self.aim_ctrl = ('ctrl_{}_{}{}Aim_001'.format (self.side , self.name , self.rigType))
+        self.aim_loc = ('loc_{}_{}{}Aim_001'.format (self.side , self.name , self.rigType))
+        self.jnt_loc = ('loc_{}_{}{}Jnt_001'.format (self.side , self.name , self.rigType))
+        self.aim_crv = ('crv_{}_{}{}Aim_001'.format (self.side , self.name , self.rigType))
         for index in range (3) :
             self.iris_bpjnt_list.append (
-                'bpjnt_{}_{}{}iris_{:03d}'.format (self.side , self.name , self.rtype , index + 1))
+                'bpjnt_{}_{}{}iris_{:03d}'.format (self.side , self.name , self.rigType , index + 1))
             self.iris_jnt_list.append (
-                'jnt_{}_{}{}iris_{:03d}'.format (self.side , self.name , self.rtype , index + 1))
+                'jnt_{}_{}{}iris_{:03d}'.format (self.side , self.name , self.rigType , index + 1))
         # 创建眼睛闭合曲线的名称规范：blink
-        self.blink_curve = 'crv_{}_{}{}EyeLidBlink_001'.format (self.side , self.name , self.rtype)
+        self.blink_curve = 'crv_{}_{}{}EyeLidBlink_001'.format (self.side , self.name , self.rigType)
 
         # 创建连接blinkHeight上眼皮的reverse节点的名称规范
         self.reverse_node = self.eye_lid_upper.curve.replace ('crv' , 'reverse')
@@ -63,8 +63,8 @@ class Eye (chain.Chain) :
         self.eye_lid_lower.blink_curve = self.eye_lid_lower.skin_curve.replace ('Skin' , 'SkinBlink')
 
         # 创建眼内侧和眼外侧的控制器的名称规范
-        self.inn_ctrl = 'ctrl_{}_{}{}inn_001'.format (self.side , self.name , self.rtype)
-        self.out_ctrl = 'ctrl_{}_{}{}out_001'.format (self.side , self.name , self.rtype)
+        self.inn_ctrl = 'ctrl_{}_{}{}inn_001'.format (self.side , self.name , self.rigType)
+        self.out_ctrl = 'ctrl_{}_{}{}out_001'.format (self.side , self.name , self.rigType)
 
         # 所有曲线的集合
         self.crv_list = [self.blink_curve , self.eye_lid_upper.blink_curve , self.eye_lid_lower.blink_curve]

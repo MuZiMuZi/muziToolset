@@ -23,7 +23,7 @@ class Jaw (chainFK.ChainFK) :
         super (Jaw , self).__init__ (side , name , jnt_number , direction , length , jnt_parent ,
                                      ctrl_parent)
         self.shape = 'circle'
-        self.rtype = 'Jaw'
+        self.rigType = 'Jaw'
         self.radius = 0.4
 
         # 创建用于驱动下巴位移的偏移组

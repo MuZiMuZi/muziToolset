@@ -21,7 +21,7 @@ class Mouth (base.Base) :
     def __init__ (self , side , name , jnt_number = 7 , jnt_parent = None , ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
 
-        self.rtype = 'Mouth'
+        self.rigType = 'Mouth'
         # 生成上部分的嘴唇
         self.mouth_lip_upper = mouthLip.MouthLip (side = self.side , name = 'upper' , jnt_number = 10 ,
                                                   jnt_parent = None ,
@@ -38,8 +38,8 @@ class Mouth (base.Base) :
         self.mouth_lip_upper.create_namespace ()
         self.mouth_lip_lower.create_namespace ()
         ## 创建嘴内侧和嘴外侧的控制器
-        self.inn_ctrl = 'ctrl_{}_{}{}Inn_001'.format (self.side , self.name , self.rtype)
-        self.out_ctrl = 'ctrl_{}_{}{}Out_001'.format (self.side , self.name , self.rtype)
+        self.inn_ctrl = 'ctrl_{}_{}{}Inn_001'.format (self.side , self.name , self.rigType)
+        self.out_ctrl = 'ctrl_{}_{}{}Out_001'.format (self.side , self.name , self.rigType)
 
 
     def create_bpjnt (self) :

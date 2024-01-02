@@ -4,7 +4,7 @@ from ...module.chain import chainFK
 
 
 class Finger (chainFK.ChainFK) :
-    rtype = 'Finger'
+    rigType = 'Finger'
     radius = 2
 
 

@@ -35,19 +35,19 @@ class Base_Widget (base_ui.Ui_MainWindow , bone_widget.Bone_Widget , QMainWindow
     # 创建实例化的对象,然后生成对应的bp定位关节
     def build_setup (self) :
         # 创建实例化的对象
-        self.rtype = base.Base (self.side , self.name , self.jnt_number,self.jnt_parent , self.ctrl_parent)
-        self.rtype.build_setup ()
+        self.rigType = base.Base (self.side , self.name , self.jnt_number,self.jnt_parent , self.ctrl_parent)
+        self.rigType.build_setup ()
 
 
     # 根据base_widget和extra_widget返回的参数,创建绑定系统
     def build_rig (self) :
         # 删除已经创建好的绑定系统
-        self.rtype.build_rig ()
+        self.rigType.build_rig ()
 
 
     # 删除已经创建好的绑定系统
     def delete_rig (self) :
-        self.rtype.delete_rig ()
+        self.rigType.delete_rig ()
 
 
 def main () :

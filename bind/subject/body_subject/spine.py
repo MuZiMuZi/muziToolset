@@ -12,7 +12,7 @@ class Spine (chainIKFK.ChainIKFK) :
     def __init__ (self , side , name , jnt_number , direction , length = 10 , is_stretch = 1 , jnt_parent = None ,
                   ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , direction , length , is_stretch , jnt_parent , ctrl_parent)
-        self.rtype = 'Spine'
+        self.rigType = 'Spine'
 
 
 if __name__ == '__main__' :

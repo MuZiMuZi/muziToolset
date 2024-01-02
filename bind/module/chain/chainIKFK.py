@@ -15,7 +15,7 @@ class ChainIKFK (chain.Chain) :
     创建ikfk的关节链条的绑定系统
     由三条关节链组成，ik关节链条，fk关节链条和ikfk关节链条组成
     '''
-    rtype = 'ChainIKFK'
+    rigType = 'ChainIKFK'
 
 
     def __init__ (self , side , name , jnt_number , direction = [0 , 1 , 0] , length = 10 , is_stretch = 1 ,
@@ -26,7 +26,7 @@ class ChainIKFK (chain.Chain) :
         self.ik_chain = chainIK.ChainIK (side , name , jnt_number , direction , length , is_stretch)
 
         self.fk_chain = chainFK.ChainFK (side , name , jnt_number , direction , length)
-        self.rtype = 'ChainIKFK'
+        self.rigType = 'ChainIKFK'
         self.radius = 6
 
         super ().__init__ (side , name , jnt_number , length , jnt_parent = None , ctrl_parent = None)

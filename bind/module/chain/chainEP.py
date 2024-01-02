@@ -13,7 +13,7 @@ reload (pipelineUtils)
 
 
 class ChainEP (chain.Chain) :
-    rtype = 'ChainEP'
+    rigType = 'ChainEP'
 
 
     def __init__ (self , side , name , jnt_number , ctrl_number , curve , jnt_parent = None ,

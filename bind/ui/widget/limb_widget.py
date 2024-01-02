@@ -26,7 +26,7 @@ class Limb_Widget (limb_ui.Ui_MainWindow , chain_widget.Chain_Widget , QMainWind
     def __init__ (self , parent = None , *args , **kwargs) :
         '''
         # 针对身体四肢模块的绑定模块
-        rigtype_limb = ['arm' , 'leg' , 'spine']
+        rigType_limb = ['arm' , 'leg' , 'spine']
          # 组件需要的参数有[side,name,jnt_number,ikctrl_value,fkctrl_value,stretch_value,up_ribbon_value,down_ribbon_value,jnt_parent,ctrl_parent]
         使用设置初始化QListWidgetItem，如名称和图标，以及初始化base、额外的widget对象和ui文件，也对应要构建的绑定组件对象
 
@@ -48,8 +48,8 @@ class Limb_Widget (limb_ui.Ui_MainWindow , chain_widget.Chain_Widget , QMainWind
         # 传递参数时，参数本身是一个包含字符串的元组 ('[0, 1, 0]',)，而不是一个包含数字的列表 [0, 1, 0]。因此使用eval方法将其解析成为一个列表
         self.direction = eval (self.direction_cbox.currentText ())
 
-        # 根据self.rtype来判断是哪个模块的绑定
-        self.rtype = self.rtype_edit.text ()
+        # 根据self.rigType来判断是哪个模块的绑定
+        self.rigType = self.rigType_edit.text ()
         
         # 获取是否设置ik控制器的值
         self.ikCtrl_value = self.ikCtrl_cbox.isChecked ()
@@ -74,7 +74,7 @@ class Limb_Widget (limb_ui.Ui_MainWindow , chain_widget.Chain_Widget , QMainWind
 
 
     def build_setup (self) :
-        # 根据self.rtype来判断是需要生成哪个模块的绑定
+        # 根据self.rigType来判断是需要生成哪个模块的绑定
         if self.limb in self.limb_modules :
             limb_class = self.limb_modules [self.limb]
             self.limb = limb_class (self.side , self.name , self.jnt_number , self.direction , self.length ,

@@ -19,7 +19,7 @@ class Arm (limbIKFK.LimbIKFK) :
                   jnt_parent = None , ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , direction , is_stretch , length , limbtype , jnt_parent ,
                            ctrl_parent)
-        self.rtype = 'Arm'
+        self.rigType = 'Arm'
 
         # 初始化手指的模块
         self.hand_limb = hand.Hand (side , name , jnt_number , direction , length = 3 ,

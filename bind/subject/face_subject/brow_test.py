@@ -39,36 +39,36 @@ class Side_Brow (base.Base) :
 
         for i in range (4) :
             self.bpjnt_follow_list.append (
-                'bpjnt_{}_{}{}Follow_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+                'bpjnt_{}_{}{}Follow_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
             self.ctrl_follow_list.append (
-                'ctrl_{}_{}{}Follow_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+                'ctrl_{}_{}{}Follow_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
             self.connect_follow_list.append (
-                'connect_{}_{}{}Follow_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+                'connect_{}_{}{}Follow_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
             self.output_follow_list.append (
-                'output_{}_{}{}Follow_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+                'output_{}_{}{}Follow_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
 
             self.brow_r.bpjnt_follow_list.append (
-                'bpjnt_{}_{}{}Follow_{:03d}'.format ('r' , self.name , self.rtype , i + 1))
+                'bpjnt_{}_{}{}Follow_{:03d}'.format ('r' , self.name , self.rigType , i + 1))
             self.brow_r.ctrl_follow_list.append (
-                'ctrl_{}_{}{}Follow_{:03d}'.format ('r' , self.name , self.rtype , i + 1))
+                'ctrl_{}_{}{}Follow_{:03d}'.format ('r' , self.name , self.rigType , i + 1))
             self.brow_r.connect_follow_list.append (
-                'connect_{}_{}{}Follow_{:03d}'.format ('r' , self.name , self.rtype , i + 1))
+                'connect_{}_{}{}Follow_{:03d}'.format ('r' , self.name , self.rigType , i + 1))
             self.brow_r.output_follow_list.append (
-                'output_{}_{}{}Follow_{:03d}'.format ('r' , self.name , self.rtype , i + 1))
+                'output_{}_{}{}Follow_{:03d}'.format ('r' , self.name , self.rigType , i + 1))
 
         # 创建左边的眉毛曲线和曲面名称
         self.bpjnt_crv = self.bpjnt_list [0].replace ('bpjnt' , 'bpcrv')
         self.drive_crv = self.bpjnt_list [0].replace ('bpjnt' , 'crv')
         self.drive_suf = self.bpjnt_list [0].replace ('bpjnt' , 'suf')
         # 创建左边的眉毛的整体控制器
-        self.master_ctrl = ('ctrl_{}_{}{}Master_001'.format (self.side , self.name , self.rtype))
+        self.master_ctrl = ('ctrl_{}_{}{}Master_001'.format (self.side , self.name , self.rigType))
 
         # 创建右边的眉毛曲线和曲面名称
         self.brow_r.bpjnt_crv = self.brow_r.bpjnt_list [0].replace ('bpjnt' , 'bpcrv')
         self.brow_r.drive_crv = self.brow_r.bpjnt_list [0].replace ('bpjnt' , 'crv')
         self.brow_r.drive_suf = self.brow_r.bpjnt_list [0].replace ('bpjnt' , 'suf')
         # 创建右边的眉毛的整体控制器
-        self.brow_r.master_ctrl = ('ctrl_{}_{}{}Master_001'.format ('r' , self.name , self.rtype))
+        self.brow_r.master_ctrl = ('ctrl_{}_{}{}Master_001'.format ('r' , self.name , self.rigType))
 
 
     def create_bpjnt (self) :
@@ -128,13 +128,13 @@ class Side_Brow (base.Base) :
         # 创建左边的曲面上的毛囊和权重关节
         self.follicle_dict = pipelineUtils.Pipeline.create_joint_follicle_on_surface (self.drive_suf ,
                                                                                       self.side ,
-                                                                                      self.rtype ,
+                                                                                      self.rigType ,
                                                                                       jnt_number = 7)
 
         # 创建右边的曲面上的毛囊和权重关节
         self.brow_r.follicle_dict = pipelineUtils.Pipeline.create_joint_follicle_on_surface (self.brow_r.drive_suf ,
                                                                                              self.brow_r.side ,
-                                                                                             self.brow_r.rtype ,
+                                                                                             self.brow_r.rigType ,
                                                                                              jnt_number = 7)
 
 

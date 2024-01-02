@@ -11,7 +11,7 @@ reload (chain)
 
 
 class ChainFK (chain.Chain) :
-    rtype = 'ChainFK'
+    rigType = 'ChainFK'
     def __init__ (self , side , name , jnt_number , direction = None , length = 10 , jnt_parent = None ,
                   ctrl_parent = None) :
         u"""

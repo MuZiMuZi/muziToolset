@@ -21,7 +21,7 @@ class Leg (base.Base) :
                            ctrl_parent)
         self.side = side
         self.name = name
-        self.rtype = 'Leg'
+        self.rigType = 'Leg'
         self.axis = 'Z+'
         # 初始化脚掌的模块
         self.foot_limb = foot.Foot (side , name , jnt_number = 3 , length = 6 , jnt_parent = None ,

@@ -21,7 +21,7 @@ class Cheek (base.Base) :
     def __init__ (self , side , name , jnt_number = 8 , jnt_parent = None , ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
 
-        self.rtype = ''
+        self.rigType = ''
         self.radius = 0.1
         self.shape = 'pPlatonic'
 
@@ -48,34 +48,34 @@ class Cheek (base.Base) :
         for side in ['l' , 'r'] :
             for i in range (3) :
                 self.cheekbone_bpjnt_list.append (
-                    'bpjnt_{}_{}{}CheekBone_{:03d}'.format (side , self.name , self.rtype , i + 1))
+                    'bpjnt_{}_{}{}CheekBone_{:03d}'.format (side , self.name , self.rigType , i + 1))
                 self.cheekbone_jnt_list.append (
-                    'jnt_{}_{}{}CheekBone_{:03d}'.format (side , self.name , self.rtype , i + 1))
+                    'jnt_{}_{}{}CheekBone_{:03d}'.format (side , self.name , self.rigType , i + 1))
                 self.cheekbone_ctrl_list.append (
-                    'ctrl_{}_{}{}CheekBone_{:03d}'.format (side , self.name , self.rtype , i + 1))
+                    'ctrl_{}_{}{}CheekBone_{:03d}'.format (side , self.name , self.rigType , i + 1))
             # 法令纹层级名称整理，法令纹关节三个
             for i in range (3) :
                 self.nasolabial_bpjnt_list.append (
-                    'bpjnt_{}_{}{}Nasolabial_{:03d}'.format (side , self.name , self.rtype , i + 1))
+                    'bpjnt_{}_{}{}Nasolabial_{:03d}'.format (side , self.name , self.rigType , i + 1))
                 self.nasolabial_jnt_list.append (
-                    'jnt_{}_{}{}Nasolabial_{:03d}'.format (side , self.name , self.rtype , i + 1))
+                    'jnt_{}_{}{}Nasolabial_{:03d}'.format (side , self.name , self.rigType , i + 1))
                 self.nasolabial_ctrl_list.append (
-                    'ctrl_{}_{}{}Nasolabial_{:03d}'.format (side , self.name , self.rtype , i + 1))
+                    'ctrl_{}_{}{}Nasolabial_{:03d}'.format (side , self.name , self.rigType , i + 1))
 
             # 脸颊层级名称整理，脸颊关节两个
             for i in range (2) :
                 self.cheek_bpjnt_list.append (
-                    'bpjnt_{}_{}{}Cheek_{:03d}'.format (side , self.name , self.rtype , i + 1))
+                    'bpjnt_{}_{}{}Cheek_{:03d}'.format (side , self.name , self.rigType , i + 1))
                 self.cheek_jnt_list.append (
-                    'jnt_{}_{}{}Cheek_{:03d}'.format (side , self.name , self.rtype , i + 1))
+                    'jnt_{}_{}{}Cheek_{:03d}'.format (side , self.name , self.rigType , i + 1))
                 self.cheek_ctrl_list.append (
-                    'ctrl_{}_{}{}Cheek_{:03d}'.format (side , self.name , self.rtype , i + 1))
+                    'ctrl_{}_{}{}Cheek_{:03d}'.format (side , self.name , self.rigType , i + 1))
 
         # 整理所有的层级名称
         self.bpjnt_list = self.cheekbone_bpjnt_list + self.nasolabial_bpjnt_list + self.cheek_bpjnt_list
         self.jnt_list = self.cheekbone_jnt_list + self.nasolabial_jnt_list + self.cheek_jnt_list
         self.ctrl_list = self.cheekbone_ctrl_list + self.nasolabial_ctrl_list + self.cheek_ctrl_list
-        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rtype))
+        self.ctrl_grp = ('grp_{}_{}{}_001'.format (self.side , self.name , self.rigType))
 
 
     def create_bpjnt (self) :

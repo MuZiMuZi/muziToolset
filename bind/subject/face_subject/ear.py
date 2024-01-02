@@ -16,7 +16,7 @@ class Ear (chainFK.ChainFK) :
                   length = 5 , jnt_parent = None , ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , direction , length , jnt_parent , ctrl_parent)
         self.shape = 'circle'
-        self.rtype = 'Ear'
+        self.rigType = 'Ear'
         self.radius = 0.5
 
 

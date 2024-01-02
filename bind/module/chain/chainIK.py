@@ -10,7 +10,7 @@ reload (chain)
 
 
 class ChainIK (chain.Chain) :
-    rtype = 'ChainIK'
+    rigType = 'ChainIK'
 
 
     def __init__ (self , side , name , jnt_number , direction , length = 10 , is_stretch = 1 , jnt_parent = None ,
@@ -42,10 +42,10 @@ class ChainIK (chain.Chain) :
         self.ik_curve = None
         self.ik_handle = None
         for i in range (self.jnt_number) :
-            self.cluster_list.append ('cluster_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+            self.cluster_list.append ('cluster_{}_{}{}_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
 
-        self.ik_curve = ('curve_{}_{}{}_001'.format (self.side , self.name , self.rtype))
-        self.ik_handle = ('handle_{}_{}{}_001'.format (self.side , self.name , self.rtype))
+        self.ik_curve = ('curve_{}_{}{}_001'.format (self.side , self.name , self.rigType))
+        self.ik_handle = ('handle_{}_{}{}_001'.format (self.side , self.name , self.rigType))
 
 
     def build_ikSpline (self) :

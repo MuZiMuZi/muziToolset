@@ -196,7 +196,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         item_index = item.data (Qt.UserRole + 2)
 
         # 根据item的类型选择生成哪个界面
-        rigtype = config.Rigtype (item_text)
+        rigType = config.rigType (item_text)
         widget_mapping = {
             'bone' : bone_widget.main ,
             'base' : base_widget.main ,
@@ -206,15 +206,15 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
             'face' : face_widget.main ,
         }
 
-        if rigtype in widget_mapping :
+        if rigType in widget_mapping :
             # 使用映射表来获取对应的组件
-            item_widget = widget_mapping [rigtype] ()
-            item_widget.rtype_edit.setText ('{}'.format (item_text))
+            item_widget = widget_mapping [rigType] ()
+            item_widget.rigType_edit.setText ('{}'.format (item_text))
             item_widget.index_edit.setText ('{}'.format (item_index + 1))
             item.setData (Qt.UserRole , item_widget)
             self.setting_stack.addWidget (item_widget)
         else :
-            cmds.warning ("未知的rigtype：{}".format (rigtype))
+            cmds.warning ("未知的rigType：{}".format (rigType))
 
 
     # 根据提供的处理函数对self.custom_widget中的所有item进行处理
@@ -256,7 +256,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         for item in all_items :
             all_items_texts.append (item.text ())
             item_widget = item.data (Qt.UserRole)
-            module = item_widget.rtype_edit.text ()
+            module = item_widget.rigType_edit.text ()
             side = item_widget.side
             name = item_widget.name
 

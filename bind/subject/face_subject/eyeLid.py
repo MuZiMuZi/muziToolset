@@ -22,10 +22,10 @@ class EyeLid (base.Base) :
     def __init__ (self , side , name , jnt_number = 7 , jnt_parent = None , ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , jnt_parent , ctrl_parent)
         # 定位用的曲线
-        self.skin_curve = 'crv_{}_{}{}Skin_001'.format (self.side , self.name , self.rtype)
+        self.skin_curve = 'crv_{}_{}{}Skin_001'.format (self.side , self.name , self.rigType)
         self.name = name
         self.shape = 'cube'
-        self.rtype = 'EyeLid'
+        self.rigType = 'EyeLid'
         self.radius = 1
         self.jnt_number = jnt_number
         self.curve_jnt_list = []
@@ -52,16 +52,16 @@ class EyeLid (base.Base) :
         """
         super ().create_namespace ()
         # 整理与控制器有关的曲线的名称规范层级结构
-        self.curve = 'crv_{}_{}{}_001'.format (self.side , self.name , self.rtype)
+        self.curve = 'crv_{}_{}{}_001'.format (self.side , self.name , self.rigType)
         for index in range (self.jnt_number) :
-            self.curve_jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rtype , index + 1))
-        self.curve_jnt_grp = 'grp_{}_{}{}Jnts_001'.format (self.side , self.name , self.rtype)
-        self.curve_nodes_grp = 'grp_{}_{}{}RigNodes_001'.format (self.side , self.name , self.rtype)
+            self.curve_jnt_list.append ('jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rigType , index + 1))
+        self.curve_jnt_grp = 'grp_{}_{}{}Jnts_001'.format (self.side , self.name , self.rigType)
+        self.curve_nodes_grp = 'grp_{}_{}{}RigNodes_001'.format (self.side , self.name , self.rigType)
 
         # 整理与蒙皮关节有关的曲线名称规范层级结构
-        self.skin_curve = 'crv_{}_{}{}Skin_001'.format (self.side , self.name , self.rtype)
-        self.skin_jnt_grp = 'grp_{}_{}{}SkinJnts_001'.format (self.side , self.name , self.rtype)
-        self.skin_nodes_grp = 'grp_{}_{}{}SkinRigNodes_001'.format (self.side , self.name , self.rtype)
+        self.skin_curve = 'crv_{}_{}{}Skin_001'.format (self.side , self.name , self.rigType)
+        self.skin_jnt_grp = 'grp_{}_{}{}SkinJnts_001'.format (self.side , self.name , self.rigType)
+        self.skin_nodes_grp = 'grp_{}_{}{}SkinRigNodes_001'.format (self.side , self.name , self.rigType)
         # 整理眼睛的关节和向上方向的参考向量的名称规范层级结构
         self.eye_jnt = 'jnt_{}_Eye_001'.format (self.side)
         self.eye_up_loc = 'loc_{}_EyeUp_001'.format (self.side)
@@ -69,19 +69,19 @@ class EyeLid (base.Base) :
         # 添加眼袋的名称规范
         for i in range (3) :
             self.pouch_ctrl_list.append (
-                'ctrl_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+                'ctrl_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
             self.pouch_jnt_list.append (
-                'jnt_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
+                'jnt_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
             self.pouch_zero_list.append (
-                'zero_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rtype , i + 1))
-            self.pouch_bpjnt_list.append ('bpjnt_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rtype ,
+                'zero_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rigType , i + 1))
+            self.pouch_bpjnt_list.append ('bpjnt_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rigType ,
                                                                               i + 1))
-            self.pouch_output_list.append ('output_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rtype ,
+            self.pouch_output_list.append ('output_{}_{}{}Pouch_{:03d}'.format (self.side , self.name , self.rigType ,
                                                                                 i + 1))
-        self.pouch_master_ctrl = 'ctrl_{}_{}{}PouchMaster_001'.format (self.side , self.name , self.rtype)
+        self.pouch_master_ctrl = 'ctrl_{}_{}{}PouchMaster_001'.format (self.side , self.name , self.rigType)
         # 整理节点的层级结构
-        self.node_grp = 'grp_{}_{}{}Nodes_001'.format (self.side , self.name , self.rtype)
-        self.pouch_jnt_grp = 'grp_{}_{}{}PouchJnts_001'.format (self.side , self.name , self.rtype)
+        self.node_grp = 'grp_{}_{}{}Nodes_001'.format (self.side , self.name , self.rigType)
+        self.pouch_jnt_grp = 'grp_{}_{}{}PouchJnts_001'.format (self.side , self.name , self.rigType)
 
 
     def create_bpjnt (self) :
