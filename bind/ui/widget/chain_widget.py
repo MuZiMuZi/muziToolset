@@ -88,7 +88,7 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
             self.module.build_setup ()
 
 
-    # 根据base_widget和extra_widget返回的参数,创建绑定系统
+    # 根据返回的参数,创建绑定系统
     def build_rig (self) :
         # 创建绑定
         self.module.build_rig ()

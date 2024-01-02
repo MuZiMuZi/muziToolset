@@ -34,17 +34,19 @@ class Limb_Widget (limb_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow
         super ().__init__ (parent , *args , **kwargs)
 
 
-    # 分析base_widget中的输入并将其作为参数返回
-    def parse_base (self) :
-        super ().parse_base ()
+    # 分析组件里额外的输入内容输入并将其作为参数返回
+    def parse_extra (self) :
+        '''
+        分析组件里额外的输入内容输入并将其作为参数返回
+        '''
         # 获取是否设置ik控制器的值
-        self.ikCtrl_value = self.ikCtrl_cbox.value ()
+        self.ikCtrl_value = self.ikCtrl_cbox.isChecked ()
 
         # 获取是否设置fk控制器的值
-        self.fkCtrl_value = self.fkCtrl_cbox.value ()
+        self.fkCtrl_value = self.fkCtrl_cbox.isChecked ()
 
         # 获取是否设置拉伸的值
-        self.stretch_value = self.stretch_cbox.value ()
+        self.stretch_value = self.stretch_cbox.isChecked ()
 
         # 获取设置上部分ribbon关节的数量
         self.up_ribbon_value = self.up_ribbon_sbox.value ()
@@ -62,9 +64,21 @@ class Limb_Widget (limb_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow
     def build_setup (self) :
         # 根据self.module来判断是需要生成哪个模块的绑定
         if self.limb in self.limb_modules :
-            limb_class = self.chain_modules [self.module]
+            limb_class = self.limb_modules [self.limb]
             self.limb = limb_class (self.side , self.name , self.jnt_number , self.direction , self.length ,
                                     self.jnt_parent , self.ctrl_parent)
+
+
+    # 根据返回的参数,创建绑定系统
+    def build_rig (self) :
+        # 创建绑定
+        self.limb.build_rig ()
+
+
+    ## 删除绑定
+    def delete_rig (self) :
+        # 删除绑定
+        self.limb.delete_rig ()
 
 
 def main () :
