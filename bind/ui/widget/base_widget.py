@@ -100,8 +100,6 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
             # 2.将删除按钮从隐藏状态下显示出来，用于删除不需要的绑定
             self.delete_btn.setVisible (True)
             # 3，将获取组件的属性用来创建用于关节定位的bp关节
-            # 创建实例化的对象
-            self.module = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
             # 创建用来定位的bp关节
             self.build_setup ()
 
@@ -142,7 +140,11 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
 
 
         # 根据给定的参数信息，生成绑定准备，创建用来定位的bp关节
+
+
     def build_setup (self) :
+        # 创建实例化的对象
+        self.module = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
         self.module.build_setup ()
 
 
