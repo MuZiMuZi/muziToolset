@@ -64,15 +64,33 @@ def Rigtype (value) :
         str or None: 如果找到匹配的绑定类型，则返回相应的键；如果未找到匹配，则返回 None。
     """
     # 定义不同的绑定类型的值列表
-    rigtype_custom = ['base' , 'master' , 'brow' , 'nose' , 'cheek' , 'jaw']
-    rigtype_chain = ['chainFK' , 'chainIK' , 'chainIKFK' , 'finger' , 'spine' , 'hand' , 'tail' , 'spine']
+    # 针对多个关节点的绑定模块，
+    # 组件需要的参数有[side,name,jnt_number,jnt_parent,ctrl_parent]
+    rigtype_bone = ['bone']
+
+    # 针对不需要预设属性设置修改的绑定模块，
+    # 组件需要的参数有[side,name,jnt_parent,ctrl_parent]
+    rigtype_base = ['master' , 'brow' , 'nose' , 'cheek' , 'jaw' , 'hand' , 'foot']
+
+    # 针对关节链条的绑定模块，
+    # 组件需要的参数有[side,name,length,direction,jnt_parent,ctrl_parent]
+    rigtype_chain = ['chainFK' , 'chainIK' , 'chainIKFK' , 'finger' , 'tail']
+
+    # 针对EP曲线关节链条的绑定模块，
+    # 组件需要的参数有[side,name,jnt_number,ctrl_number,curve,jnt_parent,ctrl_parent]
     rigtype_chainEP = ['chainEP']
-    rigtype_limb = ['arm' , 'leg']
+
+    # 针对身体四肢模块的绑定模块，
+    # 组件需要的参数有[side,name,jnt_number,ikctrl_value,fkctrl_value,stretch_value,up_ribbon_value,down_ribbon_value,jnt_parent,ctrl_parent]
+    rigtype_limb = ['arm' , 'leg' , 'spine']
+
+    # 针对需要选择上下曲线的脸部的绑定模块，组件需要的参数有[side,name,up_curve,down_curve,jnt_parent,ctrl_parent]
     rigtype_face = ['eye' , 'mouth']
 
     # 创建一个包含绑定类型的字典
     rigtype_dict = {
-        'custom' : rigtype_custom ,
+        'bone' : rigtype_bone ,
+        'base' : rigtype_base ,
         'chain' : rigtype_chain ,
         'chainEP' : rigtype_chainEP ,
         'limb' : rigtype_limb ,
