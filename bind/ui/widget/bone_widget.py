@@ -72,11 +72,8 @@ class Bone_Widget (bone_ui.Ui_MainWindow , QMainWindow) :
         """
 
         # 获取填写的组件的参数信息
-        # 获取组件的属性
-        self.parse_base ()
-
-        # 判断组件需要给定数值的组件参数是否存在，如果都符合要求的话，则进行下一步
-        self.is_info_base = self.check_parameters ()
+        # 获取组件的属性并加以分析，如果全部符合条件的话则进行下一步
+        self.parse_input ()
 
         # 判断self.is_info_base的值是否存在，当这个值不存在的时候，说明参数收集还未完成，不进行下一步
         if not self.is_info_base :
@@ -91,18 +88,41 @@ class Bone_Widget (bone_ui.Ui_MainWindow , QMainWindow) :
             # 创建用来定位的bp关节
             self.build_setup ()
 
+    #分析组件里所有的属性输入，分析组件中基础的输入和额外的输入。然后调用 check_parameters 函数来检查是否满足组件的参数要求。
+    def parse_input (self) :
+        """
+        分析组件里所有的属性输入，分析组件中基础的输入和额外的输入。然后调用 check_parameters 函数来检查是否满足组件的参数要求。
+        """
 
-    # 分析base_widget中的输入并将其作为参数返回
+        # 分析组件中基础的输入并将其作为参数返回
+        self.parse_base ()
+
+        # 分析组件中额外的输入并将其作为参数返回
+        self.parse_extra ()
+
+        # 判断组件需要给定数值的组件参数是否存在或者是否符合要求，如果都符合要求的话，则进行下一步
+        self.check_parameters ()
+
+
+    # 分析组件中基础的输入并将其作为参数返回
     def parse_base (self , *args) :
         """
-        分析base_widget中的输入并将其作为参数返回
+        分析组件中基础的输入并将其作为参数返回
+        side，name，jnt_parent,ctrl_parent
         """
         self.name = self.name_edit.text ()
         self.side = self.side_cbox.currentText ()
-        self.jnt_number = self.jnt_number_sbox.value ()
         self.jnt_parent = self.jnt_parent_edit.text ()
         self.ctrl_parent = self.ctrl_parent_edit.text ()
 
+
+    # 分析组件里额外的输入内容输入并将其作为参数返回
+    def parse_extra (self) :
+        '''
+        分析组件里额外的输入内容输入并将其作为参数返回
+        '''
+        # 分析组件里额外的输入内容输入
+        self.jnt_number = self.jnt_number_sbox.value ()
         # 组件需要给定数值的输入，
         self.base_parameters = [self.side , self.jnt_number]
 
