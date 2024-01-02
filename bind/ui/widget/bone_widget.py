@@ -34,6 +34,9 @@ class Bone_Widget (bone_ui.Ui_MainWindow , QMainWindow) :
         self.delete_btn.setVisible (False)
         self.init_base ()
 
+        #组件需要给定数值的组件参数列表
+        self.base_parameters = []
+
         # 给定一个用来采集信息收集的变量,判断是否已经采集了所有组件的参数信息并返回，当参数信息没有采集完毕的时候不进行下一步
         self.is_info_base = False
 

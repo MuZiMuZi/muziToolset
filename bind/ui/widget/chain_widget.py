@@ -22,7 +22,6 @@ reload (finger)
 
 
 class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow) :
-
     # 添加其他模块类型
     chain_modules = {
         'chainFK' : chainFK.ChainFK ,
@@ -53,14 +52,16 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         # 添加轴向的参数的初始化
         for direciton in config.Direction :
             self.direction_cbox.addItem (str (direciton.value))
+    
 
 
-    # 分析base_widget中的输入并将其作为参数返回
-    def parse_base (self , *args) :
-        """
-        分析base_widget中的输入并将其作为参数返回
-        """
-        super ().parse_base ()
+    # 分析组件里额外的输入内容输入并将其作为参数返回
+    def parse_extra (self) :
+        '''
+        分析组件里额外的输入内容输入并将其作为参数返回
+        '''
+        # 分析组件里额外的输入内容输入
+        self.jnt_number = self.jnt_number_sbox.value()
         self.length = self.length_sbox.value ()
 
         # 传递参数时，参数本身是一个包含字符串的元组 ('[0, 1, 0]',)，而不是一个包含数字的列表 [0, 1, 0]。因此使用eval方法将其解析成为一个列表
