@@ -1,26 +1,12 @@
 # coding=utf-8
 # 导入所有需要的模块
-
-from __future__ import unicode_literals , print_function
-
-
-try :
-    from PySide2.QtCore import *
-    from PySide2.QtGui import *
-    from PySide2.QtWidgets import *
-    from PySide2 import __version__
-    from shiboken2 import wrapInstance
-
-except ImportError :
-    from PySide.QtCore import *
-    from PySide.QtGui import *
-    from PySide.QtWidgets import *
-    from PySide import __version__
-    from shiboken import wrapInstance
-from importlib import reload
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
+from shiboken2 import wrapInstance
+import maya.cmds as cmds
 from ... import config
 from ..setup import bone_ui
-import maya.cmds as cmds
 from ....bind.module.base import bone
 
 
@@ -30,6 +16,9 @@ reload (bone_ui)
 
 class Bone_Widget (bone_ui.Ui_MainWindow , QMainWindow) :
 
+    # 针对多个关节点的绑定模块，
+    # 组件需要的参数有[side,name,jnt_number,jnt_parent,ctrl_parent]
+    # rigtype_bone = ['bone']
 
     def __init__ (self , parent = None , *args , **kwargs) :
         '''
