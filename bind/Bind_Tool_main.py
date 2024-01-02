@@ -196,15 +196,35 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         item_index = item.data (Qt.UserRole + 2)
         # 判断item的类型，根据item的类型选择生成哪个界面
         rigtype = config.Rigtype (item_text)
+        # 针对多个关节点的绑定模块，
+        # 组件需要的参数有[side,name,jnt_number,jnt_parent,ctrl_parent]
+        # rigtype_bone = ['bone']
+        if rigtype == 'bone' :
+            item_widget = bone_widget.main ()
 
-        if rigtype == 'custom' :
+        # 针对不需要预设属性设置修改的绑定模块，
+        # 组件需要的参数有[side,name,jnt_parent,ctrl_parent]
+        elif rigtype == 'base' :
             item_widget = base_widget.main ()
+         # 针对关节链条的绑定模块，
+        # 组件需要的参数有[side,name,length,direction,jnt_parent,ctrl_parent]
         elif rigtype == 'chain' :
             item_widget = chain_widget.main ()
+
+        # 针对EP曲线关节链条的绑定模块，
+        # 组件需要的参数有[side,name,jnt_number,ctrl_number,curve,jnt_parent,ctrl_parent]
         elif rigtype == 'chainEP' :
             item_widget = chainEP_widget.main ()
+
+        # 针对身体四肢模块的绑定模块
+        # 组件需要的参数有[side,name,jnt_number,ikctrl_value,fkctrl_value,stretch_value,up_ribbon_value,down_ribbon_value,jnt_parent,ctrl_parent]
+        # rigtype_limb = ['arm' , 'leg' , 'spine']
         elif rigtype == 'limb' :
             item_widget = limb_widget.main ()
+
+        # 针对需要选择上下曲线的脸部的绑定模块，
+        # 组件需要的参数有[side,name,up_curve,down_curve,jnt_parent,ctrl_parent]
+        # rigtype_face = ['eye' , 'mouth']
         elif rigtype == 'face' :
             item_widget = face_widget.main ()
 

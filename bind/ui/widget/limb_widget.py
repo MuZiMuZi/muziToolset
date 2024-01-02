@@ -28,6 +28,13 @@ reload (base_widget)
 
 
 class Limb_Widget (limb_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow) :
+    # # 添加其他模块类型
+    # limb_modules = {
+    #     'arm' : chainFK.ChainFK ,
+    #     'leg' : chainIK.ChainIK ,
+    #     'spine' : chainIKFK.ChainIKFK ,
+    #
+    # }
 
 
     def __init__ (self , parent = None , *args , **kwargs) :
