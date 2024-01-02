@@ -257,25 +257,25 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_4.addWidget(self.ribbon_label)
 
-        self.up_number_sbox = QSpinBox(self.centralwidget)
-        self.up_number_sbox.setObjectName(u"up_number_sbox")
-        sizePolicy.setHeightForWidth(self.up_number_sbox.sizePolicy().hasHeightForWidth())
-        self.up_number_sbox.setSizePolicy(sizePolicy)
-        self.up_number_sbox.setFont(font3)
-        self.up_number_sbox.setMinimum(1)
-        self.up_number_sbox.setValue(5)
+        self.up_ribbon_sbox = QSpinBox(self.centralwidget)
+        self.up_ribbon_sbox.setObjectName(u"up_ribbon_sbox")
+        sizePolicy.setHeightForWidth(self.up_ribbon_sbox.sizePolicy().hasHeightForWidth())
+        self.up_ribbon_sbox.setSizePolicy(sizePolicy)
+        self.up_ribbon_sbox.setFont(font3)
+        self.up_ribbon_sbox.setMinimum(1)
+        self.up_ribbon_sbox.setValue(5)
 
-        self.horizontalLayout_4.addWidget(self.up_number_sbox)
+        self.horizontalLayout_4.addWidget(self.up_ribbon_sbox)
 
-        self.down_number_sbox = QSpinBox(self.centralwidget)
-        self.down_number_sbox.setObjectName(u"down_number_sbox")
-        sizePolicy.setHeightForWidth(self.down_number_sbox.sizePolicy().hasHeightForWidth())
-        self.down_number_sbox.setSizePolicy(sizePolicy)
-        self.down_number_sbox.setFont(font3)
-        self.down_number_sbox.setMinimum(1)
-        self.down_number_sbox.setValue(5)
+        self.down_ribbon_sbox = QSpinBox(self.centralwidget)
+        self.down_ribbon_sbox.setObjectName(u"down_ribbon_sbox")
+        sizePolicy.setHeightForWidth(self.down_ribbon_sbox.sizePolicy().hasHeightForWidth())
+        self.down_ribbon_sbox.setSizePolicy(sizePolicy)
+        self.down_ribbon_sbox.setFont(font3)
+        self.down_ribbon_sbox.setMinimum(1)
+        self.down_ribbon_sbox.setValue(5)
 
-        self.horizontalLayout_4.addWidget(self.down_number_sbox)
+        self.horizontalLayout_4.addWidget(self.down_ribbon_sbox)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_4)

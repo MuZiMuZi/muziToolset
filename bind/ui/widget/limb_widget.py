@@ -50,14 +50,15 @@ class Limb_Widget (limb_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow
         super ().add_connect ()
 
 
-    def parse_base (self , *args) :
-        """
-        分析base_widget中的输入并将其作为参数返回
-        """
-        self.name = self.name_edit.text ()
-        self.side = self.side_cbox.currentText ()
-        self.jnt_parent = self.jnt_parent_edit.text ()
-        self.ctrl_parent = self.ctrl_parent_edit.text ()
+    def parse_base (self ) :
+        super ().parse_base ()
+        # 分析base_widget中的输入并将其作为参数返回
+        self.ikCtrl_value = self.ikCtrl_cbox.value ()
+        self.fkCtrl_value = self.fkCtrl_cbox.value()
+        self.stretch_value = self.stretch_cbox.value()
+
+
+
 
 
     def build_setup (self) :
