@@ -52,12 +52,14 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         self.add_connect ()
 
 
+    # 初始化需要输入的参数
     def init_base (self) :
         # 初始化参数
         for side in config.Side :
             self.side_cbox.addItem (side.value)
 
 
+    # 用来添加连接的槽函数
     def add_connect (self) :
         u"""
         用来添加连接的槽函数
@@ -66,6 +68,7 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         # self.base_widget.delete_btn.clicked.connect (self.delete_setup)
 
 
+    # 连接创建按钮的槽函数，当按下创建按钮函数的时候会做以下操作
     def clicked_create_btn (self) :
         """
         连接创建按钮的槽函数，当按下创建按钮函数的时候会做以下操作
@@ -101,6 +104,7 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
             self.build_setup ()
 
 
+    # 分析base_widget中的输入并将其作为参数返回
     def parse_base (self , *args) :
         """
         分析base_widget中的输入并将其作为参数返回
@@ -112,7 +116,7 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         self.ctrl_parent = self.ctrl_parent_edit.text ()
 
         # 组件需要给定数值的输入，
-        self.base_parameters = [self.side , self.jnt_number ]
+        self.base_parameters = [self.side , self.jnt_number]
 
 
     # 判断组件需要给定数值的组件参数是否存在，如果都符合要求的话，则进行下一步
@@ -121,11 +125,13 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
             # 判断组件需要给定数值的组件参数是否存在
             if not parameter :
                 cmds.warning ("{}_{}_{}_{:03d}组件还未给定所有需要的参数，请重新设置".format (self.side , self.name ,
-                                                                                         self.module_edit.text () ,
-                                                                                         int(self.index_edit.text ())))
-                raise ValueError ("{}_{}_{}_{:03d}组件还未给定所有需要的参数，请重新设置".format (self.side , self.name ,
                                                                                              self.module_edit.text () ,
-                                                                                             int(self.index_edit.text ())))
+                                                                                             int (
+                                                                                                 self.index_edit.text ())))
+                raise ValueError ("{}_{}_{}_{:03d}组件还未给定所有需要的参数，请重新设置".format (self.side , self.name ,
+                                                                                                 self.module_edit.text () ,
+                                                                                                 int (
+                                                                                                     self.index_edit.text ())))
 
         # 如果都符合要求的话，则进行下一步
         self.is_info_base = True
