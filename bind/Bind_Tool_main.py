@@ -257,8 +257,8 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
             all_items_texts.append (item.text ())
             item_widget = item.data (Qt.UserRole)
             module = item_widget.rigType_edit.text ()
-            side = item_widget.side
-            name = item_widget.name
+            side = item_widget.side_cbox.currentText ()
+            name = item_widget.name_edit.text ()
 
             # 利用count方法来获取item的模块名称出现过的次数
             item_index = all_items_texts.count ('{}_{}'.format (side , item.text ()))
