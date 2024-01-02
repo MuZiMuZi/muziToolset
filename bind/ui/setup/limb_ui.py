@@ -78,16 +78,16 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.label)
 
-        self.module_edit = QLineEdit(self.centralwidget)
-        self.module_edit.setObjectName(u"module_edit")
-        self.module_edit.setEnabled(False)
-        sizePolicy.setHeightForWidth(self.module_edit.sizePolicy().hasHeightForWidth())
-        self.module_edit.setSizePolicy(sizePolicy)
+        self.rtype_edit = QLineEdit(self.centralwidget)
+        self.rtype_edit.setObjectName(u"rtype_edit")
+        self.rtype_edit.setEnabled(False)
+        sizePolicy.setHeightForWidth(self.rtype_edit.sizePolicy().hasHeightForWidth())
+        self.rtype_edit.setSizePolicy(sizePolicy)
         font3 = QFont()
         font3.setPointSize(18)
-        self.module_edit.setFont(font3)
+        self.rtype_edit.setFont(font3)
 
-        self.horizontalLayout.addWidget(self.module_edit)
+        self.horizontalLayout.addWidget(self.rtype_edit)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout)
@@ -139,6 +139,48 @@ class Ui_MainWindow(object):
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_8)
+
+        self.horizontalLayout_12 = QHBoxLayout()
+        self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
+        self.length_label = QLabel(self.centralwidget)
+        self.length_label.setObjectName(u"length_label")
+        sizePolicy.setHeightForWidth(self.length_label.sizePolicy().hasHeightForWidth())
+        self.length_label.setSizePolicy(sizePolicy)
+        self.length_label.setFont(font3)
+
+        self.horizontalLayout_12.addWidget(self.length_label)
+
+        self.length_sbox = QDoubleSpinBox(self.centralwidget)
+        self.length_sbox.setObjectName(u"length_sbox")
+        sizePolicy.setHeightForWidth(self.length_sbox.sizePolicy().hasHeightForWidth())
+        self.length_sbox.setSizePolicy(sizePolicy)
+        self.length_sbox.setValue(10.000000000000000)
+
+        self.horizontalLayout_12.addWidget(self.length_sbox)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_12)
+
+        self.horizontalLayout_10 = QHBoxLayout()
+        self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
+        self.direction_label = QLabel(self.centralwidget)
+        self.direction_label.setObjectName(u"direction_label")
+        sizePolicy.setHeightForWidth(self.direction_label.sizePolicy().hasHeightForWidth())
+        self.direction_label.setSizePolicy(sizePolicy)
+        self.direction_label.setFont(font3)
+
+        self.horizontalLayout_10.addWidget(self.direction_label)
+
+        self.direction_cbox = QComboBox(self.centralwidget)
+        self.direction_cbox.setObjectName(u"direction_cbox")
+        sizePolicy.setHeightForWidth(self.direction_cbox.sizePolicy().hasHeightForWidth())
+        self.direction_cbox.setSizePolicy(sizePolicy)
+        self.direction_cbox.setFont(font3)
+
+        self.horizontalLayout_10.addWidget(self.direction_cbox)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_10)
 
         self.horizontalLayout_5 = QHBoxLayout()
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
@@ -327,9 +369,11 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.side_label.setText(QCoreApplication.translate("MainWindow", u"side\uff1a", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"module\uff1a", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"rtype\uff1a", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"name\uff1a", None))
         self.index_label.setText(QCoreApplication.translate("MainWindow", u"index:", None))
+        self.length_label.setText(QCoreApplication.translate("MainWindow", u"length:", None))
+        self.direction_label.setText(QCoreApplication.translate("MainWindow", u"direction:", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"jnt_parent\uff1a", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"ctrl_parent\uff1a", None))
         self.ikCtrl_label.setText(QCoreApplication.translate("MainWindow", u"ikCtrl:", None))

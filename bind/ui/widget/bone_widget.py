@@ -138,12 +138,12 @@ class Bone_Widget (bone_ui.Ui_MainWindow , QMainWindow) :
             # 判断组件需要给定数值的组件参数是否存在
             if not parameter :
                 cmds.warning ("{}_{}_{}_{:03d}组件还未给定所有需要的参数，请重新设置".format (self.side , self.name ,
-                                                                                             self.module_edit.text () ,
+                                                                                             self.rtype_edit.text () ,
                                                                                              int (
                                                                                                  self.index_edit.text ())))
                 self.is_info_base = False
                 raise ValueError ("{}_{}_{}_{:03d}组件还未给定所有需要的参数，请重新设置".format (self.side , self.name ,
-                                                                                                 self.module_edit.text () ,
+                                                                                                 self.rtype_edit.text () ,
                                                                                                  int (
                                                                                                      self.index_edit.text ())))
 
@@ -155,19 +155,19 @@ class Bone_Widget (bone_ui.Ui_MainWindow , QMainWindow) :
 
     def build_setup (self) :
         # 创建实例化的对象
-        self.module = bone.Bone (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
-        self.module.build_setup ()
+        self.rtype = bone.Bone (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
+        self.rtype.build_setup ()
 
 
     # 根据base_widget和extra_widget返回的参数,创建绑定系统
     def build_rig (self) :
         # 删除已经创建好的绑定系统
-        self.module.build_rig ()
+        self.rtype.build_rig ()
 
 
     # 删除已经创建好的绑定系统
     def delete_rig (self) :
-        self.module.delete_rig ()
+        self.rtype.delete_rig ()
 
 
 def main () :

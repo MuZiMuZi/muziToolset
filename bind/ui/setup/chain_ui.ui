@@ -98,7 +98,7 @@
            <enum>Qt::LeftToRight</enum>
           </property>
           <property name="text">
-           <string>module：</string>
+           <string>rtype：</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -106,7 +106,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="module_edit">
+         <widget class="QLineEdit" name="rtype_edit">
           <property name="enabled">
            <bool>false</bool>
           </property>

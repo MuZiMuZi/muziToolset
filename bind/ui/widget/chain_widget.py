@@ -67,11 +67,11 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         # 传递参数时，参数本身是一个包含字符串的元组 ('[0, 1, 0]',)，而不是一个包含数字的列表 [0, 1, 0]。因此使用eval方法将其解析成为一个列表
         self.direction = eval (self.direction_cbox.currentText ())
 
-        # 根据self.module来判断是哪个模块的绑定
-        self.module = self.module_edit.text ()
+        # 根据self.rtype来判断是哪个模块的绑定
+        self.rtype = self.rtype_edit.text ()
 
         # 将需要检查参数存在的值封装到列表中
-        parameters_to_add = [self.length , self.direction , self.module]
+        parameters_to_add = [self.length , self.direction , self.rtype]
 
         # 使用 extend() 方法将列表添加到 base_parameters 中，后续通过check_parameters这个方法判断这些参数是否有值
         self.base_parameters.extend (parameters_to_add)
@@ -79,25 +79,25 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
 
     # 判断是需要生成哪个模块的绑定
     def build_setup (self) :
-        # 根据self.module来判断是需要生成哪个模块的绑定
-        if self.module in self.chain_modules :
-            module_class = self.chain_modules [self.module]
-            self.module = module_class (self.side , self.name , self.jnt_number , self.direction , self.length ,
+        # 根据self.rtype来判断是需要生成哪个模块的绑定
+        if self.rtype in self.chain_modules :
+            module_class = self.chain_modules [self.rtype]
+            self.rtype = module_class (self.side , self.name , self.jnt_number , self.direction , self.length ,
                                         self.jnt_parent , self.ctrl_parent)
 
-            self.module.build_setup ()
+            self.rtype.build_setup ()
 
 
     # 根据返回的参数,创建绑定系统
     def build_rig (self) :
         # 创建绑定
-        self.module.build_rig ()
+        self.rtype.build_rig ()
 
 
     ## 删除绑定
     def delete_rig (self) :
         # 删除绑定
-        self.module.delete_rig ()
+        self.rtype.delete_rig ()
 
 
 def main () :

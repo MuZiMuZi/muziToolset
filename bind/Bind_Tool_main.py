@@ -209,7 +209,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         if rigtype in widget_mapping :
             # 使用映射表来获取对应的组件
             item_widget = widget_mapping [rigtype] ()
-            item_widget.module_edit.setText ('{}'.format (item_text))
+            item_widget.rtype_edit.setText ('{}'.format (item_text))
             item_widget.index_edit.setText ('{}'.format (item_index + 1))
             item.setData (Qt.UserRole , item_widget)
             self.setting_stack.addWidget (item_widget)
@@ -256,7 +256,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         for item in all_items :
             all_items_texts.append (item.text ())
             item_widget = item.data (Qt.UserRole)
-            module = item_widget.module_edit.text ()
+            module = item_widget.rtype_edit.text ()
             side = item_widget.side
             name = item_widget.name
 
