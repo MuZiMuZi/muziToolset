@@ -83,7 +83,8 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         # 使用 extend() 方法将列表添加到 base_parameters 中，后续判断这些参数是否有值
         self.base_parameters.extend (parameters_to_add)
 
-    #判断是需要生成哪个模块的绑定
+
+    # 判断是需要生成哪个模块的绑定
     def build_setup (self) :
         # 根据self.module来判断是需要生成哪个模块的绑定
         if self.module in self.chain_modules :
