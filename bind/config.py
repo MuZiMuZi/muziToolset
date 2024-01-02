@@ -45,12 +45,12 @@ class Direction (Enum) :
     """
     定义模块的轴向。
     """
-    y_positive = [0 , 1 , 0]
-    y_negative = [0 , -1 , 0]
-    x_positive = [1 , 0 , 0]
     x_negative = [-1 , 0 , 0]
-    z_positive = [0 , 0 , 1]
+    x_positive = [1 , 0 , 0]
+    y_negative = [0 , -1 , 0]
+    y_positive = [0 , 1 , 0]
     z_negative = [0 , 0 , -1]
+    z_positive = [0 , 0 , 1]
 
 
 def Rigtype (value) :

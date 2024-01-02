@@ -4,6 +4,8 @@ from ...module.chain import chainFK
 
 
 class Finger (chainFK.ChainFK) :
+    rtype = 'Finger'
+    radius = 2
 
 
     def __init__ (self , side , name , jnt_number = 4 , direction = [-1 , 0 , 0] , length = 10 , jnt_parent = None ,
@@ -11,9 +13,6 @@ class Finger (chainFK.ChainFK) :
         if side == 'r' :
             direction = [1 , 0 , 0]
         super ().__init__ (side , name , jnt_number , direction , length , jnt_parent , ctrl_parent)
-
-        self.rtype = 'Finger'
-        self.radius = 2
 
 
     def create_ctrl (self) :

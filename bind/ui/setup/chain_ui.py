@@ -159,7 +159,7 @@ class Ui_MainWindow(object):
         self.jnt_number_sbox.setSizePolicy(sizePolicy)
         self.jnt_number_sbox.setFont(font4)
         self.jnt_number_sbox.setMinimum(2)
-        self.jnt_number_sbox.setValue(5)
+        self.jnt_number_sbox.setValue(4)
 
         self.horizontalLayout_4.addWidget(self.jnt_number_sbox)
 
