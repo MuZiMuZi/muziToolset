@@ -69,7 +69,7 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         # 根据self.module来判断是哪个模块的绑定
         self.module = self.module_edit.text ()
 
-        # 将两个参数封装到列表中
+        # 将需要检查参数存在的值封装到列表中
         parameters_to_add = [self.length , self.direction , self.module]
 
         # 使用 extend() 方法将列表添加到 base_parameters 中，后续通过check_parameters这个方法判断这些参数是否有值

@@ -225,7 +225,7 @@
            </font>
           </property>
           <property name="text">
-           <string>up_curve</string>
+           <string>up_curve：</string>
           </property>
          </widget>
         </item>
