@@ -88,7 +88,7 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         self.parse_base ()
 
         # 判断组件需要给定数值的组件参数是否存在，如果都符合要求的话，则进行下一步
-        self.check_parameters ()
+        self.is_info_base = self.check_parameters ()
 
         # 判断self.is_info_base的值是否存在，当这个值不存在的时候，说明参数收集还未完成，不进行下一步
         if not self.is_info_base :
@@ -100,6 +100,8 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
             # 2.将删除按钮从隐藏状态下显示出来，用于删除不需要的绑定
             self.delete_btn.setVisible (True)
             # 3，将获取组件的属性用来创建用于关节定位的bp关节
+            # 创建实例化的对象
+            self.module = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
             # 创建用来定位的bp关节
             self.build_setup ()
 
@@ -119,8 +121,10 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
         self.base_parameters = [self.side , self.jnt_number]
 
 
-    # 判断组件需要给定数值的组件参数是否存在，如果都符合要求的话，则进行下一步
+    # 判断组件需要给定数值的组件参数是否存在或者是否符合要求，如果都符合要求的话，则进行下一步
     def check_parameters (self) :
+        self.is_info_base = True  # 变量用于判断所有参数是否都符合要求
+
         for parameter in self.base_parameters :
             # 判断组件需要给定数值的组件参数是否存在
             if not parameter :
@@ -128,33 +132,29 @@ class Base_Widget (base_ui.Ui_MainWindow , QMainWindow) :
                                                                                              self.module_edit.text () ,
                                                                                              int (
                                                                                                  self.index_edit.text ())))
+                self.is_info_base = False
                 raise ValueError ("{}_{}_{}_{:03d}组件还未给定所有需要的参数，请重新设置".format (self.side , self.name ,
                                                                                                  self.module_edit.text () ,
                                                                                                  int (
                                                                                                      self.index_edit.text ())))
 
-        # 如果都符合要求的话，则进行下一步
-        self.is_info_base = True
+        return self.is_info_base
 
 
-    # 根据给定的参数信息，生成绑定准备，创建用来定位的bp关节
+        # 根据给定的参数信息，生成绑定准备，创建用来定位的bp关节
     def build_setup (self) :
-        # # 生成定位关节系统
-        self.setup = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
-        self.setup.build_setup ()
+        self.module.build_setup ()
 
 
     # 根据base_widget和extra_widget返回的参数,创建绑定系统
     def build_rig (self) :
         # 删除已经创建好的绑定系统
-        self.rig = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
-        self.rig.build_rig ()
+        self.module.build_rig ()
 
 
     # 删除已经创建好的绑定系统
     def delete_rig (self) :
-        self.delete = base.Base (self.side , self.name , self.jnt_number , self.jnt_parent , self.ctrl_parent)
-        self.delete.delete_rig ()
+        self.module.delete_rig ()
 
 
 def main () :
