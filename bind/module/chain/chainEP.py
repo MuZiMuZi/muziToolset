@@ -50,6 +50,7 @@ class ChainEP (chain.Chain) :
             self.cvs.append (integer)
 
 
+    # 根据获取的属性输入生成定位的bp关节
     def create_bpjnt (self) :
         """
         创建定位的bp关节
@@ -64,6 +65,7 @@ class ChainEP (chain.Chain) :
             self.bpjnt_parent = bpjnt
 
 
+    # 根据bp关节的定位生成绑定关节
     def create_joint (self) :
         # 根据bp关节创建新的关节
         for bpjnt , jnt in zip (self.bpjnt_list , self.jnt_list) :
@@ -75,6 +77,7 @@ class ChainEP (chain.Chain) :
         cmds.setAttr (self.bpjnt_list [0] + '.visibility' , 0)
 
 
+    # 创建控制器组
     def create_ctrl (self) :
         self.set_shape (self.shape)
         # 创建整体的控制器层级组
@@ -86,12 +89,13 @@ class ChainEP (chain.Chain) :
         for index in self.cvs :
             ctrl_instance = controlUtils.Control.create_ctrl (
                 self.ctrl_list [index] , shape = self.shape , radius = self.radius ,
-                axis = 'X+' , pos = self.jnt_list [index] , parent = self.ctrl_parent
+                axis = 'X+' , pos = self.jnt_list [index] , parent = self.ctrl_grp
             )
             # 将控制器实例添加到列表中
             self.ctrl_instances.append (ctrl_instance)
 
 
+    # 添加约束和连接
     def add_constraint (self) :
         '''
         在关节和控制器之间添加平滑衰减约束
@@ -99,31 +103,38 @@ class ChainEP (chain.Chain) :
         for cv_index in self.cvs :
             # 开头的关节进行约束
             if cv_index == 0 :
-                cmds.pointConstraint (self.ctrl_list [cv_index] , self.jnt_list [cv_index] , mo = 1)
-                cmds.orientConstraint (self.ctrl_list [cv_index] , self.jnt_list [cv_index] , mo = 1)
-
+                self._add_end_constraint (cv_index , self.jnt_list [cv_index])
             # 结尾的关节进行约束
             elif cv_index == self.cvs [-1] :
-                cmds.pointConstraint (self.ctrl_list [cv_index] , self.jnt_list [-1] , mo = 1)
-                cmds.orientConstraint (self.ctrl_list [cv_index] , self.jnt_list [-1])
+                self._add_end_constraint (cv_index , self.jnt_list [-1])
 
             # 中间的关节进行约束
             else :
-                for jnt_index in range (self.cvs.index (cv_index) , self.cvs.index (cv_index) + 1) :
-                    head = cv_index
-                    tail = self.cvs [self.cvs.index (cv_index) + 1]
-                    for jnt in range (head , tail + 1) :
-                        gap = 1.00 / (tail - head)
+                self._add_middle_constraint (cv_index)
 
-                        # 设置前后两端的控制器影响关节的权重值
-                        cmds.pointConstraint (self.ctrl_list [head] , self.jnt_list [jnt] ,
-                                              w = 1 - ((jnt - head) * gap) , mo = 1)
-                        cmds.pointConstraint (self.ctrl_list [tail] , self.jnt_list [jnt] ,
-                                              w = (jnt - head) * gap , mo = 1)
-                        cmds.orientConstraint (self.ctrl_list [head] , self.jnt_list [jnt] ,
-                                               w = 1 - ((jnt - head) * gap) , mo = 1)
-                        cmds.orientConstraint (self.ctrl_list [tail] , self.jnt_list [jnt] ,
-                                               w = (jnt - head) * gap , mo = 1)
+
+    # 对首尾两端的关节进行平滑约束
+    def _add_end_constraint (self , cv_index , jnt) :
+        cmds.pointConstraint (self.ctrl_list [cv_index] , jnt , mo = 1)
+        cmds.orientConstraint (self.ctrl_list [cv_index] , jnt , mo = 1)
+
+
+    # 对中间的关节进行平滑约束
+    def _add_middle_constraint (self , cv_index) :
+        head = cv_index
+        tail = self.cvs [self.cvs.index (cv_index) + 1]
+
+        for jnt_index in range (head , tail + 1) :
+            gap = 1.00 / (tail - head)
+
+            cmds.pointConstraint (self.ctrl_list [head] , self.jnt_list [jnt_index] ,
+                                  w = 1 - ((jnt_index - head) * gap) , mo = 1)
+            cmds.pointConstraint (self.ctrl_list [tail] , self.jnt_list [jnt_index] ,
+                                  w = (jnt_index - head) * gap , mo = 1)
+            cmds.orientConstraint (self.ctrl_list [head] , self.jnt_list [jnt_index] ,
+                                   w = 1 - ((jnt_index - head) * gap) , mo = 1)
+            cmds.orientConstraint (self.ctrl_list [tail] , self.jnt_list [jnt_index] ,
+                                   w = (jnt_index - head) * gap , mo = 1)
 
 
 if __name__ == '__main__' :

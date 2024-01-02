@@ -7,6 +7,7 @@ from PySide2.QtWidgets import *
 
 from . import chain_widget
 from ..setup import chainEP_ui
+from ... import config
 from ....bind.module.chain import chainEP
 from ....core import pipelineUtils
 
@@ -31,6 +32,14 @@ class ChainEP_Widget (chainEP_ui.Ui_MainWindow , chain_widget.Chain_Widget , QMa
         self.length = None
         self.direction = None
         super ().__init__ (parent , *args , **kwargs)
+
+
+    # 初始化参数
+    def init_base (self) :
+        # 继承base_widget.Base_Widget的init_base方法
+        # 初始化参数
+        for side in config.Side :
+            self.side_cbox.addItem (side.value)
 
 
     # 用来添加连接的槽函数
