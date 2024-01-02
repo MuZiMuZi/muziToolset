@@ -80,7 +80,7 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         # 将两个参数封装到列表中
         parameters_to_add = [self.length , self.direction , self.module]
 
-        # 使用 extend() 方法将列表添加到 base_parameters 中，后续判断这些参数是否有值
+        # 使用 extend() 方法将列表添加到 base_parameters 中，后续通过check_parameters这个方法判断这些参数是否有值
         self.base_parameters.extend (parameters_to_add)
 
 
