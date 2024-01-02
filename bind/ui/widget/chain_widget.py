@@ -54,13 +54,16 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         super ().__init__ (parent , *args , **kwargs)
 
 
+    # 初始化参数
     def init_base (self) :
         # 继承base_widget.Base_Widget的init_base方法
         super ().init_base ()
+        # 添加轴向的参数的初始化
         for direciton in config.Direction :
             self.direction_cbox.addItem (str (direciton.value))
 
 
+    # 分析base_widget中的输入并将其作为参数返回
     def parse_base (self , *args) :
         """
         分析base_widget中的输入并将其作为参数返回
@@ -75,12 +78,12 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         self.module = self.module_edit.text ()
 
         # 将两个参数封装到列表中
-        parameters_to_add = [self.length , self.direction,self.module]
+        parameters_to_add = [self.length , self.direction , self.module]
 
         # 使用 extend() 方法将列表添加到 base_parameters 中，后续判断这些参数是否有值
         self.base_parameters.extend (parameters_to_add)
 
-
+    #判断是需要生成哪个模块的绑定
     def build_setup (self) :
         # 根据self.module来判断是需要生成哪个模块的绑定
         if self.module in self.chain_modules :
