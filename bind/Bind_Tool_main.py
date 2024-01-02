@@ -88,6 +88,9 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         # 连接创建绑定的槽函数
         self.build_button.clicked.connect (self.clicked_build_btn)
 
+        # 连接删除绑定的槽函数
+        self.delete_button.clicked.connect (self.clicked_delete_btn)
+
 
     # 用来连接proxy_widget双击所连接的功能槽函数,双击的时候将模版库的模版添加到自定义模块里
     def clicked_proxy_widget_dbclk (self) :
@@ -227,6 +230,20 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         for item in all_items :
             item_widget = item.data (Qt.UserRole)
             item_widget.build_rig ()
+
+
+    def clicked_delete_btn (self) :
+        """
+        连接删除绑定按钮的槽函数
+        """
+
+        # 1.获取self.custom_widget里所拥有的所有item
+        all_items = self.custom_widget.findItems ("*" , Qt.MatchWildcard)
+
+        # 对所有item做循环遍历，根据item里面的信息来创建对应的绑定结构
+        for item in all_items :
+            item_widget = item.data (Qt.UserRole)
+            item_widget.delete_rig ()
 
 
     def triggered_action_Refersh (self) :
