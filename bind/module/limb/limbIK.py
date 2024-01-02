@@ -112,20 +112,20 @@ class LimbIK (chainIK.ChainIK) :
         cmds.setAttr (f'{self.midIK_jnt_loc}.visibility' , 0)
 
         # 连接loc和曲线来表示位置
-        ikpv_curve = cmds.curve (degree = 1 , point = [(0.0 , 0.0 , 0.0) , (0.0 , 0.0 , 0.0)] , name = self.pv_curve)
+        self.ikpv_curve = cmds.curve (degree = 1 , point = [(0.0 , 0.0 , 0.0) , (0.0 , 0.0 , 0.0)] , name = self.pv_curve)
         self.midIK_jnt_loc_shape = cmds.listRelatives (self.midIK_jnt_loc , shapes = True) [0]
         self.midIK_pv_loc_shape = cmds.listRelatives (self.midIK_pv_loc , shapes = True) [0]
-        ikpv_curve_shape = cmds.listRelatives (ikpv_curve , shapes = True) [0]
+        self.ikpv_curve_shape = cmds.listRelatives (self.ikpv_curve , shapes = True) [0]
 
         # 连接曲线与loc
-        cmds.connectAttr (f'{self.midIK_jnt_loc_shape}.worldPosition[0]' , f'{ikpv_curve_shape}.controlPoints[0]')
-        cmds.connectAttr (f'{self.midIK_pv_loc_shape}.worldPosition[0]' , f'{ikpv_curve_shape}.controlPoints[1]')
+        cmds.connectAttr (f'{self.midIK_jnt_loc_shape}.worldPosition[0]' , f'{self.ikpv_curve_shape}.controlPoints[0]')
+        cmds.connectAttr (f'{self.midIK_pv_loc_shape}.worldPosition[0]' , f'{self.ikpv_curve_shape}.controlPoints[1]')
 
         # 设置曲线的可见性
-        cmds.setAttr (f'{ikpv_curve_shape}.overrideEnabled' , 1)
-        cmds.setAttr (f'{ikpv_curve_shape}.overrideDisplayType' , 2)
-        cmds.setAttr (f'{ikpv_curve}.inheritsTransform' , 0)
-        cmds.parent (ikpv_curve , self.ctrl_grp)
+        cmds.setAttr (f'{self.ikpv_curve_shape}.overrideEnabled' , 1)
+        cmds.setAttr (f'{self.ikpv_curve_shape}.overrideDisplayType' , 2)
+        cmds.setAttr (f'{self.ikpv_curve}.inheritsTransform' , 0)
+        cmds.parent (self.ikpv_curve , self.ctrl_grp)
 
 
     # 创建local控制器给手腕
@@ -212,50 +212,50 @@ class LimbIK (chainIK.ChainIK) :
         # 1.创建起始端和末端关节控制器的定位locator，并将其与对应控制器匹配。
         # 创建起始端关节控制器的定位loctor
         self.startIK_pos_loc = cmds.spaceLocator (name = self.startIK_pos_loc) [0]
-        startIK_pos_loc_shape = cmds.listRelatives (self.startIK_pos_loc , shapes = True) [0]
+        self.startIK_pos_loc_shape = cmds.listRelatives (self.startIK_pos_loc , shapes = True) [0]
         cmds.matchTransform (self.startIK_pos_loc , self.ctrl_list [0])
         cmds.setAttr (self.startIK_pos_loc + '.v' , 0)
         hierarchyUtils.Hierarchy.parent (child_node = self.startIK_pos_loc , parent_node = self.output_list [0])
 
         # 创建末端关节控制器的定位loctor
         self.endIK_pos_loc = cmds.spaceLocator (name = self.endIK_pos_loc) [0]
-        endIK_pos_loc_shape = cmds.listRelatives (self.endIK_pos_loc , shapes = True) [0]
+        self.endIK_pos_loc_shape = cmds.listRelatives (self.endIK_pos_loc , shapes = True) [0]
         cmds.setAttr (self.endIK_pos_loc + '.v' , 0)
         cmds.matchTransform (self.endIK_pos_loc , self.ctrl_list [-1])
         hierarchyUtils.Hierarchy.parent (child_node = self.endIK_pos_loc , parent_node = self.output_list [-1])
 
         # 2.创建计算距离的distanceBetween节点，计算起始端关节到末端控制器的距离。
         # 创建计算距离的distween节点，来计算首端关节到中端控制器的距离
-        disBtw_node = cmds.createNode ('distanceBetween' , name = self.endIK_pos_loc.replace ('loc' , 'disBtw'))
-        cmds.connectAttr (startIK_pos_loc_shape + '.worldPosition' , disBtw_node + '.point1')
-        cmds.connectAttr (endIK_pos_loc_shape + '.worldPosition' , disBtw_node + '.point2')
+        self.disBtw_node = cmds.createNode ('distanceBetween' , name = self.endIK_pos_loc.replace ('loc' , 'disBtw'))
+        cmds.connectAttr (self.startIK_pos_loc_shape + '.worldPosition' , self.disBtw_node + '.point1')
+        cmds.connectAttr (self.endIK_pos_loc_shape + '.worldPosition' , self.disBtw_node + '.point2')
 
         # 3.计算原本关节的距离值，将现有关节距离减去原关节的距离得到拉伸的距离。
         # 计算原本关节的距离值
-        midIK_jnt_value = cmds.getAttr (self.jnt_list [1] + '.translateX')
-        endIK_jnt_value = cmds.getAttr (self.jnt_list [-1] + '.translateX')
-        distance_value = midIK_jnt_value * self.side_value + endIK_jnt_value * self.side_value
+        self.midIK_jnt_value = cmds.getAttr (self.jnt_list [1] + '.translateX')
+        self.endIK_jnt_value = cmds.getAttr (self.jnt_list [-1] + '.translateX')
+        self.distance_value = self.midIK_jnt_value * self.side_value + self.endIK_jnt_value * self.side_value
 
         # 将现有的关节距离减去原本关节的距离得到拉伸的距离
-        reduce_node = cmds.createNode ('addDoubleLinear' , name = self.jnt_list [0].replace ('jnt' , 'reduce'))
-        cmds.connectAttr (disBtw_node + '.distance' , reduce_node + '.input1')
-        cmds.setAttr (reduce_node + '.input2' , distance_value * -1 * self.z_value)
+        self.reduce_node = cmds.createNode ('addDoubleLinear' , name = self.jnt_list [0].replace ('jnt' , 'reduce'))
+        cmds.connectAttr (self.disBtw_node + '.distance' , self.reduce_node + '.input1')
+        cmds.setAttr (self.reduce_node + '.input2' , self.distance_value * -1 * self.z_value)
 
         # 4.将拉伸的距离均匀分配给首端和末端的拉伸关节。
         # 将变化的数值除以二，均匀分配给对应的拉伸关节
-        mult_node = cmds.createNode ('multDoubleLinear' , name = self.jnt_list [0].replace ('jnt' , 'mult'))
-        cmds.connectAttr (reduce_node + '.output' , mult_node + '.input1')
-        cmds.setAttr (mult_node + '.input2' , 0.5 * self.side_value * self.z_value)
+        self.mult_node = cmds.createNode ('multDoubleLinear' , name = self.jnt_list [0].replace ('jnt' , 'mult'))
+        cmds.connectAttr (self.reduce_node + '.output' , self.mult_node + '.input1')
+        cmds.setAttr (self.mult_node + '.input2' , 0.5 * self.side_value * self.z_value)
 
         # 将变化的数值连接给对应的拉伸关节
-        add_midIK_jnt_node = cmds.createNode ('addDoubleLinear' , name = self.jnt_list [1].replace ('jnt' , 'add'))
-        add_endIK_jnt_node = cmds.createNode ('addDoubleLinear' , name = self.jnt_list [-1].replace ('jnt' , 'add'))
+        self.add_midIK_jnt_node = cmds.createNode ('addDoubleLinear' , name = self.jnt_list [1].replace ('jnt' , 'add'))
+        self.add_endIK_jnt_node = cmds.createNode ('addDoubleLinear' , name = self.jnt_list [-1].replace ('jnt' , 'add'))
 
-        cmds.connectAttr (mult_node + '.output' , add_midIK_jnt_node + '.input1')
-        cmds.setAttr (add_midIK_jnt_node + '.input2' , midIK_jnt_value)
+        cmds.connectAttr (self.mult_node + '.output' , self.add_midIK_jnt_node + '.input1')
+        cmds.setAttr (self.add_midIK_jnt_node + '.input2' , self.midIK_jnt_value)
 
-        cmds.connectAttr (mult_node + '.output' , add_endIK_jnt_node + '.input1')
-        cmds.setAttr (add_endIK_jnt_node + '.input2' , endIK_jnt_value)
+        cmds.connectAttr (self.mult_node + '.output' , self.add_endIK_jnt_node + '.input1')
+        cmds.setAttr (self.add_endIK_jnt_node + '.input2' , self.endIK_jnt_value)
 
 
     # 用来创建拉伸的控制器的开启与混合连接
@@ -271,14 +271,14 @@ class LimbIK (chainIK.ChainIK) :
 
         # 1.创建判断节点，当拉伸距离大于0时才进行拉伸，否则保持原关节长度。
         # 创建一个判断节点，当变化的数值大于0时才进行拉伸
-        cond_node = cmds.createNode ('condition' , name = self.jnt_list [0].replace ('jnt' , 'cond'))
-        cmds.setAttr (cond_node + '.operation' , 2)
-        cmds.connectAttr (reduce_node + '.output' , cond_node + '.firstTerm')
-        cmds.connectAttr (add_midIK_jnt_node + '.output' , cond_node + '.colorIfTrueR')
-        cmds.connectAttr (add_endIK_jnt_node + '.output' , cond_node + '.colorIfTrueG')
+        self.cond_node = cmds.createNode ('condition' , name = self.jnt_list [0].replace ('jnt' , 'cond'))
+        cmds.setAttr (self.cond_node + '.operation' , 2)
+        cmds.connectAttr (self.reduce_node + '.output' , self.cond_node + '.firstTerm')
+        cmds.connectAttr (self.add_midIK_jnt_node + '.output' , self.cond_node + '.colorIfTrueR')
+        cmds.connectAttr (self.add_endIK_jnt_node + '.output' , self.cond_node + '.colorIfTrueG')
 
-        cmds.setAttr (cond_node + '.colorIfFalseR' , midIK_jnt_value)
-        cmds.setAttr (cond_node + '.colorIfFalseG' , endIK_jnt_value)
+        cmds.setAttr (self.cond_node + '.colorIfFalseR' , self.midIK_jnt_value)
+        cmds.setAttr (self.cond_node + '.colorIfFalseG' , self.endIK_jnt_value)
 
         # 2.为末端控制器添加一个stretch属性，动画师根据需要可以选择是否拉伸。
         # 给控制器创建一个拉伸的属性，动画师根据需要可以选择是否拉伸
@@ -287,22 +287,22 @@ class LimbIK (chainIK.ChainIK) :
 
         # 3.创建blendColors节点用来混合拉伸和非拉伸状态的关节长度。
         # 创建blendcolor节点用来承载拉伸的设置
-        stretch_blend_node = cmds.createNode ('blendColors' , name = self.ctrl_list [-1].replace ('ctrl' , 'blend'))
-        cmds.connectAttr (self.ctrl_list [-1] + '.stretch' , stretch_blend_node + '.blender')
+        self.stretch_blend_node = cmds.createNode ('blendColors' , name = self.ctrl_list [-1].replace ('ctrl' , 'blend'))
+        cmds.connectAttr (self.ctrl_list [-1] + '.stretch' , self.stretch_blend_node + '.blender')
 
         # 4.将拉伸后的关节长度连接到blendColors节点，用于混合时的非拉伸状态。
         # 设置blendcolor节点混合值为0的时候，也就是没有拉伸的时候，color2R 和 color2G 的值是原关节的长度
         # 连接拉伸后的关节长度
-        stretch_divBtw_node = cmds.createNode ('multiplyDivide' ,
-                                               name = stretch_blend_node.replace ('blend' , 'div'))
+        self.stretch_divBtw_node = cmds.createNode ('multiplyDivide' ,
+                                               name = self.stretch_blend_node.replace ('blend' , 'div'))
 
-        cmds.setAttr (stretch_divBtw_node + '.operation' , 2)
-        cmds.setAttr (stretch_divBtw_node + '.input1X' , midIK_jnt_value)
-        cmds.setAttr (stretch_divBtw_node + '.input1Y' , endIK_jnt_value)
-        cmds.connectAttr (stretch_divBtw_node + '.outputX' , stretch_blend_node + '.color2R')
-        cmds.connectAttr (stretch_divBtw_node + '.outputY' , stretch_blend_node + '.color2G')
-        cmds.connectAttr (cond_node + '.outColorR' , stretch_blend_node + '.color1R')
-        cmds.connectAttr (cond_node + '.outColorG' , stretch_blend_node + '.color1G')
+        cmds.setAttr (self.stretch_divBtw_node + '.operation' , 2)
+        cmds.setAttr (self.stretch_divBtw_node + '.input1X' , self.midIK_jnt_value)
+        cmds.setAttr (self.stretch_divBtw_node + '.input1Y' , self.endIK_jnt_value)
+        cmds.connectAttr (self.stretch_divBtw_node + '.outputX' , self.stretch_blend_node + '.color2R')
+        cmds.connectAttr (self.stretch_divBtw_node + '.outputY' , self.stretch_blend_node + '.color2G')
+        cmds.connectAttr (self.cond_node + '.outColorR' , self.stretch_blend_node + '.color1R')
+        cmds.connectAttr (self.cond_node + '.outColorG' , self.stretch_blend_node + '.color1G')
 
 
     # 用来创建极向量锁定的属性连接
@@ -321,54 +321,54 @@ class LimbIK (chainIK.ChainIK) :
         # 给控制器创建一个极向量锁定的属性，动画师根据需要可以选择是否进行极向量锁定
         cmds.addAttr (self.ctrl_list [-1] , longName = 'PvLock' , attributeType = 'double' ,
                       niceName = u'极向量锁定' , minValue = 0 , maxValue = 1 , defaultValue = 0 , keyable = 1)
-        pv_loc_shape = cmds.listRelatives (self.pv_loc , shapes = True) [0]
+        self.pv_loc_shape = cmds.listRelatives (self.pv_loc , shapes = True) [0]
 
         # 2.创建另一个blendColors节点用来混合极向量锁定和非锁定状态的关节长度。
         # 创建blendColors节点用来承载极向量锁定的设置
-        pvLock_blend_node = cmds.createNode ('blendColors' , name = self.pv_ctrl.replace ('ctrl' , 'blend'))
-        cmds.connectAttr (self.ctrl_list [-1] + '.PvLock' , pvLock_blend_node + '.blender')
+        self.pvLock_blend_node  = cmds.createNode ('blendColors' , name = self.pv_ctrl.replace ('ctrl' , 'blend'))
+        cmds.connectAttr (self.ctrl_list [-1] + '.PvLock' , self.pvLock_blend_node  + '.blender')
 
         # 3.计算起始端到极向量控制器和末端到极向量控制器的距离，并将结果乘以侧边和Z轴的值，用于极向量锁定状态的混合。
         # 获取起始控制器，极向量控制器，末端控制器层级下用来定位位置的loc.(startIK_pos_loc,self.midIK_pv_loc,endIK_pos_loc)
         # 创建对应的disteween节点来获取距离
         # 计算起始控制器到极向量控制器的距离
-        upper_disBtw_node = cmds.createNode ('distanceBetween' ,
+        self.upper_disBtw_node = cmds.createNode ('distanceBetween' ,
                                              name = self.startIK_pos_loc.replace ('loc' , 'disBtw_upper'))
-        cmds.connectAttr (startIK_pos_loc_shape + '.worldPosition' , upper_disBtw_node + '.point1')
-        cmds.connectAttr (pv_loc_shape + '.worldPosition' , upper_disBtw_node + '.point2')
+        cmds.connectAttr (self.startIK_pos_loc_shape + '.worldPosition' , self.upper_disBtw_node + '.point1')
+        cmds.connectAttr (self.pv_loc_shape + '.worldPosition' , self.upper_disBtw_node + '.point2')
 
         # 创建一个相乘节点来连接
-        mult_upper_disBtw_node = cmds.createNode ('multDoubleLinear' ,
-                                                  name = upper_disBtw_node.replace ('disBtw_lower' , 'mult'))
-        cmds.connectAttr (upper_disBtw_node + '.distance' , mult_upper_disBtw_node + '.input1')
-        cmds.setAttr (mult_upper_disBtw_node + '.input2' , self.side_value * self.z_value)
+        self.mult_upper_disBtw_node = cmds.createNode ('multDoubleLinear' ,
+                                                  name = self.upper_disBtw_node.replace ('disBtw_lower' , 'mult'))
+        cmds.connectAttr (self.upper_disBtw_node + '.distance' , self.mult_upper_disBtw_node + '.input1')
+        cmds.setAttr (self.mult_upper_disBtw_node + '.input2' , self.side_value * self.z_value)
 
         # 计算末端控制器到极向量控制器的距离
-        lower_disBtw_node = cmds.createNode ('distanceBetween' ,
+        self.lower_disBtw_node = cmds.createNode ('distanceBetween' ,
                                              name = self.startIK_pos_loc.replace ('loc' , 'disBtw_lower'))
-        cmds.connectAttr (pv_loc_shape + '.worldPosition' , lower_disBtw_node + '.point1')
-        cmds.connectAttr (endIK_pos_loc_shape + '.worldPosition' , lower_disBtw_node + '.point2')
+        cmds.connectAttr (self.pv_loc_shape + '.worldPosition' , self.lower_disBtw_node + '.point1')
+        cmds.connectAttr (self.endIK_pos_loc_shape + '.worldPosition' , self.lower_disBtw_node + '.point2')
         # 创建一个相乘节点来连接
-        mult_lower_disBtw_node = cmds.createNode ('multDoubleLinear' ,
-                                                  name = lower_disBtw_node.replace ('disBtw_lower' , 'mult'))
-        cmds.connectAttr (lower_disBtw_node + '.distance' , mult_lower_disBtw_node + '.input1')
-        cmds.setAttr (mult_lower_disBtw_node + '.input2' , self.side_value * self.z_value)
+        self.mult_lower_disBtw_node = cmds.createNode ('multDoubleLinear' ,
+                                                  name = self.lower_disBtw_node.replace ('disBtw_lower' , 'mult'))
+        cmds.connectAttr (self.lower_disBtw_node + '.distance' , self.mult_lower_disBtw_node + '.input1')
+        cmds.setAttr (self.mult_lower_disBtw_node + '.input2' , self.side_value * self.z_value)
 
         # 4.将真实的距离和拉伸后的距离分别连接到极向量锁定的blendColors节点，用于混合时的非锁定状态。
         # 将真实的距离连接给极向量锁定的blendcolor节点
         # 原理：当极向量锁定值为1打开的时候，启用的是color1的数值。当极向量锁定值为0关闭的时候，启用的是color2的数值
 
-        cmds.connectAttr (mult_upper_disBtw_node + '.output' , pvLock_blend_node + '.color1R')
-        cmds.connectAttr (mult_lower_disBtw_node + '.output' , pvLock_blend_node + '.color1G')
+        cmds.connectAttr (self.mult_upper_disBtw_node + '.output' , self.pvLock_blend_node  + '.color1R')
+        cmds.connectAttr (self.mult_lower_disBtw_node + '.output' , self.pvLock_blend_node  + '.color1G')
 
         # 将原先关节拉伸后的距离连接给极向量锁定的blendcolor节点的color2
-        cmds.connectAttr (stretch_blend_node + '.outputR' , pvLock_blend_node + '.color2R')
-        cmds.connectAttr (stretch_blend_node + '.outputG' , pvLock_blend_node + '.color2G')
+        cmds.connectAttr (self.stretch_blend_node + '.outputR' , self.pvLock_blend_node  + '.color2R')
+        cmds.connectAttr (self.stretch_blend_node + '.outputG' , self.pvLock_blend_node  + '.color2G')
 
         # 5.最终将混合后的关节长度连接到原关节。
         # 把混合后的关节长度连接给原关节
-        cmds.connectAttr (pvLock_blend_node + '.outputR' , self.jnt_list [1] + '.translateX')
-        cmds.connectAttr (pvLock_blend_node + '.outputG' , self.jnt_list [-1] + '.translateX')
+        cmds.connectAttr (self.pvLock_blend_node  + '.outputR' , self.jnt_list [1] + '.translateX')
+        cmds.connectAttr (self.pvLock_blend_node  + '.outputG' , self.jnt_list [-1] + '.translateX')
 
 
 if __name__ == '__main__' :
