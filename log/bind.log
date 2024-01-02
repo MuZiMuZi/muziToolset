@@ -982,3 +982,36 @@ abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT147/Cache/QiZi_H
 abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT136/Cache/LaoLv_LaoLv_geo_grp_abc.abc
 2023-12-29 14:50:49,360 -root - INFO - 
 abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT136/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc
+2024-01-02 14:40:01,101 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT190\Hair\EP002_SC001_CUT190_v001.mov输出完成
+2024-01-02 14:40:30,485 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT190\Hair\EP002_SC001_CUT190_v001.mov输出完成
+2024-01-02 14:44:06,584 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT190\Hair\EP002_SC001_CUT190_v001.mov输出完成
+2024-01-02 14:46:57,375 -root - WARNING - 确保一个3D视图面板被激活
+2024-01-02 14:47:14,154 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT190\Hair\EP002_SC001_CUT190_v001.mov输出完成
+2024-01-02 14:49:42,508 -root - WARNING - 确保一个3D视图面板被激活
+2024-01-02 14:49:53,149 -root - WARNING - 确保一个3D视图面板被激活
+2024-01-02 14:50:10,862 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT190\Hair\EP002_SC001_CUT190_v001.mov输出完成
+2024-01-02 14:54:32,944 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT190\Hair\EP002_SC001_CUT190_v001.mov输出完成
+2024-01-02 14:55:29,639 -root - INFO - AbcImport -mode import -connect "Patching_geo_grp_abc" "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/EP002_SC001_CUT190_Patch.abc"
+2024-01-02 14:55:29,657 -root - INFO - 
+导入abc:AbcImport -mode import -connect "Patching_geo_grp_abc" "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/EP002_SC001_CUT190_Patch.abc"
+2024-01-02 14:55:29,905 -root - INFO - 
+导出Maya文件 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/EP002_SC001_CUT190_Patch.ma
+2024-01-02 14:55:53,309 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/EP002_SC001_CUT190_Patch.abc
+2024-01-02 14:56:04,554 -root - INFO - 没有需要缓存的物体
+2024-01-02 14:56:38,264 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/RenZhu_RenZhu_geo_grp_abc.abc"
+2024-01-02 14:56:38,264 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/RenZhu_RenZhu_geo_grp_abc.abc"
+2024-01-02 14:56:38,966 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc"
+2024-01-02 14:56:38,966 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc"
+2024-01-02 14:56:38,973 -root - INFO - AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/QiZi_Bai_QiZi_Bai_geo_grp_abc.abc"
+2024-01-02 14:56:38,973 -root - INFO - 
+导入abc:AbcImport -mode import "P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/QiZi_Bai_QiZi_Bai_geo_grp_abc.abc"
+2024-01-02 14:56:39,509 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/RenZhu_RenZhu_geo_grp_abc.abc
+2024-01-02 14:56:39,543 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/QiShe_Prop_QiShe_Prop_geo_grp_abc.abc
+2024-01-02 14:56:39,577 -root - INFO - 
+abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/QiZi_Bai_QiZi_Bai_geo_grp_abc.abc
+2024-01-02 15:43:50,729 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT066\Hair\EP002_SC001_CUT066.mov输出完成

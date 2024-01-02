@@ -146,7 +146,7 @@ class Bone (object) :
     # 生成的绑定类型
     rtype = 'bone'
     shape = 'circle'
-    radius = 5
+    radius = 10
 
     def __init__ (self , side , name , jnt_number , jnt_parent = None , ctrl_parent = None) :
         """
@@ -388,7 +388,7 @@ class Bone (object) :
         for ctrl , jnt in zip (self.ctrl_list , self.jnt_list) :
             self.ctrl = controlUtils.Control.create_ctrl (ctrl , shape = self.shape ,
                                                           radius = self.radius ,
-                                                          axis = 'X+' , pos = jnt ,
+                                                          axis = 'Z+' , pos = jnt ,
                                                           parent = self.ctrl_grp)
             # 判断所创建的控制器的边，如果边为_r_的话，offset组需要修改镜像
             if self.side == 'r' :

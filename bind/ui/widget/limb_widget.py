@@ -34,6 +34,7 @@ class Limb_Widget (limb_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow
         super ().__init__ (parent , *args , **kwargs)
 
 
+    # 分析base_widget中的输入并将其作为参数返回
     def parse_base (self) :
         super ().parse_base ()
         # 获取是否设置ik控制器的值
