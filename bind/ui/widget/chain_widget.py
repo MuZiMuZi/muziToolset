@@ -1,26 +1,12 @@
 # coding=utf-8
 # 导入所有需要的模块
-
-from __future__ import unicode_literals , print_function
-
-
-try :
-    from PySide2.QtCore import *
-    from PySide2.QtGui import *
-    from PySide2.QtWidgets import *
-    from PySide2 import __version__
-    from shiboken2 import wrapInstance
-
-except ImportError :
-    from PySide.QtCore import *
-    from PySide.QtGui import *
-    from PySide.QtWidgets import *
-    from PySide import __version__
-    from shiboken import wrapInstance
 from importlib import reload
-from ... import config
+
+from PySide2.QtWidgets import *
+
 from ..setup import chain_ui
 from ..widget import base_widget
+from ... import config
 from ....bind.module.base import base
 from ....bind.module.chain import chainFK , chainIK , chainIKFK
 from ....bind.subject.body_subject import finger
@@ -32,7 +18,7 @@ reload (chain_ui)
 reload (chainFK)
 reload (chainIK)
 reload (chainIKFK)
-reload(finger)
+reload (finger)
 
 
 class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWindow) :
@@ -41,7 +27,7 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         'chainFK' : chainFK.ChainFK ,
         'chainIK' : chainIK.ChainIK ,
         'chainIKFK' : chainIKFK.ChainIKFK ,
-        'finger':finger.Finger
+        'finger' : finger.Finger
 
     }
 
@@ -64,7 +50,6 @@ class Chain_Widget (chain_ui.Ui_MainWindow , base_widget.Base_Widget , QMainWind
         # 添加轴向的参数的初始化
         for direciton in config.Direction :
             self.direction_cbox.addItem (str (direciton.value))
-
 
 
     # 分析base_widget中的输入并将其作为参数返回

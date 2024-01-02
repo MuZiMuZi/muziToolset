@@ -1,12 +1,12 @@
 # coding=utf-8
 # 导入所有需要的模块
-from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtWidgets import *
-from shiboken2 import wrapInstance
+from importlib import reload
+
 import maya.cmds as cmds
-from ... import config
+from PySide2.QtWidgets import *
+
 from ..setup import bone_ui
+from ... import config
 from ....bind.module.base import bone
 
 
