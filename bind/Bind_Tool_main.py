@@ -206,7 +206,7 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         # 组件需要的参数有[side,name,jnt_parent,ctrl_parent]
         elif rigtype == 'base' :
             item_widget = base_widget.main ()
-         # 针对关节链条的绑定模块，
+        # 针对关节链条的绑定模块，
         # 组件需要的参数有[side,name,length,direction,jnt_parent,ctrl_parent]
         elif rigtype == 'chain' :
             item_widget = chain_widget.main ()
@@ -238,32 +238,29 @@ class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
         self.setting_stack.addWidget (item_widget)
 
 
+    def process_items (self , process_function) :
+        """
+        根据提供的处理函数对self.custom_widget中的所有item进行处理
+        """
+        all_items = self.custom_widget.findItems ("*" , Qt.MatchWildcard)
+
+        for item in all_items :
+            item_widget = item.data (Qt.UserRole)
+            process_function (item_widget)
+
+
     def clicked_build_btn (self) :
         """
         连接创建绑定按钮的槽函数
         """
-
-        # 1.获取self.custom_widget里所拥有的所有item
-        all_items = self.custom_widget.findItems ("*" , Qt.MatchWildcard)
-
-        # 对所有item做循环遍历，根据item里面的信息来创建对应的绑定结构
-        for item in all_items :
-            item_widget = item.data (Qt.UserRole)
-            item_widget.build_rig ()
+        self.process_items (lambda item_widget : item_widget.build_rig ())
 
 
     def clicked_delete_btn (self) :
         """
         连接删除绑定按钮的槽函数
         """
-
-        # 1.获取self.custom_widget里所拥有的所有item
-        all_items = self.custom_widget.findItems ("*" , Qt.MatchWildcard)
-
-        # 对所有item做循环遍历，根据item里面的信息来创建对应的绑定结构
-        for item in all_items :
-            item_widget = item.data (Qt.UserRole)
-            item_widget.delete_rig ()
+        self.process_items (lambda item_widget : item_widget.delete_rig ())
 
 
     def triggered_action_Refersh (self) :
