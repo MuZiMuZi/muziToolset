@@ -7,6 +7,7 @@ reload (chainFK)
 
 
 class LimbFK (chainFK.ChainFK) :
+    rigType = 'LimbFK'
 
 
     def __init__ (self , side , name , jnt_number = 3 , direction = [-1 , 0 , 0] , length = 10 , jnt_parent = None ,
@@ -16,11 +17,8 @@ class LimbFK (chainFK.ChainFK) :
         limbtype(str):给定的limbtype 是手臂还是腿部
         """
         super ().__init__ (side , name , jnt_number , direction , length , jnt_parent , ctrl_parent)
-        self.rigType = 'LimbFK'
 
 
-    def create_joint (self) :
-        super ().create_joint ()
 
 
 if __name__ == '__main__' :
