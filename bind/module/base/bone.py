@@ -431,6 +431,11 @@ class Bone (object) :
         """
         删除已经创建好的绑定系统
         """
+        #删除已经创建好的定位关节
+        for bpjnt in self.bpjnt_list:
+            if cmds.objExists(bpjnt):
+                cmds.delete(bpjnt)
+
         # 删除已经创建好的关节
         for jnt in self.jnt_list :
             if cmds.objExists (jnt) :
