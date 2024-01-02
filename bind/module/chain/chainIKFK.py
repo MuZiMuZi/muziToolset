@@ -183,6 +183,14 @@ class ChainIKFK (chain.Chain) :
                                 cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 0)
 
 
+    def delete_rig (self) :
+        super ().delete_rig ()
+        #删除IKFK的绑定
+        self.ik_chain.delete_rig()
+        self.fk_chain.delete_rig()
+
+
+
 if __name__ == '__main__' :
     def build_setup () :
         chain_ikfk = chainIKFK.ChainIKFK (side = 'l' , name = 'zz' , jnt_number = 5 , direction = [1 , 0 , 0] ,

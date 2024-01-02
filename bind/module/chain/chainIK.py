@@ -70,14 +70,14 @@ class ChainIK (chain.Chain) :
         # 去掉第二个点和倒数第二个点，第二个点和倒数第二个曲线点是用来平滑曲线的，并不用来设置关节点位置
         modified_curve_cvs = cvs [:1] + cvs [2 :-2] + cvs [-1 :]
 
-        #从self.ik_curve第二个点和倒数第二个点后的列表里创建cluster用来控制曲线的位置
+        # 从self.ik_curve第二个点和倒数第二个点后的列表里创建cluster用来控制曲线的位置
         for jnt_number , cv in enumerate (modified_curve_cvs) :
             cluster = cmds.cluster (cv , n = self.cluster_list [jnt_number]) [-1]
             cmds.parent (cluster , self.ctrl_parent)
             cmds.setAttr (cluster + '.v' , 0)
 
         cmds.setAttr (self.ik_handle + '.v' , 0)
-        cmds.parent (self.ik_handle , self.ctrl_parent)
+        cmds.parent (self.ik_handle , self.ik_curve , self.ctrl_grp)
 
 
     # 获取ikhandle的输入曲线
