@@ -33,6 +33,7 @@ class LimbIK (chainIK.ChainIK) :
             self.z_value = -1
 
 
+    # 根据获取的输入信息，创建名称规范组
     def create_namespace (self) :
         super ().create_namespace ()
 
@@ -49,6 +50,7 @@ class LimbIK (chainIK.ChainIK) :
         self.endIK_jnt = 'jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rigType , self.jnt_number + 1)
 
 
+    # 创建用来蒙皮的绑定关节
     def create_joint (self) :
         super ().create_joint ()
         # 隐藏bp的定位关节
@@ -57,88 +59,6 @@ class LimbIK (chainIK.ChainIK) :
         con = cmds.parentConstraint (self.jnt_list [-1] , self.endIK_jnt , mo = False)
         cmds.delete (con)
         cmds.setAttr (self.endIK_jnt + '.translateX' , 5 * self.side_value)
-
-
-    # 创建ikHandle
-    def build_ik_handle (self) :
-        """
-        创建ikHandle
-        """
-        # 创建ikSolverHandle
-        self.ik_handle = cmds.ikHandle (name = self.ik_handle , startJoint = self.jnt_list [0] ,
-                                        endEffector = self.jnt_list [2] ,
-                                        sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True) [0]
-
-        # 创建末端的ikspineHandle
-        self.endIK_handle = cmds.ikHandle (name = self.endIK_handle , startJoint = self.jnt_list [2] ,
-                                           endEffector = self.endIK_jnt ,
-                                           sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True) [0]
-
-        cmds.setAttr (f'{self.ik_handle}.v' , 0)
-        cmds.setAttr (f'{self.endIK_handle}.v' , 0)
-
-
-    # 创建极向量控制器
-    def create_pv_ctrl (self) :
-        """
-        创建极向量控制器
-        """
-        self.pv_ctrl = controlUtils.Control.create_ctrl (self.pv_ctrl , shape = 'ball' ,
-                                                         radius = self.radius * 0.6 ,
-                                                         axis = 'X+' , pos = self.jnt_list [1] ,
-                                                         parent = self.ctrl_grp)
-
-        # 移动极向量控制器组的位置
-        cmds.setAttr (f'{self.pv_ctrl.replace ("ctrl" , "zero")}.translateZ' , -10 * self.z_value * self.side_value)
-
-
-    # 创建ik极向量控制器的曲线指示器
-    def create_ik_pv_curve (self) :
-        """
-        创建ik极向量控制器的曲线指示器
-        """
-        # 创建pv控制器的loc来记录位置
-        self.midIK_pv_loc = cmds.spaceLocator (name = self.pv_loc) [0]
-        cmds.matchTransform (self.midIK_pv_loc , self.pv_ctrl.replace ('ctrl' , 'output') , position = True ,
-                             rotation = True ,
-                             scale = True)
-        cmds.parent (self.midIK_pv_loc , self.pv_ctrl)
-        cmds.setAttr (f'{self.midIK_pv_loc}.visibility' , 0)
-
-        # 创建pvjnt的loc来记录位置
-        self.midIK_jnt_loc = cmds.spaceLocator (name = self.jnt_loc) [0]
-        cmds.matchTransform (self.midIK_jnt_loc , self.jnt_list [1] , position = True , rotation = True , scale = True)
-        cmds.parent (self.midIK_jnt_loc , self.jnt_list [1])
-        cmds.setAttr (f'{self.midIK_jnt_loc}.visibility' , 0)
-
-        # 连接loc和曲线来表示位置
-        self.ikpv_curve = cmds.curve (degree = 1 , point = [(0.0 , 0.0 , 0.0) , (0.0 , 0.0 , 0.0)] , name = self.pv_curve)
-        self.midIK_jnt_loc_shape = cmds.listRelatives (self.midIK_jnt_loc , shapes = True) [0]
-        self.midIK_pv_loc_shape = cmds.listRelatives (self.midIK_pv_loc , shapes = True) [0]
-        self.ikpv_curve_shape = cmds.listRelatives (self.ikpv_curve , shapes = True) [0]
-
-        # 连接曲线与loc
-        cmds.connectAttr (f'{self.midIK_jnt_loc_shape}.worldPosition[0]' , f'{self.ikpv_curve_shape}.controlPoints[0]')
-        cmds.connectAttr (f'{self.midIK_pv_loc_shape}.worldPosition[0]' , f'{self.ikpv_curve_shape}.controlPoints[1]')
-
-        # 设置曲线的可见性
-        cmds.setAttr (f'{self.ikpv_curve_shape}.overrideEnabled' , 1)
-        cmds.setAttr (f'{self.ikpv_curve_shape}.overrideDisplayType' , 2)
-        cmds.setAttr (f'{self.ikpv_curve}.inheritsTransform' , 0)
-        cmds.parent (self.ikpv_curve , self.ctrl_grp)
-
-
-    # 创建local控制器给手腕
-    def create_local_ctrl (self) :
-        """
-        创建local控制器给手腕
-        """
-        self.local_ctrl = controlUtils.Control.create_ctrl (self.local_ctrl , shape = 'cross' ,
-                                                            radius = self.radius * 0.75 ,
-                                                            axis = 'X+' , pos = self.jnt_list [-1] ,
-                                                            parent = self.ctrl_list [-1])
-        # ikHandle放到local控制器层级下
-        cmds.parent (self.ik_handle , self.local_ctrl.replace ('ctrl' , 'output'))
 
 
     # 创建控制器结构
@@ -175,12 +95,11 @@ class LimbIK (chainIK.ChainIK) :
         # 极向量控制器约束ikHandle
         cmds.poleVectorConstraint (self.pv_ctrl.replace ('ctrl' , 'output') , self.ik_handle)
 
-
-
         # 首段ik控制器点约束首段ik关节
         cmds.pointConstraint (self.output_list [0] , self.jnt_list [0] , mo = True)
 
 
+    # 添加ik链条的拉伸功能
     def add_stretch (self) :
         u"""
         添加ik链条的拉伸功能
@@ -194,6 +113,98 @@ class LimbIK (chainIK.ChainIK) :
 
         # 创建极向量锁定的属性，并为中端控制器添加PvLock属性，动画师可以选择是否进行极向量锁定。
         self.set_pvLock_ctrl ()
+
+
+    # 创建ikHandle
+    def build_ik_handle (self) :
+        """
+        创建ikHandle
+        """
+        # 创建ikSolverHandle
+        self.ik_handle = cmds.ikHandle (name = self.ik_handle , startJoint = self.jnt_list [0] ,
+                                        endEffector = self.jnt_list [2] ,
+                                        sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True) [0]
+
+        # 创建末端的ikspineHandle
+        self.endIK_handle = cmds.ikHandle (name = self.endIK_handle , startJoint = self.jnt_list [2] ,
+                                           endEffector = self.endIK_jnt ,
+                                           sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True) [0]
+
+        cmds.setAttr (f'{self.ik_handle}.v' , 0)
+        cmds.setAttr (f'{self.endIK_handle}.v' , 0)
+
+
+        # 创建极向量控制器
+
+
+    # 创建极向量控制器
+    def create_pv_ctrl (self) :
+        """
+        创建极向量控制器
+        """
+        self.pv_ctrl = controlUtils.Control.create_ctrl (self.pv_ctrl , shape = 'ball' ,
+                                                         radius = self.radius * 0.6 ,
+                                                         axis = 'X+' , pos = self.jnt_list [1] ,
+                                                         parent = self.ctrl_grp)
+
+        # 移动极向量控制器组的位置
+        cmds.setAttr (f'{self.pv_ctrl.replace ("ctrl" , "zero")}.translateZ' , -10 * self.z_value * self.side_value)
+
+
+        # 创建ik极向量控制器的曲线指示器
+
+
+    # 创建ik极向量控制器的曲线指示器
+    def create_ik_pv_curve (self) :
+        """
+        创建ik极向量控制器的曲线指示器
+        """
+        # 创建pv控制器的loc来记录位置
+        self.midIK_pv_loc = cmds.spaceLocator (name = self.pv_loc) [0]
+        cmds.matchTransform (self.midIK_pv_loc , self.pv_ctrl.replace ('ctrl' , 'output') , position = True ,
+                             rotation = True ,
+                             scale = True)
+        cmds.parent (self.midIK_pv_loc , self.pv_ctrl)
+        cmds.setAttr (f'{self.midIK_pv_loc}.visibility' , 0)
+
+        # 创建pvjnt的loc来记录位置
+        self.midIK_jnt_loc = cmds.spaceLocator (name = self.jnt_loc) [0]
+        cmds.matchTransform (self.midIK_jnt_loc , self.jnt_list [1] , position = True , rotation = True , scale = True)
+        cmds.parent (self.midIK_jnt_loc , self.jnt_list [1])
+        cmds.setAttr (f'{self.midIK_jnt_loc}.visibility' , 0)
+
+        # 连接loc和曲线来表示位置
+        self.ikpv_curve = cmds.curve (degree = 1 , point = [(0.0 , 0.0 , 0.0) , (0.0 , 0.0 , 0.0)] ,
+                                      name = self.pv_curve)
+        self.midIK_jnt_loc_shape = cmds.listRelatives (self.midIK_jnt_loc , shapes = True) [0]
+        self.midIK_pv_loc_shape = cmds.listRelatives (self.midIK_pv_loc , shapes = True) [0]
+        self.ikpv_curve_shape = cmds.listRelatives (self.ikpv_curve , shapes = True) [0]
+
+        # 连接曲线与loc
+        cmds.connectAttr (f'{self.midIK_jnt_loc_shape}.worldPosition[0]' , f'{self.ikpv_curve_shape}.controlPoints[0]')
+        cmds.connectAttr (f'{self.midIK_pv_loc_shape}.worldPosition[0]' , f'{self.ikpv_curve_shape}.controlPoints[1]')
+
+        # 设置曲线的可见性
+        cmds.setAttr (f'{self.ikpv_curve_shape}.overrideEnabled' , 1)
+        cmds.setAttr (f'{self.ikpv_curve_shape}.overrideDisplayType' , 2)
+        cmds.setAttr (f'{self.ikpv_curve}.inheritsTransform' , 0)
+        cmds.parent (self.ikpv_curve , self.ctrl_grp)
+
+
+        # 创建local控制器给手腕
+
+
+    # 创建local控制器给手腕
+    def create_local_ctrl (self) :
+        """
+        创建local控制器给手腕
+        """
+        self.local_ctrl = controlUtils.Control.create_ctrl (self.local_ctrl , shape = 'cross' ,
+                                                            radius = self.radius * 0.75 ,
+                                                            axis = 'X+' , pos = self.jnt_list [-1] ,
+                                                            parent = self.ctrl_list [-1])
+        # ikHandle放到local控制器层级下
+        cmds.parent (self.ik_handle , self.local_ctrl.replace ('ctrl' , 'output'))
 
 
     # 用来获取总的拉伸的长度，计算原理：通过获取起始端和末端控制器的位置信息获取拉伸后的距离长度，减去原先关节的长度即可获得拉伸的长度距离
@@ -249,7 +260,8 @@ class LimbIK (chainIK.ChainIK) :
 
         # 将变化的数值连接给对应的拉伸关节
         self.add_midIK_jnt_node = cmds.createNode ('addDoubleLinear' , name = self.jnt_list [1].replace ('jnt' , 'add'))
-        self.add_endIK_jnt_node = cmds.createNode ('addDoubleLinear' , name = self.jnt_list [-1].replace ('jnt' , 'add'))
+        self.add_endIK_jnt_node = cmds.createNode ('addDoubleLinear' ,
+                                                   name = self.jnt_list [-1].replace ('jnt' , 'add'))
 
         cmds.connectAttr (self.mult_node + '.output' , self.add_midIK_jnt_node + '.input1')
         cmds.setAttr (self.add_midIK_jnt_node + '.input2' , self.midIK_jnt_value)
@@ -287,14 +299,15 @@ class LimbIK (chainIK.ChainIK) :
 
         # 3.创建blendColors节点用来混合拉伸和非拉伸状态的关节长度。
         # 创建blendcolor节点用来承载拉伸的设置
-        self.stretch_blend_node = cmds.createNode ('blendColors' , name = self.ctrl_list [-1].replace ('ctrl' , 'blend'))
+        self.stretch_blend_node = cmds.createNode ('blendColors' ,
+                                                   name = self.ctrl_list [-1].replace ('ctrl' , 'blend'))
         cmds.connectAttr (self.ctrl_list [-1] + '.stretch' , self.stretch_blend_node + '.blender')
 
         # 4.将拉伸后的关节长度连接到blendColors节点，用于混合时的非拉伸状态。
         # 设置blendcolor节点混合值为0的时候，也就是没有拉伸的时候，color2R 和 color2G 的值是原关节的长度
         # 连接拉伸后的关节长度
         self.stretch_divBtw_node = cmds.createNode ('multiplyDivide' ,
-                                               name = self.stretch_blend_node.replace ('blend' , 'div'))
+                                                    name = self.stretch_blend_node.replace ('blend' , 'div'))
 
         cmds.setAttr (self.stretch_divBtw_node + '.operation' , 2)
         cmds.setAttr (self.stretch_divBtw_node + '.input1X' , self.midIK_jnt_value)
@@ -325,32 +338,32 @@ class LimbIK (chainIK.ChainIK) :
 
         # 2.创建另一个blendColors节点用来混合极向量锁定和非锁定状态的关节长度。
         # 创建blendColors节点用来承载极向量锁定的设置
-        self.pvLock_blend_node  = cmds.createNode ('blendColors' , name = self.pv_ctrl.replace ('ctrl' , 'blend'))
-        cmds.connectAttr (self.ctrl_list [-1] + '.PvLock' , self.pvLock_blend_node  + '.blender')
+        self.pvLock_blend_node = cmds.createNode ('blendColors' , name = self.pv_ctrl.replace ('ctrl' , 'blend'))
+        cmds.connectAttr (self.ctrl_list [-1] + '.PvLock' , self.pvLock_blend_node + '.blender')
 
         # 3.计算起始端到极向量控制器和末端到极向量控制器的距离，并将结果乘以侧边和Z轴的值，用于极向量锁定状态的混合。
         # 获取起始控制器，极向量控制器，末端控制器层级下用来定位位置的loc.(startIK_pos_loc,self.midIK_pv_loc,endIK_pos_loc)
         # 创建对应的disteween节点来获取距离
         # 计算起始控制器到极向量控制器的距离
         self.upper_disBtw_node = cmds.createNode ('distanceBetween' ,
-                                             name = self.startIK_pos_loc.replace ('loc' , 'disBtw_upper'))
+                                                  name = self.startIK_pos_loc.replace ('loc' , 'disBtw_upper'))
         cmds.connectAttr (self.startIK_pos_loc_shape + '.worldPosition' , self.upper_disBtw_node + '.point1')
         cmds.connectAttr (self.pv_loc_shape + '.worldPosition' , self.upper_disBtw_node + '.point2')
 
         # 创建一个相乘节点来连接
         self.mult_upper_disBtw_node = cmds.createNode ('multDoubleLinear' ,
-                                                  name = self.upper_disBtw_node.replace ('disBtw_lower' , 'mult'))
+                                                       name = self.upper_disBtw_node.replace ('disBtw_lower' , 'mult'))
         cmds.connectAttr (self.upper_disBtw_node + '.distance' , self.mult_upper_disBtw_node + '.input1')
         cmds.setAttr (self.mult_upper_disBtw_node + '.input2' , self.side_value * self.z_value)
 
         # 计算末端控制器到极向量控制器的距离
         self.lower_disBtw_node = cmds.createNode ('distanceBetween' ,
-                                             name = self.startIK_pos_loc.replace ('loc' , 'disBtw_lower'))
+                                                  name = self.startIK_pos_loc.replace ('loc' , 'disBtw_lower'))
         cmds.connectAttr (self.pv_loc_shape + '.worldPosition' , self.lower_disBtw_node + '.point1')
         cmds.connectAttr (self.endIK_pos_loc_shape + '.worldPosition' , self.lower_disBtw_node + '.point2')
         # 创建一个相乘节点来连接
         self.mult_lower_disBtw_node = cmds.createNode ('multDoubleLinear' ,
-                                                  name = self.lower_disBtw_node.replace ('disBtw_lower' , 'mult'))
+                                                       name = self.lower_disBtw_node.replace ('disBtw_lower' , 'mult'))
         cmds.connectAttr (self.lower_disBtw_node + '.distance' , self.mult_lower_disBtw_node + '.input1')
         cmds.setAttr (self.mult_lower_disBtw_node + '.input2' , self.side_value * self.z_value)
 
@@ -358,17 +371,17 @@ class LimbIK (chainIK.ChainIK) :
         # 将真实的距离连接给极向量锁定的blendcolor节点
         # 原理：当极向量锁定值为1打开的时候，启用的是color1的数值。当极向量锁定值为0关闭的时候，启用的是color2的数值
 
-        cmds.connectAttr (self.mult_upper_disBtw_node + '.output' , self.pvLock_blend_node  + '.color1R')
-        cmds.connectAttr (self.mult_lower_disBtw_node + '.output' , self.pvLock_blend_node  + '.color1G')
+        cmds.connectAttr (self.mult_upper_disBtw_node + '.output' , self.pvLock_blend_node + '.color1R')
+        cmds.connectAttr (self.mult_lower_disBtw_node + '.output' , self.pvLock_blend_node + '.color1G')
 
         # 将原先关节拉伸后的距离连接给极向量锁定的blendcolor节点的color2
-        cmds.connectAttr (self.stretch_blend_node + '.outputR' , self.pvLock_blend_node  + '.color2R')
-        cmds.connectAttr (self.stretch_blend_node + '.outputG' , self.pvLock_blend_node  + '.color2G')
+        cmds.connectAttr (self.stretch_blend_node + '.outputR' , self.pvLock_blend_node + '.color2R')
+        cmds.connectAttr (self.stretch_blend_node + '.outputG' , self.pvLock_blend_node + '.color2G')
 
         # 5.最终将混合后的关节长度连接到原关节。
         # 把混合后的关节长度连接给原关节
-        cmds.connectAttr (self.pvLock_blend_node  + '.outputR' , self.jnt_list [1] + '.translateX')
-        cmds.connectAttr (self.pvLock_blend_node  + '.outputG' , self.jnt_list [-1] + '.translateX')
+        cmds.connectAttr (self.pvLock_blend_node + '.outputR' , self.jnt_list [1] + '.translateX')
+        cmds.connectAttr (self.pvLock_blend_node + '.outputG' , self.jnt_list [-1] + '.translateX')
 
 
 if __name__ == '__main__' :
