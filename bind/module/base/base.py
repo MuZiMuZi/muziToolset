@@ -27,6 +27,9 @@ reload (bone)
 reload (config)
 
 
+# 帮助文档
+# https://www.yuque.com/yuqueyonghur5eqgu/gpxuh5/xvn4bot85pqac0du
+
 class Base (bone.Bone) :
     u"""
     基础的关节和控制器绑定，继承于bone
