@@ -1,6 +1,7 @@
 # coding=utf-8
 # 导入所有需要的模块
-
+#帮助文档：
+#https://www.yuque.com/yuqueyonghur5eqgu/qev20s/nsdlrea8e8q88qai?singleDoc# 《bone.py》
 from __future__ import unicode_literals , print_function
 
 
@@ -22,103 +23,7 @@ import os
 
 import maya.cmds as cmds
 
-from ... import config
 from ....core import controlUtils , hierarchyUtils , jointUtils , pipelineUtils
-
-
-class RigItem (QListWidgetItem) :
-    """
-    定义了一个名为 RigItem 的类，它是 QtWidgets.QListWidgetItem 的子类，用于表示一个骨骼组件
-    """
-
-
-    # 表示一个骨骼组件的列表项，初始化了列表项的一些属性，包括名称、图标
-    def __init__ (self , name) :
-        """
-        表示一个骨骼组件的列表项，初始化了列表项的一些属性，包括名称、图标
-
-        :param name(str):根据给定的模块名称初始化属性，包括名称、图标
-        """
-        super (RigItem , self).__init__ ()
-
-        # 初始化ui的文件
-        self.base_ui = None
-        self.extra_ui = None
-
-        # 根据给定的名称初始化图标的名称
-        self.icon = '{}.png'.format (name)
-        # 获取config配置文件里的ui路径来设置图标
-        icon = QIcon ()
-        path = os.path.join (config.icon_dir , self.icon)
-        icon.addFile (path)
-        self.setIcon (icon)
-
-        # 绑定属性的小部件
-        self.base_widget = None
-        self.extra_widget = None
-
-        # 绑定的组件对象
-        self._obj = None
-
-
-    # 初始化作为QWidget对象的base_widget属性，用于设置绑定组件的基础属性，比如（边，名称，关节数量，关节的父物体，控制器的父物体）等属性
-    # （side,name,jnt_number,jnt_parent,ctrl_parent）
-    def create_base_widget (self) :
-        """
-        初始化作为QWidget对象的base_widget属性，用于设置绑定组件的边，名称，关节数量，关节的父物体，控制器的父物体等属性
-        side,name,jnt_number,jnt_parent,ctrl_parent
-        """
-        pass
-
-
-    # 初始化作为QWidget对象的extra_widget属性,用于设置绑定组件的特殊属性，比如(长度，朝向，拉伸，IK启用，FK启用,twist启用)等属性
-    # （Length, orientation, stretch, IK enabled, FK enabled, twist enabled）
-
-    def create_extra_widget (self) :
-        """
-        #初始化作为QWidget对象的extra_widget属性,用于设置绑定组件的特殊属性，比如(长度，朝向，拉伸，IK启用，FK启用,twist启用)等属性
-        #（Length, orientation, stretch, IK enabled, FK enabled, twist enabled）
-        """
-        pass
-
-
-    # 分析base_widget中的输入并将其作为参数返回
-    def parse_base_widget (self) :
-        """
-        分析base_widget中的输入并将其作为参数返回
-        """
-        pass
-
-
-    # 分析extra_widget中的输入并将其作为参数返回
-    def parse_extra_widget (self) :
-        """
-        #分析extra_widget中的输入并将其作为参数返回
-        """
-        pass
-
-
-    # 根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备
-    def build_setup (self , *args , **kwargs) :
-        """
-        根据base_widget和extra_widget返回的参数创建bp的定位关节,生成准备
-        """
-        pass
-
-
-    # 根据base_widget和extra_widget返回的参数，创建绑定系统
-    def build_rig (self , *args , **kwargs) :
-        """
-        根据base_widget和extra_widget返回的参数，创建绑定系统
-        """
-
-
-    # 根据base_widget和extra_widget返回的参数，删除绑定系统
-    def delete_rig (self) :
-        """
-        根据base_widget和extra_widget返回的参数，删除绑定系统
-        """
-        pass
 
 
 class Bone (object) :
@@ -314,30 +219,13 @@ class Bone (object) :
                                                set_parent = 'bpjnt_set')
 
 
-    # 设置bp关节的可见性，用于切换状态，当绑定系统创建完成的时候设置bp关节为隐藏状态，当绑定系统删除的时候则设置bp关节为显示状态
-    def set_bpjnt_vis (self , vis_bool) :
-        """
-        设置bp关节的可见性，用于切换状态，当绑定系统创建完成的时候设置bp关节为隐藏状态，当绑定系统删除的时候则设置bp关节为显示状态
-        vis_bool(bool):bp关节的可见性,0为不可见，1为可见
-        """
-        # 选择bp选择集
-        cmds.select (clear = True)
-        if cmds.objExists ('bpjnt_set') :
-            bpjnts_set = cmds.select ('bpjnt_set')
-            # 选择bp选择集下所有子对象关节
-            bpjnts_list = cmds.ls (sl = True , type = 'joint')
-            # 对bpjnt关节列表做循环，设置他们的可见性
-            for bpjnt in bpjnts_list :
-                cmds.setAttr (bpjnt + '.visibility' , vis_bool)
-
-
     # 根据定位的bp关节创建绑定关节
     def create_joint (self) :
         '''
         根据定位的bp关节创建绑定关节
         '''
         # 隐藏bp的定位关节
-        self.set_bpjnt_vis (vis_bool = 0)
+        self._set_bpjnt_vis (vis_bool = 0)
 
         # 根据bp关节创建新的关节,需要做生成关节的准备，断掉bp关节上的所有属性链接
         self._break_bpjnt_connect ()
@@ -352,6 +240,23 @@ class Bone (object) :
         # 将bp关节放到bp关节组里隐藏
         for bpjnt in self.bpjnt_list :
             hierarchyUtils.Hierarchy.parent (bpjnt , self.top_bpjnt_grp)
+
+
+    # 设置bp关节的可见性，用于切换状态，当绑定系统创建完成的时候设置bp关节为隐藏状态，当绑定系统删除的时候则设置bp关节为显示状态
+    def _set_bpjnt_vis (self , vis_bool) :
+        """
+        设置bp关节的可见性，用于切换状态，当绑定系统创建完成的时候设置bp关节为隐藏状态，当绑定系统删除的时候则设置bp关节为显示状态
+        vis_bool(bool):bp关节的可见性,0为不可见，1为可见
+        """
+        # 选择bp选择集
+        cmds.select (clear = True)
+        if cmds.objExists ('bpjnt_set') :
+            bpjnts_set = cmds.select ('bpjnt_set')
+            # 选择bp选择集下所有子对象关节
+            bpjnts_list = cmds.ls (sl = True , type = 'joint')
+            # 对bpjnt关节列表做循环，设置他们的可见性
+            for bpjnt in bpjnts_list :
+                cmds.setAttr (bpjnt + '.visibility' , vis_bool)
 
 
     # 根据bp关节创建新的关节,需要做生成关节的准备，断掉bp关节上的所有属性链接
