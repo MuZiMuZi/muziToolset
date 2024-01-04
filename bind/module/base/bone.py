@@ -148,6 +148,7 @@ class Bone (object) :
     shape = 'circle'
     radius = 10
 
+
     def __init__ (self , side , name , jnt_number , jnt_parent = None , ctrl_parent = None) :
         """
         根据给定的变量创建关节和控制器
@@ -177,10 +178,8 @@ class Bone (object) :
         if not self.ctrl_parent or not cmds.objExists (self.ctrl_parent) :
             self.ctrl_parent = self.top_ctrl_grp
 
-
         # 根据给定的side，name等属性，创建名称进行规范整理
         self.create_namespace ()
-
 
         # 根据给定的边，初始化side_value的值，用于镜像控制器以及位移
         self.side_value = self._setup_side_value ()
@@ -341,32 +340,55 @@ class Bone (object) :
         self.set_bpjnt_vis (vis_bool = 0)
 
         # 根据bp关节创建新的关节,需要做生成关节的准备，断掉bp关节上的所有属性链接
+        self._break_bpjnt_connect ()
+
+        # 判断场景里是否已经存在对应的关节，重建的情况,当之前的关节存在于场景中的时候进行删除
+        self._cheek_bpjnt_objExists ()
+
+        # # 根据bpjnt的位置，创建对应的关节吸附到对应位置，并且创建用来整理的集合
+        for bpjnt , jnt in zip (self.bpjnt_list , self.jnt_list) :
+            self._create_and_attach_joint (bpjnt , jnt)
+
+        # 将bp关节放到bp关节组里隐藏
+        for bpjnt in self.bpjnt_list :
+            hierarchyUtils.Hierarchy.parent (bpjnt , self.top_bpjnt_grp)
+
+
+    # 根据bp关节创建新的关节,需要做生成关节的准备，断掉bp关节上的所有属性链接
+    def _break_bpjnt_connect (self) :
+        # 根据bp关节创建新的关节,需要做生成关节的准备，断掉bp关节上的所有属性链接
         for bpjnt in self.bpjnt_list :
             for attr in ['.translate' , '.rotate' , '.scale'] :
                 # 判断bp关节上有没有连接的属性，如果有的话则断掉
                 plug = cmds.listConnections (bpjnt + attr , s = True , d = False , p = True)
                 if plug :
                     cmds.disconnectAttr (plug [0] , bpjnt + attr)
-        # 判断场景里是否已经存在对应的关节，重建的情况
+
+
+    # 判断场景里是否已经存在对应的关节，重建的情况,当之前的关节存在于场景中的时候进行删除
+    def _cheek_bpjnt_objExists (self) :
+        # 删除已存在的关节
         for jnt in self.jnt_list :
             if cmds.objExists (jnt) :
-                # 删除过去的关节后，并重新创建关节
                 cmds.delete (jnt)
-        else :
-            pass
-        for bpjnt , jnt in zip (self.bpjnt_list , self.jnt_list) :
-            # 场景里没有存在对应的关节，第一次创建绑定的情况
-            jnt = cmds.createNode ('joint' , name = jnt , parent = self.jnt_parent)
-            # 将蒙皮关节添加到选择集里方便进行选择
-            pipelineUtils.Pipeline.create_set (jnt ,
-                                               set_name = '{}_{}{}_jnt_set'.format (self.side , self.name ,
-                                                                                    self.rigType) ,
-                                               set_parent = 'jnt_set')
-            # 吸附绑定关节与定位关节的位置
-            cmds.matchTransform (jnt , bpjnt)
-        # 将bp关节放到bp关节组里隐藏
-        for bpjnt in self.bpjnt_list :
-            hierarchyUtils.Hierarchy.parent (bpjnt , self.top_bpjnt_grp)
+
+
+    def _create_and_attach_joint (self , bpjnt , jnt) :
+        """
+        根据给定的bp关节位置创建绑定关节，吸附到对应位置，并创建用于整理的集合
+        """
+        # 场景里没有存在对应的关节，第一次创建绑定的情况
+        jnt = cmds.createNode ('joint' , name = jnt , parent = self.jnt_parent)
+
+        # 将蒙皮关节添加到选择集以便于选择
+        pipelineUtils.Pipeline.create_set (
+            jnt ,
+            set_name = '{}_{}{}_jnt_set'.format (self.side , self.name , self.rigType) ,
+            set_parent = 'jnt_set'
+        )
+
+        # 吸附绑定关节与定位关节的位置
+        cmds.matchTransform (jnt , bpjnt)
 
 
     # 根据绑定关节来创建对应的控制器
@@ -377,6 +399,17 @@ class Bone (object) :
         self.set_shape (self.shape)
         # 创建整体的控制器层级组
         # 判断场景里是否已经存在对应的控制器，重建的情况
+        self._create_ctrl_grp ()
+
+        # 对控制器组和关节组进行循环，创建对应关节的控制器以及吸附到对应的位置
+        # 使用函数进行创建和吸附控制器
+        for ctrl , jnt in zip (self.ctrl_list , self.jnt_list) :
+            self.ctrl = self._create_and_attach_controller (ctrl , jnt)
+
+
+    def _create_ctrl_grp (self) :
+        # 创建整体的控制器层级组
+        # 判断场景里是否已经存在对应的控制器，重建的情况
         if cmds.objExists (self.ctrl_grp) :
             # 删除过去的控制器层级组后，并重新创建控制器
             cmds.delete (self.ctrl_grp)
@@ -384,15 +417,21 @@ class Bone (object) :
         else :
             self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
 
-        # 对控制器组和关节组进行循环，创建对应关节的控制器以及吸附到对应的位置
-        for ctrl , jnt in zip (self.ctrl_list , self.jnt_list) :
-            self.ctrl = controlUtils.Control.create_ctrl (ctrl , shape = self.shape ,
-                                                          radius = self.radius ,
-                                                          axis = 'Z+' , pos = jnt ,
-                                                          parent = self.ctrl_grp)
-            # 判断所创建的控制器的边，如果边为_r_的话，offset组需要修改镜像
-            if self.side == 'r' :
-                cmds.setAttr (ctrl.replace ('ctrl' , 'offset') + '.scaleX' , -1)
+
+    def _create_and_attach_controller (self , ctrl , jnt) :
+        """
+        根据给定的控制器和关节创建控制器，吸附到对应位置，并根据边的情况进行调整
+        """
+        # 使用控制器工具类创建控制器
+        created_ctrl = controlUtils.Control.create_ctrl (
+            ctrl , shape = self.shape , radius = self.radius , axis = 'Z+' , pos = jnt , parent = self.ctrl_grp
+        )
+
+        # 根据边的情况调整镜像
+        if self.side == 'r' :
+            cmds.setAttr (ctrl.replace ('ctrl' , 'offset') + '.scaleX' , -1)
+
+        return created_ctrl
 
 
     # 对应的控制器与绑定关节之间创建连接
@@ -400,12 +439,20 @@ class Bone (object) :
         '''
         对应的控制器与绑定关节之间创建连接
         '''
+        # 根据给定的控制器和关节创建约束关系
         for ctrl , jnt in zip (self.ctrl_list , self.jnt_list) :
-            pipelineUtils.Pipeline.create_constraint (ctrl.replace (' ctrl' , 'output') , jnt ,
-                                                      point_value = False ,
-                                                      orient_value = False , parent_value = True , scale_value =
-                                                      True ,
-                                                      mo_value = True)
+            self._create_controller_constraint (ctrl , jnt)
+
+
+    def _create_controller_constraint (self , ctrl , jnt) :
+        """
+        根据给定的控制器和关节创建约束关系
+        """
+        # 使用管道工具类创建约束
+        pipelineUtils.Pipeline.create_constraint (
+            ctrl.replace (' ctrl' , 'output') , jnt ,
+            point_value = False , orient_value = False , parent_value = True , scale_value = True , mo_value = True
+        )
 
 
     # 创建bp的定位关节,生成准备
@@ -431,10 +478,10 @@ class Bone (object) :
         """
         删除已经创建好的绑定系统
         """
-        #删除已经创建好的定位关节
-        for bpjnt in self.bpjnt_list:
-            if cmds.objExists(bpjnt):
-                cmds.delete(bpjnt)
+        # 删除已经创建好的定位关节
+        for bpjnt in self.bpjnt_list :
+            if cmds.objExists (bpjnt) :
+                cmds.delete (bpjnt)
 
         # 删除已经创建好的关节
         for jnt in self.jnt_list :
