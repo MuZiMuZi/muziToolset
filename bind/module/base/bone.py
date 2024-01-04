@@ -332,9 +332,6 @@ class Bone (object) :
             ctrl , shape = self.shape , radius = self.radius , axis = 'Z+' , pos = jnt , parent = self.ctrl_grp
         )
 
-        # 根据边的情况调整镜像
-        if self.side == 'r' :
-            cmds.setAttr (ctrl.replace ('ctrl' , 'offset') + '.scaleX' , -1)
 
         return created_ctrl
 
