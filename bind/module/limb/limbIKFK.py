@@ -18,33 +18,27 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
     由三条关节链组成，ik关节链条，fk关节链条和ikfk关节链条组成
     '''
 
+    rigType = 'LimbIKFK'
+    radius = 5
 
-    def __init__ (self , side , name , jnt_number , direction , is_stretch = 1 , length = 10 , limbtype = None ,
+
+    def __init__ (self , side , name , jnt_number = 3 , direction = [-1 , 0 , 0] , is_stretch = 1 , length = 10 ,
+                  limbtype = None ,
                   jnt_parent = None ,
                   ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , direction , is_stretch , length , jnt_parent , ctrl_parent)
-
-        self.rigType = 'LimbIKFK'
-        jnt_number = 3
         # 判断给定的limbtype 是手臂还是腿部
         if limbtype == 'arm' :
             self.z_value = 1
         else :
             self.z_value = -1
 
-        # 判断边为'l'还是'r'
-        if side == 'l' :
-            self.side_value = 1
-        else :
-            self.side_value = -1
-
-        self.radius = 5
-
         # 初始化ik关节链条和fk关节链条
         self.ik_limb = limbIK.LimbIK (side , name , jnt_number , direction , length , is_stretch , limbtype)
         self.fk_limb = limbFK.LimbFK (side , name , jnt_number , direction , length)
 
 
+    # 创建名称进行规范整理
     def create_namespace (self) :
         u"""
             创建名称进行规范整理
@@ -54,7 +48,7 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         self.ik_limb.create_namespace ()
         self.fk_limb.create_namespace ()
 
-
+    #创建定位的bp关节
     def create_bpjnt (self) :
         """
         创建定位的bp关节
@@ -76,7 +70,7 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         # 创建logging用来记录日志
         self.logger.debug (u'{}_{}  :  BP joint creation completed for positioning'.format (self.name , self.side))
 
-
+    #根据定位的bp关节创建关节
     def create_joint (self) :
         '''
         根据定位的bp关节创建关节
@@ -107,7 +101,7 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         # 创建logging用来记录日志
         self.logger.debug (u'{}_{}  :  Skin joint creation completed'.format (self.name , self.side))
 
-
+    #创建控制器绑定
     def create_ctrl (self) :
         u'''
         创建控制器绑定
@@ -119,23 +113,22 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
             self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
         else :
             self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
+
+        #创建ik模块和fk模块的控制器
         self.ik_limb.create_ctrl ()
         self.fk_limb.create_ctrl ()
+
         # 创建用于ikfk切换的控制器
-        self.ctrl = controlUtils.Control.create_ctrl (self.ctrl_list [0] , shape = 'pPlatonic' ,
-                                                      radius = self.radius ,
-                                                      axis = self.axis , pos = self.jnt_list [0] ,
-                                                      parent = self.ctrl_grp)
-        cmds.setAttr (self.zero_list [0] + '.translateZ' , -5)
-        # 添加IKFK切换的属性
-        cmds.addAttr (self.ctrl , sn = 'Switch' , ln = 'ikfkSwitch' , at = 'double' , dv = 1 , min = 0 , max = 1 ,
-                      k = 1)
+        self._create_ikfk_switch_ctrl()
 
         # 整理层级结构
         cmds.parent (self.ik_limb.ctrl_grp , self.output_list [0])
         cmds.parent (self.fk_limb.ctrl_grp , self.output_list [0])
         # 创建logging用来记录日志
         self.logger.debug (u'{}_{}  :  Controller creation completed'.format (self.name , self.side))
+
+
+
 
 
     def add_constraint (self) :

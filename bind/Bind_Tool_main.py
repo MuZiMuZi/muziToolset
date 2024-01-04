@@ -20,7 +20,8 @@ reload (chainEP_widget)
 reload (bind_ui)
 reload (face_widget)
 reload (bone_widget)
-
+#帮助文档
+#https://www.yuque.com/yuqueyonghur5eqgu/gpxuh5
 
 class Bind_Widget (bind_ui.Ui_MainWindow , QMainWindow) :
     u'''
