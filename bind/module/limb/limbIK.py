@@ -72,15 +72,15 @@ class LimbIK (chainIK.ChainIK) :
         cmds.setAttr (f'{self.zero_list [1]}.v' , 0)
 
         # 创建极向量控制器
-        self.create_pv_ctrl ()
+        self._create_pv_ctrl ()
 
         cmds.parent (self.ik_handle , self.endIK_handle , self.output_list [-1])
 
         # 创建ik极向量控制器的曲线指示器
-        self.create_ik_pv_curve ()
+        self._create_ik_pv_curve ()
 
         # 创建local控制器给手腕
-        self.create_local_ctrl ()
+        self._create_local_ctrl ()
 
         # 判断是否需要添加拉伸功能，如果是则添加
         if self.is_stretch :
@@ -106,13 +106,13 @@ class LimbIK (chainIK.ChainIK) :
         """
 
         # 用来获取总的拉伸的长度，计算原理：通过获取起始端和末端控制器的位置信息获取拉伸后的距离长度，减去原先关节的长度即可获得拉伸的长度距离
-        self.get_stretch_length ()
+        self._get_stretch_length ()
 
         # 为末端控制器添加一个stretch属性，动画师根据需要可以选择是否拉伸。
-        self.set_stretch_ctrl ()
+        self._set_stretch_ctrl ()
 
         # 创建极向量锁定的属性，并为中端控制器添加PvLock属性，动画师可以选择是否进行极向量锁定。
-        self.set_pvLock_ctrl ()
+        self._set_pvLock_ctrl ()
 
 
     # 创建ikHandle
@@ -138,7 +138,7 @@ class LimbIK (chainIK.ChainIK) :
 
 
     # 创建极向量控制器
-    def create_pv_ctrl (self) :
+    def _create_pv_ctrl (self) :
         """
         创建极向量控制器
         """
@@ -155,7 +155,7 @@ class LimbIK (chainIK.ChainIK) :
 
 
     # 创建ik极向量控制器的曲线指示器
-    def create_ik_pv_curve (self) :
+    def _create_ik_pv_curve (self) :
         """
         创建ik极向量控制器的曲线指示器
         """
@@ -195,7 +195,7 @@ class LimbIK (chainIK.ChainIK) :
 
 
     # 创建local控制器给手腕
-    def create_local_ctrl (self) :
+    def _create_local_ctrl (self) :
         """
         创建local控制器给手腕
         """
@@ -208,7 +208,7 @@ class LimbIK (chainIK.ChainIK) :
 
 
     # 用来获取总的拉伸的长度，计算原理：通过获取起始端和末端控制器的位置信息获取拉伸后的距离长度，减去原先关节的长度即可获得拉伸的长度距离
-    def get_stretch_length (self) :
+    def _get_stretch_length (self) :
         '''
         用来获取总的拉伸的长度，计算原理：
         通过获取起始端和末端控制器的位置信息获取拉伸后的距离长度，减去原先关节的长度即可获得拉伸的长度距离
@@ -271,7 +271,7 @@ class LimbIK (chainIK.ChainIK) :
 
 
     # 用来创建拉伸的控制器的开启与混合连接
-    def set_stretch_ctrl (self) :
+    def _set_stretch_ctrl (self) :
         """
         用来创建拉伸的控制器的开启与混合连接，通过创建判断节点和混合节点来控制拉伸的开启
         步骤：
@@ -319,7 +319,7 @@ class LimbIK (chainIK.ChainIK) :
 
 
     # 用来创建极向量锁定的属性连接
-    def set_pvLock_ctrl (self) :
+    def _set_pvLock_ctrl (self) :
         '''
         用来创建极向量锁定的属性连接
         步骤：
