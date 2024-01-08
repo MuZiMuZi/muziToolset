@@ -11,16 +11,23 @@ reload (chainIK)
 
 
 class ChainIKFK (chain.Chain) :
-    u'''
-    创建ikfk的关节链条的绑定系统
-    由三条关节链组成，ik关节链条，fk关节链条和ikfk关节链条组成
-    '''
     rigType = 'ChainIKFK'
 
 
     def __init__ (self , side , name , jnt_number , direction = [0 , 1 , 0] , length = 10 , is_stretch = 1 ,
                   jnt_parent = None ,
                   ctrl_parent = None) :
+        """
+        创建ikfk的关节链条的绑定系统
+        由三条关节链组成，ik关节链条，fk关节链条和ikfk关节链条组成
+        side(str):边
+        name(str):组件的名称
+        direction(list):组件的轴向
+        length(float)：组件的长度
+        is_stretch(bool):组件是否可以拉伸
+        jnt_parent(str):组件所对应的关节的父对象
+        ctrl_parent(str):组件所对应的控制器的父对象
+        """
         super ().__init__ (side , name , jnt_number , length , jnt_parent = None , ctrl_parent = None)
         # 获取初始的位置
         self.interval = length / (self.jnt_number - 1)
@@ -139,13 +146,14 @@ class ChainIKFK (chain.Chain) :
         # 创建用于ikfk切换的控制器
         self._create_ikfk_switch_ctrl ()
 
+        # 整理层级控制器组的层级结构
+        self._create_ctrl_hierarchy ()
+
 
     # 创建ik和fk系统各自的控制器
     def _create_ikfk_ctrl (self) :
         self.ik_chain.create_ctrl ()
         self.fk_chain.create_ctrl ()
-
-
 
 
     # 创建IKFK切换控制器
@@ -162,9 +170,14 @@ class ChainIKFK (chain.Chain) :
         cmds.addAttr (self.ctrl , sn = 'Switch' , ln = 'ikfkSwitch' , at = 'double' , dv = 1 , min = 0 , max = 1 ,
                       k = 1)
 
-        # 整理层级结构
+
+    def _create_ctrl_hierarchy (self) :
+        """
+        整理控制器组的层级结构
+        """
         cmds.parent (self.ik_chain.ctrl_grp , self.output_list [0])
         cmds.parent (self.fk_chain.ctrl_grp , self.output_list [0])
+
 
     def add_constraint (self) :
         """

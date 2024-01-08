@@ -4,7 +4,7 @@ import maya.cmds as cmds
 
 from ..chain import chainIKFK
 from ..limb import limbFK , limbIK
-from ....core import jointUtils,controlUtils
+from ....core import jointUtils
 
 
 reload (limbFK)
@@ -13,11 +13,6 @@ reload (chainIKFK)
 
 
 class LimbIKFK (chainIKFK.ChainIKFK) :
-    u'''
-    创建手臂或者是腿部的四肢关节的绑定系统
-    由三条关节链组成，ik关节链条，fk关节链条和ikfk关节链条组成
-    '''
-
     rigType = 'LimbIKFK'
     radius = 5
 
@@ -26,6 +21,18 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
                   limbtype = None ,
                   jnt_parent = None ,
                   ctrl_parent = None) :
+        '''
+        创建手臂或者是腿部的四肢关节的绑定系统
+        由三条关节链组成，ik关节链条，fk关节链条和ikfk关节链条组成
+        side(str):边
+        name(str):组件的名称
+        direction(list):组件的轴向
+        length(float)：组件的长度
+        is_stretch(bool):组件是否可以拉伸
+        limbtype(str):组件的类型，为arm还是leg，判断为手部的绑定还是腿部的绑定
+        jnt_parent(str):组件所对应的关节的父对象
+        ctrl_parent(str):组件所对应的控制器的父对象
+        '''
         self.limbtype = limbtype
         # 判断给定的limbtype 是手臂还是腿部
 
@@ -66,6 +73,7 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         super ().create_bpjnt ()
 
 
+    # 创建ik系统和fk系统的关节
     def _create_ikfk_bpjnt (self) :
         # 创建ik关节链条和fk关节链条的定位关节
         self.ik_limb.create_bpjnt ()
@@ -142,6 +150,8 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         # 创建用于ikfk切换的控制器
         self._create_ikfk_switch_ctrl ()
 
+        # 整理控制器的层级结构
+        self._create_ctrl_hierarchy ()
 
         # 创建logging用来记录日志
         self.logger.debug (u'{}_{}  :  Controller creation completed'.format (self.name , self.side))
@@ -154,21 +164,10 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         self.fk_limb.create_ctrl ()
 
 
-    # 创建IKFK切换控制器
-    def _create_ikfk_switch_ctrl (self) :
+    def _create_ctrl_hierarchy (self) :
         """
-        创建IKFK切换控制器
+        整理控制器组的层级结构
         """
-        self.ctrl = controlUtils.Control.create_ctrl (self.ctrl_list [0] , shape = 'pPlatonic' ,
-                                                      radius = self.radius * 1.2 ,
-                                                      axis = self.axis , pos = self.jnt_list [0] ,
-                                                      parent = self.ctrl_grp)
-        cmds.setAttr (self.zero_list [0] + '.translateZ' , -5)
-        # 添加IKFK切换的属性
-        cmds.addAttr (self.ctrl , sn = 'Switch' , ln = 'ikfkSwitch' , at = 'double' , dv = 1 , min = 0 , max = 1 ,
-                      k = 1)
-
-        # 整理层级结构
         cmds.parent (self.ik_limb.ctrl_grp , self.output_list [0])
         cmds.parent (self.fk_limb.ctrl_grp , self.output_list [0])
 
