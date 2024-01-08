@@ -166,19 +166,10 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
 
     def build_setup (self) :
         super ().build_setup ()
-        # 创建logging用来记录日志
-        self.logger.debug ('done')
-        self.logger.info (
-            '{}_{}  :  Create positioning joints for BP and prepare for generation'.format (self.name , self.side))
-        self.logger.info ('\n')
 
 
     def build_rig (self) :
         super ().build_rig ()
-        # 创建logging用来记录日志
-        self.logger.debug ('done')
-        self.logger.info (u'{}_{}  :  Create binding system'.format (self.name , self.side))
-        self.logger.info ('\n')
 
 
 if __name__ == '__main__' :

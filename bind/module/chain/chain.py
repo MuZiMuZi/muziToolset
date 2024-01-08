@@ -61,7 +61,7 @@ class Chain (base.Base) :
 
 
     # 创建单个bp关节
-    def _create_single_bpjnt (self , bpjnt , index) :
+    def _create_single_bpjnt (self , bpjnt) :
         """
            创建单个bp关节
            """
@@ -92,14 +92,13 @@ class Chain (base.Base) :
 
     ## 根据bpjnt的位置，创建对应的关节吸附到对应位置，并且创建用来整理的集合
     def _create_and_attach_joint (self , bpjnt , jnt) :
-        for bpjnt , jnt in zip (self.bpjnt_list , self.jnt_list) :
-            # 场景里没有存在对应的关节，第一次创建绑定的情况
-            self.jnt = cmds.createNode ('joint' , name = jnt , parent = self.jnt_parent)
-            cmds.matchTransform (jnt , bpjnt)
-            # 指定关节的父层级为上一轮创建出来的关节
-            self.jnt_parent = self.jnt
-            # 将蒙皮关节添加到选择集里方便进行选择
-            pipelineUtils.Pipeline.create_set (jnt ,
-                                               set_name = '{}_{}{}_jnt_set'.format (self.side , self.name ,
-                                                                                    self.rigType) ,
-                                               set_parent = 'jnt_set')
+        # 场景里没有存在对应的关节，第一次创建绑定的情况
+        self.jnt = cmds.createNode ('joint' , name = jnt , parent = self.jnt_parent)
+        cmds.matchTransform (jnt , bpjnt)
+        # 指定关节的父层级为上一轮创建出来的关节
+        self.jnt_parent = self.jnt
+        # 将蒙皮关节添加到选择集里方便进行选择
+        pipelineUtils.Pipeline.create_set (jnt ,
+                                           set_name = '{}_{}{}_jnt_set'.format (self.side , self.name ,
+                                                                                self.rigType) ,
+                                           set_parent = 'jnt_set')

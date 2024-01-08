@@ -1015,3 +1015,47 @@ abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/QiShe_
 2024-01-02 14:56:39,577 -root - INFO - 
 abc缓存到 P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/QiZi_Bai_QiZi_Bai_geo_grp_abc.abc
 2024-01-02 15:43:50,729 -root - INFO - P:\Project\Production_CG\Project\Shots\EP002\SC001\CUT066\Hair\EP002_SC001_CUT066.mov输出完成
+2024-01-08 14:02:12,261 -Bone_logger - DEBUG - done
+2024-01-08 14:02:12,262 -Bone_logger - INFO - _l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 14:02:12,262 -Bone_logger - INFO - 
+
+2024-01-08 14:02:22,025 -Bone_logger - DEBUG - done
+2024-01-08 14:02:22,025 -Bone_logger - INFO - _l  :  Create binding system
+2024-01-08 14:02:22,025 -Bone_logger - INFO - 
+
+2024-01-08 14:02:29,992 -Bone_logger - DEBUG - done
+2024-01-08 14:02:29,992 -Bone_logger - INFO - _l  :  Delete binding system
+2024-01-08 14:02:29,992 -Bone_logger - INFO - 
+
+2024-01-08 14:02:37,631 -Base_logger - DEBUG - done
+2024-01-08 14:02:37,632 -Base_logger - INFO - _l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 14:02:37,632 -Base_logger - INFO - 
+
+2024-01-08 14:02:39,470 -Base_logger - DEBUG - done
+2024-01-08 14:02:39,470 -Base_logger - INFO - _l  :  Create binding system
+2024-01-08 14:02:39,470 -Base_logger - INFO - 
+
+2024-01-08 14:02:56,032 -Base_logger - DEBUG - done
+2024-01-08 14:02:56,032 -Base_logger - INFO - _l  :  Delete binding system
+2024-01-08 14:02:56,032 -Base_logger - INFO - 
+
+2024-01-08 14:04:03,714 -ChainFK_logger - DEBUG - done
+2024-01-08 14:04:03,715 -ChainFK_logger - INFO - _l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 14:04:03,715 -ChainFK_logger - INFO - 
+
+2024-01-08 14:04:51,595 -ChainFK_logger - DEBUG - done
+2024-01-08 14:04:51,595 -ChainFK_logger - INFO - _l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 14:04:51,596 -ChainFK_logger - INFO - 
+
+2024-01-08 14:07:23,147 -ChainFK_logger - DEBUG - done
+2024-01-08 14:07:23,147 -ChainFK_logger - INFO - _l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 14:07:23,147 -ChainFK_logger - INFO - 
+
+2024-01-08 14:08:21,218 -ChainFK_logger - DEBUG - done
+2024-01-08 14:08:21,219 -ChainFK_logger - INFO - _l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 14:08:21,219 -ChainFK_logger - INFO - 
+
+2024-01-08 14:08:41,436 -ChainFK_logger - DEBUG - done
+2024-01-08 14:08:41,436 -ChainFK_logger - INFO - _l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 14:08:41,436 -ChainFK_logger - INFO - 
+

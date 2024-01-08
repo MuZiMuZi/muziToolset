@@ -364,6 +364,11 @@ class Bone (object) :
         创建bp的定位关节,生成准备
         """
         self.create_bpjnt ()
+        # 创建logging用来记录日志
+        self.logger.debug ('done')
+        self.logger.info (
+            '{}_{}  :  Create positioning joints for BP and prepare for generation'.format (self.name , self.side))
+        self.logger.info ('\n')
 
 
     # 根据生成的bp定位关节，创建绑定系统
@@ -374,6 +379,10 @@ class Bone (object) :
         self.create_joint ()
         self.create_ctrl ()
         self.add_constraint ()
+        # 创建logging用来记录日志
+        self.logger.debug ('done')
+        self.logger.info (u'{}_{}  :  Create binding system'.format (self.name , self.side))
+        self.logger.info ('\n')
 
 
     # 删除已经创建好的绑定系统
@@ -394,3 +403,8 @@ class Bone (object) :
         # 删除控制器组
         if cmds.objExists (self.ctrl_grp) :
             cmds.delete (self.ctrl_grp)
+
+        # 创建logging用来记录日志
+        self.logger.debug ('done')
+        self.logger.info (u'{}_{}  :  Delete binding system'.format (self.name , self.side))
+        self.logger.info ('\n')
