@@ -26,6 +26,7 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
                   limbtype = None ,
                   jnt_parent = None ,
                   ctrl_parent = None) :
+        super ().__init__ (side , name , jnt_number , direction , is_stretch , length , jnt_parent , ctrl_parent)
         # 判断给定的limbtype 是手臂还是腿部
         if limbtype == 'arm' :
             self.z_value = 1
@@ -35,7 +36,7 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         # 初始化ik关节链条和fk关节链条
         self.ik_limb = limbIK.LimbIK (side , name , jnt_number , direction , length , is_stretch , limbtype)
         self.fk_limb = limbFK.LimbFK (side , name , jnt_number , direction , length)
-        super ().__init__ (side , name , jnt_number , direction , is_stretch , length , jnt_parent , ctrl_parent)
+
 
 
 

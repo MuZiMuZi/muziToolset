@@ -9,7 +9,7 @@ from ...module.limb import limbIKFK
 
 reload (limbIKFK)
 reload (base)
-
+reload(hand)
 
 class Arm (limbIKFK.LimbIKFK) :
     rigType = 'arm'
@@ -18,14 +18,15 @@ class Arm (limbIKFK.LimbIKFK) :
     def __init__ (self , side , name , jnt_number = 3 , direction = [-1 , 0 , 0] , is_stretch = 1 , length = 15 ,
                   limbtype = 'arm' ,
                   jnt_parent = None , ctrl_parent = None) :
-        # 初始化手指的模块
-        self.hand_limb = hand.Hand (side , name , jnt_number , direction , length = 3 ,
-                                    jnt_parent = None ,
-                                    ctrl_parent = None)
         super ().__init__ (side , name , jnt_number , direction , is_stretch , length ,
                            limbtype ,
                            jnt_parent ,
                            ctrl_parent)
+        # 初始化手指的模块
+        self.hand_limb = hand.Hand (side , name , jnt_number , direction , length = 3 ,
+                                    jnt_parent = None ,
+                                    ctrl_parent = None)
+
 
 
     def create_namespace (self) :

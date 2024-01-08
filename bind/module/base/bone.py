@@ -83,8 +83,7 @@ class Bone (object) :
         if not self.ctrl_parent or not cmds.objExists (self.ctrl_parent) :
             self.ctrl_parent = self.top_ctrl_grp
 
-        # 根据给定的side，name等属性，创建名称进行规范整理
-        self.create_namespace ()
+
 
         # 根据给定的边，初始化side_value的值，用于镜像控制器以及位移
         self.side_value = self._setup_side_value ()
@@ -363,6 +362,8 @@ class Bone (object) :
         """
         创建bp的定位关节,生成准备
         """
+        # 根据给定的side，name等属性，创建名称进行规范整理
+        self.create_namespace ()
         self.create_bpjnt ()
         # 创建logging用来记录日志
         self.logger.debug ('done')

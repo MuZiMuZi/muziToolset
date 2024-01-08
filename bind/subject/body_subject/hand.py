@@ -1,33 +1,38 @@
+from importlib import reload
+
 import maya.cmds as cmds
 
 from . import finger
 
 
+reload (finger)
+
+
 class Hand (finger.Finger) :
+    rigType = 'finger'
 
 
     def __init__ (self , side , name , jnt_number = 4 , direction = [-1 , 0 , 0] , length = 3 , jnt_parent = None ,
                   ctrl_parent = None) :
         super ().__init__ (side , name , jnt_number , direction , length , jnt_parent , ctrl_parent)
-        self.rigType = ''
         # 初始化手指的模块
-        self.thumb_finger = finger.Finger (self.side , 'thumb' , jnt_number = 3 , direction = self.direction ,
+        self.thumb_finger = finger.Finger (side , 'thumb' , jnt_number = 3 , direction = self.direction ,
                                            length = self.length , jnt_parent = self.jnt_parent ,
                                            ctrl_parent = self.ctrl_parent)
 
-        self.index_finger = finger.Finger (self.side , 'index' , jnt_number = 4 , direction = self.direction ,
+        self.index_finger = finger.Finger (side , 'index' , jnt_number = 4 , direction = self.direction ,
                                            length = self.length , jnt_parent = self.jnt_parent ,
                                            ctrl_parent = self.ctrl_parent)
 
-        self.middle_finger = finger.Finger (self.side , 'middle' , jnt_number = 4 , direction = self.direction ,
+        self.middle_finger = finger.Finger (side , 'middle' , jnt_number = 4 , direction = self.direction ,
                                             length = self.length , jnt_parent = self.jnt_parent ,
                                             ctrl_parent = self.ctrl_parent)
 
-        self.ring_finger = finger.Finger (self.side , 'ring' , jnt_number = 4 , direction = self.direction ,
+        self.ring_finger = finger.Finger (side , 'ring' , jnt_number = 4 , direction = self.direction ,
                                           length = self.length , jnt_parent = self.jnt_parent ,
                                           ctrl_parent = self.ctrl_parent)
 
-        self.pinky_finger = finger.Finger (self.side , 'pinky' , jnt_number = 4 , direction = self.direction ,
+        self.pinky_finger = finger.Finger (side , 'pinky' , jnt_number = 4 , direction = self.direction ,
                                            length = self.length , jnt_parent = self.jnt_parent ,
                                            ctrl_parent = self.ctrl_parent)
         self.finger_list = [self.thumb_finger , self.index_finger , self.middle_finger , self.ring_finger ,
