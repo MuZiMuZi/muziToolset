@@ -26,16 +26,22 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
                   limbtype = None ,
                   jnt_parent = None ,
                   ctrl_parent = None) :
-        super ().__init__ (side , name , jnt_number , direction , is_stretch , length , jnt_parent , ctrl_parent)
+        self.limbtype = limbtype
         # 判断给定的limbtype 是手臂还是腿部
-        if limbtype == 'arm' :
+
+        if self.limbtype == 'arm' :
             self.z_value = 1
         else :
             self.z_value = -1
+        super ().__init__ (side , name , jnt_number , direction , is_stretch , length , jnt_parent , ctrl_parent)
 
-        # 初始化ik关节链条和fk关节链条
-        self.ik_limb = limbIK.LimbIK (side , name , jnt_number , direction , length , is_stretch , limbtype)
-        self.fk_limb = limbFK.LimbFK (side , name , jnt_number , direction , length)
+
+    # 初始化ik系统和fk系统
+    def _init_ikfk (self) :
+        self.ik_limb = limbIK.LimbIK (self.side , self.name , self.jnt_number , self.direction , self.length ,
+                                      self.is_stretch ,
+                                      self.limbtype)
+        self.fk_limb = limbFK.LimbFK (self.side , self.name , self.jnt_number , self.direction , self.length)
 
 
     # 创建名称进行规范整理
@@ -44,6 +50,9 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
             创建名称进行规范整理
             """
         super ().create_namespace ()
+
+
+    def _create_ikfk_namespace (self) :
         # 初始化ik关节链条和fk关节链条的命名规范
         self.ik_limb.create_namespace ()
         self.fk_limb.create_namespace ()
@@ -79,26 +88,44 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         '''
         根据定位的bp关节创建关节
         '''
+        # 判断场景里是否已经存在对应的关节，重建的情况,当之前的关节存在于场景中的时候进行删除
+        self._cheek_bpjnt_objExists ()
+
+        # 创建ikfk的关节
+        self._create_ikfk_joints ()
+
+        # 进行关节定向
+        jointUtils.Joint.joint_orientation (self.jnt_list)
+
+        # 设置bp关节的可见性
+        self._set_bpjnt_vis (False)
+
+        # 整理关节层级结构
+        cmds.parent (self.jnt_list [0] , self.jnt_parent)
+        # 创建logging用来记录日志
+        self.logger.debug (u'{}_{}  :  Skin joint creation completed'.format (self.name , self.side))
+
+
+    # 创建ik系统和fk系统的关节链条
+    def _create_ikfk_joints (self) :
         # 创建ik关节链条和fk关节链条的关节
         self.ik_limb.create_joint ()
         self.fk_limb.create_joint ()
-        # 判断场景里是否已经存在对应的关节，重建的情况,当之前的关节存在于场景中的时候进行删除
-        self._cheek_bpjnt_objExists ()
+
         # 创建ikfk的关节
         cmds.select (clear = True)
         for jnt_number , bpjnt in enumerate (self.bpjnt_list) :
             pos = cmds.xform (bpjnt , q = 1 , t = 1 , ws = 1)
             cmds.joint (p = pos , name = self.jnt_list [jnt_number])
-        # 进行关节定向
-        jointUtils.Joint.joint_orientation (self.jnt_list)
+
+
+    # 设置定位关节的可见性
+    def _set_bpjnt_vis (self , vis_bool) :
         # 隐藏bp的定位关节
-        self.hide_bpjnt ()
-        # 隐藏bp的定位关节
-        self._set_bpjnt_vis (vis_bool = 0)
-        # 整理关节层级结构
-        cmds.parent (self.jnt_list [0] , self.jnt_parent)
-        # 创建logging用来记录日志
-        self.logger.debug (u'{}_{}  :  Skin joint creation completed'.format (self.name , self.side))
+        cmds.setAttr (self.bpjnt_list [0] + '.visibility' , vis_bool)
+        # 设置ik关节链条和fk关节链条的可见性
+        cmds.setAttr (self.ik_limb.jnt_list [0] + '.v' , vis_bool)
+        cmds.setAttr (self.fk_limb.jnt_list [0] + '.v' , vis_bool)
 
 
     # 创建控制器绑定
@@ -110,36 +137,60 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         self._create_ctrl_grp ()
 
         # 创建ik模块和fk模块的控制器
-        self.ik_limb.create_ctrl ()
-        self.fk_limb.create_ctrl ()
+        self._create_ikfk_ctrl ()
 
         # 创建用于ikfk切换的控制器
         self._create_ikfk_switch_ctrl ()
 
-        # 整理层级结构
-        cmds.parent (self.ik_limb.ctrl_grp , self.output_list [0])
-        cmds.parent (self.fk_limb.ctrl_grp , self.output_list [0])
+
         # 创建logging用来记录日志
         self.logger.debug (u'{}_{}  :  Controller creation completed'.format (self.name , self.side))
 
 
+    # 创建ik和fk系统各自的控制器
+    def _create_ikfk_ctrl (self) :
+        # 创建ik模块和fk模块的控制器
+        self.ik_limb.create_ctrl ()
+        self.fk_limb.create_ctrl ()
+        # 整理层级结构
+        cmds.parent (self.ik_limb.ctrl_grp , self.output_list [0])
+        cmds.parent (self.fk_limb.ctrl_grp , self.output_list [0])
+
+
+    # 添加约束,ikfk关节链的约束比较特别，需要连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
     def add_constraint (self) :
         '''
         添加约束,ikfk关节链的约束比较特别，需要连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
         '''
-        self.ik_limb.add_constraint ()
-        self.fk_limb.add_constraint ()
+        # 添加ik和fk系统各自的约束连接
+        self._add_ikfk_constraint ()
 
         # IK关节链，FK关节链来约束IKFK关节链
         for jnt_number in range (self.jnt_number) :
-            cons = cmds.parentConstraint (
-                self.ik_limb.jnt_list [jnt_number] ,
-                self.fk_limb.jnt_list [jnt_number] ,
-                self.jnt_list [jnt_number]) [0]
-        # 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
-        self._set_ikfk_driven_keyframes ()
+            cons = self._create_ikfk_constraint (jnt_number)
+            # 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
+            self._set_ikfk_driven_keyframes (cons , jnt_number)
+
         # 创建logging用来记录日志
         self.logger.debug (u'{}_{}  :  Constraint creation completed'.format (self.name , self.side))
+
+
+    # 添加ik和fk系统各自的约束连接
+    def _add_ikfk_constraint (self) :
+        # 添加ik和fk系统各自的约束连接
+        self.ik_limb.add_constraint ()
+        self.fk_limb.add_constraint ()
+
+
+    def _create_ikfk_constraint (self , jnt_number) :
+        """
+        创建IKFK约束
+        """
+        cons = cmds.parentConstraint (
+            self.ik_limb.jnt_list [jnt_number] ,
+            self.fk_limb.jnt_list [jnt_number] ,
+            self.jnt_list [jnt_number]) [0]
+        return cons
 
 
     def _set_ikfk_driven_keyframes (self , cons , jnt_number) :
