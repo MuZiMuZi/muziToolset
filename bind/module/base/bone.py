@@ -311,7 +311,8 @@ class Bone (object) :
         for ctrl , jnt in zip (self.ctrl_list , self.jnt_list) :
             self.ctrl = self._create_and_attach_controller (ctrl , jnt)
 
-
+    ## 创建整体的控制器层级组
+    # 判断场景里是否已经存在对应的控制器，重建的情况
     def _create_ctrl_grp (self) :
         # 创建整体的控制器层级组
         # 判断场景里是否已经存在对应的控制器，重建的情况

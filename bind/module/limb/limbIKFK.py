@@ -4,7 +4,7 @@ import maya.cmds as cmds
 
 from ..chain import chainIKFK
 from ..limb import limbFK , limbIK
-from ....core import controlUtils , jointUtils
+from ....core import jointUtils
 
 
 reload (limbFK)
@@ -48,7 +48,8 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         self.ik_limb.create_namespace ()
         self.fk_limb.create_namespace ()
 
-    #创建定位的bp关节
+
+    # 创建定位的bp关节
     def create_bpjnt (self) :
         """
         创建定位的bp关节
@@ -70,7 +71,8 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         # 创建logging用来记录日志
         self.logger.debug (u'{}_{}  :  BP joint creation completed for positioning'.format (self.name , self.side))
 
-    #根据定位的bp关节创建关节
+
+    # 根据定位的bp关节创建关节
     def create_joint (self) :
         '''
         根据定位的bp关节创建关节
@@ -78,12 +80,8 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         # 创建ik关节链条和fk关节链条的关节
         self.ik_limb.create_joint ()
         self.fk_limb.create_joint ()
-        # 判断场景里是否已经存在对应的关节，重建的情况
-        if cmds.objExists (self.jnt_list [0]) :
-            # 删除过去的关节后，并重新创建关节
-            cmds.delete (self.jnt_list [0])
-        else :
-            pass
+        # 判断场景里是否已经存在对应的关节，重建的情况,当之前的关节存在于场景中的时候进行删除
+        self._cheek_bpjnt_objExists ()
         # 创建ikfk的关节
         cmds.select (clear = True)
         for jnt_number , bpjnt in enumerate (self.bpjnt_list) :
@@ -93,42 +91,34 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         jointUtils.Joint.joint_orientation (self.jnt_list)
         # 隐藏bp的定位关节
         self.hide_bpjnt ()
-        # 设置ik关节链条和fk关节链条的可见性
-        cmds.setAttr (self.ik_limb.jnt_list [0] + '.v' , 0)
-        cmds.setAttr (self.fk_limb.jnt_list [0] + '.v' , 0)
-
+        # 隐藏bp的定位关节
+        self._set_bpjnt_vis (vis_bool = 0)
+        # 整理关节层级结构
         cmds.parent (self.jnt_list [0] , self.jnt_parent)
         # 创建logging用来记录日志
         self.logger.debug (u'{}_{}  :  Skin joint creation completed'.format (self.name , self.side))
 
-    #创建控制器绑定
+
+    # 创建控制器绑定
     def create_ctrl (self) :
         u'''
         创建控制器绑定
         '''
         # 判断场景里是否已经存在对应的控制器，重建的情况
-        if cmds.objExists (self.ctrl_grp) :
-            # 删除过去的控制器层级组后，并重新创建控制器
-            cmds.delete (self.ctrl_grp)
-            self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
-        else :
-            self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
+        self._create_ctrl_grp ()
 
-        #创建ik模块和fk模块的控制器
+        # 创建ik模块和fk模块的控制器
         self.ik_limb.create_ctrl ()
         self.fk_limb.create_ctrl ()
 
         # 创建用于ikfk切换的控制器
-        self._create_ikfk_switch_ctrl()
+        self._create_ikfk_switch_ctrl ()
 
         # 整理层级结构
         cmds.parent (self.ik_limb.ctrl_grp , self.output_list [0])
         cmds.parent (self.fk_limb.ctrl_grp , self.output_list [0])
         # 创建logging用来记录日志
         self.logger.debug (u'{}_{}  :  Controller creation completed'.format (self.name , self.side))
-
-
-
 
 
     def add_constraint (self) :
@@ -144,29 +134,34 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
                 self.ik_limb.jnt_list [jnt_number] ,
                 self.fk_limb.jnt_list [jnt_number] ,
                 self.jnt_list [jnt_number]) [0]
-            # 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
-            cmds.setDrivenKeyframe (
-                '{}.w0'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 1)
-            cmds.setDrivenKeyframe (
-                '{}.w1'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 0)
-            cmds.setDrivenKeyframe (
-                '{}.w0'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 0)
-            cmds.setDrivenKeyframe (
-                '{}.w1'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 1)
-
-            # 设置ik关节链条和ik控制器的可见性
-            cmds.setDrivenKeyframe (self.ik_limb.ctrl_grp + '.v' ,
-                                    cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 1)
-            cmds.setDrivenKeyframe (self.ik_limb.ctrl_grp + '.v' ,
-                                    cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 0)
-
-            # 设置fk关节链条和fk控制器的可见性
-            cmds.setDrivenKeyframe (self.fk_limb.ctrl_grp + '.v' ,
-                                    cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 1)
-            cmds.setDrivenKeyframe (self.fk_limb.ctrl_grp + '.v' ,
-                                    cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 0)
+        # 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
+        self._set_ikfk_driven_keyframes ()
         # 创建logging用来记录日志
         self.logger.debug (u'{}_{}  :  Constraint creation completed'.format (self.name , self.side))
+
+
+    def _set_ikfk_driven_keyframes (self , cons , jnt_number) :
+        # 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
+        cmds.setDrivenKeyframe (
+            '{}.w0'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 1)
+        cmds.setDrivenKeyframe (
+            '{}.w1'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 0)
+        cmds.setDrivenKeyframe (
+            '{}.w0'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 0)
+        cmds.setDrivenKeyframe (
+            '{}.w1'.format (cons) , cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 1)
+
+        # 设置ik关节链条和ik控制器的可见性
+        cmds.setDrivenKeyframe (self.ik_limb.ctrl_grp + '.v' ,
+                                cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 1)
+        cmds.setDrivenKeyframe (self.ik_limb.ctrl_grp + '.v' ,
+                                cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 0)
+
+        # 设置fk关节链条和fk控制器的可见性
+        cmds.setDrivenKeyframe (self.fk_limb.ctrl_grp + '.v' ,
+                                cd = self.ctrl_list [0] + '.Switch' , dv = 0 , v = 1)
+        cmds.setDrivenKeyframe (self.fk_limb.ctrl_grp + '.v' ,
+                                cd = self.ctrl_list [0] + '.Switch' , dv = 1 , v = 0)
 
 
     def build_setup (self) :
