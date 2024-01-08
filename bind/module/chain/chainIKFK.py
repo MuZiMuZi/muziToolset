@@ -21,14 +21,6 @@ class ChainIKFK (chain.Chain) :
     def __init__ (self , side , name , jnt_number , direction = [0 , 1 , 0] , length = 10 , is_stretch = 1 ,
                   jnt_parent = None ,
                   ctrl_parent = None) :
-
-        # 初始化ik关节链条和fk关节链条
-        self.ik_chain = chainIK.ChainIK (side , name , jnt_number , direction , length , is_stretch)
-
-        self.fk_chain = chainFK.ChainFK (side , name , jnt_number , direction , length)
-        self.rigType = 'ChainIKFK'
-        self.radius = 6
-
         super ().__init__ (side , name , jnt_number , length , jnt_parent = None , ctrl_parent = None)
         # 获取初始的位置
         self.interval = length / (self.jnt_number - 1)
@@ -36,10 +28,47 @@ class ChainIKFK (chain.Chain) :
         self.is_stretch = is_stretch
         self.axis = vectorUtils.Vector (direction).axis
 
+        # 初始化ik关节链条和fk关节链条
+        self._init_ikfk ()
+
+
+    # 初始化ik关节链条和fk关节链条
+    def _init_ikfk (self) :
+        # 初始化ik关节链条和fk关节链条
+        self.ik_chain = chainIK.ChainIK (self.side , self.name , self.jnt_number , self.direction , self.length ,
+                                         self.is_stretch)
+
+        self.fk_chain = chainFK.ChainFK (self.side , self.name , self.jnt_number , self.direction , self.length)
+
+
+    def create_namespace (self) :
+        u"""
+            创建名称进行规范整理
+            """
+        super ().create_namespace ()
+
+        ## 初始化ik关节链条和fk关节链条的命名规范
+        self._create_ikfk_namespace ()
+
+
+    def _create_ikfk_namespace (self) :
+        # 初始化ik关节链条和fk关节链条的命名规范
+        self.ik_chain.create_namespace ()
+        self.fk_chain.create_namespace ()
+
 
     def create_bpjnt (self) :
+        """
+        创建定位的bp关节
+        """
+        # 设置bpjnt创建出来的位置放置在top_bpjnt_grp的层级下
         super ().create_bpjnt ()
 
+        ## 创建ik关节链条和fk关节链条的定位关节
+        self._create_ikfk_bpjnt ()
+
+
+    def _create_ikfk_bpjnt (self) :
         # 创建ik关节链条和fk关节链条的定位关节
         self.ik_chain.create_bpjnt ()
         self.fk_chain.create_bpjnt ()
@@ -53,28 +82,13 @@ class ChainIKFK (chain.Chain) :
         cmds.setAttr (self.fk_chain.bpjnt_list [0] + '.visibility' , 0)
 
 
-    def create_namespace (self) :
-        u"""
-            创建名称进行规范整理
-            """
-        # 初始化ik关节链条和fk关节链条的命名规范
-        self.ik_chain.create_namespace ()
-        self.fk_chain.create_namespace ()
-        super ().create_namespace ()
-
-
     def create_joint (self) :
         """
         根据定位的bp关节创建关节
         """
-        # 创建ik关节链条和fk关节链条的关节
-        self.ik_chain.create_joint ()
-        self.fk_chain.create_joint ()
 
         # 判断场景里是否已经存在对应的关节，重建的情况
-        if cmds.objExists (self.jnt_list [0]) :
-            # 删除过去的关节后，并重新创建关节
-            cmds.delete (self.jnt_list [0])
+        self._cheek_bpjnt_objExists ()
 
         # 创建ikfk的关节
         self._create_ikfk_joints ()
@@ -82,19 +96,30 @@ class ChainIKFK (chain.Chain) :
         # 进行关节定向
         jointUtils.Joint.joint_orientation (self.jnt_list)
 
+        # 设置bp关节的可见性
+        self._set_bpjnt_vis (False)
+
+        # 设置关节的层级结构
+        cmds.parent (self.jnt_list [0] , self.jnt_parent)
+
+
+    def _set_bpjnt_vis (self , vis_bool) :
+        super ()._set_bpjnt_vis (vis_bool)
         # 隐藏bp的定位关节
         cmds.setAttr (self.bpjnt_list [0] + '.visibility' , 0)
         # 设置ik关节链条和fk关节链条的可见性
         cmds.setAttr (self.ik_chain.jnt_list [0] + '.v' , 0)
         cmds.setAttr (self.fk_chain.jnt_list [0] + '.v' , 0)
 
-        cmds.parent (self.jnt_list [0] , self.jnt_parent)
-
 
     def _create_ikfk_joints (self) :
         """
         创建ikfk的关节
         """
+        # 创建ik关节链条和fk关节链条的关节
+        self.ik_chain.create_joint ()
+        self.fk_chain.create_joint ()
+
         cmds.select (clear = True)
         for jnt_number , bpjnt in enumerate (self.bpjnt_list) :
             pos = cmds.xform (bpjnt , q = 1 , t = 1 , ws = 1)
@@ -106,14 +131,20 @@ class ChainIKFK (chain.Chain) :
         """
         创建控制器绑定
         """
-        self.ik_chain.create_ctrl ()
-        self.fk_chain.create_ctrl ()
+        # 创建ik和fk系统各自的控制器
+        self._create_ikfk_ctrl ()
 
         # 创建整体的控制器层级组
-        self.ctrl_grp = cmds.createNode ('transform' , name = self.ctrl_grp , parent = self.ctrl_parent)
+        self._create_ctrl_grp ()
 
         # 创建用于ikfk切换的控制器
         self._create_ikfk_switch_ctrl ()
+
+
+    # 创建ik和fk系统各自的控制器
+    def _create_ikfk_ctrl (self) :
+        self.ik_chain.create_ctrl ()
+        self.fk_chain.create_ctrl ()
 
 
     # 创建IKFK切换控制器
@@ -135,14 +166,20 @@ class ChainIKFK (chain.Chain) :
         """
         添加约束,ikfk关节链的约束比较特别，需要连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
         """
-        self.ik_chain.add_constraint ()
-        self.fk_chain.add_constraint ()
+        # 添加ik和fk系统各自的约束连接
+        self._add_ikfk_constraint ()
 
         # IK关节链，FK关节链来约束IKFK关节链
         for jnt_number in range (self.jnt_number) :
             cons = self._create_ikfk_constraint (jnt_number)
             # 连接IKFK切换的属性做驱动关键帧来驱动不同的关节链条
             self._set_ikfk_driven_keyframes (cons , jnt_number)
+
+
+    # 添加ik和fk系统各自的约束连接
+    def _add_ikfk_constraint (self) :
+        self.ik_chain.add_constraint ()
+        self.fk_chain.add_constraint ()
 
 
     ## IK关节链，FK关节链来约束IKFK关节链

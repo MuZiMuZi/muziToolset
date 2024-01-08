@@ -1064,3 +1064,23 @@ abc»º´æµ½ P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/QiZi_B
 2024-01-08 16:32:42,135 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
 2024-01-08 16:32:42,135 -LimbIKFK_logger - INFO - 
 
+2024-01-08 16:39:28,232 -Arm_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-08 16:39:28,244 -Arm_logger - DEBUG - done
+2024-01-08 16:39:28,244 -Arm_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 16:39:28,244 -Arm_logger - INFO - 
+
+2024-01-08 16:40:49,681 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-08 16:40:49,681 -LimbIKFK_logger - DEBUG - done
+2024-01-08 16:40:49,681 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 16:40:49,681 -LimbIKFK_logger - INFO - 
+
+2024-01-08 16:47:15,646 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-08 16:47:15,647 -LimbIKFK_logger - DEBUG - done
+2024-01-08 16:47:15,647 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 16:47:15,647 -LimbIKFK_logger - INFO - 
+
+2024-01-08 16:47:58,805 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-08 16:47:58,805 -LimbIKFK_logger - DEBUG - done
+2024-01-08 16:47:58,805 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 16:47:58,805 -LimbIKFK_logger - INFO - 
+

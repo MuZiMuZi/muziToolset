@@ -38,8 +38,6 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         self.fk_limb = limbFK.LimbFK (side , name , jnt_number , direction , length)
 
 
-
-
     # 创建名称进行规范整理
     def create_namespace (self) :
         u"""
@@ -58,6 +56,8 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         """
         super ().create_bpjnt ()
 
+
+    def _create_ikfk_bpjnt (self) :
         # 创建ik关节链条和fk关节链条的定位关节
         self.ik_limb.create_bpjnt ()
         self.fk_limb.create_bpjnt ()
