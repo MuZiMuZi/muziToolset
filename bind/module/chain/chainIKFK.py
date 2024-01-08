@@ -32,7 +32,7 @@ class ChainIKFK (chain.Chain) :
         self._init_ikfk ()
 
 
-    # 初始化ik关节链条和fk关节链条
+    # 初始化ik系统和fk系统
     def _init_ikfk (self) :
         # 初始化ik关节链条和fk关节链条
         self.ik_chain = chainIK.ChainIK (self.side , self.name , self.jnt_number , self.direction , self.length ,
@@ -131,11 +131,10 @@ class ChainIKFK (chain.Chain) :
         """
         创建控制器绑定
         """
-        # 创建ik和fk系统各自的控制器
-        self._create_ikfk_ctrl ()
-
         # 创建整体的控制器层级组
         self._create_ctrl_grp ()
+        # 创建ik和fk系统各自的控制器
+        self._create_ikfk_ctrl ()
 
         # 创建用于ikfk切换的控制器
         self._create_ikfk_switch_ctrl ()
@@ -145,6 +144,8 @@ class ChainIKFK (chain.Chain) :
     def _create_ikfk_ctrl (self) :
         self.ik_chain.create_ctrl ()
         self.fk_chain.create_ctrl ()
+
+
 
 
     # 创建IKFK切换控制器
@@ -161,6 +162,9 @@ class ChainIKFK (chain.Chain) :
         cmds.addAttr (self.ctrl , sn = 'Switch' , ln = 'ikfkSwitch' , at = 'double' , dv = 1 , min = 0 , max = 1 ,
                       k = 1)
 
+        # 整理层级结构
+        cmds.parent (self.ik_chain.ctrl_grp , self.output_list [0])
+        cmds.parent (self.fk_chain.ctrl_grp , self.output_list [0])
 
     def add_constraint (self) :
         """

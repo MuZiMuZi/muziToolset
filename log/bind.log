@@ -1084,3 +1084,89 @@ abc»º´æµ½ P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/QiZi_B
 2024-01-08 16:47:58,805 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
 2024-01-08 16:47:58,805 -LimbIKFK_logger - INFO - 
 
+2024-01-08 17:17:10,024 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-08 17:17:10,024 -LimbIKFK_logger - DEBUG - done
+2024-01-08 17:17:10,024 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:17:10,024 -LimbIKFK_logger - INFO - 
+
+2024-01-08 17:17:24,911 -Arm_logger - DEBUG - _l  :  BP joint creation completed for positioning
+2024-01-08 17:17:24,929 -Arm_logger - DEBUG - done
+2024-01-08 17:17:24,929 -Arm_logger - INFO - _l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:17:24,929 -Arm_logger - INFO - 
+
+2024-01-08 17:18:30,112 -Arm_logger - DEBUG - _l  :  BP joint creation completed for positioning
+2024-01-08 17:18:30,137 -Arm_logger - DEBUG - done
+2024-01-08 17:18:30,137 -Arm_logger - INFO - _l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:18:30,137 -Arm_logger - INFO - 
+
+2024-01-08 17:18:35,269 -Arm_logger - DEBUG - _l  :  Skin joint creation completed
+2024-01-08 17:28:08,581 -Arm_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-08 17:28:08,591 -Arm_logger - DEBUG - done
+2024-01-08 17:28:08,591 -Arm_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:28:08,591 -Arm_logger - INFO - 
+
+2024-01-08 17:28:25,192 -Arm_logger - DEBUG - zz_l  :  Skin joint creation completed
+2024-01-08 17:28:50,471 -Arm_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-08 17:28:50,483 -Arm_logger - DEBUG - done
+2024-01-08 17:28:50,483 -Arm_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:28:50,483 -Arm_logger - INFO - 
+
+2024-01-08 17:28:56,516 -Arm_logger - DEBUG - zz_l  :  Skin joint creation completed
+2024-01-08 17:29:59,289 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-08 17:29:59,289 -LimbIKFK_logger - DEBUG - done
+2024-01-08 17:29:59,289 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:29:59,289 -LimbIKFK_logger - INFO - 
+
+2024-01-08 17:29:59,297 -LimbIKFK_logger - DEBUG - zz_l  :  Skin joint creation completed
+2024-01-08 17:32:21,854 -ChainIKFK_logger - DEBUG - done
+2024-01-08 17:32:21,854 -ChainIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:32:21,854 -ChainIKFK_logger - INFO - 
+
+2024-01-08 17:36:28,048 -ChainIKFK_logger - DEBUG - done
+2024-01-08 17:36:28,048 -ChainIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:36:28,048 -ChainIKFK_logger - INFO - 
+
+2024-01-08 17:37:27,999 -ChainIKFK_logger - DEBUG - done
+2024-01-08 17:37:27,999 -ChainIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:37:27,999 -ChainIKFK_logger - INFO - 
+
+2024-01-08 17:39:03,328 -ChainIKFK_logger - DEBUG - done
+2024-01-08 17:39:03,328 -ChainIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:39:03,328 -ChainIKFK_logger - INFO - 
+
+2024-01-08 17:39:24,875 -ChainIKFK_logger - DEBUG - done
+2024-01-08 17:39:24,875 -ChainIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:39:24,875 -ChainIKFK_logger - INFO - 
+
+2024-01-08 17:42:48,152 -ChainIKFK_logger - DEBUG - done
+2024-01-08 17:42:48,152 -ChainIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:42:48,152 -ChainIKFK_logger - INFO - 
+
+2024-01-08 17:43:08,186 -ChainIKFK_logger - DEBUG - done
+2024-01-08 17:43:08,186 -ChainIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:43:08,186 -ChainIKFK_logger - INFO - 
+
+2024-01-08 17:44:07,901 -ChainIKFK_logger - DEBUG - done
+2024-01-08 17:44:07,902 -ChainIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:44:07,902 -ChainIKFK_logger - INFO - 
+
+2024-01-08 17:45:02,934 -ChainFK_logger - DEBUG - done
+2024-01-08 17:45:02,934 -ChainFK_logger - INFO - _l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:45:02,935 -ChainFK_logger - INFO - 
+
+2024-01-08 17:45:18,401 -ChainFK_logger - DEBUG - done
+2024-01-08 17:45:18,401 -ChainFK_logger - INFO - _l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:45:18,401 -ChainFK_logger - INFO - 
+
+2024-01-08 17:47:29,044 -ChainFK_logger - DEBUG - done
+2024-01-08 17:47:29,044 -ChainFK_logger - INFO - _l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:47:29,044 -ChainFK_logger - INFO - 
+
+2024-01-08 17:47:45,908 -ChainFK_logger - DEBUG - done
+2024-01-08 17:47:45,908 -ChainFK_logger - INFO - _l  :  Create positioning joints for BP and prepare for generation
+2024-01-08 17:47:45,908 -ChainFK_logger - INFO - 
+
+2024-01-08 17:47:46,939 -ChainFK_logger - DEBUG - done
+2024-01-08 17:47:46,939 -ChainFK_logger - INFO - _l  :  Create binding system
+2024-01-08 17:47:46,939 -ChainFK_logger - INFO - 
+

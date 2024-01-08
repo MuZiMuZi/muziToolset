@@ -40,15 +40,15 @@ class ChainFK (chain.Chain) :
 
         # 对控制器组和关节组进行循环，创建对应关节的控制器以及吸附到对应的位置
         # 使用函数进行创建和吸附控制器
-        for ctrl , jnt in zip (self.ctrl_list , self.jnt_list) :
-            self.ctrl = self._create_and_attach_controller (ctrl , jnt)
+        self._create_and_attach_controller ()
 
 
-    def _create_and_attach_controller (self , ctrl , jnt) :
+    def _create_and_attach_controller (self) :
         """
         根据给定的控制器和关节创建控制器，吸附到对应位置，并根据边的情况进行调整
         """
-        # 使用控制器工具类创建控制器
+        # 对控制器组和关节组进行循环，创建对应关节的控制器以及吸附到对应的位置
+        # 使用函数进行创建和吸附控制器
         parent = self.ctrl_grp
         for ctrl , jnt in zip (self.ctrl_list , self.jnt_list) :
             self.ctrl = controlUtils.Control.create_ctrl (ctrl , shape = self.shape , radius = self.radius ,
