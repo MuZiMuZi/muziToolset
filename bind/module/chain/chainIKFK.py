@@ -63,7 +63,6 @@ class ChainIKFK (chain.Chain) :
         super ().create_namespace ()
 
 
-
     def create_joint (self) :
         """
         根据定位的bp关节创建关节
@@ -184,10 +183,9 @@ class ChainIKFK (chain.Chain) :
 
     def delete_rig (self) :
         super ().delete_rig ()
-        #删除IKFK的绑定
-        self.ik_chain.delete_rig()
-        self.fk_chain.delete_rig()
-
+        # 删除IKFK的绑定
+        self.ik_chain.delete_rig ()
+        self.fk_chain.delete_rig ()
 
 
 if __name__ == '__main__' :
