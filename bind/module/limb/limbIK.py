@@ -25,12 +25,13 @@ class LimbIK (chainIK.ChainIK) :
         创建手臂或者是腿部的四肢关节的IK绑定
         limb_type(str):给定的limb_type 是手臂还是腿部
         """
-        super ().__init__ (side , name , jnt_number , direction , length , is_stretch , jnt_parent , ctrl_parent)
         # 判断给定的limb_type 是手臂还是腿部
         if limb_type == 'arm' :
             self.z_value = 1
         else :
             self.z_value = -1
+        super ().__init__ (side , name , jnt_number , direction , length , is_stretch , jnt_parent , ctrl_parent)
+
 
 
     # 根据获取的输入信息，创建名称规范组

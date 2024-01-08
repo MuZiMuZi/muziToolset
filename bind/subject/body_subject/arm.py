@@ -12,19 +12,20 @@ reload (base)
 
 
 class Arm (limbIKFK.LimbIKFK) :
+    rigType = 'arm'
 
 
     def __init__ (self , side , name , jnt_number = 3 , direction = [-1 , 0 , 0] , is_stretch = 1 , length = 15 ,
                   limbtype = 'arm' ,
                   jnt_parent = None , ctrl_parent = None) :
-        super ().__init__ (side , name , jnt_number , direction , is_stretch , length , limbtype , jnt_parent ,
-                           ctrl_parent)
-        self.rigType = 'Arm'
-
         # 初始化手指的模块
         self.hand_limb = hand.Hand (side , name , jnt_number , direction , length = 3 ,
                                     jnt_parent = None ,
                                     ctrl_parent = None)
+        super ().__init__ (side , name , jnt_number , direction , is_stretch , length ,
+                           limbtype ,
+                           jnt_parent ,
+                           ctrl_parent)
 
 
     def create_namespace (self) :
