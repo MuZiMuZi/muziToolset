@@ -4,7 +4,7 @@ import maya.cmds as cmds
 
 from ..chain import chainIKFK
 from ..limb import limbFK , limbIK
-from ....core import jointUtils
+from ....core import jointUtils,controlUtils
 
 
 reload (limbFK)
@@ -152,6 +152,22 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         # 创建ik模块和fk模块的控制器
         self.ik_limb.create_ctrl ()
         self.fk_limb.create_ctrl ()
+
+
+    # 创建IKFK切换控制器
+    def _create_ikfk_switch_ctrl (self) :
+        """
+        创建IKFK切换控制器
+        """
+        self.ctrl = controlUtils.Control.create_ctrl (self.ctrl_list [0] , shape = 'pPlatonic' ,
+                                                      radius = self.radius * 1.2 ,
+                                                      axis = self.axis , pos = self.jnt_list [0] ,
+                                                      parent = self.ctrl_grp)
+        cmds.setAttr (self.zero_list [0] + '.translateZ' , -5)
+        # 添加IKFK切换的属性
+        cmds.addAttr (self.ctrl , sn = 'Switch' , ln = 'ikfkSwitch' , at = 'double' , dv = 1 , min = 0 , max = 1 ,
+                      k = 1)
+
         # 整理层级结构
         cmds.parent (self.ik_limb.ctrl_grp , self.output_list [0])
         cmds.parent (self.fk_limb.ctrl_grp , self.output_list [0])
