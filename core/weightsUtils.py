@@ -10,31 +10,70 @@ u"""
 
 bind_chain_rig:创建混合IKFk链的bind链控制器绑定
 """
-from importlib import reload
 import json
 import os
-import maya.mel as mel
 
 import maya.cmds as cmds
-from . import pipelineUtils
+import maya.mel as mel
+
 
 class Weights (object) :
 
     def __init__ (self , geo) :
+        """
+        geo(str) : 需要进行蒙皮操作的物体
+        """
         self.geo = geo
 
-        self.file_path = cmds.file (q = True , location = True)
+        # 初始化权重文件夹路径,创建权重文件夹
+        self._init_file_path ()
 
+        # 初始权重文件的路径，将权重文件放在对应的文件夹下
+        self._init_skin_folder ()
+
+
+    # 初始化权重文件夹路径 , 创建权重文件夹
+    def _init_file_path (self) :
+        """
+        初始化权重文件夹路径,创建权重文件夹
+        """
+        # 获取打开的maya文件的路径信息
+        self.current_file_path = cmds.file (q = True , location = True)
+        if not self.current_file_path :
+            cmds.warning ("未打开任何Maya文件。")
+            return
+
+        # 提取文件夹和文件名
+        self.folder_path , self.file_name = os.path.split (self.current_file_path)
+
+        # 在文件夹旁边创建名为 "文件名_skin" 的文件夹,用来整理保存权重文件
+        self.skin_folder_name = "{}_skin".format (self.file_name)
+        self.skin_folder_path = os.path.join (self.folder_path , self.skin_folder_name)
+
+        # 检查文件夹是否已存在，如果不存在则创建
+        if not os.path.exists (self.skin_folder_path) :
+            os.makedirs (self.skin_folder_path)
+            print (f"成功创建文件夹：{self.skin_folder_name}，路径为：{self.skin_folder_path}")
+        else :
+            cmds.warning (f"文件夹 {self.skin_folder_name} 已存在。")
+
+
+    # 初始权重文件的路径，将权重文件放在对应的文件夹下
+    def _init_skin_folder (self) :
+        """
+        初始权重文件的路径，将权重文件放在对应的文件夹下
+        """
+        # 规定蒙皮权重文件和关节影响文件的后缀名
         self.weightsFileExt = '.xml'
         self.influencesFileExt = '.infs'
 
         # 设定蒙皮权重导出的文件名
         self.skinWeights_FileName = 'sc_' + self.geo + self.weightsFileExt
-        self.skinWeights_Path = os.path.abspath (self.file_path + "/..")
+        self.skinWeights_Path = self.skin_folder_path
 
         # 设定关节影响导出的文件名
         self.influences_FileName = 'sc_' + self.geo + self.influencesFileExt
-        self.influences_Path = os.path.join (self.skinWeights_Path , self.influences_FileName)
+        self.influences_Path = os.path.join (self.skin_folder_path , self.influences_FileName)
 
 
     # 选择物体，导出保存的权重文件
@@ -44,13 +83,12 @@ class Weights (object) :
         :return:
         '''
         # 查询物体是否有蒙皮节点，没有的话报错
-        history = cmds.listHistory (self.geo)
-        skin_node_Res = cmds.ls (history , type = 'skinCluster')
+        self.skin_node = self.get_skin_node ()
 
-        if not skin_node_Res :
+        if not self.skin_node :
             cmds.warning (u'{}这个物体没有蒙皮节点'.format (self.geo))
         else :
-            skin_node = skin_node_Res [0]
+            skin_node = self.skin_node [0]
             # 导出蒙皮权重
             cmds.deformerWeights (self.skinWeights_FileName , path = self.skinWeights_Path , export = True ,
                                   deformer = skin_node)
@@ -67,17 +105,18 @@ class Weights (object) :
        从给定权重文件夹加载蒙皮几何体对象的权重将从与对象短名称匹配的文件名加载权重，并添加其他文件以获取其影响
         :return:
         '''
-        # 查询物体是否有蒙皮节点，没有的话报错
-        history = cmds.listHistory (self.geo)
-        skin_node_Res = cmds.ls (history , type = 'skinCluster')
+        # 查询物体是否有蒙皮节点
+        self.skin_node = self.get_skin_node ()
 
-        if skin_node_Res :
-            cmds.delete (skin_node_Res)
+        # 如果物体本身就具有蒙皮节点的话则先删除原本的蒙皮节点
+        if self.skin_node :
+            cmds.delete (self.skin_node)
 
+        # 判断物体导出权重的的文件路径是否存在，如果不存在的话则报错
         if not os.path.exists (self.skinWeights_Path) :
             cmds.warning (u'{}这个物体没有导出权重的文件'.format (self.geo))
             return
-
+        # 判断物体导出权重关节影响的文件路径是否存在，如果不存在的话则报错
         if not os.path.exists (self.influences_Path) :
             cmds.warning (u'{}这个物体没有导出权重关节影响的文件'.format (self.geo))
             return
@@ -152,3 +191,20 @@ class Weights (object) :
             bs = cmds.listConnections (geo_shape , type = 'blendShape')
             if bs :
                 cmds.rename (bs , 'bs_{}'.format (geo))
+
+
+    def get_skin_node (self) :
+        """
+        获取物体的蒙皮节点信息，返回蒙皮节点
+        """
+
+        # 查询物体是否有蒙皮节点，没有的话报错
+        history = cmds.listHistory (self.geo)
+        self.skin_node = cmds.ls (history , type = 'skinCluster')
+        # 如果蒙皮节点存在，则返回出蒙皮节点
+        if self.skin_node :
+            return self.skin_node
+        # 如果不存在则提出报错，物体没有蒙皮节点
+        else :
+            cmds.warning (u'{}这个物体没有蒙皮节点'.format (self.geo))
+            return None
