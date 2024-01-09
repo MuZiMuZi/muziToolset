@@ -216,3 +216,4 @@ class Weights (object) :
         self.skin_node = self.get_skin_node ()
         if self.skin_node :
             self.skin_node = cmds.rename (self.skin_node , 'sc_{}'.format (self.geo))
+
