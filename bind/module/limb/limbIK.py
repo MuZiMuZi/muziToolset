@@ -40,6 +40,7 @@ class LimbIK (chainIK.ChainIK) :
         # 创建ik控制器组的名称规范
         # 创建极向量pv控制器和关节的名称规范
         self.pv_bpjnt = ('bpjnt_{}_{}{}PV_001'.format (self.side , self.name , self.rigType))
+        self.pv_zero = ('zero_{}_{}{}PV_001'.format (self.side , self.name , self.rigType))
         self.pv_ctrl = ('ctrl_{}_{}{}PV_001'.format (self.side , self.name , self.rigType))
         self.pv_loc = ('loc_{}_{}{}PV_001'.format (self.side , self.name , self.rigType))
         self.pv_jnt = ('jnt_{}_{}{}PV_001'.format (self.side , self.name , self.rigType))
@@ -55,6 +56,18 @@ class LimbIK (chainIK.ChainIK) :
         # 添加一个末端的iK关节用来制作singleIKhandle，
         self.endIK_handle = ('handle_{}_{}{}End_001'.format (self.side , self.name , self.rigType))
         self.endIK_jnt = 'jnt_{}_{}{}_{:03d}'.format (self.side , self.name , self.rigType , self.jnt_number + 1)
+
+
+    def create_bpjnt (self) :
+        """
+        创建定位的bp关节
+        """
+        # 设置bpjnt创建出来的位置放置在top_bpjnt_grp的层级下
+        self.bpjnt_parent = self.top_bpjnt_grp
+
+        # 根据命名规范创建用来定位的bp关节
+        for bpjnt in self.bpjnt_list :
+            self._create_single_bpjnt (bpjnt)
 
 
     # 创建用来蒙皮的绑定关节
@@ -132,11 +145,12 @@ class LimbIK (chainIK.ChainIK) :
                                         endEffector = self.jnt_list [2] ,
                                         sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True) [0]
 
-        # 创建末端的ikspineHandle
+        # 创建末端的ikSCsolverHandle
         self.endIK_handle = cmds.ikHandle (name = self.endIK_handle , startJoint = self.jnt_list [2] ,
                                            endEffector = self.endIK_jnt ,
-                                           sticky = 'sticky' , solver = 'ikRPsolver' , setupForRPsolver = True) [0]
+                                           sticky = 'sticky' , solver = 'ikSCsolver' , setupForRPsolver = True) [0]
 
+        # 设置ikhandle的可见性
         cmds.setAttr (f'{self.ik_handle}.v' , 0)
         cmds.setAttr (f'{self.endIK_handle}.v' , 0)
 
@@ -151,14 +165,8 @@ class LimbIK (chainIK.ChainIK) :
         """
         self.pv_ctrl = controlUtils.Control.create_ctrl (self.pv_ctrl , shape = 'ball' ,
                                                          radius = self.radius * 0.6 ,
-                                                         axis = 'X+' , pos = self.jnt_list [1] ,
+                                                         axis = 'X+' , pos = self.bpjnt_list [1] ,
                                                          parent = self.ctrl_grp)
-
-        # 移动极向量控制器组的位置
-        cmds.setAttr (f'{self.pv_ctrl.replace ("ctrl" , "zero")}.translateZ' , -10 * self.z_value * self.side_value)
-
-
-        # 创建ik极向量控制器的曲线指示器
 
 
     # 创建ik极向量控制器的曲线指示器
@@ -389,6 +397,15 @@ class LimbIK (chainIK.ChainIK) :
         # 把混合后的关节长度连接给原关节
         cmds.connectAttr (self.pvLock_blend_node + '.outputR' , self.jnt_list [1] + '.translateX')
         cmds.connectAttr (self.pvLock_blend_node + '.outputG' , self.jnt_list [-1] + '.translateX')
+
+
+    def build_rig (self) :
+        """
+        根据生成的bp定位关节，创建绑定系统
+        """
+        self.create_joint ()
+        # self.create_ctrl ()
+        # self.add_constraint ()
 
 
 if __name__ == '__main__' :

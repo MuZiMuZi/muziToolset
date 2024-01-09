@@ -1324,3 +1324,232 @@ abc»º´æµ½ P:/Project/Production_CG/Project/Shots/EP002/SC001/CUT190/Cache/QiZi_B
 2024-01-09 09:50:03,216 -LimbIKFK_logger - INFO - zz_l  :  Create binding system
 2024-01-09 09:50:03,217 -LimbIKFK_logger - INFO - 
 
+2024-01-09 10:49:04,923 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-09 10:49:04,923 -LimbIKFK_logger - DEBUG - done
+2024-01-09 10:49:04,923 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 10:49:04,923 -LimbIKFK_logger - INFO - 
+
+2024-01-09 10:49:13,656 -LimbIKFK_logger - DEBUG - zz_l  :  Skin joint creation completed
+2024-01-09 10:49:13,970 -LimbIKFK_logger - DEBUG - zz_l  :  Controller creation completed
+2024-01-09 10:49:13,976 -LimbIKFK_logger - DEBUG - zz_l  :  Constraint creation completed
+2024-01-09 10:49:13,976 -LimbIKFK_logger - DEBUG - done
+2024-01-09 10:49:13,976 -LimbIKFK_logger - INFO - zz_l  :  Create binding system
+2024-01-09 10:49:13,976 -LimbIKFK_logger - INFO - 
+
+2024-01-09 10:51:29,564 -LimbIK_logger - DEBUG - done
+2024-01-09 10:51:29,564 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 10:51:29,564 -LimbIK_logger - INFO - 
+
+2024-01-09 10:51:38,928 -LimbIK_logger - DEBUG - done
+2024-01-09 10:51:38,928 -LimbIK_logger - INFO - zz_l  :  Create binding system
+2024-01-09 10:51:38,928 -LimbIK_logger - INFO - 
+
+2024-01-09 10:52:37,687 -LimbIK_logger - DEBUG - done
+2024-01-09 10:52:37,687 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 10:52:37,687 -LimbIK_logger - INFO - 
+
+2024-01-09 10:52:59,620 -LimbIK_logger - DEBUG - done
+2024-01-09 10:52:59,620 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 10:52:59,620 -LimbIK_logger - INFO - 
+
+2024-01-09 10:53:56,536 -LimbIK_logger - DEBUG - done
+2024-01-09 10:53:56,536 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 10:53:56,536 -LimbIK_logger - INFO - 
+
+2024-01-09 10:55:06,175 -LimbIK_logger - DEBUG - done
+2024-01-09 10:55:06,175 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 10:55:06,175 -LimbIK_logger - INFO - 
+
+2024-01-09 10:55:35,385 -LimbIK_logger - DEBUG - done
+2024-01-09 10:55:35,385 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 10:55:35,385 -LimbIK_logger - INFO - 
+
+2024-01-09 10:55:58,282 -LimbIK_logger - DEBUG - done
+2024-01-09 10:55:58,282 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 10:55:58,282 -LimbIK_logger - INFO - 
+
+2024-01-09 10:57:04,854 -LimbIK_logger - DEBUG - done
+2024-01-09 10:57:04,854 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 10:57:04,854 -LimbIK_logger - INFO - 
+
+2024-01-09 10:58:48,411 -LimbIK_logger - DEBUG - done
+2024-01-09 10:58:48,411 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 10:58:48,411 -LimbIK_logger - INFO - 
+
+2024-01-09 10:59:15,451 -LimbIK_logger - DEBUG - done
+2024-01-09 10:59:15,451 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 10:59:15,451 -LimbIK_logger - INFO - 
+
+2024-01-09 11:02:15,138 -LimbIK_logger - DEBUG - done
+2024-01-09 11:02:15,138 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:02:15,138 -LimbIK_logger - INFO - 
+
+2024-01-09 11:04:30,647 -LimbIK_logger - DEBUG - done
+2024-01-09 11:04:30,648 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:04:30,648 -LimbIK_logger - INFO - 
+
+2024-01-09 11:05:33,110 -LimbIK_logger - DEBUG - done
+2024-01-09 11:05:33,110 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:05:33,110 -LimbIK_logger - INFO - 
+
+2024-01-09 11:05:52,102 -LimbIK_logger - DEBUG - done
+2024-01-09 11:05:52,103 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:05:52,103 -LimbIK_logger - INFO - 
+
+2024-01-09 11:06:45,469 -LimbIK_logger - DEBUG - done
+2024-01-09 11:06:45,469 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:06:45,469 -LimbIK_logger - INFO - 
+
+2024-01-09 11:07:34,208 -LimbIK_logger - DEBUG - done
+2024-01-09 11:07:34,208 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:07:34,208 -LimbIK_logger - INFO - 
+
+2024-01-09 11:08:09,088 -LimbIK_logger - DEBUG - done
+2024-01-09 11:08:09,088 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:08:09,088 -LimbIK_logger - INFO - 
+
+2024-01-09 11:10:44,729 -LimbIK_logger - DEBUG - done
+2024-01-09 11:10:44,729 -LimbIK_logger - INFO - zz_l  :  Create binding system
+2024-01-09 11:10:44,729 -LimbIK_logger - INFO - 
+
+2024-01-09 11:12:52,461 -Arm_logger - DEBUG - _l  :  BP joint creation completed for positioning
+2024-01-09 11:12:52,472 -Arm_logger - DEBUG - done
+2024-01-09 11:12:52,473 -Arm_logger - INFO - _l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:12:52,473 -Arm_logger - INFO - 
+
+2024-01-09 11:12:53,243 -Arm_logger - DEBUG - _l  :  Skin joint creation completed
+2024-01-09 11:12:53,534 -Arm_logger - DEBUG - _l  :  Controller creation completed
+2024-01-09 11:12:53,980 -Arm_logger - DEBUG - _l  :  Constraint creation completed
+2024-01-09 11:12:53,994 -Arm_logger - DEBUG - done
+2024-01-09 11:12:53,994 -Arm_logger - INFO - _l  :  Create binding system
+2024-01-09 11:12:53,994 -Arm_logger - INFO - 
+
+2024-01-09 11:13:10,832 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-09 11:13:10,832 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:13:10,832 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:13:10,832 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:13:17,128 -LimbIKFK_logger - DEBUG - zz_l  :  Skin joint creation completed
+2024-01-09 11:13:17,459 -LimbIKFK_logger - DEBUG - zz_l  :  Controller creation completed
+2024-01-09 11:13:17,465 -LimbIKFK_logger - DEBUG - zz_l  :  Constraint creation completed
+2024-01-09 11:13:17,465 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:13:17,465 -LimbIKFK_logger - INFO - zz_l  :  Create binding system
+2024-01-09 11:13:17,465 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:16:02,067 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-09 11:16:02,067 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:16:02,067 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:16:02,067 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:16:08,519 -LimbIKFK_logger - DEBUG - zz_l  :  Skin joint creation completed
+2024-01-09 11:17:09,293 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-09 11:17:09,293 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:17:09,293 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:17:09,293 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:17:15,114 -LimbIKFK_logger - DEBUG - zz_l  :  Skin joint creation completed
+2024-01-09 11:17:15,437 -LimbIKFK_logger - DEBUG - zz_l  :  Controller creation completed
+2024-01-09 11:17:15,443 -LimbIKFK_logger - DEBUG - zz_l  :  Constraint creation completed
+2024-01-09 11:17:15,443 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:17:15,443 -LimbIKFK_logger - INFO - zz_l  :  Create binding system
+2024-01-09 11:17:15,443 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:19:31,487 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-09 11:19:31,487 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:19:31,487 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:19:31,488 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:19:40,668 -LimbIKFK_logger - DEBUG - zz_l  :  Skin joint creation completed
+2024-01-09 11:19:40,985 -LimbIKFK_logger - DEBUG - zz_l  :  Controller creation completed
+2024-01-09 11:19:40,993 -LimbIKFK_logger - DEBUG - zz_l  :  Constraint creation completed
+2024-01-09 11:19:40,993 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:19:40,993 -LimbIKFK_logger - INFO - zz_l  :  Create binding system
+2024-01-09 11:19:40,993 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:25:11,385 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-09 11:25:11,385 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:25:11,385 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:25:11,385 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:28:03,482 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-09 11:28:03,482 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:28:03,482 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:28:03,482 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:28:15,907 -LimbIKFK_logger - DEBUG - zz_l  :  Skin joint creation completed
+2024-01-09 11:28:16,235 -LimbIKFK_logger - DEBUG - zz_l  :  Controller creation completed
+2024-01-09 11:28:16,242 -LimbIKFK_logger - DEBUG - zz_l  :  Constraint creation completed
+2024-01-09 11:28:16,242 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:28:16,242 -LimbIKFK_logger - INFO - zz_l  :  Create binding system
+2024-01-09 11:28:16,242 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:28:43,032 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-09 11:28:43,033 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:28:43,033 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:28:43,033 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:28:52,562 -LimbIKFK_logger - DEBUG - zz_l  :  Skin joint creation completed
+2024-01-09 11:28:52,904 -LimbIKFK_logger - DEBUG - zz_l  :  Controller creation completed
+2024-01-09 11:28:52,909 -LimbIKFK_logger - DEBUG - zz_l  :  Constraint creation completed
+2024-01-09 11:28:52,909 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:28:52,910 -LimbIKFK_logger - INFO - zz_l  :  Create binding system
+2024-01-09 11:28:52,910 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:29:19,757 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-09 11:29:19,758 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:29:19,758 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:29:19,758 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:30:15,053 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-09 11:30:15,053 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:30:15,053 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:30:15,053 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:32:05,783 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-09 11:32:05,783 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:32:05,783 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:32:05,783 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:32:14,051 -LimbIKFK_logger - DEBUG - zz_l  :  Skin joint creation completed
+2024-01-09 11:32:14,381 -LimbIKFK_logger - DEBUG - zz_l  :  Controller creation completed
+2024-01-09 11:32:14,387 -LimbIKFK_logger - DEBUG - zz_l  :  Constraint creation completed
+2024-01-09 11:32:14,387 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:32:14,387 -LimbIKFK_logger - INFO - zz_l  :  Create binding system
+2024-01-09 11:32:14,387 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:35:42,429 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-09 11:35:42,429 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:35:42,429 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:35:42,429 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:35:55,884 -LimbIKFK_logger - DEBUG - zz_l  :  Skin joint creation completed
+2024-01-09 11:35:56,220 -LimbIKFK_logger - DEBUG - zz_l  :  Controller creation completed
+2024-01-09 11:35:56,226 -LimbIKFK_logger - DEBUG - zz_l  :  Constraint creation completed
+2024-01-09 11:35:56,226 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:35:56,226 -LimbIKFK_logger - INFO - zz_l  :  Create binding system
+2024-01-09 11:35:56,226 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:36:21,558 -LimbIKFK_logger - DEBUG - zz_l  :  BP joint creation completed for positioning
+2024-01-09 11:36:21,558 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:36:21,558 -LimbIKFK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:36:21,558 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:36:21,566 -LimbIKFK_logger - DEBUG - zz_l  :  Skin joint creation completed
+2024-01-09 11:36:21,827 -LimbIKFK_logger - DEBUG - zz_l  :  Controller creation completed
+2024-01-09 11:36:21,833 -LimbIKFK_logger - DEBUG - zz_l  :  Constraint creation completed
+2024-01-09 11:36:21,833 -LimbIKFK_logger - DEBUG - done
+2024-01-09 11:36:21,833 -LimbIKFK_logger - INFO - zz_l  :  Create binding system
+2024-01-09 11:36:21,833 -LimbIKFK_logger - INFO - 
+
+2024-01-09 11:36:37,131 -LimbIK_logger - DEBUG - done
+2024-01-09 11:36:37,131 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:36:37,131 -LimbIK_logger - INFO - 
+
+2024-01-09 11:36:45,817 -LimbIK_logger - DEBUG - done
+2024-01-09 11:36:45,817 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:36:45,817 -LimbIK_logger - INFO - 
+
+2024-01-09 11:38:36,997 -LimbIK_logger - DEBUG - done
+2024-01-09 11:38:36,997 -LimbIK_logger - INFO - zz_l  :  Create positioning joints for BP and prepare for generation
+2024-01-09 11:38:36,997 -LimbIK_logger - INFO - 
+

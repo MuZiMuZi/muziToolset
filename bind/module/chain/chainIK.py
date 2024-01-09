@@ -48,6 +48,10 @@ class ChainIK (chain.Chain) :
         self.ik_handle = ('handle_{}_{}{}_001'.format (self.side , self.name , self.rigType))
 
 
+    def create_bpjnt (self) :
+        super ().create_bpjnt ()
+
+
     def build_ikSpline (self) :
         u'''
         创建ikSpline的绑定系统
