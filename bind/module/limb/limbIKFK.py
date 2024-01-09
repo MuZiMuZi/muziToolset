@@ -17,7 +17,7 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
     radius = 5
 
 
-    def __init__ (self , side , name , jnt_number = 3 , direction = [-1 , 0 , 0] , is_stretch = 1 , length = 10 ,
+    def __init__ (self , side , name , jnt_number = 3 , direction = [-1 , 0 , 0] , length = 10 ,is_stretch = 1 ,
                   limbtype = None ,
                   jnt_parent = None ,
                   ctrl_parent = None) :
@@ -40,9 +40,7 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
             self.z_value = 1
         else :
             self.z_value = -1
-        super ().__init__ (side , name , jnt_number , direction , is_stretch , length , jnt_parent , ctrl_parent)
-
-
+        super ().__init__ (side , name , jnt_number , direction , length , is_stretch , jnt_parent , ctrl_parent)
     # 初始化ik系统和fk系统
     def _init_ikfk (self) :
         self.ik_limb = limbIK.LimbIK (self.side , self.name , self.jnt_number , self.direction , self.length ,
@@ -71,7 +69,6 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         创建定位的bp关节
         """
         super ().create_bpjnt ()
-
 
     # 创建ik系统和fk系统的关节
     def _create_ikfk_bpjnt (self) :
