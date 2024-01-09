@@ -15,6 +15,8 @@ import os
 
 import maya.cmds as cmds
 import maya.mel as mel
+import pymel.core as pm
+from . import pipelineUtils
 
 
 class Weights (object) :
@@ -30,6 +32,9 @@ class Weights (object) :
 
         # 初始权重文件的路径，将权重文件放在对应的文件夹下
         self._init_skin_folder ()
+
+        # 初始化模型为一个pymel对象
+        self.geo_pynode = pm.PyNode (self.geo)
 
 
     # 初始化权重文件夹路径 , 创建权重文件夹
@@ -55,7 +60,7 @@ class Weights (object) :
             os.makedirs (self.skin_folder_path)
             print (f"成功创建文件夹：{self.skin_folder_name}，路径为：{self.skin_folder_path}")
         else :
-            cmds.warning (f"文件夹 {self.skin_folder_name} 已存在。")
+            pass
 
 
     # 初始权重文件的路径，将权重文件放在对应的文件夹下
@@ -216,4 +221,28 @@ class Weights (object) :
         self.skin_node = self.get_skin_node ()
         if self.skin_node :
             self.skin_node = cmds.rename (self.skin_node , 'sc_{}'.format (self.geo))
+
+    #使用线变形的方式来生成链式关节的蒙皮信息
+    @pipelineUtils.make_undo
+    def set_deformer_skin(self,jnt_list):
+        """
+        使用线变形的方式来生成链式关节的蒙皮信息，适用于有规律的条状物体，布料状物体等，可以刷手臂的链式关节权重。
+        jnt_list(list):需要绘制权重的关节列表
+        思路：
+        1.根据需要绘制权重的关节列表创建一根吸附的曲线
+        2.将需要绘制权重的模型所选择的点或边制作一个简模出来，作为用以线变形的模型
+        3.曲线对简模进行线变形
+        4.模拟模型上的点的位置信息位移，模拟成为权重值
+        5.将权重值设置到对应的关节上
+
+        """
+        #1.根据需要绘制权重的关节列表创建一根吸附的曲线
+        self.skin_curve_name = 'skinCurve_' + self.geo
+        self.skin_curve = pipelineUtils.Pipeline.create_curve_on_joints(jnt_list, self.skin_curve_name,degree = 3)
+
+        #2.将需要绘制权重的模型所选择的点或边制作一个简模出来，作为用以线变形的模型
+        #复制一个模型出来用于制作简模
+        self.skin_geo = cmds.duplicate(self.geo,name = 'skinModle_' + self.geo)[0]
+
+        
 
