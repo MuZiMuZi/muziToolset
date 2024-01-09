@@ -193,6 +193,7 @@ class Weights (object) :
                 cmds.rename (bs , 'bs_{}'.format (geo))
 
 
+    # 获取物体的蒙皮节点信息
     def get_skin_node (self) :
         """
         获取物体的蒙皮节点信息，返回蒙皮节点
@@ -208,3 +209,10 @@ class Weights (object) :
         else :
             cmds.warning (u'{}这个物体没有蒙皮节点'.format (self.geo))
             return None
+
+
+    # 重命名物体的蒙皮节点名称
+    def rename_skin_node (self) :
+        self.skin_node = self.get_skin_node ()
+        if self.skin_node :
+            self.skin_node = cmds.rename (self.skin_node , 'sc_{}'.format (self.geo))
