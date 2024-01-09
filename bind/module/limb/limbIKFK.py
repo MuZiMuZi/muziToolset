@@ -57,6 +57,8 @@ class LimbIKFK (chainIKFK.ChainIKFK) :
         super ().create_namespace ()
 
 
+
+
     def _create_ikfk_namespace (self) :
         # 初始化ik关节链条和fk关节链条的命名规范
         self.ik_limb.create_namespace ()

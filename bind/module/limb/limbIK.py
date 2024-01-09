@@ -33,16 +33,22 @@ class LimbIK (chainIK.ChainIK) :
         super ().__init__ (side , name , jnt_number , direction , length , is_stretch , jnt_parent , ctrl_parent)
 
 
-
     # 根据获取的输入信息，创建名称规范组
     def create_namespace (self) :
         super ().create_namespace ()
 
+        # 创建ik控制器组的名称规范
+        # 创建极向量pv控制器和关节的名称规范
+        self.pv_bpjnt = ('bpjnt_{}_{}{}PV_001'.format (self.side , self.name , self.rigType))
         self.pv_ctrl = ('ctrl_{}_{}{}PV_001'.format (self.side , self.name , self.rigType))
         self.pv_loc = ('loc_{}_{}{}PV_001'.format (self.side , self.name , self.rigType))
-        self.jnt_loc = ('jnt_{}_{}{}PV_001'.format (self.side , self.name , self.rigType))
+        self.pv_jnt = ('jnt_{}_{}{}PV_001'.format (self.side , self.name , self.rigType))
         self.pv_curve = ('crv_{}_{}{}PV_001'.format (self.side , self.name , self.rigType))
+
+        # 创建手腕控制器的名称规范
         self.local_ctrl = ('ctrl_{}_{}{}Local_001'.format (self.side , self.name , self.rigType))
+
+        # 创建起始端和末端ik关节的定位loc
         self.startIK_pos_loc = self.jnt_list [0].replace ('jnt' , 'loc')
         self.endIK_pos_loc = self.jnt_list [-1].replace ('jnt' , 'loc')
 
@@ -169,7 +175,7 @@ class LimbIK (chainIK.ChainIK) :
         cmds.setAttr (f'{self.midIK_pv_loc}.visibility' , 0)
 
         # 创建pvjnt的loc来记录位置
-        self.midIK_jnt_loc = cmds.spaceLocator (name = self.jnt_loc) [0]
+        self.midIK_jnt_loc = cmds.spaceLocator (name = self.pv_jnt) [0]
         cmds.matchTransform (self.midIK_jnt_loc , self.jnt_list [1] , position = True , rotation = True , scale = True)
         cmds.parent (self.midIK_jnt_loc , self.jnt_list [1])
         cmds.setAttr (f'{self.midIK_jnt_loc}.visibility' , 0)
