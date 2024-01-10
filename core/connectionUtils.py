@@ -23,7 +23,7 @@ class Connection () :
     get_output_attributes：获取物体的输入连接
     """
 
-
+    #获取物体上的输入连接
     def get_input_connection (self , object) :
         """
         获取物体上的输入连接
@@ -49,7 +49,7 @@ class Connection () :
             return list ()
         return input_connections
 
-
+    #获取物体上的输出连接
     def get_output_connection (self , object) :
         """
         获取物体上的输出连接
@@ -247,7 +247,7 @@ class Connection () :
 
 
     @staticmethod
-    #给定需要断开链接的属性列表进行断开链接
+    # 给定需要断开链接的属性列表进行断开链接
     def disconnect_attributes (node , attribute_list) :
         '''
         #给定需要断开链接的属性列表进行断开链接
@@ -257,8 +257,9 @@ class Connection () :
             if plug :
                 cmds.disconnectAttr (plug [0] , node + attr)
 
-        #实例
-        #disconnect_attributes (bpjnt , ['.translate' , '.rotate' , '.scale'])
+        # 实例
+        # disconnect_attributes (bpjnt , ['.translate' , '.rotate' , '.scale'])
+
 
     # 断开所选择的通道盒上的属性的属性连接
     def break_attr_connections (self) :
@@ -319,7 +320,7 @@ class Connection () :
                 cmds.warning (
                     '未将{}.{}与{}.{}断开连接'.format (driver_obj , source_attr , driven_obj , destination_attr))
 
-
+    #选择多个物体，用于在第一个对象和列表中的所有其他对象之间断开连接
     def break_connect_connections (self , source_attr , destination_attr) :
         """选择多个物体，用于在第一个对象和列表中的所有其他对象之间断开连接
 
@@ -329,7 +330,7 @@ class Connection () :
         # 将驱动者的需要连接的属性连接给所有被驱动者需要连接的属性
         self.break_connections_list (driver_obj , source_attr , driven_obj_list , destination_attr)
 
-
+    #断开被驱动者上默认属性的断开连接
     def break_connect_srt_connections (self , translate = True , rotation = True , scale = True ,
                                        matrix = False) :
         """断开被驱动者上默认属性的断开连接
