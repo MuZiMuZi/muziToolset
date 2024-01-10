@@ -53,6 +53,8 @@ class Control (object) :
         kwargs – -ro -rotate [float, float,float] 旋转
         kwargs – -o -offset [float, float,float] 偏移
     """
+    # 设置控制器的颜色模版
+    COLORS = {'l' : (6 , 18) , 'r' : (13 , 20) , 'm' : (17 , 22)}
 
 
     def __init__ (self , *args , **kwargs) :
@@ -71,6 +73,13 @@ class Control (object) :
     def set (self , **kwargs) :
         """
         设置控制器属性
+        set_parent: 设置父对象。
+        set_shape: 设置形态。
+        set_name: 设置名字。
+        set_color: 设置颜色。
+        set_radius: 设置半径。
+        set_offset: 设置偏移。
+        set_locked: 设置锁定状态。
         """
         self.set_parent (**kwargs)
         self.set_shape (**kwargs)
@@ -263,10 +272,10 @@ class Control (object) :
         pass
 
 
-    # 上传控制器到data路径下，并且截图
+    # 上传控制器形状的信息到指定路径，并截取控制器形状的图像。
     def upload (self) :
         u"""
-        上传控制器到data路径下，并且截图
+        上传控制器形状的信息到指定路径，并截取控制器形状的图像。
         """
         data_path = os.path.abspath (__file__ + "/../../tools/image")
         if not os.path.isdir (data_path) :
@@ -330,10 +339,10 @@ class Control (object) :
         pm.delete (temp.get_transform ())
 
 
-    # 镜像控制器
+    # 镜像控制器，将指定控制器的形状信息镜像到当前控制器上。
     def mirror (self , other) :
         u"""
-        镜像控制器
+        镜像控制器，将指定控制器的形状信息镜像到当前控制器上。
         :param other: 镜像控制器的目标
         :return:
         """
@@ -1284,3 +1293,132 @@ class Control (object) :
         # cmds.delete(ribbon_grp)
 
         return ribbon_grp , ribbon_ctrl_grp , ribbon_jnt_grp , nodes_local_grp , nodes_world_grp
+
+
+    def set_control_orientation (self , axis) :
+        axis_mapping = {'X+' : (90 , 0 , 0) , 'X-' : (-90 , 0 , 0) , 'Y+' : (0 , 90 , 0) , 'Y-' : (0 , -90 , 0) ,
+                        'Z+' : (0 , 0 , 90) , 'Z-' : (0 , 0 , -90)}
+        if axis in axis_mapping :
+            self.set_rotateX (rx = axis_mapping [axis] [0])
+            self.set_rotateY (ry = axis_mapping [axis] [1])
+            self.set_rotateZ (rz = axis_mapping [axis] [2])
+
+
+    def _create_ctrl (self , name , shape , radius , axis , pos , parent = None) :
+        u"""基于参数ctrl_side_name_index快速创建控制器
+
+        Args:
+            name(str/None): 控制器的名称.
+            # side (str/None): 控制器的边.
+            # description (str): 控制器的描述.
+            # index (int/None): 控制器的编号.
+            shape (str): 控制器的形状.
+            radius(float):控制器形状的大小.
+            pos(str) : 被吸附物体的位置
+            axis (str): 控制器的朝向. 'X+'/'X-'/'Y+'/'Y-'/'Z+'/'Z-'
+            lock_attrs (list): 要锁定的控制器属性.
+            parent (str/None): 控制器的父层级.
+            animation_set (str/None): 动画控制器集.
+
+
+
+        Raises:
+            ValueError: 如果控制器名称已存在.
+
+        Returns:
+            ctrl_transform（str）: 控制器的名称
+
+        """
+        # 拆分控制器的名称
+        name_obj = nameUtils.Name (name = name)
+        name_obj.decompose ()
+
+        # 判断需要创建的控制器是否在场景里已经存在，如果存在的话则报错返回
+        if cmds.objExists (name_obj.name) :
+            raise ValueError (u'{} 在场景中已存在'.format (name_obj.name))
+
+        # 根据控制器边的参数来获取默认控制器的颜色设置
+        ctrl_color , sub_color = self.COLORS.get (name_obj.side.lower () , (0 , 0))
+
+        # 创建控制器
+        self.ctrl = Control (n = name_obj.name , s = shape , r = radius)
+        self.ctrl_transform = self.ctrl.get_transform ()
+
+        # 创建次级控制器
+        sub_obj = nameUtils.Name (name = name)
+        sub_obj.description = sub_obj.description + 'Sub'
+        self.sub_ctrl = Control (n = sub_obj.name , s = shape , r = radius)
+        self.sub_ctrl_transform = self.sub_ctrl.get_transform ()
+
+        # 设置控制器的形状方向
+        self.ctrl.set_control_orientation (axis)
+        self.sub_ctrl.set_control_orientation (axis)
+
+        # 设置控制器的颜色
+        self.ctrl.set_color (ctrl_color)
+        self.sub_ctrl.set_color (sub_color)
+
+        # 添加上层层级组
+        self.offset_grp = hierarchyUtils.Hierarchy.add_extra_group (
+            obj = self.ctrl_transform , grp_name = '{}_offset'.format (name) ,
+            world_orient = False
+        )
+        self.connect_grp = hierarchyUtils.Hierarchy.add_extra_group (
+            obj = self.offset_grp , grp_name = '{}_connect'.format (self.offset_grp) ,
+            world_orient = False
+        )
+        self.space_grp = hierarchyUtils.Hierarchy.add_extra_group (
+            obj = self.connect_grp , grp_name = '{}_space'.format (self.offset_grp) ,
+            world_orient = False
+        )
+        self.driven_grp = hierarchyUtils.Hierarchy.add_extra_group (
+            obj = self.space_grp , grp_name = '{}_driven'.format (self.connect_grp) ,
+            world_orient = False
+        )
+        self.zero_grp = hierarchyUtils.Hierarchy.add_extra_group (
+            obj = self.driven_grp , grp_name = '{}_zero'.format (self.driven_grp) ,
+            world_orient = False
+        )
+
+        # 创建output层级组
+        self.output_grp = cmds.createNode ('transform' , name = name.replace ('ctrl' , 'output') ,
+                                           parent = self.ctrl_transform)
+
+        # 连接次级控制器的属性
+        attrs_to_connect = ['.translate' , '.rotate' , '.scale' , '.rotateOrder']
+        for attr in attrs_to_connect :
+            source_attr = self.ctrl_transform + attr
+            target_attr = self.sub_ctrl_transform + attr
+            cmds.connectAttr (source_attr , target_attr)
+
+        # # 添加次级控制器的属性控制在控制器上
+        cmds.addAttr (self.ctrl_transform , longName = 'subCtrlVis' , attributeType = 'bool')
+        cmds.setAttr (self.ctrl_transform + '.subCtrlVis' , channelBox = True)
+
+        # 连接次级控制器的显示
+        cmds.connectAttr (self.ctrl_transform + '.subCtrlVis' , self.sub_ctrl_transform + '.visibility')
+
+        # 锁定并且隐藏不需要的属性
+        attrUtils.Attr.lock_and_hide_attrs (obj = self.ctrl_transform , attrs_list = ['rotateOrder'] , lock = False ,
+                                            hide = False)
+
+        # 吸附到对应的位置
+        if pos :
+            cmds.matchTransform (self.zero_grp , pos , position = True , rotation = True , scale = True , piv = True)
+        #
+        # 做父子层级
+        if parent :
+            hierarchyUtils.Hierarchy.parent (child_node = self.zero_grp , parent_node = parent)
+
+        # 将控制器添加到选择集里方便进行选择
+        pipelineUtils.Pipeline.create_set (ctrl_transform ,
+                                           set_name = '{}_{}_ctrl_set'.format (name_obj.side ,
+                                                                               name_obj.description) ,
+                                           set_parent = 'ctrl_set')
+
+        pipelineUtils.Pipeline.create_set (sub_ctrl.transform ,
+                                           set_name = '{}_{}_ctrl_set'.format (name_obj.side ,
+                                                                               name_obj.description) ,
+                                           set_parent = 'ctrl_set')
+
+        return self.ctrl_transform
