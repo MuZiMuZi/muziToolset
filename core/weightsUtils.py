@@ -16,6 +16,7 @@ import os
 import maya.cmds as cmds
 import maya.mel as mel
 import pymel.core as pm
+
 from . import pipelineUtils
 
 
@@ -216,15 +217,24 @@ class Weights (object) :
             return None
 
 
+    # 获取物体的蒙皮节点的关节信息
+    def get_skin_node_jnt (self) :
+        self.skin_node_nt = pm.PyNode (self.skin_node)
+        self.all_weight_joints = pm.skinCluster (self.skin_node_nt , q = True , wi = True)
+
+        return self.all_weight_joints
+
+
     # 重命名物体的蒙皮节点名称
     def rename_skin_node (self) :
         self.skin_node = self.get_skin_node ()
         if self.skin_node :
             self.skin_node = cmds.rename (self.skin_node , 'sc_{}'.format (self.geo))
 
-    #使用线变形的方式来生成链式关节的蒙皮信息
+
+    # 使用线变形的方式来生成链式关节的蒙皮信息
     @pipelineUtils.make_undo
-    def set_deformer_skin(self,jnt_list):
+    def set_deformer_skin (self , jnt_list) :
         """
         使用线变形的方式来生成链式关节的蒙皮信息，适用于有规律的条状物体，布料状物体等，可以刷手臂的链式关节权重。
         jnt_list(list):需要绘制权重的关节列表
@@ -236,13 +246,23 @@ class Weights (object) :
         5.将权重值设置到对应的关节上
 
         """
-        #1.根据需要绘制权重的关节列表创建一根吸附的曲线
+        # 1.根据需要绘制权重的关节列表创建一根吸附的曲线
         self.skin_curve_name = 'skinCurve_' + self.geo
-        self.skin_curve = pipelineUtils.Pipeline.create_curve_on_joints(jnt_list, self.skin_curve_name,degree = 3)
+        self.skin_curve = pipelineUtils.Pipeline.create_curve_on_joints (jnt_list , self.skin_curve_name , degree = 3)
 
-        #2.将需要绘制权重的模型所选择的点或边制作一个简模出来，作为用以线变形的模型
-        #复制一个模型出来用于制作简模
-        self.skin_geo = pipelineUtils.Pipeline.copy_surface_create_geo()
+        # 2.将需要绘制权重的模型所选择的点或边制作一个简模出来，作为用以线变形的模型
+        # 复制一个模型出来用于制作简模
+        self.skin_geo = pipelineUtils.Pipeline.copy_surface_create_geo ()
 
-        
+        # 3.曲线对简模进行线变形
+        # 控制器曲线对蒙皮曲线做wire变形，让控制器曲线控制蒙皮曲线,注意如果是两条曲线做wire变形器的话，被控制的曲线需要给个w参数
+        self.wire_node = cmds.wire (self.skin_curve , w = self.skin_geo , gw = False , en = 1.000000 , ce = 0.000000 ,
+                                    li = 0.000000) [0]
+        cmds.setAttr (self.wire_node + '.dropoffDistance[0]' , 200)
 
+        # 获取模型上的所有的点
+        self.skin_geo_nt = pm.PyNode (self.skin_geo)
+
+        count_vertex = pm.polyEvaluate (self.skin_geo_nt , v = True)
+        # 获取所有蒙皮骨骼
+        self.all_weight_joints = self.get_skin_node_jnt ()
