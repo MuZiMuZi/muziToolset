@@ -1287,3 +1287,44 @@ class Pipeline (object) :
             return obj
         else :
             cmds.warning ('{}不是给定的类型{}，而是这个类型｛｝'.format (obj , type , cmds.objectType (obj)))
+
+    #将需要绘制权重的模型所选择的面制作一个简模出来，作为用以线变形的模型
+    @staticmethod
+    def copy_surface_create_geo () :
+        """
+        将需要绘制权重的模型所选择的面制作一个简模出来，作为用以线变形的模型
+        
+        high_geo(str):需要绘制权重的模型
+        skin_geo(str):用来复制权重的低模
+
+        返回：
+            skin_geo(str):用来复制权重的低模
+        """
+
+        # 获取需要绘制权重的模型和用来复制权重的低模
+        high_geo = cmds.ls (sl = True) [0]
+        skin_geo = cmds.duplicate (self.geo , name = 'skinModle_' + geo) [0]
+
+        # 获取需要绘制的模型上所选择的面
+        high_faces = cmds.ls (sl = True , flatten = True)
+
+        # 获取简模上应该选择的面
+        skin_faces = []
+        for face in high_faces :
+            skin_face = face.replace (high_geo , skin_geo)
+            skin_faces.append (skin_face)
+
+        # 在制作出来的简模上选择同样的面
+        cmds.select (skin_faces , replace = True)
+
+        # 获取简模上所有的面
+        all_skin_faces = cmds.ls (skin_geo + '.f[*]' , flatten = True)
+
+        non_selected_skin_faces = all_skin_faces
+        # 对简模上选择的面做循环，从所有的面的列表里移除，得出没有被选择的面删除
+        for skin_face in skin_faces :
+            non_selected_skin_faces.remove (skin_face)
+        # 删除物体没有被选择的面
+        pm.delete (non_selected_skin_faces)
+
+        return skin_geo

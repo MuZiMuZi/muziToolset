@@ -242,7 +242,7 @@ class Weights (object) :
 
         #2.将需要绘制权重的模型所选择的点或边制作一个简模出来，作为用以线变形的模型
         #复制一个模型出来用于制作简模
-        self.skin_geo = cmds.duplicate(self.geo,name = 'skinModle_' + self.geo)[0]
+        self.skin_geo = pipelineUtils.Pipeline.copy_surface_create_geo()
 
         
 
