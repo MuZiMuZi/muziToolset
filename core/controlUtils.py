@@ -30,6 +30,7 @@ from __future__ import print_function
 import json
 import os
 from importlib import reload
+
 import maya.cmds as cmds
 import pymel.core as pm
 
@@ -66,7 +67,11 @@ class Control (object) :
                                            t = self.get_transform ().name ())
 
 
+    # 设置控制器属性
     def set (self , **kwargs) :
+        """
+        设置控制器属性
+        """
         self.set_parent (**kwargs)
         self.set_shape (**kwargs)
         self.set_name (**kwargs)
@@ -76,6 +81,7 @@ class Control (object) :
         self.set_locked (**kwargs)
 
 
+    # 设置控制器的transform节点
     def set_transform (self , *args , **kwargs) :
         u"""
         设置控制器的transform节点
@@ -107,6 +113,7 @@ class Control (object) :
             self.transform = t
 
 
+    # 设置控制器的父对象
     def set_parent (self , *args , **kwargs) :
         u"""
         设置控制器的父对象
@@ -124,6 +131,7 @@ class Control (object) :
                 pass
 
 
+    # 设置控制器的形状
     def set_shape (self , *args , **kwargs) :
         u"""
         设置控制器的形状
@@ -161,9 +169,10 @@ class Control (object) :
                 self.set_shape (s = json.load (fp))
 
 
+    # 设置控制器的名称
     def set_name (self , *args , **kwargs) :
         u"""
-        设置名字
+        设置控制器的名称
         """
         n = kwargs.get ("n" , kwargs.get ("name" , self.get_arg (args)))
         if n is None :
@@ -173,6 +182,7 @@ class Control (object) :
             s.rename (n + "Shape")
 
 
+    # 设置控制器的颜色
     def set_color (self , *args , **kwargs) :
         u"""
         设置控制器的颜色
@@ -189,6 +199,7 @@ class Control (object) :
             shape.overrideColor.set (color)
 
 
+    # 设置控制器的半径大小
     def set_radius (self , *args , **kwargs) :
         u"""
         设置控制器的半径
@@ -207,6 +218,7 @@ class Control (object) :
                 pm.xform (cv , t = [xyz * scale for xyz in p])
 
 
+    # 设置控制器的选择X
     def set_rotateX (self , **kwargs) :
         rotateX = kwargs.get ('rx' , kwargs.get ('rotateX' , 0))  # type: int
         shape_node = cmds.listRelatives ('{}'.format (self.get_transform ()) , shapes = True) [0]
@@ -214,6 +226,7 @@ class Control (object) :
         cmds.rotate (rotateX , 0 , 0 , points)
 
 
+    # 设置控制器的选择Y
     def set_rotateY (self , **kwargs) :
         rotateY = kwargs.get ('ry' , kwargs.get ('rotateY' , 0))  # type: int
         shape_node = cmds.listRelatives ('{}'.format (self.get_transform ()) , shapes = True) [0]
@@ -221,6 +234,7 @@ class Control (object) :
         cmds.rotate (0 , rotateY , 0 , points)
 
 
+    # 设置控制器的旋转Z
     def set_rotateZ (self , **kwargs) :
         rotateZ = kwargs.get ('rz' , kwargs.get ('rotateZ' , 0))  # type: int
         shape_node = cmds.listRelatives ('{}'.format (self.get_transform ()) , shapes = True) [0]
@@ -228,6 +242,7 @@ class Control (object) :
         cmds.rotate (0 , 0 , rotateZ , points)
 
 
+    # 设置控制器的偏移
     def set_offset (self , *args , **kwargs) :
         u"""
         设置偏移
@@ -243,10 +258,12 @@ class Control (object) :
                 pm.xform (cv , t = [p_xyz + o_xyz for p_xyz , o_xyz in zip (p , offset)])
 
 
+    # 设置控制器的锁定
     def set_locked (self , *args , **kwargs) :
         pass
 
 
+    # 上传控制器到data路径下，并且截图
     def upload (self) :
         u"""
         上传控制器到data路径下，并且截图
@@ -313,6 +330,7 @@ class Control (object) :
         pm.delete (temp.get_transform ())
 
 
+    # 镜像控制器
     def mirror (self , other) :
         u"""
         镜像控制器
@@ -327,6 +345,7 @@ class Control (object) :
                 pm.xform (src_cv , t = point , ws = 1)
 
 
+    # 获取控制器形状的数据
     def get_shape (self) :
         u"""
 
@@ -340,6 +359,7 @@ class Control (object) :
                 for shape in self.get_transform ().getShapes ()]
 
 
+    # 获取控制器的transform节点
     def get_transform (self) :
         u"""
          -t -transform string/node/Control 控制器
@@ -349,6 +369,7 @@ class Control (object) :
         return self.transform
 
 
+    # 获取控制器的颜色
     def get_color (self) :
         """
         获得控制器的颜色
@@ -361,6 +382,7 @@ class Control (object) :
         return c
 
 
+    # 获取控制器的半径大小
     def get_radius (self) :
         """
         获得控制器的大小
@@ -376,6 +398,7 @@ class Control (object) :
         return radius
 
 
+    # 基于参数ctrl_side_name_index创建控制器
     @staticmethod
     def create_ctrl (name , shape , radius , axis , pos , parent = None) :
         u"""基于参数ctrl_side_name_index创建控制器
@@ -506,9 +529,10 @@ class Control (object) :
         return name
 
 
+    # 基于参数ctrl_side_name_index创建mateHuman的控制器
     @staticmethod
     def create_mateHuman_ctrl (jnt_name , type , shape , radius , axis , pos , parent = None) :
-        u"""基于参数ctrl_side_name_index创建控制器
+        u"""基于参数ctrl_side_name_index创建mateHuman的控制器
 
         Args:
             jnt_name(str/None): 需要创建控制器的关节名称.
@@ -635,6 +659,7 @@ class Control (object) :
         return ctrl_name
 
 
+    # 基于参数name, shape , radius , axis , pos , parent = None,创建通用的控制器
     @staticmethod
     def create_current_ctrl (ctrl_name , shape , radius , axis , pos , parent = None) :
         u"""基于参数name, shape , radius , axis , pos , parent = None,创建通用的控制器
@@ -743,6 +768,7 @@ class Control (object) :
                                                set_parent = 'ctrl_set')
 
 
+    # 创建fk控制器
     @staticmethod
     def create_fk_ctrl (objects) :
         parent = None
@@ -754,7 +780,7 @@ class Control (object) :
                                                 parent = parent)
             # 制作约束
             pipelineUtils.Pipeline.create_constraint (driver = ctrl_name.replace ('ctrl' , 'output') , driven = object ,
-                                                      point_value = False , orient_value = False ,parent_value = True,
+                                                      point_value = False , orient_value = False , parent_value = True ,
                                                       scale_value = True ,
                                                       mo_value = True)
             # 指定关节的父层级为上一轮创建出来的控制器层级组
@@ -762,6 +788,7 @@ class Control (object) :
         cmds.warning ('创建了{}的fk链条'.format (objects))
 
 
+    # 删除fk控制器
     @staticmethod
     def delete_fk_ctrl (objects) :
         for object in objects :
@@ -774,6 +801,7 @@ class Control (object) :
                 return
 
 
+    # 创建ik控制器
     @staticmethod
     def create_ik_ctrl (startIK_jnt , endIK_jnt) :
         u"""
@@ -787,7 +815,7 @@ class Control (object) :
 
         """
         # 获取startjnt底下所有的子物体关节作为列表
-        startjnt_child_list = hierarchyUtils.Hierarchy.get_child_object (startIK_jnt,type = 'joint')
+        startjnt_child_list = hierarchyUtils.Hierarchy.get_child_object (startIK_jnt , type = 'joint')
         # 获取endIK_jnt在这个关节列表里的索引值
         enjnt_index = startjnt_child_list.index (endIK_jnt)
         # ik关节链则是从0到endIK_jnt关节索引值
@@ -806,9 +834,9 @@ class Control (object) :
 
         startIK_ctrl = 'ctrl_' + startIK_jnt
         startIK_ctrl_obj = Control.create_current_ctrl (startIK_ctrl , shape = 'shape_020' ,
-                                                        radius = 8,
-                                                                     axis = 'Z+' ,
-                                                                     pos = startIK_jnt , parent = None)
+                                                        radius = 8 ,
+                                                        axis = 'Z+' ,
+                                                        pos = startIK_jnt , parent = None)
         startIK_ctrl_output = startIK_ctrl.replace ('ctrl_' , 'output_')
         startIK_zero = startIK_ctrl.replace ('ctrl_' , 'zero_')
         cmds.parent (startIK_crv_jnt , startIK_ctrl_output)
@@ -818,8 +846,8 @@ class Control (object) :
         endIK_crv_jnt = cmds.createNode ('joint' , name = 'crvjnt_' + endIK_jnt)
         cmds.matchTransform (endIK_crv_jnt , endIK_jnt , position = True , rotation = True , scale = True)
         endIK_ctrl = 'ctrl_' + endIK_jnt
-        endIK_ctrl_obj = Control.create_current_ctrl (endIK_ctrl , shape = 'Cube' , radius = 4, axis = 'Y+' ,
-                                                           pos = endIK_jnt , parent = None)
+        endIK_ctrl_obj = Control.create_current_ctrl (endIK_ctrl , shape = 'Cube' , radius = 4 , axis = 'Y+' ,
+                                                      pos = endIK_jnt , parent = None)
         endIK_ctrl_output = endIK_ctrl.replace ('ctrl_' , 'output_')
         endIK_zero = endIK_ctrl.replace ('ctrl_' , 'zero_')
         cmds.parent (endIK_crv_jnt , endIK_ctrl_output)
@@ -827,12 +855,12 @@ class Control (object) :
 
         #
         # 创建中间的ik控制器
-        midIK_jnt = ik_chain [len (ik_chain ) // 2]
+        midIK_jnt = ik_chain [len (ik_chain) // 2]
         midIK_crv_jnt = cmds.createNode ('joint' , name = 'crvjnt_' + midIK_jnt)
         cmds.matchTransform (midIK_crv_jnt , midIK_jnt , position = True , rotation = True , scale = True)
         midIK_ctrl = 'ctrl_' + midIK_jnt
         midIK_ctrl_obj = Control.create_current_ctrl (midIK_ctrl , shape = 'Cube' , radius = 4 , axis = 'Y+' ,
-                                                           pos = midIK_jnt , parent = None)
+                                                      pos = midIK_jnt , parent = None)
         midIK_ctrl_output = midIK_ctrl.replace ('ctrl_' , 'output_')
         cmds.parent (midIK_crv_jnt , midIK_ctrl_output)
         cmds.setAttr (midIK_crv_jnt + '.visibility' , 0)
@@ -865,8 +893,7 @@ class Control (object) :
 
         # 整理层级结构
         ik_ctrl_grp = cmds.createNode ('transform' , name = "grpIKspine_" + ik_chain [0])
-        cmds.parent (spine_ikhandle_node,ik_chain_crv,startIK_zero , midIK_zero , endIK_zero , ik_ctrl_grp)
-
+        cmds.parent (spine_ikhandle_node , ik_chain_crv , startIK_zero , midIK_zero , endIK_zero , ik_ctrl_grp)
 
         # 添加拉伸效果
         # 获取ikspine曲线的形状节点
@@ -907,8 +934,9 @@ class Control (object) :
             cmds.connectAttr (blend_node + '.outputR' , jnt + '.translateX')
 
 
+    # 删除ik控制器
     @staticmethod
-    def delete_ik_ctrl(objects):
+    def delete_ik_ctrl (objects) :
         for object in objects :
             grp_name = 'grpIKspine_{}'.format (object)
             try :
@@ -919,6 +947,7 @@ class Control (object) :
                 return
 
 
+    # 获取参数值
     @staticmethod
     def get_arg (args) :
         if len (args) > 0 :
@@ -926,11 +955,13 @@ class Control (object) :
         return None
 
 
+    # 获取控制器形状节点的曲线点位置信息
     @staticmethod
     def get_curve_shape_points (shape) :
         return pm.xform (shape.cv , q = 1 , t = 1)
 
 
+    # 返回软选择的范围
     @staticmethod
     def get_soft_radius () :
         u"""
@@ -940,6 +971,7 @@ class Control (object) :
         return pm.softSelect (query = 1 , ssd = 1)
 
 
+    # 获取两点之间的距离
     @staticmethod
     def get_length (point1 , point2) :
         u"""
@@ -954,6 +986,7 @@ class Control (object) :
         return distance
 
 
+    # 获取选择的控制器
     @classmethod
     def selected (cls) :
         u"""
@@ -963,6 +996,7 @@ class Control (object) :
         return [cls (t = t) for t in pm.selected (type = "transform")]
 
 
+    # 批量修改选择的控制器
     @classmethod
     def set_selected (cls , **kwargs) :
         u"""
@@ -975,6 +1009,7 @@ class Control (object) :
         pm.select ([control.get_transform () for control in selected])
 
 
+    # 镜像两个选择的控制器
     @classmethod
     def mirror_selected (cls) :
         u"""
@@ -988,6 +1023,7 @@ class Control (object) :
         src.mirror (dst)
 
 
+    # 删除形状
     @classmethod
     def delete_shape (cls , *args , **kwargs) :
         """
@@ -1005,6 +1041,7 @@ class Control (object) :
             os.remove (jpg_path)
 
 
+    # 批量删除形状
     @classmethod
     def delete_shapes (cls , *args) :
         """
@@ -1015,6 +1052,7 @@ class Control (object) :
             cls.delete_shape (s)
 
 
+    # 创建ribbon控制器
     @staticmethod
     def create_ribbon (name , control_parent , jnt_number = 5) :
         """
