@@ -53,7 +53,6 @@ class Pipeline (object) :
 
     # 清除场景内所有的关键帧
     @staticmethod
-    @Pipeline.make_undo
     def clear_keys () :
         u"""
         清除场景内所有的动画关键帧
@@ -69,7 +68,6 @@ class Pipeline (object) :
 
     # 将“isFace”标记添加到所选物体的属性上
     @staticmethod
-    @Pipeline.make_undo
     def add_face_tag () :
         u"""将“isFace”标记添加到所选物体的属性上.
 
@@ -85,7 +83,6 @@ class Pipeline (object) :
 
     # 移除没有带face标志的物体.
     @staticmethod
-    @Pipeline.make_undo
     def remove_non_face_objs () :
         u"""“移除没有带face标志的物体.
 
@@ -104,7 +101,6 @@ class Pipeline (object) :
 
     # 获取两个对象之间的距离.
     @staticmethod
-    @Pipeline.make_undo
     def distence_between (node_a , node_b) :
         u'''获取两个对象之间的距离.
         node_a(str): 对象a.
@@ -121,7 +117,6 @@ class Pipeline (object) :
 
     # 重置绑定系统的控制器上所有的数值.
     @staticmethod
-    @Pipeline.make_undo
     def reset_control () :
         u"""重置绑定系统的控制器上所有的数值.
 
@@ -191,7 +186,6 @@ class Pipeline (object) :
 
     # 选择物体，批量制作约束。新添加创建关节来蒙皮物体
     @staticmethod
-    @Pipeline.make_undo
     def batch_Constraints_modle () :
         u"""
         选择物体，批量制作约束。新添加创建关节来蒙皮物体		"""
@@ -241,7 +235,6 @@ class Pipeline (object) :
 
     # 选择关节，批量制作约束。不需要新添加创建关节来蒙皮物体
     @staticmethod
-    @Pipeline.make_undo
     def batch_Constraints_joint () :
         u"""
         选择关节，批量制作约束。不需要新添加创建关节来蒙皮物体		"""
@@ -287,7 +280,6 @@ class Pipeline (object) :
 
     # 快速创建约束.用法：先选择需要约束者，在选择被约束者
     @staticmethod
-    @Pipeline.make_undo
     def create_constraints () :
         u"""
         快速创建约束.
@@ -317,7 +309,6 @@ class Pipeline (object) :
 
     # 快速删除选择物体的约束节点
     @staticmethod
-    @Pipeline.make_undo
     def delete_constraints () :
         u'''
         快速删除选择物体的约束节点
@@ -543,7 +534,6 @@ class Pipeline (object) :
 
     # 根据给定关节点的位置生成曲线的函数
     @staticmethod
-    @Pipeline.make_undo
     def create_curve_on_joints (jnt_list , curve , degree = 3) :
         u"""
        根据给定关节点的位置生成曲线的函数
@@ -580,7 +570,6 @@ class Pipeline (object) :
 
     # 根据给定的曲线放样生成出曲面
     @staticmethod
-    @Pipeline.make_undo
     def create_surface_on_curve (curve , surface_node , spans = 4 , offset = 0.2) :
         u"""
         根据给定的曲线放样生成出曲面
@@ -613,7 +602,6 @@ class Pipeline (object) :
 
     # 在给定的曲面上创建毛囊节点和关节节点
     @staticmethod
-    @Pipeline.make_undo
     def create_joint_follicle_on_surface (surf_node , side , description , jnt_number) :
         """
         在给定的曲面上创建毛囊节点和关节节点
