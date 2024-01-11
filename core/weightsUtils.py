@@ -233,7 +233,7 @@ class Weights (object) :
 
 
     # 使用线变形的方式来生成链式关节的蒙皮信息
-    @pipelineUtils.make_undo
+    @pipelineUtils.Pipeline.make_undo
     def set_deformer_skin (self , jnt_list) :
         """
         使用线变形的方式来生成链式关节的蒙皮信息，适用于有规律的条状物体，布料状物体等，可以刷手臂的链式关节权重。

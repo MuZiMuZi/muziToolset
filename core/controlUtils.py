@@ -783,7 +783,7 @@ class Control (object) :
         parent = None
         for object in objects :
             ctrl_name = 'ctrl_{}'.format (object)
-            ctrl = Control.create_current_ctrl (ctrl_name , shape = 'shape_020' ,
+            ctrl = Control.create_current_ctrl (ctrl_name , shape = 'hexagon' ,
                                                 radius = 4 ,
                                                 axis = 'Z+' , pos = object ,
                                                 parent = parent)
@@ -842,7 +842,7 @@ class Control (object) :
         cmds.matchTransform (startIK_crv_jnt , startIK_jnt , position = True , rotation = True , scale = True)
 
         startIK_ctrl = 'ctrl_' + startIK_jnt
-        startIK_ctrl_obj = Control.create_current_ctrl (startIK_ctrl , shape = 'shape_020' ,
+        startIK_ctrl_obj = Control.create_current_ctrl (startIK_ctrl , shape = 'hexagon' ,
                                                         radius = 8 ,
                                                         axis = 'Z+' ,
                                                         pos = startIK_jnt , parent = None)
