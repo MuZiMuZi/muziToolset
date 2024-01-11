@@ -540,6 +540,7 @@ class Control (object) :
 
     # 基于参数ctrl_side_name_index创建mateHuman的控制器
     @staticmethod
+    @pipelineUtils.Pipeline.make_undo
     def create_mateHuman_ctrl (jnt_name , type , shape , radius , axis , pos , parent = None) :
         u"""基于参数ctrl_side_name_index创建mateHuman的控制器
 
@@ -670,6 +671,7 @@ class Control (object) :
 
     # 基于参数name, shape , radius , axis , pos , parent = None,创建通用的控制器
     @staticmethod
+    @pipelineUtils.Pipeline.make_undo
     def create_current_ctrl (ctrl_name , shape , radius , axis , pos , parent = None) :
         u"""基于参数name, shape , radius , axis , pos , parent = None,创建通用的控制器
 
@@ -779,6 +781,7 @@ class Control (object) :
 
     # 创建fk控制器
     @staticmethod
+    @pipelineUtils.Pipeline.make_undo
     def create_fk_ctrl (objects) :
         parent = None
         for object in objects :
@@ -799,6 +802,7 @@ class Control (object) :
 
     # 删除fk控制器
     @staticmethod
+    @pipelineUtils.Pipeline.make_undo
     def delete_fk_ctrl (objects) :
         for object in objects :
             zero_name = 'zero_{}'.format (object)
@@ -812,6 +816,7 @@ class Control (object) :
 
     # 创建ik控制器
     @staticmethod
+    @pipelineUtils.Pipeline.make_undo
     def create_ik_ctrl (startIK_jnt , endIK_jnt) :
         u"""
         创建IKspine链的控制器绑定
@@ -945,6 +950,7 @@ class Control (object) :
 
     # 删除ik控制器
     @staticmethod
+    @pipelineUtils.Pipeline.make_undo
     def delete_ik_ctrl (objects) :
         for object in objects :
             grp_name = 'grpIKspine_{}'.format (object)
@@ -1304,6 +1310,7 @@ class Control (object) :
             self.set_rotateZ (rz = axis_mapping [axis] [2])
 
 
+    @pipelineUtils.Pipeline.make_undo
     def _create_ctrl (self , name , shape , radius , axis , pos , parent = None) :
         u"""基于参数ctrl_side_name_index快速创建控制器
 
