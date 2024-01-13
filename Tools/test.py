@@ -1,4 +1,4 @@
-import muziToolset.tools.Tool_main as Tool_main
+import muziToolset.Tools.Tool_main as Tool_main
 
 from importlib import reload
 
