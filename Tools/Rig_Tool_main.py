@@ -100,6 +100,8 @@ class Rig_Tool (QWidget) :
                                                     "导入选择的动画")
 
         self.create_secondary_joint_button = QPushButton (QIcon (':parentConstraint.png') , "批量约束_次级")
+        self.import_test_animation_button = QPushButton (QIcon (':setKeyOnAnim.png') ,
+                                                         "导入动作测试的动画")
         # 添加文本提示
         self.clear_keys_button.setToolTip ('将场景内所有的动画关键帧删除')
 
@@ -138,7 +140,7 @@ class Rig_Tool (QWidget) :
                              self.print_duplicate_object_button ,
                              self.rename_duplicate_object_button , self.create_dynamic_curve_driven_button ,
                              self.snap_modle_button , self.export_animation_button , self.import_animation_button ,
-                             self.create_secondary_joint_button]
+                             self.create_secondary_joint_button , self.import_test_animation_button]
 
 
     def create_layouts (self) :
@@ -241,6 +243,7 @@ class Rig_Tool (QWidget) :
         self.import_animation_button.clicked.connect (self.clicked_import_animation)
         self.create_secondary_joint_button.clicked.connect (lambda *args : jointUtils.Joint.create_secondary_joint ())
 
+        self.import_test_animation_button.clicked.connect(self.clicked_import_test_animation_button)
 
     def clicked_export_animation (self) :
         # 连接选择控制器进行导出动画的按钮
@@ -320,6 +323,15 @@ class Rig_Tool (QWidget) :
         nodes = cmds.ls (sl = True)
         for node in nodes :
             attrUtils.Attr.reset_attr (node)
+
+
+    def clicked_import_test_animation_button (self) :
+        """
+        用来连接导入动作测试的按钮
+        """
+        # 连接选择导入控制器动画的按钮
+        file = fileUtils.File ()
+        file.import_test_animation_json ()
 
 
 def main () :

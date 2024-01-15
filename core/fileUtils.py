@@ -257,6 +257,20 @@ class File (object) :
             print (e)
 
 
+    # 从 JSON 文件导入动画数据并应用到相应的控制器，测试动画的导入
+    def import_test_animation_json (self) :
+        """
+        从 JSON 文件导入动画数据并应用到相应的控制器，进行测试动画的导入
+        """
+        """
+          从 JSON 文件导入动画数据并应用到相应的控制器
+          """
+        #指定测试动画的路径
+        self.file_path = r'C:\Users\lixin\Documents\maya\scripts\muziToolset\core\animation.json'
+
+        #导入测试动画
+        self.import_animation_json()
+
 def text () :
     """
     对于文件操作的例子
