@@ -231,3 +231,5 @@ class AdvUtils (object) :
                 myDrv (SDK2 , 15 , -30 , ctrl [-1])
             if 'IndexFinger1' in i :
                 myDrv (SDK2 , -20 , 40 , ctrl [-1])
+
+
