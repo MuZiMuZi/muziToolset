@@ -1,22 +1,23 @@
+# coding=utf-8
 from __future__ import unicode_literals
 import os
-from enum import Enum , unique
 
+PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(PACKAGE_DIR)
+TOOLS_DIR = os.path.join(PACKAGE_DIR, 'tools')
+IMAGE_DIR = os.path.join(PACKAGE_DIR, 'image')
+ICON_DIR = os.path.join(PACKAGE_DIR, 'icon')
+UI_DIR = os.path.join(PACKAGE_DIR, 'ui')
+QSS_DIR = os.path.join(PACKAGE_DIR, 'qss')
 
-#############################################################
-# 配置模块
-#############################################################
+# Backward-compatible names used by legacy modules.
+project_root = PACKAGE_DIR
+tools_dir = TOOLS_DIR
+data_dir = IMAGE_DIR
+image_dir = IMAGE_DIR
+icon_dir = ICON_DIR
+ui_dir = UI_DIR
+qss_dir = QSS_DIR
 
-
-# 路径
-project_root = os.path.dirname (__file__)
-tools_dir = os.path.abspath (__file__ + "/../tools")
-data_dir = os.path.abspath (__file__ + "/../image")
-ui_dir = os.path.abspath (__file__ + "/../ui")
-icon_dir = os.path.abspath (__file__ + "/../icon")
-qss_dir = os.path.abspath (__file__ + "/../qss")
-# 是否处于DEBUG状态
 DEBUG = True
-VERSION = 'v0.1'
-
-# 全局变量
+VERSION = '0.2.0'

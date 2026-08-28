@@ -1,147 +1,251 @@
+# coding=utf-8
+u"""
+å…³èŠ‚é‡é‡‡æ ·å·¥å…·
 
-class Joint_Resampling (QDialog) :
-    """
-    ¹Ø½ÚÖØ²ÉÑù¹¤¾ßµÄÒ³Ãæ±àĞ´
-    """
+å…¼å®¹ Maya 2023 / PySide2ã€‚
+"""
 
+from __future__ import print_function
 
-    def __init__ (self , parent = qtUtils.get_maya_window ()) :
-        super (Joint_Resampling , self).__init__ (parent)
-        self.setWindowTitle ("¹Ø½ÚÖØ²ÉÑù¹¤¾ß")
-        # Ìí¼Ó²¿¼ş
-        self.create_widgets ()
-        self.create_layouts ()
+import maya.cmds as cmds
 
-        # Ìí¼ÓÁ¬½Ó
-        self.create_connections ()
+from PySide2.QtWidgets import QDialog
+from PySide2.QtWidgets import QLabel
+from PySide2.QtWidgets import QLineEdit
+from PySide2.QtWidgets import QPushButton
+from PySide2.QtWidgets import QSpinBox
+from PySide2.QtWidgets import QHBoxLayout
+from PySide2.QtWidgets import QVBoxLayout
 
-
-    def create_widgets (self) :
-        # ÔÚstart_layoutÀïÃæÌí¼Ó¿Ø¼ş
-        self.start_label = QLabel ('startJoint:')
-        self.start_line = QLineEdit ()
-        self.start_pick_btn = QPushButton ('Ê°È¡ÆğÊ¼¹Ø½Ú')
-
-        # ÔÚend_layoutÀïÃæÌí¼Ó¿Ø¼ş
-        self.end_label = QLabel ('endJoint:')
-        self.end_line = QLineEdit ()
-        self.end_pick_btn = QPushButton ('Ê°È¡Ä©¶Ë¹Ø½Ú')
-
-        # ÔÚjnt_number_layout ÀïÃæÌí¼Ó¿Ø¼ş
-        self.jnt_number_label = QLabel ('jnt_number:')
-        self.jnt_number_spine = QSpinBox ()
-        self.jnt_number_spine.setValue (2)
-
-        #
-        self.resample_btn = QPushButton ('resample')
+from ....core import qtUtils
 
 
-    def create_layouts (self) :
-        # Ìí¼ÓÒ³Ãæ²¼¾Ö
-        self.start_layout = QHBoxLayout ()
-        self.start_layout.addWidget (self.start_label)
-        self.start_layout.addWidget (self.start_line)
-        self.start_layout.addWidget (self.start_pick_btn)
-
-        self.end_layout = QHBoxLayout ()
-        self.end_layout.addWidget (self.end_label)
-        self.end_layout.addWidget (self.end_line)
-        self.end_layout.addWidget (self.end_pick_btn)
-
-        self.joint_layout = QHBoxLayout ()
-        self.joint_layout.addWidget (self.jnt_number_label)
-        self.joint_layout.addWidget (self.jnt_number_spine)
-        self.joint_layout.addStretch ()
-
-        self.main_layout = QVBoxLayout (self)
-
-        self.main_layout.addLayout (self.start_layout)
-        self.main_layout.addLayout (self.end_layout)
-        self.main_layout.addLayout (self.joint_layout)
-        self.main_layout.addWidget (self.resample_btn)
+_window = None
 
 
-    def create_connections (self) :
-        self.start_pick_btn.clicked.connect (self.pick_startJoint_line)
-        self.end_pick_btn.clicked.connect (self.pick_endJoint_line)
+class JointResamplingDialog(QDialog):
 
-        self.resample_btn.clicked.connect (self.clicked_resample_btn)
+    def __init__(self, parent=None):
 
+        if parent is None:
+            parent = qtUtils.get_maya_window()
 
-    # Ê°È¡ÆğÊ¼¹Ø½Ú
-    def pick_startJoint_line (self) :
-        """
-        Ê°È¡ÆğÊ¼¹Ø½Ú
-        """
-        startJoint = cmds.ls (sl = True , type = 'joint')
-        if len (startJoint) != 1 :
-            cmds.warning ("Ñ¡ÔñÊıÁ¿²»ÕıÈ·£¬ÇëÖ»Ñ¡ÔñÒ»¸ö¹Ø½Ú×÷Îª¹Ø½ÚÖØ²ÉÑùµÄÆğÊ¼¹Ø½Ú: {}".format (startJoint))
+        super(JointResamplingDialog, self).__init__(parent)
+
+        self.setWindowTitle("å…³èŠ‚é‡é‡‡æ ·å·¥å…·")
+        self.setMinimumWidth(360)
+
+        self.create_widgets()
+        self.create_layouts()
+        self.create_connections()
+
+    def create_widgets(self):
+
+        self.start_label = QLabel("èµ·å§‹å…³èŠ‚:")
+        self.start_line = QLineEdit()
+        self.start_line.setReadOnly(True)
+        self.start_pick_btn = QPushButton("æ‹¾å–")
+
+        self.end_label = QLabel("æœ«ç«¯å…³èŠ‚:")
+        self.end_line = QLineEdit()
+        self.end_line.setReadOnly(True)
+        self.end_pick_btn = QPushButton("æ‹¾å–")
+
+        self.joint_number_label = QLabel("ä¸­é—´å…³èŠ‚æ•°é‡:")
+        self.joint_number_spin = QSpinBox()
+        self.joint_number_spin.setMinimum(1)
+        self.joint_number_spin.setMaximum(100)
+        self.joint_number_spin.setValue(2)
+
+        self.resample_btn = QPushButton("é‡æ–°é‡‡æ ·")
+
+    def create_layouts(self):
+
+        start_layout = QHBoxLayout()
+        start_layout.addWidget(self.start_label)
+        start_layout.addWidget(self.start_line)
+        start_layout.addWidget(self.start_pick_btn)
+
+        end_layout = QHBoxLayout()
+        end_layout.addWidget(self.end_label)
+        end_layout.addWidget(self.end_line)
+        end_layout.addWidget(self.end_pick_btn)
+
+        number_layout = QHBoxLayout()
+        number_layout.addWidget(self.joint_number_label)
+        number_layout.addWidget(self.joint_number_spin)
+        number_layout.addStretch()
+
+        main_layout = QVBoxLayout(self)
+        main_layout.addLayout(start_layout)
+        main_layout.addLayout(end_layout)
+        main_layout.addLayout(number_layout)
+        main_layout.addWidget(self.resample_btn)
+
+    def create_connections(self):
+
+        self.start_pick_btn.clicked.connect(
+            self.pick_start_joint
+        )
+
+        self.end_pick_btn.clicked.connect(
+            self.pick_end_joint
+        )
+
+        self.resample_btn.clicked.connect(
+            self.resample
+        )
+
+    def pick_start_joint(self):
+
+        joints = cmds.ls(
+            selection=True,
+            type="joint",
+        )
+
+        if len(joints) != 1:
+            cmds.warning(
+                "è¯·åªé€‰æ‹©ä¸€ä¸ªå…³èŠ‚ä½œä¸ºèµ·å§‹å…³èŠ‚ã€‚"
+            )
             return
-        else :
-            self.start_line.setText (startJoint [0])
-            cmds.warning ("Éè¶¨ÁË{}Îª¹Ø½ÚÖØ²ÉÑùµÄÆğÊ¼¹Ø½Ú ".format (startJoint [0]))
 
+        self.start_line.setText(joints[0])
 
-    # Ê°È¡Ä©¶Ë¹Ø½Ú
-    def pick_endJoint_line (self) :
-        """
-                Ê°È¡Ä©¶Ë¹Ø½Ú
-                """
-        endJoint = cmds.ls (sl = True , type = 'joint')
-        if len (endJoint) != 1 :
-            cmds.warning ("Ñ¡ÔñÊıÁ¿²»ÕıÈ·£¬ÇëÖ»Ñ¡ÔñÒ»¸ö¹Ø½Ú×÷Îª¹Ø½ÚÖØ²ÉÑùµÄÄ©¶Ë¹Ø½Ú: {}".format (endJoint))
+    def pick_end_joint(self):
+
+        joints = cmds.ls(
+            selection=True,
+            type="joint",
+        )
+
+        if len(joints) != 1:
+            cmds.warning(
+                "è¯·åªé€‰æ‹©ä¸€ä¸ªå…³èŠ‚ä½œä¸ºæœ«ç«¯å…³èŠ‚ã€‚"
+            )
             return
-        else :
-            self.end_line.setText (endJoint [0])
-            cmds.warning ("Éè¶¨ÁË{}Îª¹Ø½ÚÖØ²ÉÑùµÄÄ©¶Ë¹Ø½Ú ".format (endJoint [0]))
+
+        self.end_line.setText(joints[0])
+
+    def resample(self):
+
+        start_joint = self.start_line.text()
+        end_joint = self.end_line.text()
+        joint_number = self.joint_number_spin.value()
+
+        if not start_joint:
+            cmds.warning("æ²¡æœ‰æŒ‡å®šèµ·å§‹å…³èŠ‚ã€‚")
+            return
+
+        if not end_joint:
+            cmds.warning("æ²¡æœ‰æŒ‡å®šæœ«ç«¯å…³èŠ‚ã€‚")
+            return
+
+        if not cmds.objExists(start_joint):
+            cmds.warning(
+                "èµ·å§‹å…³èŠ‚ä¸å­˜åœ¨: {}".format(
+                    start_joint
+                )
+            )
+            return
+
+        if not cmds.objExists(end_joint):
+            cmds.warning(
+                "æœ«ç«¯å…³èŠ‚ä¸å­˜åœ¨: {}".format(
+                    end_joint
+                )
+            )
+            return
+
+        resample_joint(
+            start_joint,
+            end_joint,
+            joint_number,
+        )
 
 
-    def clicked_resample_btn (self) :
-        startJoint = self.start_line.text ()
-        endJoint = self.end_line.text ()
-        jnt_number = self.jnt_number_spine.value ()
+def resample_joint(start_joint, end_joint, joint_number):
 
-        Joint.resample_joint (startJoint , endJoint , jnt_number)
+    if joint_number < 1:
+        cmds.warning(
+            "å…³èŠ‚æ•°é‡å¿…é¡»å¤§äºç­‰äº 1ã€‚"
+        )
+        return []
+
+    start_position = cmds.xform(
+        start_joint,
+        query=True,
+        worldSpace=True,
+        translation=True,
+    )
+
+    end_position = cmds.xform(
+        end_joint,
+        query=True,
+        worldSpace=True,
+        translation=True,
+    )
+
+    created_joints = []
+    previous_joint = start_joint
+
+    for index in range(joint_number):
+
+        ratio = float(index + 1) / float(joint_number + 1)
+
+        position = []
+
+        for axis_index in range(3):
+
+            value = (
+                start_position[axis_index]
+                + (
+                    end_position[axis_index]
+                    - start_position[axis_index]
+                )
+                * ratio
+            )
+
+            position.append(value)
+
+        cmds.select(clear=True)
+
+        new_joint = cmds.joint(
+            name="{}_resamp_{:03d}".format(
+                start_joint,
+                index + 1,
+            ),
+            position=position,
+        )
+
+        cmds.parent(
+            new_joint,
+            previous_joint,
+        )
+
+        created_joints.append(new_joint)
+        previous_joint = new_joint
+
+    cmds.parent(
+        end_joint,
+        previous_joint,
+    )
+
+    return created_joints
 
 
-# ¹Ø½ÚÖØ²ÉÑù¹¤¾ß
-@staticmethod
-def create_more_joint () :
-    """
-    ¹Ø½ÚÖØ²ÉÑù¹¤¾ß
-    """
-    try :
-        window.close ()  # ¹Ø±Õ´°¿Ú
-        window.deleteLater ()  # É¾³ı´°¿Ú
-    except :
+def main():
+    global _window
+
+    try:
+        if _window is not None:
+            _window.close()
+            _window.deleteLater()
+    except Exception:
         pass
-    window = Joint_Resampling ()  # ´´½¨ÊµÀı
-    window.show ()  # ÏÔÊ¾´°¿Ú
 
+    _window = JointResamplingDialog()
+    _window.show()
+    _window.raise_()
+    _window.activateWindow()
 
-# ¹Ø½ÚÖØ²ÉÑù£¬Ñ¡ÔñÆğÊ¼¹Ø½ÚºÍÄ©¶Ë¹Ø½Ú£¬ÔÚ¶şÕßÖĞ¼äÖØĞÂ¹¹½¨Ö¸¶¨ÊıÁ¿µÄ¹Ø½ÚÁ´Ìõ
-@staticmethod
-def resample_joint (startJoint , endJoint , jnt_number) :
-    """
-    ¹Ø½ÚÖØ²ÉÑù£¬Ñ¡ÔñÆğÊ¼¹Ø½ÚºÍÄ©¶Ë¹Ø½Ú£¬ÔÚ¶şÕßÖĞ¼äÖØĞÂ¹¹½¨Ö¸¶¨ÊıÁ¿µÄ¹Ø½ÚÁ´Ìõ
-    startJoint(str):ÆğÊ¼¹Ø½Ú
-    endJoint(str):Ä©¶Ë¹Ø½Ú
-    jnt_number(int)£ºÖ¸¶¨ÊıÁ¿µÄ¹Ø½ÚÁ´Ìõ
-    """
-    jnt_parent = startJoint
-    # »ñÈ¡ÆğÊ¼¹Ø½ÚÓëÄ©¶Ë¹Ø½ÚÖ®¼äµÄ¾àÀë
-    try :
-        cmds.parent (endJoint , startJoint)
-    except :
-        pass
-    tx_value = cmds.getAttr (endJoint + '.translateX') / jnt_number
-    cmds.parent (endJoint , world = True)
-    cmds.delete (cmds.listRelatives (startJoint , children = True))
-    # ¸ù¾İÖ¸¶¨µÄ¹Ø½ÚÊıÁ¿£¬Ñ­»·´´½¨¶ÔÓ¦µÄ¹Ø½Ú
-    for index in range (jnt_number) :
-        jnt = cmds.createNode ('joint' , name = startJoint + '_{:03d}'.format (index))
-        cmds.matchTransform (jnt , startJoint)
-        cmds.parent (jnt , jnt_parent)
-        cmds.setAttr (jnt + '.translateX' , tx_value)
-        jnt_parent = jnt
-    cmds.parent (endJoint , startJoint + '_{:03d}'.format (jnt_number - 1))
+    return _window

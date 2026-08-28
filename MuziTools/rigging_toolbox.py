@@ -28,6 +28,7 @@ import maya.OpenMayaUI as omui
 
 # 从 tools 包导入按分类组织的工具字典
 from .tools import get_tools_by_category
+from . import window_manager
 
 
 def get_maya_main_window():
@@ -167,7 +168,10 @@ class Rigging_Toolbox(QWidget):
                 btn.setToolTip(f"点击打开 {tool_name}.py")
                 btn.setMinimumHeight(28)
                 # 使用 *args 兼容不同 PySide 版本的信号参数传递
-                btn.clicked.connect(lambda *args, f=tool_func: f())
+                tool_key = "{}/{}".format(category_name, tool_name)
+                btn.clicked.connect(
+                    lambda *args, key=tool_key, f=tool_func: window_manager.show_tool(key, f)
+                )
                 box.add_widget(btn)
 
             self.category_boxes[category_name] = box

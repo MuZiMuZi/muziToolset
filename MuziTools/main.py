@@ -1,13 +1,29 @@
-import muziToolset.MuziTools.rigging_toolbox as rigging_toolbox
-
+# coding=utf-8
 from importlib import reload
+from . import rigging_toolbox
+
+reload(rigging_toolbox)
+window = None
 
 
-reload (rigging_toolbox)
+def main():
+    global window
+    try:
+        if window is not None:
+            window.close()
+            window.deleteLater()
+    except Exception:
+        pass
+    window = rigging_toolbox.main()
+    return window
 
-try :
-    window.close ()  # 关闭窗口
-    window.deleteLater ()  # 删除窗口
-except :
-    pass
-window = rigging_toolbox.main ()  # 创建实例
+
+if __name__ == '__main__':
+    try:
+        main()
+    except Exception:
+        import traceback
+        print('')
+        print('!!! MuziTools merge failed !!!')
+        traceback.print_exc()
+        raise
