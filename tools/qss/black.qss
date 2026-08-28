@@ -1,0 +1,98 @@
+/* Global Settings */
+QPalette {
+    background: #464646;
+}
+
+* {
+    outline: 0px;
+    color: #F0F0F0;
+}
+
+/* Widget Borders */
+QWidget[form="true"],
+QLabel[frameShape="1"] {
+    border: 1px solid #353535;
+    border-radius: 0px;
+}
+
+/* Button Styling */
+QPushButton,
+.QToolButton {
+    border-style: none;
+    border: 1px solid #353535;
+    color: #F0F0F0;
+    padding: 5px;
+    min-height: 15px;
+    border-radius: 5px;
+    background: qlineargradient(spread:pad,
+    x1: 0,
+    y1: 0,
+    x2: 0,
+    y2: 1,
+    stop: 0 #4D4D4D,
+    stop: 1 #383838);
+}
+
+/* Checkbox and Radio Button Styling */
+QCheckBox::indicator,
+QGroupBox::indicator,
+QTreeWidget::indicator,
+QListWidget::indicator {
+    width: 13px;
+    height: 13px;
+}
+
+/* Tab Styling */
+QTabBar::tab {
+    border: 1px solid #353535;
+    color: #F0F0F0;
+    margin: 0px;
+    background: qlineargradient(spread:pad,
+    x1: 0,
+    y1: 0,
+    x2: 0,
+    y2: 1,
+    stop: 0 #636363,
+    stop: 1 #575757);
+}
+
+/* Scrollbar Styling */
+QScrollBar:horizontal,
+QScrollBar:vertical {
+    background: #4D4D4D;
+    padding: 0px;
+    border-radius: 6px;
+}
+
+/* Table and List View Styling */
+QTableView,
+QListView,
+QTreeView,
+QSplitter::handle,
+QTreeView::branch {
+    background: #464646;
+}
+
+/* Tooltip Styling */
+QToolTip {
+    border: 0px solid #F0F0F0;
+    padding: 1px;
+    color: #F0F0F0;
+    background: qlineargradient(spread:pad,
+    x1: 0,
+    y1: 0,
+    x2: 0,
+    y2: 1,
+    stop: 0 #4D4D4D,
+    stop: 1 #383838);
+}
+
+/* Color Definitions */
+/* TextColor:#F0F0F0 */
+/* PanelColor:#464646 */
+/* BorderColor:#353535 */
+/* NormalColorStart:#4D4D4D */
+/* NormalColorEnd:#383838 */
+/* DarkColorStart:#636363 */
+/* DarkColorEnd:#575757 */
+/* HighColor:#00BB9E */

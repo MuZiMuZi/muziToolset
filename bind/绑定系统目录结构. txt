@@ -1,0 +1,64 @@
+                                        绑定系统目录结构
+ 这是我整体的绑定系统的架构思路
+ ● bpjnt目录：
+   ○ 用于定位关节的 .ma 文件。
+   ○ 通过导入模板文件进行绑定。
+ ● module目录：
+   ○ 包含了不同类型的模块，每个模块都用于特定类型的关节绑定。
+   ○ base目录：
+     ■ bone.py：基础类，为后续的抽象类提供规范。
+     ■ base.py：继承自bone.Bone，用于基础的关节和控制器绑定。
+   ○ chain目录：
+     ■ chain.py：继承自base.Base，用于关节链条的绑定。
+     ■ chainEP.py：继承自chain.Chain，根据曲线的长度创建关节和控制器。
+     ■ chainFK.py：继承自chain.Chain，用于创建FK关节链条的绑定。
+     ■ chainIK.py：继承自chain.Chain，用于创建IK关节Spline链条的绑定。
+     ■ chainIKFK.py：继承自chain.Chain，创建IKFK关节链条的绑定系统，由三条关节链组成。
+   ○ limb目录：
+     ■ limbFK.py：继承自chainFK.ChainFK，创建手臂或腿部四肢关节的FK绑定。
+     ■ limbIK.py：继承自chainIK.ChainIK，创建手臂或腿部四肢关节的IK绑定。
+     ■ limbIKFK.py：继承自chainIKFK.ChainIKFK，创建手臂或腿部四肢关节的IKFK绑定系统。
+ ● subject目录：
+   ○ 针对各组件的绑定。
+   ○ body_subject目录：
+     ■ finger.py：调用chainFK.ChainFK，创建手指的绑定。
+     ■ hand.py：调用finger.Finger，创建手掌的绑定。
+     ■ arm.py：调用limbIKFK.LimbIKFK，创建手臂的绑定。
+     ■ foot.py：调用chain.Chain，创建脚掌的绑定。
+     ■ leg.py：调用limbIKFK.LimbIKFK，创建腿部的绑定。
+     ■ spine.py：调用chainIK.ChainIK，创建胸腔和脊椎的绑定。
+     ■ tail.py：调用chainIKFK.ChainIKFK，创建尾部或飘带的绑定。
+   ○ face_subject目录：
+     ■ brow.py : 继承base.Base,创建眉毛的绑定
+     ■ ear.py : 调用chainFK.ChainFK,创建耳朵的绑定
+     ■ eyeLid.py : 调用base.Base,创建上下眼皮的绑定
+     ■ eye.py : 调用chain.Chain,创建眼睛的绑定
+     ■ nose.py : 调用base.Base,创建鼻子的绑定
+     ■ cheek.py : 调用base.Base,创建脸颊的绑定
+     ■ mouthLip.py : 调用base.Base,创建上下嘴唇的绑定
+     ■ mouth.py : 调用base.Base,创建嘴巴的绑定
+     ■ tongue.py : 调用chainFK.ChainFK,创建舌头的绑定
+     ■ jaw.py : 调用chainFK.ChainFK,创建下巴的绑定
+ ● ui目录：
+   ○ 包含UI相关的文件。
+   ○ icon目录：图标图片的存放目录。
+   ○ setup目录：存放UI文件。
+   ○ widget目录：读取UI文件的Python文件的目录。
+ ● config文件：
+   ○ 整个绑定系统的配置文件。
+ ● Bind_Tool_main：
+   ○ 绑定系统的入口。
+   ○ 包括启动代码实例，导入模块，创建并显示绑定系统的主窗口。
+   ○ 启动代码实例
+
+ import muziToolset.bind.Bind_Tool_main as Bind_Tool_main
+ from importlib import reload
+ reload(Bind_Tool_main)
+
+ try :
+     win.close ()
+     win.deleteLater ()
+ except :
+     pass
+ win = Bind_Tool_main.Bind_Widget ()
+ win.show ()
