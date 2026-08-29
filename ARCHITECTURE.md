@@ -14,14 +14,15 @@ muziToolset/
 ├─ tools/                  # 单功能、可独立启动的小工具
 ├─ systems/                # 可复用 Rig System / Builder
 │  ├─ common/              # 系统级共享能力
-│  ├─ controller/          # 统一 Controller Builder
+│  ├─ controller/          # Controller Builder / Parent Space Blend
 │  ├─ body/
 │  │  └─ skirt/            # 当前已迁移的 Skirt Rig Builder
 │  └─ face/                # Face Rig System
 ├─ resources/              # 图标、Controller Shape 等静态资源
+├─ tests/                  # Maya Smoke / Functional Smoke
 ├─ legacy_reference/       # 历史代码，只用于参考
 ├─ config.py               # 根包路径和资源配置
-├─ __init__.py             # 对外 show()/initialize() 入口
+├─ __init__.py             # 对外 show()/initialize() 与测试入口
 └─ start.py                # Maya 快速启动脚本
 ```
 
@@ -57,21 +58,41 @@ Core 函数应该尽量：
 当前正式职责模块包括：
 
 ```text
+# 基础节点 / 场景
 attrUtils.py
-jointUtils.py
 hierarchyUtils.py
+jointUtils.py
 nameUtils.py
-control_shape_utils.py
-rename_utils.py
+scene_utils.py
+transform_utils.py
+connection_utils.py
+matrix_utils.py
+
+# Rig / Geometry
+animation_utils.py
+constraint_utils.py
+curve_utils.py
+surface_utils.py
 snap_utils.py
+mesh_utils.py
 skin_utils.py
 blendshape_utils.py
+control_shape_utils.py
+
+# 文件 / 数据
+file_utils.py
+scene_io_utils.py
+animation_io_utils.py
+
+# 工具支持
+rename_utils.py
 scene_clean_utils.py
 model_check_utils.py
-mesh_utils.py
 ```
 
-旧 `controlUtils / pipelineUtils / weightsUtils / qtUtils / snapUtils` 等重复模块已经退出正式 Core，原版保存在 `legacy_reference/core`。
+旧 `pipelineUtils / controlUtils / connectionUtils / vectorUtils / fileUtils / weightsUtils / qtUtils` 等万能或重复模块已经退出正式 Core。
+
+其中有价值的通用算法已经拆入正式模块；大型 Rig Workflow 进入 `systems/` 或仅保留在 `legacy_reference/rigging/` 作为历史参考。
 
 ### systems
 
@@ -81,8 +102,18 @@ mesh_utils.py
 
 ```text
 systems/controller/
+├─ builder.py
+└─ space_blend.py
+
 systems/body/skirt/
+
 systems/face/
+├─ face_setup.py
+├─ face_guide.py
+├─ curve_attachment.py
+├─ eyelid/
+├─ lip/
+└─ wizard.py
 ```
 
 例如 Controller Creator、FK、IK 和 Skirt Rig 不应该各自维护一套 Controller 创建算法，而应该通过包内 System API 调用：
@@ -122,6 +153,8 @@ def main():
 ```
 
 窗口不要自己维护第二套全局引用，统一交给 `app.window_manager`。
+
+Tool 中不要复制 Core 算法。例如属性连接统一调用 `core.connection_utils`，Controller Shape 编辑统一调用 `core.control_shape_utils`。
 
 ### ui
 
@@ -194,20 +227,37 @@ window_manager.py
 
 ## 历史代码
 
-`legacy_reference/` 只作为参考资料库。
+`legacy_reference/` 只作为参考资料库，不属于正式运行架构。
 
-当前包含旧：
+当前主要目录：
 
 ```text
-MuziTools/
-bind/
-core/
-face/
-pyside/
-res/
-rigging/
-dev/
+legacy_reference/
+├─ bind/
+├─ core/
+├─ dev/
+├─ integrations/
+│  ├─ advanced_skeleton.py
+│  └─ metahuman.py
+├─ pyside/
+├─ res/
+└─ rigging/
 ```
+
+旧 `legacy_reference/face/` 和旧 `MuziTools/` 已经完成迁移后删除。
+
+当前 `legacy_reference/core/` 已经收缩为：
+
+```text
+legacy_reference/core/
+├─ PIPELINE_MIGRATION.md
+├─ __init__.py
+└─ pipelineUtils.py
+```
+
+`pipelineUtils.py` 只作为最后的迁移验证参考；新版 Maya Smoke Test 验证通过后即可删除。
+
+旧 Controller 中剩余 Ribbon / IK Spine / IK Curve Rig 等大型流程放在 `legacy_reference/rigging/controlUtils.py`，第三方 AdvancedSkeleton / MetaHuman 代码放在 `legacy_reference/integrations/`。
 
 需要旧功能时，应重新提取有价值的算法并按职责进入新的 `core / tools / systems`，而不是让正式代码直接调用历史包。
 
