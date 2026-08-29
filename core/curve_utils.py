@@ -9,6 +9,7 @@ Maya NURBS Curve 通用底层工具。
     - Curve Shape / Transform 查询；
     - Curve CV 查询；
     - 按长度均匀采样 Point / Tangent；
+    - Curve Parameter 与弧长百分比互转；
     - 查询世界位置在 Curve 上最近的 Parameter；
     - 创建 pointOnCurveInfo 附着节点；
     - 根据 Maya 节点创建 Curve；
@@ -303,6 +304,60 @@ def get_closest_parameter(
     return parameter
 
 
+def parameter_to_length_percentage(
+        curve,
+        parameter
+):
+    """把 Curve 原始 Parameter 转换成 0~1 弧长百分比。"""
+    curve_function = get_curve_function(curve)
+    curve_length = curve_function.length()
+
+    if curve_length <= 0.000001:
+        raise RuntimeError(
+            u"Curve 长度为 0，无法换算 Parameter：{}".format(
+                curve
+            )
+        )
+
+    parameter_length = curve_function.findLengthFromParam(
+        parameter
+    )
+    percentage = parameter_length / curve_length
+
+    if percentage < 0.0:
+        percentage = 0.0
+
+    if percentage > 1.0:
+        percentage = 1.0
+
+    return percentage
+
+
+def length_percentage_to_parameter(
+        curve,
+        percentage
+):
+    """把 0~1 弧长百分比转换成 Curve 原始 Parameter。"""
+    percentage = float(percentage)
+
+    if percentage < 0.0 or percentage > 1.0:
+        raise ValueError(
+            u"percentage 必须在 0~1 范围内：{}".format(
+                percentage
+            )
+        )
+
+    curve_function = get_curve_function(curve)
+    curve_length = curve_function.length()
+    target_length = curve_length * percentage
+
+    parameter = curve_function.findParamFromLength(
+        target_length
+    )
+
+    return parameter
+
+
 # =============================================================================
 # Attach
 # =============================================================================
@@ -536,6 +591,8 @@ __all__ = [
     "get_even_percentages",
     "sample_curve_by_length",
     "get_closest_parameter",
+    "parameter_to_length_percentage",
+    "length_percentage_to_parameter",
     "create_point_on_curve_attachment",
     "create_closest_point_attachment",
     "create_curve_from_nodes",
