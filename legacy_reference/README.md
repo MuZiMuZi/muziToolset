@@ -35,17 +35,23 @@ from legacy_reference import ...
 1. 阅读旧实现；
 2. 找出真正需要保留的算法；
 3. 去掉旧 UI、旧路径、PyMel、主动 reload 等不再需要的依赖；
-4. 根据职责迁入 `muzi_rigging/core`、`muzi_rigging/tools` 或 `muzi_rigging/systems`；
+4. 根据职责迁入根包中的 `core/`、`tools/` 或 `systems/`；
 5. 把场景算法与 PySide UI 分开；
-6. 使用新的 Theme、Window Manager 和公共 Widget；
+6. 使用正式 `ui/` Theme、`app/window_manager.py` 和公共 Widget；
 7. 在 Maya 中验证新实现后，再让正式工具调用新的 API。
 
 ## 正式代码位置
 
-当前正式运行代码统一位于：
+当前正式运行框架就是仓库根包：
 
 ```text
-muzi_rigging/
+muziToolset/
+├─ app/
+├─ ui/
+├─ core/
+├─ tools/
+├─ systems/
+└─ resources/
 ```
 
 历史区只作为代码资料库，不应该重新变成第二套运行架构。
