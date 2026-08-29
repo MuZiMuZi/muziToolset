@@ -1,8 +1,9 @@
 # coding=utf-8
 u"""
-Muzi Rigging 全局路径配置。
+Muzi Toolset 全局路径配置。
 
-这里只维护包路径和静态资源路径，不在这里放具体工具业务配置。
+仓库根目录本身就是正式 Python Package。
+这里只维护包路径和静态资源路径，不放具体工具业务配置。
 """
 
 from __future__ import print_function
@@ -11,7 +12,7 @@ import os
 
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(package_dir)
+project_root = package_dir
 
 app_dir = os.path.join(package_dir, "app")
 ui_dir = os.path.join(package_dir, "ui")
@@ -19,6 +20,10 @@ core_dir = os.path.join(package_dir, "core")
 tools_dir = os.path.join(package_dir, "tools")
 systems_dir = os.path.join(package_dir, "systems")
 resources_dir = os.path.join(package_dir, "resources")
+legacy_reference_dir = os.path.join(
+    package_dir,
+    "legacy_reference"
+)
 
 icons_dir = os.path.join(resources_dir, "icons")
 controller_shapes_dir = os.path.join(
@@ -27,8 +32,8 @@ controller_shapes_dir = os.path.join(
 )
 templates_dir = os.path.join(resources_dir, "templates")
 
-# 迁移期间保留旧工具中常见的小写变量名。
-# 新代码优先使用上面语义更清楚的名称。
+# 旧工具中仍可能使用这些小写路径别名。
+# 新代码优先使用上面语义更清楚的正式变量。
 icon_dir = icons_dir
 image_dir = controller_shapes_dir
 data_dir = controller_shapes_dir
