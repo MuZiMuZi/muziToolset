@@ -55,6 +55,30 @@ def get_short_name(node):
     return node.split("|")[-1]
 
 
+def get_long_name(node):
+    """把 Maya DAG 节点统一解析成长路径。"""
+    if not node:
+        return None
+
+    matches = cmds.ls(
+        node,
+        long=True
+    )
+
+    if matches is None:
+        matches = []
+
+    if not matches:
+        return None
+
+    if len(matches) > 1:
+        raise RuntimeError(
+            u"节点名称不唯一，请使用完整 DAG 路径：{}".format(node)
+        )
+
+    return matches[0]
+
+
 def vector_subtract(vector_a, vector_b):
     """三维向量相减。"""
     return [
@@ -116,6 +140,15 @@ def dot_product(vector_a, vector_b):
 
 def get_joint_path(start_joint, end_joint):
     """返回 start_joint 到 end_joint 的 Joint 路径。"""
+    start_joint = get_long_name(start_joint)
+    end_joint = get_long_name(end_joint)
+
+    if start_joint is None:
+        return None
+
+    if end_joint is None:
+        return None
+
     if start_joint == end_joint:
         return [start_joint]
 
@@ -244,14 +277,20 @@ def get_pole_vector_position(
 
 def create_ik_rig(start_joint, end_joint):
     """创建基础 RP IK、End Controller 和 Pole Vector Controller。"""
-    if not start_joint or not cmds.objExists(start_joint):
+    original_start_joint = start_joint
+    original_end_joint = end_joint
+
+    start_joint = get_long_name(start_joint)
+    end_joint = get_long_name(end_joint)
+
+    if start_joint is None:
         raise RuntimeError(
-            u"IK 起始 Joint 不存在：{}".format(start_joint)
+            u"IK 起始 Joint 不存在：{}".format(original_start_joint)
         )
 
-    if not end_joint or not cmds.objExists(end_joint):
+    if end_joint is None:
         raise RuntimeError(
-            u"IK 末端 Joint 不存在：{}".format(end_joint)
+            u"IK 末端 Joint 不存在：{}".format(original_end_joint)
         )
 
     if cmds.nodeType(start_joint) != "joint":
@@ -427,7 +466,7 @@ def create_ik_rig(start_joint, end_joint):
 
 def find_rig_root(node):
     """沿父层级查找带 muziRigType 的 Rig Module Root。"""
-    current_node = node
+    current_node = get_long_name(node)
 
     while current_node:
         if cmds.attributeQuery(
@@ -1111,7 +1150,11 @@ class RigTool(QWidget):
             print(u"[Rig Tool] 场景中没有重名 DAG 节点。")
             return
 
-        short_names = list(duplicates.keys())
+        short_names = []
+
+        for short_name in duplicates:
+            short_names.append(short_name)
+
         short_names.sort()
 
         print(u"[Rig Tool] 重名 DAG 节点：")
@@ -1131,7 +1174,11 @@ class RigTool(QWidget):
             print(u"[Rig Tool] 场景中没有重名 DAG 节点。")
             return
 
-        short_names = list(duplicates.keys())
+        short_names = []
+
+        for short_name in duplicates:
+            short_names.append(short_name)
+
         short_names.sort()
 
         cmds.undoInfo(
@@ -1182,5 +1229,6 @@ __all__ = [
     "RigTool",
     "create_ik_rig",
     "find_rig_root",
+    "get_joint_path",
     "main",
 ]
