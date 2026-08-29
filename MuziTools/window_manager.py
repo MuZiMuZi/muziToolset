@@ -11,7 +11,8 @@ MuziTools Window Manager
     3. Maya 主窗口作为 owner，减少工具失焦后掉到 Maya 后面的情况；
     4. 同一个工具只保留一个窗口实例；
     5. 兼容 main() 已经 show() 但没有 return QWidget 的旧式工具；
-    6. 不重复 re-parent 已经整理过的窗口，避免 Qt 重建 native window 时闪烁或隐藏。
+    6. 不重复 re-parent 已经整理过的窗口，避免 Qt 重建 native window 时闪烁或隐藏；
+    7. 所有 PySide 子工具自动使用统一的 Muzi Silicon UI Theme。
 """
 
 from __future__ import print_function
@@ -34,9 +35,12 @@ try:
 except ImportError:
     omui = None
 
+from . import ui_theme
+
 
 _OPEN_WINDOWS = {}
 _PREPARED_PROPERTY = "muzi_window_manager_prepared"
+_THEME_PROPERTY = "muzi_window_theme_applied"
 
 
 def _is_valid_widget(widget):
@@ -104,6 +108,7 @@ def _top_level_window_ids():
 
 
 def _is_new_tool_window(widget, before_ids):
+    """判断 QWidget 是否是本次工具调用新创建的顶层窗口。"""
     if not _is_valid_widget(widget):
         return False
 
@@ -234,10 +239,53 @@ def _already_prepared(window):
 
 
 def _mark_prepared(window):
+    """标记窗口已经完成 parent / flags 整理。"""
     try:
         window.setProperty(_PREPARED_PROPERTY, True)
     except Exception:
         pass
+
+
+def _theme_already_applied(window):
+    """检查当前窗口是否已经应用 Muzi Theme。"""
+    try:
+        return bool(window.property(_THEME_PROPERTY))
+    except Exception:
+        return False
+
+
+def _apply_window_theme(window):
+    """
+    给子工具应用统一 Muzi Silicon Theme。
+
+    Theme 只在每个 QWidget 实例第一次显示时设置一次，避免重复点击工具时
+    反复 setStyleSheet 导致整棵控件树重新 polish。
+    """
+    if not _is_valid_widget(window):
+        return False
+
+    if _theme_already_applied(window):
+        return True
+
+    try:
+        ui_theme.apply_theme(window)
+    except Exception as error:
+        print(
+            u"[MuziTools] 应用 UI Theme 失败: {}".format(error)
+        )
+        return False
+
+    try:
+        window.setAttribute(Qt.WA_StyledBackground, True)
+    except Exception:
+        pass
+
+    try:
+        window.setProperty(_THEME_PROPERTY, True)
+    except Exception:
+        pass
+
+    return True
 
 
 def _prepare_window(window):
@@ -340,6 +388,8 @@ def show_tool(tool_key, tool_function):
     old_window = _OPEN_WINDOWS.get(tool_key)
 
     if _is_valid_widget(old_window):
+        _prepare_window(old_window)
+        _apply_window_theme(old_window)
         _show_and_activate(old_window)
         return old_window
 
@@ -353,6 +403,7 @@ def show_tool(tool_key, tool_function):
         return result
 
     _prepare_window(window)
+    _apply_window_theme(window)
 
     # show 之前先保存强引用。
     _OPEN_WINDOWS[tool_key] = window
