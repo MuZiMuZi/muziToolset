@@ -9,12 +9,15 @@ Maya NURBS Curve 通用底层工具。
     - Curve Shape / Transform 查询；
     - Curve CV 查询；
     - 按长度均匀采样 Point / Tangent；
+    - 查询世界位置在 Curve 上最近的 Parameter；
+    - 创建 pointOnCurveInfo 附着节点；
     - 根据 Maya 节点创建 Curve；
     - 根据当前 Polygon Edge 创建 Curve。
 
 说明：
     Joint 专属逻辑继续留在 jointUtils；
-    本模块只提供通用 Curve 数据和创建能力。
+    Face / Eyelid / Lip 等完整绑定逻辑留在对应 System；
+    本模块只提供通用 Curve 数据、采样和附着能力。
 """
 
 from __future__ import print_function
@@ -254,6 +257,189 @@ def sample_curve_by_length(
     }
 
 
+def get_closest_parameter(
+        curve,
+        world_position
+):
+    """
+    返回世界坐标在 Curve 上最近点的 Parameter。
+
+    这里使用临时 nearestPointOnCurve 节点，原因是 Maya 2023 中
+    pointOnCurveInfo 使用原始 Curve Parameter，而不是 0~1 百分比。
+    """
+    if world_position is None:
+        raise ValueError(u"world_position 不能为空。")
+
+    if len(world_position) != 3:
+        raise ValueError(u"world_position 必须包含 x / y / z 三个数值。")
+
+    curve_shape = get_curve_shape(curve)
+    nearest_node = cmds.createNode(
+        "nearestPointOnCurve"
+    )
+
+    try:
+        cmds.connectAttr(
+            curve_shape + ".worldSpace[0]",
+            nearest_node + ".inputCurve",
+            force=True
+        )
+
+        cmds.setAttr(
+            nearest_node + ".inPosition",
+            world_position[0],
+            world_position[1],
+            world_position[2],
+            type="double3"
+        )
+
+        parameter = cmds.getAttr(
+            nearest_node + ".parameter"
+        )
+    finally:
+        if cmds.objExists(nearest_node):
+            cmds.delete(nearest_node)
+
+    return parameter
+
+
+# =============================================================================
+# Attach
+# =============================================================================
+
+def create_point_on_curve_attachment(
+        curve,
+        parameter,
+        name,
+        parent=None
+):
+    """
+    创建一个由 pointOnCurveInfo 驱动的 Transform。
+
+    当 attachment 有 Parent 时，pointOnCurveInfo.position 是世界空间值，
+    不能直接连接到子节点的本地 translate。因此会自动建立：
+
+        pointOnCurveInfo.position
+            -> composeMatrix
+            -> multMatrix(parent.worldInverseMatrix)
+            -> decomposeMatrix
+            -> attachment.translate
+
+    Returns:
+        dict:
+            {
+                "transform": str,
+                "point_on_curve": str,
+                "matrix_nodes": [str, ...],
+                "parameter": float,
+            }
+    """
+    curve_shape = get_curve_shape(curve)
+
+    if parent is not None:
+        validate_node(parent)
+
+    attachment = cmds.createNode(
+        "transform",
+        name=name,
+        parent=parent
+    )
+
+    point_on_curve = cmds.createNode(
+        "pointOnCurveInfo",
+        name="poci_{}".format(name)
+    )
+
+    cmds.connectAttr(
+        curve_shape + ".worldSpace[0]",
+        point_on_curve + ".inputCurve",
+        force=True
+    )
+    cmds.setAttr(
+        point_on_curve + ".parameter",
+        parameter
+    )
+
+    matrix_nodes = []
+
+    if parent is None:
+        cmds.connectAttr(
+            point_on_curve + ".position",
+            attachment + ".translate",
+            force=True
+        )
+    else:
+        compose_matrix = cmds.createNode(
+            "composeMatrix",
+            name="cmp_{}".format(name)
+        )
+        mult_matrix = cmds.createNode(
+            "multMatrix",
+            name="mult_{}".format(name)
+        )
+        decompose_matrix = cmds.createNode(
+            "decomposeMatrix",
+            name="dcmp_{}".format(name)
+        )
+
+        matrix_nodes.append(compose_matrix)
+        matrix_nodes.append(mult_matrix)
+        matrix_nodes.append(decompose_matrix)
+
+        cmds.connectAttr(
+            point_on_curve + ".position",
+            compose_matrix + ".inputTranslate",
+            force=True
+        )
+        cmds.connectAttr(
+            compose_matrix + ".outputMatrix",
+            mult_matrix + ".matrixIn[0]",
+            force=True
+        )
+        cmds.connectAttr(
+            parent + ".worldInverseMatrix[0]",
+            mult_matrix + ".matrixIn[1]",
+            force=True
+        )
+        cmds.connectAttr(
+            mult_matrix + ".matrixSum",
+            decompose_matrix + ".inputMatrix",
+            force=True
+        )
+        cmds.connectAttr(
+            decompose_matrix + ".outputTranslate",
+            attachment + ".translate",
+            force=True
+        )
+
+    return {
+        "transform": attachment,
+        "point_on_curve": point_on_curve,
+        "matrix_nodes": matrix_nodes,
+        "parameter": parameter,
+    }
+
+
+def create_closest_point_attachment(
+        curve,
+        world_position,
+        name,
+        parent=None
+):
+    """在 Curve 上离 world_position 最近的位置创建 Attachment。"""
+    parameter = get_closest_parameter(
+        curve,
+        world_position
+    )
+
+    return create_point_on_curve_attachment(
+        curve=curve,
+        parameter=parameter,
+        name=name,
+        parent=parent
+    )
+
+
 # =============================================================================
 # Create
 # =============================================================================
@@ -349,6 +535,9 @@ __all__ = [
     "get_curve_function",
     "get_even_percentages",
     "sample_curve_by_length",
+    "get_closest_parameter",
+    "create_point_on_curve_attachment",
+    "create_closest_point_attachment",
     "create_curve_from_nodes",
     "create_curve_from_selected_edges",
 ]
