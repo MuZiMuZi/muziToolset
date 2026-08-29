@@ -3,28 +3,78 @@ u"""
 Model Check Utils
 =================
 
-Maya 模型检查底层模块。
+Maya 模型质量检查模块。
 
-检查项：
-    1. Non-Manifold Vertex / Edge；
-    2. Lamina Face；
-    3. DAG 重名；
-    4. 非 Deformer 的遗留建模历史；
-    5. Mesh Transform 未冻结；
-    6. 锁定法线。
+模块职责
+--------
+本模块负责“尽量只读地发现问题”，并把检查结果统一整理成 Issue 字典。
+只有明确标记 ``fixable=True`` 的安全问题才允许通过 ``fix_issue / fix_issues`` 修复。
 
-安全原则：
-    - 拓扑问题只报告，不自动猜修；
-    - SkinCluster / BlendShape 等正常 Rig Deformer 不当作建模历史错误；
-    - 带 Deformer 的 Mesh 不自动 Freeze；
-    - 引用节点不自动修复。
+当前检查项
+----------
+check_nonmanifold_geometry(meshes=None)
+    检查 Non-Manifold Vertex / Edge。
 
-本模块不包含 PySide UI。
+check_lamina_faces(meshes=None)
+    检查 Lamina Face。
+
+check_duplicate_names(nodes=None)
+    检查 DAG Short Name 冲突。
+
+check_construction_history(meshes=None)
+    检查非 Deformer 的遗留建模历史。
+
+check_transformations(meshes=None)
+    检查 Mesh Transform 是否未冻结；如果有 Rig Deformer，只报告而不允许自动 Freeze。
+
+check_locked_normals(meshes=None, sample_limit=500)
+    采样检查锁定法线。
+
+run_checks(...)
+    根据开关组合执行全部检查，并返回统一 Issue 列表。
+
+修复 API
+--------
+fix_issue(issue)
+    只修复 Issue 自己声明为 fixable 的安全问题。
+
+fix_issues(issues)
+    在一个 Maya Undo Chunk 中批量修复。
+
+通用辅助
+--------
+get_mesh_shapes(nodes=None)
+get_mesh_transform(mesh_shape)
+get_mesh_transforms(meshes)
+get_modeling_history(mesh)
+has_deformer_history(mesh)
+make_issue(node, issue_type, details, fixable=False)
+    用于统一检查输入与结果格式。
+
+Issue 数据结构
+--------------
+{
+    "node": "|character|model_md_head_geo_001",
+    "type": "遗留建模历史",
+    "details": "3 个节点：polyExtrudeFace, polyMergeVert",
+    "fixable": True,
+}
+
+安全原则
+--------
+1. Non-Manifold / Lamina 只报告，不猜测拓扑修复方案；
+2. SkinCluster / BlendShape / Wrap 等正常 Rig Deformer 不当作建模历史错误；
+3. 有 Deformer 的 Mesh 不自动 Freeze；
+4. Reference 节点不自动修复；
+5. 检查与清理分离：大范围场景清理属于 scene_clean_utils.py；
+6. Core 不弹确认窗口，UI 是否允许自动修复由上层 Tool 决定。
 """
 
 from __future__ import print_function
 
 import maya.cmds as cmds
+
+from . import scene_utils
 
 
 default_cameras = [
@@ -62,13 +112,17 @@ history_ignore_types = [
 ]
 
 
+# =============================================================================
+# Common Query
+# =============================================================================
+
 def get_short_name(node):
-    """返回 DAG 节点短名称。"""
+    """返回 DAG Short Name。"""
     return node.split("|")[-1]
 
 
 def is_referenced(node):
-    """判断节点是否来自 Reference。"""
+    """判断节点是否来自 Maya Reference。"""
     try:
         return cmds.referenceQuery(
             node,
@@ -79,29 +133,26 @@ def is_referenced(node):
 
 
 def get_mesh_shapes(nodes=None):
-    """把 Transform / Mesh 输入统一转成非 Intermediate Mesh Shape。"""
+    """
+    把 Transform / Mesh 输入统一转换成非 Intermediate Mesh Shape Long Path。
+
+    ``nodes=None`` 时扫描全场景 Mesh。
+    """
     if nodes is None:
-        meshes = cmds.ls(
+        return cmds.ls(
             type="mesh",
             long=True,
             noIntermediate=True
-        )
-
-        if meshes is None:
-            meshes = []
-
-        return meshes
+        ) or []
 
     if isinstance(nodes, str):
         nodes = [nodes]
 
     result = []
 
+    # 步骤 1：逐个解析输入类型。
     for node in nodes:
-        if not node:
-            continue
-
-        if not cmds.objExists(node):
+        if not node or not cmds.objExists(node):
             continue
 
         node_type = cmds.nodeType(node)
@@ -120,15 +171,8 @@ def get_mesh_shapes(nodes=None):
             matches = cmds.ls(
                 node,
                 long=True
-            )
-
-            if matches is None:
-                matches = []
-
-            resolved = node
-
-            if matches:
-                resolved = matches[0]
+            ) or []
+            resolved = matches[0] if matches else node
 
             if resolved not in result:
                 result.append(resolved)
@@ -141,16 +185,14 @@ def get_mesh_shapes(nodes=None):
         ]:
             continue
 
+        # 步骤 2：Transform / Joint 输入转为可见 Mesh Shape。
         shapes = cmds.listRelatives(
             node,
             shapes=True,
             noIntermediate=True,
             fullPath=True,
             type="mesh"
-        )
-
-        if shapes is None:
-            shapes = []
+        ) or []
 
         for shape in shapes:
             if shape not in result:
@@ -160,15 +202,12 @@ def get_mesh_shapes(nodes=None):
 
 
 def get_mesh_transform(mesh_shape):
-    """返回 Mesh Shape 对应 Transform。"""
+    """返回 Mesh Shape 的 Transform Long Path。"""
     parents = cmds.listRelatives(
         mesh_shape,
         parent=True,
         fullPath=True
-    )
-
-    if parents is None:
-        parents = []
+    ) or []
 
     if parents:
         return parents[0]
@@ -177,7 +216,7 @@ def get_mesh_transform(mesh_shape):
 
 
 def get_mesh_transforms(meshes):
-    """从 Mesh Shape 列表返回唯一 Transform 列表。"""
+    """从 Mesh Shape 列表整理唯一 Transform 列表。"""
     result = []
 
     for mesh in meshes:
@@ -189,15 +228,16 @@ def get_mesh_transforms(meshes):
     return result
 
 
+# =============================================================================
+# History Query
+# =============================================================================
+
 def get_history_node_types(mesh):
-    """返回需要参与检查的 History Node / Type。"""
+    """返回参与 Model Check 的 History ``(node, node_type)`` 列表。"""
     history = cmds.listHistory(
         mesh,
         pruneDagObjects=True
-    )
-
-    if history is None:
-        history = []
+    ) or []
 
     result = []
 
@@ -218,7 +258,11 @@ def get_history_node_types(mesh):
 
 
 def get_modeling_history(mesh):
-    """返回非 Deformer 的建模历史。"""
+    """
+    返回非 Deformer 的遗留建模历史。
+
+    geometryFilter 类型即使不在 deformer_types 表里也会被视为正常 Deformer，从而避免误报。
+    """
     result = []
     history_nodes = get_history_node_types(mesh)
 
@@ -243,7 +287,7 @@ def get_modeling_history(mesh):
 
 
 def has_deformer_history(mesh):
-    """判断 Mesh 历史中是否存在 Deformer。"""
+    """判断 Mesh 历史中是否存在需要保护的 Deformer。"""
     history_nodes = get_history_node_types(mesh)
 
     for node, node_type in history_nodes:
@@ -262,6 +306,10 @@ def has_deformer_history(mesh):
     return False
 
 
+# =============================================================================
+# Issue Format
+# =============================================================================
+
 def make_issue(node, issue_type, details, fixable=False):
     """创建统一 Issue 字典。"""
     return {
@@ -272,8 +320,12 @@ def make_issue(node, issue_type, details, fixable=False):
     }
 
 
+# =============================================================================
+# Topology Check
+# =============================================================================
+
 def check_nonmanifold_geometry(meshes=None):
-    """检查 Non-Manifold Vertex / Edge。"""
+    """检查 Non-Manifold Vertex / Edge。只报告，不自动修复。"""
     meshes = get_mesh_shapes(meshes)
     issues = []
 
@@ -282,18 +334,13 @@ def check_nonmanifold_geometry(meshes=None):
             vertices = cmds.polyInfo(
                 mesh,
                 nonManifoldVertices=True
-            )
+            ) or []
             edges = cmds.polyInfo(
                 mesh,
                 nonManifoldEdges=True
-            )
+            ) or []
         except Exception:
             continue
-
-        if vertices is None:
-            vertices = []
-        if edges is None:
-            edges = []
 
         if not vertices and not edges:
             continue
@@ -314,7 +361,7 @@ def check_nonmanifold_geometry(meshes=None):
 
 
 def check_lamina_faces(meshes=None):
-    """检查 Lamina Face。"""
+    """检查 Lamina Face。只报告，不自动修复。"""
     meshes = get_mesh_shapes(meshes)
     issues = []
 
@@ -323,11 +370,8 @@ def check_lamina_faces(meshes=None):
             lamina_faces = cmds.polyInfo(
                 mesh,
                 laminaFaces=True
-            )
+            ) or []
         except Exception:
-            lamina_faces = []
-
-        if lamina_faces is None:
             lamina_faces = []
 
         if not lamina_faces:
@@ -345,18 +389,17 @@ def check_lamina_faces(meshes=None):
     return issues
 
 
+# =============================================================================
+# Duplicate DAG Name Check
+# =============================================================================
+
 def get_dag_nodes(nodes=None):
-    """返回用于重名检查的 DAG 范围。"""
+    """返回重名检查使用的 DAG Long Path 范围。"""
     if nodes is None:
-        dag_nodes = cmds.ls(
+        return cmds.ls(
             dag=True,
             long=True
-        )
-
-        if dag_nodes is None:
-            dag_nodes = []
-
-        return dag_nodes
+        ) or []
 
     dag_nodes = []
 
@@ -367,15 +410,8 @@ def get_dag_nodes(nodes=None):
         matches = cmds.ls(
             node,
             long=True
-        )
-
-        if matches is None:
-            matches = []
-
-        resolved = node
-
-        if matches:
-            resolved = matches[0]
+        ) or []
+        resolved = matches[0] if matches else node
 
         if resolved not in dag_nodes:
             dag_nodes.append(resolved)
@@ -384,10 +420,7 @@ def get_dag_nodes(nodes=None):
             resolved,
             allDescendents=True,
             fullPath=True
-        )
-
-        if descendants is None:
-            descendants = []
+        ) or []
 
         for descendant in descendants:
             if descendant not in dag_nodes:
@@ -397,10 +430,11 @@ def get_dag_nodes(nodes=None):
 
 
 def check_duplicate_names(nodes=None):
-    """检查 DAG 短名称冲突。"""
+    """检查 DAG Short Name 冲突。"""
     dag_nodes = get_dag_nodes(nodes)
     name_map = {}
 
+    # 步骤 1：按 Short Name 分组。
     for node in dag_nodes:
         short_name = get_short_name(node)
 
@@ -412,6 +446,7 @@ def check_duplicate_names(nodes=None):
 
         name_map[short_name].append(node)
 
+    # 步骤 2：数量大于 1 的名称生成 Issue。
     issues = []
     short_names = []
 
@@ -440,6 +475,10 @@ def check_duplicate_names(nodes=None):
 
     return issues
 
+
+# =============================================================================
+# Construction History Check
+# =============================================================================
 
 def check_construction_history(meshes=None):
     """检查非 Deformer 的遗留建模历史。"""
@@ -483,6 +522,10 @@ def check_construction_history(meshes=None):
     return issues
 
 
+# =============================================================================
+# Transform Check
+# =============================================================================
+
 def _vector_has_nonzero(values, tolerance=0.001):
     """判断向量是否存在超过容差的非零值。"""
     for value in values:
@@ -493,7 +536,7 @@ def _vector_has_nonzero(values, tolerance=0.001):
 
 
 def _scale_is_nondefault(values, tolerance=0.001):
-    """判断 Scale 是否偏离 1。"""
+    """判断 Scale 是否偏离默认值 1。"""
     for value in values:
         if abs(value - 1.0) > tolerance:
             return True
@@ -502,7 +545,7 @@ def _scale_is_nondefault(values, tolerance=0.001):
 
 
 def _round_values(values):
-    """返回三位小数显示值，不使用列表推导。"""
+    """返回三位小数显示值。"""
     result = []
 
     for value in values:
@@ -514,7 +557,11 @@ def _round_values(values):
 
 
 def check_transformations(meshes=None):
-    """检查 Mesh Transform 是否未冻结。"""
+    """
+    检查 Mesh Transform 是否未冻结。
+
+    有 Deformer 时仍然报告，但 ``fixable=False``，避免自动 Freeze 破坏绑定。
+    """
     meshes = get_mesh_shapes(meshes)
     transforms = get_mesh_transforms(meshes)
     issues = []
@@ -566,8 +613,16 @@ def check_transformations(meshes=None):
     return issues
 
 
+# =============================================================================
+# Normal Check
+# =============================================================================
+
 def check_locked_normals(meshes=None, sample_limit=500):
-    """采样检查锁定法线。"""
+    """
+    采样检查锁定法线。
+
+    大模型默认只检查前 500 个 Vertex，避免 Model Checker 因逐点查询导致明显卡顿。
+    """
     meshes = get_mesh_shapes(meshes)
     issues = []
 
@@ -575,10 +630,7 @@ def check_locked_normals(meshes=None, sample_limit=500):
         vertices = cmds.ls(
             mesh + ".vtx[*]",
             flatten=True
-        )
-
-        if vertices is None:
-            vertices = []
+        ) or []
 
         if not vertices:
             continue
@@ -598,11 +650,8 @@ def check_locked_normals(meshes=None, sample_limit=500):
                     vertex,
                     query=True,
                     freezeNormal=True
-                )
+                ) or []
             except Exception:
-                locked_values = []
-
-            if locked_values is None:
                 locked_values = []
 
             is_locked = False
@@ -640,6 +689,10 @@ def check_locked_normals(meshes=None, sample_limit=500):
     return issues
 
 
+# =============================================================================
+# Runner
+# =============================================================================
+
 def run_checks(
         nodes=None,
         check_nonmanifold=True,
@@ -649,60 +702,70 @@ def run_checks(
         check_transform=True,
         check_normals=True
 ):
-    """按配置执行模型检查。"""
+    """根据开关执行模型检查，按顺序合并成一个 Issue 列表。"""
     issues = []
     meshes = get_mesh_shapes(nodes)
 
+    check_results = []
+
     if check_nonmanifold:
-        result = check_nonmanifold_geometry(meshes)
-        for issue in result:
-            issues.append(issue)
+        check_results.append(
+            check_nonmanifold_geometry(meshes)
+        )
 
     if check_lamina:
-        result = check_lamina_faces(meshes)
-        for issue in result:
-            issues.append(issue)
+        check_results.append(
+            check_lamina_faces(meshes)
+        )
 
     if check_duplicates:
-        result = check_duplicate_names(nodes)
-        for issue in result:
-            issues.append(issue)
+        check_results.append(
+            check_duplicate_names(nodes)
+        )
 
     if check_history:
-        result = check_construction_history(meshes)
-        for issue in result:
-            issues.append(issue)
+        check_results.append(
+            check_construction_history(meshes)
+        )
 
     if check_transform:
-        result = check_transformations(meshes)
-        for issue in result:
-            issues.append(issue)
+        check_results.append(
+            check_transformations(meshes)
+        )
 
     if check_normals:
-        result = check_locked_normals(meshes)
+        check_results.append(
+            check_locked_normals(meshes)
+        )
+
+    for result in check_results:
         for issue in result:
             issues.append(issue)
 
     return issues
 
 
+# =============================================================================
+# Safe Fix
+# =============================================================================
+
 def fix_issue(issue):
-    """修复一个允许自动修复的问题。"""
+    """修复一个明确允许自动修复的 Issue。"""
     node = issue.get("node")
     issue_type = issue.get("type")
 
+    # 步骤 1：Issue 自己必须声明 fixable。
     if not issue.get("fixable"):
         return False
 
-    if not node:
+    if not node or not cmds.objExists(node):
         return False
 
-    if not cmds.objExists(node):
-        return False
-
+    # 步骤 2：Reference 节点永远不由本地 Model Checker 修改。
     if is_referenced(node):
         return False
 
+    # 步骤 3：根据 Issue Type 执行白名单修复。
     if issue_type == u"遗留建模历史":
         cmds.bakePartialHistory(
             node,
@@ -735,24 +798,17 @@ def fix_issue(issue):
     return False
 
 
+@scene_utils.undo_chunk
 def fix_issues(issues):
-    """批量修复 Issue 列表中允许自动修复的项目。"""
+    """批量修复允许自动修复的 Issue，并返回成功数量。"""
     fixed_count = 0
 
-    cmds.undoInfo(
-        openChunk=True,
-        chunkName="MuziModelCheckerFix"
-    )
-
-    try:
-        for issue in issues:
-            try:
-                if fix_issue(issue):
-                    fixed_count += 1
-            except Exception as error:
-                cmds.warning(str(error))
-    finally:
-        cmds.undoInfo(closeChunk=True)
+    for issue in issues:
+        try:
+            if fix_issue(issue):
+                fixed_count += 1
+        except Exception as error:
+            cmds.warning(str(error))
 
     return fixed_count
 
@@ -760,6 +816,10 @@ def fix_issues(issues):
 __all__ = [
     "get_mesh_shapes",
     "get_mesh_transform",
+    "get_mesh_transforms",
+    "get_modeling_history",
+    "has_deformer_history",
+    "make_issue",
     "check_nonmanifold_geometry",
     "check_lamina_faces",
     "check_duplicate_names",
