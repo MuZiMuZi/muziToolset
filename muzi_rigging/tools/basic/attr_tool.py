@@ -1,0 +1,378 @@
+# coding=utf-8
+u"""
+属性工具
+========
+
+功能：
+    1. 打开 Maya 属性编辑窗口；
+    2. 调整 Channel Box 自定义属性顺序；
+    3. 批量设置 Transform / Visibility 的锁定和隐藏状态。
+"""
+
+from __future__ import print_function
+
+import maya.cmds as cmds
+import maya.mel as mel
+
+try:
+    from PySide2.QtCore import Qt
+    from PySide2.QtGui import QIcon
+    from PySide2.QtWidgets import QCheckBox
+    from PySide2.QtWidgets import QGridLayout
+    from PySide2.QtWidgets import QHBoxLayout
+    from PySide2.QtWidgets import QLabel
+    from PySide2.QtWidgets import QPushButton
+    from PySide2.QtWidgets import QVBoxLayout
+    from PySide2.QtWidgets import QWidget
+except ImportError:
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QIcon
+    from PySide6.QtWidgets import QCheckBox
+    from PySide6.QtWidgets import QGridLayout
+    from PySide6.QtWidgets import QHBoxLayout
+    from PySide6.QtWidgets import QLabel
+    from PySide6.QtWidgets import QPushButton
+    from PySide6.QtWidgets import QVBoxLayout
+    from PySide6.QtWidgets import QWidget
+
+from ... import ui_theme
+from ...config import icon_dir
+from ....core import attrUtils
+
+
+class AttrTool(QWidget):
+    """属性工具窗口。"""
+
+    def __init__(self, parent=None):
+        super(AttrTool, self).__init__(parent)
+
+        self.window_title = u"属性工具"
+
+        self.create_widgets()
+        self.create_layouts()
+        self.create_connections()
+
+        ui_theme.style_window(
+            self,
+            title=self.window_title,
+            minimum_width=520
+        )
+        self.resize(560, 520)
+
+    # -------------------------------------------------------------------------
+    # UI
+    # -------------------------------------------------------------------------
+
+    def create_widgets(self):
+        """创建界面部件。"""
+        self.title_label = ui_theme.make_title(u"属性工具")
+        self.subtitle_label = ui_theme.make_subtitle(
+            u"管理 Maya 属性窗口、Channel Box 顺序以及常用 Transform 属性状态。"
+        )
+
+        self.add_attr_window_button = QPushButton(
+            QIcon(icon_dir + "/add.png"),
+            u"添加属性"
+        )
+        self.add_attr_window_button.setToolTip(u"打开 Maya Add Attribute 窗口")
+
+        self.edit_attr_window_button = QPushButton(
+            QIcon(icon_dir + "/edit.png"),
+            u"编辑属性"
+        )
+        self.edit_attr_window_button.setToolTip(u"打开 Maya Edit Attribute 窗口")
+
+        self.connect_attr_window_button = QPushButton(
+            QIcon(icon_dir + "/connect-empty.png"),
+            u"连接编辑器"
+        )
+        self.connect_attr_window_button.setToolTip(u"打开 Maya Connection Editor")
+
+        self.channel_control_window_button = QPushButton(
+            QIcon(icon_dir + "/set.png"),
+            u"Channel Control"
+        )
+        self.channel_control_window_button.setToolTip(u"打开 Maya Channel Control")
+
+        self.delete_attr_window_button = QPushButton(
+            QIcon(icon_dir + "/delete.png"),
+            u"删除属性"
+        )
+        self.delete_attr_window_button.setToolTip(u"删除 Channel Box 中选中的自定义属性")
+        ui_theme.style_danger(self.delete_attr_window_button)
+
+        self.attr_move_info_label = QLabel(
+            u"先在 Channel Box 中选中一个自定义属性，再调整顺序。"
+        )
+        ui_theme.set_role(self.attr_move_info_label, "muted")
+
+        self.attr_up_button = QPushButton(
+            QIcon(icon_dir + "/arrow-upward .png"),
+            u"向上移动"
+        )
+        self.attr_down_button = QPushButton(
+            QIcon(icon_dir + "/arrow-downward.png"),
+            u"向下移动"
+        )
+
+        self.translation_set_label = QLabel("Translate")
+        self.rotate_set_label = QLabel("Rotate")
+        self.scale_set_label = QLabel("Scale")
+        self.visibility_set_label = QLabel("Visibility")
+
+        self.lock_header_label = QLabel(u"锁定")
+        self.hide_header_label = QLabel(u"隐藏")
+        ui_theme.set_role(self.lock_header_label, "muted")
+        ui_theme.set_role(self.hide_header_label, "muted")
+
+        self.translation_locked_checkbox = QCheckBox()
+        self.translation_hidden_checkbox = QCheckBox()
+        self.rotate_locked_checkbox = QCheckBox()
+        self.rotate_hidden_checkbox = QCheckBox()
+        self.scale_locked_checkbox = QCheckBox()
+        self.scale_hidden_checkbox = QCheckBox()
+        self.visibility_locked_checkbox = QCheckBox()
+        self.visibility_hidden_checkbox = QCheckBox()
+
+        self.attr_set_button = QPushButton(
+            QIcon(icon_dir + "/set.png"),
+            u"应用到选择对象"
+        )
+        self.attr_set_button.setToolTip(u"把当前锁定 / 隐藏设置应用到 Maya 选择对象")
+        ui_theme.style_primary(self.attr_set_button)
+
+        self.attr_reset_button = QPushButton(
+            QIcon(icon_dir + "/reset.png"),
+            u"重置选项"
+        )
+        ui_theme.style_ghost(self.attr_reset_button)
+
+        self.attr_checkboxes = [
+            self.translation_locked_checkbox,
+            self.translation_hidden_checkbox,
+            self.rotate_locked_checkbox,
+            self.rotate_hidden_checkbox,
+            self.scale_locked_checkbox,
+            self.scale_hidden_checkbox,
+            self.visibility_locked_checkbox,
+            self.visibility_hidden_checkbox,
+        ]
+
+    def create_layouts(self):
+        """创建 Silicon 风格 Card 布局。"""
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(16, 16, 16, 16)
+        main_layout.setSpacing(12)
+
+        main_layout.addWidget(self.title_label)
+        main_layout.addWidget(self.subtitle_label)
+
+        # Maya 属性窗口 Card。
+        editor_card, editor_layout = ui_theme.make_card(self)
+        editor_layout.addWidget(ui_theme.make_section_title(u"属性编辑"))
+
+        editor_description = QLabel(
+            u"直接调用 Maya 自带的属性管理窗口。"
+        )
+        ui_theme.set_role(editor_description, "muted")
+        editor_layout.addWidget(editor_description)
+
+        editor_grid = QGridLayout()
+        editor_grid.setHorizontalSpacing(8)
+        editor_grid.setVerticalSpacing(8)
+        editor_grid.addWidget(self.add_attr_window_button, 0, 0)
+        editor_grid.addWidget(self.edit_attr_window_button, 0, 1)
+        editor_grid.addWidget(self.connect_attr_window_button, 0, 2)
+        editor_grid.addWidget(self.channel_control_window_button, 1, 0)
+        editor_grid.addWidget(self.delete_attr_window_button, 1, 1)
+        editor_layout.addLayout(editor_grid)
+
+        # Channel Box 排序 Card。
+        order_card, order_layout = ui_theme.make_card(self)
+        order_layout.addWidget(ui_theme.make_section_title(u"Channel Box 排序"))
+        order_layout.addWidget(self.attr_move_info_label)
+
+        order_button_layout = QHBoxLayout()
+        order_button_layout.setContentsMargins(0, 0, 0, 0)
+        order_button_layout.addWidget(self.attr_up_button)
+        order_button_layout.addWidget(self.attr_down_button)
+        order_layout.addLayout(order_button_layout)
+
+        # 属性状态 Card。
+        state_card, state_layout = ui_theme.make_card(self)
+        state_layout.addWidget(ui_theme.make_section_title(u"属性状态"))
+
+        state_description = QLabel(
+            u"按通道统一设置 X / Y / Z，并可单独控制 Visibility。"
+        )
+        ui_theme.set_role(state_description, "muted")
+        state_layout.addWidget(state_description)
+
+        state_grid = QGridLayout()
+        state_grid.setHorizontalSpacing(18)
+        state_grid.setVerticalSpacing(10)
+        state_grid.addWidget(self.lock_header_label, 0, 1, Qt.AlignCenter)
+        state_grid.addWidget(self.hide_header_label, 0, 2, Qt.AlignCenter)
+
+        state_grid.addWidget(self.translation_set_label, 1, 0)
+        state_grid.addWidget(self.translation_locked_checkbox, 1, 1, Qt.AlignCenter)
+        state_grid.addWidget(self.translation_hidden_checkbox, 1, 2, Qt.AlignCenter)
+
+        state_grid.addWidget(self.rotate_set_label, 2, 0)
+        state_grid.addWidget(self.rotate_locked_checkbox, 2, 1, Qt.AlignCenter)
+        state_grid.addWidget(self.rotate_hidden_checkbox, 2, 2, Qt.AlignCenter)
+
+        state_grid.addWidget(self.scale_set_label, 3, 0)
+        state_grid.addWidget(self.scale_locked_checkbox, 3, 1, Qt.AlignCenter)
+        state_grid.addWidget(self.scale_hidden_checkbox, 3, 2, Qt.AlignCenter)
+
+        state_grid.addWidget(self.visibility_set_label, 4, 0)
+        state_grid.addWidget(self.visibility_locked_checkbox, 4, 1, Qt.AlignCenter)
+        state_grid.addWidget(self.visibility_hidden_checkbox, 4, 2, Qt.AlignCenter)
+        state_grid.setColumnStretch(0, 1)
+        state_layout.addLayout(state_grid)
+
+        action_layout = QHBoxLayout()
+        action_layout.setContentsMargins(0, 4, 0, 0)
+        action_layout.addWidget(self.attr_reset_button)
+        action_layout.addStretch(1)
+        action_layout.addWidget(self.attr_set_button)
+        state_layout.addLayout(action_layout)
+
+        main_layout.addWidget(editor_card)
+        main_layout.addWidget(order_card)
+        main_layout.addWidget(state_card)
+        main_layout.addStretch(1)
+
+    def create_connections(self):
+        """连接界面信号。"""
+        self.add_attr_window_button.clicked.connect(self.open_add_attr_window)
+        self.edit_attr_window_button.clicked.connect(self.open_edit_attr_window)
+        self.connect_attr_window_button.clicked.connect(self.open_connection_editor)
+        self.channel_control_window_button.clicked.connect(self.open_channel_control)
+        self.delete_attr_window_button.clicked.connect(self.delete_selected_attr)
+
+        self.attr_up_button.clicked.connect(self.move_attr_up)
+        self.attr_down_button.clicked.connect(self.move_attr_down)
+
+        self.attr_set_button.clicked.connect(self.clicked_attr_set_button)
+        self.attr_reset_button.clicked.connect(self.clicked_attr_reset_button)
+
+    # -------------------------------------------------------------------------
+    # Maya 属性窗口
+    # -------------------------------------------------------------------------
+
+    def open_add_attr_window(self):
+        mel.eval("dynAddAttrWin({})")
+
+    def open_edit_attr_window(self):
+        mel.eval("dynRenameAttrWin({})")
+
+    def open_connection_editor(self):
+        cmds.ConnectionEditor()
+
+    def open_channel_control(self):
+        cmds.ChannelControlEditor()
+
+    def delete_selected_attr(self):
+        mel.eval("dynDeleteAttrWin({})")
+
+    # -------------------------------------------------------------------------
+    # Channel Box 顺序
+    # -------------------------------------------------------------------------
+
+    def move_attr_up(self):
+        attrUtils.Attr.move_channelBox_attr(
+            up=True,
+            down=False
+        )
+
+    def move_attr_down(self):
+        attrUtils.Attr.move_channelBox_attr(
+            up=False,
+            down=True
+        )
+
+    # -------------------------------------------------------------------------
+    # 属性状态
+    # -------------------------------------------------------------------------
+
+    def clicked_attr_set_button(self):
+        """根据界面状态设置当前选择物体的 Transform 属性。"""
+        selected_objects = cmds.ls(
+            selection=True,
+            long=True
+        )
+
+        if not selected_objects:
+            cmds.warning(u"请先选择需要设置属性的物体。")
+            return
+
+        translation_lock = self.translation_locked_checkbox.isChecked()
+        translation_hide = self.translation_hidden_checkbox.isChecked()
+        rotate_lock = self.rotate_locked_checkbox.isChecked()
+        rotate_hide = self.rotate_hidden_checkbox.isChecked()
+        scale_lock = self.scale_locked_checkbox.isChecked()
+        scale_hide = self.scale_hidden_checkbox.isChecked()
+        visibility_lock = self.visibility_locked_checkbox.isChecked()
+        visibility_hide = self.visibility_hidden_checkbox.isChecked()
+
+        axis_list = [
+            "X",
+            "Y",
+            "Z",
+        ]
+
+        cmds.undoInfo(
+            openChunk=True,
+            chunkName="MuziAttrToolSetState"
+        )
+
+        try:
+            for selected_object in selected_objects:
+                attr_handler = attrUtils.Attr(selected_object)
+
+                for axis in axis_list:
+                    translate_attr = "translate{}".format(axis)
+                    rotate_attr = "rotate{}".format(axis)
+                    scale_attr = "scale{}".format(axis)
+
+                    attr_handler.lock_and_hide_attr(
+                        translate_attr,
+                        lock=translation_lock,
+                        hide=translation_hide
+                    )
+                    attr_handler.lock_and_hide_attr(
+                        rotate_attr,
+                        lock=rotate_lock,
+                        hide=rotate_hide
+                    )
+                    attr_handler.lock_and_hide_attr(
+                        scale_attr,
+                        lock=scale_lock,
+                        hide=scale_hide
+                    )
+
+                attr_handler.lock_and_hide_attr(
+                    "visibility",
+                    lock=visibility_lock,
+                    hide=visibility_hide
+                )
+        finally:
+            cmds.undoInfo(closeChunk=True)
+
+    def clicked_attr_reset_button(self):
+        """清空界面中所有 Locked / Hidden 选项。"""
+        for checkbox in self.attr_checkboxes:
+            checkbox.setChecked(False)
+
+
+def main():
+    """创建属性工具并返回 QWidget。"""
+    window = AttrTool()
+    return window
+
+
+if __name__ == "__main__":
+    window = main()
+    window.show()
