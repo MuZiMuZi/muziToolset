@@ -34,6 +34,7 @@ Rig / Scene：
 文件 / Scene IO：
     file_utils
     scene_io_utils
+    animation_io_utils
 
 Geometry / Deformer：
     mesh_utils
