@@ -1,340 +1,586 @@
 # coding=utf-8
+u"""
+Hierarchy Utils
+===============
+
+Maya DAG 层级通用操作模块。
+
+模块职责
+--------
+本模块只处理 Transform / Joint 等 DAG 节点之间的父子关系、额外层级组、子层级查询和基础组创建。
+
+公开类
+------
+Hierarchy
+    兼容早期项目的静态方法集合。
+
+公开方法
+--------
+Hierarchy.parent(child_node, parent_node)
+    确保 child_node 位于指定 parent_node 下。
+
+Hierarchy.add_extra_group(obj, grp_name, world_orient=False)
+    在对象上方插入一个额外 Transform Group，并保持对象世界姿态。
+
+Hierarchy.get_child_object(object, type="joint")
+    获取指定类型的全部后代，并把根对象一起返回。
+
+Hierarchy.select_sub_objects(obj_type="transform")
+    兼容旧工具：根据当前 Selection 选择指定类型的全部后代。
+
+Hierarchy.create_grp(grp, parent=None)
+    安全创建一个 Transform Group；已存在时直接返回。
+
+Hierarchy.create_rig_grp()
+    创建早期 Rig 顶层组命名结构。保留用于兼容旧场景。
+
+Hierarchy.create_default_grp()
+    创建早期默认 Rig Group 结构。旧版曾同时创建 Controller，职责越界且依赖已删除的 controlUtils；
+    当前版本只创建层级组并返回结果，完整 Controller 构建应使用 systems.controller。
+
+Hierarchy.control_hierarchy()
+    兼容早期 Controller 层级创建入口。新代码应使用 systems.controller Builder。
+
+设计原则
+--------
+1. Core 只负责 DAG 层级，不 import Controller / Face / Body System；
+2. 插入额外 Group 时必须保持原对象世界 Transform；
+3. Generic Query 不读取 UI，只有明确标为 Legacy Compatibility 的方法允许使用 Selection；
+4. 已迁移到 systems.controller 的完整 Rig Workflow 不再继续扩张到本模块；
+5. 文件名暂时保留 hierarchyUtils.py 以兼容现有 import，后续可增加 snake_case 别名入口。
+"""
+
+from __future__ import print_function
+
 import maya.cmds as cmds
 
 
-u"""
-hierarchyUtils：这是一个用来对层级结构进行修改的类
+class Hierarchy(object):
+    """Maya DAG 层级操作兼容类。"""
 
-目前已有的功能：
+    # =========================================================================
+    # Validate / Parent
+    # =========================================================================
 
-parent：查找子物体和父物体之间是否有父子层级关系
-add_extra_group：在对象上方添加一个额外的组.
-control_hierarchy:做控制器的层级结构
-get_child_object:获取对象的所有子物体包括对象本身
-"""
-
-
-class Hierarchy (object) :
-
-    #先查找子物体和父物体之间是否有父子层级关系，没有的话制作父子层级关系
     @staticmethod
-    def parent (child_node , parent_node) :
-        u"""
-        先查找子物体和父物体之间是否有父子层级关系，没有的话制作父子层级关系
-        :param child_node（str）:子物体的节点名称
-        :param parent_nodestr）:父物体的节点名称
-        :return:
+    def _validate_node(node, label=u"节点"):
+        """检查 Maya DAG 节点是否存在。"""
+        if not node:
+            raise RuntimeError(
+                u"{}不能为空。".format(label)
+            )
+
+        if not cmds.objExists(node):
+            raise RuntimeError(
+                u"{}不存在：{}".format(
+                    label,
+                    node
+                )
+            )
+
+        return True
+
+    @staticmethod
+    def parent(child_node, parent_node):
         """
-        if parent_node :
-            parent_original = cmds.listRelatives (child_node , parent = True)
-            if not parent_original or parent_original [0] != parent_node :
-                cmds.parent (child_node , parent_node)
-            else :
-                cmds.warning (u'{} 已为 {}的子物体'.format (child_node , parent_node))
-        else :
-            cmds.warning (u'没有给定父物体节点')
-
-    #在对象上方添加一个额外的组.
-    @staticmethod
-    def add_extra_group (obj , grp_name , world_orient = False) :
-        u"""在对象上方添加一个额外的组.
-
-        Args:
-            obj (str):要添加额外组的Maya对象.
-            grp_name (str): 额外的组名
-            world_orient (bool): 设置新组的世界位置是否改变。
+        确保 child_node 位于 parent_node 下。
 
         Returns:
-            str: 新添加的组.
-
+            str:
+                Parent 后 Maya 返回的 Child Path；如果已经是正确父子关系则返回原节点。
         """
+        # ---------------------------------------------------------------------
+        # 步骤 1：验证 Child / Parent。
+        # ---------------------------------------------------------------------
+        Hierarchy._validate_node(
+            child_node,
+            label=u"子节点"
+        )
+        Hierarchy._validate_node(
+            parent_node,
+            label=u"父节点"
+        )
 
-        obj_grp = cmds.group (name = grp_name , empty = True)
-        t_pos = cmds.xform (obj , query = True , worldSpace = True , translation = True)
-        r_pos = cmds.xform (obj , query = True , worldSpace = True , rotation = True)
-        if world_orient :
-            r_pos = [0 , 0 , 0]
-        s_pos = cmds.xform (obj , q = True , worldSpace = True , s = True)
-        cmds.xform (obj_grp , s = s_pos)
-        cmds.xform (obj_grp , ws = True , t = t_pos)
-        cmds.xform (obj_grp , ws = True , ro = r_pos)
+        # ---------------------------------------------------------------------
+        # 步骤 2：查询当前 Parent，避免重复 parent 导致无意义 DAG 路径变化。
+        # ---------------------------------------------------------------------
+        parent_original = cmds.listRelatives(
+            child_node,
+            parent=True,
+            fullPath=True
+        ) or []
 
-        obj_parent = cmds.listRelatives (obj , parent = True)
-        if obj_parent :
-            cmds.parent (obj_grp , obj_parent [0] , absolute = True)
-            cmds.parent (obj , obj_grp , absolute = True)
-        else :
-            cmds.parent (obj , obj_grp , absolute = True)
+        parent_matches = cmds.ls(
+            parent_node,
+            long=True
+        ) or []
 
-        return obj_grp
+        parent_long_name = parent_node
 
-    #自定义的预设控制器打组
+        if parent_matches:
+            parent_long_name = parent_matches[0]
+
+        if parent_original and parent_original[0] == parent_long_name:
+            return child_node
+
+        # ---------------------------------------------------------------------
+        # 步骤 3：建立父子关系，并使用 Maya 返回值更新最终路径。
+        # ---------------------------------------------------------------------
+        result = cmds.parent(
+            child_node,
+            parent_node,
+            absolute=True
+        )
+
+        if result:
+            return result[0]
+
+        return child_node
+
+    # =========================================================================
+    # Insert Extra Group
+    # =========================================================================
+
     @staticmethod
-    def control_hierarchy () :
-        """Add an upper level group to the controller.
-
-            The naming convention is
-            Type_Side_describe_index
-
-            """
-        CTRL_COLORS = {
-            'm' : 17 ,
-            'l' : 6 ,
-            'r' : 13
-        }
-
-        SUB_COLORS = {
-            'm' : 25 ,
-            'l' : 15 ,
-            'r' : 4
-        }
-
-        # get selected nurbs curve as controller
-        ctrls = cmds.ls (selection = True)
-
-        # loop in each ctrl and create hierarchy
-        for ctrl in ctrls :
-            # get name parts
-            name_parts = ctrl.split ('_')
-
-            # create zero group
-            zero = cmds.createNode ('transform' , name = ctrl.replace ('ctrl_' , 'zero_'))
-            # create driven group
-            driven = cmds.createNode ('transform' , name = ctrl.replace ('ctrl_' , 'driven_') , parent = zero)
-            # create connect group
-            connect = cmds.createNode ('transform' , name = ctrl.replace ('ctrl_' , 'connect_') , parent = driven)
-            # create offset group
-            offset = cmds.createNode ('transform' , name = ctrl.replace ('ctrl_' , 'offset_') , parent = connect)
-
-            # snap to control position
-            cmds.matchTransform (zero , ctrl , position = True , rotation = True)
-
-            # parent control to offset group
-            cmds.parent (ctrl , offset)
-
-            # freeze transformation for controller
-            cmds.makeIdentity (ctrl , apply = True , translate = True , rotate = True , scale = True)
-            # delete history
-            cmds.select (ctrl)
-            cmds.DeleteHistory ()
-
-            # duplicate ctrl as sub control
-            sub = cmds.duplicate (ctrl , name = ctrl.replace (name_parts [2] , name_parts [2] + 'Sub')) [0]
-            cmds.parent (sub , ctrl)
-            cmds.setAttr (sub + '.scale' , 0.5 , 0.5 , 0.5)
-            cmds.makeIdentity (sub , apply = True , scale = True)
-
-            # create output group
-            output = cmds.createNode ('transform' , name = ctrl.replace ('ctrl_' , 'output_') , parent = ctrl)
-
-            # connect attrs
-            cmds.connectAttr (sub + '.translate' , output + '.translate')
-            cmds.connectAttr (sub + '.rotate' , output + '.rotate')
-            cmds.connectAttr (sub + '.scale' , output + '.scale')
-            cmds.connectAttr (sub + '.rotateOrder' , output + '.rotateOrder')
-
-            # show rotate order
-            cmds.setAttr (ctrl + '.rotateOrder' , channelBox = True)
-            cmds.setAttr (sub + '.rotateOrder' , channelBox = True)
-
-            # add sub vis attr
-            cmds.addAttr (ctrl , longName = 'subCtrlVis' , attributeType = 'bool')
-            cmds.setAttr (ctrl + '.subCtrlVis' , channelBox = True)
-
-            # connect sub vis
-            cmds.connectAttr (ctrl + '.subCtrlVis' , sub + '.visibility')
-            # set color
-            for ctrl_node , col_idx in zip ([ctrl , sub] ,
-                                            [CTRL_COLORS [name_parts [1]] , SUB_COLORS [name_parts [1]]]) :
-                # get shape node
-                shape_node = cmds.listRelatives (ctrl_node , shapes = True) [0]
-            # set color
-            cmds.setAttr(shape_node + '.overrideEnabled', 1)
-            cmds.setAttr(shape_node + '.overrideColor', col_idx)
-
-
-    # 获取对象的所有子物体包括对象本身,可以指定需要获取的对象类型
-    @staticmethod
-    def get_child_object (object,type = 'joint') :
-        u'''
-        获取对象的所有子物体包括对象本身
-        :param object: 需要获取所有子物体的对象
-        type（str）:需要获取对象的类型
-        return: 所有子物体的名称列表
-        '''
-        object_list = cmds.listRelatives (object , type = type,children = True , allDescendents = True)
-        object_list.append (object)
-        object_list.reverse ()
-        return object_list
-
-
-    # 快速选择所选择物体的所有子对象的类型,将所有选择的对象名称返回出去方便其他函数调用
-    @staticmethod
-    def select_sub_objects (obj_type = 'transform') :
-        u'''
-        快速选择所选择物体的所有子对象,将所有选择的对象名称返回出去方便其他函数调用
-        obj_type（type）:需要选择的物体的子对象的类型，比如'transform','joint'
-        '''
-        selection = cmds.ls (sl = True)  # 获取选择的所有对象
-        for obj in selection :
-            cmds.select (obj , add = True)
-            cmds.select (cmds.listRelatives (obj , allDescendents = True , type = obj_type) , add = True)
-        selection = cmds.ls (sl = True)  # 获取选择的所有对象
-        return selection
-
-
-    # 创建绑定的默认层级组
-    @staticmethod
-    def create_rig_grp () :
+    def add_extra_group(obj, grp_name, world_orient=False):
         """
-        创建绑定的默认层级组
+        在对象上方插入一个额外 Transform Group。
+
+        Args:
+            obj(str):
+                需要插入额外组的对象。
+
+            grp_name(str):
+                新 Group 名称。
+
+            world_orient(bool):
+                False：Group 旋转与对象当前世界旋转一致；
+                True：Group 使用世界零旋转。
+
+        Returns:
+            str: 新 Group。
+
+        Notes:
+            插组前先记录对象原 Parent 和世界 Transform，再插入 Group，确保对象视觉姿态不跳动。
         """
-        top_main_group = 'grp_m_group_001'
-        top_bpjnt_grp = 'grp_m_bpjnt_001'
-        top_ctrl_grp = 'grp_m_control_001'
-        top_jnt_grp = 'grp_m_jnt_001'
-        top_mesh_grp = 'grp_m_mesh_001'
-        top_node_grp = 'grp_m_node_001'
+        Hierarchy._validate_node(
+            obj,
+            label=u"目标对象"
+        )
 
-        for grp in [top_main_group , top_bpjnt_grp , top_ctrl_grp , top_jnt_grp , top_mesh_grp , top_node_grp] :
-            if not cmds.ls (grp) :
-                cmds.group (em = 1 , name = grp)
+        if not grp_name:
+            raise RuntimeError(u"Group 名称不能为空。")
 
-        cmds.parent (top_bpjnt_grp , top_ctrl_grp , top_jnt_grp , top_mesh_grp , top_node_grp , top_main_group)
+        if cmds.objExists(grp_name):
+            raise RuntimeError(
+                u"Group 名称已经存在：{}".format(grp_name)
+            )
 
-        return top_bpjnt_grp , top_ctrl_grp , top_jnt_grp , top_mesh_grp , top_node_grp , top_main_group
+        # ---------------------------------------------------------------------
+        # 步骤 1：记录目标对象世界位置 / 旋转 / 缩放以及原 Parent。
+        # ---------------------------------------------------------------------
+        translation = cmds.xform(
+            obj,
+            query=True,
+            worldSpace=True,
+            translation=True
+        )
+        rotation = cmds.xform(
+            obj,
+            query=True,
+            worldSpace=True,
+            rotation=True
+        )
+        scale = cmds.xform(
+            obj,
+            query=True,
+            relative=True,
+            scale=True
+        )
+        original_parent = cmds.listRelatives(
+            obj,
+            parent=True,
+            fullPath=True
+        ) or []
 
+        if world_orient:
+            rotation = [0.0, 0.0, 0.0]
 
-    # 添加绑定的初始层级组，并隐藏连接对应的属性
+        # ---------------------------------------------------------------------
+        # 步骤 2：创建 Group 并对齐到目标对象。
+        # ---------------------------------------------------------------------
+        object_group = cmds.createNode(
+            "transform",
+            name=grp_name
+        )
+
+        cmds.xform(
+            object_group,
+            worldSpace=True,
+            translation=translation
+        )
+        cmds.xform(
+            object_group,
+            worldSpace=True,
+            rotation=rotation
+        )
+        cmds.xform(
+            object_group,
+            relative=True,
+            scale=scale
+        )
+
+        # ---------------------------------------------------------------------
+        # 步骤 3：先把新 Group 放回原 Parent，再把目标对象放进 Group。
+        # 这样不会丢失原来的 DAG 结构。
+        # ---------------------------------------------------------------------
+        if original_parent:
+            parent_result = cmds.parent(
+                object_group,
+                original_parent[0],
+                absolute=True
+            )
+
+            if parent_result:
+                object_group = parent_result[0]
+
+        cmds.parent(
+            obj,
+            object_group,
+            absolute=True
+        )
+
+        return object_group
+
+    # =========================================================================
+    # Hierarchy Query
+    # =========================================================================
+
     @staticmethod
-    def create_default_grp () :
-        u'''
-        添加绑定的初始层级组，并隐藏连接对应的属性
-        '''
-        # 创建顶层的Group组
-        Group = cmds.createNode ('transform' , name = 'Group')
+    def get_child_object(object, type="joint"):
+        """
+        获取指定类型的全部后代，并把根对象放在列表第一位。
 
-        # 创建Group层级下的子层级组，并做层级关系
-        Geometry = cmds.createNode ('transform' , name = 'Geometry')
-        Control = cmds.createNode ('transform' , name = 'Control')
-        Custom = cmds.createNode ('transform' , name = 'Custom')
-        cmds.parent (Geometry , Custom , Control , Group)
+        Args:
+            object(str): 根对象。
+            type(str): Maya Node Type，例如 joint / transform。
+        """
+        Hierarchy._validate_node(
+            object,
+            label=u"根对象"
+        )
 
-        # 创建RigNode层级下的子层级组并做层级关系
-        RigNodes = cmds.createNode ('transform' , name = 'RigNodes')
-        Joints = cmds.createNode ('transform' , name = 'Joints')
-        RigNodes_Local = cmds.createNode ('transform' , name = 'RigNodesLocal')
-        RigNodes_World = cmds.createNode ('transform' , name = 'RigNodesWorld')
-        nCloth_geo_grp = cmds.createNode ('transform' , name = 'nCloth_geo_grp')
-        cmds.parent (RigNodes_Local , RigNodes_World , RigNodes)
-        cmds.parent (RigNodes , Joints , nCloth_geo_grp , Custom)
+        descendants = cmds.listRelatives(
+            object,
+            allDescendents=True,
+            type=type,
+            fullPath=True
+        ) or []
 
-        # 创建Modle层级下的子层级组并且做层级关系
-        Low_modle_grp = cmds.createNode ('transform' , name = 'grp_m_low_Modle_001')
-        Mid_modle_grp = cmds.createNode ('transform' , name = 'grp_m_mid_Modle_001')
-        High_modle_grp = cmds.createNode ('transform' , name = 'grp_m_high_Modle_001')
-        cmds.parent (Low_modle_grp , Mid_modle_grp , High_modle_grp , Geometry)
+        # Maya listRelatives(allDescendents=True) 的顺序通常从更深层开始。
+        # 这里反转后让结果更接近“根 -> 子 -> 孙”的阅读顺序。
+        descendants.reverse()
 
-        World_zero = [Group , Geometry , RigNodes_Local , RigNodes_World , RigNodes , Control , Joints , Custom]
-        attrs_list = ['.translateX' , '.translateY' , '.translateZ' , '.rotateX' , '.rotateY' , '.rotateZ' ,
-                      '.scaleX' ,
-                      '.scaleY' ,
-                      '.scaleZ' , '.visibility' , '.rotateOrder' , '.subCtrlVis']
-        rig_top_grp = 'Group'
-        if not cmds.objExists (rig_top_grp) :
-            selections = cmds.ls (sl = True)
-            if selections :
-                rig_top_grp = selections [0]
+        result = [object]
 
-        # 创建总控制器Character
-        character_ctrl_obj = controlUtils.Control.create_ctrl ('ctrl_m_Character_001' , shape = 'circle' , radius = 10 ,
-                                                               axis = 'X+' ,
-                                                               pos = None ,
-                                                               parent = Control)
+        for descendant in descendants:
+            result.append(descendant)
 
-        # 创建世界控制器
-        world_ctrl_obj = controlUtils.Control.create_ctrl ('ctrl_m_world_001' , shape = 'local' , radius = 8 ,
-                                                           axis = 'Z-' ,
-                                                           pos = None ,
-                                                           parent = 'ctrl_m_Character_001')
+        return result
 
-        cog_ctrl_obj = controlUtils.Control.create_ctrl ('ctrl_m_cog_001' , shape = 'circle' , radius = 3 ,
-                                                         axis = 'X+' ,
-                                                         pos = None ,
-                                                         parent = 'output_m_world_001')
+    @staticmethod
+    def select_sub_objects(obj_type="transform"):
+        """
+        兼容旧工具：选择当前 Selection 下指定类型的全部后代。
 
-        # 创建一个自定义的控制器，用来承载自定义的属性
-        lock_ctrl_obj = controlUtils.Control.create_ctrl ('ctrl_m_custom_001' , shape = 'cross' , radius = 3 ,
-                                                          axis = 'X+' ,
-                                                          pos = None ,
-                                                          parent = Custom)
-        lock_ctrl = 'ctrl_m_custom_001'
-        cmds.parentConstraint ('ctrl_m_Character_001' , lock_ctrl , mo = True)
-        cmds.scaleConstraint ('ctrl_m_Character_001' , lock_ctrl , mo = True)
+        新 Core 逻辑不应依赖 Selection；新 Tool 可以自行读取 Selection 后调用 get_child_object。
+        """
+        selections = cmds.ls(
+            selection=True,
+            long=True
+        ) or []
 
-        # 创建自定义的控制器属性
-        for attr in ['GeometryVis' , 'ControlsVis' , 'RigNodesVis' , 'JointsVis'] :
-            if not cmds.objExists ('{}.{}'.format (lock_ctrl , attr)) :
-                cmds.addAttr (lock_ctrl , ln = attr , at = 'bool' , dv = 1 , keyable = True)
+        result = []
 
-        # 添加精度切换的属性
-        if not cmds.objExists ('{}.Resolution'.format (lock_ctrl)) :
-            cmds.addAttr (lock_ctrl , ln = 'Resolution' , at = 'enum' , en = 'low:mid:high' , keyable = True)
-            for idx , res in {0 : 'low' , 1 : 'mid' , 2 : 'high'}.items () :
-                cnd_node = 'resolution_{}_conditionNode'.format (res)
-                if not cmds.objExists (cnd_node) :
-                    cnd_node = cmds.createNode ('condition' , n = cnd_node)
-                cmds.connectAttr ('{}.Resolution'.format (lock_ctrl) , '{}.firstTerm'.format (cnd_node) , f = True)
-                cmds.setAttr ('{}.secondTerm'.format (cnd_node) , idx)
-                cmds.setAttr ('{}.colorIfTrueR'.format (cnd_node) , 1)
-                cmds.setAttr ('{}.colorIfFalseR'.format (cnd_node) , 0)
-                cmds.connectAttr ('{}.outColorR'.format (cnd_node) , 'grp_m_{}_Modle_001.visibility'.format (res) ,
-                                  f = True)
+        for selection in selections:
+            if selection not in result:
+                result.append(selection)
 
-        # 添加模型显示方式的属性
-        if not cmds.objExists ('{}.GeometryDisplayType'.format (lock_ctrl)) :
-            cmds.addAttr (lock_ctrl , ln = 'GeometryDisplayType' , at = 'enum' , en = 'Normal:Template:Reference' ,
-                          keyable = True)
+            descendants = cmds.listRelatives(
+                selection,
+                allDescendents=True,
+                type=obj_type,
+                fullPath=True
+            ) or []
 
-        # 连接 GeometryVis
-        cmds.connectAttr ('{}.GeometryVis'.format (lock_ctrl) , '{}.visibility'.format (Geometry) , f = True)
+            for descendant in descendants:
+                if descendant not in result:
+                    result.append(descendant)
 
-        # 连接 controlsVis
-        cmds.connectAttr ('{}.ControlsVis'.format (lock_ctrl) , '{}.visibility'.format (Control) , f = True)
+        if result:
+            cmds.select(
+                result,
+                replace=True
+            )
 
-        # 连接 RigNodesVis
-        cmds.connectAttr ('{}.RigNodesVis'.format (lock_ctrl) , '{}.visibility'.format (RigNodes) , f = True)
+        return result
 
-        # 连接 jointsVis
-        cmds.connectAttr ('{}.JointsVis'.format (lock_ctrl) , '{}.visibility'.format (Joints) , f = True)
+    # =========================================================================
+    # Generic Group Creation
+    # =========================================================================
 
-        # 连接模型的可编辑属性
-        cmds.setAttr (Geometry + '.overrideDisplayType' , 2)
-        cmds.connectAttr ('{}.GeometryDisplayType'.format (lock_ctrl) , Geometry + '.overrideEnabled' , f = True)
+    @staticmethod
+    def create_grp(grp, parent=None):
+        """
+        创建一个 Transform Group；已存在时直接返回现有节点。
 
-        # 显示和隐藏属性
-        for attr in attrs_list :
-            cmds.setAttr (lock_ctrl + attr , l = True , k = False , cb = False)
+        Returns:
+            str: Group 名称 / Path。
+        """
+        if not grp:
+            raise RuntimeError(u"Group 名称不能为空。")
+
+        if cmds.objExists(grp):
+            return grp
+
+        if parent:
+            Hierarchy._validate_node(
+                parent,
+                label=u"父节点"
+            )
+
+        group = cmds.createNode(
+            "transform",
+            name=grp,
+            parent=parent
+        )
+
+        return group
+
+    # =========================================================================
+    # Legacy Rig Group Presets
+    # =========================================================================
+
+    @staticmethod
+    def create_rig_grp():
+        """
+        创建早期项目使用的基础 Rig Group。
+
+        Notes:
+            这些名称属于旧场景兼容命名（m），新系统应使用项目当前 md / lf / rt 命名规范。
+        """
+        top_main_group = "grp_m_group_001"
+        child_groups = [
+            "grp_m_bpjnt_001",
+            "grp_m_control_001",
+            "grp_m_jnt_001",
+            "grp_m_mesh_001",
+            "grp_m_node_001",
+        ]
+
+        Hierarchy.create_grp(
+            top_main_group
+        )
+
+        for group in child_groups:
+            Hierarchy.create_grp(
+                group,
+                parent=top_main_group
+            )
+
+        return (
+            child_groups[0],
+            child_groups[1],
+            child_groups[2],
+            child_groups[3],
+            child_groups[4],
+            top_main_group,
+        )
+
+    @staticmethod
+    def create_default_grp():
+        """
+        创建早期默认 Rig Group 结构。
+
+        旧实现同时创建 Character / World / COG Controller，并依赖已经退出正式 Core 的 controlUtils，
+        因此该函数曾处于“调用即 NameError”的坏状态。
+
+        当前版本只做它名字真正表达的职责：创建默认 Group。完整 Controller / Rig Build 请使用
+        ``systems.controller`` 或具体 Body Rig System。
+        """
+        # ---------------------------------------------------------------------
+        # 步骤 1：创建顶层结构。
+        # ---------------------------------------------------------------------
+        group = Hierarchy.create_grp("Group")
+        geometry = Hierarchy.create_grp(
+            "Geometry",
+            parent=group
+        )
+        control = Hierarchy.create_grp(
+            "Control",
+            parent=group
+        )
+        custom = Hierarchy.create_grp(
+            "Custom",
+            parent=group
+        )
+
+        # ---------------------------------------------------------------------
+        # 步骤 2：创建 Rig Node / Joint 子结构。
+        # ---------------------------------------------------------------------
+        rig_nodes = Hierarchy.create_grp(
+            "RigNodes",
+            parent=custom
+        )
+        joints = Hierarchy.create_grp(
+            "Joints",
+            parent=custom
+        )
+        rig_nodes_local = Hierarchy.create_grp(
+            "RigNodesLocal",
+            parent=rig_nodes
+        )
+        rig_nodes_world = Hierarchy.create_grp(
+            "RigNodesWorld",
+            parent=rig_nodes
+        )
+        ncloth_geometry_group = Hierarchy.create_grp(
+            "nCloth_geo_grp",
+            parent=custom
+        )
+
+        # ---------------------------------------------------------------------
+        # 步骤 3：创建旧版 Low / Mid / High Model 分组。
+        # ---------------------------------------------------------------------
+        Hierarchy.create_grp(
+            "grp_m_low_Modle_001",
+            parent=geometry
+        )
+        Hierarchy.create_grp(
+            "grp_m_mid_Modle_001",
+            parent=geometry
+        )
+        Hierarchy.create_grp(
+            "grp_m_high_Modle_001",
+            parent=geometry
+        )
 
         return {
-            'Geometry' : Geometry ,
-            'Control' : Control ,
-            'RigNodes' : RigNodes ,
-            'Joints' : Joints ,
-            'RigNodes_Local' : RigNodes_Local ,
-            'RigNodes_World' : RigNodes_World ,
-            'nCloth_geo_grp' : nCloth_geo_grp
+            "Geometry": geometry,
+            "Control": control,
+            "RigNodes": rig_nodes,
+            "Joints": joints,
+            "RigNodes_Local": rig_nodes_local,
+            "RigNodes_World": rig_nodes_world,
+            "nCloth_geo_grp": ncloth_geometry_group,
         }
 
+    # =========================================================================
+    # Legacy Controller Hierarchy
+    # =========================================================================
+
     @staticmethod
-    def create_grp(grp,parent=None):
+    def control_hierarchy():
         """
-        给定组的名称，查询给定的名称是否已经在场景里存在，没有的话则创建对应的组
+        兼容早期 Selection 驱动的 Controller 打组入口。
+
+        新代码应使用 systems.controller Builder。本方法只保留基础 Zero / Driven / Connect / Offset
+        层级创建，不再复制 Sub Controller、颜色、Visibility 等完整 Controller System 职责。
+
+        Returns:
+            list(dict): 每个选中 Controller 对应的层级节点。
         """
-        #判断给定的名称是否已经在场景里存在了，如果存在的话则跳过，不存在的话则创建
-        if  cmds.objExists (grp) :
-            pass
-        else:
-            cmds.createNode ('transform', name = grp,parent = parent)
+        controls = cmds.ls(
+            selection=True,
+            long=True
+        ) or []
+
+        results = []
+
+        for control in controls:
+            short_name = control.split("|")[-1]
+
+            if not short_name.startswith("ctrl_"):
+                cmds.warning(
+                    u"跳过非标准 Controller：{}".format(control)
+                )
+                continue
+
+            # -----------------------------------------------------------------
+            # 步骤 1：创建标准上层组。
+            # -----------------------------------------------------------------
+            zero_name = short_name.replace(
+                "ctrl_",
+                "zero_",
+                1
+            )
+            driven_name = short_name.replace(
+                "ctrl_",
+                "driven_",
+                1
+            )
+            connect_name = short_name.replace(
+                "ctrl_",
+                "connect_",
+                1
+            )
+            offset_name = short_name.replace(
+                "ctrl_",
+                "offset_",
+                1
+            )
+
+            zero = cmds.createNode(
+                "transform",
+                name=zero_name
+            )
+            driven = cmds.createNode(
+                "transform",
+                name=driven_name,
+                parent=zero
+            )
+            connect = cmds.createNode(
+                "transform",
+                name=connect_name,
+                parent=driven
+            )
+            offset = cmds.createNode(
+                "transform",
+                name=offset_name,
+                parent=connect
+            )
+
+            # -----------------------------------------------------------------
+            # 步骤 2：Zero 对齐 Controller，再把 Controller 放进 Offset。
+            # -----------------------------------------------------------------
+            cmds.matchTransform(
+                zero,
+                control,
+                position=True,
+                rotation=True
+            )
+            parent_result = cmds.parent(
+                control,
+                offset,
+                absolute=True
+            )
+
+            final_control = control
+
+            if parent_result:
+                final_control = parent_result[0]
+
+            results.append({
+                "zero": zero,
+                "driven": driven,
+                "connect": connect,
+                "offset": offset,
+                "control": final_control,
+            })
+
+        return results
 
 
+__all__ = [
+    "Hierarchy",
+]
