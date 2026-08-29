@@ -3,9 +3,10 @@ u"""
 Name Utils
 ==========
 
-Maya Rig 命名工具。
+MuziTools Rig 标准命名模块。
 
-标准命名规则：
+标准命名规则
+------------
     [类型]_[方向]_[部位]_[功能]_[序号]
 
 例如：
@@ -14,46 +15,102 @@ Maya Rig 命名工具。
     jnt_rt_brow_bind_003
     model_md_head_tweak_001
 
-说明：
-    - 本模块只依赖 maya.cmds；
-    - 不依赖旧 Pipeline 模块；
-    - 需要撤销支持的操作在本模块内部使用 Maya Undo Chunk；
-    - 保留旧 Name 初始化参数，方便现有代码逐步迁移。
+模块职责
+--------
+本模块负责“名称语义”本身：标准名称生成、解析、Side 规范化、镜像名称、唯一序号、
+层级前后缀、正则替换，以及重名 DAG 节点检查。
+
+主要公开 API
+------------
+Name.create_name(node_type, side, part, function, index=1)
+    按正式五段式规则生成名称。
+
+Name.normalize_side(side)
+    把 l / left / lf、r / right / rt、m / center / md 等输入统一为 lf / rt / md。
+
+Name.get_next_index(...)
+Name.create_unique_name(...)
+    查询场景并生成下一个可用序号。
+
+Name.parse_name(name)
+    将标准名称解析成 type / side / part / function / index 字典。
+
+Name.mirror_name(name)
+    只计算左右镜像名称，不修改 Maya 节点。
+
+Name.compose()
+Name.decompose()
+Name.flip()
+    Name 对象内部的组合、拆分与 Side 翻转。
+
+Name.add_prefix(...)
+Name.add_suffix(...)
+Name.add_hierarchy_prefix(...)
+Name.add_hierarchy_suffix(...)
+Name.search_replace_name(...)
+Name.regex_search_replace_name(...)
+Name.rename_to_name(...)
+    Maya Rename 兼容操作。
+
+Name.print_duplicate_object()
+Name.rename_duplicate_object()
+    检查 / 修复重名 DAG 节点。
+
+maya_undo(function)
+    兼容旧装饰器名称；底层统一使用 scene_utils.undo_chunk，不再维护第二套 Undo 实现。
+
+和 rename_utils.py 的区别
+-------------------------
+nameUtils.py
+    负责“一个 Rig 名称应该是什么”和 Name 对象语义。
+
+rename_utils.py
+    负责面向批量操作 / Tool 的 Prefix、Suffix、Search Replace、Auto Number、Pattern Rename。
+
+两个模块名字相近，但职责不同，因此本轮不强行合并。
+
+设计原则
+--------
+1. 当前 Side Token 统一为 lf / rt / md；
+2. function 字段允许包含下划线，最后三位数字永远作为 index；
+3. Rename 层级时先处理最深子节点，避免 Parent Rename 后旧 DAG Path 失效；
+4. 本模块不依赖旧 Pipeline；
+5. 文件名 nameUtils.py 暂时保留以兼容现有 import，新代码方法名保持 snake_case。
 """
 
 from __future__ import print_function
 
 import re
-from functools import wraps
 
 import maya.cmds as cmds
 
+from . import scene_utils
+
+
+# =============================================================================
+# Undo / DAG Helper
+# =============================================================================
 
 def maya_undo(function):
-    """把一次命名操作包装成单独的 Maya Undo Chunk。"""
+    """
+    兼容早期 ``@maya_undo`` 名称。
 
-    @wraps(function)
-    def wrapped(*args, **kwargs):
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziName_{}".format(function.__name__)
-        )
-
-        try:
-            return function(*args, **kwargs)
-        finally:
-            cmds.undoInfo(closeChunk=True)
-
-    return wrapped
+    实际 Undo Chunk 逻辑统一由 scene_utils.undo_chunk 维护。
+    """
+    return scene_utils.undo_chunk(function)
 
 
 def dag_depth(node):
-    """返回 DAG 路径深度，用于子节点优先重命名。"""
+    """返回 DAG 路径深度，用于 Rename 时让子节点优先处理。"""
     return node.count("|")
 
 
+# =============================================================================
+# Name
+# =============================================================================
+
 class Name(object):
-    u"""Rig 节点命名类。"""
+    """Rig 标准名称对象。"""
 
     node_types = [
         "grp",
@@ -62,6 +119,7 @@ class Name(object):
         "connect",
         "space",
         "driven",
+        "output",
         "ctrl",
         "jnt",
         "loc",
@@ -75,6 +133,7 @@ class Name(object):
         "cluster",
         "follicle",
         "rivet",
+        "attach",
         "bs",
         "skin",
         "cns",
@@ -108,26 +167,31 @@ class Name(object):
     }
 
     def __init__(
-        self,
-        name=None,
-        type=None,
-        side=None,
-        resolution=None,
-        description=None,
-        index=None,
-        part=None,
-        function=None
+            self,
+            name=None,
+            type=None,
+            side=None,
+            resolution=None,
+            description=None,
+            index=None,
+            part=None,
+            function=None
     ):
-        u"""
+        """
+        创建 Name 对象。
+
         Args:
-            name(str): 已经存在的标准名称。如果给定，会自动拆分。
-            type(str): 旧接口，节点类型。
-            side(str): 方向。
-            resolution(str): 旧接口，对应新的 part。
-            description(str): 旧接口，对应新的 function。
-            index(int): 序号。
-            part(str): 新接口，部位。
-            function(str): 新接口，功能。
+            name(str/None): 已存在的标准名称；给定时自动 decompose。
+            type(str/None): 旧接口，节点类型。
+            side(str/None): 方向。
+            resolution(str/None): 旧接口，对应当前 part。
+            description(str/None): 旧接口，对应当前 function。
+            index(int/None): 序号。
+            part(str/None): 当前接口，部位。
+            function(str/None): 当前接口，功能。
+
+        Notes:
+            resolution / description 继续保留，只为了兼容早期调用；新代码应优先使用 part / function。
         """
         self.nodes = []
 
@@ -148,7 +212,7 @@ class Name(object):
             self.decompose()
 
     # =========================================================================
-    # Property
+    # Property - 旧字段和新字段保持兼容
     # =========================================================================
 
     @property
@@ -185,7 +249,7 @@ class Name(object):
 
     @property
     def part(self):
-        """部位。兼容旧版 resolution。"""
+        """部位字段；内部与旧 resolution 共用存储。"""
         return self._resolution
 
     @part.setter
@@ -194,7 +258,7 @@ class Name(object):
 
     @property
     def function(self):
-        """功能。兼容旧版 description。"""
+        """功能字段；内部与旧 description 共用存储。"""
         return self._description
 
     @function.setter
@@ -211,16 +275,21 @@ class Name(object):
 
     @property
     def name(self):
+        """根据当前字段重新 compose 并返回完整名称。"""
         self.compose()
         return self._name
 
     # =========================================================================
-    # Name Build / Parse
+    # Normalize / Build / Parse
     # =========================================================================
 
     @staticmethod
     def _normalize_name_part(value):
-        """统一单个名称字段格式。"""
+        """
+        规范单个名称字段。
+
+        处理规则：Trim -> 空格 / 横线转下划线 -> 合并连续下划线 -> lower-case。
+        """
         if value is None:
             return None
 
@@ -235,13 +304,11 @@ class Name(object):
         while "__" in value:
             value = value.replace("__", "_")
 
-        value = value.strip("_")
-        value = value.lower()
-        return value
+        return value.strip("_").lower()
 
     @classmethod
     def normalize_side(cls, side):
-        """把方向统一成 lf / rt / md。"""
+        """把方向统一为正式 ``lf / rt / md`` Token。"""
         if side is None:
             return "md"
 
@@ -256,14 +323,15 @@ class Name(object):
 
     @classmethod
     def create_name(
-        cls,
-        node_type,
-        side,
-        part,
-        function,
-        index=1
+            cls,
+            node_type,
+            side,
+            part,
+            function,
+            index=1
     ):
-        """根据标准规则创建名称。"""
+        """根据五段式规则创建标准名称。"""
+        # 步骤 1：所有字段先规范化，避免不同 Tool 产生大小写 / 空格差异。
         node_type = cls._normalize_name_part(node_type)
         side = cls.normalize_side(side)
         part = cls._normalize_name_part(part)
@@ -283,6 +351,7 @@ class Name(object):
 
         index = int(index)
 
+        # 步骤 2：序号固定三位，保证 Outliner 字符串排序稳定。
         return "{0}_{1}_{2}_{3}_{4:03d}".format(
             node_type,
             side,
@@ -293,13 +362,13 @@ class Name(object):
 
     @classmethod
     def get_next_index(
-        cls,
-        node_type,
-        side,
-        part,
-        function
+            cls,
+            node_type,
+            side,
+            part,
+            function
     ):
-        """获取场景中同类名称的下一个可用序号。"""
+        """查询场景中同类标准名称，并返回下一个可用序号。"""
         node_type = cls._normalize_name_part(node_type)
         side = cls.normalize_side(side)
         part = cls._normalize_name_part(part)
@@ -311,11 +380,10 @@ class Name(object):
             part,
             function
         )
-        search_name = base_name + "_*"
-        nodes = cmds.ls(search_name)
 
-        if nodes is None:
-            nodes = []
+        nodes = cmds.ls(
+            base_name + "_*"
+        ) or []
 
         max_index = 0
 
@@ -341,13 +409,13 @@ class Name(object):
 
     @classmethod
     def create_unique_name(
-        cls,
-        node_type,
-        side,
-        part,
-        function
+            cls,
+            node_type,
+            side,
+            part,
+            function
     ):
-        """创建场景中下一个可用的标准名称。"""
+        """生成场景中下一个可用的标准名称。"""
         index = cls.get_next_index(
             node_type=node_type,
             side=side,
@@ -365,7 +433,7 @@ class Name(object):
 
     @classmethod
     def parse_name(cls, name):
-        """把标准名称解析为字典。"""
+        """把标准名称解析成字典。"""
         name_object = cls(name=name)
 
         return {
@@ -378,13 +446,13 @@ class Name(object):
 
     @classmethod
     def mirror_name(cls, name):
-        """返回左右镜像名称，不修改 Maya 节点。"""
+        """计算镜像名称，不修改 Maya 节点。"""
         name_object = cls(name=name)
         name_object.flip()
         return name_object.name
 
     def compose(self):
-        """根据当前成员变量组合名称。"""
+        """根据当前对象字段重新组合标准名称。"""
         node_type = self._normalize_name_part(self._type)
         side = self.normalize_side(self._side)
         part = self._normalize_name_part(self._resolution)
@@ -400,10 +468,16 @@ class Name(object):
             function=function,
             index=self._index
         )
+
         return self._name
 
     def decompose(self):
-        """拆分标准名称，支持 function 字段包含下划线。"""
+        """
+        拆分标准名称。
+
+        function 允许包含多个下划线，因此规则固定为：
+            第 1 段 type；第 2 段 side；第 3 段 part；最后一段 index；中间全部属于 function。
+        """
         if not self._name:
             return False
 
@@ -420,44 +494,40 @@ class Name(object):
             return False
 
         self._type = name_parts[0]
-        self._side = name_parts[1]
+        self._side = self.normalize_side(name_parts[1])
         self._resolution = name_parts[2]
-
-        function_parts = name_parts[3:-1]
-        self._description = "_".join(function_parts)
+        self._description = "_".join(name_parts[3:-1])
         self._index = int(index_string)
+
         return True
 
     def flip(self):
-        """翻转名称方向。"""
-        if self._side == "lf":
+        """翻转 lf <-> rt；md 保持不变。"""
+        normalized_side = self.normalize_side(self._side)
+
+        if normalized_side == "lf":
             self._side = "rt"
-        elif self._side == "rt":
+        elif normalized_side == "rt":
             self._side = "lf"
-        elif self._side == "l":
-            self._side = "r"
-        elif self._side == "r":
-            self._side = "l"
+        else:
+            self._side = "md"
 
         return self._side
 
     # =========================================================================
-    # Maya Rename
+    # Maya Rename - 兼容 API
     # =========================================================================
 
     def set_rename(self, new_name):
-        """把当前选择节点重命名为 new_name。"""
+        """把当前 Selection 节点依次重命名为 new_name。"""
         names = cmds.ls(
-            selection=True
-        )
-
-        if names is None:
-            names = []
+            selection=True,
+            long=True
+        ) or []
 
         for selected_name in names:
-            object_name = selected_name.split("|")[-1]
             self._name = cmds.rename(
-                object_name,
+                selected_name,
                 new_name
             )
 
@@ -465,70 +535,67 @@ class Name(object):
 
     @maya_undo
     def add_prefix(self, prefix):
-        """给当前节点添加前缀。"""
+        """给当前 Name 节点添加前缀。"""
         self._name = cmds.rename(
             self._name,
-            prefix + self._name
+            prefix + self._name.split("|")[-1]
         )
         return self._name
 
     @maya_undo
     def add_suffix(self, suffix):
-        """给当前节点添加后缀。"""
+        """给当前 Name 节点添加后缀。"""
+        short_name = self._name.split("|")[-1]
         self._name = cmds.rename(
             self._name,
-            self._name + suffix
+            short_name + suffix
         )
         return self._name
 
     def _selection_list_nodes(self):
-        """返回当前选择及其全部后代节点。"""
+        """返回当前 Selection 及其全部后代，自动去重。"""
         self.nodes = []
         selected_nodes = cmds.ls(
             selection=True,
             long=True
-        )
-
-        if selected_nodes is None:
-            selected_nodes = []
+        ) or []
 
         for selected_node in selected_nodes:
-            self.nodes.append(selected_node)
+            if selected_node not in self.nodes:
+                self.nodes.append(selected_node)
 
             children = cmds.listRelatives(
                 selected_node,
                 allDescendents=True,
                 fullPath=True
-            )
-
-            if children is None:
-                children = []
+            ) or []
 
             for child in children:
-                self.nodes.append(child)
+                if child not in self.nodes:
+                    self.nodes.append(child)
 
         return self.nodes
 
     @maya_undo
     def add_hierarchy_prefix(self, prefix):
-        """给当前选择层级添加前缀。"""
+        """给当前 Selection 整个层级添加前缀。"""
         self.nodes = self._selection_list_nodes()
         self.nodes.sort(
             key=dag_depth,
             reverse=True
         )
 
+        # 子节点先改名，避免 Parent 改名后旧 Child Long Path 失效。
         for node in self.nodes:
             object_name = node.split("|")[-1]
-            new_object_name = prefix + object_name
             cmds.rename(
                 node,
-                new_object_name
+                prefix + object_name
             )
 
     @maya_undo
     def add_hierarchy_suffix(self, suffix):
-        """给当前选择层级添加后缀。"""
+        """给当前 Selection 整个层级添加后缀。"""
         self.nodes = self._selection_list_nodes()
         self.nodes.sort(
             key=dag_depth,
@@ -537,15 +604,14 @@ class Name(object):
 
         for node in self.nodes:
             object_name = node.split("|")[-1]
-            new_object_name = object_name + suffix
             cmds.rename(
                 node,
-                new_object_name
+                object_name + suffix
             )
 
     @maya_undo
     def search_replace_name(self, search, replace):
-        """根据关键字搜索替换当前节点名称。"""
+        """对当前 Name 节点执行普通字符串 Search / Replace。"""
         object_name = self._name.split("|")[-1]
         new_name = object_name.replace(
             search,
@@ -559,15 +625,16 @@ class Name(object):
         return self._name
 
     def rename_to_name(self, new_name):
-        """重命名为指定名称。"""
+        """把当前 Name 节点重命名为明确名称。"""
         self._name = cmds.rename(
             self._name,
             new_name
         )
         return self._name
 
+    @maya_undo
     def regex_search_replace_name(self, search, replace):
-        """根据正则表达式搜索替换当前选择层级名称。"""
+        """使用正则表达式 Search / Replace 当前 Selection 层级。"""
         regex_object = re.compile(search)
         nodes = self._selection_list_nodes()
         nodes.sort(
@@ -587,23 +654,20 @@ class Name(object):
             )
 
     # =========================================================================
-    # Duplicate Name
+    # Duplicate DAG Name
     # =========================================================================
 
     @staticmethod
     def print_duplicate_object():
-        """检查并列出场景中所有重名 DAG 节点。"""
+        """检查并返回场景中所有重名 DAG 节点 Long Path。"""
         all_objects = cmds.ls(
             long=True,
             dagObjects=True
-        )
+        ) or []
 
-        if all_objects is None:
-            all_objects = []
-
-        duplicate_object_list = []
         short_name_dict = {}
 
+        # 步骤 1：按 Short Name 建立 Long Path 分组。
         for object_name in all_objects:
             short_name = object_name.split("|")[-1]
 
@@ -611,6 +675,9 @@ class Name(object):
                 short_name_dict[short_name] = []
 
             short_name_dict[short_name].append(object_name)
+
+        # 步骤 2：只有同名数量 > 1 才属于 Duplicate。
+        duplicate_object_list = []
 
         for short_name in short_name_dict:
             object_list = short_name_dict[short_name]
@@ -632,7 +699,7 @@ class Name(object):
     @staticmethod
     @maya_undo
     def rename_duplicate_object():
-        """重新命名场景内所有重名 DAG 节点。"""
+        """给场景中重名 DAG 节点追加三位数字后缀。"""
         duplicate_object_list = Name.print_duplicate_object()
         duplicate_object_list.sort(
             key=dag_depth,
@@ -666,4 +733,5 @@ class Name(object):
 __all__ = [
     "Name",
     "maya_undo",
+    "dag_depth",
 ]
