@@ -6,11 +6,11 @@ Controller Shape Utils
 控制器 NURBS Curve Shape 的底层读写模块。
 
 职责：
-    1. 读取 / 保存 Controller Shape JSON；
+    1. 读取 / 保存 / 删除 Controller Shape JSON；
     2. 把 JSON 数据创建成 Maya NURBS Curve Shape；
-    3. 获取控制器 Curve Shape / CV；
+    3. 获取控制器 Curve Shape / CV / Color / Radius；
     4. 设置 Shape Maya Index Color；
-    5. 对 Shape CV 做缩放、旋转和镜像。
+    5. 对 Shape CV 做位移、缩放、旋转和镜像。
 
 本模块不包含任何 PySide UI。
 """
@@ -18,6 +18,7 @@ Controller Shape Utils
 from __future__ import print_function
 
 import json
+import math
 import os
 
 import maya.cmds as cmds
@@ -164,6 +165,67 @@ def get_shape_data(transform):
     return result
 
 
+def get_shape_color(transform, default=None):
+    """返回第一个 Curve Shape 的 Maya Index Color。"""
+    shapes = get_curve_shapes(transform)
+
+    if not shapes:
+        return default
+
+    shape = shapes[0]
+
+    override_enabled = cmds.getAttr(
+        shape + ".overrideEnabled"
+    )
+
+    if not override_enabled:
+        return default
+
+    use_rgb = cmds.getAttr(
+        shape + ".overrideRGBColors"
+    )
+
+    if use_rgb:
+        return default
+
+    return cmds.getAttr(
+        shape + ".overrideColor"
+    )
+
+
+def get_shape_radius(transform):
+    """
+    返回控制器 Shape CV 到局部原点的最大距离。
+
+    该值用于旧 controlUtils.get_radius() 的正式替代。
+    """
+    cvs = get_shape_cvs(transform)
+
+    if not cvs:
+        return 0.0
+
+    maximum_distance = 0.0
+
+    for cv in cvs:
+        position = cmds.xform(
+            cv,
+            query=True,
+            objectSpace=True,
+            translation=True
+        )
+
+        distance = math.sqrt(
+            position[0] * position[0]
+            + position[1] * position[1]
+            + position[2] * position[2]
+        )
+
+        if distance > maximum_distance:
+            maximum_distance = distance
+
+    return maximum_distance
+
+
 def _create_temp_curve(shape_data):
     """根据单个 Shape 数据创建临时 Curve Transform。"""
     points_flat = shape_data.get("points")
@@ -234,10 +296,6 @@ def apply_shape_data(transform, shape_data_list):
 
         temp_shape = temp_shapes[0]
 
-        # Shape 被重新 parent 到目标 Transform 后，原来的 DAG fullPath 会立即失效。
-        # Maya 2023 中继续使用旧 temp_shape 路径执行 rename 会报：
-        # “指定的要重命名的对象无效”。
-        # 因此必须使用 cmds.parent 返回的最新 Shape 路径。
         parent_result = cmds.parent(
             temp_shape,
             transform,
@@ -323,6 +381,35 @@ def save_shape_data(shape_name, transform):
     return file_path
 
 
+def delete_shape_data(shape_name, delete_previews=True):
+    """删除图库 Shape JSON，并可同时删除 JPG / PNG 预览图。"""
+    if not shape_name:
+        return []
+
+    extensions = [".json"]
+
+    if delete_previews:
+        extensions.append(".jpg")
+        extensions.append(".png")
+
+    deleted_files = []
+    library_dir = get_library_dir()
+
+    for extension in extensions:
+        file_path = os.path.join(
+            library_dir,
+            shape_name + extension
+        )
+
+        if not os.path.isfile(file_path):
+            continue
+
+        os.remove(file_path)
+        deleted_files.append(file_path)
+
+    return deleted_files
+
+
 def set_shape_color(transform, color_index):
     """设置 Maya Index Color。"""
     shapes = get_curve_shapes(transform)
@@ -342,6 +429,28 @@ def set_shape_color(transform, color_index):
         )
 
 
+def translate_shape(transform, offset):
+    """按 Object Space 平移控制器 Shape CV。"""
+    if offset is None or len(offset) != 3:
+        raise ValueError(
+            u"offset 必须是包含 3 个数值的列表或元组。"
+        )
+
+    cvs = get_shape_cvs(transform)
+
+    if not cvs:
+        return
+
+    cmds.move(
+        offset[0],
+        offset[1],
+        offset[2],
+        cvs,
+        relative=True,
+        objectSpace=True
+    )
+
+
 def scale_shape(transform, scale_value):
     """按 Object Space 缩放控制器 Shape。"""
     cvs = get_shape_cvs(transform)
@@ -356,6 +465,25 @@ def scale_shape(transform, scale_value):
         cvs,
         relative=True,
         objectSpace=True
+    )
+
+
+def set_shape_radius(transform, radius):
+    """把控制器 Shape 的最大局部半径设置为指定数值。"""
+    radius = float(radius)
+
+    if radius < 0.0:
+        raise ValueError(u"radius 不能小于 0。")
+
+    current_radius = get_shape_radius(transform)
+
+    if current_radius == 0.0:
+        return
+
+    scale_value = radius / current_radius
+    scale_shape(
+        transform,
+        scale_value
     )
 
 
@@ -414,11 +542,16 @@ __all__ = [
     "get_shape_cvs",
     "get_selected_curve_transforms",
     "get_shape_data",
+    "get_shape_color",
+    "get_shape_radius",
     "apply_shape_data",
     "load_shape_data",
     "save_shape_data",
+    "delete_shape_data",
     "set_shape_color",
+    "translate_shape",
     "scale_shape",
+    "set_shape_radius",
     "rotate_shape",
     "mirror_shape",
 ]
