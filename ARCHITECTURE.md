@@ -2,8 +2,6 @@
 
 `muziToolset` 根包是当前项目唯一的正式运行框架。
 
-不再保留额外的 `muzi_rigging/` 中间包。
-
 ## 当前目录职责
 
 ```text
@@ -13,17 +11,17 @@ muziToolset/
 ├─ core/                   # 不依赖 UI 的 Maya 通用底层能力
 ├─ tools/                  # 单功能、可独立启动的小工具
 ├─ systems/                # 可复用 Rig System / Builder
-│  ├─ common/              # 系统级共享能力
+│  ├─ common/
 │  ├─ controller/          # Controller Builder / Parent Space Blend
 │  ├─ body/
-│  │  └─ skirt/            # 当前已迁移的 Skirt Rig Builder
-│  └─ face/                # Face Rig System
-├─ resources/              # 图标、Controller Shape 等静态资源
-├─ tests/                  # Maya Smoke / Functional Smoke
-├─ legacy_reference/       # 历史代码，只用于参考
-├─ config.py               # 根包路径和资源配置
-├─ __init__.py             # 对外 show()/initialize() 与测试入口
-└─ start.py                # Maya 快速启动脚本
+│  │  └─ skirt/
+│  └─ face/
+├─ resources/
+├─ tests/
+├─ legacy_reference/       # 历史资料，只用于参考
+├─ config.py
+├─ __init__.py
+└─ start.py
 ```
 
 ## 分层依赖规则
@@ -55,7 +53,7 @@ Core 函数应该尽量：
 4. 返回节点、列表或结果字典；
 5. 不创建工具窗口。
 
-当前正式职责模块包括：
+当前正式职责模块：
 
 ```text
 # 基础节点 / 场景
@@ -92,11 +90,11 @@ model_check_utils.py
 
 旧 `pipelineUtils / controlUtils / connectionUtils / vectorUtils / fileUtils / weightsUtils / qtUtils` 等万能或重复模块已经退出正式 Core。
 
-其中有价值的通用算法已经拆入正式模块；大型 Rig Workflow 进入 `systems/` 或仅保留在 `legacy_reference/rigging/` 作为历史参考。
+其中 `pipelineUtils` 已完成拆分并删除；正式替代分别位于 `core/`、`systems/controller/` 和 `systems/face/`。大型历史 Rig Workflow 只允许保留在 `legacy_reference/rigging/` 作为参考。
 
 ### systems
 
-`systems` 实现可以被多个工具复用的绑定流程和 Builder。
+`systems` 实现可被多个工具复用的绑定流程和 Builder。
 
 当前正式系统：
 
@@ -116,102 +114,31 @@ systems/face/
 └─ wizard.py
 ```
 
-例如 Controller Creator、FK、IK 和 Skirt Rig 不应该各自维护一套 Controller 创建算法，而应该通过包内 System API 调用：
-
-```python
-from ...systems import controller
-```
-
-System 允许依赖：
-
-- core
-- systems/common
-- 其它明确的 System 公共 API
-
-System Build 逻辑不要写进 PySide UI 类。
-
-完整 Body Rig System 暂缓，后续再扩展 Arm / Leg / Spine / Hand / Foot。
+System 允许依赖 `core`、`systems/common` 和其它明确的 System 公共 API。System Build 逻辑不要写进 PySide UI 类。
 
 ### tools
 
-`tools` 是用户直接点击的小工具。
-
-职责：
-
-- 收集用户输入；
-- 显示状态和错误；
-- 调用 Core；
-- 调用 System 公共 API；
-- 提供统一 `main()` 入口。
-
-推荐结构：
-
-```python
-def main():
-    window = SomeTool()
-    return window
-```
-
-窗口不要自己维护第二套全局引用，统一交给 `app.window_manager`。
+`tools` 只负责收集用户输入、显示状态、调用 Core/System，并提供统一 `main()` 入口。
 
 Tool 中不要复制 Core 算法。例如属性连接统一调用 `core.connection_utils`，Controller Shape 编辑统一调用 `core.control_shape_utils`。
 
 ### ui
 
-`ui` 只维护视觉和通用交互组件。
-
-当前包括：
-
-```text
-ui/theme.py
-ui/widgets/object_picker.py
-```
-
-UI Widget 不负责具体 Rig Build 算法。
+`ui` 只维护视觉和通用交互组件，不负责具体 Rig Build 算法。
 
 ### app
 
-`app` 是最外层应用层，只负责：
-
-- 主工具箱；
-- 工具发现与懒加载；
-- PySide 子窗口生命周期；
-- 启动和关闭。
-
-具体 Maya Rig 算法不写在 app 中。
+`app` 只负责主工具箱、工具发现与懒加载、PySide 子窗口生命周期、启动和关闭。具体 Maya Rig 算法不写进 app。
 
 ## Window Manager 规则
 
-主工具箱通过包内 Window Manager 统一打开工具：
-
-```python
-from . import window_manager
-
-window_manager.show_tool(
-    "category/tool_key",
-    tool_module.main
-)
-```
-
-不要在每个工具中重新维护 `_window`、`child_windows`、`setParent(Qt.Window)` 等窗口生命周期代码。
+主工具箱统一通过 `app.window_manager` 打开工具。不要在每个工具中重新维护 `_window`、`child_windows` 或第二套窗口生命周期。
 
 ## Python 命名规范
 
-新模块统一使用小写 `snake_case`：
+新模块统一使用小写 `snake_case`，类使用 `PascalCase`，函数、方法、变量使用 `snake_case`。
 
-```text
-controller/
-blendshape/
-attr_utils.py
-joint_utils.py
-window_manager.py
-```
-
-类使用 `PascalCase`。
-
-函数、方法、变量使用 `snake_case`。
-
-当前仍保留的 `attrUtils.py / jointUtils.py / hierarchyUtils.py / nameUtils.py` 属于迁移中的核心公共 API，为避免一次性破坏现有调用暂不强制重命名；后续可以逐个建立 snake_case API 后再迁移。
+当前仍保留的 `attrUtils.py / jointUtils.py / hierarchyUtils.py / nameUtils.py` 属于迁移中的核心公共 API，为避免一次性破坏现有调用暂不强制重命名；后续逐个建立 snake_case API 再迁移。
 
 ## 编码习惯
 
@@ -222,42 +149,31 @@ window_manager.py
 - 普通流程使用完整 `for` 循环；
 - 不为了压缩代码滥用列表推导式；
 - 中文注释解释执行流程和设计原因；
-- 正式模块 import 时不主动 reload 其它模块；
+- import 时不主动 reload 其它模块；
 - 大型操作尽量使用一个 Maya Undo Chunk。
 
 ## 历史代码
 
 `legacy_reference/` 只作为参考资料库，不属于正式运行架构。
 
-当前主要目录：
-
 ```text
 legacy_reference/
 ├─ bind/
 ├─ core/
+│  └─ PIPELINE_MIGRATION.md
 ├─ dev/
 ├─ integrations/
 │  ├─ advanced_skeleton.py
-│  └─ metahuman.py
+│  ├─ metahuman.py
+│  └─ README.md
 ├─ pyside/
 ├─ res/
 └─ rigging/
 ```
 
-旧 `legacy_reference/face/` 和旧 `MuziTools/` 已经完成迁移后删除。
+旧 `legacy_reference/face/`、旧 `MuziTools/` 和旧 `pipelineUtils.py` 都已经完成迁移后删除。
 
-当前 `legacy_reference/core/` 已经收缩为：
-
-```text
-legacy_reference/core/
-├─ PIPELINE_MIGRATION.md
-├─ __init__.py
-└─ pipelineUtils.py
-```
-
-`pipelineUtils.py` 只作为最后的迁移验证参考；新版 Maya Smoke Test 验证通过后即可删除。
-
-旧 Controller 中剩余 Ribbon / IK Spine / IK Curve Rig 等大型流程放在 `legacy_reference/rigging/controlUtils.py`，第三方 AdvancedSkeleton / MetaHuman 代码放在 `legacy_reference/integrations/`。
+`legacy_reference/core/` 现在只是文档目录，不是 Python Package。旧 Controller 中剩余 Ribbon / IK Spine / IK Curve Rig 等大型流程放在 `legacy_reference/rigging/controlUtils.py`；第三方 AdvancedSkeleton / MetaHuman 参考位于 `legacy_reference/integrations/`。
 
 需要旧功能时，应重新提取有价值的算法并按职责进入新的 `core / tools / systems`，而不是让正式代码直接调用历史包。
 
@@ -272,11 +188,9 @@ legacy_reference/core/
 
 ## 对外启动方式
 
-唯一推荐启动方式：
-
 ```python
 import muziToolset
 muziToolset.show()
 ```
 
-正式代码内部使用包内相对 import，不再依赖 `muzi_rigging` 包名。
+正式代码内部使用包内相对 import，不再依赖额外中间包。
