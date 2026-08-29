@@ -49,7 +49,7 @@ def functional_smoke_test():
 
 
 def pipeline_smoke_test():
-    """运行 pipelineUtils 拆分后的 Core 功能 Smoke Test。"""
+    """运行 pipelineUtils / Legacy Core 拆分后的功能 Smoke Test。"""
     from .tests import pipeline_refactor_smoke_test
 
     return pipeline_refactor_smoke_test.run()
@@ -62,6 +62,13 @@ def face_component_smoke_test():
     return face_component_smoke_test.run()
 
 
+def controller_component_smoke_test():
+    """运行 Controller Parent Space Blend 功能 Smoke Test。"""
+    from .tests import controller_component_smoke_test
+
+    return controller_component_smoke_test.run()
+
+
 __all__ = [
     "show",
     "initialize",
@@ -69,4 +76,5 @@ __all__ = [
     "functional_smoke_test",
     "pipeline_smoke_test",
     "face_component_smoke_test",
+    "controller_component_smoke_test",
 ]
