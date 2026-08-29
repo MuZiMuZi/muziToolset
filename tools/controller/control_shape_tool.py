@@ -5,13 +5,45 @@ Control Shape Tool
 
 Maya Controller Shape 图库与编辑工具。
 
-职责：
-    1. 展示正式 Controller Shape 资源目录；
-    2. 收集 Maya Selection 和 UI 参数；
-    3. 调用 core.control_shape_utils 执行 Shape 读写和编辑；
-    4. 管理 Shape 图库交互。
+模块职责
+--------
+1. 展示正式 Controller Shape 资源目录；
+2. 收集 Maya Selection 和 UI 参数；
+3. 调用 ``core.control_shape_utils`` 执行 Shape 读写和编辑；
+4. 管理 Shape 图库交互；
+5. 提供在 Maya Script Editor 中可以直接显示的 ``main()`` 入口。
 
-底层 Curve Shape 操作统一放在 core/control_shape_utils.py。
+主要公开类型 / 方法
+------------------
+ShapeListWidget
+    Controller Shape JSON 图库控件；负责浏览、应用、上传和删除 Shape。
+
+ColorListWidget
+    Maya Index Color 选择控件。
+
+ControlShapeTool
+    Controller Shape 图库主窗口。
+
+main()
+    创建或恢复主窗口，立即显示并返回 QWidget。
+
+底层边界
+--------
+Curve Shape 数据读写、CV 编辑、颜色、缩放和镜像统一放在 ``core/control_shape_utils.py``。
+本文件只负责 UI 和用户交互，不复制底层 Shape 算法。
+
+直接运行
+--------
+Maya Python Script Editor：
+
+    from muziToolset.tools.controller import control_shape_tool
+
+    window = control_shape_tool.main()
+
+窗口生命周期
+------------
+独立运行时通过 ``ui.window_utils`` 保存强引用；从 MuziTools 主工具箱打开时，返回的 QWidget 还会继续
+交给 ``app.window_manager`` 做 Maya Parent、Window Flags 和应用级窗口管理。
 """
 
 from __future__ import print_function
@@ -59,6 +91,7 @@ except ImportError:
 
 from ...core import control_shape_utils
 from ...ui import theme
+from ...ui import window_utils
 
 
 index_rgb_map = [
@@ -672,11 +705,16 @@ class ControlShapeTool(QWidget):
 
 
 def main():
-    """创建并返回 Controller Shape 工具。"""
-    window = ControlShapeTool()
-    return window
+    """
+    创建或恢复 Controller Shape 工具，并立即显示。
+
+    直接从 Maya Script Editor 调用时无需额外执行 ``window.show()``。
+    """
+    return window_utils.show_window(
+        "tools.controller.control_shape_tool",
+        ControlShapeTool
+    )
 
 
 if __name__ == "__main__":
-    window = main()
-    window.show()
+    main()
