@@ -3,20 +3,63 @@ u"""
 Scene Clean Utils
 =================
 
-Maya 场景安全清理底层模块。
+Maya 场景安全清理模块。
 
-安全原则：
-    1. 不修改引用节点；
-    2. 不删除默认相机；
-    3. Delete History 跳过常见 Rig Deformer；
-    4. Freeze 跳过动画、约束和 Rig Deformer；
-    5. 删除空组采用递归方式；
-    6. 本模块不包含 UI 和确认弹窗。
+模块职责
+--------
+本模块负责“明确会修改场景”的通用清理操作，并通过一组保护规则避免误伤 Rig、动画和 Reference。
+
+主要公开 API
+------------
+all_transform_nodes()
+    返回全场景 Transform Long Path。
+
+delete_empty_groups(nodes=None)
+    递归删除空 Transform Group。
+
+delete_history(nodes)
+    删除安全范围内的 Construction History；存在 Rig Deformer 时跳过。
+
+freeze_transformations(nodes)
+    Freeze 安全范围内的 Transform；动画、Constraint、Rig Deformer、Reference 会跳过。
+
+unlock_and_show_attributes(nodes)
+    解锁并显示标准 TRS / Visibility 属性。
+
+center_pivot(nodes)
+    对可编辑、带 Shape 的 Transform 执行 Center Pivot。
+
+delete_unknown_nodes(nodes=None)
+    删除非 Reference Unknown 节点。
+
+run_cleanup(...)
+    按开关组合执行一次安全清理，并返回统计字典。
+
+安全保护
+--------
+1. 不修改 Reference 节点；
+2. 不删除 Maya 默认相机；
+3. Delete History 遇到 Skin / BlendShape / Wrap 等 Rig Deformer 时跳过；
+4. Freeze 遇到 Animation、Constraint 或 Rig Deformer 时跳过；
+5. Delete Empty Group 采用 Child First + 递归循环，确保父组在子组删除后可以再次检查；
+6. Core 不弹确认窗口，真正的“是否执行清理”由上层 Tool / App 决定。
+
+和 model_check_utils.py 的区别
+-----------------------------
+model_check_utils.py
+    负责发现问题，默认尽量只读。
+
+scene_clean_utils.py
+    负责执行明确的场景修改。
+
+因此两个模块不合并，避免“检查一下模型”意外产生场景修改。
 """
 
 from __future__ import print_function
 
 import maya.cmds as cmds
+
+from . import scene_utils
 
 
 default_cameras = [
@@ -57,13 +100,17 @@ anim_curve_types = [
 ]
 
 
+# =============================================================================
+# Common Query
+# =============================================================================
+
 def get_short_name(node):
-    """返回 DAG 节点短名称。"""
+    """返回 DAG Short Name。"""
     return node.split("|")[-1]
 
 
 def is_default_camera(node):
-    """判断是否为 Maya 默认相机 Transform。"""
+    """判断节点是否为 Maya 默认相机 Transform。"""
     return get_short_name(node) in default_cameras
 
 
@@ -79,31 +126,25 @@ def is_referenced(node):
 
 
 def existing_nodes(nodes):
-    """过滤不存在的节点，并转换成长名称。"""
+    """
+    过滤不存在的节点、转换为 Long Path 并去重。
+
+    该步骤在真正修改场景前统一执行，避免调用过程中遇到已经被前一个清理动作删除的节点。
+    """
     result = []
 
     if not nodes:
         return result
 
     for node in nodes:
-        if not node:
-            continue
-
-        if not cmds.objExists(node):
+        if not node or not cmds.objExists(node):
             continue
 
         matches = cmds.ls(
             node,
             long=True
-        )
-
-        if matches is None:
-            matches = []
-
-        resolved = node
-
-        if matches:
-            resolved = matches[0]
+        ) or []
+        resolved = matches[0] if matches else node
 
         if resolved not in result:
             result.append(resolved)
@@ -112,57 +153,45 @@ def existing_nodes(nodes):
 
 
 def all_transform_nodes():
-    """返回全场景 Transform。"""
-    nodes = cmds.ls(
+    """返回全场景 Transform Long Path。"""
+    return cmds.ls(
         type="transform",
         long=True
-    )
-
-    if nodes is None:
-        nodes = []
-
-    return nodes
+    ) or []
 
 
 def sort_child_first(nodes):
-    """按 DAG 深度从深到浅排序，不使用 lambda。"""
+    """按 DAG 深度从深到浅排序。"""
     result = []
 
     for node in nodes:
         if node not in result:
             result.append(node)
 
-    item_count = len(result)
-    outer_index = 0
+    def get_depth(node):
+        return node.count("|")
 
-    while outer_index < item_count:
-        inner_index = 0
-
-        while inner_index < item_count - 1:
-            current_depth = result[inner_index].count("|")
-            next_depth = result[inner_index + 1].count("|")
-
-            if current_depth < next_depth:
-                temporary_node = result[inner_index]
-                result[inner_index] = result[inner_index + 1]
-                result[inner_index + 1] = temporary_node
-
-            inner_index += 1
-
-        outer_index += 1
+    result.sort(
+        key=get_depth,
+        reverse=True
+    )
 
     return result
 
 
+# =============================================================================
+# Protection Query
+# =============================================================================
+
 def has_incoming_animation(node):
-    """判断 Transform 是否有 AnimCurve 输入。"""
+    """判断 Transform 是否存在 AnimCurve 输入。"""
     for anim_type in anim_curve_types:
         connections = cmds.listConnections(
             node,
             source=True,
             destination=False,
             type=anim_type
-        )
+        ) or []
 
         if connections:
             return True
@@ -171,15 +200,12 @@ def has_incoming_animation(node):
 
 
 def has_constraint(node):
-    """判断节点是否存在 Constraint 输入。"""
+    """判断节点是否存在常见 Constraint 输入。"""
     connections = cmds.listConnections(
         node,
         source=True,
         destination=False
-    )
-
-    if connections is None:
-        connections = []
+    ) or []
 
     for connection in connections:
         try:
@@ -198,10 +224,7 @@ def has_rig_history(node):
     history = cmds.listHistory(
         node,
         pruneDagObjects=True
-    )
-
-    if history is None:
-        history = []
+    ) or []
 
     for history_node in history:
         try:
@@ -212,11 +235,25 @@ def has_rig_history(node):
         if node_type in rig_history_types:
             return True
 
+        # 未列进白名单但属于 geometryFilter 的节点同样按 Deformer 保护。
+        try:
+            if cmds.objectType(
+                    history_node,
+                    isAType="geometryFilter"
+            ):
+                return True
+        except Exception:
+            pass
+
     return False
 
 
 def can_modify_transform(node):
-    """判断节点是否适合执行场景清理。"""
+    """
+    判断节点是否允许进入 Transform 类清理操作。
+
+    默认相机、Reference、非 Transform 都返回 False。
+    """
     if not cmds.objExists(node):
         return False
 
@@ -232,34 +269,50 @@ def can_modify_transform(node):
     return True
 
 
+# =============================================================================
+# Delete Empty Group
+# =============================================================================
+
+def _collect_parent_candidates(nodes):
+    """把输入节点一直向上追溯到 Root，收集可能在清理后变空的 Parent。"""
+    parent_candidates = []
+
+    for node in nodes:
+        current = node
+
+        while current:
+            parents = cmds.listRelatives(
+                current,
+                parent=True,
+                fullPath=True
+            ) or []
+
+            if not parents:
+                break
+
+            current = parents[0]
+
+            if current not in parent_candidates:
+                parent_candidates.append(current)
+
+    return parent_candidates
+
+
 def delete_empty_groups(nodes=None):
-    """递归删除空 Transform Group。"""
+    """
+    递归删除空 Transform Group。
+
+    ``nodes=None`` 时扫描全场景；给定 nodes 时还会自动把它们的 Parent 加入候选，
+    因为删除 Child 后原本非空的 Parent 可能变成空组。
+    """
+    # -------------------------------------------------------------------------
+    # 步骤 1：建立候选节点列表。
+    # -------------------------------------------------------------------------
     if nodes is None:
         candidates = all_transform_nodes()
     else:
         candidates = existing_nodes(nodes)
-        parent_candidates = []
-
-        for node in candidates:
-            current = node
-
-            while current:
-                parents = cmds.listRelatives(
-                    current,
-                    parent=True,
-                    fullPath=True
-                )
-
-                if parents is None:
-                    parents = []
-
-                if not parents:
-                    break
-
-                current = parents[0]
-
-                if current not in parent_candidates:
-                    parent_candidates.append(current)
+        parent_candidates = _collect_parent_candidates(candidates)
 
         for parent in parent_candidates:
             if parent not in candidates:
@@ -268,6 +321,12 @@ def delete_empty_groups(nodes=None):
     deleted_count = 0
     changed = True
 
+    # -------------------------------------------------------------------------
+    # 步骤 2：循环检查直到本轮没有删除任何节点。
+    #
+    # 为什么需要循环：
+    # Child 空组删除后，Parent 可能才刚刚变成空组，需要下一轮继续处理。
+    # -------------------------------------------------------------------------
     while changed:
         changed = False
         current_candidates = []
@@ -286,19 +345,12 @@ def delete_empty_groups(nodes=None):
                 node,
                 shapes=True,
                 fullPath=True
-            )
-
-            if shapes is None:
-                shapes = []
-
+            ) or []
             children = cmds.listRelatives(
                 node,
                 children=True,
                 fullPath=True
-            )
-
-            if children is None:
-                children = []
+            ) or []
 
             if shapes or children:
                 continue
@@ -318,14 +370,24 @@ def delete_empty_groups(nodes=None):
     return deleted_count
 
 
+# =============================================================================
+# Delete History
+# =============================================================================
+
 def delete_history(nodes):
-    """删除安全范围内的 Construction History。"""
+    """
+    删除安全范围内的 Construction History。
+
+    Returns:
+        tuple: ``(processed_count, skipped_count)``。
+    """
     nodes = existing_nodes(nodes)
     deleted_count = 0
     skipped_count = 0
 
     for node in nodes:
         if not can_modify_transform(node):
+            skipped_count += 1
             continue
 
         shapes = cmds.listRelatives(
@@ -333,14 +395,12 @@ def delete_history(nodes):
             shapes=True,
             noIntermediate=True,
             fullPath=True
-        )
-
-        if shapes is None:
-            shapes = []
+        ) or []
 
         if not shapes:
             continue
 
+        # Rig Deformer 比建模 History 更重要，发现后整个对象跳过 Delete History。
         if has_rig_history(node):
             skipped_count += 1
             continue
@@ -362,17 +422,27 @@ def delete_history(nodes):
     return deleted_count, skipped_count
 
 
+# =============================================================================
+# Freeze Transform
+# =============================================================================
+
 def freeze_transformations(nodes):
-    """冻结安全范围内的 Transform。"""
+    """
+    Freeze 安全范围内的 Transform。
+
+    有 Animation、Constraint 或 Rig Deformer 的节点一律跳过。
+    """
     nodes = existing_nodes(nodes)
     frozen_count = 0
     skipped_count = 0
 
     for node in nodes:
+        # 步骤 1：基础保护。
         if not can_modify_transform(node):
             skipped_count += 1
             continue
 
+        # 步骤 2：Animation / Constraint / Deformer 保护。
         if has_incoming_animation(node):
             skipped_count += 1
             continue
@@ -385,6 +455,7 @@ def freeze_transformations(nodes):
             skipped_count += 1
             continue
 
+        # 步骤 3：正式 Freeze，并保留 Normal。
         try:
             cmds.makeIdentity(
                 node,
@@ -407,8 +478,12 @@ def freeze_transformations(nodes):
     return frozen_count, skipped_count
 
 
+# =============================================================================
+# Attribute / Pivot
+# =============================================================================
+
 def unlock_and_show_attributes(nodes):
-    """解锁并显示标准 Transform 属性。"""
+    """解锁并显示标准 Translate / Rotate / Scale / Visibility 通道。"""
     nodes = existing_nodes(nodes)
     attrs = [
         "tx",
@@ -458,7 +533,7 @@ def unlock_and_show_attributes(nodes):
 
 
 def center_pivot(nodes):
-    """把可编辑几何 Transform 的 Pivot 居中。"""
+    """把可编辑、带 Shape 的 Transform Pivot 居中。"""
     nodes = existing_nodes(nodes)
     centered_count = 0
 
@@ -471,10 +546,7 @@ def center_pivot(nodes):
             shapes=True,
             noIntermediate=True,
             fullPath=True
-        )
-
-        if shapes is None:
-            shapes = []
+        ) or []
 
         if not shapes:
             continue
@@ -491,16 +563,17 @@ def center_pivot(nodes):
     return centered_count
 
 
+# =============================================================================
+# Unknown Node
+# =============================================================================
+
 def delete_unknown_nodes(nodes=None):
-    """删除 Unknown 节点。"""
+    """删除非 Reference Unknown 节点。"""
     if nodes is None:
         unknown_nodes = cmds.ls(
             type="unknown",
             long=True
-        )
-
-        if unknown_nodes is None:
-            unknown_nodes = []
+        ) or []
     else:
         unknown_nodes = []
 
@@ -528,6 +601,11 @@ def delete_unknown_nodes(nodes=None):
     return deleted_count
 
 
+# =============================================================================
+# Cleanup Runner
+# =============================================================================
+
+@scene_utils.undo_chunk
 def run_cleanup(
         nodes,
         selected_only=True,
@@ -538,17 +616,25 @@ def run_cleanup(
         center_pivot_enabled=False,
         delete_unknown_enabled=True
 ):
-    """按配置执行一次安全清理并返回结果字典。"""
+    """
+    按配置执行一次安全清理并返回统计字典。
+
+    整个 Cleanup 被包装为一次 Maya Undo，方便用户完整回退一次清理操作。
+    """
     result = {}
 
+    # 步骤 1：空组与 Unknown 可以根据 selected_only 决定局部 / 全场景范围。
     if delete_empty:
         empty_scope = nodes
 
         if not selected_only:
             empty_scope = None
 
-        result["empty_groups"] = delete_empty_groups(empty_scope)
+        result["empty_groups"] = delete_empty_groups(
+            empty_scope
+        )
 
+    # 步骤 2：History / Freeze 始终针对明确传入节点，并返回 Processed / Skipped。
     if delete_history_enabled:
         deleted_count, skipped_count = delete_history(nodes)
         result["history"] = {
@@ -563,6 +649,7 @@ def run_cleanup(
             "skipped": skipped_count,
         }
 
+    # 步骤 3：其它安全清理。
     if unlock_enabled:
         result["attributes"] = unlock_and_show_attributes(nodes)
 
@@ -575,13 +662,24 @@ def run_cleanup(
         if not selected_only:
             unknown_scope = None
 
-        result["unknown"] = delete_unknown_nodes(unknown_scope)
+        result["unknown"] = delete_unknown_nodes(
+            unknown_scope
+        )
 
     return result
 
 
 __all__ = [
+    "get_short_name",
+    "is_default_camera",
+    "is_referenced",
+    "existing_nodes",
     "all_transform_nodes",
+    "sort_child_first",
+    "has_incoming_animation",
+    "has_constraint",
+    "has_rig_history",
+    "can_modify_transform",
     "delete_empty_groups",
     "delete_history",
     "freeze_transformations",
