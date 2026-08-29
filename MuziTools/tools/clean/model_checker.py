@@ -1,473 +1,816 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-模型检查工具
-功能：检查模型中的常见问题，如非流形几何体、薄片面、重名、法线方向等
-分类：clean
+# coding=utf-8
+u"""
+Model Checker
+=============
+
+Maya 2023 / PySide2 模型检查工具。
+
+检查项：
+    - Non-Manifold Vertex / Edge；
+    - Lamina Face；
+    - DAG 重名；
+    - 建模历史（过滤 Skin / BlendShape 等正常 Rig Deformer）；
+    - Mesh Transform 未冻结；
+    - 锁定法线。
+
+检查逻辑和修复逻辑分离。只有相对安全的项目允许自动修复，拓扑问题不会
+直接“猜着修”，避免检查器把生产模型越修越坏。
 """
 
-try:
-    from PySide2.QtCore import *
-    from PySide2.QtGui import *
-    from PySide2.QtWidgets import *
-    from shiboken2 import wrapInstance
-except ImportError:
-    from PySide6.QtCore import *
-    from PySide6.QtGui import *
-    from PySide6.QtWidgets import *
-    from shiboken6 import wrapInstance
+from __future__ import print_function
+
+import re
 
 import maya.cmds as cmds
-import maya.OpenMayaUI as omui
+
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QAbstractItemView
+from PySide2.QtWidgets import QCheckBox
+from PySide2.QtWidgets import QDialog
+from PySide2.QtWidgets import QFrame
+from PySide2.QtWidgets import QGridLayout
+from PySide2.QtWidgets import QHBoxLayout
+from PySide2.QtWidgets import QLabel
+from PySide2.QtWidgets import QPushButton
+from PySide2.QtWidgets import QTableWidget
+from PySide2.QtWidgets import QTableWidgetItem
+from PySide2.QtWidgets import QVBoxLayout
+
+from ....core import qtUtils
 
 
-def get_maya_main_window():
-    """获取 Maya 主窗口，作为工具箱的父窗口"""
-    ptr = omui.MQtUtil.mainWindow()
-    if ptr is not None:
-        return wrapInstance(int(ptr), QWidget)
-    return None
+_window = None
+
+_DEFAULT_CAMERAS = {
+    "persp",
+    "top",
+    "front",
+    "side",
+}
+
+_DEFORMER_TYPES = {
+    "skinCluster",
+    "blendShape",
+    "cluster",
+    "wire",
+    "ffd",
+    "lattice",
+    "nonLinear",
+    "deltaMush",
+    "tension",
+    "wrap",
+    "proximityWrap",
+    "sculpt",
+}
+
+_HISTORY_IGNORE_TYPES = {
+    "mesh",
+    "transform",
+    "groupId",
+    "groupParts",
+    "objectSet",
+    "shadingEngine",
+    "tweak",
+}
 
 
-# =============================================================================
-#  检查功能函数
-# =============================================================================
-def check_nonmanifold_geometry(meshes=None):
-    """
-    检查非流形几何体
-    返回：问题列表 [{"mesh": "名称", "type": "非流形几何体", "details": "..."}]
-    """
-    if meshes is None:
-        meshes = cmds.ls(type="mesh", long=True)
-    else:
-        meshes = [meshes] if isinstance(meshes, str) else meshes
+def _short_name(node):
+    return node.split("|")[-1]
 
-    issues = []
-    for m in meshes:
-        if not cmds.objExists(m):
+
+def _mesh_shapes_from_nodes(nodes=None):
+    """把 Transform / Mesh 输入统一转成非 intermediate Mesh Shape。"""
+    if nodes is None:
+        return cmds.ls(
+            type="mesh",
+            long=True,
+            noIntermediate=True
+        ) or []
+
+    if isinstance(nodes, str):
+        nodes = [nodes]
+
+    result = []
+
+    for node in nodes:
+        if not node or not cmds.objExists(node):
             continue
+
+        node_type = cmds.nodeType(node)
+
+        if node_type == "mesh":
+            if not cmds.getAttr(node + ".intermediateObject"):
+                matches = cmds.ls(node, long=True) or [node]
+                mesh = matches[0]
+                if mesh not in result:
+                    result.append(mesh)
+            continue
+
+        if node_type not in ("transform", "joint"):
+            continue
+
+        shapes = cmds.listRelatives(
+            node,
+            shapes=True,
+            noIntermediate=True,
+            fullPath=True,
+            type="mesh"
+        ) or []
+
+        for shape in shapes:
+            if shape not in result:
+                result.append(shape)
+
+    return result
+
+
+def _mesh_transform(mesh_shape):
+    parents = cmds.listRelatives(
+        mesh_shape,
+        parent=True,
+        fullPath=True
+    ) or []
+
+    if parents:
+        return parents[0]
+
+    return mesh_shape
+
+
+def _mesh_transforms(meshes):
+    result = []
+
+    for mesh in meshes:
+        transform = _mesh_transform(mesh)
+        if transform not in result:
+            result.append(transform)
+
+    return result
+
+
+def _is_referenced(node):
+    try:
+        return cmds.referenceQuery(node, isNodeReferenced=True)
+    except Exception:
+        return False
+
+
+def _history_node_types(mesh):
+    history = cmds.listHistory(
+        mesh,
+        pruneDagObjects=True
+    ) or []
+
+    result = []
+
+    for node in history:
         try:
-            nonmanifold_verts = cmds.polyInfo(m, nonManifoldVertices=True) or []
-            nonmanifold_edges = cmds.polyInfo(m, nonManifoldEdges=True) or []
-            if nonmanifold_verts or nonmanifold_edges:
-                transform = cmds.listRelatives(m, parent=True, fullPath=True)[0]
-                issues.append({
-                    "mesh": transform,
-                    "type": "非流形几何体",
-                    "details": f"顶点:{len(nonmanifold_verts)} 边:{len(nonmanifold_edges)}"
-                })
-        except:
+            node_type = cmds.nodeType(node)
+        except Exception:
+            continue
+
+        if node_type in _HISTORY_IGNORE_TYPES:
+            continue
+
+        result.append((node, node_type))
+
+    return result
+
+
+def _modeling_history(mesh):
+    """返回非 Deformer 的建模历史节点。"""
+    result = []
+
+    for node, node_type in _history_node_types(mesh):
+        if node_type in _DEFORMER_TYPES:
+            continue
+
+        if cmds.objectType(node, isAType="geometryFilter"):
+            continue
+
+        result.append((node, node_type))
+
+    return result
+
+
+def _has_deformer_history(mesh):
+    for node, node_type in _history_node_types(mesh):
+        if node_type in _DEFORMER_TYPES:
+            return True
+
+        try:
+            if cmds.objectType(node, isAType="geometryFilter"):
+                return True
+        except Exception:
             pass
+
+    return False
+
+
+def check_nonmanifold_geometry(meshes=None):
+    meshes = _mesh_shapes_from_nodes(meshes)
+    issues = []
+
+    for mesh in meshes:
+        try:
+            vertices = cmds.polyInfo(
+                mesh,
+                nonManifoldVertices=True
+            ) or []
+            edges = cmds.polyInfo(
+                mesh,
+                nonManifoldEdges=True
+            ) or []
+        except Exception:
+            continue
+
+        if not vertices and not edges:
+            continue
+
+        issues.append({
+            "node": _mesh_transform(mesh),
+            "type": u"非流形几何体",
+            "details": u"顶点 {} / 边 {}".format(
+                len(vertices),
+                len(edges)
+            ),
+            "fixable": False,
+        })
+
     return issues
 
 
 def check_lamina_faces(meshes=None):
-    """
-    检查薄片面（lamina faces）
-    """
-    if meshes is None:
-        meshes = cmds.ls(type="mesh", long=True)
-    else:
-        meshes = [meshes] if isinstance(meshes, str) else meshes
-
+    meshes = _mesh_shapes_from_nodes(meshes)
     issues = []
-    for m in meshes:
-        if not cmds.objExists(m):
-            continue
+
+    for mesh in meshes:
         try:
-            lamina = cmds.polyInfo(m, laminaFaces=True) or []
-            if lamina:
-                transform = cmds.listRelatives(m, parent=True, fullPath=True)[0]
-                issues.append({
-                    "mesh": transform,
-                    "type": "薄片面",
-                    "details": f"数量: {len(lamina)}"
-                })
-        except:
-            pass
+            lamina_faces = cmds.polyInfo(
+                mesh,
+                laminaFaces=True
+            ) or []
+        except Exception:
+            continue
+
+        if not lamina_faces:
+            continue
+
+        issues.append({
+            "node": _mesh_transform(mesh),
+            "type": u"薄片面",
+            "details": u"数量 {}".format(len(lamina_faces)),
+            "fixable": False,
+        })
+
     return issues
 
 
-def check_duplicate_names():
-    """
-    检查重名节点（短名称相同但长路径不同）
-    """
-    all_nodes = cmds.ls(dag=True, long=True)
+def check_duplicate_names(nodes=None):
+    """检查 DAG 短名称冲突。"""
+    if nodes is None:
+        dag_nodes = cmds.ls(dag=True, long=True) or []
+    else:
+        dag_nodes = []
+        for node in nodes:
+            if not cmds.objExists(node):
+                continue
+
+            matches = cmds.ls(node, long=True) or [node]
+            resolved = matches[0]
+
+            if resolved not in dag_nodes:
+                dag_nodes.append(resolved)
+
+            descendants = cmds.listRelatives(
+                resolved,
+                allDescendents=True,
+                fullPath=True
+            ) or []
+
+            for descendant in descendants:
+                if descendant not in dag_nodes:
+                    dag_nodes.append(descendant)
+
     name_map = {}
 
-    for node in all_nodes:
-        short_name = node.split("|")[-1]
-        if short_name in name_map:
-            name_map[short_name].append(node)
-        else:
-            name_map[short_name] = [node]
+    for node in dag_nodes:
+        short_name = _short_name(node)
+
+        if short_name in _DEFAULT_CAMERAS:
+            continue
+
+        if short_name not in name_map:
+            name_map[short_name] = []
+
+        name_map[short_name].append(node)
 
     issues = []
-    for short_name, nodes in name_map.items():
-        if len(nodes) > 1 and short_name not in ["front", "persp", "side", "top"]:
-            issues.append({
-                "mesh": short_name,
-                "type": "重名",
-                "details": f"出现 {len(nodes)} 次"
-            })
+
+    for short_name in sorted(name_map.keys()):
+        matches = name_map[short_name]
+
+        if len(matches) <= 1:
+            continue
+
+        issues.append({
+            "node": matches[0],
+            "type": u"重名",
+            "details": u"{} 出现 {} 次".format(
+                short_name,
+                len(matches)
+            ),
+            "fixable": False,
+        })
+
     return issues
 
 
 def check_construction_history(meshes=None):
-    """
-    检查是否有遗留的构造历史
-    """
-    if meshes is None:
-        meshes = cmds.ls(type="mesh", long=True)
-    else:
-        meshes = [meshes] if isinstance(meshes, str) else meshes
-
+    meshes = _mesh_shapes_from_nodes(meshes)
     issues = []
-    for m in meshes:
-        if not cmds.objExists(m):
+
+    for mesh in meshes:
+        history = _modeling_history(mesh)
+        if not history:
             continue
-        try:
-            history = cmds.listHistory(m) or []
-            # 过滤掉 shape 和 transform 本身
-            real_history = [h for h in history if cmds.nodeType(h) not in ["mesh", "transform"]]
-            if real_history:
-                transform = cmds.listRelatives(m, parent=True, fullPath=True)[0]
-                issues.append({
-                    "mesh": transform,
-                    "type": "遗留构造历史",
-                    "details": f"{len(real_history)} 个历史节点"
-                })
-        except:
-            pass
+
+        history_types = []
+        for node, node_type in history:
+            if node_type not in history_types:
+                history_types.append(node_type)
+
+        issues.append({
+            "node": _mesh_transform(mesh),
+            "type": u"遗留建模历史",
+            "details": u"{} 个节点：{}".format(
+                len(history),
+                ", ".join(history_types[:6])
+            ),
+            "fixable": True,
+        })
+
     return issues
 
 
-def check_transformations(nodes=None):
-    """
-    检查变换是否归零（T/R 不为零，S 不为1）
-    """
-    if nodes is None:
-        nodes = cmds.ls(type="transform", long=True)
-
+def check_transformations(meshes=None):
+    meshes = _mesh_shapes_from_nodes(meshes)
+    transforms = _mesh_transforms(meshes)
     issues = []
-    for node in nodes:
-        short_name = node.split("|")[-1]
-        if short_name in ["front", "persp", "side", "top"]:
-            continue
-        try:
-            t = cmds.getAttr(f"{node}.translate")[0]
-            r = cmds.getAttr(f"{node}.rotate")[0]
-            s = cmds.getAttr(f"{node}.scale")[0]
 
-            if (any(abs(v) > 0.001 for v in t) or
-                any(abs(v) > 0.001 for v in r) or
-                any(abs(v - 1.0) > 0.001 for v in s)):
-                issues.append({
-                    "mesh": node,
-                    "type": "变换未归零",
-                    "details": f"T:{[round(x,3) for x in t]} R:{[round(x,3) for x in r]} S:{[round(x,3) for x in s]}"
-                })
-        except:
-            pass
+    for node in transforms:
+        if _short_name(node) in _DEFAULT_CAMERAS:
+            continue
+
+        try:
+            translate = cmds.getAttr(node + ".translate")[0]
+            rotate = cmds.getAttr(node + ".rotate")[0]
+            scale = cmds.getAttr(node + ".scale")[0]
+        except Exception:
+            continue
+
+        translation_bad = False
+        rotation_bad = False
+        scale_bad = False
+
+        for value in translate:
+            if abs(value) > 0.001:
+                translation_bad = True
+                break
+
+        for value in rotate:
+            if abs(value) > 0.001:
+                rotation_bad = True
+                break
+
+        for value in scale:
+            if abs(value - 1.0) > 0.001:
+                scale_bad = True
+                break
+
+        if not translation_bad and not rotation_bad and not scale_bad:
+            continue
+
+        fixable = not _has_deformer_history(node)
+
+        issues.append({
+            "node": node,
+            "type": u"Mesh Transform 未冻结",
+            "details": u"T {} | R {} | S {}{}".format(
+                [round(value, 3) for value in translate],
+                [round(value, 3) for value in rotate],
+                [round(value, 3) for value in scale],
+                u" | 有 Deformer，不自动 Freeze" if not fixable else ""
+            ),
+            "fixable": fixable,
+        })
+
     return issues
 
 
-def check_locked_normals(meshes=None):
-    """
-    检查法线是否被锁定
-    """
-    if meshes is None:
-        meshes = cmds.ls(type="mesh", long=True)
-    else:
-        meshes = [meshes] if isinstance(meshes, str) else meshes
-
+def check_locked_normals(meshes=None, sample_limit=500):
+    meshes = _mesh_shapes_from_nodes(meshes)
     issues = []
-    for m in meshes:
-        if not cmds.objExists(m):
+
+    for mesh in meshes:
+        vertices = cmds.ls(
+            mesh + ".vtx[*]",
+            flatten=True
+        ) or []
+
+        if not vertices:
             continue
-        try:
-            # 检查是否有锁定的法线
-            vertices = cmds.ls(f"{m}.vtx[*]", flatten=True)
-            locked_count = 0
-            for vtx in vertices[:100]:  # 采样检查，避免太慢
-                locked = cmds.polyNormalPerVertex(vtx, query=True, freezeNormal=True)
-                if locked and locked[0]:
-                    locked_count += 1
-            if locked_count > 0:
-                transform = cmds.listRelatives(m, parent=True, fullPath=True)[0]
-                issues.append({
-                    "mesh": transform,
-                    "type": "法线被锁定",
-                    "details": f"约 {locked_count} 个顶点法线锁定"
-                })
-        except:
-            pass
+
+        sample_count = min(len(vertices), sample_limit)
+        locked_vertex_count = 0
+
+        index = 0
+        while index < sample_count:
+            vertex = vertices[index]
+
+            try:
+                locked_values = cmds.polyNormalPerVertex(
+                    vertex,
+                    query=True,
+                    freezeNormal=True
+                ) or []
+            except Exception:
+                locked_values = []
+
+            is_locked = False
+            for value in locked_values:
+                if value:
+                    is_locked = True
+                    break
+
+            if is_locked:
+                locked_vertex_count += 1
+
+            index += 1
+
+        if locked_vertex_count <= 0:
+            continue
+
+        details = u"采样 {} 个点，发现 {} 个锁定法线点".format(
+            sample_count,
+            locked_vertex_count
+        )
+
+        if len(vertices) > sample_count:
+            details += u"（总点数 {}）".format(len(vertices))
+
+        issues.append({
+            "node": _mesh_transform(mesh),
+            "type": u"法线被锁定",
+            "details": details,
+            "fixable": True,
+        })
+
     return issues
 
 
-# =============================================================================
-#  UI 类
-# =============================================================================
-class Model_Checker_UI(QDialog):
-    """
-    模型检查工具界面
-    """
+def fix_issue(issue):
+    """修复一个允许自动修复的问题。"""
+    node = issue.get("node")
+    issue_type = issue.get("type")
+
+    if not issue.get("fixable"):
+        return False
+
+    if not node or not cmds.objExists(node):
+        return False
+
+    if _is_referenced(node):
+        return False
+
+    if issue_type == u"遗留建模历史":
+        # 只删除 deformers 前后的建模历史，保留 Skin / BlendShape 等 Deformer。
+        cmds.bakePartialHistory(
+            node,
+            prePostDeformers=True
+        )
+        return True
+
+    if issue_type == u"Mesh Transform 未冻结":
+        if _has_deformer_history(node):
+            return False
+
+        cmds.makeIdentity(
+            node,
+            apply=True,
+            translate=True,
+            rotate=True,
+            scale=True,
+            normal=False,
+            preserveNormals=True
+        )
+        return True
+
+    if issue_type == u"法线被锁定":
+        cmds.polyNormalPerVertex(
+            node,
+            unFreezeNormal=True
+        )
+        return True
+
+    return False
+
+
+class ModelCheckerUI(QDialog):
+    """模型检查器窗口。"""
 
     def __init__(self, parent=None):
         if parent is None:
-            parent = get_maya_main_window()
-        super(Model_Checker_UI, self).__init__(parent)
+            parent = qtUtils.get_maya_window()
 
-        self.setWindowTitle("模型检查工具")
-        self.setMinimumWidth(460)
-        self.setMinimumHeight(520)
+        super(ModelCheckerUI, self).__init__(parent)
+        self.setWindowTitle(u"模型检查工具")
+        self.resize(680, 560)
 
         self.issues = []
 
-        self.create_widgets()
-        self.create_layouts()
-        self.create_connections()
+        self.nonmanifold_check = QCheckBox(u"非流形")
+        self.nonmanifold_check.setChecked(True)
 
-    def create_widgets(self):
-        """创建 UI 部件"""
-        self.title_label = QLabel("模型检查工具")
-        self.title_label.setStyleSheet("font-weight: bold; font-size: 14px; color: rgb(169, 255, 175);")
-        self.title_label.setAlignment(Qt.AlignCenter)
+        self.lamina_check = QCheckBox(u"Lamina Face")
+        self.lamina_check.setChecked(True)
 
-        # 检查选项
-        self.chk_nonmanifold = QCheckBox("非流形几何体")
-        self.chk_nonmanifold.setChecked(True)
+        self.duplicate_check = QCheckBox(u"DAG 重名")
+        self.duplicate_check.setChecked(True)
 
-        self.chk_lamina = QCheckBox("薄片面 (Lamina)")
-        self.chk_lamina.setChecked(True)
+        self.history_check = QCheckBox(u"遗留建模历史")
+        self.history_check.setChecked(True)
 
-        self.chk_duplicate = QCheckBox("重名节点")
-        self.chk_duplicate.setChecked(True)
+        self.transform_check = QCheckBox(u"Mesh Transform 未冻结")
+        self.transform_check.setChecked(True)
 
-        self.chk_history = QCheckBox("遗留构造历史")
-        self.chk_history.setChecked(True)
+        self.normals_check = QCheckBox(u"锁定法线")
+        self.normals_check.setChecked(True)
 
-        self.chk_transform = QCheckBox("变换未归零")
-        self.chk_transform.setChecked(True)
+        self.selected_only_check = QCheckBox(u"仅检查当前选择")
+        self.selected_only_check.setChecked(False)
 
-        self.chk_normals = QCheckBox("法线被锁定")
-        self.chk_normals.setChecked(True)
+        self.check_btn = QPushButton(u"开始检查")
+        self.select_issues_btn = QPushButton(u"选择问题对象")
+        self.fix_selected_btn = QPushButton(u"修复表格选中项")
+        self.select_issues_btn.setEnabled(False)
+        self.fix_selected_btn.setEnabled(False)
 
-        # 仅检查选中
-        self.chk_selected_only = QCheckBox("仅检查选中对象")
-        self.chk_selected_only.setChecked(False)
-
-        # 按钮
-        self.btn_check = QPushButton("开始检查")
-        self.btn_check.setMinimumHeight(36)
-        self.btn_check.setStyleSheet("""
-            QPushButton {
-                background-color: rgb(60, 100, 140);
-                color: white;
-                font-weight: bold;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: rgb(80, 140, 180);
-            }
-        """)
-
-        self.btn_select_issues = QPushButton("选中问题对象")
-        self.btn_select_issues.setEnabled(False)
-
-        self.btn_fix_selected = QPushButton("修复选中项")
-        self.btn_fix_selected.setEnabled(False)
-
-        # 结果表格
         self.result_table = QTableWidget()
-        self.result_table.setColumnCount(3)
-        self.result_table.setHorizontalHeaderLabels(["对象", "问题类型", "详情"])
-        self.result_table.horizontalHeader().setStretchLastSection(True)
-        self.result_table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.result_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.result_table.setColumnCount(4)
+        self.result_table.setHorizontalHeaderLabels([
+            u"对象",
+            u"问题类型",
+            u"详情",
+            u"自动修复",
+        ])
+        self.result_table.setSelectionBehavior(
+            QAbstractItemView.SelectRows
+        )
+        self.result_table.setEditTriggers(
+            QAbstractItemView.NoEditTriggers
+        )
         self.result_table.setAlternatingRowColors(True)
+        self.result_table.horizontalHeader().setStretchLastSection(True)
 
-        # 状态标签
-        self.status_label = QLabel("就绪")
+        self.status_label = QLabel(u"就绪")
         self.status_label.setAlignment(Qt.AlignCenter)
 
-    def create_layouts(self):
-        """组装布局"""
+        self._create_layout()
+        self._create_connections()
+
+    def _create_layout(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setSpacing(8)
-        main_layout.setContentsMargins(12, 12, 12, 12)
 
-        main_layout.addWidget(self.title_label)
+        title_label = QLabel(u"Model Checker")
+        title_label.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(title_label)
 
-        line = QFrame()
-        line.setFrameShape(QFrame.HLine)
-        line.setStyleSheet("color: rgb(100, 100, 100);")
-        main_layout.addWidget(line)
+        separator = QFrame()
+        separator.setFrameShape(QFrame.HLine)
+        main_layout.addWidget(separator)
 
-        # 选项网格
         options_layout = QGridLayout()
-        options_layout.setSpacing(6)
-        options_layout.addWidget(self.chk_nonmanifold, 0, 0)
-        options_layout.addWidget(self.chk_lamina, 0, 1)
-        options_layout.addWidget(self.chk_duplicate, 1, 0)
-        options_layout.addWidget(self.chk_history, 1, 1)
-        options_layout.addWidget(self.chk_transform, 2, 0)
-        options_layout.addWidget(self.chk_normals, 2, 1)
+        options_layout.addWidget(self.nonmanifold_check, 0, 0)
+        options_layout.addWidget(self.lamina_check, 0, 1)
+        options_layout.addWidget(self.duplicate_check, 1, 0)
+        options_layout.addWidget(self.history_check, 1, 1)
+        options_layout.addWidget(self.transform_check, 2, 0)
+        options_layout.addWidget(self.normals_check, 2, 1)
         main_layout.addLayout(options_layout)
+        main_layout.addWidget(self.selected_only_check)
 
-        main_layout.addWidget(self.chk_selected_only)
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.check_btn)
+        button_layout.addWidget(self.select_issues_btn)
+        button_layout.addWidget(self.fix_selected_btn)
+        main_layout.addLayout(button_layout)
 
-        # 按钮行
-        btn_layout = QHBoxLayout()
-        btn_layout.addWidget(self.btn_check)
-        btn_layout.addWidget(self.btn_select_issues)
-        btn_layout.addWidget(self.btn_fix_selected)
-        main_layout.addLayout(btn_layout)
-
-        main_layout.addWidget(self.result_table)
+        main_layout.addWidget(self.result_table, 1)
         main_layout.addWidget(self.status_label)
 
-    def create_connections(self):
-        """连接信号"""
-        self.btn_check.clicked.connect(self.on_check)
-        self.btn_select_issues.clicked.connect(self.on_select_issues)
-        self.btn_fix_selected.clicked.connect(self.on_fix_selected)
-        self.result_table.itemSelectionChanged.connect(self.on_selection_changed)
+    def _create_connections(self):
+        self.check_btn.clicked.connect(self.run_check)
+        self.select_issues_btn.clicked.connect(self.select_issue_nodes)
+        self.fix_selected_btn.clicked.connect(self.fix_selected_issues)
+        self.result_table.itemSelectionChanged.connect(
+            self.update_fix_button
+        )
+        self.result_table.cellDoubleClicked.connect(
+            self.select_table_row_node
+        )
 
-    def on_check(self):
-        """执行检查"""
+    def _scope(self):
+        if not self.selected_only_check.isChecked():
+            return None, None
+
+        selections = cmds.ls(selection=True, long=True) or []
+        if not selections:
+            return [], []
+
+        meshes = _mesh_shapes_from_nodes(selections)
+        return selections, meshes
+
+    def run_check(self):
         self.result_table.setRowCount(0)
         self.issues = []
 
-        # 获取目标
-        if self.chk_selected_only.isChecked():
-            selected = cmds.ls(selection=True, long=True)
-            if not selected:
-                self.status_label.setText("<span style='color: rgb(255, 100, 100);'>请先选择对象</span>")
-                return
+        scope_nodes, scope_meshes = self._scope()
 
-            meshes = []
-            transforms = selected
-            for s in selected:
-                shapes = cmds.listRelatives(s, shapes=True, fullPath=True) or []
-                meshes.extend([sh for sh in shapes if cmds.nodeType(sh) == "mesh"])
-        else:
-            meshes = None
-            transforms = None
-
-        all_issues = []
-
-        if self.chk_nonmanifold.isChecked():
-            all_issues.extend(check_nonmanifold_geometry(meshes))
-
-        if self.chk_lamina.isChecked():
-            all_issues.extend(check_lamina_faces(meshes))
-
-        if self.chk_duplicate.isChecked():
-            all_issues.extend(check_duplicate_names())
-
-        if self.chk_history.isChecked():
-            all_issues.extend(check_construction_history(meshes))
-
-        if self.chk_transform.isChecked():
-            all_issues.extend(check_transformations(transforms))
-
-        if self.chk_normals.isChecked():
-            all_issues.extend(check_locked_normals(meshes))
-
-        # 填充表格
-        self.result_table.setRowCount(len(all_issues))
-        for i, issue in enumerate(all_issues):
-            self.result_table.setItem(i, 0, QTableWidgetItem(issue["mesh"]))
-            self.result_table.setItem(i, 1, QTableWidgetItem(issue["type"]))
-            self.result_table.setItem(i, 2, QTableWidgetItem(issue["details"]))
-
-        self.issues = all_issues
-
-        if all_issues:
-            self.status_label.setText(
-                f"<span style='color: rgb(255, 150, 100);'>发现 {len(all_issues)} 个问题</span>"
-            )
-            self.btn_select_issues.setEnabled(True)
-        else:
-            self.status_label.setText(
-                "<span style='color: rgb(169, 255, 175);'>检查通过，未发现明显问题</span>"
-            )
-            self.btn_select_issues.setEnabled(False)
-            self.btn_fix_selected.setEnabled(False)
-
-        self.result_table.resizeColumnsToContents()
-
-    def on_selection_changed(self):
-        """表格选择变化"""
-        has_selection = len(self.result_table.selectedItems()) > 0
-        self.btn_fix_selected.setEnabled(has_selection)
-
-    def on_select_issues(self):
-        """选中所有问题对象"""
-        if not self.issues:
+        if self.selected_only_check.isChecked() and not scope_nodes:
+            self.status_label.setText(u"请先选择需要检查的模型。")
             return
 
-        objects = list(set([issue["mesh"] for issue in self.issues]))
-        try:
-            cmds.select(objects, replace=True)
-            self.status_label.setText(f"已选中 {len(objects)} 个问题对象")
-        except Exception as e:
-            cmds.warning(f"选择失败: {str(e)}")
+        issues = []
 
-    def on_fix_selected(self):
-        """修复选中的问题"""
-        selected_rows = set()
+        if self.nonmanifold_check.isChecked():
+            issues.extend(check_nonmanifold_geometry(scope_meshes))
+
+        if self.lamina_check.isChecked():
+            issues.extend(check_lamina_faces(scope_meshes))
+
+        if self.duplicate_check.isChecked():
+            issues.extend(check_duplicate_names(scope_nodes))
+
+        if self.history_check.isChecked():
+            issues.extend(check_construction_history(scope_meshes))
+
+        if self.transform_check.isChecked():
+            issues.extend(check_transformations(scope_meshes))
+
+        if self.normals_check.isChecked():
+            issues.extend(check_locked_normals(scope_meshes))
+
+        self.issues = issues
+        self.result_table.setRowCount(len(issues))
+
+        row = 0
+        for issue in issues:
+            self.result_table.setItem(
+                row,
+                0,
+                QTableWidgetItem(issue["node"])
+            )
+            self.result_table.setItem(
+                row,
+                1,
+                QTableWidgetItem(issue["type"])
+            )
+            self.result_table.setItem(
+                row,
+                2,
+                QTableWidgetItem(issue["details"])
+            )
+            self.result_table.setItem(
+                row,
+                3,
+                QTableWidgetItem(
+                    u"是" if issue.get("fixable") else u"否"
+                )
+            )
+            row += 1
+
+        self.result_table.resizeColumnsToContents()
+        self.select_issues_btn.setEnabled(bool(issues))
+        self.update_fix_button()
+
+        if issues:
+            self.status_label.setText(
+                u"发现 {} 个问题。拓扑问题只报告，不自动猜测修复。".format(
+                    len(issues)
+                )
+            )
+        else:
+            self.status_label.setText(u"检查通过，未发现所选检查项的问题。")
+
+    def update_fix_button(self):
+        selected_rows = self._selected_rows()
+        has_fixable = False
+
+        for row in selected_rows:
+            if row < len(self.issues):
+                if self.issues[row].get("fixable"):
+                    has_fixable = True
+                    break
+
+        self.fix_selected_btn.setEnabled(has_fixable)
+
+    def _selected_rows(self):
+        rows = []
+
         for item in self.result_table.selectedItems():
-            selected_rows.add(item.row())
+            row = item.row()
+            if row not in rows:
+                rows.append(row)
+
+        rows.sort()
+        return rows
+
+    def select_table_row_node(self, row, column):
+        if row >= len(self.issues):
+            return
+
+        node = self.issues[row].get("node")
+        if node and cmds.objExists(node):
+            cmds.select(node, replace=True)
+
+    def select_issue_nodes(self):
+        nodes = []
+
+        for issue in self.issues:
+            node = issue.get("node")
+            if node and cmds.objExists(node) and node not in nodes:
+                nodes.append(node)
+
+        if nodes:
+            cmds.select(nodes, replace=True)
+            self.status_label.setText(
+                u"已选择 {} 个问题对象。".format(len(nodes))
+            )
+
+    def fix_selected_issues(self):
+        selected_rows = self._selected_rows()
+        if not selected_rows:
+            return
 
         fixed_count = 0
-        for row in selected_rows:
-            if row >= len(self.issues):
-                continue
+        skipped_count = 0
 
-            issue = self.issues[row]
-            mesh = issue["mesh"]
-            issue_type = issue["type"]
+        cmds.undoInfo(openChunk=True, chunkName="MuziModelCheckerFix")
+        try:
+            for row in selected_rows:
+                if row >= len(self.issues):
+                    continue
 
-            try:
-                if issue_type == "遗留构造历史":
-                    cmds.delete(mesh, constructionHistory=True)
-                    fixed_count += 1
-                elif issue_type == "变换未归零":
-                    cmds.makeIdentity(mesh, apply=True, t=1, r=1, s=1, n=0, pn=1)
-                    fixed_count += 1
-                elif issue_type == "法线被锁定":
-                    cmds.polyNormalPerVertex(mesh, unFreezeNormal=True)
-                    fixed_count += 1
-                elif issue_type == "薄片面":
-                    cmds.delete(mesh, constructionHistory=True)
-                    cmds.polyClean(mesh, lamina=True)
-                    fixed_count += 1
-            except Exception as e:
-                cmds.warning(f"修复 {mesh} 失败: {str(e)}")
+                issue = self.issues[row]
 
-        if fixed_count > 0:
-            self.status_label.setText(
-                f"<span style='color: rgb(169, 255, 175);'>已修复 {fixed_count} 项，请重新检查</span>"
+                try:
+                    if fix_issue(issue):
+                        fixed_count += 1
+                    else:
+                        skipped_count += 1
+                except Exception as error:
+                    skipped_count += 1
+                    cmds.warning(
+                        u"修复 {} 失败：{}".format(
+                            issue.get("node"),
+                            error
+                        )
+                    )
+        finally:
+            cmds.undoInfo(closeChunk=True)
+
+        self.status_label.setText(
+            u"自动修复 {} 项，跳过 {} 项。正在重新检查…".format(
+                fixed_count,
+                skipped_count
             )
-            self.on_check()
-        else:
-            self.status_label.setText("选中项无法自动修复或无需修复")
+        )
+        self.run_check()
+
+
+# 旧类名兼容。
+Model_Checker_UI = ModelCheckerUI
 
 
 def main():
-    """显示模型检查工具窗口"""
-    global model_checker_window
+    global _window
 
     try:
-        model_checker_window.close()
-        model_checker_window.deleteLater()
-    except:
+        if _window is not None:
+            _window.close()
+            _window.deleteLater()
+    except Exception:
         pass
 
-    model_checker_window = Model_Checker_UI()
-    model_checker_window.show()
-    model_checker_window.raise_()
-    model_checker_window.activateWindow()
-    return model_checker_window
+    _window = ModelCheckerUI()
+    _window.setAttribute(Qt.WA_DeleteOnClose, False)
+    _window.show()
+    _window.raise_()
+    _window.activateWindow()
+
+    return _window
+
+
+if __name__ == "__main__":
+    main()
