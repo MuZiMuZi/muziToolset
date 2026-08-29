@@ -3,12 +3,15 @@ u"""
 Pipeline Refactor Smoke Test
 ============================
 
-验证从旧 pipelineUtils 拆出的正式 Core 模块。
+验证从旧 pipelineUtils / legacy Core 拆出的正式 Core 模块。
 
 测试范围：
+    animation_io_utils
     animation_utils
+    connection_utils
     constraint_utils
     curve_utils
+    matrix_utils
     scene_utils
     surface_utils
     transform_utils
@@ -18,14 +21,19 @@ Pipeline Refactor Smoke Test
 
 from __future__ import print_function
 
+import os
+import tempfile
 import traceback
 import uuid
 
 import maya.cmds as cmds
 
+from ..core import animation_io_utils
 from ..core import animation_utils
+from ..core import connection_utils
 from ..core import constraint_utils
 from ..core import curve_utils
+from ..core import matrix_utils
 from ..core import scene_utils
 from ..core import surface_utils
 from ..core import transform_utils
@@ -343,6 +351,154 @@ def test_animation_utils(token):
     return u"AnimCurve Clear + Transform Reset 成功"
 
 
+def test_connection_utils(token):
+    """测试 Plug 查询、创建和断开连接。"""
+    driver = cmds.createNode(
+        "transform",
+        name=create_name(token, "connection_driver")
+    )
+    driven = cmds.createNode(
+        "transform",
+        name=create_name(token, "connection_driven")
+    )
+
+    source_plug = driver + ".translateX"
+    destination_plug = driven + ".translateY"
+
+    created = connection_utils.connect_plugs(
+        source_plug,
+        destination_plug
+    )
+
+    if not created:
+        raise RuntimeError(u"Connection 创建失败。")
+
+    input_connections = connection_utils.get_input_connections(
+        destination_plug
+    )
+
+    if source_plug not in input_connections:
+        raise RuntimeError(
+            u"Input Connection 查询失败：{}".format(
+                input_connections
+            )
+        )
+
+    output_connections = connection_utils.get_output_connections(
+        source_plug
+    )
+
+    if destination_plug not in output_connections:
+        raise RuntimeError(
+            u"Output Connection 查询失败：{}".format(
+                output_connections
+            )
+        )
+
+    cmds.setAttr(
+        source_plug,
+        7.5
+    )
+
+    driven_value = cmds.getAttr(
+        destination_plug
+    )
+
+    if abs(driven_value - 7.5) > 0.0001:
+        raise RuntimeError(
+            u"Connection DG 计算错误：{}".format(
+                driven_value
+            )
+        )
+
+    disconnected = connection_utils.disconnect_plugs(
+        source_plug,
+        destination_plug
+    )
+
+    if not disconnected:
+        raise RuntimeError(u"Connection 断开失败。")
+
+    return u"Connect + Query + DG + Disconnect 成功"
+
+
+def test_matrix_utils(token):
+    """测试 offsetParentMatrix Parent Matrix Constraint。"""
+    driver = cmds.createNode(
+        "transform",
+        name=create_name(token, "matrix_driver")
+    )
+    driven = cmds.createNode(
+        "transform",
+        name=create_name(token, "matrix_driven")
+    )
+
+    cmds.xform(
+        driver,
+        worldSpace=True,
+        translation=[1.0, 0.0, 0.0]
+    )
+    cmds.xform(
+        driven,
+        worldSpace=True,
+        translation=[4.0, 2.0, 0.0]
+    )
+
+    matrix_node = matrix_utils.create_parent_matrix_constraint(
+        driver=driver,
+        driven=driven,
+        maintain_offset=True,
+        name=create_name(token, "parent_mm")
+    )
+
+    if not cmds.objExists(matrix_node):
+        raise RuntimeError(u"multMatrix 创建失败。")
+
+    before_position = cmds.xform(
+        driven,
+        query=True,
+        worldSpace=True,
+        translation=True
+    )
+
+    if abs(before_position[0] - 4.0) > 0.0001:
+        raise RuntimeError(
+            u"Maintain Offset 创建后位置改变：{}".format(
+                before_position
+            )
+        )
+
+    cmds.xform(
+        driver,
+        worldSpace=True,
+        translation=[3.0, 0.0, 0.0]
+    )
+
+    after_position = cmds.xform(
+        driven,
+        query=True,
+        worldSpace=True,
+        translation=True
+    )
+
+    if abs(after_position[0] - 6.0) > 0.0001:
+        raise RuntimeError(
+            u"Matrix Constraint 跟随结果错误：{}".format(
+                after_position
+            )
+        )
+
+    removed = matrix_utils.remove_parent_matrix_constraint(
+        driven,
+        delete_node=True
+    )
+
+    if not removed:
+        raise RuntimeError(u"Matrix Constraint 删除失败。")
+
+    return u"Maintain Offset + OPM Follow + Remove 成功"
+
+
 def test_constraint_utils(token):
     """测试创建、查询和删除 Constraint。"""
     driver = cmds.createNode(
@@ -470,6 +626,93 @@ def test_surface_utils(token):
     return u"Curve Loft Surface + Follicle 成功"
 
 
+def test_animation_io_utils(token):
+    """测试动画 JSON 导出、清除和恢复。"""
+    node = cmds.createNode(
+        "transform",
+        name=create_name(token, "animation_io")
+    )
+
+    cmds.setKeyframe(
+        node,
+        attribute="translateX",
+        time=1,
+        value=1.25
+    )
+    cmds.setKeyframe(
+        node,
+        attribute="translateX",
+        time=8,
+        value=4.5
+    )
+
+    file_name = create_name(
+        token,
+        "animation"
+    ) + ".json"
+
+    file_path = os.path.join(
+        tempfile.gettempdir(),
+        file_name
+    )
+
+    try:
+        animation_io_utils.export_animation(
+            nodes=[node],
+            file_path=file_path
+        )
+
+        if not os.path.isfile(file_path):
+            raise RuntimeError(u"Animation JSON 没有生成。")
+
+        animation_utils.clear_animation_keys(
+            nodes=[node]
+        )
+
+        cleared_count = cmds.keyframe(
+            node + ".translateX",
+            query=True,
+            keyframeCount=True
+        )
+
+        if cleared_count:
+            raise RuntimeError(u"导入前关键帧没有清理干净。")
+
+        import_result = animation_io_utils.import_animation(
+            file_path=file_path,
+            clear_existing=False,
+            strict=True
+        )
+
+        if import_result["created_keys"] != 2:
+            raise RuntimeError(
+                u"恢复关键帧数量错误：{}".format(
+                    import_result["created_keys"]
+                )
+            )
+
+        restored_count = cmds.keyframe(
+            node + ".translateX",
+            query=True,
+            keyframeCount=True
+        )
+
+        if restored_count != 2:
+            raise RuntimeError(
+                u"Maya 中恢复的 Key 数量错误：{}".format(
+                    restored_count
+                )
+            )
+    finally:
+        if os.path.isfile(file_path):
+            try:
+                os.remove(file_path)
+            except OSError:
+                pass
+
+    return u"JSON Export + Clear + Import 成功"
+
+
 # =============================================================================
 # Runner
 # =============================================================================
@@ -514,6 +757,20 @@ def run():
         run_case(
             results,
             token,
+            "connection_utils",
+            "Connections",
+            test_connection_utils
+        )
+        run_case(
+            results,
+            token,
+            "matrix_utils",
+            "Matrix Constraint",
+            test_matrix_utils
+        )
+        run_case(
+            results,
+            token,
             "constraint_utils",
             "Constraint",
             test_constraint_utils
@@ -531,6 +788,13 @@ def run():
             "surface_utils",
             "Surface / Follicle",
             test_surface_utils
+        )
+        run_case(
+            results,
+            token,
+            "animation_io_utils",
+            "Animation JSON",
+            test_animation_io_utils
         )
     finally:
         delete_existing_test_nodes(token)
