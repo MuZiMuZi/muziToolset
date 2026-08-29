@@ -10,7 +10,7 @@ Muzi Rigging Core
     - 场景操作优先 maya.cmds，必要时使用 maya.api.OpenMaya；
     - 不新增 PyMel 依赖；
     - 不在 Core 中创建 PySide 工具窗口；
-    - 历史实现位于 legacy_reference/core，不从正式包直接调用。
+    - legacy_reference 只保存历史资料，正式 Core 不直接调用。
 
 当前主要模块：
 
@@ -47,7 +47,7 @@ Geometry / Deformer：
     scene_clean_utils
     model_check_utils
 
-旧 pipelineUtils 的通用职责会逐步拆入以上模块；
+旧 pipelineUtils 的通用职责已经完成拆分并删除旧实现；
 Face、Controller、Hair 等完整 Rig Workflow 不允许重新塞回 Core。
 
 为了避免 import muziToolset.core 时产生额外 Maya 副作用，
