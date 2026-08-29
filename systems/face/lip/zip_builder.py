@@ -1,0 +1,956 @@
+# coding=utf-8
+u"""
+Face Zip Lip Builder
+====================
+
+把旧 pipelineUtils.create_zip_lip 重构为 Matrix 驱动版本。
+
+设计目标：
+    1. 上下嘴唇 Joint 数量一致，并按相同顺序成对；
+    2. 左 / 右嘴角控制器分别提供 zip 0~1；
+    3. Jaw 控制器提供 zipHeight 0~1；
+    4. 每对上下嘴唇使用动态 Rest World Matrix 计算闭合中间矩阵；
+    5. 每个 Joint 上方插入独立 Zip Offset Group；
+    6. Zip Offset 使用 blendMatrix 混合 Rest Matrix 和 Mid Matrix；
+    7. 不直接修改 Joint translateY，不把表演微调硬编码进 Zip 系统。
+
+相比旧版：
+    - 不再为每个 Joint 创建 ParentConstraint 来做闭合混合；
+    - 不再依赖 Constraint Weight Alias 名称；
+    - 上游 Parent 发生移动时，Rest Matrix 会继续跟随；
+    - Zip 闭合层与 Joint 自身局部动画层分离。
+"""
+
+from __future__ import print_function
+
+import maya.cmds as cmds
+
+from ....core import nameUtils
+
+
+# =============================================================================
+# Validate / Attribute
+# =============================================================================
+
+def validate_transform(node, label):
+    """检查 Transform / Joint。"""
+    if not node:
+        raise RuntimeError(
+            u"{}不能为空。".format(label)
+        )
+
+    if not cmds.objExists(node):
+        raise RuntimeError(
+            u"{}不存在：{}".format(
+                label,
+                node
+            )
+        )
+
+    node_type = cmds.nodeType(node)
+
+    if node_type not in ["transform", "joint"]:
+        raise RuntimeError(
+            u"{}必须是 Transform 或 Joint：{} | type={}".format(
+                label,
+                node,
+                node_type
+            )
+        )
+
+    return True
+
+
+def validate_joint(joint, label):
+    """检查 Joint。"""
+    validate_transform(
+        joint,
+        label
+    )
+
+    if cmds.nodeType(joint) != "joint":
+        raise RuntimeError(
+            u"{}必须是 Joint：{}".format(
+                label,
+                joint
+            )
+        )
+
+    return True
+
+
+def ensure_float_attribute(
+        node,
+        attribute,
+        minimum,
+        maximum,
+        default_value
+):
+    """创建或复用一个 Keyable Float Attribute。"""
+    validate_transform(
+        node,
+        u"Attribute Node"
+    )
+
+    if not cmds.attributeQuery(
+            attribute,
+            node=node,
+            exists=True
+    ):
+        cmds.addAttr(
+            node,
+            longName=attribute,
+            attributeType="double",
+            minValue=minimum,
+            maxValue=maximum,
+            defaultValue=default_value,
+            keyable=True
+        )
+    else:
+        plug = "{}.{}".format(
+            node,
+            attribute
+        )
+        cmds.setAttr(
+            plug,
+            keyable=True
+        )
+
+    return "{}.{}".format(
+        node,
+        attribute
+    )
+
+
+# =============================================================================
+# Naming
+# =============================================================================
+
+def create_name(
+        node_type,
+        function,
+        index=1
+):
+    """创建 Zip Lip 系统标准名称。"""
+    return nameUtils.Name.create_name(
+        node_type=node_type,
+        side="md",
+        part="lip",
+        function=function,
+        index=index
+    )
+
+
+# =============================================================================
+# Matrix Helpers
+# =============================================================================
+
+def get_parent(node):
+    """返回直接 Parent，没有则返回 None。"""
+    parents = cmds.listRelatives(
+        node,
+        parent=True,
+        fullPath=True
+    )
+
+    if parents is None:
+        parents = []
+
+    if not parents:
+        return None
+
+    return parents[0]
+
+
+def insert_zip_offset_group(
+        joint,
+        function,
+        index
+):
+    """
+    在 Joint 上方插入 Zip Offset Group。
+
+    Group 会匹配 Joint 当前世界矩阵，Joint 重新 Parent 后保留世界矩阵，
+    因此 Joint 的现有姿态不会因为插入 Zip 层而跳动。
+    """
+    parent = get_parent(joint)
+    world_matrix = cmds.xform(
+        joint,
+        query=True,
+        worldSpace=True,
+        matrix=True
+    )
+
+    group_name = create_name(
+        "grp",
+        function,
+        index
+    )
+
+    if cmds.objExists(group_name):
+        raise RuntimeError(
+            u"Zip Offset Group 已经存在：{}".format(
+                group_name
+            )
+        )
+
+    zip_offset = cmds.createNode(
+        "transform",
+        name=group_name
+    )
+
+    if parent is not None:
+        zip_offset = cmds.parent(
+            zip_offset,
+            parent
+        )[0]
+
+    cmds.xform(
+        zip_offset,
+        worldSpace=True,
+        matrix=world_matrix
+    )
+
+    joint = cmds.parent(
+        joint,
+        zip_offset
+    )[0]
+
+    return {
+        "joint": joint,
+        "zip_offset": zip_offset,
+        "parent": parent,
+    }
+
+
+def create_rest_world_matrix(
+        zip_offset,
+        parent,
+        function,
+        index
+):
+    """
+    保存 Zip Offset 的 Rest Local Matrix，并实时组合 Parent World Matrix。
+
+    结果是一个不会受到 Zip Offset 自己后续驱动影响的 Rest World Matrix，
+    可以安全作为 blendMatrix 的基础矩阵，避免形成循环依赖。
+    """
+    local_matrix = cmds.xform(
+        zip_offset,
+        query=True,
+        objectSpace=True,
+        matrix=True
+    )
+
+    hold_matrix = cmds.createNode(
+        "holdMatrix",
+        name=create_name(
+            "hold",
+            "{}_rest".format(function),
+            index
+        )
+    )
+
+    cmds.setAttr(
+        hold_matrix + ".inMatrix",
+        *local_matrix,
+        type="matrix"
+    )
+
+    nodes = [
+        hold_matrix,
+    ]
+
+    output_plug = hold_matrix + ".outMatrix"
+
+    if parent is not None:
+        rest_mult_matrix = cmds.createNode(
+            "multMatrix",
+            name=create_name(
+                "mult",
+                "{}_rest_world".format(function),
+                index
+            )
+        )
+
+        cmds.connectAttr(
+            hold_matrix + ".outMatrix",
+            rest_mult_matrix + ".matrixIn[0]",
+            force=True
+        )
+        cmds.connectAttr(
+            parent + ".worldMatrix[0]",
+            rest_mult_matrix + ".matrixIn[1]",
+            force=True
+        )
+
+        nodes.append(rest_mult_matrix)
+        output_plug = rest_mult_matrix + ".matrixSum"
+
+    return {
+        "output": output_plug,
+        "nodes": nodes,
+    }
+
+
+def connect_world_matrix_to_transform(
+        world_matrix_plug,
+        transform,
+        parent,
+        function,
+        index
+):
+    """把 World Matrix 安全转换到 Transform Parent Local Space。"""
+    nodes = []
+    local_matrix_plug = world_matrix_plug
+
+    if parent is not None:
+        local_mult_matrix = cmds.createNode(
+            "multMatrix",
+            name=create_name(
+                "mult",
+                "{}_local".format(function),
+                index
+            )
+        )
+
+        cmds.connectAttr(
+            world_matrix_plug,
+            local_mult_matrix + ".matrixIn[0]",
+            force=True
+        )
+        cmds.connectAttr(
+            parent + ".worldInverseMatrix[0]",
+            local_mult_matrix + ".matrixIn[1]",
+            force=True
+        )
+
+        nodes.append(local_mult_matrix)
+        local_matrix_plug = local_mult_matrix + ".matrixSum"
+
+    decompose_matrix = cmds.createNode(
+        "decomposeMatrix",
+        name=create_name(
+            "dcmp",
+            function,
+            index
+        )
+    )
+
+    cmds.connectAttr(
+        local_matrix_plug,
+        decompose_matrix + ".inputMatrix",
+        force=True
+    )
+    cmds.connectAttr(
+        decompose_matrix + ".outputTranslate",
+        transform + ".translate",
+        force=True
+    )
+    cmds.connectAttr(
+        decompose_matrix + ".outputRotate",
+        transform + ".rotate",
+        force=True
+    )
+
+    nodes.append(decompose_matrix)
+
+    return nodes
+
+
+# =============================================================================
+# Zip Influence
+# =============================================================================
+
+def configure_remap(
+        remap_node,
+        start_position,
+        end_position
+):
+    """配置 0~1 的线性 Remap。"""
+    if end_position <= start_position:
+        end_position = start_position + 0.0001
+
+    if end_position > 1.0:
+        end_position = 1.0
+
+    cmds.setAttr(
+        remap_node + ".value[0].value_Position",
+        start_position
+    )
+    cmds.setAttr(
+        remap_node + ".value[0].value_FloatValue",
+        0.0
+    )
+    cmds.setAttr(
+        remap_node + ".value[1].value_Position",
+        end_position
+    )
+    cmds.setAttr(
+        remap_node + ".value[1].value_FloatValue",
+        1.0
+    )
+    cmds.setAttr(
+        remap_node + ".value[0].value_Interp",
+        1
+    )
+
+
+def create_zip_influence(
+        left_zip_plug,
+        right_zip_plug,
+        pair_count,
+        pair_index,
+        falloff
+):
+    """创建一对嘴唇 Joint 的左右 Zip Influence 0~1。"""
+    step = 1.0 / float(pair_count)
+    item_number = pair_index + 1
+
+    left_end = step * item_number
+    left_start = step * (item_number - falloff)
+
+    if left_start < 0.0:
+        left_start = 0.0
+
+    right_number = pair_count - pair_index
+    right_end = step * right_number
+    right_start = step * (right_number - falloff)
+
+    if right_start < 0.0:
+        right_start = 0.0
+
+    left_remap = cmds.createNode(
+        "remapValue",
+        name=create_name(
+            "remap",
+            "zip_left",
+            item_number
+        )
+    )
+    right_remap = cmds.createNode(
+        "remapValue",
+        name=create_name(
+            "remap",
+            "zip_right",
+            item_number
+        )
+    )
+
+    cmds.connectAttr(
+        left_zip_plug,
+        left_remap + ".inputValue",
+        force=True
+    )
+    cmds.connectAttr(
+        right_zip_plug,
+        right_remap + ".inputValue",
+        force=True
+    )
+
+    configure_remap(
+        left_remap,
+        left_start,
+        left_end
+    )
+    configure_remap(
+        right_remap,
+        right_start,
+        right_end
+    )
+
+    add_node = cmds.createNode(
+        "addDoubleLinear",
+        name=create_name(
+            "add",
+            "zip_weight",
+            item_number
+        )
+    )
+    clamp_node = cmds.createNode(
+        "clamp",
+        name=create_name(
+            "clamp",
+            "zip_weight",
+            item_number
+        )
+    )
+
+    cmds.connectAttr(
+        left_remap + ".outValue",
+        add_node + ".input1",
+        force=True
+    )
+    cmds.connectAttr(
+        right_remap + ".outValue",
+        add_node + ".input2",
+        force=True
+    )
+    cmds.connectAttr(
+        add_node + ".output",
+        clamp_node + ".inputR",
+        force=True
+    )
+    cmds.setAttr(
+        clamp_node + ".minR",
+        0.0
+    )
+    cmds.setAttr(
+        clamp_node + ".maxR",
+        1.0
+    )
+
+    return {
+        "output": clamp_node + ".outputR",
+        "nodes": [
+            left_remap,
+            right_remap,
+            add_node,
+            clamp_node,
+        ],
+    }
+
+
+# =============================================================================
+# Pair Build
+# =============================================================================
+
+def build_zip_pair(
+        upper_joint,
+        lower_joint,
+        pair_index,
+        pair_count,
+        zip_height_reverse_plug,
+        left_zip_plug,
+        right_zip_plug,
+        falloff
+):
+    """构建一对 Upper / Lower Lip Joint 的 Matrix Zip 网络。"""
+    item_number = pair_index + 1
+
+    upper_insert = insert_zip_offset_group(
+        upper_joint,
+        "upper_zip_offset",
+        item_number
+    )
+    lower_insert = insert_zip_offset_group(
+        lower_joint,
+        "lower_zip_offset",
+        item_number
+    )
+
+    upper_rest = create_rest_world_matrix(
+        upper_insert["zip_offset"],
+        upper_insert["parent"],
+        "upper",
+        item_number
+    )
+    lower_rest = create_rest_world_matrix(
+        lower_insert["zip_offset"],
+        lower_insert["parent"],
+        "lower",
+        item_number
+    )
+
+    mid_blend = cmds.createNode(
+        "blendMatrix",
+        name=create_name(
+            "blend",
+            "zip_mid",
+            item_number
+        )
+    )
+
+    cmds.connectAttr(
+        upper_rest["output"],
+        mid_blend + ".inputMatrix",
+        force=True
+    )
+    cmds.connectAttr(
+        lower_rest["output"],
+        mid_blend + ".target[0].targetMatrix",
+        force=True
+    )
+    cmds.connectAttr(
+        zip_height_reverse_plug,
+        mid_blend + ".target[0].weight",
+        force=True
+    )
+
+    influence = create_zip_influence(
+        left_zip_plug,
+        right_zip_plug,
+        pair_count,
+        pair_index,
+        falloff
+    )
+
+    upper_zip_blend = cmds.createNode(
+        "blendMatrix",
+        name=create_name(
+            "blend",
+            "upper_zip",
+            item_number
+        )
+    )
+    lower_zip_blend = cmds.createNode(
+        "blendMatrix",
+        name=create_name(
+            "blend",
+            "lower_zip",
+            item_number
+        )
+    )
+
+    cmds.connectAttr(
+        upper_rest["output"],
+        upper_zip_blend + ".inputMatrix",
+        force=True
+    )
+    cmds.connectAttr(
+        mid_blend + ".outputMatrix",
+        upper_zip_blend + ".target[0].targetMatrix",
+        force=True
+    )
+    cmds.connectAttr(
+        influence["output"],
+        upper_zip_blend + ".target[0].weight",
+        force=True
+    )
+
+    cmds.connectAttr(
+        lower_rest["output"],
+        lower_zip_blend + ".inputMatrix",
+        force=True
+    )
+    cmds.connectAttr(
+        mid_blend + ".outputMatrix",
+        lower_zip_blend + ".target[0].targetMatrix",
+        force=True
+    )
+    cmds.connectAttr(
+        influence["output"],
+        lower_zip_blend + ".target[0].weight",
+        force=True
+    )
+
+    upper_output_nodes = connect_world_matrix_to_transform(
+        upper_zip_blend + ".outputMatrix",
+        upper_insert["zip_offset"],
+        upper_insert["parent"],
+        "upper_zip_output",
+        item_number
+    )
+    lower_output_nodes = connect_world_matrix_to_transform(
+        lower_zip_blend + ".outputMatrix",
+        lower_insert["zip_offset"],
+        lower_insert["parent"],
+        "lower_zip_output",
+        item_number
+    )
+
+    utility_nodes = []
+
+    for node in upper_rest["nodes"]:
+        utility_nodes.append(node)
+
+    for node in lower_rest["nodes"]:
+        utility_nodes.append(node)
+
+    for node in influence["nodes"]:
+        utility_nodes.append(node)
+
+    utility_nodes.append(mid_blend)
+    utility_nodes.append(upper_zip_blend)
+    utility_nodes.append(lower_zip_blend)
+
+    for node in upper_output_nodes:
+        utility_nodes.append(node)
+
+    for node in lower_output_nodes:
+        utility_nodes.append(node)
+
+    return {
+        "upper_joint": upper_insert["joint"],
+        "lower_joint": lower_insert["joint"],
+        "upper_zip_offset": upper_insert["zip_offset"],
+        "lower_zip_offset": lower_insert["zip_offset"],
+        "mid_blend": mid_blend,
+        "upper_zip_blend": upper_zip_blend,
+        "lower_zip_blend": lower_zip_blend,
+        "zip_weight_plug": influence["output"],
+        "utility_nodes": utility_nodes,
+    }
+
+
+# =============================================================================
+# Public Build
+# =============================================================================
+
+def build_zip_lip(
+        upper_joints,
+        lower_joints,
+        left_zip_control,
+        right_zip_control,
+        jaw_control,
+        zip_height=0.5,
+        falloff=3,
+        utility_parent=None
+):
+    """
+    创建 Matrix Zip Lip。
+
+    Args:
+        upper_joints(list): 从左到右排列的 Upper Lip Joint。
+        lower_joints(list): 与 upper_joints 一一对应的 Lower Lip Joint。
+        left_zip_control(str): 左嘴角控制器。
+        right_zip_control(str): 右嘴角控制器。
+        jaw_control(str): Jaw / Mouth 主控制器。
+        zip_height(float): 0=靠近 Lower，1=靠近 Upper，默认 0.5。
+        falloff(int): Zip 传播覆盖的 Joint Pair 步数。
+        utility_parent(str/None): Utility Group 的 Parent。
+
+    Returns:
+        dict: Zip Lip 系统结果。
+    """
+    if upper_joints is None:
+        upper_joints = []
+
+    if lower_joints is None:
+        lower_joints = []
+
+    if len(upper_joints) != len(lower_joints):
+        raise RuntimeError(
+            u"Upper / Lower Lip Joint 数量必须一致：{} / {}".format(
+                len(upper_joints),
+                len(lower_joints)
+            )
+        )
+
+    if len(upper_joints) < 2:
+        raise RuntimeError(
+            u"Zip Lip 至少需要两对 Upper / Lower Joint。"
+        )
+
+    index = 0
+
+    while index < len(upper_joints):
+        validate_joint(
+            upper_joints[index],
+            u"Upper Lip Joint"
+        )
+        validate_joint(
+            lower_joints[index],
+            u"Lower Lip Joint"
+        )
+        index += 1
+
+    validate_transform(
+        left_zip_control,
+        u"Left Zip Control"
+    )
+    validate_transform(
+        right_zip_control,
+        u"Right Zip Control"
+    )
+    validate_transform(
+        jaw_control,
+        u"Jaw Control"
+    )
+
+    if utility_parent is not None:
+        validate_transform(
+            utility_parent,
+            u"Utility Parent"
+        )
+
+    zip_height = float(zip_height)
+
+    if zip_height < 0.0 or zip_height > 1.0:
+        raise ValueError(u"zip_height 必须在 0~1 范围内。")
+
+    falloff = int(falloff)
+
+    if falloff < 1:
+        raise ValueError(u"falloff 必须大于或等于 1。")
+
+    node_group_name = create_name(
+        "grp",
+        "zip_nodes",
+        1
+    )
+
+    if cmds.objExists(node_group_name):
+        raise RuntimeError(
+            u"Zip Lip 系统已经存在：{}".format(
+                node_group_name
+            )
+        )
+
+    left_zip_plug = ensure_float_attribute(
+        left_zip_control,
+        "zip",
+        0.0,
+        1.0,
+        0.0
+    )
+    right_zip_plug = ensure_float_attribute(
+        right_zip_control,
+        "zip",
+        0.0,
+        1.0,
+        0.0
+    )
+    zip_height_plug = ensure_float_attribute(
+        jaw_control,
+        "zipHeight",
+        0.0,
+        1.0,
+        zip_height
+    )
+
+    created_zip_offsets = []
+    node_group = None
+
+    cmds.undoInfo(
+        openChunk=True,
+        chunkName="MuziFaceZipLipBuild"
+    )
+
+    try:
+        node_group = cmds.createNode(
+            "transform",
+            name=node_group_name,
+            parent=utility_parent
+        )
+
+        cmds.setAttr(
+            node_group + ".visibility",
+            0
+        )
+
+        height_reverse = cmds.createNode(
+            "reverse",
+            name=create_name(
+                "rvs",
+                "zip_height",
+                1
+            )
+        )
+
+        cmds.connectAttr(
+            zip_height_plug,
+            height_reverse + ".inputX",
+            force=True
+        )
+
+        pairs = []
+        utility_nodes = [
+            height_reverse,
+        ]
+
+        pair_index = 0
+
+        while pair_index < len(upper_joints):
+            pair_result = build_zip_pair(
+                upper_joint=upper_joints[pair_index],
+                lower_joint=lower_joints[pair_index],
+                pair_index=pair_index,
+                pair_count=len(upper_joints),
+                zip_height_reverse_plug=height_reverse + ".outputX",
+                left_zip_plug=left_zip_plug,
+                right_zip_plug=right_zip_plug,
+                falloff=falloff
+            )
+
+            pairs.append(pair_result)
+            created_zip_offsets.append(
+                pair_result["upper_zip_offset"]
+            )
+            created_zip_offsets.append(
+                pair_result["lower_zip_offset"]
+            )
+
+            for utility_node in pair_result["utility_nodes"]:
+                utility_nodes.append(utility_node)
+
+            pair_index += 1
+
+        for utility_node in utility_nodes:
+            parents = cmds.listRelatives(
+                utility_node,
+                parent=True,
+                fullPath=True
+            )
+
+            if parents:
+                continue
+
+            node_type = cmds.nodeType(utility_node)
+
+            if node_type == "transform":
+                cmds.parent(
+                    utility_node,
+                    node_group
+                )
+
+        result = {
+            "node_group": node_group,
+            "left_zip_plug": left_zip_plug,
+            "right_zip_plug": right_zip_plug,
+            "zip_height_plug": zip_height_plug,
+            "height_reverse": height_reverse,
+            "pairs": pairs,
+            "utility_nodes": utility_nodes,
+            "zip_offsets": created_zip_offsets,
+        }
+
+        return result
+
+    except Exception:
+        if node_group is not None:
+            if cmds.objExists(node_group):
+                cmds.delete(node_group)
+
+        for zip_offset in created_zip_offsets:
+            if not cmds.objExists(zip_offset):
+                continue
+
+            children = cmds.listRelatives(
+                zip_offset,
+                children=True,
+                type="joint",
+                fullPath=True
+            )
+
+            if children is None:
+                children = []
+
+            parent = get_parent(zip_offset)
+
+            for child_joint in children:
+                if parent is None:
+                    cmds.parent(
+                        child_joint,
+                        world=True
+                    )
+                else:
+                    cmds.parent(
+                        child_joint,
+                        parent
+                    )
+
+            if cmds.objExists(zip_offset):
+                cmds.delete(zip_offset)
+
+        raise
+
+    finally:
+        cmds.undoInfo(
+            closeChunk=True
+        )
+
+
+__all__ = [
+    "build_zip_lip",
+]
