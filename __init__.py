@@ -42,10 +42,24 @@ def smoke_test(test_window_manager=False):
 
 
 def functional_smoke_test():
-    """运行 Maya 2023 真实功能 Smoke Test。"""
+    """运行 Maya 2023 全工具真实功能 Smoke Test。"""
     from .tests import maya_functional_smoke_test
 
     return maya_functional_smoke_test.run()
+
+
+def pipeline_smoke_test():
+    """运行 pipelineUtils 拆分后的 Core 功能 Smoke Test。"""
+    from .tests import pipeline_refactor_smoke_test
+
+    return pipeline_refactor_smoke_test.run()
+
+
+def face_component_smoke_test():
+    """运行 Face Eyelid / Curve Attachment / Zip Lip 功能 Smoke Test。"""
+    from .tests import face_component_smoke_test
+
+    return face_component_smoke_test.run()
 
 
 __all__ = [
@@ -53,4 +67,6 @@ __all__ = [
     "initialize",
     "smoke_test",
     "functional_smoke_test",
+    "pipeline_smoke_test",
+    "face_component_smoke_test",
 ]
