@@ -2,14 +2,14 @@
 
 木子的 Maya Rigging Toolset。
 
-当前项目正在整理为一个可长期维护的大型绑定工具集，主要目标是：
+项目正在整理为一个可长期维护的大型绑定工具集，当前原则：
 
 - Maya 2023 优先；
 - PySide2 UI，保留 PySide6 fallback；
 - Maya 场景操作优先 `maya.cmds`；
 - 新代码不新增 PyMel 依赖；
-- UI、底层功能、独立工具、完整 Rig System 分层维护；
-- 历史代码逐步退出正式运行路径。
+- UI、Core、独立 Tool、完整 Rig System 分层维护；
+- 历史代码统一放入 `legacy_reference`，不参与正式运行。
 
 ## 启动
 
@@ -54,11 +54,18 @@ muziToolset/
 │  ├─ config.py
 │  └─ ARCHITECTURE.md
 │
-├─ core/                         # 旧 Face Rig 仍依赖的临时兼容 Core
-├─ face/                         # 尚未完成新 Face System 提取的旧 Face Rig
-├─ legacy_reference/             # 已退出运行路径的历史参考代码
+├─ legacy_reference/             # 历史参考代码，不参与正式运行
+│  ├─ MuziTools/
+│  ├─ bind/
+│  ├─ core/
+│  ├─ face/
+│  ├─ pyside/
+│  ├─ res/
+│  └─ rigging/
+│
 ├─ README.md
 ├─ LICENSE
+├─ __init__.py
 └─ start.py
 ```
 
@@ -68,36 +75,25 @@ muziToolset/
 muzi_rigging/ARCHITECTURE.md
 ```
 
-## 过渡目录说明
-
-仓库根目录的 `core/` 与 `face/` **暂时保留**。
-
-当前旧 `face/` 中仍有类似下面的相对依赖：
-
-```python
-from ..core import hierarchyUtils
-from ..core import pipelineUtils
-from ..core import nameUtils
-```
-
-因此在新的 Face System 尚未提取完成之前，不应只移动或删除根目录 `core/`。正确迁移顺序是：
-
-1. 把旧 Face Rig 中仍有价值的算法提取到 `muzi_rigging/systems/face` 和 `muzi_rigging/core`；
-2. 让新的 Face Tool / Face System 不再依赖根目录 `face/` 与 `core/`；
-3. 验证 Maya 中的新 Face Rig 工作流；
-4. 再把根目录 `face/` 与 `core/` 归档到 `legacy_reference/`。
-
-这两个目录属于同一批迁移依赖，不应该拆开归档。
-
 ## 代码职责
 
 ### `muzi_rigging/core`
 
-放通用 Maya 能力，例如属性、连接、命名、Joint、Controller、Hierarchy、权重和 Pipeline 工具。
+放不依赖 UI 的 Maya 通用能力，例如：
 
-`core` 不应该反向 import UI、Tools 或 Systems。
+- Attribute
+- Connection
+- Naming
+- Joint
+- Controller Shape
+- Hierarchy
+- Skin Weight
+- BlendShape
+- Scene Clean
+- Model Check
+- Snap
 
-当前已经独立出的正式模块包括：
+已经独立出的新模块包括：
 
 - `control_shape_utils.py`
 - `rename_utils.py`
@@ -107,9 +103,11 @@ from ..core import nameUtils
 - `scene_clean_utils.py`
 - `model_check_utils.py`
 
+`core` 不应该反向 import `ui / tools / systems`。
+
 ### `muzi_rigging/tools`
 
-放可以独立打开的小工具，例如：
+放可以独立执行或独立打开的小工具，例如：
 
 - Rename Tool
 - Attribute Tool
@@ -129,27 +127,44 @@ def main():
 
 主工具箱只在用户点击时才 import 对应模块。
 
-工具文件负责 UI、参数收集和用户入口，不应该重复维护大型 Rig 算法。
+工具文件负责 UI、参数收集和用户入口，不重复维护大型 Rig 算法。
 
 ### `muzi_rigging/systems`
 
-放可复用的绑定系统和 Builder。
+放可复用的完整绑定系统和 Builder。
 
-当前已经建立统一 `Controller System`，Controller Creator、FK Creator 和专项 Rig Tool 应优先调用这一层，而不是分别复制控制器创建代码。
+当前已经建立：
 
-完整 Body Rig System 暂未作为当前迁移阶段的强制目标，可以在基础工具和 Face System 稳定后继续扩展。
+```text
+systems/controller/
+systems/face/
+systems/body/skirt/
+```
+
+Controller Creator、FK Creator、IK Rig、Skirt Rig 等功能应优先调用 System API，而不是分别复制控制器创建逻辑。
+
+完整 Body Rig System 暂时不作为当前阶段目标，后续再扩展 Arm / Leg / Spine / Hand / Foot 等系统。
 
 ### `muzi_rigging/ui`
 
 维护统一 UI Theme 和可复用控件。
 
-旧的 `muzi_rigging/ui_theme.py` 迁移桥已经删除；正式工具直接 import `muzi_rigging.ui.theme`。
+当前已经建立：
+
+```text
+ui/theme.py
+ui/widgets/object_picker.py
+```
+
+子工具窗口统一交给 `app/window_manager.py` 管理。
 
 ### `legacy_reference`
 
-这里保存已经退出正式运行路径的旧 `MuziTools / bind / pyside / res / rigging` 等历史实现。
+这里只保存历史实现和参考代码。
 
-正式代码禁止直接 import 这些目录。需要旧功能时，把有价值的算法重新整理后迁入正式架构。
+根目录旧 `core/` 与 `face/` 已经退出正式运行路径，并与旧 `MuziTools / bind / pyside / res / rigging` 一起归档到这里。
+
+正式代码禁止直接 import `legacy_reference`。需要旧功能时，先把有价值的算法重新整理成新的 Core 或 System API，再接入正式工具。
 
 ## 编程规范
 
@@ -159,13 +174,24 @@ def main():
 - 函数、方法、变量使用 `snake_case`；
 - 类使用 `PascalCase`；
 - Maya 节点命名可以继续使用 `ctrl_ / jnt_ / grp_` 等绑定命名约定；
+- Maya 场景操作优先使用 `maya.cmds`；
 - 中文注释重点解释执行流程和设计原因；
 - UI 不直接堆积复杂 Rig 算法；
 - 正式模块 import 时不主动 reload 依赖；
-- 子工具窗口统一交给 Window Manager 管理。
+- 子工具窗口统一交给 Window Manager 管理；
+- 历史代码只能作为参考，不能从正式包直接 import。
 
-## 开发状态
+## 当前开发状态
 
-目前 Controller、Basic、Skin、BlendShape、Clean 等新工具正在逐步完成正式 Core / System 分层。
+已经完成的主要架构迁移：
 
-根目录旧 `core/` 与 `face/` 暂不强行移动，等新的 Face System 完整提取并验证后再一起归档，避免 Maya 中现有 Face Rig 工作流在迁移中断裂。
+- `MuziTools` 退出根目录并归档；
+- 正式运行代码集中到 `muzi_rigging`；
+- Controller 创建统一到 `systems/controller`；
+- Skirt Rig Build 逻辑进入 `systems/body/skirt`；
+- Basic / Skin / BlendShape / Clean 的主要算法开始从 UI 抽到 Core；
+- 根目录旧 `core / face` 已归档到 `legacy_reference`；
+- 临时 `ui_theme.py` 和 `tools/ctrl` 迁移桥已经删除；
+- 根目录备份、测试草稿、上传 cfg 和旧说明文档已经清理。
+
+`muzi_rigging/` 这一层当前继续保留，用于稳定正式运行包。后续等项目完全稳定后，再考虑把 `app / ui / core / tools / systems / resources` 扁平迁移到 `muziToolset` 根包。
