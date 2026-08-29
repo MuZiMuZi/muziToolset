@@ -4,18 +4,13 @@ u"""
 ==============
 
 功能：
-    1. 添加前缀
-    2. 添加后缀
-    3. 查找并替换名称
-    4. 按选择 / 层级 / 全场景范围处理
-    5. 自动数字编号
-    6. 自动字母编号
-    7. 使用 * 作为编号占位符进行模式重命名
+    1. 添加前缀 / 后缀；
+    2. 查找并替换名称；
+    3. 按选择 / 层级 / 全场景范围处理；
+    4. 数字 / 大写字母 / 小写字母自动编号；
+    5. 使用 * 作为编号占位符进行模式重命名。
 
-说明：
-    - Maya 2023 / maya.cmds。
-    - 这个工具使用 Maya 原生 cmds.window，不依赖 PySide。
-    - 所有批量重命名都放入一个 Undo Chunk，方便一次 Ctrl+Z 撤销。
+场景操作统一使用 maya.cmds，UI 使用 Maya 2023 的 PySide2。
 """
 
 from __future__ import print_function
@@ -24,38 +19,47 @@ import re
 
 import maya.cmds as cmds
 
+try:
+    from PySide2.QtWidgets import QComboBox
+    from PySide2.QtWidgets import QGridLayout
+    from PySide2.QtWidgets import QHBoxLayout
+    from PySide2.QtWidgets import QLabel
+    from PySide2.QtWidgets import QLineEdit
+    from PySide2.QtWidgets import QPushButton
+    from PySide2.QtWidgets import QScrollArea
+    from PySide2.QtWidgets import QSpinBox
+    from PySide2.QtWidgets import QVBoxLayout
+    from PySide2.QtWidgets import QWidget
+except ImportError:
+    from PySide6.QtWidgets import QComboBox
+    from PySide6.QtWidgets import QGridLayout
+    from PySide6.QtWidgets import QHBoxLayout
+    from PySide6.QtWidgets import QLabel
+    from PySide6.QtWidgets import QLineEdit
+    from PySide6.QtWidgets import QPushButton
+    from PySide6.QtWidgets import QScrollArea
+    from PySide6.QtWidgets import QSpinBox
+    from PySide6.QtWidgets import QVBoxLayout
+    from PySide6.QtWidgets import QWidget
 
-window_name = "MuziRenameToolWindow"
-
-prefix_field = "MuziRenamePrefixField"
-suffix_field = "MuziRenameSuffixField"
-search_field = "MuziRenameSearchField"
-replace_field = "MuziRenameReplaceField"
-scope_radio = "MuziRenameScopeRadio"
-start_number_field = "MuziRenameStartNumberField"
-padding_field = "MuziRenamePaddingField"
-number_type_menu = "MuziRenameNumberTypeMenu"
-base_name_field = "MuziRenameBaseNameField"
-pattern_field = "MuziRenamePatternField"
+from ... import ui_theme
 
 
 # -----------------------------------------------------------------------------
-# 通用函数
+# Maya 节点工具
 # -----------------------------------------------------------------------------
 
 
 def get_short_name(node):
     """从完整 DAG 路径中取得最后一级名称。"""
-
     if "|" in node:
         return node.rsplit("|", 1)[-1]
 
     return node
 
 
-def get_selected_objects():
+def get_selected_objects(show_warning=True):
     """获取当前选择物体。"""
-
     selected_objects = cmds.ls(
         selection=True,
         long=True
@@ -64,7 +68,7 @@ def get_selected_objects():
     if selected_objects is None:
         selected_objects = []
 
-    if not selected_objects:
+    if not selected_objects and show_warning:
         cmds.warning(u"请先选择物体。")
 
     return selected_objects
@@ -72,12 +76,10 @@ def get_selected_objects():
 
 def sort_objects_child_first(objects):
     """
-    把 DAG 层级更深的物体放在前面。
+    按 DAG 深度从深到浅排序。
 
-    批量修改父子层级名称时，如果先重命名父节点，子节点的完整路径会改变，
-    后续保存的旧路径就会失效。因此需要先处理最深层的子节点。
+    重命名层级时先处理子节点，避免父节点改名后子节点旧完整路径失效。
     """
-
     result = []
 
     for node in objects:
@@ -86,7 +88,6 @@ def sort_objects_child_first(objects):
 
         result.append(node)
 
-    # 不使用列表推导式，直接用简单冒泡逻辑按 DAG 深度排序。
     item_count = len(result)
     outer_index = 0
 
@@ -109,21 +110,12 @@ def sort_objects_child_first(objects):
     return result
 
 
-def get_objects_by_scope():
-    """根据界面中的范围设置返回需要重命名的 Transform。"""
-
-    scope_index = cmds.radioButtonGrp(
-        scope_radio,
-        query=True,
-        select=True
-    )
-
-    # 选中物体。
-    if scope_index == 1:
+def get_objects_by_scope(scope_name):
+    """根据范围名称返回需要处理的 Transform。"""
+    if scope_name == u"选中物体":
         return get_selected_objects()
 
-    # 选中层级。
-    if scope_index == 2:
+    if scope_name == u"选中层级":
         selected_objects = get_selected_objects()
 
         if not selected_objects:
@@ -151,7 +143,6 @@ def get_objects_by_scope():
 
         return sort_objects_child_first(hierarchy_objects)
 
-    # 全部 Transform。
     all_objects = cmds.ls(
         transforms=True,
         long=True
@@ -165,7 +156,6 @@ def get_objects_by_scope():
 
 def rename_node(node, new_name):
     """只有名称发生变化时才执行 cmds.rename。"""
-
     if not cmds.objExists(node):
         return None
 
@@ -185,27 +175,22 @@ def rename_node(node, new_name):
 
 
 # -----------------------------------------------------------------------------
-# 前缀 / 后缀
+# 重命名逻辑
 # -----------------------------------------------------------------------------
 
 
-def add_prefix(*args):
+def add_prefix_to_selection(prefix):
     """给当前选择物体添加前缀。"""
-
-    prefix = cmds.textField(
-        prefix_field,
-        query=True,
-        text=True
-    )
-
     if not prefix:
         cmds.warning(u"请输入前缀。")
-        return
+        return 0
 
     selected_objects = get_selected_objects()
 
     if not selected_objects:
-        return
+        return 0
+
+    renamed_count = 0
 
     cmds.undoInfo(
         openChunk=True,
@@ -216,28 +201,31 @@ def add_prefix(*args):
         for selected_object in selected_objects:
             current_name = get_short_name(selected_object)
             new_name = prefix + current_name
-            rename_node(selected_object, new_name)
+            result = rename_node(
+                selected_object,
+                new_name
+            )
+
+            if result is not None:
+                renamed_count += 1
     finally:
         cmds.undoInfo(closeChunk=True)
 
+    return renamed_count
 
-def add_suffix(*args):
+
+def add_suffix_to_selection(suffix):
     """给当前选择物体添加后缀。"""
-
-    suffix = cmds.textField(
-        suffix_field,
-        query=True,
-        text=True
-    )
-
     if not suffix:
         cmds.warning(u"请输入后缀。")
-        return
+        return 0
 
     selected_objects = get_selected_objects()
 
     if not selected_objects:
-        return
+        return 0
+
+    renamed_count = 0
 
     cmds.undoInfo(
         openChunk=True,
@@ -248,39 +236,32 @@ def add_suffix(*args):
         for selected_object in selected_objects:
             current_name = get_short_name(selected_object)
             new_name = current_name + suffix
-            rename_node(selected_object, new_name)
+            result = rename_node(
+                selected_object,
+                new_name
+            )
+
+            if result is not None:
+                renamed_count += 1
     finally:
         cmds.undoInfo(closeChunk=True)
 
-
-# -----------------------------------------------------------------------------
-# 查找替换
-# -----------------------------------------------------------------------------
+    return renamed_count
 
 
-def search_replace(*args):
-    """在指定范围内查找并替换节点名称。"""
-
-    search_text = cmds.textField(
-        search_field,
-        query=True,
-        text=True
-    )
-    replace_text = cmds.textField(
-        replace_field,
-        query=True,
-        text=True
-    )
-
+def search_replace_names(search_text, replace_text, scope_name):
+    """在指定范围内查找并替换名称。"""
     if not search_text:
         cmds.warning(u"请输入需要查找的内容。")
-        return
+        return 0
 
-    target_objects = get_objects_by_scope()
+    target_objects = get_objects_by_scope(scope_name)
 
     if not target_objects:
         cmds.warning(u"没有可操作的对象。")
-        return
+        return 0
+
+    renamed_count = 0
 
     cmds.undoInfo(
         openChunk=True,
@@ -293,34 +274,30 @@ def search_replace(*args):
                 continue
 
             current_name = get_short_name(target_object)
+
+            if search_text not in current_name:
+                continue
+
             new_name = current_name.replace(
                 search_text,
                 replace_text
             )
 
-            rename_node(
+            result = rename_node(
                 target_object,
                 new_name
             )
+
+            if result is not None:
+                renamed_count += 1
     finally:
         cmds.undoInfo(closeChunk=True)
 
-
-# -----------------------------------------------------------------------------
-# 自动编号
-# -----------------------------------------------------------------------------
+    return renamed_count
 
 
 def number_to_alpha(number, uppercase=True):
-    """
-    把从 0 开始的整数转换成字母编号。
-
-    Examples:
-        0  -> A
-        25 -> Z
-        26 -> AA
-    """
-
+    """把从 0 开始的整数转换成 A-Z / AA-ZZ 字母编号。"""
     if number < 0:
         raise ValueError(u"字母编号不能小于 0。")
 
@@ -349,7 +326,6 @@ def number_to_alpha(number, uppercase=True):
 
 def get_number_string(number, padding, number_type):
     """根据编号类型生成最终编号字符串。"""
-
     if number_type == u"数字":
         number_string = str(number)
 
@@ -387,34 +363,19 @@ def get_number_string(number, padding, number_type):
     )
 
 
-def auto_number(*args):
-    """按照当前选择顺序批量添加数字或字母编号。"""
-
-    base_name = cmds.textField(
-        base_name_field,
-        query=True,
-        text=True
-    )
-    start_number = cmds.intField(
-        start_number_field,
-        query=True,
-        value=True
-    )
-    padding = cmds.intField(
-        padding_field,
-        query=True,
-        value=True
-    )
-    number_type = cmds.optionMenu(
-        number_type_menu,
-        query=True,
-        value=True
-    )
-
+def auto_number_selection(
+        base_name,
+        start_number,
+        padding,
+        number_type
+):
+    """按照当前选择顺序批量数字 / 字母编号。"""
     selected_objects = get_selected_objects()
 
     if not selected_objects:
-        return
+        return 0
+
+    renamed_count = 0
 
     cmds.undoInfo(
         openChunk=True,
@@ -450,19 +411,19 @@ def auto_number(*args):
                 number_string
             )
 
-            rename_node(
+            result = rename_node(
                 selected_object,
                 new_name
             )
+
+            if result is not None:
+                renamed_count += 1
 
             index += 1
     finally:
         cmds.undoInfo(closeChunk=True)
 
-
-# -----------------------------------------------------------------------------
-# 模式重命名
-# -----------------------------------------------------------------------------
+    return renamed_count
 
 
 def build_pattern_name(pattern, number):
@@ -472,7 +433,6 @@ def build_pattern_name(pattern, number):
     Example:
         leg**_jnt*** + 2 -> leg02_jnt002
     """
-
     star_blocks = re.findall(
         r"\*+",
         pattern
@@ -503,23 +463,18 @@ def build_pattern_name(pattern, number):
     return new_name
 
 
-def pattern_rename(*args):
+def pattern_rename_selection(pattern):
     """按照 * 编号占位规则重命名当前选择。"""
-
-    pattern = cmds.textField(
-        pattern_field,
-        query=True,
-        text=True
-    )
-
     if not pattern:
         cmds.warning(u"请输入重命名模式。")
-        return
+        return 0
 
     selected_objects = get_selected_objects()
 
     if not selected_objects:
-        return
+        return 0
+
+    renamed_count = 0
 
     cmds.undoInfo(
         openChunk=True,
@@ -535,276 +490,269 @@ def pattern_rename(*args):
                 number
             )
 
-            rename_node(
+            result = rename_node(
                 selected_object,
                 new_name
             )
+
+            if result is not None:
+                renamed_count += 1
 
             number += 1
     finally:
         cmds.undoInfo(closeChunk=True)
 
+    return renamed_count
+
 
 # -----------------------------------------------------------------------------
-# 界面
+# PySide UI
 # -----------------------------------------------------------------------------
 
 
-def create_interface():
-    """创建 Maya 原生重命名工具界面。"""
+class RenameTool(QWidget):
+    """Silicon 风格批量重命名窗口。"""
 
-    if cmds.window(window_name, exists=True):
-        cmds.deleteUI(window_name)
+    def __init__(self, parent=None):
+        super(RenameTool, self).__init__(parent)
 
-    window = cmds.window(
-        window_name,
-        title=u"重命名工具",
-        widthHeight=(460, 580),
-        sizeable=True
-    )
+        self.create_widgets()
+        self.create_layouts()
+        self.create_connections()
 
-    cmds.columnLayout(
-        adjustableColumn=True,
-        rowSpacing=10,
-        columnAttach=("both", 10)
-    )
+        ui_theme.style_window(
+            self,
+            title=u"重命名工具",
+            minimum_width=560
+        )
+        self.resize(580, 680)
 
-    # ------------------------------------------------------------------
-    # 前缀 / 后缀
-    # ------------------------------------------------------------------
-    cmds.frameLayout(
-        label=u"前缀 / 后缀",
-        collapsable=True,
-        borderStyle="etchedIn",
-        marginWidth=10,
-        marginHeight=10
-    )
-    cmds.columnLayout(
-        adjustableColumn=True,
-        rowSpacing=6
-    )
+    def create_widgets(self):
+        """创建界面控件。"""
+        self.title_label = ui_theme.make_title(u"重命名工具")
+        self.subtitle_label = ui_theme.make_subtitle(
+            u"批量处理前后缀、查找替换、编号和命名模式。所有操作均可一次撤销。"
+        )
 
-    cmds.rowLayout(
-        numberOfColumns=3,
-        adjustableColumn=2
-    )
-    cmds.text(
-        label=u"前缀：",
-        width=60,
-        align="right"
-    )
-    cmds.textField(prefix_field)
-    cmds.button(
-        label=u"执行",
-        command=add_prefix,
-        width=60
-    )
-    cmds.setParent("..")
+        # 前后缀。
+        self.prefix_line = QLineEdit()
+        self.prefix_line.setPlaceholderText(u"例如 ctrl_")
+        self.prefix_button = QPushButton(u"添加前缀")
 
-    cmds.rowLayout(
-        numberOfColumns=3,
-        adjustableColumn=2
-    )
-    cmds.text(
-        label=u"后缀：",
-        width=60,
-        align="right"
-    )
-    cmds.textField(suffix_field)
-    cmds.button(
-        label=u"执行",
-        command=add_suffix,
-        width=60
-    )
-    cmds.setParent("..")
-    cmds.setParent("..")
-    cmds.setParent("..")
+        self.suffix_line = QLineEdit()
+        self.suffix_line.setPlaceholderText(u"例如 _geo")
+        self.suffix_button = QPushButton(u"添加后缀")
 
-    # ------------------------------------------------------------------
-    # 查找替换
-    # ------------------------------------------------------------------
-    cmds.frameLayout(
-        label=u"查找与替换",
-        collapsable=True,
-        borderStyle="etchedIn",
-        marginWidth=10,
-        marginHeight=10
-    )
-    cmds.columnLayout(
-        adjustableColumn=True,
-        rowSpacing=6
-    )
+        # 查找替换。
+        self.search_line = QLineEdit()
+        self.search_line.setPlaceholderText(u"查找")
+        self.replace_line = QLineEdit()
+        self.replace_line.setPlaceholderText(u"替换为，可留空")
 
-    cmds.rowLayout(
-        numberOfColumns=2,
-        adjustableColumn=2
-    )
-    cmds.text(
-        label=u"查找：",
-        width=70,
-        align="right"
-    )
-    cmds.textField(search_field)
-    cmds.setParent("..")
+        self.scope_combo = QComboBox()
+        self.scope_combo.addItem(u"选中物体")
+        self.scope_combo.addItem(u"选中层级")
+        self.scope_combo.addItem(u"全场景 Transform")
 
-    cmds.rowLayout(
-        numberOfColumns=2,
-        adjustableColumn=2
-    )
-    cmds.text(
-        label=u"替换为：",
-        width=70,
-        align="right"
-    )
-    cmds.textField(replace_field)
-    cmds.setParent("..")
+        self.search_replace_button = QPushButton(u"执行查找替换")
+        ui_theme.style_primary(self.search_replace_button)
 
-    cmds.radioButtonGrp(
-        scope_radio,
-        label=u"范围：",
-        numberOfRadioButtons=3,
-        labelArray3=(u"选中物体", u"层级", u"全部"),
-        select=1,
-        columnWidth4=[70, 90, 70, 70]
-    )
-    cmds.button(
-        label=u"执行",
-        command=search_replace,
-        height=28
-    )
-    cmds.setParent("..")
-    cmds.setParent("..")
+        # 自动编号。
+        self.base_name_line = QLineEdit()
+        self.base_name_line.setPlaceholderText(
+            u"基础名称；留空则沿用每个对象当前名称"
+        )
 
-    # ------------------------------------------------------------------
-    # 自动编号
-    # ------------------------------------------------------------------
-    cmds.frameLayout(
-        label=u"自动编号",
-        collapsable=True,
-        borderStyle="etchedIn",
-        marginWidth=10,
-        marginHeight=10
-    )
-    cmds.columnLayout(
-        adjustableColumn=True,
-        rowSpacing=6
-    )
+        self.start_number_spin = QSpinBox()
+        self.start_number_spin.setMinimum(0)
+        self.start_number_spin.setMaximum(999999)
+        self.start_number_spin.setValue(1)
 
-    cmds.rowLayout(
-        numberOfColumns=2,
-        adjustableColumn=2
-    )
-    cmds.text(
-        label=u"起始：",
-        width=80,
-        align="right"
-    )
-    cmds.intField(
-        start_number_field,
-        value=1
-    )
-    cmds.setParent("..")
+        self.padding_spin = QSpinBox()
+        self.padding_spin.setMinimum(0)
+        self.padding_spin.setMaximum(8)
+        self.padding_spin.setValue(2)
 
-    cmds.rowLayout(
-        numberOfColumns=2,
-        adjustableColumn=2
-    )
-    cmds.text(
-        label=u"补零位数：",
-        width=80,
-        align="right"
-    )
-    cmds.intField(
-        padding_field,
-        value=2,
-        minValue=0,
-        maxValue=10
-    )
-    cmds.setParent("..")
+        self.number_type_combo = QComboBox()
+        self.number_type_combo.addItem(u"数字")
+        self.number_type_combo.addItem(u"大写字母")
+        self.number_type_combo.addItem(u"小写字母")
 
-    cmds.rowLayout(
-        numberOfColumns=2,
-        adjustableColumn=2
-    )
-    cmds.text(
-        label=u"编号类型：",
-        width=80,
-        align="right"
-    )
-    cmds.optionMenu(number_type_menu)
-    cmds.menuItem(label=u"数字")
-    cmds.menuItem(label=u"大写字母")
-    cmds.menuItem(label=u"小写字母")
-    cmds.setParent("..")
+        self.auto_number_button = QPushButton(u"按选择顺序编号")
 
-    cmds.rowLayout(
-        numberOfColumns=2,
-        adjustableColumn=2
-    )
-    cmds.text(
-        label=u"基础名称：",
-        width=80,
-        align="right"
-    )
-    cmds.textField(
-        base_name_field,
-        placeholderText=u"留空则使用原名称"
-    )
-    cmds.setParent("..")
+        # Pattern。
+        self.pattern_line = QLineEdit()
+        self.pattern_line.setPlaceholderText(
+            u"例如 ctrl_arm_*** 或 leg**_jnt***"
+        )
+        self.pattern_button = QPushButton(u"模式重命名")
 
-    cmds.button(
-        label=u"执行",
-        command=auto_number,
-        height=28
-    )
-    cmds.setParent("..")
-    cmds.setParent("..")
+        self.pattern_info_label = QLabel(
+            u"每一段连续的 * 都会使用当前序号，* 的数量就是补零位数。"
+        )
+        self.pattern_info_label.setWordWrap(True)
+        ui_theme.set_role(self.pattern_info_label, "muted")
 
-    # ------------------------------------------------------------------
-    # 模式重命名
-    # ------------------------------------------------------------------
-    cmds.frameLayout(
-        label=u"模式重命名",
-        collapsable=True,
-        borderStyle="etchedIn",
-        marginWidth=10,
-        marginHeight=10
-    )
-    cmds.columnLayout(
-        adjustableColumn=True,
-        rowSpacing=6
-    )
+        self.status_label = QLabel(u"准备就绪")
+        ui_theme.set_role(self.status_label, "muted")
 
-    cmds.rowLayout(
-        numberOfColumns=3,
-        adjustableColumn=2
-    )
-    cmds.text(
-        label=u"模式：",
-        width=70,
-        align="right"
-    )
-    cmds.textField(
-        pattern_field,
-        placeholderText=u"例如 leg**_jnt*** -> leg01_jnt001"
-    )
-    cmds.button(
-        label=u"执行",
-        command=pattern_rename,
-        width=60
-    )
-    cmds.setParent("..")
-    cmds.setParent("..")
-    cmds.setParent("..")
+    def create_layouts(self):
+        """创建 Card + Scroll 布局。"""
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(16, 16, 16, 16)
+        main_layout.setSpacing(10)
 
-    cmds.showWindow(window)
-    return window
+        main_layout.addWidget(self.title_label)
+        main_layout.addWidget(self.subtitle_label)
+
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+        scroll_layout.setContentsMargins(0, 0, 6, 0)
+        scroll_layout.setSpacing(10)
+
+        # 前缀 / 后缀。
+        affix_card, affix_layout = ui_theme.make_card(scroll_content)
+        affix_layout.addWidget(
+            ui_theme.make_section_title(u"前缀 / 后缀")
+        )
+
+        prefix_layout = QHBoxLayout()
+        prefix_layout.setContentsMargins(0, 0, 0, 0)
+        prefix_layout.addWidget(self.prefix_line, 1)
+        prefix_layout.addWidget(self.prefix_button)
+        affix_layout.addLayout(prefix_layout)
+
+        suffix_layout = QHBoxLayout()
+        suffix_layout.setContentsMargins(0, 0, 0, 0)
+        suffix_layout.addWidget(self.suffix_line, 1)
+        suffix_layout.addWidget(self.suffix_button)
+        affix_layout.addLayout(suffix_layout)
+
+        # 查找替换。
+        replace_card, replace_layout = ui_theme.make_card(scroll_content)
+        replace_layout.addWidget(
+            ui_theme.make_section_title(u"查找与替换")
+        )
+
+        replace_grid = QGridLayout()
+        replace_grid.setHorizontalSpacing(8)
+        replace_grid.setVerticalSpacing(8)
+        replace_grid.addWidget(QLabel(u"查找"), 0, 0)
+        replace_grid.addWidget(self.search_line, 0, 1)
+        replace_grid.addWidget(QLabel(u"替换为"), 1, 0)
+        replace_grid.addWidget(self.replace_line, 1, 1)
+        replace_grid.addWidget(QLabel(u"范围"), 2, 0)
+        replace_grid.addWidget(self.scope_combo, 2, 1)
+        replace_layout.addLayout(replace_grid)
+        replace_layout.addWidget(self.search_replace_button)
+
+        # 自动编号。
+        number_card, number_layout = ui_theme.make_card(scroll_content)
+        number_layout.addWidget(
+            ui_theme.make_section_title(u"自动编号")
+        )
+        number_layout.addWidget(self.base_name_line)
+
+        number_grid = QGridLayout()
+        number_grid.setHorizontalSpacing(8)
+        number_grid.setVerticalSpacing(8)
+        number_grid.addWidget(QLabel(u"起始"), 0, 0)
+        number_grid.addWidget(self.start_number_spin, 0, 1)
+        number_grid.addWidget(QLabel(u"位数"), 0, 2)
+        number_grid.addWidget(self.padding_spin, 0, 3)
+        number_grid.addWidget(QLabel(u"类型"), 1, 0)
+        number_grid.addWidget(self.number_type_combo, 1, 1, 1, 3)
+        number_layout.addLayout(number_grid)
+        number_layout.addWidget(self.auto_number_button)
+
+        # Pattern。
+        pattern_card, pattern_layout = ui_theme.make_card(scroll_content)
+        pattern_layout.addWidget(
+            ui_theme.make_section_title(u"模式重命名")
+        )
+        pattern_layout.addWidget(self.pattern_info_label)
+        pattern_layout.addWidget(self.pattern_line)
+        pattern_layout.addWidget(self.pattern_button)
+
+        scroll_layout.addWidget(affix_card)
+        scroll_layout.addWidget(replace_card)
+        scroll_layout.addWidget(number_card)
+        scroll_layout.addWidget(pattern_card)
+        scroll_layout.addStretch(1)
+
+        self.scroll_area.setWidget(scroll_content)
+
+        main_layout.addWidget(self.scroll_area, 1)
+        main_layout.addWidget(self.status_label)
+
+    def create_connections(self):
+        """连接界面信号。"""
+        self.prefix_button.clicked.connect(self.apply_prefix)
+        self.suffix_button.clicked.connect(self.apply_suffix)
+        self.search_replace_button.clicked.connect(
+            self.apply_search_replace
+        )
+        self.auto_number_button.clicked.connect(
+            self.apply_auto_number
+        )
+        self.pattern_button.clicked.connect(
+            self.apply_pattern
+        )
+
+    def set_status_count(self, action_name, count):
+        """更新底部状态。"""
+        self.status_label.setText(
+            u"{}：{} 个对象".format(
+                action_name,
+                count
+            )
+        )
+
+    def apply_prefix(self):
+        count = add_prefix_to_selection(
+            self.prefix_line.text()
+        )
+        self.set_status_count(u"已添加前缀", count)
+
+    def apply_suffix(self):
+        count = add_suffix_to_selection(
+            self.suffix_line.text()
+        )
+        self.set_status_count(u"已添加后缀", count)
+
+    def apply_search_replace(self):
+        count = search_replace_names(
+            self.search_line.text(),
+            self.replace_line.text(),
+            self.scope_combo.currentText()
+        )
+        self.set_status_count(u"已替换", count)
+
+    def apply_auto_number(self):
+        count = auto_number_selection(
+            self.base_name_line.text(),
+            self.start_number_spin.value(),
+            self.padding_spin.value(),
+            self.number_type_combo.currentText()
+        )
+        self.set_status_count(u"已编号", count)
+
+    def apply_pattern(self):
+        count = pattern_rename_selection(
+            self.pattern_line.text()
+        )
+        self.set_status_count(u"已模式重命名", count)
 
 
 def main():
-    """创建并显示 Maya 原生重命名工具。"""
-    return create_interface()
+    """创建重命名工具。"""
+    window = RenameTool()
+    return window
 
 
 if __name__ == "__main__":
-    main()
+    window = main()
+    window.show()
