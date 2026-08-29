@@ -35,9 +35,9 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
-from ... import ui_theme
-from ...config import icon_dir
-from ....core import attrUtils
+from ...config import icons_dir as icon_dir
+from ...core import attrUtils
+from ...ui import theme as ui_theme
 
 
 class AttrTool(QWidget):
@@ -58,10 +58,6 @@ class AttrTool(QWidget):
             minimum_width=520
         )
         self.resize(560, 520)
-
-    # -------------------------------------------------------------------------
-    # UI
-    # -------------------------------------------------------------------------
 
     def create_widgets(self):
         """创建界面部件。"""
@@ -159,7 +155,7 @@ class AttrTool(QWidget):
         ]
 
     def create_layouts(self):
-        """创建 Silicon 风格 Card 布局。"""
+        """创建 Card 布局。"""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -167,7 +163,6 @@ class AttrTool(QWidget):
         main_layout.addWidget(self.title_label)
         main_layout.addWidget(self.subtitle_label)
 
-        # Maya 属性窗口 Card。
         editor_card, editor_layout = ui_theme.make_card(self)
         editor_layout.addWidget(ui_theme.make_section_title(u"属性编辑"))
 
@@ -187,7 +182,6 @@ class AttrTool(QWidget):
         editor_grid.addWidget(self.delete_attr_window_button, 1, 1)
         editor_layout.addLayout(editor_grid)
 
-        # Channel Box 排序 Card。
         order_card, order_layout = ui_theme.make_card(self)
         order_layout.addWidget(ui_theme.make_section_title(u"Channel Box 排序"))
         order_layout.addWidget(self.attr_move_info_label)
@@ -198,7 +192,6 @@ class AttrTool(QWidget):
         order_button_layout.addWidget(self.attr_down_button)
         order_layout.addLayout(order_button_layout)
 
-        # 属性状态 Card。
         state_card, state_layout = ui_theme.make_card(self)
         state_layout.addWidget(ui_theme.make_section_title(u"属性状态"))
 
@@ -251,16 +244,10 @@ class AttrTool(QWidget):
         self.connect_attr_window_button.clicked.connect(self.open_connection_editor)
         self.channel_control_window_button.clicked.connect(self.open_channel_control)
         self.delete_attr_window_button.clicked.connect(self.delete_selected_attr)
-
         self.attr_up_button.clicked.connect(self.move_attr_up)
         self.attr_down_button.clicked.connect(self.move_attr_down)
-
         self.attr_set_button.clicked.connect(self.clicked_attr_set_button)
         self.attr_reset_button.clicked.connect(self.clicked_attr_reset_button)
-
-    # -------------------------------------------------------------------------
-    # Maya 属性窗口
-    # -------------------------------------------------------------------------
 
     def open_add_attr_window(self):
         mel.eval("dynAddAttrWin({})")
@@ -277,10 +264,6 @@ class AttrTool(QWidget):
     def delete_selected_attr(self):
         mel.eval("dynDeleteAttrWin({})")
 
-    # -------------------------------------------------------------------------
-    # Channel Box 顺序
-    # -------------------------------------------------------------------------
-
     def move_attr_up(self):
         attrUtils.Attr.move_channelBox_attr(
             up=True,
@@ -292,10 +275,6 @@ class AttrTool(QWidget):
             up=False,
             down=True
         )
-
-    # -------------------------------------------------------------------------
-    # 属性状态
-    # -------------------------------------------------------------------------
 
     def clicked_attr_set_button(self):
         """根据界面状态设置当前选择物体的 Transform 属性。"""
@@ -373,6 +352,7 @@ def main():
     return window
 
 
-if __name__ == "__main__":
-    window = main()
-    window.show()
+__all__ = [
+    "AttrTool",
+    "main",
+]
