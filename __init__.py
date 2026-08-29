@@ -12,6 +12,21 @@ muziToolset
     tools       独立的小型绑定工具
     systems     完整绑定系统
     resources   图标、Controller Shape 等资源
+
+常用入口
+--------
+show()
+    打开 Muzi Rigging 主工具箱。
+
+pipeline_smoke_test()
+    验证基础 Core 拆分和 Maya 节点网络。
+
+extended_core_smoke_test()
+    验证 Attribute / Hierarchy / Joint / Naming / Model Check / Scene Clean。
+
+controller_component_smoke_test()
+face_component_smoke_test()
+    验证独立 Rig Component；System 本身由各自测试负责。
 """
 
 from __future__ import print_function
@@ -49,10 +64,27 @@ def functional_smoke_test():
 
 
 def pipeline_smoke_test():
-    """运行 pipelineUtils / Legacy Core 拆分后的功能 Smoke Test。"""
+    """运行基础 Core / Legacy Pipeline 拆分后的功能 Smoke Test。"""
     from .tests import pipeline_refactor_smoke_test
 
     return pipeline_refactor_smoke_test.run()
+
+
+def extended_core_smoke_test():
+    """
+    运行 Extended Core Smoke Test。
+
+    测试范围：
+        attr_utils
+        hierarchy_utils
+        joint_utils
+        name_utils / rename_utils
+        model_check_utils
+        scene_clean_utils
+    """
+    from .tests import extended_core_smoke_test
+
+    return extended_core_smoke_test.run()
 
 
 def face_component_smoke_test():
@@ -75,6 +107,7 @@ __all__ = [
     "smoke_test",
     "functional_smoke_test",
     "pipeline_smoke_test",
+    "extended_core_smoke_test",
     "face_component_smoke_test",
     "controller_component_smoke_test",
 ]
