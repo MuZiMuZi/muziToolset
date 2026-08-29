@@ -5,7 +5,63 @@ Rename Utils
 
 Maya 节点批量重命名底层模块。
 
-本模块不包含 PySide UI。
+模块职责
+--------
+本模块负责面向 Tool / Selection 的批量 Rename 行为，包括 Prefix、Suffix、Search Replace、
+自动编号与 Pattern Rename。
+
+主要公开 API
+------------
+get_short_name(node)
+    返回 DAG Short Name。
+
+get_selected_objects(show_warning=True)
+    获取当前 Maya Selection。
+
+sort_objects_child_first(objects)
+    按 DAG 深度从深到浅排序，保证层级 Rename 时 Child 先处理。
+
+get_objects_by_scope(scope_name)
+    根据“选中物体 / 选中层级 / 全部对象”整理 Rename 范围。
+
+rename_node(node, new_name)
+    安全重命名单个节点。
+
+add_prefix(prefix)
+add_suffix(suffix)
+    给当前 Selection 批量添加前后缀。
+
+search_replace(search_text, replace_text, scope_name)
+    按范围执行普通字符串 Search / Replace。
+
+number_to_alpha(number, uppercase=True)
+get_number_string(number, padding, number_type)
+    数字 / 字母编号辅助。
+
+auto_number(base_name, start_number=1, padding=3, number_type=u"数字")
+    根据 Selection 顺序自动编号。
+
+build_pattern_name(pattern, number)
+pattern_rename(pattern)
+    使用 ``*`` 作为数字占位符执行 Pattern Rename。
+
+和 nameUtils.py 的区别
+----------------------
+nameUtils.py
+    负责正式五段式 Rig 名称的创建、解析、镜像、唯一序号和 Name 对象。
+
+rename_utils.py
+    负责面向用户操作的批量 Rename。
+
+因此本轮保留两个模块，不为了减少文件数量强行合并不同职责。
+
+设计原则
+--------
+1. 层级 Rename 必须 Child First，避免 Parent Rename 后 Long Path 失效；
+2. 所有批量 Rename 使用 scene_utils.undo_chunk，用户一次 Undo 即可撤销整次操作；
+3. Maya 自动追加数字后缀不是正式命名策略，工具应尽量生成明确名称；
+4. Selection 属于本模块的 Tool 兼容入口，真正的单节点 rename_node 接受明确参数；
+5. 本模块不包含 PySide UI。
 """
 
 from __future__ import print_function
@@ -14,9 +70,15 @@ import re
 
 import maya.cmds as cmds
 
+from . import scene_utils
+
+
+# =============================================================================
+# Query / Sort
+# =============================================================================
 
 def get_short_name(node):
-    """返回 DAG 节点短名称。"""
+    """返回 DAG 节点 Short Name。"""
     if "|" in node:
         return node.rsplit("|", 1)[-1]
 
@@ -24,14 +86,11 @@ def get_short_name(node):
 
 
 def get_selected_objects(show_warning=True):
-    """返回当前 Maya 选择。"""
+    """返回当前 Maya Selection 的 Long Path。"""
     selected_objects = cmds.ls(
         selection=True,
         long=True
-    )
-
-    if selected_objects is None:
-        selected_objects = []
+    ) or []
 
     if not selected_objects and show_warning:
         cmds.warning(u"请先选择物体。")
@@ -40,40 +99,47 @@ def get_selected_objects(show_warning=True):
 
 
 def sort_objects_child_first(objects):
-    """按 DAG 深度从深到浅排序。"""
+    """
+    对 DAG 节点去重，并按深度从深到浅排序。
+
+    为什么 Child First：
+        如果先 Rename Parent，原来的 Child Long Path 会立刻失效；先处理最深节点可以避免这个问题。
+    """
     result = []
 
     for node in objects:
         if node not in result:
             result.append(node)
 
-    item_count = len(result)
-    outer_index = 0
+    def get_depth(node):
+        return node.count("|")
 
-    while outer_index < item_count:
-        inner_index = 0
-
-        while inner_index < item_count - 1:
-            current_depth = result[inner_index].count("|")
-            next_depth = result[inner_index + 1].count("|")
-
-            if current_depth < next_depth:
-                temporary_node = result[inner_index]
-                result[inner_index] = result[inner_index + 1]
-                result[inner_index + 1] = temporary_node
-
-            inner_index += 1
-
-        outer_index += 1
+    result.sort(
+        key=get_depth,
+        reverse=True
+    )
 
     return result
 
 
 def get_objects_by_scope(scope_name):
-    """根据中文范围名称返回需要处理的 Transform。"""
+    """
+    根据中文范围名称返回需要处理的 Transform。
+
+    支持：
+        选中物体
+        选中层级
+        其它值 -> 场景全部 Transform
+    """
+    # -------------------------------------------------------------------------
+    # 步骤 1：仅当前 Selection。
+    # -------------------------------------------------------------------------
     if scope_name == u"选中物体":
         return get_selected_objects()
 
+    # -------------------------------------------------------------------------
+    # 步骤 2：Selection + 全部 Transform 后代。
+    # -------------------------------------------------------------------------
     if scope_name == u"选中层级":
         selected_objects = get_selected_objects()
 
@@ -88,10 +154,7 @@ def get_objects_by_scope(scope_name):
                 allDescendents=True,
                 type="transform",
                 fullPath=True
-            )
-
-            if descendants is None:
-                descendants = []
+            ) or []
 
             for descendant in descendants:
                 if descendant not in hierarchy_objects:
@@ -102,20 +165,31 @@ def get_objects_by_scope(scope_name):
 
         return sort_objects_child_first(hierarchy_objects)
 
+    # -------------------------------------------------------------------------
+    # 步骤 3：默认处理场景全部 Transform。
+    # -------------------------------------------------------------------------
     all_objects = cmds.ls(
         transforms=True,
         long=True
-    )
-
-    if all_objects is None:
-        all_objects = []
+    ) or []
 
     return sort_objects_child_first(all_objects)
 
 
+# =============================================================================
+# Single Rename
+# =============================================================================
+
 def rename_node(node, new_name):
-    """只有名称变化时才执行 Maya rename。"""
-    if not cmds.objExists(node):
+    """
+    安全重命名单个 Maya 节点。
+
+    名称没有变化时不调用 cmds.rename；失败时发出 Maya Warning 并返回 None。
+    """
+    if not node or not cmds.objExists(node):
+        return None
+
+    if not new_name:
         return None
 
     current_name = get_short_name(node)
@@ -133,8 +207,13 @@ def rename_node(node, new_name):
         return None
 
 
+# =============================================================================
+# Prefix / Suffix
+# =============================================================================
+
+@scene_utils.undo_chunk
 def add_prefix(prefix):
-    """给当前选择添加前缀。"""
+    """给当前 Selection 批量添加前缀，并返回成功数量。"""
     if not prefix:
         cmds.warning(u"请输入前缀。")
         return 0
@@ -146,29 +225,22 @@ def add_prefix(prefix):
 
     renamed_count = 0
 
-    cmds.undoInfo(
-        openChunk=True,
-        chunkName="MuziRenameAddPrefix"
-    )
+    for selected_object in selected_objects:
+        current_name = get_short_name(selected_object)
+        result = rename_node(
+            selected_object,
+            prefix + current_name
+        )
 
-    try:
-        for selected_object in selected_objects:
-            current_name = get_short_name(selected_object)
-            result = rename_node(
-                selected_object,
-                prefix + current_name
-            )
-
-            if result is not None:
-                renamed_count += 1
-    finally:
-        cmds.undoInfo(closeChunk=True)
+        if result is not None:
+            renamed_count += 1
 
     return renamed_count
 
 
+@scene_utils.undo_chunk
 def add_suffix(suffix):
-    """给当前选择添加后缀。"""
+    """给当前 Selection 批量添加后缀，并返回成功数量。"""
     if not suffix:
         cmds.warning(u"请输入后缀。")
         return 0
@@ -180,29 +252,26 @@ def add_suffix(suffix):
 
     renamed_count = 0
 
-    cmds.undoInfo(
-        openChunk=True,
-        chunkName="MuziRenameAddSuffix"
-    )
+    for selected_object in selected_objects:
+        current_name = get_short_name(selected_object)
+        result = rename_node(
+            selected_object,
+            current_name + suffix
+        )
 
-    try:
-        for selected_object in selected_objects:
-            current_name = get_short_name(selected_object)
-            result = rename_node(
-                selected_object,
-                current_name + suffix
-            )
-
-            if result is not None:
-                renamed_count += 1
-    finally:
-        cmds.undoInfo(closeChunk=True)
+        if result is not None:
+            renamed_count += 1
 
     return renamed_count
 
 
+# =============================================================================
+# Search / Replace
+# =============================================================================
+
+@scene_utils.undo_chunk
 def search_replace(search_text, replace_text, scope_name):
-    """按指定范围查找替换节点名称。"""
+    """按指定范围对节点 Short Name 做普通字符串 Search / Replace。"""
     if not search_text:
         cmds.warning(u"请输入需要查找的内容。")
         return 0
@@ -215,41 +284,45 @@ def search_replace(search_text, replace_text, scope_name):
 
     renamed_count = 0
 
-    cmds.undoInfo(
-        openChunk=True,
-        chunkName="MuziRenameSearchReplace"
-    )
+    # Child First 的列表已经由 get_objects_by_scope 整理完成。
+    for target_object in target_objects:
+        if not cmds.objExists(target_object):
+            continue
 
-    try:
-        for target_object in target_objects:
-            if not cmds.objExists(target_object):
-                continue
+        current_name = get_short_name(target_object)
 
-            current_name = get_short_name(target_object)
+        if search_text not in current_name:
+            continue
 
-            if search_text not in current_name:
-                continue
+        new_name = current_name.replace(
+            search_text,
+            replace_text
+        )
 
-            new_name = current_name.replace(
-                search_text,
-                replace_text
-            )
+        result = rename_node(
+            target_object,
+            new_name
+        )
 
-            result = rename_node(
-                target_object,
-                new_name
-            )
-
-            if result is not None:
-                renamed_count += 1
-    finally:
-        cmds.undoInfo(closeChunk=True)
+        if result is not None:
+            renamed_count += 1
 
     return renamed_count
 
 
+# =============================================================================
+# Number Helper
+# =============================================================================
+
 def number_to_alpha(number, uppercase=True):
-    """把从 0 开始的整数转换成 A-Z / AA-ZZ。"""
+    """
+    把从 0 开始的整数转换成 A-Z / AA-ZZ 字母编号。
+
+    Example:
+        0 -> A
+        25 -> Z
+        26 -> AA
+    """
     if number < 0:
         raise ValueError(u"字母编号不能小于 0。")
 
@@ -280,7 +353,7 @@ def number_to_alpha(number, uppercase=True):
 
 
 def get_number_string(number, padding, number_type):
-    """根据编号类型返回数字或字母字符串。"""
+    """根据编号类型返回数字 / 大写字母 / 小写字母字符串。"""
     if number_type == u"数字":
         number_string = str(number)
 
@@ -294,11 +367,7 @@ def get_number_string(number, padding, number_type):
     if alpha_number < 0:
         return None
 
-    uppercase = True
-
-    if number_type == u"小写字母":
-        uppercase = False
-
+    uppercase = number_type != u"小写字母"
     alpha_string = number_to_alpha(
         alpha_number,
         uppercase=uppercase
@@ -307,10 +376,7 @@ def get_number_string(number, padding, number_type):
     if padding <= len(alpha_string):
         return alpha_string
 
-    fill_character = "A"
-
-    if not uppercase:
-        fill_character = "a"
+    fill_character = "A" if uppercase else "a"
 
     return alpha_string.rjust(
         padding,
@@ -318,13 +384,18 @@ def get_number_string(number, padding, number_type):
     )
 
 
+# =============================================================================
+# Auto Number
+# =============================================================================
+
+@scene_utils.undo_chunk
 def auto_number(
         base_name,
         start_number=1,
         padding=3,
         number_type=u"数字"
 ):
-    """按照当前选择顺序自动编号。"""
+    """按照当前 Selection 顺序自动编号。"""
     selected_objects = get_selected_objects()
 
     if not selected_objects:
@@ -332,56 +403,52 @@ def auto_number(
 
     renamed_count = 0
 
-    cmds.undoInfo(
-        openChunk=True,
-        chunkName="MuziRenameAutoNumber"
-    )
+    for index in range(len(selected_objects)):
+        selected_object = selected_objects[index]
+        number = start_number + index
+        number_string = get_number_string(
+            number,
+            padding,
+            number_type
+        )
 
-    try:
-        index = 0
+        if number_string is None:
+            cmds.warning(u"字母编号的起始数字必须大于等于 1。")
+            continue
 
-        for selected_object in selected_objects:
-            number = start_number + index
-            number_string = get_number_string(
-                number,
-                padding,
-                number_type
-            )
+        final_base_name = base_name
 
-            if number_string is None:
-                cmds.warning(
-                    u"字母编号的起始数字必须大于等于 1。"
-                )
-                index += 1
-                continue
+        if not final_base_name:
+            final_base_name = get_short_name(selected_object)
 
-            final_base_name = base_name
+        new_name = "{}_{}".format(
+            final_base_name,
+            number_string
+        )
 
-            if not final_base_name:
-                final_base_name = get_short_name(selected_object)
+        result = rename_node(
+            selected_object,
+            new_name
+        )
 
-            new_name = "{}_{}".format(
-                final_base_name,
-                number_string
-            )
-
-            result = rename_node(
-                selected_object,
-                new_name
-            )
-
-            if result is not None:
-                renamed_count += 1
-
-            index += 1
-    finally:
-        cmds.undoInfo(closeChunk=True)
+        if result is not None:
+            renamed_count += 1
 
     return renamed_count
 
 
+# =============================================================================
+# Pattern Rename
+# =============================================================================
+
 def build_pattern_name(pattern, number):
-    """根据 * 占位块生成名称。"""
+    """
+    根据 ``*`` 占位块生成名称。
+
+    Example:
+        build_pattern_name("jnt_md_spine_bind_***", 4)
+        -> jnt_md_spine_bind_004
+    """
     star_blocks = re.findall(
         r"\*+",
         pattern
@@ -411,8 +478,9 @@ def build_pattern_name(pattern, number):
     return new_name
 
 
+@scene_utils.undo_chunk
 def pattern_rename(pattern):
-    """按照 * 编号占位规则重命名当前选择。"""
+    """按照 ``*`` 数字占位规则重命名当前 Selection。"""
     if not pattern:
         cmds.warning(u"请输入重命名模式。")
         return 0
@@ -424,30 +492,20 @@ def pattern_rename(pattern):
 
     renamed_count = 0
 
-    cmds.undoInfo(
-        openChunk=True,
-        chunkName="MuziRenamePattern"
-    )
+    for index in range(len(selected_objects)):
+        selected_object = selected_objects[index]
+        number = index + 1
+        new_name = build_pattern_name(
+            pattern,
+            number
+        )
+        result = rename_node(
+            selected_object,
+            new_name
+        )
 
-    try:
-        number = 1
-
-        for selected_object in selected_objects:
-            new_name = build_pattern_name(
-                pattern,
-                number
-            )
-            result = rename_node(
-                selected_object,
-                new_name
-            )
-
-            if result is not None:
-                renamed_count += 1
-
-            number += 1
-    finally:
-        cmds.undoInfo(closeChunk=True)
+        if result is not None:
+            renamed_count += 1
 
     return renamed_count
 
@@ -455,11 +513,15 @@ def pattern_rename(pattern):
 __all__ = [
     "get_short_name",
     "get_selected_objects",
+    "sort_objects_child_first",
     "get_objects_by_scope",
+    "rename_node",
     "add_prefix",
     "add_suffix",
     "search_replace",
+    "number_to_alpha",
+    "get_number_string",
     "auto_number",
-    "pattern_rename",
     "build_pattern_name",
+    "pattern_rename",
 ]
