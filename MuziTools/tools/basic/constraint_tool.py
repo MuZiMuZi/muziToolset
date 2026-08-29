@@ -4,26 +4,9 @@ u"""
 ========
 
 功能：
-    1. 父子约束
-    2. 点约束
-    3. 方向约束
-    4. 缩放约束
-    5. 目标约束
-    6. 极向量约束
-    7. 选择物体关联的约束节点
-    8. 删除物体关联的约束节点
-
-约束模式：
-    多对一：
-        前面的选择物体作为驱动者，最后一个选择物体作为被驱动者。
-
-    一对多：
-        第一个选择物体作为驱动者，其余选择物体作为被驱动者。
-
-说明：
-    - Maya 2023 优先使用 PySide2。
-    - Maya 场景操作统一使用 maya.cmds。
-    - main() 只创建并返回 QWidget，由 window_manager 统一管理窗口。
+    - Parent / Point / Orient / Scale / Aim / Pole Vector Constraint；
+    - 多对一 / 一对多选择模式；
+    - 查询和删除关联约束节点。
 """
 
 from __future__ import print_function
@@ -51,18 +34,14 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
+from ... import ui_theme
+
 
 class ConstraintTool(QWidget):
     """Maya 常用约束工具窗口。"""
 
     def __init__(self, parent=None):
         super(ConstraintTool, self).__init__(parent)
-
-        self.window_name = "ConstraintTool"
-        self.window_title = u"Constraint Tool（约束工具）"
-
-        self.setWindowTitle(self.window_title)
-        self.setMinimumWidth(360)
 
         self.constraint_types = [
             "parentConstraint",
@@ -77,18 +56,22 @@ class ConstraintTool(QWidget):
         self.create_layouts()
         self.create_connections()
 
+        ui_theme.style_window(
+            self,
+            title=u"约束工具",
+            minimum_width=520
+        )
+        self.resize(540, 460)
+
     # -------------------------------------------------------------------------
-    # 创建界面
+    # UI
     # -------------------------------------------------------------------------
 
     def create_widgets(self):
         """创建窗口中使用的所有部件。"""
-
-        self.title_label = QLabel(
-            u"---------------- 约束工具 ----------------"
-        )
-        self.title_label.setStyleSheet(
-            u"color: rgb(169, 255, 175);"
+        self.title_label = ui_theme.make_title(u"约束工具")
+        self.subtitle_label = ui_theme.make_subtitle(
+            u"统一创建常用 Constraint，并管理选择对象已有的约束节点。"
         )
 
         self.mult_to_one_radio = QRadioButton(u"多对一")
@@ -105,94 +88,118 @@ class ConstraintTool(QWidget):
         self.maintain_offset_checkbox = QCheckBox(u"保持偏移")
         self.maintain_offset_checkbox.setChecked(True)
 
+        self.mode_info_label = QLabel(
+            u"多对一：前面选择作为 Driver，最后一个作为 Driven。\n"
+            u"一对多：第一个作为 Driver，其余对象作为 Driven。"
+        )
+        self.mode_info_label.setWordWrap(True)
+        ui_theme.set_role(self.mode_info_label, "muted")
+
         self.parent_constraint_button = QPushButton(
             QIcon(":parentConstraint.png"),
-            u"父子约束"
+            u"Parent"
         )
         self.point_constraint_button = QPushButton(
             QIcon(":posConstraint.png"),
-            u"点约束"
+            u"Point"
         )
         self.orient_constraint_button = QPushButton(
             QIcon(":orientConstraint.png"),
-            u"方向约束"
+            u"Orient"
         )
         self.scale_constraint_button = QPushButton(
             QIcon(":scaleConstraint.png"),
-            u"缩放约束"
+            u"Scale"
         )
         self.aim_constraint_button = QPushButton(
             QIcon(":aimConstraint.png"),
-            u"目标约束"
+            u"Aim"
         )
         self.pole_vector_constraint_button = QPushButton(
             QIcon(":poleVectorConstraint.png"),
-            u"极向量约束"
+            u"Pole Vector"
         )
 
         self.select_constraint_button = QPushButton(
             QIcon(":menuIconModify.png"),
-            u"选择约束"
+            u"选择关联约束"
         )
         self.select_constraint_button.setToolTip(
-            u"选择当前物体关联的所有约束节点"
+            u"选择当前对象关联的所有约束节点"
         )
 
         self.delete_constraint_button = QPushButton(
             QIcon(":delete.png"),
-            u"删除约束"
+            u"删除关联约束"
         )
         self.delete_constraint_button.setToolTip(
-            u"删除当前物体关联的所有约束节点"
+            u"删除当前对象关联的所有约束节点"
         )
-
-        self.constraint_buttons = [
-            self.parent_constraint_button,
-            self.point_constraint_button,
-            self.orient_constraint_button,
-            self.scale_constraint_button,
-            self.aim_constraint_button,
-            self.pole_vector_constraint_button,
-            self.select_constraint_button,
-            self.delete_constraint_button,
-        ]
+        ui_theme.style_danger(self.delete_constraint_button)
 
     def create_layouts(self):
-        """创建窗口布局。"""
+        """创建 Silicon Card 布局。"""
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(16, 16, 16, 16)
+        main_layout.setSpacing(12)
 
-        self.mode_layout = QHBoxLayout()
-        self.mode_layout.addWidget(self.mult_to_one_radio)
-        self.mode_layout.addWidget(self.one_to_mult_radio)
-        self.mode_layout.addStretch()
-        self.mode_layout.addWidget(self.maintain_offset_checkbox)
+        main_layout.addWidget(self.title_label)
+        main_layout.addWidget(self.subtitle_label)
 
-        self.constraint_layout = QGridLayout()
+        mode_card, mode_layout = ui_theme.make_card(self)
+        mode_layout.addWidget(
+            ui_theme.make_section_title(u"选择模式")
+        )
+        mode_layout.addWidget(self.mode_info_label)
 
-        row = 0
-        column = 0
+        mode_row = QHBoxLayout()
+        mode_row.setContentsMargins(0, 0, 0, 0)
+        mode_row.addWidget(self.mult_to_one_radio)
+        mode_row.addWidget(self.one_to_mult_radio)
+        mode_row.addStretch(1)
+        mode_row.addWidget(self.maintain_offset_checkbox)
+        mode_layout.addLayout(mode_row)
 
-        for button in self.constraint_buttons:
-            self.constraint_layout.addWidget(
-                button,
-                row,
-                column
-            )
+        create_card, create_layout = ui_theme.make_card(self)
+        create_layout.addWidget(
+            ui_theme.make_section_title(u"创建约束")
+        )
 
-            column += 1
+        constraint_grid = QGridLayout()
+        constraint_grid.setHorizontalSpacing(8)
+        constraint_grid.setVerticalSpacing(8)
+        constraint_grid.addWidget(self.parent_constraint_button, 0, 0)
+        constraint_grid.addWidget(self.point_constraint_button, 0, 1)
+        constraint_grid.addWidget(self.orient_constraint_button, 0, 2)
+        constraint_grid.addWidget(self.scale_constraint_button, 1, 0)
+        constraint_grid.addWidget(self.aim_constraint_button, 1, 1)
+        constraint_grid.addWidget(self.pole_vector_constraint_button, 1, 2)
+        create_layout.addLayout(constraint_grid)
 
-            if column >= 2:
-                column = 0
-                row += 1
+        manage_card, manage_layout = ui_theme.make_card(self)
+        manage_layout.addWidget(
+            ui_theme.make_section_title(u"约束管理")
+        )
 
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.addWidget(self.title_label)
-        self.main_layout.addLayout(self.mode_layout)
-        self.main_layout.addLayout(self.constraint_layout)
-        self.main_layout.addStretch()
+        manage_info_label = QLabel(
+            u"对当前选择对象查询或删除已连接的 Constraint 节点。"
+        )
+        ui_theme.set_role(manage_info_label, "muted")
+        manage_layout.addWidget(manage_info_label)
+
+        manage_row = QHBoxLayout()
+        manage_row.setContentsMargins(0, 0, 0, 0)
+        manage_row.addWidget(self.select_constraint_button)
+        manage_row.addWidget(self.delete_constraint_button)
+        manage_layout.addLayout(manage_row)
+
+        main_layout.addWidget(mode_card)
+        main_layout.addWidget(create_card)
+        main_layout.addWidget(manage_card)
+        main_layout.addStretch(1)
 
     def create_connections(self):
         """连接所有按钮事件。"""
-
         self.parent_constraint_button.clicked.connect(
             self.clicked_parent_constraint_button
         )
@@ -223,15 +230,7 @@ class ConstraintTool(QWidget):
     # -------------------------------------------------------------------------
 
     def get_driver_and_driven_objects(self):
-        """
-        根据当前约束模式，把 Maya 选择拆分成驱动者和被驱动者。
-
-        Returns:
-            tuple:
-                driver_objects (list)
-                driven_objects (list)
-        """
-
+        """根据当前模式拆分 Driver / Driven。"""
         selected_objects = cmds.ls(
             selection=True,
             long=True
@@ -249,8 +248,8 @@ class ConstraintTool(QWidget):
 
         if self.mult_to_one_radio.isChecked():
             last_index = len(selected_objects) - 1
-
             index = 0
+
             while index < last_index:
                 driver_objects.append(selected_objects[index])
                 index += 1
@@ -258,8 +257,8 @@ class ConstraintTool(QWidget):
             driven_objects.append(selected_objects[-1])
         else:
             driver_objects.append(selected_objects[0])
-
             index = 1
+
             while index < len(selected_objects):
                 driven_objects.append(selected_objects[index])
                 index += 1
@@ -271,13 +270,7 @@ class ConstraintTool(QWidget):
     # -------------------------------------------------------------------------
 
     def create_standard_constraint(self, constraint_command, chunk_name):
-        """
-        创建支持多目标的标准约束。
-
-        parent / point / orient / scale / aim 的选择逻辑完全一致，
-        因此只把共同流程集中在这里；具体按钮仍然保留独立函数，便于阅读。
-        """
-
+        """创建支持多目标的标准约束。"""
         driver_objects, driven_objects = self.get_driver_and_driven_objects()
 
         if not driver_objects or not driven_objects:
@@ -304,48 +297,37 @@ class ConstraintTool(QWidget):
             cmds.undoInfo(closeChunk=True)
 
     def clicked_parent_constraint_button(self):
-        """创建父子约束。"""
         self.create_standard_constraint(
             cmds.parentConstraint,
             "MuziParentConstraint"
         )
 
     def clicked_point_constraint_button(self):
-        """创建点约束。"""
         self.create_standard_constraint(
             cmds.pointConstraint,
             "MuziPointConstraint"
         )
 
     def clicked_orient_constraint_button(self):
-        """创建方向约束。"""
         self.create_standard_constraint(
             cmds.orientConstraint,
             "MuziOrientConstraint"
         )
 
     def clicked_scale_constraint_button(self):
-        """创建缩放约束。"""
         self.create_standard_constraint(
             cmds.scaleConstraint,
             "MuziScaleConstraint"
         )
 
     def clicked_aim_constraint_button(self):
-        """
-        创建目标约束。
-
-        旧工具这里调用 performAimConstraint MEL，导致它不遵循工具中的
-        多对一 / 一对多和保持偏移选项。现在统一使用 maya.cmds.aimConstraint。
-        """
         self.create_standard_constraint(
             cmds.aimConstraint,
             "MuziAimConstraint"
         )
 
     def clicked_pole_vector_constraint_button(self):
-        """创建极向量约束。极向量约束要求恰好选择两个物体。"""
-
+        """创建 Pole Vector Constraint。"""
         selected_objects = cmds.ls(
             selection=True,
             long=True
@@ -356,7 +338,7 @@ class ConstraintTool(QWidget):
 
         if len(selected_objects) != 2:
             cmds.warning(
-                u"极向量约束需要恰好选择两个物体：控制器 -> IK Handle。"
+                u"Pole Vector 需要恰好选择两个物体：控制器 -> IK Handle。"
             )
             return
 
@@ -379,12 +361,11 @@ class ConstraintTool(QWidget):
             cmds.undoInfo(closeChunk=True)
 
     # -------------------------------------------------------------------------
-    # 查询约束
+    # 约束查询
     # -------------------------------------------------------------------------
 
     def get_constraints_from_objects(self, selected_objects):
-        """收集选择物体关联的约束节点，并保持稳定顺序去重。"""
-
+        """收集选择对象关联的约束节点，并保持顺序去重。"""
         constraint_nodes = []
 
         for selected_object in selected_objects:
@@ -406,8 +387,7 @@ class ConstraintTool(QWidget):
         return constraint_nodes
 
     def clicked_select_constraint_button(self):
-        """选择当前选择物体关联的所有约束节点。"""
-
+        """选择当前对象关联的所有约束节点。"""
         selected_objects = cmds.ls(
             selection=True,
             long=True
@@ -440,8 +420,7 @@ class ConstraintTool(QWidget):
         )
 
     def clicked_delete_constraint_button(self):
-        """删除当前选择物体关联的所有约束节点。"""
-
+        """删除当前对象关联的所有约束节点。"""
         selected_objects = cmds.ls(
             selection=True,
             long=True
@@ -484,10 +463,6 @@ class ConstraintTool(QWidget):
                 deleted_count
             )
         )
-
-
-# 旧类名兼容。
-Constraint_Tool = ConstraintTool
 
 
 def main():
