@@ -6,22 +6,16 @@ Control Shape Tool
 Maya Controller Shape 图库与编辑工具。
 
 职责：
-    1. 从正式资源目录读取 Controller Shape JSON / 缩略图；
-    2. 把 Shape 应用到当前控制器；
-    3. 上传、删除和刷新 Shape 数据；
-    4. 修改 Maya Index Color；
-    5. 旋转、缩放、镜像和替换 Curve Shape。
+    1. 展示正式 Controller Shape 资源目录；
+    2. 收集 Maya Selection 和 UI 参数；
+    3. 调用 core.control_shape_utils 执行 Shape 读写和编辑；
+    4. 管理 Shape 图库交互。
 
-说明：
-    - 场景操作统一使用 maya.cmds；
-    - 不依赖 PyMel；
-    - 不自己保存全局窗口引用；
-    - main() 只创建并返回 QWidget，由 app.window_manager 统一管理生命周期。
+底层 Curve Shape 操作统一放在 core/control_shape_utils.py。
 """
 
 from __future__ import print_function
 
-import json
 import os
 
 import maya.cmds as cmds
@@ -63,7 +57,7 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
-from ... import config
+from ...core import control_shape_utils
 from ...ui import theme
 
 
@@ -101,278 +95,6 @@ index_rgb_map = [
     (0.434, 0.188, 0.627),
     (0.627, 0.188, 0.411),
 ]
-
-
-def get_library_dir():
-    """返回正式 Controller Shape 资源目录。"""
-    return config.controller_shapes_dir
-
-
-def get_curve_shapes(transform):
-    """返回 Transform 下全部非 Intermediate NURBS Curve Shape。"""
-    shapes = cmds.listRelatives(
-        transform,
-        shapes=True,
-        noIntermediate=True,
-        fullPath=True,
-        type="nurbsCurve"
-    )
-
-    if shapes is None:
-        shapes = []
-
-    return shapes
-
-
-def get_selected_curve_transforms():
-    """返回 Maya 当前选择中的 Curve Transform。"""
-    selections = cmds.ls(
-        selection=True,
-        long=True,
-        objectsOnly=True
-    )
-
-    if selections is None:
-        selections = []
-
-    transforms = []
-
-    for selected_node in selections:
-        node = selected_node
-        node_type = cmds.nodeType(node)
-
-        if node_type == "nurbsCurve":
-            parent_nodes = cmds.listRelatives(
-                node,
-                parent=True,
-                fullPath=True
-            )
-
-            if parent_nodes:
-                node = parent_nodes[0]
-
-        if cmds.nodeType(node) != "transform":
-            continue
-
-        curve_shapes = get_curve_shapes(node)
-
-        if not curve_shapes:
-            continue
-
-        if node not in transforms:
-            transforms.append(node)
-
-    return transforms
-
-
-def get_shape_data_from_transform(transform):
-    """把控制器 Transform 的全部 Curve Shape 转成可保存 JSON 数据。"""
-    result = []
-    curve_shapes = get_curve_shapes(transform)
-
-    for curve_shape in curve_shapes:
-        degree = cmds.getAttr(
-            curve_shape + ".degree"
-        )
-        form = cmds.getAttr(
-            curve_shape + ".form"
-        )
-        periodic = form == 2
-
-        cvs = cmds.ls(
-            curve_shape + ".cv[*]",
-            flatten=True
-        )
-
-        if cvs is None:
-            cvs = []
-
-        points = []
-
-        for cv in cvs:
-            position = cmds.xform(
-                cv,
-                query=True,
-                objectSpace=True,
-                translation=True
-            )
-
-            for value in position:
-                points.append(value)
-
-        knot_count = cmds.getAttr(
-            curve_shape + ".knots",
-            size=True
-        )
-
-        knots = []
-
-        for knot_index in range(knot_count):
-            knot_value = cmds.getAttr(
-                "{}.knots[{}]".format(
-                    curve_shape,
-                    knot_index
-                )
-            )
-            knots.append(knot_value)
-
-        shape_data = {
-            "points": points,
-            "degree": degree,
-            "periodic": periodic,
-            "knot": knots,
-        }
-        result.append(shape_data)
-
-    return result
-
-
-def create_temp_curve(shape_data):
-    """根据单个 Shape 数据创建临时 Curve Transform。"""
-    points_flat = shape_data.get("points") or []
-    degree = int(shape_data.get("degree", 1))
-    periodic = bool(shape_data.get("periodic", False))
-    knots = shape_data.get("knot") or []
-
-    points = []
-    point_index = 0
-
-    while point_index + 2 < len(points_flat):
-        point = [
-            points_flat[point_index],
-            points_flat[point_index + 1],
-            points_flat[point_index + 2],
-        ]
-        points.append(point)
-        point_index += 3
-
-    if not points:
-        raise RuntimeError(u"Shape 数据没有有效 CV 点。")
-
-    if periodic:
-        extra_points = []
-
-        for extra_index in range(degree):
-            if extra_index >= len(points):
-                break
-
-            extra_points.append(points[extra_index])
-
-        for point in extra_points:
-            points.append(point)
-
-    create_kwargs = {
-        "degree": degree,
-        "point": points,
-        "periodic": periodic,
-    }
-
-    if knots:
-        create_kwargs["knot"] = knots
-
-    temp_curve = cmds.curve(**create_kwargs)
-    return temp_curve
-
-
-def apply_shape_data(transform, shape_data_list):
-    """使用 Shape JSON 数据替换 Transform 下现有 Curve Shape。"""
-    if not cmds.objExists(transform):
-        raise RuntimeError(
-            u"控制器不存在：{}".format(transform)
-        )
-
-    old_shapes = get_curve_shapes(transform)
-
-    if old_shapes:
-        cmds.delete(old_shapes)
-
-    short_name = transform.split("|")[-1]
-    shape_index = 0
-
-    for shape_data in shape_data_list:
-        temp_curve = create_temp_curve(shape_data)
-        temp_shapes = get_curve_shapes(temp_curve)
-
-        if not temp_shapes:
-            cmds.delete(temp_curve)
-            continue
-
-        temp_shape = temp_shapes[0]
-
-        cmds.parent(
-            temp_shape,
-            transform,
-            shape=True,
-            relative=True
-        )
-
-        new_shape_name = "{}Shape".format(short_name)
-
-        if shape_index > 0:
-            new_shape_name = "{}Shape{}".format(
-                short_name,
-                shape_index + 1
-            )
-
-        cmds.rename(
-            temp_shape,
-            new_shape_name
-        )
-        cmds.delete(temp_curve)
-        shape_index += 1
-
-    return transform
-
-
-def load_shape_data(shape_name):
-    """从 Controller Shape 资源目录读取 JSON。"""
-    file_path = os.path.join(
-        get_library_dir(),
-        "{}.json".format(shape_name)
-    )
-
-    if not os.path.isfile(file_path):
-        raise RuntimeError(
-            u"控制器 Shape 文件不存在：{}".format(file_path)
-        )
-
-    with open(file_path, "r") as file_object:
-        data = json.load(file_object)
-
-    return data
-
-
-def save_shape_data(shape_name, transform):
-    """把控制器 Curve Shape 保存为 JSON。"""
-    if not shape_name:
-        raise RuntimeError(u"Shape 名称不能为空。")
-
-    data = get_shape_data_from_transform(transform)
-
-    if not data:
-        raise RuntimeError(
-            u"所选对象没有 NURBS Curve Shape。"
-        )
-
-    library_dir = get_library_dir()
-
-    if not os.path.isdir(library_dir):
-        os.makedirs(library_dir)
-
-    file_path = os.path.join(
-        library_dir,
-        "{}.json".format(shape_name)
-    )
-
-    with open(file_path, "w") as file_object:
-        json.dump(
-            data,
-            file_object,
-            ensure_ascii=False,
-            indent=4
-        )
-
-    return file_path
 
 
 class ShapeListWidget(QListWidget):
@@ -424,13 +146,13 @@ class ShapeListWidget(QListWidget):
         """重新扫描 Controller Shape 资源目录。"""
         self.clear()
 
-        library_dir = get_library_dir()
+        library_dir = control_shape_utils.get_library_dir()
 
         if not os.path.isdir(library_dir):
             os.makedirs(library_dir)
 
         file_names = os.listdir(library_dir)
-        json_names = []
+        shape_names = []
 
         for file_name in file_names:
             shape_name, extension = os.path.splitext(file_name)
@@ -438,11 +160,11 @@ class ShapeListWidget(QListWidget):
             if extension.lower() != ".json":
                 continue
 
-            json_names.append(shape_name)
+            shape_names.append(shape_name)
 
-        json_names.sort()
+        shape_names.sort()
 
-        for shape_name in json_names:
+        for shape_name in shape_names:
             jpg_file = os.path.join(
                 library_dir,
                 "{}.jpg".format(shape_name)
@@ -491,8 +213,15 @@ class ShapeListWidget(QListWidget):
     @staticmethod
     def apply_shape_name(shape_name):
         """把指定 Shape 应用到选择控制器，或创建新控制器。"""
-        data = load_shape_data(shape_name)
-        transforms = get_selected_curve_transforms()
+        try:
+            shape_data = control_shape_utils.load_shape_data(
+                shape_name
+            )
+        except Exception as error:
+            cmds.warning(str(error))
+            return
+
+        transforms = control_shape_utils.get_selected_curve_transforms()
 
         cmds.undoInfo(
             openChunk=True,
@@ -502,18 +231,18 @@ class ShapeListWidget(QListWidget):
         try:
             if transforms:
                 for transform in transforms:
-                    apply_shape_data(
+                    control_shape_utils.apply_shape_data(
                         transform,
-                        data
+                        shape_data
                     )
             else:
                 transform = cmds.createNode(
                     "transform",
                     name="ctrl_{}".format(shape_name)
                 )
-                apply_shape_data(
+                control_shape_utils.apply_shape_data(
                     transform,
-                    data
+                    shape_data
                 )
                 cmds.select(
                     transform,
@@ -526,7 +255,7 @@ class ShapeListWidget(QListWidget):
 
     def upload_control(self):
         """把当前一个 Curve Controller 保存进图库。"""
-        transforms = get_selected_curve_transforms()
+        transforms = control_shape_utils.get_selected_curve_transforms()
 
         if len(transforms) != 1:
             cmds.warning(
@@ -573,7 +302,7 @@ class ShapeListWidget(QListWidget):
                 return
 
         try:
-            file_path = save_shape_data(
+            file_path = control_shape_utils.save_shape_data(
                 shape_name,
                 transforms[0]
             )
@@ -596,29 +325,16 @@ class ShapeListWidget(QListWidget):
             )
             return
 
-        library_dir = get_library_dir()
-
         for item in items:
             shape_name = item.text()
-            extensions = [
-                ".json",
-                ".jpg",
-                ".png",
-            ]
 
-            for extension in extensions:
-                file_path = os.path.join(
-                    library_dir,
-                    shape_name + extension
+            try:
+                control_shape_utils.delete_shape_data(
+                    shape_name,
+                    delete_previews=True
                 )
-
-                if not os.path.isfile(file_path):
-                    continue
-
-                try:
-                    os.remove(file_path)
-                except OSError as error:
-                    cmds.warning(str(error))
+            except OSError as error:
+                cmds.warning(str(error))
 
         self.refresh()
 
@@ -669,28 +385,17 @@ class ColorListWidget(QListWidget):
     def apply_color(item):
         """把 Index Color 应用到选择控制器 Shape。"""
         color_index = item.data(Qt.UserRole)
-        transforms = get_selected_curve_transforms()
+        transforms = control_shape_utils.get_selected_curve_transforms()
 
         if not transforms:
             cmds.warning(u"请先选择 Curve 控制器。")
             return
 
         for transform in transforms:
-            curve_shapes = get_curve_shapes(transform)
-
-            for curve_shape in curve_shapes:
-                cmds.setAttr(
-                    curve_shape + ".overrideEnabled",
-                    1
-                )
-                cmds.setAttr(
-                    curve_shape + ".overrideRGBColors",
-                    0
-                )
-                cmds.setAttr(
-                    curve_shape + ".overrideColor",
-                    int(color_index)
-                )
+            control_shape_utils.set_shape_color(
+                transform,
+                color_index
+            )
 
 
 class ControlShapeTool(QWidget):
@@ -720,7 +425,7 @@ class ControlShapeTool(QWidget):
         )
 
         self.library_path_label = QLabel(
-            get_library_dir()
+            control_shape_utils.get_library_dir()
         )
         self.library_path_label.setWordWrap(True)
         theme.set_role(
@@ -861,34 +566,11 @@ class ControlShapeTool(QWidget):
             self.shape_list.refresh
         )
 
-    @staticmethod
-    def get_selected_cvs():
-        """返回当前选择控制器的全部 Curve CV。"""
-        transforms = get_selected_curve_transforms()
-        cvs = []
-
-        for transform in transforms:
-            curve_shapes = get_curve_shapes(transform)
-
-            for curve_shape in curve_shapes:
-                shape_cvs = cmds.ls(
-                    curve_shape + ".cv[*]",
-                    flatten=True
-                )
-
-                if shape_cvs is None:
-                    shape_cvs = []
-
-                for cv in shape_cvs:
-                    cvs.append(cv)
-
-        return cvs
-
     def rotate_shapes(self):
         """旋转选择控制器的 Shape CV。"""
-        cvs = self.get_selected_cvs()
+        transforms = control_shape_utils.get_selected_curve_transforms()
 
-        if not cvs:
+        if not transforms:
             cmds.warning(u"请先选择 Curve 控制器。")
             return
 
@@ -906,33 +588,29 @@ class ControlShapeTool(QWidget):
         if self.rotate_z_check.isChecked():
             rotate_z = angle
 
-        cmds.rotate(
-            rotate_x,
-            rotate_y,
-            rotate_z,
-            cvs,
-            relative=True,
-            objectSpace=True
-        )
+        for transform in transforms:
+            control_shape_utils.rotate_shape(
+                transform,
+                rotate_x=rotate_x,
+                rotate_y=rotate_y,
+                rotate_z=rotate_z
+            )
 
     def scale_shapes(self):
         """统一缩放选择控制器的 Shape CV。"""
-        cvs = self.get_selected_cvs()
+        transforms = control_shape_utils.get_selected_curve_transforms()
 
-        if not cvs:
+        if not transforms:
             cmds.warning(u"请先选择 Curve 控制器。")
             return
 
         scale_value = self.scale_spin.value()
 
-        cmds.scale(
-            scale_value,
-            scale_value,
-            scale_value,
-            cvs,
-            relative=True,
-            objectSpace=True
-        )
+        for transform in transforms:
+            control_shape_utils.scale_shape(
+                transform,
+                scale_value
+            )
 
     def mirror_x_shapes(self):
         self.mirror_shapes("x")
@@ -945,36 +623,22 @@ class ControlShapeTool(QWidget):
 
     def mirror_shapes(self, axis):
         """沿给定轴镜像选择控制器的 Shape CV。"""
-        cvs = self.get_selected_cvs()
+        transforms = control_shape_utils.get_selected_curve_transforms()
 
-        if not cvs:
+        if not transforms:
             cmds.warning(u"请先选择 Curve 控制器。")
             return
 
-        scale_x = 1.0
-        scale_y = 1.0
-        scale_z = 1.0
-
-        if axis == "x":
-            scale_x = -1.0
-        elif axis == "y":
-            scale_y = -1.0
-        elif axis == "z":
-            scale_z = -1.0
-
-        cmds.scale(
-            scale_x,
-            scale_y,
-            scale_z,
-            cvs,
-            relative=True,
-            objectSpace=True
-        )
+        for transform in transforms:
+            control_shape_utils.mirror_shape(
+                transform,
+                axis=axis
+            )
 
     @staticmethod
     def replace_shapes():
         """用最后选择控制器的 Shape 替换前面选择对象。"""
-        transforms = get_selected_curve_transforms()
+        transforms = control_shape_utils.get_selected_curve_transforms()
 
         if len(transforms) < 2:
             cmds.warning(
@@ -984,7 +648,7 @@ class ControlShapeTool(QWidget):
 
         source = transforms[-1]
         targets = transforms[:-1]
-        source_data = get_shape_data_from_transform(source)
+        source_data = control_shape_utils.get_shape_data(source)
 
         if not source_data:
             cmds.warning(
@@ -999,7 +663,7 @@ class ControlShapeTool(QWidget):
 
         try:
             for target in targets:
-                apply_shape_data(
+                control_shape_utils.apply_shape_data(
                     target,
                     source_data
                 )
