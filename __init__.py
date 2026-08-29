@@ -3,20 +3,29 @@ u"""
 muziToolset
 ===========
 
-仓库级启动入口。
+仓库根包就是正式 Maya Rigging Toolset。
 
-正式运行代码位于 ``muzi_rigging`` 主包。
-历史参考代码位于 ``legacy_reference``，不会参与正常启动。
+迁移阶段同时兼容：
+    1. 新根架构：app / ui / core / tools / systems / resources
+    2. 旧过渡架构：muzi_rigging
+
+等根架构迁移完成后，会删除旧兼容分支。
 """
 
 from __future__ import print_function
 
 
+__version__ = "0.3.0"
+
+
 def show():
     """打开 Muzi Rigging 主工具箱。"""
-    from .muzi_rigging import show as show_rigging
-
-    return show_rigging()
+    try:
+        from .app import toolbox
+        return toolbox.main()
+    except ImportError:
+        from .muzi_rigging import show as show_rigging
+        return show_rigging()
 
 
 def initialize():
