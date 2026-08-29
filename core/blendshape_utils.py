@@ -323,13 +323,34 @@ def add_or_replace_target(blendshape_node, target_transform):
         )
     )
 
-    cmds.aliasAttr(
-        alias_name,
-        "{}.weight[{}]".format(
-            blendshape_node,
-            target_index
-        )
+    weight_plug = "{}.weight[{}]".format(
+        blendshape_node,
+        target_index
     )
+
+    # Maya 在 blendShape(edit=True, target=...) 时通常已经自动使用
+    # Target Transform 名称作为 weight alias。重复调用 aliasAttr 设置同名
+    # alias 会在 Maya 2023 报“对象不允许设置别名”。
+    # 因此先读取当前 alias，只有名称不一致时才主动修改。
+    current_alias = cmds.aliasAttr(
+        weight_plug,
+        query=True
+    )
+
+    if current_alias != alias_name:
+        if current_alias:
+            try:
+                cmds.aliasAttr(
+                    weight_plug,
+                    remove=True
+                )
+            except Exception:
+                pass
+
+        cmds.aliasAttr(
+            alias_name,
+            weight_plug
+        )
 
     return {
         "alias": alias_name,
