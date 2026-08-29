@@ -34,7 +34,7 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
-from ... import ui_theme
+from ...ui import theme as ui_theme
 
 
 class ConstraintTool(QWidget):
@@ -62,10 +62,6 @@ class ConstraintTool(QWidget):
             minimum_width=520
         )
         self.resize(540, 460)
-
-    # -------------------------------------------------------------------------
-    # UI
-    # -------------------------------------------------------------------------
 
     def create_widgets(self):
         """创建窗口中使用的所有部件。"""
@@ -124,21 +120,14 @@ class ConstraintTool(QWidget):
             QIcon(":menuIconModify.png"),
             u"选择关联约束"
         )
-        self.select_constraint_button.setToolTip(
-            u"选择当前对象关联的所有约束节点"
-        )
-
         self.delete_constraint_button = QPushButton(
             QIcon(":delete.png"),
             u"删除关联约束"
         )
-        self.delete_constraint_button.setToolTip(
-            u"删除当前对象关联的所有约束节点"
-        )
         ui_theme.style_danger(self.delete_constraint_button)
 
     def create_layouts(self):
-        """创建 Silicon Card 布局。"""
+        """创建 Card 布局。"""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -225,10 +214,6 @@ class ConstraintTool(QWidget):
             self.clicked_delete_constraint_button
         )
 
-    # -------------------------------------------------------------------------
-    # 选择数据
-    # -------------------------------------------------------------------------
-
     def get_driver_and_driven_objects(self):
         """根据当前模式拆分 Driver / Driven。"""
         selected_objects = cmds.ls(
@@ -264,10 +249,6 @@ class ConstraintTool(QWidget):
                 index += 1
 
         return driver_objects, driven_objects
-
-    # -------------------------------------------------------------------------
-    # 创建约束
-    # -------------------------------------------------------------------------
 
     def create_standard_constraint(self, constraint_command, chunk_name):
         """创建支持多目标的标准约束。"""
@@ -342,9 +323,6 @@ class ConstraintTool(QWidget):
             )
             return
 
-        driver_object = selected_objects[0]
-        ik_handle = selected_objects[1]
-
         cmds.undoInfo(
             openChunk=True,
             chunkName="MuziPoleVectorConstraint"
@@ -352,17 +330,11 @@ class ConstraintTool(QWidget):
 
         try:
             cmds.poleVectorConstraint(
-                driver_object,
-                ik_handle
+                selected_objects[0],
+                selected_objects[1]
             )
-        except RuntimeError as error:
-            cmds.warning(str(error))
         finally:
             cmds.undoInfo(closeChunk=True)
-
-    # -------------------------------------------------------------------------
-    # 约束查询
-    # -------------------------------------------------------------------------
 
     def get_constraints_from_objects(self, selected_objects):
         """收集选择对象关联的约束节点，并保持顺序去重。"""
@@ -381,7 +353,6 @@ class ConstraintTool(QWidget):
                 for connected_node in connected_nodes:
                     if connected_node in constraint_nodes:
                         continue
-
                     constraint_nodes.append(connected_node)
 
         return constraint_nodes
@@ -413,12 +384,6 @@ class ConstraintTool(QWidget):
             replace=True
         )
 
-        print(
-            u"[ConstraintTool] 已选择 {} 个约束节点。".format(
-                len(constraint_nodes)
-            )
-        )
-
     def clicked_delete_constraint_button(self):
         """删除当前对象关联的所有约束节点。"""
         selected_objects = cmds.ls(
@@ -446,23 +411,12 @@ class ConstraintTool(QWidget):
             chunkName="MuziDeleteConstraints"
         )
 
-        deleted_count = 0
-
         try:
             for constraint_node in constraint_nodes:
-                if not cmds.objExists(constraint_node):
-                    continue
-
-                cmds.delete(constraint_node)
-                deleted_count += 1
+                if cmds.objExists(constraint_node):
+                    cmds.delete(constraint_node)
         finally:
             cmds.undoInfo(closeChunk=True)
-
-        print(
-            u"[ConstraintTool] 已删除 {} 个约束节点。".format(
-                deleted_count
-            )
-        )
 
 
 def main():
@@ -471,6 +425,7 @@ def main():
     return window
 
 
-if __name__ == "__main__":
-    window = main()
-    window.show()
+__all__ = [
+    "ConstraintTool",
+    "main",
+]
