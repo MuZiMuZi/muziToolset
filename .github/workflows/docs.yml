@@ -22,6 +22,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # -------------------------------------------------------------------------
+    # 把 Pages 是否已启用暴露给 Deploy Job。
+    #
+    # 仓库还没有在 Settings -> Pages 中启用 Pages 时，GitHub Pages API 会返回 404。
+    # 这不属于 MkDocs / 文档代码错误，因此不应该把每次正常 Push 都标记成 CI Failed。
+    # -------------------------------------------------------------------------
+    outputs:
+      pages_enabled: ${{ steps.pages_status.outputs.enabled }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -39,17 +48,63 @@ jobs:
           python -m pip install -r requirements-docs.txt
 
       # -----------------------------------------------------------------------
-      # 先使用 AST 生成 API Reference。
+      # 步骤 1：使用 AST 自动生成 Core / Tools / Systems API Reference。
       #
-      # 这里不会 import muziToolset，所以 GitHub Runner 不需要安装 Maya。
+      # 生成器不会 import muziToolset，因此 Linux Runner 不需要安装 Maya。
       # -----------------------------------------------------------------------
       - name: Generate API reference
         run: python scripts/generate_mkdocs_reference.py
 
-      # strict=True 会把断链、缺失页面等文档问题直接变成 CI 失败。
+      # -----------------------------------------------------------------------
+      # 步骤 2：严格构建 MkDocs。
+      #
+      # --strict 会把无效配置、断链、缺失页面等文档问题升级为 CI Failure。
+      # 这是 Docs CI 最重要的质量门槛，无论 Pages 是否开启都必须执行并通过。
+      # -----------------------------------------------------------------------
       - name: Build MkDocs site
         run: mkdocs build --strict
 
+      # -----------------------------------------------------------------------
+      # 步骤 3：仅在非 PR 构建中检查 GitHub Pages 是否已经启用。
+      #
+      # GET /repos/{owner}/{repo}/pages：
+      #   200 -> Pages 已启用，可以执行 deploy-pages；
+      #   404 -> Pages 尚未启用，Deploy Job 安全跳过。
+      #
+      # 注意：这里故意不让 404 导致 Step 失败。
+      # -----------------------------------------------------------------------
+      - name: Check GitHub Pages status
+        id: pages_status
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          http_status=$(curl \
+            --silent \
+            --show-error \
+            --output /tmp/muzitools_pages_status.json \
+            --write-out "%{http_code}" \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${REPOSITORY}/pages")
+
+          if [ "${http_status}" = "200" ]; then
+            echo "enabled=true" >> "${GITHUB_OUTPUT}"
+            echo "GitHub Pages is enabled. The deploy job will run."
+          else
+            echo "enabled=false" >> "${GITHUB_OUTPUT}"
+            echo "GitHub Pages is not enabled yet (HTTP ${http_status})."
+            echo "MkDocs build is valid; Pages deployment will be skipped safely."
+          fi
+
+      # -----------------------------------------------------------------------
+      # 步骤 4：Main Push 时上传 Pages Artifact。
+      #
+      # 即使 Pages 尚未启用，上传 Artifact 本身也可以成功，并且便于检查生成站点。
+      # -----------------------------------------------------------------------
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
@@ -57,7 +112,16 @@ jobs:
           path: site
 
   deploy:
-    if: github.event_name != 'pull_request'
+    # -------------------------------------------------------------------------
+    # 只有同时满足下面两个条件才真正部署：
+    #   1. 不是 Pull Request；
+    #   2. 仓库 Pages API 确认已经启用。
+    #
+    # 尚未开启 Pages 时 Job 会显示为 Skipped，而整个 Docs Workflow 仍然保持 Success。
+    # -------------------------------------------------------------------------
+    if: >-
+      github.event_name != 'pull_request' &&
+      needs.build.outputs.pages_enabled == 'true'
     needs: build
     runs-on: ubuntu-latest
     environment:
