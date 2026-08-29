@@ -1,347 +1,645 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-层级清理器
-功能：清理场景中的空组、冻结变换、删除历史、解锁属性等
-分类：clean
+# coding=utf-8
+u"""
+Hierarchy Cleaner
+=================
+
+Maya 2023 / PySide2 场景层级清理工具。
+
+安全原则：
+    1. 默认只处理当前选择，避免误伤整个 Rig 场景；
+    2. 空组删除会递归执行，直到没有新的空父组；
+    3. Delete History / Freeze 会跳过明显的绑定、动画和约束节点；
+    4. 全场景模式执行前需要再次确认；
+    5. 所有修改包装在一个 Maya Undo Chunk 中。
 """
 
-try:
-    from PySide2.QtCore import *
-    from PySide2.QtGui import *
-    from PySide2.QtWidgets import *
-    from shiboken2 import wrapInstance
-except ImportError:
-    from PySide6.QtCore import *
-    from PySide6.QtGui import *
-    from PySide6.QtWidgets import *
-    from shiboken6 import wrapInstance
+from __future__ import print_function
 
 import maya.cmds as cmds
-import maya.OpenMayaUI as omui
+
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QCheckBox
+from PySide2.QtWidgets import QDialog
+from PySide2.QtWidgets import QFrame
+from PySide2.QtWidgets import QLabel
+from PySide2.QtWidgets import QMessageBox
+from PySide2.QtWidgets import QPushButton
+from PySide2.QtWidgets import QVBoxLayout
+
+from ....core import qtUtils
 
 
-def get_maya_main_window():
-    """获取 Maya 主窗口，作为工具箱的父窗口"""
-    ptr = omui.MQtUtil.mainWindow()
-    if ptr is not None:
-        return wrapInstance(int(ptr), QWidget)
-    return None
+_window = None
+
+_DEFAULT_CAMERAS = {
+    "persp",
+    "top",
+    "front",
+    "side",
+}
+
+_RIG_HISTORY_TYPES = {
+    "skinCluster",
+    "blendShape",
+    "cluster",
+    "wire",
+    "ffd",
+    "lattice",
+    "nonLinear",
+    "deltaMush",
+    "tension",
+    "wrap",
+    "proximityWrap",
+}
+
+_CONSTRAINT_TYPES = {
+    "parentConstraint",
+    "pointConstraint",
+    "orientConstraint",
+    "scaleConstraint",
+    "aimConstraint",
+    "poleVectorConstraint",
+}
 
 
-# =============================================================================
-#  清理功能函数
-# =============================================================================
-def delete_empty_groups():
-    """
-    递归删除场景中的所有空组
-    空组定义：没有子对象、没有形状节点、不是骨骼
-    """
-    all_transforms = cmds.ls(type="transform", long=True)
-    empty_groups = []
+def _short_name(node):
+    return node.split("|")[-1]
 
-    for tr in all_transforms:
-        # 跳过默认相机
-        short_name = tr.split("|")[-1]
-        if short_name in ["front", "persp", "side", "top"]:
+
+def _is_default_camera(node):
+    return _short_name(node) in _DEFAULT_CAMERAS
+
+
+def _is_referenced(node):
+    try:
+        return cmds.referenceQuery(node, isNodeReferenced=True)
+    except Exception:
+        return False
+
+
+def _existing_nodes(nodes):
+    result = []
+
+    if not nodes:
+        return result
+
+    for node in nodes:
+        if not node:
             continue
 
-        children = cmds.listRelatives(tr, children=True, fullPath=True) or []
-        shapes = cmds.listRelatives(tr, shapes=True, fullPath=True) or []
+        if not cmds.objExists(node):
+            continue
 
-        # 无子对象且无形状节点，且不是关节
-        if not children and not shapes:
-            if cmds.objectType(tr) != "joint":
-                empty_groups.append(tr)
+        matches = cmds.ls(node, long=True) or [node]
+        resolved = matches[0]
 
-    # 从深层级向上删除，避免破坏父级结构
-    empty_groups.sort(key=lambda x: x.count("|"), reverse=True)
+        if resolved not in result:
+            result.append(resolved)
+
+    return result
+
+
+def _all_transform_nodes():
+    return cmds.ls(type="transform", long=True) or []
+
+
+def _has_incoming_animation(node):
+    anim_curve_types = [
+        "animCurveTA",
+        "animCurveTL",
+        "animCurveTT",
+        "animCurveTU",
+    ]
+
+    for anim_type in anim_curve_types:
+        connections = cmds.listConnections(
+            node,
+            source=True,
+            destination=False,
+            type=anim_type
+        ) or []
+
+        if connections:
+            return True
+
+    return False
+
+
+def _has_constraint(node):
+    connections = cmds.listConnections(
+        node,
+        source=True,
+        destination=False
+    ) or []
+
+    for connection in connections:
+        try:
+            node_type = cmds.nodeType(connection)
+        except Exception:
+            continue
+
+        if node_type in _CONSTRAINT_TYPES:
+            return True
+
+    return False
+
+
+def _has_rig_history(node):
+    history = cmds.listHistory(node, pruneDagObjects=True) or []
+
+    for history_node in history:
+        try:
+            node_type = cmds.nodeType(history_node)
+        except Exception:
+            continue
+
+        if node_type in _RIG_HISTORY_TYPES:
+            return True
+
+    return False
+
+
+def _can_modify_transform(node):
+    if not cmds.objExists(node):
+        return False
+
+    if _is_default_camera(node):
+        return False
+
+    if _is_referenced(node):
+        return False
+
+    node_type = cmds.nodeType(node)
+    if node_type != "transform":
+        return False
+
+    return True
+
+
+def delete_empty_groups(nodes=None):
+    """
+    递归删除空 Transform Group。
+
+    Args:
+        nodes(list/None):
+            None 时检查整个场景；传列表时只检查列表及其父层级。
+
+    Returns:
+        int: 删除数量。
+    """
+    if nodes is None:
+        candidates = _all_transform_nodes()
+    else:
+        candidates = _existing_nodes(nodes)
+
+        parent_candidates = []
+        for node in list(candidates):
+            current = node
+
+            while current:
+                parents = cmds.listRelatives(
+                    current,
+                    parent=True,
+                    fullPath=True
+                ) or []
+
+                if not parents:
+                    break
+
+                current = parents[0]
+                if current not in parent_candidates:
+                    parent_candidates.append(current)
+
+        for parent in parent_candidates:
+            if parent not in candidates:
+                candidates.append(parent)
 
     deleted_count = 0
-    for grp in empty_groups:
-        try:
-            if cmds.objExists(grp):
-                cmds.delete(grp)
-                deleted_count += 1
-        except Exception as e:
-            cmds.warning(f"无法删除空组 {grp}: {str(e)}")
+    changed = True
 
-    return deleted_count
+    while changed:
+        changed = False
 
-
-def delete_history(nodes=None):
-    """
-    删除构造历史
-    参数：nodes - 要处理的 transform 节点列表，None 则处理所有几何体
-    """
-    if nodes is None:
-        nodes = cmds.ls(type="transform", long=True)
-
-    deleted_count = 0
-    for node in nodes:
-        short_name = node.split("|")[-1]
-        if short_name in ["front", "persp", "side", "top"]:
-            continue
-        try:
+        current_candidates = []
+        for node in candidates:
             if cmds.objExists(node):
-                shapes = cmds.listRelatives(node, shapes=True, fullPath=True) or []
-                if shapes:
-                    cmds.delete(node, constructionHistory=True)
-                    deleted_count += 1
-        except Exception as e:
-            cmds.warning(f"无法删除历史 {node}: {str(e)}")
+                current_candidates.append(node)
 
-    return deleted_count
+        current_candidates.sort(
+            key=lambda item: item.count("|"),
+            reverse=True
+        )
 
+        for node in current_candidates:
+            if not _can_modify_transform(node):
+                continue
 
-def freeze_transformations(nodes=None):
-    """
-    冻结变换
-    参数：nodes - 要处理的节点列表，None 则处理所有 transform
-    """
-    if nodes is None:
-        nodes = cmds.ls(type="transform", long=True)
+            shapes = cmds.listRelatives(
+                node,
+                shapes=True,
+                fullPath=True
+            ) or []
 
-    frozen_count = 0
-    for node in nodes:
-        short_name = node.split("|")[-1]
-        if short_name in ["front", "persp", "side", "top"]:
-            continue
-        try:
-            if cmds.objExists(node):
-                cmds.makeIdentity(node, apply=True, t=1, r=1, s=1, n=0, pn=1)
-                frozen_count += 1
-        except Exception as e:
-            cmds.warning(f"无法冻结变换 {node}: {str(e)}")
+            children = cmds.listRelatives(
+                node,
+                children=True,
+                fullPath=True
+            ) or []
 
-    return frozen_count
+            if shapes or children:
+                continue
 
-
-def unlock_and_show_attributes(nodes=None):
-    """
-    解锁并显示所有关键属性
-    """
-    if nodes is None:
-        nodes = cmds.ls(type="transform", long=True)
-
-    attrs = ["tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz", "v"]
-    unlocked_count = 0
-
-    for node in nodes:
-        for attr in attrs:
-            full_attr = f"{node}.{attr}"
             try:
-                if cmds.attributeQuery(attr, node=node, exists=True):
-                    cmds.setAttr(full_attr, lock=False)
-                    cmds.setAttr(full_attr, keyable=True)
-                    unlocked_count += 1
-            except:
+                cmds.delete(node)
+                deleted_count += 1
+                changed = True
+            except Exception as error:
+                cmds.warning(
+                    u"无法删除空组 {}：{}".format(
+                        node,
+                        error
+                    )
+                )
+
+    return deleted_count
+
+
+def delete_history(nodes):
+    """
+    删除安全范围内的构造历史。
+
+    已检测到 SkinCluster / BlendShape / Wire 等 Rig Deformer 时会跳过，
+    防止一个“清历史”按钮直接破坏绑定。
+    """
+    nodes = _existing_nodes(nodes)
+    deleted_count = 0
+    skipped_count = 0
+
+    for node in nodes:
+        if not _can_modify_transform(node):
+            continue
+
+        shapes = cmds.listRelatives(
+            node,
+            shapes=True,
+            noIntermediate=True,
+            fullPath=True
+        ) or []
+
+        if not shapes:
+            continue
+
+        if _has_rig_history(node):
+            skipped_count += 1
+            continue
+
+        try:
+            cmds.delete(node, constructionHistory=True)
+            deleted_count += 1
+        except Exception as error:
+            cmds.warning(
+                u"无法删除历史 {}：{}".format(
+                    node,
+                    error
+                )
+            )
+
+    return deleted_count, skipped_count
+
+
+def freeze_transformations(nodes):
+    """
+    冻结安全范围内的 Transform。
+
+    有动画、约束、绑定 Deformer 或引用来源的节点会跳过。
+    """
+    nodes = _existing_nodes(nodes)
+    frozen_count = 0
+    skipped_count = 0
+
+    for node in nodes:
+        if not _can_modify_transform(node):
+            skipped_count += 1
+            continue
+
+        if _has_incoming_animation(node):
+            skipped_count += 1
+            continue
+
+        if _has_constraint(node):
+            skipped_count += 1
+            continue
+
+        if _has_rig_history(node):
+            skipped_count += 1
+            continue
+
+        try:
+            cmds.makeIdentity(
+                node,
+                apply=True,
+                translate=True,
+                rotate=True,
+                scale=True,
+                normal=False,
+                preserveNormals=True
+            )
+            frozen_count += 1
+        except Exception as error:
+            cmds.warning(
+                u"无法冻结变换 {}：{}".format(
+                    node,
+                    error
+                )
+            )
+
+    return frozen_count, skipped_count
+
+
+def unlock_and_show_attributes(nodes):
+    """解锁并显示标准 Transform 属性。"""
+    nodes = _existing_nodes(nodes)
+
+    attrs = [
+        "tx",
+        "ty",
+        "tz",
+        "rx",
+        "ry",
+        "rz",
+        "sx",
+        "sy",
+        "sz",
+        "v",
+    ]
+
+    changed_count = 0
+
+    for node in nodes:
+        if _is_referenced(node):
+            continue
+
+        for attr in attrs:
+            if not cmds.attributeQuery(
+                    attr,
+                    node=node,
+                    exists=True
+            ):
+                continue
+
+            plug = "{}.{}".format(node, attr)
+
+            try:
+                cmds.setAttr(plug, lock=False)
+                cmds.setAttr(plug, keyable=True)
+                changed_count += 1
+            except Exception:
                 pass
 
-    return unlocked_count
+    return changed_count
 
 
-def center_pivot(nodes=None):
-    """
-    将轴心点归零到对象中心
-    """
-    if nodes is None:
-        nodes = cmds.ls(type="transform", long=True)
-
+def center_pivot(nodes):
+    """把可编辑几何 Transform 的 Pivot 居中。"""
+    nodes = _existing_nodes(nodes)
     centered_count = 0
+
     for node in nodes:
-        short_name = node.split("|")[-1]
-        if short_name in ["front", "persp", "side", "top"]:
+        if not _can_modify_transform(node):
             continue
+
+        shapes = cmds.listRelatives(
+            node,
+            shapes=True,
+            noIntermediate=True,
+            fullPath=True
+        ) or []
+
+        if not shapes:
+            continue
+
         try:
-            if cmds.objExists(node):
-                cmds.xform(node, cp=True)
-                centered_count += 1
-        except:
+            cmds.xform(node, centerPivots=True)
+            centered_count += 1
+        except Exception:
             pass
 
     return centered_count
 
 
-def delete_unknown_nodes():
-    """删除未知节点"""
-    unknown = cmds.ls(type="unknown")
-    if unknown:
+def delete_unknown_nodes(nodes=None):
+    """删除 Unknown 节点；传入 nodes 时只处理选择范围。"""
+    if nodes is None:
+        unknown_nodes = cmds.ls(type="unknown", long=True) or []
+    else:
+        unknown_nodes = []
+
+        for node in _existing_nodes(nodes):
+            if cmds.nodeType(node) == "unknown":
+                unknown_nodes.append(node)
+
+    deleted_count = 0
+
+    for node in unknown_nodes:
+        if _is_referenced(node):
+            continue
+
         try:
-            cmds.delete(unknown)
-            return len(unknown)
-        except:
-            return 0
-    return 0
+            cmds.delete(node)
+            deleted_count += 1
+        except Exception as error:
+            cmds.warning(
+                u"无法删除 Unknown 节点 {}：{}".format(
+                    node,
+                    error
+                )
+            )
+
+    return deleted_count
 
 
-# =============================================================================
-#  UI 类
-# =============================================================================
-class Hierarchy_Cleaner_UI(QDialog):
-    """
-    层级清理器界面
-    """
+class HierarchyCleanerUI(QDialog):
+    """层级清理器窗口。"""
 
     def __init__(self, parent=None):
         if parent is None:
-            parent = get_maya_main_window()
-        super(Hierarchy_Cleaner_UI, self).__init__(parent)
+            parent = qtUtils.get_maya_window()
 
-        self.setWindowTitle("层级清理器")
-        self.setMinimumWidth(300)
-        self.setMinimumHeight(400)
+        super(HierarchyCleanerUI, self).__init__(parent)
+        self.setWindowTitle(u"层级清理器")
+        self.setMinimumWidth(360)
 
-        self.create_widgets()
-        self.create_layouts()
-        self.create_connections()
-
-    def create_widgets(self):
-        """创建 UI 部件"""
-        self.title_label = QLabel("层级清理器")
-        self.title_label.setStyleSheet("font-weight: bold; font-size: 14px; color: rgb(169, 255, 175);")
+        self.title_label = QLabel(u"Hierarchy Cleaner")
         self.title_label.setAlignment(Qt.AlignCenter)
 
-        # 清理选项
-        self.chk_delete_empty = QCheckBox("删除空组")
-        self.chk_delete_empty.setChecked(True)
+        self.delete_empty_check = QCheckBox(u"删除空组")
+        self.delete_empty_check.setChecked(True)
 
-        self.chk_delete_history = QCheckBox("删除构造历史 (Delete History)")
-        self.chk_delete_history.setChecked(True)
+        self.delete_history_check = QCheckBox(u"删除安全范围内构造历史")
+        self.delete_history_check.setChecked(False)
 
-        self.chk_freeze = QCheckBox("冻结变换 (Freeze Transform)")
-        self.chk_freeze.setChecked(True)
+        self.freeze_check = QCheckBox(u"冻结安全范围内 Transform")
+        self.freeze_check.setChecked(False)
 
-        self.chk_unlock = QCheckBox("解锁并显示属性")
-        self.chk_unlock.setChecked(True)
+        self.unlock_check = QCheckBox(u"解锁并显示标准 Transform 属性")
+        self.unlock_check.setChecked(False)
 
-        self.chk_center_pivot = QCheckBox("轴心点居中 (Center Pivot)")
-        self.chk_center_pivot.setChecked(True)  # <-- 默认勾选
+        self.center_pivot_check = QCheckBox(u"几何体 Pivot 居中")
+        self.center_pivot_check.setChecked(False)
 
-        self.chk_delete_unknown = QCheckBox("删除未知节点")
-        self.chk_delete_unknown.setChecked(True)
+        self.delete_unknown_check = QCheckBox(u"删除 Unknown 节点")
+        self.delete_unknown_check.setChecked(True)
 
-        # 仅对选中对象操作
-        self.chk_selected_only = QCheckBox("仅对选中对象操作")
-        self.chk_selected_only.setChecked(False)
+        self.selected_only_check = QCheckBox(u"仅处理当前选择")
+        self.selected_only_check.setChecked(True)
 
-        # 执行按钮
-        self.btn_execute = QPushButton("执行清理")
-        self.btn_execute.setMinimumHeight(36)
-        self.btn_execute.setStyleSheet("""
-            QPushButton {
-                background-color: rgb(60, 120, 80);
-                color: white;
-                font-weight: bold;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: rgb(80, 160, 100);
-            }
-        """)
-
-        # 结果标签
-        self.result_label = QLabel("")
-        self.result_label.setAlignment(Qt.AlignCenter)
+        self.execute_btn = QPushButton(u"执行清理")
+        self.result_label = QLabel()
         self.result_label.setWordWrap(True)
 
-    def create_layouts(self):
-        """组装布局"""
+        self._create_layout()
+        self._create_connections()
+
+    def _create_layout(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setSpacing(8)
         main_layout.setContentsMargins(12, 12, 12, 12)
+        main_layout.setSpacing(7)
 
         main_layout.addWidget(self.title_label)
 
-        line = QFrame()
-        line.setFrameShape(QFrame.HLine)
-        line.setStyleSheet("color: rgb(100, 100, 100);")
-        main_layout.addWidget(line)
+        separator = QFrame()
+        separator.setFrameShape(QFrame.HLine)
+        main_layout.addWidget(separator)
 
-        # 选项区域
-        options_layout = QVBoxLayout()
-        options_layout.setSpacing(6)
-        options_layout.addWidget(self.chk_delete_empty)
-        options_layout.addWidget(self.chk_delete_history)
-        options_layout.addWidget(self.chk_freeze)
-        options_layout.addWidget(self.chk_unlock)
-        options_layout.addWidget(self.chk_center_pivot)
-        options_layout.addWidget(self.chk_delete_unknown)
-
-        main_layout.addLayout(options_layout)
-        main_layout.addWidget(self.chk_selected_only)
-        main_layout.addStretch()
-        main_layout.addWidget(self.btn_execute)
+        main_layout.addWidget(self.delete_empty_check)
+        main_layout.addWidget(self.delete_history_check)
+        main_layout.addWidget(self.freeze_check)
+        main_layout.addWidget(self.unlock_check)
+        main_layout.addWidget(self.center_pivot_check)
+        main_layout.addWidget(self.delete_unknown_check)
+        main_layout.addWidget(self.selected_only_check)
+        main_layout.addWidget(self.execute_btn)
         main_layout.addWidget(self.result_label)
 
-    def create_connections(self):
-        """连接信号"""
-        self.btn_execute.clicked.connect(self.on_execute)
+    def _create_connections(self):
+        self.execute_btn.clicked.connect(self.execute_cleanup)
 
-    def on_execute(self):
-        """执行清理"""
-        # 获取目标节点
-        if self.chk_selected_only.isChecked():
-            nodes = cmds.ls(selection=True, long=True)
+    def _scope_nodes(self):
+        if self.selected_only_check.isChecked():
+            return cmds.ls(selection=True, long=True) or []
+
+        return _all_transform_nodes()
+
+    def _confirm_whole_scene(self):
+        if self.selected_only_check.isChecked():
+            return True
+
+        result = QMessageBox.warning(
+            self,
+            u"确认全场景清理",
+            u"你关闭了“仅处理当前选择”。\n\n"
+            u"本次操作将扫描整个场景。历史、冻结、解锁等操作仍会跳过明显的 Rig 节点，"
+            u"但建议先保存场景。是否继续？",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+
+        return result == QMessageBox.Yes
+
+    def execute_cleanup(self):
+        if not self._confirm_whole_scene():
+            return
+
+        selected_only = self.selected_only_check.isChecked()
+
+        if selected_only:
+            nodes = cmds.ls(selection=True, long=True) or []
             if not nodes:
-                self.result_label.setText("<span style='color: rgb(255, 100, 100);'>请先选择对象</span>")
+                self.result_label.setText(u"请先选择需要清理的对象。")
                 return
         else:
-            nodes = None
+            nodes = _all_transform_nodes()
 
-        results = []
+        result_lines = []
 
-        # 按合理顺序执行
-        if self.chk_delete_empty.isChecked():
-            count = delete_empty_groups()
-            if count > 0:
-                results.append(f"删除空组: {count} 个")
+        cmds.undoInfo(openChunk=True, chunkName="MuziHierarchyCleaner")
+        try:
+            if self.delete_empty_check.isChecked():
+                empty_scope = nodes
+                if not selected_only:
+                    empty_scope = None
 
-        if self.chk_delete_history.isChecked():
-            count = delete_history(nodes)
-            if count > 0:
-                results.append(f"删除历史: {count} 个")
+                count = delete_empty_groups(empty_scope)
+                result_lines.append(u"空组：删除 {}".format(count))
 
-        if self.chk_freeze.isChecked():
-            count = freeze_transformations(nodes)
-            if count > 0:
-                results.append(f"冻结变换: {count} 个")
+            if self.delete_history_check.isChecked():
+                deleted_count, skipped_count = delete_history(nodes)
+                result_lines.append(
+                    u"历史：处理 {} / 跳过 Rig {}".format(
+                        deleted_count,
+                        skipped_count
+                    )
+                )
 
-        if self.chk_unlock.isChecked():
-            count = unlock_and_show_attributes(nodes)
-            if count > 0:
-                results.append(f"解锁属性: {count} 项")
+            if self.freeze_check.isChecked():
+                frozen_count, skipped_count = freeze_transformations(nodes)
+                result_lines.append(
+                    u"冻结：处理 {} / 跳过 {}".format(
+                        frozen_count,
+                        skipped_count
+                    )
+                )
 
-        if self.chk_center_pivot.isChecked():
-            count = center_pivot(nodes)
-            if count > 0:
-                results.append(f"轴心居中: {count} 个")
+            if self.unlock_check.isChecked():
+                count = unlock_and_show_attributes(nodes)
+                result_lines.append(u"属性：修改 {} 项".format(count))
 
-        if self.chk_delete_unknown.isChecked():
-            count = delete_unknown_nodes()
-            if count > 0:
-                results.append(f"删除未知节点: {count} 个")
+            if self.center_pivot_check.isChecked():
+                count = center_pivot(nodes)
+                result_lines.append(u"Pivot：处理 {}".format(count))
 
-        # 显示结果
-        if results:
-            result_text = "<br>".join(results)
-            self.result_label.setText(f"<span style='color: rgb(169, 255, 175);'>{result_text}</span>")
-        else:
-            self.result_label.setText("<span style='color: rgb(200, 200, 200);'>无需清理或已清理完成</span>")
+            if self.delete_unknown_check.isChecked():
+                unknown_scope = nodes
+                if not selected_only:
+                    unknown_scope = None
+
+                count = delete_unknown_nodes(unknown_scope)
+                result_lines.append(u"Unknown：删除 {}".format(count))
+
+        except Exception as error:
+            cmds.warning(str(error))
+            result_lines.append(u"执行失败：{}".format(error))
+        finally:
+            cmds.undoInfo(closeChunk=True)
+
+        if not result_lines:
+            result_lines.append(u"没有启用任何清理选项。")
+
+        self.result_label.setText(u"\n".join(result_lines))
+
+
+# 旧类名兼容。
+Hierarchy_Cleaner_UI = HierarchyCleanerUI
 
 
 def main():
-    """显示层级清理器窗口"""
-    global hierarchy_cleaner_window
+    global _window
 
     try:
-        hierarchy_cleaner_window.close()
-        hierarchy_cleaner_window.deleteLater()
-    except:
+        if _window is not None:
+            _window.close()
+            _window.deleteLater()
+    except Exception:
         pass
 
-    hierarchy_cleaner_window = Hierarchy_Cleaner_UI()
-    hierarchy_cleaner_window.show()
-    hierarchy_cleaner_window.raise_()
-    hierarchy_cleaner_window.activateWindow()
-    return hierarchy_cleaner_window
+    _window = HierarchyCleanerUI()
+    _window.setAttribute(Qt.WA_DeleteOnClose, False)
+    _window.show()
+    _window.raise_()
+    _window.activateWindow()
+
+    return _window
+
+
+if __name__ == "__main__":
+    main()
