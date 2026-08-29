@@ -5,53 +5,46 @@ Extended Core Smoke Test
 
 MuziTools Core 第二层 Maya 真机验证。
 
-测试目的
+模块职责
 --------
-Pipeline Refactor Smoke Test 负责验证从旧 Pipeline 拆出的基础能力，例如 Scene、Transform、Matrix、
-Connection、Constraint、Curve 和 Surface。
+本测试专门验证这次重新整理并统一为 snake_case 的 Core 领域：
 
-本测试专门验证这次重新整理的较高层 Core 领域：
+attr_utils
+    Attribute Value、String Config、Message Config。
 
-    attr_utils
-        Attribute / String Config / Message Config。
+hierarchy_utils
+    DAG Parent、Extra Group、World Transform 保持。
 
-    hierarchy_utils
-        DAG Parent / Extra Group / World Transform 保持。
+joint_utils
+    Joint Create、Joint Chain、Radius、Maya Joint Label。
 
-    joint_utils
-        Joint Create / Joint Chain / Joint Label。
+name_utils / rename_utils
+    五段式标准名称、Side Alias、Parse、Mirror、Maya Rename。
 
-    name_utils + rename_utils
-        五段式命名、Side 规范化、Mirror Name、Maya Rename。
+model_check_utils
+    Mesh Transform Issue 检查和统一 Issue Schema。
 
-    model_check_utils
-        Mesh Transform Issue 检查与 Issue 数据结构。
+scene_clean_utils
+    安全 Freeze Transform 和递归 Empty Group 清理。
 
-    scene_clean_utils
-        Freeze Transform 与递归 Empty Group 清理。
+和 Pipeline Smoke 的区别
+------------------------
+``pipeline_refactor_smoke_test.py`` 验证 Scene / Transform / Matrix / Connection / Constraint /
+Curve / Surface 等基础 Core。
 
-为什么单独建立 Extended Smoke
-----------------------------
-这些模块比基础 Math / DG Utility 更接近真实 Maya 场景行为。如果把它们全部塞回
-``pipeline_refactor_smoke_test.py``，基础 Core 与场景质量工具会重新混在一起，失败时也更难定位。
-
-因此质量门槛分成两层：
-
-    Pipeline Smoke
-        验证基础 Core 拆分和节点网络。
-
-    Extended Core Smoke
-        验证 Attribute / DAG / Joint / Naming / Model Quality / Scene Clean。
+本文件验证更接近真实资产工作流的 Attribute / DAG / Joint / Naming / Scene Quality 能力。
+两个测试分开后，失败时可以快速判断问题属于“基础节点网络”还是“高层场景行为”。
 
 安全原则
 --------
-1. 所有测试节点都使用唯一 ``__muzi_extended_test_<token>_`` 前缀；
-2. 测试结束后无论成功还是失败都会尝试清理临时节点；
-3. 不打开 / 保存用户 Scene；
-4. 不删除用户节点；
-5. 不依赖 PyMel；
-6. 不测试 UI，不需要用户 Selection；
-7. 每个测试只验证稳定公开行为，不依赖 Maya 内部临时节点名称。
+1. 所有临时 DAG 都挂在本轮唯一测试 Root 下，结束时删除 Root 即可完整清理；
+2. 测试结束后还会按 Token 做一次兜底扫描；
+3. 不打开、不保存、不新建用户 Scene；
+4. 不修改用户 Selection；
+5. 不操作用户节点；
+6. 不依赖 PyMel；
+7. 单项失败不会阻止后续 Case 执行；
+8. 清理动作放在 finally 中，无论成功失败都会执行。
 
 运行方式
 --------
@@ -88,24 +81,56 @@ from ..core import scene_clean_utils
 
 
 # =============================================================================
-# Helpers - 公共测试辅助
+# Common Helpers
 # =============================================================================
 
 def create_token():
-    """创建短 Token，让测试节点不会与用户场景或另一轮测试重名。"""
+    """创建短 Token，保证不同测试轮次之间不会重名。"""
     return uuid.uuid4().hex[:8]
 
 
 def create_name(token, description):
-    """生成当前测试轮次专用的临时节点名称。"""
+    """生成带统一测试前缀的临时节点名称。"""
     return "__muzi_extended_test_{}_{}".format(
         token,
         description
     )
 
 
+def create_test_root(token):
+    """
+    创建本轮测试 Root。
+
+    为什么需要 Root：
+        Naming / Joint Label 等 Case 需要创建符合正式命名规则的节点，这些节点名称不一定能使用
+        ``__muzi_extended_test_`` 作为开头。把它们全部 Parent 到测试 Root 后，只要最终删除 Root，
+        就能保证这些标准命名节点也一起被清理。
+    """
+    return cmds.createNode(
+        "transform",
+        name=create_name(token, "root")
+    )
+
+
+def parent_under_test_root(node, test_root):
+    """把 DAG 节点放到测试 Root 下，并返回 Maya 最新路径。"""
+    if not node or not cmds.objExists(node):
+        return node
+
+    result = cmds.parent(
+        node,
+        test_root,
+        absolute=True
+    )
+
+    if result:
+        return result[0]
+
+    return node
+
+
 def assert_close(actual, expected, tolerance=0.0001, label=u"数值"):
-    """验证两个数值在给定容差内相等。"""
+    """验证两个数值在允许误差内一致。"""
     if abs(actual - expected) > tolerance:
         raise RuntimeError(
             u"{}错误：actual={} expected={}".format(
@@ -117,7 +142,7 @@ def assert_close(actual, expected, tolerance=0.0001, label=u"数值"):
 
 
 def assert_vector_close(actual, expected, tolerance=0.0001, label=u"向量"):
-    """逐项验证 Maya 三维向量。"""
+    """逐项验证三维向量。"""
     if len(actual) != len(expected):
         raise RuntimeError(
             u"{}长度错误：actual={} expected={}".format(
@@ -139,13 +164,27 @@ def assert_vector_close(actual, expected, tolerance=0.0001, label=u"向量"):
         index += 1
 
 
-def delete_existing_test_nodes(token):
+def cleanup_test_nodes(token, test_root):
     """
-    删除当前 Token 创建的测试节点。
+    清理本轮测试产生的所有节点。
 
-    DAG 节点必须先删除最深层 Child，再删除 Parent；否则 Parent 删除后原 Child Long Path 会失效。
+    清理分两层：
+        1. 先删除 Test Root，它会连同所有标准命名 Child 一起删除；
+        2. 再按 Token 扫描一次，清理由异常中断产生且尚未 Parent 到 Root 的节点。
     """
-    pattern = "__muzi_extended_test_{}_*".format(token)
+    # -------------------------------------------------------------------------
+    # 步骤 1：优先删除 Root。
+    # -------------------------------------------------------------------------
+    if test_root and cmds.objExists(test_root):
+        try:
+            cmds.delete(test_root)
+        except Exception:
+            pass
+
+    # -------------------------------------------------------------------------
+    # 步骤 2：Token 兜底扫描，并按 Child First 顺序删除。
+    # -------------------------------------------------------------------------
+    pattern = "*{}*".format(token)
     nodes = cmds.ls(
         pattern,
         long=True
@@ -188,7 +227,7 @@ def record_result(
         message,
         error_text=""
 ):
-    """追加一条结构化测试结果。"""
+    """向结果列表追加统一字典。"""
     result = {
         "category": category,
         "name": name,
@@ -204,13 +243,17 @@ def record_result(
 def run_case(
         results,
         token,
+        test_root,
         category,
         name,
         test_function
 ):
-    """运行一项测试，把 Python 异常转换为统一失败记录。"""
+    """执行单项 Case，并把异常转换为统一失败记录。"""
     try:
-        message = test_function(token)
+        message = test_function(
+            token,
+            test_root
+        )
 
         record_result(
             results,
@@ -234,20 +277,17 @@ def run_case(
 # Attr Utils
 # =============================================================================
 
-def test_attr_utils(token):
-    """
-    验证普通属性、String Config 和 Message Config。
-
-    Message 是 Rig Setup 保存 Maya 节点引用的重要方式，因此除了“连接成功”，还要验证 Rename 前后
-    仍然可以通过 Message 找到来源节点。
-    """
+def test_attr_utils(token, test_root):
+    """验证普通属性、String Config 和 Message Config。"""
     config_node = cmds.createNode(
         "transform",
-        name=create_name(token, "attr_config")
+        name=create_name(token, "attr_config"),
+        parent=test_root
     )
     source_node = cmds.createNode(
         "transform",
-        name=create_name(token, "attr_source")
+        name=create_name(token, "attr_source"),
+        parent=test_root
     )
 
     attr = attr_utils.Attr(config_node)
@@ -266,11 +306,14 @@ def test_attr_utils(token):
     if not value_plug or not cmds.objExists(value_plug):
         raise RuntimeError(u"普通属性创建失败。")
 
-    value = attr.get_attr_value("test_value")
-    assert_close(value, 3.5, label=u"Attribute Value")
+    assert_close(
+        attr.get_attr_value("test_value"),
+        3.5,
+        label=u"Attribute Value"
+    )
 
     # -------------------------------------------------------------------------
-    # 步骤 2：保存 Python 基础数据到 String Config，并恢复成原字典。
+    # 步骤 2：把 Python 基础数据写入 String Config，再恢复原数据。
     # -------------------------------------------------------------------------
     config_data = {
         "mode": "extended_smoke",
@@ -288,11 +331,11 @@ def test_attr_utils(token):
 
     if restored_data != config_data:
         raise RuntimeError(
-            u"String Config 恢复结果错误：{}".format(restored_data)
+            u"String Config 恢复错误：{}".format(restored_data)
         )
 
     # -------------------------------------------------------------------------
-    # 步骤 3：建立 Message 引用并验证来源节点。
+    # 步骤 3：Message 保存节点引用。
     # -------------------------------------------------------------------------
     connected = attr.connect_message(
         source_node=source_node,
@@ -311,11 +354,7 @@ def test_attr_utils(token):
     if message_node is None:
         raise RuntimeError(u"Message 查询没有返回来源节点。")
 
-    # Maya 可能返回 Short Name 或 Long Path，因此统一比较 Short Name。
-    message_short_name = message_node.split("|")[-1]
-    source_short_name = source_node.split("|")[-1]
-
-    if message_short_name != source_short_name:
+    if message_node.split("|")[-1] != source_node.split("|")[-1]:
         raise RuntimeError(
             u"Message 来源错误：{}".format(message_node)
         )
@@ -327,26 +366,23 @@ def test_attr_utils(token):
 # Hierarchy Utils
 # =============================================================================
 
-def test_hierarchy_utils(token):
+def test_hierarchy_utils(token, test_root):
     """验证 Extra Group 插入后 DAG 关系和对象世界姿态保持。"""
-    root = cmds.createNode(
+    hierarchy_root = cmds.createNode(
         "transform",
-        name=create_name(token, "hierarchy_root")
+        name=create_name(token, "hierarchy_parent"),
+        parent=test_root
     )
     target = cmds.createNode(
         "transform",
-        name=create_name(token, "hierarchy_target")
+        name=create_name(token, "hierarchy_target"),
+        parent=hierarchy_root
     )
 
     cmds.xform(
-        root,
+        hierarchy_root,
         worldSpace=True,
         translation=[10.0, 0.0, 0.0]
-    )
-    cmds.parent(
-        target,
-        root,
-        absolute=True
     )
     cmds.xform(
         target,
@@ -373,7 +409,7 @@ def test_hierarchy_utils(token):
     )
 
     # -------------------------------------------------------------------------
-    # 步骤 1：在 Target 上方插入 Extra Group。
+    # 步骤 1：插入 Extra Group。
     # -------------------------------------------------------------------------
     extra_group = hierarchy_utils.Hierarchy.add_extra_group(
         target,
@@ -385,7 +421,7 @@ def test_hierarchy_utils(token):
         raise RuntimeError(u"Extra Group 没有创建。")
 
     # -------------------------------------------------------------------------
-    # 步骤 2：验证 Target 已经成为 Extra Group 的直接 Child。
+    # 步骤 2：重新解析 Target Long Path，确认 Parent 已经是 Extra Group。
     # -------------------------------------------------------------------------
     target_matches = cmds.ls(
         target.split("|")[-1],
@@ -417,7 +453,7 @@ def test_hierarchy_utils(token):
         )
 
     # -------------------------------------------------------------------------
-    # 步骤 3：插组不应该改变 Target 的世界位置和世界旋转。
+    # 步骤 3：验证世界姿态没有因插组跳动。
     # -------------------------------------------------------------------------
     after_translation = cmds.xform(
         target_long,
@@ -451,19 +487,21 @@ def test_hierarchy_utils(token):
 # Joint Utils
 # =============================================================================
 
-def test_joint_utils(token):
-    """验证 Joint 创建、Chain Parent、Radius 和 Joint Label。"""
+def test_joint_utils(token, test_root):
+    """验证 Joint Create、Chain、Radius 和正式 Maya Joint Label。"""
     root_name = create_name(token, "joint_root")
     child_name = create_name(token, "joint_child")
 
     root_joint = joint_utils.Joint.create(
         name=root_name,
         position=[0.0, 5.0, 0.0],
+        parent=test_root,
         radius=1.5
     )
     child_joint = joint_utils.Joint.create(
         name=child_name,
-        position=[3.0, 5.0, 0.0]
+        position=[3.0, 5.0, 0.0],
+        parent=test_root
     )
 
     # -------------------------------------------------------------------------
@@ -493,25 +531,31 @@ def test_joint_utils(token):
     ) or []
 
     if not parents:
-        raise RuntimeError(u"Joint Chain 没有建立 Parent。")
+        raise RuntimeError(u"Joint Chain 没有建立 Joint Parent。")
 
     if parents[0].split("|")[-1] != root_name:
         raise RuntimeError(
             u"Joint Chain Parent 错误：{}".format(parents[0])
         )
 
-    radius = cmds.getAttr(root_joint + ".radius")
-    assert_close(radius, 1.5, label=u"Joint Radius")
+    assert_close(
+        cmds.getAttr(root_joint + ".radius"),
+        1.5,
+        label=u"Joint Radius"
+    )
 
     # -------------------------------------------------------------------------
-    # 步骤 2：单独创建正式命名 Joint，验证 lf Side 的 Maya Joint Label。
+    # 步骤 2：创建符合五段式规则的 Joint，并把它挂到 Test Root 下。
+    #
+    # 这样既能测试 Joint.tag()，又能确保 finally 删除 Test Root 时不会留下标准命名 Joint。
     # -------------------------------------------------------------------------
     tagged_name = "jnt_lf_{}_bind_001".format(
         token.lower()
     )
     tagged_joint = joint_utils.Joint.create(
         name=tagged_name,
-        position=[0.0, 0.0, 0.0]
+        position=[0.0, 0.0, 0.0],
+        parent=test_root
     )
 
     tag_data = joint_utils.Joint(tagged_joint).tag()
@@ -540,8 +584,8 @@ def test_joint_utils(token):
 # Naming / Rename Utils
 # =============================================================================
 
-def test_naming_utils(token):
-    """验证正式五段式名称、Side Alias、Mirror Name 和 Maya Rename。"""
+def test_naming_utils(token, test_root):
+    """验证五段式名称、Side Alias、Parse、Mirror Name 和 Maya Rename。"""
     # -------------------------------------------------------------------------
     # 步骤 1：left Alias 必须统一成 lf。
     # -------------------------------------------------------------------------
@@ -553,35 +597,34 @@ def test_naming_utils(token):
         index=1
     )
 
-    expected_name = "jnt_lf_arm_bind_001"
-
-    if standard_name != expected_name:
+    if standard_name != "jnt_lf_arm_bind_001":
         raise RuntimeError(
             u"标准名称生成错误：{}".format(standard_name)
         )
 
     # -------------------------------------------------------------------------
-    # 步骤 2：Parse 后字段必须完整恢复。
+    # 步骤 2：Parse 必须完整恢复字段。
     # -------------------------------------------------------------------------
     parsed = name_utils.Name.parse_name(standard_name)
+    expected_values = {
+        "type": "jnt",
+        "side": "lf",
+        "part": "arm",
+        "function": "bind",
+        "index": 1,
+    }
 
-    if parsed["type"] != "jnt":
-        raise RuntimeError(u"Name Parse type 错误。")
-
-    if parsed["side"] != "lf":
-        raise RuntimeError(u"Name Parse side 错误。")
-
-    if parsed["part"] != "arm":
-        raise RuntimeError(u"Name Parse part 错误。")
-
-    if parsed["function"] != "bind":
-        raise RuntimeError(u"Name Parse function 错误。")
-
-    if parsed["index"] != 1:
-        raise RuntimeError(u"Name Parse index 错误。")
+    for key in expected_values:
+        if parsed.get(key) != expected_values[key]:
+            raise RuntimeError(
+                u"Name Parse {} 错误：{}".format(
+                    key,
+                    parsed
+                )
+            )
 
     # -------------------------------------------------------------------------
-    # 步骤 3：Mirror Name 只改变 lf / rt，不改其它字段。
+    # 步骤 3：Mirror Name 只翻转 lf / rt。
     # -------------------------------------------------------------------------
     mirror_name = name_utils.Name.mirror_name(standard_name)
 
@@ -591,11 +634,12 @@ def test_naming_utils(token):
         )
 
     # -------------------------------------------------------------------------
-    # 步骤 4：rename_utils.rename_node 必须真正修改 Maya DAG 节点。
+    # 步骤 4：rename_utils 必须真正 Rename Maya DAG 节点。
     # -------------------------------------------------------------------------
     source = cmds.createNode(
         "transform",
-        name=create_name(token, "rename_source")
+        name=create_name(token, "rename_source"),
+        parent=test_root
     )
     renamed_name = create_name(token, "rename_result")
 
@@ -617,23 +661,26 @@ def test_naming_utils(token):
 # Model Check Utils
 # =============================================================================
 
-def test_model_check_utils(token):
-    """验证 Mesh Transform 检查能够发现一个明确的未冻结模型。"""
+def test_model_check_utils(token, test_root):
+    """验证 Model Check 能发现一个明确的未冻结 Mesh。"""
     # -------------------------------------------------------------------------
-    # 步骤 1：创建带 Construction History 的普通 Poly Cube。
+    # 步骤 1：创建普通 Cube，并放进 Test Root。
     # -------------------------------------------------------------------------
     cube_result = cmds.polyCube(
         name=create_name(token, "model_cube"),
         constructionHistory=True
     )
-    cube = cube_result[0]
+    cube = parent_under_test_root(
+        cube_result[0],
+        test_root
+    )
 
     cmds.setAttr(cube + ".translateX", 4.0)
     cmds.setAttr(cube + ".rotateY", 15.0)
     cmds.setAttr(cube + ".scaleZ", 1.5)
 
     # -------------------------------------------------------------------------
-    # 步骤 2：Transform Check 应该返回一个统一 Issue。
+    # 步骤 2：Transform Check 应返回统一 Issue。
     # -------------------------------------------------------------------------
     issues = model_check_utils.check_transformations(
         meshes=[cube]
@@ -673,16 +720,19 @@ def test_model_check_utils(token):
 # Scene Clean Utils
 # =============================================================================
 
-def test_scene_clean_utils(token):
+def test_scene_clean_utils(token, test_root):
     """验证安全 Freeze Transform 和递归 Empty Group 清理。"""
     # -------------------------------------------------------------------------
-    # 步骤 1：创建一个没有 Animation / Constraint / Deformer 的普通 Mesh。
+    # 步骤 1：创建没有 Animation / Constraint / Deformer 的普通 Mesh。
     # -------------------------------------------------------------------------
     cube_result = cmds.polyCube(
         name=create_name(token, "clean_cube"),
         constructionHistory=False
     )
-    cube = cube_result[0]
+    cube = parent_under_test_root(
+        cube_result[0],
+        test_root
+    )
 
     cmds.setAttr(cube + ".translateX", 3.0)
     cmds.setAttr(cube + ".rotateZ", 20.0)
@@ -700,33 +750,29 @@ def test_scene_clean_utils(token):
             )
         )
 
-    translate = cmds.getAttr(cube + ".translate")[0]
-    rotate = cmds.getAttr(cube + ".rotate")[0]
-    scale = cmds.getAttr(cube + ".scale")[0]
-
     assert_vector_close(
-        translate,
+        cmds.getAttr(cube + ".translate")[0],
         [0.0, 0.0, 0.0],
         label=u"Freeze Translate"
     )
     assert_vector_close(
-        rotate,
+        cmds.getAttr(cube + ".rotate")[0],
         [0.0, 0.0, 0.0],
         label=u"Freeze Rotate"
     )
     assert_vector_close(
-        scale,
+        cmds.getAttr(cube + ".scale")[0],
         [1.0, 1.0, 1.0],
         label=u"Freeze Scale"
     )
 
     # -------------------------------------------------------------------------
-    # 步骤 2：创建 Parent -> Child 两层空 Group。
-    # 删除 Child 后 Parent 才会变空，所以能验证递归循环逻辑。
+    # 步骤 2：创建 Test Root 下的 Parent -> Child 两层空 Group。
     # -------------------------------------------------------------------------
     empty_parent = cmds.createNode(
         "transform",
-        name=create_name(token, "empty_parent")
+        name=create_name(token, "empty_parent"),
+        parent=test_root
     )
     empty_child = cmds.createNode(
         "transform",
@@ -753,11 +799,11 @@ def test_scene_clean_utils(token):
 
 
 # =============================================================================
-# Runner / Report
+# Report
 # =============================================================================
 
 def print_report(results):
-    """把结构化测试结果打印成 Maya Script Editor 易读格式。"""
+    """打印 Maya Script Editor 易读报告，并返回结构化统计。"""
     print("")
     print("=" * 78)
     print("Muzi Toolset - Extended Core Smoke Test")
@@ -805,15 +851,24 @@ def print_report(results):
     }
 
 
+# =============================================================================
+# Public Runner
+# =============================================================================
+
 def run():
     """
-    执行 Extended Core Smoke Test。
+    执行全部 Extended Core Case。
 
-    每一项 Case 独立记录错误；即使前面某项失败，后面的领域仍然继续执行，便于一次看到完整结果。
-    测试结束后统一清理本轮 Token 创建的节点。
+    执行流程：
+        1. 创建唯一 Token 和 Test Root；
+        2. 逐项执行六个领域测试；
+        3. 单项失败只记录，不阻止下一项；
+        4. finally 中完整清理临时节点；
+        5. 打印并返回最终报告。
     """
     token = create_token()
     results = []
+    test_root = None
 
     test_cases = [
         (
@@ -849,16 +904,22 @@ def run():
     ]
 
     try:
+        test_root = create_test_root(token)
+
         for category, name, test_function in test_cases:
             run_case(
                 results,
                 token,
+                test_root,
                 category,
                 name,
                 test_function
             )
     finally:
-        delete_existing_test_nodes(token)
+        cleanup_test_nodes(
+            token,
+            test_root
+        )
 
     return print_report(results)
 
