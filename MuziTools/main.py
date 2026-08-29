@@ -1,29 +1,15 @@
 # coding=utf-8
-from importlib import reload
-from . import rigging_toolbox
+u"""MuziTools Maya 脚本入口。"""
 
-reload(rigging_toolbox)
-window = None
+from __future__ import print_function
+
+from . import show
 
 
 def main():
-    global window
-    try:
-        if window is not None:
-            window.close()
-            window.deleteLater()
-    except Exception:
-        pass
-    window = rigging_toolbox.main()
-    return window
+    """打开木子绑定工具盒。"""
+    return show()
 
 
-if __name__ == '__main__':
-    try:
-        main()
-    except Exception:
-        import traceback
-        print('')
-        print('!!! MuziTools merge failed !!!')
-        traceback.print_exc()
-        raise
+if __name__ == "__main__":
+    main()
