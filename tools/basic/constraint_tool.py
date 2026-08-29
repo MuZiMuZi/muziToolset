@@ -1,16 +1,49 @@
 # coding=utf-8
 u"""
-约束工具
-========
+Constraint Tool
+===============
 
-功能：
-    - Parent / Point / Orient / Scale / Aim / Pole Vector Constraint；
-    - 多对一 / 一对多选择模式；
-    - 查询和删除关联约束节点。
+Maya 常用约束工具窗口。
 
-结构：
-    UI 只负责选择模式、按钮事件和反馈；
-    Maya Constraint 场景操作统一由 core.constraint_utils 负责。
+模块职责
+--------
+1. Parent / Point / Orient / Scale / Aim / Pole Vector Constraint；
+2. 支持多对一 / 一对多 Selection 模式；
+3. 查询和删除关联 Constraint；
+4. UI 只收集选择模式和参数，实际 Maya Constraint 操作统一调用 ``core.constraint_utils``；
+5. 提供可在 Maya Script Editor 中直接显示的 ``main()``。
+
+主要公开类型 / 方法
+------------------
+ConstraintTool
+    约束工具主窗口。
+
+ConstraintTool.get_driver_and_driven_objects()
+    根据 UI 模式拆分 Driver / Driven。
+
+ConstraintTool.create_standard_constraint(...)
+    调用 Core 创建标准约束。
+
+ConstraintTool.clicked_pole_vector_constraint_button()
+    创建 Pole Vector Constraint。
+
+ConstraintTool.clicked_select_constraint_button()
+ConstraintTool.clicked_delete_constraint_button()
+    查询 / 删除关联约束。
+
+main()
+    创建或恢复窗口，立即显示并返回 QWidget。
+
+直接运行
+--------
+
+    from muziToolset.tools.basic import constraint_tool
+
+    window = constraint_tool.main()
+
+设计边界
+--------
+本文件不维护 Constraint 算法；所有场景操作统一由 ``core.constraint_utils`` 负责。
 """
 
 from __future__ import print_function
@@ -40,6 +73,7 @@ except ImportError:
 
 from ...core import constraint_utils
 from ...ui import theme as ui_theme
+from ...ui import window_utils
 
 
 class ConstraintTool(QWidget):
@@ -223,10 +257,7 @@ class ConstraintTool(QWidget):
         selected_objects = cmds.ls(
             selection=True,
             long=True
-        )
-
-        if selected_objects is None:
-            selected_objects = []
+        ) or []
 
         if len(selected_objects) < 2:
             cmds.warning(u"请至少选择两个物体。")
@@ -240,24 +271,17 @@ class ConstraintTool(QWidget):
             index = 0
 
             while index < last_index:
-                driver_objects.append(
-                    selected_objects[index]
-                )
+                driver_objects.append(selected_objects[index])
                 index += 1
 
-            driven_objects.append(
-                selected_objects[-1]
-            )
+            driven_objects.append(selected_objects[-1])
         else:
-            driver_objects.append(
-                selected_objects[0]
-            )
+            driver_objects.append(selected_objects[0])
 
             index = 1
+
             while index < len(selected_objects):
-                driven_objects.append(
-                    selected_objects[index]
-                )
+                driven_objects.append(selected_objects[index])
                 index += 1
 
         return driver_objects, driven_objects
@@ -279,12 +303,18 @@ class ConstraintTool(QWidget):
 
         maintain_offset = self.maintain_offset_checkbox.isChecked()
 
+        # ---------------------------------------------------------------------
+        # 步骤 1：一次按钮操作只生成一个 Undo Chunk。
+        # ---------------------------------------------------------------------
         cmds.undoInfo(
             openChunk=True,
             chunkName=chunk_name
         )
 
         try:
+            # -----------------------------------------------------------------
+            # 步骤 2：把 Driver / Driven 和 UI 参数交给 constraint_utils。
+            # -----------------------------------------------------------------
             constraint_utils.create_constraints(
                 driver_objects=driver_objects,
                 driven_objects=driven_objects,
@@ -294,9 +324,7 @@ class ConstraintTool(QWidget):
         except RuntimeError as error:
             cmds.warning(str(error))
         finally:
-            cmds.undoInfo(
-                closeChunk=True
-            )
+            cmds.undoInfo(closeChunk=True)
 
     def clicked_parent_constraint_button(self):
         self.create_standard_constraint(
@@ -333,10 +361,7 @@ class ConstraintTool(QWidget):
         selected_objects = cmds.ls(
             selection=True,
             long=True
-        )
-
-        if selected_objects is None:
-            selected_objects = []
+        ) or []
 
         if len(selected_objects) != 2:
             cmds.warning(
@@ -357,9 +382,7 @@ class ConstraintTool(QWidget):
         except RuntimeError as error:
             cmds.warning(str(error))
         finally:
-            cmds.undoInfo(
-                closeChunk=True
-            )
+            cmds.undoInfo(closeChunk=True)
 
     # =========================================================================
     # Manage
@@ -368,27 +391,20 @@ class ConstraintTool(QWidget):
     @staticmethod
     def get_constraints_from_objects(selected_objects):
         """从 Core 查询对象关联的约束节点。"""
-        return constraint_utils.get_constraints(
-            selected_objects
-        )
+        return constraint_utils.get_constraints(selected_objects)
 
     def clicked_select_constraint_button(self):
         """选择当前对象关联的所有约束节点。"""
         selected_objects = cmds.ls(
             selection=True,
             long=True
-        )
-
-        if selected_objects is None:
-            selected_objects = []
+        ) or []
 
         if not selected_objects:
             cmds.warning(u"请先选择需要查询约束的物体。")
             return
 
-        constraint_nodes = self.get_constraints_from_objects(
-            selected_objects
-        )
+        constraint_nodes = self.get_constraints_from_objects(selected_objects)
 
         if not constraint_nodes:
             cmds.warning(u"没有找到约束节点。")
@@ -404,18 +420,13 @@ class ConstraintTool(QWidget):
         selected_objects = cmds.ls(
             selection=True,
             long=True
-        )
-
-        if selected_objects is None:
-            selected_objects = []
+        ) or []
 
         if not selected_objects:
             cmds.warning(u"请先选择需要删除约束的物体。")
             return
 
-        constraint_nodes = self.get_constraints_from_objects(
-            selected_objects
-        )
+        constraint_nodes = self.get_constraints_from_objects(selected_objects)
 
         if not constraint_nodes:
             cmds.warning(u"没有找到需要删除的约束节点。")
@@ -427,19 +438,17 @@ class ConstraintTool(QWidget):
         )
 
         try:
-            constraint_utils.delete_constraints(
-                selected_objects
-            )
+            constraint_utils.delete_constraints(selected_objects)
         finally:
-            cmds.undoInfo(
-                closeChunk=True
-            )
+            cmds.undoInfo(closeChunk=True)
 
 
 def main():
-    """创建约束工具并返回 QWidget。"""
-    window = ConstraintTool()
-    return window
+    """创建或恢复 Constraint Tool，立即显示并返回 QWidget。"""
+    return window_utils.show_window(
+        "tools.basic.constraint_tool",
+        ConstraintTool
+    )
 
 
 __all__ = [
