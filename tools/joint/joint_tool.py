@@ -3,21 +3,58 @@ u"""
 Joint Tool
 ==========
 
-Maya 2023+ 关节工具面板。
+Maya 2023+ Joint 工具面板。
 
-职责：
-    1. Joint 显示与轴向管理；
-    2. Maya 原生 Joint / IK / Skin 选项入口；
-    3. Joint 创建、链整理和 Curve / Edge 转 Joint；
-    4. Segment Scale Compensate 与 Joint Orient 管理；
-    5. 关节链 Curve、批量 Parent Constraint；
-    6. Skin Weight 复制入口。
+模块职责
+--------
+1. Joint Radius、Local Rotation Axis 与 Joint Orient 显示管理；
+2. Maya 原生 Joint / IK / Skin Options 入口；
+3. Joint 创建、Child Joint、Joint Chain 和 Curve / Edge 转 Joint；
+4. Segment Scale Compensate 管理；
+5. Joint Chain Curve 与批量 Parent Constraint 辅助；
+6. Skin Weight Copy 入口；
+7. 提供可在 Maya Script Editor 中直接显示的 ``main()``。
 
-架构：
-    - Joint 算法调用 core.jointUtils；
-    - Skin 算法调用 core.skin_utils；
-    - 子工具窗口统一交给 app.window_manager；
-    - 本文件只负责 UI、参数收集和执行入口。
+主要公开入口
+------------
+JointTool
+    Joint 工具主窗口。
+
+JointTool.set_axis_visibility(...)
+    批量切换 Joint Local Rotation Axis。
+
+JointTool.create_snap_joints()
+JointTool.create_child_joints()
+JointTool.parent_selected_chain()
+JointTool.create_joints_on_curves()
+JointTool.create_joints_on_edges()
+    Joint 创建与链处理入口。
+
+JointTool.set_scale_compensate(...)
+JointTool.set_orient_visibility(...)
+JointTool.clear_joint_orient()
+    Joint 属性与 Orient 管理。
+
+JointTool.copy_skin_weights()
+    Skin Weight Copy Tool 入口。
+
+main()
+    创建或恢复窗口，立即显示并返回 QWidget。
+
+架构边界
+--------
+- Joint 通用算法使用 ``core.joint_utils``；
+- Skin 使用 ``core.skin_utils``；
+- 子工具窗口通过 ``app.window_manager``；
+- 本文件只负责 UI、Selection 与参数收集；
+- 完整 Arm / Leg / Spine 等 Rig System 不放进本文件。
+
+直接运行
+--------
+
+    from muziToolset.tools.joint import joint_tool
+
+    window = joint_tool.main()
 """
 
 from __future__ import print_function
@@ -45,9 +82,10 @@ except ImportError:
     from PySide6.QtWidgets import QWidget
 
 from ...app import window_manager
-from ...core import jointUtils
+from ...core import joint_utils
 from ...core import skin_utils
 from ...ui import theme
+from ...ui import window_utils
 from . import joint_resamp_tool
 
 
@@ -149,9 +187,7 @@ class JointTool(QWidget):
         scroll_layout.setSpacing(12)
 
         display_card, display_layout = theme.make_card(scroll_widget)
-        display_layout.addWidget(
-            theme.make_section_title(u"Joint 显示")
-        )
+        display_layout.addWidget(theme.make_section_title(u"Joint 显示"))
 
         radius_layout = QHBoxLayout()
         radius_layout.setContentsMargins(0, 0, 0, 0)
@@ -172,9 +208,7 @@ class JointTool(QWidget):
         display_layout.addLayout(display_grid)
 
         maya_card, maya_layout = theme.make_card(scroll_widget)
-        maya_layout.addWidget(
-            theme.make_section_title(u"Maya Joint / IK")
-        )
+        maya_layout.addWidget(theme.make_section_title(u"Maya Joint / IK"))
 
         maya_grid = QGridLayout()
         maya_grid.setHorizontalSpacing(8)
@@ -186,9 +220,7 @@ class JointTool(QWidget):
         maya_layout.addLayout(maya_grid)
 
         create_card, create_layout = theme.make_card(scroll_widget)
-        create_layout.addWidget(
-            theme.make_section_title(u"Joint 创建与编辑")
-        )
+        create_layout.addWidget(theme.make_section_title(u"Joint 创建与编辑"))
 
         create_grid = QGridLayout()
         create_grid.setHorizontalSpacing(8)
@@ -215,9 +247,7 @@ class JointTool(QWidget):
         create_layout.addLayout(create_grid)
 
         skin_card, skin_layout = theme.make_card(scroll_widget)
-        skin_layout.addWidget(
-            theme.make_section_title(u"Skin")
-        )
+        skin_layout.addWidget(theme.make_section_title(u"Skin"))
 
         skin_grid = QGridLayout()
         skin_grid.setHorizontalSpacing(8)
@@ -240,97 +270,35 @@ class JointTool(QWidget):
 
     def create_connections(self):
         """连接界面信号。"""
-        self.joint_size_spinbox.valueChanged.connect(
-            self.set_joint_size
-        )
-
-        self.show_axis_selected_button.clicked.connect(
-            self.show_axis_selected
-        )
-        self.hide_axis_selected_button.clicked.connect(
-            self.hide_axis_selected
-        )
-        self.show_axis_hierarchy_button.clicked.connect(
-            self.show_axis_hierarchy
-        )
-        self.hide_axis_hierarchy_button.clicked.connect(
-            self.hide_axis_hierarchy
-        )
-        self.show_axis_all_button.clicked.connect(
-            self.show_axis_all
-        )
-        self.hide_axis_all_button.clicked.connect(
-            self.hide_axis_all
-        )
-
-        self.orient_options_button.clicked.connect(
-            self.open_orient_options
-        )
-        self.mirror_options_button.clicked.connect(
-            self.open_mirror_options
-        )
-        self.ik_handle_options_button.clicked.connect(
-            self.open_ik_handle_options
-        )
-        self.ik_spline_options_button.clicked.connect(
-            self.open_ik_spline_options
-        )
-
-        self.create_snap_joint_button.clicked.connect(
-            self.create_snap_joints
-        )
-        self.create_child_joint_button.clicked.connect(
-            self.create_child_joints
-        )
-        self.resample_joint_button.clicked.connect(
-            self.open_resample_tool
-        )
-        self.parent_chain_button.clicked.connect(
-            self.parent_selected_chain
-        )
-        self.curve_chain_button.clicked.connect(
-            self.create_joints_on_curves
-        )
-        self.edge_chain_button.clicked.connect(
-            self.create_joints_on_edges
-        )
-        self.enable_scale_compensate_button.clicked.connect(
-            self.enable_scale_compensate
-        )
-        self.disable_scale_compensate_button.clicked.connect(
-            self.disable_scale_compensate
-        )
-        self.show_orient_button.clicked.connect(
-            self.show_orient
-        )
-        self.hide_orient_button.clicked.connect(
-            self.hide_orient
-        )
-        self.clear_orient_button.clicked.connect(
-            self.clear_joint_orient
-        )
-        self.create_curve_on_joints_button.clicked.connect(
-            self.create_curve_on_joints
-        )
-        self.batch_parent_constraint_button.clicked.connect(
-            self.batch_parent_constraint
-        )
-
-        self.bind_skin_options_button.clicked.connect(
-            self.open_bind_skin_options
-        )
-        self.detach_skin_options_button.clicked.connect(
-            self.open_detach_skin_options
-        )
-        self.paint_skin_options_button.clicked.connect(
-            self.open_paint_skin_options
-        )
-        self.mirror_skin_options_button.clicked.connect(
-            self.open_mirror_skin_options
-        )
-        self.copy_skin_button.clicked.connect(
-            self.copy_skin_weights
-        )
+        self.joint_size_spinbox.valueChanged.connect(self.set_joint_size)
+        self.show_axis_selected_button.clicked.connect(self.show_axis_selected)
+        self.hide_axis_selected_button.clicked.connect(self.hide_axis_selected)
+        self.show_axis_hierarchy_button.clicked.connect(self.show_axis_hierarchy)
+        self.hide_axis_hierarchy_button.clicked.connect(self.hide_axis_hierarchy)
+        self.show_axis_all_button.clicked.connect(self.show_axis_all)
+        self.hide_axis_all_button.clicked.connect(self.hide_axis_all)
+        self.orient_options_button.clicked.connect(self.open_orient_options)
+        self.mirror_options_button.clicked.connect(self.open_mirror_options)
+        self.ik_handle_options_button.clicked.connect(self.open_ik_handle_options)
+        self.ik_spline_options_button.clicked.connect(self.open_ik_spline_options)
+        self.create_snap_joint_button.clicked.connect(self.create_snap_joints)
+        self.create_child_joint_button.clicked.connect(self.create_child_joints)
+        self.resample_joint_button.clicked.connect(self.open_resample_tool)
+        self.parent_chain_button.clicked.connect(self.parent_selected_chain)
+        self.curve_chain_button.clicked.connect(self.create_joints_on_curves)
+        self.edge_chain_button.clicked.connect(self.create_joints_on_edges)
+        self.enable_scale_compensate_button.clicked.connect(self.enable_scale_compensate)
+        self.disable_scale_compensate_button.clicked.connect(self.disable_scale_compensate)
+        self.show_orient_button.clicked.connect(self.show_orient)
+        self.hide_orient_button.clicked.connect(self.hide_orient)
+        self.clear_orient_button.clicked.connect(self.clear_joint_orient)
+        self.create_curve_on_joints_button.clicked.connect(self.create_curve_on_joints)
+        self.batch_parent_constraint_button.clicked.connect(self.batch_parent_constraint)
+        self.bind_skin_options_button.clicked.connect(self.open_bind_skin_options)
+        self.detach_skin_options_button.clicked.connect(self.open_detach_skin_options)
+        self.paint_skin_options_button.clicked.connect(self.open_paint_skin_options)
+        self.mirror_skin_options_button.clicked.connect(self.open_mirror_skin_options)
+        self.copy_skin_button.clicked.connect(self.copy_skin_weights)
 
     # =========================================================================
     # Maya Option Windows
@@ -379,10 +347,7 @@ class JointTool(QWidget):
             selection=True,
             type="joint",
             long=True
-        )
-
-        if joints is None:
-            joints = []
+        ) or []
 
         if not joints:
             cmds.warning(u"请先选择一个或以上的 Joint。")
@@ -391,62 +356,38 @@ class JointTool(QWidget):
 
     def set_joint_size(self, value):
         """设置全场景 Joint Radius。"""
-        jointUtils.Joint.set_all_radius(
+        joint_utils.Joint.set_all_radius(
             float(value)
         )
 
     def show_axis_selected(self):
-        self.set_axis_visibility(
-            visible=True,
-            hierarchy=False,
-            all_joints=False
-        )
+        self.set_axis_visibility(True, False, False)
 
     def hide_axis_selected(self):
-        self.set_axis_visibility(
-            visible=False,
-            hierarchy=False,
-            all_joints=False
-        )
+        self.set_axis_visibility(False, False, False)
 
     def show_axis_hierarchy(self):
-        self.set_axis_visibility(
-            visible=True,
-            hierarchy=True,
-            all_joints=False
-        )
+        self.set_axis_visibility(True, True, False)
 
     def hide_axis_hierarchy(self):
-        self.set_axis_visibility(
-            visible=False,
-            hierarchy=True,
-            all_joints=False
-        )
+        self.set_axis_visibility(False, True, False)
 
     def show_axis_all(self):
-        self.set_axis_visibility(
-            visible=True,
-            hierarchy=False,
-            all_joints=True
-        )
+        self.set_axis_visibility(True, False, True)
 
     def hide_axis_all(self):
-        self.set_axis_visibility(
-            visible=False,
-            hierarchy=False,
-            all_joints=True
-        )
+        self.set_axis_visibility(False, False, True)
 
     @staticmethod
     def set_axis_visibility(visible, hierarchy, all_joints):
         """设置 Joint Local Rotation Axis 显示。"""
         if all_joints:
-            jointUtils.Joint.set_all_axis_visibility(
+            joint_utils.Joint.set_all_axis_visibility(
                 visible=visible
             )
             return
 
-        jointUtils.Joint.set_selected_axis_visibility(
+        joint_utils.Joint.set_selected_axis_visibility(
             visible=visible,
             include_descendents=hierarchy
         )
@@ -463,7 +404,7 @@ class JointTool(QWidget):
         )
 
         try:
-            joints = jointUtils.Joint.create_from_selection(
+            joints = joint_utils.Joint.create_from_selection(
                 name_prefix="jnt_snap",
                 parent_chain=False,
                 radius=self.joint_size_spinbox.value()
@@ -484,10 +425,7 @@ class JointTool(QWidget):
         selections = cmds.ls(
             selection=True,
             long=True
-        )
-
-        if selections is None:
-            selections = []
+        ) or []
 
         if not selections:
             cmds.warning(u"请选择一个或以上的 Transform / Joint。")
@@ -502,7 +440,7 @@ class JointTool(QWidget):
 
         try:
             for selected_object in selections:
-                joint = jointUtils.Joint.create_child(
+                joint = joint_utils.Joint.create_child(
                     obj=selected_object,
                     radius=self.joint_size_spinbox.value()
                 )
@@ -535,7 +473,7 @@ class JointTool(QWidget):
         )
 
         try:
-            jointUtils.JointChain.parent_selected_as_chain()
+            joint_utils.JointChain.parent_selected_as_chain()
         except Exception as error:
             cmds.warning(str(error))
         finally:
@@ -546,10 +484,7 @@ class JointTool(QWidget):
         selections = cmds.ls(
             selection=True,
             long=True
-        )
-
-        if selections is None:
-            selections = []
+        ) or []
 
         if not selections:
             cmds.warning(u"请选择一条或多条 NURBS Curve。")
@@ -564,7 +499,7 @@ class JointTool(QWidget):
 
         try:
             for curve in selections:
-                result = jointUtils.JointCurve.create_joints_on_curve_points(
+                result = joint_utils.JointCurve.create_joints_on_curve_points(
                     curve=curve,
                     parent_chain=True,
                     create_group=True,
@@ -591,10 +526,7 @@ class JointTool(QWidget):
         selections = cmds.ls(
             selection=True,
             flatten=True
-        )
-
-        if selections is None:
-            selections = []
+        ) or []
 
         valid_edges = []
 
@@ -625,7 +557,7 @@ class JointTool(QWidget):
             )
             curve = curve_result[0]
 
-            result = jointUtils.JointCurve.create_joints_on_curve_points(
+            result = joint_utils.JointCurve.create_joints_on_curve_points(
                 curve=curve,
                 parent_chain=True,
                 create_group=True,
@@ -664,7 +596,7 @@ class JointTool(QWidget):
 
         try:
             for joint in joints:
-                jointUtils.Joint(joint).set_scale_compensate(
+                joint_utils.Joint(joint).set_scale_compensate(
                     enabled=enabled
                 )
         finally:
@@ -684,7 +616,7 @@ class JointTool(QWidget):
             return
 
         for joint in joints:
-            joint_handler = jointUtils.Joint(joint)
+            joint_handler = joint_utils.Joint(joint)
 
             if visible:
                 joint_handler.show_orient()
@@ -705,7 +637,7 @@ class JointTool(QWidget):
 
         try:
             for joint in joints:
-                jointUtils.Joint(joint).clear_orient()
+                joint_utils.Joint(joint).clear_orient()
         finally:
             cmds.undoInfo(closeChunk=True)
 
@@ -750,10 +682,7 @@ class JointTool(QWidget):
         selections = cmds.ls(
             selection=True,
             long=True
-        )
-
-        if selections is None:
-            selections = []
+        ) or []
 
         if len(selections) < 2 or len(selections) % 2 != 0:
             cmds.warning(
@@ -793,10 +722,7 @@ class JointTool(QWidget):
         selections = cmds.ls(
             selection=True,
             long=True
-        )
-
-        if selections is None:
-            selections = []
+        ) or []
 
         if len(selections) < 2:
             cmds.warning(u"请先选择源模型，再选择一个或多个目标模型。")
@@ -823,9 +749,11 @@ class JointTool(QWidget):
 
 
 def main():
-    """创建并返回 Joint Tool。"""
-    window = JointTool()
-    return window
+    """创建或恢复 Joint Tool，立即显示并返回 QWidget。"""
+    return window_utils.show_window(
+        "tools.joint.joint_tool",
+        JointTool
+    )
 
 
 __all__ = [
