@@ -234,12 +234,26 @@ def apply_shape_data(transform, shape_data_list):
 
         temp_shape = temp_shapes[0]
 
-        cmds.parent(
+        # Shape 被重新 parent 到目标 Transform 后，原来的 DAG fullPath 会立即失效。
+        # Maya 2023 中继续使用旧 temp_shape 路径执行 rename 会报：
+        # “指定的要重命名的对象无效”。
+        # 因此必须使用 cmds.parent 返回的最新 Shape 路径。
+        parent_result = cmds.parent(
             temp_shape,
             transform,
             shape=True,
             relative=True
         )
+
+        if not parent_result:
+            cmds.delete(temp_curve)
+            raise RuntimeError(
+                u"无法把 Controller Shape 挂到目标 Transform：{}".format(
+                    transform
+                )
+            )
+
+        parented_shape = parent_result[0]
 
         short_name = transform.split("|")[-1]
         new_shape_name = "{}Shape".format(short_name)
@@ -251,7 +265,7 @@ def apply_shape_data(transform, shape_data_list):
             )
 
         cmds.rename(
-            temp_shape,
+            parented_shape,
             new_shape_name
         )
         cmds.delete(temp_curve)
