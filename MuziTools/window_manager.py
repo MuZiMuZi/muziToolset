@@ -3,40 +3,31 @@ u"""
 MuziTools Window Manager
 ========================
 
-统一管理从 Rigging Toolbox 打开的 PySide 窗口。
+统一管理 Rigging Toolbox 打开的 PySide 子工具窗口。
 
-主要解决 Maya 中 PySide 子工具窗口的几个常见问题：
-    1. 子窗口失去焦点后消失或跑到 Maya 主窗口后面；
-    2. Qt.Tool / Qt.Popup 类型窗口不能正常最小化；
-    3. Python 局部变量释放后窗口被垃圾回收；
-    4. 旧工具 main() 自己 show()、但没有 return QWidget；
-    5. 重复点击工具时创建多个相同窗口。
-
-设计原则：
-    - 子工具仍然以 Maya MainWindow 作为 owner；
-    - 但窗口类型强制转换成真正的 Qt.Window，而不是 Qt.Tool；
-    - Window Manager 保存强引用，避免窗口被 Python 回收；
-    - 对没有返回 QWidget 的旧工具，自动查找本次新创建的顶层窗口。
+主要目标：
+    1. 保存 Python 强引用，避免窗口被垃圾回收；
+    2. 把 Qt.Tool / Qt.Dialog / Qt.Popup 统一成可正常最小化的 Qt.Window；
+    3. Maya 主窗口作为 owner，减少工具失焦后掉到 Maya 后面的情况；
+    4. 同一个工具只保留一个窗口实例；
+    5. 兼容 main() 已经 show() 但没有 return QWidget 的旧式工具；
+    6. 不重复 re-parent 已经整理过的窗口，避免 Qt 重建 native window 时闪烁或隐藏。
 """
 
 from __future__ import print_function
 
 try:
     from PySide2.QtCore import Qt
-    from PySide2.QtWidgets import QApplication, QWidget
-    try:
-        from shiboken2 import isValid, wrapInstance
-    except ImportError:
-        isValid = None
-        wrapInstance = None
+    from PySide2.QtWidgets import QApplication
+    from PySide2.QtWidgets import QWidget
+    from shiboken2 import isValid
+    from shiboken2 import wrapInstance
 except ImportError:
     from PySide6.QtCore import Qt
-    from PySide6.QtWidgets import QApplication, QWidget
-    try:
-        from shiboken6 import isValid, wrapInstance
-    except ImportError:
-        isValid = None
-        wrapInstance = None
+    from PySide6.QtWidgets import QApplication
+    from PySide6.QtWidgets import QWidget
+    from shiboken6 import isValid
+    from shiboken6 import wrapInstance
 
 try:
     import maya.OpenMayaUI as omui
@@ -44,28 +35,17 @@ except ImportError:
     omui = None
 
 
-# -----------------------------------------------------------------------------
-# 全局窗口引用
-# -----------------------------------------------------------------------------
-# Maya 中 PySide 顶层窗口必须保存 Python 强引用。
-# 否则创建函数退出以后，窗口可能被垃圾回收，表现为刚打开不久就消失。
-# -----------------------------------------------------------------------------
 _OPEN_WINDOWS = {}
+_PREPARED_PROPERTY = "muzi_window_manager_prepared"
 
 
-# -----------------------------------------------------------------------------
-# 基础工具函数
-# -----------------------------------------------------------------------------
 def _is_valid_widget(widget):
-    """判断 PySide QWidget 是否仍然有效。"""
+    """判断对象是否仍是有效 QWidget。"""
     if widget is None:
         return False
 
     if not isinstance(widget, QWidget):
         return False
-
-    if isValid is None:
-        return True
 
     try:
         return bool(isValid(widget))
@@ -74,44 +54,40 @@ def _is_valid_widget(widget):
 
 
 def _get_maya_main_window():
-    """获取 Maya MainWindow 的 QWidget 包装对象。"""
-    if omui is None or wrapInstance is None:
+    """返回 Maya 主窗口 QWidget。"""
+    if omui is None:
         return None
 
     try:
-        ptr = omui.MQtUtil.mainWindow()
+        pointer = omui.MQtUtil.mainWindow()
     except Exception:
-        ptr = None
+        pointer = None
 
-    if ptr is None:
+    if pointer is None:
         return None
 
     try:
-        return wrapInstance(int(ptr), QWidget)
+        return wrapInstance(int(pointer), QWidget)
     except Exception:
         return None
 
 
 def _remove_window(tool_key, window=None):
-    """
-    从窗口缓存中删除已经销毁的窗口。
-
-    window 参数用于避免旧窗口延迟发出 destroyed 时，把后来新建的同名窗口
-    一起从 _OPEN_WINDOWS 中误删。
-    """
+    """从缓存中移除指定窗口。"""
     current_window = _OPEN_WINDOWS.get(tool_key)
 
-    if window is not None and current_window is not window:
-        return
+    if window is not None:
+        if current_window is not window:
+            return
 
     _OPEN_WINDOWS.pop(tool_key, None)
 
 
-def _window_identity_set():
-    """返回 QApplication 当前所有有效顶层窗口的 id 集合。"""
+def _top_level_window_ids():
+    """返回当前 QApplication 顶层 QWidget 的 id 集合。"""
     result = set()
-
     app = QApplication.instance()
+
     if app is None:
         return result
 
@@ -127,8 +103,7 @@ def _window_identity_set():
     return result
 
 
-def _is_candidate_window(widget, before_ids):
-    """判断 widget 是否是 tool_function() 本次新建的顶层窗口。"""
+def _is_new_tool_window(widget, before_ids):
     if not _is_valid_widget(widget):
         return False
 
@@ -141,10 +116,8 @@ def _is_candidate_window(widget, before_ids):
     except Exception:
         return False
 
-    # ToolTip 是 Qt 自己创建的临时顶层窗口，不能当作工具窗口接管。
     try:
-        window_type = widget.windowType()
-        if window_type == Qt.ToolTip:
+        if widget.windowType() == Qt.ToolTip:
             return False
     except Exception:
         pass
@@ -153,18 +126,9 @@ def _is_candidate_window(widget, before_ids):
 
 
 def _find_new_top_level_window(before_ids):
-    """
-    查找 tool_function() 执行后新出现的顶层 QWidget。
-
-    用于兼容旧工具：
-        def main():
-            window = SomeUI()
-            window.show()
-            # 没有 return window
-
-    这种代码以前 window_manager 得到的是 None，因此无法保存强引用。
-    """
+    """兼容没有 return QWidget 的工具 main()。"""
     app = QApplication.instance()
+
     if app is None:
         return None
 
@@ -176,13 +140,12 @@ def _find_new_top_level_window(before_ids):
     candidates = []
 
     for widget in widgets:
-        if _is_candidate_window(widget, before_ids):
+        if _is_new_tool_window(widget, before_ids):
             candidates.append(widget)
 
     if not candidates:
         return None
 
-    # 优先选择当前 activeWindow，因为通常它就是刚刚 show() 出来的工具。
     try:
         active_window = app.activeWindow()
     except Exception:
@@ -191,7 +154,6 @@ def _find_new_top_level_window(before_ids):
     if active_window in candidates:
         return active_window
 
-    # 其次选择当前可见的窗口。
     for widget in candidates:
         try:
             if widget.isVisible():
@@ -203,11 +165,10 @@ def _find_new_top_level_window(before_ids):
 
 
 def _extract_window(result, before_ids):
-    """从工具返回值或新创建顶层窗口中取得需要管理的 QWidget。"""
+    """从 main() 返回值中寻找 QWidget。"""
     if _is_valid_widget(result):
         return result
 
-    # 某些旧代码会返回 list / tuple，把窗口包在里面。
     if isinstance(result, (list, tuple)):
         for item in result:
             if _is_valid_widget(item):
@@ -216,34 +177,23 @@ def _extract_window(result, before_ids):
     return _find_new_top_level_window(before_ids)
 
 
-# -----------------------------------------------------------------------------
-# Window flags
-# -----------------------------------------------------------------------------
 def _normal_window_flags(window):
-    """
-    返回适合 Maya 子工具的普通顶层窗口 flags。
-
-    Qt.WindowType 使用同一组低位 bit 表示 Window / Dialog / Tool / Popup 等
-    窗口类型。因此不能只写::
-
-        window.windowFlags() | Qt.Window
-
-    那样可能继续残留 Qt.Tool / Qt.Popup 的窗口类型行为。
-    正确做法是先清除 WindowType_Mask，再明确设置 Qt.Window。
-    """
+    """构建 Maya 子工具使用的普通 Window flags。"""
     flags = window.windowFlags()
 
     try:
         flags = flags & ~Qt.WindowType_Mask
     except Exception:
-        # 兼容极少数 Qt 绑定版本。
-        for flag_name in [
+        window_type_flags = [
             "Tool",
             "Popup",
-            "SplashScreen",
-            "Drawer",
+            "Dialog",
             "Sheet",
-        ]:
+            "Drawer",
+            "SplashScreen",
+        ]
+
+        for flag_name in window_type_flags:
             try:
                 flag_value = getattr(Qt, flag_name)
                 flags = flags & ~flag_value
@@ -256,14 +206,16 @@ def _normal_window_flags(window):
     flags = flags | Qt.WindowMinimizeButtonHint
     flags = flags | Qt.WindowCloseButtonHint
 
-    # 清除容易造成 Maya 子工具体验异常的特殊 hints。
-    for flag_name in [
+    unwanted_hints = [
         "WindowStaysOnTopHint",
         "WindowStaysOnBottomHint",
         "FramelessWindowHint",
+        "WindowContextHelpButtonHint",
         "BypassWindowManagerHint",
         "X11BypassWindowManagerHint",
-    ]:
+    ]
+
+    for flag_name in unwanted_hints:
         try:
             flag_value = getattr(Qt, flag_name)
             flags = flags & ~flag_value
@@ -273,23 +225,34 @@ def _normal_window_flags(window):
     return flags
 
 
+def _already_prepared(window):
+    """检查窗口是否已经由 Window Manager 整理过。"""
+    try:
+        return bool(window.property(_PREPARED_PROPERTY))
+    except Exception:
+        return False
+
+
+def _mark_prepared(window):
+    try:
+        window.setProperty(_PREPARED_PROPERTY, True)
+    except Exception:
+        pass
+
+
 def _prepare_window(window):
     """
-    把子工具规范成 Maya 拥有的普通 Qt.Window。
+    将窗口整理成 Maya 拥有的普通非模态 Qt.Window。
 
-    这里故意不再使用 setParent(None)。
-
-    parent=None 虽然可以把 Qt.Tool 转换成独立窗口，但当用户点击 Maya 主窗口时，
-    独立窗口很容易掉到 Maya 后面，看起来仍然像“失焦后消失”。
-
-    正确策略是：
-        Maya MainWindow 作为 owner + Qt.Window 作为窗口类型。
-
-    这样窗口仍属于 Maya，不会轻易跑到 Maya 后面，同时具备普通窗口的标题栏、
-    最小化按钮和正常焦点行为。
+    Qt 在修改 parent / windowFlags 时可能销毁并重新创建 native window。
+    因此每个 QWidget 只做一次结构性整理；重复点击工具时只恢复窗口，不再次
+    re-parent。
     """
     if not _is_valid_widget(window):
-        return
+        return False
+
+    if _already_prepared(window):
+        return True
 
     try:
         window.setWindowModality(Qt.NonModal)
@@ -299,46 +262,60 @@ def _prepare_window(window):
     flags = _normal_window_flags(window)
     maya_main_window = _get_maya_main_window()
 
-    if _is_valid_widget(maya_main_window) and window is not maya_main_window:
-        try:
-            window.setParent(maya_main_window, flags)
-        except Exception:
+    try:
+        current_parent = window.parentWidget()
+    except Exception:
+        current_parent = None
+
+    if _is_valid_widget(maya_main_window):
+        if window is not maya_main_window:
             try:
-                window.setWindowFlags(flags)
+                if current_parent is not maya_main_window:
+                    window.setParent(maya_main_window, flags)
+                else:
+                    window.setWindowFlags(flags)
             except Exception:
-                pass
+                try:
+                    window.setWindowFlags(flags)
+                except Exception:
+                    pass
     else:
         try:
             window.setWindowFlags(flags)
         except Exception:
             pass
 
-    # Window Manager 自己负责窗口生命周期。
-    # 禁止“关闭即销毁”可以避免部分旧工具在 Maya 焦点切换、父窗口变化时被删除。
     try:
         window.setAttribute(Qt.WA_DeleteOnClose, False)
     except Exception:
         pass
 
-    # 子工具关闭不应该影响 Maya QApplication。
     try:
         window.setAttribute(Qt.WA_QuitOnClose, False)
     except Exception:
         pass
 
+    _mark_prepared(window)
+    return True
+
 
 def _show_and_activate(window):
-    """显示窗口，并尽量恢复到可见、可交互状态。"""
+    """恢复、显示并激活窗口。"""
     if not _is_valid_widget(window):
-        return
+        return False
 
     try:
-        if window.isMinimized():
+        minimized = window.isMinimized()
+    except Exception:
+        minimized = False
+
+    try:
+        if minimized:
             window.showNormal()
         else:
             window.show()
     except Exception:
-        return
+        return False
 
     try:
         window.raise_()
@@ -350,59 +327,52 @@ def _show_and_activate(window):
     except Exception:
         pass
 
+    return True
 
-# -----------------------------------------------------------------------------
-# 对外接口
-# -----------------------------------------------------------------------------
+
 def show_tool(tool_key, tool_function):
     """
-    显示一个工具窗口。
+    显示或恢复一个工具。
 
-    流程：
-        1. 已存在 -> 恢复已有窗口；
-        2. 记录调用前的 QApplication 顶层窗口；
-        3. 执行工具 main()；
-        4. main() 返回 QWidget -> 直接接管；
-        5. main() 返回 None -> 自动查找本次新建的顶层 QWidget；
-        6. 统一设置 Maya owner / Qt.Window flags；
-        7. 保存 Python 强引用。
+    对非 QWidget 工具（例如 Maya cmds.window 工具）直接返回原始结果，
+    不强行纳入 PySide Window Manager。
     """
     old_window = _OPEN_WINDOWS.get(tool_key)
 
     if _is_valid_widget(old_window):
-        _prepare_window(old_window)
         _show_and_activate(old_window)
         return old_window
 
     _OPEN_WINDOWS.pop(tool_key, None)
 
-    before_ids = _window_identity_set()
+    before_ids = _top_level_window_ids()
     result = tool_function()
     window = _extract_window(result, before_ids)
 
-    # 不是 PySide 窗口的工具，例如只执行 Maya cmds 的命令，保持原返回值。
     if not _is_valid_widget(window):
         return result
 
     _prepare_window(window)
 
-    # 一定先保存强引用，再执行 show()。
+    # show 之前先保存强引用。
     _OPEN_WINDOWS[tool_key] = window
 
     try:
         window.destroyed.connect(
-            lambda *args, key=tool_key, obj=window: _remove_window(key, obj)
+            lambda *args, key=tool_key, obj=window: _remove_window(
+                key,
+                obj
+            )
         )
     except Exception:
         pass
 
     _show_and_activate(window)
-
     return window
 
 
 def close_tool(tool_key):
-    """关闭指定工具窗口。"""
+    """关闭并真正释放一个受管理工具窗口。"""
     window = _OPEN_WINDOWS.pop(tool_key, None)
 
     if not _is_valid_widget(window):
@@ -420,19 +390,24 @@ def close_tool(tool_key):
 
 
 def close_all_tools():
-    """关闭所有由 Window Manager 管理的工具窗口。"""
-    tool_keys = list(_OPEN_WINDOWS.keys())
+    """关闭全部受管理的工具窗口。"""
+    tool_keys = []
+
+    for tool_key in _OPEN_WINDOWS:
+        tool_keys.append(tool_key)
 
     for tool_key in tool_keys:
         close_tool(tool_key)
 
 
 def get_open_windows():
-    """返回当前仍然有效的工具窗口。"""
+    """返回当前有效窗口字典的浅拷贝。"""
     result = {}
     invalid_keys = []
 
-    for tool_key, window in _OPEN_WINDOWS.items():
+    for tool_key in _OPEN_WINDOWS:
+        window = _OPEN_WINDOWS[tool_key]
+
         if _is_valid_widget(window):
             result[tool_key] = window
         else:
