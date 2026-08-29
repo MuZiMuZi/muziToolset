@@ -5,12 +5,13 @@ Connections Tool
 
 Maya 属性连接工具。
 
-功能：
-    1. Translate / Rotate / Scale / Matrix 批量连接与断开；
-    2. 从 Channel Box 拾取 Driver / Driven 属性；
-    3. 创建和断开自定义属性连接；
-    4. 复制一个对象已有的输入连接到其它对象；
-    5. 断开 Channel Box 选中属性的输入连接。
+职责：
+    1. 提供 Translate / Rotate / Scale / Matrix 连接界面；
+    2. 从 Maya Selection 和 Channel Box 收集用户输入；
+    3. 调用 core.connection_utils 执行底层连接操作；
+    4. 显示操作结果。
+
+底层连接算法统一放在 core/connection_utils.py。
 """
 
 from __future__ import print_function
@@ -40,11 +41,12 @@ except ImportError:
 
 from ...config import icons_dir as icon_dir
 from ...core import attrUtils
+from ...core import connection_utils
 from ...ui import theme
 
 
 def get_selected_objects(minimum_count=1):
-    """返回当前选择，并校验最少数量。"""
+    """返回 Maya 当前选择，并校验最少数量。"""
     selected_objects = cmds.ls(
         selection=True,
         long=True
@@ -64,89 +66,15 @@ def get_selected_objects(minimum_count=1):
 
 def get_channel_box_attrs():
     """返回 Maya Channel Box 当前选中的属性。"""
-    attrs = attrUtils.Attr.get_channelBox_attrs()
+    attribute_names = attrUtils.Attr.get_channelBox_attrs()
 
-    if attrs is None:
-        attrs = []
+    if attribute_names is None:
+        attribute_names = []
 
-    if not attrs:
+    if not attribute_names:
         cmds.warning(u"请先在 Channel Box 中选择属性。")
 
-    return attrs
-
-
-def connect_plugs(source_plug, destination_plug, force=False):
-    """安全连接两个完整 Plug。"""
-    if not cmds.objExists(source_plug):
-        cmds.warning(u"驱动属性不存在：{}".format(source_plug))
-        return False
-
-    if not cmds.objExists(destination_plug):
-        cmds.warning(u"被驱动属性不存在：{}".format(destination_plug))
-        return False
-
-    if cmds.isConnected(source_plug, destination_plug):
-        return True
-
-    existing_inputs = cmds.listConnections(
-        destination_plug,
-        source=True,
-        destination=False,
-        plugs=True
-    )
-
-    if existing_inputs and not force:
-        cmds.warning(
-            u"被驱动属性已有输入连接：{}".format(destination_plug)
-        )
-        return False
-
-    try:
-        cmds.connectAttr(
-            source_plug,
-            destination_plug,
-            force=force
-        )
-    except RuntimeError as error:
-        cmds.warning(str(error))
-        return False
-
-    return True
-
-
-def disconnect_input(destination_plug):
-    """断开指定 Plug 的全部输入连接。"""
-    inputs = cmds.listConnections(
-        destination_plug,
-        source=True,
-        destination=False,
-        plugs=True,
-        connections=True
-    )
-
-    if inputs is None:
-        inputs = []
-
-    disconnected_count = 0
-    index = 0
-
-    while index + 1 < len(inputs):
-        destination = inputs[index]
-        source = inputs[index + 1]
-
-        if cmds.isConnected(source, destination):
-            try:
-                cmds.disconnectAttr(
-                    source,
-                    destination
-                )
-                disconnected_count += 1
-            except RuntimeError:
-                pass
-
-        index += 2
-
-    return disconnected_count
+    return attribute_names
 
 
 class ConnectionsTool(QWidget):
@@ -227,7 +155,7 @@ class ConnectionsTool(QWidget):
         theme.set_role(self.status_label, "muted")
 
     def create_layouts(self):
-        """创建 Card 布局。"""
+        """创建界面布局。"""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -373,6 +301,7 @@ class ConnectionsTool(QWidget):
             self.matrix_checkbox.setChecked(False)
 
     def reset_default_options(self):
+        """重置 Transform 连接选项。"""
         self.translate_checkbox.setChecked(False)
         self.rotate_checkbox.setChecked(False)
         self.scale_checkbox.setChecked(False)
@@ -380,24 +309,24 @@ class ConnectionsTool(QWidget):
 
     def get_default_attr_pairs(self):
         """返回当前勾选的默认属性映射。"""
-        pairs = []
+        attribute_pairs = []
 
         if self.translate_checkbox.isChecked():
-            pairs.append(("translate", "translate"))
+            attribute_pairs.append(("translate", "translate"))
         if self.rotate_checkbox.isChecked():
-            pairs.append(("rotate", "rotate"))
+            attribute_pairs.append(("rotate", "rotate"))
         if self.scale_checkbox.isChecked():
-            pairs.append(("scale", "scale"))
+            attribute_pairs.append(("scale", "scale"))
         if self.matrix_checkbox.isChecked():
-            pairs.append(("matrix", "offsetParentMatrix"))
+            attribute_pairs.append(("matrix", "offsetParentMatrix"))
 
-        return pairs
+        return attribute_pairs
 
     def connect_default_attrs(self):
         """第一个选择驱动其余选择。"""
-        pairs = self.get_default_attr_pairs()
+        attribute_pairs = self.get_default_attr_pairs()
 
-        if not pairs:
+        if not attribute_pairs:
             cmds.warning(u"请先选择需要连接的属性类型。")
             return
 
@@ -408,7 +337,6 @@ class ConnectionsTool(QWidget):
 
         driver = selected_objects[0]
         driven_objects = selected_objects[1:]
-        created_count = 0
 
         cmds.undoInfo(
             openChunk=True,
@@ -416,20 +344,12 @@ class ConnectionsTool(QWidget):
         )
 
         try:
-            for driven in driven_objects:
-                for source_attr, destination_attr in pairs:
-                    source_plug = "{}.{}".format(driver, source_attr)
-                    destination_plug = "{}.{}".format(
-                        driven,
-                        destination_attr
-                    )
-
-                    if connect_plugs(
-                            source_plug,
-                            destination_plug,
-                            force=False
-                    ):
-                        created_count += 1
+            created_count = connection_utils.connect_attribute_pairs(
+                driver,
+                driven_objects,
+                attribute_pairs,
+                force=False
+            )
         finally:
             cmds.undoInfo(closeChunk=True)
 
@@ -439,9 +359,9 @@ class ConnectionsTool(QWidget):
 
     def break_default_attrs(self):
         """断开选择对象对应的默认属性连接。"""
-        pairs = self.get_default_attr_pairs()
+        attribute_pairs = self.get_default_attr_pairs()
 
-        if not pairs:
+        if not attribute_pairs:
             cmds.warning(u"请先选择需要断开的属性类型。")
             return
 
@@ -452,7 +372,6 @@ class ConnectionsTool(QWidget):
 
         driver = selected_objects[0]
         driven_objects = selected_objects[1:]
-        disconnected_count = 0
 
         cmds.undoInfo(
             openChunk=True,
@@ -460,26 +379,13 @@ class ConnectionsTool(QWidget):
         )
 
         try:
-            for driven in driven_objects:
-                for source_attr, destination_attr in pairs:
-                    source_plug = "{}.{}".format(driver, source_attr)
-                    destination_plug = "{}.{}".format(
-                        driven,
-                        destination_attr
-                    )
-
-                    if not cmds.objExists(source_plug):
-                        continue
-                    if not cmds.objExists(destination_plug):
-                        continue
-                    if not cmds.isConnected(source_plug, destination_plug):
-                        continue
-
-                    cmds.disconnectAttr(
-                        source_plug,
-                        destination_plug
-                    )
-                    disconnected_count += 1
+            disconnected_count = (
+                connection_utils.disconnect_attribute_pairs(
+                    driver,
+                    driven_objects,
+                    attribute_pairs
+                )
+            )
         finally:
             cmds.undoInfo(closeChunk=True)
 
@@ -490,33 +396,33 @@ class ConnectionsTool(QWidget):
     def pick_driver_attr(self):
         """拾取唯一 Driver Object + Channel Box Attr。"""
         selected_objects = get_selected_objects(1)
-        attrs = get_channel_box_attrs()
+        attribute_names = get_channel_box_attrs()
 
         if len(selected_objects) != 1:
             cmds.warning(u"拾取 Driver 时请只选择一个对象。")
             return
 
-        if len(attrs) != 1:
+        if len(attribute_names) != 1:
             cmds.warning(u"拾取 Driver 时请只选择一个 Channel Box 属性。")
             return
 
         self.driver_plug = "{}.{}".format(
             selected_objects[0],
-            attrs[0]
+            attribute_names[0]
         )
         self.driver_line.setText(self.driver_plug)
 
     def pick_driven_attrs(self):
         """记录 Driven Channel Box 属性名。"""
-        attrs = get_channel_box_attrs()
+        attribute_names = get_channel_box_attrs()
 
-        if not attrs:
+        if not attribute_names:
             return
 
         self.driven_attr_names = []
 
-        for attr in attrs:
-            self.driven_attr_names.append(attr)
+        for attribute_name in attribute_names:
+            self.driven_attr_names.append(attribute_name)
 
         self.driven_line.setText(
             ", ".join(self.driven_attr_names)
@@ -537,27 +443,18 @@ class ConnectionsTool(QWidget):
         if not driven_objects:
             return
 
-        created_count = 0
-
         cmds.undoInfo(
             openChunk=True,
             chunkName="MuziConnectCustomAttrs"
         )
 
         try:
-            for driven_object in driven_objects:
-                for attr_name in self.driven_attr_names:
-                    destination_plug = "{}.{}".format(
-                        driven_object,
-                        attr_name
-                    )
-
-                    if connect_plugs(
-                            self.driver_plug,
-                            destination_plug,
-                            force=False
-                    ):
-                        created_count += 1
+            created_count = connection_utils.connect_source_to_attributes(
+                self.driver_plug,
+                driven_objects,
+                self.driven_attr_names,
+                force=False
+            )
         finally:
             cmds.undoInfo(closeChunk=True)
 
@@ -576,39 +473,33 @@ class ConnectionsTool(QWidget):
         if not driven_objects:
             return
 
-        count = 0
-
         cmds.undoInfo(
             openChunk=True,
             chunkName="MuziBreakCustomAttrs"
         )
 
         try:
-            for driven_object in driven_objects:
-                for attr_name in self.driven_attr_names:
-                    destination_plug = "{}.{}".format(
-                        driven_object,
-                        attr_name
-                    )
-                    count += disconnect_input(destination_plug)
+            disconnected_count = connection_utils.disconnect_object_inputs(
+                driven_objects,
+                self.driven_attr_names
+            )
         finally:
             cmds.undoInfo(closeChunk=True)
 
         self.status_label.setText(
-            u"已断开 {} 条自定义连接".format(count)
+            u"已断开 {} 条自定义连接".format(disconnected_count)
         )
 
     def copy_input_connections(self):
         """复制来源对象 Channel Box 选中属性的输入连接。"""
         selected_objects = get_selected_objects(2)
-        attrs = get_channel_box_attrs()
+        attribute_names = get_channel_box_attrs()
 
-        if not selected_objects or not attrs:
+        if not selected_objects or not attribute_names:
             return
 
         source_object = selected_objects[0]
         target_objects = selected_objects[1:]
-        copied_count = 0
 
         cmds.undoInfo(
             openChunk=True,
@@ -616,39 +507,12 @@ class ConnectionsTool(QWidget):
         )
 
         try:
-            for attr_name in attrs:
-                source_destination_plug = "{}.{}".format(
-                    source_object,
-                    attr_name
-                )
-
-                source_inputs = cmds.listConnections(
-                    source_destination_plug,
-                    source=True,
-                    destination=False,
-                    plugs=True
-                )
-
-                if source_inputs is None:
-                    source_inputs = []
-
-                if not source_inputs:
-                    continue
-
-                source_input_plug = source_inputs[0]
-
-                for target_object in target_objects:
-                    target_plug = "{}.{}".format(
-                        target_object,
-                        attr_name
-                    )
-
-                    if connect_plugs(
-                            source_input_plug,
-                            target_plug,
-                            force=True
-                    ):
-                        copied_count += 1
+            copied_count = connection_utils.copy_input_connections(
+                source_object,
+                target_objects,
+                attribute_names,
+                force=True
+            )
         finally:
             cmds.undoInfo(closeChunk=True)
 
@@ -659,12 +523,10 @@ class ConnectionsTool(QWidget):
     def break_selected_inputs(self):
         """断开当前选择对象 Channel Box 属性的输入。"""
         selected_objects = get_selected_objects(1)
-        attrs = get_channel_box_attrs()
+        attribute_names = get_channel_box_attrs()
 
-        if not selected_objects or not attrs:
+        if not selected_objects or not attribute_names:
             return
-
-        disconnected_count = 0
 
         cmds.undoInfo(
             openChunk=True,
@@ -672,15 +534,10 @@ class ConnectionsTool(QWidget):
         )
 
         try:
-            for selected_object in selected_objects:
-                for attr_name in attrs:
-                    destination_plug = "{}.{}".format(
-                        selected_object,
-                        attr_name
-                    )
-                    disconnected_count += disconnect_input(
-                        destination_plug
-                    )
+            disconnected_count = connection_utils.disconnect_object_inputs(
+                selected_objects,
+                attribute_names
+            )
         finally:
             cmds.undoInfo(closeChunk=True)
 
@@ -697,7 +554,5 @@ def main():
 
 __all__ = [
     "ConnectionsTool",
-    "connect_plugs",
-    "disconnect_input",
     "main",
 ]
