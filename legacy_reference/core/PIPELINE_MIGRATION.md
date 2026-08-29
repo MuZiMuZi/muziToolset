@@ -8,9 +8,8 @@
 
 - ✅ **已迁移**：已有正式替代 API。
 - ♻️ **已有替代**：功能已经被正式模块覆盖，不再重复迁移。
-- 🧩 **迁入 System**：属于完整 Rig Workflow，不能放回 Core。
-- ⏸ **暂缓**：当前正式工具没有调用，保留旧实现供后续判断。
-- 🗑 **淘汰**：不建议继续保留为正式 API。
+- 🧩 **迁入 System**：属于完整 Rig Workflow，不放回 Core。
+- 🗑 **淘汰**：旧实现不再保留为正式 API；未来如需要，应重新设计。
 
 ## 通用 Core
 
@@ -46,48 +45,61 @@
 
 | 旧 Pipeline 方法 | 状态 | 正式方向 | 说明 |
 | --- | --- | --- | --- |
-| `create_joints_on_curve` | ♻️ / 重构中 | `core.jointUtils.JointCurve` + `core.curve_utils` | Joint 创建属于 Joint 模块，等距采样属于 Curve Core。 |
+| `create_joints_on_curve` | ♻️ | `core.jointUtils.JointCurve` + `core.curve_utils` | Joint 创建属于 Joint 模块，等距采样属于 Curve Core。 |
 | `create_eyelid_joints_on_curve` | ✅ | `systems.face.eyelid` | 重构为眼皮 / 眼袋共用的放射状 Joint Builder。 |
 | `attach_joints_on_curve` | ✅ | `systems.face.curve_attachment.attach_joints_to_curves` | Drive / Aim / Up Curve 使用统一弧长百分比同步。 |
-| `create_doble_constraint` | 🧩 | Controller / Rig System | 依赖 zero / driven / ctrl 特定层级约定。 |
+| `create_doble_constraint` | ✅ | `systems.controller.create_parent_space_blend` | 重构为标准 Controller Parent Space / Follow Blend，并使用真实 Constraint Weight Alias。 |
 
 ## Face
 
 | 旧 Pipeline 方法 | 状态 | 正式方向 | 说明 |
 | --- | --- | --- | --- |
-| `add_face_tag` | ⏸ | Face Publish / Export System | 当前 Face Rig 不依赖 `isFace` Tag。 |
-| `remove_non_face_objs` | ⏸ | Face Publish / Export System | 具有破坏性，不允许作为普通 Core API。 |
 | `create_zip_lip` | ✅ | `systems.face.lip.build_zip_lip` | 已重构为 Matrix Zip Lip，不再使用每 Joint ParentConstraint 做闭合混合。 |
+| `add_face_tag` | 🗑 | 不迁移 | `isFace` 是旧发布约定，当前 Face Rig 不依赖。以后如果做 Publish，应重新设计 metadata。 |
+| `remove_non_face_objs` | 🗑 | 不迁移 | 会直接删除未标记 Transform，破坏性过高，不允许成为通用 Core API。 |
 
 ## Controller / Rig Workflow
 
 | 旧 Pipeline 方法 | 状态 | 正式方向 | 说明 |
 | --- | --- | --- | --- |
-| `batch_Constraints_modle` | 🧩 | Controller / Rig System | 同时创建 Joint、Skin、Controller、Hierarchy、Constraint，职责过重。 |
-| `batch_Constraints_joint` | 🧩 | Controller / Rig System | 同上。 |
+| `batch_Constraints_modle` | ♻️ / 🗑 | `systems.controller` + `core.skin_utils` + `core.constraint_utils` | 旧函数重复创建 Joint、Skin、Controller、Hierarchy、Constraint；正式模块已可组合完成，不保留一键黑盒 API。 |
+| `batch_Constraints_joint` | ♻️ / 🗑 | `systems.controller` + `core.constraint_utils` | 标准 Controller Builder 已覆盖层级和输出节点，不保留旧重复实现。 |
 
 ## Hair / Dynamics
 
 | 旧 Pipeline 方法 | 状态 | 正式方向 | 说明 |
 | --- | --- | --- | --- |
-| `create_dynamic_curve_driven` | 🧩 | Future Hair System | 同时创建 nHair、Joint、Spline IK、Set 和 Rig Group，不属于 Core。 |
+| `create_dynamic_curve_driven` | 🗑 | Future `systems/hair` 重写 | 旧实现同时操作 MakeCurvesDynamic、Joint、Spline IK、Set、Hierarchy，并包含旧调用问题；未来 Hair System 从零设计，不复制旧实现。 |
 
-## 暂缓 / 淘汰
+## 淘汰
 
 | 旧 Pipeline 方法 | 状态 | 说明 |
 | --- | --- | --- |
 | `list_operation` | 🗑 | 只是 Python `set` 运算，没有必要维护 Maya 专用 API。 |
-| `copy_surface_create_geo` | ⏸ | 依赖当前 Face Component Selection 的交互建模操作，当前正式系统没有调用。 |
-| `create_logging` | 🗑 / 暂缓 | Python 标准 `logging` 足够；如以后需要项目日志系统，应单独设计。 |
+| `copy_surface_create_geo` | 🗑 | 旧实现包含未定义的 `self.geo` / `geo`，且对应的自动权重流程本身未完成。 |
+| `create_logging` | 🗑 | Python 标准 `logging` 足够；如以后需要项目日志系统，应单独设计。 |
 
-## 删除 legacy pipelineUtils.py 的条件
+## 其它 Legacy Core 已完成迁移
 
-只有以下条件全部满足后，才删除 `legacy_reference/core/pipelineUtils.py`：
+本轮额外完成：
 
-1. 通用 Core 功能全部有正式替代；
-2. Face Zip Lip、Eyelid、Curve Attachment 等有价值算法已经迁入对应 System 或明确淘汰；
-3. Dynamic Hair、批量 Controller Rig 等完整 Workflow 已经迁移或确认不再保留；
-4. 全仓库正式运行代码搜索 `pipelineUtils` 为 0；
-5. Maya 2023 Smoke Test、Functional Smoke Test 与新 Face Component Smoke Test 通过。
+- `connectionUtils.py` -> `core.connection_utils`
+- `vectorUtils.py` Matrix 部分 -> `core.matrix_utils`
+- `fileUtils.py` -> `core.file_utils` + `core.scene_io_utils` + `core.animation_io_utils`
+- `controlUtils.py` Shape 能力 -> `core.control_shape_utils`
+- `pipelineUtils.create_doble_constraint` -> `systems.controller.space_blend`
+- `weightsUtils.py` 的有效 Skin IO / Copy 能力 -> `core.skin_utils`
 
-在此之前，旧文件只作为历史算法参考，不允许正式代码 import。
+## legacy pipelineUtils.py 删除条件
+
+目前通用能力和有价值的 Face / Controller 算法已经完成迁移，剩余旧 Workflow 也已经明确淘汰或决定未来从零重写。
+
+正式运行代码不允许 import `legacy_reference.core.pipelineUtils`。
+
+在删除 `legacy_reference/core/pipelineUtils.py` 前，只保留最后一个验证门槛：
+
+1. Maya 2023 `muziToolset.pipeline_smoke_test()` 新版 9 项全部通过；
+2. Maya 2023 `muziToolset.controller_component_smoke_test()` 通过；
+3. Face Component Smoke Test 如继续用于 Face System 验证，也应保持通过。
+
+验证通过后即可删除旧 `pipelineUtils.py`，不再保留第二套实现。
