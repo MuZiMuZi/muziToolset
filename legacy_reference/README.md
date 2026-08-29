@@ -9,6 +9,7 @@ legacy_reference/
 ├─ MuziTools/      # 旧工具箱与旧 UI 结构
 ├─ bind/           # 早期绑定相关代码
 ├─ core/           # 旧 Core 全量备份
+├─ dev/            # 旧开发辅助脚本，例如 MayaSender
 ├─ face/           # 旧 Face Rig 与旧 Face UI
 ├─ pyside/         # PySide 学习 / 旧界面代码
 ├─ res/            # 旧资源与 UI 资源
