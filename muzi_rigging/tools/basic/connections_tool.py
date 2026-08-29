@@ -1,20 +1,16 @@
 # coding=utf-8
 u"""
-属性连接工具
-============
+Connections Tool
+================
+
+Maya 属性连接工具。
 
 功能：
-    1. 批量连接 Translate / Rotate / Scale / Matrix
-    2. 批量断开 Translate / Rotate / Scale / Matrix
-    3. 从 Maya Channel Box 读取驱动属性和被驱动属性
-    4. 创建 / 断开自定义属性连接
-    5. 复制一个物体已有的输入连接到其它物体
-    6. 断开 Channel Box 中选中属性的输入连接
-
-说明：
-    - Maya 2023 优先使用 PySide2。
-    - 场景操作统一使用 maya.cmds，不依赖 pymel。
-    - main() 只创建并返回 QWidget，窗口生命周期由 window_manager 管理。
+    1. Translate / Rotate / Scale / Matrix 批量连接与断开；
+    2. 从 Channel Box 拾取 Driver / Driven 属性；
+    3. 创建和断开自定义属性连接；
+    4. 复制一个对象已有的输入连接到其它对象；
+    5. 断开 Channel Box 选中属性的输入连接。
 """
 
 from __future__ import print_function
@@ -24,6 +20,7 @@ import maya.cmds as cmds
 try:
     from PySide2.QtGui import QIcon
     from PySide2.QtWidgets import QCheckBox
+    from PySide2.QtWidgets import QGridLayout
     from PySide2.QtWidgets import QHBoxLayout
     from PySide2.QtWidgets import QLabel
     from PySide2.QtWidgets import QLineEdit
@@ -33,6 +30,7 @@ try:
 except ImportError:
     from PySide6.QtGui import QIcon
     from PySide6.QtWidgets import QCheckBox
+    from PySide6.QtWidgets import QGridLayout
     from PySide6.QtWidgets import QHBoxLayout
     from PySide6.QtWidgets import QLabel
     from PySide6.QtWidgets import QLineEdit
@@ -40,39 +38,142 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
-from ...config import icon_dir
-from ....core import attrUtils
+from ...config import icons_dir as icon_dir
+from ...core import attrUtils
+from ...ui import theme
+
+
+def get_selected_objects(minimum_count=1):
+    """返回当前选择，并校验最少数量。"""
+    selected_objects = cmds.ls(
+        selection=True,
+        long=True
+    )
+
+    if selected_objects is None:
+        selected_objects = []
+
+    if len(selected_objects) < minimum_count:
+        cmds.warning(
+            u"请至少选择 {} 个物体。".format(minimum_count)
+        )
+        return []
+
+    return selected_objects
+
+
+def get_channel_box_attrs():
+    """返回 Maya Channel Box 当前选中的属性。"""
+    attrs = attrUtils.Attr.get_channelBox_attrs()
+
+    if attrs is None:
+        attrs = []
+
+    if not attrs:
+        cmds.warning(u"请先在 Channel Box 中选择属性。")
+
+    return attrs
+
+
+def connect_plugs(source_plug, destination_plug, force=False):
+    """安全连接两个完整 Plug。"""
+    if not cmds.objExists(source_plug):
+        cmds.warning(u"驱动属性不存在：{}".format(source_plug))
+        return False
+
+    if not cmds.objExists(destination_plug):
+        cmds.warning(u"被驱动属性不存在：{}".format(destination_plug))
+        return False
+
+    if cmds.isConnected(source_plug, destination_plug):
+        return True
+
+    existing_inputs = cmds.listConnections(
+        destination_plug,
+        source=True,
+        destination=False,
+        plugs=True
+    )
+
+    if existing_inputs and not force:
+        cmds.warning(
+            u"被驱动属性已有输入连接：{}".format(destination_plug)
+        )
+        return False
+
+    try:
+        cmds.connectAttr(
+            source_plug,
+            destination_plug,
+            force=force
+        )
+    except RuntimeError as error:
+        cmds.warning(str(error))
+        return False
+
+    return True
+
+
+def disconnect_input(destination_plug):
+    """断开指定 Plug 的全部输入连接。"""
+    inputs = cmds.listConnections(
+        destination_plug,
+        source=True,
+        destination=False,
+        plugs=True,
+        connections=True
+    )
+
+    if inputs is None:
+        inputs = []
+
+    disconnected_count = 0
+    index = 0
+
+    while index + 1 < len(inputs):
+        destination = inputs[index]
+        source = inputs[index + 1]
+
+        if cmds.isConnected(source, destination):
+            try:
+                cmds.disconnectAttr(
+                    source,
+                    destination
+                )
+                disconnected_count += 1
+            except RuntimeError:
+                pass
+
+        index += 2
+
+    return disconnected_count
 
 
 class ConnectionsTool(QWidget):
-    """Maya 属性连接工具窗口。"""
+    """属性连接工具窗口。"""
 
     def __init__(self, parent=None):
         super(ConnectionsTool, self).__init__(parent)
 
-        self.window_name = "ConnectionsTool"
-        self.window_title = u"Connections Tool（连接工具）"
-
-        self.setWindowTitle(self.window_title)
-        self.setMinimumWidth(460)
+        self.driver_plug = None
+        self.driven_attr_names = []
 
         self.create_widgets()
         self.create_layouts()
         self.create_connections()
 
-    # -------------------------------------------------------------------------
-    # 创建界面
-    # -------------------------------------------------------------------------
+        theme.style_window(
+            self,
+            title=u"Connections Tool",
+            minimum_width=560
+        )
+        self.resize(590, 560)
 
     def create_widgets(self):
-        """创建所有界面部件。"""
-
-        # 默认 Transform 属性连接。
-        self.default_connection_label = QLabel(
-            u"--------------- 连接默认属性 ---------------"
-        )
-        self.default_connection_label.setStyleSheet(
-            u"color: rgb(169, 255, 175);"
+        """创建界面控件。"""
+        self.title_label = theme.make_title(u"属性连接")
+        self.subtitle_label = theme.make_subtitle(
+            u"管理 Transform、自定义属性和已有输入连接。"
         )
 
         self.translate_checkbox = QCheckBox("Translate")
@@ -82,153 +183,131 @@ class ConnectionsTool(QWidget):
 
         self.reset_default_button = QPushButton(
             QIcon(icon_dir + "/reset.png"),
-            "Reset"
+            u"重置"
         )
-        self.reset_default_button.setToolTip(u"清空默认属性连接选项")
+        theme.style_ghost(self.reset_default_button)
 
-        self.connect_default_button = QPushButton(
-            QIcon(":parentConstraint.png"),
-            "Create SRT Connection"
-        )
-        self.connect_default_button.setToolTip(
-            u"第一个选择物体作为驱动者，其余选择物体作为被驱动者"
-        )
+        self.connect_default_button = QPushButton(u"创建默认连接")
+        theme.style_primary(self.connect_default_button)
 
         self.break_default_button = QPushButton(
             QIcon(icon_dir + "/delete.png"),
-            "Break SRT Connection"
+            u"断开默认连接"
         )
-        self.break_default_button.setToolTip(u"断开当前选择的默认属性连接")
+        theme.style_danger(self.break_default_button)
 
-        # 自定义属性连接。
-        self.custom_connection_label = QLabel(
-            u"--------------- 连接自定义属性 ---------------"
-        )
-        self.custom_connection_label.setStyleSheet(
-            u"color: rgb(85, 255, 255);"
-        )
+        self.driver_line = QLineEdit()
+        self.driver_line.setReadOnly(True)
+        self.driver_line.setPlaceholderText(u"Driver Plug")
+        self.pick_driver_button = QPushButton(u"拾取 Driver")
 
-        self.driver_attr_label = QLabel(u"Driver（驱动者）：")
-        self.driver_attr_line = QLineEdit()
-        self.driver_attr_line.setReadOnly(True)
+        self.driven_line = QLineEdit()
+        self.driven_line.setReadOnly(True)
+        self.driven_line.setPlaceholderText(u"Driven Attribute")
+        self.pick_driven_button = QPushButton(u"拾取 Driven")
 
-        self.pick_driver_attr_button = QPushButton(
-            QIcon(icon_dir + "/select.png"),
-            "Pick"
-        )
-        self.pick_driver_attr_button.setToolTip(
-            u"选择一个物体，并在 Channel Box 中选择一个驱动属性"
-        )
+        self.connect_custom_button = QPushButton(u"创建自定义连接")
+        theme.style_primary(self.connect_custom_button)
 
-        self.driven_attr_label = QLabel(u"Driven（被驱动者）：")
-        self.driven_attr_line = QLineEdit()
-        self.driven_attr_line.setReadOnly(True)
-
-        self.pick_driven_attr_button = QPushButton(
-            QIcon(icon_dir + "/select.png"),
-            "Pick"
-        )
-        self.pick_driven_attr_button.setToolTip(
-            u"选择一个或多个物体，并在 Channel Box 中选择被驱动属性"
-        )
-
-        self.connect_custom_button = QPushButton(
-            QIcon(":parentConstraint.png"),
-            "Create Connection"
-        )
-        self.connect_custom_button.setToolTip(u"创建自定义属性连接")
-
-        self.break_custom_button = QPushButton(
-            QIcon(icon_dir + "/delete.png"),
-            "Break Connection"
-        )
-        self.break_custom_button.setToolTip(u"断开自定义属性连接")
-
-        # 复制 / 删除已有连接。
-        self.copy_break_connection_label = QLabel(
-            u"--------------- 复制 / 删除属性连接 ---------------"
-        )
-        self.copy_break_connection_label.setStyleSheet(
-            u"color: rgb(170, 255, 128);"
-        )
+        self.break_custom_button = QPushButton(u"断开自定义连接")
+        theme.style_danger(self.break_custom_button)
 
         self.copy_connection_button = QPushButton(
             QIcon(icon_dir + "/copy.png"),
-            "Copy Driven Connection"
-        )
-        self.copy_connection_button.setToolTip(
-            u"第一个选择物体作为来源，把 Channel Box 中属性的输入连接复制给其余物体"
+            u"复制输入连接"
         )
 
-        self.break_connection_button = QPushButton(
+        self.break_selected_input_button = QPushButton(
             QIcon(icon_dir + "/delete.png"),
-            "Break Driven Connection"
+            u"断开所选属性输入"
         )
-        self.break_connection_button.setToolTip(
-            u"断开所选物体 Channel Box 选中属性的输入连接"
-        )
+        theme.style_danger(self.break_selected_input_button)
+
+        self.status_label = QLabel(u"准备就绪")
+        theme.set_role(self.status_label, "muted")
 
     def create_layouts(self):
-        """创建窗口布局。"""
+        """创建 Card 布局。"""
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(16, 16, 16, 16)
+        main_layout.setSpacing(12)
 
-        # 默认连接区域。
-        self.default_attr_layout = QHBoxLayout()
-        self.default_attr_layout.addWidget(self.translate_checkbox)
-        self.default_attr_layout.addWidget(self.rotate_checkbox)
-        self.default_attr_layout.addWidget(self.scale_checkbox)
-        self.default_attr_layout.addWidget(self.matrix_checkbox)
-        self.default_attr_layout.addWidget(self.reset_default_button)
+        main_layout.addWidget(self.title_label)
+        main_layout.addWidget(self.subtitle_label)
 
-        self.default_operate_layout = QHBoxLayout()
-        self.default_operate_layout.addWidget(self.connect_default_button)
-        self.default_operate_layout.addWidget(self.break_default_button)
+        default_card, default_layout = theme.make_card(self)
+        default_layout.addWidget(
+            theme.make_section_title(u"Transform 连接")
+        )
 
-        self.default_connection_layout = QVBoxLayout()
-        self.default_connection_layout.addLayout(self.default_attr_layout)
-        self.default_connection_layout.addLayout(self.default_operate_layout)
+        default_option_layout = QHBoxLayout()
+        default_option_layout.setContentsMargins(0, 0, 0, 0)
+        default_option_layout.addWidget(self.translate_checkbox)
+        default_option_layout.addWidget(self.rotate_checkbox)
+        default_option_layout.addWidget(self.scale_checkbox)
+        default_option_layout.addWidget(self.matrix_checkbox)
+        default_option_layout.addStretch(1)
+        default_option_layout.addWidget(self.reset_default_button)
+        default_layout.addLayout(default_option_layout)
 
-        # 自定义连接区域。
-        self.driver_attr_layout = QHBoxLayout()
-        self.driver_attr_layout.addWidget(self.driver_attr_label)
-        self.driver_attr_layout.addWidget(self.driver_attr_line)
-        self.driver_attr_layout.addWidget(self.pick_driver_attr_button)
+        default_action_layout = QHBoxLayout()
+        default_action_layout.setContentsMargins(0, 0, 0, 0)
+        default_action_layout.addWidget(self.break_default_button)
+        default_action_layout.addStretch(1)
+        default_action_layout.addWidget(self.connect_default_button)
+        default_layout.addLayout(default_action_layout)
 
-        self.driven_attr_layout = QHBoxLayout()
-        self.driven_attr_layout.addWidget(self.driven_attr_label)
-        self.driven_attr_layout.addWidget(self.driven_attr_line)
-        self.driven_attr_layout.addWidget(self.pick_driven_attr_button)
+        custom_card, custom_layout = theme.make_card(self)
+        custom_layout.addWidget(
+            theme.make_section_title(u"自定义属性")
+        )
 
-        self.custom_operate_layout = QHBoxLayout()
-        self.custom_operate_layout.addWidget(self.connect_custom_button)
-        self.custom_operate_layout.addWidget(self.break_custom_button)
+        custom_grid = QGridLayout()
+        custom_grid.setHorizontalSpacing(8)
+        custom_grid.setVerticalSpacing(8)
+        custom_grid.addWidget(QLabel(u"Driver"), 0, 0)
+        custom_grid.addWidget(self.driver_line, 0, 1)
+        custom_grid.addWidget(self.pick_driver_button, 0, 2)
+        custom_grid.addWidget(QLabel(u"Driven"), 1, 0)
+        custom_grid.addWidget(self.driven_line, 1, 1)
+        custom_grid.addWidget(self.pick_driven_button, 1, 2)
+        custom_grid.setColumnStretch(1, 1)
+        custom_layout.addLayout(custom_grid)
 
-        self.custom_connection_layout = QVBoxLayout()
-        self.custom_connection_layout.addLayout(self.driver_attr_layout)
-        self.custom_connection_layout.addLayout(self.driven_attr_layout)
-        self.custom_connection_layout.addLayout(self.custom_operate_layout)
+        custom_action_layout = QHBoxLayout()
+        custom_action_layout.setContentsMargins(0, 0, 0, 0)
+        custom_action_layout.addWidget(self.break_custom_button)
+        custom_action_layout.addStretch(1)
+        custom_action_layout.addWidget(self.connect_custom_button)
+        custom_layout.addLayout(custom_action_layout)
 
-        # 复制 / 删除连接区域。
-        self.copy_break_connection_layout = QHBoxLayout()
-        self.copy_break_connection_layout.addWidget(self.copy_connection_button)
-        self.copy_break_connection_layout.addWidget(self.break_connection_button)
+        existing_card, existing_layout = theme.make_card(self)
+        existing_layout.addWidget(
+            theme.make_section_title(u"已有连接")
+        )
 
-        # 主布局。
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.addWidget(self.default_connection_label)
-        self.main_layout.addLayout(self.default_connection_layout)
-        self.main_layout.addStretch()
+        existing_info = QLabel(
+            u"复制：第一个对象是来源，其余对象是目标；"
+            u"断开：对当前对象 Channel Box 中选中的属性执行。"
+        )
+        existing_info.setWordWrap(True)
+        theme.set_role(existing_info, "muted")
+        existing_layout.addWidget(existing_info)
 
-        self.main_layout.addWidget(self.custom_connection_label)
-        self.main_layout.addLayout(self.custom_connection_layout)
-        self.main_layout.addStretch()
+        existing_action_layout = QHBoxLayout()
+        existing_action_layout.setContentsMargins(0, 0, 0, 0)
+        existing_action_layout.addWidget(self.copy_connection_button)
+        existing_action_layout.addWidget(self.break_selected_input_button)
+        existing_layout.addLayout(existing_action_layout)
 
-        self.main_layout.addWidget(self.copy_break_connection_label)
-        self.main_layout.addLayout(self.copy_break_connection_layout)
-        self.main_layout.addStretch()
+        main_layout.addWidget(default_card)
+        main_layout.addWidget(custom_card)
+        main_layout.addWidget(existing_card)
+        main_layout.addWidget(self.status_label)
+        main_layout.addStretch(1)
 
     def create_connections(self):
         """连接界面信号。"""
-
         self.matrix_checkbox.stateChanged.connect(
             self.changed_matrix_checkbox
         )
@@ -243,162 +322,35 @@ class ConnectionsTool(QWidget):
         )
 
         self.reset_default_button.clicked.connect(
-            self.clicked_reset_default_button
+            self.reset_default_options
         )
         self.connect_default_button.clicked.connect(
-            self.clicked_connect_default_button
+            self.connect_default_attrs
         )
         self.break_default_button.clicked.connect(
-            self.clicked_break_default_button
+            self.break_default_attrs
         )
-
-        self.pick_driver_attr_button.clicked.connect(
-            self.clicked_pick_driver_attr_button
+        self.pick_driver_button.clicked.connect(
+            self.pick_driver_attr
         )
-        self.pick_driven_attr_button.clicked.connect(
-            self.clicked_pick_driven_attr_button
+        self.pick_driven_button.clicked.connect(
+            self.pick_driven_attrs
         )
         self.connect_custom_button.clicked.connect(
-            self.clicked_connect_custom_button
+            self.connect_custom_attrs
         )
         self.break_custom_button.clicked.connect(
-            self.clicked_break_custom_button
+            self.break_custom_attrs
         )
-
         self.copy_connection_button.clicked.connect(
-            self.clicked_copy_connection_button
+            self.copy_input_connections
         )
-        self.break_connection_button.clicked.connect(
-            self.clicked_break_connection_button
+        self.break_selected_input_button.clicked.connect(
+            self.break_selected_inputs
         )
-
-    # -------------------------------------------------------------------------
-    # 通用检查
-    # -------------------------------------------------------------------------
-
-    def get_selected_objects(self, minimum_count=1):
-        """读取 Maya 当前选择，并检查最少数量。"""
-
-        selected_objects = cmds.ls(
-            selection=True,
-            long=True
-        )
-
-        if selected_objects is None:
-            selected_objects = []
-
-        if len(selected_objects) < minimum_count:
-            cmds.warning(
-                u"请至少选择 {} 个物体。".format(minimum_count)
-            )
-            return []
-
-        return selected_objects
-
-    def get_selected_channel_attrs(self):
-        """读取 Maya Channel Box 当前选中的属性。"""
-
-        selected_attrs = attrUtils.Attr.get_channelBox_attrs()
-
-        if selected_attrs is None:
-            selected_attrs = []
-
-        if not selected_attrs:
-            cmds.warning(u"请先在 Channel Box 中选择属性。")
-            return []
-
-        return selected_attrs
-
-    def get_default_attr_pairs(self):
-        """根据复选框状态生成需要连接的属性对。"""
-
-        attr_pairs = []
-
-        if self.translate_checkbox.isChecked():
-            attr_pairs.append(("translate", "translate"))
-
-        if self.rotate_checkbox.isChecked():
-            attr_pairs.append(("rotate", "rotate"))
-
-        if self.scale_checkbox.isChecked():
-            attr_pairs.append(("scale", "scale"))
-
-        if self.matrix_checkbox.isChecked():
-            # 保留旧工具原本的连接方式：
-            # driver.matrix -> driven.offsetParentMatrix。
-            attr_pairs.append(("matrix", "offsetParentMatrix"))
-
-        return attr_pairs
-
-    def connect_plugs(self, source_plug, destination_plug, force=False):
-        """安全地连接两个完整属性 plug。"""
-
-        if not cmds.objExists(source_plug):
-            cmds.warning(u"驱动属性不存在：{}".format(source_plug))
-            return False
-
-        if not cmds.objExists(destination_plug):
-            cmds.warning(u"被驱动属性不存在：{}".format(destination_plug))
-            return False
-
-        if cmds.isConnected(source_plug, destination_plug):
-            return True
-
-        input_connections = cmds.listConnections(
-            destination_plug,
-            source=True,
-            destination=False,
-            plugs=True
-        )
-
-        if input_connections and not force:
-            cmds.warning(
-                u"被驱动属性已经存在输入连接：{}".format(destination_plug)
-            )
-            return False
-
-        try:
-            cmds.connectAttr(
-                source_plug,
-                destination_plug,
-                force=force
-            )
-        except RuntimeError as error:
-            cmds.warning(str(error))
-            return False
-
-        return True
-
-    def disconnect_plugs(self, source_plug, destination_plug):
-        """安全地断开指定的两个完整属性 plug。"""
-
-        if not cmds.objExists(source_plug):
-            return False
-
-        if not cmds.objExists(destination_plug):
-            return False
-
-        if not cmds.isConnected(source_plug, destination_plug):
-            return False
-
-        try:
-            cmds.disconnectAttr(
-                source_plug,
-                destination_plug
-            )
-        except RuntimeError as error:
-            cmds.warning(str(error))
-            return False
-
-        return True
-
-    # -------------------------------------------------------------------------
-    # 默认 Transform 属性连接
-    # -------------------------------------------------------------------------
 
     def changed_matrix_checkbox(self):
-        """选择 Matrix 时，取消 Translate / Rotate / Scale。"""
-
+        """Matrix 和普通 SRT 连接互斥。"""
         if not self.matrix_checkbox.isChecked():
             return
 
@@ -407,391 +359,345 @@ class ConnectionsTool(QWidget):
         self.scale_checkbox.setChecked(False)
 
     def changed_transform_checkbox(self):
-        """选择普通 Transform 属性时，取消 Matrix。"""
-
-        transform_checked = False
+        """普通 SRT 被勾选时取消 Matrix。"""
+        checked = False
 
         if self.translate_checkbox.isChecked():
-            transform_checked = True
-
+            checked = True
         if self.rotate_checkbox.isChecked():
-            transform_checked = True
-
+            checked = True
         if self.scale_checkbox.isChecked():
-            transform_checked = True
+            checked = True
 
-        if transform_checked:
+        if checked:
             self.matrix_checkbox.setChecked(False)
 
-    def clicked_reset_default_button(self):
-        """清空所有默认属性选项。"""
-
+    def reset_default_options(self):
         self.translate_checkbox.setChecked(False)
         self.rotate_checkbox.setChecked(False)
         self.scale_checkbox.setChecked(False)
         self.matrix_checkbox.setChecked(False)
 
-    def clicked_connect_default_button(self):
-        """连接第一个选择物体到其余选择物体。"""
+    def get_default_attr_pairs(self):
+        """返回当前勾选的默认属性映射。"""
+        pairs = []
 
-        attr_pairs = self.get_default_attr_pairs()
+        if self.translate_checkbox.isChecked():
+            pairs.append(("translate", "translate"))
+        if self.rotate_checkbox.isChecked():
+            pairs.append(("rotate", "rotate"))
+        if self.scale_checkbox.isChecked():
+            pairs.append(("scale", "scale"))
+        if self.matrix_checkbox.isChecked():
+            pairs.append(("matrix", "offsetParentMatrix"))
 
-        if not attr_pairs:
-            cmds.warning(u"没有选择需要连接的默认属性。")
+        return pairs
+
+    def connect_default_attrs(self):
+        """第一个选择驱动其余选择。"""
+        pairs = self.get_default_attr_pairs()
+
+        if not pairs:
+            cmds.warning(u"请先选择需要连接的属性类型。")
             return
 
-        selected_objects = self.get_selected_objects(minimum_count=2)
+        selected_objects = get_selected_objects(2)
 
         if not selected_objects:
             return
 
-        driver_object = selected_objects[0]
+        driver = selected_objects[0]
         driven_objects = selected_objects[1:]
+        created_count = 0
 
         cmds.undoInfo(
             openChunk=True,
-            chunkName="MuziConnectionsToolCreateDefault"
+            chunkName="MuziConnectDefaultAttrs"
         )
 
         try:
-            for driven_object in driven_objects:
-                for source_attr, destination_attr in attr_pairs:
-                    source_plug = "{}.{}".format(
-                        driver_object,
-                        source_attr
-                    )
+            for driven in driven_objects:
+                for source_attr, destination_attr in pairs:
+                    source_plug = "{}.{}".format(driver, source_attr)
                     destination_plug = "{}.{}".format(
-                        driven_object,
+                        driven,
                         destination_attr
                     )
 
-                    self.connect_plugs(
-                        source_plug,
-                        destination_plug,
-                        force=False
-                    )
+                    if connect_plugs(
+                            source_plug,
+                            destination_plug,
+                            force=False
+                    ):
+                        created_count += 1
         finally:
             cmds.undoInfo(closeChunk=True)
 
-    def clicked_break_default_button(self):
-        """断开第一个选择物体到其余选择物体的指定连接。"""
+        self.status_label.setText(
+            u"已创建 {} 条连接".format(created_count)
+        )
 
-        attr_pairs = self.get_default_attr_pairs()
+    def break_default_attrs(self):
+        """断开选择对象对应的默认属性连接。"""
+        pairs = self.get_default_attr_pairs()
 
-        if not attr_pairs:
-            cmds.warning(u"没有选择需要断开的默认属性。")
+        if not pairs:
+            cmds.warning(u"请先选择需要断开的属性类型。")
             return
 
-        selected_objects = self.get_selected_objects(minimum_count=2)
+        selected_objects = get_selected_objects(2)
 
         if not selected_objects:
             return
 
-        driver_object = selected_objects[0]
+        driver = selected_objects[0]
         driven_objects = selected_objects[1:]
+        disconnected_count = 0
 
         cmds.undoInfo(
             openChunk=True,
-            chunkName="MuziConnectionsToolBreakDefault"
+            chunkName="MuziBreakDefaultAttrs"
         )
 
         try:
-            for driven_object in driven_objects:
-                for source_attr, destination_attr in attr_pairs:
-                    source_plug = "{}.{}".format(
-                        driver_object,
-                        source_attr
-                    )
+            for driven in driven_objects:
+                for source_attr, destination_attr in pairs:
+                    source_plug = "{}.{}".format(driver, source_attr)
                     destination_plug = "{}.{}".format(
-                        driven_object,
+                        driven,
                         destination_attr
                     )
 
-                    self.disconnect_plugs(
+                    if not cmds.objExists(source_plug):
+                        continue
+                    if not cmds.objExists(destination_plug):
+                        continue
+                    if not cmds.isConnected(source_plug, destination_plug):
+                        continue
+
+                    cmds.disconnectAttr(
                         source_plug,
                         destination_plug
                     )
+                    disconnected_count += 1
         finally:
             cmds.undoInfo(closeChunk=True)
 
-    # -------------------------------------------------------------------------
-    # 自定义属性连接
-    # -------------------------------------------------------------------------
-
-    def clicked_pick_driver_attr_button(self):
-        """读取一个驱动物体和一个 Channel Box 属性。"""
-
-        selected_objects = self.get_selected_objects(minimum_count=1)
-
-        if not selected_objects:
-            return
-
-        selected_attrs = self.get_selected_channel_attrs()
-
-        if not selected_attrs:
-            return
-
-        driver_object = selected_objects[0]
-        driver_attr = selected_attrs[0]
-        driver_plug = "{}.{}".format(
-            driver_object,
-            driver_attr
+        self.status_label.setText(
+            u"已断开 {} 条连接".format(disconnected_count)
         )
 
-        self.driver_attr_line.setText(driver_plug)
+    def pick_driver_attr(self):
+        """拾取唯一 Driver Object + Channel Box Attr。"""
+        selected_objects = get_selected_objects(1)
+        attrs = get_channel_box_attrs()
 
-    def clicked_pick_driven_attr_button(self):
-        """读取一个或多个被驱动物体及 Channel Box 属性。"""
-
-        selected_objects = self.get_selected_objects(minimum_count=1)
-
-        if not selected_objects:
+        if len(selected_objects) != 1:
+            cmds.warning(u"拾取 Driver 时请只选择一个对象。")
             return
 
-        selected_attrs = self.get_selected_channel_attrs()
-
-        if not selected_attrs:
+        if len(attrs) != 1:
+            cmds.warning(u"拾取 Driver 时请只选择一个 Channel Box 属性。")
             return
 
-        driven_plugs = []
+        self.driver_plug = "{}.{}".format(
+            selected_objects[0],
+            attrs[0]
+        )
+        self.driver_line.setText(self.driver_plug)
 
-        for driven_object in selected_objects:
-            for driven_attr in selected_attrs:
-                driven_plug = "{}.{}".format(
-                    driven_object,
-                    driven_attr
-                )
+    def pick_driven_attrs(self):
+        """记录 Driven Channel Box 属性名。"""
+        attrs = get_channel_box_attrs()
 
-                if not cmds.objExists(driven_plug):
-                    continue
-
-                driven_plugs.append(driven_plug)
-
-        if not driven_plugs:
-            cmds.warning(u"没有找到可以加载的被驱动属性。")
+        if not attrs:
             return
 
-        driven_text = ", ".join(driven_plugs)
-        self.driven_attr_line.setText(driven_text)
+        self.driven_attr_names = []
 
-    def get_custom_connection_data(self):
-        """检查并返回自定义连接输入框中的完整属性。"""
+        for attr in attrs:
+            self.driven_attr_names.append(attr)
 
-        source_plug = self.driver_attr_line.text().strip()
-        destination_text = self.driven_attr_line.text().strip()
+        self.driven_line.setText(
+            ", ".join(self.driven_attr_names)
+        )
 
-        if not source_plug:
-            cmds.warning(u"未加载驱动属性。")
-            return None, []
-
-        if not destination_text:
-            cmds.warning(u"未加载被驱动属性。")
-            return None, []
-
-        if not cmds.objExists(source_plug):
-            cmds.warning(u"驱动属性不存在：{}".format(source_plug))
-            return None, []
-
-        destination_plugs = []
-        destination_items = destination_text.split(",")
-
-        for destination_item in destination_items:
-            destination_plug = destination_item.strip()
-
-            if not destination_plug:
-                continue
-
-            if not cmds.objExists(destination_plug):
-                cmds.warning(
-                    u"被驱动属性不存在：{}".format(destination_plug)
-                )
-                continue
-
-            destination_plugs.append(destination_plug)
-
-        if not destination_plugs:
-            cmds.warning(u"没有有效的被驱动属性。")
-            return None, []
-
-        return source_plug, destination_plugs
-
-    def clicked_connect_custom_button(self):
-        """创建自定义属性连接。"""
-
-        source_plug, destination_plugs = self.get_custom_connection_data()
-
-        if source_plug is None:
+    def connect_custom_attrs(self):
+        """把 Driver Plug 连接到当前选择对象的 Driven Attr。"""
+        if not self.driver_plug:
+            cmds.warning(u"请先拾取 Driver 属性。")
             return
+
+        if not self.driven_attr_names:
+            cmds.warning(u"请先拾取 Driven 属性。")
+            return
+
+        driven_objects = get_selected_objects(1)
+
+        if not driven_objects:
+            return
+
+        created_count = 0
 
         cmds.undoInfo(
             openChunk=True,
-            chunkName="MuziConnectionsToolCreateCustom"
+            chunkName="MuziConnectCustomAttrs"
         )
 
         try:
-            for destination_plug in destination_plugs:
-                self.connect_plugs(
-                    source_plug,
-                    destination_plug,
-                    force=False
-                )
+            for driven_object in driven_objects:
+                for attr_name in self.driven_attr_names:
+                    destination_plug = "{}.{}".format(
+                        driven_object,
+                        attr_name
+                    )
+
+                    if connect_plugs(
+                            self.driver_plug,
+                            destination_plug,
+                            force=False
+                    ):
+                        created_count += 1
         finally:
             cmds.undoInfo(closeChunk=True)
 
-    def clicked_break_custom_button(self):
-        """断开自定义属性连接。"""
+        self.status_label.setText(
+            u"已创建 {} 条自定义连接".format(created_count)
+        )
 
-        source_plug, destination_plugs = self.get_custom_connection_data()
-
-        if source_plug is None:
+    def break_custom_attrs(self):
+        """断开当前选择对象对应的自定义属性输入。"""
+        if not self.driven_attr_names:
+            cmds.warning(u"请先拾取 Driven 属性。")
             return
+
+        driven_objects = get_selected_objects(1)
+
+        if not driven_objects:
+            return
+
+        count = 0
 
         cmds.undoInfo(
             openChunk=True,
-            chunkName="MuziConnectionsToolBreakCustom"
+            chunkName="MuziBreakCustomAttrs"
         )
 
         try:
-            for destination_plug in destination_plugs:
-                self.disconnect_plugs(
-                    source_plug,
-                    destination_plug
-                )
+            for driven_object in driven_objects:
+                for attr_name in self.driven_attr_names:
+                    destination_plug = "{}.{}".format(
+                        driven_object,
+                        attr_name
+                    )
+                    count += disconnect_input(destination_plug)
         finally:
             cmds.undoInfo(closeChunk=True)
 
-    # -------------------------------------------------------------------------
-    # 复制 / 删除已有输入连接
-    # -------------------------------------------------------------------------
+        self.status_label.setText(
+            u"已断开 {} 条自定义连接".format(count)
+        )
 
-    def clicked_copy_connection_button(self):
-        """
-        把第一个选择物体指定属性的输入连接复制给其它选择物体。
+    def copy_input_connections(self):
+        """复制来源对象 Channel Box 选中属性的输入连接。"""
+        selected_objects = get_selected_objects(2)
+        attrs = get_channel_box_attrs()
 
-        例如：
-            multiplyDivide1.outputX -> ctrl_a.customAttr
-
-        选择 ctrl_a、ctrl_b、ctrl_c，并在 Channel Box 选择 customAttr，
-        执行后会把同一个上游输出连接到 ctrl_b.customAttr 和 ctrl_c.customAttr。
-        """
-
-        selected_objects = self.get_selected_objects(minimum_count=2)
-
-        if not selected_objects:
-            return
-
-        selected_attrs = self.get_selected_channel_attrs()
-
-        if not selected_attrs:
+        if not selected_objects or not attrs:
             return
 
         source_object = selected_objects[0]
         target_objects = selected_objects[1:]
+        copied_count = 0
 
         cmds.undoInfo(
             openChunk=True,
-            chunkName="MuziConnectionsToolCopyDriven"
+            chunkName="MuziCopyInputConnections"
         )
 
         try:
-            for selected_attr in selected_attrs:
+            for attr_name in attrs:
                 source_destination_plug = "{}.{}".format(
                     source_object,
-                    selected_attr
+                    attr_name
                 )
 
-                if not cmds.objExists(source_destination_plug):
-                    continue
-
-                input_connections = cmds.listConnections(
+                source_inputs = cmds.listConnections(
                     source_destination_plug,
                     source=True,
                     destination=False,
                     plugs=True
                 )
 
-                if not input_connections:
-                    cmds.warning(
-                        u"属性没有输入连接：{}".format(
-                            source_destination_plug
-                        )
-                    )
+                if source_inputs is None:
+                    source_inputs = []
+
+                if not source_inputs:
                     continue
 
-                source_plug = input_connections[0]
+                source_input_plug = source_inputs[0]
 
                 for target_object in target_objects:
                     target_plug = "{}.{}".format(
                         target_object,
-                        selected_attr
+                        attr_name
                     )
 
-                    self.connect_plugs(
-                        source_plug,
-                        target_plug,
-                        force=False
-                    )
+                    if connect_plugs(
+                            source_input_plug,
+                            target_plug,
+                            force=True
+                    ):
+                        copied_count += 1
         finally:
             cmds.undoInfo(closeChunk=True)
 
-    def clicked_break_connection_button(self):
-        """断开所选物体 Channel Box 选中属性的全部输入连接。"""
+        self.status_label.setText(
+            u"已复制 {} 条输入连接".format(copied_count)
+        )
 
-        selected_objects = self.get_selected_objects(minimum_count=1)
+    def break_selected_inputs(self):
+        """断开当前选择对象 Channel Box 属性的输入。"""
+        selected_objects = get_selected_objects(1)
+        attrs = get_channel_box_attrs()
 
-        if not selected_objects:
+        if not selected_objects or not attrs:
             return
 
-        selected_attrs = self.get_selected_channel_attrs()
-
-        if not selected_attrs:
-            return
+        disconnected_count = 0
 
         cmds.undoInfo(
             openChunk=True,
-            chunkName="MuziConnectionsToolBreakDriven"
+            chunkName="MuziBreakSelectedInputs"
         )
 
         try:
             for selected_object in selected_objects:
-                for selected_attr in selected_attrs:
+                for attr_name in attrs:
                     destination_plug = "{}.{}".format(
                         selected_object,
-                        selected_attr
+                        attr_name
                     )
-
-                    if not cmds.objExists(destination_plug):
-                        continue
-
-                    input_connections = cmds.listConnections(
-                        destination_plug,
-                        source=True,
-                        destination=False,
-                        plugs=True
+                    disconnected_count += disconnect_input(
+                        destination_plug
                     )
-
-                    if not input_connections:
-                        continue
-
-                    for source_plug in input_connections:
-                        self.disconnect_plugs(
-                            source_plug,
-                            destination_plug
-                        )
         finally:
             cmds.undoInfo(closeChunk=True)
 
-
-# 保留旧类名，避免历史代码在迁移期间失效。
-Connections_Tool = ConnectionsTool
+        self.status_label.setText(
+            u"已断开 {} 条输入连接".format(disconnected_count)
+        )
 
 
 def main():
-    """创建连接工具并返回 QWidget。"""
+    """创建并返回 Connections Tool。"""
     window = ConnectionsTool()
     return window
 
 
-if __name__ == "__main__":
-    window = main()
-    window.show()
+__all__ = [
+    "ConnectionsTool",
+    "connect_plugs",
+    "disconnect_input",
+    "main",
+]
