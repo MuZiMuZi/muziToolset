@@ -3,40 +3,46 @@ u"""
 Face Driven Key Tool
 ====================
 
-用于把一组面部控制器当前 Pose 转换成驱动组上的 Set Driven Key。
+把一组面部控制器当前 Pose 转换成 Driver Group 上的 Set Driven Key。
 
 工作流：
-    1. 选择总驱动控制器并点击“拾取驱动”；
+    1. 选择总驱动控制器并拾取；
     2. 输入驱动属性名称；
-    3. 把需要的面部控制器摆到最大 Pose；
-    4. 选择这些控制器并点击“创建 Driven Key”。
+    3. 把面部控制器摆到最大 Pose；
+    4. 选择这些控制器并创建 Driven Key。
 
-驱动属性默认范围：0 -> 10。
+驱动范围默认：0 -> 10。
 """
 
 from __future__ import print_function
 
 import maya.cmds as cmds
 
-from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QDialog
-from PySide2.QtWidgets import QHBoxLayout
-from PySide2.QtWidgets import QLabel
-from PySide2.QtWidgets import QLineEdit
-from PySide2.QtWidgets import QPushButton
-from PySide2.QtWidgets import QVBoxLayout
+try:
+    from PySide2.QtWidgets import QDialog
+    from PySide2.QtWidgets import QHBoxLayout
+    from PySide2.QtWidgets import QLabel
+    from PySide2.QtWidgets import QLineEdit
+    from PySide2.QtWidgets import QPushButton
+    from PySide2.QtWidgets import QVBoxLayout
+except ImportError:
+    from PySide6.QtWidgets import QDialog
+    from PySide6.QtWidgets import QHBoxLayout
+    from PySide6.QtWidgets import QLabel
+    from PySide6.QtWidgets import QLineEdit
+    from PySide6.QtWidgets import QPushButton
+    from PySide6.QtWidgets import QVBoxLayout
 
-from ....core import qtUtils
-
-
-_window = None
+from ... import ui_theme
 
 
 def _short_name(node):
+    """返回 Maya 节点短名称。"""
     return node.split("|")[-1]
 
 
 def _driver_group_name(control):
+    """根据控制器名称生成 Driver Group 名称。"""
     short_name = _short_name(control)
 
     if short_name.startswith("ctrl_"):
@@ -46,11 +52,7 @@ def _driver_group_name(control):
 
 
 def add_extra_group(obj, group_name, world_orient=False):
-    """
-    在 obj 上方创建或复用一个额外 Transform 组。
-
-    如果组已存在，会返回已有组，而不是返回 None。
-    """
+    """在控制器上方创建或复用 Driver Group。"""
     if not cmds.objExists(obj):
         raise RuntimeError(u"对象不存在：{}".format(obj))
 
@@ -61,7 +63,10 @@ def add_extra_group(obj, group_name, world_orient=False):
         obj,
         parent=True,
         fullPath=True
-    ) or []
+    )
+
+    if parent_nodes is None:
+        parent_nodes = []
 
     world_translation = cmds.xform(
         obj,
@@ -115,17 +120,20 @@ def add_extra_group(obj, group_name, world_orient=False):
 
 
 def _ensure_driver_attribute(driver, attribute_name):
+    """确保驱动控制器上存在 0-10 的驱动属性。"""
     if not attribute_name:
         raise RuntimeError(u"驱动属性名称不能为空。")
 
     if not cmds.objExists(driver):
         raise RuntimeError(u"驱动控制器不存在：{}".format(driver))
 
-    if not cmds.attributeQuery(
-            attribute_name,
-            node=driver,
-            exists=True
-    ):
+    attribute_exists = cmds.attributeQuery(
+        attribute_name,
+        node=driver,
+        exists=True
+    )
+
+    if not attribute_exists:
         cmds.addAttr(
             driver,
             longName=attribute_name,
@@ -155,7 +163,7 @@ def create_driven_key_setup(
     把 driven_controls 当前 Pose 记录到 maximum，默认状态记录到 minimum。
 
     Returns:
-        list[str]: Driver Group 列表。
+        list: 创建或复用的 Driver Group。
     """
     if not driven_controls:
         raise RuntimeError(u"请选择一个或以上需要被驱动的控制器。")
@@ -179,9 +187,25 @@ def create_driven_key_setup(
         "scaleZ",
     ]
 
-    cmds.undoInfo(openChunk=True, chunkName="MuziFaceDrivenKey")
+    default_values = {
+        "translateX": 0.0,
+        "translateY": 0.0,
+        "translateZ": 0.0,
+        "rotateX": 0.0,
+        "rotateY": 0.0,
+        "rotateZ": 0.0,
+        "scaleX": 1.0,
+        "scaleY": 1.0,
+        "scaleZ": 1.0,
+    }
+
+    cmds.undoInfo(
+        openChunk=True,
+        chunkName="MuziFaceDrivenKey"
+    )
+
     try:
-        # 先把当前控制器 Pose 固化到新建的 driver group。
+        # 把当前控制器 Pose 固化到 Driver Group。
         for control in driven_controls:
             if not cmds.objExists(control):
                 continue
@@ -196,7 +220,10 @@ def create_driven_key_setup(
             if driver_group not in driver_groups:
                 driver_groups.append(driver_group)
 
-        # maximum：保留新建 driver group 当前的 Pose。
+        if not driver_groups:
+            raise RuntimeError(u"没有找到可以创建 Driven Key 的控制器。")
+
+        # 最大状态记录当前 Pose。
         cmds.setAttr(driver_plug, maximum)
 
         for driver_group in driver_groups:
@@ -207,25 +234,16 @@ def create_driven_key_setup(
                     currentDriver=driver_plug
                 )
 
-        # minimum：把组归到标准默认值后再记录。
+        # 最小状态归零并记录默认 Pose。
         cmds.setAttr(driver_plug, minimum)
 
         for driver_group in driver_groups:
-            default_values = {
-                "translateX": 0.0,
-                "translateY": 0.0,
-                "translateZ": 0.0,
-                "rotateX": 0.0,
-                "rotateY": 0.0,
-                "rotateZ": 0.0,
-                "scaleX": 1.0,
-                "scaleY": 1.0,
-                "scaleZ": 1.0,
-            }
-
             for attr in transform_attrs:
                 plug = "{}.{}".format(driver_group, attr)
-                cmds.setAttr(plug, default_values[attr])
+                cmds.setAttr(
+                    plug,
+                    default_values[attr]
+                )
                 cmds.setDrivenKeyframe(
                     plug,
                     currentDriver=driver_plug
@@ -243,46 +261,115 @@ class FaceDrivenKeyTool(QDialog):
     """面部 Driven Key 创建窗口。"""
 
     def __init__(self, parent=None):
-        if parent is None:
-            parent = qtUtils.get_maya_window()
-
         super(FaceDrivenKeyTool, self).__init__(parent)
-        self.setWindowTitle(u"面部拾取驱动工具")
-        self.setMinimumWidth(440)
 
+        self.create_widgets()
+        self.create_layouts()
+        self.create_connections()
+
+        ui_theme.style_window(
+            self,
+            title=u"面部 Driven Key",
+            minimum_width=520
+        )
+        self.resize(540, 360)
+
+    # -------------------------------------------------------------------------
+    # UI
+    # -------------------------------------------------------------------------
+
+    def create_widgets(self):
+        """创建界面控件。"""
+        self.title_label = ui_theme.make_title(u"面部 Driven Key")
+        self.subtitle_label = ui_theme.make_subtitle(
+            u"把当前面部控制器 Pose 固化到 Driver Group，并建立 0 → 10 驱动关系。"
+        )
+
+        self.driver_label = QLabel(u"驱动控制器")
         self.driver_line = QLineEdit()
         self.driver_line.setReadOnly(True)
-        self.driver_pick_btn = QPushButton(u"拾取驱动")
+        self.driver_line.setPlaceholderText(u"选择一个总驱动控制器")
+        self.driver_pick_button = QPushButton(u"拾取")
 
+        self.attribute_label = QLabel(u"驱动属性")
         self.attribute_line = QLineEdit()
-        self.attribute_line.setPlaceholderText(u"例如 smile / browUp / mouthOpen")
-        self.execute_btn = QPushButton(u"选择被驱动控制器并创建 Driven Key")
+        self.attribute_line.setPlaceholderText(
+            u"例如 smile / browUp / mouthOpen"
+        )
 
-        self._create_layout()
-        self._create_connections()
+        self.pose_info_label = QLabel(
+            u"把需要驱动的控制器摆到最大 Pose 后保持选择，再执行创建。"
+        )
+        self.pose_info_label.setWordWrap(True)
+        ui_theme.set_role(self.pose_info_label, "muted")
 
-    def _create_layout(self):
+        self.execute_button = QPushButton(u"创建 Driven Key")
+        self.execute_button.setToolTip(
+            u"当前选择作为被驱动控制器，创建 0 和 10 两个驱动状态"
+        )
+        ui_theme.style_primary(self.execute_button)
+
+    def create_layouts(self):
+        """创建 Card 布局。"""
         main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(16, 16, 16, 16)
+        main_layout.setSpacing(12)
 
-        driver_layout = QHBoxLayout()
-        driver_layout.addWidget(QLabel(u"驱动控制器:"))
-        driver_layout.addWidget(self.driver_line, 1)
-        driver_layout.addWidget(self.driver_pick_btn)
-        main_layout.addLayout(driver_layout)
+        main_layout.addWidget(self.title_label)
+        main_layout.addWidget(self.subtitle_label)
 
-        attribute_layout = QHBoxLayout()
-        attribute_layout.addWidget(QLabel(u"驱动属性:"))
-        attribute_layout.addWidget(self.attribute_line, 1)
-        main_layout.addLayout(attribute_layout)
+        driver_card, driver_layout = ui_theme.make_card(self)
+        driver_layout.addWidget(
+            ui_theme.make_section_title(u"Driver")
+        )
 
-        main_layout.addWidget(self.execute_btn)
+        driver_row = QHBoxLayout()
+        driver_row.setContentsMargins(0, 0, 0, 0)
+        driver_row.addWidget(self.driver_label)
+        driver_row.addWidget(self.driver_line, 1)
+        driver_row.addWidget(self.driver_pick_button)
+        driver_layout.addLayout(driver_row)
 
-    def _create_connections(self):
-        self.driver_pick_btn.clicked.connect(self.pick_driver)
-        self.execute_btn.clicked.connect(self.execute)
+        attribute_row = QHBoxLayout()
+        attribute_row.setContentsMargins(0, 0, 0, 0)
+        attribute_row.addWidget(self.attribute_label)
+        attribute_row.addWidget(self.attribute_line, 1)
+        driver_layout.addLayout(attribute_row)
+
+        pose_card, pose_layout = ui_theme.make_card(self)
+        pose_layout.addWidget(
+            ui_theme.make_section_title(u"Driven Pose")
+        )
+        pose_layout.addWidget(self.pose_info_label)
+        pose_layout.addWidget(self.execute_button)
+
+        main_layout.addWidget(driver_card)
+        main_layout.addWidget(pose_card)
+        main_layout.addStretch(1)
+
+    def create_connections(self):
+        """连接按钮。"""
+        self.driver_pick_button.clicked.connect(
+            self.pick_driver
+        )
+        self.execute_button.clicked.connect(
+            self.execute
+        )
+
+    # -------------------------------------------------------------------------
+    # 操作
+    # -------------------------------------------------------------------------
 
     def pick_driver(self):
-        selections = cmds.ls(selection=True, long=True) or []
+        """拾取唯一选择的驱动控制器。"""
+        selections = cmds.ls(
+            selection=True,
+            long=True
+        )
+
+        if selections is None:
+            selections = []
+
         if len(selections) != 1:
             cmds.warning(u"请只选择一个驱动控制器。")
             return
@@ -291,9 +378,16 @@ class FaceDrivenKeyTool(QDialog):
         cmds.select(clear=True)
 
     def execute(self):
+        """创建当前 Pose 的 Driven Key。"""
         driver = self.driver_line.text().strip()
         attribute_name = self.attribute_line.text().strip()
-        driven_controls = cmds.ls(selection=True, long=True) or []
+        driven_controls = cmds.ls(
+            selection=True,
+            long=True
+        )
+
+        if driven_controls is None:
+            driven_controls = []
 
         if not driver:
             cmds.warning(u"请先拾取驱动控制器。")
@@ -315,7 +409,12 @@ class FaceDrivenKeyTool(QDialog):
                 minimum=0.0,
                 maximum=10.0
             )
-            cmds.select(groups, replace=True)
+
+            cmds.select(
+                groups,
+                replace=True
+            )
+
             print(
                 u"[Face Driven Key] 已创建 {} 个 Driver Group。".format(
                     len(groups)
@@ -325,28 +424,12 @@ class FaceDrivenKeyTool(QDialog):
             cmds.warning(str(error))
 
 
-# 旧类名兼容。
-Select_key_tool = FaceDrivenKeyTool
-
-
 def main():
-    global _window
-
-    try:
-        if _window is not None:
-            _window.close()
-            _window.deleteLater()
-    except Exception:
-        pass
-
-    _window = FaceDrivenKeyTool()
-    _window.setAttribute(Qt.WA_DeleteOnClose, False)
-    _window.show()
-    _window.raise_()
-    _window.activateWindow()
-
-    return _window
+    """创建 Face Driven Key 窗口。"""
+    window = FaceDrivenKeyTool()
+    return window
 
 
 if __name__ == "__main__":
-    main()
+    window = main()
+    window.show()
