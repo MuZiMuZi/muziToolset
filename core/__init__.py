@@ -21,6 +21,8 @@ Muzi Rigging Core
     nameUtils
     scene_utils
     transform_utils
+    connection_utils
+    matrix_utils
 
 Rig / Scene：
     animation_utils
@@ -28,6 +30,10 @@ Rig / Scene：
     curve_utils
     surface_utils
     snap_utils
+
+文件 / Scene IO：
+    file_utils
+    scene_io_utils
 
 Geometry / Deformer：
     mesh_utils
