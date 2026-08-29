@@ -1,253 +1,376 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-Rigging 工具箱主面板
-功能：自动发现 tools 目录下按分类组织的工具，生成可折叠面板，点击即可打开对应工具
+# coding=utf-8
+u"""
+Rigging Toolbox
+===============
 
-分类映射（由 tools/__init__.py 管理）：
-    basic      -> 基础工具
-    joint      -> 骨骼工具
-    ctrl       -> 控制器工具
-    skin       -> 蒙皮工具
-    blendShape -> BlendShape工具
-    clean      -> 清理工具
+MuziTools 主面板。
+
+特点：
+    - ``tools`` 注册表只扫描文件，子工具点击时才真正 import；
+    - 分类默认收起；
+    - 工具按钮统一交给 ``window_manager`` 管理；
+    - 支持开发过程中刷新工具列表；
+    - 单个工具加载失败时只提示该工具，不影响整个 Toolbox。
 """
+
+from __future__ import print_function
+
+import traceback
+from functools import partial
 
 try:
-    from PySide2.QtCore import *
-    from PySide2.QtGui import *
-    from PySide2.QtWidgets import *
+    from PySide2.QtCore import Qt
+    from PySide2.QtWidgets import QFrame
+    from PySide2.QtWidgets import QHBoxLayout
+    from PySide2.QtWidgets import QLabel
+    from PySide2.QtWidgets import QMessageBox
+    from PySide2.QtWidgets import QPushButton
+    from PySide2.QtWidgets import QScrollArea
+    from PySide2.QtWidgets import QSizePolicy
+    from PySide2.QtWidgets import QToolButton
+    from PySide2.QtWidgets import QVBoxLayout
+    from PySide2.QtWidgets import QWidget
     from shiboken2 import wrapInstance
 except ImportError:
-    from PySide6.QtCore import *
-    from PySide6.QtGui import *
-    from PySide6.QtWidgets import *
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QFrame
+    from PySide6.QtWidgets import QHBoxLayout
+    from PySide6.QtWidgets import QLabel
+    from PySide6.QtWidgets import QMessageBox
+    from PySide6.QtWidgets import QPushButton
+    from PySide6.QtWidgets import QScrollArea
+    from PySide6.QtWidgets import QSizePolicy
+    from PySide6.QtWidgets import QToolButton
+    from PySide6.QtWidgets import QVBoxLayout
+    from PySide6.QtWidgets import QWidget
     from shiboken6 import wrapInstance
 
 import maya.OpenMayaUI as omui
 
-# 从 tools 包导入按分类组织的工具字典
-from .tools import get_tools_by_category
 from . import window_manager
+from .tools import get_tools_by_category
+from .tools import refresh_tools
+
+
+_window = None
+
+
+_TOOL_DISPLAY_NAMES = {
+    "rename_tool": u"重命名工具",
+    "attr_tool": u"属性工具",
+    "connections_tool": u"连接工具",
+    "constraint_tool": u"约束工具",
+    "joint_tool": u"Joint 工具",
+    "joint_resamp_tool": u"关节链重采样",
+    "control_shape_tool": u"控制器 Shape 图库",
+    "create_ctrl_tool": u"创建控制器",
+    "create_fk_ctrl_tool": u"创建 FK 控制器",
+    "set_ctrl_tool": u"编辑控制器 Shape",
+    "face_rig_tool": u"Face Rig Wizard",
+    "rig_tool": u"Rig 工具",
+    "skirt_ctrl_tool": u"裙子绑定工具",
+    "face_select_key_tool": u"面部 Driven Key",
+    "skin_tool": u"Skin 工具",
+    "add_blendshape_tool": u"BlendShape Target",
+    "invert_shape_tool": u"Invert Shape",
+    "hierarchy_cleaner": u"层级清理器",
+    "model_checker": u"模型检查器",
+}
 
 
 def get_maya_main_window():
-    """获取 Maya 主窗口，作为工具箱的父窗口"""
-    ptr = omui.MQtUtil.mainWindow()
-    if ptr is not None:
-        return wrapInstance(int(ptr), QWidget)
-    return None
+    """获取 Maya 主窗口 QWidget。"""
+    try:
+        pointer = omui.MQtUtil.mainWindow()
+    except Exception:
+        pointer = None
+
+    if pointer is None:
+        return None
+
+    try:
+        return wrapInstance(int(pointer), QWidget)
+    except Exception:
+        return None
 
 
-# =============================================================================
-#  可折叠面板组件
-# =============================================================================
-class Collapsible_Box(QWidget):
-    """
-    可折叠面板组件
-    类似 Maya cmds.frameLayout(collapsable=True) 的效果
-    点击标题栏可以展开/收起内容区域
-    """
+def _display_name(tool_name):
+    """返回工具按钮显示名称。"""
+    if tool_name in _TOOL_DISPLAY_NAMES:
+        return _TOOL_DISPLAY_NAMES[tool_name]
+
+    words = tool_name.split("_")
+    display_words = []
+
+    for word in words:
+        if not word:
+            continue
+        display_words.append(word.title())
+
+    return " ".join(display_words)
+
+
+class CollapsibleBox(QWidget):
+    """简单稳定的可折叠分类容器。"""
 
     def __init__(self, title="", parent=None):
-        super(Collapsible_Box, self).__init__(parent)
+        super(CollapsibleBox, self).__init__(parent)
 
-        # --- 标题按钮（带箭头图标，可点击切换）---
-        self.toggle_button = QToolButton()
+        self.toggle_button = QToolButton(self)
         self.toggle_button.setText(title)
-        # 设置按钮样式：文字在左，图标在右，无边框，左对齐
-        self.toggle_button.setStyleSheet("""
-            QToolButton {
-                border: none;
-                padding: 4px;
-                font-weight: bold;
-                color: rgb(200, 200, 200);
-            }
-            QToolButton:hover {
-                color: rgb(169, 255, 175);
-            }
-        """)
-        self.toggle_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self.toggle_button.setArrowType(Qt.RightArrow)   # 默认收起状态：右箭头
-        self.toggle_button.setCheckable(True)             # 可勾选状态，用于记录展开/收起
-        self.toggle_button.setChecked(False)              # 默认收起
-        self.toggle_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.toggle_button.setCheckable(True)
+        self.toggle_button.setChecked(False)
+        self.toggle_button.setArrowType(Qt.RightArrow)
+        self.toggle_button.setToolButtonStyle(
+            Qt.ToolButtonTextBesideIcon
+        )
+        self.toggle_button.setSizePolicy(
+            QSizePolicy.Expanding,
+            QSizePolicy.Fixed
+        )
 
-        # --- 内容区域（默认高度为0，即收起状态）---
-        self.content_area = QFrame()
-        self.content_area.setMaximumHeight(0)             # 收起时高度为0
-        self.content_area.setMinimumHeight(0)
+        self.content_area = QFrame(self)
         self.content_area.setFrameShape(QFrame.NoFrame)
+        self.content_area.setMaximumHeight(0)
+        self.content_area.setMinimumHeight(0)
 
-        # 内容区域使用垂直布局，内部可以添加任意部件
         self.content_layout = QVBoxLayout(self.content_area)
+        self.content_layout.setContentsMargins(10, 4, 4, 6)
         self.content_layout.setSpacing(4)
-        self.content_layout.setContentsMargins(8, 4, 8, 4)
 
-        # --- 组装自身布局 ---
         main_layout = QVBoxLayout(self)
-        main_layout.setSpacing(0)
         main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
         main_layout.addWidget(self.toggle_button)
         main_layout.addWidget(self.content_area)
 
-        # 连接信号：点击标题按钮时切换展开/收起
-        self.toggle_button.toggled.connect(self._on_toggled)
+        self.toggle_button.toggled.connect(self.set_expanded)
 
-    def _on_toggled(self, checked):
-        """
-        点击标题按钮时的回调
-        checked=True 表示展开，checked=False 表示收起
-        """
-        # 切换箭头方向
-        self.toggle_button.setArrowType(Qt.DownArrow if checked else Qt.RightArrow)
+    def set_expanded(self, expanded):
+        """设置展开状态。"""
+        if self.toggle_button.isChecked() != expanded:
+            self.toggle_button.blockSignals(True)
+            self.toggle_button.setChecked(expanded)
+            self.toggle_button.blockSignals(False)
 
-        if checked:
-            # 展开：取消高度限制，让布局自动计算
+        if expanded:
+            self.toggle_button.setArrowType(Qt.DownArrow)
             self.content_area.setMaximumHeight(16777215)
         else:
-            # 收起：高度设为0
+            self.toggle_button.setArrowType(Qt.RightArrow)
             self.content_area.setMaximumHeight(0)
 
     def add_widget(self, widget):
-        """向内容区域添加部件"""
         self.content_layout.addWidget(widget)
 
 
-# =============================================================================
-#  主工具箱类
-# =============================================================================
-class Rigging_Toolbox(QWidget):
-    """
-    Rigging 工具箱主类
-    按分类生成可折叠面板，每个面板内包含该分类下的工具按钮
-    """
+class RiggingToolbox(QWidget):
+    """木子绑定工具盒主窗口。"""
 
     def __init__(self, parent=None):
-        # 如果没有传入父窗口，自动获取 Maya 主窗口
         if parent is None:
             parent = get_maya_main_window()
-        super(Rigging_Toolbox, self).__init__(parent)
 
-        # 设置窗口属性
-        self.setWindowTitle("木子绑定工具盒")
+        super(RiggingToolbox, self).__init__(parent)
+
+        self.setWindowTitle(u"木子绑定工具盒")
         self.setWindowFlags(Qt.Window)
-        self.setMinimumWidth(340)
-        self.setMinimumHeight(400)
+        self.setMinimumSize(360, 500)
+        self.resize(400, 650)
 
-        # 创建界面
-        self.create_widgets()
-        self.create_layouts()
+        try:
+            self.setAttribute(Qt.WA_DeleteOnClose, False)
+        except Exception:
+            pass
 
-    def create_widgets(self):
-        """
-        创建 UI 部件
-        从 tools 包获取按分类组织的工具，为每个分类创建一个可折叠面板
-        """
-        # 标题标签
-        self.title_label = QLabel("Rigging Toolbox")
-        self.title_label.setStyleSheet("font-weight: bold; font-size: 14px; color: rgb(169, 255, 175);")
-        self.title_label.setAlignment(Qt.AlignCenter)
-
-        # 获取按分类组织的工具字典
-        # 结构：{"基础工具": {"constraint_tool": func, ...}, ...}
-        self.tools_by_category = get_tools_by_category()
-
-        # 存储每个分类的可折叠面板实例 {分类名: Collapsible_Box}
+        self.tools_by_category = {}
         self.category_boxes = {}
 
-        # 为每个分类创建折叠面板
-        for category_name, tools_dict in self.tools_by_category.items():
-            box = Collapsible_Box(title=category_name)
+        self.title_label = QLabel(u"Rigging Toolbox")
+        self.title_label.setAlignment(Qt.AlignCenter)
 
-            # 在该分类下创建按钮
-            for tool_name, tool_func in tools_dict.items():
-                # 生成友好的显示名称：constraint_tool -> Constraint Tool
-                display_name = tool_name.replace("_", " ").title()
-                btn = QPushButton(display_name)
-                btn.setToolTip(f"点击打开 {tool_name}.py")
-                btn.setMinimumHeight(28)
-                # 使用 *args 兼容不同 PySide 版本的信号参数传递
-                tool_key = "{}/{}".format(category_name, tool_name)
-                btn.clicked.connect(
-                    lambda *args, key=tool_key, f=tool_func: window_manager.show_tool(key, f)
-                )
-                box.add_widget(btn)
+        self.refresh_button = QPushButton(u"刷新工具")
+        self.expand_button = QPushButton(u"全部展开")
+        self.collapse_button = QPushButton(u"全部收起")
+        self.close_subtools_button = QPushButton(u"关闭子工具")
 
-            self.category_boxes[category_name] = box
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFrameShape(QFrame.NoFrame)
 
-        # 如果没有发现任何工具，显示提示
-        if not self.tools_by_category:
-            self.empty_label = QLabel("未发现工具\n请确保 tools 目录下有子文件夹和 .py 文件\n且每个 .py 文件包含 main() 函数")
-            self.empty_label.setAlignment(Qt.AlignCenter)
-            self.empty_label.setStyleSheet("color: rgb(255, 100, 100);")
+        self.scroll_content = QWidget()
+        self.scroll_layout = QVBoxLayout(self.scroll_content)
+        self.scroll_layout.setContentsMargins(0, 0, 0, 0)
+        self.scroll_layout.setSpacing(4)
+        self.scroll_area.setWidget(self.scroll_content)
 
-    def create_layouts(self):
-        """
-        组装布局
-        使用滚动区域防止分类过多时窗口被撑爆
-        """
-        # 主布局
+        self._create_layout()
+        self._create_connections()
+        self.rebuild_tool_buttons(refresh_registry=False)
+
+    def _create_layout(self):
         main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(8)
-        main_layout.setContentsMargins(12, 12, 12, 12)
 
-        # 添加标题
         main_layout.addWidget(self.title_label)
 
-        # 添加分隔线
-        line = QFrame()
-        line.setFrameShape(QFrame.HLine)
-        line.setStyleSheet("color: rgb(100, 100, 100);")
-        main_layout.addWidget(line)
+        toolbar_layout = QHBoxLayout()
+        toolbar_layout.addWidget(self.refresh_button)
+        toolbar_layout.addWidget(self.expand_button)
+        toolbar_layout.addWidget(self.collapse_button)
+        toolbar_layout.addWidget(self.close_subtools_button)
+        main_layout.addLayout(toolbar_layout)
 
-        # 如果有工具分类，用滚动区域包裹所有折叠面板
-        if self.tools_by_category:
-            # 创建一个 QWidget 作为滚动区域的容器
-            scroll_content = QWidget()
-            scroll_layout = QVBoxLayout(scroll_content)
-            scroll_layout.setSpacing(4)
-            scroll_layout.setContentsMargins(0, 0, 0, 0)
+        separator = QFrame()
+        separator.setFrameShape(QFrame.HLine)
+        main_layout.addWidget(separator)
+        main_layout.addWidget(self.scroll_area, 1)
 
-            # 逐个添加分类折叠面板
-            for box in self.category_boxes.values():
-                scroll_layout.addWidget(box)
+    def _create_connections(self):
+        self.refresh_button.clicked.connect(self.refresh_tool_registry)
+        self.expand_button.clicked.connect(self.expand_all)
+        self.collapse_button.clicked.connect(self.collapse_all)
+        self.close_subtools_button.clicked.connect(
+            window_manager.close_all_tools
+        )
 
-            # 底部弹性空间
-            scroll_layout.addStretch()
+    def _clear_tool_layout(self):
+        """删除当前分类 UI。"""
+        while self.scroll_layout.count():
+            layout_item = self.scroll_layout.takeAt(0)
+            widget = layout_item.widget()
 
-            # 创建滚动区域
-            scroll_area = QScrollArea()
-            scroll_area.setWidgetResizable(True)    # 内容区域可随窗口调整大小
-            scroll_area.setFrameShape(QFrame.NoFrame)
-            scroll_area.setWidget(scroll_content)
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
 
-            main_layout.addWidget(scroll_area)
+        self.category_boxes = {}
+
+    def _create_tool_button(
+            self,
+            category_name,
+            tool_name,
+            tool_function
+    ):
+        button = QPushButton(_display_name(tool_name))
+        button.setMinimumHeight(30)
+        button.setToolTip(
+            u"打开 {}.py".format(tool_name)
+        )
+
+        tool_key = "{}/{}".format(
+            category_name,
+            tool_name
+        )
+
+        callback = partial(
+            self.run_tool,
+            tool_key,
+            tool_function
+        )
+        button.clicked.connect(callback)
+
+        return button
+
+    def rebuild_tool_buttons(self, refresh_registry=False):
+        """根据注册表重建分类和按钮。"""
+        if refresh_registry:
+            self.tools_by_category = refresh_tools()
         else:
-            main_layout.addWidget(self.empty_label)
-            main_layout.addStretch()
+            self.tools_by_category = get_tools_by_category()
+
+        self._clear_tool_layout()
+
+        if not self.tools_by_category:
+            empty_label = QLabel(
+                u"没有发现可用工具。\n"
+                u"请检查 MuziTools/tools/<category>/*.py。"
+            )
+            empty_label.setAlignment(Qt.AlignCenter)
+            self.scroll_layout.addWidget(empty_label)
+            self.scroll_layout.addStretch(1)
+            return
+
+        for category_name in self.tools_by_category:
+            tools_dict = self.tools_by_category[category_name]
+            category_box = CollapsibleBox(category_name)
+
+            for tool_name in tools_dict:
+                tool_function = tools_dict[tool_name]
+                button = self._create_tool_button(
+                    category_name,
+                    tool_name,
+                    tool_function
+                )
+                category_box.add_widget(button)
+
+            self.category_boxes[category_name] = category_box
+            self.scroll_layout.addWidget(category_box)
+
+        self.scroll_layout.addStretch(1)
+
+    def refresh_tool_registry(self, checked=False):
+        self.rebuild_tool_buttons(refresh_registry=True)
+
+    def expand_all(self, checked=False):
+        for category_name in self.category_boxes:
+            category_box = self.category_boxes[category_name]
+            category_box.set_expanded(True)
+
+    def collapse_all(self, checked=False):
+        for category_name in self.category_boxes:
+            category_box = self.category_boxes[category_name]
+            category_box.set_expanded(False)
+
+    def run_tool(
+            self,
+            tool_key,
+            tool_function,
+            checked=False
+    ):
+        """安全执行一个工具 Runner。"""
+        try:
+            return window_manager.show_tool(
+                tool_key,
+                tool_function
+            )
+        except Exception as error:
+            print(u"\n[MuziTools] 工具打开失败：{}".format(tool_key))
+            traceback.print_exc()
+
+            QMessageBox.critical(
+                self,
+                u"工具打开失败",
+                u"{}\n\n{}".format(
+                    tool_key,
+                    error
+                )
+            )
+            return None
+
+
+# 旧类名保留给 Tool_main.py，但实际实现只维护这一份。
+Rigging_Toolbox = RiggingToolbox
 
 
 def main():
-    """
-    显示 Rigging 工具箱窗口
-    全局变量保存窗口实例，方便关闭旧窗口后重建
-    """
-    global rigging_toolbox_window
+    """显示唯一的 Rigging Toolbox 窗口。"""
+    global _window
 
-    # 关闭并删除旧窗口（如果存在）
     try:
-        rigging_toolbox_window.close()
-        rigging_toolbox_window.deleteLater()
-    except:
+        if _window is not None:
+            _window.close()
+            _window.deleteLater()
+    except Exception:
         pass
 
-    # 创建并显示新窗口
-    rigging_toolbox_window = Rigging_Toolbox()
-    rigging_toolbox_window.show()
-    rigging_toolbox_window.raise_()
-    rigging_toolbox_window.activateWindow()
-    return rigging_toolbox_window
+    _window = RiggingToolbox()
+    _window.show()
+    _window.raise_()
+    _window.activateWindow()
+
+    return _window
 
 
 if __name__ == "__main__":
