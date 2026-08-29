@@ -11,13 +11,13 @@ Maya 2023+ 关节工具面板。
     3. Joint 创建、链整理和 Curve / Edge 转 Joint；
     4. Segment Scale Compensate 与 Joint Orient 管理；
     5. 关节链 Curve、批量 Parent Constraint；
-    6. 轻量 Skin Weight 复制。
+    6. Skin Weight 复制入口。
 
-说明：
-    - UI 只负责交互；
-    - Joint 通用能力调用 muzi_rigging.core.jointUtils；
-    - 不依赖旧顶层 core / qtUtils；
-    - main() 只返回 QWidget，由 app.window_manager 统一管理。
+架构：
+    - Joint 算法调用 core.jointUtils；
+    - Skin 算法调用 core.skin_utils；
+    - 子工具窗口统一交给 app.window_manager；
+    - 本文件只负责 UI、参数收集和执行入口。
 """
 
 from __future__ import print_function
@@ -26,7 +26,6 @@ import maya.cmds as cmds
 import maya.mel as mel
 
 try:
-    from PySide2.QtCore import Qt
     from PySide2.QtWidgets import QDoubleSpinBox
     from PySide2.QtWidgets import QGridLayout
     from PySide2.QtWidgets import QHBoxLayout
@@ -36,7 +35,6 @@ try:
     from PySide2.QtWidgets import QVBoxLayout
     from PySide2.QtWidgets import QWidget
 except ImportError:
-    from PySide6.QtCore import Qt
     from PySide6.QtWidgets import QDoubleSpinBox
     from PySide6.QtWidgets import QGridLayout
     from PySide6.QtWidgets import QHBoxLayout
@@ -46,7 +44,9 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
+from ...app import window_manager
 from ...core import jointUtils
+from ...core import skin_utils
 from ...ui import theme
 from . import joint_resamp_tool
 
@@ -56,8 +56,6 @@ class JointTool(QWidget):
 
     def __init__(self, parent=None):
         super(JointTool, self).__init__(parent)
-
-        self.resample_window = None
 
         self.create_widgets()
         self.create_layouts()
@@ -108,15 +106,23 @@ class JointTool(QWidget):
         self.curve_chain_button = QPushButton(u"Curve CV 创建 Joint Chain")
         self.edge_chain_button = QPushButton(u"Polygon Edge 创建 Joint Chain")
 
-        self.enable_scale_compensate_button = QPushButton(u"开启 Segment Scale Compensate")
-        self.disable_scale_compensate_button = QPushButton(u"关闭 Segment Scale Compensate")
+        self.enable_scale_compensate_button = QPushButton(
+            u"开启 Segment Scale Compensate"
+        )
+        self.disable_scale_compensate_button = QPushButton(
+            u"关闭 Segment Scale Compensate"
+        )
 
         self.show_orient_button = QPushButton(u"显示 Joint Orient")
         self.hide_orient_button = QPushButton(u"隐藏 Joint Orient")
         self.clear_orient_button = QPushButton(u"归零 Joint Orient")
 
-        self.create_curve_on_joints_button = QPushButton(u"Joint Chain 创建 Curve")
-        self.batch_parent_constraint_button = QPushButton(u"按顺序批量 Parent Constraint")
+        self.create_curve_on_joints_button = QPushButton(
+            u"Joint Chain 创建 Curve"
+        )
+        self.batch_parent_constraint_button = QPushButton(
+            u"按顺序批量 Parent Constraint"
+        )
 
         self.bind_skin_options_button = QPushButton(u"Smooth Bind Options")
         self.detach_skin_options_button = QPushButton(u"Detach Skin Options")
@@ -199,7 +205,13 @@ class JointTool(QWidget):
         create_grid.addWidget(self.hide_orient_button, 4, 1)
         create_grid.addWidget(self.clear_orient_button, 5, 0)
         create_grid.addWidget(self.create_curve_on_joints_button, 5, 1)
-        create_grid.addWidget(self.batch_parent_constraint_button, 6, 0, 1, 2)
+        create_grid.addWidget(
+            self.batch_parent_constraint_button,
+            6,
+            0,
+            1,
+            2
+        )
         create_layout.addLayout(create_grid)
 
         skin_card, skin_layout = theme.make_card(scroll_widget)
@@ -478,9 +490,7 @@ class JointTool(QWidget):
             selections = []
 
         if not selections:
-            cmds.warning(
-                u"请选择一个或以上的 Transform / Joint。"
-            )
+            cmds.warning(u"请选择一个或以上的 Transform / Joint。")
             return
 
         created_joints = []
@@ -508,31 +518,13 @@ class JointTool(QWidget):
                 replace=True
             )
 
-    def open_resample_tool(self):
-        """打开 Joint Resample 子窗口并保存引用。"""
-        if self.resample_window is not None:
-            try:
-                self.resample_window.close()
-                self.resample_window.deleteLater()
-            except Exception:
-                pass
-
-        self.resample_window = joint_resamp_tool.main()
-
-        if self.resample_window is None:
-            return
-
-        try:
-            self.resample_window.setParent(
-                self,
-                Qt.Window
-            )
-        except Exception:
-            pass
-
-        self.resample_window.show()
-        self.resample_window.raise_()
-        self.resample_window.activateWindow()
+    @staticmethod
+    def open_resample_tool():
+        """通过统一 Window Manager 打开 Joint Resample。"""
+        return window_manager.show_tool(
+            "joint/joint_resample",
+            joint_resamp_tool.main
+        )
 
     @staticmethod
     def parent_selected_chain():
@@ -807,79 +799,27 @@ class JointTool(QWidget):
             selections = []
 
         if len(selections) < 2:
-            cmds.warning(
-                u"请先选择源模型，再选择一个或多个目标模型。"
-            )
+            cmds.warning(u"请先选择源模型，再选择一个或多个目标模型。")
             return
 
         source_mesh = selections[0]
         target_meshes = selections[1:]
 
-        source_skin = mel.eval(
-            'findRelatedSkinCluster("{}")'.format(
-                source_mesh
-            )
-        )
-
-        if not source_skin:
-            cmds.warning(
-                u"源模型没有 SkinCluster：{}".format(
-                    source_mesh
-                )
-            )
-            return
-
-        influences = cmds.skinCluster(
-            source_skin,
-            query=True,
-            influence=True
-        )
-
-        if influences is None:
-            influences = []
-
-        if not influences:
-            cmds.warning(u"源 SkinCluster 没有影响 Joint。")
-            return
-
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziCopySkinWeights"
-        )
-
         try:
-            for target_mesh in target_meshes:
-                target_skin = mel.eval(
-                    'findRelatedSkinCluster("{}")'.format(
-                        target_mesh
-                    )
-                )
-
-                if target_skin:
-                    cmds.delete(target_skin)
-
-                target_skin = cmds.skinCluster(
-                    influences,
-                    target_mesh,
-                    toSelectedBones=True,
-                    normalizeWeights=1
-                )[0]
-
-                cmds.copySkinWeights(
-                    sourceSkin=source_skin,
-                    destinationSkin=target_skin,
-                    noMirror=True,
-                    surfaceAssociation="closestPoint",
-                    influenceAssociation=[
-                        "label",
-                        "oneToOne",
-                        "closestJoint",
-                    ]
-                )
+            result = skin_utils.copy_skin_weights(
+                source=source_mesh,
+                targets=target_meshes
+            )
         except Exception as error:
             cmds.warning(str(error))
-        finally:
-            cmds.undoInfo(closeChunk=True)
+            return
+
+        if result:
+            print(
+                u"[Joint Tool] 已复制 Skin Weight 到 {} 个目标。".format(
+                    len(result)
+                )
+            )
 
 
 def main():
@@ -888,6 +828,7 @@ def main():
     return window
 
 
-if __name__ == "__main__":
-    window = main()
-    window.show()
+__all__ = [
+    "JointTool",
+    "main",
+]
