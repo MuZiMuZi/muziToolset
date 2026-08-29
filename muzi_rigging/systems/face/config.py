@@ -1,7 +1,7 @@
 # coding=utf-8
 u"""Face Rig 全局配置。"""
 
-from ..core import nameUtils
+from ...core import nameUtils
 
 
 # ============================================================
@@ -35,7 +35,6 @@ face_part = "face"
 # Face Rig 层级名称
 # ============================================================
 
-# Face 总组
 face_master_grp = nameUtils.Name.create_name(
     node_type="grp",
     side=face_side,
@@ -44,7 +43,6 @@ face_master_grp = nameUtils.Name.create_name(
     index=1
 )
 
-# Guide 组
 face_guide_grp = nameUtils.Name.create_name(
     node_type="grp",
     side=face_side,
@@ -53,7 +51,6 @@ face_guide_grp = nameUtils.Name.create_name(
     index=1
 )
 
-# Controller 组
 face_ctrl_grp = nameUtils.Name.create_name(
     node_type="grp",
     side=face_side,
@@ -62,7 +59,6 @@ face_ctrl_grp = nameUtils.Name.create_name(
     index=1
 )
 
-# Joint 组
 face_jnt_grp = nameUtils.Name.create_name(
     node_type="grp",
     side=face_side,
@@ -71,7 +67,6 @@ face_jnt_grp = nameUtils.Name.create_name(
     index=1
 )
 
-# Rig Nodes 组
 face_rig_nodes_grp = nameUtils.Name.create_name(
     node_type="grp",
     side=face_side,
@@ -80,7 +75,6 @@ face_rig_nodes_grp = nameUtils.Name.create_name(
     index=1
 )
 
-# Pose Driver 组
 face_pos_driver_grp = nameUtils.Name.create_name(
     node_type="grp",
     side=face_side,
@@ -94,7 +88,6 @@ face_pos_driver_grp = nameUtils.Name.create_name(
 # Face 模型层级
 # ============================================================
 
-# 模型总组
 face_model_grp = nameUtils.Name.create_name(
     node_type="grp",
     side=face_side,
@@ -103,7 +96,6 @@ face_model_grp = nameUtils.Name.create_name(
     index=1
 )
 
-# Tweak 模型组
 face_tweak_grp = nameUtils.Name.create_name(
     node_type="grp",
     side=face_side,
@@ -112,7 +104,6 @@ face_tweak_grp = nameUtils.Name.create_name(
     index=1
 )
 
-# Stretch 模型组
 face_stretch_grp = nameUtils.Name.create_name(
     node_type="grp",
     side=face_side,
@@ -121,7 +112,6 @@ face_stretch_grp = nameUtils.Name.create_name(
     index=1
 )
 
-# Deform 模型组
 face_deform_grp = nameUtils.Name.create_name(
     node_type="grp",
     side=face_side,
@@ -161,7 +151,6 @@ config_node = nameUtils.Name.create_name(
 # Face 默认设置
 # ============================================================
 
-# 脸部默认镜像轴向
 face_center_axis = "X"
 
 
@@ -169,29 +158,17 @@ face_center_axis = "X"
 # 创建层级时使用的列表
 # ============================================================
 
-# Face Rig 类型组
-# 这里只保存名称，不在这里创建节点。
+# 这里只保存名称，不在配置文件中创建 Maya 节点。
 type_grp_list = [
     face_guide_grp,
     face_ctrl_grp,
     face_jnt_grp,
     face_rig_nodes_grp,
-    face_pos_driver_grp
+    face_pos_driver_grp,
 ]
 
-# Face 模型层级组
 model_grp_list = [
     face_tweak_grp,
     face_stretch_grp,
-    face_deform_grp
+    face_deform_grp,
 ]
-
-
-# ============================================================
-# 旧变量名兼容
-# ============================================================
-# 后续代码全部建议使用上面的 snake_case 新变量名。
-
-face_rigNodes_grp = face_rig_nodes_grp
-face_posDriver_grp = face_pos_driver_grp
-face_tweaks_grp = face_tweak_grp
