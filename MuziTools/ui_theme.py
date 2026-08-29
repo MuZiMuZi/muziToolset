@@ -1,23 +1,23 @@
 # coding=utf-8
 u"""
-Muzi Silicon UI Theme
-=====================
+MuziTools UI Theme
+==================
 
-MuziTools 自己的 Maya / PySide2 视觉系统。
+Maya 2023 / PySide2 统一视觉系统。
 
-设计方向参考现代 Silicon / Fluent 类桌面 UI 的视觉语言：
-    - 深色分层背景；
-    - 柔和紫色 Accent；
-    - 大圆角卡片；
-    - 低对比边框；
-    - 清晰的标题 / 正文 / 辅助文字层级；
-    - 控件 Hover / Press / Checked 状态统一；
-    - 紧凑但不拥挤，适合 Maya 工具窗口。
+当前设计方向参考网易云音乐电脑版的桌面端布局语言：
+    - 浅灰色应用背景；
+    - 白色主内容区域和卡片；
+    - 左侧固定导航栏；
+    - 红色作为唯一主要强调色；
+    - 大量留白和轻量分割线；
+    - 搜索框、导航、按钮都采用柔和圆角；
+    - Hover 变化轻，不做厚重阴影；
+    - 保持 Maya 工具窗口需要的紧凑信息密度。
 
-注意：
-    本文件不依赖 PyQt-SiliconUI，也没有复制其控件实现。
-    目的是保持 Maya 2023 / PySide2 可直接运行，并方便整个 MuziTools
-    使用一套可维护的 Theme Token。
+说明：
+    这里只参考布局和视觉语言，不复制网易云音乐的品牌素材、Logo 或图标。
+    所有控件仍然使用 PySide2 / PySide6 原生组件，保证 Maya 中稳定运行。
 """
 
 from __future__ import print_function
@@ -27,56 +27,55 @@ try:
     from PySide2.QtWidgets import QFrame
     from PySide2.QtWidgets import QLabel
     from PySide2.QtWidgets import QVBoxLayout
-    from PySide2.QtWidgets import QWidget
 except ImportError:
     from PySide6.QtCore import Qt
     from PySide6.QtWidgets import QFrame
     from PySide6.QtWidgets import QLabel
     from PySide6.QtWidgets import QVBoxLayout
-    from PySide6.QtWidgets import QWidget
 
 
 # =============================================================================
 # Theme Tokens
 # =============================================================================
-BACKGROUND = "#17151B"
-BACKGROUND_ALT = "#1D1A22"
-SURFACE = "#211E27"
-SURFACE_ALT = "#29242F"
-SURFACE_HOVER = "#332C3A"
-SURFACE_PRESSED = "#3B3244"
+background = "#F5F5F7"
+background_alt = "#F0F1F3"
+sidebar_background = "#F7F7F9"
+surface = "#FFFFFF"
+surface_alt = "#FAFAFB"
+surface_hover = "#F3F3F5"
+surface_pressed = "#ECECEF"
 
-BORDER = "#3A3341"
-BORDER_SOFT = "#302A36"
-BORDER_FOCUS = "#B57AC8"
+border = "#E4E5E8"
+border_soft = "#ECEDEF"
+border_focus = "#EC4141"
 
-TEXT = "#F0ECF3"
-TEXT_SECONDARY = "#C9C2CE"
-TEXT_MUTED = "#958E9D"
-TEXT_DISABLED = "#69636F"
+text = "#1F2024"
+text_secondary = "#55575F"
+text_muted = "#8A8D96"
+text_disabled = "#B8BBC2"
 
-ACCENT = "#B57AC8"
-ACCENT_HOVER = "#C98CDC"
-ACCENT_PRESSED = "#9661AA"
-ACCENT_SOFT = "#3B2942"
-ACCENT_SOFT_HOVER = "#493051"
+accent = "#EC4141"
+accent_hover = "#F05252"
+accent_pressed = "#D93636"
+accent_soft = "#FFF0F0"
+accent_soft_hover = "#FFE4E4"
 
-SECONDARY_ACCENT = "#8370D8"
-SUCCESS = "#71B98A"
-WARNING = "#D39A67"
-DANGER = "#D56F7F"
-INFO = "#6FA7D8"
+success = "#31A66A"
+warning = "#D58A2D"
+danger = "#D94C4C"
+info = "#4D87D8"
 
-RADIUS_SMALL = 6
-RADIUS = 10
-RADIUS_LARGE = 14
+radius_small = 6
+radius = 9
+radius_large = 12
 
 
 # =============================================================================
 # Global Style Sheet
 # =============================================================================
 def _build_style_sheet():
-    """生成完整 QSS。"""
+    """生成 MuziTools 全局 QSS。"""
+
     return u"""
 /* -------------------------------------------------------------------------
    Base
@@ -90,16 +89,24 @@ QWidget {
     selection-color: #FFFFFF;
 }
 
-QWidget[muziSurface="true"] {
+QWidget[muziSurface="true"],
+QFrame[muziSurface="true"] {
     background-color: %(surface)s;
     border: 1px solid %(border_soft)s;
     border-radius: %(radius_large)dpx;
 }
 
+QWidget[muziSidebar="true"],
+QFrame[muziSidebar="true"] {
+    background-color: %(sidebar_background)s;
+    border: none;
+    border-right: 1px solid %(border)s;
+}
+
 QWidget[muziCard="true"],
 QFrame[muziCard="true"] {
     background-color: %(surface)s;
-    border: 1px solid %(border)s;
+    border: 1px solid %(border_soft)s;
     border-radius: %(radius_large)dpx;
 }
 
@@ -111,7 +118,7 @@ QFrame[muziSubCard="true"] {
 }
 
 /* -------------------------------------------------------------------------
-   Text hierarchy
+   Text
    ------------------------------------------------------------------------- */
 QLabel {
     background: transparent;
@@ -126,13 +133,13 @@ QLabel[muziTitle="true"] {
 }
 
 QLabel[muziSubtitle="true"] {
-    color: %(text_secondary)s;
+    color: %(text_muted)s;
     font-size: 12px;
 }
 
 QLabel[muziSectionTitle="true"] {
     color: %(text)s;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
 }
 
@@ -145,14 +152,24 @@ QLabel[muziAccent="true"] {
     font-weight: 600;
 }
 
+QLabel[muziPill="true"] {
+    padding: 3px 8px;
+    background-color: %(accent_soft)s;
+    color: %(accent)s;
+    border: 1px solid #FFDADA;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
 /* -------------------------------------------------------------------------
-   Buttons
+   Push Buttons
    ------------------------------------------------------------------------- */
 QPushButton,
 QToolButton {
     min-height: 30px;
     padding: 0px 12px;
-    background-color: %(surface_alt)s;
+    background-color: %(surface)s;
     color: %(text)s;
     border: 1px solid %(border)s;
     border-radius: %(radius_small)dpx;
@@ -161,20 +178,20 @@ QToolButton {
 QPushButton:hover,
 QToolButton:hover {
     background-color: %(surface_hover)s;
-    border-color: #4D4356;
+    border-color: #D6D8DC;
 }
 
 QPushButton:pressed,
 QToolButton:pressed {
     background-color: %(surface_pressed)s;
-    border-color: %(accent_pressed)s;
+    border-color: #C8CAD0;
 }
 
 QPushButton:checked,
 QToolButton:checked {
     background-color: %(accent_soft)s;
-    border-color: %(accent)s;
-    color: %(text)s;
+    border-color: #FFCACA;
+    color: %(accent)s;
 }
 
 QPushButton:disabled,
@@ -187,7 +204,7 @@ QToolButton:disabled {
 QPushButton[muziPrimary="true"],
 QToolButton[muziPrimary="true"] {
     background-color: %(accent)s;
-    color: #1A131D;
+    color: #FFFFFF;
     border: 1px solid %(accent)s;
     font-weight: 600;
 }
@@ -202,18 +219,17 @@ QPushButton[muziPrimary="true"]:pressed,
 QToolButton[muziPrimary="true"]:pressed {
     background-color: %(accent_pressed)s;
     border-color: %(accent_pressed)s;
-    color: #FFFFFF;
 }
 
 QPushButton[muziDanger="true"] {
-    background-color: #3A242A;
-    border-color: #5A3039;
-    color: #F0B1BB;
+    background-color: #FFF4F4;
+    border-color: #FFD9D9;
+    color: %(danger)s;
 }
 
 QPushButton[muziDanger="true"]:hover {
-    background-color: #4A2931;
-    border-color: %(danger)s;
+    background-color: #FFEAEA;
+    border-color: #FFBEBE;
 }
 
 QPushButton[muziGhost="true"],
@@ -225,9 +241,33 @@ QToolButton[muziGhost="true"] {
 
 QPushButton[muziGhost="true"]:hover,
 QToolButton[muziGhost="true"]:hover {
-    background-color: %(surface_alt)s;
-    border-color: %(border_soft)s;
+    background-color: %(surface_hover)s;
+    border-color: transparent;
     color: %(text)s;
+}
+
+QPushButton[muziNav="true"] {
+    min-height: 34px;
+    padding-left: 14px;
+    padding-right: 12px;
+    text-align: left;
+    background-color: transparent;
+    border: none;
+    color: %(text_secondary)s;
+    border-radius: %(radius_small)dpx;
+}
+
+QPushButton[muziNav="true"]:hover {
+    background-color: #ECEDEF;
+    color: %(text)s;
+}
+
+QPushButton[muziNav="true"]:checked,
+QPushButton[muziNavActive="true"] {
+    background-color: %(accent_soft)s;
+    color: %(accent)s;
+    border: none;
+    font-weight: 600;
 }
 
 /* -------------------------------------------------------------------------
@@ -244,7 +284,7 @@ QTimeEdit,
 QDateTimeEdit {
     min-height: 30px;
     padding: 0px 9px;
-    background-color: %(background_alt)s;
+    background-color: %(surface)s;
     color: %(text)s;
     border: 1px solid %(border)s;
     border-radius: %(radius_small)dpx;
@@ -253,6 +293,25 @@ QDateTimeEdit {
 QTextEdit,
 QPlainTextEdit {
     padding: 8px;
+}
+
+QLineEdit[muziSearch="true"] {
+    min-height: 32px;
+    padding-left: 14px;
+    padding-right: 14px;
+    background-color: #F0F1F3;
+    border: 1px solid #F0F1F3;
+    border-radius: 16px;
+}
+
+QLineEdit[muziSearch="true"]:hover {
+    background-color: #ECEDEF;
+    border-color: #E4E5E8;
+}
+
+QLineEdit[muziSearch="true"]:focus {
+    background-color: %(surface)s;
+    border: 1px solid #FFBDBD;
 }
 
 QLineEdit:hover,
@@ -264,7 +323,7 @@ QComboBox:hover,
 QDateEdit:hover,
 QTimeEdit:hover,
 QDateTimeEdit:hover {
-    border-color: #514758;
+    border-color: #D3D5D9;
 }
 
 QLineEdit:focus,
@@ -277,14 +336,14 @@ QDateEdit:focus,
 QTimeEdit:focus,
 QDateTimeEdit:focus {
     border: 1px solid %(border_focus)s;
-    background-color: #211C25;
+    background-color: %(surface)s;
 }
 
 QLineEdit:read-only,
 QTextEdit:read-only,
 QPlainTextEdit:read-only {
     color: %(text_muted)s;
-    background-color: #1B181F;
+    background-color: %(surface_alt)s;
 }
 
 QComboBox::drop-down,
@@ -301,8 +360,8 @@ QComboBox QAbstractItemView {
     color: %(text)s;
     border: 1px solid %(border)s;
     border-radius: %(radius_small)dpx;
-    selection-background-color: %(accent_soft_hover)s;
-    selection-color: %(text)s;
+    selection-background-color: %(accent_soft)s;
+    selection-color: %(accent)s;
     outline: none;
     padding: 4px;
 }
@@ -329,8 +388,8 @@ QRadioButton::indicator {
 }
 
 QCheckBox::indicator:unchecked {
-    background-color: %(background_alt)s;
-    border: 1px solid #5B5361;
+    background-color: %(surface)s;
+    border: 1px solid #C8CBD0;
     border-radius: 4px;
 }
 
@@ -341,26 +400,26 @@ QCheckBox::indicator:checked {
 }
 
 QRadioButton::indicator:unchecked {
-    background-color: %(background_alt)s;
-    border: 1px solid #5B5361;
+    background-color: %(surface)s;
+    border: 1px solid #C8CBD0;
     border-radius: 8px;
 }
 
 QRadioButton::indicator:checked {
     background-color: %(accent)s;
-    border: 4px solid %(background_alt)s;
+    border: 4px solid %(surface)s;
     border-radius: 8px;
 }
 
 /* -------------------------------------------------------------------------
-   Group / Tab / Splitter
+   Group / Tab
    ------------------------------------------------------------------------- */
 QGroupBox {
     margin-top: 12px;
     padding: 12px 10px 10px 10px;
     background-color: %(surface)s;
     color: %(text)s;
-    border: 1px solid %(border)s;
+    border: 1px solid %(border_soft)s;
     border-radius: %(radius_large)dpx;
     font-weight: 600;
 }
@@ -374,15 +433,15 @@ QGroupBox::title {
 }
 
 QTabWidget::pane {
-    border: 1px solid %(border)s;
+    border: 1px solid %(border_soft)s;
     border-radius: %(radius)dpx;
     background-color: %(surface)s;
     top: -1px;
 }
 
 QTabBar::tab {
-    min-height: 28px;
-    padding: 0px 12px;
+    min-height: 30px;
+    padding: 0px 14px;
     margin-right: 4px;
     background-color: transparent;
     color: %(text_muted)s;
@@ -392,20 +451,16 @@ QTabBar::tab {
 
 QTabBar::tab:hover {
     color: %(text)s;
-    background-color: %(surface_alt)s;
 }
 
 QTabBar::tab:selected {
     color: %(text)s;
     border-bottom: 2px solid %(accent)s;
-}
-
-QSplitter::handle {
-    background-color: %(border_soft)s;
+    font-weight: 600;
 }
 
 /* -------------------------------------------------------------------------
-   Views / Tables
+   Item Views
    ------------------------------------------------------------------------- */
 QListWidget,
 QTreeWidget,
@@ -413,10 +468,10 @@ QTableWidget,
 QTableView,
 QTreeView,
 QListView {
-    background-color: %(background_alt)s;
-    alternate-background-color: #201C24;
+    background-color: %(surface)s;
+    alternate-background-color: %(surface_alt)s;
     color: %(text_secondary)s;
-    border: 1px solid %(border)s;
+    border: 1px solid %(border_soft)s;
     border-radius: %(radius)dpx;
     outline: none;
     gridline-color: %(border_soft)s;
@@ -426,16 +481,16 @@ QListWidget::item,
 QTreeWidget::item,
 QListView::item,
 QTreeView::item {
-    min-height: 26px;
-    padding: 3px 7px;
-    border-radius: 5px;
+    min-height: 28px;
+    padding: 4px 7px;
+    border-radius: 6px;
 }
 
 QListWidget::item:hover,
 QTreeWidget::item:hover,
 QListView::item:hover,
 QTreeView::item:hover {
-    background-color: %(surface_alt)s;
+    background-color: %(surface_hover)s;
     color: %(text)s;
 }
 
@@ -446,7 +501,7 @@ QTreeView::item:selected,
 QTableWidget::item:selected,
 QTableView::item:selected {
     background-color: %(accent_soft)s;
-    color: %(text)s;
+    color: %(accent)s;
 }
 
 QHeaderView::section {
@@ -456,7 +511,7 @@ QHeaderView::section {
     color: %(text_secondary)s;
     border: none;
     border-right: 1px solid %(border_soft)s;
-    border-bottom: 1px solid %(border)s;
+    border-bottom: 1px solid %(border_soft)s;
     font-weight: 600;
 }
 
@@ -481,12 +536,12 @@ QScrollBar:vertical {
 
 QScrollBar::handle:vertical {
     min-height: 30px;
-    background-color: #625A68;
+    background-color: #C7C9CE;
     border-radius: 4px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background-color: %(accent)s;
+    background-color: #AEB1B7;
 }
 
 QScrollBar:horizontal {
@@ -497,12 +552,12 @@ QScrollBar:horizontal {
 
 QScrollBar::handle:horizontal {
     min-width: 30px;
-    background-color: #625A68;
+    background-color: #C7C9CE;
     border-radius: 4px;
 }
 
 QScrollBar::handle:horizontal:hover {
-    background-color: %(accent)s;
+    background-color: #AEB1B7;
 }
 
 QScrollBar::add-line,
@@ -518,7 +573,7 @@ QScrollBar::sub-page {
    ------------------------------------------------------------------------- */
 QSlider::groove:horizontal {
     height: 4px;
-    background-color: %(surface_alt)s;
+    background-color: #E5E6E9;
     border-radius: 2px;
 }
 
@@ -531,24 +586,24 @@ QSlider::handle:horizontal {
     width: 14px;
     height: 14px;
     margin: -5px 0px;
-    background-color: %(text)s;
-    border: 3px solid %(accent)s;
+    background-color: #FFFFFF;
+    border: 2px solid %(accent)s;
     border-radius: 7px;
 }
 
 QProgressBar {
-    min-height: 8px;
-    max-height: 8px;
-    background-color: %(surface_alt)s;
+    min-height: 6px;
+    max-height: 6px;
+    background-color: #E5E6E9;
     border: none;
-    border-radius: 4px;
+    border-radius: 3px;
     text-align: center;
     color: transparent;
 }
 
 QProgressBar::chunk {
     background-color: %(accent)s;
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 /* -------------------------------------------------------------------------
@@ -580,53 +635,47 @@ QMenu::separator {
 
 QToolTip {
     padding: 6px 9px;
-    background-color: #3B3441;
-    color: %(text)s;
-    border: 1px solid #514758;
+    background-color: #2F3136;
+    color: #FFFFFF;
+    border: none;
     border-radius: 6px;
 }
-
-/* -------------------------------------------------------------------------
-   Misc
-   ------------------------------------------------------------------------- */
-QFrame[frameShape="4"],
-QFrame[frameShape="5"] {
-    color: %(border_soft)s;
-}
 """ % {
-        "background": BACKGROUND,
-        "background_alt": BACKGROUND_ALT,
-        "surface": SURFACE,
-        "surface_alt": SURFACE_ALT,
-        "surface_hover": SURFACE_HOVER,
-        "surface_pressed": SURFACE_PRESSED,
-        "border": BORDER,
-        "border_soft": BORDER_SOFT,
-        "border_focus": BORDER_FOCUS,
-        "text": TEXT,
-        "text_secondary": TEXT_SECONDARY,
-        "text_muted": TEXT_MUTED,
-        "text_disabled": TEXT_DISABLED,
-        "accent": ACCENT,
-        "accent_hover": ACCENT_HOVER,
-        "accent_pressed": ACCENT_PRESSED,
-        "accent_soft": ACCENT_SOFT,
-        "accent_soft_hover": ACCENT_SOFT_HOVER,
-        "danger": DANGER,
-        "radius_small": RADIUS_SMALL,
-        "radius": RADIUS,
-        "radius_large": RADIUS_LARGE,
+        "background": background,
+        "background_alt": background_alt,
+        "sidebar_background": sidebar_background,
+        "surface": surface,
+        "surface_alt": surface_alt,
+        "surface_hover": surface_hover,
+        "surface_pressed": surface_pressed,
+        "border": border,
+        "border_soft": border_soft,
+        "border_focus": border_focus,
+        "text": text,
+        "text_secondary": text_secondary,
+        "text_muted": text_muted,
+        "text_disabled": text_disabled,
+        "accent": accent,
+        "accent_hover": accent_hover,
+        "accent_pressed": accent_pressed,
+        "accent_soft": accent_soft,
+        "accent_soft_hover": accent_soft_hover,
+        "danger": danger,
+        "radius_small": radius_small,
+        "radius": radius,
+        "radius_large": radius_large,
     }
 
 
-STYLE_SHEET = _build_style_sheet()
+style_sheet = _build_style_sheet()
 
 
 # =============================================================================
 # Helpers
 # =============================================================================
 def repolish(widget):
-    """属性改变后立即刷新 QSS。"""
+    """动态属性变化后重新刷新 QSS。"""
+
     if widget is None:
         return
 
@@ -641,12 +690,14 @@ def repolish(widget):
 
 
 def set_role(widget, role, enabled=True):
-    """给 QWidget 设置 Muzi Theme 动态属性。"""
+    """给 QWidget 设置 MuziTools 视觉角色。"""
+
     if widget is None:
         return widget
 
     property_name = {
         "surface": "muziSurface",
+        "sidebar": "muziSidebar",
         "card": "muziCard",
         "sub_card": "muziSubCard",
         "title": "muziTitle",
@@ -654,9 +705,13 @@ def set_role(widget, role, enabled=True):
         "section_title": "muziSectionTitle",
         "muted": "muziMuted",
         "accent": "muziAccent",
+        "pill": "muziPill",
         "primary": "muziPrimary",
         "danger": "muziDanger",
         "ghost": "muziGhost",
+        "nav": "muziNav",
+        "nav_active": "muziNavActive",
+        "search": "muziSearch",
     }.get(role)
 
     if property_name is None:
@@ -668,44 +723,41 @@ def set_role(widget, role, enabled=True):
 
 
 def apply_theme(widget):
-    """把 Muzi Silicon Theme 应用到一个窗口及其子控件。"""
+    """把统一主题应用到一个窗口。"""
+
     if widget is None:
         return None
 
     try:
-        widget.setStyleSheet(STYLE_SHEET)
+        widget.setStyleSheet(style_sheet)
     except Exception:
         return widget
 
     return widget
 
 
-def make_title(text, parent=None):
-    label = QLabel(text, parent)
+def make_title(text_value, parent=None):
+    label = QLabel(text_value, parent)
     set_role(label, "title")
     return label
 
 
-def make_subtitle(text, parent=None):
-    label = QLabel(text, parent)
+def make_subtitle(text_value, parent=None):
+    label = QLabel(text_value, parent)
     set_role(label, "subtitle")
     label.setWordWrap(True)
     return label
 
 
-def make_section_title(text, parent=None):
-    label = QLabel(text, parent)
+def make_section_title(text_value, parent=None):
+    label = QLabel(text_value, parent)
     set_role(label, "section_title")
     return label
 
 
-def make_card(parent=None, margins=(14, 12, 14, 12), spacing=8):
-    """
-    创建一个标准 Muzi Card。
+def make_card(parent=None, margins=(16, 14, 16, 14), spacing=8):
+    """创建标准白色内容卡片。"""
 
-    Returns:
-        tuple: (card_widget, card_layout)
-    """
     card = QFrame(parent)
     set_role(card, "card")
 
@@ -721,7 +773,9 @@ def make_card(parent=None, margins=(14, 12, 14, 12), spacing=8):
     return card, layout
 
 
-def make_sub_card(parent=None, margins=(10, 8, 10, 8), spacing=6):
+def make_sub_card(parent=None, margins=(12, 10, 12, 10), spacing=6):
+    """创建次级浅灰卡片。"""
+
     card = QFrame(parent)
     set_role(card, "sub_card")
 
@@ -749,8 +803,19 @@ def style_ghost(button):
     return set_role(button, "ghost")
 
 
+def style_navigation(button, active=False):
+    set_role(button, "nav")
+    set_role(button, "nav_active", active)
+    return button
+
+
+def style_search(line_edit):
+    return set_role(line_edit, "search")
+
+
 def style_window(widget, title=None, minimum_width=None):
-    """统一设置常用窗口基础外观。"""
+    """统一设置窗口标题、最小宽度和主题。"""
+
     if widget is None:
         return None
 
@@ -771,20 +836,21 @@ def style_window(widget, title=None, minimum_width=None):
 
 
 __all__ = [
-    "BACKGROUND",
-    "BACKGROUND_ALT",
-    "SURFACE",
-    "SURFACE_ALT",
-    "BORDER",
-    "TEXT",
-    "TEXT_SECONDARY",
-    "TEXT_MUTED",
-    "ACCENT",
-    "SUCCESS",
-    "WARNING",
-    "DANGER",
-    "INFO",
-    "STYLE_SHEET",
+    "background",
+    "background_alt",
+    "sidebar_background",
+    "surface",
+    "surface_alt",
+    "border",
+    "text",
+    "text_secondary",
+    "text_muted",
+    "accent",
+    "success",
+    "warning",
+    "danger",
+    "info",
+    "style_sheet",
     "apply_theme",
     "repolish",
     "set_role",
@@ -796,5 +862,7 @@ __all__ = [
     "style_primary",
     "style_danger",
     "style_ghost",
+    "style_navigation",
+    "style_search",
     "style_window",
 ]
