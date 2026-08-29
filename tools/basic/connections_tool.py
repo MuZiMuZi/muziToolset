@@ -3,15 +3,55 @@ u"""
 Connections Tool
 ================
 
-Maya 属性连接工具。
+Maya 属性连接工具窗口。
 
-职责：
-    1. 提供 Translate / Rotate / Scale / Matrix 连接界面；
-    2. 从 Maya Selection 和 Channel Box 收集用户输入；
-    3. 调用 core.connection_utils 执行底层连接操作；
-    4. 显示操作结果。
+模块职责
+--------
+1. 提供 Translate / Rotate / Scale / Matrix 连接界面；
+2. 从 Maya Selection 和 Channel Box 收集用户输入；
+3. 调用 ``core.connection_utils`` 执行底层 DG Plug 连接；
+4. Channel Box 属性查询复用 ``core.attr_utils``；
+5. 提供可在 Maya Script Editor 中直接显示的 ``main()``。
 
-底层连接算法统一放在 core/connection_utils.py。
+主要公开方法
+------------
+get_selected_objects(minimum_count=1)
+    获取并校验 Maya Selection。
+
+get_channel_box_attrs()
+    获取 Channel Box 当前选中的属性。
+
+ConnectionsTool.get_default_attr_pairs()
+    根据 UI 勾选整理默认属性映射。
+
+ConnectionsTool.connect_default_attrs()
+ConnectionsTool.break_default_attrs()
+    创建 / 断开默认 SRT / Matrix 连接。
+
+ConnectionsTool.pick_driver_attr()
+ConnectionsTool.pick_driven_attrs()
+ConnectionsTool.connect_custom_attrs()
+ConnectionsTool.break_custom_attrs()
+    自定义 Plug 连接流程。
+
+ConnectionsTool.copy_input_connections()
+ConnectionsTool.break_selected_inputs()
+    复制或断开已有输入连接。
+
+main()
+    创建或恢复窗口，立即显示并返回 QWidget。
+
+直接运行
+--------
+
+    from muziToolset.tools.basic import connections_tool
+
+    window = connections_tool.main()
+
+设计边界
+--------
+本文件只负责 UI / Selection / Channel Box。真正的连接、断开、查询与复制逻辑统一维护在
+``core.connection_utils``。
 """
 
 from __future__ import print_function
@@ -40,9 +80,10 @@ except ImportError:
     from PySide6.QtWidgets import QWidget
 
 from ...config import icons_dir as icon_dir
-from ...core import attrUtils
+from ...core import attr_utils
 from ...core import connection_utils
 from ...ui import theme
+from ...ui import window_utils
 
 
 def get_selected_objects(minimum_count=1):
@@ -50,10 +91,7 @@ def get_selected_objects(minimum_count=1):
     selected_objects = cmds.ls(
         selection=True,
         long=True
-    )
-
-    if selected_objects is None:
-        selected_objects = []
+    ) or []
 
     if len(selected_objects) < minimum_count:
         cmds.warning(
@@ -66,10 +104,7 @@ def get_selected_objects(minimum_count=1):
 
 def get_channel_box_attrs():
     """返回 Maya Channel Box 当前选中的属性。"""
-    attribute_names = attrUtils.Attr.get_channelBox_attrs()
-
-    if attribute_names is None:
-        attribute_names = []
+    attribute_names = attr_utils.Attr.get_channelBox_attrs() or []
 
     if not attribute_names:
         cmds.warning(u"请先在 Channel Box 中选择属性。")
@@ -379,12 +414,10 @@ class ConnectionsTool(QWidget):
         )
 
         try:
-            disconnected_count = (
-                connection_utils.disconnect_attribute_pairs(
-                    driver,
-                    driven_objects,
-                    attribute_pairs
-                )
+            disconnected_count = connection_utils.disconnect_attribute_pairs(
+                driver,
+                driven_objects,
+                attribute_pairs
             )
         finally:
             cmds.undoInfo(closeChunk=True)
@@ -547,9 +580,11 @@ class ConnectionsTool(QWidget):
 
 
 def main():
-    """创建并返回 Connections Tool。"""
-    window = ConnectionsTool()
-    return window
+    """创建或恢复 Connections Tool，立即显示并返回 QWidget。"""
+    return window_utils.show_window(
+        "tools.basic.connections_tool",
+        ConnectionsTool
+    )
 
 
 __all__ = [
