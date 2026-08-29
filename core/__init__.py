@@ -20,6 +20,7 @@ Muzi Rigging Core
     jointUtils
     nameUtils
     scene_utils
+    transform_utils
 
 Rig / Scene：
     animation_utils
