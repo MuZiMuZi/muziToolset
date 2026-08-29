@@ -1,13 +1,13 @@
 # Muzi Rigging Architecture
 
-`muzi_rigging` 是当前项目唯一的正式运行包。
+`muziToolset` 根包是当前项目唯一的正式运行框架。
 
-这一层暂时保留，用来稳定隔离正式代码和 `legacy_reference`。等项目完全稳定后，可以再把 `app / ui / core / tools / systems / resources` 扁平迁移到 `muziToolset` 根包。
+不再保留额外的 `muzi_rigging/` 中间包。
 
 ## 当前目录职责
 
 ```text
-muzi_rigging/
+muziToolset/
 ├─ app/                    # Maya 应用入口、主工具箱、窗口生命周期
 ├─ ui/                     # PySide Theme 与可复用 UI Widget
 ├─ core/                   # 不依赖 UI 的 Maya 通用底层能力
@@ -19,17 +19,11 @@ muzi_rigging/
 │  │  └─ skirt/            # 当前已迁移的 Skirt Rig Builder
 │  └─ face/                # Face Rig System
 ├─ resources/              # 图标、Controller Shape 等静态资源
-├─ config.py               # 包路径和资源配置
-└─ __init__.py             # 对外 show()/initialize() 入口
+├─ legacy_reference/       # 历史代码，只用于参考
+├─ config.py               # 根包路径和资源配置
+├─ __init__.py             # 对外 show()/initialize() 入口
+└─ start.py                # Maya 快速启动脚本
 ```
-
-历史实现统一位于仓库根目录：
-
-```text
-legacy_reference/
-```
-
-正式代码禁止从这里 import。
 
 ## 分层依赖规则
 
@@ -60,9 +54,13 @@ Core 函数应该尽量：
 4. 返回节点、列表或结果字典；
 5. 不创建工具窗口。
 
-当前新的职责模块包括：
+当前正式职责模块包括：
 
 ```text
+attrUtils.py
+jointUtils.py
+hierarchyUtils.py
+nameUtils.py
 control_shape_utils.py
 rename_utils.py
 snap_utils.py
@@ -87,10 +85,10 @@ systems/body/skirt/
 systems/face/
 ```
 
-例如 Controller Creator、FK、IK 和 Skirt Rig 不应该各自维护一套 Controller 创建算法，而应该调用：
+例如 Controller Creator、FK、IK 和 Skirt Rig 不应该各自维护一套 Controller 创建算法，而应该通过包内 System API 调用：
 
 ```python
-from muzi_rigging.systems import controller
+from ...systems import controller
 ```
 
 System 允许依赖：
@@ -101,7 +99,7 @@ System 允许依赖：
 
 System Build 逻辑不要写进 PySide UI 类。
 
-完整 Body Rig System 暂时不在当前阶段开发范围内，后续再扩展 Arm / Leg / Spine / Hand / Foot。
+完整 Body Rig System 暂缓，后续再扩展 Arm / Leg / Spine / Hand / Foot。
 
 ### tools
 
@@ -151,10 +149,10 @@ UI Widget 不负责具体 Rig Build 算法。
 
 ## Window Manager 规则
 
-所有 PySide 子工具都应通过：
+主工具箱通过包内 Window Manager 统一打开工具：
 
 ```python
-from muzi_rigging.app import window_manager
+from . import window_manager
 
 window_manager.show_tool(
     "category/tool_key",
@@ -224,18 +222,11 @@ dev/
 
 ## 对外启动方式
 
-仓库级推荐启动方式：
+唯一推荐启动方式：
 
 ```python
 import muziToolset
 muziToolset.show()
 ```
 
-当前内部正式包仍然可以单独启动：
-
-```python
-import muzi_rigging
-muzi_rigging.show()
-```
-
-以后执行扁平迁移时，只改变包结构，不改变用户使用 `muziToolset.show()` 的入口。
+正式代码内部使用包内相对 import，不再依赖 `muzi_rigging` 包名。
