@@ -30,3 +30,19 @@ def show():
 def initialize():
     """初始化并打开主工具箱。"""
     return show()
+
+
+def smoke_test(test_window_manager=False):
+    """运行 Maya 2023 非破坏性全工具 Smoke Test。"""
+    from .tests import maya_smoke_test
+
+    return maya_smoke_test.run(
+        test_window_manager=test_window_manager
+    )
+
+
+__all__ = [
+    "show",
+    "initialize",
+    "smoke_test",
+]
