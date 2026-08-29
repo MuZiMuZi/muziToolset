@@ -1,0 +1,83 @@
+/* Global Settings */
+QPalette {
+    background: #2C2C2C;
+    foreground: #E0E0E0;
+}
+
+* {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+}
+
+/* Widget Borders */
+QWidget {
+    border: 1px solid #333333;
+    border-radius: 4px;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #3E3E3E;
+    color: #E0E0E0;
+    border: 1px solid #333333;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+QPushButton:hover {
+    background-color: #4E4E4E;
+}
+
+/* Line Edit */
+QLineEdit {
+    background-color: #444444;
+    color: #E0E0E0;
+    border: 1px solid #333333;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+/* Checkboxes and Radio Buttons */
+QCheckBox::indicator, QRadioButton::indicator {
+    width: 14px;
+    height: 14px;
+}
+
+
+
+/* Scrollbars */
+QScrollBar:vertical {
+    background: #2C2C2C;
+    width: 10px;
+    margin: 0;
+}
+
+QScrollBar::handle:vertical {
+    background: #4E4E4E;
+    border-radius: 5px;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+}
+
+/* Tabs */
+QTabBar::tab {
+    background-color: #3E3E3E;
+    color: #E0E0E0;
+    border: 1px solid #333333;
+    padding: 8px;
+}
+
+QTabBar::tab:selected {
+    background-color: #555555;
+    border-bottom: 2px solid #00BB9E;
+}
+
+/* Tooltips */
+QToolTip {
+    background-color: #333333;
+    color: #E0E0E0;
+    border: 1px solid #555555;
+    padding: 5px;
+}
