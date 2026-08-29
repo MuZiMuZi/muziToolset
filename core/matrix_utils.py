@@ -83,6 +83,26 @@ def calculate_parent_offset_matrix(driver, driven):
     )
 
 
+def get_parent(node):
+    """返回 DAG 节点的直接父节点；World 下返回 None。"""
+    if not cmds.objExists(node):
+        return None
+
+    parents = cmds.listRelatives(
+        node,
+        parent=True,
+        fullPath=True
+    )
+
+    if parents is None:
+        parents = []
+
+    if not parents:
+        return None
+
+    return parents[0]
+
+
 # =============================================================================
 # offsetParentMatrix constraint
 # =============================================================================
@@ -101,11 +121,21 @@ def create_parent_matrix_constraint(
         drivenLocalInverse
         * offset
         * driverWorld
-        * drivenParentInverse
+        * parentWorldInverse
         -> driven.offsetParentMatrix
 
-    这样可以抵消 Driven 自身已有的 localMatrix，同时把 Driver 的世界空间
-    转换到 Driven 的 Parent Space。
+    注意：
+        不直接连接 driven.parentInverseMatrix[0]。
+
+        offsetParentMatrix 本身会参与 Driven Transform 的矩阵计算，如果同时
+        从同一个 Driven 的 parentInverseMatrix 输出回读到 multMatrix，Maya
+        Evaluation Graph 可能将网络判断为循环依赖。
+
+        因此这里在 Driven 有父节点时直接读取父节点的
+        worldInverseMatrix[0]；Driven 位于 World 下时最后一项保持 Identity。
+
+        如果创建 Matrix Constraint 后重新 Parent Driven，应重新创建这条
+        Matrix Constraint，让网络连接到新的 Parent。
 
     Args:
         driver(str): 驱动 Transform / Joint。
@@ -196,11 +226,16 @@ def create_parent_matrix_constraint(
         mult_matrix + ".matrixIn[2]",
         force=True
     )
-    cmds.connectAttr(
-        driven + ".parentInverseMatrix[0]",
-        mult_matrix + ".matrixIn[3]",
-        force=True
-    )
+
+    driven_parent = get_parent(driven)
+
+    if driven_parent:
+        cmds.connectAttr(
+            driven_parent + ".worldInverseMatrix[0]",
+            mult_matrix + ".matrixIn[3]",
+            force=True
+        )
+
     cmds.connectAttr(
         mult_matrix + ".matrixSum",
         offset_parent_matrix_plug,
@@ -261,6 +296,7 @@ __all__ = [
     "get_matrix",
     "matrix_to_list",
     "calculate_parent_offset_matrix",
+    "get_parent",
     "create_parent_matrix_constraint",
     "remove_parent_matrix_constraint",
 ]
