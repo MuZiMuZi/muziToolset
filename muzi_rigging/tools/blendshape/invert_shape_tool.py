@@ -56,7 +56,7 @@ class InvertShapeTool(QDialog):
         )
 
         self.base_picker = MayaObjectPicker(
-            label=u"基础模型",
+            label_text=u"基础模型",
             placeholder=u"选择蒙皮后的基础 Mesh"
         )
 
@@ -147,7 +147,7 @@ class InvertShapeTool(QDialog):
 
     def execute(self):
         """执行批量 Invert Shape。"""
-        base_mesh = self.base_picker.value()
+        base_mesh = self.base_picker.get_value()
 
         if not base_mesh:
             cmds.warning(u"请先拾取基础模型。")
