@@ -4,25 +4,22 @@ A Maya rigging toolkit focused on maintainable production tools and reusable rig
 
 ## Runtime package
 
-The current production code lives in:
+The repository root itself is the production Python package:
 
 ```text
-muzi_rigging/
+muziToolset/
 ├─ app/          # toolbox entry and Maya window management
 ├─ ui/           # shared theme and reusable widgets
 ├─ core/         # Maya logic without UI dependencies
 ├─ tools/        # standalone user-facing tools
 ├─ systems/      # reusable rig builders and larger workflows
-└─ resources/    # icons and controller shape data
+├─ resources/    # icons and controller shape data
+└─ legacy_reference/
 ```
 
-Historical implementations are stored under:
+There is no additional `muzi_rigging/` runtime package anymore.
 
-```text
-legacy_reference/
-```
-
-They are reference-only and must not be imported by production modules.
+Historical implementations are stored under `legacy_reference/`. They are reference-only and must not be imported by production modules.
 
 ## Maya target
 
@@ -42,10 +39,11 @@ muziToolset.show()
 
 ## Architecture rules
 
-- `core` must not depend on `ui`, `tools`, or `systems`.
+- `core` must not depend on `ui`, `tools`, `systems`, or `app`.
 - `tools` collect user input and call Core/System APIs.
 - `systems` contain reusable rig-building workflows.
+- `app` owns toolbox discovery and window lifecycle.
 - PySide windows are managed by the shared Window Manager.
 - Historical code is used only as a source for algorithms that are rewritten into the production architecture.
 
-See `README.md` and `muzi_rigging/ARCHITECTURE.md` for the detailed Chinese project documentation.
+See `README.md` and `ARCHITECTURE.md` for the detailed project documentation.
