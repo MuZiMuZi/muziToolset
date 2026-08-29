@@ -106,10 +106,10 @@ def record_result(results, category, name, passed, message, error_text=""):
     return result
 
 
-def run_case(results, category, name, test_function):
+def run_case(results, token, category, name, test_function):
     """执行单项测试并记录异常。"""
     try:
-        message = test_function()
+        message = test_function(token)
 
         record_result(
             results,
@@ -492,39 +492,45 @@ def run():
     try:
         run_case(
             results,
+            token,
             "scene_utils",
             "Node / Object Set",
-            lambda: test_scene_utils(token)
+            test_scene_utils
         )
         run_case(
             results,
+            token,
             "transform_utils",
             "Transform / Matrix",
-            lambda: test_transform_utils(token)
+            test_transform_utils
         )
         run_case(
             results,
+            token,
             "animation_utils",
             "Animation / Reset",
-            lambda: test_animation_utils(token)
+            test_animation_utils
         )
         run_case(
             results,
+            token,
             "constraint_utils",
             "Constraint",
-            lambda: test_constraint_utils(token)
+            test_constraint_utils
         )
         run_case(
             results,
+            token,
             "curve_utils",
             "Curve",
-            lambda: test_curve_utils(token)
+            test_curve_utils
         )
         run_case(
             results,
+            token,
             "surface_utils",
             "Surface / Follicle",
-            lambda: test_surface_utils(token)
+            test_surface_utils
         )
     finally:
         delete_existing_test_nodes(token)
