@@ -5,10 +5,47 @@ Joint Resample Tool
 
 在一对直接父子 Joint 之间均匀插入指定数量的新 Joint。
 
-安全规则：
-    - end_joint 必须是 start_joint 的直接子 Joint；
-    - 不跨越已有中间 Joint 重建层级；
-    - 创建失败时清理本次新节点并尽量恢复原始父子关系。
+模块职责
+--------
+1. 提供 Start Joint / End Joint Picker 和插入数量参数；
+2. 校验只处理直接父子 Joint；
+3. 在两端世界位置之间做线性插值并插入新 Joint；
+4. 创建失败时清理本轮新节点并尽量恢复原父子关系；
+5. 提供可在 Maya Script Editor 中直接显示的 ``main()``。
+
+主要公开方法
+------------
+validate_joint(joint, label)
+    校验输入节点存在且为 Joint。
+
+is_direct_child_joint(start_joint, end_joint)
+    判断 End 是否为 Start 的直接 Child Joint。
+
+get_interpolated_position(start_position, end_position, ratio)
+    计算两点之间线性插值位置。
+
+resample_joint(start_joint, end_joint, joint_number)
+    安全插入中间 Joint。
+
+JointResamplingTool
+    参数和执行入口窗口。
+
+main()
+    创建或恢复窗口，立即显示并返回 QWidget。
+
+安全规则
+--------
+- End Joint 必须是 Start Joint 的直接子 Joint；
+- 不跨越已有中间 Joint 重建层级；
+- 创建失败时删除本轮创建节点；
+- 所有创建过程放在一个 Maya Undo Chunk 内。
+
+直接运行
+--------
+
+    from muziToolset.tools.joint import joint_resamp_tool
+
+    window = joint_resamp_tool.main()
 """
 
 from __future__ import print_function
@@ -31,6 +68,7 @@ except ImportError:
     from PySide6.QtWidgets import QWidget
 
 from ...ui import theme
+from ...ui import window_utils
 from ...ui.widgets import MayaObjectPicker
 
 
@@ -126,7 +164,7 @@ class JointResamplingTool(QWidget):
         )
 
     def resample(self):
-        """根据当前 UI 参数插入 Joint。"""
+        """读取当前 UI 参数并执行 Joint Resample。"""
         start_joint = self.start_joint_picker.get_value()
         end_joint = self.end_joint_picker.get_value()
         joint_number = self.joint_number_spinbox.value()
@@ -185,15 +223,12 @@ def is_direct_child_joint(start_joint, end_joint):
         end_joint,
         parent=True,
         fullPath=True
-    )
-
-    if parent_nodes is None:
-        parent_nodes = []
+    ) or []
 
     start_long_names = cmds.ls(
         start_joint,
         long=True
-    )
+    ) or []
 
     if not parent_nodes or not start_long_names:
         return False
@@ -217,7 +252,17 @@ def get_interpolated_position(start_position, end_position, ratio):
 
 
 def resample_joint(start_joint, end_joint, joint_number):
-    """在直接父子 Joint 之间插入指定数量的新 Joint。"""
+    """
+    在直接父子 Joint 之间插入指定数量的新 Joint。
+
+    执行步骤：
+        1. 验证 Start / End 和直接父子关系；
+        2. 记录两端世界位置；
+        3. 临时把 End 放到 World；
+        4. 按等比例位置依次创建并 Parent 新 Joint；
+        5. 把 End 接回新 Chain 末端；
+        6. 失败时删除新节点并恢复原始 Parent。
+    """
     if not validate_joint(start_joint, u"起始 Joint"):
         return []
 
@@ -238,6 +283,9 @@ def resample_joint(start_joint, end_joint, joint_number):
         )
         return []
 
+    # -------------------------------------------------------------------------
+    # 步骤 1：记录两端世界位置。
+    # -------------------------------------------------------------------------
     start_position = cmds.xform(
         start_joint,
         query=True,
@@ -262,11 +310,17 @@ def resample_joint(start_joint, end_joint, joint_number):
     )
 
     try:
+        # ---------------------------------------------------------------------
+        # 步骤 2：先把 End 暂时解除 Parent，避免创建新 Chain 时形成错误层级。
+        # ---------------------------------------------------------------------
         cmds.parent(
             end_joint,
             world=True
         )
 
+        # ---------------------------------------------------------------------
+        # 步骤 3：按等比例位置创建 Joint，并逐个组成 Chain。
+        # ---------------------------------------------------------------------
         for joint_index in range(joint_number):
             ratio = float(joint_index + 1) / float(
                 joint_number + 1
@@ -298,6 +352,9 @@ def resample_joint(start_joint, end_joint, joint_number):
             created_joints.append(new_joint)
             previous_joint = new_joint
 
+        # ---------------------------------------------------------------------
+        # 步骤 4：把原 End Joint 接到新 Chain 尾端。
+        # ---------------------------------------------------------------------
         cmds.parent(
             end_joint,
             previous_joint
@@ -308,6 +365,9 @@ def resample_joint(start_joint, end_joint, joint_number):
         cmds.warning(str(error))
 
     finally:
+        # ---------------------------------------------------------------------
+        # 步骤 5：失败时清理本轮新节点并尽量恢复原始父子关系。
+        # ---------------------------------------------------------------------
         if not success:
             delete_joints = []
 
@@ -327,7 +387,7 @@ def resample_joint(start_joint, end_joint, joint_number):
                         end_joint,
                         parent=True,
                         fullPath=True
-                    )
+                    ) or []
 
                     if not current_parent:
                         cmds.parent(
@@ -346,11 +406,12 @@ def resample_joint(start_joint, end_joint, joint_number):
 
 
 def main():
-    """创建并返回 Joint Resample Tool。"""
-    window = JointResamplingTool()
-    return window
+    """创建或恢复 Joint Resample Tool，立即显示并返回 QWidget。"""
+    return window_utils.show_window(
+        "tools.joint.joint_resamp_tool",
+        JointResamplingTool
+    )
 
 
 if __name__ == "__main__":
-    window = main()
-    window.show()
+    main()
