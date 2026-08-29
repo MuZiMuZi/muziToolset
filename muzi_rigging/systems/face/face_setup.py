@@ -25,8 +25,8 @@ from __future__ import print_function
 import maya.cmds as cmds
 
 from ...core import hierarchyUtils
+from ...core import mesh_utils
 from ...core import nameUtils
-from ...core import pipelineUtils
 from . import face_base
 
 
@@ -193,24 +193,24 @@ class FaceSetup(face_base.FaceBase):
         return True
 
     def create_work_models(self, work_model_name_dict):
-        u"""根据最新 Head Model 创建三个工作模型。"""
+        u"""根据最新 Head Model 创建三个独立工作模型。"""
         face_head_tweak_name = work_model_name_dict.get("tweak")
         face_head_stretch_name = work_model_name_dict.get("stretch")
         face_head_deform_name = work_model_name_dict.get("deform")
 
-        self.face_head_tweak_model = pipelineUtils.Pipeline.duplicate_model(
+        self.face_head_tweak_model = mesh_utils.duplicate_model(
             source_model=self.face_head_model,
             new_name=face_head_tweak_name,
             parent=self.face_tweak_grp
         )
 
-        self.face_head_stretch_model = pipelineUtils.Pipeline.duplicate_model(
+        self.face_head_stretch_model = mesh_utils.duplicate_model(
             source_model=self.face_head_model,
             new_name=face_head_stretch_name,
             parent=self.face_stretch_grp
         )
 
-        self.face_head_deform_model = pipelineUtils.Pipeline.duplicate_model(
+        self.face_head_deform_model = mesh_utils.duplicate_model(
             source_model=self.face_head_model,
             new_name=face_head_deform_name,
             parent=self.face_deform_grp
