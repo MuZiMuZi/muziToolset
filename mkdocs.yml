@@ -1,0 +1,101 @@
+site_name: MuziTools
+site_description: Maya 2023 Rigging Toolset - Core、Tools、Systems 开发与 API 文档
+site_author: MuziTools
+site_url: https://muzimuzi.github.io/muziToolset/
+repo_name: MuZiMuZi/muziToolset
+repo_url: https://github.com/MuZiMuZi/muziToolset
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+site_dir: site
+use_directory_urls: true
+strict: true
+
+theme:
+  name: material
+  language: zh
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: 切换到深色模式
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: 切换到浅色模式
+
+plugins:
+  - search:
+      lang:
+        - zh
+        - en
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+nav:
+  - 首页: index.md
+  - 快速开始:
+      - 安装与启动: getting-started/installation.md
+      - Maya 中运行: getting-started/maya-usage.md
+  - 架构:
+      - 总体架构: architecture/index.md
+      - Core 设计: architecture/core.md
+      - Tools 与 Systems: architecture/tools-systems.md
+  - API 参考:
+      - 总览: reference/index.md
+      - Core: reference/core/index.md
+      - Tools: reference/tools/index.md
+      - Systems: reference/systems/index.md
+  - 开发指南:
+      - Core 编码规范: development/core-style-guide.md
+      - 文档维护: development/documentation.md
+      - 测试: development/testing.md
+  - 迁移记录:
+      - Pipeline 重构: migration/pipeline.md
+
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/MuZiMuZi/muziToolset
+
+copyright: Copyright © MuziTools
