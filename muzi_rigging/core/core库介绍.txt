@@ -1,0 +1,17 @@
+attrUtils：这是一个用来对属性进行各种操作的模块
+
+blendShapeUtils：这是一个blendshape的模块。用来对混合变形进行一系列修改的操作。
+
+controlUtils：这是一个控制器模块。用来对控制器进行一系列修改的操作。
+
+hierarchyUtils：这是一个用来对层级结构进行修改的模块
+
+jointUtils：这是一个用来编写关节工具的模块
+
+matehumanUtils：这是一个用来对matehuman的基础功能定义的模块
+
+nameutils:这是一个命名类。用来对命名进行一系列修改的操作。
+
+pipelineUtils:这是一个用来编写流程工具的模块
+
+skinUtils :这是一个吸附的模块。用来吸附对应的位置
