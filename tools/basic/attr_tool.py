@@ -1,12 +1,50 @@
 # coding=utf-8
 u"""
-属性工具
-========
+Attr Tool
+=========
 
-功能：
-    1. 打开 Maya 属性编辑窗口；
-    2. 调整 Channel Box 自定义属性顺序；
-    3. 批量设置 Transform / Visibility 的锁定和隐藏状态。
+Maya 属性管理工具窗口。
+
+模块职责
+--------
+1. 打开 Maya 自带 Add / Edit Attribute、Connection Editor、Channel Control；
+2. 调整 Channel Box 自定义属性顺序；
+3. 批量设置 Translate / Rotate / Scale / Visibility 的 Lock / Hide 状态；
+4. 把 Attribute 底层操作交给 ``core.attr_utils``；
+5. 提供可以在 Maya Script Editor 中直接显示的 ``main()`` 入口。
+
+主要公开类型 / 方法
+------------------
+AttrTool
+    属性工具主窗口。
+
+AttrTool.open_add_attr_window()
+AttrTool.open_edit_attr_window()
+AttrTool.open_connection_editor()
+AttrTool.open_channel_control()
+    打开 Maya 原生属性相关窗口。
+
+AttrTool.move_attr_up()
+AttrTool.move_attr_down()
+    调整当前 Channel Box 自定义属性顺序。
+
+AttrTool.clicked_attr_set_button()
+    把当前 UI Lock / Hide 状态应用到 Maya Selection。
+
+main()
+    创建或恢复窗口，立即显示并返回 QWidget。
+
+直接运行
+--------
+Maya Python Script Editor：
+
+    from muziToolset.tools.basic import attr_tool
+
+    window = attr_tool.main()
+
+设计边界
+--------
+本文件负责 UI 和 Selection；Attribute 创建、连接、Lock / Hide 等通用能力统一维护在 ``core.attr_utils``。
 """
 
 from __future__ import print_function
@@ -36,8 +74,9 @@ except ImportError:
     from PySide6.QtWidgets import QWidget
 
 from ...config import icons_dir as icon_dir
-from ...core import attrUtils
+from ...core import attr_utils
 from ...ui import theme as ui_theme
+from ...ui import window_utils
 
 
 class AttrTool(QWidget):
@@ -250,28 +289,35 @@ class AttrTool(QWidget):
         self.attr_reset_button.clicked.connect(self.clicked_attr_reset_button)
 
     def open_add_attr_window(self):
+        """打开 Maya 原生 Add Attribute 窗口。"""
         mel.eval("dynAddAttrWin({})")
 
     def open_edit_attr_window(self):
+        """打开 Maya 原生 Edit Attribute 窗口。"""
         mel.eval("dynRenameAttrWin({})")
 
     def open_connection_editor(self):
+        """打开 Maya Connection Editor。"""
         cmds.ConnectionEditor()
 
     def open_channel_control(self):
+        """打开 Maya Channel Control。"""
         cmds.ChannelControlEditor()
 
     def delete_selected_attr(self):
+        """打开 Maya 原生 Delete Attribute 操作。"""
         mel.eval("dynDeleteAttrWin({})")
 
     def move_attr_up(self):
-        attrUtils.Attr.move_channelBox_attr(
+        """把 Channel Box 当前自定义属性向上移动。"""
+        attr_utils.Attr.move_channelBox_attr(
             up=True,
             down=False
         )
 
     def move_attr_down(self):
-        attrUtils.Attr.move_channelBox_attr(
+        """把 Channel Box 当前自定义属性向下移动。"""
+        attr_utils.Attr.move_channelBox_attr(
             up=False,
             down=True
         )
@@ -302,14 +348,20 @@ class AttrTool(QWidget):
             "Z",
         ]
 
+        # ---------------------------------------------------------------------
+        # 步骤 1：把一次 UI Apply 包成一个 Undo Chunk。
+        # -------------------------------------------------------------------------
         cmds.undoInfo(
             openChunk=True,
             chunkName="MuziAttrToolSetState"
         )
 
         try:
+            # -----------------------------------------------------------------
+            # 步骤 2：逐对象、逐轴调用正式 attr_utils API。
+            # -----------------------------------------------------------------
             for selected_object in selected_objects:
-                attr_handler = attrUtils.Attr(selected_object)
+                attr_handler = attr_utils.Attr(selected_object)
 
                 for axis in axis_list:
                     translate_attr = "translate{}".format(axis)
@@ -347,9 +399,11 @@ class AttrTool(QWidget):
 
 
 def main():
-    """创建属性工具并返回 QWidget。"""
-    window = AttrTool()
-    return window
+    """创建或恢复 Attr Tool，立即显示并返回 QWidget。"""
+    return window_utils.show_window(
+        "tools.basic.attr_tool",
+        AttrTool
+    )
 
 
 __all__ = [
