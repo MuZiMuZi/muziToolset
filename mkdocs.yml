@@ -11,6 +11,18 @@ site_dir: site
 use_directory_urls: true
 strict: true
 
+# API Reference 的模块页由 AST 生成器在 CI 中动态创建。
+# 它们需要被 MkDocs 构建并可通过 Index / Search 访问，但没有必要把几十个模块全部展开到顶层 Nav。
+# not_in_nav 只关闭“已知自动页面未显式写进 nav”的警告，不会排除页面构建。
+not_in_nav: |
+  /reference/core/*.md
+  /reference/tools/**/*.md
+  /reference/systems/**/*.md
+  !/reference/core/index.md
+  !/reference/core/guide.md
+  !/reference/tools/index.md
+  !/reference/systems/index.md
+
 theme:
   name: material
   language: zh
@@ -82,7 +94,9 @@ nav:
       - Tools 与 Systems: architecture/tools-systems.md
   - API 参考:
       - 总览: reference/index.md
-      - Core: reference/core/index.md
+      - Core:
+          - Core API 索引: reference/core/index.md
+          - Core API 使用手册: reference/core/guide.md
       - Tools: reference/tools/index.md
       - Systems: reference/systems/index.md
   - 开发指南:
