@@ -1,0 +1,10 @@
+# MuziTools 文档构建依赖
+#
+# 安装：
+#     python -m pip install -r requirements-docs.txt
+#
+# 本项目的 API Reference 由 scripts/generate_mkdocs_reference.py 使用 Python AST
+# 从源码静态生成，因此不需要在文档环境中安装 Maya，也不需要 import maya.cmds。
+
+mkdocs>=1.5,<2.0
+mkdocs-material>=9.5,<10.0
