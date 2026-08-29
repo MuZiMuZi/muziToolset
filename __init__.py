@@ -41,8 +41,16 @@ def smoke_test(test_window_manager=False):
     )
 
 
+def functional_smoke_test():
+    """运行 Maya 2023 真实功能 Smoke Test。"""
+    from .tests import maya_functional_smoke_test
+
+    return maya_functional_smoke_test.run()
+
+
 __all__ = [
     "show",
     "initialize",
     "smoke_test",
+    "functional_smoke_test",
 ]
