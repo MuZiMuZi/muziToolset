@@ -3,22 +3,106 @@ u"""
 Curve Utils
 ===========
 
-Maya NURBS Curve 通用底层工具。
+Maya NURBS Curve 领域的通用底层工具。
 
-从旧 pipelineUtils 中拆出的职责：
-    - Curve Shape / Transform 查询；
-    - Curve CV 查询；
-    - 按长度均匀采样 Point / Tangent；
-    - Curve Parameter 与弧长百分比互转；
-    - 查询世界位置在 Curve 上最近的 Parameter；
-    - 创建 pointOnCurveInfo 附着节点；
-    - 根据 Maya 节点创建 Curve；
-    - 根据当前 Polygon Edge 创建 Curve。
+模块职责
+--------
+这个模块只处理 NURBS Curve 的“查询、采样、Parameter 换算、附着和基础创建”。
+Joint、Face、Lip、Eyelid 等更高层绑定逻辑继续放在对应 Core / System 中。
 
-说明：
-    Joint 专属逻辑继续留在 jointUtils；
-    Face / Eyelid / Lip 等完整绑定逻辑留在对应 System；
-    本模块只提供通用 Curve 数据、采样和附着能力。
+当前公开方法
+------------
+基础校验与查询：
+    validate_node(node)
+        检查 Maya 节点是否存在。
+
+    get_curve_shape(curve)
+        获取 NURBS Curve Shape 的完整 DAG Path。
+
+    get_curve_transform(curve)
+        获取 Curve Transform 的完整 DAG Path。
+
+    get_curve_cvs(curve)
+        获取 Curve 全部 CV Component。
+
+    get_curve_cv_count(curve)
+        获取 Curve CV 数量。
+
+    get_curve_cv_positions(curve, world_space=True)
+        获取 Curve 全部 CV 的坐标。
+
+Maya API：
+    get_dag_path(node)
+        将 Maya 节点转换为 API 2.0 MDagPath。
+
+    get_curve_function(curve)
+        获取 API 2.0 MFnNurbsCurve。
+
+弧长采样与 Parameter：
+    get_even_percentages(sample_count)
+        生成 0~1 的等间距百分比。
+
+    sample_curve_by_length(curve, sample_count, world_space=True)
+        按实际弧长均匀采样 Point / Tangent / Parameter。
+
+    get_closest_parameter(curve, world_position)
+        获取世界坐标在 Curve 上最近位置对应的原始 Parameter。
+
+    parameter_to_length_percentage(curve, parameter)
+        将 Curve 原始 Parameter 转为 0~1 弧长百分比。
+
+    length_percentage_to_parameter(curve, percentage)
+        将 0~1 弧长百分比转回 Curve 原始 Parameter。
+
+Curve Attachment：
+    create_point_on_curve_attachment(curve, parameter, name, parent=None)
+        创建由 pointOnCurveInfo 驱动的 Transform Attachment。
+
+    create_closest_point_attachment(curve, world_position, name, parent=None)
+        在距离指定世界位置最近的 Curve 位置创建 Attachment。
+
+Curve 创建：
+    create_curve_from_nodes(nodes, name, degree=3)
+        根据一组 Maya 节点的世界位置创建 NURBS Curve。
+
+    create_curve_from_selected_edges(name, degree=3, form=2)
+        根据当前 Polygon Edge Selection 创建 Curve。
+
+为什么需要“Parameter”和“弧长百分比”两套概念
+---------------------------------------------
+Maya NURBS Curve 的原始 Parameter 并不保证是 0~1，也不保证不同 Curve 的
+Parameter Domain 相同。
+
+因此当多条 Curve 需要“同一个空间进度”时，不能直接复制 raw parameter：
+
+    Drive Curve Parameter
+        -> 转成弧长百分比 0~1
+        -> 在 Aim / Up Curve 上重新换算 Parameter
+
+Face Eyelid / Lip / Curve Attachment 会依赖这个规则。
+
+本模块不负责
+------------
+- Joint 创建和 Joint Orient；
+- Face / Eyelid / Lip 的完整绑定；
+- Ribbon / Spline IK Workflow；
+- Curve UI Tool；
+- Surface / Follicle。
+
+模块边界
+--------
+    Curve 数据 / 采样 / Attachment  -> curve_utils
+    NURBS Surface / Follicle         -> surface_utils
+    Joint on Curve                   -> jointUtils / 对应 System
+    Face Curve Rig                   -> systems.face
+
+设计原则
+--------
+1. 通用 Curve 数据优先使用 Maya API 2.0；
+2. Maya DG Attachment 使用 maya.cmds，方便在 Node Editor 检查网络；
+3. 多 Curve 同步时优先使用“弧长百分比”，不共享 raw parameter；
+4. Attachment 有 Parent 时必须做 World -> Local 转换，不能把世界坐标直接接 local translate；
+5. 不把 Selection 逻辑混进普通 Core API，只有明确命名为 selected 的函数才读取 Selection。
 """
 
 from __future__ import print_function
@@ -28,14 +112,16 @@ import maya.api.OpenMaya as om
 
 
 # =============================================================================
-# Validate / Query
+# Validate / Query - Curve 基础校验与查询
 # =============================================================================
 
 def validate_node(node):
-    """检查 Maya 节点是否存在。"""
+    """检查 Maya 节点是否存在；有效时返回 True。"""
+    # 步骤 1：参数为空时直接报错。
     if not node:
         raise RuntimeError(u"节点名称不能为空。")
 
+    # 步骤 2：确认 Maya Scene 中真实存在该节点。
     if not cmds.objExists(node):
         raise RuntimeError(
             u"Maya 节点不存在：{}".format(node)
@@ -45,9 +131,19 @@ def validate_node(node):
 
 
 def get_curve_shape(curve):
-    """返回 NURBS Curve Shape 长路径。"""
+    """
+    返回 NURBS Curve Shape 的完整 DAG Path。
+
+    ``curve`` 可以直接传 Transform，也可以直接传 nurbsCurve Shape。
+    """
+    # -------------------------------------------------------------------------
+    # 步骤 1：确认输入节点存在。
+    # -------------------------------------------------------------------------
     validate_node(curve)
 
+    # -------------------------------------------------------------------------
+    # 步骤 2：输入本身就是 nurbsCurve Shape 时直接返回 Long Name。
+    # -------------------------------------------------------------------------
     if cmds.nodeType(curve) == "nurbsCurve":
         matches = cmds.ls(
             curve,
@@ -59,6 +155,9 @@ def get_curve_shape(curve):
 
         return curve
 
+    # -------------------------------------------------------------------------
+    # 步骤 3：输入是 Transform 时，寻找非 Intermediate 的 nurbsCurve Shape。
+    # -------------------------------------------------------------------------
     shapes = cmds.listRelatives(
         curve,
         shapes=True,
@@ -73,15 +172,18 @@ def get_curve_shape(curve):
         if cmds.nodeType(shape) == "nurbsCurve":
             return shape
 
+    # 步骤 4：没有找到 Curve Shape 时明确报错，不返回 None 让后续函数继续失败。
     raise RuntimeError(
         u"节点不是 NURBS Curve：{}".format(curve)
     )
 
 
 def get_curve_transform(curve):
-    """返回 NURBS Curve Transform 长路径。"""
+    """返回 NURBS Curve Transform 的完整 DAG Path。"""
+    # 步骤 1：先统一取得 Curve Shape。
     curve_shape = get_curve_shape(curve)
 
+    # 步骤 2：查询 Shape Parent。
     parents = cmds.listRelatives(
         curve_shape,
         parent=True,
@@ -102,9 +204,11 @@ def get_curve_transform(curve):
 
 
 def get_curve_cvs(curve):
-    """返回 Curve 的全部 CV Component。"""
+    """返回 Curve 全部 CV Component 名称。"""
+    # 步骤 1：取得唯一 Shape Path。
     curve_shape = get_curve_shape(curve)
 
+    # 步骤 2：展开 cv[*] Component。
     curve_cvs = cmds.ls(
         curve_shape + ".cv[*]",
         flatten=True
@@ -126,10 +230,17 @@ def get_curve_cv_positions(
         curve,
         world_space=True
 ):
-    """返回 Curve CV 坐标列表。"""
+    """
+    返回 Curve 全部 CV 坐标。
+
+    Args:
+        curve(str): Curve Transform 或 Shape。
+        world_space(bool): True 返回世界坐标；False 返回局部坐标。
+    """
     curve_cvs = get_curve_cvs(curve)
     positions = []
 
+    # 步骤 1：逐 CV 查询坐标。
     for curve_cv in curve_cvs:
         position = cmds.xform(
             curve_cv,
@@ -140,52 +251,61 @@ def get_curve_cv_positions(
 
         positions.append(position)
 
+    # 步骤 2：返回普通 Python list，方便 JSON / Test / System 使用。
     return positions
 
 
 # =============================================================================
-# Maya API
+# Maya API - Curve Function Set
 # =============================================================================
 
 def get_dag_path(node):
-    """返回 Maya API 2.0 MDagPath。"""
+    """返回 Maya API 2.0 ``MDagPath``。"""
+    # 步骤 1：确认节点存在。
     validate_node(node)
 
+    # 步骤 2：通过 SelectionList 取得 DagPath。
     selection = om.MSelectionList()
     selection.add(node)
 
-    dag_path = selection.getDagPath(0)
-    return dag_path
+    return selection.getDagPath(0)
 
 
 def get_curve_function(curve):
-    """返回 Maya API 2.0 MFnNurbsCurve。"""
+    """返回 Maya API 2.0 ``MFnNurbsCurve``。"""
+    # 步骤 1：取得 Curve Shape。
     curve_shape = get_curve_shape(curve)
+
+    # 步骤 2：Shape -> DagPath -> MFnNurbsCurve。
     dag_path = get_dag_path(curve_shape)
     return om.MFnNurbsCurve(dag_path)
 
 
 # =============================================================================
-# Sample
+# Sample - 弧长采样与 Parameter 换算
 # =============================================================================
 
 def get_even_percentages(sample_count):
     """
-    返回 0~1 的均匀百分比。
+    返回包含头尾的 0~1 等间距百分比。
 
-    例如：
+    Example:
         get_even_percentages(5)
         -> [0.0, 0.25, 0.5, 0.75, 1.0]
     """
+    # 步骤 1：至少需要首尾两个采样点。
     if sample_count < 2:
         raise ValueError(
             u"sample_count 必须大于或等于 2。"
         )
 
+    # 步骤 2：计算相邻百分比间距。
     percentages = []
     gap = 1.0 / float(sample_count - 1)
 
+    # 步骤 3：使用普通 while 保证每一步易于调试。
     index = 0
+
     while index < sample_count:
         percentages.append(
             index * gap
@@ -201,7 +321,7 @@ def sample_curve_by_length(
         world_space=True
 ):
     """
-    按曲线弧长均匀采样 Point 和 Tangent。
+    按 Curve 实际弧长均匀采样 Point、Tangent 和原始 Parameter。
 
     Returns:
         dict:
@@ -211,29 +331,46 @@ def sample_curve_by_length(
                 "parameters": [float, ...],
             }
     """
+    # -------------------------------------------------------------------------
+    # 步骤 1：准备 Curve API Function 和等分百分比。
+    # -------------------------------------------------------------------------
     curve_function = get_curve_function(curve)
     percentages = get_even_percentages(sample_count)
 
+    # -------------------------------------------------------------------------
+    # 步骤 2：确定 API 查询空间。
+    # -------------------------------------------------------------------------
     space = om.MSpace.kObject
 
     if world_space:
         space = om.MSpace.kWorld
 
+    # -------------------------------------------------------------------------
+    # 步骤 3：取得 Curve 总弧长。
+    # -------------------------------------------------------------------------
     curve_length = curve_function.length()
 
     points = []
     tangents = []
     parameters = []
 
+    # -------------------------------------------------------------------------
+    # 步骤 4：百分比 -> 实际长度 -> 原始 Parameter -> Point / Tangent。
+    #
+    # 这和直接平均 Parameter 不同，可以真正得到空间上均匀的采样点。
+    # -------------------------------------------------------------------------
     for percentage in percentages:
         sample_length = curve_length * percentage
+
         parameter = curve_function.findParamFromLength(
             sample_length
         )
+
         point = curve_function.getPointAtParam(
             parameter,
             space
         )
+
         tangent = curve_function.tangent(
             parameter,
             space
@@ -263,23 +400,27 @@ def get_closest_parameter(
         world_position
 ):
     """
-    返回世界坐标在 Curve 上最近点的 Parameter。
+    返回世界坐标在 Curve 上最近点对应的原始 Parameter。
 
-    这里使用临时 nearestPointOnCurve 节点，原因是 Maya 2023 中
-    pointOnCurveInfo 使用原始 Curve Parameter，而不是 0~1 百分比。
+    这里使用临时 ``nearestPointOnCurve`` 节点。
+    原因是后续 ``pointOnCurveInfo.parameter`` 需要 Maya Curve 的原始 Parameter，
+    而不是简单的 0~1 百分比。
     """
+    # 步骤 1：验证世界坐标格式。
     if world_position is None:
         raise ValueError(u"world_position 不能为空。")
 
     if len(world_position) != 3:
         raise ValueError(u"world_position 必须包含 x / y / z 三个数值。")
 
+    # 步骤 2：取得 Curve Shape 并创建临时查询节点。
     curve_shape = get_curve_shape(curve)
     nearest_node = cmds.createNode(
         "nearestPointOnCurve"
     )
 
     try:
+        # 步骤 3：连接世界空间 Curve，并写入查询位置。
         cmds.connectAttr(
             curve_shape + ".worldSpace[0]",
             nearest_node + ".inputCurve",
@@ -294,10 +435,13 @@ def get_closest_parameter(
             type="double3"
         )
 
+        # 步骤 4：读取最近位置对应的 Parameter。
         parameter = cmds.getAttr(
             nearest_node + ".parameter"
         )
+
     finally:
+        # 步骤 5：查询节点只用于一次计算，必须清理，不能污染用户场景。
         if cmds.objExists(nearest_node):
             cmds.delete(nearest_node)
 
@@ -308,7 +452,8 @@ def parameter_to_length_percentage(
         curve,
         parameter
 ):
-    """把 Curve 原始 Parameter 转换成 0~1 弧长百分比。"""
+    """将 Curve 原始 Parameter 转换成 0~1 弧长百分比。"""
+    # 步骤 1：取得 API Function 和总弧长。
     curve_function = get_curve_function(curve)
     curve_length = curve_function.length()
 
@@ -319,11 +464,15 @@ def parameter_to_length_percentage(
             )
         )
 
+    # 步骤 2：计算该 Parameter 对应的弧长。
     parameter_length = curve_function.findLengthFromParam(
         parameter
     )
+
+    # 步骤 3：转换成 0~1 百分比。
     percentage = parameter_length / curve_length
 
+    # 数值误差可能产生极小越界，最终 Clamp 到 0~1。
     if percentage < 0.0:
         percentage = 0.0
 
@@ -337,7 +486,8 @@ def length_percentage_to_parameter(
         curve,
         percentage
 ):
-    """把 0~1 弧长百分比转换成 Curve 原始 Parameter。"""
+    """将 0~1 弧长百分比转换成 Curve 原始 Parameter。"""
+    # 步骤 1：统一成 float，并验证范围。
     percentage = float(percentage)
 
     if percentage < 0.0 or percentage > 1.0:
@@ -347,19 +497,19 @@ def length_percentage_to_parameter(
             )
         )
 
+    # 步骤 2：百分比 -> 目标弧长。
     curve_function = get_curve_function(curve)
     curve_length = curve_function.length()
     target_length = curve_length * percentage
 
-    parameter = curve_function.findParamFromLength(
+    # 步骤 3：目标弧长 -> 原始 Parameter。
+    return curve_function.findParamFromLength(
         target_length
     )
 
-    return parameter
-
 
 # =============================================================================
-# Attach
+# Attach - Curve Attachment
 # =============================================================================
 
 def create_point_on_curve_attachment(
@@ -369,37 +519,42 @@ def create_point_on_curve_attachment(
         parent=None
 ):
     """
-    创建一个由 pointOnCurveInfo 驱动的 Transform。
+    创建由 ``pointOnCurveInfo`` 驱动的 Transform Attachment。
 
-    当 attachment 有 Parent 时，pointOnCurveInfo.position 是世界空间值，
-    不能直接连接到子节点的本地 translate。因此会自动建立：
-
+    Parent=None：
         pointOnCurveInfo.position
+            -> attachment.translate
+
+    有 Parent：
+        pointOnCurveInfo.position          # 世界位置
             -> composeMatrix
-            -> multMatrix(parent.worldInverseMatrix)
+            -> multMatrix
+               × parent.worldInverseMatrix # World -> Parent Local
             -> decomposeMatrix
             -> attachment.translate
 
+    为什么有 Parent 时不能直接连接：
+        ``pointOnCurveInfo.position`` 来自 worldSpace Curve，结果是世界坐标；
+        子节点 ``translate`` 是 Parent Local 坐标。直接连接会发生空间不匹配。
+
     Returns:
         dict:
-            {
-                "transform": str,
-                "point_on_curve": str,
-                "matrix_nodes": [str, ...],
-                "parameter": float,
-            }
+            transform / point_on_curve / matrix_nodes / parameter。
     """
+    # 步骤 1：取得 Curve Shape，并校验可选 Parent。
     curve_shape = get_curve_shape(curve)
 
     if parent is not None:
         validate_node(parent)
 
+    # 步骤 2：创建 Attachment Transform。
     attachment = cmds.createNode(
         "transform",
         name=name,
         parent=parent
     )
 
+    # 步骤 3：创建 pointOnCurveInfo 并连接 worldSpace Curve。
     point_on_curve = cmds.createNode(
         "pointOnCurveInfo",
         name="poci_{}".format(name)
@@ -410,6 +565,7 @@ def create_point_on_curve_attachment(
         point_on_curve + ".inputCurve",
         force=True
     )
+
     cmds.setAttr(
         point_on_curve + ".parameter",
         parameter
@@ -417,12 +573,19 @@ def create_point_on_curve_attachment(
 
     matrix_nodes = []
 
+    # -------------------------------------------------------------------------
+    # 步骤 4A：World 下的 Attachment 可以直接接世界 Position。
+    # -------------------------------------------------------------------------
     if parent is None:
         cmds.connectAttr(
             point_on_curve + ".position",
             attachment + ".translate",
             force=True
         )
+
+    # -------------------------------------------------------------------------
+    # 步骤 4B：有 Parent 时建立 World -> Local Matrix 网络。
+    # -------------------------------------------------------------------------
     else:
         compose_matrix = cmds.createNode(
             "composeMatrix",
@@ -441,11 +604,14 @@ def create_point_on_curve_attachment(
         matrix_nodes.append(mult_matrix)
         matrix_nodes.append(decompose_matrix)
 
+        # 世界 Position 先组成 Matrix。
         cmds.connectAttr(
             point_on_curve + ".position",
             compose_matrix + ".inputTranslate",
             force=True
         )
+
+        # 世界 Matrix × Parent World Inverse = Parent Local Matrix。
         cmds.connectAttr(
             compose_matrix + ".outputMatrix",
             mult_matrix + ".matrixIn[0]",
@@ -456,6 +622,8 @@ def create_point_on_curve_attachment(
             mult_matrix + ".matrixIn[1]",
             force=True
         )
+
+        # Local Matrix 再拆成 Local Translate。
         cmds.connectAttr(
             mult_matrix + ".matrixSum",
             decompose_matrix + ".inputMatrix",
@@ -467,6 +635,7 @@ def create_point_on_curve_attachment(
             force=True
         )
 
+    # 步骤 5：返回完整构建结果，让 System 可以继续组织 / 清理这些节点。
     return {
         "transform": attachment,
         "point_on_curve": point_on_curve,
@@ -481,12 +650,14 @@ def create_closest_point_attachment(
         name,
         parent=None
 ):
-    """在 Curve 上离 world_position 最近的位置创建 Attachment。"""
+    """在 Curve 上距离 world_position 最近的位置创建 Attachment。"""
+    # 步骤 1：先得到最近位置的原始 Parameter。
     parameter = get_closest_parameter(
         curve,
         world_position
     )
 
+    # 步骤 2：复用标准 Attachment 创建入口。
     return create_point_on_curve_attachment(
         curve=curve,
         parameter=parameter,
@@ -496,7 +667,7 @@ def create_closest_point_attachment(
 
 
 # =============================================================================
-# Create
+# Create - 基础 Curve 创建
 # =============================================================================
 
 def create_curve_from_nodes(
@@ -504,7 +675,13 @@ def create_curve_from_nodes(
         name,
         degree=3
 ):
-    """根据 Maya 节点的世界位置创建 NURBS Curve。"""
+    """
+    根据 Maya 节点的世界位置创建 NURBS Curve。
+
+    Returns:
+        str: 新 Curve Transform。
+    """
+    # 步骤 1：验证输入节点数量和 Degree。
     if nodes is None:
         nodes = []
 
@@ -523,6 +700,7 @@ def create_curve_from_nodes(
             )
         )
 
+    # 步骤 2：逐节点读取世界位置。
     curve_points = []
 
     for node in nodes:
@@ -537,13 +715,12 @@ def create_curve_from_nodes(
 
         curve_points.append(position)
 
-    curve = cmds.curve(
+    # 步骤 3：使用这些世界点创建 Curve。
+    return cmds.curve(
         point=curve_points,
         degree=degree,
         name=name
     )
-
-    return curve
 
 
 def create_curve_from_selected_edges(
@@ -551,7 +728,12 @@ def create_curve_from_selected_edges(
         degree=3,
         form=2
 ):
-    """根据当前选择的 Polygon Edge 创建 NURBS Curve。"""
+    """
+    根据当前选择的 Polygon Edge 创建 NURBS Curve。
+
+    这是本模块少数明确读取 Selection 的函数，因为函数名已经写明 selected_edges。
+    """
+    # 步骤 1：只展开 Polygon Edge Selection。
     selected_edges = cmds.filterExpand(
         selectionMask=32,
         expand=True
@@ -565,6 +747,7 @@ def create_curve_from_selected_edges(
             u"请先选择一个或多个 Polygon Edge。"
         )
 
+    # 步骤 2：调用 Maya polyToCurve。
     result = cmds.polyToCurve(
         form=form,
         degree=degree,
@@ -575,8 +758,8 @@ def create_curve_from_selected_edges(
     if not result:
         raise RuntimeError(u"Polygon Edge 转 Curve 失败。")
 
-    curve = result[0]
-    return curve
+    # Maya 返回列表，第一项为创建出来的 Curve Transform。
+    return result[0]
 
 
 __all__ = [
