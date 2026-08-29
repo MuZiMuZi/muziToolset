@@ -3,643 +3,281 @@ u"""
 Hierarchy Cleaner
 =================
 
-Maya 2023 / PySide2 场景层级清理工具。
+场景安全清理 UI。
 
-安全原则：
-    1. 默认只处理当前选择，避免误伤整个 Rig 场景；
-    2. 空组删除会递归执行，直到没有新的空父组；
-    3. Delete History / Freeze 会跳过明显的绑定、动画和约束节点；
-    4. 全场景模式执行前需要再次确认；
-    5. 所有修改包装在一个 Maya Undo Chunk 中。
+实际清理逻辑统一维护在：
+    muzi_rigging.core.scene_clean_utils
 """
 
 from __future__ import print_function
 
 import maya.cmds as cmds
 
-from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QCheckBox
-from PySide2.QtWidgets import QDialog
-from PySide2.QtWidgets import QFrame
-from PySide2.QtWidgets import QLabel
-from PySide2.QtWidgets import QMessageBox
-from PySide2.QtWidgets import QPushButton
-from PySide2.QtWidgets import QVBoxLayout
-
-from ....core import qtUtils
-
-
-_window = None
-
-_DEFAULT_CAMERAS = {
-    "persp",
-    "top",
-    "front",
-    "side",
-}
-
-_RIG_HISTORY_TYPES = {
-    "skinCluster",
-    "blendShape",
-    "cluster",
-    "wire",
-    "ffd",
-    "lattice",
-    "nonLinear",
-    "deltaMush",
-    "tension",
-    "wrap",
-    "proximityWrap",
-}
-
-_CONSTRAINT_TYPES = {
-    "parentConstraint",
-    "pointConstraint",
-    "orientConstraint",
-    "scaleConstraint",
-    "aimConstraint",
-    "poleVectorConstraint",
-}
-
-
-def _short_name(node):
-    return node.split("|")[-1]
-
-
-def _is_default_camera(node):
-    return _short_name(node) in _DEFAULT_CAMERAS
-
-
-def _is_referenced(node):
-    try:
-        return cmds.referenceQuery(node, isNodeReferenced=True)
-    except Exception:
-        return False
-
-
-def _existing_nodes(nodes):
-    result = []
-
-    if not nodes:
-        return result
-
-    for node in nodes:
-        if not node:
-            continue
-
-        if not cmds.objExists(node):
-            continue
-
-        matches = cmds.ls(node, long=True) or [node]
-        resolved = matches[0]
-
-        if resolved not in result:
-            result.append(resolved)
-
-    return result
-
-
-def _all_transform_nodes():
-    return cmds.ls(type="transform", long=True) or []
-
-
-def _has_incoming_animation(node):
-    anim_curve_types = [
-        "animCurveTA",
-        "animCurveTL",
-        "animCurveTT",
-        "animCurveTU",
-    ]
-
-    for anim_type in anim_curve_types:
-        connections = cmds.listConnections(
-            node,
-            source=True,
-            destination=False,
-            type=anim_type
-        ) or []
-
-        if connections:
-            return True
-
-    return False
-
-
-def _has_constraint(node):
-    connections = cmds.listConnections(
-        node,
-        source=True,
-        destination=False
-    ) or []
-
-    for connection in connections:
-        try:
-            node_type = cmds.nodeType(connection)
-        except Exception:
-            continue
-
-        if node_type in _CONSTRAINT_TYPES:
-            return True
-
-    return False
-
-
-def _has_rig_history(node):
-    history = cmds.listHistory(node, pruneDagObjects=True) or []
-
-    for history_node in history:
-        try:
-            node_type = cmds.nodeType(history_node)
-        except Exception:
-            continue
-
-        if node_type in _RIG_HISTORY_TYPES:
-            return True
-
-    return False
-
-
-def _can_modify_transform(node):
-    if not cmds.objExists(node):
-        return False
-
-    if _is_default_camera(node):
-        return False
-
-    if _is_referenced(node):
-        return False
-
-    node_type = cmds.nodeType(node)
-    if node_type != "transform":
-        return False
-
-    return True
-
-
-def delete_empty_groups(nodes=None):
-    """
-    递归删除空 Transform Group。
-
-    Args:
-        nodes(list/None):
-            None 时检查整个场景；传列表时只检查列表及其父层级。
-
-    Returns:
-        int: 删除数量。
-    """
-    if nodes is None:
-        candidates = _all_transform_nodes()
-    else:
-        candidates = _existing_nodes(nodes)
-
-        parent_candidates = []
-        for node in list(candidates):
-            current = node
-
-            while current:
-                parents = cmds.listRelatives(
-                    current,
-                    parent=True,
-                    fullPath=True
-                ) or []
-
-                if not parents:
-                    break
-
-                current = parents[0]
-                if current not in parent_candidates:
-                    parent_candidates.append(current)
-
-        for parent in parent_candidates:
-            if parent not in candidates:
-                candidates.append(parent)
-
-    deleted_count = 0
-    changed = True
-
-    while changed:
-        changed = False
-
-        current_candidates = []
-        for node in candidates:
-            if cmds.objExists(node):
-                current_candidates.append(node)
-
-        current_candidates.sort(
-            key=lambda item: item.count("|"),
-            reverse=True
-        )
-
-        for node in current_candidates:
-            if not _can_modify_transform(node):
-                continue
-
-            shapes = cmds.listRelatives(
-                node,
-                shapes=True,
-                fullPath=True
-            ) or []
-
-            children = cmds.listRelatives(
-                node,
-                children=True,
-                fullPath=True
-            ) or []
-
-            if shapes or children:
-                continue
-
-            try:
-                cmds.delete(node)
-                deleted_count += 1
-                changed = True
-            except Exception as error:
-                cmds.warning(
-                    u"无法删除空组 {}：{}".format(
-                        node,
-                        error
-                    )
-                )
-
-    return deleted_count
-
-
-def delete_history(nodes):
-    """
-    删除安全范围内的构造历史。
-
-    已检测到 SkinCluster / BlendShape / Wire 等 Rig Deformer 时会跳过，
-    防止一个“清历史”按钮直接破坏绑定。
-    """
-    nodes = _existing_nodes(nodes)
-    deleted_count = 0
-    skipped_count = 0
-
-    for node in nodes:
-        if not _can_modify_transform(node):
-            continue
-
-        shapes = cmds.listRelatives(
-            node,
-            shapes=True,
-            noIntermediate=True,
-            fullPath=True
-        ) or []
-
-        if not shapes:
-            continue
-
-        if _has_rig_history(node):
-            skipped_count += 1
-            continue
-
-        try:
-            cmds.delete(node, constructionHistory=True)
-            deleted_count += 1
-        except Exception as error:
-            cmds.warning(
-                u"无法删除历史 {}：{}".format(
-                    node,
-                    error
-                )
-            )
-
-    return deleted_count, skipped_count
-
-
-def freeze_transformations(nodes):
-    """
-    冻结安全范围内的 Transform。
-
-    有动画、约束、绑定 Deformer 或引用来源的节点会跳过。
-    """
-    nodes = _existing_nodes(nodes)
-    frozen_count = 0
-    skipped_count = 0
-
-    for node in nodes:
-        if not _can_modify_transform(node):
-            skipped_count += 1
-            continue
-
-        if _has_incoming_animation(node):
-            skipped_count += 1
-            continue
-
-        if _has_constraint(node):
-            skipped_count += 1
-            continue
-
-        if _has_rig_history(node):
-            skipped_count += 1
-            continue
-
-        try:
-            cmds.makeIdentity(
-                node,
-                apply=True,
-                translate=True,
-                rotate=True,
-                scale=True,
-                normal=False,
-                preserveNormals=True
-            )
-            frozen_count += 1
-        except Exception as error:
-            cmds.warning(
-                u"无法冻结变换 {}：{}".format(
-                    node,
-                    error
-                )
-            )
-
-    return frozen_count, skipped_count
-
-
-def unlock_and_show_attributes(nodes):
-    """解锁并显示标准 Transform 属性。"""
-    nodes = _existing_nodes(nodes)
-
-    attrs = [
-        "tx",
-        "ty",
-        "tz",
-        "rx",
-        "ry",
-        "rz",
-        "sx",
-        "sy",
-        "sz",
-        "v",
-    ]
-
-    changed_count = 0
-
-    for node in nodes:
-        if _is_referenced(node):
-            continue
-
-        for attr in attrs:
-            if not cmds.attributeQuery(
-                    attr,
-                    node=node,
-                    exists=True
-            ):
-                continue
-
-            plug = "{}.{}".format(node, attr)
-
-            try:
-                cmds.setAttr(plug, lock=False)
-                cmds.setAttr(plug, keyable=True)
-                changed_count += 1
-            except Exception:
-                pass
-
-    return changed_count
-
-
-def center_pivot(nodes):
-    """把可编辑几何 Transform 的 Pivot 居中。"""
-    nodes = _existing_nodes(nodes)
-    centered_count = 0
-
-    for node in nodes:
-        if not _can_modify_transform(node):
-            continue
-
-        shapes = cmds.listRelatives(
-            node,
-            shapes=True,
-            noIntermediate=True,
-            fullPath=True
-        ) or []
-
-        if not shapes:
-            continue
-
-        try:
-            cmds.xform(node, centerPivots=True)
-            centered_count += 1
-        except Exception:
-            pass
-
-    return centered_count
-
-
-def delete_unknown_nodes(nodes=None):
-    """删除 Unknown 节点；传入 nodes 时只处理选择范围。"""
-    if nodes is None:
-        unknown_nodes = cmds.ls(type="unknown", long=True) or []
-    else:
-        unknown_nodes = []
-
-        for node in _existing_nodes(nodes):
-            if cmds.nodeType(node) == "unknown":
-                unknown_nodes.append(node)
-
-    deleted_count = 0
-
-    for node in unknown_nodes:
-        if _is_referenced(node):
-            continue
-
-        try:
-            cmds.delete(node)
-            deleted_count += 1
-        except Exception as error:
-            cmds.warning(
-                u"无法删除 Unknown 节点 {}：{}".format(
-                    node,
-                    error
-                )
-            )
-
-    return deleted_count
-
-
-class HierarchyCleanerUI(QDialog):
+try:
+    from PySide2.QtWidgets import QCheckBox
+    from PySide2.QtWidgets import QDialog
+    from PySide2.QtWidgets import QLabel
+    from PySide2.QtWidgets import QMessageBox
+    from PySide2.QtWidgets import QPushButton
+    from PySide2.QtWidgets import QVBoxLayout
+except ImportError:
+    from PySide6.QtWidgets import QCheckBox
+    from PySide6.QtWidgets import QDialog
+    from PySide6.QtWidgets import QLabel
+    from PySide6.QtWidgets import QMessageBox
+    from PySide6.QtWidgets import QPushButton
+    from PySide6.QtWidgets import QVBoxLayout
+
+from ...core import scene_clean_utils
+from ...ui import theme
+
+
+class HierarchyCleaner(QDialog):
     """层级清理器窗口。"""
 
     def __init__(self, parent=None):
-        if parent is None:
-            parent = qtUtils.get_maya_window()
+        super(HierarchyCleaner, self).__init__(parent)
 
-        super(HierarchyCleanerUI, self).__init__(parent)
-        self.setWindowTitle(u"层级清理器")
-        self.setMinimumWidth(360)
+        self.create_widgets()
+        self.create_layouts()
+        self.create_connections()
 
-        self.title_label = QLabel(u"Hierarchy Cleaner")
-        self.title_label.setAlignment(Qt.AlignCenter)
+        theme.style_window(
+            self,
+            title=u"Hierarchy Cleaner",
+            minimum_width=500
+        )
+        self.resize(530, 520)
 
-        self.delete_empty_check = QCheckBox(u"删除空组")
-        self.delete_empty_check.setChecked(True)
+    def create_widgets(self):
+        """创建界面控件。"""
+        self.title_label = theme.make_title(u"层级清理")
+        self.subtitle_label = theme.make_subtitle(
+            u"默认只处理当前选择；高风险操作会主动跳过动画、约束和 Rig Deformer。"
+        )
 
-        self.delete_history_check = QCheckBox(u"删除安全范围内构造历史")
-        self.delete_history_check.setChecked(False)
+        self.delete_empty_checkbox = QCheckBox(u"删除空组")
+        self.delete_empty_checkbox.setChecked(True)
 
-        self.freeze_check = QCheckBox(u"冻结安全范围内 Transform")
-        self.freeze_check.setChecked(False)
+        self.delete_history_checkbox = QCheckBox(
+            u"删除安全范围内 Construction History"
+        )
+        self.delete_history_checkbox.setChecked(False)
 
-        self.unlock_check = QCheckBox(u"解锁并显示标准 Transform 属性")
-        self.unlock_check.setChecked(False)
+        self.freeze_checkbox = QCheckBox(
+            u"冻结安全范围内 Transform"
+        )
+        self.freeze_checkbox.setChecked(False)
 
-        self.center_pivot_check = QCheckBox(u"几何体 Pivot 居中")
-        self.center_pivot_check.setChecked(False)
+        self.unlock_checkbox = QCheckBox(
+            u"解锁并显示标准 Transform 属性"
+        )
+        self.unlock_checkbox.setChecked(False)
 
-        self.delete_unknown_check = QCheckBox(u"删除 Unknown 节点")
-        self.delete_unknown_check.setChecked(True)
+        self.center_pivot_checkbox = QCheckBox(u"几何体 Pivot 居中")
+        self.center_pivot_checkbox.setChecked(False)
 
-        self.selected_only_check = QCheckBox(u"仅处理当前选择")
-        self.selected_only_check.setChecked(True)
+        self.delete_unknown_checkbox = QCheckBox(u"删除 Unknown 节点")
+        self.delete_unknown_checkbox.setChecked(True)
 
-        self.execute_btn = QPushButton(u"执行清理")
-        self.result_label = QLabel()
+        self.selected_only_checkbox = QCheckBox(u"仅处理当前选择")
+        self.selected_only_checkbox.setChecked(True)
+
+        self.safety_label = QLabel(
+            u"全场景模式会扫描所有 Transform。执行前会再次确认，"
+            u"但仍建议先保存 Maya 场景。"
+        )
+        self.safety_label.setWordWrap(True)
+        theme.set_role(self.safety_label, "muted")
+
+        self.execute_button = QPushButton(u"执行清理")
+        theme.style_primary(self.execute_button)
+
+        self.result_label = QLabel(u"尚未执行")
         self.result_label.setWordWrap(True)
+        theme.set_role(self.result_label, "muted")
 
-        self._create_layout()
-        self._create_connections()
-
-    def _create_layout(self):
+    def create_layouts(self):
+        """创建 Card 布局。"""
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(12, 12, 12, 12)
-        main_layout.setSpacing(7)
+        main_layout.setContentsMargins(16, 16, 16, 16)
+        main_layout.setSpacing(12)
 
         main_layout.addWidget(self.title_label)
+        main_layout.addWidget(self.subtitle_label)
 
-        separator = QFrame()
-        separator.setFrameShape(QFrame.HLine)
-        main_layout.addWidget(separator)
+        option_card, option_layout = theme.make_card(self)
+        option_layout.addWidget(
+            theme.make_section_title(u"清理选项")
+        )
+        option_layout.addWidget(self.delete_empty_checkbox)
+        option_layout.addWidget(self.delete_history_checkbox)
+        option_layout.addWidget(self.freeze_checkbox)
+        option_layout.addWidget(self.unlock_checkbox)
+        option_layout.addWidget(self.center_pivot_checkbox)
+        option_layout.addWidget(self.delete_unknown_checkbox)
 
-        main_layout.addWidget(self.delete_empty_check)
-        main_layout.addWidget(self.delete_history_check)
-        main_layout.addWidget(self.freeze_check)
-        main_layout.addWidget(self.unlock_check)
-        main_layout.addWidget(self.center_pivot_check)
-        main_layout.addWidget(self.delete_unknown_check)
-        main_layout.addWidget(self.selected_only_check)
-        main_layout.addWidget(self.execute_btn)
-        main_layout.addWidget(self.result_label)
+        scope_card, scope_layout = theme.make_card(self)
+        scope_layout.addWidget(
+            theme.make_section_title(u"执行范围")
+        )
+        scope_layout.addWidget(self.selected_only_checkbox)
+        scope_layout.addWidget(self.safety_label)
 
-    def _create_connections(self):
-        self.execute_btn.clicked.connect(self.execute_cleanup)
+        result_card, result_layout = theme.make_card(self)
+        result_layout.addWidget(
+            theme.make_section_title(u"执行结果")
+        )
+        result_layout.addWidget(self.result_label)
 
-    def _scope_nodes(self):
-        if self.selected_only_check.isChecked():
-            return cmds.ls(selection=True, long=True) or []
+        main_layout.addWidget(option_card)
+        main_layout.addWidget(scope_card)
+        main_layout.addWidget(self.execute_button)
+        main_layout.addWidget(result_card)
+        main_layout.addStretch(1)
 
-        return _all_transform_nodes()
+    def create_connections(self):
+        """连接 UI 信号。"""
+        self.execute_button.clicked.connect(
+            self.execute_cleanup
+        )
 
-    def _confirm_whole_scene(self):
-        if self.selected_only_check.isChecked():
+    def confirm_whole_scene(self):
+        """全场景模式二次确认。"""
+        if self.selected_only_checkbox.isChecked():
             return True
 
         result = QMessageBox.warning(
             self,
             u"确认全场景清理",
-            u"你关闭了“仅处理当前选择”。\n\n"
-            u"本次操作将扫描整个场景。历史、冻结、解锁等操作仍会跳过明显的 Rig 节点，"
-            u"但建议先保存场景。是否继续？",
+            u"当前将扫描整个 Maya 场景。\n\n"
+            u"安全规则会跳过明显的 Rig / Animation 节点，"
+            u"但仍建议先保存场景。是否继续？",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No
         )
 
         return result == QMessageBox.Yes
 
+    def get_scope_nodes(self):
+        """返回当前清理范围。"""
+        if self.selected_only_checkbox.isChecked():
+            nodes = cmds.ls(
+                selection=True,
+                long=True
+            )
+
+            if nodes is None:
+                nodes = []
+
+            return nodes
+
+        return scene_clean_utils.all_transform_nodes()
+
+    def format_result(self, result):
+        """把 Core 返回字典格式化成 UI 文本。"""
+        lines = []
+
+        if "empty_groups" in result:
+            lines.append(
+                u"空组：删除 {}".format(
+                    result["empty_groups"]
+                )
+            )
+
+        if "history" in result:
+            history_result = result["history"]
+            lines.append(
+                u"历史：处理 {} / 跳过 {}".format(
+                    history_result["processed"],
+                    history_result["skipped"]
+                )
+            )
+
+        if "freeze" in result:
+            freeze_result = result["freeze"]
+            lines.append(
+                u"冻结：处理 {} / 跳过 {}".format(
+                    freeze_result["processed"],
+                    freeze_result["skipped"]
+                )
+            )
+
+        if "attributes" in result:
+            lines.append(
+                u"属性：修改 {} 项".format(
+                    result["attributes"]
+                )
+            )
+
+        if "pivot" in result:
+            lines.append(
+                u"Pivot：处理 {}".format(
+                    result["pivot"]
+                )
+            )
+
+        if "unknown" in result:
+            lines.append(
+                u"Unknown：删除 {}".format(
+                    result["unknown"]
+                )
+            )
+
+        if not lines:
+            lines.append(u"没有启用任何清理选项。")
+
+        return u"\n".join(lines)
+
     def execute_cleanup(self):
-        if not self._confirm_whole_scene():
+        """执行当前配置的场景清理。"""
+        if not self.confirm_whole_scene():
             return
 
-        selected_only = self.selected_only_check.isChecked()
+        nodes = self.get_scope_nodes()
+        selected_only = self.selected_only_checkbox.isChecked()
 
-        if selected_only:
-            nodes = cmds.ls(selection=True, long=True) or []
-            if not nodes:
-                self.result_label.setText(u"请先选择需要清理的对象。")
-                return
-        else:
-            nodes = _all_transform_nodes()
+        if selected_only and not nodes:
+            self.result_label.setText(u"请先选择需要清理的对象。")
+            return
 
-        result_lines = []
+        cmds.undoInfo(
+            openChunk=True,
+            chunkName="MuziHierarchyCleaner"
+        )
 
-        cmds.undoInfo(openChunk=True, chunkName="MuziHierarchyCleaner")
         try:
-            if self.delete_empty_check.isChecked():
-                empty_scope = nodes
-                if not selected_only:
-                    empty_scope = None
-
-                count = delete_empty_groups(empty_scope)
-                result_lines.append(u"空组：删除 {}".format(count))
-
-            if self.delete_history_check.isChecked():
-                deleted_count, skipped_count = delete_history(nodes)
-                result_lines.append(
-                    u"历史：处理 {} / 跳过 Rig {}".format(
-                        deleted_count,
-                        skipped_count
-                    )
-                )
-
-            if self.freeze_check.isChecked():
-                frozen_count, skipped_count = freeze_transformations(nodes)
-                result_lines.append(
-                    u"冻结：处理 {} / 跳过 {}".format(
-                        frozen_count,
-                        skipped_count
-                    )
-                )
-
-            if self.unlock_check.isChecked():
-                count = unlock_and_show_attributes(nodes)
-                result_lines.append(u"属性：修改 {} 项".format(count))
-
-            if self.center_pivot_check.isChecked():
-                count = center_pivot(nodes)
-                result_lines.append(u"Pivot：处理 {}".format(count))
-
-            if self.delete_unknown_check.isChecked():
-                unknown_scope = nodes
-                if not selected_only:
-                    unknown_scope = None
-
-                count = delete_unknown_nodes(unknown_scope)
-                result_lines.append(u"Unknown：删除 {}".format(count))
-
+            result = scene_clean_utils.run_cleanup(
+                nodes=nodes,
+                selected_only=selected_only,
+                delete_empty=self.delete_empty_checkbox.isChecked(),
+                delete_history_enabled=self.delete_history_checkbox.isChecked(),
+                freeze_enabled=self.freeze_checkbox.isChecked(),
+                unlock_enabled=self.unlock_checkbox.isChecked(),
+                center_pivot_enabled=self.center_pivot_checkbox.isChecked(),
+                delete_unknown_enabled=self.delete_unknown_checkbox.isChecked()
+            )
         except Exception as error:
             cmds.warning(str(error))
-            result_lines.append(u"执行失败：{}".format(error))
+            self.result_label.setText(
+                u"执行失败：{}".format(error)
+            )
+            return
         finally:
             cmds.undoInfo(closeChunk=True)
 
-        if not result_lines:
-            result_lines.append(u"没有启用任何清理选项。")
-
-        self.result_label.setText(u"\n".join(result_lines))
-
-
-# 旧类名兼容。
-Hierarchy_Cleaner_UI = HierarchyCleanerUI
+        self.result_label.setText(
+            self.format_result(result)
+        )
 
 
 def main():
-    global _window
-
-    try:
-        if _window is not None:
-            _window.close()
-            _window.deleteLater()
-    except Exception:
-        pass
-
-    _window = HierarchyCleanerUI()
-    _window.setAttribute(Qt.WA_DeleteOnClose, False)
-    _window.show()
-    _window.raise_()
-    _window.activateWindow()
-
-    return _window
+    """创建并返回 Hierarchy Cleaner。"""
+    window = HierarchyCleaner()
+    return window
 
 
-if __name__ == "__main__":
-    main()
+__all__ = [
+    "HierarchyCleaner",
+    "main",
+]
