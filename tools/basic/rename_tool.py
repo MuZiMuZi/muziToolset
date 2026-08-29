@@ -5,8 +5,39 @@ Rename Tool
 
 批量重命名工具 UI。
 
-实际重命名逻辑统一维护在：
-    muzi_rigging.core.rename_utils
+模块职责
+--------
+1. 提供 Prefix / Suffix、Search Replace、Auto Number、Pattern Rename 界面；
+2. 收集用户输入和 Maya Selection Scope；
+3. 实际 Rename 行为统一调用 ``core.rename_utils``；
+4. 提供可在 Maya Script Editor 中直接显示的 ``main()``。
+
+主要公开类型 / 方法
+------------------
+RenameTool
+    批量 Rename 主窗口。
+
+RenameTool.add_prefix()
+RenameTool.add_suffix()
+RenameTool.search_replace()
+RenameTool.auto_number()
+RenameTool.pattern_rename()
+    把 UI 参数交给 ``rename_utils``。
+
+main()
+    创建或恢复窗口，立即显示并返回 QWidget。
+
+直接运行
+--------
+
+    from muziToolset.tools.basic import rename_tool
+
+    window = rename_tool.main()
+
+设计边界
+--------
+本文件不实现 DAG Rename 算法。Child First、Undo、编号和 Pattern 解析统一维护在
+``core.rename_utils``。
 """
 
 from __future__ import print_function
@@ -34,6 +65,7 @@ except ImportError:
 
 from ...core import rename_utils
 from ...ui import theme
+from ...ui import window_utils
 
 
 class RenameTool(QWidget):
@@ -104,7 +136,7 @@ class RenameTool(QWidget):
 
         self.pattern_line = QLineEdit()
         self.pattern_line.setPlaceholderText(
-            u"例如 ctrl_l_arm_***"
+            u"例如 ctrl_lf_arm_***"
         )
         self.pattern_button = QPushButton(u"模式重命名")
         theme.style_primary(self.pattern_button)
@@ -229,18 +261,21 @@ class RenameTool(QWidget):
         )
 
     def add_prefix(self):
+        """读取 Prefix 输入并执行批量添加。"""
         count = rename_utils.add_prefix(
             self.prefix_line.text().strip()
         )
         self.set_result_status(u"添加前缀", count)
 
     def add_suffix(self):
+        """读取 Suffix 输入并执行批量添加。"""
         count = rename_utils.add_suffix(
             self.suffix_line.text().strip()
         )
         self.set_result_status(u"添加后缀", count)
 
     def search_replace(self):
+        """按照当前 Scope 执行 Search / Replace。"""
         count = rename_utils.search_replace(
             search_text=self.search_line.text(),
             replace_text=self.replace_line.text(),
@@ -249,6 +284,7 @@ class RenameTool(QWidget):
         self.set_result_status(u"查找替换", count)
 
     def auto_number(self):
+        """按照 Selection 顺序执行自动编号。"""
         count = rename_utils.auto_number(
             base_name=self.base_name_line.text().strip(),
             start_number=self.start_number_spin.value(),
@@ -258,6 +294,7 @@ class RenameTool(QWidget):
         self.set_result_status(u"自动编号", count)
 
     def pattern_rename(self):
+        """按照 * 占位规则执行 Pattern Rename。"""
         count = rename_utils.pattern_rename(
             self.pattern_line.text().strip()
         )
@@ -265,9 +302,11 @@ class RenameTool(QWidget):
 
 
 def main():
-    """创建并返回 Rename Tool。"""
-    window = RenameTool()
-    return window
+    """创建或恢复 Rename Tool，立即显示并返回 QWidget。"""
+    return window_utils.show_window(
+        "tools.basic.rename_tool",
+        RenameTool
+    )
 
 
 __all__ = [
