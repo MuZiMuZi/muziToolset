@@ -1,36 +1,51 @@
 # muziToolset
 
-#### Description
-木子的绑定工具集
+A Maya rigging toolkit focused on maintainable production tools and reusable rig systems.
 
-#### Software Architecture
-Software architecture description
+## Runtime package
 
-#### Installation
+The current production code lives in:
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+```text
+muzi_rigging/
+├─ app/          # toolbox entry and Maya window management
+├─ ui/           # shared theme and reusable widgets
+├─ core/         # Maya logic without UI dependencies
+├─ tools/        # standalone user-facing tools
+├─ systems/      # reusable rig builders and larger workflows
+└─ resources/    # icons and controller shape data
+```
 
-#### Instructions
+Historical implementations are stored under:
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+```text
+legacy_reference/
+```
 
-#### Contribution
+They are reference-only and must not be imported by production modules.
 
-1.  Fork the repository
-2.  Create Feat_xxx branch
-3.  Commit your code
-4.  Create Pull Request
+## Maya target
 
+- Maya 2023 first
+- PySide2 first, with PySide6 fallback where practical
+- `maya.cmds` preferred for scene operations
+- New production code should not add PyMel dependencies
 
-#### Gitee Feature
+## Launch
 
-1.  You can use Readme\_XXX.md to support different languages, such as Readme\_en.md, Readme\_zh.md
-2.  Gitee blog [blog.gitee.com](https://blog.gitee.com)
-3.  Explore open source project [https://gitee.com/explore](https://gitee.com/explore)
-4.  The most valuable open source project [GVP](https://gitee.com/gvp)
-5.  The manual of Gitee [https://gitee.com/help](https://gitee.com/help)
-6.  The most popular members  [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+Place the repository where Maya can import `muziToolset`, then run:
+
+```python
+import muziToolset
+muziToolset.show()
+```
+
+## Architecture rules
+
+- `core` must not depend on `ui`, `tools`, or `systems`.
+- `tools` collect user input and call Core/System APIs.
+- `systems` contain reusable rig-building workflows.
+- PySide windows are managed by the shared Window Manager.
+- Historical code is used only as a source for algorithms that are rewritten into the production architecture.
+
+See `README.md` and `muzi_rigging/ARCHITECTURE.md` for the detailed Chinese project documentation.
