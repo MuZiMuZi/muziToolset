@@ -9,13 +9,32 @@ legacy_reference/
 ├─ bind/           # 早期绑定相关代码
 ├─ core/           # 旧 Core 全量备份
 ├─ dev/            # 旧开发辅助脚本，例如 MayaSender
-├─ face/           # 旧 Face Rig 与旧 Face UI
 ├─ pyside/         # PySide 学习 / 旧界面代码
 ├─ res/            # 旧资源与 UI 资源
 └─ rigging/        # 旧 Body / IKFK / Rig 参考实现
 ```
 
 其中 `rigging/line_rig_v02.py` 等实验脚本也统一保存在历史区，不再占用项目根目录。
+
+## 已完成迁移
+
+旧 `legacy_reference/face/` 已完成审计并移除。
+
+对应正式开发位置：
+
+```text
+systems/face/
+├─ config.py
+├─ face_base.py
+├─ face_setup.py
+├─ face_guide.py
+├─ curve_attachment.py
+├─ eyelid/
+├─ lip/
+└─ wizard.py
+```
+
+旧 Face Setup / Config / Base / Guide 已由正式系统版本接管；旧 Face UI 已由 `systems/face/wizard.py` 重写；旧 Maya 测试则由根包 `tests/` 下的 Smoke Test 接管。
 
 ## 使用规则
 
