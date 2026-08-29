@@ -1,5 +1,5 @@
 # coding=utf-8
-u"""MuziTools Rig 工具包。"""
+u"""Muzi Toolset Rig 工具包。"""
 
 __all__ = [
     "rig_tool",
