@@ -7,6 +7,10 @@ u"""
     - Parent / Point / Orient / Scale / Aim / Pole Vector Constraint；
     - 多对一 / 一对多选择模式；
     - 查询和删除关联约束节点。
+
+结构：
+    UI 只负责选择模式、按钮事件和反馈；
+    Maya Constraint 场景操作统一由 core.constraint_utils 负责。
 """
 
 from __future__ import print_function
@@ -34,6 +38,7 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
+from ...core import constraint_utils
 from ...ui import theme as ui_theme
 
 
@@ -42,15 +47,6 @@ class ConstraintTool(QWidget):
 
     def __init__(self, parent=None):
         super(ConstraintTool, self).__init__(parent)
-
-        self.constraint_types = [
-            "parentConstraint",
-            "pointConstraint",
-            "orientConstraint",
-            "scaleConstraint",
-            "aimConstraint",
-            "poleVectorConstraint",
-        ]
 
         self.create_widgets()
         self.create_layouts()
@@ -62,6 +58,10 @@ class ConstraintTool(QWidget):
             minimum_width=520
         )
         self.resize(540, 460)
+
+    # =========================================================================
+    # UI
+    # =========================================================================
 
     def create_widgets(self):
         """创建窗口中使用的所有部件。"""
@@ -214,6 +214,10 @@ class ConstraintTool(QWidget):
             self.clicked_delete_constraint_button
         )
 
+    # =========================================================================
+    # Selection
+    # =========================================================================
+
     def get_driver_and_driven_objects(self):
         """根据当前模式拆分 Driver / Driven。"""
         selected_objects = cmds.ls(
@@ -236,22 +240,38 @@ class ConstraintTool(QWidget):
             index = 0
 
             while index < last_index:
-                driver_objects.append(selected_objects[index])
+                driver_objects.append(
+                    selected_objects[index]
+                )
                 index += 1
 
-            driven_objects.append(selected_objects[-1])
+            driven_objects.append(
+                selected_objects[-1]
+            )
         else:
-            driver_objects.append(selected_objects[0])
-            index = 1
+            driver_objects.append(
+                selected_objects[0]
+            )
 
+            index = 1
             while index < len(selected_objects):
-                driven_objects.append(selected_objects[index])
+                driven_objects.append(
+                    selected_objects[index]
+                )
                 index += 1
 
         return driver_objects, driven_objects
 
-    def create_standard_constraint(self, constraint_command, chunk_name):
-        """创建支持多目标的标准约束。"""
+    # =========================================================================
+    # Create
+    # =========================================================================
+
+    def create_standard_constraint(
+            self,
+            constraint_type,
+            chunk_name
+    ):
+        """收集 UI 参数并调用 Core 创建标准约束。"""
         driver_objects, driven_objects = self.get_driver_and_driven_objects()
 
         if not driver_objects or not driven_objects:
@@ -265,45 +285,46 @@ class ConstraintTool(QWidget):
         )
 
         try:
-            for driven_object in driven_objects:
-                try:
-                    constraint_command(
-                        driver_objects,
-                        driven_object,
-                        maintainOffset=maintain_offset
-                    )
-                except RuntimeError as error:
-                    cmds.warning(str(error))
+            constraint_utils.create_constraints(
+                driver_objects=driver_objects,
+                driven_objects=driven_objects,
+                constraint_type=constraint_type,
+                maintain_offset=maintain_offset
+            )
+        except RuntimeError as error:
+            cmds.warning(str(error))
         finally:
-            cmds.undoInfo(closeChunk=True)
+            cmds.undoInfo(
+                closeChunk=True
+            )
 
     def clicked_parent_constraint_button(self):
         self.create_standard_constraint(
-            cmds.parentConstraint,
+            "parentConstraint",
             "MuziParentConstraint"
         )
 
     def clicked_point_constraint_button(self):
         self.create_standard_constraint(
-            cmds.pointConstraint,
+            "pointConstraint",
             "MuziPointConstraint"
         )
 
     def clicked_orient_constraint_button(self):
         self.create_standard_constraint(
-            cmds.orientConstraint,
+            "orientConstraint",
             "MuziOrientConstraint"
         )
 
     def clicked_scale_constraint_button(self):
         self.create_standard_constraint(
-            cmds.scaleConstraint,
+            "scaleConstraint",
             "MuziScaleConstraint"
         )
 
     def clicked_aim_constraint_button(self):
         self.create_standard_constraint(
-            cmds.aimConstraint,
+            "aimConstraint",
             "MuziAimConstraint"
         )
 
@@ -329,33 +350,27 @@ class ConstraintTool(QWidget):
         )
 
         try:
-            cmds.poleVectorConstraint(
-                selected_objects[0],
-                selected_objects[1]
+            constraint_utils.create_pole_vector_constraint(
+                driver_object=selected_objects[0],
+                ik_handle=selected_objects[1]
             )
+        except RuntimeError as error:
+            cmds.warning(str(error))
         finally:
-            cmds.undoInfo(closeChunk=True)
+            cmds.undoInfo(
+                closeChunk=True
+            )
 
-    def get_constraints_from_objects(self, selected_objects):
-        """收集选择对象关联的约束节点，并保持顺序去重。"""
-        constraint_nodes = []
+    # =========================================================================
+    # Manage
+    # =========================================================================
 
-        for selected_object in selected_objects:
-            for constraint_type in self.constraint_types:
-                connected_nodes = cmds.listConnections(
-                    selected_object,
-                    type=constraint_type
-                )
-
-                if connected_nodes is None:
-                    connected_nodes = []
-
-                for connected_node in connected_nodes:
-                    if connected_node in constraint_nodes:
-                        continue
-                    constraint_nodes.append(connected_node)
-
-        return constraint_nodes
+    @staticmethod
+    def get_constraints_from_objects(selected_objects):
+        """从 Core 查询对象关联的约束节点。"""
+        return constraint_utils.get_constraints(
+            selected_objects
+        )
 
     def clicked_select_constraint_button(self):
         """选择当前对象关联的所有约束节点。"""
@@ -412,11 +427,13 @@ class ConstraintTool(QWidget):
         )
 
         try:
-            for constraint_node in constraint_nodes:
-                if cmds.objExists(constraint_node):
-                    cmds.delete(constraint_node)
+            constraint_utils.delete_constraints(
+                selected_objects
+            )
         finally:
-            cmds.undoInfo(closeChunk=True)
+            cmds.undoInfo(
+                closeChunk=True
+            )
 
 
 def main():
