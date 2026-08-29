@@ -7,15 +7,15 @@ Rig Tool
 
 职责：
     1. 启动 FK / Controller / Joint / Skirt 专项工具；
-    2. 创建基础 RP IK + End Controller + Pole Vector Controller；
-    3. 管理 Muzi Rig 模块；
-    4. 提供常用场景级 Rig 小工具。
+    2. 创建基础 RP IK Rig；
+    3. 管理带 muziRigType 标记的 Rig Module；
+    4. 提供常用 Rig 场景工具。
 
-说明：
-    - 具体 Controller 创建调用 tools.controller；
-    - 不依赖旧顶层 core / qtUtils；
-    - 不自己维护全局窗口；
-    - main() 返回 QWidget，由 app.window_manager 管理。
+架构：
+    - Controller 创建统一调用 systems.controller；
+    - Snap 等通用算法统一调用 core；
+    - 子窗口统一交给 app.window_manager；
+    - 本文件只保留 Rig Tool UI 和少量模块级组装逻辑。
 """
 
 from __future__ import print_function
@@ -25,7 +25,6 @@ import math
 import maya.cmds as cmds
 
 try:
-    from PySide2.QtCore import Qt
     from PySide2.QtWidgets import QGridLayout
     from PySide2.QtWidgets import QLabel
     from PySide2.QtWidgets import QPushButton
@@ -33,7 +32,6 @@ try:
     from PySide2.QtWidgets import QVBoxLayout
     from PySide2.QtWidgets import QWidget
 except ImportError:
-    from PySide6.QtCore import Qt
     from PySide6.QtWidgets import QGridLayout
     from PySide6.QtWidgets import QLabel
     from PySide6.QtWidgets import QPushButton
@@ -41,6 +39,9 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
+from ...app import window_manager
+from ...core import snap_utils
+from ...systems import controller as controller_system
 from ...ui import theme
 from ...ui.widgets import MayaObjectPicker
 from ..controller import create_ctrl_tool
@@ -52,49 +53,6 @@ from . import skirt_ctrl_tool
 def get_short_name(node):
     """返回 DAG 节点短名称。"""
     return node.split("|")[-1]
-
-
-def get_joint_path(start_joint, end_joint):
-    """返回 start_joint 到 end_joint 的子 Joint 路径。"""
-    if start_joint == end_joint:
-        return [start_joint]
-
-    def walk(current_joint, path):
-        children = cmds.listRelatives(
-            current_joint,
-            children=True,
-            type="joint",
-            fullPath=True
-        )
-
-        if children is None:
-            children = []
-
-        for child in children:
-            child_path = []
-
-            for path_joint in path:
-                child_path.append(path_joint)
-
-            child_path.append(child)
-
-            if child == end_joint:
-                return child_path
-
-            result = walk(
-                child,
-                child_path
-            )
-
-            if result:
-                return result
-
-        return None
-
-    return walk(
-        start_joint,
-        [start_joint]
-    )
 
 
 def vector_subtract(vector_a, vector_b):
@@ -156,12 +114,55 @@ def dot_product(vector_a, vector_b):
     )
 
 
+def get_joint_path(start_joint, end_joint):
+    """返回 start_joint 到 end_joint 的 Joint 路径。"""
+    if start_joint == end_joint:
+        return [start_joint]
+
+    def walk(current_joint, current_path):
+        children = cmds.listRelatives(
+            current_joint,
+            children=True,
+            type="joint",
+            fullPath=True
+        )
+
+        if children is None:
+            children = []
+
+        for child_joint in children:
+            child_path = []
+
+            for path_joint in current_path:
+                child_path.append(path_joint)
+
+            child_path.append(child_joint)
+
+            if child_joint == end_joint:
+                return child_path
+
+            result = walk(
+                child_joint,
+                child_path
+            )
+
+            if result:
+                return result
+
+        return None
+
+    return walk(
+        start_joint,
+        [start_joint]
+    )
+
+
 def get_pole_vector_position(
-    start_joint,
-    middle_joint,
-    end_joint
+        start_joint,
+        middle_joint,
+        end_joint
 ):
-    """计算三关节链的 Pole Vector 推荐位置。"""
+    """计算三关节链 Pole Vector 推荐位置。"""
     start_position = cmds.xform(
         start_joint,
         query=True,
@@ -243,15 +244,21 @@ def get_pole_vector_position(
 
 def create_ik_rig(start_joint, end_joint):
     """创建基础 RP IK、End Controller 和 Pole Vector Controller。"""
-    if not cmds.objExists(start_joint):
+    if not start_joint or not cmds.objExists(start_joint):
         raise RuntimeError(
             u"IK 起始 Joint 不存在：{}".format(start_joint)
         )
 
-    if not cmds.objExists(end_joint):
+    if not end_joint or not cmds.objExists(end_joint):
         raise RuntimeError(
             u"IK 末端 Joint 不存在：{}".format(end_joint)
         )
+
+    if cmds.nodeType(start_joint) != "joint":
+        raise RuntimeError(u"IK 起始节点必须是 Joint。")
+
+    if cmds.nodeType(end_joint) != "joint":
+        raise RuntimeError(u"IK 末端节点必须是 Joint。")
 
     joint_path = get_joint_path(
         start_joint,
@@ -291,12 +298,11 @@ def create_ik_rig(start_joint, end_joint):
         type="string"
     )
 
-    ik_handle_name = "ikh_{}".format(base_name)
     ik_handle_result = cmds.ikHandle(
         startJoint=start_joint,
         endEffector=end_joint,
         solver="ikRPsolver",
-        name=ik_handle_name
+        name="ikh_{}".format(base_name)
     )
 
     ik_handle = ik_handle_result[0]
@@ -331,7 +337,7 @@ def create_ik_rig(start_joint, end_joint):
         0.5
     )
 
-    end_control_result = create_ctrl_tool.create_controller(
+    end_control_result = controller_system.create_controller(
         name="ctrl_{}_ik".format(base_name),
         shape="circle",
         radius=control_radius,
@@ -344,9 +350,10 @@ def create_ik_rig(start_joint, end_joint):
     )
 
     end_control = end_control_result["control"]
+    end_top_group = end_control_result["top_group"]
 
     cmds.parent(
-        end_control_result["top_group"],
+        end_top_group,
         rig_group
     )
 
@@ -364,18 +371,15 @@ def create_ik_rig(start_joint, end_joint):
     pole_control = None
 
     if len(joint_path) >= 3:
-        middle_index = int(
-            len(joint_path) / 2
-        )
+        middle_index = int(len(joint_path) / 2)
         middle_joint = joint_path[middle_index]
-
         pole_position = get_pole_vector_position(
             start_joint,
             middle_joint,
             end_joint
         )
 
-        pole_result = create_ctrl_tool.create_controller(
+        pole_result = controller_system.create_controller(
             name="ctrl_{}_pv".format(base_name),
             shape="circle",
             radius=max(
@@ -391,14 +395,15 @@ def create_ik_rig(start_joint, end_joint):
         )
 
         pole_control = pole_result["control"]
+        pole_top_group = pole_result["top_group"]
 
         cmds.xform(
-            pole_result["top_group"],
+            pole_top_group,
             worldSpace=True,
             translation=pole_position
         )
         cmds.parent(
-            pole_result["top_group"],
+            pole_top_group,
             rig_group
         )
         cmds.poleVectorConstraint(
@@ -426,9 +431,9 @@ def find_rig_root(node):
 
     while current_node:
         if cmds.attributeQuery(
-            "muziRigType",
-            node=current_node,
-            exists=True
+                "muziRigType",
+                node=current_node,
+                exists=True
         ):
             return current_node
 
@@ -449,13 +454,42 @@ def find_rig_root(node):
     return None
 
 
+def get_duplicate_map():
+    """按短名称收集场景重名 DAG 节点。"""
+    nodes = cmds.ls(
+        long=True,
+        dagObjects=True
+    )
+
+    if nodes is None:
+        nodes = []
+
+    name_map = {}
+
+    for node in nodes:
+        short_name = get_short_name(node)
+
+        if short_name not in name_map:
+            name_map[short_name] = []
+
+        name_map[short_name].append(node)
+
+    duplicates = {}
+
+    for short_name in name_map:
+        matches = name_map[short_name]
+
+        if len(matches) > 1:
+            duplicates[short_name] = matches
+
+    return duplicates
+
+
 class RigTool(QWidget):
     """通用 Rig 主工具面板。"""
 
     def __init__(self, parent=None):
         super(RigTool, self).__init__(parent)
-
-        self.child_windows = {}
 
         self.create_widgets()
         self.create_layouts()
@@ -468,15 +502,11 @@ class RigTool(QWidget):
         )
         self.resize(640, 760)
 
-    # =========================================================================
-    # UI
-    # =========================================================================
-
     def create_widgets(self):
         """创建界面控件。"""
         self.title_label = theme.make_title(u"Rig 工具")
         self.subtitle_label = theme.make_subtitle(
-            u"集中处理 Controller、FK、基础 IK、Rig Module 和常用绑定场景操作。"
+            u"集中处理 Controller、FK、基础 IK、Rig Module 和常用绑定操作。"
         )
 
         self.create_fk_button = QPushButton(u"创建 FK Controller")
@@ -505,9 +535,9 @@ class RigTool(QWidget):
         self.reset_attrs_button = QPushButton(u"重置可动画属性")
         self.batch_constraint_button = QPushButton(u"批量 Parent Constraint")
         self.create_default_groups_button = QPushButton(u"创建默认 Rig 层级")
-        self.add_zero_group_button = QPushButton(u"为选择对象添加 Zero Group")
+        self.add_zero_group_button = QPushButton(u"添加 Zero Group")
         self.select_children_button = QPushButton(u"选择全部子物体")
-        self.snap_button = QPushButton(u"最后对象吸附到前面中心")
+        self.snap_button = QPushButton(u"最后对象吸附到参考中心")
         self.print_duplicates_button = QPushButton(u"打印重名节点")
         self.rename_duplicates_button = QPushButton(u"重命名重复节点")
 
@@ -580,7 +610,6 @@ class RigTool(QWidget):
         for button in utility_buttons:
             row = int(button_index / 2)
             column = button_index % 2
-
             utility_grid.addWidget(
                 button,
                 row,
@@ -612,14 +641,12 @@ class RigTool(QWidget):
         self.open_skirt_tool_button.clicked.connect(
             self.open_skirt_tool
         )
-
         self.create_ik_button.clicked.connect(
             self.create_ik
         )
         self.delete_rig_button.clicked.connect(
             self.delete_selected_rig
         )
-
         self.clear_keys_button.clicked.connect(
             self.clear_keys
         )
@@ -648,81 +675,45 @@ class RigTool(QWidget):
             self.rename_duplicate_nodes
         )
 
-    # =========================================================================
-    # Child Tools
-    # =========================================================================
-
-    def open_child_tool(self, tool_key, tool_module):
-        """打开专项子工具，并由当前 RigTool 保存窗口引用。"""
-        old_window = self.child_windows.get(tool_key)
-
-        if old_window is not None:
-            try:
-                old_window.showNormal()
-                old_window.raise_()
-                old_window.activateWindow()
-                return old_window
-            except Exception:
-                self.child_windows.pop(tool_key, None)
-
-        window = tool_module.main()
-
-        if window is None:
-            return None
-
-        try:
-            window.setParent(
-                self,
-                Qt.Window
-            )
-        except Exception:
-            pass
-
-        theme.apply_theme(window)
-
-        self.child_windows[tool_key] = window
-        window.show()
-        window.raise_()
-        window.activateWindow()
-        return window
+    @staticmethod
+    def open_tool(tool_key, tool_module):
+        """通过统一 Window Manager 执行或打开专项工具。"""
+        return window_manager.show_tool(
+            "rig/{}".format(tool_key),
+            tool_module.main
+        )
 
     def open_fk_tool(self):
-        return self.open_child_tool(
-            "fk",
+        return self.open_tool(
+            "fk_controller",
             create_fk_ctrl_tool
         )
 
     def open_control_creator(self):
-        return self.open_child_tool(
+        return self.open_tool(
             "controller_creator",
             create_ctrl_tool
         )
 
     def open_joint_tool(self):
-        return self.open_child_tool(
-            "joint",
+        return self.open_tool(
+            "joint_tool",
             joint_tool
         )
 
     def open_skirt_tool(self):
-        return self.open_child_tool(
-            "skirt",
+        return self.open_tool(
+            "skirt_rig",
             skirt_ctrl_tool
         )
 
-    # =========================================================================
-    # IK
-    # =========================================================================
-
     def create_ik(self):
-        """根据 UI 输入创建基础 RP IK Rig。"""
+        """根据当前 Picker 创建基础 RP IK Rig。"""
         start_joint = self.ik_start_picker.get_value()
         end_joint = self.ik_end_picker.get_value()
 
         if not start_joint or not end_joint:
-            cmds.warning(
-                u"请先拾取 IK 起始和末端 Joint。"
-            )
+            cmds.warning(u"请先拾取 IK 起始和末端 Joint。")
             return
 
         cmds.undoInfo(
@@ -755,12 +746,6 @@ class RigTool(QWidget):
         if selections is None:
             selections = []
 
-        if not selections:
-            cmds.warning(
-                u"请选择 Rig Module Group 或模块中的节点。"
-            )
-            return
-
         rig_roots = []
 
         for node in selections:
@@ -770,16 +755,10 @@ class RigTool(QWidget):
                 rig_roots.append(rig_root)
 
         if not rig_roots:
-            cmds.warning(
-                u"选择中未找到带 muziRigType 的 Rig Module。"
-            )
+            cmds.warning(u"选择中未找到带 muziRigType 的 Rig Module。")
             return
 
         cmds.delete(rig_roots)
-
-    # =========================================================================
-    # Utility
-    # =========================================================================
 
     @staticmethod
     def clear_keys():
@@ -805,9 +784,7 @@ class RigTool(QWidget):
         anim_curves = []
 
         for node_type in anim_curve_types:
-            nodes = cmds.ls(
-                type=node_type
-            )
+            nodes = cmds.ls(type=node_type)
 
             if nodes is None:
                 nodes = []
@@ -830,9 +807,7 @@ class RigTool(QWidget):
             selections = []
 
         if not selections:
-            cmds.warning(
-                u"请先选择需要重置的对象。"
-            )
+            cmds.warning(u"请先选择需要重置的对象。")
             return
 
         cmds.undoInfo(
@@ -857,8 +832,8 @@ class RigTool(QWidget):
                     )
 
                     if not cmds.getAttr(
-                        plug,
-                        settable=True
+                            plug,
+                            settable=True
                     ):
                         continue
 
@@ -932,7 +907,7 @@ class RigTool(QWidget):
 
     @staticmethod
     def create_default_groups():
-        """创建基础 Rig / Geo / Skeleton / Controls / NoTouch 层级。"""
+        """创建基础 Rig 层级。"""
         group_names = [
             "rig_grp",
             "geo_grp",
@@ -940,39 +915,36 @@ class RigTool(QWidget):
             "controls_grp",
             "noTouch_grp",
         ]
-
         created_groups = {}
 
         for group_name in group_names:
             if cmds.objExists(group_name):
                 created_groups[group_name] = group_name
-                continue
+            else:
+                created_groups[group_name] = cmds.createNode(
+                    "transform",
+                    name=group_name
+                )
 
-            created_groups[group_name] = cmds.createNode(
-                "transform",
-                name=group_name
-            )
-
-        child_groups = [
-            created_groups["geo_grp"],
-            created_groups["skeleton_grp"],
-            created_groups["controls_grp"],
-            created_groups["noTouch_grp"],
+        child_names = [
+            "geo_grp",
+            "skeleton_grp",
+            "controls_grp",
+            "noTouch_grp",
         ]
 
-        for child_group in child_groups:
+        for child_name in child_names:
+            child_group = created_groups[child_name]
             parents = cmds.listRelatives(
                 child_group,
                 parent=True
             )
 
-            if parents:
-                continue
-
-            cmds.parent(
-                child_group,
-                created_groups["rig_grp"]
-            )
+            if not parents:
+                cmds.parent(
+                    child_group,
+                    created_groups["rig_grp"]
+                )
 
         cmds.setAttr(
             created_groups["noTouch_grp"] + ".visibility",
@@ -995,9 +967,7 @@ class RigTool(QWidget):
             selections = []
 
         if not selections:
-            cmds.warning(
-                u"请先选择需要添加 Zero Group 的对象。"
-            )
+            cmds.warning(u"请先选择需要添加 Zero Group 的对象。")
             return
 
         created_groups = []
@@ -1010,7 +980,6 @@ class RigTool(QWidget):
         try:
             for node in selections:
                 short_name = get_short_name(node)
-                zero_name = "zero_{}".format(short_name)
 
                 if short_name.startswith("ctrl_"):
                     zero_name = short_name.replace(
@@ -1018,12 +987,12 @@ class RigTool(QWidget):
                         "zero_",
                         1
                     )
+                else:
+                    zero_name = "zero_{}".format(short_name)
 
                 if cmds.objExists(zero_name):
                     cmds.warning(
-                        u"Zero Group 已存在，跳过：{}".format(
-                            zero_name
-                        )
+                        u"Zero Group 已存在，跳过：{}".format(zero_name)
                     )
                     continue
 
@@ -1070,7 +1039,7 @@ class RigTool(QWidget):
 
     @staticmethod
     def select_children():
-        """选择当前对象的全部后代节点。"""
+        """选择当前对象全部后代节点。"""
         selections = cmds.ls(
             selection=True,
             long=True
@@ -1107,105 +1076,45 @@ class RigTool(QWidget):
 
     @staticmethod
     def snap_last_to_center():
-        """把最后一个选择对象吸附到前面对象的平均位置与旋转。"""
+        """把最后选择对象吸附到前面参考项平均位置和旋转。"""
         selections = cmds.ls(
             selection=True,
-            long=True
+            long=True,
+            flatten=True
         )
 
         if selections is None:
             selections = []
 
         if len(selections) < 2:
-            cmds.warning(
-                u"至少选择两个对象，最后一个作为被吸附对象。"
-            )
+            cmds.warning(u"至少选择两个对象，最后一个作为被吸附对象。")
             return
 
         references = selections[:-1]
         target = selections[-1]
 
-        position_total = [0.0, 0.0, 0.0]
-        rotation_total = [0.0, 0.0, 0.0]
-
-        for reference in references:
-            position = cmds.xform(
-                reference,
-                query=True,
-                worldSpace=True,
-                translation=True
+        try:
+            snap_utils.snap_to_average(
+                reference_items=references,
+                target_item=target,
+                include_rotation=True
             )
-            rotation = cmds.xform(
-                reference,
-                query=True,
-                worldSpace=True,
-                rotation=True
-            )
-
-            for axis_index in range(3):
-                position_total[axis_index] += position[axis_index]
-                rotation_total[axis_index] += rotation[axis_index]
-
-        reference_count = float(len(references))
-        center_position = []
-        center_rotation = []
-
-        for axis_index in range(3):
-            center_position.append(
-                position_total[axis_index] / reference_count
-            )
-            center_rotation.append(
-                rotation_total[axis_index] / reference_count
-            )
-
-        cmds.xform(
-            target,
-            worldSpace=True,
-            translation=center_position,
-            rotation=center_rotation
-        )
+        except Exception as error:
+            cmds.warning(str(error))
 
     @staticmethod
-    def get_duplicate_map():
-        """按短名称收集场景重名 DAG 节点。"""
-        nodes = cmds.ls(long=True)
-
-        if nodes is None:
-            nodes = []
-
-        name_map = {}
-
-        for node in nodes:
-            short_name = get_short_name(node)
-
-            if short_name not in name_map:
-                name_map[short_name] = []
-
-            name_map[short_name].append(node)
-
-        duplicates = {}
-
-        for short_name in name_map:
-            matches = name_map[short_name]
-
-            if len(matches) > 1:
-                duplicates[short_name] = matches
-
-        return duplicates
-
-    @classmethod
-    def print_duplicate_nodes(cls):
-        """打印重名节点。"""
-        duplicates = cls.get_duplicate_map()
+    def print_duplicate_nodes():
+        """打印重名 DAG 节点。"""
+        duplicates = get_duplicate_map()
 
         if not duplicates:
-            print(u"[Rig Tool] 场景中没有重名节点。")
+            print(u"[Rig Tool] 场景中没有重名 DAG 节点。")
             return
-
-        print(u"[Rig Tool] 重名节点：")
 
         short_names = list(duplicates.keys())
         short_names.sort()
+
+        print(u"[Rig Tool] 重名 DAG 节点：")
 
         for short_name in short_names:
             print(u"  {}".format(short_name))
@@ -1213,13 +1122,13 @@ class RigTool(QWidget):
             for node in duplicates[short_name]:
                 print(u"    {}".format(node))
 
-    @classmethod
-    def rename_duplicate_nodes(cls):
-        """给重名节点追加递增编号。"""
-        duplicates = cls.get_duplicate_map()
+    @staticmethod
+    def rename_duplicate_nodes():
+        """给重名 DAG 节点追加递增编号。"""
+        duplicates = get_duplicate_map()
 
         if not duplicates:
-            print(u"[Rig Tool] 场景中没有重名节点。")
+            print(u"[Rig Tool] 场景中没有重名 DAG 节点。")
             return
 
         short_names = list(duplicates.keys())
@@ -1269,6 +1178,9 @@ def main():
     return window
 
 
-if __name__ == "__main__":
-    window = main()
-    window.show()
+__all__ = [
+    "RigTool",
+    "create_ik_rig",
+    "find_rig_root",
+    "main",
+]
