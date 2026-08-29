@@ -3,22 +3,17 @@ u"""
 Face Rig Tool
 =============
 
-MuziTools 面部绑定系统入口。
-
-真正的分步 Face Rig UI 维护在项目 ``face.face_rig_ui`` 中；这里负责把它注册到
-MuziTools 的“面部工具”分类。
+面部工具分类中的 Face Rig 系统启动入口。
+完整 Face Rig 实现维护在 ``muzi_rigging.systems.face``。
 """
 
 from __future__ import print_function
 
-from importlib import reload
-
-from ....face import face_rig_ui
+from ...systems.face import face_rig_ui
 
 
 def main():
     """创建并返回 Face Rig Wizard。"""
-    reload(face_rig_ui)
     window = face_rig_ui.main()
     return window
 
