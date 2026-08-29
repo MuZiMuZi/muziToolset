@@ -32,6 +32,8 @@
 | `get_percentages` | ✅ | `core.curve_utils.get_even_percentages` | 对非法 sample count 明确报错。 |
 | `get_dag_path` | ✅ | `core.curve_utils.get_dag_path` | Maya API 2.0。 |
 | `get_point_on_curve` | ✅ | `core.curve_utils.sample_curve_by_length` | 返回普通 Python 坐标和 tangent 数据。 |
+| Curve Parameter Sync | ✅ | `core.curve_utils.parameter_to_length_percentage` / `length_percentage_to_parameter` | 多条 Curve 不再直接共享 raw parameter。 |
+| Curve Attachment | ✅ | `core.curve_utils.create_point_on_curve_attachment` | Parent 下自动做 World -> Local Matrix 转换。 |
 | `create_curve_on_joints` | ✅ | `core.curve_utils.create_curve_from_nodes` | 不再限定输入一定是 Joint。 |
 | `create_curve_on_polyToCurve` | ✅ | `core.curve_utils.create_curve_from_selected_edges` | 明确要求 Polygon Edge Selection。 |
 | `get_curve_number` | ✅ | `core.curve_utils.get_curve_cv_count` | 直接读取 CV，不使用 spans + degree 推算。 |
@@ -45,8 +47,8 @@
 | 旧 Pipeline 方法 | 状态 | 正式方向 | 说明 |
 | --- | --- | --- | --- |
 | `create_joints_on_curve` | ♻️ / 重构中 | `core.jointUtils.JointCurve` + `core.curve_utils` | Joint 创建属于 Joint 模块，等距采样属于 Curve Core。 |
-| `create_eyelid_joints_on_curve` | 🧩 | `systems.face` | 是眼睑绑定 Workflow，不是通用 Curve Core。 |
-| `attach_joints_on_curve` | 🧩 | 对应 Rig System | 同时建立 pointOnCurve / Aim 驱动网络，应由系统决定结构和命名。 |
+| `create_eyelid_joints_on_curve` | ✅ | `systems.face.eyelid` | 重构为眼皮 / 眼袋共用的放射状 Joint Builder。 |
+| `attach_joints_on_curve` | ✅ | `systems.face.curve_attachment.attach_joints_to_curves` | Drive / Aim / Up Curve 使用统一弧长百分比同步。 |
 | `create_doble_constraint` | 🧩 | Controller / Rig System | 依赖 zero / driven / ctrl 特定层级约定。 |
 
 ## Face
@@ -55,7 +57,7 @@
 | --- | --- | --- | --- |
 | `add_face_tag` | ⏸ | Face Publish / Export System | 当前 Face Rig 不依赖 `isFace` Tag。 |
 | `remove_non_face_objs` | ⏸ | Face Publish / Export System | 具有破坏性，不允许作为普通 Core API。 |
-| `create_zip_lip` | 🧩 | `systems.face` Lip System | 算法可参考，但旧命名、层级插入和嘴角逻辑需要重新设计。 |
+| `create_zip_lip` | ✅ | `systems.face.lip.build_zip_lip` | 已重构为 Matrix Zip Lip，不再使用每 Joint ParentConstraint 做闭合混合。 |
 
 ## Controller / Rig Workflow
 
@@ -83,9 +85,9 @@
 只有以下条件全部满足后，才删除 `legacy_reference/core/pipelineUtils.py`：
 
 1. 通用 Core 功能全部有正式替代；
-2. Face Zip Lip 等仍有价值的算法已经迁入对应 System 或明确淘汰；
-3. Dynamic Hair 等完整 Workflow 已经迁移或确认不再保留；
+2. Face Zip Lip、Eyelid、Curve Attachment 等有价值算法已经迁入对应 System 或明确淘汰；
+3. Dynamic Hair、批量 Controller Rig 等完整 Workflow 已经迁移或确认不再保留；
 4. 全仓库正式运行代码搜索 `pipelineUtils` 为 0；
-5. Maya 2023 Smoke Test 与 Functional Smoke Test 通过。
+5. Maya 2023 Smoke Test、Functional Smoke Test 与新 Face Component Smoke Test 通过。
 
 在此之前，旧文件只作为历史算法参考，不允许正式代码 import。
