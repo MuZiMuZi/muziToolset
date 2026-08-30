@@ -12,13 +12,25 @@ Step 01 - Face Setup
     6. 设置嘴唇 Joint 数量；
     7. 更新 Face Rig 工作模型；
     8. 更新 Config Network Node；
-    9. 更新 Face Wizard Step 状态。
+    9. 更新 Face UI Step 状态。
 
 设计：
     Config Node 只创建一次。
     Step 01 可以重复执行。
     用户修改 Step 01 后，会把最新配置写回同一个 Config Node。
     后续 Step 统一从 FaceBase 读取最新数据。
+
+模型名称规则：
+    FaceSetup 内部统一保存 Maya 节点短名称，不保存 Long DAG Path。
+
+    原因是 Step 01 会重新整理输入模型 Parent。如果保存：
+        |grp_model|grp_head|model_md_head_001
+    这样的 Long DAG Path，reparent 后原路径会立即失效。
+
+    因此统一转换成：
+        model_md_head_001
+
+    同时要求短名称在场景中唯一，避免同名 DAG 节点产生歧义。
 """
 
 from __future__ import print_function
@@ -46,44 +58,59 @@ class FaceSetup(face_base.FaceBase):
             mouth_jnt_number=32
     ):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
+        初始化 Face Setup。
 
         Args:
             face_head_model (str):
-                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+                当前检查、绑定、复制或变形使用的模型 Transform。
             face_lf_eye_model (str):
-                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+                当前检查、绑定、复制或变形使用的模型 Transform。
             face_rt_eye_model (str):
-                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+                当前检查、绑定、复制或变形使用的模型 Transform。
             upper_teech_model (str):
-                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+                当前检查、绑定、复制或变形使用的模型 Transform。
             lower_teech_model (str):
-                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+                当前检查、绑定、复制或变形使用的模型 Transform。
             face_tongue_model (str):
-                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+                当前检查、绑定、复制或变形使用的模型 Transform。
             face_gum_model (str):
-                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+                当前检查、绑定、复制或变形使用的模型 Transform。
             mouth_jnt_number (int):
                 嘴唇分布系统需要创建的 Joint 总数量。
         """
-
         super(FaceSetup, self).__init__()
 
         # ------------------------------------------------------------
-        # Face Wizard Step
+        # Face UI Step
         # ------------------------------------------------------------
         self.step_value = 1
 
         # ------------------------------------------------------------
         # 用户输入模型
         # ------------------------------------------------------------
-        self.face_head_model = face_head_model
-        self.face_lf_eye_model = face_lf_eye_model
-        self.face_rt_eye_model = face_rt_eye_model
-        self.upper_teech_model = upper_teech_model
-        self.lower_teech_model = lower_teech_model
-        self.face_tongue_model = face_tongue_model
-        self.face_gum_model = face_gum_model
+        # UI Picker 正常已经返回短名称。
+        # 这里仍然再次规范化，保证直接调用 FaceSetup API 时也安全。
+        self.face_head_model = self.normalize_model_name(
+            face_head_model
+        )
+        self.face_lf_eye_model = self.normalize_model_name(
+            face_lf_eye_model
+        )
+        self.face_rt_eye_model = self.normalize_model_name(
+            face_rt_eye_model
+        )
+        self.upper_teech_model = self.normalize_model_name(
+            upper_teech_model
+        )
+        self.lower_teech_model = self.normalize_model_name(
+            lower_teech_model
+        )
+        self.face_tongue_model = self.normalize_model_name(
+            face_tongue_model
+        )
+        self.face_gum_model = self.normalize_model_name(
+            face_gum_model
+        )
 
         self.face_model_list = [
             self.face_head_model,
@@ -108,20 +135,47 @@ class FaceSetup(face_base.FaceBase):
         self.face_head_deform_model = None
 
     # =========================================================================
+    # Name
+    # =========================================================================
+
+    @staticmethod
+    def normalize_model_name(model):
+        u"""
+        把输入模型名称统一转换成 Maya DAG 短名称。
+
+        Args:
+            model (str | None):
+                Maya 节点名称或 Long DAG Path。
+
+        Returns:
+            str | None:
+                短名称；None 输入保持 None。
+        """
+        if model is None:
+            return None
+
+        model = str(model).strip()
+
+        if not model:
+            return ""
+
+        return model.split("|")[-1]
+
+    # =========================================================================
     # Check
     # =========================================================================
 
     def check_model_exists(self):
         u"""
-        检查 Step 01 指定的模型是否存在。
+        检查 Step 01 指定的模型是否存在，并确认短名称唯一。
 
         Returns:
             bool:
-            方法执行后的结果数据。
+                检查通过返回 True。
 
         Raises:
             RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+                模型不存在、名称不唯一或不是 Transform 时抛出。
         """
         if self.face_head_model is None or self.face_head_model == "":
             raise RuntimeError(
@@ -135,10 +189,39 @@ class FaceSetup(face_base.FaceBase):
             if face_model == "":
                 continue
 
-            if not cmds.objExists(face_model):
+            matches = cmds.ls(
+                face_model,
+                long=True
+            )
+
+            if matches is None:
+                matches = []
+
+            if not matches:
                 raise RuntimeError(
                     u"给定名称的模型不存在于当前 Maya 场景中: {}".format(
                         face_model
+                    )
+                )
+
+            if len(matches) > 1:
+                raise RuntimeError(
+                    u"模型短名称不唯一，Face Setup 无法安全确定目标: {}\n"
+                    u"请先把场景中的同名节点重命名。".format(
+                        face_model
+                    )
+                )
+
+            node = matches[0]
+            node_type = cmds.nodeType(
+                node
+            )
+
+            if node_type != "transform":
+                raise RuntimeError(
+                    u"Face Setup 输入必须是 Transform，当前节点: {} | 类型: {}".format(
+                        face_model,
+                        node_type
                     )
                 )
 
@@ -191,6 +274,8 @@ class FaceSetup(face_base.FaceBase):
     def parent_input_models(self):
         u"""
         把 Step 01 指定的模型整理到 Face Model Group。
+
+        输入模型使用短名称，因此节点 reparent 后名称引用仍然有效。
 
         Returns:
             bool:
