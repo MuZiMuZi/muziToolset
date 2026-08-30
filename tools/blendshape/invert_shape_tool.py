@@ -6,7 +6,11 @@ Invert Shape Tool
 Corrective Shape 反算 UI。
 
 实际 invertShape 逻辑统一维护在：
-    muzi_rigging.core.blendshape_utils
+    muziToolset.core.blendshape_utils
+
+窗口生命周期：
+    用户直接调用 main() 时，由 ui.window_utils 负责保存强引用并显示窗口；
+    从主工具箱打开时，仍可继续交给 app.window_manager 做应用级窗口管理。
 """
 
 from __future__ import print_function
@@ -26,6 +30,7 @@ except ImportError:
 
 from ...core import blendshape_utils
 from ...ui import theme
+from ...ui import window_utils
 from ...ui.widgets import MayaObjectPicker
 
 
@@ -179,9 +184,11 @@ class InvertShapeTool(QDialog):
 
 
 def main():
-    """创建并返回 Invert Shape Tool。"""
-    window = InvertShapeTool()
-    return window
+    """显示并返回 Invert Shape Tool。"""
+    return window_utils.show_window(
+        "tools.blendshape.invert_shape_tool",
+        InvertShapeTool
+    )
 
 
 __all__ = [
