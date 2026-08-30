@@ -6,7 +6,7 @@ Muzi Face Rig System
 Face Rig 的正式系统包。
 
 公共入口只暴露稳定的 Face System API；
-上层 Tool / Wizard 不需要依赖各组件内部 builder 文件路径。
+上层 Tool / UI 不需要依赖各组件内部 builder 文件路径。
 """
 
 from __future__ import print_function
@@ -23,15 +23,15 @@ from .lip import build_zip_lip
 
 def show():
     u"""
-    打开 Face Rig Wizard。
+    打开 Face Rig UI。
 
     Returns:
         object:
         方法执行后的结果数据。
     """
-    from . import wizard
+    from . import face_rig_ui
 
-    return wizard.main()
+    return face_rig_ui.main()
 
 
 __all__ = [
