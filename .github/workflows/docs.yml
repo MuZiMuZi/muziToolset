@@ -48,7 +48,17 @@ jobs:
           python -m pip install -r requirements-docs.txt
 
       # -----------------------------------------------------------------------
-      # 步骤 1：使用 AST 自动生成 Core / Tools / Systems API Reference。
+      # 步骤 1：检查正式代码是否仍引用旧 CamelCase Core 兼容入口。
+      #
+      # 该测试只解析 Python AST，不 import Maya，因此可以在 Linux Runner 上执行。
+      # 一旦正式代码重新写回 attrUtils / hierarchyUtils / jointUtils / nameUtils，
+      # Workflow 会直接失败，防止旧入口重新进入正式架构。
+      # -----------------------------------------------------------------------
+      - name: Check Core import style
+        run: python tests/core_import_style_test.py
+
+      # -----------------------------------------------------------------------
+      # 步骤 2：使用 AST 自动生成 Core / Tools / Systems API Reference。
       #
       # 生成器不会 import muziToolset，因此 Linux Runner 不需要安装 Maya。
       # -----------------------------------------------------------------------
@@ -56,7 +66,7 @@ jobs:
         run: python scripts/generate_mkdocs_reference.py
 
       # -----------------------------------------------------------------------
-      # 步骤 2：严格构建 MkDocs。
+      # 步骤 3：严格构建 MkDocs。
       #
       # --strict 会把无效配置、断链、缺失页面等文档问题升级为 CI Failure。
       # 这是 Docs CI 最重要的质量门槛，无论 Pages 是否开启都必须执行并通过。
@@ -65,7 +75,7 @@ jobs:
         run: mkdocs build --strict
 
       # -----------------------------------------------------------------------
-      # 步骤 3：仅在非 PR 构建中检查 GitHub Pages 是否已经启用。
+      # 步骤 4：仅在非 PR 构建中检查 GitHub Pages 是否已经启用。
       #
       # GET /repos/{owner}/{repo}/pages：
       #   200 -> Pages 已启用，可以执行 deploy-pages；
@@ -101,7 +111,7 @@ jobs:
           fi
 
       # -----------------------------------------------------------------------
-      # 步骤 4：Main Push 时上传 Pages Artifact。
+      # 步骤 5：Main Push 时上传 Pages Artifact。
       #
       # 即使 Pages 尚未启用，上传 Artifact 本身也可以成功，并且便于检查生成站点。
       # -----------------------------------------------------------------------
