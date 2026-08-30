@@ -12,6 +12,11 @@ Face Driven Key Tool
     4. 选择这些控制器并创建 Driven Key。
 
 驱动范围默认：0 -> 10。
+
+架构：
+    - Driver Group 的 DAG 插组逻辑统一复用 core.hierarchy_utils；
+    - Tool 只保留 Face Driven Key 工作流与 UI；
+    - 用户直接调用 main() 时由 ui.window_utils 负责窗口生命周期。
 """
 
 from __future__ import print_function
@@ -33,7 +38,9 @@ except ImportError:
     from PySide6.QtWidgets import QPushButton
     from PySide6.QtWidgets import QVBoxLayout
 
+from ...core import hierarchy_utils
 from ...ui import theme
+from ...ui import window_utils
 
 
 def _short_name(node):
@@ -52,71 +59,23 @@ def _driver_group_name(control):
 
 
 def add_extra_group(obj, group_name, world_orient=False):
-    """在控制器上方创建或复用 Driver Group。"""
+    """
+    在控制器上方创建或复用 Driver Group。
+
+    实际 DAG 插组逻辑统一复用 ``hierarchy_utils.Hierarchy.add_extra_group``，
+    这里只保留 Face Driven Key 的“已有 Group 直接复用”兼容行为。
+    """
     if not cmds.objExists(obj):
         raise RuntimeError(u"对象不存在：{}".format(obj))
 
     if cmds.objExists(group_name):
         return group_name
 
-    parent_nodes = cmds.listRelatives(
-        obj,
-        parent=True,
-        fullPath=True
+    return hierarchy_utils.Hierarchy.add_extra_group(
+        obj=obj,
+        grp_name=group_name,
+        world_orient=world_orient
     )
-
-    if parent_nodes is None:
-        parent_nodes = []
-
-    world_translation = cmds.xform(
-        obj,
-        query=True,
-        worldSpace=True,
-        translation=True
-    )
-    world_rotation = cmds.xform(
-        obj,
-        query=True,
-        worldSpace=True,
-        rotation=True
-    )
-    world_scale = cmds.xform(
-        obj,
-        query=True,
-        worldSpace=True,
-        scale=True
-    )
-
-    if world_orient:
-        world_rotation = [0.0, 0.0, 0.0]
-
-    group = cmds.createNode(
-        "transform",
-        name=group_name
-    )
-
-    cmds.xform(
-        group,
-        worldSpace=True,
-        translation=world_translation,
-        rotation=world_rotation,
-        scale=world_scale
-    )
-
-    if parent_nodes:
-        cmds.parent(
-            group,
-            parent_nodes[0],
-            absolute=True
-        )
-
-    cmds.parent(
-        obj,
-        group,
-        absolute=True
-    )
-
-    return group
 
 
 def _ensure_driver_attribute(driver, attribute_name):
@@ -415,9 +374,11 @@ class FaceDrivenKeyTool(QDialog):
 
 
 def main():
-    """创建 Face Driven Key 窗口。"""
-    window = FaceDrivenKeyTool()
-    return window
+    """显示并返回 Face Driven Key 窗口。"""
+    return window_utils.show_window(
+        "tools.face.face_select_key_tool",
+        FaceDrivenKeyTool
+    )
 
 
 __all__ = [
