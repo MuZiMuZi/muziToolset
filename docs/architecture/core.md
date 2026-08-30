@@ -28,11 +28,19 @@ Transform       -> transform_utils.py
 Matrix          -> matrix_utils.py
 Connection      -> connection_utils.py
 Constraint      -> constraint_utils.py
+Attribute       -> attr_utils.py
+Hierarchy       -> hierarchy_utils.py
+Joint           -> joint_utils.py
+Naming          -> name_utils.py
+Batch Rename    -> rename_utils.py
 Curve           -> curve_utils.py
 Surface         -> surface_utils.py
+Mesh            -> mesh_utils.py
 Skin            -> skin_utils.py
 BlendShape      -> blendshape_utils.py
 ControllerShape -> control_shape_utils.py
+Model Check     -> model_check_utils.py
+Scene Clean     -> scene_clean_utils.py
 ```
 
 ---
@@ -106,7 +114,7 @@ Collect Animation Data
 Animation JSON Export / Import
 ```
 
-原 `animation_io_utils.py` 已合并进来。
+原 `animation_io_utils.py` 已合并进来并删除旧文件。
 
 ### `scene_utils.py`
 
@@ -123,7 +131,7 @@ Open / Import / Reference
 FBX Export
 ```
 
-原 `scene_io_utils.py` 已合并进来。
+原 `scene_io_utils.py` 已合并进来并删除旧文件。
 
 ### `file_utils.py`
 
@@ -137,7 +145,7 @@ Find Files
 File Name / Stem
 ```
 
-判断方式很简单：
+判断方式：
 
 ```text
 涉及 Maya Scene -> scene_utils
@@ -201,7 +209,13 @@ Matrix 和 Constraint 不合并，因为它们是两套不同的 Rig 驱动体�
 
 # DAG / Attribute / Naming
 
-## `attrUtils.py`
+## `attr_utils.py`
+
+正式 Import：
+
+```python
+from muziToolset.core import attr_utils
+```
 
 负责：
 
@@ -214,10 +228,16 @@ String Config
 Transform Limits
 ```
 
-旧的 Connection API 继续保留，但内部已经统一调用 `connection_utils`。
-旧 `reset_attr()` 也已经转调 `animation_utils`。
+旧的 Connection API 继续作为兼容方法存在于 `Attr` 类中，但底层已经统一调用 `connection_utils`。
+旧 `reset_attr()` 也已经转调 `animation_utils`，避免第二套 Reset 实现。
 
-## `hierarchyUtils.py`
+## `hierarchy_utils.py`
+
+正式 Import：
+
+```python
+from muziToolset.core import hierarchy_utils
+```
 
 负责：
 
@@ -229,9 +249,15 @@ Group Creation
 ```
 
 旧版 `create_default_grp()` 曾依赖已经退出正式 Core 的 `controlUtils`，当前已经修正为只创建 Group。
-完整 Controller 构建属于 `systems.controller`。
+完整 Controller 构建属于上层 Controller System。
 
-## `jointUtils.py`
+## `joint_utils.py`
+
+正式 Import：
+
+```python
+from muziToolset.core import joint_utils
+```
 
 分成：
 
@@ -241,9 +267,16 @@ JointCurve
 JointChain
 ```
 
-其中 `JointCurve` 不再自己维护 Curve Query，而是统一复用 `curve_utils`。
+其中 `JointCurve` 不再自己维护 Curve Query，而是统一复用 `curve_utils`；
+`JointChain` 的正式命名依赖统一使用 `name_utils`。
 
-## `nameUtils.py`
+## `name_utils.py`
+
+正式 Import：
+
+```python
+from muziToolset.core import name_utils
+```
 
 负责标准命名语义：
 
@@ -261,6 +294,12 @@ model_md_head_tweak_001
 
 ## `rename_utils.py`
 
+正式 Import：
+
+```python
+from muziToolset.core import rename_utils
+```
+
 负责批量 Rename Tool 行为：
 
 ```text
@@ -271,7 +310,15 @@ Auto Number
 Pattern Rename
 ```
 
-所以 `nameUtils` 与 `rename_utils` 不合并。
+所以 `name_utils` 与 `rename_utils` 不合并：
+
+```text
+name_utils
+    -> 一个 Rig 名称应该是什么
+
+rename_utils
+    -> 对一批 Maya 节点执行什么 Rename 操作
+```
 
 ---
 
@@ -410,31 +457,81 @@ Rig Deformer
 
 ---
 
-# CamelCase 文件兼容
+# snake_case 迁移已经完成
 
-以下早期正式文件名暂时保留：
+以下早期 CamelCase Core 文件已经完成迁移并删除：
 
 ```text
-attrUtils.py
-hierarchyUtils.py
-jointUtils.py
-nameUtils.py
+attrUtils.py        -> attr_utils.py
+hierarchyUtils.py   -> hierarchy_utils.py
+jointUtils.py       -> joint_utils.py
+nameUtils.py        -> name_utils.py
 ```
 
-原因不是推荐 CamelCase，而是现有正式代码可能已经依赖这些 Import。
-
-如果未来统一 snake_case，正确迁移流程是：
+迁移过程已经走完：
 
 ```text
-新 snake_case API
+建立正式 snake_case 实现
     ↓
-旧模块兼容转发
+旧文件兼容转发
     ↓
-全仓库 Import 迁移
+Tools / Systems / Tests 切换正式 Import
     ↓
-Maya Smoke Test
+Maya 2023 Extended Core Smoke
     ↓
-最后删除旧入口
+GitHub CI Import Gate 归零
+    ↓
+删除旧兼容文件
+```
+
+GitHub Actions 现在会执行：
+
+```bash
+python tests/core_import_style_test.py
+```
+
+该测试使用 AST 静态扫描正式 Python 源码，不需要 Maya。
+如果以后有人重新写入旧 CamelCase Core Import，CI 会直接失败。
+
+---
+
+# 当前验证状态
+
+## Extended Core Smoke
+
+Maya 2023 已验证：
+
+```text
+attr_utils          PASS
+hierarchy_utils     PASS
+joint_utils         PASS
+naming              PASS
+model_check_utils   PASS
+scene_clean_utils   PASS
+
+Total: 6 | Passed: 6 | Failed: 0
+```
+
+## Tool Window Smoke
+
+Maya 2023 已验证：
+
+```text
+Total: 17 | Passed: 17 | Failed: 0
+```
+
+## 文档 / 静态架构 CI
+
+GitHub Actions 的文档构建链：
+
+```text
+Core Import Style Gate
+        ↓
+AST API Reference Generation
+        ↓
+mkdocs build --strict
+        ↓
+GitHub Pages
 ```
 
 ---
