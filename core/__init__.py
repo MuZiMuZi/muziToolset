@@ -52,9 +52,13 @@ Transform / DG：
     constraint_utils.py
         Maya 原生 Parent / Point / Orient / Scale / Aim Constraint。
 
-DAG / Attribute / Naming：
+DAG / Attribute / Config / Naming：
     attr_utils.py
         Attribute、Message、String Config、Transform Limits。
+
+    config_utils.py
+        通用 Network Config Node 生命周期、Message 引用和 Value 配置封装。
+        Face / Body / Hand 等 System 应复用该模块，不重复实现 Config CRUD。
 
     hierarchy_utils.py
         DAG Parent、Extra Group、Child Query、基础 Group。
@@ -66,7 +70,7 @@ DAG / Attribute / Naming：
         五段式 Rig 标准名称、解析、Mirror Name、Unique Index、Duplicate DAG Name。
 
     rename_utils.py
-        面向批量操作的 Prefix / Suffix / Search Replace / Auto Number / Pattern Rename。
+        DAG Short Name、Prefix / Suffix / Search Replace / Auto Number / Pattern Rename。
 
 Geometry：
     curve_utils.py
@@ -76,7 +80,7 @@ Geometry：
         NURBS Surface / Follicle。
 
     mesh_utils.py
-        Mesh / Model 的轻量底层操作。
+        Mesh / Model 的轻量底层操作，包括模型 Transform 验证、复制和删除。
 
 Deformer / Controller Shape：
     skin_utils.py
@@ -109,7 +113,6 @@ snake_case 迁移状态
     nameUtils.py        -> name_utils.py
 
 正式代码、Tests、Tools、Systems 和 MkDocs 统一使用 snake_case 模块路径。
-GitHub Actions 中的 ``tests/core_import_style_test.py`` 会阻止退休文件或旧 Import 被重新加入正式代码。
 
 颗粒度原则
 ----------
@@ -121,16 +124,11 @@ GitHub Actions 中的 ``tests/core_import_style_test.py`` 会阻止退休文件�
 
     pipelineUtils.py -> 所有功能
 
-例如：
-    Animation 操作 + Animation JSON IO -> animation_utils.py
-    Scene 基础 + Scene IO             -> scene_utils.py
+Config 也遵守同样原则：
 
-但以下领域继续保持独立：
-    Matrix != Constraint
-    Connection != Constraint
-    Curve != Surface
-    Model Check != Scene Clean
-    Name Semantic != Batch Rename
+    attr_utils       -> 单个 Attribute / Message 的底层能力
+    config_utils     -> Network Config Node 的数据容器语义
+    systems/*        -> 决定具体保存哪些业务数据
 
 Import 原则
 ----------
@@ -139,6 +137,7 @@ Import 原则
 
 推荐：
 
+    from muziToolset.core import config_utils
     from muziToolset.core import curve_utils
     from muziToolset.core import matrix_utils
     from muziToolset.core import attr_utils
