@@ -5,6 +5,11 @@ Rename Utils
 
 Maya 节点批量重命名底层模块。
 
+正式模块路径
+------------
+``muziToolset.core.rename_utils`` 是批量 Rename 行为的正式入口。
+标准 Rig 名称语义由 ``muziToolset.core.name_utils`` 负责，两者职责独立。
+
 模块职责
 --------
 本模块负责面向 Tool / Selection 的批量 Rename 行为，包括 Prefix、Suffix、Search Replace、
@@ -45,15 +50,15 @@ build_pattern_name(pattern, number)
 pattern_rename(pattern)
     使用 ``*`` 作为数字占位符执行 Pattern Rename。
 
-和 nameUtils.py 的区别
-----------------------
-nameUtils.py
+和 name_utils.py 的区别
+-----------------------
+name_utils.py
     负责正式五段式 Rig 名称的创建、解析、镜像、唯一序号和 Name 对象。
 
 rename_utils.py
     负责面向用户操作的批量 Rename。
 
-因此本轮保留两个模块，不为了减少文件数量强行合并不同职责。
+两个模块名字相近，但职责不同，因此保持独立，不为了减少文件数量强行合并。
 
 设计原则
 --------
