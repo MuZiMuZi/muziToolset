@@ -5,6 +5,11 @@ Joint Utils
 
 Maya Joint 通用底层模块。
 
+正式模块路径
+------------
+``muziToolset.core.joint_utils`` 是 Joint / JointCurve / JointChain 的唯一正式实现。
+旧 ``jointUtils.py`` 兼容模块已经完成迁移并删除，正式代码统一使用 snake_case Import。
+
 模块职责
 --------
 本模块按三个层级组织 Joint 能力：
@@ -62,7 +67,7 @@ JointChain.orient_chain(...)
 2. Joint 模块不创建 Controller、不创建 Constraint、不包含 PySide UI；
 3. Selection 驱动的方法仅作为 Tool 兼容入口；底层函数本身接受明确参数；
 4. 完整 Arm / Leg / Spine / Eyelid 等绑定流程进入 systems，而不是继续扩张 Joint Utils；
-5. 正式模块名为 joint_utils.py；旧 jointUtils.py 只保留兼容转发，不允许正式代码反向依赖兼容层。
+5. 模块文件名与所有正式 Import 统一使用 snake_case。
 
 依赖
 ----
