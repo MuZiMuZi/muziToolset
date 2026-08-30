@@ -16,6 +16,7 @@ Face Joint -> Drive / Aim Curve 组合系统。
 重要边界：
     - Curve 参数、采样和 Attachment 节点由 core.curve_utils 负责；
     - Transform 输入和世界位置由 core.transform_utils 负责；
+    - Joint 类型校验由 core.joint_utils 负责；
     - Group 创建由 core.scene_utils 负责；
     - Parent 由 core.hierarchy_utils 负责；
     - Constraint 由 core.constraint_utils 负责；
@@ -30,6 +31,7 @@ import maya.cmds as cmds
 from ...core import constraint_utils
 from ...core import curve_utils
 from ...core import hierarchy_utils
+from ...core import joint_utils
 from ...core import name_utils
 from ...core import scene_utils
 from ...core import transform_utils
@@ -41,52 +43,14 @@ from ...core import transform_utils
 
 def validate_joint(joint):
     u"""检查输入节点必须是 Maya Joint。"""
-    if not joint:
-        raise RuntimeError(u"Joint 名称不能为空。")
-
     try:
-        # 先使用 Transform Core 确认 Joint 存在并具备 Transform 行为。
-        transform_utils.validate_transform(
+        # 使用 Joint Core 统一检查节点存在性和 Joint 类型。
+        joint_utils.Joint._validate_joint(
             joint
         )
     except RuntimeError as error:
         raise RuntimeError(
             u"Joint 无效：{}".format(
-                error
-            )
-        )
-
-    if cmds.nodeType(joint) != "joint":
-        raise RuntimeError(
-            u"节点不是 Joint：{} | type={}".format(
-                joint,
-                cmds.nodeType(joint)
-            )
-        )
-
-    return True
-
-
-def validate_transform(node, label):
-    u"""
-    检查 Transform / Joint 类型。
-
-    保留旧入口，实际规则统一由 transform_utils 维护。
-    """
-    if not node:
-        raise RuntimeError(
-            u"{}不能为空。".format(label)
-        )
-
-    try:
-        # 使用 Transform Core 统一检查节点存在性和 Transform / Joint 类型。
-        transform_utils.validate_transform(
-            node
-        )
-    except RuntimeError as error:
-        raise RuntimeError(
-            u"{}无效：{}".format(
-                label,
                 error
             )
         )
@@ -263,17 +227,15 @@ def attach_joints_to_curves(
             up_curve
         )
     else:
-        # 没有 Up Curve 时必须提供可用于 Aim World Up 的 Transform / Joint。
-        validate_transform(
-            up_object,
-            u"Up Object"
+        # 没有 Up Curve 时直接使用 Transform Core 验证 World Up 对象。
+        transform_utils.validate_transform(
+            up_object
         )
 
     if parent_group is not None:
-        # 如果给定 Rig Parent，先确认它可以参与 DAG 层级操作。
-        validate_transform(
-            parent_group,
-            u"Parent Group"
+        # 如果给定 Rig Parent，直接使用 Transform Core 验证其 DAG 类型。
+        transform_utils.validate_transform(
+            parent_group
         )
 
     # 规范 Side / Region / Feature，保证本次所有节点使用一致命名字段。
