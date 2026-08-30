@@ -27,6 +27,9 @@ jobs:
       - name: Normalize public runtime docstrings
         run: python scripts/normalize_runtime_docstrings.py --write
 
+      - name: Refine Maya and rigging parameter semantics
+        run: python scripts/refine_runtime_docstring_semantics.py --write
+
       - name: Normalize runtime whitespace
         shell: bash
         run: |
@@ -35,6 +38,9 @@ jobs:
 
       - name: Validate public runtime docstrings
         run: python scripts/normalize_runtime_docstrings.py --check
+
+      - name: Validate rigging terminology quality
+        run: python scripts/refine_runtime_docstring_semantics.py --check
 
       - name: Compile runtime source
         shell: bash
@@ -56,5 +62,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add __init__.py config.py app core systems tools ui
-          git commit -m "docs: normalize runtime api docstrings"
+          git commit -m "docs: refine maya rigging api semantics"
           git push origin HEAD:refactor/runtime-docstring-standard
