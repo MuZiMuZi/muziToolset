@@ -225,8 +225,8 @@ def clear_animation_keys(nodes=None):
 
     Notes:
         这个函数的语义是“删除动画曲线节点”。
-                                                如果以后需要只删除某一个时间范围的 Key，应新增独立 API，
-                                                不要让一个函数同时承担两种不同的清理行为。
+                                                    如果以后需要只删除某一个时间范围的 Key，应新增独立 API，
+                                                    不要让一个函数同时承担两种不同的清理行为。
     """
     # 步骤 1：先查询需要删除的曲线。
     animation_curves = get_animation_curves(
@@ -416,8 +416,8 @@ def reset_controls(
 
     Notes:
         这里只重置标准 TRS。
-                                                IkFk、Stretch、Follow、Space 等角色专属属性必须由对应 Rig System
-                                                自己定义默认值，不能再次硬编码到通用 Core。
+                                                    IkFk、Stretch、Follow、Space 等角色专属属性必须由对应 Rig System
+                                                    自己定义默认值，不能再次硬编码到通用 Core。
     """
     # 步骤 1：没有显式传入控制器时，按命名规则自动查找。
     if controls is None:
@@ -804,8 +804,8 @@ def resolve_target_node(source_node, node_map=None):
 
     Example:
         {
-                                                    "ctrl_lf_arm_001": "characterA:ctrl_lf_arm_001"
-                                                }
+                                                        "ctrl_lf_arm_001": "characterA:ctrl_lf_arm_001"
+                                                    }
     """
     if node_map is None:
         return source_node
