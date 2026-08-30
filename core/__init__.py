@@ -99,17 +99,17 @@ Utility：
     snap_utils.py
         Object / Component 平均位置与轻量 Rotation Snap。
 
-兼容模块
---------
-为了不在一次重构里破坏旧 Tool / System，以下 CamelCase 文件暂时保留为“薄兼容层”：
+snake_case 迁移状态
+-------------------
+以下早期 CamelCase Core 入口已经完成全仓库迁移并删除：
 
     attrUtils.py        -> attr_utils.py
     hierarchyUtils.py   -> hierarchy_utils.py
     jointUtils.py       -> joint_utils.py
     nameUtils.py        -> name_utils.py
 
-这些旧文件不再保存第二份业务逻辑。新代码、Tests 和 MkDocs 一律使用 snake_case 正式入口。
-等仓库中所有正式调用都完成迁移后，可以安全删除兼容文件。
+正式代码、Tests、Tools、Systems 和 MkDocs 统一使用 snake_case 模块路径。
+GitHub Actions 中的 ``tests/core_import_style_test.py`` 会阻止退休文件或旧 Import 被重新加入正式代码。
 
 颗粒度原则
 ----------
