@@ -1,0 +1,71 @@
+name: Runtime Docstring Autofix
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/runtime_docstring_autofix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------------------------------------------------------
+      # 步骤 1：取得完整仓库源码。
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # -----------------------------------------------------------------------
+      # 步骤 2：使用与正式文档 CI 相同的 Python 版本。
+      # -----------------------------------------------------------------------
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # -----------------------------------------------------------------------
+      # 步骤 3：使用仓库自己的 AST 工具补齐 Runtime Docstring 结构。
+      # -----------------------------------------------------------------------
+      - name: Normalize runtime docstrings
+        run: python scripts/normalize_runtime_docstrings.py --write
+
+      # -----------------------------------------------------------------------
+      # 步骤 4：把自动生成的通用参数说明继续替换成 Maya / Rigging 语义。
+      # -----------------------------------------------------------------------
+      - name: Refine runtime docstring semantics
+        run: python scripts/refine_runtime_docstring_semantics.py --write
+
+      # -----------------------------------------------------------------------
+      # 步骤 5：先在 Runner 内验证两套 Docstring Gate 已经通过。
+      # -----------------------------------------------------------------------
+      - name: Validate runtime docstrings
+        run: |
+          python scripts/normalize_runtime_docstrings.py --check
+          python scripts/refine_runtime_docstring_semantics.py --check
+
+      # -----------------------------------------------------------------------
+      # 步骤 6：只提交 AST Docstring 工具产生的 Runtime 源码变化。
+      # 如果没有变化则正常结束，不创建空 Commit。
+      # -----------------------------------------------------------------------
+      - name: Commit normalized docstrings
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "Runtime docstrings already satisfy repository standards."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add app core systems tools ui __init__.py config.py
+          git commit -m "docs: normalize runtime API docstrings"
+          git push origin HEAD:main
