@@ -109,21 +109,34 @@ class MayaIndexColorSlider(QWidget):
             1
         )
         self.color_slider.setMinimumWidth(
-            120
+            150
         )
+        self.style_color_slider()
 
         self.index_label = QLabel()
         self.index_label.setMinimumWidth(
-            26
+            30
         )
         self.index_label.setAlignment(
             Qt.AlignCenter
         )
+        self.index_label.setStyleSheet(
+            u"""
+            QLabel {
+                background-color: #F3F3F5;
+                color: #3A3C42;
+                border: 1px solid #D9DBE0;
+                border-radius: 5px;
+                padding: 2px 4px;
+                font-weight: 600;
+            }
+            """
+        )
 
         self.color_preview = QLabel()
         self.color_preview.setFixedSize(
-            26,
-            26
+            28,
+            28
         )
 
         main_layout = QHBoxLayout(
@@ -156,6 +169,58 @@ class MayaIndexColorSlider(QWidget):
 
         self.set_value(
             value
+        )
+
+    # =========================================================================
+    # Style
+    # =========================================================================
+
+    def style_color_slider(self):
+        u"""增强 Slider Track 和 Handle 对比度，保证浅色主题下仍然清晰。"""
+        self.color_slider.setStyleSheet(
+            u"""
+            QSlider {
+                background: transparent;
+            }
+
+            QSlider::groove:horizontal {
+                height: 8px;
+                background: #D8DADE;
+                border: 1px solid #C9CBD0;
+                border-radius: 4px;
+            }
+
+            QSlider::sub-page:horizontal {
+                background: #EC4141;
+                border: 1px solid #EC4141;
+                border-radius: 4px;
+            }
+
+            QSlider::add-page:horizontal {
+                background: #E5E6E9;
+                border: 1px solid #D4D6DA;
+                border-radius: 4px;
+            }
+
+            QSlider::handle:horizontal {
+                width: 18px;
+                height: 18px;
+                margin: -6px 0px;
+                background: #FFFFFF;
+                border: 3px solid #EC4141;
+                border-radius: 9px;
+            }
+
+            QSlider::handle:horizontal:hover {
+                background: #FFF0F0;
+                border-color: #F05252;
+            }
+
+            QSlider::handle:horizontal:pressed {
+                background: #FFE4E4;
+                border-color: #D93636;
+            }
+            """
         )
 
     # =========================================================================
@@ -259,8 +324,8 @@ class MayaIndexColorSlider(QWidget):
             u"""
             QLabel {{
                 background-color: rgb({red}, {green}, {blue});
-                border: 1px solid #8A8A8A;
-                border-radius: 4px;
+                border: 2px solid #7C7F86;
+                border-radius: 5px;
             }}
             """.format(
                 red=red,
