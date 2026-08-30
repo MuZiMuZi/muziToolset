@@ -1,5 +1,5 @@
 site_name: MuziTools
-site_description: Maya 2023 Rigging Toolset - Core、Tools、Systems 开发与 API 文档
+site_description: Maya 2023 Rigging Toolset - 用户手册、开发指南与完整 API Reference
 site_author: MuziTools
 site_url: https://muzimuzi.github.io/muziToolset/
 repo_name: MuZiMuZi/muziToolset
@@ -11,28 +11,28 @@ site_dir: site
 use_directory_urls: true
 strict: true
 
-# API Reference 的模块页由 AST 生成器在 CI 中动态创建。
-# 它们需要被 MkDocs 构建并可通过 Index / Search 访问，但没有必要把几十个模块全部展开到顶层 Nav。
-# not_in_nav 只关闭“已知自动页面未显式写进 nav”的警告，不会排除页面构建。
-not_in_nav: |
-  /reference/core/*.md
-  /reference/tools/**/*.md
-  /reference/systems/**/*.md
-  !/reference/core/index.md
-  !/reference/core/guide.md
-  !/reference/tools/index.md
-  !/reference/systems/index.md
-
+# =============================================================================
+# Theme
+# =============================================================================
+#
+# 文档信息架构参考任务导向的用户手册：
+#   1. 用户先从“我要做什么”进入；
+#   2. API Reference 再负责完整技术细节；
+#   3. 左侧导航保持源码层级，右侧 TOC 展开到 Method。
+#
+# 不复制任何外部网站视觉样式，只借鉴清晰、渐进式的信息组织方式。
+# =============================================================================
 theme:
   name: material
   language: zh
   features:
+    - navigation.instant
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.sections
-    - navigation.expand
-    - navigation.top
     - navigation.indexes
+    - navigation.path
+    - navigation.top
     - toc.follow
     - search.suggest
     - search.highlight
@@ -54,12 +54,20 @@ theme:
         icon: material/brightness-4
         name: 切换到浅色模式
 
+# =============================================================================
+# Plugins
+# =============================================================================
 plugins:
   - search:
       lang:
         - zh
         - en
+  - literate-nav:
+      nav_file: SUMMARY.md
 
+# =============================================================================
+# Markdown
+# =============================================================================
 markdown_extensions:
   - admonition
   - attr_list
@@ -69,7 +77,7 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
-      toc_depth: 3
+      toc_depth: 4
   - pymdownx.details
   - pymdownx.highlight:
       anchor_linenums: true
@@ -83,28 +91,11 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
 
-nav:
-  - 首页: index.md
-  - 快速开始:
-      - 安装与启动: getting-started/installation.md
-      - Maya 中运行: getting-started/maya-usage.md
-  - 架构:
-      - 总体架构: architecture/index.md
-      - Core 设计: architecture/core.md
-      - Tools 与 Systems: architecture/tools-systems.md
-  - API 参考:
-      - 总览: reference/index.md
-      - Core:
-          - Core API 索引: reference/core/index.md
-          - Core API 使用手册: reference/core/guide.md
-      - Tools: reference/tools/index.md
-      - Systems: reference/systems/index.md
-  - 开发指南:
-      - Core 编码规范: development/core-style-guide.md
-      - 文档维护: development/documentation.md
-      - 测试: development/testing.md
-  - 迁移记录:
-      - Pipeline 重构: migration/pipeline.md
+# =============================================================================
+# Styling
+# =============================================================================
+extra_css:
+  - stylesheets/manual.css
 
 extra:
   generator: false
