@@ -24,9 +24,6 @@ jobs:
 
     # -------------------------------------------------------------------------
     # 把 Pages 是否已启用暴露给 Deploy Job。
-    #
-    # 仓库还没有在 Settings -> Pages 中启用 Pages 时，GitHub Pages API 会返回 404。
-    # 这不属于 MkDocs / 文档代码错误，因此不应该把每次正常 Push 都标记成 CI Failed。
     # -------------------------------------------------------------------------
     outputs:
       pages_enabled: ${{ steps.pages_status.outputs.enabled }}
@@ -48,53 +45,63 @@ jobs:
           python -m pip install -r requirements-docs.txt
 
       # -----------------------------------------------------------------------
-      # 步骤 1：检查正式代码是否仍引用旧 CamelCase Core 兼容入口。
-      #
-      # 该测试只解析 Python AST，不 import Maya，因此可以在 Linux Runner 上执行。
-      # 一旦正式代码重新写回 attrUtils / hierarchyUtils / jointUtils / nameUtils，
-      # Workflow 会直接失败，防止旧入口重新进入正式架构。
+      # 步骤 1：检查正式代码是否重新引用退休 CamelCase Core 入口。
       # -----------------------------------------------------------------------
       - name: Check Core import style
         run: python tests/core_import_style_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 2：验证 API Reference Generator。
+      # 步骤 2：验证 API Reference Generator 本身。
       #
-      # Smoke Test 会在临时目录中创建 app / core / systems / tools / ui 示例源码，
-      # 检查 Package 页面、参数表、返回值、异常、示例以及 SUMMARY.md 导航。
+      # 该测试使用临时项目验证：
+      #   - Package 页面；
+      #   - Function / Class / Method；
+      #   - 参数表；
+      #   - Returns / Raises / Example；
+      #   - SUMMARY.md 导航。
       # -----------------------------------------------------------------------
       - name: Test API reference generator
         run: python tests/docs_reference_generator_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 3：使用 AST 自动生成完整 Runtime API Reference。
+      # 步骤 3：验证正式 Runtime 源码全部进入 API 文档范围。
       #
-      # 当前正式范围：
-      #   app / core / systems / tools / ui / config.py / 各级 __init__.py
+      # 正式范围：
+      #   __init__.py
+      #   config.py
+      #   app/**/*.py
+      #   core/**/*.py
+      #   systems/**/*.py
+      #   tools/**/*.py
+      #   ui/**/*.py
       #
-      # 生成器不会 import muziToolset，因此 Linux Runner 不需要安装 Maya。
-      # 同时会生成 docs/SUMMARY.md，供 mkdocs-literate-nav 创建完整侧边栏。
+      # 只要新增正式 Python 文件，就必须能映射到唯一 API Markdown 页面。
+      # -----------------------------------------------------------------------
+      - name: Check runtime API documentation coverage
+        run: python tests/docs_runtime_api_coverage_test.py
+
+      # -----------------------------------------------------------------------
+      # 步骤 4：使用 AST 生成完整 Runtime API Reference。
+      #
+      # 生成器不会 import muziToolset / maya.cmds，因此 Linux Runner 不需要 Maya。
+      # 同时生成 docs/SUMMARY.md，供 mkdocs-literate-nav 创建源码树侧边栏。
       # -----------------------------------------------------------------------
       - name: Generate API reference
         run: python scripts/generate_mkdocs_reference.py
 
       # -----------------------------------------------------------------------
-      # 步骤 4：严格构建 MkDocs。
+      # 步骤 5：严格构建 MkDocs。
       #
-      # --strict 会把无效配置、断链、导航缺页等文档问题升级为 CI Failure。
-      # 这是 Docs CI 最重要的质量门槛，无论 Pages 是否开启都必须执行并通过。
+      # --strict 会把断链、缺页、无效导航和配置问题升级为 CI Failure。
       # -----------------------------------------------------------------------
       - name: Build MkDocs site
         run: mkdocs build --strict
 
       # -----------------------------------------------------------------------
-      # 步骤 5：仅在非 PR 构建中检查 GitHub Pages 是否已经启用。
+      # 步骤 6：仅在非 PR 构建中检查 GitHub Pages 是否已经启用。
       #
-      # GET /repos/{owner}/{repo}/pages：
-      #   200 -> Pages 已启用，可以执行 deploy-pages；
-      #   404 -> Pages 尚未启用，Deploy Job 安全跳过。
-      #
-      # 注意：这里故意不让 404 导致 Step 失败。
+      # 200 -> Pages 已启用，可以部署。
+      # 404 -> Pages 尚未启用，安全跳过 Deploy。
       # -----------------------------------------------------------------------
       - name: Check GitHub Pages status
         id: pages_status
@@ -124,7 +131,7 @@ jobs:
           fi
 
       # -----------------------------------------------------------------------
-      # 步骤 6：Main Push 时上传 Pages Artifact。
+      # 步骤 7：Main Push 时上传 Pages Artifact。
       # -----------------------------------------------------------------------
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
@@ -133,13 +140,6 @@ jobs:
           path: site
 
   deploy:
-    # -------------------------------------------------------------------------
-    # 只有同时满足下面两个条件才真正部署：
-    #   1. 不是 Pull Request；
-    #   2. 仓库 Pages API 确认已经启用。
-    #
-    # 尚未开启 Pages 时 Job 会显示为 Skipped，而整个 Docs Workflow 仍然保持 Success。
-    # -------------------------------------------------------------------------
     if: >-
       github.event_name != 'pull_request' &&
       needs.build.outputs.pages_enabled == 'true'
