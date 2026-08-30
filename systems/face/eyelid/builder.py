@@ -28,35 +28,8 @@ from ....core import transform_utils
 
 
 # =============================================================================
-# Validate
+# Naming
 # =============================================================================
-
-def validate_transform(node, label):
-    u"""
-    检查 Transform / Joint 输入。
-
-    保留旧公开入口，实际节点类型校验统一由 transform_utils 维护。
-    """
-    if not node:
-        raise RuntimeError(
-            u"{}不能为空。".format(label)
-        )
-
-    try:
-        # 使用 Transform Core 统一检查节点存在性和 Transform / Joint 类型。
-        transform_utils.validate_transform(
-            node
-        )
-    except RuntimeError as error:
-        raise RuntimeError(
-            u"{}无效：{}".format(
-                label,
-                error
-            )
-        )
-
-    return True
-
 
 def validate_side(side):
     u"""把方向统一成 lf / rt / md。"""
@@ -89,10 +62,6 @@ def normalize_name_part(value, label):
 
     return value
 
-
-# =============================================================================
-# Naming
-# =============================================================================
 
 def create_rig_name(
         node_type,
@@ -185,23 +154,20 @@ def build_radial_curve_joints(
         curve
     )
 
-    # 检查眼球中心 Joint / Transform 是否可以参与空间计算。
-    validate_transform(
-        eye_joint,
-        u"Eye Joint"
+    # 直接使用 Transform Core 检查眼球中心 Joint / Transform。
+    transform_utils.validate_transform(
+        eye_joint
     )
 
-    # 检查 Aim Constraint 使用的 Up Object。
-    validate_transform(
-        up_object,
-        u"Up Object"
+    # 直接使用 Transform Core 检查 Aim Constraint 的 Up Object。
+    transform_utils.validate_transform(
+        up_object
     )
 
     if parent_group is not None:
-        # 如果提供父层级，先确认它是有效 Transform / Joint。
-        validate_transform(
-            parent_group,
-            u"Parent Group"
+        # 如果提供父层级，直接使用 Transform Core 检查其 DAG 类型。
+        transform_utils.validate_transform(
+            parent_group
         )
 
     # 规范 Side / Region / Feature，保证本次创建的全部节点命名一致。
