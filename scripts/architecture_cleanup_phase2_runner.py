@@ -12,7 +12,7 @@ Architecture Cleanup Phase 2 Runner
 
 from __future__ import print_function
 
-from scripts import architecture_cleanup_phase2 as migration
+import architecture_cleanup_phase2 as migration
 
 
 def update_scene_utils():
