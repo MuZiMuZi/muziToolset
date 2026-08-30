@@ -13,33 +13,44 @@ Maya Mesh / Model 通用底层工具。
 公开方法
 --------
 validate_node(node, label=u"节点")
-    检查 Maya 节点是否存在，并在失败时提供更明确的中文错误信息。
+    兼容旧调用的基础节点存在性检查。
+
+validate_model_transform(node, label=u"模型")
+    检查模型节点是否存在、名称是否唯一，并确认它是 Transform。
+
+ delete_model(model, ignore_missing=True)
+    安全删除一个模型 Transform；短名称不唯一时拒绝猜测。
 
 duplicate_model(source_model, new_name, parent=None)
     复制一个独立模型 Transform，可选整理到指定父层级。
 
 典型使用场景
 ------------
-1. Face Setup 生成 Head / Mouth 等工作模型副本；
-2. Rig Build 需要保留一份独立 Model 作为 Deformation / Tweak / Reference 使用；
-3. 上层 System 需要复制模型，但不希望复制输入连接和上游历史网络。
+1. Face Setup 验证 Head / Eye / Teeth 等模型输入；
+2. Face Setup 生成 Head 工作模型副本；
+3. Rig Build 需要保留一份独立 Model 作为 Deformation / Tweak / Reference 使用；
+4. 上层 System 需要复制或删除模型，但不希望直接重复 Maya cmds 校验逻辑。
 
 设计边界
 --------
+- Maya 节点是否存在、DAG 名称是否唯一的基础规则由 scene_utils 提供；
+- 本模块在此基础上补充“模型 Transform”语义；
 - SkinCluster 操作放在 skin_utils.py；
 - BlendShape / Corrective 放在 blendshape_utils.py；
 - 模型规范检查放在 model_check_utils.py；
-- 场景清理放在 scene_clean_utils.py；
+- 场景整体清理放在 scene_clean_utils.py；
 - 本模块不读取 UI Selection，也不创建任何工具窗口。
 
 依赖
 ----
-只依赖 maya.cmds，不依赖 PyMel、Tools、Systems 或 UI。
+只依赖 maya.cmds 和 core.scene_utils，不依赖 PyMel、Tools、Systems 或 UI。
 """
 
 from __future__ import print_function
 
 import maya.cmds as cmds
+
+from . import scene_utils
 
 
 # =============================================================================
@@ -50,6 +61,9 @@ def validate_node(node, label=u"节点"):
     u"""
     检查 Maya 节点是否存在。
 
+    这是早期 mesh_utils 的公开 API，继续保留用于兼容。
+    新的通用节点查询能力仍以 scene_utils 为正式底层实现。
+
     Args:
         node (str):
             需要验证的 Maya 节点。
@@ -58,30 +72,138 @@ def validate_node(node, label=u"节点"):
 
     Returns:
         bool:
-        验证通过返回 True。
+            验证通过返回 True。
 
     Raises:
         RuntimeError:
-        节点名称为空或场景中不存在时抛出。
+            节点名称为空或场景中不存在时抛出。
     """
-    # -------------------------------------------------------------------------
-    # 步骤 1：先判断调用者有没有提供节点名称。
-    # -------------------------------------------------------------------------
     if not node:
         raise RuntimeError(
             u"{}不能为空。".format(label)
         )
 
-    # -------------------------------------------------------------------------
-    # 步骤 2：确认 Maya 场景中确实存在该节点。
-    # -------------------------------------------------------------------------
-    if not cmds.objExists(node):
+    try:
+        scene_utils.validate_node(
+            node
+        )
+    except RuntimeError:
         raise RuntimeError(
             u"{}不存在：{}".format(
                 label,
                 node
             )
         )
+
+    return True
+
+
+def validate_model_transform(node, label=u"模型"):
+    u"""
+    检查一个节点是否可以安全作为模型 Transform 使用。
+
+    检查内容：
+        1. 名称不能为空；
+        2. 节点必须存在；
+        3. 短名称如果对应多个 DAG 节点则拒绝猜测；
+        4. 节点类型必须严格为 transform。
+
+    Args:
+        node (str):
+            模型 Transform 名称，可以是唯一短名称或 Long DAG Path。
+        label (str):
+            错误信息中使用的业务说明。
+
+    Returns:
+        str:
+            唯一解析后的 Long DAG Path。
+
+    Raises:
+        RuntimeError:
+            节点不存在、名称不唯一或节点类型不是 transform 时抛出。
+    """
+    if not node:
+        raise RuntimeError(
+            u"{}不能为空。".format(label)
+        )
+
+    try:
+        long_name = scene_utils.get_long_name(
+            node
+        )
+    except RuntimeError as error:
+        raise RuntimeError(
+            u"{}无效：{}".format(
+                label,
+                error
+            )
+        )
+
+    node_type = cmds.nodeType(
+        long_name
+    )
+
+    if node_type != "transform":
+        raise RuntimeError(
+            u"{}必须是 Transform：{} | type={}".format(
+                label,
+                node,
+                node_type
+            )
+        )
+
+    return long_name
+
+
+# =============================================================================
+# Delete Model
+# =============================================================================
+
+def delete_model(model, ignore_missing=True):
+    u"""
+    安全删除一个模型 Transform。
+
+    Args:
+        model (str | None):
+            需要删除的模型 Transform。
+        ignore_missing (bool):
+            True 时，空值或不存在的节点直接返回 False；
+            False 时按照正式校验规则抛出异常。
+
+    Returns:
+        bool:
+            实际删除节点时返回 True；没有节点可删时返回 False。
+
+    Raises:
+        RuntimeError:
+            名称不唯一、节点不是 Transform，或 ignore_missing=False 且节点不存在时抛出。
+    """
+    if not model:
+        if ignore_missing:
+            return False
+
+        raise RuntimeError(
+            u"需要删除的模型不能为空。"
+        )
+
+    if not cmds.objExists(model):
+        if ignore_missing:
+            return False
+
+        raise RuntimeError(
+            u"需要删除的模型不存在：{}".format(
+                model
+            )
+        )
+
+    long_name = validate_model_transform(
+        model,
+        label=u"需要删除的模型"
+    )
+
+    cmds.delete(
+        long_name
+    )
 
     return True
 
@@ -103,55 +225,44 @@ def duplicate_model(
             源模型 Transform。
         new_name (str):
             新模型名称。
-        parent (str/None):
+        parent (str | None):
             可选父节点。给定时会在复制完成后重新 Parent。
 
     Returns:
         str:
-        最终复制模型节点名称。
+            最终复制模型节点名称。
 
     Raises:
         RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
 
     Notes:
         这里明确关闭 inputConnections / upstreamNodes，目的是得到相对独立的模型副本，
-                                                            避免把旧 Rig / Deformer / DG 输入网络一起复制到新的工作模型上。
+        避免把旧 Rig / Deformer / DG 输入网络一起复制到新的工作模型上。
     """
-    # -------------------------------------------------------------------------
-    # 步骤 1：验证源模型。
-    # -------------------------------------------------------------------------
-    validate_node(
+    source_model = validate_model_transform(
         source_model,
         label=u"源模型"
     )
 
     if not new_name:
-        raise RuntimeError(u"新模型名称不能为空。")
+        raise RuntimeError(
+            u"新模型名称不能为空。"
+        )
 
-    # -------------------------------------------------------------------------
-    # 步骤 2：如果要求整理到指定层级，先确认 Parent 有效。
-    # -------------------------------------------------------------------------
     if parent:
         validate_node(
             parent,
             label=u"父节点"
         )
 
-    # -------------------------------------------------------------------------
-    # 步骤 3：正式创建前检查目标名称。
-    #
-    # 为什么不让 Maya 自动加数字后缀：
-    # Rig 构建依赖稳定命名。静默得到 xxx1 / xxx2 很容易让后续查找错误节点。
-    # -------------------------------------------------------------------------
     if cmds.objExists(new_name):
         raise RuntimeError(
-            u"目标名称已经存在：{}".format(new_name)
+            u"目标名称已经存在：{}".format(
+                new_name
+            )
         )
 
-    # -------------------------------------------------------------------------
-    # 步骤 4：复制模型根节点，并明确不要复制输入 DG 网络和上游节点。
-    # -------------------------------------------------------------------------
     duplicate_result = cmds.duplicate(
         source_model,
         name=new_name,
@@ -162,17 +273,13 @@ def duplicate_model(
 
     if not duplicate_result:
         raise RuntimeError(
-            u"复制模型失败：{}".format(source_model)
+            u"复制模型失败：{}".format(
+                source_model
+            )
         )
 
     duplicated_model = duplicate_result[0]
 
-    # -------------------------------------------------------------------------
-    # 步骤 5：根据调用者要求整理父层级。
-    #
-    # cmds.parent 可能返回新的 DAG Path，所以后续统一使用 Maya 返回值，而不是继续使用
-    # Parent 前的旧路径。
-    # -------------------------------------------------------------------------
     if parent:
         parent_result = cmds.parent(
             duplicated_model,
@@ -187,5 +294,7 @@ def duplicate_model(
 
 __all__ = [
     "validate_node",
+    "validate_model_transform",
+    "delete_model",
     "duplicate_model",
 ]
