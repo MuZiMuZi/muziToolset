@@ -5,75 +5,25 @@ Joint Utils
 
 Maya Joint 通用底层模块。
 
-正式模块路径
-------------
-``muziToolset.core.joint_utils`` 是 Joint / JointCurve / JointChain 的唯一正式实现。
-旧 ``jointUtils.py`` 兼容模块已经完成迁移并删除，正式代码统一使用 snake_case Import。
-
 模块职责
 --------
-本模块按三个层级组织 Joint 能力：
-
 Joint
     单个 Joint 的创建、查询、显示、方向、属性和 Maya Joint Label。
 
 JointCurve
-    Curve CV 与 Joint 的轻量桥接。Curve 的查询能力统一复用 curve_utils，不再维护第二套 Curve API。
+    Curve CV 与 Joint 的轻量桥接。
 
 JointChain
     多个 Joint 的父子链、模板链复制和批量定向。
 
-主要公开 API
-------------
-Joint.create(...)
-Joint.create_at_object(...)
-Joint.create_child(...)
-Joint.create_from_component(...)
-Joint.create_from_selection(...)
-    创建单个 / 多个 Joint。
-
-Joint.get_parent()
-Joint.get_children(...)
-    查询 Joint 层级。
-
-Joint.set_axis_visibility(...)
-Joint.set_joints_axis_visibility(...)
-Joint.set_selected_axis_visibility(...)
-Joint.set_all_axis_visibility(...)
-Joint.set_radius(...)
-Joint.set_all_radius(...)
-    Joint 显示设置。
-
-Joint.orient(...)
-Joint.clear_orient()
-Joint.set_orient_keyable(...)
-Joint.set_scale_compensate(...)
-    Joint Orient 与 Segment Scale Compensate。
-
-Joint.tag()
-    根据项目命名设置 Maya Joint Label；同时兼容旧 l/r/m 和当前 lf/rt/md Side Token。
-
-JointCurve.create_joints_on_curve_points(...)
-    基于 Curve CV 世界位置创建 Joint。
-
-JointChain.parent_joints_as_chain(...)
-JointChain.create_chain(...)
-JointChain.orient_chain(...)
-    Joint Chain 操作。
-
-设计原则
+设计边界
 --------
-1. Curve 查询统一复用 curve_utils；
-2. Joint 模块不创建 Controller、不创建 Constraint、不包含 PySide UI；
-3. Selection 驱动的方法仅作为 Tool 兼容入口；底层函数本身接受明确参数；
-4. 完整 Arm / Leg / Spine / Eyelid 等绑定流程进入 systems，而不是继续扩张 Joint Utils；
-5. 模块文件名与所有正式 Import 统一使用 snake_case。
-
-依赖
-----
-maya.cmds
-curve_utils
-name_utils
+- 节点存在性统一复用 scene_utils；
+- DAG Short Name 统一复用 rename_utils；
+- Transform 世界空间数据统一复用 transform_utils；
+- 通用 Parent / Child 查询统一复用 hierarchy_utils；
+- Curve 查询统一复用 curve_utils；
+- 本模块只保留真正属于 Joint 的创建、显示、Orient、Label 和 Joint Chain 语义。
 """
 
 from __future__ import print_function
@@ -83,53 +33,56 @@ import re
 import maya.cmds as cmds
 
 from . import curve_utils
+from . import hierarchy_utils
 from . import name_utils
+from . import rename_utils
+from . import scene_utils
+from . import transform_utils
 
 
 # =============================================================================
-# Joint - 单 Joint 基础能力
+# Joint
 # =============================================================================
 
 class Joint(object):
-    """单个 Maya Joint 的基础操作对象。"""
+    u"""单个 Maya Joint 的基础操作对象。"""
 
     def __init__(self, joint=None):
-        u"""
-        执行 `__init__` 对应的 Maya 工具操作。
-
-        Args:
-            joint (str):
-                需要处理的 Maya Joint 节点名称。
-        """
-
         self.joint = joint
 
         if self.joint is not None:
-            self._validate_joint(self.joint)
+            # 确保构造时传入的节点确实是 Joint。
+            self._validate_joint(
+                self.joint
+            )
 
     # -------------------------------------------------------------------------
-    # Validate / Name
+    # Validate / Name - Compatibility Entrypoints
     # -------------------------------------------------------------------------
 
     @staticmethod
     def _validate_node(node):
-        """检查 Maya 节点是否存在。"""
-        if not node:
-            raise RuntimeError(u"节点名称不能为空。")
+        u"""
+        兼容旧内部调用的节点校验入口。
 
-        if not cmds.objExists(node):
-            raise RuntimeError(
-                u"节点不存在：{}".format(node)
-            )
-
-        return True
+        真正的节点存在性规则统一由 scene_utils.validate_node 维护。
+        """
+        # 使用 Scene Core 统一检查节点是否存在。
+        return scene_utils.validate_node(
+            node
+        )
 
     @staticmethod
     def _validate_joint(joint):
-        """检查节点是否是 Joint。"""
-        Joint._validate_node(joint)
+        u"""检查节点是否存在且类型为 Joint。"""
+        # 先使用 Scene Core 统一检查节点存在性。
+        scene_utils.validate_node(
+            joint
+        )
 
-        node_type = cmds.nodeType(joint)
+        node_type = cmds.nodeType(
+            joint
+        )
 
         if node_type != "joint":
             raise RuntimeError(
@@ -143,8 +96,15 @@ class Joint(object):
 
     @staticmethod
     def _short_name(node):
-        """返回去掉 DAG Path 的节点短名称。"""
-        return node.split("|")[-1]
+        u"""
+        兼容旧内部调用的 Short Name 入口。
+
+        DAG Short Name 规则统一由 rename_utils.get_short_name 维护。
+        """
+        # 使用 Rename Core 统一解析 DAG Short Name。
+        return rename_utils.get_short_name(
+            node
+        )
 
     # -------------------------------------------------------------------------
     # Create
@@ -158,76 +118,54 @@ class Joint(object):
             parent=None,
             radius=None
     ):
-        u"""
-        创建单个 Joint。
-
-        步骤：
-            1. 验证名称和 Parent；
-            2. 创建 Joint；
-            3. 应用 World Position / Rotation；
-            4. 最后整理 Parent 和 Radius。
-
-        Args:
-            name (str):
-                创建或查询时使用的节点名称。
-            position (list[float] | tuple[float, float, float]):
-                Joint / Transform 使用的 XYZ Position。
-            rotation (list[float] | tuple[float, float, float]):
-                Joint / Transform 使用的 XYZ Rotation。
-            parent (str):
-                父级 Maya 节点名称。
-            radius (float):
-                创建节点或控制器使用的半径值。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-        """
+        u"""创建一个 Joint，并可设置世界姿态、Parent 与 Radius。"""
         if not name:
-            raise RuntimeError(u"Joint 名称不能为空。")
+            raise RuntimeError(
+                u"Joint 名称不能为空。"
+            )
 
         if cmds.objExists(name):
             raise RuntimeError(
-                u"节点已经存在：{}".format(name)
+                u"节点已经存在：{}".format(
+                    name
+                )
             )
 
         if parent is not None:
-            Joint._validate_node(parent)
+            # 使用 Scene Core 统一验证 Parent 节点。
+            scene_utils.validate_node(
+                parent
+            )
 
+        # 创建真正的 Maya Joint 节点。
         joint = cmds.createNode(
             "joint",
             name=name
         )
 
         if position is not None:
-            cmds.xform(
+            # 使用 Transform Core 写入 Joint 世界位置。
+            transform_utils.set_world_translation(
                 joint,
-                worldSpace=True,
-                translation=position
+                position
             )
 
         if rotation is not None:
-            cmds.xform(
+            # 使用 Transform Core 写入 Joint 世界旋转。
+            transform_utils.set_world_rotation(
                 joint,
-                worldSpace=True,
-                rotation=rotation
+                rotation
             )
 
         if parent is not None:
-            parent_result = cmds.parent(
+            # 使用 Hierarchy Core 建立 Parent，并接收可能变化的 DAG Path。
+            joint = hierarchy_utils.Hierarchy.parent(
                 joint,
-                parent,
-                absolute=True
+                parent
             )
 
-            if parent_result:
-                joint = parent_result[0]
-
         if radius is not None:
+            # Radius 属于 Joint 专属显示属性，因此保留在 Joint Core 内设置。
             cmds.setAttr(
                 joint + ".radius",
                 radius
@@ -243,54 +181,41 @@ class Joint(object):
             match_rotation=True,
             radius=None
     ):
-        u"""
-        在指定 Transform / Joint 的世界位置创建 Joint。
+        u"""在指定 Transform / Joint 的世界姿态创建 Joint。"""
+        # 使用 Transform Core 验证参考对象。
+        transform_utils.validate_transform(
+            obj
+        )
 
-        Args:
-            obj (str):
-                当前操作使用的 Maya DAG 节点或场景对象。
-            name (str):
-                创建或查询时使用的节点名称。
-            parent (str):
-                父级 Maya 节点名称。
-            match_rotation (bool):
-                根据目标 Transform 创建 Joint 时是否同时匹配目标 Rotation。
-            radius (float):
-                创建节点或控制器使用的半径值。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-        Joint._validate_node(obj)
-
-        short_name = Joint._short_name(obj)
+        # 使用统一 Short Name API 生成默认 Joint 名称。
+        short_name = rename_utils.get_short_name(
+            obj
+        )
 
         if name is None:
             if short_name.startswith("jnt_"):
-                name = "{}_child".format(short_name)
+                name = "{}_child".format(
+                    short_name
+                )
             else:
-                name = "jnt_{}".format(short_name)
+                name = "jnt_{}".format(
+                    short_name
+                )
 
-        # 步骤 1：读取参考对象 World Transform。
-        position = cmds.xform(
-            obj,
-            query=True,
-            worldSpace=True,
-            translation=True
+        # 使用 Transform Core 读取参考对象世界位置。
+        position = transform_utils.get_world_translation(
+            obj
         )
 
         rotation = None
 
         if match_rotation:
-            rotation = cmds.xform(
-                obj,
-                query=True,
-                worldSpace=True,
-                rotation=True
+            # 需要匹配旋转时统一读取 World Rotation。
+            rotation = transform_utils.get_world_rotation(
+                obj
             )
 
-        # 步骤 2：统一转给 create() 创建，避免重复维护创建逻辑。
+        # 统一交给 Joint.create() 完成真正的创建流程。
         return Joint.create(
             name=name,
             position=position,
@@ -305,44 +230,36 @@ class Joint(object):
             name=None,
             radius=None
     ):
-        u"""
-        在指定对象位置创建一个 Child Joint，并 Parent 到该对象下。
+        u"""在指定对象世界姿态创建一个 Child Joint。"""
+        # 使用 Transform Core 验证 Parent / 参考对象。
+        transform_utils.validate_transform(
+            obj
+        )
 
-        Args:
-            obj (str):
-                当前操作使用的 Maya DAG 节点或场景对象。
-            name (str):
-                创建或查询时使用的节点名称。
-            radius (float):
-                创建节点或控制器使用的半径值。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-        Joint._validate_node(obj)
-
-        short_name = Joint._short_name(obj)
+        # 使用统一 Short Name API 生成默认名称。
+        short_name = rename_utils.get_short_name(
+            obj
+        )
 
         if name is None:
-            name = "{}_child".format(short_name)
+            name = "{}_child".format(
+                short_name
+            )
 
             if not name.startswith("jnt_"):
-                name = "jnt_{}".format(name)
+                name = "jnt_{}".format(
+                    name
+                )
 
-        position = cmds.xform(
-            obj,
-            query=True,
-            worldSpace=True,
-            translation=True
+        # 使用 Transform Core 读取 Parent 当前世界姿态。
+        position = transform_utils.get_world_translation(
+            obj
         )
-        rotation = cmds.xform(
-            obj,
-            query=True,
-            worldSpace=True,
-            rotation=True
+        rotation = transform_utils.get_world_rotation(
+            obj
         )
 
+        # 创建 Joint，并直接挂到指定对象下。
         return Joint.create(
             name=name,
             position=position,
@@ -358,30 +275,13 @@ class Joint(object):
             parent=None,
             radius=None
     ):
-        u"""
-        在 Vertex / CV 等组件世界位置创建 Joint。
-
-        Args:
-            component (str):
-                用于创建 Joint 或查询位置的 Maya Component，例如 Vertex、CV 或 Edge。
-            name (str):
-                创建或查询时使用的节点名称。
-            parent (str):
-                父级 Maya 节点名称。
-            radius (float):
-                创建节点或控制器使用的半径值。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-        """
+        u"""在 Vertex / CV 等 Component 世界位置创建 Joint。"""
         if not component:
-            raise RuntimeError(u"组件名称不能为空。")
+            raise RuntimeError(
+                u"组件名称不能为空。"
+            )
 
+        # Component 不是普通 DG Node，因此这里仍由 Maya xform 读取 Component Position。
         position = cmds.xform(
             component,
             query=True,
@@ -391,9 +291,12 @@ class Joint(object):
 
         if not position:
             raise RuntimeError(
-                u"无法获取组件位置：{}".format(component)
+                u"无法获取组件位置：{}".format(
+                    component
+                )
             )
 
+        # 统一交给 Joint.create() 完成创建和 Parent。
         return Joint.create(
             name=name,
             position=position,
@@ -408,21 +311,10 @@ class Joint(object):
             radius=None
     ):
         u"""
-        兼容 Tool：根据当前 Selection 的对象 / 组件创建 Joint。
+        兼容 Tool：根据当前 Selection 的对象 / Component 创建 Joint。
 
-        ``parent_chain=True`` 时，按 Selection 顺序组成 Joint Chain。
-
-        Args:
-            name_prefix (str):
-                批量创建 Joint 时写入节点名称前部的 Prefix。
-            parent_chain (bool):
-                创建多个 Joint 时是否按输入顺序建立父子 Joint Chain。
-            radius (float):
-                创建节点或控制器使用的半径值。
-
-        Returns:
-            object | list:
-            方法执行后的结果数据。
+        这里保留 Selection 语义，因为这是明确的 Tool Compatibility API；
+        真正的 Joint 创建仍统一调用参数化 API。
         """
         selections = cmds.ls(
             selection=True,
@@ -431,7 +323,9 @@ class Joint(object):
         ) or []
 
         if not selections:
-            cmds.warning(u"请选择一个或以上的物体或组件。")
+            cmds.warning(
+                u"请选择一个或以上的物体或组件。"
+            )
             return []
 
         joints = []
@@ -445,6 +339,7 @@ class Joint(object):
             )
 
             if "." in item:
+                # Component 输入使用专用创建入口。
                 joint = Joint.create_from_component(
                     component=item,
                     name=joint_name,
@@ -452,6 +347,7 @@ class Joint(object):
                     radius=radius
                 )
             else:
+                # DAG 输入使用 Transform -> Joint 创建入口。
                 joint = Joint.create_at_object(
                     obj=item,
                     name=joint_name,
@@ -460,7 +356,9 @@ class Joint(object):
                     radius=radius
                 )
 
-            joints.append(joint)
+            joints.append(
+                joint
+            )
 
             if parent_chain:
                 current_parent = joint
@@ -472,13 +370,7 @@ class Joint(object):
     # -------------------------------------------------------------------------
 
     def get_angle_z(self):
-        u"""
-        查询 Maya joint(angleZ=True) 数值。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+        u"""查询 Maya joint(angleZ=True) 数值。"""
         return cmds.joint(
             self.joint,
             query=True,
@@ -486,41 +378,35 @@ class Joint(object):
         )
 
     def get_parent(self):
-        u"""
-        返回 Joint Parent；没有 Joint Parent 时返回 None。
-
-        Returns:
-            object | None:
-            方法执行后的结果数据。
-        """
-        parents = cmds.listRelatives(
+        u"""返回直接 Joint Parent；上级不是 Joint 时返回 None。"""
+        # 使用 Hierarchy Core 查询直接 Parent。
+        parent = hierarchy_utils.Hierarchy.get_parent(
             self.joint,
-            parent=True,
-            type="joint",
-            fullPath=True
-        ) or []
+            full_path=True
+        )
 
-        if not parents:
+        if parent is None:
             return None
 
-        return parents[0]
+        if cmds.nodeType(parent) != "joint":
+            return None
+
+        return parent
 
     def get_children(self, all_descendents=False):
-        u"""
-        返回 Child Joint；可选择是否递归全部后代。
+        u"""返回 Child Joint；可选择递归全部后代。"""
+        if not all_descendents:
+            # 直接 Child 查询统一交给 Hierarchy Core。
+            return hierarchy_utils.Hierarchy.get_children(
+                self.joint,
+                node_type="joint",
+                full_path=True
+            )
 
-        Args:
-            all_descendents (bool):
-                Joint 查询时是否包含当前节点以下的全部 Descendant Joint。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+        # 全部后代属于 Joint 专项递归查询，这里保留 Maya Joint Type Filter。
         children = cmds.listRelatives(
             self.joint,
-            children=True,
-            allDescendents=all_descendents,
+            allDescendents=True,
             type="joint",
             fullPath=True
         ) or []
@@ -532,17 +418,7 @@ class Joint(object):
     # -------------------------------------------------------------------------
 
     def set_axis_visibility(self, visible=True):
-        u"""
-        设置 Joint Local Rotation Axis 显示。
-
-        Args:
-            visible (bool):
-                Joint / Guide / UI 元素是否保持可见。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+        u"""设置当前 Joint Local Rotation Axis 显示。"""
         value = 1 if visible else 0
 
         cmds.setAttr(
@@ -553,41 +429,22 @@ class Joint(object):
         return self.joint
 
     def show_axis(self):
-        u"""
-        显示 Local Rotation Axis。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-        return self.set_axis_visibility(True)
+        return self.set_axis_visibility(
+            True
+        )
 
     def hide_axis(self):
-        u"""
-        隐藏 Local Rotation Axis。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-        return self.set_axis_visibility(False)
+        return self.set_axis_visibility(
+            False
+        )
 
     def set_radius(self, radius):
-        u"""
-        设置当前 Joint 显示半径。
-
-        Args:
-            radius (float):
-                创建节点或控制器使用的半径值。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+        u"""设置当前 Joint 显示半径。"""
         cmds.setAttr(
             self.joint + ".radius",
             radius
         )
+
         return self.joint
 
     @staticmethod
@@ -596,48 +453,42 @@ class Joint(object):
             visible=True,
             include_descendents=False
     ):
-        u"""
-        批量设置 Joint Local Rotation Axis。
-
-        Args:
-            joints (str | list[str]):
-                需要批量处理的 Maya Joint 节点或 Joint Chain。
-            visible (bool):
-                Joint / Guide / UI 元素是否保持可见。
-            include_descendents (bool):
-                Joint 查询或显示操作是否递归包含 Descendant Joint。
-
-        Returns:
-            object | list:
-            方法执行后的结果数据。
-        """
+        u"""批量设置 Joint Local Rotation Axis。"""
         if not joints:
             return []
 
         process_joints = []
 
-        # 步骤 1：整理去重后的处理列表。
         for joint in joints:
-            Joint._validate_joint(joint)
+            # 确保每一个输入节点都是 Joint。
+            Joint._validate_joint(
+                joint
+            )
 
             if joint not in process_joints:
-                process_joints.append(joint)
+                process_joints.append(
+                    joint
+                )
 
             if include_descendents:
-                descendants = cmds.listRelatives(
-                    joint,
-                    allDescendents=True,
-                    type="joint",
-                    fullPath=True
-                ) or []
+                # 通过 Joint Query API 获取全部后代，避免这里再维护一套查询规则。
+                descendants = Joint(
+                    joint
+                ).get_children(
+                    all_descendents=True
+                )
 
                 for descendant in descendants:
                     if descendant not in process_joints:
-                        process_joints.append(descendant)
+                        process_joints.append(
+                            descendant
+                        )
 
-        # 步骤 2：统一应用显示状态。
         for joint in process_joints:
-            Joint(joint).set_axis_visibility(
+            # 使用单 Joint API 统一应用显示状态。
+            Joint(
+                joint
+            ).set_axis_visibility(
                 visible=visible
             )
 
@@ -648,29 +499,21 @@ class Joint(object):
             visible=True,
             include_descendents=False
     ):
-        u"""
-        根据当前选择批量设置 Local Rotation Axis。
-
-        Args:
-            visible (bool):
-                Joint / Guide / UI 元素是否保持可见。
-            include_descendents (bool):
-                Joint 查询或显示操作是否递归包含 Descendant Joint。
-
-        Returns:
-            object | list:
-            方法执行后的结果数据。
-        """
-        joints = cmds.ls(
-            selection=True,
-            type="joint",
-            long=True
-        ) or []
+        u"""根据当前选择批量设置 Local Rotation Axis。"""
+        # 使用 Scene Core 查询当前选择的 Joint。
+        joints = scene_utils.get_selected_nodes(
+            node_type="joint",
+            long=True,
+            flatten=True
+        )
 
         if not joints:
-            cmds.warning(u"请选择一个或以上的 Joint。")
+            cmds.warning(
+                u"请选择一个或以上的 Joint。"
+            )
             return []
 
+        # 统一交给批量 Joint API 执行。
         return Joint.set_joints_axis_visibility(
             joints=joints,
             visible=visible,
@@ -679,17 +522,7 @@ class Joint(object):
 
     @staticmethod
     def set_all_axis_visibility(visible=True):
-        u"""
-        设置场景全部 Joint Local Rotation Axis。
-
-        Args:
-            visible (bool):
-                Joint / Guide / UI 元素是否保持可见。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+        u"""设置场景全部 Joint Local Rotation Axis。"""
         joints = cmds.ls(
             type="joint",
             long=True
@@ -702,25 +535,17 @@ class Joint(object):
 
     @staticmethod
     def set_all_radius(radius):
-        u"""
-        设置场景全部 Joint 显示半径。
-
-        Args:
-            radius (float):
-                创建节点或控制器使用的半径值。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+        u"""设置场景全部 Joint 显示半径。"""
         joints = cmds.ls(
             type="joint",
             long=True
         ) or []
 
         for joint in joints:
-            cmds.setAttr(
-                joint + ".radius",
+            # 使用单 Joint API 统一设置 Radius。
+            Joint(
+                joint
+            ).set_radius(
                 radius
             )
 
@@ -735,21 +560,8 @@ class Joint(object):
             orient_joint="xyz",
             secondary_axis_orient="xup"
     ):
-        u"""
-        对当前 Joint 做 Maya Joint Orient。
-
-        有 Child Joint 时按照给定 Primary / Secondary Axis 定向；末端 Joint 清为 ``none``。
-
-        Args:
-            orient_joint (str):
-                当前 Rig 计算或构建使用的 Maya Joint 节点。
-            secondary_axis_orient (str):
-                Maya Joint Orient 使用的 Secondary Axis World Orientation，例如 `yup`、`zdown`。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+        u"""对当前 Joint 做 Maya Joint Orient。"""
+        # 查询直接 Child Joint，用于判断当前 Joint 是否是链末端。
         children = self.get_children(
             all_descendents=False
         )
@@ -774,13 +586,7 @@ class Joint(object):
         return self.joint
 
     def clear_orient(self):
-        u"""
-        把 jointOrientXYZ 清零。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+        u"""把 jointOrientXYZ 清零。"""
         attrs = [
             "jointOrientX",
             "jointOrientY",
@@ -789,24 +595,17 @@ class Joint(object):
 
         for attr in attrs:
             cmds.setAttr(
-                "{}.{}".format(self.joint, attr),
+                "{}.{}".format(
+                    self.joint,
+                    attr
+                ),
                 0
             )
 
         return self.joint
 
     def set_orient_keyable(self, keyable=True):
-        u"""
-        设置 jointOrientXYZ 是否 Keyable。
-
-        Args:
-            keyable (bool):
-                对应 Maya Attribute 是否允许 Animator Keyframe。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+        u"""设置 jointOrientXYZ 是否 Keyable。"""
         attrs = [
             "jointOrientX",
             "jointOrientY",
@@ -815,48 +614,32 @@ class Joint(object):
 
         for attr in attrs:
             cmds.setAttr(
-                "{}.{}".format(self.joint, attr),
+                "{}.{}".format(
+                    self.joint,
+                    attr
+                ),
                 keyable=keyable
             )
 
         return self.joint
 
     def show_orient(self):
-        u"""
-        显示 jointOrient 通道。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-        return self.set_orient_keyable(True)
+        return self.set_orient_keyable(
+            True
+        )
 
     def hide_orient(self):
-        u"""
-        隐藏 jointOrient 的 Keyable 状态。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-        return self.set_orient_keyable(False)
+        return self.set_orient_keyable(
+            False
+        )
 
     def set_scale_compensate(self, enabled=True):
-        u"""
-        设置 segmentScaleCompensate。
-
-        Args:
-            enabled (bool):
-                当前 UI 控件或 Rig 功能是否启用。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+        u"""设置 segmentScaleCompensate。"""
         cmds.setAttr(
             self.joint + ".segmentScaleCompensate",
             1 if enabled else 0
         )
+
         return self.joint
 
     # -------------------------------------------------------------------------
@@ -864,32 +647,18 @@ class Joint(object):
     # -------------------------------------------------------------------------
 
     def tag(self):
-        u"""
-        根据项目命名设置 Maya Joint Label。
-
-        支持：
-            jnt_l_arm_upper_001
-            jnt_r_arm_upper_001
-            jnt_m_spine_001
-        同时支持当前正式 Side Token：
-            jnt_lf_arm_upper_001
-            jnt_rt_arm_upper_001
-            jnt_md_spine_001
-
-        Returns:
-            dict:
-            方法执行后的结果数据。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-        """
-        short_name = Joint._short_name(self.joint)
+        u"""根据项目命名设置 Maya Joint Label。"""
+        # 使用统一 Short Name API 解析 Joint 名称。
+        short_name = rename_utils.get_short_name(
+            self.joint
+        )
         name_parts = short_name.split("_")
 
         if len(name_parts) < 3:
             raise RuntimeError(
-                u"Joint 名称格式不正确：{}".format(short_name)
+                u"Joint 名称格式不正确：{}".format(
+                    short_name
+                )
             )
 
         side_name = name_parts[1]
@@ -910,9 +679,13 @@ class Joint(object):
                 if re.match(r"^\d{3}$", part):
                     continue
 
-            description_parts.append(part)
+            description_parts.append(
+                part
+            )
 
-        description = "_".join(description_parts)
+        description = "_".join(
+            description_parts
+        )
 
         cmds.setAttr(
             self.joint + ".side",
@@ -937,85 +710,38 @@ class Joint(object):
 
 
 # =============================================================================
-# JointCurve - Curve 与 Joint 的轻量桥接
+# JointCurve
 # =============================================================================
 
 class JointCurve(object):
-    """Curve CV 与 Joint 创建相关的兼容类。"""
+    u"""Curve CV 与 Joint 创建相关的兼容类。"""
 
     @staticmethod
     def get_curve_shape(curve):
-        u"""
-        兼容入口：底层复用 curve_utils.get_curve_shape。
-
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-        return curve_utils.get_curve_shape(curve)
+        return curve_utils.get_curve_shape(
+            curve
+        )
 
     @staticmethod
     def get_curve_transform(curve):
-        u"""
-        兼容入口：底层复用 curve_utils.get_curve_transform。
-
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-        return curve_utils.get_curve_transform(curve)
+        return curve_utils.get_curve_transform(
+            curve
+        )
 
     @staticmethod
     def get_curve_cvs(curve):
-        u"""
-        兼容入口：返回 Curve 全部 CV Component。
-
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-        return curve_utils.get_curve_cvs(curve)
+        return curve_utils.get_curve_cvs(
+            curve
+        )
 
     @staticmethod
     def get_curve_cv_count(curve):
-        u"""
-        兼容入口：返回 Curve CV 数量。
-
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-        return curve_utils.get_curve_cv_count(curve)
+        return curve_utils.get_curve_cv_count(
+            curve
+        )
 
     @staticmethod
     def get_curve_cv_positions(curve):
-        u"""
-        兼容入口：返回 Curve CV 世界坐标。
-
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
         return curve_utils.get_curve_cv_positions(
             curve,
             world_space=True
@@ -1023,9 +749,16 @@ class JointCurve(object):
 
     @staticmethod
     def _default_joint_base_name(curve):
-        """根据 Curve 名称生成默认 Joint Base Name。"""
-        curve_transform = JointCurve.get_curve_transform(curve)
-        short_name = Joint._short_name(curve_transform)
+        u"""根据 Curve 名称生成默认 Joint Base Name。"""
+        # 获取正式 Curve Transform。
+        curve_transform = JointCurve.get_curve_transform(
+            curve
+        )
+
+        # 使用统一 Short Name API 获取名称。
+        short_name = rename_utils.get_short_name(
+            curve_transform
+        )
 
         if short_name.startswith("crv_"):
             base_name = short_name.replace(
@@ -1034,7 +767,9 @@ class JointCurve(object):
                 1
             )
         else:
-            base_name = "jnt_{}".format(short_name)
+            base_name = "jnt_{}".format(
+                short_name
+            )
 
         return re.sub(
             r"_\d{3}$",
@@ -1051,46 +786,28 @@ class JointCurve(object):
             group_name=None,
             radius=None
     ):
-        u"""
-        基于 Curve CV 世界位置创建 Joint。
-
-        注意：这是“CV 对应 Joint”功能，不是按弧长均匀采样。需要等距采样时先使用
-        curve_utils.sample_curve_by_length，再由上层 System 决定如何建 Joint。
-
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
-            joint_base_name (str):
-                `joint_base_name` 对应的 Maya 节点或资源名称。
-            parent_chain (bool):
-                创建多个 Joint 时是否按输入顺序建立父子 Joint Chain。
-            create_group (bool):
-                当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
-            group_name (str):
-                `group_name` 对应的 Maya 节点或资源名称。
-            radius (float):
-                创建节点或控制器使用的半径值。
-
-        Returns:
-            dict:
-            方法执行后的结果数据。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-        """
-        curve_transform = JointCurve.get_curve_transform(curve)
-        positions = JointCurve.get_curve_cv_positions(curve)
+        u"""基于 Curve CV 世界位置创建 Joint。"""
+        # 获取 Curve Transform 和 CV 世界位置。
+        curve_transform = JointCurve.get_curve_transform(
+            curve
+        )
+        positions = JointCurve.get_curve_cv_positions(
+            curve
+        )
 
         if not positions:
             raise RuntimeError(
-                u"Curve 没有找到 CV：{}".format(curve)
+                u"Curve 没有找到 CV：{}".format(
+                    curve
+                )
             )
 
         if joint_base_name is None:
-            joint_base_name = JointCurve._default_joint_base_name(curve)
+            # 根据 Curve 名称生成默认 Joint Base Name。
+            joint_base_name = JointCurve._default_joint_base_name(
+                curve
+            )
 
-        # 步骤 1：可选创建统一 Joint Group。
         joint_group = None
 
         if create_group:
@@ -1104,19 +821,22 @@ class JointCurve(object):
                         1
                     )
 
-                group_name = "{}_joints".format(group_base_name)
+                group_name = "{}_joints".format(
+                    group_base_name
+                )
 
             if cmds.objExists(group_name):
                 raise RuntimeError(
-                    u"Joint Group 已经存在：{}".format(group_name)
+                    u"Joint Group 已经存在：{}".format(
+                        group_name
+                    )
                 )
 
-            joint_group = cmds.createNode(
-                "transform",
-                name=group_name
+            # 使用 Hierarchy Core 创建 Joint Group。
+            joint_group = hierarchy_utils.Hierarchy.create_grp(
+                group_name
             )
 
-        # 步骤 2：按 CV 顺序创建 Joint。
         joints = []
         current_parent = joint_group
 
@@ -1131,6 +851,7 @@ class JointCurve(object):
             if parent_chain:
                 parent = current_parent
 
+            # 使用单 Joint API 创建当前 CV 对应 Joint。
             joint = Joint.create(
                 name=joint_name,
                 position=positions[index],
@@ -1138,7 +859,9 @@ class JointCurve(object):
                 radius=radius
             )
 
-            joints.append(joint)
+            joints.append(
+                joint
+            )
 
             if parent_chain:
                 current_parent = joint
@@ -1151,54 +874,40 @@ class JointCurve(object):
 
 
 # =============================================================================
-# JointChain - 多 Joint 层级能力
+# JointChain
 # =============================================================================
 
 class JointChain(object):
-    """Joint Chain 创建、Parent 与 Orient 工具。"""
+    u"""Joint Chain 创建、Parent 与 Orient 工具。"""
 
     @staticmethod
     def validate_joint_list(joints):
-        u"""
-        验证并返回 Joint 列表。
-
-        Args:
-            joints (str | list[str]):
-                需要批量处理的 Maya Joint 节点或 Joint Chain。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-        """
+        u"""验证并返回 Joint 列表。"""
         if not joints:
-            raise RuntimeError(u"Joint 列表不能为空。")
+            raise RuntimeError(
+                u"Joint 列表不能为空。"
+            )
 
         result = []
 
         for joint in joints:
-            Joint._validate_joint(joint)
-            result.append(joint)
+            # 确保列表中的每一个节点都是 Joint。
+            Joint._validate_joint(
+                joint
+            )
+            result.append(
+                joint
+            )
 
         return result
 
     @staticmethod
     def parent_joints_as_chain(joints):
-        u"""
-        按列表顺序组成 Joint Chain。
-
-        Args:
-            joints (str | list[str]):
-                需要批量处理的 Maya Joint 节点或 Joint Chain。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-        joints = JointChain.validate_joint_list(joints)
+        u"""按列表顺序组成 Joint Chain。"""
+        # 验证输入 Joint 列表。
+        joints = JointChain.validate_joint_list(
+            joints
+        )
 
         if len(joints) <= 1:
             return joints
@@ -1209,7 +918,7 @@ class JointChain(object):
                 0,
                 -1
         ):
-            cmds.parent(
+            hierarchy_utils.Hierarchy.parent(
                 joints[index],
                 joints[index - 1]
             )
@@ -1218,24 +927,24 @@ class JointChain(object):
 
     @staticmethod
     def parent_selected_as_chain():
-        u"""
-        兼容 Tool：把当前选择 Joint 按 Selection 顺序组成 Chain。
-
-        Returns:
-            object | list:
-            方法执行后的结果数据。
-        """
-        joints = cmds.ls(
-            selection=True,
-            type="joint",
-            long=True
-        ) or []
+        u"""兼容 Tool：把当前选择 Joint 按 Selection 顺序组成 Chain。"""
+        # 使用 Scene Core 查询当前选择 Joint。
+        joints = scene_utils.get_selected_nodes(
+            node_type="joint",
+            long=True,
+            flatten=True
+        )
 
         if not joints:
-            cmds.warning(u"请选择一个或以上的 Joint。")
+            cmds.warning(
+                u"请选择一个或以上的 Joint。"
+            )
             return []
 
-        return JointChain.parent_joints_as_chain(joints)
+        # 统一交给参数化 Chain API 建立父子关系。
+        return JointChain.parent_joints_as_chain(
+            joints
+        )
 
     @staticmethod
     def create_chain(
@@ -1244,41 +953,23 @@ class JointChain(object):
             joint_parent=None,
             hide_blueprint=True
     ):
-        u"""
-        根据 Blueprint Joint 创建一条新 Joint Chain。
-
-        命名统一复用 name_utils.Name，以保持项目标准命名规则。
-
-        Args:
-            blueprint_joints (str | list[str]):
-                作为正式 Skeleton 构建来源的 Blueprint / Guide Joint 列表。
-            suffix (str):
-                添加到 Maya 节点名称尾部的 Suffix。
-            joint_parent (str | None):
-                新建 Joint Chain 的父 Joint / Parent Transform；None 表示保持在世界层级。
-            hide_blueprint (bool):
-                生成正式 Skeleton 后是否隐藏 Blueprint / Guide Joint。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-        """
+        u"""根据 Blueprint Joint 创建一条新 Joint Chain。"""
+        # 验证 Blueprint Joint 列表。
         blueprint_joints = JointChain.validate_joint_list(
             blueprint_joints
         )
 
         if joint_parent is not None:
-            Joint._validate_node(joint_parent)
+            # 使用 Scene Core 验证最终 Parent。
+            scene_utils.validate_node(
+                joint_parent
+            )
 
         joints_chain = []
         current_parent = joint_parent
 
         for blueprint_joint in blueprint_joints:
-            # 步骤 1：根据 Blueprint 名称生成新 Joint 名称。
+            # 根据 Blueprint 名称生成新 Joint 名称。
             name_object = name_utils.Name(
                 name=blueprint_joint
             )
@@ -1291,24 +982,20 @@ class JointChain(object):
 
             if cmds.objExists(new_joint_name):
                 raise RuntimeError(
-                    u"Joint 已经存在：{}".format(new_joint_name)
+                    u"Joint 已经存在：{}".format(
+                        new_joint_name
+                    )
                 )
 
-            # 步骤 2：读取 Blueprint 世界姿态。
-            position = cmds.xform(
-                blueprint_joint,
-                query=True,
-                worldSpace=True,
-                translation=True
+            # 使用 Transform Core 读取 Blueprint 世界位置和旋转。
+            position = transform_utils.get_world_translation(
+                blueprint_joint
             )
-            rotation = cmds.xform(
-                blueprint_joint,
-                query=True,
-                worldSpace=True,
-                rotation=True
+            rotation = transform_utils.get_world_rotation(
+                blueprint_joint
             )
 
-            # 步骤 3：创建并组成新 Chain。
+            # 创建当前正式 Joint，并组成新 Chain。
             new_joint = Joint.create(
                 name=new_joint_name,
                 position=position,
@@ -1316,6 +1003,7 @@ class JointChain(object):
                 parent=current_parent
             )
 
+            # Freeze Transform 属于当前 Joint Chain 的构建语义，保留在这里执行。
             cmds.makeIdentity(
                 new_joint,
                 apply=True,
@@ -1324,7 +1012,9 @@ class JointChain(object):
                 scale=True
             )
 
-            joints_chain.append(new_joint)
+            joints_chain.append(
+                new_joint
+            )
             current_parent = new_joint
 
         if hide_blueprint:
@@ -1341,25 +1031,17 @@ class JointChain(object):
             orient_joint="xyz",
             secondary_axis_orient="xup"
     ):
-        u"""
-        按同一 Primary / Secondary Axis 批量 Orient Joint Chain。
-
-        Args:
-            joints (str | list[str]):
-                需要批量处理的 Maya Joint 节点或 Joint Chain。
-            orient_joint (str):
-                当前 Rig 计算或构建使用的 Maya Joint 节点。
-            secondary_axis_orient (str):
-                Maya Joint Orient 使用的 Secondary Axis World Orientation，例如 `yup`、`zdown`。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-        joints = JointChain.validate_joint_list(joints)
+        u"""按同一 Primary / Secondary Axis 批量 Orient Joint Chain。"""
+        # 验证输入 Joint 列表。
+        joints = JointChain.validate_joint_list(
+            joints
+        )
 
         for joint in joints:
-            Joint(joint).orient(
+            # 使用单 Joint API 完成每个 Joint 的 Orient。
+            Joint(
+                joint
+            ).orient(
                 orient_joint=orient_joint,
                 secondary_axis_orient=secondary_axis_orient
             )
