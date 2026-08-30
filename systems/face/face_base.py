@@ -19,8 +19,8 @@ from __future__ import print_function
 
 import maya.cmds as cmds
 
-from ...core import attrUtils
-from ...core import hierarchyUtils
+from ...core import attr_utils
+from ...core import hierarchy_utils
 from . import config
 
 
@@ -74,12 +74,12 @@ class FaceBase(object):
     def ensure_hierarchy(self):
         u"""确保 Face Rig 基础层级存在。"""
         if not cmds.objExists(self.face_master_grp):
-            hierarchyUtils.Hierarchy.create_grp(
+            hierarchy_utils.Hierarchy.create_grp(
                 self.face_master_grp
             )
 
         if not cmds.objExists(self.face_model_grp):
-            hierarchyUtils.Hierarchy.create_grp(
+            hierarchy_utils.Hierarchy.create_grp(
                 self.face_model_grp,
                 parent=self.face_master_grp
             )
@@ -88,7 +88,7 @@ class FaceBase(object):
             if cmds.objExists(group_name):
                 continue
 
-            hierarchyUtils.Hierarchy.create_grp(
+            hierarchy_utils.Hierarchy.create_grp(
                 group_name,
                 parent=self.face_master_grp
             )
@@ -97,7 +97,7 @@ class FaceBase(object):
             if cmds.objExists(group_name):
                 continue
 
-            hierarchyUtils.Hierarchy.create_grp(
+            hierarchy_utils.Hierarchy.create_grp(
                 group_name,
                 parent=self.face_model_grp
             )
@@ -148,7 +148,7 @@ class FaceBase(object):
 
     def get_config_attr(self):
         u"""获取 Face Rig Config 节点的 Attr 操作对象。"""
-        config_attr = attrUtils.Attr(self.config_node)
+        config_attr = attr_utils.Attr(self.config_node)
         return config_attr
 
     def get_config_message(self, attr_name):
