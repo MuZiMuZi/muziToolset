@@ -3,7 +3,7 @@ u"""
 Face Zip Lip Builder
 ====================
 
-把旧 pipelineUtils.create_zip_lip 重构为 Matrix 驱动版本。
+Matrix 驱动 Zip Lip 系统。
 
 设计目标：
     1. 上下嘴唇 Joint 数量一致，并按相同顺序成对；
@@ -14,18 +14,26 @@ Face Zip Lip Builder
     6. Zip Offset 使用 blendMatrix 混合 Rest Matrix 和 Mid Matrix；
     7. 不直接修改 Joint translateY，不把表演微调硬编码进 Zip 系统。
 
-相比旧版：
-    - 不再为每个 Joint 创建 ParentConstraint 来做闭合混合；
-    - 不再依赖 Constraint Weight Alias 名称；
-    - 上游 Parent 发生移动时，Rest Matrix 会继续跟随；
-    - Zip 闭合层与 Joint 自身局部动画层分离。
+重要边界：
+    - Transform 输入和 Matrix 读写统一复用 core.transform_utils；
+    - Attribute 创建统一复用 core.attr_utils；
+    - DAG Parent / Parent Query 统一复用 core.hierarchy_utils；
+    - DG Node 创建统一复用 core.scene_utils；
+    - Plug Connection 统一复用 core.connection_utils；
+    - Undo Chunk 统一复用 core.scene_utils；
+    - Zip Influence、Rest Matrix、Mid Matrix 和 Pairing 算法保留在本 System。
 """
 
 from __future__ import print_function
 
 import maya.cmds as cmds
 
+from ....core import attr_utils
+from ....core import connection_utils
+from ....core import hierarchy_utils
 from ....core import name_utils
+from ....core import scene_utils
+from ....core import transform_utils
 
 
 # =============================================================================
@@ -36,41 +44,23 @@ def validate_transform(node, label):
     u"""
     检查 Transform / Joint。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-        label (str):
-            UI、Rig Node 或日志中展示的简短 Label。
-
-    Returns:
-        bool:
-        方法执行后的结果数据。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+    保留旧入口，实际 Transform 类型校验统一由 transform_utils 维护。
     """
     if not node:
         raise RuntimeError(
             u"{}不能为空。".format(label)
         )
 
-    if not cmds.objExists(node):
-        raise RuntimeError(
-            u"{}不存在：{}".format(
-                label,
-                node
-            )
+    try:
+        # 使用 Transform Core 统一检查节点存在性以及 Transform / Joint 类型。
+        transform_utils.validate_transform(
+            node
         )
-
-    node_type = cmds.nodeType(node)
-
-    if node_type not in ["transform", "joint"]:
+    except RuntimeError as error:
         raise RuntimeError(
-            u"{}必须是 Transform 或 Joint：{} | type={}".format(
+            u"{}无效：{}".format(
                 label,
-                node,
-                node_type
+                error
             )
         )
 
@@ -78,23 +68,8 @@ def validate_transform(node, label):
 
 
 def validate_joint(joint, label):
-    u"""
-    检查 Joint。
-
-    Args:
-        joint (str):
-            需要处理的 Maya Joint 节点名称。
-        label (str):
-            UI、Rig Node 或日志中展示的简短 Label。
-
-    Returns:
-        bool:
-        方法执行后的结果数据。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-    """
+    u"""检查输入节点必须是 Maya Joint。"""
+    # 先复用统一 Transform 校验，确认节点存在且具备 Transform 行为。
     validate_transform(
         joint,
         label
@@ -118,52 +93,29 @@ def ensure_float_attribute(
         maximum,
         default_value
 ):
-    u"""
-    创建或复用一个 Keyable Float Attribute。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-        attribute (str):
-            Maya Attribute 或完整 Plug 名称。
-        minimum (float | int):
-            数值 Attribute、Remap 或 UI 控件使用的最小值。
-        maximum (float | int):
-            数值 Attribute、Remap 或 UI 控件使用的最大值。
-        default_value (object):
-            新建 Attribute、UI 控件或 Rig 参数使用的默认值。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
+    u"""创建或复用一个 Keyable Float Attribute。"""
+    # 检查 Attribute 所在节点是否可以安全作为 Transform / Joint 使用。
     validate_transform(
         node,
         u"Attribute Node"
     )
 
-    if not cmds.attributeQuery(
-            attribute,
-            node=node,
-            exists=True
-    ):
-        cmds.addAttr(
-            node,
-            longName=attribute,
-            attributeType="double",
-            minValue=minimum,
-            maxValue=maximum,
-            defaultValue=default_value,
-            keyable=True
-        )
-    else:
-        plug = "{}.{}".format(
-            node,
+    # 使用统一 Attr Core 查询 / 创建属性；已有属性不会覆盖当前动画值。
+    node_attr = attr_utils.Attr(
+        node
+    )
+
+    if not node_attr.attr_exists(
             attribute
-        )
-        cmds.setAttr(
-            plug,
-            keyable=True
+    ):
+        node_attr.add_attr(
+            attribute,
+            attr_type="double",
+            lock=False,
+            hide=False,
+            default_value=default_value,
+            min_value=minimum,
+            max_value=maximum
         )
 
     return "{}.{}".format(
@@ -181,21 +133,8 @@ def create_name(
         function,
         index=1
 ):
-    u"""
-    创建 Zip Lip 系统标准名称。
-
-    Args:
-        node_type (str):
-            需要创建、查询或过滤的 Maya Node Type。
-        function (str | callable):
-            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
-        index (int):
-            目标元素或节点的序号。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
+    u"""创建 Zip Lip 系统标准名称。"""
+    # 使用项目统一五段式 Name API 创建中线 Lip 节点名称。
     return name_utils.Name.create_name(
         node_type=node_type,
         side="md",
@@ -213,27 +152,13 @@ def get_parent(node):
     u"""
     返回直接 Parent，没有则返回 None。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object | None:
-        方法执行后的结果数据。
+    保留旧入口，实际 Parent Query 统一由 hierarchy_utils 维护。
     """
-    parents = cmds.listRelatives(
+    # 使用 Hierarchy Core 获取直接 Parent Long Path。
+    return hierarchy_utils.Hierarchy.get_parent(
         node,
-        parent=True,
-        fullPath=True
+        full_path=True
     )
-
-    if parents is None:
-        parents = []
-
-    if not parents:
-        return None
-
-    return parents[0]
 
 
 def insert_zip_offset_group(
@@ -242,35 +167,19 @@ def insert_zip_offset_group(
         index
 ):
     u"""
-    在 Joint 上方插入 Zip Offset Group。
-
-    Group 会匹配 Joint 当前世界矩阵，Joint 重新 Parent 后保留世界矩阵，
-    因此 Joint 的现有姿态不会因为插入 Zip 层而跳动。
-
-    Args:
-        joint (str):
-            需要处理的 Maya Joint 节点名称。
-        function (str | callable):
-            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
-        index (int):
-            目标元素或节点的序号。
-
-    Returns:
-        dict:
-        方法执行后的结果数据。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+    在 Joint 上方插入 Zip Offset Group，并保持 Joint 当前世界姿态。
     """
-    parent = get_parent(joint)
-    world_matrix = cmds.xform(
-        joint,
-        query=True,
-        worldSpace=True,
-        matrix=True
+    # 记录 Joint 原 Parent，Zip Offset 创建后需要插回同一 DAG 层级。
+    parent = get_parent(
+        joint
     )
 
+    # 使用 Transform Core 保存 Joint 当前完整 World Matrix。
+    world_matrix = transform_utils.get_world_matrix(
+        joint
+    )
+
+    # 生成当前 Joint Pair 对应的 Zip Offset Group 名称。
     group_name = create_name(
         "grp",
         function,
@@ -284,27 +193,30 @@ def insert_zip_offset_group(
             )
         )
 
-    zip_offset = cmds.createNode(
+    # 使用 Scene Core 创建新的 Zip Offset Transform。
+    zip_offset = scene_utils.create_node(
         "transform",
-        name=group_name
+        group_name
     )
 
     if parent is not None:
-        zip_offset = cmds.parent(
+        # 把 Zip Offset 放回 Joint 原 Parent，保留原来的 DAG 结构。
+        zip_offset = hierarchy_utils.Hierarchy.parent(
             zip_offset,
             parent
-        )[0]
+        )
 
-    cmds.xform(
+    # 使用 Transform Core 恢复 Joint 原世界矩阵到 Zip Offset。
+    transform_utils.set_world_matrix(
         zip_offset,
-        worldSpace=True,
-        matrix=world_matrix
+        world_matrix
     )
 
-    joint = cmds.parent(
+    # 把 Joint 放入 Zip Offset，形成独立的 Zip 驱动层。
+    joint = hierarchy_utils.Hierarchy.parent(
         joint,
         zip_offset
-    )[0]
+    )
 
     return {
         "joint": joint,
@@ -321,23 +233,6 @@ def create_rest_world_matrix(
 ):
     u"""
     保存 Zip Offset 的 Rest Local Matrix，并实时组合 Parent World Matrix。
-
-    结果是一个不会受到 Zip Offset 自己后续驱动影响的 Rest World Matrix，
-    可以安全作为 blendMatrix 的基础矩阵，避免形成循环依赖。
-
-    Args:
-        zip_offset (str):
-            Zip Lip 网络中位于 Lip Joint 上方、接收闭合 Matrix 结果的 Offset Transform。
-        parent (str):
-            父级 Maya 节点名称。
-        function (str | callable):
-            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
-        index (int):
-            目标元素或节点的序号。
-
-    Returns:
-        dict:
-        方法执行后的结果数据。
     """
     local_matrix = cmds.xform(
         zip_offset,
@@ -346,9 +241,10 @@ def create_rest_world_matrix(
         matrix=True
     )
 
-    hold_matrix = cmds.createNode(
+    # 创建 holdMatrix 保存 Zip Offset 构建时的 Rest Local Matrix。
+    hold_matrix = scene_utils.create_node(
         "holdMatrix",
-        name=create_name(
+        create_name(
             "hold",
             "{}_rest".format(function),
             index
@@ -368,21 +264,25 @@ def create_rest_world_matrix(
     output_plug = hold_matrix + ".outMatrix"
 
     if parent is not None:
-        rest_mult_matrix = cmds.createNode(
+        # 创建 multMatrix，把固定 Rest Local Matrix 实时组合到 Parent World Space。
+        rest_mult_matrix = scene_utils.create_node(
             "multMatrix",
-            name=create_name(
+            create_name(
                 "mult",
                 "{}_rest_world".format(function),
                 index
             )
         )
 
-        cmds.connectAttr(
+        # 把 Rest Local Matrix 接入 Mult Matrix 第一项。
+        connection_utils.connect_plugs(
             hold_matrix + ".outMatrix",
             rest_mult_matrix + ".matrixIn[0]",
             force=True
         )
-        cmds.connectAttr(
+
+        # 把 Parent World Matrix 作为第二项，得到动态 Rest World Matrix。
+        connection_utils.connect_plugs(
             parent + ".worldMatrix[0]",
             rest_mult_matrix + ".matrixIn[1]",
             force=True
@@ -404,44 +304,30 @@ def connect_world_matrix_to_transform(
         function,
         index
 ):
-    u"""
-    把 World Matrix 安全转换到 Transform Parent Local Space。
-
-    Args:
-        world_matrix_plug (str):
-            完整 Maya Plug，例如 `node.translateX`。
-        transform (str):
-            需要处理的 Maya Transform 节点名称。
-        parent (str):
-            父级 Maya 节点名称。
-        function (str | callable):
-            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
-        index (int):
-            目标元素或节点的序号。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
+    u"""把 World Matrix 安全转换到 Transform Parent Local Space。"""
     nodes = []
     local_matrix_plug = world_matrix_plug
 
     if parent is not None:
-        local_mult_matrix = cmds.createNode(
+        # 创建 multMatrix 把目标 World Matrix 转换到当前 Parent Local Space。
+        local_mult_matrix = scene_utils.create_node(
             "multMatrix",
-            name=create_name(
+            create_name(
                 "mult",
                 "{}_local".format(function),
                 index
             )
         )
 
-        cmds.connectAttr(
+        # 输入需要应用到 Transform 的目标 World Matrix。
+        connection_utils.connect_plugs(
             world_matrix_plug,
             local_mult_matrix + ".matrixIn[0]",
             force=True
         )
-        cmds.connectAttr(
+
+        # 乘以 Parent World Inverse Matrix 得到 Transform Local Matrix。
+        connection_utils.connect_plugs(
             parent + ".worldInverseMatrix[0]",
             local_mult_matrix + ".matrixIn[1]",
             force=True
@@ -450,26 +336,32 @@ def connect_world_matrix_to_transform(
         nodes.append(local_mult_matrix)
         local_matrix_plug = local_mult_matrix + ".matrixSum"
 
-    decompose_matrix = cmds.createNode(
+    # 创建 decomposeMatrix，把最终 Local Matrix 拆成 Translate / Rotate。
+    decompose_matrix = scene_utils.create_node(
         "decomposeMatrix",
-        name=create_name(
+        create_name(
             "dcmp",
             function,
             index
         )
     )
 
-    cmds.connectAttr(
+    # 把最终 Local Matrix 输入 decomposeMatrix。
+    connection_utils.connect_plugs(
         local_matrix_plug,
         decompose_matrix + ".inputMatrix",
         force=True
     )
-    cmds.connectAttr(
+
+    # 用分解出的 Translation 驱动 Zip Offset。
+    connection_utils.connect_plugs(
         decompose_matrix + ".outputTranslate",
         transform + ".translate",
         force=True
     )
-    cmds.connectAttr(
+
+    # 用分解出的 Rotation 驱动 Zip Offset。
+    connection_utils.connect_plugs(
         decompose_matrix + ".outputRotate",
         transform + ".rotate",
         force=True
@@ -489,17 +381,7 @@ def configure_remap(
         start_position,
         end_position
 ):
-    u"""
-    配置 0~1 的线性 Remap。
-
-    Args:
-        remap_node (str):
-            Zip / Falloff 计算使用的 remapValue 节点。
-        start_position (list[float] | tuple[float, float, float] | float):
-            插值、Remap 或 Joint 分布的起始位置 / 起始值。
-        end_position (list[float] | tuple[float, float, float] | float):
-            插值、Remap 或 Joint 分布的结束位置 / 结束值。
-    """
+    u"""配置 0~1 的线性 Remap。"""
     if end_position <= start_position:
         end_position = start_position + 0.0001
 
@@ -535,25 +417,7 @@ def create_zip_influence(
         pair_index,
         falloff
 ):
-    u"""
-    创建一对嘴唇 Joint 的左右 Zip Influence 0~1。
-
-    Args:
-        left_zip_plug (str):
-            完整 Maya Plug，例如 `node.translateX`。
-        right_zip_plug (str):
-            完整 Maya Plug，例如 `node.translateX`。
-        pair_count (int):
-            当前构建、采样或查询过程使用的元素数量。
-        pair_index (int):
-            对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
-        falloff (float):
-            Zip Lip 或局部驱动沿嘴唇分布的衰减范围 / Falloff。
-
-    Returns:
-        dict:
-        方法执行后的结果数据。
-    """
+    u"""创建一对嘴唇 Joint 的左右 Zip Influence 0~1。"""
     step = 1.0 / float(pair_count)
     item_number = pair_index + 1
 
@@ -570,77 +434,91 @@ def create_zip_influence(
     if right_start < 0.0:
         right_start = 0.0
 
-    left_remap = cmds.createNode(
+    # 创建左右两条 remapValue，用于计算 Zip 从嘴角向中间传播的权重。
+    left_remap = scene_utils.create_node(
         "remapValue",
-        name=create_name(
+        create_name(
             "remap",
             "zip_left",
             item_number
         )
     )
-    right_remap = cmds.createNode(
+    right_remap = scene_utils.create_node(
         "remapValue",
-        name=create_name(
+        create_name(
             "remap",
             "zip_right",
             item_number
         )
     )
 
-    cmds.connectAttr(
+    # 把左右嘴角 Zip 属性分别输入对应 Remap。
+    connection_utils.connect_plugs(
         left_zip_plug,
         left_remap + ".inputValue",
         force=True
     )
-    cmds.connectAttr(
+    connection_utils.connect_plugs(
         right_zip_plug,
         right_remap + ".inputValue",
         force=True
     )
 
+    # 根据当前 Pair 的位置配置左侧 Zip 传播区间。
     configure_remap(
         left_remap,
         left_start,
         left_end
     )
+
+    # 根据镜像位置配置右侧 Zip 传播区间。
     configure_remap(
         right_remap,
         right_start,
         right_end
     )
 
-    add_node = cmds.createNode(
+    # 创建 Add Node，把左右 Zip Influence 合并。
+    add_node = scene_utils.create_node(
         "addDoubleLinear",
-        name=create_name(
+        create_name(
             "add",
             "zip_weight",
             item_number
         )
     )
-    clamp_node = cmds.createNode(
+
+    # 创建 Clamp，保证左右 Influence 叠加后最终权重仍在 0~1。
+    clamp_node = scene_utils.create_node(
         "clamp",
-        name=create_name(
+        create_name(
             "clamp",
             "zip_weight",
             item_number
         )
     )
 
-    cmds.connectAttr(
+    # 合并左侧 Remap 输出。
+    connection_utils.connect_plugs(
         left_remap + ".outValue",
         add_node + ".input1",
         force=True
     )
-    cmds.connectAttr(
+
+    # 合并右侧 Remap 输出。
+    connection_utils.connect_plugs(
         right_remap + ".outValue",
         add_node + ".input2",
         force=True
     )
-    cmds.connectAttr(
+
+    # 把合并结果输入 Clamp。
+    connection_utils.connect_plugs(
         add_node + ".output",
         clamp_node + ".inputR",
         force=True
     )
+
     cmds.setAttr(
         clamp_node + ".minR",
         0.0
@@ -675,50 +553,32 @@ def build_zip_pair(
         right_zip_plug,
         falloff
 ):
-    u"""
-    构建一对 Upper / Lower Lip Joint 的 Matrix Zip 网络。
-
-    Args:
-        upper_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
-        lower_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
-        pair_index (int):
-            对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
-        pair_count (int):
-            当前构建、采样或查询过程使用的元素数量。
-        zip_height_reverse_plug (str):
-            完整 Maya Plug，例如 `node.translateX`。
-        left_zip_plug (str):
-            完整 Maya Plug，例如 `node.translateX`。
-        right_zip_plug (str):
-            完整 Maya Plug，例如 `node.translateX`。
-        falloff (float):
-            Zip Lip 或局部驱动沿嘴唇分布的衰减范围 / Falloff。
-
-    Returns:
-        dict:
-        方法执行后的结果数据。
-    """
+    u"""构建一对 Upper / Lower Lip Joint 的 Matrix Zip 网络。"""
     item_number = pair_index + 1
 
+    # 在 Upper Joint 上方插入独立 Zip Offset 层，隔离闭合驱动和 Joint Local 动画。
     upper_insert = insert_zip_offset_group(
         upper_joint,
         "upper_zip_offset",
         item_number
     )
+
+    # 在 Lower Joint 上方插入独立 Zip Offset 层。
     lower_insert = insert_zip_offset_group(
         lower_joint,
         "lower_zip_offset",
         item_number
     )
 
+    # 创建 Upper Zip Offset 的动态 Rest World Matrix。
     upper_rest = create_rest_world_matrix(
         upper_insert["zip_offset"],
         upper_insert["parent"],
         "upper",
         item_number
     )
+
+    # 创建 Lower Zip Offset 的动态 Rest World Matrix。
     lower_rest = create_rest_world_matrix(
         lower_insert["zip_offset"],
         lower_insert["parent"],
@@ -726,31 +586,38 @@ def build_zip_pair(
         item_number
     )
 
-    mid_blend = cmds.createNode(
+    # 创建 Mid Blend，在 Upper / Lower Rest Matrix 之间计算闭合目标矩阵。
+    mid_blend = scene_utils.create_node(
         "blendMatrix",
-        name=create_name(
+        create_name(
             "blend",
             "zip_mid",
             item_number
         )
     )
 
-    cmds.connectAttr(
+    # Upper Rest 作为 Mid Blend 起始矩阵。
+    connection_utils.connect_plugs(
         upper_rest["output"],
         mid_blend + ".inputMatrix",
         force=True
     )
-    cmds.connectAttr(
+
+    # Lower Rest 作为 Mid Blend Target Matrix。
+    connection_utils.connect_plugs(
         lower_rest["output"],
         mid_blend + ".target[0].targetMatrix",
         force=True
     )
-    cmds.connectAttr(
+
+    # Zip Height Reverse 决定闭合目标在 Upper / Lower 之间的位置。
+    connection_utils.connect_plugs(
         zip_height_reverse_plug,
         mid_blend + ".target[0].weight",
         force=True
     )
 
+    # 创建当前 Pair 的左右 Zip 传播权重。
     influence = create_zip_influence(
         left_zip_plug,
         right_zip_plug,
@@ -759,55 +626,59 @@ def build_zip_pair(
         falloff
     )
 
-    upper_zip_blend = cmds.createNode(
+    # 创建 Upper / Lower 最终 Zip Blend Matrix。
+    upper_zip_blend = scene_utils.create_node(
         "blendMatrix",
-        name=create_name(
+        create_name(
             "blend",
             "upper_zip",
             item_number
         )
     )
-    lower_zip_blend = cmds.createNode(
+    lower_zip_blend = scene_utils.create_node(
         "blendMatrix",
-        name=create_name(
+        create_name(
             "blend",
             "lower_zip",
             item_number
         )
     )
 
-    cmds.connectAttr(
+    # Upper 从自身 Rest Matrix 混合到共同 Mid Matrix。
+    connection_utils.connect_plugs(
         upper_rest["output"],
         upper_zip_blend + ".inputMatrix",
         force=True
     )
-    cmds.connectAttr(
+    connection_utils.connect_plugs(
         mid_blend + ".outputMatrix",
         upper_zip_blend + ".target[0].targetMatrix",
         force=True
     )
-    cmds.connectAttr(
+    connection_utils.connect_plugs(
         influence["output"],
         upper_zip_blend + ".target[0].weight",
         force=True
     )
 
-    cmds.connectAttr(
+    # Lower 从自身 Rest Matrix 混合到同一个 Mid Matrix。
+    connection_utils.connect_plugs(
         lower_rest["output"],
         lower_zip_blend + ".inputMatrix",
         force=True
     )
-    cmds.connectAttr(
+    connection_utils.connect_plugs(
         mid_blend + ".outputMatrix",
         lower_zip_blend + ".target[0].targetMatrix",
         force=True
     )
-    cmds.connectAttr(
+    connection_utils.connect_plugs(
         influence["output"],
         lower_zip_blend + ".target[0].weight",
         force=True
     )
 
+    # 把 Upper 最终 World Matrix 转成 Zip Offset Parent Local Space 并驱动 Transform。
     upper_output_nodes = connect_world_matrix_to_transform(
         upper_zip_blend + ".outputMatrix",
         upper_insert["zip_offset"],
@@ -815,6 +686,8 @@ def build_zip_pair(
         "upper_zip_output",
         item_number
     )
+
+    # 把 Lower 最终 World Matrix 转成 Zip Offset Parent Local Space 并驱动 Transform。
     lower_output_nodes = connect_world_matrix_to_transform(
         lower_zip_blend + ".outputMatrix",
         lower_insert["zip_offset"],
@@ -861,6 +734,7 @@ def build_zip_pair(
 # Public Build
 # =============================================================================
 
+@scene_utils.undo_chunk
 def build_zip_lip(
         upper_joints,
         lower_joints,
@@ -871,36 +745,7 @@ def build_zip_lip(
         falloff=3,
         utility_parent=None
 ):
-    u"""
-    创建 Matrix Zip Lip。
-
-    Args:
-        upper_joints (list):
-            从左到右排列的 Upper Lip Joint。
-        lower_joints (list):
-            与 upper_joints 一一对应的 Lower Lip Joint。
-        left_zip_control (str):
-            左嘴角控制器。
-        right_zip_control (str):
-            右嘴角控制器。
-        jaw_control (str):
-            Jaw / Mouth 主控制器。
-        zip_height (float):
-            0=靠近 Lower，1=靠近 Upper，默认 0.5。
-        falloff (int):
-            Zip 传播覆盖的 Joint Pair 步数。
-        utility_parent (str/None):
-            Utility Group 的 Parent。
-
-    Returns:
-        dict: Zip Lip 系统结果。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-        ValueError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-    """
+    u"""创建 Matrix Zip Lip。"""
     if upper_joints is None:
         upper_joints = []
 
@@ -922,6 +767,7 @@ def build_zip_lip(
 
     index = 0
 
+    # 逐对检查 Upper / Lower 输入确实是有效 Joint。
     while index < len(upper_joints):
         validate_joint(
             upper_joints[index],
@@ -933,6 +779,7 @@ def build_zip_lip(
         )
         index += 1
 
+    # 检查左右嘴角 Zip Controller。
     validate_transform(
         left_zip_control,
         u"Left Zip Control"
@@ -941,12 +788,15 @@ def build_zip_lip(
         right_zip_control,
         u"Right Zip Control"
     )
+
+    # 检查 Jaw / Mouth 主 Controller。
     validate_transform(
         jaw_control,
         u"Jaw Control"
     )
 
     if utility_parent is not None:
+        # 如果指定 Utility Parent，先确认该层级有效。
         validate_transform(
             utility_parent,
             u"Utility Parent"
@@ -962,6 +812,7 @@ def build_zip_lip(
     if falloff < 1:
         raise ValueError(u"falloff 必须大于或等于 1。")
 
+    # 生成 Zip Lip Utility Nodes 顶层 Group 名称。
     node_group_name = create_name(
         "grp",
         "zip_nodes",
@@ -975,6 +826,7 @@ def build_zip_lip(
             )
         )
 
+    # 在左右嘴角 Controller 上创建或复用 Zip 属性。
     left_zip_plug = ensure_float_attribute(
         left_zip_control,
         "zip",
@@ -989,6 +841,8 @@ def build_zip_lip(
         1.0,
         0.0
     )
+
+    # 在 Jaw Controller 上创建或复用 Zip Height 属性。
     zip_height_plug = ensure_float_attribute(
         jaw_control,
         "zipHeight",
@@ -1000,15 +854,11 @@ def build_zip_lip(
     created_zip_offsets = []
     node_group = None
 
-    cmds.undoInfo(
-        openChunk=True,
-        chunkName="MuziFaceZipLipBuild"
-    )
-
     try:
-        node_group = cmds.createNode(
+        # 使用 Scene Core 创建并隐藏 Zip Lip Utility Transform Group。
+        node_group = scene_utils.create_node(
             "transform",
-            name=node_group_name,
+            node_group_name,
             parent=utility_parent
         )
 
@@ -1017,16 +867,18 @@ def build_zip_lip(
             0
         )
 
-        height_reverse = cmds.createNode(
+        # 创建 Reverse Node，把 zipHeight 转换成 Mid Blend 使用的 Lower 权重。
+        height_reverse = scene_utils.create_node(
             "reverse",
-            name=create_name(
+            create_name(
                 "rvs",
                 "zip_height",
                 1
             )
         )
 
-        cmds.connectAttr(
+        # 把 Jaw zipHeight 输入 Reverse Node。
+        connection_utils.connect_plugs(
             zip_height_plug,
             height_reverse + ".inputX",
             force=True
@@ -1039,6 +891,7 @@ def build_zip_lip(
 
         pair_index = 0
 
+        # 按 Upper / Lower Joint 的配对顺序逐个建立 Matrix Zip Pair。
         while pair_index < len(upper_joints):
             pair_result = build_zip_pair(
                 upper_joint=upper_joints[pair_index],
@@ -1064,25 +917,25 @@ def build_zip_lip(
 
             pair_index += 1
 
+        # 只有 DAG Transform Utility 才需要 Parent 到隐藏 Group；DG 节点不参与 DAG Parent。
         for utility_node in utility_nodes:
-            parents = cmds.listRelatives(
-                utility_node,
-                parent=True,
-                fullPath=True
-            )
-
-            if parents:
+            if cmds.nodeType(utility_node) != "transform":
                 continue
 
-            node_type = cmds.nodeType(utility_node)
+            parent = hierarchy_utils.Hierarchy.get_parent(
+                utility_node,
+                full_path=True
+            )
 
-            if node_type == "transform":
-                cmds.parent(
-                    utility_node,
-                    node_group
-                )
+            if parent:
+                continue
 
-        result = {
+            hierarchy_utils.Hierarchy.parent(
+                utility_node,
+                node_group
+            )
+
+        return {
             "node_group": node_group,
             "left_zip_plug": left_zip_plug,
             "right_zip_plug": right_zip_plug,
@@ -1093,50 +946,49 @@ def build_zip_lip(
             "zip_offsets": created_zip_offsets,
         }
 
-        return result
-
     except Exception:
+        # 构建失败时先删除 Utility Group，清理所有被 Parent 到其中的 DAG 节点。
         if node_group is not None:
             if cmds.objExists(node_group):
-                cmds.delete(node_group)
+                cmds.delete(
+                    node_group
+                )
 
+        # 把已经插入 Zip Offset 的 Joint 恢复到原 Parent，再删除临时 Offset Group。
         for zip_offset in created_zip_offsets:
             if not cmds.objExists(zip_offset):
                 continue
 
-            children = cmds.listRelatives(
+            children = hierarchy_utils.Hierarchy.get_children(
                 zip_offset,
-                children=True,
-                type="joint",
-                fullPath=True
+                node_type="joint",
+                full_path=True
             )
 
-            if children is None:
-                children = []
-
-            parent = get_parent(zip_offset)
+            parent = hierarchy_utils.Hierarchy.get_parent(
+                zip_offset,
+                full_path=True
+            )
 
             for child_joint in children:
                 if parent is None:
                     cmds.parent(
                         child_joint,
-                        world=True
+                        world=True,
+                        absolute=True
                     )
                 else:
-                    cmds.parent(
+                    hierarchy_utils.Hierarchy.parent(
                         child_joint,
                         parent
                     )
 
             if cmds.objExists(zip_offset):
-                cmds.delete(zip_offset)
+                cmds.delete(
+                    zip_offset
+                )
 
         raise
-
-    finally:
-        cmds.undoInfo(
-            closeChunk=True
-        )
 
 
 __all__ = [
