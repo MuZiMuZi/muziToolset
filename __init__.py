@@ -33,6 +33,9 @@ tool_window_smoke_test()
 controller_component_smoke_test()
 face_component_smoke_test()
     验证独立 Rig Component；System 本身由各自测试负责。
+
+rig_integration_test()
+    验证 Joint / Controller / Hierarchy / OPM / Transform / Connection 完整基础 Rig 链。
 """
 
 from __future__ import print_function
@@ -121,6 +124,13 @@ def controller_component_smoke_test():
     return controller_component_smoke_test.run()
 
 
+def rig_integration_test():
+    """运行基础 Rig 跨模块 Integration Test。"""
+    from .tests import rig_integration_test
+
+    return rig_integration_test.run()
+
+
 __all__ = [
     "show",
     "initialize",
@@ -132,4 +142,5 @@ __all__ = [
     "tool_window_smoke_test",
     "face_component_smoke_test",
     "controller_component_smoke_test",
+    "rig_integration_test",
 ]
