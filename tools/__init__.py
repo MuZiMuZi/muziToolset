@@ -211,13 +211,25 @@ def _discover_tools():
 
 
 def refresh_tools():
-    """重新扫描磁盘中的工具文件。"""
+    u"""
+    重新扫描磁盘中的工具文件。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     _discover_tools()
     return get_tools_by_category()
 
 
 def get_tools_by_category():
-    """返回分类 -> 工具名 -> Runner 的浅拷贝。"""
+    u"""
+    返回分类 -> 工具名 -> Runner 的浅拷贝。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     result = {}
 
     for category_name in _tools_categories:
@@ -228,7 +240,13 @@ def get_tools_by_category():
 
 
 def get_categories():
-    """返回当前工具分类顺序。"""
+    u"""
+    返回当前工具分类顺序。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     categories = []
 
     for category_name in _tools_categories:
@@ -238,7 +256,17 @@ def get_categories():
 
 
 def get_tools_in_category(category_name):
-    """返回一个分类中的工具 Runner。"""
+    u"""
+    返回一个分类中的工具 Runner。
+
+    Args:
+        category_name (str):
+            `category_name` 对应的 Maya 节点或资源名称。
+
+    Returns:
+        object | dict:
+            方法执行后的结果数据。
+    """
     if category_name not in _tools_categories:
         return {}
 
@@ -246,7 +274,23 @@ def get_tools_in_category(category_name):
 
 
 def run_tool(category_name, tool_name):
-    """按照注册表名称执行工具。"""
+    u"""
+    按照注册表名称执行工具。
+
+    Args:
+        category_name (str):
+            `category_name` 对应的 Maya 节点或资源名称。
+        tool_name (str):
+            `tool_name` 对应的 Maya 节点或资源名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        KeyError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if category_name not in _tools_categories:
         raise KeyError(
             u"工具分类不存在：{}".format(category_name)

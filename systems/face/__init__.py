@@ -22,7 +22,13 @@ from .lip import build_zip_lip
 
 
 def show():
-    """打开 Face Rig Wizard。"""
+    u"""
+    打开 Face Rig Wizard。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from . import wizard
 
     return wizard.main()

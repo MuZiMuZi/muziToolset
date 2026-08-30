@@ -87,6 +87,18 @@ class SkirtRigBuilder(object):
             horizontal_count=8,
             vertical_count=4
     ):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
+            horizontal_count (int):
+                `horizontal_count` 对应的整数参数。
+            vertical_count (int):
+                `vertical_count` 对应的整数参数。
+        """
+
         self.name = _safe_name(name)
         self.horizontal_count = int(horizontal_count)
         self.vertical_count = int(vertical_count)
@@ -98,7 +110,17 @@ class SkirtRigBuilder(object):
     # -------------------------------------------------------------------------
 
     def validate_parameters(self):
-        """检查 Builder 参数。"""
+        u"""
+        检查 Builder 参数。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if self.horizontal_count < 3:
             raise ValueError(
                 u"裙子横向链数量不能小于 3。"
@@ -112,7 +134,13 @@ class SkirtRigBuilder(object):
         return True
 
     def get_names(self):
-        """返回系统内所有固定节点名称。"""
+        u"""
+        返回系统内所有固定节点名称。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+        """
         return {
             "name": self.name,
             "root": "grp_m_{}_001".format(self.name),
@@ -131,7 +159,13 @@ class SkirtRigBuilder(object):
     # -------------------------------------------------------------------------
 
     def ensure_root_groups(self):
-        """确保裙子系统基础层级存在。"""
+        u"""
+        确保裙子系统基础层级存在。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         names = self.get_names()
 
         root = _ensure_group(
@@ -308,7 +342,13 @@ class SkirtRigBuilder(object):
             index += 1
 
     def create_setup(self):
-        """创建或重建裙子定位系统。"""
+        u"""
+        创建或重建裙子定位系统。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+        """
         self.validate_parameters()
 
         cmds.undoInfo(
@@ -359,7 +399,13 @@ class SkirtRigBuilder(object):
             cmds.undoInfo(closeChunk=True)
 
     def select_setup_curves(self):
-        """选择当前裙子系统的两条定位曲线。"""
+        u"""
+        选择当前裙子系统的两条定位曲线。
+
+        Returns:
+            object | list:
+                方法执行后的结果数据。
+        """
         names = self.get_names()
         curves = []
 
@@ -445,7 +491,13 @@ class SkirtRigBuilder(object):
         return True
 
     def build(self):
-        """根据当前 Blueprint 创建完整裙子 FK 绑定。"""
+        u"""
+        根据当前 Blueprint 创建完整裙子 FK 绑定。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+        """
         self.validate_parameters()
         names = self.ensure_root_groups()
         self._validate_blueprints(names)

@@ -74,11 +74,12 @@ import os
 # =============================================================================
 
 def normalize_path(file_path):
-    """
+    u"""
     返回统一使用正斜杠的规范路径。
 
     Args:
-        file_path(str): 输入路径。
+        file_path (str):
+            输入路径。
 
     Returns:
         str: 规范化路径；空输入返回空字符串。
@@ -98,10 +99,22 @@ def normalize_path(file_path):
 
 
 def ensure_directory(directory):
-    """
+    u"""
     确保目录存在，并返回规范后的目录路径。
 
     目录不存在时会递归创建。
+
+    Args:
+        directory (str):
+            需要读取或写入的目录路径。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：目录参数不能为空。
     if not directory:
@@ -122,12 +135,20 @@ def ensure_directory(directory):
 # =============================================================================
 
 def normalize_extensions(extensions):
-    """
+    u"""
     将扩展名统一成小写、带点号、保持顺序去重的列表。
+
+    Args:
+        extensions (object):
+            `extensions` 对应的输入数据。
+
+    Returns:
+        object | None:
+            方法执行后的结果数据。
 
     Example:
         ["MA", ".mb", "json"]
-            -> [".ma", ".mb", ".json"]
+                -> [".ma", ".mb", ".json"]
     """
     # 步骤 1：None 表示不过滤扩展名。
     if extensions is None:
@@ -170,21 +191,27 @@ def find_files(
         recursive=True,
         return_paths=True
 ):
-    """
+    u"""
     按扩展名扫描目录文件。
 
     Args:
-        directory(str): 根目录。
-        extensions(str/list/None):
-            例如 "ma"、["ma", "mb"]、[".json"]；
-            None 表示不过滤扩展名。
-        recursive(bool): 是否递归扫描子目录。
-        return_paths(bool):
-            True 返回完整路径；
-            False 只返回文件名。
+        directory (str):
+            根目录。
+        extensions (str/list/None):
+            例如 "ma"、["ma", "mb"]、[".json"]； None 表示不过滤扩展名。
+        recursive (bool):
+            是否递归扫描子目录。
+        return_paths (bool):
+            True 返回完整路径； False 只返回文件名。
 
     Returns:
         list: 排序后的文件列表。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：规范化并验证根目录。
@@ -274,14 +301,24 @@ def find_files(
 # =============================================================================
 
 def read_json(file_path, default=None):
-    """
+    u"""
     读取 UTF-8 JSON 文件。
 
     Args:
-        file_path(str): JSON 文件路径。
-        default(any):
-            文件不存在时可返回的默认值；
-            default=None 时文件不存在会抛 RuntimeError。
+        file_path (str):
+            JSON 文件路径。
+        default (any):
+            文件不存在时可返回的默认值； default=None 时文件不存在会抛 RuntimeError。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：规范化路径。
     normalized_path = normalize_path(file_path)
@@ -310,11 +347,27 @@ def write_json(
         ensure_ascii=False,
         sort_keys=False
 ):
-    """
+    u"""
     将数据写入 UTF-8 JSON 文件，并自动创建父目录。
+
+    Args:
+        file_path (str):
+            需要读取或写入的文件路径。
+        data (object):
+            `data` 对应的输入数据。
+        indent (int):
+            `indent` 对应的整数参数。
+        ensure_ascii (bool):
+            是否启用 `ensure_ascii` 对应的处理。
+        sort_keys (bool):
+            是否启用 `sort_keys` 对应的处理。
 
     Returns:
         str: 最终写入路径。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：规范化输出路径。
     normalized_path = normalize_path(file_path)
@@ -346,13 +399,33 @@ def write_json(
 # =============================================================================
 
 def get_file_name(file_path):
-    """返回路径中的完整文件名，例如 ``character.ma``。"""
+    u"""
+    返回路径中的完整文件名，例如 ``character.ma``。
+
+    Args:
+        file_path (str):
+            需要读取或写入的文件路径。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     normalized_path = normalize_path(file_path)
     return os.path.basename(normalized_path)
 
 
 def get_file_stem(file_path):
-    """返回不包含扩展名的文件名，例如 ``character``。"""
+    u"""
+    返回不包含扩展名的文件名，例如 ``character``。
+
+    Args:
+        file_path (str):
+            需要读取或写入的文件路径。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     # 步骤 1：先取得文件名。
     file_name = get_file_name(file_path)
 

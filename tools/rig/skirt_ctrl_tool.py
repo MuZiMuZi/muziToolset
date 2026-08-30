@@ -45,6 +45,14 @@ class SkirtRigDialog(QDialog):
     """裙子绑定工具窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(SkirtRigDialog, self).__init__(parent)
 
         self.create_widgets()
@@ -59,7 +67,9 @@ class SkirtRigDialog(QDialog):
         self.resize(520, 430)
 
     def create_widgets(self):
-        """创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(u"裙子绑定")
         self.subtitle_label = theme.make_subtitle(
             u"先创建上下定位曲线并调整造型，再生成纵向 Joint Chain 和 FK Controller。"
@@ -89,7 +99,9 @@ class SkirtRigDialog(QDialog):
         theme.set_role(self.status_label, "muted")
 
     def create_layouts(self):
-        """创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -155,7 +167,9 @@ class SkirtRigDialog(QDialog):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        """连接 UI 信号。"""
+        u"""
+        连接 UI 信号。
+        """
         self.create_setup_button.clicked.connect(
             self.create_setup
         )
@@ -167,7 +181,13 @@ class SkirtRigDialog(QDialog):
         )
 
     def create_builder(self):
-        """根据当前 UI 参数创建 Skirt Builder。"""
+        u"""
+        根据当前 UI 参数创建 Skirt Builder。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return SkirtRigBuilder(
             name=self.name_line.text(),
             horizontal_count=self.horizontal_spin.value(),
@@ -175,7 +195,9 @@ class SkirtRigDialog(QDialog):
         )
 
     def create_setup(self):
-        """创建或重建定位系统。"""
+        u"""
+        创建或重建定位系统。
+        """
         try:
             builder = self.create_builder()
             builder.create_setup()
@@ -189,7 +211,9 @@ class SkirtRigDialog(QDialog):
             self.status_label.setText(u"定位创建失败")
 
     def select_setup_curves(self):
-        """选择定位曲线。"""
+        u"""
+        选择定位曲线。
+        """
         try:
             builder = self.create_builder()
             curves = builder.select_setup_curves()
@@ -200,7 +224,9 @@ class SkirtRigDialog(QDialog):
             cmds.warning(str(error))
 
     def build_rig(self):
-        """执行完整裙子绑定 Build。"""
+        u"""
+        执行完整裙子绑定 Build。
+        """
         try:
             builder = self.create_builder()
             result = builder.build()
@@ -218,7 +244,13 @@ class SkirtRigDialog(QDialog):
 
 
 def main():
-    """显示并返回 Skirt Rig 窗口。"""
+    u"""
+    显示并返回 Skirt Rig 窗口。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.rig.skirt_ctrl_tool",
         SkirtRigDialog

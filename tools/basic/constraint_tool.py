@@ -80,6 +80,14 @@ class ConstraintTool(QWidget):
     """Maya 常用约束工具窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(ConstraintTool, self).__init__(parent)
 
         self.create_widgets()
@@ -98,7 +106,9 @@ class ConstraintTool(QWidget):
     # =========================================================================
 
     def create_widgets(self):
-        """创建窗口中使用的所有部件。"""
+        u"""
+        创建窗口中使用的所有部件。
+        """
         self.title_label = ui_theme.make_title(u"约束工具")
         self.subtitle_label = ui_theme.make_subtitle(
             u"统一创建常用 Constraint，并管理选择对象已有的约束节点。"
@@ -161,7 +171,9 @@ class ConstraintTool(QWidget):
         ui_theme.style_danger(self.delete_constraint_button)
 
     def create_layouts(self):
-        """创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -222,7 +234,9 @@ class ConstraintTool(QWidget):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        """连接所有按钮事件。"""
+        u"""
+        连接所有按钮事件。
+        """
         self.parent_constraint_button.clicked.connect(
             self.clicked_parent_constraint_button
         )
@@ -253,7 +267,13 @@ class ConstraintTool(QWidget):
     # =========================================================================
 
     def get_driver_and_driven_objects(self):
-        """根据当前模式拆分 Driver / Driven。"""
+        u"""
+        根据当前模式拆分 Driver / Driven。
+
+        Returns:
+            tuple:
+                方法执行后的结果数据。
+        """
         selected_objects = cmds.ls(
             selection=True,
             long=True
@@ -295,7 +315,15 @@ class ConstraintTool(QWidget):
             constraint_type,
             chunk_name
     ):
-        """收集 UI 参数并调用 Core 创建标准约束。"""
+        u"""
+        收集 UI 参数并调用 Core 创建标准约束。
+
+        Args:
+            constraint_type (object):
+                `constraint_type` 对应的输入数据。
+            chunk_name (str):
+                `chunk_name` 对应的 Maya 节点或资源名称。
+        """
         driver_objects, driven_objects = self.get_driver_and_driven_objects()
 
         if not driver_objects or not driven_objects:
@@ -327,37 +355,59 @@ class ConstraintTool(QWidget):
             cmds.undoInfo(closeChunk=True)
 
     def clicked_parent_constraint_button(self):
+        u"""
+        执行 `clicked_parent_constraint_button` 对应的 Maya 工具操作。
+        """
+
         self.create_standard_constraint(
             "parentConstraint",
             "MuziParentConstraint"
         )
 
     def clicked_point_constraint_button(self):
+        u"""
+        执行 `clicked_point_constraint_button` 对应的 Maya 工具操作。
+        """
+
         self.create_standard_constraint(
             "pointConstraint",
             "MuziPointConstraint"
         )
 
     def clicked_orient_constraint_button(self):
+        u"""
+        执行 `clicked_orient_constraint_button` 对应的 Maya 工具操作。
+        """
+
         self.create_standard_constraint(
             "orientConstraint",
             "MuziOrientConstraint"
         )
 
     def clicked_scale_constraint_button(self):
+        u"""
+        执行 `clicked_scale_constraint_button` 对应的 Maya 工具操作。
+        """
+
         self.create_standard_constraint(
             "scaleConstraint",
             "MuziScaleConstraint"
         )
 
     def clicked_aim_constraint_button(self):
+        u"""
+        执行 `clicked_aim_constraint_button` 对应的 Maya 工具操作。
+        """
+
         self.create_standard_constraint(
             "aimConstraint",
             "MuziAimConstraint"
         )
 
     def clicked_pole_vector_constraint_button(self):
-        """创建 Pole Vector Constraint。"""
+        u"""
+        创建 Pole Vector Constraint。
+        """
         selected_objects = cmds.ls(
             selection=True,
             long=True
@@ -390,11 +440,23 @@ class ConstraintTool(QWidget):
 
     @staticmethod
     def get_constraints_from_objects(selected_objects):
-        """从 Core 查询对象关联的约束节点。"""
+        u"""
+        从 Core 查询对象关联的约束节点。
+
+        Args:
+            selected_objects (object):
+                `selected_objects` 对应的输入数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return constraint_utils.get_constraints(selected_objects)
 
     def clicked_select_constraint_button(self):
-        """选择当前对象关联的所有约束节点。"""
+        u"""
+        选择当前对象关联的所有约束节点。
+        """
         selected_objects = cmds.ls(
             selection=True,
             long=True
@@ -416,7 +478,9 @@ class ConstraintTool(QWidget):
         )
 
     def clicked_delete_constraint_button(self):
-        """删除当前对象关联的所有约束节点。"""
+        u"""
+        删除当前对象关联的所有约束节点。
+        """
         selected_objects = cmds.ls(
             selection=True,
             long=True
@@ -444,7 +508,13 @@ class ConstraintTool(QWidget):
 
 
 def main():
-    """创建或恢复 Constraint Tool，立即显示并返回 QWidget。"""
+    u"""
+    创建或恢复 Constraint Tool，立即显示并返回 QWidget。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.basic.constraint_tool",
         ConstraintTool

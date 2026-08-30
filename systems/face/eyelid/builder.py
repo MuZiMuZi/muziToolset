@@ -28,7 +28,23 @@ from ....core import transform_utils
 # =============================================================================
 
 def validate_transform(node, label):
-    """检查 Transform / Joint 输入。"""
+    u"""
+    检查 Transform / Joint 输入。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+        label (object):
+            `label` 对应的输入数据。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if not node:
         raise RuntimeError(
             u"{}不能为空。".format(label)
@@ -57,12 +73,38 @@ def validate_transform(node, label):
 
 
 def validate_side(side):
-    """把方向统一成 lf / rt / md。"""
+    u"""
+    把方向统一成 lf / rt / md。
+
+    Args:
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return name_utils.Name.normalize_side(side)
 
 
 def normalize_name_part(value, label):
-    """清理用于 Rig 命名的字段。"""
+    u"""
+    清理用于 Rig 命名的字段。
+
+    Args:
+        value (float):
+            需要读取、写入或参与计算的数值。
+        label (object):
+            `label` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if value is None:
         raise ValueError(
             u"{}不能为空。".format(label)
@@ -97,13 +139,31 @@ def create_rig_name(
         role,
         index=1
 ):
-    """
+    u"""
     创建 Eye Area Rig 名称。
 
     例如：
         grp_lf_upper_lid_rig_nodes_001
         grp_lf_lower_eye_bag_attach_003
         jnt_lf_upper_lid_bind_005
+
+    Args:
+        node_type (str):
+            `node_type` 对应的名称、标记或字符串参数。
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        region (str):
+            `region` 对应的名称、标记或字符串参数。
+        feature (str):
+            `feature` 对应的名称、标记或字符串参数。
+        role (object):
+            `role` 对应的输入数据。
+        index (int):
+            目标元素或节点的序号。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     side = validate_side(side)
     region = normalize_name_part(
@@ -147,7 +207,7 @@ def build_radial_curve_joints(
         parent_group=None,
         joint_radius=0.2
 ):
-    """
+    u"""
     基于 Curve CV 创建眼区放射状 Joint。
 
     适用：
@@ -155,32 +215,41 @@ def build_radial_curve_joints(
         lower lid
         upper eye bag
         lower eye bag
-
     原理：
         Eye Center
             -> Aim Group
                 -> Bind Joint
-
         Curve
             -> pointOnCurveInfo
                 -> Attachment
                     -> Aim Constraint -> Aim Group
-
     Joint 本身不承担 Aim Constraint，Aim Group 负责方向；
     Joint 只沿 Local X 放置到眼皮 / 眼袋位置，便于后续蒙皮和驱动。
 
     Args:
-        curve(str): 眼皮 / 眼袋驱动 Curve。
-        eye_joint(str): 眼球中心 Joint 或 Transform。
-        up_object(str): Aim Constraint World Up 参考物体。
-        side(str): lf / rt / md。
-        region(str): upper / lower。
-        feature(str): lid / eye_bag 等。
-        parent_group(str/None): Rig Nodes Group 的父组。
-        joint_radius(float): Joint 显示半径。
+        curve (str):
+            眼皮 / 眼袋驱动 Curve。
+        eye_joint (str):
+            眼球中心 Joint 或 Transform。
+        up_object (str):
+            Aim Constraint World Up 参考物体。
+        side (str):
+            lf / rt / md。
+        region (str):
+            upper / lower。
+        feature (str):
+            lid / eye_bag 等。
+        parent_group (str/None):
+            Rig Nodes Group 的父组。
+        joint_radius (float):
+            Joint 显示半径。
 
     Returns:
         dict: 构建结果。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     curve_utils.get_curve_shape(curve)
     validate_transform(
@@ -459,7 +528,29 @@ def build_eyelid_joints(
         parent_group=None,
         joint_radius=0.2
 ):
-    """眼皮专用入口。"""
+    u"""
+    眼皮专用入口。
+
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+        eye_joint (object):
+            `eye_joint` 对应的输入数据。
+        up_object (str):
+            `up_object` 对应的名称、标记或字符串参数。
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        region (str):
+            `region` 对应的名称、标记或字符串参数。
+        parent_group (object):
+            `parent_group` 对应的输入数据。
+        joint_radius (float):
+            `joint_radius` 对应的数值参数。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return build_radial_curve_joints(
         curve=curve,
         eye_joint=eye_joint,
@@ -481,7 +572,29 @@ def build_eye_bag_joints(
         parent_group=None,
         joint_radius=0.2
 ):
-    """眼袋专用入口。"""
+    u"""
+    眼袋专用入口。
+
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+        eye_joint (object):
+            `eye_joint` 对应的输入数据。
+        up_object (str):
+            `up_object` 对应的名称、标记或字符串参数。
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        region (str):
+            `region` 对应的名称、标记或字符串参数。
+        parent_group (object):
+            `parent_group` 对应的输入数据。
+        joint_radius (float):
+            `joint_radius` 对应的数值参数。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return build_radial_curve_joints(
         curve=curve,
         eye_joint=eye_joint,

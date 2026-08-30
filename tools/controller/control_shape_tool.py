@@ -134,6 +134,14 @@ class ShapeListWidget(QListWidget):
     """Controller Shape JSON 图库。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(ShapeListWidget, self).__init__(parent)
 
         self.setMovement(QListWidget.Static)
@@ -150,7 +158,9 @@ class ShapeListWidget(QListWidget):
         self.refresh()
 
     def create_menu(self):
-        """创建 Shape 图库右键菜单。"""
+        u"""
+        创建 Shape 图库右键菜单。
+        """
         self.menu = QMenu(self)
         self.menu.addAction(
             u"应用 Shape",
@@ -167,16 +177,28 @@ class ShapeListWidget(QListWidget):
         )
 
     def create_connections(self):
-        """连接 Shape 图库信号。"""
+        u"""
+        连接 Shape 图库信号。
+        """
         self.itemDoubleClicked.connect(
             self.apply_item_shape
         )
 
     def contextMenuEvent(self, event):
+        u"""
+        执行 `contextMenuEvent` 对应的 Maya 工具操作。
+
+        Args:
+            event (object):
+                `event` 对应的输入数据。
+        """
+
         self.menu.exec_(event.globalPos())
 
     def refresh(self):
-        """重新扫描 Controller Shape 资源目录。"""
+        u"""
+        重新扫描 Controller Shape 资源目录。
+        """
         self.clear()
 
         library_dir = control_shape_utils.get_library_dir()
@@ -230,11 +252,19 @@ class ShapeListWidget(QListWidget):
             item.setTextAlignment(Qt.AlignHCenter)
 
     def apply_item_shape(self, item):
-        """双击图库项目时应用 Shape。"""
+        u"""
+        双击图库项目时应用 Shape。
+
+        Args:
+            item (object):
+                `item` 对应的输入数据。
+        """
         self.apply_shape_name(item.text())
 
     def apply_selected_shape(self):
-        """应用当前第一个选中的图库 Shape。"""
+        u"""
+        应用当前第一个选中的图库 Shape。
+        """
         items = self.selectedItems()
 
         if not items:
@@ -245,7 +275,13 @@ class ShapeListWidget(QListWidget):
 
     @staticmethod
     def apply_shape_name(shape_name):
-        """把指定 Shape 应用到选择控制器，或创建新控制器。"""
+        u"""
+        把指定 Shape 应用到选择控制器，或创建新控制器。
+
+        Args:
+            shape_name (str):
+                `shape_name` 对应的 Maya 节点或资源名称。
+        """
         try:
             shape_data = control_shape_utils.load_shape_data(
                 shape_name
@@ -287,7 +323,9 @@ class ShapeListWidget(QListWidget):
             cmds.undoInfo(closeChunk=True)
 
     def upload_control(self):
-        """把当前一个 Curve Controller 保存进图库。"""
+        u"""
+        把当前一个 Curve Controller 保存进图库。
+        """
         transforms = control_shape_utils.get_selected_curve_transforms()
 
         if len(transforms) != 1:
@@ -349,7 +387,9 @@ class ShapeListWidget(QListWidget):
             cmds.warning(str(error))
 
     def delete_shape_files(self):
-        """删除选中 Shape 对应的 JSON 和缩略图。"""
+        u"""
+        删除选中 Shape 对应的 JSON 和缩略图。
+        """
         items = self.selectedItems()
 
         if not items:
@@ -376,6 +416,14 @@ class ColorListWidget(QListWidget):
     """Maya Index Color 选择器。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(ColorListWidget, self).__init__(parent)
 
         self.setMovement(QListWidget.Static)
@@ -389,7 +437,9 @@ class ColorListWidget(QListWidget):
         self.itemClicked.connect(self.apply_color)
 
     def create_items(self):
-        """创建 Maya Index Color 项目。"""
+        u"""
+        创建 Maya Index Color 项目。
+        """
         color_index = 0
 
         for rgb in index_rgb_map:
@@ -416,7 +466,13 @@ class ColorListWidget(QListWidget):
 
     @staticmethod
     def apply_color(item):
-        """把 Index Color 应用到选择控制器 Shape。"""
+        u"""
+        把 Index Color 应用到选择控制器 Shape。
+
+        Args:
+            item (object):
+                `item` 对应的输入数据。
+        """
         color_index = item.data(Qt.UserRole)
         transforms = control_shape_utils.get_selected_curve_transforms()
 
@@ -435,6 +491,14 @@ class ControlShapeTool(QWidget):
     """Controller Shape 图库主窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(ControlShapeTool, self).__init__(parent)
 
         self.create_widgets()
@@ -449,7 +513,9 @@ class ControlShapeTool(QWidget):
         self.resize(660, 820)
 
     def create_widgets(self):
-        """创建窗口控件。"""
+        u"""
+        创建窗口控件。
+        """
         self.title_label = theme.make_title(
             u"控制器 Shape 图库"
         )
@@ -512,7 +578,9 @@ class ControlShapeTool(QWidget):
         theme.style_ghost(self.refresh_button)
 
     def create_layouts(self):
-        """创建统一 Card 布局。"""
+        u"""
+        创建统一 Card 布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(
             16,
@@ -576,7 +644,9 @@ class ControlShapeTool(QWidget):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        """连接窗口信号。"""
+        u"""
+        连接窗口信号。
+        """
         self.rotate_button.clicked.connect(
             self.rotate_shapes
         )
@@ -600,7 +670,9 @@ class ControlShapeTool(QWidget):
         )
 
     def rotate_shapes(self):
-        """旋转选择控制器的 Shape CV。"""
+        u"""
+        旋转选择控制器的 Shape CV。
+        """
         transforms = control_shape_utils.get_selected_curve_transforms()
 
         if not transforms:
@@ -630,7 +702,9 @@ class ControlShapeTool(QWidget):
             )
 
     def scale_shapes(self):
-        """统一缩放选择控制器的 Shape CV。"""
+        u"""
+        统一缩放选择控制器的 Shape CV。
+        """
         transforms = control_shape_utils.get_selected_curve_transforms()
 
         if not transforms:
@@ -646,16 +720,34 @@ class ControlShapeTool(QWidget):
             )
 
     def mirror_x_shapes(self):
+        u"""
+        执行 `mirror_x_shapes` 对应的 Maya 工具操作。
+        """
+
         self.mirror_shapes("x")
 
     def mirror_y_shapes(self):
+        u"""
+        执行 `mirror_y_shapes` 对应的 Maya 工具操作。
+        """
+
         self.mirror_shapes("y")
 
     def mirror_z_shapes(self):
+        u"""
+        执行 `mirror_z_shapes` 对应的 Maya 工具操作。
+        """
+
         self.mirror_shapes("z")
 
     def mirror_shapes(self, axis):
-        """沿给定轴镜像选择控制器的 Shape CV。"""
+        u"""
+        沿给定轴镜像选择控制器的 Shape CV。
+
+        Args:
+            axis (str):
+                操作使用的轴向标记。
+        """
         transforms = control_shape_utils.get_selected_curve_transforms()
 
         if not transforms:
@@ -670,7 +762,9 @@ class ControlShapeTool(QWidget):
 
     @staticmethod
     def replace_shapes():
-        """用最后选择控制器的 Shape 替换前面选择对象。"""
+        u"""
+        用最后选择控制器的 Shape 替换前面选择对象。
+        """
         transforms = control_shape_utils.get_selected_curve_transforms()
 
         if len(transforms) < 2:
@@ -705,10 +799,14 @@ class ControlShapeTool(QWidget):
 
 
 def main():
-    """
+    u"""
     创建或恢复 Controller Shape 工具，并立即显示。
 
     直接从 Maya Script Editor 调用时无需额外执行 ``window.show()``。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     return window_utils.show_window(
         "tools.controller.control_shape_tool",

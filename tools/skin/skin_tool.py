@@ -46,6 +46,14 @@ class SkinTool(QWidget):
     """蒙皮工具窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(SkinTool, self).__init__(parent)
 
         self.create_widgets()
@@ -60,7 +68,9 @@ class SkinTool(QWidget):
         self.resize(590, 520)
 
     def create_widgets(self):
-        """创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(u"Skin Tool")
         self.subtitle_label = theme.make_subtitle(
             u"绑定、刷权重、复制权重、影响骨骼和 XML 权重文件管理。"
@@ -96,7 +106,9 @@ class SkinTool(QWidget):
         theme.set_role(self.status_label, "muted")
 
     def create_layouts(self):
-        """创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -156,7 +168,9 @@ class SkinTool(QWidget):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        """连接 UI 信号。"""
+        u"""
+        连接 UI 信号。
+        """
         self.bind_button.clicked.connect(
             self.open_smooth_bind_options
         )
@@ -186,19 +200,41 @@ class SkinTool(QWidget):
         )
 
     def open_smooth_bind_options(self):
+        u"""
+        执行 `open_smooth_bind_options` 对应的 Maya 工具操作。
+        """
+
         mel.eval("SmoothBindSkinOptions;")
 
     def open_detach_skin_options(self):
+        u"""
+        执行 `open_detach_skin_options` 对应的 Maya 工具操作。
+        """
+
         mel.eval("DetachSkinOptions;")
 
     def open_paint_skin_weights(self):
+        u"""
+        执行 `open_paint_skin_weights` 对应的 Maya 工具操作。
+        """
+
         mel.eval("ArtPaintSkinWeightsToolOptions;")
 
     def open_mirror_skin_weights_options(self):
+        u"""
+        执行 `open_mirror_skin_weights_options` 对应的 Maya 工具操作。
+        """
+
         mel.eval("MirrorSkinWeightsOptions;")
 
     def get_selected_geometries(self):
-        """返回当前选择。"""
+        u"""
+        返回当前选择。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         geometries = cmds.ls(
             selection=True,
             long=True
@@ -210,7 +246,9 @@ class SkinTool(QWidget):
         return geometries
 
     def copy_selected(self):
-        """复制当前选择的 Skin Weight。"""
+        u"""
+        复制当前选择的 Skin Weight。
+        """
         selections = self.get_selected_geometries()
 
         if len(selections) < 2:
@@ -232,7 +270,17 @@ class SkinTool(QWidget):
             self.status_label.setText(u"复制权重失败")
 
     def choose_directory(self, title):
-        """选择权重目录。"""
+        u"""
+        选择权重目录。
+
+        Args:
+            title (object):
+                `title` 对应的输入数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         scene_path = cmds.file(
             query=True,
             sceneName=True
@@ -250,7 +298,9 @@ class SkinTool(QWidget):
         )
 
     def export_selected(self):
-        """导出选择模型权重。"""
+        u"""
+        导出选择模型权重。
+        """
         geometries = self.get_selected_geometries()
 
         if not geometries:
@@ -279,7 +329,9 @@ class SkinTool(QWidget):
         )
 
     def import_selected(self):
-        """从目录导入权重到选择模型。"""
+        u"""
+        从目录导入权重到选择模型。
+        """
         geometries = self.get_selected_geometries()
 
         if not geometries:
@@ -316,7 +368,9 @@ class SkinTool(QWidget):
         )
 
     def select_influences(self):
-        """选择当前模型的影响 Joint。"""
+        u"""
+        选择当前模型的影响 Joint。
+        """
         geometries = self.get_selected_geometries()
 
         if not geometries:
@@ -334,7 +388,9 @@ class SkinTool(QWidget):
         )
 
     def normalize_selected(self):
-        """强制归一化选择模型权重。"""
+        u"""
+        强制归一化选择模型权重。
+        """
         geometries = self.get_selected_geometries()
 
         if not geometries:
@@ -348,7 +404,13 @@ class SkinTool(QWidget):
 
 
 def main():
-    """显示并返回 Skin Tool。"""
+    u"""
+    显示并返回 Skin Tool。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.skin.skin_tool",
         SkinTool

@@ -41,6 +41,14 @@ class HierarchyCleaner(QDialog):
     """层级清理器窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(HierarchyCleaner, self).__init__(parent)
 
         self.create_widgets()
@@ -55,7 +63,9 @@ class HierarchyCleaner(QDialog):
         self.resize(530, 520)
 
     def create_widgets(self):
-        """创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(u"层级清理")
         self.subtitle_label = theme.make_subtitle(
             u"默认只处理当前选择；高风险操作会主动跳过动画、约束和 Rig Deformer。"
@@ -103,7 +113,9 @@ class HierarchyCleaner(QDialog):
         theme.set_role(self.result_label, "muted")
 
     def create_layouts(self):
-        """创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -142,13 +154,21 @@ class HierarchyCleaner(QDialog):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        """连接 UI 信号。"""
+        u"""
+        连接 UI 信号。
+        """
         self.execute_button.clicked.connect(
             self.execute_cleanup
         )
 
     def confirm_whole_scene(self):
-        """全场景模式二次确认。"""
+        u"""
+        全场景模式二次确认。
+
+        Returns:
+            object | bool:
+                方法执行后的结果数据。
+        """
         if self.selected_only_checkbox.isChecked():
             return True
 
@@ -165,7 +185,13 @@ class HierarchyCleaner(QDialog):
         return result == QMessageBox.Yes
 
     def get_scope_nodes(self):
-        """返回当前清理范围。"""
+        u"""
+        返回当前清理范围。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         if self.selected_only_checkbox.isChecked():
             nodes = cmds.ls(
                 selection=True,
@@ -180,7 +206,17 @@ class HierarchyCleaner(QDialog):
         return scene_clean_utils.all_transform_nodes()
 
     def format_result(self, result):
-        """把 Core 返回字典格式化成 UI 文本。"""
+        u"""
+        把 Core 返回字典格式化成 UI 文本。
+
+        Args:
+            result (object):
+                `result` 对应的输入数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         lines = []
 
         if "empty_groups" in result:
@@ -235,7 +271,9 @@ class HierarchyCleaner(QDialog):
         return u"\n".join(lines)
 
     def execute_cleanup(self):
-        """执行当前配置的场景清理。"""
+        u"""
+        执行当前配置的场景清理。
+        """
         if not self.confirm_whole_scene():
             return
 
@@ -277,7 +315,13 @@ class HierarchyCleaner(QDialog):
 
 
 def main():
-    """显示并返回 Hierarchy Cleaner。"""
+    u"""
+    显示并返回 Hierarchy Cleaner。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.clean.hierarchy_cleaner",
         HierarchyCleaner

@@ -388,7 +388,19 @@ def _connect_destroyed_signal(tool_key, window):
 
 
 def show_tool(tool_key, tool_function):
-    """显示新工具，或恢复已经打开的工具窗口。"""
+    u"""
+    显示新工具，或恢复已经打开的工具窗口。
+
+    Args:
+        tool_key (object):
+            `tool_key` 对应的输入数据。
+        tool_function (object):
+            `tool_function` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     old_window = _open_windows.get(tool_key)
 
     if _is_valid_widget(old_window):
@@ -422,7 +434,13 @@ def show_tool(tool_key, tool_function):
 
 
 def close_tool(tool_key):
-    """关闭并释放一个受管理的工具窗口。"""
+    u"""
+    关闭并释放一个受管理的工具窗口。
+
+    Args:
+        tool_key (object):
+            `tool_key` 对应的输入数据。
+    """
     window = _open_windows.pop(tool_key, None)
 
     if not _is_valid_widget(window):
@@ -440,7 +458,9 @@ def close_tool(tool_key):
 
 
 def close_all_tools():
-    """关闭全部受管理的工具窗口。"""
+    u"""
+    关闭全部受管理的工具窗口。
+    """
     tool_keys = []
 
     for tool_key in _open_windows:
@@ -451,7 +471,13 @@ def close_all_tools():
 
 
 def get_open_windows():
-    """返回当前有效工具窗口字典的浅拷贝。"""
+    u"""
+    返回当前有效工具窗口字典的浅拷贝。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     result = {}
     invalid_keys = []
 

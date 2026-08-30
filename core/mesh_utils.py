@@ -47,23 +47,22 @@ import maya.cmds as cmds
 # =============================================================================
 
 def validate_node(node, label=u"节点"):
-    """
+    u"""
     检查 Maya 节点是否存在。
 
     Args:
-        node(str):
+        node (str):
             需要验证的 Maya 节点。
-
-        label(str):
+        label (str):
             错误信息中使用的中文说明，例如“源模型”“父节点”。
 
     Returns:
         bool:
-            验证通过返回 True。
+        验证通过返回 True。
 
     Raises:
         RuntimeError:
-            节点名称为空或场景中不存在时抛出。
+        节点名称为空或场景中不存在时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：先判断调用者有没有提供节点名称。
@@ -96,26 +95,28 @@ def duplicate_model(
         new_name,
         parent=None
 ):
-    """
+    u"""
     复制一个独立的 Maya DAG 模型并整理父层级。
 
     Args:
-        source_model(str):
+        source_model (str):
             源模型 Transform。
-
-        new_name(str):
+        new_name (str):
             新模型名称。
-
-        parent(str/None):
+        parent (str/None):
             可选父节点。给定时会在复制完成后重新 Parent。
 
     Returns:
         str:
-            最终复制模型节点名称。
+        最终复制模型节点名称。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
 
     Notes:
         这里明确关闭 inputConnections / upstreamNodes，目的是得到相对独立的模型副本，
-        避免把旧 Rig / Deformer / DG 输入网络一起复制到新的工作模型上。
+            避免把旧 Rig / Deformer / DG 输入网络一起复制到新的工作模型上。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：验证源模型。

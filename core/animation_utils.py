@@ -136,14 +136,12 @@ format_version = 1
 # =============================================================================
 
 def get_animation_curves(nodes=None):
-    """
+    u"""
     获取 AnimCurve 节点。
 
     Args:
-        nodes(list/str/None):
-            None：查询整个 Maya 场景中的 AnimCurve；
-            str：查询一个节点的输入动画曲线；
-            list：查询多个节点的输入动画曲线。
+        nodes (list/str/None):
+            None：查询整个 Maya 场景中的 AnimCurve； str：查询一个节点的输入动画曲线； list：查询多个节点的输入动画曲线。
 
     Returns:
         list: 去重后的 AnimCurve 节点列表。
@@ -215,21 +213,20 @@ def get_animation_curves(nodes=None):
 
 
 def clear_animation_keys(nodes=None):
-    """
+    u"""
     删除 AnimCurve，并返回实际删除的曲线节点名称。
 
     Args:
-        nodes(list/str/None):
-            None 时删除全场景 AnimCurve；
-            给定节点时只删除这些节点的输入 AnimCurve。
+        nodes (list/str/None):
+            None 时删除全场景 AnimCurve； 给定节点时只删除这些节点的输入 AnimCurve。
 
     Returns:
         list: 实际删除的 AnimCurve 名称。
 
-    Note:
+    Notes:
         这个函数的语义是“删除动画曲线节点”。
-        如果以后需要只删除某一个时间范围的 Key，应新增独立 API，
-        不要让一个函数同时承担两种不同的清理行为。
+            如果以后需要只删除某一个时间范围的 Key，应新增独立 API，
+            不要让一个函数同时承担两种不同的清理行为。
     """
     # 步骤 1：先查询需要删除的曲线。
     animation_curves = get_animation_curves(
@@ -255,15 +252,22 @@ def clear_animation_keys(nodes=None):
 # =============================================================================
 
 def can_set_attribute(attribute):
-    """
+    u"""
     判断属性是否可以被安全直接设置。
 
     属性必须同时满足：
         1. Plug 存在；
         2. Attribute 没有被 Lock；
         3. Maya 当前认为它是 Settable。
-
     这样可以避免 Reset 时强行覆盖 Constraint、Connection 或锁定通道。
+
+    Args:
+        attribute (str):
+            Maya Attribute 或完整 Plug 名称。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
     """
     # 步骤 1：Plug 不存在时直接返回 False。
     if not cmds.objExists(attribute):
@@ -290,7 +294,7 @@ def reset_transform_channels(
         rotate=True,
         scale=True
 ):
-    """
+    u"""
     将 Transform 的标准 TRS 恢复 Maya 默认值。
 
     默认值：
@@ -299,10 +303,14 @@ def reset_transform_channels(
         Scale     -> 1
 
     Args:
-        nodes(list/str): 需要重置的 Maya 节点。
-        translate(bool): 是否重置 Translate。
-        rotate(bool): 是否重置 Rotate。
-        scale(bool): 是否重置 Scale。
+        nodes (list/str):
+            需要重置的 Maya 节点。
+        translate (bool):
+            是否重置 Translate。
+        rotate (bool):
+            是否重置 Rotate。
+        scale (bool):
+            是否重置 Scale。
 
     Returns:
         list: 至少成功修改过一个属性的节点。
@@ -394,22 +402,22 @@ def reset_controls(
         controls=None,
         pattern="ctrl_*"
 ):
-    """
+    u"""
     批量重置控制器标准 TRS。
 
     Args:
-        controls(list/str/None):
-            指定时重置给定控制器；
-            None 时按 pattern 从场景中查找 Transform。
-        pattern(str): controls=None 时使用的 Maya 名称匹配规则。
+        controls (list/str/None):
+            指定时重置给定控制器； None 时按 pattern 从场景中查找 Transform。
+        pattern (str):
+            controls=None 时使用的 Maya 名称匹配规则。
 
     Returns:
         list: 实际修改过的控制器。
 
-    Note:
+    Notes:
         这里只重置标准 TRS。
-        IkFk、Stretch、Follow、Space 等角色专属属性必须由对应 Rig System
-        自己定义默认值，不能再次硬编码到通用 Core。
+            IkFk、Stretch、Follow、Space 等角色专属属性必须由对应 Rig System
+            自己定义默认值，不能再次硬编码到通用 Core。
     """
     # 步骤 1：没有显式传入控制器时，按命名规则自动查找。
     if controls is None:
@@ -436,10 +444,18 @@ def reset_controls(
 # =============================================================================
 
 def normalize_nodes(nodes):
-    """
+    u"""
     将单个节点或节点列表整理成有效 Maya 节点列表。
 
     不存在的节点会被跳过，避免批量动画导出因为一个坏节点全部失败。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+
+    Returns:
+        object | list:
+            方法执行后的结果数据。
     """
     if nodes is None:
         return []
@@ -464,11 +480,19 @@ def normalize_nodes(nodes):
 
 
 def get_keyed_plugs(node):
-    """
+    u"""
     返回节点上当前真正存在关键帧的可动画 Plug。
 
     ``cmds.listAnimatable`` 只能说明属性“可以动画”，并不能说明它已经有 Key。
     因此这里还会使用 ``keyframeCount`` 做第二次过滤。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object | list:
+            方法执行后的结果数据。
     """
     if not cmds.objExists(node):
         return []
@@ -499,7 +523,17 @@ def get_keyed_plugs(node):
 
 
 def get_attribute_name(plug):
-    """从 ``node.attribute`` 形式的完整 Plug 中取得 Attribute 名称。"""
+    u"""
+    从 ``node.attribute`` 形式的完整 Plug 中取得 Attribute 名称。
+
+    Args:
+        plug (str):
+            完整 Maya Plug 名称，例如 node.translateX。
+
+    Returns:
+        object | str:
+            方法执行后的结果数据。
+    """
     if "." not in plug:
         return ""
 
@@ -507,18 +541,22 @@ def get_attribute_name(plug):
 
 
 def get_key_data(plug):
-    """
+    u"""
     获取一个 Plug 的基础 Key Time / Value 数据。
+
+    Args:
+        plug (str):
+            完整 Maya Plug 名称，例如 node.translateX。
 
     Returns:
         list:
-            [
-                {"time": 1.0, "value": 0.0},
-                {"time": 10.0, "value": 5.0},
-            ]
+        [
+        {"time": 1.0, "value": 0.0},
+        {"time": 10.0, "value": 5.0},
+        ]
 
-    当前 version=1 只保存 Time / Value。
-    如果未来增加 Tangent / Infinity 等字段，必须同步升级 format_version。
+        当前 version=1 只保存 Time / Value。
+        如果未来增加 Tangent / Infinity 等字段，必须同步升级 format_version。
     """
     # 步骤 1：分别查询关键帧时间和值。
     times = cmds.keyframe(
@@ -562,7 +600,7 @@ def get_key_data(plug):
 
 
 def collect_animation(nodes):
-    """
+    u"""
     将多个 Maya 节点的动画整理成结构化数据。
 
     数据层级：
@@ -570,6 +608,14 @@ def collect_animation(nodes):
             -> Node
                 -> Attribute
                     -> Key
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     # 步骤 1：整理输入节点。
     valid_nodes = normalize_nodes(nodes)
@@ -624,15 +670,21 @@ def collect_animation(nodes):
 # =============================================================================
 
 def export_animation(nodes, file_path):
-    """
+    u"""
     将给定 Maya 节点的关键帧动画导出成 JSON。
 
     Args:
-        nodes(list/str): 要导出的 Maya 节点。
-        file_path(str): JSON 输出路径。
+        nodes (list/str):
+            要导出的 Maya 节点。
+        file_path (str):
+            JSON 输出路径。
 
     Returns:
         str: 最终写入的文件路径。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：确保至少有一个有效 Maya 节点。
     valid_nodes = normalize_nodes(nodes)
@@ -657,7 +709,17 @@ def export_animation(nodes, file_path):
 
 
 def export_selected_animation(file_path):
-    """将当前 Maya Selection 中节点的动画导出为 JSON。"""
+    u"""
+    将当前 Maya Selection 中节点的动画导出为 JSON。
+
+    Args:
+        file_path (str):
+            需要读取或写入的文件路径。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     # 步骤 1：读取当前选择。
     selected_nodes = cmds.ls(
         selection=True,
@@ -679,11 +741,23 @@ def export_selected_animation(file_path):
 # =============================================================================
 
 def validate_animation_data(data):
-    """
+    u"""
     检查 Muzi Animation JSON 的格式名、版本和基础数据结构。
 
     数据结构错误时直接抛异常，因为继续往 Maya Scene 写入会产生
     “部分导入、部分失败”的脏状态。
+
+    Args:
+        data (object):
+            `data` 对应的输入数据。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：根对象必须是 dict。
     if not isinstance(data, dict):
@@ -715,13 +789,23 @@ def validate_animation_data(data):
 
 
 def resolve_target_node(source_node, node_map=None):
-    """
+    u"""
     根据可选 node_map 解析动画导入目标节点。
+
+    Args:
+        source_node (object):
+            `source_node` 对应的输入数据。
+        node_map (dict):
+            `node_map` 对应的配置或映射字典。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
 
     Example:
         {
-            "ctrl_lf_arm_001": "characterA:ctrl_lf_arm_001"
-        }
+                "ctrl_lf_arm_001": "characterA:ctrl_lf_arm_001"
+            }
     """
     if node_map is None:
         return source_node
@@ -737,8 +821,16 @@ def apply_attribute_keys(
         attribute_info,
         clear_existing=False
 ):
-    """
+    u"""
     将一个属性的 Key 数据写入目标 Maya 节点。
+
+    Args:
+        target_node (object):
+            `target_node` 对应的输入数据。
+        attribute_info (object):
+            `attribute_info` 对应的输入数据。
+        clear_existing (bool):
+            写入新结果前是否先清理已有数据。
 
     Returns:
         int: 实际成功创建的 Key 数量。
@@ -810,22 +902,28 @@ def import_animation(
         clear_existing=False,
         strict=False
 ):
-    """
+    u"""
     从 Muzi Animation JSON 导入关键帧。
 
     Args:
-        file_path(str): JSON 文件路径。
-        node_map(dict/None): 可选节点映射表。
-        clear_existing(bool): 导入某个属性前是否清除已有 Key。
-        strict(bool):
-            True：缺失目标节点立即报错；
-            False：记录缺失节点并继续导入其它节点。
+        file_path (str):
+            JSON 文件路径。
+        node_map (dict/None):
+            可选节点映射表。
+        clear_existing (bool):
+            导入某个属性前是否清除已有 Key。
+        strict (bool):
+            True：缺失目标节点立即报错； False：记录缺失节点并继续导入其它节点。
 
     Returns:
         dict:
-            created_keys   - 实际创建 Key 数量；
-            imported_nodes - 成功写入动画的节点；
-            missing_nodes  - 文件中存在但场景找不到的目标节点。
+        created_keys   - 实际创建 Key 数量；
+        imported_nodes - 成功写入动画的节点；
+        missing_nodes  - 文件中存在但场景找不到的目标节点。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：读取 JSON，并验证格式。

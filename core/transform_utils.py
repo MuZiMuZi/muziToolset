@@ -69,18 +69,19 @@ import maya.cmds as cmds
 # =============================================================================
 
 def validate_transform(node):
-    """
+    u"""
     检查节点是否存在，并且是 Maya Transform / Joint。
 
     Args:
-        node(str): 需要检查的 Maya 节点。
+        node (str):
+            需要检查的 Maya 节点。
 
     Returns:
         bool: 节点有效时返回 True。
 
     Raises:
         RuntimeError:
-            节点为空、不存在，或者类型不是 transform / joint。
+        节点为空、不存在，或者类型不是 transform / joint。
     """
     # 步骤 1：先检查参数本身是否有效。
     if not node:
@@ -113,11 +114,12 @@ def validate_transform(node):
 # =============================================================================
 
 def get_world_translation(node):
-    """
+    u"""
     返回节点 World Translation。
 
     Args:
-        node(str): Transform / Joint。
+        node (str):
+            Transform / Joint。
 
     Returns:
         list: [x, y, z]。
@@ -138,15 +140,21 @@ def get_world_translation(node):
 
 
 def set_world_translation(node, translation):
-    """
+    u"""
     设置节点 World Translation。
 
     Args:
-        node(str): Transform / Joint。
-        translation(list/tuple): [x, y, z]。
+        node (str):
+            Transform / Joint。
+        translation (list/tuple):
+            [x, y, z]。
 
     Returns:
         str: 被修改的节点名称。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：校验 Maya 节点。
     validate_transform(node)
@@ -168,18 +176,23 @@ def set_world_translation(node, translation):
 
 
 def move_relative(node, offset, object_space=False):
-    """
+    u"""
     相对移动一个 Transform / Joint。
 
     Args:
-        node(str): Transform / Joint。
-        offset(list/tuple): [x, y, z] 相对偏移量。
-        object_space(bool):
-            False：按世界空间方向移动；
-            True：按节点自身 Object Space 轴向移动。
+        node (str):
+            Transform / Joint。
+        offset (list/tuple):
+            [x, y, z] 相对偏移量。
+        object_space (bool):
+            False：按世界空间方向移动； True：按节点自身 Object Space 轴向移动。
 
     Returns:
         str: 被移动的节点名称。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：校验节点。
     validate_transform(node)
@@ -221,12 +234,14 @@ def move_relative(node, offset, object_space=False):
 # =============================================================================
 
 def distance_between(node_a, node_b):
-    """
+    u"""
     返回两个 Transform / Joint 世界位置之间的欧氏距离。
 
     Args:
-        node_a(str): 第一个节点。
-        node_b(str): 第二个节点。
+        node_a (str):
+            第一个节点。
+        node_b (str):
+            第二个节点。
 
     Returns:
         float: 世界空间距离。
@@ -255,19 +270,20 @@ def distance_between(node_a, node_b):
 # =============================================================================
 
 def get_world_matrix(node):
-    """
+    u"""
     返回节点完整 World Matrix。
 
     Args:
-        node(str): Transform / Joint。
+        node (str):
+            Transform / Joint。
 
     Returns:
         list: 16 个数值组成的 4x4 Matrix。
 
-    Note:
+    Notes:
         这里返回普通 list，而不是 MMatrix。
-        需要矩阵计算时由 matrix_utils 转成 Maya API Matrix，
-        这样 transform_utils 保持简单的数据读写职责。
+            需要矩阵计算时由 matrix_utils 转成 Maya API Matrix，
+            这样 transform_utils 保持简单的数据读写职责。
     """
     # 步骤 1：校验节点。
     validate_transform(node)
@@ -284,15 +300,21 @@ def get_world_matrix(node):
 
 
 def set_world_matrix(node, matrix_values):
-    """
+    u"""
     设置节点完整 World Matrix。
 
     Args:
-        node(str): Transform / Joint。
-        matrix_values(list/tuple): 16 个矩阵数值。
+        node (str):
+            Transform / Joint。
+        matrix_values (list/tuple):
+            16 个矩阵数值。
 
     Returns:
         str: 被修改的节点名称。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：校验节点。
     validate_transform(node)

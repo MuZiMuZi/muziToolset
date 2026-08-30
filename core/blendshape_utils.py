@@ -104,18 +104,30 @@ import maya.cmds as cmds
 # =============================================================================
 
 def get_short_name(node):
-    """
+    u"""
     返回适合作为 Alias / 新 Mesh 名称的短名称。
 
     DAG Path 被去掉，Namespace 冒号转换成下划线。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     short_name = node.split("|")[-1]
     return short_name.replace(":", "_")
 
 
 def get_mesh_shape(node):
-    """
+    u"""
     返回 Transform 或 Mesh 对应的可见 Mesh Shape。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
 
     Returns:
         str/None: 找到 Mesh Shape 时返回节点，否则返回 None。
@@ -150,7 +162,17 @@ def get_mesh_shape(node):
 
 
 def get_transform(node):
-    """返回节点对应的 Transform；找不到时返回 None。"""
+    u"""
+    返回节点对应的 Transform；找不到时返回 None。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        None | object:
+            方法执行后的结果数据。
+    """
     # 步骤 1：过滤无效节点。
     if not node:
         return None
@@ -183,8 +205,12 @@ def get_transform(node):
 # =============================================================================
 
 def find_blendshape(node):
-    """
+    u"""
     从 BlendShape 本身或节点 History 中寻找第一个 BlendShape。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
 
     Returns:
         str/None: BlendShape 节点。
@@ -221,7 +247,17 @@ def find_blendshape(node):
 
 
 def get_base_transform(blendshape_node):
-    """返回 BlendShape 第一个 Base Geometry Transform。"""
+    u"""
+    返回 BlendShape 第一个 Base Geometry Transform。
+
+    Args:
+        blendshape_node (object):
+            `blendshape_node` 对应的输入数据。
+
+    Returns:
+        object | None:
+            方法执行后的结果数据。
+    """
     # 步骤 1：向 BlendShape 查询 Base Geometry。
     geometries = cmds.blendShape(
         blendshape_node,
@@ -246,10 +282,18 @@ def get_base_transform(blendshape_node):
 
 
 def sort_targets_by_index(targets):
-    """
+    u"""
     按真实 ``weight[index]`` 升序排序 Target 数据。
 
     这里故意保留展开的普通循环，避免把 Scene 数据排序逻辑压缩得过于简略。
+
+    Args:
+        targets (str | list[str]):
+            `targets` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     item_count = len(targets)
     outer_index = 0
@@ -275,19 +319,23 @@ def sort_targets_by_index(targets):
 
 
 def get_targets(blendshape_node):
-    """
+    u"""
     返回 BlendShape 真实 Alias -> Weight Index 映射。
+
+    Args:
+        blendshape_node (object):
+            `blendshape_node` 对应的输入数据。
 
     Returns:
         list:
-            [
-                {
-                    "alias": "smile",
-                    "index": 3,
-                    "plug": "weight[3]",
-                },
-                ...
-            ]
+        [
+        {
+        "alias": "smile",
+        "index": 3,
+        "plug": "weight[3]",
+        },
+        ...
+        ]
     """
     # 步骤 1：校验 BlendShape。
     if not blendshape_node:
@@ -337,7 +385,17 @@ def get_targets(blendshape_node):
 
 
 def get_next_target_index(blendshape_node):
-    """返回下一个可使用的 BlendShape Weight Index。"""
+    u"""
+    返回下一个可使用的 BlendShape Weight Index。
+
+    Args:
+        blendshape_node (object):
+            `blendshape_node` 对应的输入数据。
+
+    Returns:
+        object | int:
+            方法执行后的结果数据。
+    """
     # 步骤 1：读取当前 weight Multi Attribute 已存在的 Index。
     indices = cmds.getAttr(
         blendshape_node + ".weight",
@@ -363,12 +421,20 @@ def remove_target(
         target_index,
         alias_name=None
 ):
-    """
+    u"""
     删除一个 Target 的 Alias、inputTargetGroup 和可清理 Weight Element。
 
     注意：
         如果 Weight Plug 仍然有输入连接，不会删除该 weight Multi Element，
         避免破坏外部 Driver Network。
+
+    Args:
+        blendshape_node (object):
+            `blendshape_node` 对应的输入数据。
+        target_index (int):
+            `target_index` 对应的整数参数。
+        alias_name (str):
+            `alias_name` 对应的 Maya 节点或资源名称。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：按需要移除 Alias。
@@ -434,11 +500,21 @@ def remove_target(
 
 
 def add_or_replace_target(blendshape_node, target_transform):
-    """
+    u"""
     按 Target 短名称新增或同名替换 BlendShape Target。
+
+    Args:
+        blendshape_node (object):
+            `blendshape_node` 对应的输入数据。
+        target_transform (object):
+            `target_transform` 对应的输入数据。
 
     Returns:
         dict: Alias 和真实 Weight Index。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：验证 BlendShape 和 Target Mesh。
@@ -539,10 +615,22 @@ def add_or_replace_target(blendshape_node, target_transform):
 # =============================================================================
 
 def duplicate_all_targets(blendshape_node):
-    """
+    u"""
     逐个激活 BlendShape Target，并从 Base Mesh 烘焙出独立 Target Mesh。
 
     处理期间会临时修改 Weight，finally 中会恢复所有原始值。
+
+    Args:
+        blendshape_node (object):
+            `blendshape_node` 对应的输入数据。
+
+    Returns:
+        object | list:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：取得 Base Geometry 和 Target 列表。
     base_transform = get_base_transform(blendshape_node)
@@ -643,7 +731,17 @@ def duplicate_all_targets(blendshape_node):
 # =============================================================================
 
 def get_vertex_count(node):
-    """返回 Mesh 顶点数量；非 Mesh 返回 None。"""
+    u"""
+    返回 Mesh 顶点数量；非 Mesh 返回 None。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object | None:
+            方法执行后的结果数据。
+    """
     shape = get_mesh_shape(node)
 
     if not shape:
@@ -656,7 +754,7 @@ def get_vertex_count(node):
 
 
 def invert_shapes(base_mesh, corrective_meshes):
-    """
+    u"""
     批量执行 Maya ``invertShape``。
 
     每个 Corrective 在执行前会检查：
@@ -664,8 +762,18 @@ def invert_shapes(base_mesh, corrective_meshes):
         - 是有效 Mesh；
         - 顶点数量和 Base 一致。
 
+    Args:
+        base_mesh (object):
+            `base_mesh` 对应的输入数据。
+        corrective_meshes (object):
+            `corrective_meshes` 对应的输入数据。
+
     Returns:
         list: 成功创建的 Inverted Shape Mesh。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证 Base Mesh。
     if not get_mesh_shape(base_mesh):

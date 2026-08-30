@@ -105,17 +105,47 @@ anim_curve_types = [
 # =============================================================================
 
 def get_short_name(node):
-    """返回 DAG Short Name。"""
+    u"""
+    返回 DAG Short Name。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return node.split("|")[-1]
 
 
 def is_default_camera(node):
-    """判断节点是否为 Maya 默认相机 Transform。"""
+    u"""
+    判断节点是否为 Maya 默认相机 Transform。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return get_short_name(node) in default_cameras
 
 
 def is_referenced(node):
-    """判断节点是否来自 Reference。"""
+    u"""
+    判断节点是否来自 Reference。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object | bool:
+            方法执行后的结果数据。
+    """
     try:
         return cmds.referenceQuery(
             node,
@@ -126,10 +156,18 @@ def is_referenced(node):
 
 
 def existing_nodes(nodes):
-    """
+    u"""
     过滤不存在的节点、转换为 Long Path 并去重。
 
     该步骤在真正修改场景前统一执行，避免调用过程中遇到已经被前一个清理动作删除的节点。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     result = []
 
@@ -153,7 +191,13 @@ def existing_nodes(nodes):
 
 
 def all_transform_nodes():
-    """返回全场景 Transform Long Path。"""
+    u"""
+    返回全场景 Transform Long Path。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return cmds.ls(
         type="transform",
         long=True
@@ -161,7 +205,17 @@ def all_transform_nodes():
 
 
 def sort_child_first(nodes):
-    """按 DAG 深度从深到浅排序。"""
+    u"""
+    按 DAG 深度从深到浅排序。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     result = []
 
     for node in nodes:
@@ -184,7 +238,17 @@ def sort_child_first(nodes):
 # =============================================================================
 
 def has_incoming_animation(node):
-    """判断 Transform 是否存在 AnimCurve 输入。"""
+    u"""
+    判断 Transform 是否存在 AnimCurve 输入。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+    """
     for anim_type in anim_curve_types:
         connections = cmds.listConnections(
             node,
@@ -200,7 +264,17 @@ def has_incoming_animation(node):
 
 
 def has_constraint(node):
-    """判断节点是否存在常见 Constraint 输入。"""
+    u"""
+    判断节点是否存在常见 Constraint 输入。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+    """
     connections = cmds.listConnections(
         node,
         source=True,
@@ -220,7 +294,17 @@ def has_constraint(node):
 
 
 def has_rig_history(node):
-    """判断历史中是否存在需要保护的 Rig Deformer。"""
+    u"""
+    判断历史中是否存在需要保护的 Rig Deformer。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+    """
     history = cmds.listHistory(
         node,
         pruneDagObjects=True
@@ -249,10 +333,18 @@ def has_rig_history(node):
 
 
 def can_modify_transform(node):
-    """
+    u"""
     判断节点是否允许进入 Transform 类清理操作。
 
     默认相机、Reference、非 Transform 都返回 False。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
     """
     if not cmds.objExists(node):
         return False
@@ -299,11 +391,19 @@ def _collect_parent_candidates(nodes):
 
 
 def delete_empty_groups(nodes=None):
-    """
+    u"""
     递归删除空 Transform Group。
 
     ``nodes=None`` 时扫描全场景；给定 nodes 时还会自动把它们的 Parent 加入候选，
     因为删除 Child 后原本非空的 Parent 可能变成空组。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：建立候选节点列表。
@@ -375,8 +475,12 @@ def delete_empty_groups(nodes=None):
 # =============================================================================
 
 def delete_history(nodes):
-    """
+    u"""
     删除安全范围内的 Construction History。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
 
     Returns:
         tuple: ``(processed_count, skipped_count)``。
@@ -427,10 +531,18 @@ def delete_history(nodes):
 # =============================================================================
 
 def freeze_transformations(nodes):
-    """
+    u"""
     Freeze 安全范围内的 Transform。
 
     有 Animation、Constraint 或 Rig Deformer 的节点一律跳过。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+
+    Returns:
+        tuple:
+            方法执行后的结果数据。
     """
     nodes = existing_nodes(nodes)
     frozen_count = 0
@@ -483,7 +595,17 @@ def freeze_transformations(nodes):
 # =============================================================================
 
 def unlock_and_show_attributes(nodes):
-    """解锁并显示标准 Translate / Rotate / Scale / Visibility 通道。"""
+    u"""
+    解锁并显示标准 Translate / Rotate / Scale / Visibility 通道。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     nodes = existing_nodes(nodes)
     attrs = [
         "tx",
@@ -533,7 +655,17 @@ def unlock_and_show_attributes(nodes):
 
 
 def center_pivot(nodes):
-    """把可编辑、带 Shape 的 Transform Pivot 居中。"""
+    u"""
+    把可编辑、带 Shape 的 Transform Pivot 居中。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     nodes = existing_nodes(nodes)
     centered_count = 0
 
@@ -568,7 +700,17 @@ def center_pivot(nodes):
 # =============================================================================
 
 def delete_unknown_nodes(nodes=None):
-    """删除非 Reference Unknown 节点。"""
+    u"""
+    删除非 Reference Unknown 节点。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     if nodes is None:
         unknown_nodes = cmds.ls(
             type="unknown",
@@ -616,10 +758,32 @@ def run_cleanup(
         center_pivot_enabled=False,
         delete_unknown_enabled=True
 ):
-    """
+    u"""
     按配置执行一次安全清理并返回统计字典。
 
     整个 Cleanup 被包装为一次 Maya Undo，方便用户完整回退一次清理操作。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+        selected_only (bool):
+            是否启用 `selected_only` 对应的处理。
+        delete_empty (bool):
+            是否启用 `delete_empty` 对应的处理。
+        delete_history_enabled (bool):
+            是否启用 `delete_history_enabled` 对应的处理。
+        freeze_enabled (bool):
+            是否启用 `freeze_enabled` 对应的处理。
+        unlock_enabled (bool):
+            是否启用 `unlock_enabled` 对应的处理。
+        center_pivot_enabled (bool):
+            是否启用 `center_pivot_enabled` 对应的处理。
+        delete_unknown_enabled (bool):
+            是否启用 `delete_unknown_enabled` 对应的处理。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     result = {}
 

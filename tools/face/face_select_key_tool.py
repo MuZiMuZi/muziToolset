@@ -59,11 +59,27 @@ def _driver_group_name(control):
 
 
 def add_extra_group(obj, group_name, world_orient=False):
-    """
+    u"""
     在控制器上方创建或复用 Driver Group。
 
     实际 DAG 插组逻辑统一复用 ``hierarchy_utils.Hierarchy.add_extra_group``，
     这里只保留 Face Driven Key 的“已有 Group 直接复用”兼容行为。
+
+    Args:
+        obj (object):
+            `obj` 对应的输入数据。
+        group_name (str):
+            `group_name` 对应的 Maya 节点或资源名称。
+        world_orient (bool):
+            是否启用 `world_orient` 对应的处理。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not cmds.objExists(obj):
         raise RuntimeError(u"对象不存在：{}".format(obj))
@@ -118,7 +134,29 @@ def create_driven_key_setup(
         minimum=0.0,
         maximum=10.0
 ):
-    """把当前 Pose 记录到 maximum，默认状态记录到 minimum。"""
+    u"""
+    把当前 Pose 记录到 maximum，默认状态记录到 minimum。
+
+    Args:
+        driver (str):
+            作为驱动端的 Maya 节点名称。
+        driver_attribute (object):
+            `driver_attribute` 对应的输入数据。
+        driven_controls (object):
+            `driven_controls` 对应的输入数据。
+        minimum (float):
+            `minimum` 对应的数值参数。
+        maximum (float):
+            `maximum` 对应的数值参数。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if not driven_controls:
         raise RuntimeError(u"请选择一个或以上需要被驱动的控制器。")
 
@@ -218,6 +256,14 @@ class FaceDrivenKeyTool(QDialog):
     """面部 Driven Key 创建窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(FaceDrivenKeyTool, self).__init__(parent)
 
         self.create_widgets()
@@ -232,7 +278,9 @@ class FaceDrivenKeyTool(QDialog):
         self.resize(540, 360)
 
     def create_widgets(self):
-        """创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(u"面部 Driven Key")
         self.subtitle_label = theme.make_subtitle(
             u"把当前面部控制器 Pose 固化到 Driver Group，并建立 0 → 10 驱动关系。"
@@ -263,7 +311,9 @@ class FaceDrivenKeyTool(QDialog):
         theme.style_primary(self.execute_button)
 
     def create_layouts(self):
-        """创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -301,7 +351,9 @@ class FaceDrivenKeyTool(QDialog):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        """连接按钮。"""
+        u"""
+        连接按钮。
+        """
         self.driver_pick_button.clicked.connect(
             self.pick_driver
         )
@@ -310,7 +362,9 @@ class FaceDrivenKeyTool(QDialog):
         )
 
     def pick_driver(self):
-        """拾取唯一选择的驱动控制器。"""
+        u"""
+        拾取唯一选择的驱动控制器。
+        """
         selections = cmds.ls(
             selection=True,
             long=True
@@ -327,7 +381,9 @@ class FaceDrivenKeyTool(QDialog):
         cmds.select(clear=True)
 
     def execute(self):
-        """创建当前 Pose 的 Driven Key。"""
+        u"""
+        创建当前 Pose 的 Driven Key。
+        """
         driver = self.driver_line.text().strip()
         attribute_name = self.attribute_line.text().strip()
         driven_controls = cmds.ls(
@@ -374,7 +430,13 @@ class FaceDrivenKeyTool(QDialog):
 
 
 def main():
-    """显示并返回 Face Driven Key 窗口。"""
+    u"""
+    显示并返回 Face Driven Key 窗口。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.face.face_select_key_tool",
         FaceDrivenKeyTool

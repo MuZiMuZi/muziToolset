@@ -33,7 +33,23 @@ from ....core import name_utils
 # =============================================================================
 
 def validate_transform(node, label):
-    """检查 Transform / Joint。"""
+    u"""
+    检查 Transform / Joint。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+        label (object):
+            `label` 对应的输入数据。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if not node:
         raise RuntimeError(
             u"{}不能为空。".format(label)
@@ -62,7 +78,23 @@ def validate_transform(node, label):
 
 
 def validate_joint(joint, label):
-    """检查 Joint。"""
+    u"""
+    检查 Joint。
+
+    Args:
+        joint (str):
+            需要处理的 Maya Joint 节点名称。
+        label (object):
+            `label` 对应的输入数据。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     validate_transform(
         joint,
         label
@@ -86,7 +118,25 @@ def ensure_float_attribute(
         maximum,
         default_value
 ):
-    """创建或复用一个 Keyable Float Attribute。"""
+    u"""
+    创建或复用一个 Keyable Float Attribute。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+        attribute (str):
+            Maya Attribute 或完整 Plug 名称。
+        minimum (object):
+            `minimum` 对应的输入数据。
+        maximum (object):
+            `maximum` 对应的输入数据。
+        default_value (object):
+            `default_value` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     validate_transform(
         node,
         u"Attribute Node"
@@ -131,7 +181,21 @@ def create_name(
         function,
         index=1
 ):
-    """创建 Zip Lip 系统标准名称。"""
+    u"""
+    创建 Zip Lip 系统标准名称。
+
+    Args:
+        node_type (str):
+            `node_type` 对应的名称、标记或字符串参数。
+        function (object):
+            `function` 对应的输入数据。
+        index (int):
+            目标元素或节点的序号。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return name_utils.Name.create_name(
         node_type=node_type,
         side="md",
@@ -146,7 +210,17 @@ def create_name(
 # =============================================================================
 
 def get_parent(node):
-    """返回直接 Parent，没有则返回 None。"""
+    u"""
+    返回直接 Parent，没有则返回 None。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object | None:
+            方法执行后的结果数据。
+    """
     parents = cmds.listRelatives(
         node,
         parent=True,
@@ -167,11 +241,27 @@ def insert_zip_offset_group(
         function,
         index
 ):
-    """
+    u"""
     在 Joint 上方插入 Zip Offset Group。
 
     Group 会匹配 Joint 当前世界矩阵，Joint 重新 Parent 后保留世界矩阵，
     因此 Joint 的现有姿态不会因为插入 Zip 层而跳动。
+
+    Args:
+        joint (str):
+            需要处理的 Maya Joint 节点名称。
+        function (object):
+            `function` 对应的输入数据。
+        index (int):
+            目标元素或节点的序号。
+
+    Returns:
+        dict:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     parent = get_parent(joint)
     world_matrix = cmds.xform(
@@ -229,11 +319,25 @@ def create_rest_world_matrix(
         function,
         index
 ):
-    """
+    u"""
     保存 Zip Offset 的 Rest Local Matrix，并实时组合 Parent World Matrix。
 
     结果是一个不会受到 Zip Offset 自己后续驱动影响的 Rest World Matrix，
     可以安全作为 blendMatrix 的基础矩阵，避免形成循环依赖。
+
+    Args:
+        zip_offset (object):
+            `zip_offset` 对应的输入数据。
+        parent (str):
+            父级 Maya 节点名称。
+        function (object):
+            `function` 对应的输入数据。
+        index (int):
+            目标元素或节点的序号。
+
+    Returns:
+        dict:
+            方法执行后的结果数据。
     """
     local_matrix = cmds.xform(
         zip_offset,
@@ -300,7 +404,25 @@ def connect_world_matrix_to_transform(
         function,
         index
 ):
-    """把 World Matrix 安全转换到 Transform Parent Local Space。"""
+    u"""
+    把 World Matrix 安全转换到 Transform Parent Local Space。
+
+    Args:
+        world_matrix_plug (str):
+            `world_matrix_plug` 对应的名称、标记或字符串参数。
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+        parent (str):
+            父级 Maya 节点名称。
+        function (object):
+            `function` 对应的输入数据。
+        index (int):
+            目标元素或节点的序号。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     nodes = []
     local_matrix_plug = world_matrix_plug
 
@@ -367,7 +489,17 @@ def configure_remap(
         start_position,
         end_position
 ):
-    """配置 0~1 的线性 Remap。"""
+    u"""
+    配置 0~1 的线性 Remap。
+
+    Args:
+        remap_node (object):
+            `remap_node` 对应的输入数据。
+        start_position (object):
+            `start_position` 对应的输入数据。
+        end_position (object):
+            `end_position` 对应的输入数据。
+    """
     if end_position <= start_position:
         end_position = start_position + 0.0001
 
@@ -403,7 +535,25 @@ def create_zip_influence(
         pair_index,
         falloff
 ):
-    """创建一对嘴唇 Joint 的左右 Zip Influence 0~1。"""
+    u"""
+    创建一对嘴唇 Joint 的左右 Zip Influence 0~1。
+
+    Args:
+        left_zip_plug (str):
+            `left_zip_plug` 对应的名称、标记或字符串参数。
+        right_zip_plug (str):
+            `right_zip_plug` 对应的名称、标记或字符串参数。
+        pair_count (int):
+            `pair_count` 对应的整数参数。
+        pair_index (int):
+            `pair_index` 对应的整数参数。
+        falloff (object):
+            `falloff` 对应的输入数据。
+
+    Returns:
+        dict:
+            方法执行后的结果数据。
+    """
     step = 1.0 / float(pair_count)
     item_number = pair_index + 1
 
@@ -525,7 +675,31 @@ def build_zip_pair(
         right_zip_plug,
         falloff
 ):
-    """构建一对 Upper / Lower Lip Joint 的 Matrix Zip 网络。"""
+    u"""
+    构建一对 Upper / Lower Lip Joint 的 Matrix Zip 网络。
+
+    Args:
+        upper_joint (object):
+            `upper_joint` 对应的输入数据。
+        lower_joint (object):
+            `lower_joint` 对应的输入数据。
+        pair_index (int):
+            `pair_index` 对应的整数参数。
+        pair_count (int):
+            `pair_count` 对应的整数参数。
+        zip_height_reverse_plug (str):
+            `zip_height_reverse_plug` 对应的名称、标记或字符串参数。
+        left_zip_plug (str):
+            `left_zip_plug` 对应的名称、标记或字符串参数。
+        right_zip_plug (str):
+            `right_zip_plug` 对应的名称、标记或字符串参数。
+        falloff (object):
+            `falloff` 对应的输入数据。
+
+    Returns:
+        dict:
+            方法执行后的结果数据。
+    """
     item_number = pair_index + 1
 
     upper_insert = insert_zip_offset_group(
@@ -697,21 +871,35 @@ def build_zip_lip(
         falloff=3,
         utility_parent=None
 ):
-    """
+    u"""
     创建 Matrix Zip Lip。
 
     Args:
-        upper_joints(list): 从左到右排列的 Upper Lip Joint。
-        lower_joints(list): 与 upper_joints 一一对应的 Lower Lip Joint。
-        left_zip_control(str): 左嘴角控制器。
-        right_zip_control(str): 右嘴角控制器。
-        jaw_control(str): Jaw / Mouth 主控制器。
-        zip_height(float): 0=靠近 Lower，1=靠近 Upper，默认 0.5。
-        falloff(int): Zip 传播覆盖的 Joint Pair 步数。
-        utility_parent(str/None): Utility Group 的 Parent。
+        upper_joints (list):
+            从左到右排列的 Upper Lip Joint。
+        lower_joints (list):
+            与 upper_joints 一一对应的 Lower Lip Joint。
+        left_zip_control (str):
+            左嘴角控制器。
+        right_zip_control (str):
+            右嘴角控制器。
+        jaw_control (str):
+            Jaw / Mouth 主控制器。
+        zip_height (float):
+            0=靠近 Lower，1=靠近 Upper，默认 0.5。
+        falloff (int):
+            Zip 传播覆盖的 Joint Pair 步数。
+        utility_parent (str/None):
+            Utility Group 的 Parent。
 
     Returns:
         dict: Zip Lip 系统结果。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if upper_joints is None:
         upper_joints = []

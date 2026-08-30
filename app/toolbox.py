@@ -136,7 +136,13 @@ category_short_names = {
 
 
 def get_maya_main_window():
-    """返回 Maya 主窗口 QWidget。"""
+    u"""
+    返回 Maya 主窗口 QWidget。
+
+    Returns:
+        None | object:
+            方法执行后的结果数据。
+    """
     try:
         pointer = omui.MQtUtil.mainWindow()
     except Exception:
@@ -152,7 +158,17 @@ def get_maya_main_window():
 
 
 def get_tool_display_name(tool_name):
-    """返回工具显示名称。"""
+    u"""
+    返回工具显示名称。
+
+    Args:
+        tool_name (str):
+            `tool_name` 对应的 Maya 节点或资源名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     if tool_name in tool_display_names:
         return tool_display_names[tool_name]
 
@@ -169,7 +185,17 @@ def get_tool_display_name(tool_name):
 
 
 def get_tool_description(tool_name):
-    """返回工具说明。"""
+    u"""
+    返回工具说明。
+
+    Args:
+        tool_name (str):
+            `tool_name` 对应的 Maya 节点或资源名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     if tool_name in tool_descriptions:
         return tool_descriptions[tool_name]
 
@@ -187,6 +213,22 @@ class ToolCard(QFrame):
         run_callback,
         parent=None
     ):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            category_name (str):
+                `category_name` 对应的 Maya 节点或资源名称。
+            tool_name (str):
+                `tool_name` 对应的 Maya 节点或资源名称。
+            tool_function (object):
+                `tool_function` 对应的输入数据。
+            run_callback (object):
+                `run_callback` 对应的输入数据。
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(ToolCard, self).__init__(parent)
 
         self.category_name = category_name
@@ -209,7 +251,9 @@ class ToolCard(QFrame):
         self.create_connections()
 
     def create_widgets(self):
-        """创建工具卡片控件。"""
+        u"""
+        创建工具卡片控件。
+        """
         short_name = category_short_names.get(
             self.category_name,
             "TOOL"
@@ -236,7 +280,9 @@ class ToolCard(QFrame):
         theme.style_primary(self.open_button)
 
     def create_layouts(self):
-        """创建工具卡片布局。"""
+        u"""
+        创建工具卡片布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 14, 16, 14)
         main_layout.setSpacing(7)
@@ -260,7 +306,9 @@ class ToolCard(QFrame):
         main_layout.addLayout(bottom_layout)
 
     def create_connections(self):
-        """连接工具卡片信号。"""
+        u"""
+        连接工具卡片信号。
+        """
         tool_key = "{}/{}".format(
             self.category_name,
             self.tool_name
@@ -275,7 +323,17 @@ class ToolCard(QFrame):
         self.open_button.clicked.connect(callback)
 
     def matches_search(self, search_text):
-        """判断工具是否匹配搜索关键字。"""
+        u"""
+        判断工具是否匹配搜索关键字。
+
+        Args:
+            search_text (object):
+                `search_text` 对应的输入数据。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         search_text = search_text.strip().lower()
 
         if not search_text:
@@ -305,6 +363,20 @@ class CategoryPage(QWidget):
         run_callback,
         parent=None
     ):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            category_name (str):
+                `category_name` 对应的 Maya 节点或资源名称。
+            tools_dict (dict):
+                `tools_dict` 对应的配置或映射字典。
+            run_callback (object):
+                `run_callback` 对应的输入数据。
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(CategoryPage, self).__init__(parent)
 
         self.category_name = category_name
@@ -317,7 +389,9 @@ class CategoryPage(QWidget):
         self.create_cards()
 
     def create_widgets(self):
-        """创建分类页面控件。"""
+        u"""
+        创建分类页面控件。
+        """
         self.title_label = theme.make_title(
             self.category_name
         )
@@ -347,7 +421,9 @@ class CategoryPage(QWidget):
         self.scroll_area.setWidget(self.scroll_content)
 
     def create_layouts(self):
-        """创建分类页面布局。"""
+        u"""
+        创建分类页面布局。
+        """
         header_layout = QHBoxLayout()
         header_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -371,7 +447,9 @@ class CategoryPage(QWidget):
         main_layout.addWidget(self.scroll_area, 1)
 
     def create_cards(self):
-        """创建当前分类中的工具卡片。"""
+        u"""
+        创建当前分类中的工具卡片。
+        """
         row = 0
         column = 0
 
@@ -414,7 +492,9 @@ class CategoryPage(QWidget):
         self.update_count_label()
 
     def update_count_label(self):
-        """更新当前可见工具数量。"""
+        u"""
+        更新当前可见工具数量。
+        """
         visible_count = 0
 
         for card in self.tool_cards:
@@ -426,7 +506,13 @@ class CategoryPage(QWidget):
         )
 
     def filter_tools(self, search_text):
-        """按照关键字过滤当前分类的工具卡片。"""
+        u"""
+        按照关键字过滤当前分类的工具卡片。
+
+        Args:
+            search_text (object):
+                `search_text` 对应的输入数据。
+        """
         for card in self.tool_cards:
             visible = card.matches_search(search_text)
             card.setVisible(visible)
@@ -438,6 +524,14 @@ class RiggingToolbox(QWidget):
     """木子大型绑定工具集主窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         if parent is None:
             parent = get_maya_main_window()
 
@@ -466,7 +560,9 @@ class RiggingToolbox(QWidget):
         self.rebuild_tools(refresh_registry=False)
 
     def create_widgets(self):
-        """创建主工具箱控件。"""
+        u"""
+        创建主工具箱控件。
+        """
         self.sidebar = QFrame()
         theme.set_role(self.sidebar, "sidebar")
         self.sidebar.setFixedWidth(190)
@@ -538,7 +634,9 @@ class RiggingToolbox(QWidget):
         empty_layout.addStretch(1)
 
     def create_layouts(self):
-        """创建左侧导航和右侧内容布局。"""
+        u"""
+        创建左侧导航和右侧内容布局。
+        """
         sidebar_layout = QVBoxLayout(self.sidebar)
         sidebar_layout.setContentsMargins(16, 22, 16, 16)
         sidebar_layout.setSpacing(8)
@@ -580,7 +678,9 @@ class RiggingToolbox(QWidget):
         main_layout.addWidget(self.content_frame, 1)
 
     def create_connections(self):
-        """连接主窗口信号。"""
+        u"""
+        连接主窗口信号。
+        """
         self.refresh_button.clicked.connect(
             self.refresh_tool_registry
         )
@@ -592,7 +692,9 @@ class RiggingToolbox(QWidget):
         )
 
     def clear_navigation(self):
-        """清理旧分类按钮。"""
+        u"""
+        清理旧分类按钮。
+        """
         while self.navigation_layout.count():
             item = self.navigation_layout.takeAt(0)
             widget = item.widget()
@@ -603,7 +705,9 @@ class RiggingToolbox(QWidget):
         self.category_buttons = {}
 
     def clear_pages(self):
-        """清理旧分类页面。"""
+        u"""
+        清理旧分类页面。
+        """
         while self.page_stack.count():
             widget = self.page_stack.widget(0)
             self.page_stack.removeWidget(widget)
@@ -612,7 +716,13 @@ class RiggingToolbox(QWidget):
         self.category_pages = {}
 
     def rebuild_tools(self, refresh_registry=False):
-        """重新构建左侧分类和右侧页面。"""
+        u"""
+        重新构建左侧分类和右侧页面。
+
+        Args:
+            refresh_registry (bool):
+                是否启用 `refresh_registry` 对应的处理。
+        """
         if refresh_registry:
             self.tools_by_category = refresh_tools()
         else:
@@ -675,7 +785,13 @@ class RiggingToolbox(QWidget):
         )
 
     def select_category(self, category_name):
-        """切换当前工具分类。"""
+        u"""
+        切换当前工具分类。
+
+        Args:
+            category_name (str):
+                `category_name` 对应的 Maya 节点或资源名称。
+        """
         if category_name not in self.category_pages:
             return
 
@@ -704,7 +820,13 @@ class RiggingToolbox(QWidget):
         )
 
     def filter_current_page(self, search_text):
-        """过滤当前分类的工具卡片。"""
+        u"""
+        过滤当前分类的工具卡片。
+
+        Args:
+            search_text (object):
+                `search_text` 对应的输入数据。
+        """
         if self.current_category is None:
             return
 
@@ -718,7 +840,19 @@ class RiggingToolbox(QWidget):
         page.filter_tools(search_text)
 
     def run_tool(self, tool_key, tool_function):
-        """通过 Window Manager 启动工具。"""
+        u"""
+        通过 Window Manager 启动工具。
+
+        Args:
+            tool_key (object):
+                `tool_key` 对应的输入数据。
+            tool_function (object):
+                `tool_function` 对应的输入数据。
+
+        Returns:
+            object | None:
+                方法执行后的结果数据。
+        """
         self.status_label.setText(
             u"正在打开 {}...".format(tool_key)
         )
@@ -751,7 +885,9 @@ class RiggingToolbox(QWidget):
         return result
 
     def refresh_tool_registry(self):
-        """重新扫描工具目录。"""
+        u"""
+        重新扫描工具目录。
+        """
         try:
             self.rebuild_tools(refresh_registry=True)
         except Exception as error:
@@ -764,13 +900,21 @@ class RiggingToolbox(QWidget):
             )
 
     def close_all_subtools(self):
-        """关闭所有由主工具箱管理的子工具。"""
+        u"""
+        关闭所有由主工具箱管理的子工具。
+        """
         window_manager.close_all_tools()
         self.status_label.setText(u"已关闭全部子工具")
 
 
 def main():
-    """创建或恢复主工具箱。"""
+    u"""
+    创建或恢复主工具箱。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     global _window
 
     if _window is not None:

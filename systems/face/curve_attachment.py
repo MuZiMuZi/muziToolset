@@ -31,7 +31,21 @@ from ...core import name_utils
 # =============================================================================
 
 def validate_joint(joint):
-    """检查 Joint。"""
+    u"""
+    检查 Joint。
+
+    Args:
+        joint (str):
+            需要处理的 Maya Joint 节点名称。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if not joint:
         raise RuntimeError(u"Joint 名称不能为空。")
 
@@ -52,7 +66,23 @@ def validate_joint(joint):
 
 
 def validate_transform(node, label):
-    """检查 Transform / Joint 类型。"""
+    u"""
+    检查 Transform / Joint 类型。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+        label (object):
+            `label` 对应的输入数据。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if not node:
         raise RuntimeError(
             u"{}不能为空。".format(label)
@@ -80,7 +110,23 @@ def validate_transform(node, label):
 
 
 def normalize_name_part(value, label):
-    """清理命名字段。"""
+    u"""
+    清理命名字段。
+
+    Args:
+        value (float):
+            需要读取、写入或参与计算的数值。
+        label (object):
+            `label` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if value is None:
         raise ValueError(
             u"{}不能为空。".format(label)
@@ -111,7 +157,27 @@ def create_rig_name(
         role,
         index=1
 ):
-    """创建 Face Curve Rig 标准名称。"""
+    u"""
+    创建 Face Curve Rig 标准名称。
+
+    Args:
+        node_type (str):
+            `node_type` 对应的名称、标记或字符串参数。
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        region (str):
+            `region` 对应的名称、标记或字符串参数。
+        feature (str):
+            `feature` 对应的名称、标记或字符串参数。
+        role (object):
+            `role` 对应的输入数据。
+        index (int):
+            目标元素或节点的序号。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     side = name_utils.Name.normalize_side(side)
     region = normalize_name_part(
         region,
@@ -151,7 +217,29 @@ def create_attachment_group(
         feature,
         role
 ):
-    """创建 Drive / Aim / Up Attachment Group。"""
+    u"""
+    创建 Drive / Aim / Up Attachment Group。
+
+    Args:
+        nodes_group (object):
+            `nodes_group` 对应的输入数据。
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        region (str):
+            `region` 对应的名称、标记或字符串参数。
+        feature (str):
+            `feature` 对应的名称、标记或字符串参数。
+        role (object):
+            `role` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     group_name = create_rig_name(
         "grp",
         side,
@@ -181,7 +269,23 @@ def create_curve_attachment(
         name,
         parent
 ):
-    """按弧长百分比在指定 Curve 创建 Attachment。"""
+    u"""
+    按弧长百分比在指定 Curve 创建 Attachment。
+
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+        percentage (object):
+            `percentage` 对应的输入数据。
+        name (str):
+            创建或查询时使用的节点名称。
+        parent (str):
+            父级 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     parameter = curve_utils.length_percentage_to_parameter(
         curve,
         percentage
@@ -211,25 +315,37 @@ def attach_joints_to_curves(
         parent_group=None,
         preserve_joint_offset=True
 ):
-    """
+    u"""
     把一组 Joint 接入 Drive / Aim Curve 网络。
 
     Args:
-        joints(list): 需要驱动的 Joint。
-        drive_curve(str): 决定位置的 Curve。
-        aim_curve(str): 决定朝向的 Curve。
-        side(str): lf / rt / md。
-        region(str): brow / lip / lid 等区域字段。
-        feature(str): main / upper / lower 等功能字段。
-        up_object(str/None): Object Rotation World Up。
-        up_curve(str/None): 如果给定，使用第三条 Curve 作为 World Up。
-        parent_group(str/None): Rig Nodes Group Parent。
-        preserve_joint_offset(bool):
-            True  保留 Joint 原始位置偏移；
-            False Joint 直接吸附到 Drive Attachment。
+        joints (list):
+            需要驱动的 Joint。
+        drive_curve (str):
+            决定位置的 Curve。
+        aim_curve (str):
+            决定朝向的 Curve。
+        side (str):
+            lf / rt / md。
+        region (str):
+            brow / lip / lid 等区域字段。
+        feature (str):
+            main / upper / lower 等功能字段。
+        up_object (str/None):
+            Object Rotation World Up。
+        up_curve (str/None):
+            如果给定，使用第三条 Curve 作为 World Up。
+        parent_group (str/None):
+            Rig Nodes Group Parent。
+        preserve_joint_offset (bool):
+            True  保留 Joint 原始位置偏移； False Joint 直接吸附到 Drive Attachment。
 
     Returns:
         dict: Rig 节点和 Attachment 数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if joints is None:
         joints = []

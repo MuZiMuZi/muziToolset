@@ -7,7 +7,13 @@ from . import toolbox
 
 
 def main():
-    """打开 Muzi Rigging 主工具箱。"""
+    u"""
+    打开 Muzi Rigging 主工具箱。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return toolbox.main()
 
 

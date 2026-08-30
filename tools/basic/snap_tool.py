@@ -21,7 +21,13 @@ from ...core import snap_utils
 
 
 def main():
-    """按当前 Maya 选择执行一次快速吸附。"""
+    u"""
+    按当前 Maya 选择执行一次快速吸附。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+    """
     selected_items = cmds.ls(
         selection=True,
         flatten=True,
