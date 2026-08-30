@@ -49,11 +49,6 @@ jobs:
 
       # -----------------------------------------------------------------------
       # 步骤 2：检查所有正式公开 API 的 Docstring 是否完整。
-      #
-      # 公开方法必须具备：
-      #   - 清晰功能摘要；
-      #   - 每个参数的类型和说明；
-      #   - 有返回值时提供 Returns。
       # -----------------------------------------------------------------------
       - name: Check runtime docstring standard
         run: python scripts/normalize_runtime_docstrings.py --check
@@ -71,45 +66,55 @@ jobs:
         run: python tests/docs_reference_generator_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 5：验证全部正式 Runtime Python 文件都能映射到独立 API 页面。
+      # 步骤 5：验证全部正式 Runtime Python 文件都有独立 API 页面。
       # -----------------------------------------------------------------------
       - name: Check runtime API documentation coverage
         run: python tests/docs_runtime_api_coverage_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 6：使用 AST 生成完整 Runtime API Reference 和源码树导航。
+      # 步骤 6：生成完整 Runtime API Reference 和源码树导航。
       # -----------------------------------------------------------------------
       - name: Generate API reference
         run: python scripts/generate_mkdocs_reference.py
 
       # -----------------------------------------------------------------------
-      # 步骤 7：压缩模块概览，避免把完整 Module Docstring 堆在页面顶部。
+      # 步骤 7：统一压缩模块概览，并在每个 Function / Method 下增加“作用”。
       # -----------------------------------------------------------------------
-      - name: Refine API overview layout
+      - name: Refine generated API layout
         run: python scripts/refine_generated_reference.py
 
       # -----------------------------------------------------------------------
-      # 步骤 8：每个 Function / Method 标题下固定显示“作用”。
+      # 步骤 8：检查所有 Callable 标题后都有明确“作用”。
       # -----------------------------------------------------------------------
-      - name: Highlight callable purpose
-        run: |
-          python scripts/refine_generated_callable_layout.py --write
-          python scripts/refine_generated_callable_layout.py --check
+      - name: Validate callable purpose sections
+        run: python scripts/refine_generated_callable_layout.py --check
 
       # -----------------------------------------------------------------------
-      # 步骤 9：在自动生成的 SUMMARY.md 中加入人工维护的任务型用户手册页面。
+      # 步骤 9：检查全部生成 API 页面的最终布局和占位文本。
+      # -----------------------------------------------------------------------
+      - name: Validate generated API page layout
+        run: python tests/docs_generated_layout_test.py
+
+      # -----------------------------------------------------------------------
+      # 步骤 10：把人工维护的任务型用户手册页面加入 SUMMARY 导航。
       # -----------------------------------------------------------------------
       - name: Expand user manual navigation
         run: python scripts/extend_docs_summary.py
 
       # -----------------------------------------------------------------------
-      # 步骤 10：严格构建 MkDocs。
+      # 步骤 11：检查 README 文档入口与网站导航是否保持一致。
+      # -----------------------------------------------------------------------
+      - name: Check README and navigation consistency
+        run: python tests/docs_readme_navigation_test.py
+
+      # -----------------------------------------------------------------------
+      # 步骤 12：严格构建 MkDocs。任何 Warning 都视为失败。
       # -----------------------------------------------------------------------
       - name: Build MkDocs site
         run: mkdocs build --strict
 
       # -----------------------------------------------------------------------
-      # 步骤 11：检查 GitHub Pages 是否已经启用。
+      # 步骤 13：检查 GitHub Pages 是否已经启用。
       # -----------------------------------------------------------------------
       - name: Check GitHub Pages status
         id: pages_status
@@ -139,7 +144,7 @@ jobs:
           fi
 
       # -----------------------------------------------------------------------
-      # 步骤 12：上传 Pages Artifact。
+      # 步骤 14：上传 Pages Artifact。
       # -----------------------------------------------------------------------
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
