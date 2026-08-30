@@ -6,7 +6,11 @@ Hierarchy Cleaner
 场景安全清理 UI。
 
 实际清理逻辑统一维护在：
-    muzi_rigging.core.scene_clean_utils
+    muziToolset.core.scene_clean_utils
+
+窗口生命周期：
+    用户直接调用 main() 时，由 ui.window_utils 负责保存强引用并显示窗口；
+    从主工具箱打开时，仍可继续交给 app.window_manager 做应用级窗口管理。
 """
 
 from __future__ import print_function
@@ -30,6 +34,7 @@ except ImportError:
 
 from ...core import scene_clean_utils
 from ...ui import theme
+from ...ui import window_utils
 
 
 class HierarchyCleaner(QDialog):
@@ -272,9 +277,11 @@ class HierarchyCleaner(QDialog):
 
 
 def main():
-    """创建并返回 Hierarchy Cleaner。"""
-    window = HierarchyCleaner()
-    return window
+    """显示并返回 Hierarchy Cleaner。"""
+    return window_utils.show_window(
+        "tools.clean.hierarchy_cleaner",
+        HierarchyCleaner
+    )
 
 
 __all__ = [
