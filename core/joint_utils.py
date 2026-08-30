@@ -62,13 +62,13 @@ JointChain.orient_chain(...)
 2. Joint 模块不创建 Controller、不创建 Constraint、不包含 PySide UI；
 3. Selection 驱动的方法仅作为 Tool 兼容入口；底层函数本身接受明确参数；
 4. 完整 Arm / Leg / Spine / Eyelid 等绑定流程进入 systems，而不是继续扩张 Joint Utils；
-5. 保留 jointUtils.py 文件名以兼容现有 import，新代码的方法命名继续使用 snake_case。
+5. 正式模块名为 joint_utils.py；旧 jointUtils.py 只保留兼容转发，不允许正式代码反向依赖兼容层。
 
 依赖
 ----
 maya.cmds
 curve_utils
-nameUtils
+name_utils
 """
 
 from __future__ import print_function
@@ -78,7 +78,7 @@ import re
 import maya.cmds as cmds
 
 from . import curve_utils
-from . import nameUtils
+from . import name_utils
 
 
 # =============================================================================
@@ -893,7 +893,7 @@ class JointChain(object):
         """
         根据 Blueprint Joint 创建一条新 Joint Chain。
 
-        命名继续复用 nameUtils.Name，以保持现有项目命名兼容。
+        命名统一复用 name_utils.Name，以保持项目标准命名规则。
         """
         blueprint_joints = JointChain.validate_joint_list(
             blueprint_joints
@@ -907,7 +907,7 @@ class JointChain(object):
 
         for blueprint_joint in blueprint_joints:
             # 步骤 1：根据 Blueprint 名称生成新 Joint 名称。
-            name_object = nameUtils.Name(
+            name_object = name_utils.Name(
                 name=blueprint_joint
             )
             name_object.type = "jnt"
