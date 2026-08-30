@@ -5,13 +5,19 @@ Controller Space Blend
 
 控制器 Parent Space / Follow 混合系统。
 
-从旧 pipelineUtils.create_doble_constraint() 的思路重构而来。
-
 职责：
     1. 使用外部 Driver 和 Controller Zero 共同驱动 Driven Group；
     2. 在控制器上创建 0-1 Follow 属性；
     3. 自动创建反向权重；
     4. 不依赖旧 Pipeline / PyMel。
+
+重要边界：
+    - DAG Short Name 统一复用 core.rename_utils；
+    - Maya 节点校验统一复用 core.scene_utils；
+    - Attribute 创建统一复用 core.attr_utils；
+    - Parent Constraint 统一复用 core.constraint_utils；
+    - DG Plug Connection 统一复用 core.connection_utils；
+    - 本模块只保留 Parent Space / Follow Workflow。
 
 标准控制器层级：
 
@@ -30,6 +36,12 @@ from __future__ import print_function
 
 import maya.cmds as cmds
 
+from ...core import attr_utils
+from ...core import connection_utils
+from ...core import constraint_utils
+from ...core import rename_utils
+from ...core import scene_utils
+
 
 # =============================================================================
 # Name
@@ -37,38 +49,22 @@ import maya.cmds as cmds
 
 def get_short_name(node):
     u"""
-    返回 DAG 短名称。
+    返回 DAG Short Name。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
+    保留旧公开入口，实际规则统一由 core.rename_utils 维护。
     """
-    return node.split("|")[-1]
+    # 使用统一 Rename Core 提取 DAG Short Name。
+    return rename_utils.get_short_name(
+        node
+    )
 
 
 def replace_control_prefix(control, prefix):
-    u"""
-    根据 ctrl_ 名称生成同层级约定名称。
-
-    Args:
-        control (str):
-            需要处理的控制器 Transform 名称。
-        prefix (str):
-            添加到 Maya 节点名称前部的 Prefix。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-    """
-    short_name = get_short_name(control)
+    u"""根据 ctrl_ 名称生成同层级约定名称。"""
+    # 使用统一 Short Name 入口取得不带 DAG Path 的 Controller 名称。
+    short_name = get_short_name(
+        control
+    )
 
     if not short_name.startswith("ctrl_"):
         raise RuntimeError(
@@ -83,33 +79,26 @@ def replace_control_prefix(control, prefix):
 
 
 # =============================================================================
-# Validate
+# Validate - Compatibility
 # =============================================================================
 
 def validate_node(node, label):
     u"""
     检查必要 Maya 节点。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-        label (str):
-            UI、Rig Node 或日志中展示的简短 Label。
-
-    Returns:
-        bool:
-        方法执行后的结果数据。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+    保留旧公开入口，实际节点存在性规则统一由 scene_utils 维护。
     """
     if not node:
         raise RuntimeError(
             u"{}不能为空。".format(label)
         )
 
-    if not cmds.objExists(node):
+    try:
+        # 使用 Scene Core 统一检查节点存在性。
+        scene_utils.validate_node(
+            node
+        )
+    except RuntimeError:
         raise RuntimeError(
             u"{}不存在：{}".format(
                 label,
@@ -129,21 +118,8 @@ def ensure_follow_attribute(
         attribute_name="follow",
         default_value=0.5
 ):
-    u"""
-    创建或复用 0-1 Follow 属性。
-
-    Args:
-        control (str):
-            需要处理的控制器 Transform 名称。
-        attribute_name (str):
-            `attribute_name` 对应的 Maya 节点或资源名称。
-        default_value (float):
-            新建 Attribute、UI 控件或 Rig 参数使用的默认值。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
+    u"""创建或复用 0-1 Follow 属性。"""
+    # 先确认 Controller 节点有效，再操作其自定义 Attribute。
     validate_node(
         control,
         u"控制器"
@@ -155,21 +131,22 @@ def ensure_follow_attribute(
     if default_value > 1.0:
         default_value = 1.0
 
-    exists = cmds.attributeQuery(
-        attribute_name,
-        node=control,
-        exists=True
+    # 使用统一 Attr Core 查询 / 创建 Follow Attribute，已有属性不覆盖当前动画值。
+    control_attr = attr_utils.Attr(
+        control
     )
 
-    if not exists:
-        cmds.addAttr(
-            control,
-            longName=attribute_name,
-            attributeType="double",
-            minValue=0.0,
-            maxValue=1.0,
-            defaultValue=float(default_value),
-            keyable=True
+    if not control_attr.attr_exists(
+            attribute_name
+    ):
+        control_attr.add_attr(
+            attribute_name,
+            attr_type="double",
+            lock=False,
+            hide=False,
+            default_value=float(default_value),
+            min_value=0.0,
+            max_value=1.0
         )
 
     return "{}.{}".format(
@@ -194,75 +171,67 @@ def create_parent_space_blend(
     u"""
     创建 Controller Parent Space Blend。
 
-    Args:
-        driver (str):
-            外部跟随目标。
-        control (str):
-            标准 ctrl_ 控制器。
-        weight (float):
-            初始 Follow 权重，范围 0-1。
-        attribute_name (str):
-            控制器上的 Follow 属性名。
-        zero_group (str/None):
-            可显式传入 Zero Group；None 时根据 control 名称推导。
-        driven_group (str/None):
-            可显式传入 Driven Group；None 时根据 control 名称推导。
-        maintain_offset (bool):
-            Parent Constraint 是否保持偏移。
-
     Returns:
         dict:
-        control / driver / zero / driven / constraint /
-        reverse / follow_plug。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+            control / driver / zero / driven / constraint /
+            reverse / follow_plug。
     """
+    # 检查外部 Space Driver 是否存在。
     validate_node(
         driver,
         u"Driver"
     )
+
+    # 检查需要增加 Follow 行为的 Controller 是否存在。
     validate_node(
         control,
         u"Controller"
     )
 
     if zero_group is None:
+        # 根据标准 Controller 名称推导对应 Zero Group 名称。
         zero_group = replace_control_prefix(
             control,
             "zero"
         )
 
     if driven_group is None:
+        # 根据标准 Controller 名称推导对应 Driven Group 名称。
         driven_group = replace_control_prefix(
             control,
             "driven"
         )
 
+    # 确认 Controller 原始 Zero Space 节点可用。
     validate_node(
         zero_group,
         u"Zero Group"
     )
+
+    # 确认真正接收 Parent Space 混合的 Driven Group 可用。
     validate_node(
         driven_group,
         u"Driven Group"
     )
 
+    # 创建或复用 Controller 上的 0-1 Follow Attribute。
     follow_plug = ensure_follow_attribute(
         control=control,
         attribute_name=attribute_name,
         default_value=weight
     )
 
-    # -------------------------------------------------------------------------
-    # Parent Constraint
-    #
-    # Driver 和 Zero 共同约束 Driven。
-    # Zero 作为“原始空间”目标，可以避免 Follow=0 时 Driven 漂移。
-    # -------------------------------------------------------------------------
+    control_short_name = get_short_name(
+        control
+    )
+    control_name_part = control_short_name.replace(
+        "ctrl_",
+        "",
+        1
+    )
+
     constraint_name = "cns_{}_{}_001".format(
-        get_short_name(control).replace("ctrl_", "", 1),
+        control_name_part,
         attribute_name
     )
 
@@ -278,13 +247,26 @@ def create_parent_space_blend(
             )
         )
 
-    constraint = cmds.parentConstraint(
-        driver,
-        zero_group,
-        driven_group,
-        maintainOffset=maintain_offset,
+    # 使用 Constraint Core 让外部 Driver 和原始 Zero Space 共同驱动 Driven Group。
+    constraint_nodes = constraint_utils.create_constraint(
+        driver_objects=[
+            driver,
+            zero_group,
+        ],
+        driven_object=driven_group,
+        constraint_type="parentConstraint",
+        maintain_offset=maintain_offset,
         name=constraint_name
-    )[0]
+    )
+
+    if not constraint_nodes:
+        raise RuntimeError(
+            u"Parent Space Constraint 创建失败：{}".format(
+                driven_group
+            )
+        )
+
+    constraint = constraint_nodes[0]
 
     weight_aliases = cmds.parentConstraint(
         constraint,
@@ -296,7 +278,9 @@ def create_parent_space_blend(
         weight_aliases = []
 
     if len(weight_aliases) != 2:
-        cmds.delete(constraint)
+        cmds.delete(
+            constraint
+        )
         raise RuntimeError(
             u"Parent Constraint 权重目标数量异常：{}".format(
                 constraint
@@ -313,32 +297,33 @@ def create_parent_space_blend(
         weight_aliases[1]
     )
 
-    # -------------------------------------------------------------------------
-    # Follow
-    # -------------------------------------------------------------------------
-    cmds.connectAttr(
+    # 把 Follow 值直接连接到外部 Driver 的 Constraint Weight。
+    connection_utils.connect_plugs(
         follow_plug,
         driver_weight_plug,
         force=True
     )
 
     reverse_name = "reverse_{}_{}_001".format(
-        get_short_name(control).replace("ctrl_", "", 1),
+        control_name_part,
         attribute_name
     )
 
-    reverse_node = cmds.createNode(
+    # 创建 Reverse Node，把 Follow 转换成 Zero Space 的反向权重。
+    reverse_node = scene_utils.create_node(
         "reverse",
-        name=reverse_name
+        reverse_name
     )
 
-    cmds.connectAttr(
+    # 把 Follow 输入 Reverse Node，得到 1 - Follow。
+    connection_utils.connect_plugs(
         follow_plug,
         reverse_node + ".inputX",
         force=True
     )
 
-    cmds.connectAttr(
+    # 把反向权重连接到 Zero Space Constraint Weight。
+    connection_utils.connect_plugs(
         reverse_node + ".outputX",
         zero_weight_plug,
         force=True
