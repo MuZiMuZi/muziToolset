@@ -11,11 +11,18 @@ Rig Tool
     3. 管理带 muziRigType 标记的 Rig Module；
     4. 提供常用 Rig 场景工具。
 
-架构：
+架构边界：
+    - Animation 清理统一调用 core.animation_utils；
+    - Constraint 创建统一调用 core.constraint_utils；
+    - DAG Parent / Extra Group 统一调用 core.hierarchy_utils；
+    - Joint 类型检查统一调用 core.joint_utils；
+    - DAG Short / Long Name 统一调用 core.rename_utils / scene_utils；
+    - Selection / Node 创建 / Undo 统一调用 core.scene_utils；
+    - World Position 统一调用 core.transform_utils；
     - Controller 创建统一调用 systems.controller；
-    - Snap 等通用算法统一调用 core；
+    - Snap 算法统一调用 core.snap_utils；
     - 子窗口统一交给 app.window_manager；
-    - 本文件只保留 Rig Tool UI 和少量模块级组装逻辑。
+    - 本文件只保留 Rig Tool UI、RP IK / Pole Vector 业务和少量工作流组装。
 """
 
 from __future__ import print_function
@@ -40,7 +47,14 @@ except ImportError:
     from PySide6.QtWidgets import QWidget
 
 from ...app import window_manager
+from ...core import animation_utils
+from ...core import constraint_utils
+from ...core import hierarchy_utils
+from ...core import joint_utils
+from ...core import rename_utils
+from ...core import scene_utils
 from ...core import snap_utils
+from ...core import transform_utils
 from ...systems import controller as controller_system
 from ...ui import theme
 from ...ui import window_utils
@@ -51,58 +65,9 @@ from ..joint import joint_tool
 from . import skirt_ctrl_tool
 
 
-def get_short_name(node):
-    u"""
-    返回 DAG 节点短名称。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-    return node.split("|")[-1]
-
-
-def get_long_name(node):
-    u"""
-    把 Maya DAG 节点统一解析成长路径。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object | None:
-        方法执行后的结果数据。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-    """
-    if not node:
-        return None
-
-    matches = cmds.ls(
-        node,
-        long=True
-    )
-
-    if matches is None:
-        matches = []
-
-    if not matches:
-        return None
-
-    if len(matches) > 1:
-        raise RuntimeError(
-            u"节点名称不唯一，请使用完整 DAG 路径：{}".format(node)
-        )
-
-    return matches[0]
-
+# =============================================================================
+# IK Math
+# =============================================================================
 
 def vector_subtract(vector_a, vector_b):
     u"""
@@ -110,13 +75,13 @@ def vector_subtract(vector_a, vector_b):
 
     Args:
         vector_a (list[float] | tuple[float, float, float]):
-            向量计算中的第一个 XYZ Vector。
+            第一个 XYZ Vector。
         vector_b (list[float] | tuple[float, float, float]):
-            向量计算中的第二个 XYZ Vector。
+            第二个 XYZ Vector。
 
     Returns:
-        list:
-        方法执行后的结果数据。
+        list[float]:
+            vector_a - vector_b。
     """
     return [
         vector_a[0] - vector_b[0],
@@ -131,13 +96,13 @@ def vector_add(vector_a, vector_b):
 
     Args:
         vector_a (list[float] | tuple[float, float, float]):
-            向量计算中的第一个 XYZ Vector。
+            第一个 XYZ Vector。
         vector_b (list[float] | tuple[float, float, float]):
-            向量计算中的第二个 XYZ Vector。
+            第二个 XYZ Vector。
 
     Returns:
-        list:
-        方法执行后的结果数据。
+        list[float]:
+            vector_a + vector_b。
     """
     return [
         vector_a[0] + vector_b[0],
@@ -152,13 +117,13 @@ def vector_multiply(vector, value):
 
     Args:
         vector (list[float] | tuple[float, float, float]):
-            参与方向、长度或向量计算的 XYZ Vector。
+            XYZ Vector。
         value (float):
-            需要读取、写入或参与计算的数值。
+            标量。
 
     Returns:
-        list:
-        方法执行后的结果数据。
+        list[float]:
+            缩放后的 Vector。
     """
     return [
         vector[0] * value,
@@ -173,11 +138,11 @@ def vector_length(vector):
 
     Args:
         vector (list[float] | tuple[float, float, float]):
-            参与方向、长度或向量计算的 XYZ Vector。
+            XYZ Vector。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        float:
+            欧氏长度。
     """
     return math.sqrt(
         vector[0] * vector[0]
@@ -192,13 +157,15 @@ def vector_normalize(vector):
 
     Args:
         vector (list[float] | tuple[float, float, float]):
-            参与方向、长度或向量计算的 XYZ Vector。
+            XYZ Vector。
 
     Returns:
-        list:
-        方法执行后的结果数据。
+        list[float]:
+            单位向量；零长度时返回 [0, 0, 0]。
     """
-    length = vector_length(vector)
+    length = vector_length(
+        vector
+    )
 
     if length <= 0.000001:
         return [0.0, 0.0, 0.0]
@@ -216,13 +183,13 @@ def dot_product(vector_a, vector_b):
 
     Args:
         vector_a (list[float] | tuple[float, float, float]):
-            向量计算中的第一个 XYZ Vector。
+            第一个 XYZ Vector。
         vector_b (list[float] | tuple[float, float, float]):
-            向量计算中的第二个 XYZ Vector。
+            第二个 XYZ Vector。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        float:
+            Dot Product。
     """
     return (
         vector_a[0] * vector_b[0]
@@ -231,50 +198,59 @@ def dot_product(vector_a, vector_b):
     )
 
 
+# =============================================================================
+# IK Workflow
+# =============================================================================
+
 def get_joint_path(start_joint, end_joint):
     u"""
     返回 start_joint 到 end_joint 的 Joint 路径。
 
     Args:
         start_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+            起始 Joint。
         end_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+            末端 Joint。
 
     Returns:
-        object | None | list:
-        方法执行后的结果数据。
+        list[str] | None:
+            从 Start 到 End 的 Joint Path；不存在时返回 None。
     """
-    start_joint = get_long_name(start_joint)
-    end_joint = get_long_name(end_joint)
-
-    if start_joint is None:
-        return None
-
-    if end_joint is None:
+    try:
+        # 使用 Scene Core 把两端解析成唯一 DAG Long Path。
+        start_joint = scene_utils.get_long_name(
+            start_joint
+        )
+        end_joint = scene_utils.get_long_name(
+            end_joint
+        )
+    except RuntimeError:
         return None
 
     if start_joint == end_joint:
-        return [start_joint]
+        return [
+            start_joint
+        ]
 
     def walk(current_joint, current_path):
-        children = cmds.listRelatives(
+        # 使用 Hierarchy Core 获取当前 Joint 的直接 Child Joint。
+        children = hierarchy_utils.Hierarchy.get_children(
             current_joint,
-            children=True,
-            type="joint",
-            fullPath=True
+            node_type="joint",
+            full_path=True
         )
-
-        if children is None:
-            children = []
 
         for child_joint in children:
             child_path = []
 
             for path_joint in current_path:
-                child_path.append(path_joint)
+                child_path.append(
+                    path_joint
+                )
 
-            child_path.append(child_joint)
+            child_path.append(
+                child_joint
+            )
 
             if child_joint == end_joint:
                 return child_path
@@ -305,33 +281,25 @@ def get_pole_vector_position(
 
     Args:
         start_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+            起始 Joint。
         middle_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+            中间 Joint。
         end_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+            末端 Joint。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        list[float]:
+            推荐 Pole Vector 世界位置。
     """
-    start_position = cmds.xform(
-        start_joint,
-        query=True,
-        worldSpace=True,
-        translation=True
+    # 使用 Transform Core 读取三段 Joint 的世界位置。
+    start_position = transform_utils.get_world_translation(
+        start_joint
     )
-    middle_position = cmds.xform(
-        middle_joint,
-        query=True,
-        worldSpace=True,
-        translation=True
+    middle_position = transform_utils.get_world_translation(
+        middle_joint
     )
-    end_position = cmds.xform(
-        end_joint,
-        query=True,
-        worldSpace=True,
-        translation=True
+    end_position = transform_utils.get_world_translation(
+        end_joint
     )
 
     start_to_end = vector_subtract(
@@ -343,12 +311,17 @@ def get_pole_vector_position(
         start_position
     )
 
-    line_length = vector_length(start_to_end)
+    line_length = vector_length(
+        start_to_end
+    )
 
     if line_length <= 0.000001:
         return middle_position
 
-    line_direction = vector_normalize(start_to_end)
+    # 计算 Middle 在 Start -> End 直线上的投影点。
+    line_direction = vector_normalize(
+        start_to_end
+    )
     projection_length = dot_product(
         start_to_middle,
         line_direction
@@ -361,11 +334,14 @@ def get_pole_vector_position(
         )
     )
 
+    # Middle 到投影点的方向就是 Pole Vector 方向。
     pole_direction = vector_subtract(
         middle_position,
         projection
     )
-    pole_direction = vector_normalize(pole_direction)
+    pole_direction = vector_normalize(
+        pole_direction
+    )
 
     if vector_length(pole_direction) <= 0.000001:
         pole_direction = [0.0, 0.0, 1.0]
@@ -394,73 +370,83 @@ def get_pole_vector_position(
     )
 
 
+@scene_utils.undo_chunk
 def create_ik_rig(start_joint, end_joint):
     u"""
     创建基础 RP IK、End Controller 和 Pole Vector Controller。
 
     Args:
         start_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+            IK Chain 起始 Joint。
         end_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+            IK Chain 末端 Joint。
 
     Returns:
         dict:
-        方法执行后的结果数据。
+            Rig Group、IK Handle、Effector、End Controller 和 Pole Controller。
 
     Raises:
         RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+            输入 Joint 无效、Chain 不连续或 Rig 已存在时抛出。
     """
-    original_start_joint = start_joint
-    original_end_joint = end_joint
+    # 使用 Joint Core 做领域类型检查。
+    joint_utils.Joint(
+        start_joint
+    )
+    joint_utils.Joint(
+        end_joint
+    )
 
-    start_joint = get_long_name(start_joint)
-    end_joint = get_long_name(end_joint)
+    # 使用 Scene Core 解析唯一 DAG Long Path。
+    start_joint = scene_utils.get_long_name(
+        start_joint
+    )
+    end_joint = scene_utils.get_long_name(
+        end_joint
+    )
 
-    if start_joint is None:
-        raise RuntimeError(
-            u"IK 起始 Joint 不存在：{}".format(original_start_joint)
-        )
-
-    if end_joint is None:
-        raise RuntimeError(
-            u"IK 末端 Joint 不存在：{}".format(original_end_joint)
-        )
-
-    if cmds.nodeType(start_joint) != "joint":
-        raise RuntimeError(u"IK 起始节点必须是 Joint。")
-
-    if cmds.nodeType(end_joint) != "joint":
-        raise RuntimeError(u"IK 末端节点必须是 Joint。")
-
+    # 解析 Start -> End 的连续 Joint Path。
     joint_path = get_joint_path(
         start_joint,
         end_joint
     )
 
-    if not joint_path or len(joint_path) < 2:
+    if not joint_path:
         raise RuntimeError(
             u"起始 Joint 和末端 Joint 不在同一条子 Joint Chain 上。"
         )
 
-    base_name = get_short_name(start_joint)
+    if len(joint_path) < 2:
+        raise RuntimeError(
+            u"RP IK 至少需要两个 Joint。"
+        )
+
+    # 使用统一 Short Name API 生成当前 IK Module 名称。
+    base_name = rename_utils.get_short_name(
+        start_joint
+    )
 
     if base_name.startswith("jnt_"):
         base_name = base_name[4:]
 
-    rig_group_name = "rig_ik_{}_grp".format(base_name)
+    rig_group_name = "rig_ik_{}_grp".format(
+        base_name
+    )
 
     if cmds.objExists(rig_group_name):
         raise RuntimeError(
-            u"IK Rig 已存在：{}".format(rig_group_name)
+            u"IK Rig 已存在：{}".format(
+                rig_group_name
+            )
         )
 
-    rig_group = cmds.createNode(
+    # 使用 Scene Core 创建 IK Module Root。
+    rig_group = scene_utils.create_node(
         "transform",
-        name=rig_group_name
+        rig_group_name
     )
 
+    # muziRigType 是 Rig Module 的业务标记，因此由 Rig Tool 设置。
     cmds.addAttr(
         rig_group,
         longName="muziRigType",
@@ -472,32 +458,31 @@ def create_ik_rig(start_joint, end_joint):
         type="string"
     )
 
+    # 创建 Maya RP IK Handle；IK Solver 本身属于当前 Rig Workflow。
     ik_handle_result = cmds.ikHandle(
         startJoint=start_joint,
         endEffector=end_joint,
         solver="ikRPsolver",
-        name="ikh_{}".format(base_name)
+        name="ikh_{}".format(
+            base_name
+        )
     )
 
     ik_handle = ik_handle_result[0]
     effector = ik_handle_result[1]
 
-    cmds.parent(
+    # 把 IK Handle 收进当前 Rig Module Root。
+    ik_handle = hierarchy_utils.Hierarchy.parent(
         ik_handle,
         rig_group
     )
 
-    start_position = cmds.xform(
-        start_joint,
-        query=True,
-        worldSpace=True,
-        translation=True
+    # 根据 IK Chain 世界长度计算 Controller 大小。
+    start_position = transform_utils.get_world_translation(
+        start_joint
     )
-    end_position = cmds.xform(
-        end_joint,
-        query=True,
-        worldSpace=True,
-        translation=True
+    end_position = transform_utils.get_world_translation(
+        end_joint
     )
 
     chain_size = vector_length(
@@ -511,6 +496,7 @@ def create_ik_rig(start_joint, end_joint):
         0.5
     )
 
+    # 使用统一 Controller System 创建 IK End Controller。
     end_control_result = controller_system.create_controller(
         name="ctrl_{}_ik".format(base_name),
         shape="circle",
@@ -526,33 +512,44 @@ def create_ik_rig(start_joint, end_joint):
     end_control = end_control_result["control"]
     end_top_group = end_control_result["top_group"]
 
-    cmds.parent(
+    # 把 End Controller 顶层组收进当前 IK Module。
+    hierarchy_utils.Hierarchy.parent(
         end_top_group,
         rig_group
     )
 
-    cmds.pointConstraint(
-        end_control,
-        ik_handle,
-        maintainOffset=False
+    # End Controller 位置驱动 IK Handle。
+    constraint_utils.create_constraint(
+        driver_objects=end_control,
+        driven_object=ik_handle,
+        constraint_type="pointConstraint",
+        maintain_offset=False
     )
-    cmds.orientConstraint(
-        end_control,
-        end_joint,
-        maintainOffset=True
+
+    # End Controller 旋转驱动末端 Joint。
+    constraint_utils.create_constraint(
+        driver_objects=end_control,
+        driven_object=end_joint,
+        constraint_type="orientConstraint",
+        maintain_offset=True
     )
 
     pole_control = None
 
     if len(joint_path) >= 3:
-        middle_index = int(len(joint_path) / 2)
+        middle_index = int(
+            len(joint_path) / 2
+        )
         middle_joint = joint_path[middle_index]
+
+        # 根据 Joint Chain 几何关系计算稳定的 Pole Vector 推荐位置。
         pole_position = get_pole_vector_position(
             start_joint,
             middle_joint,
             end_joint
         )
 
+        # 使用统一 Controller System 创建 Pole Vector Controller。
         pole_result = controller_system.create_controller(
             name="ctrl_{}_pv".format(base_name),
             shape="circle",
@@ -571,16 +568,20 @@ def create_ik_rig(start_joint, end_joint):
         pole_control = pole_result["control"]
         pole_top_group = pole_result["top_group"]
 
-        cmds.xform(
+        # 把 Pole Controller 顶层组移动到计算得到的世界位置。
+        transform_utils.set_world_translation(
             pole_top_group,
-            worldSpace=True,
-            translation=pole_position
+            pole_position
         )
-        cmds.parent(
+
+        # 把 Pole Controller 收进当前 IK Module。
+        hierarchy_utils.Hierarchy.parent(
             pole_top_group,
             rig_group
         )
-        cmds.poleVectorConstraint(
+
+        # 使用 Constraint Core 创建 Pole Vector Constraint。
+        constraint_utils.create_pole_vector_constraint(
             pole_control,
             ik_handle
         )
@@ -599,19 +600,29 @@ def create_ik_rig(start_joint, end_joint):
     }
 
 
+# =============================================================================
+# Rig Module / Scene Query
+# =============================================================================
+
 def find_rig_root(node):
     u"""
     沿父层级查找带 muziRigType 的 Rig Module Root。
 
     Args:
         node (str):
-            需要查询或处理的 Maya 节点名称。
+            Rig Module 内任意 DAG 节点。
 
     Returns:
-        None | object:
-        方法执行后的结果数据。
+        str | None:
+            Rig Module Root；找不到时返回 None。
     """
-    current_node = get_long_name(node)
+    try:
+        # 使用 Scene Core 解析起始节点唯一 Long Path。
+        current_node = scene_utils.get_long_name(
+            node
+        )
+    except RuntimeError:
+        return None
 
     while current_node:
         if cmds.attributeQuery(
@@ -621,19 +632,11 @@ def find_rig_root(node):
         ):
             return current_node
 
-        parents = cmds.listRelatives(
+        # 使用 Hierarchy Core 向上查询直接 Parent。
+        current_node = hierarchy_utils.Hierarchy.get_parent(
             current_node,
-            parent=True,
-            fullPath=True
+            full_path=True
         )
-
-        if parents is None:
-            parents = []
-
-        if not parents:
-            break
-
-        current_node = parents[0]
 
     return None
 
@@ -643,26 +646,28 @@ def get_duplicate_map():
     按短名称收集场景重名 DAG 节点。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        dict:
+            short_name -> Long Path List，仅包含重名项。
     """
     nodes = cmds.ls(
         long=True,
         dagObjects=True
-    )
-
-    if nodes is None:
-        nodes = []
+    ) or []
 
     name_map = {}
 
     for node in nodes:
-        short_name = get_short_name(node)
+        # 使用 Rename Core 统一解析 DAG Short Name。
+        short_name = rename_utils.get_short_name(
+            node
+        )
 
         if short_name not in name_map:
             name_map[short_name] = []
 
-        name_map[short_name].append(node)
+        name_map[short_name].append(
+            node
+        )
 
     duplicates = {}
 
@@ -675,18 +680,21 @@ def get_duplicate_map():
     return duplicates
 
 
+# =============================================================================
+# UI
+# =============================================================================
+
 class RigTool(QWidget):
     """通用 Rig 主工具面板。"""
 
     def __init__(self, parent=None):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
+        创建 Rig Tool 窗口。
 
         Args:
-            parent (str):
-                父级 Maya 节点名称。
+            parent (QWidget | None):
+                Qt 父窗口。
         """
-
         super(RigTool, self).__init__(parent)
 
         self.create_widgets()
@@ -701,9 +709,7 @@ class RigTool(QWidget):
         self.resize(640, 760)
 
     def create_widgets(self):
-        u"""
-        创建界面控件。
-        """
+        u"""创建界面控件。"""
         self.title_label = theme.make_title(u"Rig 工具")
         self.subtitle_label = theme.make_subtitle(
             u"集中处理 Controller、FK、基础 IK、Rig Module 和常用绑定操作。"
@@ -742,9 +748,7 @@ class RigTool(QWidget):
         self.rename_duplicates_button = QPushButton(u"重命名重复节点")
 
     def create_layouts(self):
-        u"""
-        创建 Card 布局。
-        """
+        u"""创建 Card 布局。"""
         root_layout = QVBoxLayout(self)
         root_layout.setContentsMargins(16, 16, 16, 16)
         root_layout.setSpacing(12)
@@ -812,6 +816,7 @@ class RigTool(QWidget):
         for button in utility_buttons:
             row = int(button_index / 2)
             column = button_index % 2
+
             utility_grid.addWidget(
                 button,
                 row,
@@ -830,9 +835,7 @@ class RigTool(QWidget):
         root_layout.addWidget(scroll_area, 1)
 
     def create_connections(self):
-        u"""
-        连接界面信号。
-        """
+        u"""连接界面信号。"""
         self.create_fk_button.clicked.connect(
             self.open_fk_tool
         )
@@ -886,288 +889,235 @@ class RigTool(QWidget):
 
         Args:
             tool_key (str):
-                Tool Registry / Window Manager 中唯一识别工具的 Key。
-            tool_module (module | object):
-                已经加载的工具 Python Module，用于调用其公开入口。
+                Window Manager 唯一 Key。
+            tool_module (module):
+                已加载 Tool Module。
 
         Returns:
             object:
-            方法执行后的结果数据。
+                Tool main() 返回值。
         """
+        # 使用应用层统一 Window Manager 打开子工具。
         return window_manager.show_tool(
             "rig/{}".format(tool_key),
             tool_module.main
         )
 
     def open_fk_tool(self):
-        u"""
-        执行 `open_fk_tool` 对应的 Maya 工具操作。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-
+        u"""打开 FK Controller Tool。"""
         return self.open_tool(
             "fk_controller",
             create_fk_ctrl_tool
         )
 
     def open_control_creator(self):
-        u"""
-        执行 `open_control_creator` 对应的 Maya 工具操作。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-
+        u"""打开 Controller Creator。"""
         return self.open_tool(
             "controller_creator",
             create_ctrl_tool
         )
 
     def open_joint_tool(self):
-        u"""
-        执行 `open_joint_tool` 对应的 Maya 工具操作。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-
+        u"""打开 Joint Tool。"""
         return self.open_tool(
             "joint_tool",
             joint_tool
         )
 
     def open_skirt_tool(self):
-        u"""
-        执行 `open_skirt_tool` 对应的 Maya 工具操作。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-
+        u"""打开 Skirt Rig Tool。"""
         return self.open_tool(
             "skirt_rig",
             skirt_ctrl_tool
         )
 
     def create_ik(self):
-        u"""
-        根据当前 Picker 创建基础 RP IK Rig。
-        """
+        u"""根据当前 Picker 创建基础 RP IK Rig。"""
         start_joint = self.ik_start_picker.get_value()
         end_joint = self.ik_end_picker.get_value()
 
         if not start_joint or not end_joint:
-            cmds.warning(u"请先拾取 IK 起始和末端 Joint。")
+            cmds.warning(
+                u"请先拾取 IK 起始和末端 Joint。"
+            )
             return
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziCreateIkRig"
-        )
-
         try:
+            # 调用参数化 IK Workflow；Undo 已由 create_ik_rig 统一管理。
             result = create_ik_rig(
                 start_joint,
                 end_joint
             )
+
             cmds.select(
                 result["group"],
                 replace=True
             )
         except Exception as error:
-            cmds.warning(str(error))
-        finally:
-            cmds.undoInfo(closeChunk=True)
+            cmds.warning(
+                str(error)
+            )
 
     @staticmethod
     def delete_selected_rig():
-        u"""
-        删除选择节点所属的 Muzi Rig Module。
-        """
-        selections = cmds.ls(
-            selection=True,
-            long=True
+        u"""删除选择节点所属的 Muzi Rig Module。"""
+        selections = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
         )
-
-        if selections is None:
-            selections = []
 
         rig_roots = []
 
         for node in selections:
-            rig_root = find_rig_root(node)
+            # 向上寻找当前选择所属 Rig Module Root。
+            rig_root = find_rig_root(
+                node
+            )
 
-            if rig_root and rig_root not in rig_roots:
-                rig_roots.append(rig_root)
+            if not rig_root:
+                continue
+
+            if rig_root in rig_roots:
+                continue
+
+            rig_roots.append(
+                rig_root
+            )
 
         if not rig_roots:
-            cmds.warning(u"选择中未找到带 muziRigType 的 Rig Module。")
-            return
-
-        cmds.delete(rig_roots)
-
-    @staticmethod
-    def clear_keys():
-        u"""
-        删除选择对象关键帧；没有选择时清理场景 AnimCurve。
-        """
-        selections = cmds.ls(
-            selection=True,
-            long=True
-        )
-
-        if selections:
-            cmds.cutKey(
-                selections,
-                clear=True
+            cmds.warning(
+                u"选择中未找到带 muziRigType 的 Rig Module。"
             )
             return
 
-        anim_curve_types = [
-            "animCurveTA",
-            "animCurveTL",
-            "animCurveTT",
-            "animCurveTU",
-        ]
-        anim_curves = []
-
-        for node_type in anim_curve_types:
-            nodes = cmds.ls(type=node_type)
-
-            if nodes is None:
-                nodes = []
-
-            for node in nodes:
-                anim_curves.append(node)
-
-        if anim_curves:
-            cmds.delete(anim_curves)
+        cmds.delete(
+            rig_roots
+        )
 
     @staticmethod
+    def clear_keys():
+        u"""删除选择对象关键帧；没有选择时清理场景 AnimCurve。"""
+        selections = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
+        )
+
+        target_nodes = selections
+
+        if not target_nodes:
+            target_nodes = None
+
+        # 使用 Animation Core 统一删除目标 AnimCurve。
+        animation_utils.clear_animation_keys(
+            nodes=target_nodes
+        )
+
+    @staticmethod
+    @scene_utils.undo_chunk
     def reset_attributes():
         u"""
-        把选择对象可设置的 Keyable Attribute 恢复默认值。
-        """
-        selections = cmds.ls(
-            selection=True,
-            long=True
-        )
+        把选择对象可设置的 Keyable Attribute 恢复 Attribute Default。
 
-        if selections is None:
-            selections = []
+        这里保留“所有 Keyable Attribute”语义，因为它比
+        animation_utils.reset_transform_channels() 的标准 TRS Reset 更宽。
+        """
+        selections = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
+        )
 
         if not selections:
-            cmds.warning(u"请先选择需要重置的对象。")
+            cmds.warning(
+                u"请先选择需要重置的对象。"
+            )
             return
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziResetAttrs"
-        )
+        for node in selections:
+            attrs = cmds.listAttr(
+                node,
+                keyable=True
+            ) or []
 
-        try:
-            for node in selections:
-                attrs = cmds.listAttr(
+            for attr_name in attrs:
+                plug = "{}.{}".format(
                     node,
-                    keyable=True
+                    attr_name
                 )
 
-                if attrs is None:
-                    attrs = []
-
-                for attr_name in attrs:
-                    plug = "{}.{}".format(
-                        node,
-                        attr_name
-                    )
-
-                    if not cmds.getAttr(
-                            plug,
-                            settable=True
-                    ):
-                        continue
-
-                    source_connections = cmds.listConnections(
+                if not cmds.getAttr(
                         plug,
-                        source=True,
-                        destination=False,
-                        plugs=True
+                        settable=True
+                ):
+                    continue
+
+                source_connections = cmds.listConnections(
+                    plug,
+                    source=True,
+                    destination=False,
+                    plugs=True
+                )
+
+                if source_connections:
+                    continue
+
+                defaults = cmds.attributeQuery(
+                    attr_name,
+                    node=node,
+                    listDefault=True
+                )
+
+                if not defaults:
+                    continue
+
+                try:
+                    cmds.setAttr(
+                        plug,
+                        defaults[0]
                     )
-
-                    if source_connections:
-                        continue
-
-                    defaults = cmds.attributeQuery(
-                        attr_name,
-                        node=node,
-                        listDefault=True
-                    )
-
-                    if not defaults:
-                        continue
-
-                    try:
-                        cmds.setAttr(
-                            plug,
-                            defaults[0]
-                        )
-                    except Exception:
-                        pass
-        finally:
-            cmds.undoInfo(closeChunk=True)
+                except Exception:
+                    pass
 
     @staticmethod
+    @scene_utils.undo_chunk
     def batch_parent_constraint():
-        u"""
-        按 driver/driven 成对顺序批量创建 Parent Constraint。
-        """
-        selections = cmds.ls(
-            selection=True,
-            long=True
+        u"""按 driver/driven 成对顺序批量创建 Parent Constraint。"""
+        selections = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
         )
 
-        if selections is None:
-            selections = []
-
-        if len(selections) < 2 or len(selections) % 2 != 0:
+        if len(selections) < 2:
             cmds.warning(
                 u"请按 driver1, driven1, driver2, driven2... 顺序选择偶数个对象。"
             )
             return
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziRigBatchParentConstraint"
-        )
+        if len(selections) % 2 != 0:
+            cmds.warning(
+                u"请按 driver1, driven1, driver2, driven2... 顺序选择偶数个对象。"
+            )
+            return
 
-        try:
-            selection_index = 0
+        selection_index = 0
 
-            while selection_index < len(selections):
-                driver = selections[selection_index]
-                driven = selections[selection_index + 1]
+        while selection_index < len(selections):
+            driver = selections[selection_index]
+            driven = selections[selection_index + 1]
 
-                cmds.parentConstraint(
-                    driver,
-                    driven,
-                    maintainOffset=True
-                )
+            # 使用 Constraint Core 创建当前 Driver -> Driven Parent Constraint。
+            constraint_utils.create_constraint(
+                driver_objects=driver,
+                driven_object=driven,
+                constraint_type="parentConstraint",
+                maintain_offset=True
+            )
 
-                selection_index += 2
-        finally:
-            cmds.undoInfo(closeChunk=True)
+            selection_index += 2
 
     @staticmethod
+    @scene_utils.undo_chunk
     def create_default_groups():
-        u"""
-        创建基础 Rig 层级。
-        """
+        u"""创建基础 Rig 层级。"""
         group_names = [
             "rig_grp",
             "geo_grp",
@@ -1177,14 +1127,11 @@ class RigTool(QWidget):
         ]
         created_groups = {}
 
+        # 使用 Hierarchy Core 创建或复用每个固定 Group。
         for group_name in group_names:
-            if cmds.objExists(group_name):
-                created_groups[group_name] = group_name
-            else:
-                created_groups[group_name] = cmds.createNode(
-                    "transform",
-                    name=group_name
-                )
+            created_groups[group_name] = hierarchy_utils.Hierarchy.create_grp(
+                group_name
+            )
 
         child_names = [
             "geo_grp",
@@ -1195,16 +1142,20 @@ class RigTool(QWidget):
 
         for child_name in child_names:
             child_group = created_groups[child_name]
-            parents = cmds.listRelatives(
+
+            # 只处理当前还没有 Parent 的 Group，保持旧工具安全语义。
+            parent_node = hierarchy_utils.Hierarchy.get_parent(
                 child_group,
-                parent=True
+                full_path=True
             )
 
-            if not parents:
-                cmds.parent(
-                    child_group,
-                    created_groups["rig_grp"]
-                )
+            if parent_node is not None:
+                continue
+
+            hierarchy_utils.Hierarchy.parent(
+                child_group,
+                created_groups["rig_grp"]
+            )
 
         cmds.setAttr(
             created_groups["noTouch_grp"] + ".visibility",
@@ -1216,82 +1167,57 @@ class RigTool(QWidget):
         )
 
     @staticmethod
+    @scene_utils.undo_chunk
     def add_zero_groups():
-        u"""
-        为选择对象创建匹配 Transform 的 Zero Group。
-        """
-        selections = cmds.ls(
-            selection=True,
-            long=True
+        u"""为选择对象创建匹配 Transform 的 Zero Group。"""
+        selections = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
         )
 
-        if selections is None:
-            selections = []
-
         if not selections:
-            cmds.warning(u"请先选择需要添加 Zero Group 的对象。")
+            cmds.warning(
+                u"请先选择需要添加 Zero Group 的对象。"
+            )
             return
 
         created_groups = []
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziAddZeroGroups"
-        )
+        for node in selections:
+            # 使用 Rename Core 统一取得当前节点 Short Name。
+            short_name = rename_utils.get_short_name(
+                node
+            )
 
-        try:
-            for node in selections:
-                short_name = get_short_name(node)
+            if short_name.startswith("ctrl_"):
+                zero_name = short_name.replace(
+                    "ctrl_",
+                    "zero_",
+                    1
+                )
+            else:
+                zero_name = "zero_{}".format(
+                    short_name
+                )
 
-                if short_name.startswith("ctrl_"):
-                    zero_name = short_name.replace(
-                        "ctrl_",
-                        "zero_",
-                        1
+            if cmds.objExists(zero_name):
+                cmds.warning(
+                    u"Zero Group 已存在，跳过：{}".format(
+                        zero_name
                     )
-                else:
-                    zero_name = "zero_{}".format(short_name)
-
-                if cmds.objExists(zero_name):
-                    cmds.warning(
-                        u"Zero Group 已存在，跳过：{}".format(zero_name)
-                    )
-                    continue
-
-                parent_nodes = cmds.listRelatives(
-                    node,
-                    parent=True,
-                    fullPath=True
                 )
+                continue
 
-                if parent_nodes is None:
-                    parent_nodes = []
+            # 使用 Hierarchy Core 插入 Zero Group，并保持原世界姿态 / Parent。
+            zero_group = hierarchy_utils.Hierarchy.add_extra_group(
+                obj=node,
+                grp_name=zero_name,
+                world_orient=False
+            )
 
-                zero_group = cmds.createNode(
-                    "transform",
-                    name=zero_name
-                )
-                cmds.matchTransform(
-                    zero_group,
-                    node,
-                    position=True,
-                    rotation=True,
-                    scale=True
-                )
-
-                if parent_nodes:
-                    cmds.parent(
-                        zero_group,
-                        parent_nodes[0]
-                    )
-
-                cmds.parent(
-                    node,
-                    zero_group
-                )
-                created_groups.append(zero_group)
-        finally:
-            cmds.undoInfo(closeChunk=True)
+            created_groups.append(
+                zero_group
+            )
 
         if created_groups:
             cmds.select(
@@ -1301,36 +1227,35 @@ class RigTool(QWidget):
 
     @staticmethod
     def select_children():
-        u"""
-        选择当前对象全部后代节点。
-        """
-        selections = cmds.ls(
-            selection=True,
-            long=True
+        u"""选择当前对象全部后代 DAG 节点。"""
+        selections = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
         )
 
-        if selections is None:
-            selections = []
-
         if not selections:
-            cmds.warning(u"请先选择父对象。")
+            cmds.warning(
+                u"请先选择父对象。"
+            )
             return
 
         result = []
 
+        # 当前操作需要所有 DAG 类型，不限制 Transform / Joint，因此直接使用 Maya DAG 查询。
         for node in selections:
             descendants = cmds.listRelatives(
                 node,
                 allDescendents=True,
                 fullPath=True
-            )
-
-            if descendants is None:
-                descendants = []
+            ) or []
 
             for descendant in descendants:
-                if descendant not in result:
-                    result.append(descendant)
+                if descendant in result:
+                    continue
+
+                result.append(
+                    descendant
+                )
 
         if result:
             cmds.select(
@@ -1340,114 +1265,123 @@ class RigTool(QWidget):
 
     @staticmethod
     def snap_last_to_center():
-        u"""
-        把最后选择对象吸附到前面参考项平均位置和旋转。
-        """
-        selections = cmds.ls(
-            selection=True,
+        u"""把最后选择对象吸附到前面参考项平均位置和旋转。"""
+        selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
         )
 
-        if selections is None:
-            selections = []
-
         if len(selections) < 2:
-            cmds.warning(u"至少选择两个对象，最后一个作为被吸附对象。")
+            cmds.warning(
+                u"至少选择两个对象，最后一个作为被吸附对象。"
+            )
             return
 
         references = selections[:-1]
         target = selections[-1]
 
         try:
+            # 使用 Snap Core 计算参考对象平均位置 / 旋转并应用到 Target。
             snap_utils.snap_to_average(
                 reference_items=references,
                 target_item=target,
                 include_rotation=True
             )
         except Exception as error:
-            cmds.warning(str(error))
+            cmds.warning(
+                str(error)
+            )
 
     @staticmethod
     def print_duplicate_nodes():
-        u"""
-        打印重名 DAG 节点。
-        """
+        u"""打印重名 DAG 节点。"""
         duplicates = get_duplicate_map()
 
         if not duplicates:
-            print(u"[Rig Tool] 场景中没有重名 DAG 节点。")
+            print(
+                u"[Rig Tool] 场景中没有重名 DAG 节点。"
+            )
             return
 
         short_names = []
 
         for short_name in duplicates:
-            short_names.append(short_name)
+            short_names.append(
+                short_name
+            )
 
         short_names.sort()
 
-        print(u"[Rig Tool] 重名 DAG 节点：")
-
-        for short_name in short_names:
-            print(u"  {}".format(short_name))
-
-            for node in duplicates[short_name]:
-                print(u"    {}".format(node))
-
-    @staticmethod
-    def rename_duplicate_nodes():
-        u"""
-        给重名 DAG 节点追加递增编号。
-        """
-        duplicates = get_duplicate_map()
-
-        if not duplicates:
-            print(u"[Rig Tool] 场景中没有重名 DAG 节点。")
-            return
-
-        short_names = []
-
-        for short_name in duplicates:
-            short_names.append(short_name)
-
-        short_names.sort()
-
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziRenameDuplicates"
+        print(
+            u"[Rig Tool] 重名 DAG 节点："
         )
 
-        try:
-            for short_name in short_names:
-                matches = duplicates[short_name]
-                match_index = 1
+        for short_name in short_names:
+            print(
+                u"  {}".format(
+                    short_name
+                )
+            )
 
-                while match_index < len(matches):
-                    node = matches[match_index]
-                    suffix_index = match_index
+            for node in duplicates[short_name]:
+                print(
+                    u"    {}".format(
+                        node
+                    )
+                )
+
+    @staticmethod
+    @scene_utils.undo_chunk
+    def rename_duplicate_nodes():
+        u"""给重名 DAG 节点追加递增编号。"""
+        duplicates = get_duplicate_map()
+
+        if not duplicates:
+            print(
+                u"[Rig Tool] 场景中没有重名 DAG 节点。"
+            )
+            return
+
+        short_names = []
+
+        for short_name in duplicates:
+            short_names.append(
+                short_name
+            )
+
+        short_names.sort()
+
+        for short_name in short_names:
+            matches = duplicates[short_name]
+            match_index = 1
+
+            # 保留第一个同名节点，只给后续重复项追加编号。
+            while match_index < len(matches):
+                node = matches[match_index]
+                suffix_index = match_index
+                new_name = "{}_{:03d}".format(
+                    short_name,
+                    suffix_index
+                )
+
+                while cmds.objExists(new_name):
+                    suffix_index += 1
                     new_name = "{}_{:03d}".format(
                         short_name,
                         suffix_index
                     )
 
-                    while cmds.objExists(new_name):
-                        suffix_index += 1
-                        new_name = "{}_{:03d}".format(
-                            short_name,
-                            suffix_index
-                        )
+                try:
+                    cmds.rename(
+                        node,
+                        new_name
+                    )
+                except Exception as error:
+                    cmds.warning(
+                        str(error)
+                    )
 
-                    try:
-                        cmds.rename(
-                            node,
-                            new_name
-                        )
-                    except Exception as error:
-                        cmds.warning(str(error))
-
-                    match_index += 1
-        finally:
-            cmds.undoInfo(closeChunk=True)
+                match_index += 1
 
 
 def main():
@@ -1455,8 +1389,8 @@ def main():
     显示并返回 Rig Tool。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        QWidget:
+            Rig Tool 窗口。
     """
     return window_utils.show_window(
         "tools.rig.rig_tool",
