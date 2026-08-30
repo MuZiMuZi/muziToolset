@@ -10,14 +10,25 @@ Muzi Rigging Tool Registry
     1. 每个工具文件必须提供 main()；
     2. __init__.py、下划线开头文件和 test 文件不会注册；
     3. 一个子目录对应一个工具分类；
-    4. 工具模块异常只影响当前工具，不拖垮整个主工具箱。
+    4. 工具模块异常只影响当前工具，不拖垮整个主工具箱；
+    5. 工具可以通过顶层常量 TOOL_MODE 声明运行方式；
+    6. TOOL_MODE = "action" 表示直接执行，未声明时默认作为 UI 工具。
 """
 
 from __future__ import print_function
 
+import ast
 import importlib
 import os
 
+
+TOOL_MODE_UI = "ui"
+TOOL_MODE_ACTION = "action"
+
+_valid_tool_modes = [
+    TOOL_MODE_UI,
+    TOOL_MODE_ACTION,
+]
 
 _tools_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -84,8 +95,94 @@ def _iter_module_names(folder_path):
     return module_names
 
 
-def _make_runner(full_module_name):
-    """创建一个点击时才 import 工具并执行 main() 的函数。"""
+def _get_string_value(ast_node):
+    """
+    从 AST 常量节点读取字符串。
+
+    同时兼容 Python 3.7 的 ast.Str 和较新 Python 的 ast.Constant。
+    """
+    if isinstance(ast_node, ast.Str):
+        return ast_node.s
+
+    constant_class = getattr(ast, "Constant", None)
+
+    if constant_class is not None:
+        if isinstance(ast_node, constant_class):
+            if isinstance(ast_node.value, str):
+                return ast_node.value
+
+    return None
+
+
+def _read_tool_mode(module_path):
+    """
+    静态读取工具文件顶层 TOOL_MODE。
+
+    这里只解析源码 AST，不 import 工具模块，因此不会在主工具箱启动时
+    触发 Maya 命令、创建窗口或加载重型依赖。
+
+    Args:
+        module_path (str):
+            工具 Python 文件绝对路径。
+
+    Returns:
+        str:
+            `ui` 或 `action`。
+    """
+    try:
+        with open(
+            module_path,
+            "r",
+            encoding="utf-8"
+        ) as file_object:
+            source_text = file_object.read()
+    except Exception:
+        return TOOL_MODE_UI
+
+    try:
+        module_tree = ast.parse(
+            source_text,
+            filename=module_path
+        )
+    except Exception:
+        return TOOL_MODE_UI
+
+    for statement in module_tree.body:
+        if not isinstance(statement, ast.Assign):
+            continue
+
+        if not statement.targets:
+            continue
+
+        value = _get_string_value(
+            statement.value
+        )
+
+        if value not in _valid_tool_modes:
+            continue
+
+        for target in statement.targets:
+            if not isinstance(target, ast.Name):
+                continue
+
+            if target.id != "TOOL_MODE":
+                continue
+
+            return value
+
+    return TOOL_MODE_UI
+
+
+def _make_runner(
+    full_module_name,
+    tool_mode=TOOL_MODE_UI
+):
+    """
+    创建一个点击时才 import 工具并执行 main() 的函数。
+
+    Runner 同时携带轻量工具元数据，主工具箱可以在不 import 真实工具模块
+    的情况下决定显示“打开”还是“执行”。
+    """
 
     def run():
         try:
@@ -113,6 +210,9 @@ def _make_runner(full_module_name):
         full_module_name.rsplit(".", 1)[-1]
     )
 
+    run.tool_mode = tool_mode
+    run.full_module_name = full_module_name
+
     return run
 
 
@@ -127,7 +227,20 @@ def _discover_folder(folder_path, package_prefix):
             module_name
         )
 
-        tools[module_name] = _make_runner(full_module_name)
+        module_path = os.path.join(
+            folder_path,
+            "{}.py".format(module_name)
+        )
+
+        tool_mode = _read_tool_mode(
+            module_path
+        )
+
+        tools[module_name] = _make_runner(
+            full_module_name,
+            tool_mode=tool_mode
+        )
+
         _tool_modules[full_module_name] = module_name
 
     return tools
@@ -215,8 +328,8 @@ def refresh_tools():
     重新扫描磁盘中的工具文件。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        dict:
+            分类 -> 工具名 -> Runner。
     """
     _discover_tools()
     return get_tools_by_category()
@@ -226,9 +339,13 @@ def get_tools_by_category():
     u"""
     返回分类 -> 工具名 -> Runner 的浅拷贝。
 
+    Runner 上可以读取：
+        runner.tool_mode
+        runner.full_module_name
+
     Returns:
-        object:
-        方法执行后的结果数据。
+        dict:
+            当前工具注册表。
     """
     result = {}
 
@@ -244,8 +361,8 @@ def get_categories():
     返回当前工具分类顺序。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        list[str]:
+            分类名称列表。
     """
     categories = []
 
@@ -261,16 +378,58 @@ def get_tools_in_category(category_name):
 
     Args:
         category_name (str):
-            `category_name` 对应的 Maya 节点或资源名称。
+            工具分类名称。
 
     Returns:
-        object | dict:
-        方法执行后的结果数据。
+        dict:
+            工具名 -> Runner。
     """
     if category_name not in _tools_categories:
         return {}
 
     return _tools_categories[category_name].copy()
+
+
+def get_tool_mode(category_name, tool_name):
+    u"""
+    返回一个已注册工具的运行模式。
+
+    Args:
+        category_name (str):
+            工具分类名称。
+        tool_name (str):
+            工具模块名称。
+
+    Returns:
+        str:
+            `ui` 或 `action`。
+
+    Raises:
+        KeyError:
+            分类或工具不存在时抛出。
+    """
+    if category_name not in _tools_categories:
+        raise KeyError(
+            u"工具分类不存在：{}".format(category_name)
+        )
+
+    tools = _tools_categories[category_name]
+
+    if tool_name not in tools:
+        raise KeyError(
+            u"工具不存在：{}/{}".format(
+                category_name,
+                tool_name
+            )
+        )
+
+    runner = tools[tool_name]
+
+    return getattr(
+        runner,
+        "tool_mode",
+        TOOL_MODE_UI
+    )
 
 
 def run_tool(category_name, tool_name):
@@ -279,17 +438,17 @@ def run_tool(category_name, tool_name):
 
     Args:
         category_name (str):
-            `category_name` 对应的 Maya 节点或资源名称。
+            工具分类名称。
         tool_name (str):
-            `tool_name` 对应的 Maya 节点或资源名称。
+            工具模块名称。
 
     Returns:
         object:
-        方法执行后的结果数据。
+            工具 main() 返回值。
 
     Raises:
         KeyError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+            分类或工具不存在时抛出。
     """
     if category_name not in _tools_categories:
         raise KeyError(
