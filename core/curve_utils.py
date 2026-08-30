@@ -389,7 +389,7 @@ def get_even_percentages(sample_count):
 
     Example:
         get_even_percentages(5)
-                    -> [0.0, 0.25, 0.5, 0.75, 1.0]
+                        -> [0.0, 0.25, 0.5, 0.75, 1.0]
     """
     # 步骤 1：至少需要首尾两个采样点。
     if sample_count < 2:
