@@ -24,6 +24,9 @@ pipeline_smoke_test()
 extended_core_smoke_test()
     验证 Attribute / Hierarchy / Joint / Naming / Model Check / Scene Clean。
 
+tool_window_smoke_test()
+    验证所有 UI Tool 的 Direct Main、可见性和单实例窗口生命周期。
+
 controller_component_smoke_test()
 face_component_smoke_test()
     验证独立 Rig Component；System 本身由各自测试负责。
@@ -87,6 +90,13 @@ def extended_core_smoke_test():
     return extended_core_smoke_test.run()
 
 
+def tool_window_smoke_test():
+    """运行所有正式 UI Tool 的 Direct Main 窗口 Smoke Test。"""
+    from .tests import tool_window_smoke_test
+
+    return tool_window_smoke_test.run()
+
+
 def face_component_smoke_test():
     """运行 Face Eyelid / Curve Attachment / Zip Lip 功能 Smoke Test。"""
     from .tests import face_component_smoke_test
@@ -108,6 +118,7 @@ __all__ = [
     "functional_smoke_test",
     "pipeline_smoke_test",
     "extended_core_smoke_test",
+    "tool_window_smoke_test",
     "face_component_smoke_test",
     "controller_component_smoke_test",
 ]
