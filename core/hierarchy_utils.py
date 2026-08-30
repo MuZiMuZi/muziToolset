@@ -5,6 +5,11 @@ Hierarchy Utils
 
 Maya DAG 层级通用操作模块。
 
+正式模块路径
+------------
+``muziToolset.core.hierarchy_utils`` 是 DAG Hierarchy 能力的唯一正式实现。
+旧 ``hierarchyUtils.py`` 兼容模块已经完成迁移并删除，正式代码统一使用 snake_case Import。
+
 模块职责
 --------
 本模块只处理 Transform / Joint 等 DAG 节点之间的父子关系、额外层级组、子层级查询和基础组创建。
@@ -12,7 +17,7 @@ Maya DAG 层级通用操作模块。
 公开类
 ------
 Hierarchy
-    兼容早期项目的静态方法集合。
+    Maya DAG 层级相关的通用静态方法集合。
 
 公开方法
 --------
@@ -47,7 +52,7 @@ Hierarchy.control_hierarchy()
 2. 插入额外 Group 时必须保持原对象世界 Transform；
 3. Generic Query 不读取 UI，只有明确标为 Legacy Compatibility 的方法允许使用 Selection；
 4. 已迁移到 systems.controller 的完整 Rig Workflow 不再继续扩张到本模块；
-5. 文件名暂时保留 hierarchyUtils.py 以兼容现有 import，后续可增加 snake_case 别名入口。
+5. 模块文件名与所有正式 Import 统一使用 snake_case。
 """
 
 from __future__ import print_function
