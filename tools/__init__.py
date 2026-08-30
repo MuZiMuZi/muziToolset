@@ -329,7 +329,7 @@ def refresh_tools():
 
     Returns:
         dict:
-            分类 -> 工具名 -> Runner。
+        分类 -> 工具名 -> Runner。
     """
     _discover_tools()
     return get_tools_by_category()
@@ -345,7 +345,7 @@ def get_tools_by_category():
 
     Returns:
         dict:
-            当前工具注册表。
+        当前工具注册表。
     """
     result = {}
 
@@ -362,7 +362,7 @@ def get_categories():
 
     Returns:
         list[str]:
-            分类名称列表。
+        分类名称列表。
     """
     categories = []
 
@@ -382,7 +382,7 @@ def get_tools_in_category(category_name):
 
     Returns:
         dict:
-            工具名 -> Runner。
+        工具名 -> Runner。
     """
     if category_name not in _tools_categories:
         return {}
@@ -402,11 +402,11 @@ def get_tool_mode(category_name, tool_name):
 
     Returns:
         str:
-            `ui` 或 `action`。
+        `ui` 或 `action`。
 
     Raises:
         KeyError:
-            分类或工具不存在时抛出。
+        分类或工具不存在时抛出。
     """
     if category_name not in _tools_categories:
         raise KeyError(
@@ -444,11 +444,11 @@ def run_tool(category_name, tool_name):
 
     Returns:
         object:
-            工具 main() 返回值。
+        工具 main() 返回值。
 
     Raises:
         KeyError:
-            分类或工具不存在时抛出。
+        分类或工具不存在时抛出。
     """
     if category_name not in _tools_categories:
         raise KeyError(

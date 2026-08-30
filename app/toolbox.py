@@ -145,7 +145,7 @@ def get_maya_main_window():
 
     Returns:
         QWidget | None:
-            Maya 主窗口；无法获取时返回 None。
+        Maya 主窗口；无法获取时返回 None。
     """
     try:
         pointer = omui.MQtUtil.mainWindow()
@@ -171,7 +171,7 @@ def get_tool_display_name(tool_name):
 
     Returns:
         str:
-            用于界面展示的工具名称。
+        用于界面展示的工具名称。
     """
     if tool_name in tool_display_names:
         return tool_display_names[tool_name]
@@ -198,7 +198,7 @@ def get_tool_description(tool_name):
 
     Returns:
         str:
-            工具卡片使用的一行功能说明。
+        工具卡片使用的一行功能说明。
     """
     if tool_name in tool_descriptions:
         return tool_descriptions[tool_name]
@@ -219,7 +219,7 @@ def get_tool_mode(tool_function):
 
     Returns:
         str:
-            `ui` 或 `action`。
+        `ui` 或 `action`。
     """
     tool_mode = getattr(
         tool_function,
@@ -243,7 +243,7 @@ def get_tool_mode_display_name(tool_mode):
 
     Returns:
         str:
-            `界面工具` 或 `直接执行`。
+        `界面工具` 或 `直接执行`。
     """
     if tool_mode == TOOL_MODE_ACTION:
         return u"直接执行"
@@ -301,7 +301,9 @@ class ToolCard(QFrame):
         self.create_connections()
 
     def create_widgets(self):
-        u"""创建工具卡片控件。"""
+        u"""
+        创建工具卡片控件。
+        """
         short_name = category_short_names.get(
             self.category_name,
             "TOOL"
@@ -341,7 +343,9 @@ class ToolCard(QFrame):
         theme.style_primary(self.action_button)
 
     def create_layouts(self):
-        u"""创建工具卡片布局。"""
+        u"""
+        创建工具卡片布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 14, 16, 14)
         main_layout.setSpacing(7)
@@ -367,7 +371,9 @@ class ToolCard(QFrame):
         main_layout.addLayout(bottom_layout)
 
     def create_connections(self):
-        u"""连接工具卡片信号。"""
+        u"""
+        连接工具卡片信号。
+        """
         tool_key = "{}/{}".format(
             self.category_name,
             self.tool_name
@@ -392,7 +398,7 @@ class ToolCard(QFrame):
 
         Returns:
             bool:
-                是否显示当前卡片。
+            是否显示当前卡片。
         """
         search_text = search_text.strip().lower()
 
@@ -504,7 +510,7 @@ class ToolSection(QWidget):
 
         Returns:
             tuple[int, int]:
-                当前可见数量和分区总数量。
+            当前可见数量和分区总数量。
         """
         total_count = len(self.cards)
         visible_count = 0
@@ -562,7 +568,9 @@ class CategoryPage(QWidget):
         self.create_cards()
 
     def create_widgets(self):
-        u"""创建分类页面控件。"""
+        u"""
+        创建分类页面控件。
+        """
         self.title_label = theme.make_title(
             self.category_name
         )
@@ -600,7 +608,9 @@ class CategoryPage(QWidget):
         self.scroll_area.setWidget(self.scroll_content)
 
     def create_layouts(self):
-        u"""创建分类页面布局。"""
+        u"""
+        创建分类页面布局。
+        """
         header_layout = QHBoxLayout()
         header_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -631,7 +641,9 @@ class CategoryPage(QWidget):
         main_layout.addWidget(self.scroll_area, 1)
 
     def create_cards(self):
-        u"""创建当前分类中的工具卡片，并按照运行模式分组。"""
+        u"""
+        创建当前分类中的工具卡片，并按照运行模式分组。
+        """
         tool_names = []
 
         for tool_name in self.tools_dict:
@@ -724,7 +736,7 @@ class CategoryPage(QWidget):
 
         Returns:
             dict:
-                `total`、`ui`、`action` 三类数量。
+            `total`、`ui`、`action` 三类数量。
         """
         ui_count = len(self.ui_section.cards)
         action_count = len(self.action_section.cards)
@@ -775,7 +787,9 @@ class RiggingToolbox(QWidget):
         self.rebuild_tools(refresh_registry=False)
 
     def create_widgets(self):
-        u"""创建主工具箱控件。"""
+        u"""
+        创建主工具箱控件。
+        """
         self.sidebar = QFrame()
         theme.set_role(self.sidebar, "sidebar")
         self.sidebar.setFixedWidth(190)
@@ -846,7 +860,9 @@ class RiggingToolbox(QWidget):
         empty_layout.addStretch(1)
 
     def create_layouts(self):
-        u"""创建左侧导航和右侧内容布局。"""
+        u"""
+        创建左侧导航和右侧内容布局。
+        """
         sidebar_layout = QVBoxLayout(self.sidebar)
         sidebar_layout.setContentsMargins(16, 22, 16, 16)
         sidebar_layout.setSpacing(8)
@@ -889,7 +905,9 @@ class RiggingToolbox(QWidget):
         main_layout.addWidget(self.content_frame, 1)
 
     def create_connections(self):
-        u"""连接主窗口信号。"""
+        u"""
+        连接主窗口信号。
+        """
         self.refresh_button.clicked.connect(
             self.refresh_tool_registry
         )
@@ -901,7 +919,9 @@ class RiggingToolbox(QWidget):
         )
 
     def clear_navigation(self):
-        u"""清理旧分类按钮。"""
+        u"""
+        清理旧分类按钮。
+        """
         while self.navigation_layout.count():
             item = self.navigation_layout.takeAt(0)
             widget = item.widget()
@@ -912,7 +932,9 @@ class RiggingToolbox(QWidget):
         self.category_buttons = {}
 
     def clear_pages(self):
-        u"""清理旧分类页面。"""
+        u"""
+        清理旧分类页面。
+        """
         while self.page_stack.count():
             widget = self.page_stack.widget(0)
             self.page_stack.removeWidget(widget)
@@ -1077,7 +1099,7 @@ class RiggingToolbox(QWidget):
 
         Returns:
             object | None:
-                工具 main() 的返回值。
+            工具 main() 的返回值。
         """
         if tool_mode == TOOL_MODE_ACTION:
             return self.execute_action_tool(
@@ -1102,7 +1124,7 @@ class RiggingToolbox(QWidget):
 
         Returns:
             object | None:
-                工具窗口或 main() 返回值。
+            工具窗口或 main() 返回值。
         """
         self.status_label.setText(
             u"正在打开 {}...".format(tool_key)
@@ -1147,7 +1169,7 @@ class RiggingToolbox(QWidget):
 
         Returns:
             object | None:
-                工具 main() 返回值。
+            工具 main() 返回值。
         """
         self.status_label.setText(
             u"正在执行 {}...".format(tool_key)
@@ -1178,7 +1200,9 @@ class RiggingToolbox(QWidget):
         return result
 
     def refresh_tool_registry(self):
-        u"""重新扫描工具目录并刷新界面。"""
+        u"""
+        重新扫描工具目录并刷新界面。
+        """
         try:
             self.rebuild_tools(refresh_registry=True)
         except Exception as error:
@@ -1191,7 +1215,9 @@ class RiggingToolbox(QWidget):
             )
 
     def close_all_subtools(self):
-        u"""关闭所有由主工具箱管理的 UI 子工具。"""
+        u"""
+        关闭所有由主工具箱管理的 UI 子工具。
+        """
         window_manager.close_all_tools()
         self.status_label.setText(u"已关闭全部子工具")
 
@@ -1202,7 +1228,7 @@ def main():
 
     Returns:
         RiggingToolbox:
-            主工具箱实例。
+        主工具箱实例。
     """
     global _window
 

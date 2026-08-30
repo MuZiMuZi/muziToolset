@@ -72,11 +72,11 @@ def validate_node(node, label=u"节点"):
 
     Returns:
         bool:
-            验证通过返回 True。
+        验证通过返回 True。
 
     Raises:
         RuntimeError:
-            节点名称为空或场景中不存在时抛出。
+        节点名称为空或场景中不存在时抛出。
     """
     if not node:
         raise RuntimeError(
@@ -116,11 +116,11 @@ def validate_model_transform(node, label=u"模型"):
 
     Returns:
         str:
-            唯一解析后的 Long DAG Path。
+        唯一解析后的 Long DAG Path。
 
     Raises:
         RuntimeError:
-            节点不存在、名称不唯一或节点类型不是 transform 时抛出。
+        节点不存在、名称不唯一或节点类型不是 transform 时抛出。
     """
     if not node:
         raise RuntimeError(
@@ -167,16 +167,15 @@ def delete_model(model, ignore_missing=True):
         model (str | None):
             需要删除的模型 Transform。
         ignore_missing (bool):
-            True 时，空值或不存在的节点直接返回 False；
-            False 时按照正式校验规则抛出异常。
+            True 时，空值或不存在的节点直接返回 False； False 时按照正式校验规则抛出异常。
 
     Returns:
         bool:
-            实际删除节点时返回 True；没有节点可删时返回 False。
+        实际删除节点时返回 True；没有节点可删时返回 False。
 
     Raises:
         RuntimeError:
-            名称不唯一、节点不是 Transform，或 ignore_missing=False 且节点不存在时抛出。
+        名称不唯一、节点不是 Transform，或 ignore_missing=False 且节点不存在时抛出。
     """
     if not model:
         if ignore_missing:
@@ -230,15 +229,15 @@ def duplicate_model(
 
     Returns:
         str:
-            最终复制模型节点名称。
+        最终复制模型节点名称。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
 
     Notes:
         这里明确关闭 inputConnections / upstreamNodes，目的是得到相对独立的模型副本，
-        避免把旧 Rig / Deformer / DG 输入网络一起复制到新的工作模型上。
+            避免把旧 Rig / Deformer / DG 输入网络一起复制到新的工作模型上。
     """
     source_model = validate_model_transform(
         source_model,

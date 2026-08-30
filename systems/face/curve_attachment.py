@@ -42,7 +42,21 @@ from ...core import transform_utils
 # =============================================================================
 
 def validate_joint(joint):
-    u"""检查输入节点必须是 Maya Joint。"""
+    u"""
+    检查输入节点必须是 Maya Joint。
+
+    Args:
+        joint (str):
+            需要处理的 Maya Joint 节点名称。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     try:
         # 使用 Joint Core 统一检查节点存在性和 Joint 类型。
         joint_utils.Joint._validate_joint(
@@ -59,7 +73,23 @@ def validate_joint(joint):
 
 
 def normalize_name_part(value, label):
-    u"""清理用于 Face Curve Rig 命名的字段。"""
+    u"""
+    清理用于 Face Curve Rig 命名的字段。
+
+    Args:
+        value (float):
+            需要读取、写入或参与计算的数值。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if value is None:
         raise ValueError(
             u"{}不能为空。".format(label)
@@ -90,7 +120,27 @@ def create_rig_name(
         role,
         index=1
 ):
-    u"""创建 Face Curve Rig 标准名称。"""
+    u"""
+    创建 Face Curve Rig 标准名称。
+
+    Args:
+        node_type (str):
+            需要创建、查询或过滤的 Maya Node Type。
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        region (str):
+            Face Component 的区域标记，例如 upper、lower、inner、outer。
+        feature (str):
+            Face Component 的功能部位标记，例如 lid、bag、lip。
+        role (str):
+            当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
+        index (int):
+            目标元素或节点的序号。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     # 使用统一 Name API 规范 Side Token。
     side = name_utils.Name.normalize_side(
         side
@@ -135,7 +185,29 @@ def create_attachment_group(
         feature,
         role
 ):
-    u"""创建 Drive / Aim / Up Attachment Group。"""
+    u"""
+    创建 Drive / Aim / Up Attachment Group。
+
+    Args:
+        nodes_group (str):
+            当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        region (str):
+            Face Component 的区域标记，例如 upper、lower、inner、outer。
+        feature (str):
+            Face Component 的功能部位标记，例如 lid、bag、lip。
+        role (str):
+            当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     # 生成当前 Attachment 容器的正式名称。
     group_name = create_rig_name(
         "grp",
@@ -167,7 +239,23 @@ def create_curve_attachment(
         name,
         parent
 ):
-    u"""按弧长百分比在指定 Curve 创建 Attachment。"""
+    u"""
+    按弧长百分比在指定 Curve 创建 Attachment。
+
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+        percentage (float):
+            沿 Curve 或数据范围的归一化百分比，通常为 0.0～1.0。
+        name (str):
+            创建或查询时使用的节点名称。
+        parent (str):
+            父级 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     # 把统一弧长百分比转换成目标 Curve 自己的 Parameter。
     parameter = curve_utils.length_percentage_to_parameter(
         curve,
@@ -200,7 +288,39 @@ def attach_joints_to_curves(
         parent_group=None,
         preserve_joint_offset=True
 ):
-    u"""把一组 Joint 接入 Drive / Aim Curve 网络。"""
+    u"""
+    把一组 Joint 接入 Drive / Aim Curve 网络。
+
+    Args:
+        joints (str | list[str]):
+            需要批量处理的 Maya Joint 节点或 Joint Chain。
+        drive_curve (str):
+            当前采样、附着或驱动使用的 NURBS Curve。
+        aim_curve (str):
+            当前采样、附着或驱动使用的 NURBS Curve。
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        region (str):
+            Face Component 的区域标记，例如 upper、lower、inner、outer。
+        feature (str):
+            Face Component 的功能部位标记，例如 lid、bag、lip。
+        up_object (str):
+            Eyelid / Radial Joint Aim 系统用于稳定 Orientation 的 Up Object。
+        up_curve (str):
+            当前采样、附着或驱动使用的 NURBS Curve。
+        parent_group (str | None):
+            新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
+        preserve_joint_offset (bool):
+            控制当前方法中的 `preserve_joint_offset` 选项是否启用。
+
+    Returns:
+        dict:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if joints is None:
         joints = []
 

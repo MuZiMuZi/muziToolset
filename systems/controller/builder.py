@@ -42,6 +42,14 @@ def get_short_name(node):
 
     DAG Short Name 查询统一复用 rename_utils；Controller 名称不保留 Namespace，
     因此这里只额外把 ``:`` 转换成 ``_``。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     # 使用 Core 统一提取 DAG Short Name，避免本模块维护第二套 Long Path 解析。
     short_name = rename_utils.get_short_name(
@@ -55,7 +63,17 @@ def get_short_name(node):
 
 
 def get_control_name_from_target(target):
-    u"""根据目标节点生成标准 ctrl_ 名称。"""
+    u"""
+    根据目标节点生成标准 ctrl_ 名称。
+
+    Args:
+        target (str):
+            接收结果或被处理的目标 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     # 先取得稳定的目标节点短名称，再根据来源类型替换 Controller 前缀。
     short_name = get_short_name(
         target
@@ -74,7 +92,17 @@ def get_control_name_from_target(target):
 
 
 def get_side_color(name):
-    u"""根据标准左右命名返回 Maya Index Color。"""
+    u"""
+    根据标准左右命名返回 Maya Index Color。
+
+    Args:
+        name (str):
+            创建或查询时使用的节点名称。
+
+    Returns:
+        int:
+            方法执行后的结果数据。
+    """
     lower_name = name.lower()
 
     left_tokens = [
@@ -209,6 +237,32 @@ def create_controller(
                   ctrl
                     ctrlSub
                     output
+
+    Args:
+        name (str):
+            创建或查询时使用的节点名称。
+        shape (str):
+            Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
+        radius (float):
+            创建节点或控制器使用的半径值。
+        axis (str):
+            操作使用的轴向标记。
+        target (str):
+            接收结果或被处理的目标 Maya 节点名称。
+        parent (str):
+            父级 Maya 节点名称。
+        color (int):
+            Viewport Override 使用的 Index Color 或 RGB Color。
+        rotate_x (float):
+            Controller Shape / Transform 绕 X 轴应用的旋转角度。
+        create_sub_control (bool):
+            当前 Rig 操作或驱动使用的动画 Controller Transform。
+        create_extra_groups (bool):
+            是否创建 Zero、Driven、Space、Connect、Offset 等标准 Controller Extra Groups。
+        add_to_set (bool):
+            是否把创建后的 Controller 加入指定 Controller Set。
+        control_set (str):
+            创建后的 Controller 需要加入的 Maya Set 名称。
 
     Returns:
         dict: 控制器、层级和输出节点信息。
@@ -442,6 +496,26 @@ def create_fk_controls(
     根据 targets 顺序创建标准 FK Controller Chain。
 
     整个创建流程通过 scene_utils.undo_chunk 合并成一次 Maya Undo。
+
+    Args:
+        targets (str | list[str]):
+            需要批量处理的 Target 节点；在 Constraint / BlendShape / Controller API 中保持输入顺序。
+        shape (str):
+            Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
+        radius (float):
+            创建节点或控制器使用的半径值。
+        axis (str):
+            操作使用的轴向标记。
+        constrain (bool):
+            创建 Controller 后是否建立 Controller / Output 到 Target 的约束关系。
+        create_extra_groups (bool):
+            是否创建 Zero、Driven、Space、Connect、Offset 等标准 Controller Extra Groups。
+        add_to_set (bool):
+            是否把创建后的 Controller 加入指定 Controller Set。
+
+    Returns:
+        object | list:
+            方法执行后的结果数据。
     """
     if not targets:
         return []

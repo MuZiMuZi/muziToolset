@@ -55,11 +55,11 @@ def validate_transform(node):
 
     Returns:
         bool:
-            节点有效时返回 True。
+        节点有效时返回 True。
 
     Raises:
         RuntimeError:
-            节点为空、不存在，或者类型不是 transform / joint。
+        节点为空、不存在，或者类型不是 transform / joint。
     """
     # 先使用 Scene 层统一检查节点存在性，避免 Core 内维护第二套 objExists 逻辑。
     scene_utils.validate_node(
@@ -88,7 +88,17 @@ def validate_transform(node):
 # =============================================================================
 
 def get_world_translation(node):
-    u"""返回 Transform / Joint 的 World Translation。"""
+    u"""
+    返回 Transform / Joint 的 World Translation。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     # 确保输入节点可以作为 Transform 使用。
     validate_transform(
         node
@@ -117,7 +127,11 @@ def set_world_translation(node, translation):
 
     Returns:
         str:
-            被修改的节点名称。
+        被修改的节点名称。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 确保输入节点可以作为 Transform 使用。
     validate_transform(
@@ -144,7 +158,17 @@ def set_world_translation(node, translation):
 # =============================================================================
 
 def get_world_rotation(node):
-    u"""返回 Transform / Joint 的 World Rotation。"""
+    u"""
+    返回 Transform / Joint 的 World Rotation。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     # 确保输入节点可以作为 Transform 使用。
     validate_transform(
         node
@@ -173,7 +197,11 @@ def set_world_rotation(node, rotation):
 
     Returns:
         str:
-            被修改的节点名称。
+        被修改的节点名称。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 确保输入节点可以作为 Transform 使用。
     validate_transform(
@@ -213,7 +241,11 @@ def move_relative(node, offset, object_space=False):
 
     Returns:
         str:
-            被移动的节点名称。
+        被移动的节点名称。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 确保输入节点可以作为 Transform 使用。
     validate_transform(
@@ -252,7 +284,19 @@ def move_relative(node, offset, object_space=False):
 # =============================================================================
 
 def distance_between(node_a, node_b):
-    u"""返回两个 Transform / Joint 世界位置之间的欧氏距离。"""
+    u"""
+    返回两个 Transform / Joint 世界位置之间的欧氏距离。
+
+    Args:
+        node_a (object):
+            当前方法执行 Maya / Rig 操作时使用的 `node_a` 数据。
+        node_b (object):
+            当前方法执行 Maya / Rig 操作时使用的 `node_b` 数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     # 获取两个节点的统一 World Translation 数据。
     position_a = get_world_translation(
         node_a
@@ -281,7 +325,17 @@ def distance_between(node_a, node_b):
 # =============================================================================
 
 def get_world_matrix(node):
-    u"""返回 Transform / Joint 的完整 4x4 World Matrix。"""
+    u"""
+    返回 Transform / Joint 的完整 4x4 World Matrix。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     # 确保输入节点可以作为 Transform 使用。
     validate_transform(
         node
@@ -310,7 +364,11 @@ def set_world_matrix(node, matrix_values):
 
     Returns:
         str:
-            被修改的节点名称。
+        被修改的节点名称。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 确保输入节点可以作为 Transform 使用。
     validate_transform(

@@ -49,7 +49,27 @@ class FaceSetup(face_base.FaceBase):
             face_gum_model=None,
             mouth_jnt_number=32
     ):
-        u"""初始化 Step 01 输入。"""
+        u"""
+        初始化 Step 01 输入。
+
+        Args:
+            face_head_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+            face_lf_eye_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+            face_rt_eye_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+            upper_teech_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+            lower_teech_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+            face_tongue_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+            face_gum_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+            mouth_jnt_number (int):
+                嘴唇分布系统需要创建的 Joint 总数量。
+        """
         super(FaceSetup, self).__init__()
 
         self.step_value = 1
@@ -87,6 +107,14 @@ class FaceSetup(face_base.FaceBase):
 
         Collect 阶段同时完成输入 Validation。
         只有本方法成功结束，后续 Prepare / Process 才允许继续。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 统一把所有模型输入转换成稳定的 DAG Short Name，避免 Reparent 后 Long Path 失效。
         self.face_head_model = rename_utils.get_short_name(
@@ -164,6 +192,10 @@ class FaceSetup(face_base.FaceBase):
             1. 确保 Face Hierarchy；
             2. 生成 Work Model 名称；
             3. 清理上一次 Step 01 创建的旧 Work Model。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
         """
         # 确保 Face Rig 的基础层级已经创建完成，给后续模型整理提供目标 Group。
         self.ensure_hierarchy()
@@ -183,6 +215,10 @@ class FaceSetup(face_base.FaceBase):
         执行 Step 01 的核心场景处理。
 
         负责整理输入模型层级，并创建三个 Head Work Model。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
         """
         # 把当前输入模型统一整理到 Face Model Group，建立稳定的模型层级。
         self.parent_input_models()
@@ -203,6 +239,10 @@ class FaceSetup(face_base.FaceBase):
             2. 验证三个 Work Model；
             3. Step 01 = Completed；
             4. Step 02～04 = Invalid。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
         """
         # 把本次 Step 01 的模型引用和参数写入统一 Face Config。
         self.save_config()
@@ -225,6 +265,10 @@ class FaceSetup(face_base.FaceBase):
         兼容旧版 FaceSetup.build()。
 
         新代码统一使用 StepBase.run_step()。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
         """
         # 旧入口只转调统一 Step 生命周期，避免维护第二套执行流程。
         return self.run_step()
@@ -234,7 +278,21 @@ class FaceSetup(face_base.FaceBase):
     # =========================================================================
 
     def check_mouth_jnt_number(self):
-        u"""检查 Face Lip 系统要求的嘴唇 Joint 数量。"""
+        u"""
+        检查 Face Lip 系统要求的嘴唇 Joint 数量。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if self.mouth_jnt_number is None:
             raise RuntimeError(
                 u"没有设置嘴唇 Joint 数量。"
@@ -264,7 +322,13 @@ class FaceSetup(face_base.FaceBase):
     # =========================================================================
 
     def parent_input_models(self):
-        u"""把 Step 01 指定模型整理到 Face Model Group。"""
+        u"""
+        把 Step 01 指定模型整理到 Face Model Group。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         # 逐个整理非空输入模型，避免可选模型为空时影响其它模型。
         for face_model in self.face_model_list:
             if not face_model:
@@ -278,7 +342,13 @@ class FaceSetup(face_base.FaceBase):
         return True
 
     def get_work_model_names(self):
-        u"""生成三个 Head Work Model 的正式名称。"""
+        u"""
+        生成三个 Head Work Model 的正式名称。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+        """
         # 生成 Head Tweak 工作模型名称。
         face_head_tweak_name = name_utils.Name.create_name(
             node_type="model",
@@ -313,7 +383,17 @@ class FaceSetup(face_base.FaceBase):
         }
 
     def delete_old_work_models(self, work_model_name_dict):
-        u"""删除上一次 Step 01 创建的旧 Head Work Model。"""
+        u"""
+        删除上一次 Step 01 创建的旧 Head Work Model。
+
+        Args:
+            work_model_name_dict (dict):
+                Step 01 三个 Head Work Model（tweak / stretch / deform）的名称映射。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         # 按正式名称逐个删除旧结果；不存在的模型由 Core 安全忽略。
         for key in work_model_name_dict:
             model = work_model_name_dict.get(
@@ -331,7 +411,17 @@ class FaceSetup(face_base.FaceBase):
         return True
 
     def create_work_models(self, work_model_name_dict):
-        u"""根据最新 Head Model 创建三个独立工作模型。"""
+        u"""
+        根据最新 Head Model 创建三个独立工作模型。
+
+        Args:
+            work_model_name_dict (dict):
+                Step 01 三个 Head Work Model（tweak / stretch / deform）的名称映射。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         face_head_tweak_name = work_model_name_dict.get(
             "tweak"
         )
@@ -366,7 +456,13 @@ class FaceSetup(face_base.FaceBase):
         return True
 
     def validate_results(self):
-        u"""检查 Step 01 必须生成的三个 Head Work Model。"""
+        u"""
+        检查 Step 01 必须生成的三个 Head Work Model。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         result_models = [
             (u"Head Tweak Model", self.face_head_tweak_model),
             (u"Head Stretch Model", self.face_head_stretch_model),
@@ -390,7 +486,13 @@ class FaceSetup(face_base.FaceBase):
     # =========================================================================
 
     def save_config(self):
-        u"""把 Step 01 最新设置保存到 Face Config。"""
+        u"""
+        把 Step 01 最新设置保存到 Face Config。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         model_config_dict = {
             "face_head_model": self.face_head_model,
             "face_lf_eye_model": self.face_lf_eye_model,

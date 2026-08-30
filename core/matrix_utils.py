@@ -35,7 +35,23 @@ from . import scene_utils
 # =============================================================================
 
 def get_matrix(matrix_plug):
-    u"""读取 Maya Matrix Plug，并返回 maya.api.OpenMaya.MMatrix。"""
+    u"""
+    读取 Maya Matrix Plug，并返回 maya.api.OpenMaya.MMatrix。
+
+    Args:
+        matrix_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if not matrix_plug:
         raise ValueError(
             u"matrix_plug 不能为空。"
@@ -65,7 +81,17 @@ def get_matrix(matrix_plug):
 
 
 def matrix_to_list(matrix):
-    u"""将 MMatrix 转换为 16 个数值的普通 list。"""
+    u"""
+    将 MMatrix 转换为 16 个数值的普通 list。
+
+    Args:
+        matrix (list[float] | maya.api.OpenMaya.MMatrix):
+            用于 Transform、Constraint 或空间计算的 4x4 Matrix 数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     matrix_values = []
 
     for index in range(16):
@@ -82,6 +108,16 @@ def calculate_parent_offset_matrix(driver, driven):
 
     计算：
         drivenWorld * inverse(driverWorld)
+
+    Args:
+        driver (str):
+            作为驱动端的 Maya 节点名称。
+        driven (str):
+            作为被驱动端的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     # 使用 Scene Core 统一验证 Driver。
     scene_utils.validate_node(
@@ -114,6 +150,14 @@ def get_parent(node):
     兼容旧调用的直接 Parent 查询入口。
 
     真正 DAG Parent 查询统一由 hierarchy_utils.Hierarchy.get_parent 维护。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object | None:
+            方法执行后的结果数据。
     """
     if not node:
         return None
@@ -147,6 +191,24 @@ def create_parent_matrix_constraint(
         * driverWorld
         * parentWorldInverse
         -> driven.offsetParentMatrix
+
+    Args:
+        driver (str):
+            作为驱动端的 Maya 节点名称。
+        driven (str):
+            作为被驱动端的 Maya 节点名称。
+        maintain_offset (bool):
+            是否在建立约束或矩阵关系时保持当前偏移。
+        name (str):
+            创建或查询时使用的节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 使用 Scene Core 统一验证 Driver。
     scene_utils.validate_node(
@@ -272,6 +334,16 @@ def remove_parent_matrix_constraint(
     断开 Driven 的 offsetParentMatrix 输入。
 
     本方法是可选清理操作，因此目标不存在时返回 False，而不是抛异常。
+
+    Args:
+        driven (str):
+            作为被驱动端的 Maya 节点名称。
+        delete_node (bool):
+            当前清理 / 重建流程是否执行 `delete_node` 对应的删除步骤。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
     """
     if not driven:
         return False

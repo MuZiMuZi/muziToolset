@@ -53,31 +53,61 @@ class StepBase(object):
     u"""分步骤 Rig System 的统一生命周期基类。"""
 
     def collect_inputs(self):
-        u"""收集、规范化并检查当前 Step 输入。"""
+        u"""
+        收集、规范化并检查当前 Step 输入。
+
+        Raises:
+            NotImplementedError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         raise NotImplementedError(
             u"子类必须实现 collect_inputs()。"
         )
 
     def prepare_data(self):
-        u"""准备当前 Step 的执行环境和中间数据。"""
+        u"""
+        准备当前 Step 的执行环境和中间数据。
+
+        Raises:
+            NotImplementedError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         raise NotImplementedError(
             u"子类必须实现 prepare_data()。"
         )
 
     def process_data(self):
-        u"""执行当前 Step 的核心处理逻辑。"""
+        u"""
+        执行当前 Step 的核心处理逻辑。
+
+        Raises:
+            NotImplementedError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         raise NotImplementedError(
             u"子类必须实现 process_data()。"
         )
 
     def finalize_step(self):
-        u"""检查、保存并完成当前 Step。"""
+        u"""
+        检查、保存并完成当前 Step。
+
+        Raises:
+            NotImplementedError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         raise NotImplementedError(
             u"子类必须实现 finalize_step()。"
         )
 
     def run_step(self):
-        u"""按照统一生命周期完整执行当前 Step。"""
+        u"""
+        按照统一生命周期完整执行当前 Step。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         # 收集并检查当前 Step 的全部输入，阻止无效数据继续进入后续阶段。
         self.collect_inputs()
 

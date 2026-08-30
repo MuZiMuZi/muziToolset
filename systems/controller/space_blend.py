@@ -52,6 +52,14 @@ def get_short_name(node):
     返回 DAG Short Name。
 
     保留旧公开入口，实际规则统一由 core.rename_utils 维护。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     # 使用统一 Rename Core 提取 DAG Short Name。
     return rename_utils.get_short_name(
@@ -60,7 +68,23 @@ def get_short_name(node):
 
 
 def replace_control_prefix(control, prefix):
-    u"""根据 ctrl_ 名称生成同层级约定名称。"""
+    u"""
+    根据 ctrl_ 名称生成同层级约定名称。
+
+    Args:
+        control (str):
+            需要处理的控制器 Transform 名称。
+        prefix (str):
+            添加到 Maya 节点名称前部的 Prefix。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     # 使用统一 Short Name 入口取得不带 DAG Path 的 Controller 名称。
     short_name = get_short_name(
         control
@@ -87,6 +111,20 @@ def validate_node(node, label):
     检查必要 Maya 节点。
 
     保留旧公开入口，实际节点存在性规则统一由 scene_utils 维护。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not node:
         raise RuntimeError(
@@ -118,7 +156,21 @@ def ensure_follow_attribute(
         attribute_name="follow",
         default_value=0.5
 ):
-    u"""创建或复用 0-1 Follow 属性。"""
+    u"""
+    创建或复用 0-1 Follow 属性。
+
+    Args:
+        control (str):
+            需要处理的控制器 Transform 名称。
+        attribute_name (str):
+            `attribute_name` 对应的 Maya 节点或资源名称。
+        default_value (float):
+            新建 Attribute、UI 控件或 Rig 参数使用的默认值。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     # 先确认 Controller 节点有效，再操作其自定义 Attribute。
     validate_node(
         control,
@@ -171,10 +223,30 @@ def create_parent_space_blend(
     u"""
     创建 Controller Parent Space Blend。
 
+    Args:
+        driver (str):
+            作为驱动端的 Maya 节点名称。
+        control (str):
+            需要处理的控制器 Transform 名称。
+        weight (float):
+            当前计算、混合或变形使用的权重值。
+        attribute_name (str):
+            `attribute_name` 对应的 Maya 节点或资源名称。
+        zero_group (str):
+            当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
+        driven_group (str):
+            当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
+        maintain_offset (bool):
+            是否在建立约束或矩阵关系时保持当前偏移。
+
     Returns:
         dict:
-            control / driver / zero / driven / constraint /
-            reverse / follow_plug。
+        control / driver / zero / driven / constraint /
+        reverse / follow_plug。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 检查外部 Space Driver 是否存在。
     validate_node(

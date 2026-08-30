@@ -200,10 +200,10 @@ def show_window(window_key, window_factory):
 
     Example:
         def main():
-                                                                return window_utils.show_window(
-                                                                    "tools.basic.rename_tool",
-                                                                    RenameTool
-                                                                )
+                                                                    return window_utils.show_window(
+                                                                        "tools.basic.rename_tool",
+                                                                        RenameTool
+                                                                    )
     """
     if not window_key:
         raise ValueError(u"window_key 不能为空。")

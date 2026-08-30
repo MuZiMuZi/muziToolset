@@ -32,7 +32,17 @@ from ....core import transform_utils
 # =============================================================================
 
 def validate_side(side):
-    u"""把方向统一成 lf / rt / md。"""
+    u"""
+    把方向统一成 lf / rt / md。
+
+    Args:
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     # 使用统一 Rig Naming API 规范 Side Token。
     return name_utils.Name.normalize_side(
         side
@@ -40,7 +50,23 @@ def validate_side(side):
 
 
 def normalize_name_part(value, label):
-    u"""清理用于 Rig 命名的字段。"""
+    u"""
+    清理用于 Rig 命名的字段。
+
+    Args:
+        value (float):
+            需要读取、写入或参与计算的数值。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if value is None:
         raise ValueError(
             u"{}不能为空。".format(label)
@@ -78,6 +104,24 @@ def create_rig_name(
         grp_lf_upper_lid_rig_nodes_001
         grp_lf_lower_eye_bag_attach_003
         jnt_lf_upper_lid_bind_005
+
+    Args:
+        node_type (str):
+            需要创建、查询或过滤的 Maya Node Type。
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        region (str):
+            Face Component 的区域标记，例如 upper、lower、inner、outer。
+        feature (str):
+            Face Component 的功能部位标记，例如 lid、bag、lip。
+        role (str):
+            当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
+        index (int):
+            目标元素或节点的序号。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     # 统一规范 Side，避免 l / left / lf 等不同输入产生多套命名。
     side = validate_side(
@@ -135,19 +179,42 @@ def build_radial_curve_joints(
         lower lid
         upper eye bag
         lower eye bag
-
     原理：
         Eye Center
             -> Aim Group
                 -> Bind Joint
-
         Curve
             -> pointOnCurveInfo
                 -> Attachment
                     -> Aim Constraint -> Aim Group
-
     Joint 本身不承担 Aim Constraint，Aim Group 负责方向；
     Joint 只沿 Local X 放置到眼皮 / 眼袋位置。
+
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+        eye_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        up_object (str):
+            Eyelid / Radial Joint Aim 系统用于稳定 Orientation 的 Up Object。
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        region (str):
+            Face Component 的区域标记，例如 upper、lower、inner、outer。
+        feature (str):
+            Face Component 的功能部位标记，例如 lid、bag、lip。
+        parent_group (str | None):
+            新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
+        joint_radius (float):
+            当前 Joint、Controller 或辅助对象使用的半径。
+
+    Returns:
+        dict:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 使用 Curve Core 验证输入 Curve，并取得真实 NURBS Curve Shape。
     curve_utils.get_curve_shape(
@@ -445,7 +512,29 @@ def build_eyelid_joints(
         parent_group=None,
         joint_radius=0.2
 ):
-    u"""眼皮专用入口。"""
+    u"""
+    眼皮专用入口。
+
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+        eye_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        up_object (str):
+            Eyelid / Radial Joint Aim 系统用于稳定 Orientation 的 Up Object。
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        region (str):
+            Face Component 的区域标记，例如 upper、lower、inner、outer。
+        parent_group (str | None):
+            新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
+        joint_radius (float):
+            当前 Joint、Controller 或辅助对象使用的半径。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     # 复用统一 Radial Curve Joint Builder，只把 Feature 固定为 lid。
     return build_radial_curve_joints(
         curve=curve,
@@ -468,7 +557,29 @@ def build_eye_bag_joints(
         parent_group=None,
         joint_radius=0.2
 ):
-    u"""眼袋专用入口。"""
+    u"""
+    眼袋专用入口。
+
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+        eye_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        up_object (str):
+            Eyelid / Radial Joint Aim 系统用于稳定 Orientation 的 Up Object。
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        region (str):
+            Face Component 的区域标记，例如 upper、lower、inner、outer。
+        parent_group (str | None):
+            新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
+        joint_radius (float):
+            当前 Joint、Controller 或辅助对象使用的半径。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     # 复用统一 Radial Curve Joint Builder，只把 Feature 固定为 eye_bag。
     return build_radial_curve_joints(
         curve=curve,

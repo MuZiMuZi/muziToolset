@@ -102,7 +102,7 @@ class Hierarchy(object):
 
         Returns:
             str | None:
-                直接 Parent；没有 Parent 时返回 None。
+            直接 Parent；没有 Parent 时返回 None。
         """
         # 使用 Scene Core 统一确认查询目标存在。
         scene_utils.validate_node(
@@ -142,7 +142,7 @@ class Hierarchy(object):
 
         Returns:
             list[str]:
-                直接 Child 列表。
+            直接 Child 列表。
         """
         # 使用 Scene Core 统一确认查询目标存在。
         scene_utils.validate_node(
@@ -172,9 +172,15 @@ class Hierarchy(object):
         u"""
         确保 child_node 位于指定 parent_node 下。
 
+        Args:
+            child_node (str):
+                需要重新挂接父级的 Child DAG 节点名称。
+            parent_node (str):
+                Child 最终需要挂接到的 Parent DAG 节点名称。
+
         Returns:
             str:
-                Parent 后 Maya 返回的 Child Path；已经是正确父子关系时返回原节点。
+            Parent 后 Maya 返回的 Child Path；已经是正确父子关系时返回原节点。
         """
         # 使用统一节点校验入口检查 Child。
         Hierarchy._validate_node(
@@ -226,6 +232,22 @@ class Hierarchy(object):
     def add_extra_group(obj, grp_name, world_orient=False):
         u"""
         在对象上方插入一个额外 Transform Group，并保持对象世界姿态。
+
+        Args:
+            obj (str):
+                当前操作使用的 Maya DAG 节点或场景对象。
+            grp_name (str):
+                `grp_name` 对应的 Maya 节点或资源名称。
+            world_orient (bool):
+                创建 Extra Group 时是否使用 World Orientation，而不是继承目标对象旋转。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 使用统一节点校验入口检查需要插组的目标对象。
         Hierarchy._validate_node(
@@ -314,6 +336,16 @@ class Hierarchy(object):
     def get_child_object(object, type="joint"):
         u"""
         获取指定类型的全部后代，并把根对象放在列表第一位。
+
+        Args:
+            object (str):
+                需要处理的 Maya 场景对象名称。
+            type (str):
+                当前 Maya / Rig 操作使用的 `type` 名称或标记。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
         """
         # 使用统一节点校验入口检查查询根对象。
         Hierarchy._validate_node(
@@ -344,6 +376,14 @@ class Hierarchy(object):
         兼容旧工具：选择当前 Selection 下指定类型的全部后代。
 
         新代码应由 Tool 读取 Selection，再调用无 UI 依赖的查询 API。
+
+        Args:
+            obj_type (str):
+                当前 Maya / Rig 操作使用的 `obj_type` 名称或标记。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
         """
         selections = cmds.ls(
             selection=True,
@@ -381,7 +421,23 @@ class Hierarchy(object):
 
     @staticmethod
     def create_grp(grp, parent=None):
-        u"""创建一个 Transform Group；已存在时直接返回现有节点。"""
+        u"""
+        创建一个 Transform Group；已存在时直接返回现有节点。
+
+        Args:
+            grp (object):
+                当前方法执行 Maya / Rig 操作时使用的 `grp` 数据。
+            parent (str):
+                父级 Maya 节点名称。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if not grp:
             raise RuntimeError(u"Group 名称不能为空。")
 
@@ -409,7 +465,13 @@ class Hierarchy(object):
 
     @staticmethod
     def create_rig_grp():
-        u"""创建早期项目使用的基础 Rig Group。"""
+        u"""
+        创建早期项目使用的基础 Rig Group。
+
+        Returns:
+            tuple:
+                方法执行后的结果数据。
+        """
         top_main_group = "grp_m_group_001"
         child_groups = [
             "grp_m_bpjnt_001",
@@ -446,6 +508,10 @@ class Hierarchy(object):
         创建早期默认 Rig Group 结构。
 
         完整 Controller / Rig Build 应使用 systems.controller 或具体 Body Rig System。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
         """
         # 创建旧版默认顶层和 Geometry / Control / Custom 三个主要分区。
         group = Hierarchy.create_grp("Group")
@@ -518,6 +584,10 @@ class Hierarchy(object):
         兼容早期 Selection 驱动的 Controller 打组入口。
 
         新代码应使用 systems.controller Builder。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
         """
         controls = cmds.ls(
             selection=True,

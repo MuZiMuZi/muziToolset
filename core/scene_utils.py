@@ -548,7 +548,7 @@ def create_native_event_callback(
 
     Returns:
         callable: 调用返回函数即可删除这个 Callback。
-
+        
         为什么返回 remove 函数：
         Tool / System 不需要保存 OpenMaya callback id 的实现细节，
         只需要在关闭或销毁时调用返回值即可清理监听。

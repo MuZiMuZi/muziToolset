@@ -42,9 +42,15 @@ class ConfigNode(object):
 
     def __init__(self, node):
         u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
         Args:
             node (str):
                 Config Network Node 名称。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not node:
             raise ValueError(
@@ -63,7 +69,7 @@ class ConfigNode(object):
 
         Returns:
             bool:
-                有效 Config Node 返回 True。
+            有效 Config Node 返回 True。
         """
         if not cmds.objExists(self.node):
             return False
@@ -79,11 +85,11 @@ class ConfigNode(object):
 
         Returns:
             str:
-                Config Node 名称。
+            Config Node 名称。
 
         Raises:
             RuntimeError:
-                同名节点存在但不是 network 时抛出。
+            同名节点存在但不是 network 时抛出。
         """
         if cmds.objExists(self.node):
             node_type = cmds.nodeType(
@@ -128,6 +134,14 @@ class ConfigNode(object):
         读取一个 Message 属性保存的 Maya 节点引用。
 
         Config Node 不存在时返回 None。
+
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            object | None:
+                方法执行后的结果数据。
         """
         # 先确认当前 Config Node 有效，避免在不存在的节点上读取 Attribute。
         if not self.exists():
@@ -145,6 +159,14 @@ class ConfigNode(object):
         读取一个普通 Config Attribute Value。
 
         Config Node 不存在或属性不存在时返回 None。
+
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            object | None:
+                方法执行后的结果数据。
         """
         # 先确认当前 Config Node 有效，避免在不存在的节点上读取 Attribute。
         if not self.exists():
@@ -167,7 +189,7 @@ class ConfigNode(object):
 
         Returns:
             dict:
-                attr_name -> Maya Node / None
+            attr_name -> Maya Node / None
         """
         result = {}
 
@@ -183,7 +205,17 @@ class ConfigNode(object):
         return result
 
     def get_values(self, attr_names):
-        u"""批量读取普通 Config Value。"""
+        u"""
+        批量读取普通 Config Value。
+
+        Args:
+            attr_names (object):
+                当前方法执行 Maya / Rig 操作时使用的 `attr_names` 数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         result = {}
 
         if not attr_names:
@@ -220,7 +252,7 @@ class ConfigNode(object):
 
         Returns:
             dict:
-                每个属性的执行结果。
+            每个属性的执行结果。
         """
         # 写入前创建或复用 Config Network Node，保证后续 Attribute 操作有稳定目标。
         self.ensure()
@@ -256,7 +288,7 @@ class ConfigNode(object):
 
         Returns:
             dict:
-                每个属性的执行结果。
+            每个属性的执行结果。
         """
         # 写入前创建或复用 Config Network Node，保证普通 Value 有持久化节点。
         self.ensure()

@@ -52,7 +52,19 @@ class MayaObjectPicker(QWidget):
             node_types=None,
             parent=None
     ):
-        u"""初始化 Maya Object Picker。"""
+        u"""
+        初始化 Maya Object Picker。
+
+        Args:
+            label_text (str):
+                Object Picker 左侧显示的 Label 文本。
+            placeholder (str):
+                QLineEdit / Object Picker 在没有输入时显示的 Placeholder 文本。
+            node_types (str | list[str] | None):
+                Object Picker 允许选择的 Maya Node Type；None 表示不限制类型。
+            parent (str):
+                父级 Maya 节点名称。
+        """
         super(MayaObjectPicker, self).__init__(parent)
 
         if isinstance(node_types, str):
@@ -87,7 +99,9 @@ class MayaObjectPicker(QWidget):
     # =========================================================================
 
     def create_layout(self):
-        u"""创建控件布局。"""
+        u"""
+        创建控件布局。
+        """
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(8)
@@ -97,7 +111,9 @@ class MayaObjectPicker(QWidget):
         main_layout.addWidget(self.pick_button)
 
     def create_connections(self):
-        u"""连接控件信号。"""
+        u"""
+        连接控件信号。
+        """
         self.pick_button.clicked.connect(
             self.pick_from_selection
         )
@@ -116,6 +132,10 @@ class MayaObjectPicker(QWidget):
 
         即使用户手动粘贴 Long DAG Path，也统一通过
         core.rename_utils.get_short_name() 规范化。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
         """
         value = self.line_edit.text().strip()
 
@@ -124,7 +144,13 @@ class MayaObjectPicker(QWidget):
         )
 
     def set_value(self, value):
-        u"""设置当前输入值，并统一显示 Short Name。"""
+        u"""
+        设置当前输入值，并统一显示 Short Name。
+
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
+        """
         short_name = rename_utils.get_short_name(
             value
         )
@@ -134,7 +160,9 @@ class MayaObjectPicker(QWidget):
         )
 
     def clear(self):
-        u"""清空当前值。"""
+        u"""
+        清空当前值。
+        """
         self.line_edit.clear()
 
     # =========================================================================
@@ -187,6 +215,10 @@ class MayaObjectPicker(QWidget):
 
         查询阶段使用 Long DAG Path 精确获取用户选择；
         写入 UI 前统一转换为 Short Name。
+
+        Returns:
+            object | None:
+                方法执行后的结果数据。
         """
         selection = cmds.ls(
             selection=True,
