@@ -24,8 +24,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Normalize public runtime docstrings
-        run: python scripts/normalize_runtime_docstrings.py --write
+      # 第一轮结构化 Docstring 已经写入分支。
+      # 这里不再重复 --write，避免已有 Example / Notes 产生无意义缩进变化。
+      - name: Validate public runtime docstrings
+        run: python scripts/normalize_runtime_docstrings.py --check
 
       - name: Refine Maya and rigging parameter semantics
         run: python scripts/refine_runtime_docstring_semantics.py --write
@@ -35,9 +37,6 @@ jobs:
         run: |
           find app core systems tools ui -type f -name '*.py' -print0 | xargs -0 sed -i 's/[[:space:]]\+$//'
           sed -i 's/[[:space:]]\+$//' __init__.py config.py
-
-      - name: Validate public runtime docstrings
-        run: python scripts/normalize_runtime_docstrings.py --check
 
       - name: Validate rigging terminology quality
         run: python scripts/refine_runtime_docstring_semantics.py --check
@@ -50,11 +49,11 @@ jobs:
       - name: Check whitespace errors
         run: git diff --check
 
-      - name: Commit normalized runtime documentation
+      - name: Commit refined runtime documentation
         shell: bash
         run: |
           if git diff --quiet; then
-            echo "Runtime docstrings already satisfy the standard."
+            echo "Runtime docstrings already satisfy the semantic standard."
             exit 0
           fi
 
