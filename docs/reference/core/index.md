@@ -24,10 +24,10 @@ Transform / DG
 └─ constraint_utils.py
 
 DAG / Attribute / Naming
-├─ attrUtils.py
-├─ hierarchyUtils.py
-├─ jointUtils.py
-├─ nameUtils.py
+├─ attr_utils.py
+├─ hierarchy_utils.py
+├─ joint_utils.py
+├─ name_utils.py
 ├─ rename_utils.py
 └─ snap_utils.py
 
@@ -44,7 +44,7 @@ Scene Quality
 └─ scene_clean_utils.py
 ```
 
-## 已完成合并
+## 已完成模块收口
 
 ```text
 animation_io_utils.py
@@ -52,9 +52,21 @@ animation_io_utils.py
 
 scene_io_utils.py
     -> scene_utils.py
+
+attrUtils.py
+    -> attr_utils.py
+
+hierarchyUtils.py
+    -> hierarchy_utils.py
+
+jointUtils.py
+    -> joint_utils.py
+
+nameUtils.py
+    -> name_utils.py
 ```
 
-正式代码不再保留这两个过度拆分的小模块。
+上述旧模块都已经完成迁移并从正式 Core 删除。正式代码、测试、Tools 和文档统一使用 snake_case Import。
 
 ## 自动生成 API
 
@@ -90,6 +102,7 @@ API
 源码位置
 ```
 
-GitHub Actions 构建文档时会自动重新生成，因此在线文档中的函数签名会跟随源码更新。
+GitHub Actions 构建文档时会先执行 Core Import Style Gate，再重新生成 API Reference，最后执行 `mkdocs build --strict`。
+因此在线文档中的模块列表、函数签名和类方法会跟随源码更新。
 
 > 注意：本 `index.md` 在 CI 构建阶段会由生成器刷新成最新模块索引；`guide.md` 是人工维护文档，不会被生成器删除。
