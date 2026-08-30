@@ -6,9 +6,11 @@ Face Rig UI
 Face Rig 的分步构建界面。
 
 设计原则：
-    - UI 只收集参数、展示状态和提供当前 Step 的辅助操作；
-    - 真正的 Step 逻辑由 FaceSetup / FaceGuide 等系统类负责；
-    - 顶部 Step 导航负责返回已经完成的步骤；
+    - UI 只收集参数、展示状态和提供当前 Step 的必要辅助操作；
+    - 真正的 Step 逻辑由 FaceSetup / FaceGuide 等 System 类负责；
+    - 进入 Step 02 时自动导入或复用 resources/face/face_guide.ma；
+    - Step 02 不再暴露 Build / Reset / Refresh / Validate 等内部流程按钮；
+    - Step 02 只保留 Guide Mirror 和后续 Component 使用的 Controller Settings；
     - 底部只保留一个“下一步”，统一用于提交 / 重新提交当前 Step；
     - 返回旧 Step 修改参数后再次点击“下一步”，必须重新执行当前 Step，
       并让后续旧结果失效；
@@ -20,29 +22,37 @@ from __future__ import print_function
 
 try:
     from PySide2.QtCore import Qt
+    from PySide2.QtWidgets import QDoubleSpinBox
     from PySide2.QtWidgets import QFrame
+    from PySide2.QtWidgets import QGridLayout
     from PySide2.QtWidgets import QHBoxLayout
     from PySide2.QtWidgets import QLabel
     from PySide2.QtWidgets import QMessageBox
     from PySide2.QtWidgets import QPushButton
     from PySide2.QtWidgets import QSlider
+    from PySide2.QtWidgets import QSpinBox
     from PySide2.QtWidgets import QStackedWidget
     from PySide2.QtWidgets import QVBoxLayout
     from PySide2.QtWidgets import QWidget
 except ImportError:
     from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QDoubleSpinBox
     from PySide6.QtWidgets import QFrame
+    from PySide6.QtWidgets import QGridLayout
     from PySide6.QtWidgets import QHBoxLayout
     from PySide6.QtWidgets import QLabel
     from PySide6.QtWidgets import QMessageBox
     from PySide6.QtWidgets import QPushButton
     from PySide6.QtWidgets import QSlider
+    from PySide6.QtWidgets import QSpinBox
     from PySide6.QtWidgets import QStackedWidget
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
 from ...ui import theme
 from ...ui.widgets import MayaObjectPicker
+from . import guide_mirror
+from . import guide_settings
 from .face_guide import FaceGuide
 from .face_setup import FaceSetup
 
@@ -67,6 +77,9 @@ class FaceRigWizard(QWidget):
         self.face_setup = None
         self.face_guide = None
 
+        # Controller Settings 从 Config 回填 UI 时不触发 Dirty State。
+        self.loading_controller_settings = False
+
         # 嘴唇 Joint 数量始终以 4 为一个档位。
         # Slider 内部只保存档位，真正的 Joint 数量由档位 * 4 得到。
         self.mouth_joint_step = 4
@@ -74,9 +87,12 @@ class FaceRigWizard(QWidget):
         self.mouth_joint_maximum = 128
         self.mouth_joint_default = 40
 
+        self.controller_size_widgets = {}
+        self.controller_color_widgets = {}
+
         self.setWindowTitle(u"Face Rig")
         self.setMinimumWidth(680)
-        self.resize(760, 720)
+        self.resize(760, 700)
 
         self.create_widgets()
         self.create_pages()
@@ -91,12 +107,12 @@ class FaceRigWizard(QWidget):
     # =========================================================================
 
     def create_widgets(self):
-        u"""
-        创建公共控件。
-        """
-        self.title_label = theme.make_title(u"Face Rig")
+        u"""创建公共控件。"""
+        self.title_label = theme.make_title(
+            u"Face Rig"
+        )
         self.subtitle_label = theme.make_subtitle(
-            u"按步骤建立面部绑定。返回旧步骤修改后，再点击下一步即可重新提交当前步骤。"
+            u"按步骤建立面部绑定。Step 02 会自动加载 Guide，调整完成后点击下一步提交。"
         )
 
         step_names = [
@@ -109,32 +125,47 @@ class FaceRigWizard(QWidget):
         for step_index in range(len(step_names)):
             step_name = step_names[step_index]
 
-            step_button = QPushButton(step_name)
-            step_button.setCheckable(True)
+            step_button = QPushButton(
+                step_name
+            )
+            step_button.setCheckable(
+                True
+            )
             step_button.setProperty(
                 "step_index",
                 step_index
             )
-            theme.style_navigation(step_button)
+            theme.style_navigation(
+                step_button
+            )
 
-            self.step_buttons.append(step_button)
+            self.step_buttons.append(
+                step_button
+            )
 
         self.page_stack = QStackedWidget()
 
-        # 整个 Step UI 只保留一个提交按钮。
-        # 回退通过顶部已经完成的 Step 导航完成。
-        self.next_button = QPushButton(u"下一步")
-        theme.style_primary(self.next_button)
+        # 整个 Wizard 只保留一个 Step 提交按钮。
+        self.next_button = QPushButton(
+            u"下一步"
+        )
+        theme.style_primary(
+            self.next_button
+        )
 
-        self.status_label = QLabel(u"准备就绪")
-        theme.set_role(self.status_label, "muted")
+        self.status_label = QLabel(
+            u"准备就绪"
+        )
+        theme.set_role(
+            self.status_label,
+            "muted"
+        )
 
     def create_pages(self):
-        u"""
-        创建四个步骤页面。
-        """
+        u"""创建四个步骤页面。"""
         self.step1_page = self.create_step1_page()
         self.step2_page = self.create_step2_page()
+
         self.step3_page = self.create_placeholder_page(
             u"Step 03 · Face Build",
             u"这里将负责眉毛、眼睑、嘴唇、下颌等 Face Module 的正式 Build。"
@@ -144,10 +175,18 @@ class FaceRigWizard(QWidget):
             u"这里将负责 Controller Set、显示属性、清理、检查和最终发布。"
         )
 
-        self.page_stack.addWidget(self.step1_page)
-        self.page_stack.addWidget(self.step2_page)
-        self.page_stack.addWidget(self.step3_page)
-        self.page_stack.addWidget(self.step4_page)
+        self.page_stack.addWidget(
+            self.step1_page
+        )
+        self.page_stack.addWidget(
+            self.step2_page
+        )
+        self.page_stack.addWidget(
+            self.step3_page
+        )
+        self.page_stack.addWidget(
+            self.step4_page
+        )
 
     def create_step1_page(self):
         u"""
@@ -157,29 +196,49 @@ class FaceRigWizard(QWidget):
         真正提交当前参数统一通过底部“下一步”执行 FaceSetup.run_step()。
 
         Returns:
-            object:
-            方法执行后的结果数据。
+            QWidget:
+            Step 01 页面。
         """
         page = QWidget()
 
-        main_layout = QVBoxLayout(page)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(12)
+        main_layout = QVBoxLayout(
+            page
+        )
+        main_layout.setContentsMargins(
+            0,
+            0,
+            0,
+            0
+        )
+        main_layout.setSpacing(
+            12
+        )
 
         # ---------------------------------------------------------------------
         # 模型输入
         # ---------------------------------------------------------------------
-        model_card, model_layout = theme.make_card(page)
+        model_card, model_layout = theme.make_card(
+            page
+        )
         model_layout.addWidget(
-            theme.make_section_title(u"模型输入")
+            theme.make_section_title(
+                u"模型输入"
+            )
         )
 
         model_description = QLabel(
             u"Head 为必填项，其它模型可以留空。拾取时使用 Maya 当前最后选择对象。"
         )
-        model_description.setWordWrap(True)
-        theme.set_role(model_description, "muted")
-        model_layout.addWidget(model_description)
+        model_description.setWordWrap(
+            True
+        )
+        theme.set_role(
+            model_description,
+            "muted"
+        )
+        model_layout.addWidget(
+            model_description
+        )
 
         self.face_head_picker = MayaObjectPicker(
             label_text=u"Head *",
@@ -217,49 +276,101 @@ class FaceRigWizard(QWidget):
             node_types=["transform"]
         )
 
-        model_layout.addWidget(self.face_head_picker)
-        model_layout.addWidget(self.face_lf_eye_picker)
-        model_layout.addWidget(self.face_rt_eye_picker)
-        model_layout.addWidget(self.upper_teech_picker)
-        model_layout.addWidget(self.lower_teech_picker)
-        model_layout.addWidget(self.face_tongue_picker)
-        model_layout.addWidget(self.face_gum_picker)
+        model_layout.addWidget(
+            self.face_head_picker
+        )
+        model_layout.addWidget(
+            self.face_lf_eye_picker
+        )
+        model_layout.addWidget(
+            self.face_rt_eye_picker
+        )
+        model_layout.addWidget(
+            self.upper_teech_picker
+        )
+        model_layout.addWidget(
+            self.lower_teech_picker
+        )
+        model_layout.addWidget(
+            self.face_tongue_picker
+        )
+        model_layout.addWidget(
+            self.face_gum_picker
+        )
 
         # ---------------------------------------------------------------------
         # 构建参数
         # ---------------------------------------------------------------------
-        parameter_card, parameter_layout = theme.make_card(page)
+        parameter_card, parameter_layout = theme.make_card(
+            page
+        )
         parameter_layout.addWidget(
-            theme.make_section_title(u"构建参数")
+            theme.make_section_title(
+                u"构建参数"
+            )
         )
 
         mouth_layout = QHBoxLayout()
-        mouth_layout.setContentsMargins(0, 0, 0, 0)
-        mouth_layout.setSpacing(10)
+        mouth_layout.setContentsMargins(
+            0,
+            0,
+            0,
+            0
+        )
+        mouth_layout.setSpacing(
+            10
+        )
 
-        mouth_label = QLabel(u"嘴唇 Joint 数量")
-        mouth_label.setMinimumWidth(120)
+        mouth_label = QLabel(
+            u"嘴唇 Joint 数量"
+        )
+        mouth_label.setMinimumWidth(
+            120
+        )
 
-        self.mouth_joint_slider = QSlider(Qt.Horizontal)
+        self.mouth_joint_slider = QSlider(
+            Qt.Horizontal
+        )
         self.mouth_joint_slider.setMinimum(
-            int(self.mouth_joint_minimum / self.mouth_joint_step)
+            int(
+                self.mouth_joint_minimum
+                / self.mouth_joint_step
+            )
         )
         self.mouth_joint_slider.setMaximum(
-            int(self.mouth_joint_maximum / self.mouth_joint_step)
+            int(
+                self.mouth_joint_maximum
+                / self.mouth_joint_step
+            )
         )
-        self.mouth_joint_slider.setSingleStep(1)
-        self.mouth_joint_slider.setPageStep(2)
+        self.mouth_joint_slider.setSingleStep(
+            1
+        )
+        self.mouth_joint_slider.setPageStep(
+            2
+        )
         self.mouth_joint_slider.setValue(
-            int(self.mouth_joint_default / self.mouth_joint_step)
+            int(
+                self.mouth_joint_default
+                / self.mouth_joint_step
+            )
         )
-        self.mouth_joint_slider.setMinimumWidth(280)
+        self.mouth_joint_slider.setMinimumWidth(
+            280
+        )
         self.style_mouth_joint_slider()
 
         self.mouth_joint_value_label = QLabel(
-            u"{}".format(self.mouth_joint_default)
+            u"{}".format(
+                self.mouth_joint_default
+            )
         )
-        self.mouth_joint_value_label.setMinimumWidth(46)
-        self.mouth_joint_value_label.setAlignment(Qt.AlignCenter)
+        self.mouth_joint_value_label.setMinimumWidth(
+            46
+        )
+        self.mouth_joint_value_label.setAlignment(
+            Qt.AlignCenter
+        )
         theme.set_role(
             self.mouth_joint_value_label,
             "pill"
@@ -272,175 +383,404 @@ class FaceRigWizard(QWidget):
                 self.mouth_joint_step
             )
         )
-        theme.set_role(mouth_hint, "muted")
+        theme.set_role(
+            mouth_hint,
+            "muted"
+        )
 
-        mouth_layout.addWidget(mouth_label)
-        mouth_layout.addWidget(self.mouth_joint_slider, 1)
-        mouth_layout.addWidget(self.mouth_joint_value_label)
-        mouth_layout.addWidget(mouth_hint)
+        mouth_layout.addWidget(
+            mouth_label
+        )
+        mouth_layout.addWidget(
+            self.mouth_joint_slider,
+            1
+        )
+        mouth_layout.addWidget(
+            self.mouth_joint_value_label
+        )
+        mouth_layout.addWidget(
+            mouth_hint
+        )
 
-        parameter_layout.addLayout(mouth_layout)
+        parameter_layout.addLayout(
+            mouth_layout
+        )
 
         step_hint = QLabel(
-            u"参数调整完成后点击窗口底部“下一步”。如果返回本步骤重新修改，下一步会重新 Build Step 01。"
+            u"参数调整完成后点击窗口底部“下一步”。Step 01 成功后会自动进入并加载 Face Guide。"
         )
-        step_hint.setWordWrap(True)
-        theme.set_role(step_hint, "muted")
+        step_hint.setWordWrap(
+            True
+        )
+        theme.set_role(
+            step_hint,
+            "muted"
+        )
 
-        main_layout.addWidget(model_card)
-        main_layout.addWidget(parameter_card)
-        main_layout.addWidget(step_hint)
-        main_layout.addStretch(1)
+        main_layout.addWidget(
+            model_card
+        )
+        main_layout.addWidget(
+            parameter_card
+        )
+        main_layout.addWidget(
+            step_hint
+        )
+        main_layout.addStretch(
+            1
+        )
 
         return page
 
     def create_step2_page(self):
         u"""
-        创建正式 Face Guide 页面。
+        创建 Face Guide 编辑页面。
 
-        页面内部只保留 Guide 编辑辅助操作：
-            Build / Reset / Repair / Validate。
-        Step 02 的正式提交 Finalize 统一通过底部“下一步”执行。
+        Step 02 进入时自动导入或复用 Guide Template。
+        页面只保留：
+            1. Guide 编辑说明；
+            2. 左右 Guide Mirror；
+            3. Controller Global / Side / Module Settings。
 
         Returns:
-            object:
-            方法执行后的结果数据。
+            QWidget:
+            Step 02 页面。
         """
         page = QWidget()
 
-        main_layout = QVBoxLayout(page)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(12)
+        main_layout = QVBoxLayout(
+            page
+        )
+        main_layout.setContentsMargins(
+            0,
+            0,
+            0,
+            0
+        )
+        main_layout.setSpacing(
+            12
+        )
 
         # ---------------------------------------------------------------------
-        # Guide 状态
+        # Guide
         # ---------------------------------------------------------------------
-        status_card, status_layout = theme.make_card(page)
-        status_layout.addWidget(
-            theme.make_section_title(u"Face Guide 状态")
+        guide_card, guide_layout = theme.make_card(
+            page
+        )
+        guide_layout.addWidget(
+            theme.make_section_title(
+                u"Face Guide"
+            )
         )
 
-        status_description = QLabel(
-            u"Step 02 使用 resources/face/face_guide.ma 作为 Guide 模板。"
-            u"Build 负责导入或复用模板；手动贴合完成后，底部“下一步”负责 Finalize。"
+        guide_description = QLabel(
+            u"进入 Step 02 时会自动导入或复用 resources/face/face_guide.ma。"
+            u"请直接在 Maya 视图中调整定位器；完成后点击窗口底部“下一步”。"
         )
-        status_description.setWordWrap(True)
-        theme.set_role(status_description, "muted")
-
-        status_row = QHBoxLayout()
-        status_row.setContentsMargins(0, 0, 0, 0)
-        status_row.setSpacing(8)
-
-        self.guide_state_label = QLabel(u"未加载")
-        theme.set_role(self.guide_state_label, "pill")
-
-        self.guide_count_label = QLabel(u"Locator: 0")
-        theme.set_role(self.guide_count_label, "pill")
-
-        self.refresh_guide_button = QPushButton(u"刷新状态")
-        theme.style_ghost(self.refresh_guide_button)
-
-        status_row.addWidget(self.guide_state_label)
-        status_row.addWidget(self.guide_count_label)
-        status_row.addStretch(1)
-        status_row.addWidget(self.refresh_guide_button)
-
-        self.guide_details_label = QLabel(u"Guide 尚未加载")
-        self.guide_details_label.setWordWrap(True)
-        theme.set_role(self.guide_details_label, "muted")
-
-        status_layout.addWidget(status_description)
-        status_layout.addLayout(status_row)
-        status_layout.addWidget(self.guide_details_label)
-
-        # ---------------------------------------------------------------------
-        # Guide Template
-        # ---------------------------------------------------------------------
-        template_card, template_layout = theme.make_card(page)
-        template_layout.addWidget(
-            theme.make_section_title(u"Guide Template")
+        guide_description.setWordWrap(
+            True
+        )
+        theme.set_role(
+            guide_description,
+            "muted"
         )
 
-        template_description = QLabel(
-            u"Build Face Guide 会验证 Step 01、确保 Face 层级、导入或复用 Guide 模板，"
-            u"并把 Guide Root / Move Ctrl / Version 保存到 Config。"
+        self.guide_summary_label = QLabel(
+            u"等待加载 Face Guide"
         )
-        template_description.setWordWrap(True)
-        theme.set_role(template_description, "muted")
+        self.guide_summary_label.setWordWrap(
+            True
+        )
+        theme.set_role(
+            self.guide_summary_label,
+            "pill"
+        )
 
-        template_button_layout = QHBoxLayout()
-        template_button_layout.setContentsMargins(0, 0, 0, 0)
-        template_button_layout.setSpacing(8)
-
-        self.build_step2_button = QPushButton(u"Build Face Guide")
-        theme.style_primary(self.build_step2_button)
-
-        self.reset_guide_button = QPushButton(u"Reset Guide")
-        theme.style_ghost(self.reset_guide_button)
-
-        template_button_layout.addWidget(self.build_step2_button, 1)
-        template_button_layout.addWidget(self.reset_guide_button)
-
-        template_layout.addWidget(template_description)
-        template_layout.addLayout(template_button_layout)
+        guide_layout.addWidget(
+            guide_description
+        )
+        guide_layout.addWidget(
+            self.guide_summary_label,
+            0,
+            Qt.AlignLeft
+        )
 
         # ---------------------------------------------------------------------
-        # Validation / Symmetry
+        # Mirror
         # ---------------------------------------------------------------------
-        validation_card, validation_layout = theme.make_card(page)
-        validation_layout.addWidget(
-            theme.make_section_title(u"Guide Validation")
+        mirror_card, mirror_layout = theme.make_card(
+            page
+        )
+        mirror_layout.addWidget(
+            theme.make_section_title(
+                u"Guide Mirror"
+            )
         )
 
-        validation_description = QLabel(
-            u"Repair Symmetry 用于修复 LF → RT 的 Guide 节点、Parent 和连接。"
-            u"Validate 会检查必要 Guide、重复命名以及左右镜像完整性。"
+        mirror_description = QLabel(
+            u"镜像只复制当前 Guide 状态，不建立永久左右连接。镜像后 lf / rt 两侧仍可独立调整。"
         )
-        validation_description.setWordWrap(True)
-        theme.set_role(validation_description, "muted")
-
-        validation_button_layout = QHBoxLayout()
-        validation_button_layout.setContentsMargins(0, 0, 0, 0)
-        validation_button_layout.setSpacing(8)
-
-        self.repair_symmetry_button = QPushButton(u"Repair Symmetry")
-        theme.style_ghost(self.repair_symmetry_button)
-
-        self.validate_guide_button = QPushButton(u"Validate Guide")
-        theme.style_ghost(self.validate_guide_button)
-
-        validation_button_layout.addWidget(self.repair_symmetry_button)
-        validation_button_layout.addWidget(self.validate_guide_button)
-        validation_button_layout.addStretch(1)
-
-        self.guide_validation_label = QLabel(
-            u"尚未执行 Guide Validation"
+        mirror_description.setWordWrap(
+            True
         )
-        self.guide_validation_label.setWordWrap(True)
-        theme.set_role(self.guide_validation_label, "muted")
+        theme.set_role(
+            mirror_description,
+            "muted"
+        )
 
-        validation_layout.addWidget(validation_description)
-        validation_layout.addLayout(validation_button_layout)
-        validation_layout.addWidget(self.guide_validation_label)
+        mirror_button_layout = QHBoxLayout()
+        mirror_button_layout.setContentsMargins(
+            0,
+            0,
+            0,
+            0
+        )
+        mirror_button_layout.setSpacing(
+            8
+        )
+
+        self.mirror_lf_to_rt_button = QPushButton(
+            u"LF  →  RT"
+        )
+        self.mirror_rt_to_lf_button = QPushButton(
+            u"RT  →  LF"
+        )
+
+        theme.style_ghost(
+            self.mirror_lf_to_rt_button
+        )
+        theme.style_ghost(
+            self.mirror_rt_to_lf_button
+        )
+
+        mirror_button_layout.addWidget(
+            self.mirror_lf_to_rt_button
+        )
+        mirror_button_layout.addWidget(
+            self.mirror_rt_to_lf_button
+        )
+        mirror_button_layout.addStretch(
+            1
+        )
+
+        mirror_layout.addWidget(
+            mirror_description
+        )
+        mirror_layout.addLayout(
+            mirror_button_layout
+        )
+
+        # ---------------------------------------------------------------------
+        # Controller Settings
+        # ---------------------------------------------------------------------
+        controller_card, controller_layout = theme.make_card(
+            page
+        )
+        controller_layout.addWidget(
+            theme.make_section_title(
+                u"Controller Settings"
+            )
+        )
+
+        controller_description = QLabel(
+            u"Global Scale 控制整个 Face Controller 的总倍率；颜色使用 Maya Index Color。"
+            u"各 Module Size 作为后续 Component 创建控制器时的基础大小。"
+        )
+        controller_description.setWordWrap(
+            True
+        )
+        theme.set_role(
+            controller_description,
+            "muted"
+        )
+        controller_layout.addWidget(
+            controller_description
+        )
+
+        settings_grid = QGridLayout()
+        settings_grid.setContentsMargins(
+            0,
+            4,
+            0,
+            0
+        )
+        settings_grid.setHorizontalSpacing(
+            12
+        )
+        settings_grid.setVerticalSpacing(
+            8
+        )
+
+        global_scale_label = QLabel(
+            u"Global Scale"
+        )
+        self.face_ctrl_global_scale_spin = self.create_size_spin_box()
+
+        settings_grid.addWidget(
+            global_scale_label,
+            0,
+            0
+        )
+        settings_grid.addWidget(
+            self.face_ctrl_global_scale_spin,
+            0,
+            1
+        )
+
+        color_title = QLabel(
+            u"Side Color"
+        )
+        theme.set_role(
+            color_title,
+            "muted"
+        )
+        settings_grid.addWidget(
+            color_title,
+            1,
+            0
+        )
+
+        side_items = [
+            ("lf", u"LF"),
+            ("rt", u"RT"),
+            ("md", u"MD"),
+        ]
+
+        row = 2
+
+        for side_item in side_items:
+            side = side_item[0]
+            label_text = side_item[1]
+
+            side_label = QLabel(
+                label_text
+            )
+            color_spin = QSpinBox()
+            color_spin.setRange(
+                0,
+                31
+            )
+            color_spin.setMinimumWidth(
+                90
+            )
+
+            self.controller_color_widgets[side] = color_spin
+
+            settings_grid.addWidget(
+                side_label,
+                row,
+                0
+            )
+            settings_grid.addWidget(
+                color_spin,
+                row,
+                1
+            )
+
+            row += 1
+
+        module_title = QLabel(
+            u"Module Size"
+        )
+        theme.set_role(
+            module_title,
+            "muted"
+        )
+        settings_grid.addWidget(
+            module_title,
+            1,
+            2
+        )
+
+        module_items = [
+            ("jaw", u"Jaw"),
+            ("lip", u"Lip"),
+            ("eye", u"Eye"),
+            ("eyelid", u"Eyelid"),
+            ("brow", u"Brow"),
+            ("cheek", u"Cheek"),
+            ("nose", u"Nose"),
+        ]
+
+        module_row = 2
+
+        for module_item in module_items:
+            module_name = module_item[0]
+            label_text = module_item[1]
+
+            module_label = QLabel(
+                label_text
+            )
+            size_spin = self.create_size_spin_box()
+
+            self.controller_size_widgets[module_name] = size_spin
+
+            settings_grid.addWidget(
+                module_label,
+                module_row,
+                2
+            )
+            settings_grid.addWidget(
+                size_spin,
+                module_row,
+                3
+            )
+
+            module_row += 1
+
+        controller_layout.addLayout(
+            settings_grid
+        )
 
         next_hint = QLabel(
-            u"Guide 调整完成后点击窗口底部“下一步”。下一步会重新执行 Finalize Validation，再进入 Step 03。"
+            u"下一步会自动检查 Guide，并把当前 Controller Settings 保存到 Face Config，再进入 Step 03。"
         )
-        next_hint.setWordWrap(True)
-        theme.set_role(next_hint, "muted")
+        next_hint.setWordWrap(
+            True
+        )
+        theme.set_role(
+            next_hint,
+            "muted"
+        )
 
-        main_layout.addWidget(status_card)
-        main_layout.addWidget(template_card)
-        main_layout.addWidget(validation_card)
-        main_layout.addWidget(next_hint)
-        main_layout.addStretch(1)
+        main_layout.addWidget(
+            guide_card
+        )
+        main_layout.addWidget(
+            mirror_card
+        )
+        main_layout.addWidget(
+            controller_card
+        )
+        main_layout.addWidget(
+            next_hint
+        )
+        main_layout.addStretch(
+            1
+        )
 
         return page
 
+    def create_size_spin_box(self):
+        u"""创建 Face Controller Size 使用的统一 Double SpinBox。"""
+        spin_box = QDoubleSpinBox()
+        spin_box.setDecimals(
+            2
+        )
+        spin_box.setRange(
+            0.01,
+            100.0
+        )
+        spin_box.setSingleStep(
+            0.05
+        )
+        spin_box.setMinimumWidth(
+            90
+        )
+        return spin_box
+
     def style_mouth_joint_slider(self):
-        u"""
-        设置嘴唇 Joint Slider 的进度条式视觉。
-        """
+        u"""设置嘴唇 Joint Slider 的进度条式视觉。"""
         self.mouth_joint_slider.setStyleSheet(
             u"""
             QSlider {
@@ -487,87 +827,153 @@ class FaceRigWizard(QWidget):
             """
         )
 
-    def create_placeholder_page(self, title, description):
-        u"""
-        创建尚未完成的系统步骤页面。
-
-        Args:
-            title (str):
-                窗口、Section、Dialog 或报告使用的标题文本。
-            description (str):
-                UI Step / Section 中展示的功能说明文本。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+    def create_placeholder_page(
+            self,
+            title,
+            description
+    ):
+        u"""创建尚未完成的系统步骤页面。"""
         page = QWidget()
 
-        main_layout = QVBoxLayout(page)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(12)
-
-        card, card_layout = theme.make_card(page)
-        card_layout.addWidget(
-            theme.make_section_title(title)
+        main_layout = QVBoxLayout(
+            page
+        )
+        main_layout.setContentsMargins(
+            0,
+            0,
+            0,
+            0
+        )
+        main_layout.setSpacing(
+            12
         )
 
-        description_label = QLabel(description)
-        description_label.setWordWrap(True)
-        theme.set_role(description_label, "muted")
+        card, card_layout = theme.make_card(
+            page
+        )
+        card_layout.addWidget(
+            theme.make_section_title(
+                title
+            )
+        )
 
-        state_label = QLabel(u"开发中")
-        theme.set_role(state_label, "pill")
+        description_label = QLabel(
+            description
+        )
+        description_label.setWordWrap(
+            True
+        )
+        theme.set_role(
+            description_label,
+            "muted"
+        )
 
-        card_layout.addWidget(description_label)
+        state_label = QLabel(
+            u"开发中"
+        )
+        theme.set_role(
+            state_label,
+            "pill"
+        )
+
+        card_layout.addWidget(
+            description_label
+        )
         card_layout.addWidget(
             state_label,
             0,
             Qt.AlignLeft
         )
 
-        main_layout.addWidget(card)
-        main_layout.addStretch(1)
+        main_layout.addWidget(
+            card
+        )
+        main_layout.addStretch(
+            1
+        )
 
         return page
 
     def create_layouts(self):
-        u"""
-        创建 UI 主布局。
-        """
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(18, 18, 18, 16)
-        main_layout.setSpacing(14)
+        u"""创建 UI 主布局。"""
+        main_layout = QVBoxLayout(
+            self
+        )
+        main_layout.setContentsMargins(
+            18,
+            18,
+            18,
+            16
+        )
+        main_layout.setSpacing(
+            14
+        )
 
-        main_layout.addWidget(self.title_label)
-        main_layout.addWidget(self.subtitle_label)
+        main_layout.addWidget(
+            self.title_label
+        )
+        main_layout.addWidget(
+            self.subtitle_label
+        )
 
         step_frame = QFrame()
-        theme.set_role(step_frame, "sub_card")
+        theme.set_role(
+            step_frame,
+            "sub_card"
+        )
 
-        step_layout = QHBoxLayout(step_frame)
-        step_layout.setContentsMargins(8, 8, 8, 8)
-        step_layout.setSpacing(5)
+        step_layout = QHBoxLayout(
+            step_frame
+        )
+        step_layout.setContentsMargins(
+            8,
+            8,
+            8,
+            8
+        )
+        step_layout.setSpacing(
+            5
+        )
 
         for step_button in self.step_buttons:
-            step_layout.addWidget(step_button, 1)
+            step_layout.addWidget(
+                step_button,
+                1
+            )
 
-        main_layout.addWidget(step_frame)
-        main_layout.addWidget(self.page_stack, 1)
+        main_layout.addWidget(
+            step_frame
+        )
+        main_layout.addWidget(
+            self.page_stack,
+            1
+        )
 
         bottom_layout = QHBoxLayout()
-        bottom_layout.setContentsMargins(0, 0, 0, 0)
-        bottom_layout.setSpacing(10)
+        bottom_layout.setContentsMargins(
+            0,
+            0,
+            0,
+            0
+        )
+        bottom_layout.setSpacing(
+            10
+        )
 
-        bottom_layout.addWidget(self.status_label, 1)
-        bottom_layout.addWidget(self.next_button)
+        bottom_layout.addWidget(
+            self.status_label,
+            1
+        )
+        bottom_layout.addWidget(
+            self.next_button
+        )
 
-        main_layout.addLayout(bottom_layout)
+        main_layout.addLayout(
+            bottom_layout
+        )
 
     def create_connections(self):
-        u"""
-        连接 UI 信号。
-        """
+        u"""连接 UI 信号。"""
         for step_button in self.step_buttons:
             step_button.clicked.connect(
                 self.clicked_step_button
@@ -581,38 +987,42 @@ class FaceRigWizard(QWidget):
             self.update_mouth_joint_value
         )
 
-        self.refresh_guide_button.clicked.connect(
-            self.refresh_guide_state
+        self.mirror_lf_to_rt_button.clicked.connect(
+            self.mirror_lf_to_rt
         )
-        self.build_step2_button.clicked.connect(
-            self.build_step2
+        self.mirror_rt_to_lf_button.clicked.connect(
+            self.mirror_rt_to_lf
         )
-        self.reset_guide_button.clicked.connect(
-            self.reset_step2_guide
+
+        self.face_ctrl_global_scale_spin.valueChanged.connect(
+            self.controller_settings_changed
         )
-        self.repair_symmetry_button.clicked.connect(
-            self.repair_step2_symmetry
-        )
-        self.validate_guide_button.clicked.connect(
-            self.validate_step2_guides
-        )
+
+        for side in self.controller_color_widgets:
+            color_spin = self.controller_color_widgets.get(
+                side
+            )
+            color_spin.valueChanged.connect(
+                self.controller_settings_changed
+            )
+
+        for module_name in self.controller_size_widgets:
+            size_spin = self.controller_size_widgets.get(
+                module_name
+            )
+            size_spin.valueChanged.connect(
+                self.controller_settings_changed
+            )
 
     # =========================================================================
     # Step State
     # =========================================================================
 
-    def get_face_guide(self, refresh=False):
-        u"""
-        返回当前 UI 使用的 FaceGuide 实例。
-
-        Args:
-            refresh (bool):
-                读取数据前是否先从 Maya Scene / Config 重新刷新缓存。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+    def get_face_guide(
+            self,
+            refresh=False
+    ):
+        u"""返回当前 UI 使用的 FaceGuide 实例。"""
         if refresh:
             self.face_guide = None
 
@@ -634,8 +1044,9 @@ class FaceRigWizard(QWidget):
         )
 
         if not face_guide.config_node_exists():
-            self.set_current_step(0)
-            self.refresh_guide_state()
+            self.set_current_step(
+                0
+            )
             return
 
         try:
@@ -643,8 +1054,9 @@ class FaceRigWizard(QWidget):
                 last_step=4
             )
         except Exception:
-            self.set_current_step(0)
-            self.refresh_guide_state()
+            self.set_current_step(
+                0
+            )
             return
 
         current_step_index = 0
@@ -677,19 +1089,17 @@ class FaceRigWizard(QWidget):
         self.set_current_step(
             current_step_index
         )
-        self.refresh_guide_state()
 
-    def invalidate_ui_steps_after(self, step_index):
-        u"""
-        把指定 UI Step 之后的本地完成状态清除。
-
-        Args:
-            step_index (int):
-                对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
-        """
+    def invalidate_ui_steps_after(
+            self,
+            step_index
+    ):
+        u"""把指定 UI Step 之后的本地完成状态清除。"""
         next_step_index = step_index + 1
 
-        while next_step_index < len(self.step_buttons):
+        while next_step_index < len(
+                self.step_buttons
+        ):
             self.completed_step_indexes.discard(
                 next_step_index
             )
@@ -698,14 +1108,11 @@ class FaceRigWizard(QWidget):
         self.update_step_buttons()
         self.update_navigation_buttons()
 
-    def set_current_step(self, step_index):
-        u"""
-        切换当前步骤。
-
-        Args:
-            step_index (int):
-                对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
-        """
+    def set_current_step(
+            self,
+            step_index
+    ):
+        u"""切换当前步骤，并执行对应 Step 的进入逻辑。"""
         if step_index < 0:
             return
 
@@ -713,10 +1120,12 @@ class FaceRigWizard(QWidget):
             return
 
         self.current_step_index = step_index
-        self.page_stack.setCurrentIndex(step_index)
+        self.page_stack.setCurrentIndex(
+            step_index
+        )
 
         if step_index == 1:
-            self.refresh_guide_state()
+            self.enter_step2()
 
         self.update_step_buttons()
         self.update_navigation_buttons()
@@ -728,44 +1137,62 @@ class FaceRigWizard(QWidget):
         当前 Step 永远可用；已经完成的历史 Step 可点击返回；
         尚未到达的未来 Step 保持禁用。
         """
-        for step_index in range(len(self.step_buttons)):
-            step_button = self.step_buttons[step_index]
+        for step_index in range(
+                len(self.step_buttons)
+        ):
+            step_button = self.step_buttons[
+                step_index
+            ]
 
-            current = step_index == self.current_step_index
-            completed = step_index in self.completed_step_indexes
+            current = (
+                step_index
+                == self.current_step_index
+            )
+            completed = (
+                step_index
+                in self.completed_step_indexes
+            )
 
             if current:
-                step_button.setEnabled(True)
-                step_button.setChecked(True)
+                step_button.setEnabled(
+                    True
+                )
+                step_button.setChecked(
+                    True
+                )
                 theme.style_navigation(
                     step_button,
                     active=True
                 )
                 continue
 
-            step_button.setChecked(False)
+            step_button.setChecked(
+                False
+            )
             theme.style_navigation(
                 step_button,
                 active=False
             )
 
             if completed:
-                step_button.setEnabled(True)
+                step_button.setEnabled(
+                    True
+                )
             else:
-                step_button.setEnabled(False)
+                step_button.setEnabled(
+                    False
+                )
 
     def update_navigation_buttons(self):
-        u"""
-        更新底部“下一步”状态。
-
-        “下一步”永远表示提交当前 Step，而不是简单切换页面。
-        """
+        u"""更新底部“下一步”状态。"""
         self.next_button.setText(
             u"下一步"
         )
 
         if self.current_step_index == 0:
-            self.next_button.setEnabled(True)
+            self.next_button.setEnabled(
+                True
+            )
             return
 
         if self.current_step_index == 1:
@@ -777,17 +1204,19 @@ class FaceRigWizard(QWidget):
                 guide_exists = False
 
             self.next_button.setEnabled(
-                bool(guide_exists)
+                bool(
+                    guide_exists
+                )
             )
             return
 
         # Step 03～04 尚未正式接入。
-        self.next_button.setEnabled(False)
+        self.next_button.setEnabled(
+            False
+        )
 
     def clicked_step_button(self):
-        u"""
-        通过顶部导航返回已经完成的步骤。
-        """
+        u"""通过顶部导航返回已经完成的步骤。"""
         step_button = self.sender()
 
         if step_button is None:
@@ -817,10 +1246,6 @@ class FaceRigWizard(QWidget):
     def clicked_next_button(self):
         u"""
         重新提交当前已经接入的 Step，并在成功后进入下一个步骤。
-
-        重要：
-            即使当前 Step 之前已经完成，只要用户返回本步骤再点“下一步”，
-            仍然重新执行 Build / Finalize，确保修改真正写回系统。
         """
         if self.current_step_index == 0:
             build_result = self.build_step1()
@@ -828,7 +1253,9 @@ class FaceRigWizard(QWidget):
             if not build_result:
                 return
 
-            self.set_current_step(1)
+            self.set_current_step(
+                1
+            )
             return
 
         if self.current_step_index == 1:
@@ -837,22 +1264,24 @@ class FaceRigWizard(QWidget):
             if not finalize_result:
                 return
 
-            self.set_current_step(2)
+            self.set_current_step(
+                2
+            )
             return
 
     # =========================================================================
     # Step 01
     # =========================================================================
 
-    def update_mouth_joint_value(self, slider_value):
-        u"""
-        根据 Slider 档位实时更新嘴唇 Joint 数量显示。
-
-        Args:
-            slider_value (int | float):
-                UI Slider 当前值；回调用于同步对应 Rig / Setup 参数。
-        """
-        mouth_joint_number = slider_value * self.mouth_joint_step
+    def update_mouth_joint_value(
+            self,
+            slider_value
+    ):
+        u"""根据 Slider 档位实时更新嘴唇 Joint 数量显示。"""
+        mouth_joint_number = (
+            slider_value
+            * self.mouth_joint_step
+        )
 
         self.mouth_joint_value_label.setText(
             u"{}".format(
@@ -861,28 +1290,18 @@ class FaceRigWizard(QWidget):
         )
 
     def get_mouth_joint_number(self):
-        u"""
-        返回当前 Slider 对应的真实嘴唇 Joint 数量。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+        u"""返回当前 Slider 对应的真实嘴唇 Joint 数量。"""
         slider_value = self.mouth_joint_slider.value()
-        mouth_joint_number = slider_value * self.mouth_joint_step
+
+        mouth_joint_number = (
+            slider_value
+            * self.mouth_joint_step
+        )
+
         return mouth_joint_number
 
     def build_step1(self):
-        u"""
-        从 UI 重新收集当前参数并执行 FaceSetup.run_step()。
-
-        每次点击 Step 01 的“下一步”都会重新执行，
-        因此返回 Step 01 修改模型或参数后不需要额外的 Build 按钮。
-
-        Returns:
-            bool:
-            方法执行后的结果数据。
-        """
+        u"""从 UI 重新收集当前参数并执行 FaceSetup.run_step()。"""
         face_setup = FaceSetup(
             face_head_model=self.face_head_picker.get_value(),
             face_lf_eye_model=self.face_lf_eye_picker.get_value(),
@@ -912,11 +1331,15 @@ class FaceRigWizard(QWidget):
 
         self.face_setup = face_setup
 
-        self.completed_step_indexes.add(0)
-        self.invalidate_ui_steps_after(0)
+        self.completed_step_indexes.add(
+            0
+        )
+        self.invalidate_ui_steps_after(
+            0
+        )
 
         # Step 01 重新 Build 后创建新的 FaceGuide 实例，
-        # 让它读取刚刚写入 Config 的最新 Setup 数据。
+        # 让 Step 02 读取刚写入 Config 的最新 Setup 数据。
         self.get_face_guide(
             refresh=True
         )
@@ -928,25 +1351,74 @@ class FaceRigWizard(QWidget):
             )
         )
 
-        self.refresh_guide_state()
-
         return True
 
     # =========================================================================
-    # Step 02
+    # Step 02 - Enter / Guide
     # =========================================================================
 
-    def refresh_guide_state(self):
+    def enter_step2(self):
         u"""
-        刷新 Step 02 Guide 的场景状态显示。
+        进入 Step 02。
 
-        Returns:
-            bool:
-            方法执行后的结果数据。
+        Guide 不存在时自动执行 FaceGuide.build_guide()；
+        已存在时直接复用，不重复导入也不改变当前 Step 完成状态。
         """
-        if not hasattr(self, "guide_state_label"):
+        face_guide = self.get_face_guide(
+            refresh=True
+        )
+
+        try:
+            guide_exists = face_guide.guide_exists()
+
+            if not guide_exists:
+                result = face_guide.build_guide()
+
+                imported = False
+
+                if isinstance(
+                        result,
+                        dict
+                ):
+                    imported = bool(
+                        result.get(
+                            "imported",
+                            False
+                        )
+                    )
+
+                if imported:
+                    self.status_label.setText(
+                        u"Face Guide 已自动导入"
+                    )
+                else:
+                    self.status_label.setText(
+                        u"Face Guide 已自动恢复"
+                    )
+
+            self.load_step2_controller_settings()
+            self.refresh_step2_summary()
+        except Exception as error:
+            self.guide_summary_label.setText(
+                u"Face Guide 加载失败"
+            )
+            self.status_label.setText(
+                u"Face Guide 自动加载失败"
+            )
+
+            QMessageBox.critical(
+                self,
+                u"Face Guide 自动加载失败",
+                u"{}".format(
+                    error
+                )
+            )
             return False
 
+        return True
+
+    def refresh_step2_summary(self):
+        u"""刷新 Step 02 简洁 Guide 状态，不提供额外操作按钮。"""
         face_guide = self.get_face_guide()
 
         try:
@@ -955,446 +1427,248 @@ class FaceRigWizard(QWidget):
             guide_exists = False
 
         if not guide_exists:
-            self.completed_step_indexes.discard(1)
-            self.completed_step_indexes.discard(2)
-            self.completed_step_indexes.discard(3)
-
-            self.guide_state_label.setText(
-                u"未加载"
+            self.guide_summary_label.setText(
+                u"Guide 未加载"
             )
-            self.guide_count_label.setText(
-                u"Locator: 0"
-            )
-            self.guide_details_label.setText(
-                u"Guide 尚未加载。请先完成 Step 01，然后执行 Build Face Guide。"
-            )
-
-            self.build_step2_button.setEnabled(True)
-            self.reset_guide_button.setEnabled(False)
-            self.repair_symmetry_button.setEnabled(False)
-            self.validate_guide_button.setEnabled(False)
-
-            self.update_step_buttons()
-            self.update_navigation_buttons()
             return False
 
         guide_count = len(
             face_guide.get_guide_locators()
         )
 
-        step_completed = False
-
-        if face_guide.config_node_exists():
-            try:
-                step_completed = face_guide.is_step_completed(
-                    step_value=2
-                )
-            except Exception:
-                step_completed = False
-
-        if step_completed:
-            self.guide_state_label.setText(
-                u"已 Finalize"
-            )
-            self.completed_step_indexes.add(1)
-        else:
-            self.completed_step_indexes.discard(1)
-            self.completed_step_indexes.discard(2)
-            self.completed_step_indexes.discard(3)
-
-            self.guide_state_label.setText(
-                u"已加载"
-            )
-
-        self.guide_count_label.setText(
-            u"Locator: {}".format(
-                guide_count
-            )
-        )
-
-        self.guide_details_label.setText(
-            u"Root: {}\nMove Ctrl: {}\nGuide Version: {}".format(
-                face_guide.guide_root,
-                face_guide.guide_move_ctrl,
+        self.guide_summary_label.setText(
+            u"Guide 已加载 · Locator {} · Version {}".format(
+                guide_count,
                 face_guide.guide_version
             )
         )
 
-        self.build_step2_button.setEnabled(True)
-        self.reset_guide_button.setEnabled(True)
-        self.repair_symmetry_button.setEnabled(True)
-        self.validate_guide_button.setEnabled(True)
-
-        self.update_step_buttons()
-        self.update_navigation_buttons()
-
         return True
 
-    def build_step2(self):
-        u"""
-        执行 FaceGuide.build_guide()，导入或复用 Guide Template。
+    # =========================================================================
+    # Step 02 - Mirror
+    # =========================================================================
 
-        Returns:
-            bool:
-            方法执行后的结果数据。
-        """
-        face_guide = self.get_face_guide(
-            refresh=True
+    def mirror_lf_to_rt(self):
+        u"""把当前 lf Guide 状态镜像复制到 rt。"""
+        return self.mirror_step2_guides(
+            source_side="lf",
+            target_side="rt"
         )
 
-        try:
-            result = face_guide.build_guide()
-        except Exception as error:
-            self.status_label.setText(
-                u"Face Guide Build 失败"
-            )
-
-            QMessageBox.critical(
-                self,
-                u"Face Guide Build 失败",
-                u"{}".format(
-                    error
-                )
-            )
-            self.refresh_guide_state()
-            return False
-
-        # Build Guide 后用户还需要手动贴合，因此 Step 02 必须重新变为未完成。
-        self.completed_step_indexes.discard(1)
-        self.invalidate_ui_steps_after(1)
-
-        imported = False
-
-        if isinstance(result, dict):
-            imported = bool(
-                result.get(
-                    "imported",
-                    False
-                )
-            )
-
-        if imported:
-            self.status_label.setText(
-                u"Face Guide 模板导入完成"
-            )
-        else:
-            self.status_label.setText(
-                u"Face Guide 已存在，复用当前 Guide"
-            )
-
-        self.guide_validation_label.setText(
-            u"Guide 已加载，请贴合模型后执行 Validate；最后使用底部“下一步”提交 Step 02。"
+    def mirror_rt_to_lf(self):
+        u"""把当前 rt Guide 状态镜像复制到 lf。"""
+        return self.mirror_step2_guides(
+            source_side="rt",
+            target_side="lf"
         )
 
-        self.refresh_guide_state()
-        return True
-
-    @staticmethod
-    def get_messagebox_standard_buttons():
-        u"""
-        返回兼容 PySide2 / PySide6 的 QMessageBox Yes / No。
-
-        Returns:
-            tuple:
-            方法执行后的结果数据。
-        """
-        try:
-            yes_button = QMessageBox.StandardButton.Yes
-            no_button = QMessageBox.StandardButton.No
-        except AttributeError:
-            yes_button = QMessageBox.Yes
-            no_button = QMessageBox.No
-
-        return yes_button, no_button
-
-    def reset_step2_guide(self):
-        u"""
-        删除当前 Guide 内容并重新导入原始模板。
-
-        Returns:
-            bool:
-            方法执行后的结果数据。
-        """
-        yes_button, no_button = self.get_messagebox_standard_buttons()
-
-        reply = QMessageBox.question(
+    def mirror_step2_guides(
             self,
-            u"Reset Face Guide",
-            u"Reset 会删除当前 Face Guide 的手动调整，并重新导入原始模板。\n\n是否继续？",
-            yes_button | no_button,
-            no_button
-        )
-
-        if reply != yes_button:
-            return False
-
-        face_guide = self.get_face_guide(
-            refresh=True
-        )
+            source_side,
+            target_side
+    ):
+        u"""执行一次 Guide Mirror，并让 Step 02 / 后续旧结果失效。"""
+        face_guide = self.get_face_guide()
 
         try:
-            face_guide.validate_setup()
-            face_guide.reset_guide()
+            result = guide_mirror.mirror_guides(
+                face_guide,
+                source_side=source_side,
+                target_side=target_side
+            )
         except Exception as error:
             self.status_label.setText(
-                u"Face Guide Reset 失败"
+                u"Guide Mirror 失败"
             )
 
             QMessageBox.critical(
                 self,
-                u"Face Guide Reset 失败",
+                u"Guide Mirror 失败",
                 u"{}".format(
                     error
                 )
             )
-            self.refresh_guide_state()
             return False
 
-        self.completed_step_indexes.discard(1)
-        self.invalidate_ui_steps_after(1)
-
-        self.guide_validation_label.setText(
-            u"Guide 已重置，请重新贴合模型。"
+        self.completed_step_indexes.discard(
+            1
         )
+        self.invalidate_ui_steps_after(
+            1
+        )
+
         self.status_label.setText(
-            u"Face Guide Reset 完成"
+            u"Guide Mirror 完成：{} → {} · {} 组".format(
+                source_side,
+                target_side,
+                result.get(
+                    "count",
+                    0
+                )
+            )
         )
 
-        self.refresh_guide_state()
+        self.refresh_step2_summary()
+
         return True
 
-    def repair_step2_symmetry(self):
-        u"""
-        执行 FaceGuide.repair_symmetry() 并重新校验 Guide。
+    # =========================================================================
+    # Step 02 - Controller Settings
+    # =========================================================================
 
-        Returns:
-            bool:
-            方法执行后的结果数据。
+    def get_step2_controller_settings(self):
+        u"""从 Step 02 UI 收集完整 Controller Settings。"""
+        settings = {
+            "face_ctrl_global_scale": self.face_ctrl_global_scale_spin.value(),
+            "face_ctrl_color_lf": self.controller_color_widgets["lf"].value(),
+            "face_ctrl_color_rt": self.controller_color_widgets["rt"].value(),
+            "face_ctrl_color_md": self.controller_color_widgets["md"].value(),
+            "jaw_ctrl_size": self.controller_size_widgets["jaw"].value(),
+            "lip_ctrl_size": self.controller_size_widgets["lip"].value(),
+            "eye_ctrl_size": self.controller_size_widgets["eye"].value(),
+            "eyelid_ctrl_size": self.controller_size_widgets["eyelid"].value(),
+            "brow_ctrl_size": self.controller_size_widgets["brow"].value(),
+            "cheek_ctrl_size": self.controller_size_widgets["cheek"].value(),
+            "nose_ctrl_size": self.controller_size_widgets["nose"].value(),
+        }
 
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-        """
+        return settings
+
+    def load_step2_controller_settings(self):
+        u"""从 Face Config 读取 Controller Settings 并回填 Step 02 UI。"""
         face_guide = self.get_face_guide()
 
+        settings = guide_settings.load_controller_settings(
+            face_guide
+        )
+
+        self.loading_controller_settings = True
+
         try:
-            face_guide.validate_setup()
-
-            if not face_guide.guide_exists():
-                raise RuntimeError(
-                    u"Face Guide 尚未加载。"
-                )
-
-            repair_result = face_guide.repair_symmetry()
-
-            # Repair 会修改 Guide 层级 / 连接，旧的 Finalize 状态不能继续使用。
-            face_guide.set_step_completed(
-                completed=False
-            )
-            face_guide.invalidate_later_steps()
-
-            validation = face_guide.validate_guides(
-                check_symmetry=True
-            )
-        except Exception as error:
-            self.status_label.setText(
-                u"Repair Symmetry 失败"
-            )
-
-            QMessageBox.critical(
-                self,
-                u"Repair Symmetry 失败",
-                u"{}".format(
-                    error
+            self.face_ctrl_global_scale_spin.setValue(
+                float(
+                    settings.get(
+                        "face_ctrl_global_scale",
+                        1.0
+                    )
                 )
             )
-            return False
 
-        self.completed_step_indexes.discard(1)
-        self.invalidate_ui_steps_after(1)
+            side_attr_names = {
+                "lf": "face_ctrl_color_lf",
+                "rt": "face_ctrl_color_rt",
+                "md": "face_ctrl_color_md",
+            }
 
-        repair_count = 0
+            for side in side_attr_names:
+                attr_name = side_attr_names.get(
+                    side
+                )
+                color_value = settings.get(
+                    attr_name
+                )
 
-        if isinstance(repair_result, dict):
-            repair_items = repair_result.get(
-                "repairs",
-                []
-            )
-            repair_count = len(
-                repair_items
-            )
+                self.controller_color_widgets[
+                    side
+                ].setValue(
+                    int(
+                        color_value
+                    )
+                )
 
-        self.show_guide_validation(
-            validation
-        )
+            module_attr_names = {
+                "jaw": "jaw_ctrl_size",
+                "lip": "lip_ctrl_size",
+                "eye": "eye_ctrl_size",
+                "eyelid": "eyelid_ctrl_size",
+                "brow": "brow_ctrl_size",
+                "cheek": "cheek_ctrl_size",
+                "nose": "nose_ctrl_size",
+            }
 
-        self.status_label.setText(
-            u"Repair Symmetry 完成：处理 {} 组 Guide".format(
-                repair_count
-            )
-        )
+            for module_name in module_attr_names:
+                attr_name = module_attr_names.get(
+                    module_name
+                )
+                size_value = settings.get(
+                    attr_name
+                )
 
-        self.refresh_guide_state()
+                self.controller_size_widgets[
+                    module_name
+                ].setValue(
+                    float(
+                        size_value
+                    )
+                )
+        finally:
+            self.loading_controller_settings = False
+
         return True
 
-    def validate_step2_guides(self):
+    def controller_settings_changed(
+            self,
+            value=None
+    ):
         u"""
-        执行 FaceGuide.validate_guides()。
+        标记 Step 02 Controller Settings 已修改。
 
-        Returns:
-            bool:
-            方法执行后的结果数据。
+        参数真正写入 Config 仍然只发生在点击“下一步”时。
         """
+        if self.loading_controller_settings:
+            return
+
         face_guide = self.get_face_guide()
 
-        try:
-            face_guide.validate_setup()
-            validation = face_guide.validate_guides(
-                check_symmetry=True
-            )
-        except Exception as error:
-            self.status_label.setText(
-                u"Face Guide Validation 失败"
-            )
-
-            QMessageBox.critical(
-                self,
-                u"Face Guide Validation 失败",
-                u"{}".format(
-                    error
-                )
-            )
-            return False
-
-        self.show_guide_validation(
-            validation
-        )
-
-        if validation["valid"]:
-            self.status_label.setText(
-                u"Face Guide Validation 通过"
-            )
-            return True
-
-        self.status_label.setText(
-            u"Face Guide Validation 未通过"
-        )
-        return False
-
-    def format_guide_validation(self, validation):
-        u"""
-        把 FaceGuide.validate_guides() 的结果转换成 UI 文本。
-
-        Args:
-            validation (object):
-                当前方法执行 Maya / Rig 操作时使用的 `validation` 数据。
-
-        Returns:
-            object | str:
-            方法执行后的结果数据。
-        """
-        if not isinstance(validation, dict):
-            return u"没有可显示的 Validation 结果。"
-
-        guide_count = validation.get(
-            "guide_count",
-            0
-        )
-        valid = bool(
-            validation.get(
-                "valid",
-                False
-            )
-        )
-
-        lines = []
-
-        if valid:
-            lines.append(
-                u"Validation 通过 · Locator {}".format(
-                    guide_count
-                )
-            )
-        else:
-            lines.append(
-                u"Validation 未通过 · Locator {}".format(
-                    guide_count
-                )
-            )
-
-        errors = validation.get(
-            "errors",
-            []
-        )
-
-        for error in errors:
-            lines.append(
-                u"- {}".format(
-                    error
-                )
-            )
-
-        warnings = validation.get(
-            "warnings",
-            []
-        )
-
-        for warning in warnings:
-            lines.append(
-                u"Warning: {}".format(
-                    warning
-                )
-            )
-
-        return u"\n".join(
-            lines
-        )
-
-    def show_guide_validation(self, validation):
-        u"""
-        把 Guide Validation 结果显示到 Step 02 页面。
-
-        Args:
-            validation (object):
-                当前方法执行 Maya / Rig 操作时使用的 `validation` 数据。
-        """
-        text = self.format_guide_validation(
-            validation
-        )
-
-        self.guide_validation_label.setText(
-            text
-        )
-
-    def finalize_step2(self):
-        u"""
-        执行 FaceGuide.run_step() 并把 Step 02 标记为完成。
-
-        本方法没有独立页面按钮，只由底部“下一步”调用。
-        即使 Step 02 之前已经 Finalize，返回本步骤后再次点击“下一步”
-        也会重新 Validation / Finalize 当前 Guide 状态。
-
-        Returns:
-            bool:
-            方法执行后的结果数据。
-        """
-        face_guide = self.get_face_guide()
-
-        try:
-            face_guide.check_symmetry = True
-            face_guide.run_step()
-            validation = face_guide.validation_result
-        except Exception as error:
+        if face_guide.config_node_exists():
             try:
-                validation = face_guide.validate_guides(
-                    check_symmetry=True
+                face_guide.set_step_completed(
+                    completed=False
                 )
-                self.show_guide_validation(
-                    validation
-                )
+                face_guide.invalidate_later_steps()
             except Exception:
                 pass
 
+        self.completed_step_indexes.discard(
+            1
+        )
+        self.invalidate_ui_steps_after(
+            1
+        )
+
+        self.status_label.setText(
+            u"Controller Settings 已修改，点击下一步保存"
+        )
+
+    # =========================================================================
+    # Step 02 - Finalize
+    # =========================================================================
+
+    def finalize_step2(self):
+        u"""
+        保存 Controller Settings，执行 FaceGuide.run_step()，
+        并把 Step 02 标记为完成。
+        """
+        face_guide = self.get_face_guide()
+
+        settings = self.get_step2_controller_settings()
+
+        try:
+            # Step 02 参数属于 Face System 数据，由专用 Settings 模块写入 Config。
+            guide_settings.save_controller_settings(
+                face_guide,
+                settings
+            )
+
+            # 新 Guide Mirror 是一次性复制，左右允许独立调整；
+            # Finalize 不再要求旧版 LF -> RT 永久连接结构。
+            face_guide.check_symmetry = False
+
+            face_guide.run_step()
+
+            validation = face_guide.validation_result
+        except Exception as error:
             self.status_label.setText(
                 u"Face Guide Finalize 失败"
             )
@@ -1406,26 +1680,35 @@ class FaceRigWizard(QWidget):
                     error
                 )
             )
-            self.refresh_guide_state()
+            self.refresh_step2_summary()
             return False
 
-        self.completed_step_indexes.add(1)
-        self.invalidate_ui_steps_after(1)
-
-        self.show_guide_validation(
-            validation
+        self.completed_step_indexes.add(
+            1
+        )
+        self.invalidate_ui_steps_after(
+            1
         )
 
+        guide_count = 0
+
+        if isinstance(
+                validation,
+                dict
+        ):
+            guide_count = validation.get(
+                "guide_count",
+                0
+            )
+
         self.status_label.setText(
-            u"Face Guide 完成：{} 个 Locator".format(
-                validation.get(
-                    "guide_count",
-                    0
-                )
+            u"Face Guide 完成：{} 个 Locator · Controller Settings 已保存".format(
+                guide_count
             )
         )
 
-        self.refresh_guide_state()
+        self.refresh_step2_summary()
+
         return True
 
 
@@ -1435,7 +1718,7 @@ def main():
 
     Returns:
         object:
-        方法执行后的结果数据。
+        FaceRigWizard 实例。
     """
     window = FaceRigWizard()
     return window
