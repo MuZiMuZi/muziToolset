@@ -13,7 +13,7 @@ Rig Integration Test
         -> offsetParentMatrix
         -> 移动 Controller
         -> 验证 Joint
-        -> 删除 Rig
+        -> 可选保留 Rig / 自动删除 Rig
 
 覆盖模块
 --------
@@ -24,10 +24,16 @@ Rig Integration Test
     core.transform_utils
     core.connection_utils
 
-说明
-----
-测试只创建带 ``__muzi_rig_integration_test_`` 前缀的临时节点，
-不会清空当前场景。测试结束后无论成功失败都会清理本轮节点。
+观察模式
+--------
+默认 ``keep_result=False``，测试结束后自动清理测试节点。
+
+如果使用::
+
+    muziToolset.rig_integration_test(keep_result=True)
+
+测试通过后会保留 Joint、Controller、标准控制器层级和 multMatrix OPM 网络，
+并自动选择 Controller，方便直接在 Maya 视图中拖动控制器观察 Joint 跟随。
 
 Maya 对 Array Plug 的 ``listConnections(plugs=True)`` 返回值并不总是保留
 显式索引。例如真实连接可能是 ``worldMatrix[0] -> matrixIn[2]``，查询时
@@ -199,9 +205,17 @@ def assert_exact_connection(source_plug, destination_plug, query_inputs=None):
 # Integration Test
 # =============================================================================
 
-def test_rig_integration(token):
+def test_rig_integration(token, keep_result=False):
     """
     执行完整基础 Rig 集成测试。
+
+    Args:
+        token(str):
+            本轮测试唯一 Token。
+
+        keep_result(bool):
+            False：完成验证后移除 Matrix 并删除测试 Rig。
+            True：保留完整绑定结果，方便在 Maya 中观察和手动操作。
 
     验证：
         1. Joint 创建；
@@ -210,8 +224,8 @@ def test_rig_integration(token):
         4. Matrix OPM 网络；
         5. Connection Query；
         6. Controller Transform 驱动 Joint；
-        7. Matrix 网络移除；
-        8. Rig 整体删除。
+        7. 非观察模式下移除 Matrix 网络；
+        8. 非观察模式下删除整个 Rig。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：创建测试 Rig 根组。
@@ -381,9 +395,6 @@ def test_rig_integration(token):
 
     # -------------------------------------------------------------------------
     # 步骤 6：验证真实 DG / OPM 连接。
-    #
-    # 注意：Maya 查询 Array Plug 时可能把 worldMatrix[0] 显示成
-    # worldMatrix，因此不能用普通字符串 in 判断作为真实连接依据。
     # -------------------------------------------------------------------------
     driver_matrix_source = control + ".worldMatrix[0]"
     driver_matrix_destination = matrix_node + ".matrixIn[2]"
@@ -453,7 +464,31 @@ def test_rig_integration(token):
     )
 
     # -------------------------------------------------------------------------
-    # 步骤 8：移除 Matrix Constraint，确认 OPM 已断开且 DG 节点已删除。
+    # 步骤 8：观察模式下保留真实绑定结果。
+    # -------------------------------------------------------------------------
+    if keep_result:
+        cmds.select(
+            control,
+            replace=True
+        )
+
+        return {
+            "message": (
+                u"Joint + Controller Hierarchy + OPM + "
+                u"Transform Follow + Connection Query 成功，测试 Rig 已保留"
+            ),
+            "rig_root": rig_root,
+            "control_group": control_group,
+            "joint_group": joint_group,
+            "control": control,
+            "joint": joint,
+            "matrix_node": matrix_node,
+            "groups": groups,
+            "kept": True,
+        }
+
+    # -------------------------------------------------------------------------
+    # 步骤 9：标准测试模式下移除 Matrix Constraint。
     # -------------------------------------------------------------------------
     removed = matrix_utils.remove_parent_matrix_constraint(
         joint,
@@ -482,7 +517,7 @@ def test_rig_integration(token):
         )
 
     # -------------------------------------------------------------------------
-    # 步骤 9：删除整个测试 Rig。
+    # 步骤 10：删除整个测试 Rig。
     # -------------------------------------------------------------------------
     if cmds.objExists(rig_root):
         cmds.delete(rig_root)
@@ -504,27 +539,46 @@ def test_rig_integration(token):
                 u"Rig 删除后仍有 DAG 节点残留：{}".format(node)
             )
 
-    return (
-        u"Joint + Controller Hierarchy + OPM + "
-        u"Transform Follow + Connection Query + Cleanup 成功"
-    )
+    return {
+        "message": (
+            u"Joint + Controller Hierarchy + OPM + "
+            u"Transform Follow + Connection Query + Cleanup 成功"
+        ),
+        "rig_root": None,
+        "control": None,
+        "joint": None,
+        "matrix_node": None,
+        "groups": {},
+        "kept": False,
+    }
 
 
 # =============================================================================
 # Runner
 # =============================================================================
 
-def run():
-    """运行 Rig Integration Test。"""
+def run(keep_result=False):
+    """
+    运行 Rig Integration Test。
+
+    Args:
+        keep_result(bool):
+            True 时保留测试通过后的绑定结果，并自动选择 Controller。
+    """
     token = create_token()
     passed_count = 0
     failed_count = 0
     error_text = ""
+    test_result = None
 
     print("")
     print("=" * 78)
     print("Muzi Toolset - Rig Integration Test")
     print("=" * 78)
+
+    if keep_result:
+        print("Mode: KEEP RESULT")
+        print("-" * 78)
 
     cmds.undoInfo(
         openChunk=True,
@@ -532,12 +586,15 @@ def run():
     )
 
     try:
-        message = test_rig_integration(token)
+        test_result = test_rig_integration(
+            token,
+            keep_result=keep_result
+        )
         passed_count = 1
 
         print(
             u"[PASS] Rig | Joint -> Controller -> OPM -> Joint | {}".format(
-                message
+                test_result["message"]
             )
         )
     except Exception as error:
@@ -551,41 +608,63 @@ def run():
         )
         print(error_text)
     finally:
-        delete_test_nodes(token)
+        # 默认自动化测试继续保持完全清理。
+        # 观察模式明确要求保留，因此成功或失败都不自动删除，方便检查现场。
+        if not keep_result:
+            delete_test_nodes(token)
 
         cmds.undoInfo(
             closeChunk=True
         )
 
-    # 最终再次确认本轮 Token 没有残留节点。
-    remaining_nodes = cmds.ls(
-        "*{}*".format(token),
-        long=True
-    )
-
-    if remaining_nodes is None:
-        remaining_nodes = []
-
-    if remaining_nodes:
-        failed_count = 1
-        passed_count = 0
-
-        cleanup_message = (
-            u"测试结束后仍有节点残留：{}".format(
-                remaining_nodes
-            )
+    # -------------------------------------------------------------------------
+    # 标准模式：最终确认没有测试节点残留。
+    # -------------------------------------------------------------------------
+    if not keep_result:
+        remaining_nodes = cmds.ls(
+            "*{}*".format(token),
+            long=True
         )
 
-        if error_text:
-            error_text += "\n" + cleanup_message
+        if remaining_nodes is None:
+            remaining_nodes = []
+
+        if remaining_nodes:
+            failed_count = 1
+            passed_count = 0
+
+            cleanup_message = (
+                u"测试结束后仍有节点残留：{}".format(
+                    remaining_nodes
+                )
+            )
+
+            if error_text:
+                error_text += "\n" + cleanup_message
+            else:
+                error_text = cleanup_message
+
+            print(
+                u"[FAIL] Rig | Cleanup | {}".format(
+                    cleanup_message
+                )
+            )
+
+    # -------------------------------------------------------------------------
+    # 观察模式：打印保留节点，方便在 Outliner / Node Editor 中查找。
+    # -------------------------------------------------------------------------
+    if keep_result:
+        print("-" * 78)
+        print(u"[KEEP] Test Token : {}".format(token))
+
+        if test_result is not None:
+            print(u"[KEEP] Rig Root   : {}".format(test_result["rig_root"]))
+            print(u"[KEEP] Controller : {}".format(test_result["control"]))
+            print(u"[KEEP] Joint      : {}".format(test_result["joint"]))
+            print(u"[KEEP] multMatrix : {}".format(test_result["matrix_node"]))
+            print(u"[KEEP] Controller 已自动选中，可以直接移动观察 Joint 跟随。")
         else:
-            error_text = cleanup_message
-
-        print(
-            u"[FAIL] Rig | Cleanup | {}".format(
-                cleanup_message
-            )
-        )
+            print(u"[KEEP] 测试发生异常，保留当前 Token 节点用于排查。")
 
     print("-" * 78)
     print(
@@ -600,6 +679,9 @@ def run():
         "passed": passed_count,
         "failed": failed_count,
         "traceback": error_text,
+        "token": token,
+        "kept": bool(keep_result),
+        "result": test_result,
     }
 
 
