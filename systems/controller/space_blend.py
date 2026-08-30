@@ -36,12 +36,38 @@ import maya.cmds as cmds
 # =============================================================================
 
 def get_short_name(node):
-    """返回 DAG 短名称。"""
+    u"""
+    返回 DAG 短名称。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return node.split("|")[-1]
 
 
 def replace_control_prefix(control, prefix):
-    """根据 ctrl_ 名称生成同层级约定名称。"""
+    u"""
+    根据 ctrl_ 名称生成同层级约定名称。
+
+    Args:
+        control (str):
+            需要处理的控制器 Transform 名称。
+        prefix (object):
+            `prefix` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     short_name = get_short_name(control)
 
     if not short_name.startswith("ctrl_"):
@@ -61,7 +87,23 @@ def replace_control_prefix(control, prefix):
 # =============================================================================
 
 def validate_node(node, label):
-    """检查必要 Maya 节点。"""
+    u"""
+    检查必要 Maya 节点。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+        label (object):
+            `label` 对应的输入数据。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if not node:
         raise RuntimeError(
             u"{}不能为空。".format(label)
@@ -87,7 +129,21 @@ def ensure_follow_attribute(
         attribute_name="follow",
         default_value=0.5
 ):
-    """创建或复用 0-1 Follow 属性。"""
+    u"""
+    创建或复用 0-1 Follow 属性。
+
+    Args:
+        control (str):
+            需要处理的控制器 Transform 名称。
+        attribute_name (str):
+            `attribute_name` 对应的 Maya 节点或资源名称。
+        default_value (float):
+            `default_value` 对应的数值参数。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     validate_node(
         control,
         u"控制器"
@@ -135,35 +191,33 @@ def create_parent_space_blend(
         driven_group=None,
         maintain_offset=True
 ):
-    """
+    u"""
     创建 Controller Parent Space Blend。
 
     Args:
-        driver(str):
+        driver (str):
             外部跟随目标。
-
-        control(str):
+        control (str):
             标准 ctrl_ 控制器。
-
-        weight(float):
+        weight (float):
             初始 Follow 权重，范围 0-1。
-
-        attribute_name(str):
+        attribute_name (str):
             控制器上的 Follow 属性名。
-
-        zero_group(str/None):
+        zero_group (str/None):
             可显式传入 Zero Group；None 时根据 control 名称推导。
-
-        driven_group(str/None):
+        driven_group (str/None):
             可显式传入 Driven Group；None 时根据 control 名称推导。
-
-        maintain_offset(bool):
+        maintain_offset (bool):
             Parent Constraint 是否保持偏移。
 
     Returns:
         dict:
-            control / driver / zero / driven / constraint /
-            reverse / follow_plug。
+        control / driver / zero / driven / constraint /
+        reverse / follow_plug。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     validate_node(
         driver,

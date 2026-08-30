@@ -117,12 +117,32 @@ history_ignore_types = [
 # =============================================================================
 
 def get_short_name(node):
-    """返回 DAG Short Name。"""
+    u"""
+    返回 DAG Short Name。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return node.split("|")[-1]
 
 
 def is_referenced(node):
-    """判断节点是否来自 Maya Reference。"""
+    u"""
+    判断节点是否来自 Maya Reference。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object | bool:
+            方法执行后的结果数据。
+    """
     try:
         return cmds.referenceQuery(
             node,
@@ -133,10 +153,18 @@ def is_referenced(node):
 
 
 def get_mesh_shapes(nodes=None):
-    """
+    u"""
     把 Transform / Mesh 输入统一转换成非 Intermediate Mesh Shape Long Path。
 
     ``nodes=None`` 时扫描全场景 Mesh。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     if nodes is None:
         return cmds.ls(
@@ -202,7 +230,17 @@ def get_mesh_shapes(nodes=None):
 
 
 def get_mesh_transform(mesh_shape):
-    """返回 Mesh Shape 的 Transform Long Path。"""
+    u"""
+    返回 Mesh Shape 的 Transform Long Path。
+
+    Args:
+        mesh_shape (object):
+            `mesh_shape` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     parents = cmds.listRelatives(
         mesh_shape,
         parent=True,
@@ -216,7 +254,17 @@ def get_mesh_transform(mesh_shape):
 
 
 def get_mesh_transforms(meshes):
-    """从 Mesh Shape 列表整理唯一 Transform 列表。"""
+    u"""
+    从 Mesh Shape 列表整理唯一 Transform 列表。
+
+    Args:
+        meshes (str | list[str]):
+            `meshes` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     result = []
 
     for mesh in meshes:
@@ -233,7 +281,17 @@ def get_mesh_transforms(meshes):
 # =============================================================================
 
 def get_history_node_types(mesh):
-    """返回参与 Model Check 的 History ``(node, node_type)`` 列表。"""
+    u"""
+    返回参与 Model Check 的 History ``(node, node_type)`` 列表。
+
+    Args:
+        mesh (str):
+            需要处理的 Maya Mesh Transform 或 Shape 名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     history = cmds.listHistory(
         mesh,
         pruneDagObjects=True
@@ -258,10 +316,18 @@ def get_history_node_types(mesh):
 
 
 def get_modeling_history(mesh):
-    """
+    u"""
     返回非 Deformer 的遗留建模历史。
 
     geometryFilter 类型即使不在 deformer_types 表里也会被视为正常 Deformer，从而避免误报。
+
+    Args:
+        mesh (str):
+            需要处理的 Maya Mesh Transform 或 Shape 名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     result = []
     history_nodes = get_history_node_types(mesh)
@@ -287,7 +353,17 @@ def get_modeling_history(mesh):
 
 
 def has_deformer_history(mesh):
-    """判断 Mesh 历史中是否存在需要保护的 Deformer。"""
+    u"""
+    判断 Mesh 历史中是否存在需要保护的 Deformer。
+
+    Args:
+        mesh (str):
+            需要处理的 Maya Mesh Transform 或 Shape 名称。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+    """
     history_nodes = get_history_node_types(mesh)
 
     for node, node_type in history_nodes:
@@ -311,7 +387,23 @@ def has_deformer_history(mesh):
 # =============================================================================
 
 def make_issue(node, issue_type, details, fixable=False):
-    """创建统一 Issue 字典。"""
+    u"""
+    创建统一 Issue 字典。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+        issue_type (object):
+            `issue_type` 对应的输入数据。
+        details (object):
+            `details` 对应的输入数据。
+        fixable (bool):
+            是否启用 `fixable` 对应的处理。
+
+    Returns:
+        dict:
+            方法执行后的结果数据。
+    """
     return {
         "node": node,
         "type": issue_type,
@@ -325,7 +417,17 @@ def make_issue(node, issue_type, details, fixable=False):
 # =============================================================================
 
 def check_nonmanifold_geometry(meshes=None):
-    """检查 Non-Manifold Vertex / Edge。只报告，不自动修复。"""
+    u"""
+    检查 Non-Manifold Vertex / Edge。只报告，不自动修复。
+
+    Args:
+        meshes (str | list[str]):
+            `meshes` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     meshes = get_mesh_shapes(meshes)
     issues = []
 
@@ -361,7 +463,17 @@ def check_nonmanifold_geometry(meshes=None):
 
 
 def check_lamina_faces(meshes=None):
-    """检查 Lamina Face。只报告，不自动修复。"""
+    u"""
+    检查 Lamina Face。只报告，不自动修复。
+
+    Args:
+        meshes (str | list[str]):
+            `meshes` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     meshes = get_mesh_shapes(meshes)
     issues = []
 
@@ -394,7 +506,17 @@ def check_lamina_faces(meshes=None):
 # =============================================================================
 
 def get_dag_nodes(nodes=None):
-    """返回重名检查使用的 DAG Long Path 范围。"""
+    u"""
+    返回重名检查使用的 DAG Long Path 范围。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     if nodes is None:
         return cmds.ls(
             dag=True,
@@ -430,7 +552,17 @@ def get_dag_nodes(nodes=None):
 
 
 def check_duplicate_names(nodes=None):
-    """检查 DAG Short Name 冲突。"""
+    u"""
+    检查 DAG Short Name 冲突。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     dag_nodes = get_dag_nodes(nodes)
     name_map = {}
 
@@ -481,7 +613,17 @@ def check_duplicate_names(nodes=None):
 # =============================================================================
 
 def check_construction_history(meshes=None):
-    """检查非 Deformer 的遗留建模历史。"""
+    u"""
+    检查非 Deformer 的遗留建模历史。
+
+    Args:
+        meshes (str | list[str]):
+            `meshes` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     meshes = get_mesh_shapes(meshes)
     issues = []
 
@@ -557,10 +699,18 @@ def _round_values(values):
 
 
 def check_transformations(meshes=None):
-    """
+    u"""
     检查 Mesh Transform 是否未冻结。
 
     有 Deformer 时仍然报告，但 ``fixable=False``，避免自动 Freeze 破坏绑定。
+
+    Args:
+        meshes (str | list[str]):
+            `meshes` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     meshes = get_mesh_shapes(meshes)
     transforms = get_mesh_transforms(meshes)
@@ -618,10 +768,20 @@ def check_transformations(meshes=None):
 # =============================================================================
 
 def check_locked_normals(meshes=None, sample_limit=500):
-    """
+    u"""
     采样检查锁定法线。
 
     大模型默认只检查前 500 个 Vertex，避免 Model Checker 因逐点查询导致明显卡顿。
+
+    Args:
+        meshes (str | list[str]):
+            `meshes` 对应的输入数据。
+        sample_limit (int):
+            `sample_limit` 对应的整数参数。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     meshes = get_mesh_shapes(meshes)
     issues = []
@@ -702,7 +862,29 @@ def run_checks(
         check_transform=True,
         check_normals=True
 ):
-    """根据开关执行模型检查，按顺序合并成一个 Issue 列表。"""
+    u"""
+    根据开关执行模型检查，按顺序合并成一个 Issue 列表。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+        check_nonmanifold (bool):
+            是否启用 `check_nonmanifold` 对应的处理。
+        check_lamina (bool):
+            是否启用 `check_lamina` 对应的处理。
+        check_duplicates (bool):
+            是否启用 `check_duplicates` 对应的处理。
+        check_history (bool):
+            是否启用 `check_history` 对应的处理。
+        check_transform (bool):
+            是否启用 `check_transform` 对应的处理。
+        check_normals (bool):
+            是否启用 `check_normals` 对应的处理。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     issues = []
     meshes = get_mesh_shapes(nodes)
 
@@ -750,7 +932,17 @@ def run_checks(
 # =============================================================================
 
 def fix_issue(issue):
-    """修复一个明确允许自动修复的 Issue。"""
+    u"""
+    修复一个明确允许自动修复的 Issue。
+
+    Args:
+        issue (object):
+            `issue` 对应的输入数据。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+    """
     node = issue.get("node")
     issue_type = issue.get("type")
 
@@ -800,7 +992,17 @@ def fix_issue(issue):
 
 @scene_utils.undo_chunk
 def fix_issues(issues):
-    """批量修复允许自动修复的 Issue，并返回成功数量。"""
+    u"""
+    批量修复允许自动修复的 Issue，并返回成功数量。
+
+    Args:
+        issues (object):
+            `issues` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     fixed_count = 0
 
     for issue in issues:

@@ -129,7 +129,13 @@ from . import file_utils
 # =============================================================================
 
 def get_library_dir():
-    """返回正式 Controller Shape 资源目录。"""
+    u"""
+    返回正式 Controller Shape 资源目录。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return controller_shapes_dir
 
 
@@ -138,10 +144,18 @@ def get_library_dir():
 # =============================================================================
 
 def get_curve_shapes(transform):
-    """
+    u"""
     返回 Transform 下全部有效 NURBS Curve Shape。
 
     Intermediate Shape 会被过滤。
+
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     # 步骤 1：直接按 nurbsCurve 类型查询 Shape。
     shapes = cmds.listRelatives(
@@ -159,7 +173,17 @@ def get_curve_shapes(transform):
 
 
 def get_shape_cvs(transform):
-    """返回一个 Controller Transform 下所有 Curve Shape 的全部 CV。"""
+    u"""
+    返回一个 Controller Transform 下所有 Curve Shape 的全部 CV。
+
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     cvs = []
     shapes = get_curve_shapes(transform)
 
@@ -181,10 +205,14 @@ def get_shape_cvs(transform):
 
 
 def get_selected_curve_transforms():
-    """
+    u"""
     返回当前 Selection 中有效的 Curve Transform。
 
     Shape Selection 会自动转换到 Parent Transform，重复节点会去重。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     # 步骤 1：读取当前 Selection。
     selections = cmds.ls(
@@ -232,8 +260,12 @@ def get_selected_curve_transforms():
 # =============================================================================
 
 def get_shape_data(transform):
-    """
+    u"""
     将一个 Controller Transform 转成 JSON 可保存的 Shape 数据。
+
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
 
     Returns:
         list: 每个 Curve Shape 对应一个字典。
@@ -311,10 +343,20 @@ def get_shape_data(transform):
 
 
 def get_shape_color(transform, default=None):
-    """
+    u"""
     返回第一个 Curve Shape 的 Maya Index Color。
 
     如果没有启用 Override，或者当前使用 RGB Override，则返回 default。
+
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+        default (object):
+            `default` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     # 步骤 1：取得第一个 Shape。
     shapes = get_curve_shapes(transform)
@@ -346,10 +388,18 @@ def get_shape_color(transform, default=None):
 
 
 def get_shape_radius(transform):
-    """
+    u"""
     返回 Controller Shape CV 到局部原点的最大距离。
 
     这个值作为 Shape 的近似“半径”，用于统一调整控制器尺寸。
+
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+
+    Returns:
+        object | float:
+            方法执行后的结果数据。
     """
     cvs = get_shape_cvs(transform)
 
@@ -442,11 +492,25 @@ def _create_temp_curve(shape_data):
 
 
 def apply_shape_data(transform, shape_data_list):
-    """
+    u"""
     使用 Shape 数据替换 Transform 下已有 Curve Shape。
 
     注意：
         只替换 Shape，不删除或重建 Controller Transform。
+
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+        shape_data_list (list):
+            `shape_data_list` 对应的数据列表。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：确认目标 Controller 存在。
     if not cmds.objExists(transform):
@@ -522,7 +586,17 @@ def apply_shape_data(transform, shape_data_list):
 # =============================================================================
 
 def load_shape_data(shape_name):
-    """从正式 Controller Shape 资源目录读取一个 Shape JSON。"""
+    u"""
+    从正式 Controller Shape 资源目录读取一个 Shape JSON。
+
+    Args:
+        shape_name (str):
+            `shape_name` 对应的 Maya 节点或资源名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     # 步骤 1：构建资源路径。
     file_path = os.path.join(
         get_library_dir(),
@@ -534,11 +608,21 @@ def load_shape_data(shape_name):
 
 
 def save_shape_data(shape_name, transform):
-    """
+    u"""
     将 Controller Shape 保存到正式资源目录。
+
+    Args:
+        shape_name (str):
+            `shape_name` 对应的 Maya 节点或资源名称。
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
 
     Returns:
         str: 最终 JSON 文件路径。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证 Shape 名称。
     if not shape_name:
@@ -571,8 +655,14 @@ def save_shape_data(shape_name, transform):
 
 
 def delete_shape_data(shape_name, delete_previews=True):
-    """
+    u"""
     删除图库 Shape JSON，并可同时删除 JPG / PNG Preview。
+
+    Args:
+        shape_name (str):
+            `shape_name` 对应的 Maya 节点或资源名称。
+        delete_previews (bool):
+            是否启用 `delete_previews` 对应的处理。
 
     Returns:
         list: 实际删除的文件路径。
@@ -613,7 +703,15 @@ def delete_shape_data(shape_name, delete_previews=True):
 # =============================================================================
 
 def set_shape_color(transform, color_index):
-    """设置 Transform 下全部 Curve Shape 的 Maya Index Color。"""
+    u"""
+    设置 Transform 下全部 Curve Shape 的 Maya Index Color。
+
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+        color_index (int):
+            `color_index` 对应的整数参数。
+    """
     shapes = get_curve_shapes(transform)
 
     # 步骤 1：每一个 Curve Shape 都需要独立开启 Override。
@@ -637,7 +735,19 @@ def set_shape_color(transform, color_index):
 # =============================================================================
 
 def translate_shape(transform, offset):
-    """按 Object Space 平移 Controller Shape CV。"""
+    u"""
+    按 Object Space 平移 Controller Shape CV。
+
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+        offset (float):
+            `offset` 对应的数值参数。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     # 步骤 1：验证 Offset。
     if offset is None or len(offset) != 3:
         raise ValueError(
@@ -662,7 +772,15 @@ def translate_shape(transform, offset):
 
 
 def scale_shape(transform, scale_value):
-    """按 Object Space 等比缩放 Controller Shape CV。"""
+    u"""
+    按 Object Space 等比缩放 Controller Shape CV。
+
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+        scale_value (object):
+            `scale_value` 对应的输入数据。
+    """
     cvs = get_shape_cvs(transform)
 
     if not cvs:
@@ -679,11 +797,21 @@ def scale_shape(transform, scale_value):
 
 
 def set_shape_radius(transform, radius):
-    """
+    u"""
     将 Controller Shape 的最大局部半径调整为指定值。
 
     计算：
         scale = target_radius / current_radius
+
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+        radius (float):
+            创建节点或控制器使用的半径值。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证目标半径。
     radius = float(radius)
@@ -712,7 +840,19 @@ def rotate_shape(
         rotate_y=0.0,
         rotate_z=0.0
 ):
-    """按 Object Space 旋转 Controller Shape CV。"""
+    u"""
+    按 Object Space 旋转 Controller Shape CV。
+
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+        rotate_x (float):
+            `rotate_x` 对应的数值参数。
+        rotate_y (float):
+            `rotate_y` 对应的数值参数。
+        rotate_z (float):
+            `rotate_z` 对应的数值参数。
+    """
     cvs = get_shape_cvs(transform)
 
     if not cvs:
@@ -729,10 +869,20 @@ def rotate_shape(
 
 
 def mirror_shape(transform, axis="x"):
-    """
+    u"""
     沿指定局部轴镜像 Controller Shape CV。
 
     镜像只通过对应轴 Scale=-1 完成，不修改 Controller Transform Scale。
+
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+        axis (str):
+            操作使用的轴向标记。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：准备三轴缩放值。
     scale_x = 1.0

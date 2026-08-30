@@ -52,16 +52,16 @@ import maya.cmds as cmds
 # =============================================================================
 
 def is_component(item):
-    """
+    u"""
     判断 Maya 选择项是否为常见组件。
 
     Args:
-        item(str):
+        item (str):
             Maya 对象名或组件字符串。
 
     Returns:
         bool:
-            True 表示 Vertex / Edge / Face / CV 等组件；否则返回 False。
+        True 表示 Vertex / Edge / Face / CV 等组件；否则返回 False。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：没有“.”时通常就是普通 DAG / DG 节点，不可能是组件字符串。
@@ -100,11 +100,19 @@ def is_component(item):
 # =============================================================================
 
 def get_world_position(item):
-    """
+    u"""
     返回对象或组件的世界空间位置。
 
     Maya 的 cmds.xform 同时可以查询 Transform 和大部分组件，因此这里统一使用 xform，
     避免在调用端分别判断 Vertex / CV / Transform。
+
+    Args:
+        item (object):
+            `item` 对应的输入数据。
+
+    Returns:
+        list | None:
+            方法执行后的结果数据。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：尝试直接查询 World Translation。
@@ -139,10 +147,18 @@ def get_world_position(item):
 
 
 def get_world_rotation(item):
-    """
+    u"""
     返回 Transform / Joint 世界旋转，组件返回 None。
 
     如果传入的是 Shape，会先尝试找到它的 Transform Parent，再查询 Transform Rotation。
+
+    Args:
+        item (object):
+            `item` 对应的输入数据。
+
+    Returns:
+        list | None:
+            方法执行后的结果数据。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：组件没有可直接当作 Transform Rotation 使用的稳定旋转值，因此直接跳过。
@@ -213,16 +229,16 @@ def get_world_rotation(item):
 # =============================================================================
 
 def average_vectors(vectors):
-    """
+    u"""
     计算三维向量列表平均值。
 
     Args:
-        vectors(list):
+        vectors (list):
             [[x, y, z], [x, y, z], ...]
 
     Returns:
         list/None:
-            [x, y, z]；没有有效输入时返回 None。
+        [x, y, z]；没有有效输入时返回 None。
     """
     if not vectors:
         return None
@@ -260,25 +276,27 @@ def snap_to_average(
         target_item,
         include_rotation=True
 ):
-    """
+    u"""
     把目标吸附到参考项平均位置和平均旋转。
 
     Args:
-        reference_items(list):
+        reference_items (list):
             一个或多个参考 Transform / Joint / Component。
-
-        target_item(str):
+        target_item (str):
             需要移动的目标对象或组件。
-
-        include_rotation(bool):
+        include_rotation (bool):
             True 时尝试计算参考 Transform 的平均世界旋转；False 时只处理位置。
 
     Returns:
         dict:
-            {
-                "position": [x, y, z],
-                "rotation": [x, y, z] 或 None,
-            }
+        {
+        "position": [x, y, z],
+        "rotation": [x, y, z] 或 None,
+        }
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not reference_items:
         raise RuntimeError(u"参考对象不能为空。")

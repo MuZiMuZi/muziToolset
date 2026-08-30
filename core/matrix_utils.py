@@ -86,15 +86,21 @@ import maya.cmds as cmds
 # =============================================================================
 
 def get_matrix(matrix_plug):
-    """
+    u"""
     读取 Maya Matrix Plug，并返回 ``maya.api.OpenMaya.MMatrix``。
 
     Args:
-        matrix_plug(str):
+        matrix_plug (str):
             例如 ``ctrl.worldMatrix[0]``、``group.matrix``。
 
     Returns:
         maya.api.OpenMaya.MMatrix: 读取后的矩阵。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：检查 Plug 参数。
     if not matrix_plug:
@@ -123,11 +129,19 @@ def get_matrix(matrix_plug):
 
 
 def matrix_to_list(matrix):
-    """
+    u"""
     将 ``MMatrix`` 转换为 16 个浮点数的普通 list。
 
     Maya ``setAttr(..., type='matrix')`` 需要 16 个独立数值，
     因此在写入 multMatrix.matrixIn 时统一通过这个函数转换。
+
+    Args:
+        matrix (object):
+            `matrix` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     matrix_values = []
 
@@ -140,15 +154,27 @@ def matrix_to_list(matrix):
 
 
 def calculate_parent_offset_matrix(driver, driven):
-    """
+    u"""
     计算 Driven 当前相对 Driver 的 World Offset Matrix。
 
     计算方式：
-
         drivenWorld * inverse(driverWorld)
-
     这个 Offset 会在 maintain_offset=True 时写入 multMatrix，
     用来保持建立约束前 Driven 当前的世界姿态。
+
+    Args:
+        driver (str):
+            作为驱动端的 Maya 节点名称。
+        driven (str):
+            作为被驱动端的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：确认 Driver 存在。
     if not cmds.objExists(driver):
@@ -181,13 +207,17 @@ def calculate_parent_offset_matrix(driver, driven):
 
 
 def get_parent(node):
-    """
+    u"""
     返回 DAG 节点的直接父节点。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
 
     Returns:
         str/None:
-            有 Parent 时返回完整 DAG Path；
-            位于 World 下时返回 None。
+        有 Parent 时返回完整 DAG Path；
+        位于 World 下时返回 None。
     """
     # 步骤 1：节点不存在时直接返回 None。
     if not cmds.objExists(node):
@@ -220,29 +250,37 @@ def create_parent_matrix_constraint(
         maintain_offset=True,
         name=None
 ):
-    """
+    u"""
     使用 ``multMatrix + offsetParentMatrix`` 创建 Parent Matrix Constraint。
 
     Args:
-        driver(str): 驱动 Transform / Joint。
-        driven(str): 被驱动 Transform / Joint。
-        maintain_offset(bool): 是否保持建立前的相对位置。
-        name(str/None): 可选 multMatrix 节点名称。
+        driver (str):
+            驱动 Transform / Joint。
+        driven (str):
+            被驱动 Transform / Joint。
+        maintain_offset (bool):
+            是否保持建立前的相对位置。
+        name (str/None):
+            可选 multMatrix 节点名称。
 
     Returns:
         str: 创建出的 multMatrix 节点。
 
-    计算关系：
+        计算关系：
         drivenLocalInverse
         * offset
         * driverWorld
         * parentWorldInverse
         -> driven.offsetParentMatrix
 
-    注意：
+        注意：
         不直接连接 ``driven.parentInverseMatrix[0]``。
         这是为了避免 Maya Evaluation Graph 把 Driven 自己的矩阵输出
         再回写自身 OPM 判断为潜在循环。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：检查 Driver / Driven。
@@ -383,18 +421,19 @@ def create_parent_matrix_constraint(
 
 
 def remove_parent_matrix_constraint(driven, delete_node=True):
-    """
+    u"""
     断开 Driven 的 offsetParentMatrix 输入。
 
     Args:
-        driven(str): 被驱动节点。
-        delete_node(bool):
+        driven (str):
+            被驱动节点。
+        delete_node (bool):
             True 时，如果输入节点是 multMatrix，则一并删除该节点。
 
     Returns:
         bool: 成功断开时返回 True；没有输入或失败时返回 False。
 
-    Note:
+    Notes:
         本函数只负责断开网络，不修改 Driven 当前 TRS 数值。
     """
     # 步骤 1：Driven 不存在时没有任何可清理内容。

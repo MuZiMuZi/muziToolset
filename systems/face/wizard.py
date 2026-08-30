@@ -46,6 +46,14 @@ class FaceRigWizard(QWidget):
     """Face Rig 分步构建窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(FaceRigWizard, self).__init__(parent)
 
         self.current_step_index = 0
@@ -77,7 +85,9 @@ class FaceRigWizard(QWidget):
     # =========================================================================
 
     def create_widgets(self):
-        """创建 Wizard 公共控件。"""
+        u"""
+        创建 Wizard 公共控件。
+        """
         self.title_label = theme.make_title(u"Face Rig")
         self.subtitle_label = theme.make_subtitle(
             u"按步骤建立面部绑定。每一个 Build Step 都由独立系统模块负责。"
@@ -115,7 +125,9 @@ class FaceRigWizard(QWidget):
         theme.set_role(self.status_label, "muted")
 
     def create_pages(self):
-        """创建四个步骤页面。"""
+        u"""
+        创建四个步骤页面。
+        """
         self.step1_page = self.create_step1_page()
         self.step2_page = self.create_placeholder_page(
             u"Step 02 · Face Guide",
@@ -136,7 +148,13 @@ class FaceRigWizard(QWidget):
         self.page_stack.addWidget(self.step4_page)
 
     def create_step1_page(self):
-        """创建 Face Setup 页面。"""
+        u"""
+        创建 Face Setup 页面。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         page = QWidget()
 
         main_layout = QVBoxLayout(page)
@@ -277,7 +295,9 @@ class FaceRigWizard(QWidget):
         return page
 
     def style_mouth_joint_slider(self):
-        """设置嘴唇 Joint Slider 的进度条式视觉。"""
+        u"""
+        设置嘴唇 Joint Slider 的进度条式视觉。
+        """
         self.mouth_joint_slider.setStyleSheet(
             u"""
             QSlider {
@@ -325,7 +345,19 @@ class FaceRigWizard(QWidget):
         )
 
     def create_placeholder_page(self, title, description):
-        """创建尚未完成的系统步骤页面。"""
+        u"""
+        创建尚未完成的系统步骤页面。
+
+        Args:
+            title (object):
+                `title` 对应的输入数据。
+            description (object):
+                `description` 对应的输入数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         page = QWidget()
 
         main_layout = QVBoxLayout(page)
@@ -357,7 +389,9 @@ class FaceRigWizard(QWidget):
         return page
 
     def create_layouts(self):
-        """创建 Wizard 主布局。"""
+        u"""
+        创建 Wizard 主布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(18, 18, 18, 16)
         main_layout.setSpacing(14)
@@ -387,7 +421,9 @@ class FaceRigWizard(QWidget):
         main_layout.addLayout(bottom_layout)
 
     def create_connections(self):
-        """连接 Wizard 信号。"""
+        u"""
+        连接 Wizard 信号。
+        """
         for step_button in self.step_buttons:
             step_button.clicked.connect(
                 self.clicked_step_button
@@ -411,7 +447,13 @@ class FaceRigWizard(QWidget):
     # =========================================================================
 
     def set_current_step(self, step_index):
-        """切换当前步骤。"""
+        u"""
+        切换当前步骤。
+
+        Args:
+            step_index (int):
+                `step_index` 对应的整数参数。
+        """
         if step_index < 0:
             return
 
@@ -425,7 +467,9 @@ class FaceRigWizard(QWidget):
         self.update_navigation_buttons()
 
     def update_step_buttons(self):
-        """更新顶部步骤按钮状态。"""
+        u"""
+        更新顶部步骤按钮状态。
+        """
         for step_index in range(len(self.step_buttons)):
             step_button = self.step_buttons[step_index]
 
@@ -453,7 +497,9 @@ class FaceRigWizard(QWidget):
                 step_button.setEnabled(False)
 
     def update_navigation_buttons(self):
-        """更新底部导航按钮。"""
+        u"""
+        更新底部导航按钮。
+        """
         self.previous_button.setEnabled(
             self.current_step_index > 0
         )
@@ -468,7 +514,9 @@ class FaceRigWizard(QWidget):
         self.next_button.setEnabled(False)
 
     def clicked_step_button(self):
-        """允许返回已经完成的步骤。"""
+        u"""
+        允许返回已经完成的步骤。
+        """
         step_button = self.sender()
 
         if step_button is None:
@@ -490,7 +538,9 @@ class FaceRigWizard(QWidget):
         self.set_current_step(step_index)
 
     def clicked_previous_button(self):
-        """返回上一个页面，不重新 Build。"""
+        u"""
+        返回上一个页面，不重新 Build。
+        """
         previous_index = self.current_step_index - 1
 
         if previous_index < 0:
@@ -499,7 +549,9 @@ class FaceRigWizard(QWidget):
         self.set_current_step(previous_index)
 
     def clicked_next_button(self):
-        """执行当前已经实现的 Step。"""
+        u"""
+        执行当前已经实现的 Step。
+        """
         if self.current_step_index != 0:
             return
 
@@ -516,7 +568,13 @@ class FaceRigWizard(QWidget):
     # =========================================================================
 
     def update_mouth_joint_value(self, slider_value):
-        """根据 Slider 档位实时更新嘴唇 Joint 数量显示。"""
+        u"""
+        根据 Slider 档位实时更新嘴唇 Joint 数量显示。
+
+        Args:
+            slider_value (object):
+                `slider_value` 对应的输入数据。
+        """
         mouth_joint_number = slider_value * self.mouth_joint_step
 
         self.mouth_joint_value_label.setText(
@@ -524,13 +582,25 @@ class FaceRigWizard(QWidget):
         )
 
     def get_mouth_joint_number(self):
-        """返回当前 Slider 对应的真实嘴唇 Joint 数量。"""
+        u"""
+        返回当前 Slider 对应的真实嘴唇 Joint 数量。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         slider_value = self.mouth_joint_slider.value()
         mouth_joint_number = slider_value * self.mouth_joint_step
         return mouth_joint_number
 
     def build_step1(self):
-        """从 UI 收集参数并执行 FaceSetup.build()。"""
+        u"""
+        从 UI 收集参数并执行 FaceSetup.build()。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         face_setup = FaceSetup(
             face_head_model=self.face_head_picker.get_value(),
             face_lf_eye_model=self.face_lf_eye_picker.get_value(),
@@ -569,7 +639,13 @@ class FaceRigWizard(QWidget):
 
 
 def main():
-    """创建 Face Rig Wizard 并返回 QWidget。"""
+    u"""
+    创建 Face Rig Wizard 并返回 QWidget。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     window = FaceRigWizard()
     return window
 

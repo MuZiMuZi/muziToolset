@@ -674,7 +674,13 @@ style_sheet = _build_style_sheet()
 # Helpers
 # =============================================================================
 def repolish(widget):
-    """动态属性变化后重新刷新 QSS。"""
+    u"""
+    动态属性变化后重新刷新 QSS。
+
+    Args:
+        widget (object):
+            `widget` 对应的输入数据。
+    """
 
     if widget is None:
         return
@@ -690,7 +696,21 @@ def repolish(widget):
 
 
 def set_role(widget, role, enabled=True):
-    """给 QWidget 设置 MuziTools 视觉角色。"""
+    u"""
+    给 QWidget 设置 MuziTools 视觉角色。
+
+    Args:
+        widget (object):
+            `widget` 对应的输入数据。
+        role (object):
+            `role` 对应的输入数据。
+        enabled (bool):
+            是否启用 `enabled` 对应的处理。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
 
     if widget is None:
         return widget
@@ -723,7 +743,17 @@ def set_role(widget, role, enabled=True):
 
 
 def apply_theme(widget):
-    """把统一主题应用到一个窗口。"""
+    u"""
+    把统一主题应用到一个窗口。
+
+    Args:
+        widget (object):
+            `widget` 对应的输入数据。
+
+    Returns:
+        object | None:
+            方法执行后的结果数据。
+    """
 
     if widget is None:
         return None
@@ -737,12 +767,40 @@ def apply_theme(widget):
 
 
 def make_title(text_value, parent=None):
+    u"""
+    执行 `make_title` 对应的 Maya 工具操作。
+
+    Args:
+        text_value (object):
+            `text_value` 对应的输入数据。
+        parent (str):
+            父级 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
+
     label = QLabel(text_value, parent)
     set_role(label, "title")
     return label
 
 
 def make_subtitle(text_value, parent=None):
+    u"""
+    执行 `make_subtitle` 对应的 Maya 工具操作。
+
+    Args:
+        text_value (object):
+            `text_value` 对应的输入数据。
+        parent (str):
+            父级 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
+
     label = QLabel(text_value, parent)
     set_role(label, "subtitle")
     label.setWordWrap(True)
@@ -750,13 +808,41 @@ def make_subtitle(text_value, parent=None):
 
 
 def make_section_title(text_value, parent=None):
+    u"""
+    执行 `make_section_title` 对应的 Maya 工具操作。
+
+    Args:
+        text_value (object):
+            `text_value` 对应的输入数据。
+        parent (str):
+            父级 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
+
     label = QLabel(text_value, parent)
     set_role(label, "section_title")
     return label
 
 
 def make_card(parent=None, margins=(16, 14, 16, 14), spacing=8):
-    """创建标准白色内容卡片。"""
+    u"""
+    创建标准白色内容卡片。
+
+    Args:
+        parent (str):
+            父级 Maya 节点名称。
+        margins (tuple):
+            `margins` 对应的输入数据。
+        spacing (int):
+            `spacing` 对应的整数参数。
+
+    Returns:
+        tuple:
+            方法执行后的结果数据。
+    """
 
     card = QFrame(parent)
     set_role(card, "card")
@@ -774,7 +860,21 @@ def make_card(parent=None, margins=(16, 14, 16, 14), spacing=8):
 
 
 def make_sub_card(parent=None, margins=(12, 10, 12, 10), spacing=6):
-    """创建次级浅灰卡片。"""
+    u"""
+    创建次级浅灰卡片。
+
+    Args:
+        parent (str):
+            父级 Maya 节点名称。
+        margins (tuple):
+            `margins` 对应的输入数据。
+        spacing (int):
+            `spacing` 对应的整数参数。
+
+    Returns:
+        tuple:
+            方法执行后的结果数据。
+    """
 
     card = QFrame(parent)
     set_role(card, "sub_card")
@@ -792,29 +892,105 @@ def make_sub_card(parent=None, margins=(12, 10, 12, 10), spacing=6):
 
 
 def style_primary(button):
+    u"""
+    执行 `style_primary` 对应的 Maya 工具操作。
+
+    Args:
+        button (object):
+            `button` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
+
     return set_role(button, "primary")
 
 
 def style_danger(button):
+    u"""
+    执行 `style_danger` 对应的 Maya 工具操作。
+
+    Args:
+        button (object):
+            `button` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
+
     return set_role(button, "danger")
 
 
 def style_ghost(button):
+    u"""
+    执行 `style_ghost` 对应的 Maya 工具操作。
+
+    Args:
+        button (object):
+            `button` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
+
     return set_role(button, "ghost")
 
 
 def style_navigation(button, active=False):
+    u"""
+    执行 `style_navigation` 对应的 Maya 工具操作。
+
+    Args:
+        button (object):
+            `button` 对应的输入数据。
+        active (bool):
+            是否启用 `active` 对应的处理。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
+
     set_role(button, "nav")
     set_role(button, "nav_active", active)
     return button
 
 
 def style_search(line_edit):
+    u"""
+    执行 `style_search` 对应的 Maya 工具操作。
+
+    Args:
+        line_edit (object):
+            `line_edit` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
+
     return set_role(line_edit, "search")
 
 
 def style_window(widget, title=None, minimum_width=None):
-    """统一设置窗口标题、最小宽度和主题。"""
+    u"""
+    统一设置窗口标题、最小宽度和主题。
+
+    Args:
+        widget (object):
+            `widget` 对应的输入数据。
+        title (object):
+            `title` 对应的输入数据。
+        minimum_width (object):
+            `minimum_width` 对应的输入数据。
+
+    Returns:
+        object | None:
+            方法执行后的结果数据。
+    """
 
     if widget is None:
         return None

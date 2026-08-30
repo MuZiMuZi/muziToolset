@@ -45,6 +45,28 @@ class FaceSetup(face_base.FaceBase):
             face_gum_model=None,
             mouth_jnt_number=32
     ):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            face_head_model (object):
+                `face_head_model` 对应的输入数据。
+            face_lf_eye_model (object):
+                `face_lf_eye_model` 对应的输入数据。
+            face_rt_eye_model (object):
+                `face_rt_eye_model` 对应的输入数据。
+            upper_teech_model (object):
+                `upper_teech_model` 对应的输入数据。
+            lower_teech_model (object):
+                `lower_teech_model` 对应的输入数据。
+            face_tongue_model (object):
+                `face_tongue_model` 对应的输入数据。
+            face_gum_model (object):
+                `face_gum_model` 对应的输入数据。
+            mouth_jnt_number (int):
+                `mouth_jnt_number` 对应的整数参数。
+        """
+
         super(FaceSetup, self).__init__()
 
         # ------------------------------------------------------------
@@ -90,7 +112,17 @@ class FaceSetup(face_base.FaceBase):
     # =========================================================================
 
     def check_model_exists(self):
-        u"""检查 Step 01 指定的模型是否存在。"""
+        u"""
+        检查 Step 01 指定的模型是否存在。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if self.face_head_model is None or self.face_head_model == "":
             raise RuntimeError(
                 u"Face Setup 必须指定头部模型。"
@@ -113,7 +145,21 @@ class FaceSetup(face_base.FaceBase):
         return True
 
     def check_mouth_jnt_number(self):
-        u"""检查嘴唇 Joint 数量。"""
+        u"""
+        检查嘴唇 Joint 数量。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if self.mouth_jnt_number is None:
             raise RuntimeError(
                 u"没有设置嘴唇 Joint 数量。"
@@ -143,7 +189,13 @@ class FaceSetup(face_base.FaceBase):
     # =========================================================================
 
     def parent_input_models(self):
-        u"""把 Step 01 指定的模型整理到 Face Model Group。"""
+        u"""
+        把 Step 01 指定的模型整理到 Face Model Group。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         for face_model in self.face_model_list:
             if face_model is None:
                 continue
@@ -159,7 +211,13 @@ class FaceSetup(face_base.FaceBase):
         return True
 
     def get_work_model_names(self):
-        u"""生成 Step 01 三个头部工作模型名称。"""
+        u"""
+        生成 Step 01 三个头部工作模型名称。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         face_head_tweak_name = name_utils.Name.create_name(
             node_type="model",
             side=self.face_side,
@@ -193,7 +251,17 @@ class FaceSetup(face_base.FaceBase):
         return work_model_name_dict
 
     def delete_old_work_models(self, work_model_name_dict):
-        u"""删除 Step 01 之前生成的旧工作模型。"""
+        u"""
+        删除 Step 01 之前生成的旧工作模型。
+
+        Args:
+            work_model_name_dict (dict):
+                `work_model_name_dict` 对应的配置或映射字典。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         for key in work_model_name_dict:
             model = work_model_name_dict.get(
                 key
@@ -212,7 +280,17 @@ class FaceSetup(face_base.FaceBase):
         return True
 
     def create_work_models(self, work_model_name_dict):
-        u"""根据最新 Head Model 创建三个独立工作模型。"""
+        u"""
+        根据最新 Head Model 创建三个独立工作模型。
+
+        Args:
+            work_model_name_dict (dict):
+                `work_model_name_dict` 对应的配置或映射字典。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         face_head_tweak_name = work_model_name_dict.get(
             "tweak"
         )
@@ -244,7 +322,13 @@ class FaceSetup(face_base.FaceBase):
         return True
 
     def update_work_models(self):
-        u"""根据最新输入更新 Step 01 工作模型。"""
+        u"""
+        根据最新输入更新 Step 01 工作模型。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         self.parent_input_models()
 
         work_model_name_dict = self.get_work_model_names()
@@ -269,6 +353,10 @@ class FaceSetup(face_base.FaceBase):
 
         Config 的具体读写动作统一交给 FaceBase，
         FaceSetup 只负责组织 Step 01 自己的数据。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
         """
         model_config_dict = {
             "face_head_model": self.face_head_model,
@@ -314,10 +402,13 @@ class FaceSetup(face_base.FaceBase):
         重新 Build Step 01 后：
             1. Step 01 标记为完成；
             2. Step 02～04 标记为未完成。
-
         原因：
             模型输入或嘴唇 Joint 数量改变后，
             后续旧 Guide / Rig 结果不能继续被视为最新结果。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
         """
         self.check_model_exists()
         self.check_mouth_jnt_number()

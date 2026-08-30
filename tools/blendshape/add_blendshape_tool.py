@@ -43,6 +43,14 @@ class BlendShapeTargetTool(QWidget):
     """BlendShape Target 管理窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(BlendShapeTargetTool, self).__init__(parent)
 
         self.create_widgets()
@@ -57,7 +65,9 @@ class BlendShapeTargetTool(QWidget):
         self.resize(590, 570)
 
     def create_widgets(self):
-        """创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(u"BlendShape Target")
         self.subtitle_label = theme.make_subtitle(
             u"使用真实 weight[index] 管理、添加、替换和烘焙 Target。"
@@ -91,7 +101,9 @@ class BlendShapeTargetTool(QWidget):
         theme.set_role(self.status_label, "muted")
 
     def create_layouts(self):
-        """创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -136,7 +148,9 @@ class BlendShapeTargetTool(QWidget):
         main_layout.addWidget(self.status_label)
 
     def create_connections(self):
-        """连接 UI 信号。"""
+        u"""
+        连接 UI 信号。
+        """
         self.pick_blendshape_button.clicked.connect(
             self.pick_blendshape
         )
@@ -154,11 +168,19 @@ class BlendShapeTargetTool(QWidget):
         )
 
     def get_blendshape_node(self):
-        """返回当前输入的 BlendShape 节点。"""
+        u"""
+        返回当前输入的 BlendShape 节点。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return self.blendshape_line.text().strip()
 
     def pick_blendshape(self):
-        """从当前选择查找 BlendShape。"""
+        u"""
+        从当前选择查找 BlendShape。
+        """
         selections = cmds.ls(
             selection=True,
             long=True
@@ -186,7 +208,9 @@ class BlendShapeTargetTool(QWidget):
         cmds.warning(u"选择中没有找到 BlendShape。")
 
     def refresh_targets(self):
-        """刷新真实 Target Index。"""
+        u"""
+        刷新真实 Target Index。
+        """
         self.target_list.clear()
         blendshape_node = self.get_blendshape_node()
 
@@ -213,7 +237,9 @@ class BlendShapeTargetTool(QWidget):
         self.status_label.setText(u"Target 列表已刷新")
 
     def add_targets(self):
-        """把当前选择 Mesh 添加到 BlendShape。"""
+        u"""
+        把当前选择 Mesh 添加到 BlendShape。
+        """
         blendshape_node = self.get_blendshape_node()
 
         if not blendshape_node:
@@ -258,7 +284,9 @@ class BlendShapeTargetTool(QWidget):
         )
 
     def duplicate_targets(self):
-        """从 Base Mesh 烘焙全部 Target Mesh。"""
+        u"""
+        从 Base Mesh 烘焙全部 Target Mesh。
+        """
         blendshape_node = self.get_blendshape_node()
 
         if not blendshape_node:
@@ -286,7 +314,13 @@ class BlendShapeTargetTool(QWidget):
 
 
 def main():
-    """显示并返回 BlendShape Target Tool。"""
+    u"""
+    显示并返回 BlendShape Target Tool。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.blendshape.add_blendshape_tool",
         BlendShapeTargetTool

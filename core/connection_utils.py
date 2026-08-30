@@ -79,8 +79,12 @@ import maya.cmds as cmds
 # =============================================================================
 
 def get_input_connections(destination_plug):
-    """
+    u"""
     返回 ``destination_plug`` 的全部输入 Plug。
+
+    Args:
+        destination_plug (str):
+            `destination_plug` 对应的名称、标记或字符串参数。
 
     Returns:
         list: Source Plug 列表；无输入时返回空列表。
@@ -108,8 +112,12 @@ def get_input_connections(destination_plug):
 
 
 def get_output_connections(source_plug):
-    """
+    u"""
     返回 ``source_plug`` 的全部输出 Plug。
+
+    Args:
+        source_plug (str):
+            `source_plug` 对应的名称、标记或字符串参数。
 
     Returns:
         list: Destination Plug 列表；无输出时返回空列表。
@@ -136,18 +144,18 @@ def get_output_connections(source_plug):
 
 
 def get_connected_input_pairs(node, attribute_names=None):
-    """
+    u"""
     返回节点当前已有的输入连接。
 
     Args:
-        node(str): 目标 Maya 节点。
-        attribute_names(list/None):
-            指定时只检查这些属性；
-            None 时查询节点当前 connectable + inUse 属性。
+        node (str):
+            目标 Maya 节点。
+        attribute_names (list/None):
+            指定时只检查这些属性； None 时查询节点当前 connectable + inUse 属性。
 
     Returns:
         list:
-            [(source_plug, destination_plug), ...]
+        [(source_plug, destination_plug), ...]
     """
     # 步骤 1：节点无效时直接返回空列表。
     if not node:
@@ -189,11 +197,23 @@ def get_connected_input_pairs(node, attribute_names=None):
 # =============================================================================
 
 def can_connect(source_plug, destination_plug, force=False):
-    """
+    u"""
     检查两个完整 Plug 当前是否可以建立连接。
 
     已经存在同一条连接时返回 True；
     Destination 已有其它输入并且 force=False 时返回 False。
+
+    Args:
+        source_plug (str):
+            `source_plug` 对应的名称、标记或字符串参数。
+        destination_plug (str):
+            `destination_plug` 对应的名称、标记或字符串参数。
+        force (bool):
+            是否强制覆盖已有连接、状态或结果。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
     """
     # 步骤 1：两个 Plug 都必须存在。
     if not source_plug or not destination_plug:
@@ -223,8 +243,16 @@ def can_connect(source_plug, destination_plug, force=False):
 # =============================================================================
 
 def connect_plugs(source_plug, destination_plug, force=False):
-    """
+    u"""
     安全连接两个完整 Plug。
+
+    Args:
+        source_plug (str):
+            `source_plug` 对应的名称、标记或字符串参数。
+        destination_plug (str):
+            `destination_plug` 对应的名称、标记或字符串参数。
+        force (bool):
+            是否强制覆盖已有连接、状态或结果。
 
     Returns:
         bool: 成功建立或连接本来已存在时返回 True。
@@ -281,8 +309,14 @@ def connect_plugs(source_plug, destination_plug, force=False):
 
 
 def disconnect_plugs(source_plug, destination_plug):
-    """
+    u"""
     断开一条明确的 Plug 连接。
+
+    Args:
+        source_plug (str):
+            `source_plug` 对应的名称、标记或字符串参数。
+        destination_plug (str):
+            `destination_plug` 对应的名称、标记或字符串参数。
 
     Returns:
         bool: 实际断开成功时返回 True。
@@ -311,8 +345,12 @@ def disconnect_plugs(source_plug, destination_plug):
 
 
 def disconnect_input(destination_plug):
-    """
+    u"""
     断开一个 Destination Plug 的全部输入连接。
+
+    Args:
+        destination_plug (str):
+            `destination_plug` 对应的名称、标记或字符串参数。
 
     Returns:
         int: 实际断开的连接数量。
@@ -342,15 +380,18 @@ def connect_attribute_pairs(
         attribute_pairs,
         force=False
 ):
-    """
+    u"""
     将一个 Driver 的多组属性批量连接给多个 Driven。
 
     Args:
-        driver(str): 驱动节点。
-        driven_objects(list): 被驱动节点列表。
-        attribute_pairs(list):
+        driver (str):
+            驱动节点。
+        driven_objects (list):
+            被驱动节点列表。
+        attribute_pairs (list):
             [(source_attr, destination_attr), ...]
-        force(bool): 是否覆盖目标已有输入。
+        force (bool):
+            是否覆盖目标已有输入。
 
     Returns:
         int: 成功连接数量。
@@ -386,7 +427,21 @@ def disconnect_attribute_pairs(
         driven_objects,
         attribute_pairs
 ):
-    """批量断开一个 Driver 到多个 Driven 的指定属性连接。"""
+    u"""
+    批量断开一个 Driver 到多个 Driven 的指定属性连接。
+
+    Args:
+        driver (str):
+            作为驱动端的 Maya 节点名称。
+        driven_objects (object):
+            `driven_objects` 对应的输入数据。
+        attribute_pairs (object):
+            `attribute_pairs` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     disconnected_count = 0
 
     # 步骤 1：逐 Driven。
@@ -417,11 +472,25 @@ def connect_source_to_attributes(
         attribute_names,
         force=False
 ):
-    """
+    u"""
     将一个完整 Source Plug 连接给多个对象的同名属性。
 
     常见用途：
         一个 Visibility / Enable / GlobalScale 属性驱动多个节点。
+
+    Args:
+        source_plug (str):
+            `source_plug` 对应的名称、标记或字符串参数。
+        driven_objects (object):
+            `driven_objects` 对应的输入数据。
+        attribute_names (object):
+            `attribute_names` 对应的输入数据。
+        force (bool):
+            是否强制覆盖已有连接、状态或结果。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     created_count = 0
 
@@ -445,8 +514,14 @@ def connect_source_to_attributes(
 
 
 def disconnect_object_inputs(objects, attribute_names):
-    """
+    u"""
     批量断开多个对象指定属性的全部输入连接。
+
+    Args:
+        objects (str | list[str]):
+            需要批量处理的 Maya 场景对象名称或对象列表。
+        attribute_names (object):
+            `attribute_names` 对应的输入数据。
 
     Returns:
         int: 实际断开的总连接数量。
@@ -474,11 +549,21 @@ def copy_input_connections(
         attribute_names,
         force=True
 ):
-    """
+    u"""
     复制 ``source_object`` 指定属性已有的输入连接到其它对象。
 
     例如 Source.translateX 已经由某个 Utility Node 驱动，
     本函数可以把同一个 Source Plug 接到多个 Target.translateX。
+
+    Args:
+        source_object (object):
+            `source_object` 对应的输入数据。
+        target_objects (object):
+            `target_objects` 对应的输入数据。
+        attribute_names (object):
+            `attribute_names` 对应的输入数据。
+        force (bool):
+            是否强制覆盖已有连接、状态或结果。
 
     Returns:
         int: 成功复制的连接数量。

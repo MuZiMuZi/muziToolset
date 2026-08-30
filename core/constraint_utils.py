@@ -87,11 +87,19 @@ constraint_types = [
 # =============================================================================
 
 def validate_node(node):
-    """
+    u"""
     检查 Maya 节点是否存在。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
 
     Returns:
         bool: 节点有效时返回 True。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：空名称直接报错。
     if not node:
@@ -107,11 +115,12 @@ def validate_node(node):
 
 
 def normalize_nodes(nodes):
-    """
+    u"""
     将单节点或节点列表整理成保持原顺序的去重列表。
 
     Args:
-        nodes(str/list/None): 输入节点。
+        nodes (str/list/None):
+            输入节点。
 
     Returns:
         list: 校验通过并去重后的节点列表。
@@ -146,10 +155,22 @@ def normalize_nodes(nodes):
 # =============================================================================
 
 def get_constraint_command(constraint_type):
-    """
+    u"""
     根据 Constraint 类型返回对应的 ``maya.cmds`` 命令。
 
     poleVectorConstraint 不走这里，因为它的调用签名和标准 Constraint 不一致。
+
+    Args:
+        constraint_type (object):
+            `constraint_type` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：维护标准 Constraint Type -> Command 映射。
     command_map = {
@@ -178,20 +199,27 @@ def create_constraint(
         maintain_offset=True,
         **kwargs
 ):
-    """
+    u"""
     给一个 Driven 创建标准 Maya Constraint。
 
     Args:
-        driver_objects(str/list): 一个或多个 Driver。
-        driven_object(str): Driven。
-        constraint_type(str):
-            parentConstraint / pointConstraint / orientConstraint /
-            scaleConstraint / aimConstraint。
-        maintain_offset(bool): 是否保持创建前 Offset。
-        **kwargs: 继续传给 Maya Constraint 命令的其它参数。
+        driver_objects (str/list):
+            一个或多个 Driver。
+        driven_object (str):
+            Driven。
+        constraint_type (str):
+            parentConstraint / pointConstraint / orientConstraint / scaleConstraint / aimConstraint。
+        maintain_offset (bool):
+            是否保持创建前 Offset。
+        kwargs (dict):
+            继续传给 Maya Constraint 命令的其它参数。
 
     Returns:
         list: Maya 创建出来的 Constraint 节点列表。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：整理并验证 Driver。
@@ -244,11 +272,27 @@ def create_constraints(
         maintain_offset=True,
         **kwargs
 ):
-    """
+    u"""
     使用同一组 Driver 批量约束多个 Driven。
+
+    Args:
+        driver_objects (object):
+            `driver_objects` 对应的输入数据。
+        driven_objects (object):
+            `driven_objects` 对应的输入数据。
+        constraint_type (str):
+            `constraint_type` 对应的名称、标记或字符串参数。
+        maintain_offset (bool):
+            是否在建立约束或矩阵关系时保持当前偏移。
+        kwargs (dict):
+            `kwargs` 对应的配置或映射字典。
 
     Returns:
         list: 所有创建出来的 Constraint 节点，保持创建顺序并去重。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：整理 Driver / Driven 输入。
     driver_objects = normalize_nodes(
@@ -292,11 +336,21 @@ def create_pole_vector_constraint(
         driver_object,
         ik_handle
 ):
-    """
+    u"""
     创建 Pole Vector Constraint。
 
     poleVectorConstraint 的第二个对象必须是 IK Handle，
     调用签名和标准 Parent / Point / Orient Constraint 不同，因此单独封装。
+
+    Args:
+        driver_object (object):
+            `driver_object` 对应的输入数据。
+        ik_handle (object):
+            `ik_handle` 对应的输入数据。
+
+    Returns:
+        object | list:
+            方法执行后的结果数据。
     """
     # 步骤 1：验证 Driver 和 IK Handle。
     validate_node(driver_object)
@@ -323,12 +377,13 @@ def get_constraints(
         nodes,
         search_types=None
 ):
-    """
+    u"""
     获取一个或多个对象关联的 Constraint 节点。
 
     Args:
-        nodes(str/list): 要查询的 Maya 节点。
-        search_types(list/None):
+        nodes (str/list):
+            要查询的 Maya 节点。
+        search_types (list/None):
             None 时查询模块支持的全部 Constraint Type。
 
     Returns:
@@ -374,8 +429,14 @@ def delete_constraints(
         nodes,
         search_types=None
 ):
-    """
+    u"""
     删除对象关联的 Constraint。
+
+    Args:
+        nodes (str | list[str]):
+            需要批量查询或处理的 Maya 节点名称或节点列表。
+        search_types (object):
+            `search_types` 对应的输入数据。
 
     Returns:
         list: 实际删除的 Constraint 节点名称。

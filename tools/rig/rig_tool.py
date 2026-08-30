@@ -52,12 +52,36 @@ from . import skirt_ctrl_tool
 
 
 def get_short_name(node):
-    """返回 DAG 节点短名称。"""
+    u"""
+    返回 DAG 节点短名称。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return node.split("|")[-1]
 
 
 def get_long_name(node):
-    """把 Maya DAG 节点统一解析成长路径。"""
+    u"""
+    把 Maya DAG 节点统一解析成长路径。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object | None:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if not node:
         return None
 
@@ -81,7 +105,19 @@ def get_long_name(node):
 
 
 def vector_subtract(vector_a, vector_b):
-    """三维向量相减。"""
+    u"""
+    三维向量相减。
+
+    Args:
+        vector_a (object):
+            `vector_a` 对应的输入数据。
+        vector_b (object):
+            `vector_b` 对应的输入数据。
+
+    Returns:
+        list:
+            方法执行后的结果数据。
+    """
     return [
         vector_a[0] - vector_b[0],
         vector_a[1] - vector_b[1],
@@ -90,7 +126,19 @@ def vector_subtract(vector_a, vector_b):
 
 
 def vector_add(vector_a, vector_b):
-    """三维向量相加。"""
+    u"""
+    三维向量相加。
+
+    Args:
+        vector_a (object):
+            `vector_a` 对应的输入数据。
+        vector_b (object):
+            `vector_b` 对应的输入数据。
+
+    Returns:
+        list:
+            方法执行后的结果数据。
+    """
     return [
         vector_a[0] + vector_b[0],
         vector_a[1] + vector_b[1],
@@ -99,7 +147,19 @@ def vector_add(vector_a, vector_b):
 
 
 def vector_multiply(vector, value):
-    """三维向量乘标量。"""
+    u"""
+    三维向量乘标量。
+
+    Args:
+        vector (object):
+            `vector` 对应的输入数据。
+        value (float):
+            需要读取、写入或参与计算的数值。
+
+    Returns:
+        list:
+            方法执行后的结果数据。
+    """
     return [
         vector[0] * value,
         vector[1] * value,
@@ -108,7 +168,17 @@ def vector_multiply(vector, value):
 
 
 def vector_length(vector):
-    """返回三维向量长度。"""
+    u"""
+    返回三维向量长度。
+
+    Args:
+        vector (object):
+            `vector` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return math.sqrt(
         vector[0] * vector[0]
         + vector[1] * vector[1]
@@ -117,7 +187,17 @@ def vector_length(vector):
 
 
 def vector_normalize(vector):
-    """返回单位向量。"""
+    u"""
+    返回单位向量。
+
+    Args:
+        vector (object):
+            `vector` 对应的输入数据。
+
+    Returns:
+        list:
+            方法执行后的结果数据。
+    """
     length = vector_length(vector)
 
     if length <= 0.000001:
@@ -131,7 +211,19 @@ def vector_normalize(vector):
 
 
 def dot_product(vector_a, vector_b):
-    """返回三维向量点积。"""
+    u"""
+    返回三维向量点积。
+
+    Args:
+        vector_a (object):
+            `vector_a` 对应的输入数据。
+        vector_b (object):
+            `vector_b` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return (
         vector_a[0] * vector_b[0]
         + vector_a[1] * vector_b[1]
@@ -140,7 +232,19 @@ def dot_product(vector_a, vector_b):
 
 
 def get_joint_path(start_joint, end_joint):
-    """返回 start_joint 到 end_joint 的 Joint 路径。"""
+    u"""
+    返回 start_joint 到 end_joint 的 Joint 路径。
+
+    Args:
+        start_joint (object):
+            `start_joint` 对应的输入数据。
+        end_joint (object):
+            `end_joint` 对应的输入数据。
+
+    Returns:
+        object | None | list:
+            方法执行后的结果数据。
+    """
     start_joint = get_long_name(start_joint)
     end_joint = get_long_name(end_joint)
 
@@ -196,7 +300,21 @@ def get_pole_vector_position(
         middle_joint,
         end_joint
 ):
-    """计算三关节链 Pole Vector 推荐位置。"""
+    u"""
+    计算三关节链 Pole Vector 推荐位置。
+
+    Args:
+        start_joint (object):
+            `start_joint` 对应的输入数据。
+        middle_joint (object):
+            `middle_joint` 对应的输入数据。
+        end_joint (object):
+            `end_joint` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     start_position = cmds.xform(
         start_joint,
         query=True,
@@ -277,7 +395,23 @@ def get_pole_vector_position(
 
 
 def create_ik_rig(start_joint, end_joint):
-    """创建基础 RP IK、End Controller 和 Pole Vector Controller。"""
+    u"""
+    创建基础 RP IK、End Controller 和 Pole Vector Controller。
+
+    Args:
+        start_joint (object):
+            `start_joint` 对应的输入数据。
+        end_joint (object):
+            `end_joint` 对应的输入数据。
+
+    Returns:
+        dict:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     original_start_joint = start_joint
     original_end_joint = end_joint
 
@@ -466,7 +600,17 @@ def create_ik_rig(start_joint, end_joint):
 
 
 def find_rig_root(node):
-    """沿父层级查找带 muziRigType 的 Rig Module Root。"""
+    u"""
+    沿父层级查找带 muziRigType 的 Rig Module Root。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        None | object:
+            方法执行后的结果数据。
+    """
     current_node = get_long_name(node)
 
     while current_node:
@@ -495,7 +639,13 @@ def find_rig_root(node):
 
 
 def get_duplicate_map():
-    """按短名称收集场景重名 DAG 节点。"""
+    u"""
+    按短名称收集场景重名 DAG 节点。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     nodes = cmds.ls(
         long=True,
         dagObjects=True
@@ -529,6 +679,14 @@ class RigTool(QWidget):
     """通用 Rig 主工具面板。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(RigTool, self).__init__(parent)
 
         self.create_widgets()
@@ -543,7 +701,9 @@ class RigTool(QWidget):
         self.resize(640, 760)
 
     def create_widgets(self):
-        """创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(u"Rig 工具")
         self.subtitle_label = theme.make_subtitle(
             u"集中处理 Controller、FK、基础 IK、Rig Module 和常用绑定操作。"
@@ -582,7 +742,9 @@ class RigTool(QWidget):
         self.rename_duplicates_button = QPushButton(u"重命名重复节点")
 
     def create_layouts(self):
-        """创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
         root_layout = QVBoxLayout(self)
         root_layout.setContentsMargins(16, 16, 16, 16)
         root_layout.setSpacing(12)
@@ -668,7 +830,9 @@ class RigTool(QWidget):
         root_layout.addWidget(scroll_area, 1)
 
     def create_connections(self):
-        """连接界面信号。"""
+        u"""
+        连接界面信号。
+        """
         self.create_fk_button.clicked.connect(
             self.open_fk_tool
         )
@@ -717,38 +881,84 @@ class RigTool(QWidget):
 
     @staticmethod
     def open_tool(tool_key, tool_module):
-        """通过统一 Window Manager 执行或打开专项工具。"""
+        u"""
+        通过统一 Window Manager 执行或打开专项工具。
+
+        Args:
+            tool_key (object):
+                `tool_key` 对应的输入数据。
+            tool_module (object):
+                `tool_module` 对应的输入数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return window_manager.show_tool(
             "rig/{}".format(tool_key),
             tool_module.main
         )
 
     def open_fk_tool(self):
+        u"""
+        执行 `open_fk_tool` 对应的 Maya 工具操作。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
+
         return self.open_tool(
             "fk_controller",
             create_fk_ctrl_tool
         )
 
     def open_control_creator(self):
+        u"""
+        执行 `open_control_creator` 对应的 Maya 工具操作。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
+
         return self.open_tool(
             "controller_creator",
             create_ctrl_tool
         )
 
     def open_joint_tool(self):
+        u"""
+        执行 `open_joint_tool` 对应的 Maya 工具操作。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
+
         return self.open_tool(
             "joint_tool",
             joint_tool
         )
 
     def open_skirt_tool(self):
+        u"""
+        执行 `open_skirt_tool` 对应的 Maya 工具操作。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
+
         return self.open_tool(
             "skirt_rig",
             skirt_ctrl_tool
         )
 
     def create_ik(self):
-        """根据当前 Picker 创建基础 RP IK Rig。"""
+        u"""
+        根据当前 Picker 创建基础 RP IK Rig。
+        """
         start_joint = self.ik_start_picker.get_value()
         end_joint = self.ik_end_picker.get_value()
 
@@ -777,7 +987,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def delete_selected_rig():
-        """删除选择节点所属的 Muzi Rig Module。"""
+        u"""
+        删除选择节点所属的 Muzi Rig Module。
+        """
         selections = cmds.ls(
             selection=True,
             long=True
@@ -802,7 +1014,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def clear_keys():
-        """删除选择对象关键帧；没有选择时清理场景 AnimCurve。"""
+        u"""
+        删除选择对象关键帧；没有选择时清理场景 AnimCurve。
+        """
         selections = cmds.ls(
             selection=True,
             long=True
@@ -837,7 +1051,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def reset_attributes():
-        """把选择对象可设置的 Keyable Attribute 恢复默认值。"""
+        u"""
+        把选择对象可设置的 Keyable Attribute 恢复默认值。
+        """
         selections = cmds.ls(
             selection=True,
             long=True
@@ -908,7 +1124,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def batch_parent_constraint():
-        """按 driver/driven 成对顺序批量创建 Parent Constraint。"""
+        u"""
+        按 driver/driven 成对顺序批量创建 Parent Constraint。
+        """
         selections = cmds.ls(
             selection=True,
             long=True
@@ -947,7 +1165,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def create_default_groups():
-        """创建基础 Rig 层级。"""
+        u"""
+        创建基础 Rig 层级。
+        """
         group_names = [
             "rig_grp",
             "geo_grp",
@@ -997,7 +1217,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def add_zero_groups():
-        """为选择对象创建匹配 Transform 的 Zero Group。"""
+        u"""
+        为选择对象创建匹配 Transform 的 Zero Group。
+        """
         selections = cmds.ls(
             selection=True,
             long=True
@@ -1079,7 +1301,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def select_children():
-        """选择当前对象全部后代节点。"""
+        u"""
+        选择当前对象全部后代节点。
+        """
         selections = cmds.ls(
             selection=True,
             long=True
@@ -1116,7 +1340,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def snap_last_to_center():
-        """把最后选择对象吸附到前面参考项平均位置和旋转。"""
+        u"""
+        把最后选择对象吸附到前面参考项平均位置和旋转。
+        """
         selections = cmds.ls(
             selection=True,
             long=True,
@@ -1144,7 +1370,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def print_duplicate_nodes():
-        """打印重名 DAG 节点。"""
+        u"""
+        打印重名 DAG 节点。
+        """
         duplicates = get_duplicate_map()
 
         if not duplicates:
@@ -1168,7 +1396,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def rename_duplicate_nodes():
-        """给重名 DAG 节点追加递增编号。"""
+        u"""
+        给重名 DAG 节点追加递增编号。
+        """
         duplicates = get_duplicate_map()
 
         if not duplicates:
@@ -1221,7 +1451,13 @@ class RigTool(QWidget):
 
 
 def main():
-    """显示并返回 Rig Tool。"""
+    u"""
+    显示并返回 Rig Tool。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.rig.rig_tool",
         RigTool

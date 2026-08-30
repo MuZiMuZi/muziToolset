@@ -122,12 +122,20 @@ from . import file_utils
 # =============================================================================
 
 def undo_chunk(function):
-    """
+    u"""
     将一个函数执行过程包装成一个 Maya Undo Chunk。
 
     Maya 中一个工具通常会创建多个节点、设置多个属性。
     如果每一步都成为独立 Undo，用户需要连续撤销很多次。
     这个 Decorator 可以把整个工具操作合并成一次 Undo。
+
+    Args:
+        function (object):
+            `function` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     @wraps(function)
     def wrapped(*args, **kwargs):
@@ -158,8 +166,12 @@ def undo_chunk(function):
 # =============================================================================
 
 def validate_node(node):
-    """
+    u"""
     检查 Maya 节点是否存在。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
 
     Returns:
         bool: 节点存在时返回 True。
@@ -181,11 +193,23 @@ def validate_node(node):
 
 
 def get_long_name(node):
-    """
+    u"""
     返回唯一 Maya DAG 长路径；非 DAG 节点返回原名称。
 
     当场景存在两个同名 DAG 节点时，只使用短名会造成工具操作对象不确定。
     因此如果查询结果不唯一，本函数会要求调用方提供完整路径。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：先确认节点存在。
     validate_node(node)
@@ -220,17 +244,27 @@ def create_node(
         match_node=None,
         parent=None
 ):
-    """
+    u"""
     创建 Maya 节点，可选择匹配另一个 Transform 并指定 Parent。
 
     Args:
-        node_type(str): Maya 节点类型，例如 transform / joint。
-        name(str): 新节点名称。
-        match_node(str/None): 可选匹配目标。
-        parent(str/None): 可选父节点。
+        node_type (str):
+            Maya 节点类型，例如 transform / joint。
+        name (str):
+            新节点名称。
+        match_node (str/None):
+            可选匹配目标。
+        parent (str/None):
+            可选父节点。
 
     Returns:
         str: 新创建节点名称。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：检查创建参数。
@@ -298,11 +332,23 @@ def get_selected_nodes(
         long=True,
         flatten=True
 ):
-    """
+    u"""
     返回当前 Maya Selection，可按节点类型过滤。
 
     Component Selection 在指定 node_type 时会被跳过，
     因为 component 本身不是一个可直接 nodeType 查询的 DG 节点。
+
+    Args:
+        node_type (str):
+            `node_type` 对应的名称、标记或字符串参数。
+        long (bool):
+            是否启用 `long` 对应的处理。
+        flatten (bool):
+            是否启用 `flatten` 对应的处理。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     # 步骤 1：获取当前 Selection。
     selected_nodes = cmds.ls(
@@ -344,11 +390,25 @@ def require_selected_nodes(
         node_type=None,
         minimum_count=1
 ):
-    """
+    u"""
     获取当前选择，并检查最小数量。
 
     这个函数适合 Tool 在执行前快速做输入检查。
     不满足要求时会抛 RuntimeError，由 UI 层决定如何显示错误。
+
+    Args:
+        node_type (str):
+            `node_type` 对应的名称、标记或字符串参数。
+        minimum_count (int):
+            `minimum_count` 对应的整数参数。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：调用统一 Selection 查询。
     selected_nodes = get_selected_nodes(
@@ -385,16 +445,25 @@ def ensure_object_set(
         objects=None,
         parent_set=None
 ):
-    """
+    u"""
     创建或复用 Object Set，并可加入对象和父 Set。
 
     Args:
-        set_name(str): Set 名称。
-        objects(list/str/None): 可选需要加入 Set 的对象。
-        parent_set(str/None): 可选父 Set。
+        set_name (str):
+            Set 名称。
+        objects (list/str/None):
+            可选需要加入 Set 的对象。
+        parent_set (str/None):
+            可选父 Set。
 
     Returns:
         str: Object Set 名称。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：创建或验证目标 Set。
@@ -468,19 +537,27 @@ def create_native_event_callback(
         event_name,
         callback
 ):
-    """
+    u"""
     创建 Maya MEventMessage Callback。
 
     Args:
-        event_name(str): Maya Event 名称。
-        callback(callable): Event 触发后执行的函数。
+        event_name (str):
+            Maya Event 名称。
+        callback (callable):
+            Event 触发后执行的函数。
 
     Returns:
         callable: 调用返回函数即可删除这个 Callback。
 
-    为什么返回 remove 函数：
+        为什么返回 remove 函数：
         Tool / System 不需要保存 OpenMaya callback id 的实现细节，
         只需要在关闭或销毁时调用返回值即可清理监听。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        TypeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证输入。
     if not event_name:
@@ -509,7 +586,13 @@ def create_native_event_callback(
 # =============================================================================
 
 def get_current_scene_path():
-    """返回当前 Maya Scene 的规范绝对路径；未保存时返回空字符串。"""
+    u"""
+    返回当前 Maya Scene 的规范绝对路径；未保存时返回空字符串。
+
+    Returns:
+        object | str:
+            方法执行后的结果数据。
+    """
     # 步骤 1：向 Maya 查询当前 Scene 文件名。
     scene_path = cmds.file(
         query=True,
@@ -524,7 +607,13 @@ def get_current_scene_path():
 
 
 def is_scene_modified():
-    """返回当前 Maya Scene 是否存在未保存修改。"""
+    u"""
+    返回当前 Maya Scene 是否存在未保存修改。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return bool(
         cmds.file(
             query=True,
@@ -534,11 +623,25 @@ def is_scene_modified():
 
 
 def validate_scene_file(file_path):
-    """
+    u"""
     检查 Maya Scene 文件是否存在，并返回规范化路径。
 
     这里不强制检查 .ma / .mb 扩展名，因为 Maya 还可能通过插件读取其它格式。
     Core 只负责确认路径真实存在。
+
+    Args:
+        file_path (str):
+            需要读取或写入的文件路径。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：先统一路径分隔符和绝对路径格式。
     normalized_path = file_utils.normalize_path(file_path)
@@ -560,11 +663,27 @@ def validate_scene_file(file_path):
 # =============================================================================
 
 def open_scene(file_path, force=False, ignore_version=True):
-    """
+    u"""
     打开 Maya Scene。
 
     当当前 Scene 有未保存修改并且 force=False 时，本函数不会弹 UI，
     而是抛出 RuntimeError。上层 Tool / App 可以先询问用户，再重新调用 force=True。
+
+    Args:
+        file_path (str):
+            需要读取或写入的文件路径。
+        force (bool):
+            是否强制覆盖已有连接、状态或结果。
+        ignore_version (bool):
+            是否启用 `ignore_version` 对应的处理。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：检查目标文件。
     normalized_path = validate_scene_file(file_path)
@@ -587,8 +706,14 @@ def open_scene(file_path, force=False, ignore_version=True):
 
 
 def import_scene(file_path, ignore_version=True):
-    """
+    u"""
     将 Maya Scene 导入当前场景。
+
+    Args:
+        file_path (str):
+            需要读取或写入的文件路径。
+        ignore_version (bool):
+            是否启用 `ignore_version` 对应的处理。
 
     Returns:
         list: Maya 本次 Import 新创建的节点。
@@ -617,10 +742,26 @@ def reference_scene(
         group_name=None,
         ignore_version=True
 ):
-    """
+    u"""
     在当前 Maya Scene 中创建 Reference。
 
     namespace 未指定时，默认使用文件名 Stem。
+
+    Args:
+        file_path (str):
+            需要读取或写入的文件路径。
+        namespace (object):
+            `namespace` 对应的输入数据。
+        group_reference (bool):
+            是否启用 `group_reference` 对应的处理。
+        group_name (str):
+            `group_name` 对应的 Maya 节点或资源名称。
+        ignore_version (bool):
+            是否启用 `ignore_version` 对应的处理。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     # 步骤 1：验证文件路径。
     normalized_path = validate_scene_file(file_path)
@@ -658,11 +799,15 @@ def reference_scene(
 # =============================================================================
 
 def ensure_fbx_plugin_loaded():
-    """
+    u"""
     确保 Maya FBX 插件 fbxmaya 已加载。
 
     Returns:
         bool: 成功加载或本来已加载时返回 True。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     plugin_name = "fbxmaya"
 
@@ -686,14 +831,21 @@ def ensure_fbx_plugin_loaded():
 
 
 def export_selected_fbx(file_path):
-    """
+    u"""
     将当前 Maya Selection 导出为 FBX 文件。
 
     Args:
-        file_path(str): 输出 FBX 路径。
+        file_path (str):
+            输出 FBX 路径。
 
     Returns:
         str: 规范化后的最终输出路径。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：读取并验证当前 Selection。

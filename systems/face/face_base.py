@@ -55,6 +55,10 @@ class FaceBase(object):
         # 当前子类对应的 Step。
         # FaceBase 本身没有 Step，具体子类负责设置。
         # ------------------------------------------------------------
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+        """
+
         self.step_value = None
 
         # ------------------------------------------------------------
@@ -115,7 +119,13 @@ class FaceBase(object):
     # =========================================================================
 
     def ensure_hierarchy(self):
-        u"""确保 Face Rig 基础层级存在。"""
+        u"""
+        确保 Face Rig 基础层级存在。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         if not cmds.objExists(self.face_master_grp):
             hierarchy_utils.Hierarchy.create_grp(
                 self.face_master_grp
@@ -152,7 +162,17 @@ class FaceBase(object):
     # =========================================================================
 
     def ensure_config_node(self):
-        u"""确保 Face Rig Config Network Node 存在。"""
+        u"""
+        确保 Face Rig Config Network Node 存在。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if cmds.objExists(self.config_node):
             node_type = cmds.nodeType(
                 self.config_node
@@ -178,7 +198,13 @@ class FaceBase(object):
         return config_node
 
     def config_node_exists(self):
-        u"""检查 Face Rig Config Node 是否存在。"""
+        u"""
+        检查 Face Rig Config Node 是否存在。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         if not cmds.objExists(self.config_node):
             return False
 
@@ -192,14 +218,30 @@ class FaceBase(object):
     # =========================================================================
 
     def get_config_attr(self):
-        u"""获取 Face Rig Config 节点的 Attr 操作对象。"""
+        u"""
+        获取 Face Rig Config 节点的 Attr 操作对象。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         config_attr = attr_utils.Attr(
             self.config_node
         )
         return config_attr
 
     def get_config_message(self, attr_name):
-        u"""读取 Config Node 中保存的 Maya 节点 Message。"""
+        u"""
+        读取 Config Node 中保存的 Maya 节点 Message。
+
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            object | None:
+                方法执行后的结果数据。
+        """
         if not self.config_node_exists():
             return None
 
@@ -210,7 +252,17 @@ class FaceBase(object):
         return node
 
     def get_config_value(self, attr_name):
-        u"""读取 Config Node 中保存的普通属性值。"""
+        u"""
+        读取 Config Node 中保存的普通属性值。
+
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            object | None:
+                方法执行后的结果数据。
+        """
         if not self.config_node_exists():
             return None
 
@@ -235,6 +287,18 @@ class FaceBase(object):
 
         节点引用统一使用 Message，而不是保存节点名称字符串。
         这样场景中对象改名后，Config 仍然能够找到正确节点。
+
+        Args:
+            attrs_dict (dict):
+                `attrs_dict` 对应的配置或映射字典。
+            force (bool):
+                是否强制覆盖已有连接、状态或结果。
+            clear_empty (bool):
+                是否启用 `clear_empty` 对应的处理。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
         """
         self.ensure_config_node()
 
@@ -254,7 +318,23 @@ class FaceBase(object):
             lock=False,
             hide=False
     ):
-        u"""批量保存普通数值 / 字符串配置到 Face Config。"""
+        u"""
+        批量保存普通数值 / 字符串配置到 Face Config。
+
+        Args:
+            attrs_dict (dict):
+                `attrs_dict` 对应的配置或映射字典。
+            attr_types (object):
+                `attr_types` 对应的输入数据。
+            lock (bool):
+                是否启用 `lock` 对应的处理。
+            hide (bool):
+                是否启用 `hide` 对应的处理。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         self.ensure_config_node()
 
         if attr_types is None:
@@ -280,6 +360,10 @@ class FaceBase(object):
 
         Step 01 可以重复 Build，因此后续 Step 在执行前应该刷新数据，
         不依赖对象初始化时缓存下来的旧值。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
         """
         for attr_name in self.setup_message_attr_names:
             node = self.get_config_message(
@@ -306,7 +390,17 @@ class FaceBase(object):
         )
 
     def get_setup_data(self, refresh=False):
-        u"""返回 Step 01 公共输入数据字典。"""
+        u"""
+        返回 Step 01 公共输入数据字典。
+
+        Args:
+            refresh (bool):
+                是否启用 `refresh` 对应的处理。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         if refresh:
             self.refresh_setup_data()
 
@@ -337,6 +431,18 @@ class FaceBase(object):
 
         更具体的业务条件仍由各 Step 自己负责，避免 FaceBase
         知道 Lip / Brow / Eyelid 等组件的实现细节。
+
+        Args:
+            require_mouth_jnt_number (bool):
+                是否启用 `require_mouth_jnt_number` 对应的处理。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not self.config_node_exists():
             raise RuntimeError(
@@ -393,7 +499,23 @@ class FaceBase(object):
 
     @staticmethod
     def get_step_completed_attr_name(step_value):
-        u"""根据 Step 编号生成 Config 中的完成状态属性名称。"""
+        u"""
+        根据 Step 编号生成 Config 中的完成状态属性名称。
+
+        Args:
+            step_value (int):
+                `step_value` 对应的整数参数。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if not isinstance(step_value, int):
             raise TypeError(
                 u"Step 编号必须是整数。"
@@ -410,7 +532,23 @@ class FaceBase(object):
         return attr_name
 
     def resolve_step_value(self, step_value=None):
-        u"""获取当前操作使用的 Step 编号。"""
+        u"""
+        获取当前操作使用的 Step 编号。
+
+        Args:
+            step_value (int):
+                `step_value` 对应的整数参数。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if step_value is None:
             step_value = self.step_value
 
@@ -431,7 +569,19 @@ class FaceBase(object):
             step_value=None,
             completed=True
     ):
-        u"""写入某个 Face Step 的完成状态。"""
+        u"""
+        写入某个 Face Step 的完成状态。
+
+        Args:
+            step_value (int):
+                `step_value` 对应的整数参数。
+            completed (bool):
+                是否启用 `completed` 对应的处理。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         step_value = self.resolve_step_value(
             step_value
         )
@@ -454,7 +604,17 @@ class FaceBase(object):
         return bool(completed)
 
     def is_step_completed(self, step_value=None):
-        u"""读取某个 Face Step 是否已经完成。"""
+        u"""
+        读取某个 Face Step 是否已经完成。
+
+        Args:
+            step_value (int):
+                `step_value` 对应的整数参数。
+
+        Returns:
+            object | bool:
+                方法执行后的结果数据。
+        """
         step_value = self.resolve_step_value(
             step_value
         )
@@ -481,6 +641,20 @@ class FaceBase(object):
 
         例如重新 Build Step 01 后，Step 02～04 的旧结果已经不能保证
         继续有效，因此统一标记为未完成。
+
+        Args:
+            step_value (int):
+                `step_value` 对应的整数参数。
+            last_step (int):
+                `last_step` 对应的整数参数。
+
+        Returns:
+            object | list:
+                方法执行后的结果数据。
+
+        Raises:
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
         step_value = self.resolve_step_value(
             step_value
@@ -510,7 +684,21 @@ class FaceBase(object):
         return invalidated_steps
 
     def get_step_status(self, last_step=4):
-        u"""返回 Face Wizard 各 Step 的完成状态。"""
+        u"""
+        返回 Face Wizard 各 Step 的完成状态。
+
+        Args:
+            last_step (int):
+                `last_step` 对应的整数参数。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if not isinstance(last_step, int):
             raise TypeError(
                 u"last_step 必须是整数。"

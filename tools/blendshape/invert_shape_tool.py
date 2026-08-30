@@ -38,6 +38,14 @@ class InvertShapeTool(QDialog):
     """Invert Shape 批处理窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(InvertShapeTool, self).__init__(parent)
 
         self.corrective_meshes = []
@@ -54,7 +62,9 @@ class InvertShapeTool(QDialog):
         self.resize(590, 410)
 
     def create_widgets(self):
-        """创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(u"Invert Shape")
         self.subtitle_label = theme.make_subtitle(
             u"把蒙皮后模型上的修型反算为可用于 BlendShape 的 Corrective Shape。"
@@ -82,7 +92,9 @@ class InvertShapeTool(QDialog):
         theme.set_role(self.status_label, "muted")
 
     def create_layouts(self):
-        """创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -111,7 +123,9 @@ class InvertShapeTool(QDialog):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        """连接 UI 信号。"""
+        u"""
+        连接 UI 信号。
+        """
         self.corrective_button.clicked.connect(
             self.pick_correctives
         )
@@ -120,7 +134,9 @@ class InvertShapeTool(QDialog):
         )
 
     def pick_correctives(self):
-        """拾取当前选择中的全部有效 Mesh。"""
+        u"""
+        拾取当前选择中的全部有效 Mesh。
+        """
         selections = cmds.ls(
             selection=True,
             long=True
@@ -151,7 +167,9 @@ class InvertShapeTool(QDialog):
         )
 
     def execute(self):
-        """执行批量 Invert Shape。"""
+        u"""
+        执行批量 Invert Shape。
+        """
         base_mesh = self.base_picker.get_value()
 
         if not base_mesh:
@@ -184,7 +202,13 @@ class InvertShapeTool(QDialog):
 
 
 def main():
-    """显示并返回 Invert Shape Tool。"""
+    u"""
+    显示并返回 Invert Shape Tool。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.blendshape.invert_shape_tool",
         InvertShapeTool

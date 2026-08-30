@@ -102,7 +102,21 @@ from . import curve_utils
 # =============================================================================
 
 def validate_node(node):
-    """检查 Maya 节点是否存在；有效时返回 True。"""
+    u"""
+    检查 Maya 节点是否存在；有效时返回 True。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     # 步骤 1：空参数直接报错。
     if not node:
         raise RuntimeError(u"节点名称不能为空。")
@@ -117,10 +131,22 @@ def validate_node(node):
 
 
 def get_surface_shape(surface):
-    """
+    u"""
     返回 NURBS Surface Shape 的完整 DAG Path。
 
     ``surface`` 可以是 Transform，也可以直接是 nurbsSurface Shape。
+
+    Args:
+        surface (str):
+            需要处理的 Maya Surface 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：校验输入节点。
     validate_node(surface)
@@ -159,7 +185,21 @@ def get_surface_shape(surface):
 
 
 def get_surface_transform(surface):
-    """返回 NURBS Surface Transform 的完整 DAG Path。"""
+    u"""
+    返回 NURBS Surface Transform 的完整 DAG Path。
+
+    Args:
+        surface (str):
+            需要处理的 Maya Surface 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     # 步骤 1：先统一取得 Surface Shape。
     surface_shape = get_surface_shape(surface)
 
@@ -192,13 +232,24 @@ def move_curve_copy(
         axis,
         distance
 ):
-    """
+    u"""
     沿 Curve 自身 Object Space 指定轴移动 Curve 副本。
 
     Args:
-        curve(str): 通常是 create_surface_from_curve() 创建的临时 Duplicate。
-        axis(str): X / Y / Z。
-        distance(float): 移动距离，可以为负数。
+        curve (str):
+            通常是 create_surface_from_curve() 创建的临时 Duplicate。
+        axis (str):
+            X / Y / Z。
+        distance (float):
+            移动距离，可以为负数。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：把轴向统一成大写。
     axis = axis.upper()
@@ -242,7 +293,7 @@ def create_surface_from_curve(
         offset_axis="Y",
         degree=3
 ):
-    """
+    u"""
     复制输入 Curve 两次，并 Loft 成 NURBS Surface。
 
     与早期 Pipeline 版本不同：
@@ -251,8 +302,24 @@ def create_surface_from_curve(
         - 只操作两个临时 Duplicate；
         - Loft 完成后自动删除临时 Duplicate。
 
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+        name (str):
+            创建或查询时使用的节点名称。
+        offset (float):
+            `offset` 对应的数值参数。
+        offset_axis (str):
+            `offset_axis` 对应的名称、标记或字符串参数。
+        degree (int):
+            `degree` 对应的整数参数。
+
     Returns:
         str: 新创建的 NURBS Surface Transform。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：取得 Curve Transform。
@@ -337,29 +404,41 @@ def create_follicle(
         parameter_v=0.5,
         parent=None
 ):
-    """
+    u"""
     在 NURBS Surface 上创建一个 Follicle。
 
     网络：
-
         surfaceShape.local
             -> follicleShape.inputSurface
-
         surfaceShape.worldMatrix[0]
             -> follicleShape.inputWorldMatrix
-
         follicleShape.outTranslate
             -> follicleTransform.translate
-
         follicleShape.outRotate
             -> follicleTransform.rotate
 
+    Args:
+        surface (str):
+            需要处理的 Maya Surface 节点名称。
+        name (str):
+            创建或查询时使用的节点名称。
+        parameter_u (float):
+            `parameter_u` 对应的数值参数。
+        parameter_v (float):
+            `parameter_v` 对应的数值参数。
+        parent (str):
+            父级 Maya 节点名称。
+
     Returns:
         dict:
-            {
-                "transform": follicle_transform,
-                "shape": follicle_shape,
-            }
+        {
+        "transform": follicle_transform,
+        "shape": follicle_shape,
+        }
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：取得 Surface Shape。
@@ -462,20 +541,30 @@ def create_even_follicles(
         fixed_parameter=0.5,
         parent=None
 ):
-    """
+    u"""
     沿 Surface 的 U 或 V 方向均匀创建 Follicle。
 
     Args:
-        surface(str): NURBS Surface。
-        count(int): Follicle 数量。
-        name_prefix(str): 名称前缀。
-        direction(str): U 或 V。
-        fixed_parameter(float): 未被分布的另一个方向固定值。
-        parent(str/None): 可选父节点。
+        surface (str):
+            NURBS Surface。
+        count (int):
+            Follicle 数量。
+        name_prefix (str):
+            名称前缀。
+        direction (str):
+            U 或 V。
+        fixed_parameter (float):
+            未被分布的另一个方向固定值。
+        parent (str/None):
+            可选父节点。 规则： count=1：放在 0.5； count>=2：覆盖 0~1。
 
-    规则：
-        count=1：放在 0.5；
-        count>=2：覆盖 0~1。
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证数量和方向。
     if count < 1:

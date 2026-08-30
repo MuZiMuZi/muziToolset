@@ -27,12 +27,32 @@ axis_rotation = {
 
 
 def get_short_name(node):
-    """返回 DAG 节点短名称。"""
+    u"""
+    返回 DAG 节点短名称。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return node.split("|")[-1].replace(":", "_")
 
 
 def get_control_name_from_target(target):
-    """根据目标节点生成标准 ctrl_ 名称。"""
+    u"""
+    根据目标节点生成标准 ctrl_ 名称。
+
+    Args:
+        target (str):
+            接收结果或被处理的目标 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     short_name = get_short_name(target)
 
     if short_name.startswith("jnt_"):
@@ -48,7 +68,17 @@ def get_control_name_from_target(target):
 
 
 def get_side_color(name):
-    """根据标准左右命名返回 Maya Index Color。"""
+    u"""
+    根据标准左右命名返回 Maya Index Color。
+
+    Args:
+        name (str):
+            创建或查询时使用的节点名称。
+
+    Returns:
+        int:
+            方法执行后的结果数据。
+    """
     lower_name = name.lower()
 
     left_tokens = [
@@ -174,10 +204,10 @@ def create_controller(
         add_to_set=True,
         control_set="ctrl_set"
 ):
-    """创建标准绑定控制器。
+    u"""
+    创建标准绑定控制器。
 
     标准层级::
-
         zero
           driven
             space
@@ -187,8 +217,38 @@ def create_controller(
                     ctrlSub
                     output
 
+    Args:
+        name (str):
+            创建或查询时使用的节点名称。
+        shape (str):
+            `shape` 对应的名称、标记或字符串参数。
+        radius (float):
+            创建节点或控制器使用的半径值。
+        axis (str):
+            操作使用的轴向标记。
+        target (str):
+            接收结果或被处理的目标 Maya 节点名称。
+        parent (str):
+            父级 Maya 节点名称。
+        color (int):
+            `color` 对应的整数参数。
+        rotate_x (float):
+            `rotate_x` 对应的数值参数。
+        create_sub_control (bool):
+            是否启用 `create_sub_control` 对应的处理。
+        create_extra_groups (bool):
+            是否启用 `create_extra_groups` 对应的处理。
+        add_to_set (bool):
+            是否启用 `add_to_set` 对应的处理。
+        control_set (str):
+            `control_set` 对应的名称、标记或字符串参数。
+
     Returns:
         dict: 控制器、层级和输出节点信息。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     control_name = _safe_control_name(name)
     control_name = _next_available_name(control_name)
@@ -396,7 +456,29 @@ def create_fk_controls(
         create_extra_groups=True,
         add_to_set=True
 ):
-    """根据 targets 顺序创建标准 FK Controller Chain。"""
+    u"""
+    根据 targets 顺序创建标准 FK Controller Chain。
+
+    Args:
+        targets (str | list[str]):
+            `targets` 对应的输入数据。
+        shape (str):
+            `shape` 对应的名称、标记或字符串参数。
+        radius (float):
+            创建节点或控制器使用的半径值。
+        axis (str):
+            操作使用的轴向标记。
+        constrain (bool):
+            是否启用 `constrain` 对应的处理。
+        create_extra_groups (bool):
+            是否启用 `create_extra_groups` 对应的处理。
+        add_to_set (bool):
+            是否启用 `add_to_set` 对应的处理。
+
+    Returns:
+        object | list:
+            方法执行后的结果数据。
+    """
     if not targets:
         return []
 

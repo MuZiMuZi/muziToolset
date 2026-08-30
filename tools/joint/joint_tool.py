@@ -93,6 +93,14 @@ class JointTool(QWidget):
     """木子绑定工具集 Joint 工具。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(JointTool, self).__init__(parent)
 
         self.create_widgets()
@@ -111,7 +119,9 @@ class JointTool(QWidget):
     # =========================================================================
 
     def create_widgets(self):
-        """创建窗口控件。"""
+        u"""
+        创建窗口控件。
+        """
         self.title_label = theme.make_title(u"Joint 工具")
         self.subtitle_label = theme.make_subtitle(
             u"集中处理 Joint 显示、创建、链编辑、Orient、IK 入口和常用 Skin 操作。"
@@ -170,7 +180,9 @@ class JointTool(QWidget):
         theme.style_primary(self.copy_skin_button)
 
     def create_layouts(self):
-        """创建滚动 Card 布局。"""
+        u"""
+        创建滚动 Card 布局。
+        """
         root_layout = QVBoxLayout(self)
         root_layout.setContentsMargins(16, 16, 16, 16)
         root_layout.setSpacing(12)
@@ -269,7 +281,9 @@ class JointTool(QWidget):
         root_layout.addWidget(scroll_area, 1)
 
     def create_connections(self):
-        """连接界面信号。"""
+        u"""
+        连接界面信号。
+        """
         self.joint_size_spinbox.valueChanged.connect(self.set_joint_size)
         self.show_axis_selected_button.clicked.connect(self.show_axis_selected)
         self.hide_axis_selected_button.clicked.connect(self.hide_axis_selected)
@@ -306,34 +320,66 @@ class JointTool(QWidget):
 
     @staticmethod
     def open_orient_options():
+        u"""
+        执行 `open_orient_options` 对应的 Maya 工具操作。
+        """
+
         mel.eval("OrientJointOptions;")
 
     @staticmethod
     def open_mirror_options():
+        u"""
+        执行 `open_mirror_options` 对应的 Maya 工具操作。
+        """
+
         mel.eval("MirrorJointOptions;")
 
     @staticmethod
     def open_ik_handle_options():
+        u"""
+        执行 `open_ik_handle_options` 对应的 Maya 工具操作。
+        """
+
         mel.eval("IKHandleToolOptions;")
 
     @staticmethod
     def open_ik_spline_options():
+        u"""
+        执行 `open_ik_spline_options` 对应的 Maya 工具操作。
+        """
+
         mel.eval("IKSplineHandleToolOptions;")
 
     @staticmethod
     def open_bind_skin_options():
+        u"""
+        执行 `open_bind_skin_options` 对应的 Maya 工具操作。
+        """
+
         mel.eval("SmoothBindSkinOptions;")
 
     @staticmethod
     def open_detach_skin_options():
+        u"""
+        执行 `open_detach_skin_options` 对应的 Maya 工具操作。
+        """
+
         mel.eval("DetachSkinOptions;")
 
     @staticmethod
     def open_paint_skin_options():
+        u"""
+        执行 `open_paint_skin_options` 对应的 Maya 工具操作。
+        """
+
         mel.eval("ArtPaintSkinWeightsToolOptions;")
 
     @staticmethod
     def open_mirror_skin_options():
+        u"""
+        执行 `open_mirror_skin_options` 对应的 Maya 工具操作。
+        """
+
         mel.eval("MirrorSkinWeightsOptions;")
 
     # =========================================================================
@@ -342,7 +388,13 @@ class JointTool(QWidget):
 
     @staticmethod
     def get_selected_joints():
-        """返回当前选择 Joint。"""
+        u"""
+        返回当前选择 Joint。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         joints = cmds.ls(
             selection=True,
             type="joint",
@@ -355,32 +407,72 @@ class JointTool(QWidget):
         return joints
 
     def set_joint_size(self, value):
-        """设置全场景 Joint Radius。"""
+        u"""
+        设置全场景 Joint Radius。
+
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
+        """
         joint_utils.Joint.set_all_radius(
             float(value)
         )
 
     def show_axis_selected(self):
+        u"""
+        执行 `show_axis_selected` 对应的 Maya 工具操作。
+        """
+
         self.set_axis_visibility(True, False, False)
 
     def hide_axis_selected(self):
+        u"""
+        执行 `hide_axis_selected` 对应的 Maya 工具操作。
+        """
+
         self.set_axis_visibility(False, False, False)
 
     def show_axis_hierarchy(self):
+        u"""
+        执行 `show_axis_hierarchy` 对应的 Maya 工具操作。
+        """
+
         self.set_axis_visibility(True, True, False)
 
     def hide_axis_hierarchy(self):
+        u"""
+        执行 `hide_axis_hierarchy` 对应的 Maya 工具操作。
+        """
+
         self.set_axis_visibility(False, True, False)
 
     def show_axis_all(self):
+        u"""
+        执行 `show_axis_all` 对应的 Maya 工具操作。
+        """
+
         self.set_axis_visibility(True, False, True)
 
     def hide_axis_all(self):
+        u"""
+        执行 `hide_axis_all` 对应的 Maya 工具操作。
+        """
+
         self.set_axis_visibility(False, False, True)
 
     @staticmethod
     def set_axis_visibility(visible, hierarchy, all_joints):
-        """设置 Joint Local Rotation Axis 显示。"""
+        u"""
+        设置 Joint Local Rotation Axis 显示。
+
+        Args:
+            visible (bool):
+                是否启用 `visible` 对应的处理。
+            hierarchy (object):
+                `hierarchy` 对应的输入数据。
+            all_joints (object):
+                `all_joints` 对应的输入数据。
+        """
         if all_joints:
             joint_utils.Joint.set_all_axis_visibility(
                 visible=visible
@@ -397,7 +489,9 @@ class JointTool(QWidget):
     # =========================================================================
 
     def create_snap_joints(self):
-        """在当前选择位置创建 Joint。"""
+        u"""
+        在当前选择位置创建 Joint。
+        """
         cmds.undoInfo(
             openChunk=True,
             chunkName="MuziCreateSnapJoints"
@@ -421,7 +515,9 @@ class JointTool(QWidget):
             cmds.undoInfo(closeChunk=True)
 
     def create_child_joints(self):
-        """为选择 Transform / Joint 创建子 Joint。"""
+        u"""
+        为选择 Transform / Joint 创建子 Joint。
+        """
         selections = cmds.ls(
             selection=True,
             long=True
@@ -458,7 +554,13 @@ class JointTool(QWidget):
 
     @staticmethod
     def open_resample_tool():
-        """通过统一 Window Manager 打开 Joint Resample。"""
+        u"""
+        通过统一 Window Manager 打开 Joint Resample。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return window_manager.show_tool(
             "joint/joint_resample",
             joint_resamp_tool.main
@@ -466,7 +568,9 @@ class JointTool(QWidget):
 
     @staticmethod
     def parent_selected_chain():
-        """按照选择顺序把 Joint 组成父子链。"""
+        u"""
+        按照选择顺序把 Joint 组成父子链。
+        """
         cmds.undoInfo(
             openChunk=True,
             chunkName="MuziParentJointChain"
@@ -480,7 +584,9 @@ class JointTool(QWidget):
             cmds.undoInfo(closeChunk=True)
 
     def create_joints_on_curves(self):
-        """根据选择 Curve 的 CV 创建 Joint Chain。"""
+        u"""
+        根据选择 Curve 的 CV 创建 Joint Chain。
+        """
         selections = cmds.ls(
             selection=True,
             long=True
@@ -522,7 +628,9 @@ class JointTool(QWidget):
             )
 
     def create_joints_on_edges(self):
-        """把连续 Polygon Edge 转 Curve 后创建 Joint Chain。"""
+        u"""
+        把连续 Polygon Edge 转 Curve 后创建 Joint Chain。
+        """
         selections = cmds.ls(
             selection=True,
             flatten=True
@@ -577,13 +685,27 @@ class JointTool(QWidget):
             cmds.undoInfo(closeChunk=True)
 
     def enable_scale_compensate(self):
+        u"""
+        执行 `enable_scale_compensate` 对应的 Maya 工具操作。
+        """
+
         self.set_scale_compensate(True)
 
     def disable_scale_compensate(self):
+        u"""
+        执行 `disable_scale_compensate` 对应的 Maya 工具操作。
+        """
+
         self.set_scale_compensate(False)
 
     def set_scale_compensate(self, enabled):
-        """设置选择 Joint 的 Segment Scale Compensate。"""
+        u"""
+        设置选择 Joint 的 Segment Scale Compensate。
+
+        Args:
+            enabled (bool):
+                是否启用 `enabled` 对应的处理。
+        """
         joints = self.get_selected_joints()
 
         if not joints:
@@ -603,13 +725,27 @@ class JointTool(QWidget):
             cmds.undoInfo(closeChunk=True)
 
     def show_orient(self):
+        u"""
+        执行 `show_orient` 对应的 Maya 工具操作。
+        """
+
         self.set_orient_visibility(True)
 
     def hide_orient(self):
+        u"""
+        执行 `hide_orient` 对应的 Maya 工具操作。
+        """
+
         self.set_orient_visibility(False)
 
     def set_orient_visibility(self, visible):
-        """显示或隐藏 Joint Orient。"""
+        u"""
+        显示或隐藏 Joint Orient。
+
+        Args:
+            visible (bool):
+                是否启用 `visible` 对应的处理。
+        """
         joints = self.get_selected_joints()
 
         if not joints:
@@ -624,7 +760,9 @@ class JointTool(QWidget):
                 joint_handler.hide_orient()
 
     def clear_joint_orient(self):
-        """清空选择 Joint 的 Joint Orient。"""
+        u"""
+        清空选择 Joint 的 Joint Orient。
+        """
         joints = self.get_selected_joints()
 
         if not joints:
@@ -642,7 +780,9 @@ class JointTool(QWidget):
             cmds.undoInfo(closeChunk=True)
 
     def create_curve_on_joints(self):
-        """按照选择 Joint 世界位置创建 Curve。"""
+        u"""
+        按照选择 Joint 世界位置创建 Curve。
+        """
         joints = self.get_selected_joints()
 
         if len(joints) < 2:
@@ -678,7 +818,9 @@ class JointTool(QWidget):
 
     @staticmethod
     def batch_parent_constraint():
-        """按照 driver/driven 成对顺序批量创建 Parent Constraint。"""
+        u"""
+        按照 driver/driven 成对顺序批量创建 Parent Constraint。
+        """
         selections = cmds.ls(
             selection=True,
             long=True
@@ -718,7 +860,9 @@ class JointTool(QWidget):
 
     @staticmethod
     def copy_skin_weights():
-        """把第一个选择模型 Skin Weight 复制到后续选择模型。"""
+        u"""
+        把第一个选择模型 Skin Weight 复制到后续选择模型。
+        """
         selections = cmds.ls(
             selection=True,
             long=True
@@ -749,7 +893,13 @@ class JointTool(QWidget):
 
 
 def main():
-    """创建或恢复 Joint Tool，立即显示并返回 QWidget。"""
+    u"""
+    创建或恢复 Joint Tool，立即显示并返回 QWidget。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.joint.joint_tool",
         JointTool

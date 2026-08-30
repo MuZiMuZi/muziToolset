@@ -101,12 +101,20 @@ from . import file_utils
 # =============================================================================
 
 def get_short_name(node):
-    """
+    u"""
     返回适合 Maya 节点名和文件名使用的短名称。
 
     处理规则：
         - 去掉 DAG Path；
         - Namespace 的冒号替换为下划线。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     # 步骤 1：只保留 DAG 最后一段。
     short_name = node.split("|")[-1]
@@ -116,14 +124,21 @@ def get_short_name(node):
 
 
 def find_skin_cluster(geometry):
-    """
+    u"""
     返回 Geometry 关联的第一个 SkinCluster；找不到时返回 None。
 
     查询分两步：
         1. Maya MEL ``findRelatedSkinCluster``；
         2. History 中按 nodeType 再查一次。
-
     第二步是容错路径，避免某些特殊场景中 MEL 查询没有返回结果。
+
+    Args:
+        geometry (object):
+            `geometry` 对应的输入数据。
+
+    Returns:
+        None | object:
+            方法执行后的结果数据。
     """
     # 步骤 1：过滤空参数和不存在节点。
     if not geometry:
@@ -168,11 +183,12 @@ def find_skin_cluster(geometry):
 
 
 def get_influences(geometry_or_skin_cluster):
-    """
+    u"""
     返回 Geometry 或 SkinCluster 的 Influence Joint 列表。
 
     Args:
-        geometry_or_skin_cluster(str): Geometry 或 skinCluster。
+        geometry_or_skin_cluster (str):
+            Geometry 或 skinCluster。
 
     Returns:
         list: Influence 节点；无 SkinCluster 时返回空列表。
@@ -208,7 +224,7 @@ def get_influences(geometry_or_skin_cluster):
 # =============================================================================
 
 def copy_skin_weights(source, targets):
-    """
+    u"""
     将 Source 的 Skin Weight 复制给多个 Target。
 
     处理流程：
@@ -218,8 +234,18 @@ def copy_skin_weights(source, targets):
             -> 使用同一组 Influence 创建 Target SkinCluster
             -> cmds.copySkinWeights()
 
+    Args:
+        source (str):
+            作为输入或驱动来源的 Maya 节点名称。
+        targets (str | list[str]):
+            `targets` 对应的输入数据。
+
     Returns:
         list: 新创建的 Target SkinCluster。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：确认 Source 有 SkinCluster。
@@ -300,8 +326,12 @@ def copy_skin_weights(source, targets):
 # =============================================================================
 
 def get_weight_file_names(geometry):
-    """
+    u"""
     返回 Geometry 对应的 XML / Influence JSON 文件名称。
+
+    Args:
+        geometry (object):
+            `geometry` 对应的输入数据。
 
     Returns:
         dict: ``xml`` / ``influences``。
@@ -315,11 +345,21 @@ def get_weight_file_names(geometry):
 
 
 def export_skin_weights(geometry, directory):
-    """
+    u"""
     导出 Maya ``deformerWeights`` XML 和 Influence JSON。
+
+    Args:
+        geometry (object):
+            `geometry` 对应的输入数据。
+        directory (str):
+            需要读取或写入的目录路径。
 
     Returns:
         dict: Geometry、SkinCluster 和两个输出文件路径。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：确认 Geometry 已经绑定。
@@ -386,7 +426,7 @@ def export_skin_weights(geometry, directory):
 # =============================================================================
 
 def import_skin_weights(geometry, directory):
-    """
+    u"""
     导入 XML 权重和 Influence Joint 列表。
 
     流程：
@@ -396,6 +436,20 @@ def import_skin_weights(geometry, directory):
             -> 创建新 SkinCluster
             -> Import XML
             -> Normalize
+
+    Args:
+        geometry (object):
+            `geometry` 对应的输入数据。
+        directory (str):
+            需要读取或写入的目录路径。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：整理文件路径。
     directory = file_utils.normalize_path(directory)
@@ -483,8 +537,12 @@ def import_skin_weights(geometry, directory):
 # =============================================================================
 
 def normalize_skin_weights(geometry_or_skin_cluster):
-    """
+    u"""
     强制归一化一个 SkinCluster。
+
+    Args:
+        geometry_or_skin_cluster (object):
+            `geometry_or_skin_cluster` 对应的输入数据。
 
     Returns:
         bool: 找到并完成归一化时返回 True。
@@ -512,10 +570,18 @@ def normalize_skin_weights(geometry_or_skin_cluster):
 
 
 def select_influences(geometries):
-    """
+    u"""
     选择多个 Geometry 的全部 Influence Joint。
 
     这是明确带 ``select`` 语义的 Core 辅助函数，因此允许修改 Maya Selection。
+
+    Args:
+        geometries (object):
+            `geometries` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     influences = []
 
@@ -538,7 +604,17 @@ def select_influences(geometries):
 
 
 def normalize_geometries(geometries):
-    """批量归一化多个 Geometry，并返回实际成功的 Geometry。"""
+    u"""
+    批量归一化多个 Geometry，并返回实际成功的 Geometry。
+
+    Args:
+        geometries (object):
+            `geometries` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     normalized = []
 
     # 步骤 1：逐 Geometry 调用统一 Normalize API。

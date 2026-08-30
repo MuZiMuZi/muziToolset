@@ -97,16 +97,34 @@ from . import scene_utils
 # =============================================================================
 
 def maya_undo(function):
-    """
+    u"""
     兼容早期 ``@maya_undo`` 名称。
 
     实际 Undo Chunk 逻辑统一由 scene_utils.undo_chunk 维护。
+
+    Args:
+        function (object):
+            `function` 对应的输入数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     return scene_utils.undo_chunk(function)
 
 
 def dag_depth(node):
-    """返回 DAG 路径深度，用于 Rename 时让子节点优先处理。"""
+    u"""
+    返回 DAG 路径深度，用于 Rename 时让子节点优先处理。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return node.count("|")
 
 
@@ -182,18 +200,26 @@ class Name(object):
             part=None,
             function=None
     ):
-        """
+        u"""
         创建 Name 对象。
 
         Args:
-            name(str/None): 已存在的标准名称；给定时自动 decompose。
-            type(str/None): 旧接口，节点类型。
-            side(str/None): 方向。
-            resolution(str/None): 旧接口，对应当前 part。
-            description(str/None): 旧接口，对应当前 function。
-            index(int/None): 序号。
-            part(str/None): 当前接口，部位。
-            function(str/None): 当前接口，功能。
+            name (str/None):
+                已存在的标准名称；给定时自动 decompose。
+            type (str/None):
+                旧接口，节点类型。
+            side (str/None):
+                方向。
+            resolution (str/None):
+                旧接口，对应当前 part。
+            description (str/None):
+                旧接口，对应当前 function。
+            index (int/None):
+                序号。
+            part (str/None):
+                当前接口，部位。
+            function (str/None):
+                当前接口，功能。
 
         Notes:
             resolution / description 继续保留，只为了兼容早期调用；新代码应优先使用 part / function。
@@ -222,65 +248,179 @@ class Name(object):
 
     @property
     def type(self):
+        u"""
+        执行 `type` 对应的 Maya 工具操作。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
+
         return self._type
 
     @type.setter
     def type(self, value):
+        u"""
+        执行 `type` 对应的 Maya 工具操作。
+
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
+        """
+
         self._type = value
 
     @property
     def side(self):
+        u"""
+        执行 `side` 对应的 Maya 工具操作。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
+
         return self._side
 
     @side.setter
     def side(self, value):
+        u"""
+        执行 `side` 对应的 Maya 工具操作。
+
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
+        """
+
         self._side = value
 
     @property
     def resolution(self):
+        u"""
+        执行 `resolution` 对应的 Maya 工具操作。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
+
         return self._resolution
 
     @resolution.setter
     def resolution(self, value):
+        u"""
+        执行 `resolution` 对应的 Maya 工具操作。
+
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
+        """
+
         self._resolution = value
 
     @property
     def description(self):
+        u"""
+        执行 `description` 对应的 Maya 工具操作。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
+
         return self._description
 
     @description.setter
     def description(self, value):
+        u"""
+        执行 `description` 对应的 Maya 工具操作。
+
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
+        """
+
         self._description = value
 
     @property
     def part(self):
-        """部位字段；内部与旧 resolution 共用存储。"""
+        u"""
+        部位字段；内部与旧 resolution 共用存储。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return self._resolution
 
     @part.setter
     def part(self, value):
+        u"""
+        执行 `part` 对应的 Maya 工具操作。
+
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
+        """
+
         self._resolution = value
 
     @property
     def function(self):
-        """功能字段；内部与旧 description 共用存储。"""
+        u"""
+        功能字段；内部与旧 description 共用存储。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return self._description
 
     @function.setter
     def function(self, value):
+        u"""
+        执行 `function` 对应的 Maya 工具操作。
+
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
+        """
+
         self._description = value
 
     @property
     def index(self):
+        u"""
+        执行 `index` 对应的 Maya 工具操作。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
+
         return self._index
 
     @index.setter
     def index(self, value):
+        u"""
+        执行 `index` 对应的 Maya 工具操作。
+
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
+        """
+
         self._index = value
 
     @property
     def name(self):
-        """根据当前字段重新 compose 并返回完整名称。"""
+        u"""
+        根据当前字段重新 compose 并返回完整名称。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         self.compose()
         return self._name
 
@@ -313,7 +453,21 @@ class Name(object):
 
     @classmethod
     def normalize_side(cls, side):
-        """把方向统一为正式 ``lf / rt / md`` Token。"""
+        u"""
+        把方向统一为正式 ``lf / rt / md`` Token。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+
+        Returns:
+            str | object:
+                方法执行后的结果数据。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if side is None:
             return "md"
 
@@ -335,7 +489,29 @@ class Name(object):
             function,
             index=1
     ):
-        """根据五段式规则创建标准名称。"""
+        u"""
+        根据五段式规则创建标准名称。
+
+        Args:
+            node_type (str):
+                `node_type` 对应的名称、标记或字符串参数。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            part (str):
+                `part` 对应的名称、标记或字符串参数。
+            function (object):
+                `function` 对应的输入数据。
+            index (int):
+                目标元素或节点的序号。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         # 步骤 1：所有字段先规范化，避免不同 Tool 产生大小写 / 空格差异。
         node_type = cls._normalize_name_part(node_type)
         side = cls.normalize_side(side)
@@ -373,7 +549,23 @@ class Name(object):
             part,
             function
     ):
-        """查询场景中同类标准名称，并返回下一个可用序号。"""
+        u"""
+        查询场景中同类标准名称，并返回下一个可用序号。
+
+        Args:
+            node_type (str):
+                `node_type` 对应的名称、标记或字符串参数。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            part (str):
+                `part` 对应的名称、标记或字符串参数。
+            function (object):
+                `function` 对应的输入数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         node_type = cls._normalize_name_part(node_type)
         side = cls.normalize_side(side)
         part = cls._normalize_name_part(part)
@@ -420,7 +612,23 @@ class Name(object):
             part,
             function
     ):
-        """生成场景中下一个可用的标准名称。"""
+        u"""
+        生成场景中下一个可用的标准名称。
+
+        Args:
+            node_type (str):
+                `node_type` 对应的名称、标记或字符串参数。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            part (str):
+                `part` 对应的名称、标记或字符串参数。
+            function (object):
+                `function` 对应的输入数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         index = cls.get_next_index(
             node_type=node_type,
             side=side,
@@ -438,7 +646,17 @@ class Name(object):
 
     @classmethod
     def parse_name(cls, name):
-        """把标准名称解析成字典。"""
+        u"""
+        把标准名称解析成字典。
+
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+        """
         name_object = cls(name=name)
 
         return {
@@ -451,13 +669,29 @@ class Name(object):
 
     @classmethod
     def mirror_name(cls, name):
-        """计算镜像名称，不修改 Maya 节点。"""
+        u"""
+        计算镜像名称，不修改 Maya 节点。
+
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         name_object = cls(name=name)
         name_object.flip()
         return name_object.name
 
     def compose(self):
-        """根据当前对象字段重新组合标准名称。"""
+        u"""
+        根据当前对象字段重新组合标准名称。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         node_type = self._normalize_name_part(self._type)
         side = self.normalize_side(self._side)
         part = self._normalize_name_part(self._resolution)
@@ -477,11 +711,15 @@ class Name(object):
         return self._name
 
     def decompose(self):
-        """
+        u"""
         拆分标准名称。
 
         function 允许包含多个下划线，因此规则固定为：
             第 1 段 type；第 2 段 side；第 3 段 part；最后一段 index；中间全部属于 function。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
         """
         if not self._name:
             return False
@@ -507,7 +745,13 @@ class Name(object):
         return True
 
     def flip(self):
-        """翻转 lf <-> rt；md 保持不变。"""
+        u"""
+        翻转 lf <-> rt；md 保持不变。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         normalized_side = self.normalize_side(self._side)
 
         if normalized_side == "lf":
@@ -524,7 +768,17 @@ class Name(object):
     # =========================================================================
 
     def set_rename(self, new_name):
-        """把当前 Selection 节点依次重命名为 new_name。"""
+        u"""
+        把当前 Selection 节点依次重命名为 new_name。
+
+        Args:
+            new_name (str):
+                `new_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         names = cmds.ls(
             selection=True,
             long=True
@@ -540,7 +794,17 @@ class Name(object):
 
     @maya_undo
     def add_prefix(self, prefix):
-        """给当前 Name 节点添加前缀。"""
+        u"""
+        给当前 Name 节点添加前缀。
+
+        Args:
+            prefix (object):
+                `prefix` 对应的输入数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         self._name = cmds.rename(
             self._name,
             prefix + self._name.split("|")[-1]
@@ -549,7 +813,17 @@ class Name(object):
 
     @maya_undo
     def add_suffix(self, suffix):
-        """给当前 Name 节点添加后缀。"""
+        u"""
+        给当前 Name 节点添加后缀。
+
+        Args:
+            suffix (object):
+                `suffix` 对应的输入数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         short_name = self._name.split("|")[-1]
         self._name = cmds.rename(
             self._name,
@@ -583,7 +857,13 @@ class Name(object):
 
     @maya_undo
     def add_hierarchy_prefix(self, prefix):
-        """给当前 Selection 整个层级添加前缀。"""
+        u"""
+        给当前 Selection 整个层级添加前缀。
+
+        Args:
+            prefix (object):
+                `prefix` 对应的输入数据。
+        """
         self.nodes = self._selection_list_nodes()
         self.nodes.sort(
             key=dag_depth,
@@ -600,7 +880,13 @@ class Name(object):
 
     @maya_undo
     def add_hierarchy_suffix(self, suffix):
-        """给当前 Selection 整个层级添加后缀。"""
+        u"""
+        给当前 Selection 整个层级添加后缀。
+
+        Args:
+            suffix (object):
+                `suffix` 对应的输入数据。
+        """
         self.nodes = self._selection_list_nodes()
         self.nodes.sort(
             key=dag_depth,
@@ -616,7 +902,19 @@ class Name(object):
 
     @maya_undo
     def search_replace_name(self, search, replace):
-        """对当前 Name 节点执行普通字符串 Search / Replace。"""
+        u"""
+        对当前 Name 节点执行普通字符串 Search / Replace。
+
+        Args:
+            search (object):
+                `search` 对应的输入数据。
+            replace (bool):
+                是否启用 `replace` 对应的处理。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         object_name = self._name.split("|")[-1]
         new_name = object_name.replace(
             search,
@@ -630,7 +928,17 @@ class Name(object):
         return self._name
 
     def rename_to_name(self, new_name):
-        """把当前 Name 节点重命名为明确名称。"""
+        u"""
+        把当前 Name 节点重命名为明确名称。
+
+        Args:
+            new_name (str):
+                `new_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         self._name = cmds.rename(
             self._name,
             new_name
@@ -639,7 +947,15 @@ class Name(object):
 
     @maya_undo
     def regex_search_replace_name(self, search, replace):
-        """使用正则表达式 Search / Replace 当前 Selection 层级。"""
+        u"""
+        使用正则表达式 Search / Replace 当前 Selection 层级。
+
+        Args:
+            search (object):
+                `search` 对应的输入数据。
+            replace (bool):
+                是否启用 `replace` 对应的处理。
+        """
         regex_object = re.compile(search)
         nodes = self._selection_list_nodes()
         nodes.sort(
@@ -664,7 +980,13 @@ class Name(object):
 
     @staticmethod
     def print_duplicate_object():
-        """检查并返回场景中所有重名 DAG 节点 Long Path。"""
+        u"""
+        检查并返回场景中所有重名 DAG 节点 Long Path。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         all_objects = cmds.ls(
             long=True,
             dagObjects=True
@@ -704,7 +1026,9 @@ class Name(object):
     @staticmethod
     @maya_undo
     def rename_duplicate_object():
-        """给场景中重名 DAG 节点追加三位数字后缀。"""
+        u"""
+        给场景中重名 DAG 节点追加三位数字后缀。
+        """
         duplicate_object_list = Name.print_duplicate_object()
         duplicate_object_list.sort(
             key=dag_depth,

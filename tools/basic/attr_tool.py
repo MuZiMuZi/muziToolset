@@ -83,6 +83,14 @@ class AttrTool(QWidget):
     """属性工具窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(AttrTool, self).__init__(parent)
 
         self.window_title = u"属性工具"
@@ -99,7 +107,9 @@ class AttrTool(QWidget):
         self.resize(560, 520)
 
     def create_widgets(self):
-        """创建界面部件。"""
+        u"""
+        创建界面部件。
+        """
         self.title_label = ui_theme.make_title(u"属性工具")
         self.subtitle_label = ui_theme.make_subtitle(
             u"管理 Maya 属性窗口、Channel Box 顺序以及常用 Transform 属性状态。"
@@ -194,7 +204,9 @@ class AttrTool(QWidget):
         ]
 
     def create_layouts(self):
-        """创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -277,7 +289,9 @@ class AttrTool(QWidget):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        """连接界面信号。"""
+        u"""
+        连接界面信号。
+        """
         self.add_attr_window_button.clicked.connect(self.open_add_attr_window)
         self.edit_attr_window_button.clicked.connect(self.open_edit_attr_window)
         self.connect_attr_window_button.clicked.connect(self.open_connection_editor)
@@ -289,41 +303,57 @@ class AttrTool(QWidget):
         self.attr_reset_button.clicked.connect(self.clicked_attr_reset_button)
 
     def open_add_attr_window(self):
-        """打开 Maya 原生 Add Attribute 窗口。"""
+        u"""
+        打开 Maya 原生 Add Attribute 窗口。
+        """
         mel.eval("dynAddAttrWin({})")
 
     def open_edit_attr_window(self):
-        """打开 Maya 原生 Edit Attribute 窗口。"""
+        u"""
+        打开 Maya 原生 Edit Attribute 窗口。
+        """
         mel.eval("dynRenameAttrWin({})")
 
     def open_connection_editor(self):
-        """打开 Maya Connection Editor。"""
+        u"""
+        打开 Maya Connection Editor。
+        """
         cmds.ConnectionEditor()
 
     def open_channel_control(self):
-        """打开 Maya Channel Control。"""
+        u"""
+        打开 Maya Channel Control。
+        """
         cmds.ChannelControlEditor()
 
     def delete_selected_attr(self):
-        """打开 Maya 原生 Delete Attribute 操作。"""
+        u"""
+        打开 Maya 原生 Delete Attribute 操作。
+        """
         mel.eval("dynDeleteAttrWin({})")
 
     def move_attr_up(self):
-        """把 Channel Box 当前自定义属性向上移动。"""
+        u"""
+        把 Channel Box 当前自定义属性向上移动。
+        """
         attr_utils.Attr.move_channelBox_attr(
             up=True,
             down=False
         )
 
     def move_attr_down(self):
-        """把 Channel Box 当前自定义属性向下移动。"""
+        u"""
+        把 Channel Box 当前自定义属性向下移动。
+        """
         attr_utils.Attr.move_channelBox_attr(
             up=False,
             down=True
         )
 
     def clicked_attr_set_button(self):
-        """根据界面状态设置当前选择物体的 Transform 属性。"""
+        u"""
+        根据界面状态设置当前选择物体的 Transform 属性。
+        """
         selected_objects = cmds.ls(
             selection=True,
             long=True
@@ -393,13 +423,21 @@ class AttrTool(QWidget):
             cmds.undoInfo(closeChunk=True)
 
     def clicked_attr_reset_button(self):
-        """清空界面中所有 Locked / Hidden 选项。"""
+        u"""
+        清空界面中所有 Locked / Hidden 选项。
+        """
         for checkbox in self.attr_checkboxes:
             checkbox.setChecked(False)
 
 
 def main():
-    """创建或恢复 Attr Tool，立即显示并返回 QWidget。"""
+    u"""
+    创建或恢复 Attr Tool，立即显示并返回 QWidget。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.basic.attr_tool",
         AttrTool

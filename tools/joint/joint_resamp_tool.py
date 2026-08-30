@@ -76,6 +76,14 @@ class JointResamplingTool(QWidget):
     """Joint Resample 窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(JointResamplingTool, self).__init__(parent)
 
         self.create_widgets()
@@ -90,7 +98,9 @@ class JointResamplingTool(QWidget):
         self.resize(540, 360)
 
     def create_widgets(self):
-        """创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(u"关节重采样")
         self.subtitle_label = theme.make_subtitle(
             u"在一对直接父子 Joint 之间均匀插入新的中间 Joint。"
@@ -123,7 +133,9 @@ class JointResamplingTool(QWidget):
         theme.style_primary(self.resample_button)
 
     def create_layouts(self):
-        """创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -158,13 +170,17 @@ class JointResamplingTool(QWidget):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        """连接界面信号。"""
+        u"""
+        连接界面信号。
+        """
         self.resample_button.clicked.connect(
             self.resample
         )
 
     def resample(self):
-        """读取当前 UI 参数并执行 Joint Resample。"""
+        u"""
+        读取当前 UI 参数并执行 Joint Resample。
+        """
         start_joint = self.start_joint_picker.get_value()
         end_joint = self.end_joint_picker.get_value()
         joint_number = self.joint_number_spinbox.value()
@@ -183,7 +199,17 @@ class JointResamplingTool(QWidget):
 
 
 def get_short_name(node):
-    """返回 Maya DAG 节点短名称。"""
+    u"""
+    返回 Maya DAG 节点短名称。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     if "|" in node:
         return node.rsplit("|", 1)[-1]
 
@@ -191,7 +217,19 @@ def get_short_name(node):
 
 
 def validate_joint(joint, label):
-    """检查节点是否存在并且是 Joint。"""
+    u"""
+    检查节点是否存在并且是 Joint。
+
+    Args:
+        joint (str):
+            需要处理的 Maya Joint 节点名称。
+        label (object):
+            `label` 对应的输入数据。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+    """
     if not joint:
         cmds.warning(u"{}不能为空。".format(label))
         return False
@@ -218,7 +256,19 @@ def validate_joint(joint, label):
 
 
 def is_direct_child_joint(start_joint, end_joint):
-    """检查 end_joint 是否是 start_joint 的直接子 Joint。"""
+    u"""
+    检查 end_joint 是否是 start_joint 的直接子 Joint。
+
+    Args:
+        start_joint (object):
+            `start_joint` 对应的输入数据。
+        end_joint (object):
+            `end_joint` 对应的输入数据。
+
+    Returns:
+        object | bool:
+            方法执行后的结果数据。
+    """
     parent_nodes = cmds.listRelatives(
         end_joint,
         parent=True,
@@ -237,7 +287,21 @@ def is_direct_child_joint(start_joint, end_joint):
 
 
 def get_interpolated_position(start_position, end_position, ratio):
-    """计算两个三维位置之间的线性插值位置。"""
+    u"""
+    计算两个三维位置之间的线性插值位置。
+
+    Args:
+        start_position (object):
+            `start_position` 对应的输入数据。
+        end_position (object):
+            `end_position` 对应的输入数据。
+        ratio (float):
+            `ratio` 对应的数值参数。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     position = []
 
     for axis_index in range(3):
@@ -252,7 +316,7 @@ def get_interpolated_position(start_position, end_position, ratio):
 
 
 def resample_joint(start_joint, end_joint, joint_number):
-    """
+    u"""
     在直接父子 Joint 之间插入指定数量的新 Joint。
 
     执行步骤：
@@ -262,6 +326,18 @@ def resample_joint(start_joint, end_joint, joint_number):
         4. 按等比例位置依次创建并 Parent 新 Joint；
         5. 把 End 接回新 Chain 末端；
         6. 失败时删除新节点并恢复原始 Parent。
+
+    Args:
+        start_joint (object):
+            `start_joint` 对应的输入数据。
+        end_joint (object):
+            `end_joint` 对应的输入数据。
+        joint_number (int):
+            `joint_number` 对应的整数参数。
+
+    Returns:
+        object | list:
+            方法执行后的结果数据。
     """
     if not validate_joint(start_joint, u"起始 Joint"):
         return []
@@ -406,7 +482,13 @@ def resample_joint(start_joint, end_joint, joint_number):
 
 
 def main():
-    """创建或恢复 Joint Resample Tool，立即显示并返回 QWidget。"""
+    u"""
+    创建或恢复 Joint Resample Tool，立即显示并返回 QWidget。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.joint.joint_resamp_tool",
         JointResamplingTool

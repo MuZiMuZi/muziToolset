@@ -87,12 +87,18 @@ class Hierarchy(object):
 
     @staticmethod
     def parent(child_node, parent_node):
-        """
+        u"""
         确保 child_node 位于 parent_node 下。
+
+        Args:
+            child_node (object):
+                `child_node` 对应的输入数据。
+            parent_node (object):
+                `parent_node` 对应的输入数据。
 
         Returns:
             str:
-                Parent 后 Maya 返回的 Child Path；如果已经是正确父子关系则返回原节点。
+            Parent 后 Maya 返回的 Child Path；如果已经是正确父子关系则返回原节点。
         """
         # ---------------------------------------------------------------------
         # 步骤 1：验证 Child / Parent。
@@ -148,22 +154,23 @@ class Hierarchy(object):
 
     @staticmethod
     def add_extra_group(obj, grp_name, world_orient=False):
-        """
+        u"""
         在对象上方插入一个额外 Transform Group。
 
         Args:
-            obj(str):
+            obj (str):
                 需要插入额外组的对象。
-
-            grp_name(str):
+            grp_name (str):
                 新 Group 名称。
-
-            world_orient(bool):
-                False：Group 旋转与对象当前世界旋转一致；
-                True：Group 使用世界零旋转。
+            world_orient (bool):
+                False：Group 旋转与对象当前世界旋转一致； True：Group 使用世界零旋转。
 
         Returns:
             str: 新 Group。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
 
         Notes:
             插组前先记录对象原 Parent 和世界 Transform，再插入 Group，确保对象视觉姿态不跳动。
@@ -263,12 +270,18 @@ class Hierarchy(object):
 
     @staticmethod
     def get_child_object(object, type="joint"):
-        """
+        u"""
         获取指定类型的全部后代，并把根对象放在列表第一位。
 
         Args:
-            object(str): 根对象。
-            type(str): Maya Node Type，例如 joint / transform。
+            object (str):
+                根对象。
+            type (str):
+                Maya Node Type，例如 joint / transform。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
         """
         Hierarchy._validate_node(
             object,
@@ -295,10 +308,18 @@ class Hierarchy(object):
 
     @staticmethod
     def select_sub_objects(obj_type="transform"):
-        """
+        u"""
         兼容旧工具：选择当前 Selection 下指定类型的全部后代。
 
         新 Core 逻辑不应依赖 Selection；新 Tool 可以自行读取 Selection 后调用 get_child_object。
+
+        Args:
+            obj_type (str):
+                `obj_type` 对应的名称、标记或字符串参数。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
         """
         selections = cmds.ls(
             selection=True,
@@ -336,11 +357,21 @@ class Hierarchy(object):
 
     @staticmethod
     def create_grp(grp, parent=None):
-        """
+        u"""
         创建一个 Transform Group；已存在时直接返回现有节点。
+
+        Args:
+            grp (object):
+                `grp` 对应的输入数据。
+            parent (str):
+                父级 Maya 节点名称。
 
         Returns:
             str: Group 名称 / Path。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not grp:
             raise RuntimeError(u"Group 名称不能为空。")
@@ -368,8 +399,12 @@ class Hierarchy(object):
 
     @staticmethod
     def create_rig_grp():
-        """
+        u"""
         创建早期项目使用的基础 Rig Group。
+
+        Returns:
+            tuple:
+                方法执行后的结果数据。
 
         Notes:
             这些名称属于旧场景兼容命名（m），新系统应使用项目当前 md / lf / rt 命名规范。
@@ -404,14 +439,17 @@ class Hierarchy(object):
 
     @staticmethod
     def create_default_grp():
-        """
+        u"""
         创建早期默认 Rig Group 结构。
 
         旧实现同时创建 Character / World / COG Controller，并依赖已经退出正式 Core 的 controlUtils，
         因此该函数曾处于“调用即 NameError”的坏状态。
-
         当前版本只做它名字真正表达的职责：创建默认 Group。完整 Controller / Rig Build 请使用
         ``systems.controller`` 或具体 Body Rig System。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
         """
         # ---------------------------------------------------------------------
         # 步骤 1：创建顶层结构。
@@ -486,7 +524,7 @@ class Hierarchy(object):
 
     @staticmethod
     def control_hierarchy():
-        """
+        u"""
         兼容早期 Selection 驱动的 Controller 打组入口。
 
         新代码应使用 systems.controller Builder。本方法只保留基础 Zero / Driven / Connect / Offset

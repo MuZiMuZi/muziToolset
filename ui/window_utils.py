@@ -85,7 +85,13 @@ def _is_valid_widget(window):
 
 
 def clear_invalid_windows():
-    """清理缓存里已经被 Qt / Maya 销毁的 QWidget。"""
+    u"""
+    清理缓存里已经被 Qt / Maya 销毁的 QWidget。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     invalid_keys = []
 
     for window_key in _windows:
@@ -101,7 +107,17 @@ def clear_invalid_windows():
 
 
 def get_window(window_key):
-    """返回当前有效窗口；不存在时返回 None。"""
+    u"""
+    返回当前有效窗口；不存在时返回 None。
+
+    Args:
+        window_key (object):
+            `window_key` 对应的输入数据。
+
+    Returns:
+        object | None:
+            方法执行后的结果数据。
+    """
     window = _windows.get(window_key)
 
     if not _is_valid_widget(window):
@@ -164,25 +180,30 @@ def _connect_destroyed(window_key, window):
 
 
 def show_window(window_key, window_factory):
-    """
+    u"""
     创建或恢复一个独立 Tool 窗口。
 
     Args:
-        window_key(str):
+        window_key (str):
             稳定的窗口唯一 Key，例如 ``tools.controller.control_shape_tool``。
-
-        window_factory(callable):
+        window_factory (callable):
             无参数调用后返回 QWidget 的 Factory，通常直接传 Tool Window Class。
 
     Returns:
         QWidget: 当前显示中的窗口。
 
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        TypeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+
     Example:
         def main():
-            return window_utils.show_window(
-                "tools.basic.rename_tool",
-                RenameTool
-            )
+                return window_utils.show_window(
+                    "tools.basic.rename_tool",
+                    RenameTool
+                )
     """
     if not window_key:
         raise ValueError(u"window_key 不能为空。")
@@ -229,7 +250,17 @@ def show_window(window_key, window_factory):
 
 
 def close_window(window_key):
-    """关闭并释放指定独立 Tool 窗口。"""
+    u"""
+    关闭并释放指定独立 Tool 窗口。
+
+    Args:
+        window_key (object):
+            `window_key` 对应的输入数据。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+    """
     window = _windows.pop(window_key, None)
 
     if not _is_valid_widget(window):

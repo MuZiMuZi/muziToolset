@@ -51,6 +51,14 @@ class ModelChecker(QDialog):
     """模型检查器窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(ModelChecker, self).__init__(parent)
 
         self.issues = []
@@ -71,7 +79,9 @@ class ModelChecker(QDialog):
     # -------------------------------------------------------------------------
 
     def create_widgets(self):
-        """创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(u"模型检查")
         self.subtitle_label = theme.make_subtitle(
             u"检查拓扑、命名、建模历史、Transform 和锁定法线。"
@@ -132,7 +142,9 @@ class ModelChecker(QDialog):
         theme.set_role(self.status_label, "muted")
 
     def create_layouts(self):
-        """创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -181,7 +193,9 @@ class ModelChecker(QDialog):
         main_layout.addWidget(self.status_label)
 
     def create_connections(self):
-        """连接 UI 信号。"""
+        u"""
+        连接 UI 信号。
+        """
         self.check_button.clicked.connect(
             self.run_check
         )
@@ -200,7 +214,13 @@ class ModelChecker(QDialog):
     # -------------------------------------------------------------------------
 
     def get_scope_nodes(self):
-        """返回当前检查范围。"""
+        u"""
+        返回当前检查范围。
+
+        Returns:
+            object | None:
+                方法执行后的结果数据。
+        """
         if not self.selected_only_checkbox.isChecked():
             return None
 
@@ -215,7 +235,13 @@ class ModelChecker(QDialog):
         return nodes
 
     def get_selected_issue_rows(self):
-        """返回表格当前选中的唯一行号。"""
+        u"""
+        返回表格当前选中的唯一行号。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         selected_items = self.result_table.selectedItems()
         rows = []
 
@@ -229,7 +255,13 @@ class ModelChecker(QDialog):
         return rows
 
     def get_selected_issues(self):
-        """返回表格当前选中的 Issue。"""
+        u"""
+        返回表格当前选中的 Issue。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         issues = []
         rows = self.get_selected_issue_rows()
 
@@ -249,7 +281,9 @@ class ModelChecker(QDialog):
     # -------------------------------------------------------------------------
 
     def run_check(self):
-        """执行当前勾选的检查项。"""
+        u"""
+        执行当前勾选的检查项。
+        """
         nodes = self.get_scope_nodes()
 
         if self.selected_only_checkbox.isChecked():
@@ -284,7 +318,9 @@ class ModelChecker(QDialog):
             self.status_label.setText(u"检查通过，没有发现问题")
 
     def populate_table(self):
-        """把 Issue 写入结果表格。"""
+        u"""
+        把 Issue 写入结果表格。
+        """
         self.result_table.setRowCount(0)
         self.result_table.setRowCount(len(self.issues))
 
@@ -323,7 +359,9 @@ class ModelChecker(QDialog):
     # -------------------------------------------------------------------------
 
     def update_action_state(self):
-        """根据结果和当前选择刷新按钮状态。"""
+        u"""
+        根据结果和当前选择刷新按钮状态。
+        """
         has_issues = bool(self.issues)
         selected_issues = self.get_selected_issues()
         has_selected = bool(selected_issues)
@@ -340,7 +378,9 @@ class ModelChecker(QDialog):
         )
 
     def select_issue_nodes(self):
-        """选择问题对象；有表格选择时只选择选中项。"""
+        u"""
+        选择问题对象；有表格选择时只选择选中项。
+        """
         issues = self.get_selected_issues()
 
         if not issues:
@@ -370,7 +410,9 @@ class ModelChecker(QDialog):
         )
 
     def fix_selected_issues(self):
-        """修复表格中选中的可安全自动修复项。"""
+        u"""
+        修复表格中选中的可安全自动修复项。
+        """
         selected_issues = self.get_selected_issues()
 
         if not selected_issues:
@@ -398,7 +440,13 @@ class ModelChecker(QDialog):
 
 
 def main():
-    """显示并返回 Model Checker。"""
+    u"""
+    显示并返回 Model Checker。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.clean.model_checker",
         ModelChecker

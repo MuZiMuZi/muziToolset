@@ -137,14 +137,18 @@ class Attr(object):
     }
 
     def __init__(self, object, attr=None):
-        """
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
         Args:
-            object(str): Maya 节点名称。
-            attr(str/None): 默认属性名称。
+            object (str):
+                Maya 节点名称。
+            attr (str/None):
+                默认属性名称。
 
         Notes:
             参数名 ``object`` 来自早期 API。虽然它会遮蔽 Python 内置名称，但为了兼容现有调用，
-            这里暂时不改名。
+                这里暂时不改名。
         """
         self.object = object
         self.attr = attr
@@ -159,7 +163,13 @@ class Attr(object):
     # =========================================================================
 
     def object_exists(self):
-        """检查当前 Maya 节点是否存在。"""
+        u"""
+        检查当前 Maya 节点是否存在。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return cmds.objExists(self.object)
 
     def _get_plug(self, attr=None):
@@ -179,7 +189,17 @@ class Attr(object):
         )
 
     def attr_exists(self, attr=None):
-        """检查属性 Plug 是否存在。"""
+        u"""
+        检查属性 Plug 是否存在。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+
+        Returns:
+            object | bool:
+                方法执行后的结果数据。
+        """
         try:
             plug = self._get_plug(attr)
         except ValueError:
@@ -192,13 +212,25 @@ class Attr(object):
     # =========================================================================
 
     def lock_and_hide_attr(self, attr, lock=True, hide=True):
-        """
+        u"""
         设置单个属性的 Lock / Keyable / Channel Box 状态。
 
         步骤：
             1. 整理完整 Plug；
             2. 设置 Lock；
             3. 根据 hide 决定是否允许 Key 和是否显示在 Channel Box。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            lock (bool):
+                是否启用 `lock` 对应的处理。
+            hide (bool):
+                是否启用 `hide` 对应的处理。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
         """
         plug = self._get_plug(attr)
 
@@ -229,7 +261,21 @@ class Attr(object):
         return True
 
     def lock_and_hide_attrs(self, attrs_list, lock=True, hide=True):
-        """批量设置属性状态，并返回每个属性的执行结果。"""
+        u"""
+        批量设置属性状态，并返回每个属性的执行结果。
+
+        Args:
+            attrs_list (list):
+                `attrs_list` 对应的数据列表。
+            lock (bool):
+                是否启用 `lock` 对应的处理。
+            hide (bool):
+                是否启用 `hide` 对应的处理。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         result = []
 
         if not attrs_list:
@@ -262,10 +308,36 @@ class Attr(object):
             multi=False,
             **kwargs
     ):
-        """
+        u"""
         创建自定义属性。
 
         为兼容早期代码，同时支持 ``attr_type="double"`` 和 ``type="double"`` 两种写法。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            attr_type (str):
+                `attr_type` 对应的名称、标记或字符串参数。
+            lock (bool):
+                是否启用 `lock` 对应的处理。
+            hide (bool):
+                是否启用 `hide` 对应的处理。
+            default_value (object):
+                `default_value` 对应的输入数据。
+            min_value (object):
+                `min_value` 对应的输入数据。
+            max_value (object):
+                `max_value` 对应的输入数据。
+            enum_name (str):
+                `enum_name` 对应的 Maya 节点或资源名称。
+            multi (bool):
+                是否启用 `multi` 对应的处理。
+            kwargs (dict):
+                `kwargs` 对应的配置或映射字典。
+
+        Returns:
+            object | None:
+                方法执行后的结果数据。
         """
         # ---------------------------------------------------------------------
         # 步骤 1：兼容旧参数并验证节点。
@@ -356,7 +428,21 @@ class Attr(object):
     # =========================================================================
 
     def connect_attr(self, output_attr, input_attr, force=True):
-        """连接两个属性；底层使用 ``connection_utils.connect_plugs``。"""
+        u"""
+        连接两个属性；底层使用 ``connection_utils.connect_plugs``。
+
+        Args:
+            output_attr (str):
+                `output_attr` 对应的名称、标记或字符串参数。
+            input_attr (str):
+                `input_attr` 对应的名称、标记或字符串参数。
+            force (bool):
+                是否强制覆盖已有连接、状态或结果。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         output_plug = self._get_plug(output_attr)
         input_plug = self._get_plug(input_attr)
 
@@ -367,7 +453,19 @@ class Attr(object):
         )
 
     def disconnect_attr(self, output_attr, input_attr):
-        """断开两个属性；底层使用 ``connection_utils.disconnect_plugs``。"""
+        u"""
+        断开两个属性；底层使用 ``connection_utils.disconnect_plugs``。
+
+        Args:
+            output_attr (str):
+                `output_attr` 对应的名称、标记或字符串参数。
+            input_attr (str):
+                `input_attr` 对应的名称、标记或字符串参数。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         output_plug = self._get_plug(output_attr)
         input_plug = self._get_plug(input_attr)
 
@@ -377,7 +475,19 @@ class Attr(object):
         )
 
     def get_attr_input(self, attr=None, plugs=True):
-        """获取属性输入连接。"""
+        u"""
+        获取属性输入连接。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            plugs (bool):
+                是否启用 `plugs` 对应的处理。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         plug = self._get_plug(attr)
 
         if plugs:
@@ -391,7 +501,19 @@ class Attr(object):
         ) or []
 
     def get_attr_output(self, attr=None, plugs=True):
-        """获取属性输出连接。"""
+        u"""
+        获取属性输出连接。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            plugs (bool):
+                是否启用 `plugs` 对应的处理。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         plug = self._get_plug(attr)
 
         if plugs:
@@ -440,7 +562,35 @@ class Attr(object):
             max_value=None,
             enum_name=None
     ):
-        """如果属性不存在则创建，然后设置属性值。"""
+        u"""
+        如果属性不存在则创建，然后设置属性值。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            value (float):
+                需要读取、写入或参与计算的数值。
+            attr_type (object):
+                `attr_type` 对应的输入数据。
+            lock (bool):
+                是否启用 `lock` 对应的处理。
+            hide (bool):
+                是否启用 `hide` 对应的处理。
+            min_value (object):
+                `min_value` 对应的输入数据。
+            max_value (object):
+                `max_value` 对应的输入数据。
+            enum_name (str):
+                `enum_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            object | None:
+                方法执行后的结果数据。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if value is None:
             return None
 
@@ -494,7 +644,17 @@ class Attr(object):
         return plug
 
     def get_attr_value(self, attr=None):
-        """读取普通 Maya 属性值；属性不存在时返回 None。"""
+        u"""
+        读取普通 Maya 属性值；属性不存在时返回 None。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+
+        Returns:
+            object | None:
+                方法执行后的结果数据。
+        """
         plug = self._get_plug(attr)
 
         if not cmds.objExists(plug):
@@ -509,7 +669,23 @@ class Attr(object):
             lock=False,
             hide=False
     ):
-        """批量创建并设置属性值。"""
+        u"""
+        批量创建并设置属性值。
+
+        Args:
+            attrs_dict (dict):
+                `attrs_dict` 对应的配置或映射字典。
+            attr_types (object):
+                `attr_types` 对应的输入数据。
+            lock (bool):
+                是否启用 `lock` 对应的处理。
+            hide (bool):
+                是否启用 `hide` 对应的处理。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         result = {}
 
         if not attrs_dict:
@@ -534,7 +710,19 @@ class Attr(object):
     # =========================================================================
 
     def add_message_attr(self, attr, multi=False):
-        """创建 Message 属性；已存在时直接返回。"""
+        u"""
+        创建 Message 属性；已存在时直接返回。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            multi (bool):
+                是否启用 `multi` 对应的处理。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         plug = self._get_plug(attr)
 
         if cmds.objExists(plug):
@@ -549,7 +737,17 @@ class Attr(object):
         )
 
     def disconnect_attr_inputs(self, attr=None):
-        """断开指定属性的全部输入连接。"""
+        u"""
+        断开指定属性的全部输入连接。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         input_plug = self._get_plug(attr)
 
         if not cmds.objExists(input_plug):
@@ -567,10 +765,24 @@ class Attr(object):
             force=True,
             clear_empty=False
     ):
-        """
+        u"""
         把 ``source_node.message`` 保存到当前节点的 Message 属性。
 
         Message 连接比保存节点名称字符串更可靠，因为 Maya Rename 后会自动维护连接关系。
+
+        Args:
+            source_node (object):
+                `source_node` 对应的输入数据。
+            attr (str):
+                Maya Attribute 名称。
+            force (bool):
+                是否强制覆盖已有连接、状态或结果。
+            clear_empty (bool):
+                是否启用 `clear_empty` 对应的处理。
+
+        Returns:
+            object | bool:
+                方法执行后的结果数据。
         """
         input_plug = self._get_plug(attr)
         attr_name = input_plug.split(".", 1)[1]
@@ -611,7 +823,21 @@ class Attr(object):
             force=True,
             clear_empty=False
     ):
-        """批量保存多个 Maya 节点 Message 引用。"""
+        u"""
+        批量保存多个 Maya 节点 Message 引用。
+
+        Args:
+            attrs_dict (dict):
+                `attrs_dict` 对应的配置或映射字典。
+            force (bool):
+                是否强制覆盖已有连接、状态或结果。
+            clear_empty (bool):
+                是否启用 `clear_empty` 对应的处理。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         result = {}
 
         if not attrs_dict:
@@ -628,7 +854,19 @@ class Attr(object):
         return result
 
     def get_message(self, attr=None, plugs=False):
-        """读取 Message 属性的第一个来源节点或来源 Plug。"""
+        u"""
+        读取 Message 属性的第一个来源节点或来源 Plug。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            plugs (bool):
+                是否启用 `plugs` 对应的处理。
+
+        Returns:
+            object | None:
+                方法执行后的结果数据。
+        """
         connections = self.get_attr_input(
             attr=attr,
             plugs=plugs
@@ -644,10 +882,24 @@ class Attr(object):
     # =========================================================================
 
     def add_string_info(self, information, attr=None, lock=True, hide=True):
-        """
+        u"""
         把 Python 基础数据保存到 Maya String 属性。
 
         list / tuple / dict 等通过 repr() 保存，读取时使用 literal_eval() 安全恢复。
+
+        Args:
+            information (object):
+                `information` 对应的输入数据。
+            attr (str):
+                Maya Attribute 名称。
+            lock (bool):
+                是否启用 `lock` 对应的处理。
+            hide (bool):
+                是否启用 `hide` 对应的处理。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
         """
         plug = self._get_plug(attr)
         attr_name = plug.split(".", 1)[1]
@@ -699,7 +951,17 @@ class Attr(object):
         return plug
 
     def get_string_info(self, attr=None):
-        """读取 String 信息，并尽量恢复为原 Python 基础数据。"""
+        u"""
+        读取 String 信息，并尽量恢复为原 Python 基础数据。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+
+        Returns:
+            None | object:
+                方法执行后的结果数据。
+        """
         plug = self._get_plug(attr)
 
         if not cmds.objExists(plug):
@@ -727,14 +989,22 @@ class Attr(object):
         return attr
 
     def set_attrs_limits(self, attrs_dict):
-        """
+        u"""
         批量设置 Transform Limits。
+
+        Args:
+            attrs_dict (dict):
+                `attrs_dict` 对应的配置或映射字典。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
 
         Example:
             {
-                "translateY": [(True, True), (-10.0, 10.0)],
-                "rotateX": [(True, False), (-45.0, 0.0)],
-            }
+                    "translateY": [(True, True), (-10.0, 10.0)],
+                    "rotateX": [(True, False), (-45.0, 0.0)],
+                }
         """
         if not self.object_exists():
             cmds.warning(
@@ -791,7 +1061,17 @@ class Attr(object):
         return True
 
     def get_attrs_limits(self, attrs_list=None):
-        """读取 Transform Limits，统一返回 OrderedDict。"""
+        u"""
+        读取 Transform Limits，统一返回 OrderedDict。
+
+        Args:
+            attrs_list (list):
+                `attrs_list` 对应的数据列表。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         result = OrderedDict()
 
         if not self.object_exists():
@@ -837,7 +1117,17 @@ class Attr(object):
         return result
 
     def get_unwanted_attrs(self, attrs_list):
-        """根据需要保留的 Transform 属性，返回其它需要锁定 / 隐藏的通道。"""
+        u"""
+        根据需要保留的 Transform 属性，返回其它需要锁定 / 隐藏的通道。
+
+        Args:
+            attrs_list (list):
+                `attrs_list` 对应的数据列表。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         attrs_to_lock = []
 
         for attr in self.transform_attrs:
@@ -860,10 +1150,14 @@ class Attr(object):
 
     @staticmethod
     def get_channelBox_attrs():
-        """
+        u"""
         返回 Maya Main Channel Box 当前选中的属性长名称。
 
         该 API 涉及 Maya UI 状态，正式新代码应优先把这类逻辑放到 Tool 层；这里只为旧工具兼容保留。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
         """
         query_pairs = [
             ("mainObjectList", "selectedMainAttributes"),
@@ -909,11 +1203,21 @@ class Attr(object):
 
     @staticmethod
     def move_channelBox_attr(up=True, down=False):
-        """
+        u"""
         调整当前节点一个 User Defined 属性在 Channel Box 中的顺序。
 
         这是 Maya 的历史兼容技巧：利用 deleteAttr + undo 改变 User Defined 属性顺序。
         新代码如果不需要这种行为，不建议依赖此方法。
+
+        Args:
+            up (bool):
+                是否启用 `up` 对应的处理。
+            down (bool):
+                是否启用 `down` 对应的处理。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
         """
         selections = cmds.ls(
             selection=True,
@@ -1007,7 +1311,17 @@ class Attr(object):
 
     @staticmethod
     def set_lock_attr(node, attr, lock=True):
-        """兼容旧 API：设置属性 Lock 状态。"""
+        u"""
+        兼容旧 API：设置属性 Lock 状态。
+
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            attr (str):
+                Maya Attribute 名称。
+            lock (bool):
+                是否启用 `lock` 对应的处理。
+        """
         cmds.setAttr(
             "{}.{}".format(node, attr),
             lock=lock
@@ -1015,7 +1329,17 @@ class Attr(object):
 
     @staticmethod
     def set_hide_attr(node, attr, hide=True):
-        """兼容旧 API：隐藏或显示属性。"""
+        u"""
+        兼容旧 API：隐藏或显示属性。
+
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            attr (str):
+                Maya Attribute 名称。
+            hide (bool):
+                是否启用 `hide` 对应的处理。
+        """
         plug = "{}.{}".format(node, attr)
 
         if hide:
@@ -1033,7 +1357,17 @@ class Attr(object):
 
     @staticmethod
     def set_key_attr(node, attr, keyable=True):
-        """兼容旧 API：设置属性是否 Keyable。"""
+        u"""
+        兼容旧 API：设置属性是否 Keyable。
+
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            attr (str):
+                Maya Attribute 名称。
+            keyable (bool):
+                是否启用 `keyable` 对应的处理。
+        """
         cmds.setAttr(
             "{}.{}".format(node, attr),
             keyable=keyable
@@ -1041,7 +1375,19 @@ class Attr(object):
 
     @staticmethod
     def lock_hide_attr(node, attr, lock=True, hide=True):
-        """兼容旧 API：组合设置 Lock 与 Hide。"""
+        u"""
+        兼容旧 API：组合设置 Lock 与 Hide。
+
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            attr (str):
+                Maya Attribute 名称。
+            lock (bool):
+                是否启用 `lock` 对应的处理。
+            hide (bool):
+                是否启用 `hide` 对应的处理。
+        """
         Attr.set_lock_attr(
             node,
             attr,
@@ -1055,10 +1401,18 @@ class Attr(object):
 
     @staticmethod
     def reset_attr(node):
-        """
+        u"""
         兼容旧 API：重置节点 TRS。
 
         底层统一转调 animation_utils.reset_transform_channels，避免维护第二套 Reset 算法。
+
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
         """
         result = animation_utils.reset_transform_channels(
             [node]

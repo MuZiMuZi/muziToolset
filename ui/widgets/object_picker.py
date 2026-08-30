@@ -49,6 +49,20 @@ class MayaObjectPicker(QWidget):
         node_types=None,
         parent=None
     ):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            label_text (str):
+                `label_text` 对应的名称、标记或字符串参数。
+            placeholder (str):
+                `placeholder` 对应的名称、标记或字符串参数。
+            node_types (object):
+                `node_types` 对应的输入数据。
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(MayaObjectPicker, self).__init__(parent)
 
         self.node_types = node_types
@@ -68,7 +82,9 @@ class MayaObjectPicker(QWidget):
         self.create_connections()
 
     def create_layout(self):
-        """创建控件布局。"""
+        u"""
+        创建控件布局。
+        """
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(8)
@@ -78,7 +94,9 @@ class MayaObjectPicker(QWidget):
         main_layout.addWidget(self.pick_button)
 
     def create_connections(self):
-        """连接控件信号。"""
+        u"""
+        连接控件信号。
+        """
         self.pick_button.clicked.connect(
             self.pick_from_selection
         )
@@ -87,18 +105,32 @@ class MayaObjectPicker(QWidget):
         )
 
     def get_value(self):
-        """返回当前输入值。"""
+        u"""
+        返回当前输入值。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return self.line_edit.text().strip()
 
     def set_value(self, value):
-        """设置当前输入值。"""
+        u"""
+        设置当前输入值。
+
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
+        """
         if value is None:
             value = ""
 
         self.line_edit.setText(value)
 
     def clear(self):
-        """清空当前值。"""
+        u"""
+        清空当前值。
+        """
         self.line_edit.clear()
 
     def _is_allowed_node(self, node):
@@ -118,7 +150,13 @@ class MayaObjectPicker(QWidget):
         return False
 
     def pick_from_selection(self):
-        """读取 Maya 当前选择中的最后一个对象。"""
+        u"""
+        读取 Maya 当前选择中的最后一个对象。
+
+        Returns:
+            object | None:
+                方法执行后的结果数据。
+        """
         selection = cmds.ls(
             selection=True,
             long=True

@@ -83,7 +83,17 @@ from . import scene_utils
 # =============================================================================
 
 def get_short_name(node):
-    """返回 DAG 节点 Short Name。"""
+    u"""
+    返回 DAG 节点 Short Name。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     if "|" in node:
         return node.rsplit("|", 1)[-1]
 
@@ -91,7 +101,17 @@ def get_short_name(node):
 
 
 def get_selected_objects(show_warning=True):
-    """返回当前 Maya Selection 的 Long Path。"""
+    u"""
+    返回当前 Maya Selection 的 Long Path。
+
+    Args:
+        show_warning (bool):
+            是否启用 `show_warning` 对应的处理。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     selected_objects = cmds.ls(
         selection=True,
         long=True
@@ -104,11 +124,19 @@ def get_selected_objects(show_warning=True):
 
 
 def sort_objects_child_first(objects):
-    """
+    u"""
     对 DAG 节点去重，并按深度从深到浅排序。
 
     为什么 Child First：
         如果先 Rename Parent，原来的 Child Long Path 会立刻失效；先处理最深节点可以避免这个问题。
+
+    Args:
+        objects (str | list[str]):
+            需要批量处理的 Maya 场景对象名称或对象列表。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     result = []
 
@@ -128,13 +156,21 @@ def sort_objects_child_first(objects):
 
 
 def get_objects_by_scope(scope_name):
-    """
+    u"""
     根据中文范围名称返回需要处理的 Transform。
 
     支持：
         选中物体
         选中层级
         其它值 -> 场景全部 Transform
+
+    Args:
+        scope_name (str):
+            `scope_name` 对应的 Maya 节点或资源名称。
+
+    Returns:
+        object | list:
+            方法执行后的结果数据。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：仅当前 Selection。
@@ -186,10 +222,20 @@ def get_objects_by_scope(scope_name):
 # =============================================================================
 
 def rename_node(node, new_name):
-    """
+    u"""
     安全重命名单个 Maya 节点。
 
     名称没有变化时不调用 cmds.rename；失败时发出 Maya Warning 并返回 None。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+        new_name (str):
+            `new_name` 对应的 Maya 节点或资源名称。
+
+    Returns:
+        None | object:
+            方法执行后的结果数据。
     """
     if not node or not cmds.objExists(node):
         return None
@@ -218,7 +264,17 @@ def rename_node(node, new_name):
 
 @scene_utils.undo_chunk
 def add_prefix(prefix):
-    """给当前 Selection 批量添加前缀，并返回成功数量。"""
+    u"""
+    给当前 Selection 批量添加前缀，并返回成功数量。
+
+    Args:
+        prefix (object):
+            `prefix` 对应的输入数据。
+
+    Returns:
+        object | int:
+            方法执行后的结果数据。
+    """
     if not prefix:
         cmds.warning(u"请输入前缀。")
         return 0
@@ -245,7 +301,17 @@ def add_prefix(prefix):
 
 @scene_utils.undo_chunk
 def add_suffix(suffix):
-    """给当前 Selection 批量添加后缀，并返回成功数量。"""
+    u"""
+    给当前 Selection 批量添加后缀，并返回成功数量。
+
+    Args:
+        suffix (object):
+            `suffix` 对应的输入数据。
+
+    Returns:
+        object | int:
+            方法执行后的结果数据。
+    """
     if not suffix:
         cmds.warning(u"请输入后缀。")
         return 0
@@ -276,7 +342,21 @@ def add_suffix(suffix):
 
 @scene_utils.undo_chunk
 def search_replace(search_text, replace_text, scope_name):
-    """按指定范围对节点 Short Name 做普通字符串 Search / Replace。"""
+    u"""
+    按指定范围对节点 Short Name 做普通字符串 Search / Replace。
+
+    Args:
+        search_text (object):
+            `search_text` 对应的输入数据。
+        replace_text (object):
+            `replace_text` 对应的输入数据。
+        scope_name (str):
+            `scope_name` 对应的 Maya 节点或资源名称。
+
+    Returns:
+        object | int:
+            方法执行后的结果数据。
+    """
     if not search_text:
         cmds.warning(u"请输入需要查找的内容。")
         return 0
@@ -320,13 +400,27 @@ def search_replace(search_text, replace_text, scope_name):
 # =============================================================================
 
 def number_to_alpha(number, uppercase=True):
-    """
+    u"""
     把从 0 开始的整数转换成 A-Z / AA-ZZ 字母编号。
+
+    Args:
+        number (int):
+            `number` 对应的整数参数。
+        uppercase (bool):
+            是否启用 `uppercase` 对应的处理。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
 
     Example:
         0 -> A
-        25 -> Z
-        26 -> AA
+            25 -> Z
+            26 -> AA
     """
     if number < 0:
         raise ValueError(u"字母编号不能小于 0。")
@@ -358,7 +452,21 @@ def number_to_alpha(number, uppercase=True):
 
 
 def get_number_string(number, padding, number_type):
-    """根据编号类型返回数字 / 大写字母 / 小写字母字符串。"""
+    u"""
+    根据编号类型返回数字 / 大写字母 / 小写字母字符串。
+
+    Args:
+        number (int):
+            `number` 对应的整数参数。
+        padding (object):
+            `padding` 对应的输入数据。
+        number_type (object):
+            `number_type` 对应的输入数据。
+
+    Returns:
+        object | None:
+            方法执行后的结果数据。
+    """
     if number_type == u"数字":
         number_string = str(number)
 
@@ -400,7 +508,23 @@ def auto_number(
         padding=3,
         number_type=u"数字"
 ):
-    """按照当前 Selection 顺序自动编号。"""
+    u"""
+    按照当前 Selection 顺序自动编号。
+
+    Args:
+        base_name (str):
+            `base_name` 对应的 Maya 节点或资源名称。
+        start_number (int):
+            `start_number` 对应的整数参数。
+        padding (int):
+            `padding` 对应的整数参数。
+        number_type (str):
+            `number_type` 对应的名称、标记或字符串参数。
+
+    Returns:
+        object | int:
+            方法执行后的结果数据。
+    """
     selected_objects = get_selected_objects()
 
     if not selected_objects:
@@ -447,12 +571,22 @@ def auto_number(
 # =============================================================================
 
 def build_pattern_name(pattern, number):
-    """
+    u"""
     根据 ``*`` 占位块生成名称。
+
+    Args:
+        pattern (str):
+            用于筛选 Maya 节点名称的匹配模式。
+        number (int):
+            `number` 对应的整数参数。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
 
     Example:
         build_pattern_name("jnt_md_spine_bind_***", 4)
-        -> jnt_md_spine_bind_004
+            -> jnt_md_spine_bind_004
     """
     star_blocks = re.findall(
         r"\*+",
@@ -485,7 +619,17 @@ def build_pattern_name(pattern, number):
 
 @scene_utils.undo_chunk
 def pattern_rename(pattern):
-    """按照 ``*`` 数字占位规则重命名当前 Selection。"""
+    u"""
+    按照 ``*`` 数字占位规则重命名当前 Selection。
+
+    Args:
+        pattern (str):
+            用于筛选 Maya 节点名称的匹配模式。
+
+    Returns:
+        object | int:
+            方法执行后的结果数据。
+    """
     if not pattern:
         cmds.warning(u"请输入重命名模式。")
         return 0
