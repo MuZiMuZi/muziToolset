@@ -19,7 +19,7 @@ from __future__ import print_function
 import maya.cmds as cmds
 
 from ....core import curve_utils
-from ....core import nameUtils
+from ....core import name_utils
 from ....core import transform_utils
 
 
@@ -58,7 +58,7 @@ def validate_transform(node, label):
 
 def validate_side(side):
     """把方向统一成 lf / rt / md。"""
-    return nameUtils.Name.normalize_side(side)
+    return name_utils.Name.normalize_side(side)
 
 
 def normalize_name_part(value, label):
@@ -124,7 +124,7 @@ def create_rig_name(
         role
     )
 
-    return nameUtils.Name.create_name(
+    return name_utils.Name.create_name(
         node_type=node_type,
         side=side,
         part=region,
