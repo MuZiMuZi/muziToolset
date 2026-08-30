@@ -22,9 +22,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # -------------------------------------------------------------------------
-    # 把 Pages 是否已启用暴露给 Deploy Job。
-    # -------------------------------------------------------------------------
     outputs:
       pages_enabled: ${{ steps.pages_status.outputs.enabled }}
 
@@ -52,56 +49,38 @@ jobs:
 
       # -----------------------------------------------------------------------
       # 步骤 2：验证 API Reference Generator 本身。
-      #
-      # 该测试使用临时项目验证：
-      #   - Package 页面；
-      #   - Function / Class / Method；
-      #   - 参数表；
-      #   - Returns / Raises / Example；
-      #   - SUMMARY.md 导航。
       # -----------------------------------------------------------------------
       - name: Test API reference generator
         run: python tests/docs_reference_generator_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 3：验证正式 Runtime 源码全部进入 API 文档范围。
-      #
-      # 正式范围：
-      #   __init__.py
-      #   config.py
-      #   app/**/*.py
-      #   core/**/*.py
-      #   systems/**/*.py
-      #   tools/**/*.py
-      #   ui/**/*.py
-      #
-      # 只要新增正式 Python 文件，就必须能映射到唯一 API Markdown 页面。
+      # 步骤 3：验证全部正式 Runtime Python 文件都能映射到独立 API 页面。
       # -----------------------------------------------------------------------
       - name: Check runtime API documentation coverage
         run: python tests/docs_runtime_api_coverage_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 4：使用 AST 生成完整 Runtime API Reference。
-      #
-      # 生成器不会 import muziToolset / maya.cmds，因此 Linux Runner 不需要 Maya。
-      # 同时生成 docs/SUMMARY.md，供 mkdocs-literate-nav 创建源码树侧边栏。
+      # 步骤 4：使用 AST 生成完整 Runtime API Reference 和源码树导航。
       # -----------------------------------------------------------------------
       - name: Generate API reference
         run: python scripts/generate_mkdocs_reference.py
 
       # -----------------------------------------------------------------------
-      # 步骤 5：严格构建 MkDocs。
+      # 步骤 5：在自动生成的 SUMMARY.md 中加入人工维护的任务型用户手册页面。
       #
-      # --strict 会把断链、缺页、无效导航和配置问题升级为 CI Failure。
+      # API 源码树仍由 Generator 自动维护；这里仅扩展用户手册导航。
+      # -----------------------------------------------------------------------
+      - name: Expand user manual navigation
+        run: python scripts/extend_docs_summary.py
+
+      # -----------------------------------------------------------------------
+      # 步骤 6：严格构建 MkDocs。
       # -----------------------------------------------------------------------
       - name: Build MkDocs site
         run: mkdocs build --strict
 
       # -----------------------------------------------------------------------
-      # 步骤 6：仅在非 PR 构建中检查 GitHub Pages 是否已经启用。
-      #
-      # 200 -> Pages 已启用，可以部署。
-      # 404 -> Pages 尚未启用，安全跳过 Deploy。
+      # 步骤 7：检查 GitHub Pages 是否已经启用。
       # -----------------------------------------------------------------------
       - name: Check GitHub Pages status
         id: pages_status
@@ -131,7 +110,7 @@ jobs:
           fi
 
       # -----------------------------------------------------------------------
-      # 步骤 7：Main Push 时上传 Pages Artifact。
+      # 步骤 8：上传 Pages Artifact。
       # -----------------------------------------------------------------------
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
