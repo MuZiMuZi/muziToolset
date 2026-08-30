@@ -9,15 +9,16 @@ Step 01 - Face Setup
     3. 指定上下牙模型；
     4. 指定舌头模型；
     5. 指定牙龈模型；
-    6. 设置嘴唇关节数量；
+    6. 设置嘴唇 Joint 数量；
     7. 更新 Face Rig 工作模型；
-    8. 更新 Config Network Node。
+    8. 更新 Config Network Node；
+    9. 更新 Face Wizard Step 状态。
 
 设计：
     Config Node 只创建一次。
     Step 01 可以重复执行。
     用户修改 Step 01 后，会把最新配置写回同一个 Config Node。
-    后续 Step 统一从 Config Node 获取最新数据。
+    后续 Step 统一从 FaceBase 读取最新数据。
 """
 
 from __future__ import print_function
@@ -34,18 +35,26 @@ class FaceSetup(face_base.FaceBase):
     u"""Face Rig Step 01。"""
 
     def __init__(
-        self,
-        face_head_model=None,
-        face_lf_eye_model=None,
-        face_rt_eye_model=None,
-        upper_teech_model=None,
-        lower_teech_model=None,
-        face_tongue_model=None,
-        face_gum_model=None,
-        mouth_jnt_number=32
+            self,
+            face_head_model=None,
+            face_lf_eye_model=None,
+            face_rt_eye_model=None,
+            upper_teech_model=None,
+            lower_teech_model=None,
+            face_tongue_model=None,
+            face_gum_model=None,
+            mouth_jnt_number=32
     ):
         super(FaceSetup, self).__init__()
 
+        # ------------------------------------------------------------
+        # Face Wizard Step
+        # ------------------------------------------------------------
+        self.step_value = 1
+
+        # ------------------------------------------------------------
+        # 用户输入模型
+        # ------------------------------------------------------------
         self.face_head_model = face_head_model
         self.face_lf_eye_model = face_lf_eye_model
         self.face_rt_eye_model = face_rt_eye_model
@@ -64,8 +73,14 @@ class FaceSetup(face_base.FaceBase):
             self.face_gum_model,
         ]
 
+        # ------------------------------------------------------------
+        # 构建参数
+        # ------------------------------------------------------------
         self.mouth_jnt_number = mouth_jnt_number
 
+        # ------------------------------------------------------------
+        # Step 01 创建的工作模型
+        # ------------------------------------------------------------
         self.face_head_tweak_model = None
         self.face_head_stretch_model = None
         self.face_head_deform_model = None
@@ -98,25 +113,25 @@ class FaceSetup(face_base.FaceBase):
         return True
 
     def check_mouth_jnt_number(self):
-        u"""检查嘴唇关节数量。"""
+        u"""检查嘴唇 Joint 数量。"""
         if self.mouth_jnt_number is None:
             raise RuntimeError(
-                u"没有设置嘴唇关节数量。"
+                u"没有设置嘴唇 Joint 数量。"
             )
 
         if not isinstance(self.mouth_jnt_number, int):
             raise TypeError(
-                u"嘴唇关节数量必须是整数。"
+                u"嘴唇 Joint 数量必须是整数。"
             )
 
         if self.mouth_jnt_number < 4:
             raise ValueError(
-                u"嘴唇关节数量不能小于 4。"
+                u"嘴唇 Joint 数量不能小于 4。"
             )
 
         if self.mouth_jnt_number % 4 != 0:
             raise ValueError(
-                u"嘴唇关节数量必须是 4 的倍数，当前值为: {}".format(
+                u"嘴唇 Joint 数量必须是 4 的倍数，当前值为: {}".format(
                     self.mouth_jnt_number
                 )
             )
@@ -180,7 +195,9 @@ class FaceSetup(face_base.FaceBase):
     def delete_old_work_models(self, work_model_name_dict):
         u"""删除 Step 01 之前生成的旧工作模型。"""
         for key in work_model_name_dict:
-            model = work_model_name_dict.get(key)
+            model = work_model_name_dict.get(
+                key
+            )
 
             if not model:
                 continue
@@ -188,15 +205,23 @@ class FaceSetup(face_base.FaceBase):
             if not cmds.objExists(model):
                 continue
 
-            cmds.delete(model)
+            cmds.delete(
+                model
+            )
 
         return True
 
     def create_work_models(self, work_model_name_dict):
         u"""根据最新 Head Model 创建三个独立工作模型。"""
-        face_head_tweak_name = work_model_name_dict.get("tweak")
-        face_head_stretch_name = work_model_name_dict.get("stretch")
-        face_head_deform_name = work_model_name_dict.get("deform")
+        face_head_tweak_name = work_model_name_dict.get(
+            "tweak"
+        )
+        face_head_stretch_name = work_model_name_dict.get(
+            "stretch"
+        )
+        face_head_deform_name = work_model_name_dict.get(
+            "deform"
+        )
 
         self.face_head_tweak_model = mesh_utils.duplicate_model(
             source_model=self.face_head_model,
@@ -239,10 +264,12 @@ class FaceSetup(face_base.FaceBase):
     # =========================================================================
 
     def save_config(self):
-        u"""把 Step 01 最新设置更新到 Config Node。"""
-        self.ensure_config_node()
-        config_attr = self.get_config_attr()
+        u"""
+        把 Step 01 最新设置更新到 Face Config。
 
+        Config 的具体读写动作统一交给 FaceBase，
+        FaceSetup 只负责组织 Step 01 自己的数据。
+        """
         model_config_dict = {
             "face_head_model": self.face_head_model,
             "face_lf_eye_model": self.face_lf_eye_model,
@@ -253,7 +280,7 @@ class FaceSetup(face_base.FaceBase):
             "face_gum_model": self.face_gum_model,
         }
 
-        config_attr.connect_messages(
+        self.set_config_messages(
             attrs_dict=model_config_dict,
             force=True,
             clear_empty=True
@@ -267,7 +294,7 @@ class FaceSetup(face_base.FaceBase):
             "mouth_jnt_number": "long",
         }
 
-        config_attr.set_attr_values(
+        self.set_config_values(
             attrs_dict=value_config_dict,
             attr_types=value_type_dict,
             lock=False,
@@ -281,10 +308,32 @@ class FaceSetup(face_base.FaceBase):
     # =========================================================================
 
     def build(self):
-        u"""执行可以重复运行的 Face Rig Step 01。"""
+        u"""
+        执行可以重复运行的 Face Rig Step 01。
+
+        重新 Build Step 01 后：
+            1. Step 01 标记为完成；
+            2. Step 02～04 标记为未完成。
+
+        原因：
+            模型输入或嘴唇 Joint 数量改变后，
+            后续旧 Guide / Rig 结果不能继续被视为最新结果。
+        """
         self.check_model_exists()
         self.check_mouth_jnt_number()
+
         self.ensure_hierarchy()
         self.update_work_models()
         self.save_config()
+
+        self.set_step_completed(
+            completed=True
+        )
+        self.invalidate_later_steps()
+
         return True
+
+
+__all__ = [
+    "FaceSetup",
+]
