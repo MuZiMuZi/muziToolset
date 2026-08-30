@@ -12,6 +12,15 @@ Skirt Rig Builder
     4. 根据横向和纵向数量创建 Bind Joint Chain；
     5. 统一调用 systems.controller 创建 FK Controller。
 
+重要边界：
+    - Group 创建和 Parent 统一复用 core.hierarchy_utils；
+    - 世界位置查询统一复用 core.transform_utils；
+    - Joint 创建统一复用 core.joint_utils；
+    - DG Plug 连接统一复用 core.connection_utils；
+    - Constraint 创建统一复用 core.constraint_utils；
+    - Undo Chunk 统一复用 core.scene_utils；
+    - 本模块只保留 Skirt Rig Workflow。
+
 本模块不包含 PySide UI。
 """
 
@@ -19,6 +28,12 @@ from __future__ import print_function
 
 import maya.cmds as cmds
 
+from ....core import connection_utils
+from ....core import constraint_utils
+from ....core import hierarchy_utils
+from ....core import joint_utils
+from ....core import scene_utils
+from ....core import transform_utils
 from ... import controller as controller_system
 
 
@@ -32,35 +47,6 @@ def _safe_name(text):
         result = "skirt"
 
     return result
-
-
-def _ensure_group(name, parent=None):
-    """确保 Transform Group 存在。"""
-    if cmds.objExists(name):
-        return name
-
-    group = cmds.createNode(
-        "transform",
-        name=name
-    )
-
-    if parent is not None:
-        cmds.parent(
-            group,
-            parent
-        )
-
-    return group
-
-
-def _world_position(node):
-    """返回节点世界空间位置。"""
-    return cmds.xform(
-        node,
-        query=True,
-        worldSpace=True,
-        translation=True
-    )
 
 
 def _lerp(start_value, end_value, ratio):
@@ -87,22 +73,12 @@ class SkirtRigBuilder(object):
             horizontal_count=8,
             vertical_count=4
     ):
-        u"""
-        执行 `__init__` 对应的 Maya 工具操作。
-
-        Args:
-            name (str):
-                创建或查询时使用的节点名称。
-            horizontal_count (int):
-                当前构建、采样或查询过程使用的元素数量。
-            vertical_count (int):
-                当前构建、采样或查询过程使用的元素数量。
-        """
-
+        u"""初始化裙子绑定系统参数。"""
         self.name = _safe_name(name)
         self.horizontal_count = int(horizontal_count)
         self.vertical_count = int(vertical_count)
 
+        # 初始化后立即验证数量参数，避免无效配置进入后续 Setup / Build。
         self.validate_parameters()
 
     # -------------------------------------------------------------------------
@@ -110,17 +86,7 @@ class SkirtRigBuilder(object):
     # -------------------------------------------------------------------------
 
     def validate_parameters(self):
-        u"""
-        检查 Builder 参数。
-
-        Returns:
-            bool:
-            方法执行后的结果数据。
-
-        Raises:
-            ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-        """
+        u"""检查 Builder 参数。"""
         if self.horizontal_count < 3:
             raise ValueError(
                 u"裙子横向链数量不能小于 3。"
@@ -134,13 +100,7 @@ class SkirtRigBuilder(object):
         return True
 
     def get_names(self):
-        u"""
-        返回系统内所有固定节点名称。
-
-        Returns:
-            dict:
-            方法执行后的结果数据。
-        """
+        u"""返回系统内所有固定节点名称。"""
         return {
             "name": self.name,
             "root": "grp_m_{}_001".format(self.name),
@@ -159,16 +119,12 @@ class SkirtRigBuilder(object):
     # -------------------------------------------------------------------------
 
     def ensure_root_groups(self):
-        u"""
-        确保裙子系统基础层级存在。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+        u"""确保裙子系统基础层级存在。"""
+        # 生成当前 Skirt System 使用的固定节点名称。
         names = self.get_names()
 
-        root = _ensure_group(
+        # 创建或复用裙子系统顶层 Group。
+        root = hierarchy_utils.Hierarchy.create_grp(
             names["root"]
         )
 
@@ -180,10 +136,11 @@ class SkirtRigBuilder(object):
             "nodes",
         ]
 
+        # 创建或复用 Setup / Blueprint / Control / Joint / Node 子组。
         for group_key in child_group_keys:
-            _ensure_group(
+            hierarchy_utils.Hierarchy.create_grp(
                 names[group_key],
-                root
+                parent=root
             )
 
         return names
@@ -233,7 +190,9 @@ class SkirtRigBuilder(object):
                 delete_nodes.append(node)
 
         if delete_nodes:
-            cmds.delete(delete_nodes)
+            cmds.delete(
+                delete_nodes
+            )
 
     def _create_setup_curve(
             self,
@@ -253,7 +212,8 @@ class SkirtRigBuilder(object):
             constructionHistory=False
         )[0]
 
-        cmds.parent(
+        # 使用统一 Hierarchy API 把定位曲线整理到 Setup Group。
+        hierarchy_utils.Hierarchy.parent(
             curve,
             parent
         )
@@ -287,30 +247,38 @@ class SkirtRigBuilder(object):
         index = 0
 
         while index < self.horizontal_count:
-            point_group = cmds.createNode(
+            point_group_name = "grp_m_{}{}Point_{:03d}".format(
+                self.name,
+                place,
+                index + 1
+            )
+
+            # 使用 Scene Core 创建 Blueprint Point Group，并直接放入 Blueprint 层级。
+            point_group = scene_utils.create_node(
                 "transform",
-                name="grp_m_{}{}Point_{:03d}".format(
-                    self.name,
-                    place,
-                    index + 1
-                ),
+                point_group_name,
                 parent=names["blueprint"]
             )
 
-            poci = cmds.createNode(
-                "pointOnCurveInfo",
-                name="poci_m_{}{}_{:03d}".format(
-                    self.name,
-                    place,
-                    index + 1
-                )
+            poci_name = "poci_m_{}{}_{:03d}".format(
+                self.name,
+                place,
+                index + 1
             )
 
-            cmds.connectAttr(
+            # 创建 pointOnCurveInfo，作为定位曲线到 Blueprint Point 的实时采样节点。
+            poci = scene_utils.create_node(
+                "pointOnCurveInfo",
+                poci_name
+            )
+
+            # 把 Curve WorldSpace 输出接入 pointOnCurveInfo 输入。
+            connection_utils.connect_plugs(
                 curve_shape + ".worldSpace[0]",
                 poci + ".inputCurve",
                 force=True
             )
+
             cmds.setAttr(
                 poci + ".turnOnPercentage",
                 1
@@ -319,93 +287,87 @@ class SkirtRigBuilder(object):
                 poci + ".parameter",
                 float(index) / float(self.horizontal_count)
             )
-            cmds.connectAttr(
+
+            # 用 pointOnCurveInfo 的 Position 实时驱动 Blueprint Point Group。
+            connection_utils.connect_plugs(
                 poci + ".position",
                 point_group + ".translate",
                 force=True
             )
 
-            joint = cmds.createNode(
-                "joint",
-                name="bpjnt_m_{}{}_hor{:03d}_001".format(
-                    self.name,
-                    place,
-                    index + 1
-                ),
-                parent=point_group
+            joint_name = "bpjnt_m_{}{}_hor{:03d}_001".format(
+                self.name,
+                place,
+                index + 1
             )
-            cmds.setAttr(
-                joint + ".radius",
-                0.25
+
+            # 使用统一 Joint API 在 Point Group 下创建 Blueprint Joint。
+            joint_utils.Joint.create(
+                name=joint_name,
+                parent=point_group,
+                radius=0.25
             )
 
             index += 1
 
+    @scene_utils.undo_chunk
     def create_setup(self):
-        u"""
-        创建或重建裙子定位系统。
-
-        Returns:
-            dict:
-            方法执行后的结果数据。
-        """
+        u"""创建或重建裙子定位系统。"""
+        # 检查横向 / 纵向数量，避免使用无效参数创建 Setup。
         self.validate_parameters()
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziSkirtSetup"
+        # 创建或复用 Skirt Rig 的基础层级，并取得本次需要的固定名称。
+        names = self.ensure_root_groups()
+
+        # 删除上一次 Setup 创建的 Curve、Blueprint 和 POCI，保证本次从干净状态开始。
+        self._delete_setup_nodes(
+            names
         )
 
-        try:
-            names = self.ensure_root_groups()
-            self._delete_setup_nodes(names)
+        # 创建上方定位环线，作为裙子腰部采样边界。
+        up_curve = self._create_setup_curve(
+            names["up_curve"],
+            y_value=5.0,
+            radius=2.0,
+            parent=names["setup"]
+        )
 
-            up_curve = self._create_setup_curve(
-                names["up_curve"],
-                y_value=5.0,
-                radius=2.0,
-                parent=names["setup"]
-            )
-            down_curve = self._create_setup_curve(
-                names["down_curve"],
-                y_value=0.0,
-                radius=3.0,
-                parent=names["setup"]
-            )
+        # 创建下方定位环线，作为裙摆采样边界。
+        down_curve = self._create_setup_curve(
+            names["down_curve"],
+            y_value=0.0,
+            radius=3.0,
+            parent=names["setup"]
+        )
 
-            self._create_curve_blueprints(
-                up_curve,
-                "Up",
-                names
-            )
-            self._create_curve_blueprints(
-                down_curve,
-                "Down",
-                names
-            )
+        # 根据上方定位曲线创建实时 Up Blueprint Joint。
+        self._create_curve_blueprints(
+            up_curve,
+            "Up",
+            names
+        )
 
-            cmds.select(
-                [up_curve, down_curve],
-                replace=True
-            )
+        # 根据下方定位曲线创建实时 Down Blueprint Joint。
+        self._create_curve_blueprints(
+            down_curve,
+            "Down",
+            names
+        )
 
-            return {
-                "up_curve": up_curve,
-                "down_curve": down_curve,
-                "names": names,
-            }
+        cmds.select(
+            [up_curve, down_curve],
+            replace=True
+        )
 
-        finally:
-            cmds.undoInfo(closeChunk=True)
+        return {
+            "up_curve": up_curve,
+            "down_curve": down_curve,
+            "names": names,
+        }
 
     def select_setup_curves(self):
-        u"""
-        选择当前裙子系统的两条定位曲线。
-
-        Returns:
-            object | list:
-            方法执行后的结果数据。
-        """
+        u"""选择当前裙子系统的两条定位曲线。"""
+        # 获取当前 Skirt System 的固定 Curve 名称。
         names = self.get_names()
         curves = []
 
@@ -438,7 +400,9 @@ class SkirtRigBuilder(object):
     def _delete_previous_build(self, names):
         """删除之前生成的绑定结果。"""
         if cmds.objExists(names["build"]):
-            cmds.delete(names["build"])
+            cmds.delete(
+                names["build"]
+            )
 
         group_keys = [
             "controls",
@@ -458,7 +422,9 @@ class SkirtRigBuilder(object):
             )
 
             if children:
-                cmds.delete(children)
+                cmds.delete(
+                    children
+                )
 
     def _validate_blueprints(self, names):
         """检查所有上下 Blueprint Joint 是否存在。"""
@@ -490,158 +456,157 @@ class SkirtRigBuilder(object):
 
         return True
 
+    @scene_utils.undo_chunk
     def build(self):
-        u"""
-        根据当前 Blueprint 创建完整裙子 FK 绑定。
-
-        Returns:
-            dict:
-            方法执行后的结果数据。
-        """
+        u"""根据当前 Blueprint 创建完整裙子 FK 绑定。"""
+        # 检查 Builder 数量参数，保证 Joint Chain 可以正常插值。
         self.validate_parameters()
-        names = self.ensure_root_groups()
-        self._validate_blueprints(names)
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziBuildSkirtRig"
+        # 创建或复用基础层级，并取得当前 Skirt System 的全部固定名称。
+        names = self.ensure_root_groups()
+
+        # 确认所有 Up / Down Blueprint Joint 都存在，避免构建出残缺 Joint Chain。
+        self._validate_blueprints(
+            names
         )
 
-        try:
-            self._delete_previous_build(names)
+        # 删除上一次生成的 Joint / Controller / Build Metadata，保证 Build 可重复执行。
+        self._delete_previous_build(
+            names
+        )
 
-            build_group = cmds.createNode(
-                "transform",
-                name=names["build"],
-                parent=names["root"]
+        # 创建本次 Build 的 Metadata Group，用于保存构建参数。
+        build_group = scene_utils.create_node(
+            "transform",
+            names["build"],
+            parent=names["root"]
+        )
+
+        created_controls = []
+        created_joints = []
+        horizontal_index = 0
+
+        while horizontal_index < self.horizontal_count:
+            up_joint = "bpjnt_m_{}Up_hor{:03d}_001".format(
+                self.name,
+                horizontal_index + 1
+            )
+            down_joint = "bpjnt_m_{}Down_hor{:03d}_001".format(
+                self.name,
+                horizontal_index + 1
             )
 
-            created_controls = []
-            created_joints = []
-            horizontal_index = 0
+            # 使用 Transform Core 读取当前纵向链的上端 Blueprint 世界位置。
+            up_position = transform_utils.get_world_translation(
+                up_joint
+            )
 
-            while horizontal_index < self.horizontal_count:
-                up_joint = "bpjnt_m_{}Up_hor{:03d}_001".format(
+            # 使用 Transform Core 读取当前纵向链的下端 Blueprint 世界位置。
+            down_position = transform_utils.get_world_translation(
+                down_joint
+            )
+
+            previous_joint = None
+            previous_control = None
+            vertical_index = 0
+
+            while vertical_index < self.vertical_count:
+                ratio = float(vertical_index) / float(
+                    self.vertical_count - 1
+                )
+
+                position = _lerp(
+                    up_position,
+                    down_position,
+                    ratio
+                )
+
+                joint_name = "jnt_m_{}_hor{:03d}_ver{:03d}".format(
                     self.name,
-                    horizontal_index + 1
+                    horizontal_index + 1,
+                    vertical_index + 1
                 )
-                down_joint = "bpjnt_m_{}Down_hor{:03d}_001".format(
+
+                joint_parent = names["joints"]
+
+                if previous_joint is not None:
+                    joint_parent = previous_joint
+
+                # 使用统一 Joint API 在上下 Blueprint 之间创建当前 Bind Joint。
+                joint = joint_utils.Joint.create(
+                    name=joint_name,
+                    position=position,
+                    parent=joint_parent
+                )
+
+                control_name = "ctrl_m_{}_hor{:03d}_ver{:03d}".format(
                     self.name,
-                    horizontal_index + 1
+                    horizontal_index + 1,
+                    vertical_index + 1
                 )
 
-                up_position = _world_position(up_joint)
-                down_position = _world_position(down_joint)
+                parent_control = names["controls"]
 
-                previous_joint = None
-                previous_control = None
-                vertical_index = 0
+                if previous_control is not None:
+                    parent_control = previous_control
 
-                while vertical_index < self.vertical_count:
-                    ratio = float(vertical_index) / float(
-                        self.vertical_count - 1
-                    )
-
-                    position = _lerp(
-                        up_position,
-                        down_position,
-                        ratio
-                    )
-
-                    joint_name = "jnt_m_{}_hor{:03d}_ver{:03d}".format(
-                        self.name,
-                        horizontal_index + 1,
-                        vertical_index + 1
-                    )
-                    joint = cmds.createNode(
-                        "joint",
-                        name=joint_name
-                    )
-                    cmds.xform(
-                        joint,
-                        worldSpace=True,
-                        translation=position
-                    )
-
-                    if previous_joint is None:
-                        cmds.parent(
-                            joint,
-                            names["joints"]
-                        )
-                    else:
-                        cmds.parent(
-                            joint,
-                            previous_joint
-                        )
-
-                    control_name = "ctrl_m_{}_hor{:03d}_ver{:03d}".format(
-                        self.name,
-                        horizontal_index + 1,
-                        vertical_index + 1
-                    )
-
-                    parent_control = names["controls"]
-
-                    if previous_control is not None:
-                        parent_control = previous_control
-
-                    control_result = controller_system.create_controller(
-                        name=control_name,
-                        shape="circle",
-                        radius=0.6,
-                        axis="Y+",
-                        target=joint,
-                        parent=parent_control,
-                        color=17,
-                        create_sub_control=False,
-                        create_extra_groups=True,
-                        add_to_set=True
-                    )
-
-                    control = control_result["control"]
-
-                    cmds.parentConstraint(
-                        control,
-                        joint,
-                        maintainOffset=False
-                    )
-
-                    created_controls.append(control)
-                    created_joints.append(joint)
-                    previous_joint = joint
-                    previous_control = control
-                    vertical_index += 1
-
-                horizontal_index += 1
-
-            cmds.addAttr(
-                build_group,
-                longName="horizontalCount",
-                attributeType="long",
-                defaultValue=self.horizontal_count
-            )
-            cmds.addAttr(
-                build_group,
-                longName="verticalCount",
-                attributeType="long",
-                defaultValue=self.vertical_count
-            )
-
-            if created_controls:
-                cmds.select(
-                    created_controls,
-                    replace=True
+                # 使用统一 Controller System 创建当前 Joint 对应的 FK Controller。
+                control_result = controller_system.create_controller(
+                    name=control_name,
+                    shape="circle",
+                    radius=0.6,
+                    axis="Y+",
+                    target=joint,
+                    parent=parent_control,
+                    color=17,
+                    create_sub_control=False,
+                    create_extra_groups=True,
+                    add_to_set=True
                 )
 
-            return {
-                "group": build_group,
-                "controls": created_controls,
-                "joints": created_joints,
-                "names": names,
-            }
+                control = control_result["control"]
 
-        finally:
-            cmds.undoInfo(closeChunk=True)
+                # 使用统一 Constraint Core 建立 Controller 到 Joint 的 Parent Constraint。
+                constraint_utils.create_constraint(
+                    driver_objects=control,
+                    driven_object=joint,
+                    constraint_type="parentConstraint",
+                    maintain_offset=False
+                )
+
+                created_controls.append(control)
+                created_joints.append(joint)
+                previous_joint = joint
+                previous_control = control
+                vertical_index += 1
+
+            horizontal_index += 1
+
+        cmds.addAttr(
+            build_group,
+            longName="horizontalCount",
+            attributeType="long",
+            defaultValue=self.horizontal_count
+        )
+        cmds.addAttr(
+            build_group,
+            longName="verticalCount",
+            attributeType="long",
+            defaultValue=self.vertical_count
+        )
+
+        if created_controls:
+            cmds.select(
+                created_controls,
+                replace=True
+            )
+
+        return {
+            "group": build_group,
+            "controls": created_controls,
+            "joints": created_joints,
+            "names": names,
+        }
 
 
 __all__ = [
