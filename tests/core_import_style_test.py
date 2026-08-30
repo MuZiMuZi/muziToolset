@@ -3,7 +3,7 @@ u"""
 Core Import Style Test
 ======================
 
-静态检查正式代码是否仍然依赖旧 CamelCase Core Compatibility Shim。
+静态检查正式代码是否重新引入已经退休的 CamelCase Core 模块。
 
 正式模块：
     attr_utils
@@ -11,14 +11,19 @@ Core Import Style Test
     joint_utils
     name_utils
 
-兼容入口：
+已退休模块：
     attrUtils
     hierarchyUtils
     jointUtils
     nameUtils
 
-本测试使用 Python AST，只检查 Import 语义，不会因为文档或注释里提到旧文件名而误报。
-它不 Import Maya，也不会修改场景。
+检查内容
+--------
+1. ``core/`` 下不允许重新出现对应的 CamelCase Python 文件；
+2. ``app / ui / core / tools / systems / tests`` 不允许重新 Import 这些旧模块名。
+
+本测试使用 Python AST，只检查源码结构，不会因为普通注释或文档文字提到历史名称而误报。
+它不 Import Maya，也不会修改场景，因此可以同时在 Maya 和 GitHub Actions 中运行。
 """
 
 from __future__ import print_function
@@ -40,7 +45,7 @@ def get_package_root():
 
 
 def get_formal_roots():
-    """返回需要执行正式 Import Gate 的目录。"""
+    """返回需要执行正式 Import Gate 的源码目录。"""
     package_root = get_package_root()
     root_names = [
         "app",
@@ -63,11 +68,11 @@ def get_formal_roots():
     return roots
 
 
-def get_forbidden_module_names():
+def get_retired_module_names():
     """
-    返回旧 CamelCase Compatibility Shim 名称。
+    返回已经退休的 CamelCase Core 模块名。
 
-    字符串使用分段组合，避免本测试源码本身被未来的普通文本扫描器误判为旧 Import。
+    名称使用字符串拼接，避免未来额外增加的普通文本扫描规则把本测试自己的配置误判成 Import。
     """
     return [
         "attr" + "Utils",
@@ -77,8 +82,8 @@ def get_forbidden_module_names():
     ]
 
 
-def get_compatibility_file_paths():
-    """返回允许存在的四个兼容转发文件。"""
+def get_retired_file_paths():
+    """返回四个已经删除、禁止重新出现的历史 Core 文件路径。"""
     package_root = get_package_root()
     core_directory = os.path.join(
         package_root,
@@ -86,14 +91,12 @@ def get_compatibility_file_paths():
     )
     file_paths = []
 
-    for module_name in get_forbidden_module_names():
+    for module_name in get_retired_module_names():
         file_paths.append(
-            os.path.normcase(
-                os.path.abspath(
-                    os.path.join(
-                        core_directory,
-                        module_name + ".py"
-                    )
+            os.path.abspath(
+                os.path.join(
+                    core_directory,
+                    module_name + ".py"
                 )
             )
         )
@@ -106,9 +109,7 @@ def get_compatibility_file_paths():
 # =============================================================================
 
 def iter_python_files():
-    """遍历正式代码目录中的 Python 文件。"""
-    compatibility_paths = get_compatibility_file_paths()
-
+    """遍历正式代码目录中的全部 Python 文件。"""
     for formal_root in get_formal_roots():
         if not os.path.isdir(formal_root):
             continue
@@ -128,22 +129,14 @@ def iter_python_files():
                 if not file_name.endswith(".py"):
                     continue
 
-                file_path = os.path.join(
+                yield os.path.join(
                     directory,
                     file_name
                 )
-                normalized_path = os.path.normcase(
-                    os.path.abspath(file_path)
-                )
-
-                if normalized_path in compatibility_paths:
-                    continue
-
-                yield file_path
 
 
 # =============================================================================
-# AST Check
+# AST Import Check
 # =============================================================================
 
 def get_imported_names(import_node):
@@ -172,19 +165,19 @@ def get_imported_names(import_node):
     return imported_names
 
 
-def contains_forbidden_name(imported_name, forbidden_names):
-    """判断 Import 名称是否引用旧 Compatibility Shim。"""
+def contains_retired_name(imported_name, retired_names):
+    """判断 Import 名称是否包含已经退休的 Core 模块名。"""
     name_parts = imported_name.split(".")
 
     for name_part in name_parts:
-        if name_part in forbidden_names:
+        if name_part in retired_names:
             return True
 
     return False
 
 
 def scan_file(file_path):
-    """扫描单个 Python 文件并返回旧 Core Import 问题。"""
+    """扫描单个 Python 文件并返回历史 Core Import 问题。"""
     with open(
             file_path,
             "r",
@@ -197,7 +190,7 @@ def scan_file(file_path):
         filename=file_path
     )
 
-    forbidden_names = get_forbidden_module_names()
+    retired_names = get_retired_module_names()
     issues = []
 
     for node in ast.walk(syntax_tree):
@@ -207,13 +200,14 @@ def scan_file(file_path):
         imported_names = get_imported_names(node)
 
         for imported_name in imported_names:
-            if not contains_forbidden_name(
+            if not contains_retired_name(
                     imported_name,
-                    forbidden_names
+                    retired_names
             ):
                 continue
 
             issues.append({
+                "issue_type": "retired_import",
                 "file": file_path,
                 "line": getattr(node, "lineno", None),
                 "import_name": imported_name,
@@ -222,11 +216,50 @@ def scan_file(file_path):
     return issues
 
 
+# =============================================================================
+# Retired File Check
+# =============================================================================
+
+def scan_retired_files():
+    """
+    检查已经删除的 CamelCase Core 文件是否被重新加入仓库。
+
+    为什么单独检查文件存在：
+        即使某个重新加入的兼容文件内部只 Import snake_case 实现，单纯 AST Import 扫描也未必能发现问题。
+        因此这里把“历史文件重新出现”本身就视为架构回退。
+    """
+    issues = []
+
+    for file_path in get_retired_file_paths():
+        if not os.path.isfile(file_path):
+            continue
+
+        issues.append({
+            "issue_type": "retired_file",
+            "file": file_path,
+            "line": None,
+            "import_name": None,
+        })
+
+    return issues
+
+
 def scan_repository():
-    """扫描全部正式 Python 文件。"""
+    """扫描退休文件和全部正式 Python Import。"""
     issues = []
     file_count = 0
 
+    # -------------------------------------------------------------------------
+    # 步骤 1：退休 CamelCase 文件本身不允许重新出现。
+    # -------------------------------------------------------------------------
+    retired_file_issues = scan_retired_files()
+
+    for issue in retired_file_issues:
+        issues.append(issue)
+
+    # -------------------------------------------------------------------------
+    # 步骤 2：扫描正式源码中的 Import 语义。
+    # -------------------------------------------------------------------------
     for file_path in iter_python_files():
         file_count += 1
 
@@ -246,7 +279,7 @@ def scan_repository():
 # =============================================================================
 
 def run():
-    """运行 CamelCase Core Compatibility Import Gate。"""
+    """运行 snake_case Core 架构 Gate。"""
     print("=" * 78)
     print("Muzi Toolset - Core Import Style Test")
     print("=" * 78)
@@ -261,6 +294,14 @@ def run():
                 get_package_root()
             )
 
+            if issue["issue_type"] == "retired_file":
+                print(
+                    u"[FAIL] {} | 已退休的 CamelCase Core 文件重新出现".format(
+                        relative_path
+                    )
+                )
+                continue
+
             print(
                 u"[FAIL] {}:{} | {}".format(
                     relative_path,
@@ -270,9 +311,12 @@ def run():
             )
     else:
         print(
-            u"[PASS] {} 个正式 Python 文件未引用旧 CamelCase Core 入口。".format(
+            u"[PASS] {} 个正式 Python 文件全部使用当前 Core 模块命名。".format(
                 result["file_count"]
             )
+        )
+        print(
+            u"[PASS] 已退休 CamelCase Core 文件保持删除状态。"
         )
 
     print("-" * 78)
@@ -291,8 +335,11 @@ def run():
 __all__ = [
     "get_package_root",
     "get_formal_roots",
+    "get_retired_module_names",
+    "get_retired_file_paths",
     "iter_python_files",
     "scan_file",
+    "scan_retired_files",
     "scan_repository",
     "run",
 ]
