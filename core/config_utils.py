@@ -114,6 +114,7 @@ class ConfigNode(object):
         Returns:
             attr_utils.Attr
         """
+        # 使用统一 Attribute Core 处理当前 Network Node 的所有属性操作。
         return attr_utils.Attr(
             self.node
         )
@@ -128,9 +129,11 @@ class ConfigNode(object):
 
         Config Node 不存在时返回 None。
         """
+        # 先确认当前 Config Node 有效，避免在不存在的节点上读取 Attribute。
         if not self.exists():
             return None
 
+        # 获取统一 Attr 操作对象，读取目标 Message Attribute 的来源节点。
         config_attr = self.get_attr()
 
         return config_attr.get_message(
@@ -143,9 +146,11 @@ class ConfigNode(object):
 
         Config Node 不存在或属性不存在时返回 None。
         """
+        # 先确认当前 Config Node 有效，避免在不存在的节点上读取 Attribute。
         if not self.exists():
             return None
 
+        # 获取统一 Attr 操作对象，读取普通 Config Value。
         config_attr = self.get_attr()
 
         return config_attr.get_attr_value(
@@ -169,6 +174,7 @@ class ConfigNode(object):
         if not attr_names:
             return result
 
+        # 逐个调用统一 Message 查询入口，保证单个和批量读取使用同一套行为。
         for attr_name in attr_names:
             result[attr_name] = self.get_message(
                 attr_name
@@ -177,14 +183,13 @@ class ConfigNode(object):
         return result
 
     def get_values(self, attr_names):
-        u"""
-        批量读取普通 Config Value。
-        """
+        u"""批量读取普通 Config Value。"""
         result = {}
 
         if not attr_names:
             return result
 
+        # 逐个调用统一 Value 查询入口，避免批量 API 维护第二套读取逻辑。
         for attr_name in attr_names:
             result[attr_name] = self.get_value(
                 attr_name
@@ -217,8 +222,10 @@ class ConfigNode(object):
             dict:
                 每个属性的执行结果。
         """
+        # 写入前创建或复用 Config Network Node，保证后续 Attribute 操作有稳定目标。
         self.ensure()
 
+        # 获取统一 Attr 操作对象，把节点引用保存成 Message Connection。
         config_attr = self.get_attr()
 
         return config_attr.connect_messages(
@@ -251,11 +258,13 @@ class ConfigNode(object):
             dict:
                 每个属性的执行结果。
         """
+        # 写入前创建或复用 Config Network Node，保证普通 Value 有持久化节点。
         self.ensure()
 
         if attr_types is None:
             attr_types = {}
 
+        # 获取统一 Attr 操作对象，批量创建或更新普通配置属性。
         config_attr = self.get_attr()
 
         return config_attr.set_attr_values(
