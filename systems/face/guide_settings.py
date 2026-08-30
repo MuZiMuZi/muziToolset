@@ -30,13 +30,13 @@ default_controller_settings = {
     "face_ctrl_color_lf": 6,
     "face_ctrl_color_rt": 13,
     "face_ctrl_color_md": 17,
+    "brow_ctrl_size": 1.0,
+    "eye_ctrl_size": 1.0,
+    "eyelid_ctrl_size": 1.0,
+    "nose_ctrl_size": 1.0,
+    "cheek_ctrl_size": 1.0,
+    "lip_ctrl_size": 1.0,
     "jaw_ctrl_size": 1.0,
-    "lip_ctrl_size": 0.6,
-    "eye_ctrl_size": 0.8,
-    "eyelid_ctrl_size": 0.35,
-    "brow_ctrl_size": 0.45,
-    "cheek_ctrl_size": 0.5,
-    "nose_ctrl_size": 0.4,
 }
 
 controller_setting_attr_types = {
@@ -44,23 +44,24 @@ controller_setting_attr_types = {
     "face_ctrl_color_lf": "long",
     "face_ctrl_color_rt": "long",
     "face_ctrl_color_md": "long",
-    "jaw_ctrl_size": "double",
-    "lip_ctrl_size": "double",
+    "brow_ctrl_size": "double",
     "eye_ctrl_size": "double",
     "eyelid_ctrl_size": "double",
-    "brow_ctrl_size": "double",
-    "cheek_ctrl_size": "double",
     "nose_ctrl_size": "double",
+    "cheek_ctrl_size": "double",
+    "lip_ctrl_size": "double",
+    "jaw_ctrl_size": "double",
 }
 
+# 按面部从上到下排列，UI 和后续 Component 读取时保持同一顺序。
 controller_size_attr_names = [
-    "jaw_ctrl_size",
-    "lip_ctrl_size",
+    "brow_ctrl_size",
     "eye_ctrl_size",
     "eyelid_ctrl_size",
-    "brow_ctrl_size",
-    "cheek_ctrl_size",
     "nose_ctrl_size",
+    "cheek_ctrl_size",
+    "lip_ctrl_size",
+    "jaw_ctrl_size",
 ]
 
 controller_color_attr_names = [
