@@ -442,7 +442,7 @@ class ControlCreatorDialog(QDialog):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         selected_items = self.shape_list.selectedItems()
 
@@ -486,7 +486,7 @@ class ControlCreatorDialog(QDialog):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         mode = self.create_mode_combo.currentData()
 
@@ -553,7 +553,7 @@ class ControlCreatorDialog(QDialog):
 
         Returns:
             object | str:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         custom_name = self.name_line.text().strip()
 
@@ -657,7 +657,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return window_utils.show_window(
         "tools.controller.create_ctrl_tool",

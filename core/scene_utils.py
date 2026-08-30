@@ -135,7 +135,7 @@ def undo_chunk(function):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     @wraps(function)
     def wrapped(*args, **kwargs):
@@ -205,11 +205,11 @@ def get_long_name(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：先确认节点存在。
     validate_node(node)
@@ -262,9 +262,9 @@ def create_node(
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：检查创建参数。
@@ -348,7 +348,7 @@ def get_selected_nodes(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：获取当前 Selection。
     selected_nodes = cmds.ls(
@@ -404,11 +404,11 @@ def require_selected_nodes(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：调用统一 Selection 查询。
     selected_nodes = get_selected_nodes(
@@ -461,9 +461,9 @@ def ensure_object_set(
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：创建或验证目标 Set。
@@ -555,9 +555,9 @@ def create_native_event_callback(
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
         TypeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证输入。
     if not event_name:
@@ -591,7 +591,7 @@ def get_current_scene_path():
 
     Returns:
         object | str:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：向 Maya 查询当前 Scene 文件名。
     scene_path = cmds.file(
@@ -612,7 +612,7 @@ def is_scene_modified():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return bool(
         cmds.file(
@@ -635,13 +635,13 @@ def validate_scene_file(file_path):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：先统一路径分隔符和绝对路径格式。
     normalized_path = file_utils.normalize_path(file_path)
@@ -679,11 +679,11 @@ def open_scene(file_path, force=False, ignore_version=True):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：检查目标文件。
     normalized_path = validate_scene_file(file_path)
@@ -761,7 +761,7 @@ def reference_scene(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：验证文件路径。
     normalized_path = validate_scene_file(file_path)
@@ -807,7 +807,7 @@ def ensure_fbx_plugin_loaded():
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     plugin_name = "fbxmaya"
 
@@ -843,9 +843,9 @@ def export_selected_fbx(file_path):
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：读取并验证当前 Selection。

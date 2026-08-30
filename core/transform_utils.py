@@ -154,7 +154,7 @@ def set_world_translation(node, translation):
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：校验 Maya 节点。
     validate_transform(node)
@@ -192,7 +192,7 @@ def move_relative(node, offset, object_space=False):
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：校验节点。
     validate_transform(node)
@@ -282,8 +282,8 @@ def get_world_matrix(node):
 
     Notes:
         这里返回普通 list，而不是 MMatrix。
-            需要矩阵计算时由 matrix_utils 转成 Maya API Matrix，
-            这样 transform_utils 保持简单的数据读写职责。
+                需要矩阵计算时由 matrix_utils 转成 Maya API Matrix，
+                这样 transform_utils 保持简单的数据读写职责。
     """
     # 步骤 1：校验节点。
     validate_transform(node)
@@ -314,7 +314,7 @@ def set_world_matrix(node, matrix_values):
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：校验节点。
     validate_transform(node)

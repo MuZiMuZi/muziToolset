@@ -98,9 +98,9 @@ def get_matrix(matrix_plug):
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：检查 Plug 参数。
     if not matrix_plug:
@@ -141,7 +141,7 @@ def matrix_to_list(matrix):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     matrix_values = []
 
@@ -170,11 +170,11 @@ def calculate_parent_offset_matrix(driver, driven):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：确认 Driver 存在。
     if not cmds.objExists(driver):
@@ -280,7 +280,7 @@ def create_parent_matrix_constraint(
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：检查 Driver / Driven。

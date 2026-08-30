@@ -82,7 +82,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.validate_setup_config(
             require_mouth_jnt_number=True
@@ -103,7 +103,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object | str:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not node:
             return ""
@@ -121,7 +121,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object | int:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not node:
             return 0
@@ -139,7 +139,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not node:
             return None
@@ -172,7 +172,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not locator:
             return []
@@ -209,7 +209,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             None | object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not short_name:
             return None
@@ -262,7 +262,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         template_path = os.path.join(
             package_config.resources_dir,
@@ -282,11 +282,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         template_path = self.get_guide_template_path()
 
@@ -305,7 +305,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object | bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self.guide_root = None
         self.guide_move_ctrl = None
@@ -334,7 +334,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self.refresh_guide_handles()
 
@@ -360,11 +360,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         imported_transforms = cmds.ls(
             imported_nodes,
@@ -421,11 +421,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not cmds.objExists(self.face_guide_grp):
             raise RuntimeError(
@@ -482,11 +482,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         self.ensure_hierarchy()
 
@@ -535,7 +535,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not self.config_node_exists():
             return False
@@ -561,7 +561,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not cmds.objExists(self.face_guide_grp):
             self.refresh_guide_handles()
@@ -602,7 +602,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self.remove_guide()
 
@@ -637,11 +637,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             None | object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not short_name:
             if required:
@@ -721,7 +721,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if parent_group is None:
             parent_group = self.face_guide_grp
@@ -793,11 +793,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not part:
             raise ValueError(
@@ -885,13 +885,13 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not guide:
             raise ValueError(
@@ -924,7 +924,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         positions = []
 
@@ -955,7 +955,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         upper_names = [
             "loc_rt_mouth_corner_guide_001",
@@ -1041,11 +1041,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if side not in ["lf", "rt"]:
             raise ValueError(
@@ -1115,11 +1115,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if side not in ["lf", "rt"]:
             raise ValueError(
@@ -1165,11 +1165,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if side not in ["lf", "rt"]:
             raise ValueError(
@@ -1200,11 +1200,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if side not in ["lf", "rt"]:
             raise ValueError(
@@ -1222,7 +1222,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.get_part_guides(
             part="nose"
@@ -1234,7 +1234,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.get_part_guides(
             part="jaw"
@@ -1246,7 +1246,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.get_part_guides(
             part="teeth"
@@ -1258,7 +1258,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.get_part_guides(
             part="tongue"
@@ -1274,7 +1274,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.get_part_guides(
             part="ear",
@@ -1291,7 +1291,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.get_part_guides(
             part="zygoma",
@@ -1313,11 +1313,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if "_lf_" not in left_name:
             raise ValueError(
@@ -1345,11 +1345,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not left_parent:
             return None
@@ -1390,7 +1390,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if parent_group is None:
             parent_group = self.face_guide_grp
@@ -1439,7 +1439,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             None | object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         children = cmds.listRelatives(
             left_zero_group,
@@ -1484,7 +1484,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         plug = "{}.{}".format(
             node,
@@ -1535,7 +1535,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not cmds.objExists(source_attr):
             return False
@@ -1588,7 +1588,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         left_zero_name = self.get_short_name(
             left_zero_group
@@ -1779,7 +1779,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         left_locator_name = self.get_short_name(
             left_locator
@@ -1835,7 +1835,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         attributes = [
             "translateX",
@@ -1884,7 +1884,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         left_shapes = self.get_locator_shapes(
             left_locator
@@ -1938,7 +1938,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         result = {
             "valid": True,
@@ -2094,11 +2094,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         left_locator = self.get_left_locator(
             left_zero_group
@@ -2146,7 +2146,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if parent_group is None:
             parent_group = self.face_guide_grp
@@ -2174,7 +2174,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         repair_results = self.mirror_left_guides(
             parent_group=self.face_guide_grp
@@ -2204,7 +2204,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         result = {
             "valid": True,
@@ -2320,11 +2320,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         self.refresh_guide_handles()
 
@@ -2378,7 +2378,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self.validate_setup()
         self.ensure_hierarchy()
@@ -2407,11 +2407,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         self.validate_setup()
 

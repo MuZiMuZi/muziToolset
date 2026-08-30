@@ -61,7 +61,7 @@ def get_short_name(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return node.split("|")[-1]
 
@@ -76,11 +76,11 @@ def get_long_name(node):
 
     Returns:
         object | None:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not node:
         return None
@@ -116,7 +116,7 @@ def vector_subtract(vector_a, vector_b):
 
     Returns:
         list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return [
         vector_a[0] - vector_b[0],
@@ -137,7 +137,7 @@ def vector_add(vector_a, vector_b):
 
     Returns:
         list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return [
         vector_a[0] + vector_b[0],
@@ -158,7 +158,7 @@ def vector_multiply(vector, value):
 
     Returns:
         list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return [
         vector[0] * value,
@@ -177,7 +177,7 @@ def vector_length(vector):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return math.sqrt(
         vector[0] * vector[0]
@@ -196,7 +196,7 @@ def vector_normalize(vector):
 
     Returns:
         list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     length = vector_length(vector)
 
@@ -222,7 +222,7 @@ def dot_product(vector_a, vector_b):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return (
         vector_a[0] * vector_b[0]
@@ -243,7 +243,7 @@ def get_joint_path(start_joint, end_joint):
 
     Returns:
         object | None | list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     start_joint = get_long_name(start_joint)
     end_joint = get_long_name(end_joint)
@@ -313,7 +313,7 @@ def get_pole_vector_position(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     start_position = cmds.xform(
         start_joint,
@@ -406,11 +406,11 @@ def create_ik_rig(start_joint, end_joint):
 
     Returns:
         dict:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     original_start_joint = start_joint
     original_end_joint = end_joint
@@ -609,7 +609,7 @@ def find_rig_root(node):
 
     Returns:
         None | object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     current_node = get_long_name(node)
 
@@ -644,7 +644,7 @@ def get_duplicate_map():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     nodes = cmds.ls(
         long=True,
@@ -892,7 +892,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return window_manager.show_tool(
             "rig/{}".format(tool_key),
@@ -905,7 +905,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return self.open_tool(
@@ -919,7 +919,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return self.open_tool(
@@ -933,7 +933,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return self.open_tool(
@@ -947,7 +947,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return self.open_tool(
@@ -1456,7 +1456,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return window_utils.show_window(
         "tools.rig.rig_tool",

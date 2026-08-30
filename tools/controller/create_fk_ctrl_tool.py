@@ -40,7 +40,7 @@ def create_fk_controls(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return controller_system.create_fk_controls(
         targets=targets,
@@ -59,7 +59,7 @@ def main():
 
     Returns:
         object | list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     selections = cmds.ls(
         selection=True,

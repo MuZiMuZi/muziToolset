@@ -225,8 +225,8 @@ def clear_animation_keys(nodes=None):
 
     Notes:
         这个函数的语义是“删除动画曲线节点”。
-            如果以后需要只删除某一个时间范围的 Key，应新增独立 API，
-            不要让一个函数同时承担两种不同的清理行为。
+                如果以后需要只删除某一个时间范围的 Key，应新增独立 API，
+                不要让一个函数同时承担两种不同的清理行为。
     """
     # 步骤 1：先查询需要删除的曲线。
     animation_curves = get_animation_curves(
@@ -267,7 +267,7 @@ def can_set_attribute(attribute):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：Plug 不存在时直接返回 False。
     if not cmds.objExists(attribute):
@@ -416,8 +416,8 @@ def reset_controls(
 
     Notes:
         这里只重置标准 TRS。
-            IkFk、Stretch、Follow、Space 等角色专属属性必须由对应 Rig System
-            自己定义默认值，不能再次硬编码到通用 Core。
+                IkFk、Stretch、Follow、Space 等角色专属属性必须由对应 Rig System
+                自己定义默认值，不能再次硬编码到通用 Core。
     """
     # 步骤 1：没有显式传入控制器时，按命名规则自动查找。
     if controls is None:
@@ -455,7 +455,7 @@ def normalize_nodes(nodes):
 
     Returns:
         object | list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if nodes is None:
         return []
@@ -492,7 +492,7 @@ def get_keyed_plugs(node):
 
     Returns:
         object | list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not cmds.objExists(node):
         return []
@@ -532,7 +532,7 @@ def get_attribute_name(plug):
 
     Returns:
         object | str:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if "." not in plug:
         return ""
@@ -615,7 +615,7 @@ def collect_animation(nodes):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：整理输入节点。
     valid_nodes = normalize_nodes(nodes)
@@ -684,7 +684,7 @@ def export_animation(nodes, file_path):
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：确保至少有一个有效 Maya 节点。
     valid_nodes = normalize_nodes(nodes)
@@ -718,7 +718,7 @@ def export_selected_animation(file_path):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：读取当前选择。
     selected_nodes = cmds.ls(
@@ -753,11 +753,11 @@ def validate_animation_data(data):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：根对象必须是 dict。
     if not isinstance(data, dict):
@@ -800,12 +800,12 @@ def resolve_target_node(source_node, node_map=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Example:
         {
-                "ctrl_lf_arm_001": "characterA:ctrl_lf_arm_001"
-            }
+                    "ctrl_lf_arm_001": "characterA:ctrl_lf_arm_001"
+                }
     """
     if node_map is None:
         return source_node
@@ -923,7 +923,7 @@ def import_animation(
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：读取 JSON，并验证格式。

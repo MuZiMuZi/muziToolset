@@ -112,7 +112,7 @@ def get_world_position(item):
 
     Returns:
         list | None:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：尝试直接查询 World Translation。
@@ -158,7 +158,7 @@ def get_world_rotation(item):
 
     Returns:
         list | None:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：组件没有可直接当作 Transform Rotation 使用的稳定旋转值，因此直接跳过。
@@ -296,7 +296,7 @@ def snap_to_average(
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not reference_items:
         raise RuntimeError(u"参考对象不能为空。")

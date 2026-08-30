@@ -45,7 +45,7 @@ def get_short_name(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return node.split("|")[-1]
 
@@ -62,11 +62,11 @@ def replace_control_prefix(control, prefix):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     short_name = get_short_name(control)
 
@@ -98,11 +98,11 @@ def validate_node(node, label):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not node:
         raise RuntimeError(
@@ -142,7 +142,7 @@ def ensure_follow_attribute(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     validate_node(
         control,
@@ -217,7 +217,7 @@ def create_parent_space_blend(
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     validate_node(
         driver,

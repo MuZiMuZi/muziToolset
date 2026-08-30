@@ -208,7 +208,7 @@ def get_short_name(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if "|" in node:
         return node.rsplit("|", 1)[-1]
@@ -228,7 +228,7 @@ def validate_joint(joint, label):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not joint:
         cmds.warning(u"{}不能为空。".format(label))
@@ -267,7 +267,7 @@ def is_direct_child_joint(start_joint, end_joint):
 
     Returns:
         object | bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     parent_nodes = cmds.listRelatives(
         end_joint,
@@ -300,7 +300,7 @@ def get_interpolated_position(start_position, end_position, ratio):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     position = []
 
@@ -337,7 +337,7 @@ def resample_joint(start_joint, end_joint, joint_number):
 
     Returns:
         object | list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not validate_joint(start_joint, u"起始 Joint"):
         return []
@@ -487,7 +487,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return window_utils.show_window(
         "tools.joint.joint_resamp_tool",

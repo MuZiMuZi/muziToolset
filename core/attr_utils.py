@@ -148,7 +148,7 @@ class Attr(object):
 
         Notes:
             参数名 ``object`` 来自早期 API。虽然它会遮蔽 Python 内置名称，但为了兼容现有调用，
-                这里暂时不改名。
+                    这里暂时不改名。
         """
         self.object = object
         self.attr = attr
@@ -168,7 +168,7 @@ class Attr(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return cmds.objExists(self.object)
 
@@ -198,7 +198,7 @@ class Attr(object):
 
         Returns:
             object | bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         try:
             plug = self._get_plug(attr)
@@ -230,7 +230,7 @@ class Attr(object):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         plug = self._get_plug(attr)
 
@@ -274,7 +274,7 @@ class Attr(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         result = []
 
@@ -337,7 +337,7 @@ class Attr(object):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # ---------------------------------------------------------------------
         # 步骤 1：兼容旧参数并验证节点。
@@ -441,7 +441,7 @@ class Attr(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         output_plug = self._get_plug(output_attr)
         input_plug = self._get_plug(input_attr)
@@ -464,7 +464,7 @@ class Attr(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         output_plug = self._get_plug(output_attr)
         input_plug = self._get_plug(input_attr)
@@ -486,7 +486,7 @@ class Attr(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         plug = self._get_plug(attr)
 
@@ -512,7 +512,7 @@ class Attr(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         plug = self._get_plug(attr)
 
@@ -585,11 +585,11 @@ class Attr(object):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if value is None:
             return None
@@ -653,7 +653,7 @@ class Attr(object):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         plug = self._get_plug(attr)
 
@@ -684,7 +684,7 @@ class Attr(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         result = {}
 
@@ -721,7 +721,7 @@ class Attr(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         plug = self._get_plug(attr)
 
@@ -746,7 +746,7 @@ class Attr(object):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         input_plug = self._get_plug(attr)
 
@@ -782,7 +782,7 @@ class Attr(object):
 
         Returns:
             object | bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         input_plug = self._get_plug(attr)
         attr_name = input_plug.split(".", 1)[1]
@@ -836,7 +836,7 @@ class Attr(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         result = {}
 
@@ -865,7 +865,7 @@ class Attr(object):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         connections = self.get_attr_input(
             attr=attr,
@@ -899,7 +899,7 @@ class Attr(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         plug = self._get_plug(attr)
         attr_name = plug.split(".", 1)[1]
@@ -960,7 +960,7 @@ class Attr(object):
 
         Returns:
             None | object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         plug = self._get_plug(attr)
 
@@ -998,13 +998,13 @@ class Attr(object):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Example:
             {
-                    "translateY": [(True, True), (-10.0, 10.0)],
-                    "rotateX": [(True, False), (-45.0, 0.0)],
-                }
+                        "translateY": [(True, True), (-10.0, 10.0)],
+                        "rotateX": [(True, False), (-45.0, 0.0)],
+                    }
         """
         if not self.object_exists():
             cmds.warning(
@@ -1070,7 +1070,7 @@ class Attr(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         result = OrderedDict()
 
@@ -1126,7 +1126,7 @@ class Attr(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         attrs_to_lock = []
 
@@ -1157,7 +1157,7 @@ class Attr(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         query_pairs = [
             ("mainObjectList", "selectedMainAttributes"),
@@ -1217,7 +1217,7 @@ class Attr(object):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         selections = cmds.ls(
             selection=True,
@@ -1412,7 +1412,7 @@ class Attr(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         result = animation_utils.reset_transform_channels(
             [node]

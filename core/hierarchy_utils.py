@@ -170,7 +170,7 @@ class Hierarchy(object):
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
 
         Notes:
             插组前先记录对象原 Parent 和世界 Transform，再插入 Group，确保对象视觉姿态不跳动。
@@ -281,7 +281,7 @@ class Hierarchy(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         Hierarchy._validate_node(
             object,
@@ -319,7 +319,7 @@ class Hierarchy(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         selections = cmds.ls(
             selection=True,
@@ -371,7 +371,7 @@ class Hierarchy(object):
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not grp:
             raise RuntimeError(u"Group 名称不能为空。")
@@ -404,7 +404,7 @@ class Hierarchy(object):
 
         Returns:
             tuple:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Notes:
             这些名称属于旧场景兼容命名（m），新系统应使用项目当前 md / lf / rt 命名规范。
@@ -449,7 +449,7 @@ class Hierarchy(object):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # ---------------------------------------------------------------------
         # 步骤 1：创建顶层结构。

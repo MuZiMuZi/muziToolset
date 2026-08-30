@@ -153,7 +153,7 @@ class FaceRigWizard(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         page = QWidget()
 
@@ -356,7 +356,7 @@ class FaceRigWizard(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         page = QWidget()
 
@@ -587,7 +587,7 @@ class FaceRigWizard(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         slider_value = self.mouth_joint_slider.value()
         mouth_joint_number = slider_value * self.mouth_joint_step
@@ -599,7 +599,7 @@ class FaceRigWizard(QWidget):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         face_setup = FaceSetup(
             face_head_model=self.face_head_picker.get_value(),
@@ -644,7 +644,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     window = FaceRigWizard()
     return window

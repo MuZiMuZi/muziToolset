@@ -216,7 +216,7 @@ def refresh_tools():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     _discover_tools()
     return get_tools_by_category()
@@ -228,7 +228,7 @@ def get_tools_by_category():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     result = {}
 
@@ -245,7 +245,7 @@ def get_categories():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     categories = []
 
@@ -265,7 +265,7 @@ def get_tools_in_category(category_name):
 
     Returns:
         object | dict:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if category_name not in _tools_categories:
         return {}
@@ -285,11 +285,11 @@ def run_tool(category_name, tool_name):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         KeyError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if category_name not in _tools_categories:
         raise KeyError(

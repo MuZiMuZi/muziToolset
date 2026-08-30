@@ -75,11 +75,11 @@ def add_extra_group(obj, group_name, world_orient=False):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not cmds.objExists(obj):
         raise RuntimeError(u"对象不存在：{}".format(obj))
@@ -151,11 +151,11 @@ def create_driven_key_setup(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not driven_controls:
         raise RuntimeError(u"请选择一个或以上需要被驱动的控制器。")
@@ -435,7 +435,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return window_utils.show_window(
         "tools.face.face_select_key_tool",

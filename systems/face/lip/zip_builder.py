@@ -44,11 +44,11 @@ def validate_transform(node, label):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not node:
         raise RuntimeError(
@@ -89,11 +89,11 @@ def validate_joint(joint, label):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     validate_transform(
         joint,
@@ -135,7 +135,7 @@ def ensure_float_attribute(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     validate_transform(
         node,
@@ -194,7 +194,7 @@ def create_name(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return name_utils.Name.create_name(
         node_type=node_type,
@@ -219,7 +219,7 @@ def get_parent(node):
 
     Returns:
         object | None:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     parents = cmds.listRelatives(
         node,
@@ -257,11 +257,11 @@ def insert_zip_offset_group(
 
     Returns:
         dict:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     parent = get_parent(joint)
     world_matrix = cmds.xform(
@@ -337,7 +337,7 @@ def create_rest_world_matrix(
 
     Returns:
         dict:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     local_matrix = cmds.xform(
         zip_offset,
@@ -421,7 +421,7 @@ def connect_world_matrix_to_transform(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     nodes = []
     local_matrix_plug = world_matrix_plug
@@ -552,7 +552,7 @@ def create_zip_influence(
 
     Returns:
         dict:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     step = 1.0 / float(pair_count)
     item_number = pair_index + 1
@@ -698,7 +698,7 @@ def build_zip_pair(
 
     Returns:
         dict:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     item_number = pair_index + 1
 
@@ -897,9 +897,9 @@ def build_zip_lip(
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if upper_joints is None:
         upper_joints = []

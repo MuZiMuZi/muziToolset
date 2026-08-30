@@ -114,7 +114,7 @@ def get_short_name(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return node.split("|")[-1]
 
@@ -129,7 +129,7 @@ def is_default_camera(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return get_short_name(node) in default_cameras
 
@@ -144,7 +144,7 @@ def is_referenced(node):
 
     Returns:
         object | bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     try:
         return cmds.referenceQuery(
@@ -167,7 +167,7 @@ def existing_nodes(nodes):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     result = []
 
@@ -196,7 +196,7 @@ def all_transform_nodes():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return cmds.ls(
         type="transform",
@@ -214,7 +214,7 @@ def sort_child_first(nodes):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     result = []
 
@@ -247,7 +247,7 @@ def has_incoming_animation(node):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     for anim_type in anim_curve_types:
         connections = cmds.listConnections(
@@ -273,7 +273,7 @@ def has_constraint(node):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     connections = cmds.listConnections(
         node,
@@ -303,7 +303,7 @@ def has_rig_history(node):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     history = cmds.listHistory(
         node,
@@ -344,7 +344,7 @@ def can_modify_transform(node):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not cmds.objExists(node):
         return False
@@ -403,7 +403,7 @@ def delete_empty_groups(nodes=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：建立候选节点列表。
@@ -542,7 +542,7 @@ def freeze_transformations(nodes):
 
     Returns:
         tuple:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     nodes = existing_nodes(nodes)
     frozen_count = 0
@@ -604,7 +604,7 @@ def unlock_and_show_attributes(nodes):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     nodes = existing_nodes(nodes)
     attrs = [
@@ -664,7 +664,7 @@ def center_pivot(nodes):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     nodes = existing_nodes(nodes)
     centered_count = 0
@@ -709,7 +709,7 @@ def delete_unknown_nodes(nodes=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if nodes is None:
         unknown_nodes = cmds.ls(
@@ -783,7 +783,7 @@ def run_cleanup(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     result = {}
 

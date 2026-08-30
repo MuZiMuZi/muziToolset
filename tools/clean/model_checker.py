@@ -219,7 +219,7 @@ class ModelChecker(QDialog):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not self.selected_only_checkbox.isChecked():
             return None
@@ -240,7 +240,7 @@ class ModelChecker(QDialog):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         selected_items = self.result_table.selectedItems()
         rows = []
@@ -260,7 +260,7 @@ class ModelChecker(QDialog):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         issues = []
         rows = self.get_selected_issue_rows()
@@ -445,7 +445,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return window_utils.show_window(
         "tools.clean.model_checker",

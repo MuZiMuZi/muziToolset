@@ -115,7 +115,7 @@ def get_short_name(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     short_name = node.split("|")[-1]
     return short_name.replace(":", "_")
@@ -171,7 +171,7 @@ def get_transform(node):
 
     Returns:
         None | object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：过滤无效节点。
     if not node:
@@ -256,7 +256,7 @@ def get_base_transform(blendshape_node):
 
     Returns:
         object | None:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：向 BlendShape 查询 Base Geometry。
     geometries = cmds.blendShape(
@@ -293,7 +293,7 @@ def sort_targets_by_index(targets):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     item_count = len(targets)
     outer_index = 0
@@ -394,7 +394,7 @@ def get_next_target_index(blendshape_node):
 
     Returns:
         object | int:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：读取当前 weight Multi Attribute 已存在的 Index。
     indices = cmds.getAttr(
@@ -514,7 +514,7 @@ def add_or_replace_target(blendshape_node, target_transform):
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：验证 BlendShape 和 Target Mesh。
@@ -626,11 +626,11 @@ def duplicate_all_targets(blendshape_node):
 
     Returns:
         object | list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：取得 Base Geometry 和 Target 列表。
     base_transform = get_base_transform(blendshape_node)
@@ -740,7 +740,7 @@ def get_vertex_count(node):
 
     Returns:
         object | None:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     shape = get_mesh_shape(node)
 
@@ -773,7 +773,7 @@ def invert_shapes(base_mesh, corrective_meshes):
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证 Base Mesh。
     if not get_mesh_shape(base_mesh):

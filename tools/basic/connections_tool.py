@@ -96,7 +96,7 @@ def get_selected_objects(minimum_count=1):
 
     Returns:
         object | list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     selected_objects = cmds.ls(
         selection=True,
@@ -118,7 +118,7 @@ def get_channel_box_attrs():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     attribute_names = attr_utils.Attr.get_channelBox_attrs() or []
 
@@ -384,7 +384,7 @@ class ConnectionsTool(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         attribute_pairs = []
 
@@ -643,7 +643,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return window_utils.show_window(
         "tools.basic.connections_tool",

@@ -90,7 +90,7 @@ def clear_invalid_windows():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     invalid_keys = []
 
@@ -116,7 +116,7 @@ def get_window(window_key):
 
     Returns:
         object | None:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     window = _windows.get(window_key)
 
@@ -194,16 +194,16 @@ def show_window(window_key, window_factory):
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
         TypeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
 
     Example:
         def main():
-                return window_utils.show_window(
-                    "tools.basic.rename_tool",
-                    RenameTool
-                )
+                    return window_utils.show_window(
+                        "tools.basic.rename_tool",
+                        RenameTool
+                    )
     """
     if not window_key:
         raise ValueError(u"window_key 不能为空。")
@@ -259,7 +259,7 @@ def close_window(window_key):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     window = _windows.pop(window_key, None)
 

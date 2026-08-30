@@ -99,7 +99,7 @@ def validate_node(node):
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：空名称直接报错。
     if not node:
@@ -166,11 +166,11 @@ def get_constraint_command(constraint_type):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：维护标准 Constraint Type -> Command 映射。
     command_map = {
@@ -219,7 +219,7 @@ def create_constraint(
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：整理并验证 Driver。
@@ -292,7 +292,7 @@ def create_constraints(
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：整理 Driver / Driven 输入。
     driver_objects = normalize_nodes(
@@ -350,7 +350,7 @@ def create_pole_vector_constraint(
 
     Returns:
         object | list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：验证 Driver 和 IK Handle。
     validate_node(driver_object)

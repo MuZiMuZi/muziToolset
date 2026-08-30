@@ -272,7 +272,7 @@ class ConstraintTool(QWidget):
 
         Returns:
             tuple:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         selected_objects = cmds.ls(
             selection=True,
@@ -449,7 +449,7 @@ class ConstraintTool(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return constraint_utils.get_constraints(selected_objects)
 
@@ -513,7 +513,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return window_utils.show_window(
         "tools.basic.constraint_tool",

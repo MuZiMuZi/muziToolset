@@ -126,7 +126,7 @@ def get_short_name(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return node.split("|")[-1]
 
@@ -141,7 +141,7 @@ def is_referenced(node):
 
     Returns:
         object | bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     try:
         return cmds.referenceQuery(
@@ -164,7 +164,7 @@ def get_mesh_shapes(nodes=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if nodes is None:
         return cmds.ls(
@@ -239,7 +239,7 @@ def get_mesh_transform(mesh_shape):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     parents = cmds.listRelatives(
         mesh_shape,
@@ -263,7 +263,7 @@ def get_mesh_transforms(meshes):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     result = []
 
@@ -290,7 +290,7 @@ def get_history_node_types(mesh):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     history = cmds.listHistory(
         mesh,
@@ -327,7 +327,7 @@ def get_modeling_history(mesh):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     result = []
     history_nodes = get_history_node_types(mesh)
@@ -362,7 +362,7 @@ def has_deformer_history(mesh):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     history_nodes = get_history_node_types(mesh)
 
@@ -402,7 +402,7 @@ def make_issue(node, issue_type, details, fixable=False):
 
     Returns:
         dict:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return {
         "node": node,
@@ -426,7 +426,7 @@ def check_nonmanifold_geometry(meshes=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     meshes = get_mesh_shapes(meshes)
     issues = []
@@ -472,7 +472,7 @@ def check_lamina_faces(meshes=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     meshes = get_mesh_shapes(meshes)
     issues = []
@@ -515,7 +515,7 @@ def get_dag_nodes(nodes=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if nodes is None:
         return cmds.ls(
@@ -561,7 +561,7 @@ def check_duplicate_names(nodes=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     dag_nodes = get_dag_nodes(nodes)
     name_map = {}
@@ -622,7 +622,7 @@ def check_construction_history(meshes=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     meshes = get_mesh_shapes(meshes)
     issues = []
@@ -710,7 +710,7 @@ def check_transformations(meshes=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     meshes = get_mesh_shapes(meshes)
     transforms = get_mesh_transforms(meshes)
@@ -781,7 +781,7 @@ def check_locked_normals(meshes=None, sample_limit=500):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     meshes = get_mesh_shapes(meshes)
     issues = []
@@ -883,7 +883,7 @@ def run_checks(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     issues = []
     meshes = get_mesh_shapes(nodes)
@@ -941,7 +941,7 @@ def fix_issue(issue):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     node = issue.get("node")
     issue_type = issue.get("type")
@@ -1001,7 +1001,7 @@ def fix_issues(issues):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     fixed_count = 0
 

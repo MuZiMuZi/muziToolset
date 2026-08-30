@@ -26,7 +26,7 @@ def main():
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     selected_items = cmds.ls(
         selection=True,
