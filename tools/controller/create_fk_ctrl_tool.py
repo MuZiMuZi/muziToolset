@@ -16,6 +16,9 @@ import maya.cmds as cmds
 from ...systems import controller as controller_system
 
 
+TOOL_MODE = "action"
+
+
 def create_fk_controls(
         targets,
         shape="circle",
