@@ -5,6 +5,11 @@ Attribute Utils
 
 Maya Attribute / Plug 通用操作模块。
 
+正式模块路径
+------------
+``muziToolset.core.attr_utils`` 是 Attribute 能力的唯一正式实现。
+旧 ``attrUtils.py`` 兼容模块已经完成迁移并删除，新代码和文档统一使用 snake_case 路径。
+
 模块职责
 --------
 本模块负责一个 Maya 节点上的属性创建、属性状态、属性值、Message 配置、字符串配置、
@@ -73,7 +78,7 @@ reset_attr(node)
 1. 属性连接底层只维护一份：connection_utils.py；
 2. Transform Reset 底层只维护一份：animation_utils.py；
 3. Config 保存 Maya 节点引用优先使用 Message，而不是把节点名写进 String；
-4. 新代码优先使用 snake_case 方法；旧 CamelCase 文件名暂时保留用于兼容；
+4. 模块文件名与所有正式 import 统一使用 snake_case；
 5. Channel Box 属于 UI 语义，本模块仅保留旧兼容入口，不再新增同类 API。
 
 兼容
