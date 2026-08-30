@@ -5,11 +5,12 @@ Generated API Reference Refiner
 
 对 AST Generator 生成的 API Reference 做第二阶段阅读体验整理。
 
-当前负责：
+负责：
     1. 所有模块“概览”只保留简短用途说明；
-    2. 概览固定分成“用途”和“模块定位”两段；
+    2. 概览固定分成“用途”和“模块定位”；
     3. 不把完整 Module Docstring 正文直接铺在页面顶部；
-    4. 保持详细 API、参数表、返回值、异常和示例不变。
+    4. 每一个公开 Function / Method 标题下面固定增加“作用”区块；
+    5. 保持 Signature、参数、返回值、异常、示例和 Notes 不变。
 
 使用顺序：
     python scripts/generate_mkdocs_reference.py
@@ -25,6 +26,10 @@ import re
 
 
 MAX_SUMMARY_LENGTH = 140
+
+CALLABLE_HEADING_PATTERN = re.compile(
+    r"(?m)^(#{3,6}\s+`[^`\n]+\(\)`)\s*$"
+)
 
 
 # =============================================================================
@@ -113,9 +118,6 @@ def get_docstring_paragraphs(docstring):
         if line_index + 1 < len(raw_lines):
             next_line = raw_lines[line_index + 1]
 
-        # 跳过：
-        #   Animation Utils
-        #   ===============
         if stripped_line and is_underline_heading(next_line):
             line_index += 2
             continue
@@ -167,12 +169,14 @@ def looks_like_section_title(paragraph):
         "本模块不负责",
         "设计原则",
         "正式模块路径",
-        "兼容",
+        "生成范围",
         "说明",
         "功能",
         "使用场景",
         "职责",
         "边界",
+        "负责",
+        "使用",
     ]
 
     normalized = paragraph.strip().rstrip(":：")
@@ -258,7 +262,6 @@ def build_concise_summary(module_info):
         if looks_like_section_title(paragraph):
             continue
 
-        # 跳过只包含 import path / code 标记的短段。
         if paragraph.startswith("``"):
             continue
 
@@ -269,7 +272,7 @@ def build_concise_summary(module_info):
         if summary:
             return summary
 
-    return u"提供 `{}` 模块对应的 Maya 工具能力。".format(
+    return u"提供 `{}` 模块对应的 Maya / Rigging 能力。".format(
         module_info["module_name"]
     )
 
@@ -282,7 +285,7 @@ def build_module_position(module_info):
 
     position_map = {
         "core": u"Core 底层公共能力；不负责 UI 和完整 Rig Workflow。",
-        "systems": u"System 业务构建层；负责可重复构建的完整 Rig 组件或流程。",
+        "systems": u"System 业务构建层；负责可重复构建的完整 Rig Component 或 Workflow。",
         "tools": u"Tool 用户操作层；负责 UI、Selection 和调用底层能力。",
         "ui": u"UI 公共层；负责可复用界面组件，不承载 Rig 算法。",
         "app": u"应用入口层；负责主工具箱、窗口生命周期和工具调度。",
@@ -344,8 +347,60 @@ def replace_overview(markdown_text, summary, position):
     )
 
 
+def add_callable_purpose_labels(markdown_text):
+    u"""
+    给每一个公开 Function / Method 的摘要增加固定“作用”标签。
+
+    生成器已经把 Docstring 第一段放在 Callable 标题后。
+    本步骤只增强视觉层级，不修改摘要文本本身。
+    """
+    matches = list(
+        CALLABLE_HEADING_PATTERN.finditer(
+            markdown_text
+        )
+    )
+
+    if not matches:
+        return markdown_text
+
+    result_parts = []
+    cursor = 0
+    match_index = 0
+
+    while match_index < len(matches):
+        match = matches[match_index]
+        heading_end = match.end()
+        next_heading_start = len(markdown_text)
+
+        if match_index + 1 < len(matches):
+            next_heading_start = matches[match_index + 1].start()
+
+        section_text = markdown_text[
+            heading_end:next_heading_start
+        ]
+
+        if "**作用**" not in section_text[:180]:
+            result_parts.append(
+                markdown_text[cursor:heading_end]
+            )
+            result_parts.append(
+                "\n\n**作用**"
+            )
+            cursor = heading_end
+
+        match_index += 1
+
+    result_parts.append(
+        markdown_text[cursor:]
+    )
+
+    return "".join(
+        result_parts
+    )
+
+
 def refine_reference_docs(project_root=None):
-    u"""统一整理全部自动生成 API 页面的概览。"""
+    u"""统一整理全部自动生成 API 页面的概览和 Callable 作用区块。"""
     if project_root is None:
         project_root = get_project_root()
 
@@ -361,6 +416,7 @@ def refine_reference_docs(project_root=None):
     )
 
     changed_count = 0
+    callable_purpose_count = 0
 
     for source_path in source_files:
         module_info = generator.collect_module_info(
@@ -391,10 +447,27 @@ def refine_reference_docs(project_root=None):
         position = build_module_position(
             module_info
         )
+
         refined_text = replace_overview(
             markdown_text,
             summary,
             position
+        )
+
+        purpose_before = refined_text.count(
+            "**作用**"
+        )
+
+        refined_text = add_callable_purpose_labels(
+            refined_text
+        )
+
+        purpose_after = refined_text.count(
+            "**作用**"
+        )
+
+        callable_purpose_count += (
+            purpose_after - purpose_before
         )
 
         if refined_text == markdown_text:
@@ -413,11 +486,20 @@ def refine_reference_docs(project_root=None):
         changed_count += 1
 
     print(
-        u"Refined API overview pages: {}".format(
+        u"Refined API pages: {}".format(
             changed_count
         )
     )
-    return changed_count
+    print(
+        u"Added callable purpose labels: {}".format(
+            callable_purpose_count
+        )
+    )
+
+    return {
+        "changed_pages": changed_count,
+        "callable_purpose_labels": callable_purpose_count,
+    }
 
 
 if __name__ == "__main__":
