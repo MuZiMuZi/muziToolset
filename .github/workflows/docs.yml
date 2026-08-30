@@ -48,39 +48,68 @@ jobs:
         run: python tests/core_import_style_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 2：验证 API Reference Generator 本身。
+      # 步骤 2：检查所有正式公开 API 的 Docstring 是否完整。
+      #
+      # 公开方法必须具备：
+      #   - 清晰功能摘要；
+      #   - 每个参数的类型和说明；
+      #   - 有返回值时提供 Returns。
+      # -----------------------------------------------------------------------
+      - name: Check runtime docstring standard
+        run: python scripts/normalize_runtime_docstrings.py --check
+
+      # -----------------------------------------------------------------------
+      # 步骤 3：禁止自动占位式参数说明重新进入正式代码。
+      # -----------------------------------------------------------------------
+      - name: Check Maya and rigging terminology quality
+        run: python scripts/refine_runtime_docstring_semantics.py --check
+
+      # -----------------------------------------------------------------------
+      # 步骤 4：验证 API Reference Generator 本身。
       # -----------------------------------------------------------------------
       - name: Test API reference generator
         run: python tests/docs_reference_generator_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 3：验证全部正式 Runtime Python 文件都能映射到独立 API 页面。
+      # 步骤 5：验证全部正式 Runtime Python 文件都能映射到独立 API 页面。
       # -----------------------------------------------------------------------
       - name: Check runtime API documentation coverage
         run: python tests/docs_runtime_api_coverage_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 4：使用 AST 生成完整 Runtime API Reference 和源码树导航。
+      # 步骤 6：使用 AST 生成完整 Runtime API Reference 和源码树导航。
       # -----------------------------------------------------------------------
       - name: Generate API reference
         run: python scripts/generate_mkdocs_reference.py
 
       # -----------------------------------------------------------------------
-      # 步骤 5：在自动生成的 SUMMARY.md 中加入人工维护的任务型用户手册页面。
-      #
-      # API 源码树仍由 Generator 自动维护；这里仅扩展用户手册导航。
+      # 步骤 7：压缩模块概览，避免把完整 Module Docstring 堆在页面顶部。
+      # -----------------------------------------------------------------------
+      - name: Refine API overview layout
+        run: python scripts/refine_generated_reference.py
+
+      # -----------------------------------------------------------------------
+      # 步骤 8：每个 Function / Method 标题下固定显示“作用”。
+      # -----------------------------------------------------------------------
+      - name: Highlight callable purpose
+        run: |
+          python scripts/refine_generated_callable_layout.py --write
+          python scripts/refine_generated_callable_layout.py --check
+
+      # -----------------------------------------------------------------------
+      # 步骤 9：在自动生成的 SUMMARY.md 中加入人工维护的任务型用户手册页面。
       # -----------------------------------------------------------------------
       - name: Expand user manual navigation
         run: python scripts/extend_docs_summary.py
 
       # -----------------------------------------------------------------------
-      # 步骤 6：严格构建 MkDocs。
+      # 步骤 10：严格构建 MkDocs。
       # -----------------------------------------------------------------------
       - name: Build MkDocs site
         run: mkdocs build --strict
 
       # -----------------------------------------------------------------------
-      # 步骤 7：检查 GitHub Pages 是否已经启用。
+      # 步骤 11：检查 GitHub Pages 是否已经启用。
       # -----------------------------------------------------------------------
       - name: Check GitHub Pages status
         id: pages_status
@@ -110,7 +139,7 @@ jobs:
           fi
 
       # -----------------------------------------------------------------------
-      # 步骤 8：上传 Pages Artifact。
+      # 步骤 12：上传 Pages Artifact。
       # -----------------------------------------------------------------------
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
