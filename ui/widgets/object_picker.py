@@ -110,7 +110,7 @@ class MayaObjectPicker(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.line_edit.text().strip()
 
@@ -155,7 +155,7 @@ class MayaObjectPicker(QWidget):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         selection = cmds.ls(
             selection=True,

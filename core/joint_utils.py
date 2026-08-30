@@ -181,11 +181,11 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not name:
             raise RuntimeError(u"Joint 名称不能为空。")
@@ -260,7 +260,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         Joint._validate_node(obj)
 
@@ -318,7 +318,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         Joint._validate_node(obj)
 
@@ -373,11 +373,11 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not component:
             raise RuntimeError(u"组件名称不能为空。")
@@ -422,7 +422,7 @@ class Joint(object):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         selections = cmds.ls(
             selection=True,
@@ -477,7 +477,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return cmds.joint(
             self.joint,
@@ -491,7 +491,7 @@ class Joint(object):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         parents = cmds.listRelatives(
             self.joint,
@@ -515,7 +515,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         children = cmds.listRelatives(
             self.joint,
@@ -541,7 +541,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         value = 1 if visible else 0
 
@@ -558,7 +558,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.set_axis_visibility(True)
 
@@ -568,7 +568,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.set_axis_visibility(False)
 
@@ -582,7 +582,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         cmds.setAttr(
             self.joint + ".radius",
@@ -609,7 +609,7 @@ class Joint(object):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not joints:
             return []
@@ -659,7 +659,7 @@ class Joint(object):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         joints = cmds.ls(
             selection=True,
@@ -688,7 +688,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         joints = cmds.ls(
             type="joint",
@@ -711,7 +711,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         joints = cmds.ls(
             type="joint",
@@ -748,7 +748,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         children = self.get_children(
             all_descendents=False
@@ -779,7 +779,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         attrs = [
             "jointOrientX",
@@ -805,7 +805,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         attrs = [
             "jointOrientX",
@@ -827,7 +827,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.set_orient_keyable(True)
 
@@ -837,7 +837,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.set_orient_keyable(False)
 
@@ -851,7 +851,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         cmds.setAttr(
             self.joint + ".segmentScaleCompensate",
@@ -878,11 +878,11 @@ class Joint(object):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         short_name = Joint._short_name(self.joint)
         name_parts = short_name.split("_")
@@ -954,7 +954,7 @@ class JointCurve(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return curve_utils.get_curve_shape(curve)
 
@@ -969,7 +969,7 @@ class JointCurve(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return curve_utils.get_curve_transform(curve)
 
@@ -984,7 +984,7 @@ class JointCurve(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return curve_utils.get_curve_cvs(curve)
 
@@ -999,7 +999,7 @@ class JointCurve(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return curve_utils.get_curve_cv_count(curve)
 
@@ -1014,7 +1014,7 @@ class JointCurve(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return curve_utils.get_curve_cv_positions(
             curve,
@@ -1073,11 +1073,11 @@ class JointCurve(object):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         curve_transform = JointCurve.get_curve_transform(curve)
         positions = JointCurve.get_curve_cv_positions(curve)
@@ -1168,11 +1168,11 @@ class JointChain(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not joints:
             raise RuntimeError(u"Joint 列表不能为空。")
@@ -1196,7 +1196,7 @@ class JointChain(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         joints = JointChain.validate_joint_list(joints)
 
@@ -1223,7 +1223,7 @@ class JointChain(object):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         joints = cmds.ls(
             selection=True,
@@ -1261,11 +1261,11 @@ class JointChain(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         blueprint_joints = JointChain.validate_joint_list(
             blueprint_joints
@@ -1354,7 +1354,7 @@ class JointChain(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         joints = JointChain.validate_joint_list(joints)
 

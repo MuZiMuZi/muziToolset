@@ -92,7 +92,7 @@ def get_short_name(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if "|" in node:
         return node.rsplit("|", 1)[-1]
@@ -110,7 +110,7 @@ def get_selected_objects(show_warning=True):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     selected_objects = cmds.ls(
         selection=True,
@@ -136,7 +136,7 @@ def sort_objects_child_first(objects):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     result = []
 
@@ -170,7 +170,7 @@ def get_objects_by_scope(scope_name):
 
     Returns:
         object | list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：仅当前 Selection。
@@ -235,7 +235,7 @@ def rename_node(node, new_name):
 
     Returns:
         None | object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not node or not cmds.objExists(node):
         return None
@@ -273,7 +273,7 @@ def add_prefix(prefix):
 
     Returns:
         object | int:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not prefix:
         cmds.warning(u"请输入前缀。")
@@ -310,7 +310,7 @@ def add_suffix(suffix):
 
     Returns:
         object | int:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not suffix:
         cmds.warning(u"请输入后缀。")
@@ -355,7 +355,7 @@ def search_replace(search_text, replace_text, scope_name):
 
     Returns:
         object | int:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not search_text:
         cmds.warning(u"请输入需要查找的内容。")
@@ -411,16 +411,16 @@ def number_to_alpha(number, uppercase=True):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
 
     Example:
         0 -> A
-            25 -> Z
-            26 -> AA
+                25 -> Z
+                26 -> AA
     """
     if number < 0:
         raise ValueError(u"字母编号不能小于 0。")
@@ -465,7 +465,7 @@ def get_number_string(number, padding, number_type):
 
     Returns:
         object | None:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if number_type == u"数字":
         number_string = str(number)
@@ -523,7 +523,7 @@ def auto_number(
 
     Returns:
         object | int:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     selected_objects = get_selected_objects()
 
@@ -582,11 +582,11 @@ def build_pattern_name(pattern, number):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Example:
         build_pattern_name("jnt_md_spine_bind_***", 4)
-            -> jnt_md_spine_bind_004
+                -> jnt_md_spine_bind_004
     """
     star_blocks = re.findall(
         r"\*+",
@@ -628,7 +628,7 @@ def pattern_rename(pattern):
 
     Returns:
         object | int:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not pattern:
         cmds.warning(u"请输入重命名模式。")

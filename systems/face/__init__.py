@@ -27,7 +27,7 @@ def show():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     from . import wizard
 

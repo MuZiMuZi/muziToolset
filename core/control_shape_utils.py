@@ -134,7 +134,7 @@ def get_library_dir():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return controller_shapes_dir
 
@@ -155,7 +155,7 @@ def get_curve_shapes(transform):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：直接按 nurbsCurve 类型查询 Shape。
     shapes = cmds.listRelatives(
@@ -182,7 +182,7 @@ def get_shape_cvs(transform):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     cvs = []
     shapes = get_curve_shapes(transform)
@@ -212,7 +212,7 @@ def get_selected_curve_transforms():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：读取当前 Selection。
     selections = cmds.ls(
@@ -356,7 +356,7 @@ def get_shape_color(transform, default=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：取得第一个 Shape。
     shapes = get_curve_shapes(transform)
@@ -399,7 +399,7 @@ def get_shape_radius(transform):
 
     Returns:
         object | float:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     cvs = get_shape_cvs(transform)
 
@@ -506,11 +506,11 @@ def apply_shape_data(transform, shape_data_list):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：确认目标 Controller 存在。
     if not cmds.objExists(transform):
@@ -595,7 +595,7 @@ def load_shape_data(shape_name):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：构建资源路径。
     file_path = os.path.join(
@@ -622,7 +622,7 @@ def save_shape_data(shape_name, transform):
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证 Shape 名称。
     if not shape_name:
@@ -746,7 +746,7 @@ def translate_shape(transform, offset):
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证 Offset。
     if offset is None or len(offset) != 3:
@@ -811,7 +811,7 @@ def set_shape_radius(transform, radius):
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证目标半径。
     radius = float(radius)
@@ -882,7 +882,7 @@ def mirror_shape(transform, axis="x"):
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：准备三轴缩放值。
     scale_x = 1.0

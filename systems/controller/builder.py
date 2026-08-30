@@ -36,7 +36,7 @@ def get_short_name(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return node.split("|")[-1].replace(":", "_")
 
@@ -51,7 +51,7 @@ def get_control_name_from_target(target):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     short_name = get_short_name(target)
 
@@ -77,7 +77,7 @@ def get_side_color(name):
 
     Returns:
         int:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     lower_name = name.lower()
 
@@ -248,7 +248,7 @@ def create_controller(
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     control_name = _safe_control_name(name)
     control_name = _next_available_name(control_name)
@@ -477,7 +477,7 @@ def create_fk_controls(
 
     Returns:
         object | list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not targets:
         return []

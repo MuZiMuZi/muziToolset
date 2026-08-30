@@ -51,7 +51,7 @@ def show():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     from .app import toolbox
 
@@ -64,7 +64,7 @@ def initialize():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return show()
 
@@ -79,7 +79,7 @@ def smoke_test(test_window_manager=False):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     from .tests import maya_smoke_test
 
@@ -94,7 +94,7 @@ def functional_smoke_test():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     from .tests import maya_functional_smoke_test
 
@@ -107,7 +107,7 @@ def pipeline_smoke_test():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     from .tests import pipeline_refactor_smoke_test
 
@@ -128,7 +128,7 @@ def extended_core_smoke_test():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     from .tests import extended_core_smoke_test
 
@@ -141,7 +141,7 @@ def core_import_style_test():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     from .tests import core_import_style_test
 
@@ -154,7 +154,7 @@ def tool_window_smoke_test():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     from .tests import tool_window_smoke_test
 
@@ -167,7 +167,7 @@ def face_component_smoke_test():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     from .tests import face_component_smoke_test
 
@@ -180,7 +180,7 @@ def controller_component_smoke_test():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     from .tests import controller_component_smoke_test
 
@@ -197,7 +197,7 @@ def rig_integration_test(keep_result=False):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     from .tests import rig_integration_test
 

@@ -141,7 +141,7 @@ def get_maya_main_window():
 
     Returns:
         None | object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     try:
         pointer = omui.MQtUtil.mainWindow()
@@ -167,7 +167,7 @@ def get_tool_display_name(tool_name):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if tool_name in tool_display_names:
         return tool_display_names[tool_name]
@@ -194,7 +194,7 @@ def get_tool_description(tool_name):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if tool_name in tool_descriptions:
         return tool_descriptions[tool_name]
@@ -332,7 +332,7 @@ class ToolCard(QFrame):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         search_text = search_text.strip().lower()
 
@@ -851,7 +851,7 @@ class RiggingToolbox(QWidget):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self.status_label.setText(
             u"正在打开 {}...".format(tool_key)
@@ -913,7 +913,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     global _window
 

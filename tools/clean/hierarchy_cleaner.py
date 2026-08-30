@@ -167,7 +167,7 @@ class HierarchyCleaner(QDialog):
 
         Returns:
             object | bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if self.selected_only_checkbox.isChecked():
             return True
@@ -190,7 +190,7 @@ class HierarchyCleaner(QDialog):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if self.selected_only_checkbox.isChecked():
             nodes = cmds.ls(
@@ -215,7 +215,7 @@ class HierarchyCleaner(QDialog):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         lines = []
 
@@ -320,7 +320,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return window_utils.show_window(
         "tools.clean.hierarchy_cleaner",

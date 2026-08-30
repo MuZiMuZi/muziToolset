@@ -108,7 +108,7 @@ def maya_undo(function):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return scene_utils.undo_chunk(function)
 
@@ -123,7 +123,7 @@ def dag_depth(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return node.count("|")
 
@@ -253,7 +253,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return self._type
@@ -277,7 +277,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return self._side
@@ -301,7 +301,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return self._resolution
@@ -325,7 +325,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return self._description
@@ -349,7 +349,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self._resolution
 
@@ -372,7 +372,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self._description
 
@@ -395,7 +395,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return self._index
@@ -419,7 +419,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self.compose()
         return self._name
@@ -462,11 +462,11 @@ class Name(object):
 
         Returns:
             str | object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if side is None:
             return "md"
@@ -506,11 +506,11 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 步骤 1：所有字段先规范化，避免不同 Tool 产生大小写 / 空格差异。
         node_type = cls._normalize_name_part(node_type)
@@ -564,7 +564,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         node_type = cls._normalize_name_part(node_type)
         side = cls.normalize_side(side)
@@ -627,7 +627,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         index = cls.get_next_index(
             node_type=node_type,
@@ -655,7 +655,7 @@ class Name(object):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         name_object = cls(name=name)
 
@@ -678,7 +678,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         name_object = cls(name=name)
         name_object.flip()
@@ -690,7 +690,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         node_type = self._normalize_name_part(self._type)
         side = self.normalize_side(self._side)
@@ -719,7 +719,7 @@ class Name(object):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not self._name:
             return False
@@ -750,7 +750,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         normalized_side = self.normalize_side(self._side)
 
@@ -777,7 +777,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         names = cmds.ls(
             selection=True,
@@ -803,7 +803,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self._name = cmds.rename(
             self._name,
@@ -822,7 +822,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         short_name = self._name.split("|")[-1]
         self._name = cmds.rename(
@@ -913,7 +913,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         object_name = self._name.split("|")[-1]
         new_name = object_name.replace(
@@ -937,7 +937,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self._name = cmds.rename(
             self._name,
@@ -985,7 +985,7 @@ class Name(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         all_objects = cmds.ls(
             long=True,

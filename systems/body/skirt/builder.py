@@ -115,11 +115,11 @@ class SkirtRigBuilder(object):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if self.horizontal_count < 3:
             raise ValueError(
@@ -139,7 +139,7 @@ class SkirtRigBuilder(object):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return {
             "name": self.name,
@@ -164,7 +164,7 @@ class SkirtRigBuilder(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         names = self.get_names()
 
@@ -347,7 +347,7 @@ class SkirtRigBuilder(object):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self.validate_parameters()
 
@@ -404,7 +404,7 @@ class SkirtRigBuilder(object):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         names = self.get_names()
         curves = []
@@ -496,7 +496,7 @@ class SkirtRigBuilder(object):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self.validate_parameters()
         names = self.ensure_root_groups()

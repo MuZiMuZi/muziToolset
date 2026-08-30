@@ -213,7 +213,7 @@ def can_connect(source_plug, destination_plug, force=False):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：两个 Plug 都必须存在。
     if not source_plug or not destination_plug:
@@ -440,7 +440,7 @@ def disconnect_attribute_pairs(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     disconnected_count = 0
 
@@ -490,7 +490,7 @@ def connect_source_to_attributes(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     created_count = 0
 

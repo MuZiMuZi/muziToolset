@@ -111,11 +111,11 @@ def validate_node(node):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：空参数直接报错。
     if not node:
@@ -142,11 +142,11 @@ def get_surface_shape(surface):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：校验输入节点。
     validate_node(surface)
@@ -194,11 +194,11 @@ def get_surface_transform(surface):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：先统一取得 Surface Shape。
     surface_shape = get_surface_shape(surface)
@@ -245,11 +245,11 @@ def move_curve_copy(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：把轴向统一成大写。
     axis = axis.upper()
@@ -319,7 +319,7 @@ def create_surface_from_curve(
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：取得 Curve Transform。
@@ -438,7 +438,7 @@ def create_follicle(
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：取得 Surface Shape。
@@ -560,11 +560,11 @@ def create_even_follicles(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证数量和方向。
     if count < 1:

@@ -39,11 +39,11 @@ def validate_transform(node, label):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not node:
         raise RuntimeError(
@@ -82,7 +82,7 @@ def validate_side(side):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return name_utils.Name.normalize_side(side)
 
@@ -99,11 +99,11 @@ def normalize_name_part(value, label):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if value is None:
         raise ValueError(
@@ -163,7 +163,7 @@ def create_rig_name(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     side = validate_side(side)
     region = normalize_name_part(
@@ -249,7 +249,7 @@ def build_radial_curve_joints(
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     curve_utils.get_curve_shape(curve)
     validate_transform(
@@ -549,7 +549,7 @@ def build_eyelid_joints(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return build_radial_curve_joints(
         curve=curve,
@@ -593,7 +593,7 @@ def build_eye_bag_joints(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return build_radial_curve_joints(
         curve=curve,

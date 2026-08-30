@@ -393,7 +393,7 @@ class JointTool(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         joints = cmds.ls(
             selection=True,
@@ -559,7 +559,7 @@ class JointTool(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return window_manager.show_tool(
             "joint/joint_resample",
@@ -898,7 +898,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return window_utils.show_window(
         "tools.joint.joint_tool",

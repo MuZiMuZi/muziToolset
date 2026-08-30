@@ -40,11 +40,11 @@ def validate_joint(joint):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not joint:
         raise RuntimeError(u"Joint 名称不能为空。")
@@ -77,11 +77,11 @@ def validate_transform(node, label):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not node:
         raise RuntimeError(
@@ -121,11 +121,11 @@ def normalize_name_part(value, label):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if value is None:
         raise ValueError(
@@ -176,7 +176,7 @@ def create_rig_name(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     side = name_utils.Name.normalize_side(side)
     region = normalize_name_part(
@@ -234,11 +234,11 @@ def create_attachment_group(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     group_name = create_rig_name(
         "grp",
@@ -284,7 +284,7 @@ def create_curve_attachment(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     parameter = curve_utils.length_percentage_to_parameter(
         curve,
@@ -345,7 +345,7 @@ def attach_joints_to_curves(
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if joints is None:
         joints = []

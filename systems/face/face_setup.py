@@ -117,11 +117,11 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if self.face_head_model is None or self.face_head_model == "":
             raise RuntimeError(
@@ -150,15 +150,15 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
             TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if self.mouth_jnt_number is None:
             raise RuntimeError(
@@ -194,7 +194,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         for face_model in self.face_model_list:
             if face_model is None:
@@ -216,7 +216,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         face_head_tweak_name = name_utils.Name.create_name(
             node_type="model",
@@ -260,7 +260,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         for key in work_model_name_dict:
             model = work_model_name_dict.get(
@@ -289,7 +289,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         face_head_tweak_name = work_model_name_dict.get(
             "tweak"
@@ -327,7 +327,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self.parent_input_models()
 
@@ -356,7 +356,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         model_config_dict = {
             "face_head_model": self.face_head_model,
@@ -408,7 +408,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self.check_model_exists()
         self.check_mouth_jnt_number()

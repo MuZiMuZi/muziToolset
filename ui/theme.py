@@ -709,7 +709,7 @@ def set_role(widget, role, enabled=True):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
 
     if widget is None:
@@ -752,7 +752,7 @@ def apply_theme(widget):
 
     Returns:
         object | None:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
 
     if widget is None:
@@ -778,7 +778,7 @@ def make_title(text_value, parent=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
 
     label = QLabel(text_value, parent)
@@ -798,7 +798,7 @@ def make_subtitle(text_value, parent=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
 
     label = QLabel(text_value, parent)
@@ -819,7 +819,7 @@ def make_section_title(text_value, parent=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
 
     label = QLabel(text_value, parent)
@@ -841,7 +841,7 @@ def make_card(parent=None, margins=(16, 14, 16, 14), spacing=8):
 
     Returns:
         tuple:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
 
     card = QFrame(parent)
@@ -873,7 +873,7 @@ def make_sub_card(parent=None, margins=(12, 10, 12, 10), spacing=6):
 
     Returns:
         tuple:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
 
     card = QFrame(parent)
@@ -901,7 +901,7 @@ def style_primary(button):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
 
     return set_role(button, "primary")
@@ -917,7 +917,7 @@ def style_danger(button):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
 
     return set_role(button, "danger")
@@ -933,7 +933,7 @@ def style_ghost(button):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
 
     return set_role(button, "ghost")
@@ -951,7 +951,7 @@ def style_navigation(button, active=False):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
 
     set_role(button, "nav")
@@ -969,7 +969,7 @@ def style_search(line_edit):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
 
     return set_role(line_edit, "search")
@@ -989,7 +989,7 @@ def style_window(widget, title=None, minimum_width=None):
 
     Returns:
         object | None:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
 
     if widget is None:

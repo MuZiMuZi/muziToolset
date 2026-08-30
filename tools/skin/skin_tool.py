@@ -233,7 +233,7 @@ class SkinTool(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         geometries = cmds.ls(
             selection=True,
@@ -279,7 +279,7 @@ class SkinTool(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         scene_path = cmds.file(
             query=True,
@@ -409,7 +409,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return window_utils.show_window(
         "tools.skin.skin_tool",

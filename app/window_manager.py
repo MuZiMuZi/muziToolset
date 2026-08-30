@@ -399,7 +399,7 @@ def show_tool(tool_key, tool_function):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     old_window = _open_windows.get(tool_key)
 
@@ -476,7 +476,7 @@ def get_open_windows():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     result = {}
     invalid_keys = []

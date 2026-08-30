@@ -186,7 +186,7 @@ class SkirtRigDialog(QDialog):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return SkirtRigBuilder(
             name=self.name_line.text(),
@@ -249,7 +249,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return window_utils.show_window(
         "tools.rig.skirt_ctrl_tool",

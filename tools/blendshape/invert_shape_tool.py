@@ -207,7 +207,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     return window_utils.show_window(
         "tools.blendshape.invert_shape_tool",

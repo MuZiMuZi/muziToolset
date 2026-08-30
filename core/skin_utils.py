@@ -114,7 +114,7 @@ def get_short_name(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：只保留 DAG 最后一段。
     short_name = node.split("|")[-1]
@@ -138,7 +138,7 @@ def find_skin_cluster(geometry):
 
     Returns:
         None | object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：过滤空参数和不存在节点。
     if not geometry:
@@ -245,7 +245,7 @@ def copy_skin_weights(source, targets):
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：确认 Source 有 SkinCluster。
@@ -359,7 +359,7 @@ def export_skin_weights(geometry, directory):
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：确认 Geometry 已经绑定。
@@ -445,11 +445,11 @@ def import_skin_weights(geometry, directory):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：整理文件路径。
     directory = file_utils.normalize_path(directory)
@@ -581,7 +581,7 @@ def select_influences(geometries):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     influences = []
 
@@ -613,7 +613,7 @@ def normalize_geometries(geometries):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     normalized = []
 

@@ -124,7 +124,7 @@ class FaceBase(object):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not cmds.objExists(self.face_master_grp):
             hierarchy_utils.Hierarchy.create_grp(
@@ -167,11 +167,11 @@ class FaceBase(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if cmds.objExists(self.config_node):
             node_type = cmds.nodeType(
@@ -203,7 +203,7 @@ class FaceBase(object):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not cmds.objExists(self.config_node):
             return False
@@ -223,7 +223,7 @@ class FaceBase(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         config_attr = attr_utils.Attr(
             self.config_node
@@ -240,7 +240,7 @@ class FaceBase(object):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not self.config_node_exists():
             return None
@@ -261,7 +261,7 @@ class FaceBase(object):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not self.config_node_exists():
             return None
@@ -298,7 +298,7 @@ class FaceBase(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self.ensure_config_node()
 
@@ -333,7 +333,7 @@ class FaceBase(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self.ensure_config_node()
 
@@ -363,7 +363,7 @@ class FaceBase(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         for attr_name in self.setup_message_attr_names:
             node = self.get_config_message(
@@ -399,7 +399,7 @@ class FaceBase(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if refresh:
             self.refresh_setup_data()
@@ -438,11 +438,11 @@ class FaceBase(object):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not self.config_node_exists():
             raise RuntimeError(
@@ -508,13 +508,13 @@ class FaceBase(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not isinstance(step_value, int):
             raise TypeError(
@@ -541,13 +541,13 @@ class FaceBase(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
             TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if step_value is None:
             step_value = self.step_value
@@ -580,7 +580,7 @@ class FaceBase(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         step_value = self.resolve_step_value(
             step_value
@@ -613,7 +613,7 @@ class FaceBase(object):
 
         Returns:
             object | bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         step_value = self.resolve_step_value(
             step_value
@@ -650,11 +650,11 @@ class FaceBase(object):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         step_value = self.resolve_step_value(
             step_value
@@ -693,11 +693,11 @@ class FaceBase(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not isinstance(last_step, int):
             raise TypeError(

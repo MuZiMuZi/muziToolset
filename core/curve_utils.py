@@ -125,11 +125,11 @@ def validate_node(node):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：参数为空时直接报错。
     if not node:
@@ -156,11 +156,11 @@ def get_curve_shape(curve):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：确认输入节点存在。
@@ -214,11 +214,11 @@ def get_curve_transform(curve):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：先统一取得 Curve Shape。
     curve_shape = get_curve_shape(curve)
@@ -253,7 +253,7 @@ def get_curve_cvs(curve):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：取得唯一 Shape Path。
     curve_shape = get_curve_shape(curve)
@@ -280,7 +280,7 @@ def get_curve_cv_count(curve):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     curve_cvs = get_curve_cvs(curve)
     return len(curve_cvs)
@@ -301,7 +301,7 @@ def get_curve_cv_positions(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     curve_cvs = get_curve_cvs(curve)
     positions = []
@@ -335,7 +335,7 @@ def get_dag_path(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：确认节点存在。
     validate_node(node)
@@ -357,7 +357,7 @@ def get_curve_function(curve):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：取得 Curve Shape。
     curve_shape = get_curve_shape(curve)
@@ -381,15 +381,15 @@ def get_even_percentages(sample_count):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
 
     Example:
         get_even_percentages(5)
-            -> [0.0, 0.25, 0.5, 0.75, 1.0]
+                -> [0.0, 0.25, 0.5, 0.75, 1.0]
     """
     # 步骤 1：至少需要首尾两个采样点。
     if sample_count < 2:
@@ -520,11 +520,11 @@ def get_closest_parameter(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证世界坐标格式。
     if world_position is None:
@@ -583,11 +583,11 @@ def parameter_to_length_percentage(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：取得 API Function 和总弧长。
     curve_function = get_curve_function(curve)
@@ -633,11 +633,11 @@ def length_percentage_to_parameter(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：统一成 float，并验证范围。
     percentage = float(percentage)
@@ -825,7 +825,7 @@ def create_closest_point_attachment(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：先得到最近位置的原始 Parameter。
     parameter = get_closest_parameter(
@@ -867,9 +867,9 @@ def create_curve_from_nodes(
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证输入节点数量和 Degree。
     if nodes is None:
@@ -933,11 +933,11 @@ def create_curve_from_selected_edges(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：只展开 Polygon Edge Selection。
     selected_edges = cmds.filterExpand(

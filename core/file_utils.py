@@ -110,11 +110,11 @@ def ensure_directory(directory):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：目录参数不能为空。
     if not directory:
@@ -144,11 +144,11 @@ def normalize_extensions(extensions):
 
     Returns:
         object | None:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Example:
         ["MA", ".mb", "json"]
-                -> [".ma", ".mb", ".json"]
+                    -> [".ma", ".mb", ".json"]
     """
     # 步骤 1：None 表示不过滤扩展名。
     if extensions is None:
@@ -209,9 +209,9 @@ def find_files(
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：规范化并验证根目录。
@@ -312,13 +312,13 @@ def read_json(file_path, default=None):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：规范化路径。
     normalized_path = normalize_path(file_path)
@@ -367,7 +367,7 @@ def write_json(
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：规范化输出路径。
     normalized_path = normalize_path(file_path)
@@ -408,7 +408,7 @@ def get_file_name(file_path):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     normalized_path = normalize_path(file_path)
     return os.path.basename(normalized_path)
@@ -424,7 +424,7 @@ def get_file_stem(file_path):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 步骤 1：先取得文件名。
     file_name = get_file_name(file_path)
