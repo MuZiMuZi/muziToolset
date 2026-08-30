@@ -22,6 +22,12 @@ Eyelid / Eye Bag
 Lip / Zip Lip
 ```
 
+## Face Rig
+
+Face Guide 的职责划分、标准 Build / Finalize 流程、Guide 查询 API、左右镜像修复以及 Maya 测试方法，参见：
+
+- [Face Guide 工作流](face-guide.md)
+
 运行：
 
 ```bash
