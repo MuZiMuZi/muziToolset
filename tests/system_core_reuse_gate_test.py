@@ -1,13 +1,13 @@
 # coding=utf-8
 u"""
-System Core Reuse Gate
-======================
+Upper Layer Core Reuse Gate
+===========================
 
-静态检查 ``systems/`` 是否重新实现已经有明确 Core 归属的通用 Helper。
+静态检查 ``systems/`` 与 ``tools/`` 是否重新实现已经有明确 Core 归属的通用 Helper。
 
 目标
 ----
-项目完成一次去重并不够。如果以后新的 Builder 又重新写：
+项目完成一次去重并不够。如果以后新的 System / Tool 又重新写：
 
     validate_node()
     validate_transform()
@@ -47,17 +47,17 @@ def get_package_root():
     )
 
 
-def get_systems_root():
-    u"""返回正式 systems 目录。"""
-    return os.path.join(
-        get_package_root(),
-        "systems"
-    )
+def get_scan_root_names():
+    u"""返回必须复用 Core 的正式上层源码目录。"""
+    return [
+        "systems",
+        "tools",
+    ]
 
 
 def get_forbidden_helper_names():
     u"""
-    返回 System 不应重新实现的通用 Helper 名称。
+    返回 System / Tool 不应重新实现的通用 Helper 名称。
 
     这些能力已经有唯一正式 Core：
         Node Exists      -> core.scene_utils
@@ -96,7 +96,6 @@ def get_compatibility_allowlist():
         },
         "systems/face/face_guide.py": {
             "get_short_name",
-            "get_parent",
         },
     }
 
@@ -105,33 +104,43 @@ def get_compatibility_allowlist():
 # File Discovery
 # =============================================================================
 
-def iter_system_python_files():
-    u"""遍历 systems 下全部正式 Python 文件。"""
-    systems_root = get_systems_root()
+def iter_upper_layer_python_files():
+    u"""遍历 systems / tools 下全部正式 Python 文件。"""
+    package_root = get_package_root()
+    root_names = get_scan_root_names()
 
-    for directory, directory_names, file_names in os.walk(
-            systems_root
-    ):
-        filtered_directory_names = []
+    for root_name in root_names:
+        source_root = os.path.join(
+            package_root,
+            root_name
+        )
 
-        for directory_name in directory_names:
-            if directory_name == "__pycache__":
-                continue
+        if not os.path.isdir(source_root):
+            continue
 
-            filtered_directory_names.append(
-                directory_name
-            )
+        for directory, directory_names, file_names in os.walk(
+                source_root
+        ):
+            filtered_directory_names = []
 
-        directory_names[:] = filtered_directory_names
+            for directory_name in directory_names:
+                if directory_name == "__pycache__":
+                    continue
 
-        for file_name in file_names:
-            if not file_name.endswith(".py"):
-                continue
+                filtered_directory_names.append(
+                    directory_name
+                )
 
-            yield os.path.join(
-                directory,
-                file_name
-            )
+            directory_names[:] = filtered_directory_names
+
+            for file_name in file_names:
+                if not file_name.endswith(".py"):
+                    continue
+
+                yield os.path.join(
+                    directory,
+                    file_name
+                )
 
 
 def get_relative_path(file_path):
@@ -152,7 +161,7 @@ def get_relative_path(file_path):
 # =============================================================================
 
 def scan_file(file_path):
-    u"""扫描单个 System 文件中的重复通用 Helper 定义。"""
+    u"""扫描单个 System / Tool 文件中的重复通用 Helper 定义。"""
     with open(
             file_path,
             "r",
@@ -206,11 +215,11 @@ def scan_file(file_path):
 
 
 def scan_repository():
-    u"""扫描全部正式 System 文件。"""
+    u"""扫描全部正式 System / Tool 文件。"""
     issues = []
     file_count = 0
 
-    for file_path in iter_system_python_files():
+    for file_path in iter_upper_layer_python_files():
         file_count += 1
 
         file_issues = scan_file(
@@ -233,9 +242,9 @@ def scan_repository():
 # =============================================================================
 
 def run():
-    u"""运行 System -> Core Reuse 架构门禁。"""
+    u"""运行 Systems / Tools -> Core Reuse 架构门禁。"""
     print("=" * 78)
-    print("Muzi Toolset - System Core Reuse Gate")
+    print("Muzi Toolset - Upper Layer Core Reuse Gate")
     print("=" * 78)
 
     result = scan_repository()
@@ -244,7 +253,7 @@ def run():
     if issues:
         for issue in issues:
             print(
-                u"[FAIL] {}:{} | System 重新实现通用 Helper: {}".format(
+                u"[FAIL] {}:{} | 上层代码重新实现通用 Helper: {}".format(
                     issue["file"],
                     issue["line"],
                     issue["name"]
@@ -257,7 +266,7 @@ def run():
         return False
 
     print(
-        u"[PASS] {} 个 System Python 文件没有新增重复 Core Helper。".format(
+        u"[PASS] {} 个 System / Tool Python 文件没有新增重复 Core Helper。".format(
             result["file_count"]
         )
     )
