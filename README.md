@@ -129,7 +129,7 @@ API 页面由：
 scripts/generate_mkdocs_reference.py
 ```
 
-使用 Python AST 自动扫描正式 Runtime 源码生成。
+使用 Python AST 自动扫描正式 Runtime 源码生成，并由生成后整理脚本统一控制阅读结构。
 
 正式覆盖范围：
 
@@ -145,23 +145,36 @@ ui/**/*.py
 
 也就是说，**每一个正式 Python 文件都会拥有独立 API 页面**。
 
-API 页面会展开：
+每个模块页面首先只显示简短概览：
 
 ```text
-模块作用
-常用场景
+用途
+模块定位
+常用任务
 Import
 API 一览
-Class / Function / Method
+```
+
+每个公开 Function / Method 则固定按照下面的顺序展示：
+
+```text
+方法名
+作用
+适用场景（需要时）
 Signature
 参数
-必填 / 默认值
+    类型
+    必填
+    默认值
+    说明
 返回值
 异常
 示例
 Notes
 源码位置
 ```
+
+其中“作用”直接来自源码 Docstring 的功能摘要；参数的 Maya / Rigging 术语、类型和说明也以源码 Docstring 为第一事实来源。
 
 ### 源码与 API 文档路径映射
 
@@ -258,275 +271,3 @@ docs/
 ```
 
 README、`docs/` 目录和网站导航使用同一套分类，避免出现三套不同的文档结构。
-
----
-
-# 正式源码架构
-
-```text
-muziToolset/
-├── app/                       # 主工具箱、应用入口、窗口生命周期
-├── ui/                        # Theme、Window Utils、可复用 Widgets
-├── core/                      # Maya 通用底层能力
-├── tools/                     # 用户可直接打开的小工具
-│   ├── basic/
-│   ├── joint/
-│   ├── controller/
-│   ├── rig/
-│   ├── face/
-│   ├── skin/
-│   ├── blendshape/
-│   └── clean/
-├── systems/                   # 可复用完整 Rig System / Builder
-│   ├── body/
-│   ├── common/
-│   ├── controller/
-│   └── face/
-├── resources/                 # Icons、Controller Shapes、Rig Template
-├── tests/                     # 静态 Gate + Maya Smoke Test
-├── docs/                      # 用户手册 / 架构 / 开发文档
-├── scripts/                   # AST API Generator 等开发脚本
-├── legacy_reference/          # 历史参考，不参与正式运行
-├── .github/workflows/docs.yml
-├── mkdocs.yml
-├── config.py
-├── ARCHITECTURE.md
-├── README.md
-├── README.en.md
-├── LICENSE
-├── __init__.py
-└── start.py
-```
-
-完整分层规则见：
-
-- [ARCHITECTURE.md](ARCHITECTURE.md)
-
----
-
-# Core
-
-`core/` 只放不依赖 UI 的 Maya 通用能力。
-
-主要分类：
-
-```text
-Animation / Scene / File
-├── animation_utils.py
-├── scene_utils.py
-└── file_utils.py
-
-Transform / DG
-├── transform_utils.py
-├── matrix_utils.py
-├── connection_utils.py
-└── constraint_utils.py
-
-DAG / Attribute / Naming
-├── attr_utils.py
-├── hierarchy_utils.py
-├── joint_utils.py
-├── name_utils.py
-├── rename_utils.py
-└── snap_utils.py
-
-Geometry / Deformer
-├── curve_utils.py
-├── surface_utils.py
-├── mesh_utils.py
-├── skin_utils.py
-├── blendshape_utils.py
-└── control_shape_utils.py
-
-Scene Quality
-├── model_check_utils.py
-└── scene_clean_utils.py
-```
-
-正式模块统一使用 `snake_case`：
-
-```python
-from muziToolset.core import attr_utils
-from muziToolset.core import hierarchy_utils
-from muziToolset.core import joint_utils
-from muziToolset.core import name_utils
-```
-
-旧 CamelCase Core 入口已经退出正式架构。
-
----
-
-# Tools
-
-`tools/` 是绑定师直接使用的入口。
-
-例如：
-
-```python
-from muziToolset.tools.controller import create_ctrl_tool
-
-window = create_ctrl_tool.main()
-```
-
-Tool 负责：
-
-```text
-UI
-Selection
-参数收集
-用户交互
-```
-
-复杂算法不要重复写进 Tool。
-
-先看：[常用工具工作流](docs/manual/tools.md)
-
----
-
-# Systems
-
-`systems/` 放稳定、可复用、可以重复 Build 的完整 Rig Component。
-
-例如：
-
-```text
-systems/controller/
-systems/face/
-systems/body/
-```
-
-推荐关系：
-
-```text
-Tool
-    ↓
-System
-    ↓
-Core
-    ↓
-Maya
-```
-
-完整 Face / Controller / Body Workflow 不放回 Core。
-
----
-
-# Face Rig
-
-当前 Face Rig 推荐流程：
-
-```text
-FaceSetup.build()
-        ↓
-FaceGuide.build()
-        ↓
-手动贴合 Guide
-        ↓
-FaceGuide.validate_guides()
-        ↓
-FaceGuide.finalize()
-        ↓
-Lip / Jaw / Eyelid / Brow Builder
-        ↓
-Corrective / Picker / Finalize
-```
-
-用户手册：
-
-- [Face Guide](docs/manual/face-guide.md)
-
-主要源码：
-
-```text
-systems/face/face_base.py
-systems/face/face_setup.py
-systems/face/face_guide.py
-systems/face/curve_attachment.py
-systems/face/eyelid/builder.py
-systems/face/lip/zip_builder.py
-```
-
----
-
-# 编程规范
-
-项目新代码默认遵循：
-
-- Maya 2023 优先；
-- Maya Scene 操作优先 `maya.cmds`；
-- 新代码不新增 PyMEL 依赖；
-- UI 使用 PySide2，并保留需要的 PySide6 fallback；
-- 文件、函数、方法、变量使用 `snake_case`；
-- Class 使用 `PascalCase`；
-- 有意义的 Maya 场景逻辑使用完整、可读的 `for` 循环；
-- 不把主要业务流程压缩成列表推导式；
-- 中文注释解释“步骤”和“为什么”；
-- 模块头说明职责、边界和主要公开 API；
-- 公开 API 使用详细 Docstring；
-- Tool 不重复维护大型 Core / System 算法；
-- Core 不反向 Import Tools / Systems / UI / App；
-- 正式模块 Import 时不主动 reload 依赖；
-- `legacy_reference/` 只能作为参考。
-
-Docstring 规范见：
-
-- [文档维护](docs/development/documentation.md)
-
----
-
-# 测试与文档 CI
-
-不需要 Maya 的静态检查：
-
-```bash
-python tests/core_import_style_test.py
-python tests/docs_reference_generator_test.py
-python tests/docs_runtime_api_coverage_test.py
-python scripts/generate_mkdocs_reference.py
-mkdocs build --strict
-```
-
-Docs CI 顺序：
-
-```text
-Core Import Style Gate
-        ↓
-API Generator Smoke Test
-        ↓
-Runtime API Coverage Test
-        ↓
-AST Generate API Reference
-        ↓
-mkdocs build --strict
-        ↓
-Upload Pages Artifact
-        ↓
-Deploy GitHub Pages
-```
-
-`docs_runtime_api_coverage_test.py` 会保证以后新增正式 Python 文件时不会悄悄漏掉 API 文档。
-
-Maya 2023 真机测试仍用于验证：
-
-```text
-Scene
-DG / DAG
-UI
-Rig Builder
-真实节点连接
-```
-
----
-
-# 当前开发原则
-
-- `muziToolset` 根包是唯一正式运行架构；
-- 历史实现统一放入 `legacy_reference/`；
-- Core、Tools、Systems、UI、App 分层维护；
-- API 文档与源码自动同步；
-- 用户手册按任务组织；
-- README、文档路径和网站导航保持同一套结构；
-- GitHub CI 负责文档覆盖、生成和严格构建；
-- Maya 2023 Smoke Test 负责真实运行验证。
-
-后续新增功能应继续沿当前分层扩展，不重新制造大型万能模块。
