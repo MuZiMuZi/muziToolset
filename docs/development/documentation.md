@@ -15,14 +15,27 @@ MuziTools 文档分成两层，而且职责不能混在一起。
 目录：
 
 ```text
-docs/manual/
 docs/getting-started/
+docs/manual/
 docs/architecture/
 docs/development/
 docs/migration/
 ```
 
 用户手册是人工维护内容。
+
+当前主要任务页：
+
+```text
+docs/manual/basic-tools.md
+docs/manual/controller.md
+docs/manual/joint.md
+docs/manual/skin.md
+docs/manual/blendshape.md
+docs/manual/cleanup.md
+docs/manual/rigging.md
+docs/manual/face-guide.md
+```
 
 ## 2. API Reference
 
@@ -48,12 +61,25 @@ ui/
 
 ```text
 docs/reference/
+docs/SUMMARY.md
 ```
 
-以及左侧导航：
+然后：
 
 ```text
-docs/SUMMARY.md
+scripts/extend_docs_summary.py
+```
+
+只负责把人工维护的任务型用户手册页面补进 `SUMMARY.md`。
+
+这样职责保持清楚：
+
+```text
+API Generator
+    维护动态源码树
+
+Navigation Extender
+    维护人工任务页导航
 ```
 
 API Reference 负责解释：
@@ -67,17 +93,18 @@ API Reference 负责解释：
 - 返回值；
 - 异常；
 - 示例；
-- Notes。
+- Notes；
+- 源码位置。
 
 ---
 
-# Docstring 是 API 文档的第一事实来源
+# Docstring 是 API 文档第一事实来源
 
 不要在 Markdown 里手工复制一份函数签名和参数说明。
 
 应该先把源码 Docstring 写完整，再让生成器同步到网站。
 
-推荐使用下面的格式。
+推荐：
 
 ```python
 def get_world_position(self, guide):
@@ -115,9 +142,10 @@ def get_world_position(self, guide):
     """
 ```
 
-生成后的页面会自动拆成：
+生成后的 API 页面会自动拆成：
 
 ```text
+功能摘要
 Signature
 参数
 返回值
@@ -125,6 +153,8 @@ Signature
 示例
 Notes
 ```
+
+如果源码暂时没有完整 Docstring，Generator 会保留 API 骨架和自动调用示例，但正式公开 API 仍应该继续补全源码说明。
 
 ---
 
@@ -186,8 +216,6 @@ Notes
 
 ## Args
 
-推荐：
-
 ```python
 Args:
     side (str):
@@ -195,13 +223,6 @@ Args:
 
     required (bool):
         Guide 缺失时是否直接抛出异常。
-```
-
-不要只写：
-
-```python
-Args:
-    side: side
 ```
 
 参数说明应该回答：
@@ -213,10 +234,6 @@ Args:
 - 会不会修改 Maya Scene。
 
 ## Returns
-
-不要只写类型。
-
-推荐：
 
 ```python
 Returns:
@@ -231,9 +248,9 @@ Returns:
             }
 ```
 
-## Raises
+不要只写类型，尽量说明返回结构。
 
-只记录调用者需要知道的公开异常：
+## Raises
 
 ```python
 Raises:
@@ -246,8 +263,6 @@ Raises:
 
 ## Example
 
-示例应该尽量是可复制的真实调用。
-
 ```python
 Example:
     >>> guide = FaceGuide()
@@ -256,32 +271,149 @@ Example:
     ... )
 ```
 
-如果源码暂时没有 Example，生成器会根据 Signature 生成一个安全骨架，但正式公开 API 仍建议补真实示例。
+示例应该尽量可以直接复制到 Maya Python Script Editor。
 
 ## Notes
-
-用于解释容易误用的约束：
 
 ```python
 Notes:
     返回顺序已经固定，Builder 不应该再次自行排序。
 ```
 
+Notes 用于记录容易误用的约束，而不是重复摘要。
+
 ---
 
-# 代码书写规范
+# 用户手册写法
 
-正式 Maya 代码继续保持当前项目风格：
+用户手册不要按源码文件顺序写。
 
-- `maya.cmds`；
-- 不引入 PyMEL；
-- 有意义的逻辑使用显式 `for` 循环；
-- 不用列表推导式压缩主要业务流程；
-- 中文注释解释“为什么”；
-- 函数职责尽量单一；
-- `core` 不放 UI；
-- `tools` 不重复实现底层算法；
-- `systems` 不把完整业务塞回 Core。
+推荐结构：
+
+```text
+标题
+    ↓
+什么时候使用
+    ↓
+快速入口
+    ↓
+推荐步骤
+    ↓
+常见操作
+    ↓
+常见问题
+    ↓
+对应 API
+    ↓
+继续查看
+```
+
+例如 Controller 用户手册先回答：
+
+```text
+我要怎么创建 Controller？
+```
+
+而不是一上来解释：
+
+```text
+systems/controller/builder.py 有哪些函数？
+```
+
+后者属于 API Reference。
+
+---
+
+# 左侧导航
+
+第一阶段由 API Generator 生成：
+
+```bash
+python scripts/generate_mkdocs_reference.py
+```
+
+会得到：
+
+```text
+docs/SUMMARY.md
+```
+
+然后执行：
+
+```bash
+python scripts/extend_docs_summary.py
+```
+
+把人工任务页加入用户手册区域。
+
+MkDocs 使用：
+
+```text
+mkdocs-literate-nav
+```
+
+读取最终 `SUMMARY.md`。
+
+最终结构类似：
+
+```text
+用户手册
+├── 基础工具
+├── Controller
+├── Joint
+├── Skin
+├── BlendShape
+├── 场景清理
+├── 绑定工作流
+└── Face Guide
+
+API 参考
+├── App
+├── Core
+├── Tools
+├── Systems
+├── UI
+└── Package
+```
+
+API 下的文件树保持与源码目录一致。
+
+---
+
+# README 同步规则
+
+`README.md` 是 GitHub 仓库首页，也是文档站入口地图。
+
+当下面任意内容变化时必须同步 README：
+
+- 新增 / 删除主要用户手册页面；
+- 调整文档一级分类；
+- 修改 API 覆盖范围；
+- 修改源码顶层架构；
+- 修改 Docs CI；
+- 修改在线文档入口。
+
+README 中的文档路径必须和 `docs/` 实际结构对应。
+
+当前要求：
+
+```text
+README 文档导航
+        ↓
+docs/ 真实路径
+        ↓
+SUMMARY.md 网站导航
+```
+
+三者使用同一套分类和命名。
+
+不要出现：
+
+```text
+README 叫“Core 手册”
+网站叫“开发参考”
+docs 目录又叫别的名字
+```
 
 ---
 
@@ -289,7 +421,7 @@ Notes:
 
 GitHub Actions 没有 Maya。
 
-如果 API 生成器直接：
+如果文档生成器直接：
 
 ```python
 import maya.cmds
@@ -297,7 +429,7 @@ import maya.cmds
 
 在线文档就无法构建。
 
-当前方案只执行：
+当前方案：
 
 ```text
 read source
@@ -318,38 +450,47 @@ Markdown
 
 ---
 
-# 左侧导航
+# 文档覆盖 Gate
 
-生成器会根据真实源码目录生成：
+两个静态测试负责文档质量底线。
 
-```text
-docs/SUMMARY.md
+## Generator Smoke Test
+
+```bash
+python tests/docs_reference_generator_test.py
 ```
 
-MkDocs 通过 `mkdocs-literate-nav` 读取这份文件。
+检查：
 
-最终导航会类似：
+- Package 页面；
+- Function / Class / Method；
+- 参数表；
+- Returns；
+- Raises；
+- Example；
+- SUMMARY 基础导航。
 
-```text
-API 参考
-├── Core
-│   ├── attr_utils.py
-│   ├── curve_utils.py
-│   └── ...
-├── Tools
-│   ├── Basic
-│   ├── Controller
-│   └── ...
-└── Systems
-    └── Face
-        ├── face_base.py
-        ├── face_setup.py
-        ├── face_guide.py
-        ├── Eyelid
-        └── Lip
+## Runtime API Coverage Test
+
+```bash
+python tests/docs_runtime_api_coverage_test.py
 ```
 
-新增正式 Python 文件后，不需要手工维护 `mkdocs.yml` 的几十行导航。
+检查正式 Runtime 文件：
+
+```text
+__init__.py
+config.py
+app/**/*.py
+core/**/*.py
+systems/**/*.py
+tools/**/*.py
+ui/**/*.py
+```
+
+全部都能映射到唯一 API Markdown 页面。
+
+这样以后新增 `.py` 文件时，不会静默漏掉文档。
 
 ---
 
@@ -358,11 +499,13 @@ API 参考
 ```bash
 python tests/core_import_style_test.py
 python tests/docs_reference_generator_test.py
+python tests/docs_runtime_api_coverage_test.py
 python scripts/generate_mkdocs_reference.py
+python scripts/extend_docs_summary.py
 mkdocs build --strict
 ```
 
-预览：
+本地预览：
 
 ```bash
 mkdocs serve
@@ -370,18 +513,35 @@ mkdocs serve
 
 ---
 
+# 代码书写规范
+
+正式 Maya 代码继续保持项目现有风格：
+
+- `maya.cmds`；
+- 不新增 PyMEL；
+- 有意义的逻辑使用显式 `for` 循环；
+- 不用列表推导式压缩主要业务流程；
+- 中文注释解释“步骤”和“为什么”；
+- 函数职责尽量单一；
+- `core` 不放 UI；
+- `tools` 不重复实现底层算法；
+- `systems` 不把完整业务塞回 Core。
+
+---
+
 # 提交规范
 
-文档系统修改仍按职责拆 Commit。
+文档系统仍按职责拆 Commit。
 
 推荐：
 
 ```text
 feat: expand api reference generation
 test: cover api reference generator
-feat: add generated documentation navigation
-docs: reorganize user manual
-docs: define api documentation standard
+test: verify runtime api documentation coverage
+feat: expand task manual navigation
+docs: add controller user guide
+docs: sync readme with documentation navigation
 fix: correct generated api links
 ```
 
@@ -390,7 +550,8 @@ fix: correct generated api links
 ```text
 Rig 功能修改
 文档生成器重构
-大量说明页修改
+用户手册重写
+README 重写
 ```
 
 全部混到一个提交。
@@ -407,9 +568,12 @@ Rig 功能修改
 4. 返回结构变更时更新 `Returns`；
 5. 增加或更新 Example；
 6. 更新 Smoke Test；
-7. 运行 API Generator Test；
-8. 重新生成 Reference；
-9. `mkdocs build --strict`；
-10. 再提交。
+7. 运行 Generator Test；
+8. 运行 Runtime API Coverage Test；
+9. 重新生成 Reference；
+10. 扩展用户手册导航；
+11. `mkdocs build --strict`；
+12. 如果文档结构变化，同步 README；
+13. 再提交。
 
 文档不是代码完成后的附件，而是公开 API 本身的一部分。
