@@ -5,6 +5,11 @@ Name Utils
 
 MuziTools Rig 标准命名模块。
 
+正式模块路径
+------------
+``muziToolset.core.name_utils`` 是 Rig 名称语义的唯一正式实现。
+旧 ``nameUtils.py`` 兼容模块已经完成迁移并删除，正式代码和文档统一使用 snake_case 路径。
+
 标准命名规则
 ------------
     [类型]_[方向]_[部位]_[功能]_[序号]
@@ -61,13 +66,13 @@ maya_undo(function)
 
 和 rename_utils.py 的区别
 -------------------------
-nameUtils.py
+name_utils.py
     负责“一个 Rig 名称应该是什么”和 Name 对象语义。
 
 rename_utils.py
     负责面向批量操作 / Tool 的 Prefix、Suffix、Search Replace、Auto Number、Pattern Rename。
 
-两个模块名字相近，但职责不同，因此本轮不强行合并。
+两个模块名字相近，但职责不同，因此保持独立。
 
 设计原则
 --------
@@ -75,7 +80,7 @@ rename_utils.py
 2. function 字段允许包含下划线，最后三位数字永远作为 index；
 3. Rename 层级时先处理最深子节点，避免 Parent Rename 后旧 DAG Path 失效；
 4. 本模块不依赖旧 Pipeline；
-5. 文件名 nameUtils.py 暂时保留以兼容现有 import，新代码方法名保持 snake_case。
+5. 模块文件名与所有正式 Import 统一使用 snake_case。
 """
 
 from __future__ import print_function
