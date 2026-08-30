@@ -24,9 +24,9 @@ from __future__ import print_function
 
 import maya.cmds as cmds
 
-from ...core import hierarchyUtils
+from ...core import hierarchy_utils
 from ...core import mesh_utils
-from ...core import nameUtils
+from ...core import name_utils
 from . import face_base
 
 
@@ -136,7 +136,7 @@ class FaceSetup(face_base.FaceBase):
             if face_model == "":
                 continue
 
-            hierarchyUtils.Hierarchy.parent(
+            hierarchy_utils.Hierarchy.parent(
                 face_model,
                 self.face_model_grp
             )
@@ -145,7 +145,7 @@ class FaceSetup(face_base.FaceBase):
 
     def get_work_model_names(self):
         u"""生成 Step 01 三个头部工作模型名称。"""
-        face_head_tweak_name = nameUtils.Name.create_name(
+        face_head_tweak_name = name_utils.Name.create_name(
             node_type="model",
             side=self.face_side,
             part="head",
@@ -153,7 +153,7 @@ class FaceSetup(face_base.FaceBase):
             index=1
         )
 
-        face_head_stretch_name = nameUtils.Name.create_name(
+        face_head_stretch_name = name_utils.Name.create_name(
             node_type="model",
             side=self.face_side,
             part="head",
@@ -161,7 +161,7 @@ class FaceSetup(face_base.FaceBase):
             index=1
         )
 
-        face_head_deform_name = nameUtils.Name.create_name(
+        face_head_deform_name = name_utils.Name.create_name(
             node_type="model",
             side=self.face_side,
             part="head",
