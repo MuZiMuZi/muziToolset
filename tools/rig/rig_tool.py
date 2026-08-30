@@ -43,6 +43,7 @@ from ...app import window_manager
 from ...core import snap_utils
 from ...systems import controller as controller_system
 from ...ui import theme
+from ...ui import window_utils
 from ...ui.widgets import MayaObjectPicker
 from ..controller import create_ctrl_tool
 from ..controller import create_fk_ctrl_tool
@@ -1220,9 +1221,11 @@ class RigTool(QWidget):
 
 
 def main():
-    """创建并返回 Rig Tool。"""
-    window = RigTool()
-    return window
+    """显示并返回 Rig Tool。"""
+    return window_utils.show_window(
+        "tools.rig.rig_tool",
+        RigTool
+    )
 
 
 __all__ = [
