@@ -7,39 +7,14 @@ Maya Transform / Joint 的通用空间变换底层工具。
 
 模块职责
 --------
-这个模块只处理“Transform 数据本身”，例如位置、移动、距离和矩阵。
-它不负责创建 Constraint，也不负责更高层的 Snap / Space Switch Workflow。
+这个模块只处理 Transform 数据本身，例如：
 
-当前公开方法
-------------
-    validate_transform(node)
-        检查节点是否存在，并确认它是 Transform 或 Joint。
-
-    get_world_translation(node)
-        获取节点的世界空间位置 [x, y, z]。
-
-    set_world_translation(node, translation)
-        设置节点世界空间位置。
-
-    move_relative(node, offset, object_space=False)
-        按世界空间或物体空间做相对移动。
-
-    distance_between(node_a, node_b)
-        计算两个 Transform / Joint 世界位置之间的欧氏距离。
-
-    get_world_matrix(node)
-        获取节点 4x4 World Matrix，并以 16 个数值的普通 list 返回。
-
-    set_world_matrix(node, matrix_values)
-        使用 16 个数值设置节点完整 World Matrix。
-
-本模块不负责
-------------
-- parentConstraint / pointConstraint 等 Maya Constraint；
-- multMatrix / blendMatrix / offsetParentMatrix 网络；
-- Selection 驱动的 Snap Tool；
-- Controller / Rig System 层级创建；
-- UI。
+    - Transform / Joint 输入校验；
+    - World Translation 读取 / 写入；
+    - World Rotation 读取 / 写入；
+    - 相对移动；
+    - Transform 间距离；
+    - World Matrix 读取 / 写入。
 
 模块边界
 --------
@@ -54,7 +29,7 @@ Maya Transform / Joint 的通用空间变换底层工具。
 2. 每次场景修改前先校验节点类型；
 3. 返回普通 Python 数据，方便 Tool / System / Test 复用；
 4. 保留完整 for / if 流程，不把 Maya 操作压缩成难调试的表达式；
-5. 统一使用正确拼写 ``distance_between``，不再保留早期 ``distence_between``。
+5. Transform / Joint 的 World Space 查询统一从这里进入，避免上层重复 cmds.xform。
 """
 
 from __future__ import print_function
@@ -63,42 +38,41 @@ import math
 
 import maya.cmds as cmds
 
+from . import scene_utils
+
 
 # =============================================================================
-# Validate - Transform / Joint 输入校验
+# Validate
 # =============================================================================
 
 def validate_transform(node):
     u"""
-    检查节点是否存在，并且是 Maya Transform / Joint。
+    检查节点是否存在，并确认它是 Maya Transform / Joint。
 
     Args:
         node (str):
             需要检查的 Maya 节点。
 
     Returns:
-        bool: 节点有效时返回 True。
+        bool:
+            节点有效时返回 True。
 
     Raises:
         RuntimeError:
-        节点为空、不存在，或者类型不是 transform / joint。
+            节点为空、不存在，或者类型不是 transform / joint。
     """
-    # 步骤 1：先检查参数本身是否有效。
-    if not node:
-        raise RuntimeError(u"节点名称不能为空。")
+    # 先使用 Scene 层统一检查节点存在性，避免 Core 内维护第二套 objExists 逻辑。
+    scene_utils.validate_node(
+        node
+    )
 
-    # 步骤 2：确认 Maya Scene 中确实存在这个节点。
-    if not cmds.objExists(node):
-        raise RuntimeError(
-            u"Maya 节点不存在：{}".format(node)
-        )
+    # Joint 继承 Transform 行为，但 Maya nodeType 返回 joint，
+    # 因此这里显式允许 transform 和 joint 两种节点类型。
+    node_type = cmds.nodeType(
+        node
+    )
 
-    # 步骤 3：确认节点类型。
-    # Joint 继承 Transform 行为，但 Maya nodeType 返回的是 joint，
-    # 因此这里显式允许 transform 和 joint 两种类型。
-    node_type = cmds.nodeType(node)
-
-    if node_type != "transform" and node_type != "joint":
+    if node_type not in ["transform", "joint"]:
         raise RuntimeError(
             u"节点不是 Transform / Joint：{} | type={}".format(
                 node,
@@ -110,24 +84,17 @@ def validate_transform(node):
 
 
 # =============================================================================
-# Translation - 世界位置读取 / 设置
+# Translation
 # =============================================================================
 
 def get_world_translation(node):
-    u"""
-    返回节点 World Translation。
+    u"""返回 Transform / Joint 的 World Translation。"""
+    # 确保输入节点可以作为 Transform 使用。
+    validate_transform(
+        node
+    )
 
-    Args:
-        node (str):
-            Transform / Joint。
-
-    Returns:
-        list: [x, y, z]。
-    """
-    # 步骤 1：确认输入节点可以作为 Transform 使用。
-    validate_transform(node)
-
-    # 步骤 2：使用 xform 的 worldSpace 查询实际世界位置。
+    # 统一从这里读取 World Translation，上层不再重复 cmds.xform 查询。
     translation = cmds.xform(
         node,
         query=True,
@@ -135,37 +102,34 @@ def get_world_translation(node):
         translation=True
     )
 
-    # 步骤 3：直接返回 Maya 的普通数值列表。
     return translation
 
 
 def set_world_translation(node, translation):
     u"""
-    设置节点 World Translation。
+    设置 Transform / Joint 的 World Translation。
 
     Args:
         node (str):
             Transform / Joint。
-        translation (list/tuple):
+        translation (list | tuple):
             [x, y, z]。
 
     Returns:
-        str: 被修改的节点名称。
-
-    Raises:
-        ValueError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+        str:
+            被修改的节点名称。
     """
-    # 步骤 1：校验 Maya 节点。
-    validate_transform(node)
+    # 确保输入节点可以作为 Transform 使用。
+    validate_transform(
+        node
+    )
 
-    # 步骤 2：校验位置数据长度。
     if translation is None or len(translation) != 3:
         raise ValueError(
             u"translation 必须是包含 3 个数值的列表或元组。"
         )
 
-    # 步骤 3：按世界空间写入位置。
+    # 写入 World Translation。
     cmds.xform(
         node,
         worldSpace=True,
@@ -175,6 +139,66 @@ def set_world_translation(node, translation):
     return node
 
 
+# =============================================================================
+# Rotation
+# =============================================================================
+
+def get_world_rotation(node):
+    u"""返回 Transform / Joint 的 World Rotation。"""
+    # 确保输入节点可以作为 Transform 使用。
+    validate_transform(
+        node
+    )
+
+    # 统一从这里读取 World Rotation，上层不再重复 cmds.xform 查询。
+    rotation = cmds.xform(
+        node,
+        query=True,
+        worldSpace=True,
+        rotation=True
+    )
+
+    return rotation
+
+
+def set_world_rotation(node, rotation):
+    u"""
+    设置 Transform / Joint 的 World Rotation。
+
+    Args:
+        node (str):
+            Transform / Joint。
+        rotation (list | tuple):
+            [x, y, z]。
+
+    Returns:
+        str:
+            被修改的节点名称。
+    """
+    # 确保输入节点可以作为 Transform 使用。
+    validate_transform(
+        node
+    )
+
+    if rotation is None or len(rotation) != 3:
+        raise ValueError(
+            u"rotation 必须是包含 3 个数值的列表或元组。"
+        )
+
+    # 写入 World Rotation。
+    cmds.xform(
+        node,
+        worldSpace=True,
+        rotation=rotation
+    )
+
+    return node
+
+
+# =============================================================================
+# Move
+# =============================================================================
+
 def move_relative(node, offset, object_space=False):
     u"""
     相对移动一个 Transform / Joint。
@@ -182,31 +206,25 @@ def move_relative(node, offset, object_space=False):
     Args:
         node (str):
             Transform / Joint。
-        offset (list/tuple):
+        offset (list | tuple):
             [x, y, z] 相对偏移量。
         object_space (bool):
-            False：按世界空间方向移动； True：按节点自身 Object Space 轴向移动。
+            False 按世界空间方向移动；True 按 Object Space 轴向移动。
 
     Returns:
-        str: 被移动的节点名称。
-
-    Raises:
-        ValueError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+        str:
+            被移动的节点名称。
     """
-    # 步骤 1：校验节点。
-    validate_transform(node)
+    # 确保输入节点可以作为 Transform 使用。
+    validate_transform(
+        node
+    )
 
-    # 步骤 2：校验 Offset 数据。
     if offset is None or len(offset) != 3:
         raise ValueError(
             u"offset 必须是包含 3 个数值的列表或元组。"
         )
 
-    # 步骤 3：根据 object_space 准备 cmds.move 参数。
-    #
-    # Object Space 模式下同时打开 worldSpaceDistance，
-    # 表示方向使用物体局部轴，但数值距离仍按世界单位解释。
     kwargs = {
         "relative": True,
     }
@@ -217,7 +235,7 @@ def move_relative(node, offset, object_space=False):
     else:
         kwargs["worldSpace"] = True
 
-    # 步骤 4：执行相对移动。
+    # 根据指定空间执行相对位移。
     cmds.move(
         offset[0],
         offset[1],
@@ -230,65 +248,46 @@ def move_relative(node, offset, object_space=False):
 
 
 # =============================================================================
-# Distance - 世界空间距离
+# Distance
 # =============================================================================
 
 def distance_between(node_a, node_b):
-    u"""
-    返回两个 Transform / Joint 世界位置之间的欧氏距离。
+    u"""返回两个 Transform / Joint 世界位置之间的欧氏距离。"""
+    # 获取两个节点的统一 World Translation 数据。
+    position_a = get_world_translation(
+        node_a
+    )
+    position_b = get_world_translation(
+        node_b
+    )
 
-    Args:
-        node_a (str):
-            第一个节点。
-        node_b (str):
-            第二个节点。
-
-    Returns:
-        float: 世界空间距离。
-    """
-    # 步骤 1：统一通过 get_world_translation 获取两个节点位置。
-    position_a = get_world_translation(node_a)
-    position_b = get_world_translation(node_b)
-
-    # 步骤 2：计算三个轴向的差值。
     delta_x = position_b[0] - position_a[0]
     delta_y = position_b[1] - position_a[1]
     delta_z = position_b[2] - position_a[2]
 
-    # 步骤 3：使用欧氏距离公式。
     distance_squared = (
         delta_x * delta_x
         + delta_y * delta_y
         + delta_z * delta_z
     )
 
-    return math.sqrt(distance_squared)
+    return math.sqrt(
+        distance_squared
+    )
 
 
 # =============================================================================
-# Matrix - 完整 World Matrix 读取 / 设置
+# Matrix
 # =============================================================================
 
 def get_world_matrix(node):
-    u"""
-    返回节点完整 World Matrix。
+    u"""返回 Transform / Joint 的完整 4x4 World Matrix。"""
+    # 确保输入节点可以作为 Transform 使用。
+    validate_transform(
+        node
+    )
 
-    Args:
-        node (str):
-            Transform / Joint。
-
-    Returns:
-        list: 16 个数值组成的 4x4 Matrix。
-
-    Notes:
-        这里返回普通 list，而不是 MMatrix。
-                                                            需要矩阵计算时由 matrix_utils 转成 Maya API Matrix，
-                                                            这样 transform_utils 保持简单的数据读写职责。
-    """
-    # 步骤 1：校验节点。
-    validate_transform(node)
-
-    # 步骤 2：查询完整世界矩阵。
+    # 读取完整 World Matrix，并保持普通 Python list 作为 Core API 输出。
     matrix_values = cmds.xform(
         node,
         query=True,
@@ -301,31 +300,29 @@ def get_world_matrix(node):
 
 def set_world_matrix(node, matrix_values):
     u"""
-    设置节点完整 World Matrix。
+    设置 Transform / Joint 的完整 World Matrix。
 
     Args:
         node (str):
             Transform / Joint。
-        matrix_values (list/tuple):
+        matrix_values (list | tuple):
             16 个矩阵数值。
 
     Returns:
-        str: 被修改的节点名称。
-
-    Raises:
-        ValueError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+        str:
+            被修改的节点名称。
     """
-    # 步骤 1：校验节点。
-    validate_transform(node)
+    # 确保输入节点可以作为 Transform 使用。
+    validate_transform(
+        node
+    )
 
-    # 步骤 2：Maya 4x4 Matrix 必须正好包含 16 个数值。
     if matrix_values is None or len(matrix_values) != 16:
         raise ValueError(
             u"matrix_values 必须包含 16 个矩阵数值。"
         )
 
-    # 步骤 3：按 World Space 写入完整矩阵。
+    # 写入完整 World Matrix。
     cmds.xform(
         node,
         worldSpace=True,
@@ -339,6 +336,8 @@ __all__ = [
     "validate_transform",
     "get_world_translation",
     "set_world_translation",
+    "get_world_rotation",
+    "set_world_rotation",
     "move_relative",
     "distance_between",
     "get_world_matrix",
