@@ -1,23 +1,18 @@
 # muziToolset
 
-木子的 Maya Rigging Toolset。
+面向 **Autodesk Maya 2023** 的 Rigging Toolset 与可扩展绑定框架。
 
-`muziToolset` 根目录本身就是正式 Python Package，不再额外包一层旧运行包。
+正式 Python Package：
 
-当前开发原则：
+```python
+import muziToolset
+```
 
-- Maya 2023 优先；
-- PySide2 UI，保留 PySide6 fallback；
-- Maya 场景操作优先 `maya.cmds`；
-- 新代码不新增 PyMel 依赖；
-- 文件、函数、变量统一使用 `snake_case`，Class 使用 `PascalCase`；
-- UI、Core、独立 Tool、完整 Rig System 分层维护；
-- 历史代码统一放入 `legacy_reference/`，不参与正式运行；
-- Core 代码和 MkDocs 文档同步维护；
-- GitHub CI 负责静态架构、API 文档和 Pages 构建；
-- Maya 2023 Smoke Test 负责真实 Scene / DG / DAG / UI 验证。
+项目显示名称使用 **MuziTools**；源码根包始终使用 `muziToolset`。
 
-## 启动
+---
+
+# 快速开始
 
 把 `muziToolset` 放到 Maya Python 可以访问的位置后，在 Maya Python Script Editor 中运行：
 
@@ -33,120 +28,322 @@ window = muziToolset.show()
 start.py
 ```
 
-## 在线文档
+第一次使用建议先看：
 
-MkDocs Material 文档站：
+- [安装与启动](docs/getting-started/installation.md)
+- [在 Maya 中运行](docs/getting-started/maya-usage.md)
+
+在线文档：
 
 ```text
 https://muzimuzi.github.io/muziToolset/
 ```
 
-文档包括：
+---
+
+# 文档导航
+
+MuziTools 文档采用两层结构：
 
 ```text
-快速开始
-架构设计
-Core API 使用手册
-自动 API Reference
-开发规范
-测试说明
-迁移记录
+用户手册
+    回答“我要完成什么、应该怎么做”
+
+API Reference
+    回答“这个 Python 文件 / 类 / 方法怎么调用”
 ```
 
-API Reference 使用 Python AST 从源码自动生成，不需要在 GitHub Actions 中安装 Maya。
+## 1. 用户手册
 
-## 正式架构
+用户手册入口：
+
+- [MuziTools 用户手册](docs/manual/index.md)
+- [常用工具工作流](docs/manual/tools.md)
+- [完整绑定工作流](docs/manual/rigging.md)
+
+按任务进入：
+
+| 我想做什么 | 文档 |
+| --- | --- |
+| 重命名、属性、连接、约束、吸附 | [基础工具](docs/manual/basic-tools.md) |
+| 创建 / 修改 Controller | [Controller 工作流](docs/manual/controller.md) |
+| 创建 / 重采样 Joint | [Joint 工作流](docs/manual/joint.md) |
+| SkinCluster、Influence、权重 | [Skin 工作流](docs/manual/skin.md) |
+| BlendShape、Corrective、Invert Shape | [BlendShape 工作流](docs/manual/blendshape.md) |
+| 模型检查、层级清理、发布前检查 | [场景清理与模型检查](docs/manual/cleanup.md) |
+| Face Setup、Guide、左右镜像 | [Face Guide](docs/manual/face-guide.md) |
+| 整体角色绑定顺序 | [绑定工作流](docs/manual/rigging.md) |
+
+推荐学习顺序：
+
+```text
+安装与启动
+    ↓
+基础工具
+    ↓
+Controller / Joint / Skin
+    ↓
+完整绑定工作流
+    ↓
+Face Rig
+    ↓
+架构
+    ↓
+API Reference
+```
+
+## 2. 架构
+
+- [总体架构](docs/architecture/index.md)
+- [Core 设计](docs/architecture/core.md)
+- [Tools 与 Systems](docs/architecture/tools-systems.md)
+
+如果你准备增加新功能，先确认它应该属于：
+
+```text
+core
+    Maya 通用底层能力
+
+tools
+    用户直接打开的小工具 / UI
+
+systems
+    可复用完整 Rig Component / Workflow
+
+ui
+    通用 PySide UI 能力
+
+app
+    主程序和应用级窗口管理
+```
+
+## 3. API Reference
+
+API 总览：
+
+- [API Reference 说明](docs/reference/index.md)
+
+API 页面由：
+
+```text
+scripts/generate_mkdocs_reference.py
+```
+
+使用 Python AST 自动扫描正式 Runtime 源码生成。
+
+正式覆盖范围：
+
+```text
+__init__.py
+config.py
+app/**/*.py
+core/**/*.py
+systems/**/*.py
+tools/**/*.py
+ui/**/*.py
+```
+
+也就是说，**每一个正式 Python 文件都会拥有独立 API 页面**。
+
+API 页面会展开：
+
+```text
+模块作用
+常用场景
+Import
+API 一览
+Class / Function / Method
+Signature
+参数
+必填 / 默认值
+返回值
+异常
+示例
+Notes
+源码位置
+```
+
+### 源码与 API 文档路径映射
+
+源码目录与网站 API 目录保持一致：
+
+```text
+core/attr_utils.py
+    → docs/reference/core/attr_utils.md
+    → /reference/core/attr_utils/
+
+systems/face/face_guide.py
+    → docs/reference/systems/face/face_guide.md
+    → /reference/systems/face/face_guide/
+
+tools/controller/create_ctrl_tool.py
+    → docs/reference/tools/controller/create_ctrl_tool.md
+    → /reference/tools/controller/create_ctrl_tool/
+
+ui/theme.py
+    → docs/reference/ui/theme.md
+    → /reference/ui/theme/
+
+app/main.py
+    → docs/reference/app/main.md
+    → /reference/app/main/
+
+__init__.py
+    → docs/reference/package.md
+
+config.py
+    → docs/reference/config.md
+```
+
+生成页面不需要手工复制函数说明；源码 Docstring 是 API 文档第一事实来源。
+
+## 4. 开发指南
+
+- [文档维护与 Docstring 规范](docs/development/documentation.md)
+- [Core 编码规范](docs/development/core-style-guide.md)
+- [测试](docs/development/testing.md)
+
+## 5. 迁移记录
+
+- [Pipeline 重构](docs/migration/pipeline.md)
+
+---
+
+# 文档目录与网站导航
+
+当前手写文档目录：
+
+```text
+docs/
+├── index.md
+│
+├── getting-started/
+│   ├── installation.md
+│   └── maya-usage.md
+│
+├── manual/
+│   ├── index.md
+│   ├── tools.md
+│   ├── basic-tools.md
+│   ├── controller.md
+│   ├── joint.md
+│   ├── skin.md
+│   ├── blendshape.md
+│   ├── cleanup.md
+│   ├── rigging.md
+│   └── face-guide.md
+│
+├── architecture/
+│   ├── index.md
+│   ├── core.md
+│   └── tools-systems.md
+│
+├── reference/
+│   └── index.md
+│       └── 其余 API 页面由 AST Generator 自动生成
+│
+├── development/
+│   ├── documentation.md
+│   ├── core-style-guide.md
+│   └── testing.md
+│
+├── migration/
+│   └── pipeline.md
+│
+├── stylesheets/
+│   └── manual.css
+│
+└── SUMMARY.md
+    └── 由 API Generator 自动生成完整网站导航
+```
+
+README、`docs/` 目录和网站导航使用同一套分类，避免出现三套不同的文档结构。
+
+---
+
+# 正式源码架构
 
 ```text
 muziToolset/
-├─ app/                       # 主工具箱、应用级窗口管理、应用入口
-├─ ui/                        # Theme、Window Utils 与可复用 UI Widgets
-├─ core/                      # Maya 通用底层功能
-├─ tools/                     # 独立小工具
-│  ├─ basic/
-│  ├─ joint/
-│  ├─ controller/
-│  ├─ rig/
-│  ├─ face/
-│  ├─ skin/
-│  ├─ blendshape/
-│  └─ clean/
-├─ systems/                   # 可复用 Rig System / Builder
-├─ resources/
-│  ├─ icons/
-│  └─ controller_shapes/
-├─ tests/                     # Maya Smoke + 静态架构 Gate
-├─ docs/                      # MkDocs 手写文档
-├─ scripts/                   # AST API 文档生成器等开发脚本
-├─ legacy_reference/          # 历史参考代码，不参与正式运行
-├─ .github/workflows/docs.yml
-├─ mkdocs.yml
-├─ config.py
-├─ ARCHITECTURE.md
-├─ README.md
-├─ README.en.md
-├─ LICENSE
-├─ __init__.py
-└─ start.py
+├── app/                       # 主工具箱、应用入口、窗口生命周期
+├── ui/                        # Theme、Window Utils、可复用 Widgets
+├── core/                      # Maya 通用底层能力
+├── tools/                     # 用户可直接打开的小工具
+│   ├── basic/
+│   ├── joint/
+│   ├── controller/
+│   ├── rig/
+│   ├── face/
+│   ├── skin/
+│   ├── blendshape/
+│   └── clean/
+├── systems/                   # 可复用完整 Rig System / Builder
+│   ├── body/
+│   ├── common/
+│   ├── controller/
+│   └── face/
+├── resources/                 # Icons、Controller Shapes、Rig Template
+├── tests/                     # 静态 Gate + Maya Smoke Test
+├── docs/                      # 用户手册 / 架构 / 开发文档
+├── scripts/                   # AST API Generator 等开发脚本
+├── legacy_reference/          # 历史参考，不参与正式运行
+├── .github/workflows/docs.yml
+├── mkdocs.yml
+├── config.py
+├── ARCHITECTURE.md
+├── README.md
+├── README.en.md
+├── LICENSE
+├── __init__.py
+└── start.py
 ```
 
 完整分层规则见：
 
-```text
-ARCHITECTURE.md
-```
+- [ARCHITECTURE.md](ARCHITECTURE.md)
 
-## `core/`
+---
 
-Core 放不依赖 UI 的 Maya 通用能力。
+# Core
 
-当前正式模块统一使用 snake_case：
+`core/` 只放不依赖 UI 的 Maya 通用能力。
+
+主要分类：
 
 ```text
 Animation / Scene / File
-├─ animation_utils.py
-├─ scene_utils.py
-└─ file_utils.py
+├── animation_utils.py
+├── scene_utils.py
+└── file_utils.py
 
 Transform / DG
-├─ transform_utils.py
-├─ matrix_utils.py
-├─ connection_utils.py
-└─ constraint_utils.py
+├── transform_utils.py
+├── matrix_utils.py
+├── connection_utils.py
+└── constraint_utils.py
 
 DAG / Attribute / Naming
-├─ attr_utils.py
-├─ hierarchy_utils.py
-├─ joint_utils.py
-├─ name_utils.py
-├─ rename_utils.py
-└─ snap_utils.py
+├── attr_utils.py
+├── hierarchy_utils.py
+├── joint_utils.py
+├── name_utils.py
+├── rename_utils.py
+└── snap_utils.py
 
 Geometry / Deformer
-├─ curve_utils.py
-├─ surface_utils.py
-├─ mesh_utils.py
-├─ skin_utils.py
-├─ blendshape_utils.py
-└─ control_shape_utils.py
+├── curve_utils.py
+├── surface_utils.py
+├── mesh_utils.py
+├── skin_utils.py
+├── blendshape_utils.py
+└── control_shape_utils.py
 
 Scene Quality
-├─ model_check_utils.py
-└─ scene_clean_utils.py
+├── model_check_utils.py
+└── scene_clean_utils.py
 ```
 
-早期 CamelCase Core 入口：
-
-```text
-attrUtils.py
-hierarchyUtils.py
-jointUtils.py
-nameUtils.py
-```
-
-已经完成正式代码迁移并删除。
-
-新代码只使用：
+正式模块统一使用 `snake_case`：
 
 ```python
 from muziToolset.core import attr_utils
@@ -155,32 +352,15 @@ from muziToolset.core import joint_utils
 from muziToolset.core import name_utils
 ```
 
-`core` 禁止反向 Import：
+旧 CamelCase Core 入口已经退出正式架构。
 
-```text
-ui
-tools
-systems
-app
-legacy_reference
-```
+---
 
-## `tools/`
+# Tools
 
-Tools 放可以独立执行或独立打开的小工具，例如：
+`tools/` 是绑定师直接使用的入口。
 
-- Rename Tool；
-- Attribute Tool；
-- Constraint Tool；
-- Joint Tool；
-- Controller Creator；
-- Skin Tool；
-- BlendShape Tool；
-- Model Checker。
-
-### UI Tool
-
-UI Tool 的 `main()` 必须在 Maya Script Editor 中直接显示并返回窗口：
+例如：
 
 ```python
 from muziToolset.tools.controller import create_ctrl_tool
@@ -188,188 +368,132 @@ from muziToolset.tools.controller import create_ctrl_tool
 window = create_ctrl_tool.main()
 ```
 
-独立 Tool 的窗口强引用和显示统一使用：
+Tool 负责：
 
 ```text
-ui/window_utils.py
+UI
+Selection
+参数收集
+用户交互
 ```
 
-主工具箱打开子工具时仍由：
+复杂算法不要重复写进 Tool。
+
+先看：[常用工具工作流](docs/manual/tools.md)
+
+---
+
+# Systems
+
+`systems/` 放稳定、可复用、可以重复 Build 的完整 Rig Component。
+
+例如：
 
 ```text
-app/window_manager.py
+systems/controller/
+systems/face/
+systems/body/
 ```
 
-负责应用级 Maya Parent、Window Flags 和跨 Tool 生命周期。
-
-### 执行型 Tool
-
-Quick Snap、根据 Selection 直接创建 FK Controller 等 `main()` 本身就是一次操作，不创建 QWidget，因此不强行套窗口入口。
-
-Tool 负责 UI、参数收集和用户入口，不重复维护大型 Core / Rig 算法。
-
-## `systems/`
-
-Systems 放可复用的完整绑定系统和 Builder。
-
-完整 Face、Controller、Body、Hair、Ribbon Workflow 不允许重新塞回 Core。
-
-当前系统代码继续通过稳定的 Core API 组合底层能力。
-
-## `ui/`
-
-维护统一 UI Theme 和可复用控件：
+推荐关系：
 
 ```text
-ui/theme.py
-ui/widgets/
-ui/window_utils.py
-```
-
-职责：
-
-```text
-Theme
-Object Picker
-通用 Widget
-独立 Tool Window 强引用 / 显示 / 单实例
-```
-
-具体 Maya Rig 算法不写在 UI 层。
-
-## `app/`
-
-只负责应用层：
-
-- 主工具箱；
-- 工具注册；
-- 工具搜索；
-- 应用级子窗口生命周期；
-- 应用启动与关闭。
-
-具体 Maya Rig 算法不写在 `app`。
-
-## `resources/`
-
-只保存正式运行需要的静态资源，例如：
-
-- UI Icons；
-- Controller Shape JSON；
-- Controller Shape Preview；
-- 后续 Rig Template。
-
-## `legacy_reference/`
-
-这里只保存历史实现和参考资料。
-
-正式代码禁止直接 Import `legacy_reference`。
-需要旧功能时，先提取有价值的算法，再进入新的 Core / Tool / System API。
-
-## 分层依赖
-
-推荐依赖方向：
-
-```text
-app / ui
+Tool
     ↓
-tools
+System
     ↓
-systems
-    ↓
-core
+Core
     ↓
 Maya
 ```
 
-禁止反向依赖：
+完整 Face / Controller / Body Workflow 不放回 Core。
+
+---
+
+# Face Rig
+
+当前 Face Rig 推荐流程：
 
 ```text
-core -> tools
-core -> systems
-core -> app
-core -> ui
-systems -> tools
-formal code -> legacy_reference
+FaceSetup.build()
+        ↓
+FaceGuide.build()
+        ↓
+手动贴合 Guide
+        ↓
+FaceGuide.validate_guides()
+        ↓
+FaceGuide.finalize()
+        ↓
+Lip / Jaw / Eyelid / Brow Builder
+        ↓
+Corrective / Picker / Finalize
 ```
 
-## 编程规范
+用户手册：
+
+- [Face Guide](docs/manual/face-guide.md)
+
+主要源码：
+
+```text
+systems/face/face_base.py
+systems/face/face_setup.py
+systems/face/face_guide.py
+systems/face/curve_attachment.py
+systems/face/eyelid/builder.py
+systems/face/lip/zip_builder.py
+```
+
+---
+
+# 编程规范
 
 项目新代码默认遵循：
 
-- 使用完整、可读的 `for` 循环，不把 Maya 场景操作压缩成列表推导式；
+- Maya 2023 优先；
+- Maya Scene 操作优先 `maya.cmds`；
+- 新代码不新增 PyMEL 依赖；
+- UI 使用 PySide2，并保留需要的 PySide6 fallback；
 - 文件、函数、方法、变量使用 `snake_case`；
-- 类使用 `PascalCase`；
-- Maya 节点命名可以继续使用 `ctrl_ / jnt_ / grp_` 等绑定命名约定；
-- Maya 场景操作优先使用 `maya.cmds`；
-- 中文注释按“步骤 1 / 步骤 2 / 为什么”解释执行流程和 Maya 特殊行为；
-- 模块头列出职责、公开 API、功能简介、边界和设计原则；
-- UI 不直接堆积复杂 Rig 算法；
+- Class 使用 `PascalCase`；
+- 有意义的 Maya 场景逻辑使用完整、可读的 `for` 循环；
+- 不把主要业务流程压缩成列表推导式；
+- 中文注释解释“步骤”和“为什么”；
+- 模块头说明职责、边界和主要公开 API；
+- 公开 API 使用详细 Docstring；
+- Tool 不重复维护大型 Core / System 算法；
+- Core 不反向 Import Tools / Systems / UI / App；
 - 正式模块 Import 时不主动 reload 依赖；
-- 历史代码只能作为参考，不能从正式包直接 Import。
+- `legacy_reference/` 只能作为参考。
 
-## 测试
+Docstring 规范见：
 
-### Core Import Style Gate
+- [文档维护](docs/development/documentation.md)
 
-不需要 Maya：
+---
+
+# 测试与文档 CI
+
+不需要 Maya 的静态检查：
 
 ```bash
 python tests/core_import_style_test.py
+python tests/docs_reference_generator_test.py
+python tests/docs_runtime_api_coverage_test.py
+python scripts/generate_mkdocs_reference.py
+mkdocs build --strict
 ```
 
-检查：
-
-```text
-退休 CamelCase Core 文件不得重新出现
-正式代码不得重新 Import 退休模块
-```
-
-该 Gate 已接入 GitHub Actions。
-
-### Pipeline Smoke
-
-Maya：
-
-```python
-import muziToolset
-
-muziToolset.pipeline_smoke_test()
-```
-
-### Extended Core Smoke
-
-Maya 2023 已验证：
-
-```python
-muziToolset.extended_core_smoke_test()
-```
-
-当前已记录结果：
-
-```text
-Total: 6 | Passed: 6 | Failed: 0
-```
-
-### Tool Window Smoke
-
-Maya 2023 已验证：
-
-```python
-muziToolset.tool_window_smoke_test()
-```
-
-当前已记录结果：
-
-```text
-Total: 17 | Passed: 17 | Failed: 0
-```
-
-## 文档 CI
-
-GitHub Actions 顺序：
+Docs CI 顺序：
 
 ```text
 Core Import Style Gate
+        ↓
+API Generator Smoke Test
+        ↓
+Runtime API Coverage Test
         ↓
 AST Generate API Reference
         ↓
@@ -380,20 +504,29 @@ Upload Pages Artifact
 Deploy GitHub Pages
 ```
 
-## 当前开发状态
+`docs_runtime_api_coverage_test.py` 会保证以后新增正式 Python 文件时不会悄悄漏掉 API 文档。
 
-已经完成的主要架构迁移：
+Maya 2023 真机测试仍用于验证：
 
-- `muziToolset` 根包成为唯一正式框架；
-- 旧 `pipelineUtils.py` 完成职责拆分并删除；
-- `animation_io_utils.py` 合并到 `animation_utils.py`；
-- `scene_io_utils.py` 合并到 `scene_utils.py`；
-- `attrUtils / hierarchyUtils / jointUtils / nameUtils` 完成 snake_case 迁移并删除；
-- Controller 创建能力已从通用 Core 边界中分离；
-- Basic / Skin / BlendShape / Clean 的主要算法从 UI 抽到 Core；
-- UI Tool Direct Main 已统一窗口生命周期；
-- Tool Window Smoke 已通过 Maya 2023 17/17；
-- Extended Core Smoke 已通过 Maya 2023 6/6；
-- MkDocs Material + AST API Reference + GitHub Pages 已接入。
+```text
+Scene
+DG / DAG
+UI
+Rig Builder
+真实节点连接
+```
 
-后续新增功能应继续沿现有分层扩展，而不是重新制造大型万能模块。
+---
+
+# 当前开发原则
+
+- `muziToolset` 根包是唯一正式运行架构；
+- 历史实现统一放入 `legacy_reference/`；
+- Core、Tools、Systems、UI、App 分层维护；
+- API 文档与源码自动同步；
+- 用户手册按任务组织；
+- README、文档路径和网站导航保持同一套结构；
+- GitHub CI 负责文档覆盖、生成和严格构建；
+- Maya 2023 Smoke Test 负责真实运行验证。
+
+后续新增功能应继续沿当前分层扩展，不重新制造大型万能模块。
