@@ -5,11 +5,14 @@ Generated API Layout Test
 
 检查自动生成 API Reference 的最终阅读结构。
 
-必须满足：
-    1. 每个生成页面都有简短“用途 / 模块定位”；
+模块 API 页面必须满足：
+    1. 概览只保留简短“用途 / 模块定位”；
     2. 概览不再直接铺完整 Module Docstring；
     3. 每个公开 Function / Method 标题后都有明确“作用”；
     4. 参数表不允许出现“未声明”或自动占位提示。
+
+分类 Index Page 属于导航页，不对应单一 Python 模块，因此不强制套用模块“概览”模板；
+但仍会参与生成标记、占位文本和整体 MkDocs Strict Build 检查。
 """
 
 from __future__ import print_function
@@ -82,12 +85,27 @@ def iter_generated_reference_files(project_root):
     return result
 
 
+def is_navigation_index(file_path):
+    u"""判断页面是否只是 API 分类导航页，而不是单一 Runtime 模块页。"""
+    file_name = os.path.basename(
+        file_path
+    )
+
+    if file_name == "index.md":
+        return True
+
+    if file_name == "package-index.md":
+        return True
+
+    return False
+
+
 # =============================================================================
 # Validate
 # =============================================================================
 
 def validate_overview(file_path, content, errors):
-    u"""检查页面概览是否简短清晰。"""
+    u"""检查模块页面概览是否简短清晰。"""
     start_marker = "## 概览"
     end_marker = "## 常用任务"
 
@@ -199,6 +217,8 @@ def run_test():
 
     errors = []
     callable_count = 0
+    module_page_count = 0
+    navigation_page_count = 0
 
     for file_path in generated_files:
         with open(
@@ -208,11 +228,15 @@ def run_test():
         ) as file_object:
             content = file_object.read()
 
-        validate_overview(
-            file_path,
-            content,
-            errors
-        )
+        if is_navigation_index(file_path):
+            navigation_page_count += 1
+        else:
+            module_page_count += 1
+            validate_overview(
+                file_path,
+                content,
+                errors
+            )
 
         callable_count += validate_callable_purpose(
             file_path,
@@ -232,12 +256,22 @@ def run_test():
         )
 
     print(
-        u"Generated API pages: {}".format(
+        u"Generated API pages:      {}".format(
             len(generated_files)
         )
     )
     print(
-        u"Callable sections:   {}".format(
+        u"Runtime module pages:     {}".format(
+            module_page_count
+        )
+    )
+    print(
+        u"Navigation index pages:   {}".format(
+            navigation_page_count
+        )
+    )
+    print(
+        u"Callable sections:        {}".format(
             callable_count
         )
     )
