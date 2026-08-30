@@ -13,9 +13,12 @@ Face Driven Key Tool
 
 驱动范围默认：0 -> 10。
 
-架构：
+架构边界：
+    - Driver Group 名称解析统一复用 core.rename_utils；
     - Driver Group 的 DAG 插组逻辑统一复用 core.hierarchy_utils；
-    - Tool 只保留 Face Driven Key 工作流与 UI；
+    - Driver Attribute 创建统一复用 core.attr_utils；
+    - Undo Chunk 统一复用 core.scene_utils；
+    - Tool 只保留 Face Driven Key 工作流、Set Driven Key 和 UI；
     - 用户直接调用 main() 时由 ui.window_utils 负责窗口生命周期。
 """
 
@@ -38,24 +41,41 @@ except ImportError:
     from PySide6.QtWidgets import QPushButton
     from PySide6.QtWidgets import QVBoxLayout
 
+from ...core import attr_utils
 from ...core import hierarchy_utils
+from ...core import rename_utils
+from ...core import scene_utils
 from ...ui import theme
 from ...ui import window_utils
 
 
-def _short_name(node):
-    """返回 Maya 节点短名称。"""
-    return node.split("|")[-1]
-
-
 def _driver_group_name(control):
-    """根据控制器名称生成 Driver Group 名称。"""
-    short_name = _short_name(control)
+    u"""
+    根据控制器名称生成 Driver Group 名称。
+
+    Args:
+        control (str):
+            面部动画 Controller Transform。
+
+    Returns:
+        str:
+            对应 Driver Group 名称。
+    """
+    # 使用 Rename Core 统一取得 DAG Short Name。
+    short_name = rename_utils.get_short_name(
+        control
+    )
 
     if short_name.startswith("ctrl_"):
-        return short_name.replace("ctrl_", "driver_", 1)
+        return short_name.replace(
+            "ctrl_",
+            "driver_",
+            1
+        )
 
-    return "{}_driver".format(short_name)
+    return "{}_driver".format(
+        short_name
+    )
 
 
 def add_extra_group(obj, group_name, world_orient=False):
@@ -63,30 +83,33 @@ def add_extra_group(obj, group_name, world_orient=False):
     在控制器上方创建或复用 Driver Group。
 
     实际 DAG 插组逻辑统一复用 ``hierarchy_utils.Hierarchy.add_extra_group``，
-    这里只保留 Face Driven Key 的“已有 Group 直接复用”兼容行为。
+    这里只保留 Face Driven Key 的“已有 Group 直接复用”工作流语义。
 
     Args:
         obj (str):
-            当前操作使用的 Maya DAG 节点或场景对象。
+            需要插入 Driver Group 的 Controller。
         group_name (str):
-            `group_name` 对应的 Maya 节点或资源名称。
+            Driver Group 名称。
         world_orient (bool):
-            创建 Extra Group 时是否使用 World Orientation，而不是继承目标对象旋转。
+            是否使用 World Orientation。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        str:
+            新建或复用的 Driver Group。
 
     Raises:
         RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+            Controller 不存在时抛出。
     """
-    if not cmds.objExists(obj):
-        raise RuntimeError(u"对象不存在：{}".format(obj))
+    # 使用 Scene Core 统一验证 Controller 是否存在。
+    scene_utils.validate_node(
+        obj
+    )
 
     if cmds.objExists(group_name):
         return group_name
 
+    # 使用 Hierarchy Core 在 Controller 上方插入 Driver Group。
     return hierarchy_utils.Hierarchy.add_extra_group(
         obj=obj,
         grp_name=group_name,
@@ -95,38 +118,66 @@ def add_extra_group(obj, group_name, world_orient=False):
 
 
 def _ensure_driver_attribute(driver, attribute_name):
-    """确保驱动控制器上存在 0-10 的驱动属性。"""
+    u"""
+    确保驱动控制器上存在 0-10 的 Keyable Driver Attribute。
+
+    Args:
+        driver (str):
+            Driver Controller。
+        attribute_name (str):
+            需要创建或复用的驱动属性名。
+
+    Returns:
+        str:
+            完整 Driver Plug。
+    """
     if not attribute_name:
-        raise RuntimeError(u"驱动属性名称不能为空。")
-
-    if not cmds.objExists(driver):
-        raise RuntimeError(u"驱动控制器不存在：{}".format(driver))
-
-    attribute_exists = cmds.attributeQuery(
-        attribute_name,
-        node=driver,
-        exists=True
-    )
-
-    if not attribute_exists:
-        cmds.addAttr(
-            driver,
-            longName=attribute_name,
-            attributeType="double",
-            minValue=0.0,
-            maxValue=10.0,
-            defaultValue=0.0,
-            keyable=True
+        raise RuntimeError(
+            u"驱动属性名称不能为空。"
         )
 
-    plug = "{}.{}".format(driver, attribute_name)
+    # 使用 Scene Core 统一检查 Driver 节点。
+    scene_utils.validate_node(
+        driver
+    )
 
-    if not cmds.getAttr(plug, keyable=True):
-        cmds.setAttr(plug, keyable=True)
+    driver_attr = attr_utils.Attr(
+        driver
+    )
+
+    if not driver_attr.attr_exists(
+            attribute_name
+    ):
+        # 使用 Attr Core 创建 0～10 的 Driver Attribute。
+        driver_attr.add_attr(
+            attribute_name,
+            attr_type="double",
+            lock=False,
+            hide=False,
+            default_value=0.0,
+            min_value=0.0,
+            max_value=10.0
+        )
+
+    plug = "{}.{}".format(
+        driver,
+        attribute_name
+    )
+
+    # Driver Attribute 必须对动画师可 Key。
+    if not cmds.getAttr(
+            plug,
+            keyable=True
+    ):
+        cmds.setAttr(
+            plug,
+            keyable=True
+        )
 
     return plug
 
 
+@scene_utils.undo_chunk
 def create_driven_key_setup(
         driver,
         driver_attribute,
@@ -139,27 +190,30 @@ def create_driven_key_setup(
 
     Args:
         driver (str):
-            作为驱动端的 Maya 节点名称。
+            作为驱动端的 Maya Controller。
         driver_attribute (str):
-            驱动 Set Driven Key / 属性关系的 Driver Plug，例如 `ctrl.smile`。
-        driven_controls (str | list[str]):
-            接收 Driver Attribute 结果的 Driven Controller 列表。
+            Driver Attribute 名称。
+        driven_controls (list[str]):
+            需要建立 Driver Group 和 Driven Key 的 Controller 列表。
         minimum (float):
-            数值 Attribute、Remap 或 UI 控件使用的最小值。
+            默认状态 Driver Value。
         maximum (float):
-            数值 Attribute、Remap 或 UI 控件使用的最大值。
+            当前 Pose 对应的最大 Driver Value。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        list[str]:
+            创建或复用的 Driver Group。
 
     Raises:
         RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+            输入为空或没有可构建 Controller 时抛出。
     """
     if not driven_controls:
-        raise RuntimeError(u"请选择一个或以上需要被驱动的控制器。")
+        raise RuntimeError(
+            u"请选择一个或以上需要被驱动的控制器。"
+        )
 
+    # 创建或复用 Driver Controller 上的驱动属性。
     driver_plug = _ensure_driver_attribute(
         driver,
         driver_attribute
@@ -191,63 +245,83 @@ def create_driven_key_setup(
         "scaleZ": 1.0,
     }
 
-    cmds.undoInfo(
-        openChunk=True,
-        chunkName="MuziFaceDrivenKey"
-    )
+    # 为每个 Driven Controller 创建或复用独立 Driver Group。
+    for control in driven_controls:
+        if not cmds.objExists(control):
+            continue
 
-    try:
-        for control in driven_controls:
-            if not cmds.objExists(control):
-                continue
+        group_name = _driver_group_name(
+            control
+        )
 
-            group_name = _driver_group_name(control)
-            driver_group = add_extra_group(
-                obj=control,
-                group_name=group_name,
-                world_orient=False
+        driver_group = add_extra_group(
+            obj=control,
+            group_name=group_name,
+            world_orient=False
+        )
+
+        if driver_group not in driver_groups:
+            driver_groups.append(
+                driver_group
             )
 
-            if driver_group not in driver_groups:
-                driver_groups.append(driver_group)
+    if not driver_groups:
+        raise RuntimeError(
+            u"没有找到可以创建 Driven Key 的控制器。"
+        )
 
-        if not driver_groups:
-            raise RuntimeError(u"没有找到可以创建 Driven Key 的控制器。")
+    # -------------------------------------------------------------------------
+    # Maximum Pose
+    # -------------------------------------------------------------------------
+    # 把 Driver 切到 Maximum，当前 Driver Group Pose 记录为最大状态。
+    cmds.setAttr(
+        driver_plug,
+        maximum
+    )
 
-        cmds.setAttr(driver_plug, maximum)
+    for driver_group in driver_groups:
+        for attr_name in transform_attrs:
+            plug = "{}.{}".format(
+                driver_group,
+                attr_name
+            )
 
-        for driver_group in driver_groups:
-            for attr_name in transform_attrs:
-                plug = "{}.{}".format(
-                    driver_group,
-                    attr_name
-                )
-                cmds.setDrivenKeyframe(
-                    plug,
-                    currentDriver=driver_plug
-                )
+            cmds.setDrivenKeyframe(
+                plug,
+                currentDriver=driver_plug
+            )
 
-        cmds.setAttr(driver_plug, minimum)
+    # -------------------------------------------------------------------------
+    # Default Pose
+    # -------------------------------------------------------------------------
+    # 把 Driver 切回 Minimum，并把 Driver Group 恢复标准 TRS 默认值。
+    cmds.setAttr(
+        driver_plug,
+        minimum
+    )
 
-        for driver_group in driver_groups:
-            for attr_name in transform_attrs:
-                plug = "{}.{}".format(
-                    driver_group,
-                    attr_name
-                )
-                cmds.setAttr(
-                    plug,
-                    default_values[attr_name]
-                )
-                cmds.setDrivenKeyframe(
-                    plug,
-                    currentDriver=driver_plug
-                )
+    for driver_group in driver_groups:
+        for attr_name in transform_attrs:
+            plug = "{}.{}".format(
+                driver_group,
+                attr_name
+            )
 
-        cmds.setAttr(driver_plug, minimum)
+            cmds.setAttr(
+                plug,
+                default_values[attr_name]
+            )
 
-    finally:
-        cmds.undoInfo(closeChunk=True)
+            cmds.setDrivenKeyframe(
+                plug,
+                currentDriver=driver_plug
+            )
+
+    # 最终保持 Driver 在默认状态。
+    cmds.setAttr(
+        driver_plug,
+        minimum
+    )
 
     return driver_groups
 
@@ -257,13 +331,12 @@ class FaceDrivenKeyTool(QDialog):
 
     def __init__(self, parent=None):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
+        创建 Face Driven Key 窗口。
 
         Args:
-            parent (str):
-                父级 Maya 节点名称。
+            parent (QWidget | None):
+                Qt 父窗口。
         """
-
         super(FaceDrivenKeyTool, self).__init__(parent)
 
         self.create_widgets()
@@ -278,9 +351,7 @@ class FaceDrivenKeyTool(QDialog):
         self.resize(540, 360)
 
     def create_widgets(self):
-        u"""
-        创建界面控件。
-        """
+        u"""创建界面控件。"""
         self.title_label = theme.make_title(u"面部 Driven Key")
         self.subtitle_label = theme.make_subtitle(
             u"把当前面部控制器 Pose 固化到 Driver Group，并建立 0 → 10 驱动关系。"
@@ -311,9 +382,7 @@ class FaceDrivenKeyTool(QDialog):
         theme.style_primary(self.execute_button)
 
     def create_layouts(self):
-        u"""
-        创建 Card 布局。
-        """
+        u"""创建 Card 布局。"""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -351,9 +420,7 @@ class FaceDrivenKeyTool(QDialog):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        u"""
-        连接按钮。
-        """
+        u"""连接按钮。"""
         self.driver_pick_button.clicked.connect(
             self.pick_driver
         )
@@ -362,51 +429,56 @@ class FaceDrivenKeyTool(QDialog):
         )
 
     def pick_driver(self):
-        u"""
-        拾取唯一选择的驱动控制器。
-        """
-        selections = cmds.ls(
-            selection=True,
-            long=True
+        u"""拾取唯一选择的驱动控制器。"""
+        selections = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
         )
-
-        if selections is None:
-            selections = []
 
         if len(selections) != 1:
-            cmds.warning(u"请只选择一个驱动控制器。")
+            cmds.warning(
+                u"请只选择一个驱动控制器。"
+            )
             return
 
-        self.driver_line.setText(selections[0])
-        cmds.select(clear=True)
-
-    def execute(self):
-        u"""
-        创建当前 Pose 的 Driven Key。
-        """
-        driver = self.driver_line.text().strip()
-        attribute_name = self.attribute_line.text().strip()
-        driven_controls = cmds.ls(
-            selection=True,
-            long=True
+        self.driver_line.setText(
+            selections[0]
         )
 
-        if driven_controls is None:
-            driven_controls = []
+        cmds.select(
+            clear=True
+        )
+
+    def execute(self):
+        u"""创建当前 Pose 的 Driven Key。"""
+        driver = self.driver_line.text().strip()
+        attribute_name = self.attribute_line.text().strip()
+
+        driven_controls = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
+        )
 
         if not driver:
-            cmds.warning(u"请先拾取驱动控制器。")
+            cmds.warning(
+                u"请先拾取驱动控制器。"
+            )
             return
 
         if not attribute_name:
-            cmds.warning(u"请输入驱动属性名称。")
+            cmds.warning(
+                u"请输入驱动属性名称。"
+            )
             return
 
         if not driven_controls:
-            cmds.warning(u"请选择需要被驱动的面部控制器。")
+            cmds.warning(
+                u"请选择需要被驱动的面部控制器。"
+            )
             return
 
         try:
+            # 调用参数化 Driven Key Workflow，UI 不直接实现 Rig 逻辑。
             groups = create_driven_key_setup(
                 driver=driver,
                 driver_attribute=attribute_name,
@@ -426,7 +498,9 @@ class FaceDrivenKeyTool(QDialog):
                 )
             )
         except Exception as error:
-            cmds.warning(str(error))
+            cmds.warning(
+                str(error)
+            )
 
 
 def main():
@@ -434,8 +508,8 @@ def main():
     显示并返回 Face Driven Key 窗口。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        QDialog:
+            Face Driven Key 窗口。
     """
     return window_utils.show_window(
         "tools.face.face_select_key_tool",
