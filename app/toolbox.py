@@ -234,7 +234,17 @@ def get_tool_mode(tool_function):
 
 
 def get_tool_mode_display_name(tool_mode):
-    u"""返回工具模式的中文显示名称。"""
+    u"""
+    返回工具模式的中文显示名称。
+
+    Args:
+        tool_mode (str):
+            Tool Registry 声明的运行模式。
+
+    Returns:
+        str:
+            `界面工具` 或 `直接执行`。
+    """
     if tool_mode == TOOL_MODE_ACTION:
         return u"直接执行"
 
