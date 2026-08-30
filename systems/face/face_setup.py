@@ -22,6 +22,7 @@ Step 生命周期：
     - Model 有效性统一由 core.mesh_utils 处理；
     - DAG Parent 统一由 core.hierarchy_utils 处理；
     - Config 的底层 Network / Message / Value 操作由 FaceBase -> core.config_utils 处理；
+    - Step 生命周期入口统一由 systems.common.StepBase 提供；
     - FaceSetup 只保留 Step 01 自己的业务规则。
 """
 
@@ -87,6 +88,7 @@ class FaceSetup(face_base.FaceBase):
         Collect 阶段同时完成输入 Validation。
         只有本方法成功结束，后续 Prepare / Process 才允许继续。
         """
+        # 统一把所有模型输入转换成稳定的 DAG Short Name，避免 Reparent 后 Long Path 失效。
         self.face_head_model = rename_utils.get_short_name(
             self.face_head_model
         )
@@ -109,6 +111,7 @@ class FaceSetup(face_base.FaceBase):
             self.face_gum_model
         )
 
+        # 汇总本 Step 使用的模型输入，供后续统一 Parent 和处理。
         self.face_model_list = [
             self.face_head_model,
             self.face_lf_eye_model,
@@ -119,6 +122,7 @@ class FaceSetup(face_base.FaceBase):
             self.face_gum_model,
         ]
 
+        # Head 是 Face Setup 的唯一必填模型，没有 Head 时直接阻止后续执行。
         if not self.face_head_model:
             raise RuntimeError(
                 u"Face Setup 必须指定头部模型。"
@@ -134,6 +138,7 @@ class FaceSetup(face_base.FaceBase):
             (u"Gum Model", self.face_gum_model),
         ]
 
+        # 使用 Core 统一检查所有非空模型是否存在、名称唯一并且是 Transform。
         for model_input in model_inputs:
             label = model_input[0]
             model = model_input[1]
@@ -146,6 +151,7 @@ class FaceSetup(face_base.FaceBase):
                 label=label
             )
 
+        # 检查 Mouth Joint 数量是否满足 Face Lip 系统的业务规则。
         self.check_mouth_jnt_number()
 
         return True
@@ -159,10 +165,13 @@ class FaceSetup(face_base.FaceBase):
             2. 生成 Work Model 名称；
             3. 清理上一次 Step 01 创建的旧 Work Model。
         """
+        # 确保 Face Rig 的基础层级已经创建完成，给后续模型整理提供目标 Group。
         self.ensure_hierarchy()
 
+        # 生成本次 Step 01 需要使用的三个 Head Work Model 正式名称。
         self.work_model_name_dict = self.get_work_model_names()
 
+        # 删除上一次 Step 01 生成的旧 Work Model，避免名称和旧数据冲突。
         self.delete_old_work_models(
             self.work_model_name_dict
         )
@@ -175,8 +184,10 @@ class FaceSetup(face_base.FaceBase):
 
         负责整理输入模型层级，并创建三个 Head Work Model。
         """
+        # 把当前输入模型统一整理到 Face Model Group，建立稳定的模型层级。
         self.parent_input_models()
 
+        # 根据最新 Head Model 创建 Tweak / Stretch / Deform 三个工作模型。
         self.create_work_models(
             self.work_model_name_dict
         )
@@ -193,23 +204,19 @@ class FaceSetup(face_base.FaceBase):
             3. Step 01 = Completed；
             4. Step 02～04 = Invalid。
         """
+        # 把本次 Step 01 的模型引用和参数写入统一 Face Config。
         self.save_config()
+
+        # 检查三个 Head Work Model 是否都已正确生成并且仍然有效。
         self.validate_results()
 
+        # 把当前 Step 标记为完成，允许 UI 进入后续 Step。
         self.set_step_completed(
             completed=True
         )
 
+        # 当前 Step 被重新提交后，让所有后续旧结果失效，避免继续使用过期数据。
         self.invalidate_later_steps()
-
-        return True
-
-    def run_step(self):
-        u"""按照统一 Step 生命周期执行 Face Setup。"""
-        self.collect_inputs()
-        self.prepare_data()
-        self.process_data()
-        self.finalize_step()
 
         return True
 
@@ -217,8 +224,9 @@ class FaceSetup(face_base.FaceBase):
         u"""
         兼容旧版 FaceSetup.build()。
 
-        新代码统一使用 run_step()。
+        新代码统一使用 StepBase.run_step()。
         """
+        # 旧入口只转调统一 Step 生命周期，避免维护第二套执行流程。
         return self.run_step()
 
     # =========================================================================
@@ -257,6 +265,7 @@ class FaceSetup(face_base.FaceBase):
 
     def parent_input_models(self):
         u"""把 Step 01 指定模型整理到 Face Model Group。"""
+        # 逐个整理非空输入模型，避免可选模型为空时影响其它模型。
         for face_model in self.face_model_list:
             if not face_model:
                 continue
@@ -270,6 +279,7 @@ class FaceSetup(face_base.FaceBase):
 
     def get_work_model_names(self):
         u"""生成三个 Head Work Model 的正式名称。"""
+        # 生成 Head Tweak 工作模型名称。
         face_head_tweak_name = name_utils.Name.create_name(
             node_type="model",
             side=self.face_side,
@@ -278,6 +288,7 @@ class FaceSetup(face_base.FaceBase):
             index=1
         )
 
+        # 生成 Head Stretch 工作模型名称。
         face_head_stretch_name = name_utils.Name.create_name(
             node_type="model",
             side=self.face_side,
@@ -286,6 +297,7 @@ class FaceSetup(face_base.FaceBase):
             index=1
         )
 
+        # 生成 Head Deform 工作模型名称。
         face_head_deform_name = name_utils.Name.create_name(
             node_type="model",
             side=self.face_side,
@@ -302,6 +314,7 @@ class FaceSetup(face_base.FaceBase):
 
     def delete_old_work_models(self, work_model_name_dict):
         u"""删除上一次 Step 01 创建的旧 Head Work Model。"""
+        # 按正式名称逐个删除旧结果；不存在的模型由 Core 安全忽略。
         for key in work_model_name_dict:
             model = work_model_name_dict.get(
                 key
@@ -329,18 +342,21 @@ class FaceSetup(face_base.FaceBase):
             "deform"
         )
 
+        # 创建 Tweak 工作模型，供后续局部微调和修型流程使用。
         self.face_head_tweak_model = mesh_utils.duplicate_model(
             source_model=self.face_head_model,
             new_name=face_head_tweak_name,
             parent=self.face_tweak_grp
         )
 
+        # 创建 Stretch 工作模型，供后续拉伸或体积相关处理使用。
         self.face_head_stretch_model = mesh_utils.duplicate_model(
             source_model=self.face_head_model,
             new_name=face_head_stretch_name,
             parent=self.face_stretch_grp
         )
 
+        # 创建 Deform 工作模型，作为后续正式变形系统的工作副本。
         self.face_head_deform_model = mesh_utils.duplicate_model(
             source_model=self.face_head_model,
             new_name=face_head_deform_name,
@@ -357,6 +373,7 @@ class FaceSetup(face_base.FaceBase):
             (u"Head Deform Model", self.face_head_deform_model),
         ]
 
+        # 统一通过 Core 验证三个输出模型，确保 Finalize 不会保存损坏结果。
         for result_model in result_models:
             label = result_model[0]
             model = result_model[1]
@@ -384,6 +401,7 @@ class FaceSetup(face_base.FaceBase):
             "face_gum_model": self.face_gum_model,
         }
 
+        # 使用 Message 保存模型节点引用，保证 Maya Rename 后引用仍然有效。
         self.set_config_messages(
             attrs_dict=model_config_dict,
             force=True,
@@ -398,6 +416,7 @@ class FaceSetup(face_base.FaceBase):
             "mouth_jnt_number": "long",
         }
 
+        # 使用普通 Config Value 保存 Mouth Joint 数量，供后续 Lip Step 读取。
         self.set_config_values(
             attrs_dict=value_config_dict,
             attr_types=value_type_dict,
