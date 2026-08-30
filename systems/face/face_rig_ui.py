@@ -6,8 +6,12 @@ Face Rig UI
 Face Rig 的分步构建界面。
 
 设计原则：
-    - UI 只收集参数和展示 Build 状态；
-    - 实际 Step 逻辑由 FaceSetup / FaceGuide 等系统类负责；
+    - UI 只收集参数、展示状态和提供当前 Step 的辅助操作；
+    - 真正的 Step 逻辑由 FaceSetup / FaceGuide 等系统类负责；
+    - 顶部 Step 导航负责返回已经完成的步骤；
+    - 底部只保留一个“下一步”，统一用于提交 / 重新提交当前 Step；
+    - 返回旧 Step 修改参数后再次点击“下一步”，必须重新执行当前 Step，
+      并让后续旧结果失效；
     - 不在模块 import 时 reload 依赖；
     - 使用根包 ui 的统一 Theme 与通用 Widget。
 """
@@ -90,7 +94,7 @@ class FaceRigWizard(QWidget):
         u"""创建公共控件。"""
         self.title_label = theme.make_title(u"Face Rig")
         self.subtitle_label = theme.make_subtitle(
-            u"按步骤建立面部绑定。每一个 Build Step 都由独立系统模块负责。"
+            u"按步骤建立面部绑定。返回旧步骤修改后，再点击下一步即可重新提交当前步骤。"
         )
 
         step_names = [
@@ -115,9 +119,8 @@ class FaceRigWizard(QWidget):
 
         self.page_stack = QStackedWidget()
 
-        self.previous_button = QPushButton(u"上一步")
-        theme.style_ghost(self.previous_button)
-
+        # 整个 Step UI 只保留一个提交按钮。
+        # 回退通过顶部已经完成的 Step 导航完成。
         self.next_button = QPushButton(u"下一步")
         theme.style_primary(self.next_button)
 
@@ -143,13 +146,21 @@ class FaceRigWizard(QWidget):
         self.page_stack.addWidget(self.step4_page)
 
     def create_step1_page(self):
-        u"""创建 Face Setup 页面。"""
+        u"""
+        创建 Face Setup 页面。
+
+        Step 01 页面只负责参数编辑。
+        真正提交当前参数统一通过底部“下一步”执行 FaceSetup.build()。
+        """
         page = QWidget()
 
         main_layout = QVBoxLayout(page)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(12)
 
+        # ---------------------------------------------------------------------
+        # 模型输入
+        # ---------------------------------------------------------------------
         model_card, model_layout = theme.make_card(page)
         model_layout.addWidget(
             theme.make_section_title(u"模型输入")
@@ -206,6 +217,9 @@ class FaceRigWizard(QWidget):
         model_layout.addWidget(self.face_tongue_picker)
         model_layout.addWidget(self.face_gum_picker)
 
+        # ---------------------------------------------------------------------
+        # 构建参数
+        # ---------------------------------------------------------------------
         parameter_card, parameter_layout = theme.make_card(page)
         parameter_layout.addWidget(
             theme.make_section_title(u"构建参数")
@@ -259,32 +273,28 @@ class FaceRigWizard(QWidget):
 
         parameter_layout.addLayout(mouth_layout)
 
-        build_card, build_layout = theme.make_card(page)
-        build_layout.addWidget(
-            theme.make_section_title(u"Step 01 Build")
+        step_hint = QLabel(
+            u"参数调整完成后点击窗口底部“下一步”。如果返回本步骤重新修改，下一步会重新 Build Step 01。"
         )
-
-        build_description = QLabel(
-            u"Build 会确保 Face 基础层级、更新三个 Head 工作模型，并把当前参数写入同一个 Config Network Node。"
-        )
-        build_description.setWordWrap(True)
-        theme.set_role(build_description, "muted")
-
-        self.build_step1_button = QPushButton(u"Build Face Setup")
-        theme.style_primary(self.build_step1_button)
-
-        build_layout.addWidget(build_description)
-        build_layout.addWidget(self.build_step1_button)
+        step_hint.setWordWrap(True)
+        theme.set_role(step_hint, "muted")
 
         main_layout.addWidget(model_card)
         main_layout.addWidget(parameter_card)
-        main_layout.addWidget(build_card)
+        main_layout.addWidget(step_hint)
         main_layout.addStretch(1)
 
         return page
 
     def create_step2_page(self):
-        u"""创建正式的 Face Guide 页面。"""
+        u"""
+        创建正式 Face Guide 页面。
+
+        页面内部只保留 Guide 编辑辅助操作：
+            Build / Reset / Repair / Validate。
+
+        Step 02 的正式提交 Finalize 统一通过底部“下一步”执行。
+        """
         page = QWidget()
 
         main_layout = QVBoxLayout(page)
@@ -301,7 +311,7 @@ class FaceRigWizard(QWidget):
 
         status_description = QLabel(
             u"Step 02 使用 resources/face/face_guide.ma 作为 Guide 模板。"
-            u"Build 负责导入或复用模板；调整完成后再执行 Finalize。"
+            u"Build 负责导入或复用模板；手动贴合完成后，底部“下一步”负责 Finalize。"
         )
         status_description.setWordWrap(True)
         theme.set_role(status_description, "muted")
@@ -333,7 +343,7 @@ class FaceRigWizard(QWidget):
         status_layout.addWidget(self.guide_details_label)
 
         # ---------------------------------------------------------------------
-        # Template Build
+        # Guide Template
         # ---------------------------------------------------------------------
         template_card, template_layout = theme.make_card(page)
         template_layout.addWidget(
@@ -402,31 +412,16 @@ class FaceRigWizard(QWidget):
         validation_layout.addLayout(validation_button_layout)
         validation_layout.addWidget(self.guide_validation_label)
 
-        # ---------------------------------------------------------------------
-        # Finalize
-        # ---------------------------------------------------------------------
-        finalize_card, finalize_layout = theme.make_card(page)
-        finalize_layout.addWidget(
-            theme.make_section_title(u"Step 02 Finalize")
+        next_hint = QLabel(
+            u"Guide 调整完成后点击窗口底部“下一步”。下一步会重新执行 Finalize Validation，再进入 Step 03。"
         )
-
-        finalize_description = QLabel(
-            u"Finalize 不创建正式 Rig。它只确认 Guide 可以交给后续 Builder，"
-            u"保存当前 Guide Config，并把 Step 02 标记为完成。"
-        )
-        finalize_description.setWordWrap(True)
-        theme.set_role(finalize_description, "muted")
-
-        self.finalize_step2_button = QPushButton(u"Finalize Face Guide")
-        theme.style_primary(self.finalize_step2_button)
-
-        finalize_layout.addWidget(finalize_description)
-        finalize_layout.addWidget(self.finalize_step2_button)
+        next_hint.setWordWrap(True)
+        theme.set_role(next_hint, "muted")
 
         main_layout.addWidget(status_card)
         main_layout.addWidget(template_card)
         main_layout.addWidget(validation_card)
-        main_layout.addWidget(finalize_card)
+        main_layout.addWidget(next_hint)
         main_layout.addStretch(1)
 
         return page
@@ -535,8 +530,9 @@ class FaceRigWizard(QWidget):
 
         bottom_layout = QHBoxLayout()
         bottom_layout.setContentsMargins(0, 0, 0, 0)
+        bottom_layout.setSpacing(10)
+
         bottom_layout.addWidget(self.status_label, 1)
-        bottom_layout.addWidget(self.previous_button)
         bottom_layout.addWidget(self.next_button)
 
         main_layout.addLayout(bottom_layout)
@@ -548,16 +544,10 @@ class FaceRigWizard(QWidget):
                 self.clicked_step_button
             )
 
-        self.previous_button.clicked.connect(
-            self.clicked_previous_button
-        )
         self.next_button.clicked.connect(
             self.clicked_next_button
         )
 
-        self.build_step1_button.clicked.connect(
-            self.build_step1
-        )
         self.mouth_joint_slider.valueChanged.connect(
             self.update_mouth_joint_value
         )
@@ -576,9 +566,6 @@ class FaceRigWizard(QWidget):
         )
         self.validate_guide_button.clicked.connect(
             self.validate_step2_guides
-        )
-        self.finalize_step2_button.clicked.connect(
-            self.finalize_step2
         )
 
     # =========================================================================
@@ -684,7 +671,12 @@ class FaceRigWizard(QWidget):
         self.update_navigation_buttons()
 
     def update_step_buttons(self):
-        u"""更新顶部步骤按钮状态。"""
+        u"""
+        更新顶部步骤按钮状态。
+
+        当前 Step 永远可用；已经完成的历史 Step 可点击返回；
+        尚未到达的未来 Step 保持禁用。
+        """
         for step_index in range(len(self.step_buttons)):
             step_button = self.step_buttons[step_index]
 
@@ -712,54 +704,52 @@ class FaceRigWizard(QWidget):
                 step_button.setEnabled(False)
 
     def update_navigation_buttons(self):
-        u"""更新底部导航按钮。"""
-        self.previous_button.setEnabled(
-            self.current_step_index > 0
+        u"""
+        更新底部“下一步”状态。
+
+        “下一步”永远表示提交当前 Step，而不是简单切换页面。
+        """
+        self.next_button.setText(
+            u"下一步"
         )
 
         if self.current_step_index == 0:
-            self.next_button.setText(
-                u"Build 并进入下一步"
-            )
             self.next_button.setEnabled(True)
             return
 
         if self.current_step_index == 1:
-            if 1 in self.completed_step_indexes:
-                self.next_button.setText(
-                    u"进入下一步"
-                )
-                self.next_button.setEnabled(True)
-                return
-
             face_guide = self.get_face_guide()
-            guide_exists = face_guide.guide_exists()
 
-            self.next_button.setText(
-                u"Finalize 并进入下一步"
-            )
+            try:
+                guide_exists = face_guide.guide_exists()
+            except Exception:
+                guide_exists = False
+
             self.next_button.setEnabled(
                 bool(guide_exists)
             )
             return
 
         # Step 03～04 尚未正式接入。
-        self.next_button.setText(u"该步骤尚未实现")
         self.next_button.setEnabled(False)
 
     def clicked_step_button(self):
-        u"""允许返回已经完成的步骤。"""
+        u"""通过顶部导航返回已经完成的步骤。"""
         step_button = self.sender()
 
         if step_button is None:
             return
 
-        step_index = step_button.property("step_index")
+        step_index = step_button.property(
+            "step_index"
+        )
 
         if step_index is None:
             return
 
-        step_index = int(step_index)
+        step_index = int(
+            step_index
+        )
 
         if step_index == self.current_step_index:
             return
@@ -767,19 +757,18 @@ class FaceRigWizard(QWidget):
         if step_index not in self.completed_step_indexes:
             return
 
-        self.set_current_step(step_index)
-
-    def clicked_previous_button(self):
-        u"""返回上一个页面，不重新 Build。"""
-        previous_index = self.current_step_index - 1
-
-        if previous_index < 0:
-            return
-
-        self.set_current_step(previous_index)
+        self.set_current_step(
+            step_index
+        )
 
     def clicked_next_button(self):
-        u"""执行当前已经接入的 Step。"""
+        u"""
+        重新提交当前已经接入的 Step，并在成功后进入下一个步骤。
+
+        重要：
+            即使当前 Step 之前已经完成，只要用户返回本步骤再点“下一步”，
+            仍然重新执行 Build / Finalize，确保修改真正写回系统。
+        """
         if self.current_step_index == 0:
             build_result = self.build_step1()
 
@@ -790,11 +779,10 @@ class FaceRigWizard(QWidget):
             return
 
         if self.current_step_index == 1:
-            if 1 not in self.completed_step_indexes:
-                finalize_result = self.finalize_step2()
+            finalize_result = self.finalize_step2()
 
-                if not finalize_result:
-                    return
+            if not finalize_result:
+                return
 
             self.set_current_step(2)
             return
@@ -808,7 +796,9 @@ class FaceRigWizard(QWidget):
         mouth_joint_number = slider_value * self.mouth_joint_step
 
         self.mouth_joint_value_label.setText(
-            u"{}".format(mouth_joint_number)
+            u"{}".format(
+                mouth_joint_number
+            )
         )
 
     def get_mouth_joint_number(self):
@@ -818,7 +808,12 @@ class FaceRigWizard(QWidget):
         return mouth_joint_number
 
     def build_step1(self):
-        u"""从 UI 收集参数并执行 FaceSetup.build()。"""
+        u"""
+        从 UI 重新收集当前参数并执行 FaceSetup.build()。
+
+        每次点击 Step 01 的“下一步”都会重新执行，
+        因此返回 Step 01 修改模型或参数后不需要额外的 Build 按钮。
+        """
         face_setup = FaceSetup(
             face_head_model=self.face_head_picker.get_value(),
             face_lf_eye_model=self.face_lf_eye_picker.get_value(),
@@ -833,12 +828,16 @@ class FaceRigWizard(QWidget):
         try:
             face_setup.build()
         except Exception as error:
-            self.status_label.setText(u"Face Setup Build 失败")
+            self.status_label.setText(
+                u"Face Setup Build 失败"
+            )
 
             QMessageBox.critical(
                 self,
                 u"Face Setup Build 失败",
-                u"{}".format(error)
+                u"{}".format(
+                    error
+                )
             )
             return False
 
@@ -847,14 +846,14 @@ class FaceRigWizard(QWidget):
         self.completed_step_indexes.add(0)
         self.invalidate_ui_steps_after(0)
 
-        # Step 01 重新 Build 后，重新创建 FaceGuide，
+        # Step 01 重新 Build 后创建新的 FaceGuide 实例，
         # 让它读取刚刚写入 Config 的最新 Setup 数据。
         self.get_face_guide(
             refresh=True
         )
 
         self.status_label.setText(
-            u"Face Setup Build 完成：{} | Mouth Joint {}".format(
+            u"Face Setup 完成：{} | Mouth Joint {}".format(
                 face_setup.config_node,
                 face_setup.mouth_jnt_number
             )
@@ -899,8 +898,8 @@ class FaceRigWizard(QWidget):
             self.reset_guide_button.setEnabled(False)
             self.repair_symmetry_button.setEnabled(False)
             self.validate_guide_button.setEnabled(False)
-            self.finalize_step2_button.setEnabled(False)
 
+            self.update_step_buttons()
             self.update_navigation_buttons()
             return False
 
@@ -938,13 +937,10 @@ class FaceRigWizard(QWidget):
             )
         )
 
-        guide_root = face_guide.guide_root
-        guide_move_ctrl = face_guide.guide_move_ctrl
-
         self.guide_details_label.setText(
             u"Root: {}\nMove Ctrl: {}\nGuide Version: {}".format(
-                guide_root,
-                guide_move_ctrl,
+                face_guide.guide_root,
+                face_guide.guide_move_ctrl,
                 face_guide.guide_version
             )
         )
@@ -953,7 +949,6 @@ class FaceRigWizard(QWidget):
         self.reset_guide_button.setEnabled(True)
         self.repair_symmetry_button.setEnabled(True)
         self.validate_guide_button.setEnabled(True)
-        self.finalize_step2_button.setEnabled(True)
 
         self.update_step_buttons()
         self.update_navigation_buttons()
@@ -976,13 +971,14 @@ class FaceRigWizard(QWidget):
             QMessageBox.critical(
                 self,
                 u"Face Guide Build 失败",
-                u"{}".format(error)
+                u"{}".format(
+                    error
+                )
             )
             self.refresh_guide_state()
             return False
 
-        # FaceGuide.build() 明确让 Step 02 保持未完成，
-        # 因此 UI 本地状态也同步清除 Step 02 以及之后的状态。
+        # Build Guide 后用户还需要手动贴合，因此 Step 02 必须重新变为未完成。
         self.completed_step_indexes.discard(1)
         self.invalidate_ui_steps_after(1)
 
@@ -1006,13 +1002,14 @@ class FaceRigWizard(QWidget):
             )
 
         self.guide_validation_label.setText(
-            u"Guide 已加载，请贴合模型后执行 Validate / Finalize。"
+            u"Guide 已加载，请贴合模型后执行 Validate；最后使用底部“下一步”提交 Step 02。"
         )
 
         self.refresh_guide_state()
         return True
 
-    def get_messagebox_standard_buttons(self):
+    @staticmethod
+    def get_messagebox_standard_buttons():
         u"""返回兼容 PySide2 / PySide6 的 QMessageBox Yes / No。"""
         try:
             yes_button = QMessageBox.StandardButton.Yes
@@ -1053,7 +1050,9 @@ class FaceRigWizard(QWidget):
             QMessageBox.critical(
                 self,
                 u"Face Guide Reset 失败",
-                u"{}".format(error)
+                u"{}".format(
+                    error
+                )
             )
             self.refresh_guide_state()
             return False
@@ -1085,8 +1084,7 @@ class FaceRigWizard(QWidget):
 
             repair_result = face_guide.repair_symmetry()
 
-            # Repair 会修改 Guide 层级 / 连接。
-            # 已经 Finalize 的 Step 02 需要重新确认。
+            # Repair 会修改 Guide 层级 / 连接，旧的 Finalize 状态不能继续使用。
             face_guide.set_step_completed(
                 completed=False
             )
@@ -1103,7 +1101,9 @@ class FaceRigWizard(QWidget):
             QMessageBox.critical(
                 self,
                 u"Repair Symmetry 失败",
-                u"{}".format(error)
+                u"{}".format(
+                    error
+                )
             )
             return False
 
@@ -1117,7 +1117,9 @@ class FaceRigWizard(QWidget):
                 "repairs",
                 []
             )
-            repair_count = len(repair_items)
+            repair_count = len(
+                repair_items
+            )
 
         self.show_guide_validation(
             validation
@@ -1149,7 +1151,9 @@ class FaceRigWizard(QWidget):
             QMessageBox.critical(
                 self,
                 u"Face Guide Validation 失败",
-                u"{}".format(error)
+                u"{}".format(
+                    error
+                )
             )
             return False
 
@@ -1223,7 +1227,9 @@ class FaceRigWizard(QWidget):
                 )
             )
 
-        return u"\n".join(lines)
+        return u"\n".join(
+            lines
+        )
 
     def show_guide_validation(self, validation):
         u"""把 Guide Validation 结果显示到 Step 02 页面。"""
@@ -1236,7 +1242,13 @@ class FaceRigWizard(QWidget):
         )
 
     def finalize_step2(self):
-        u"""执行 FaceGuide.finalize() 并把 Step 02 标记为完成。"""
+        u"""
+        执行 FaceGuide.finalize() 并把 Step 02 标记为完成。
+
+        本方法没有独立页面按钮，只由底部“下一步”调用。
+        即使 Step 02 之前已经 Finalize，返回本步骤后再次点击“下一步”
+        也会重新 Validation / Finalize 当前 Guide 状态。
+        """
         face_guide = self.get_face_guide()
 
         try:
@@ -1244,8 +1256,6 @@ class FaceRigWizard(QWidget):
                 check_symmetry=True
             )
         except Exception as error:
-            # Finalize 失败时再读取一次结构化 Validation，
-            # 让页面上可以直接看到全部问题。
             try:
                 validation = face_guide.validate_guides(
                     check_symmetry=True
@@ -1263,7 +1273,9 @@ class FaceRigWizard(QWidget):
             QMessageBox.critical(
                 self,
                 u"Face Guide Finalize 失败",
-                u"{}".format(error)
+                u"{}".format(
+                    error
+                )
             )
             self.refresh_guide_state()
             return False
@@ -1276,7 +1288,7 @@ class FaceRigWizard(QWidget):
         )
 
         self.status_label.setText(
-            u"Face Guide Finalize 完成：{} 个 Locator".format(
+            u"Face Guide 完成：{} 个 Locator".format(
                 validation.get(
                     "guide_count",
                     0
