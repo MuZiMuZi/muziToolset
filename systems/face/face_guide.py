@@ -9,15 +9,13 @@ Step 02 - Face Guide
     1. 读取 Step 01 模型和嘴唇 Joint 数量；
     2. 把 zero_lf_* + loc_lf_* Guide 层级镜像为 rt；
     3. 右侧 Locator Transform 属性由对应左侧 Locator 直接驱动；
-    4. 右侧 Zero Group 负责 X 轴空间镜像；
-    5. 根据部位名称统一设置 Guide Locator 的 Viewport / Outliner 颜色。
+    4. 右侧 Zero Group 负责 X 轴空间镜像。
 """
 
 from __future__ import print_function
 
 import maya.cmds as cmds
 
-from . import config
 from . import face_base
 
 
@@ -72,206 +70,6 @@ class FaceGuide(face_base.FaceBase):
             )
 
         return True
-
-    # =========================================================================
-    # Guide Color
-    # =========================================================================
-
-    @staticmethod
-    def get_locator_shapes(locator):
-        u"""获取 Locator Transform 下全部有效 Locator Shape。"""
-        shapes = cmds.listRelatives(
-            locator,
-            shapes=True,
-            noIntermediate=True,
-            fullPath=True,
-            type="locator"
-        )
-
-        if shapes is None:
-            shapes = []
-
-        return shapes
-
-    def get_guide_locator_color(self, locator):
-        u"""根据 Guide Locator 名称返回对应部位颜色。"""
-        short_name = self.get_short_name(locator)
-        short_name = short_name.lower()
-
-        for name_token, color in config.guide_locator_color_rules:
-            if name_token not in short_name:
-                continue
-
-            return color
-
-        return None
-
-    def set_guide_locator_color(self, locator, color):
-        u"""
-        设置单个 Guide Locator 的颜色。
-
-        Viewport：
-            Locator Shape 使用 RGB Drawing Override。
-
-        Outliner：
-            Locator Transform 使用 Outliner Color。
-        """
-        if not cmds.objExists(locator):
-            raise RuntimeError(
-                u"Guide Locator 不存在: {}".format(
-                    locator
-                )
-            )
-
-        if color is None:
-            return False
-
-        red = float(color[0])
-        green = float(color[1])
-        blue = float(color[2])
-
-        if cmds.attributeQuery(
-                "useOutlinerColor",
-                node=locator,
-                exists=True
-        ):
-            cmds.setAttr(
-                locator + ".useOutlinerColor",
-                True
-            )
-
-        if cmds.attributeQuery(
-                "outlinerColor",
-                node=locator,
-                exists=True
-        ):
-            cmds.setAttr(
-                locator + ".outlinerColor",
-                red,
-                green,
-                blue,
-                type="float3"
-            )
-
-        shapes = self.get_locator_shapes(
-            locator
-        )
-
-        for shape in shapes:
-            cmds.setAttr(
-                shape + ".overrideEnabled",
-                True
-            )
-            cmds.setAttr(
-                shape + ".overrideRGBColors",
-                True
-            )
-            cmds.setAttr(
-                shape + ".overrideColorRGB",
-                red,
-                green,
-                blue,
-                type="float3"
-            )
-
-        return True
-
-    def get_guide_locators(self, parent_group=None):
-        u"""获取指定层级下全部 loc_*_guide_* Locator Transform。"""
-        locators = []
-
-        if parent_group:
-            if not cmds.objExists(parent_group):
-                raise RuntimeError(
-                    u"Guide Parent Group 不存在: {}".format(
-                        parent_group
-                    )
-                )
-
-            descendants = cmds.listRelatives(
-                parent_group,
-                allDescendents=True,
-                type="transform",
-                fullPath=True
-            )
-
-            if descendants is None:
-                descendants = []
-
-            for node in descendants:
-                short_name = self.get_short_name(node)
-
-                if not short_name.startswith("loc_"):
-                    continue
-
-                if "_guide_" not in short_name:
-                    continue
-
-                shapes = self.get_locator_shapes(
-                    node
-                )
-
-                if not shapes:
-                    continue
-
-                locators.append(node)
-
-        else:
-            matches = cmds.ls(
-                "loc_*_guide_*",
-                type="transform",
-                long=True
-            )
-
-            if matches is None:
-                matches = []
-
-            for node in matches:
-                shapes = self.get_locator_shapes(
-                    node
-                )
-
-                if not shapes:
-                    continue
-
-                locators.append(node)
-
-        locators.sort()
-        return locators
-
-    def apply_guide_locator_colors(self, parent_group=None):
-        u"""根据命名规则批量更新 Face Guide Locator 颜色。"""
-        locators = self.get_guide_locators(
-            parent_group=parent_group
-        )
-
-        colored_locators = []
-        skipped_locators = []
-
-        for locator in locators:
-            color = self.get_guide_locator_color(
-                locator
-            )
-
-            if color is None:
-                skipped_locators.append(
-                    locator
-                )
-                continue
-
-            self.set_guide_locator_color(
-                locator,
-                color
-            )
-
-            colored_locators.append(
-                locator
-            )
-
-        return {
-            "colored": colored_locators,
-            "skipped": skipped_locators,
-        }
 
     # =========================================================================
     # Guide Mirror
@@ -696,20 +494,6 @@ class FaceGuide(face_base.FaceBase):
             right_locator
         )
 
-        color = self.get_guide_locator_color(
-            left_locator
-        )
-
-        if color is not None:
-            self.set_guide_locator_color(
-                left_locator,
-                color
-            )
-            self.set_guide_locator_color(
-                right_locator,
-                color
-            )
-
         return {
             "left_zero": left_zero_group,
             "left_locator": left_locator,
@@ -731,12 +515,11 @@ class FaceGuide(face_base.FaceBase):
             )
             results.append(result)
 
-        self.apply_guide_locator_colors(
-            parent_group=parent_group
-        )
-
         return results
 
+
+
+    
 
 __all__ = [
     "FaceGuide",
