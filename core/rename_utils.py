@@ -419,8 +419,8 @@ def number_to_alpha(number, uppercase=True):
 
     Example:
         0 -> A
-                                25 -> Z
-                                26 -> AA
+                                    25 -> Z
+                                    26 -> AA
     """
     if number < 0:
         raise ValueError(u"字母编号不能小于 0。")
@@ -586,7 +586,7 @@ def build_pattern_name(pattern, number):
 
     Example:
         build_pattern_name("jnt_md_spine_bind_***", 4)
-                                -> jnt_md_spine_bind_004
+                                    -> jnt_md_spine_bind_004
     """
     star_blocks = re.findall(
         r"\*+",
