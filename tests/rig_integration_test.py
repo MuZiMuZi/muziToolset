@@ -28,6 +28,11 @@ Rig Integration Test
 ----
 测试只创建带 ``__muzi_rig_integration_test_`` 前缀的临时节点，
 不会清空当前场景。测试结束后无论成功失败都会清理本轮节点。
+
+Maya 对 Array Plug 的 ``listConnections(plugs=True)`` 返回值并不总是保留
+显式索引。例如真实连接可能是 ``worldMatrix[0] -> matrixIn[2]``，查询时
+却返回 ``worldMatrix``。因此本测试使用 ``cmds.isConnected`` 判断精确连接，
+同时保留 connection_utils 查询来验证 Core Query API 确实能找到输入。
 """
 
 from __future__ import print_function
@@ -141,6 +146,55 @@ def assert_parent(child, expected_parent):
         )
 
 
+def assert_vector_equal(actual, expected, label):
+    """验证两个三维数值向量一致。"""
+    for index in range(3):
+        if not almost_equal(
+                actual[index],
+                expected[index]
+        ):
+            raise RuntimeError(
+                u"{}：Expected={} | Actual={}".format(
+                    label,
+                    expected,
+                    actual
+                )
+            )
+
+
+def assert_exact_connection(source_plug, destination_plug, query_inputs=None):
+    """
+    验证 Maya 中真实存在 Source -> Destination 连接。
+
+    ``cmds.isConnected`` 用于精确判定；``query_inputs`` 只用于错误报告和
+    验证 connection_utils 至少能够查询到输入，不直接依赖 Maya 对 Array
+    Plug 是否保留 ``[0]`` 的字符串表现形式。
+    """
+    if query_inputs is None:
+        query_inputs = connection_utils.get_input_connections(
+            destination_plug
+        )
+
+    if not query_inputs:
+        raise RuntimeError(
+            u"Connection Query 没有找到输入：{}".format(
+                destination_plug
+            )
+        )
+
+    if not cmds.isConnected(
+            source_plug,
+            destination_plug
+    ):
+        raise RuntimeError(
+            u"真实 DG 连接不存在：{} -> {} | Query={}".format(
+                source_plug,
+                destination_plug,
+                query_inputs
+            )
+        )
+
+
 # =============================================================================
 # Integration Test
 # =============================================================================
@@ -196,16 +250,11 @@ def test_rig_integration(token):
 
     expected_initial_position = [4.0, 2.0, 1.0]
 
-    for index in range(3):
-        if not almost_equal(
-                initial_joint_position[index],
-                expected_initial_position[index]
-        ):
-            raise RuntimeError(
-                u"Joint 初始位置错误：{}".format(
-                    initial_joint_position
-                )
-            )
+    assert_vector_equal(
+        initial_joint_position,
+        expected_initial_position,
+        u"Joint 初始位置错误"
+    )
 
     # -------------------------------------------------------------------------
     # 步骤 3：通过正式 Controller System 创建标准控制器层级。
@@ -300,17 +349,11 @@ def test_rig_integration(token):
         control
     )
 
-    for index in range(3):
-        if not almost_equal(
-                control_initial_position[index],
-                initial_joint_position[index]
-        ):
-            raise RuntimeError(
-                u"Controller 没有正确吸附 Joint：Control={} | Joint={}".format(
-                    control_initial_position,
-                    initial_joint_position
-                )
-            )
+    assert_vector_equal(
+        control_initial_position,
+        initial_joint_position,
+        u"Controller 没有正确吸附 Joint"
+    )
 
     # -------------------------------------------------------------------------
     # 步骤 5：使用 matrix_utils 建立 Controller -> Joint OPM 驱动。
@@ -330,20 +373,17 @@ def test_rig_integration(token):
         joint
     )
 
-    for index in range(3):
-        if not almost_equal(
-                constrained_joint_position[index],
-                initial_joint_position[index]
-        ):
-            raise RuntimeError(
-                u"建立 OPM 后 Joint 发生跳变：Before={} | After={}".format(
-                    initial_joint_position,
-                    constrained_joint_position
-                )
-            )
+    assert_vector_equal(
+        constrained_joint_position,
+        initial_joint_position,
+        u"建立 OPM 后 Joint 发生跳变"
+    )
 
     # -------------------------------------------------------------------------
-    # 步骤 6：通过 connection_utils 验证真实 DG / OPM 连接。
+    # 步骤 6：验证真实 DG / OPM 连接。
+    #
+    # 注意：Maya 查询 Array Plug 时可能把 worldMatrix[0] 显示成
+    # worldMatrix，因此不能用普通字符串 in 判断作为真实连接依据。
     # -------------------------------------------------------------------------
     driver_matrix_source = control + ".worldMatrix[0]"
     driver_matrix_destination = matrix_node + ".matrixIn[2]"
@@ -352,25 +392,24 @@ def test_rig_integration(token):
         driver_matrix_destination
     )
 
-    if driver_matrix_source not in matrix_inputs:
-        raise RuntimeError(
-            u"Controller World Matrix 没有进入 multMatrix：{}".format(
-                matrix_inputs
-            )
-        )
-
-    opm_inputs = connection_utils.get_input_connections(
-        joint + ".offsetParentMatrix"
+    assert_exact_connection(
+        driver_matrix_source,
+        driver_matrix_destination,
+        query_inputs=matrix_inputs
     )
 
-    expected_opm_source = matrix_node + ".matrixSum"
+    opm_source = matrix_node + ".matrixSum"
+    opm_destination = joint + ".offsetParentMatrix"
 
-    if expected_opm_source not in opm_inputs:
-        raise RuntimeError(
-            u"Joint offsetParentMatrix 输入错误：{}".format(
-                opm_inputs
-            )
-        )
+    opm_inputs = connection_utils.get_input_connections(
+        opm_destination
+    )
+
+    assert_exact_connection(
+        opm_source,
+        opm_destination,
+        query_inputs=opm_inputs
+    )
 
     # -------------------------------------------------------------------------
     # 步骤 7：移动 Controller，并验证 Joint 世界位移 1:1 跟随。
@@ -401,28 +440,17 @@ def test_rig_integration(token):
         initial_joint_position[2] + move_delta[2],
     ]
 
-    for index in range(3):
-        if not almost_equal(
-                moved_control_position[index],
-                target_control_position[index]
-        ):
-            raise RuntimeError(
-                u"Controller 世界位置设置失败：Expected={} | Actual={}".format(
-                    target_control_position,
-                    moved_control_position
-                )
-            )
+    assert_vector_equal(
+        moved_control_position,
+        target_control_position,
+        u"Controller 世界位置设置失败"
+    )
 
-        if not almost_equal(
-                moved_joint_position[index],
-                expected_joint_position[index]
-        ):
-            raise RuntimeError(
-                u"Joint 没有 1:1 跟随 Controller：Expected={} | Actual={}".format(
-                    expected_joint_position,
-                    moved_joint_position
-                )
-            )
+    assert_vector_equal(
+        moved_joint_position,
+        expected_joint_position,
+        u"Joint 没有 1:1 跟随 Controller"
+    )
 
     # -------------------------------------------------------------------------
     # 步骤 8：移除 Matrix Constraint，确认 OPM 已断开且 DG 节点已删除。
