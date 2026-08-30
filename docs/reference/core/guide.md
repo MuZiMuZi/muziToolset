@@ -12,6 +12,35 @@
 
 ---
 
+# 正式 Import 规则
+
+正式 Core 模块已经统一使用 `snake_case`。
+
+```python
+from muziToolset.core import attr_utils
+from muziToolset.core import hierarchy_utils
+from muziToolset.core import joint_utils
+from muziToolset.core import name_utils
+from muziToolset.core import rename_utils
+```
+
+旧的 CamelCase 模块：
+
+```text
+attrUtils.py
+hierarchyUtils.py
+jointUtils.py
+nameUtils.py
+```
+
+已经完成迁移并从正式 Core 删除。
+
+!!! warning "不要在新代码中重新使用旧 CamelCase Import"
+
+    GitHub Actions 已经加入 `Core Import Style Gate`。正式源码重新引用旧 CamelCase 模块时，CI 会直接失败。
+
+---
+
 # 快速选择模块
 
 | 你想做什么 | 模块 |
@@ -23,10 +52,10 @@
 | OPM / multMatrix / Matrix Constraint | `matrix_utils` |
 | Plug 连接 / 断开 | `connection_utils` |
 | Parent / Point / Orient / Aim Constraint | `constraint_utils` |
-| Attribute / Message / Limits | `attrUtils` |
-| DAG Parent / Extra Group | `hierarchyUtils` |
-| Joint / Joint Chain | `jointUtils` |
-| 五段式 Rig 名称 | `nameUtils` |
+| Attribute / Message / Limits | `attr_utils` |
+| DAG Parent / Extra Group | `hierarchy_utils` |
+| Joint / Joint Chain | `joint_utils` |
+| 五段式 Rig 名称 | `name_utils` |
 | Prefix / Suffix / Auto Number | `rename_utils` |
 | Curve 采样 / Parameter / Attachment | `curve_utils` |
 | Surface / Follicle | `surface_utils` |
@@ -58,8 +87,6 @@ from muziToolset.core import animation_utils
 ## Reset Transform
 
 ```python
-from muziToolset.core import animation_utils
-
 nodes = [
     "ctrl_md_root_001",
     "ctrl_md_cog_001",
@@ -94,7 +121,7 @@ animation_utils.import_animation(
 
 !!! info "为什么 Animation IO 不再单独一个文件"
 
-    当前动画导入导出规模仍然属于 Animation 领域，没有必要为了 IO 两个字再拆成一个小模块。
+    当前动画导入导出仍然属于 Animation 领域，因此已经从 `animation_io_utils.py` 收口到 `animation_utils.py`。
 
 ---
 
@@ -235,9 +262,9 @@ constraint_utils.create_constraint(
 选择方式：
 
 ```text
-只想连接属性       -> connection_utils
-静态位置 / Matrix   -> transform_utils
-OPM / multMatrix    -> matrix_utils
+只想连接属性        -> connection_utils
+静态位置 / Matrix    -> transform_utils
+OPM / multMatrix     -> matrix_utils
 Maya Constraint Node -> constraint_utils
 ```
 
@@ -246,13 +273,13 @@ Maya Constraint Node -> constraint_utils
 # 4. Attribute
 
 ```python
-from muziToolset.core.attrUtils import Attr
+from muziToolset.core import attr_utils
 ```
 
 ## 创建属性
 
 ```python
-attr = Attr(
+attr = attr_utils.Attr(
     "ctrl_md_settings_001"
 )
 
@@ -272,11 +299,11 @@ attr.add_attr(
 保存 Maya 节点引用时优先使用 Message：
 
 ```python
-config = Attr(
+config_attr = attr_utils.Attr(
     "network_md_face_config_001"
 )
 
-config.connect_message(
+config_attr.connect_message(
     source_node="model_md_head_base_001",
     attr="face_head_model",
     force=True,
@@ -296,18 +323,20 @@ Message Connection
 Maya 自动维护连接
 ```
 
+Attribute Plug 的通用连接逻辑不会在这里再维护第二份，底层统一复用 `connection_utils`。
+
 ---
 
 # 5. Hierarchy
 
 ```python
-from muziToolset.core.hierarchyUtils import Hierarchy
+from muziToolset.core import hierarchy_utils
 ```
 
 ## 插入 Extra Group
 
 ```python
-zero_group = Hierarchy.add_extra_group(
+zero_group = hierarchy_utils.Hierarchy.add_extra_group(
     obj="ctrl_lf_hand_main_001",
     grp_name="zero_lf_hand_main_001",
     world_orient=False
@@ -328,22 +357,20 @@ Group Parent 回原层级
 Obj Parent 到 Group
 ```
 
-完整 Controller 层级不应该继续写在这里，应调用 `systems.controller`。
+完整 Controller 层级不应该继续写在这里，应调用上层 Controller System。
 
 ---
 
 # 6. Joint
 
 ```python
-from muziToolset.core.jointUtils import Joint
-from muziToolset.core.jointUtils import JointChain
-from muziToolset.core.jointUtils import JointCurve
+from muziToolset.core import joint_utils
 ```
 
 ## 创建 Joint
 
 ```python
-joint = Joint.create(
+joint = joint_utils.Joint.create(
     name="jnt_lf_elbow_bind_001",
     position=[3.0, 8.0, 0.0],
     radius=0.5
@@ -353,18 +380,18 @@ joint = Joint.create(
 ## Joint Label
 
 ```python
-Joint(
+joint_utils.Joint(
     "jnt_lf_elbow_bind_001"
 ).tag()
 ```
 
-当前支持：
+当前正式 Side Token：
 
 ```text
 lf / rt / md
 ```
 
-同时兼容旧：
+同时兼容旧名称输入：
 
 ```text
 l / r / m
@@ -373,7 +400,7 @@ l / r / m
 ## Curve CV 创建 Joint
 
 ```python
-result = JointCurve.create_joints_on_curve_points(
+result = joint_utils.JointCurve.create_joints_on_curve_points(
     curve="crv_md_spine_guide_001",
     joint_base_name="jnt_md_spine_bind",
     parent_chain=True
@@ -382,6 +409,18 @@ result = JointCurve.create_joints_on_curve_points(
 
 `JointCurve` 的 Curve Query 已统一调用 `curve_utils`。
 
+## Joint Chain
+
+```python
+joint_utils.JointChain.parent_joints_as_chain(
+    [
+        "jnt_md_spine_bind_001",
+        "jnt_md_spine_bind_002",
+        "jnt_md_spine_bind_003",
+    ]
+)
+```
+
 ---
 
 # 7. Naming
@@ -389,9 +428,9 @@ result = JointCurve.create_joints_on_curve_points(
 ## 标准名称
 
 ```python
-from muziToolset.core import nameUtils
+from muziToolset.core import name_utils
 
-name = nameUtils.Name.create_name(
+name = name_utils.Name.create_name(
     node_type="jnt",
     side="lf",
     part="upper_lid",
@@ -409,20 +448,20 @@ jnt_lf_upper_lid_bind_001
 ## Side 兼容
 
 ```python
-nameUtils.Name.normalize_side("left")
+name_utils.Name.normalize_side("left")
 # lf
 
-nameUtils.Name.normalize_side("r")
+name_utils.Name.normalize_side("r")
 # rt
 
-nameUtils.Name.normalize_side("center")
+name_utils.Name.normalize_side("center")
 # md
 ```
 
 ## Mirror Name
 
 ```python
-mirror_name = nameUtils.Name.mirror_name(
+mirror_name = name_utils.Name.mirror_name(
     "jnt_lf_upper_lid_bind_001"
 )
 ```
@@ -432,6 +471,8 @@ mirror_name = nameUtils.Name.mirror_name(
 ```text
 jnt_rt_upper_lid_bind_001
 ```
+
+`name_utils` 负责的是“一个 Rig 名称应该是什么”，而不是批量 Selection Rename。
 
 ---
 
@@ -459,7 +500,7 @@ jnt_md_spine_bind_002
 jnt_md_spine_bind_003
 ```
 
-`nameUtils` 和 `rename_utils` 不合并：前者负责名称语义，后者负责批量操作。
+`name_utils` 和 `rename_utils` 保持独立：前者负责名称语义，后者负责批量操作。
 
 ---
 
@@ -499,7 +540,7 @@ parameter = curve_utils.get_closest_parameter(
 
 !!! warning "Parameter 不等于 0~1 百分比"
 
-    多条 Curve 同步位置时先转换成 Arc Length Percentage：
+    多条 Curve 同步位置时先转换成 Arc Length Percentage。
 
 ```python
 percentage = curve_utils.parameter_to_length_percentage(
@@ -568,7 +609,7 @@ follicle = surface_utils.create_follicle(
 )
 ```
 
-Joint / Controller 不由 Surface Utils 创建，由上层 Ribbon / Face System 决定。
+Joint / Controller 不由 Surface Utils 创建，由上层 Rig System 决定。
 
 ---
 
@@ -776,12 +817,64 @@ Wrap / Other Deformer
 
 ---
 
+# 已验证的质量门槛
+
+## Maya 2023 Extended Core Smoke
+
+这批正式 Core 已经在 Maya 2023 真机运行：
+
+```python
+import muziToolset
+
+muziToolset.extended_core_smoke_test()
+```
+
+已验证结果：
+
+```text
+attr_utils          PASS
+hierarchy_utils     PASS
+joint_utils         PASS
+naming              PASS
+model_check_utils   PASS
+scene_clean_utils   PASS
+
+Total: 6 | Passed: 6 | Failed: 0
+```
+
+## Tool Window Smoke
+
+所有正式 UI Tool 的 Direct Main / Visible / Single Instance 已经在 Maya 2023 验证：
+
+```python
+muziToolset.tool_window_smoke_test()
+```
+
+已验证结果：
+
+```text
+Total: 17 | Passed: 17 | Failed: 0
+```
+
+## Core Import Style Gate
+
+GitHub Actions 会执行：
+
+```bash
+python tests/core_import_style_test.py
+```
+
+它使用 Python AST 检查正式代码，确保已经退休的 CamelCase Core Import 不会重新进入仓库。
+
+---
+
 # Core 开发检查表
 
 新增 Core API 前检查：
 
 - [ ] 这个功能是否可以被多个 Tool / System 复用？
 - [ ] 是否已经有同领域模块可以承载它？
+- [ ] 文件名和 Import 是否统一为 `snake_case`？
 - [ ] 是否意外读取 UI / Selection？
 - [ ] 是否应该其实属于完整 Rig System？
 - [ ] 是否有重复的 Matrix / Connection / Curve Helper？
@@ -790,5 +883,6 @@ Wrap / Other Deformer
 - [ ] 大操作是否有 Undo Chunk？
 - [ ] 是否需要补 Smoke Test？
 - [ ] MkDocs API 是否能从 AST 正确读到函数签名？
+- [ ] Core Import Style Gate 是否保持通过？
 
 这份检查表的目标只有一个：**Core 保持稳定、清晰、可复用，不再重新长成万能工具类。**
