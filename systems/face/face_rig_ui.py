@@ -9,8 +9,10 @@ Face Rig 的分步构建界面。
     - UI 只收集参数、展示状态和提供当前 Step 的必要辅助操作；
     - 真正的 Step 逻辑由 FaceSetup / FaceGuide 等 System 类负责；
     - 进入 Step 02 时自动导入或复用 resources/face/face_guide.ma；
-    - Step 02 不再暴露 Build / Reset / Refresh / Validate 等内部流程按钮；
+    - Step 02 不暴露 Build / Reset / Refresh / Validate 等内部流程按钮；
     - Step 02 只保留 Guide Mirror 和后续 Component 使用的 Controller Settings；
+    - Controller Size 使用 QSpinBox；
+    - Controller Color 使用 Maya Index Color Slider + Index + 方块预览；
     - 底部只保留一个“下一步”，统一用于提交 / 重新提交当前 Step；
     - 返回旧 Step 修改参数后再次点击“下一步”，必须重新执行当前 Step，
       并让后续旧结果失效；
@@ -22,7 +24,6 @@ from __future__ import print_function
 
 try:
     from PySide2.QtCore import Qt
-    from PySide2.QtWidgets import QDoubleSpinBox
     from PySide2.QtWidgets import QFrame
     from PySide2.QtWidgets import QGridLayout
     from PySide2.QtWidgets import QHBoxLayout
@@ -36,7 +37,6 @@ try:
     from PySide2.QtWidgets import QWidget
 except ImportError:
     from PySide6.QtCore import Qt
-    from PySide6.QtWidgets import QDoubleSpinBox
     from PySide6.QtWidgets import QFrame
     from PySide6.QtWidgets import QGridLayout
     from PySide6.QtWidgets import QHBoxLayout
@@ -50,9 +50,11 @@ except ImportError:
     from PySide6.QtWidgets import QWidget
 
 from ...ui import theme
+from ...ui.widgets import MayaIndexColorSlider
 from ...ui.widgets import MayaObjectPicker
 from . import guide_mirror
 from . import guide_settings
+from . import guide_template
 from .face_guide import FaceGuide
 from .face_setup import FaceSetup
 
@@ -81,7 +83,6 @@ class FaceRigWizard(QWidget):
         self.loading_controller_settings = False
 
         # 嘴唇 Joint 数量始终以 4 为一个档位。
-        # Slider 内部只保存档位，真正的 Joint 数量由档位 * 4 得到。
         self.mouth_joint_step = 4
         self.mouth_joint_minimum = 4
         self.mouth_joint_maximum = 128
@@ -90,16 +91,25 @@ class FaceRigWizard(QWidget):
         self.controller_size_widgets = {}
         self.controller_color_widgets = {}
 
-        self.setWindowTitle(u"Face Rig")
-        self.setMinimumWidth(680)
-        self.resize(760, 700)
+        self.setWindowTitle(
+            u"Face Rig"
+        )
+        self.setMinimumWidth(
+            680
+        )
+        self.resize(
+            760,
+            700
+        )
 
         self.create_widgets()
         self.create_pages()
         self.create_layouts()
         self.create_connections()
 
-        theme.style_window(self)
+        theme.style_window(
+            self
+        )
         self.restore_step_state()
 
     # =========================================================================
@@ -122,8 +132,12 @@ class FaceRigWizard(QWidget):
             u"04  Finalize",
         ]
 
-        for step_index in range(len(step_names)):
-            step_name = step_names[step_index]
+        for step_index in range(
+                len(step_names)
+        ):
+            step_name = step_names[
+                step_index
+            ]
 
             step_button = QPushButton(
                 step_name
@@ -145,7 +159,6 @@ class FaceRigWizard(QWidget):
 
         self.page_stack = QStackedWidget()
 
-        # 整个 Wizard 只保留一个 Step 提交按钮。
         self.next_button = QPushButton(
             u"下一步"
         )
@@ -189,16 +202,7 @@ class FaceRigWizard(QWidget):
         )
 
     def create_step1_page(self):
-        u"""
-        创建 Face Setup 页面。
-
-        Step 01 页面只负责参数编辑。
-        真正提交当前参数统一通过底部“下一步”执行 FaceSetup.run_step()。
-
-        Returns:
-            QWidget:
-            Step 01 页面。
-        """
+        u"""创建 Face Setup 页面。"""
         page = QWidget()
 
         main_layout = QVBoxLayout(
@@ -441,10 +445,6 @@ class FaceRigWizard(QWidget):
             1. Guide 编辑说明；
             2. 左右 Guide Mirror；
             3. Controller Global / Side / Module Settings。
-
-        Returns:
-            QWidget:
-            Step 02 页面。
         """
         page = QWidget()
 
@@ -583,8 +583,8 @@ class FaceRigWizard(QWidget):
         )
 
         controller_description = QLabel(
-            u"Global Scale 控制整个 Face Controller 的总倍率；颜色使用 Maya Index Color。"
-            u"各 Module Size 作为后续 Component 创建控制器时的基础大小。"
+            u"Controller Size 使用整数数字选择框，默认全部为 1。"
+            u"Side Color 使用 Maya Index Color 滑条，并实时显示颜色预览。"
         )
         controller_description.setWordWrap(
             True
@@ -605,16 +605,21 @@ class FaceRigWizard(QWidget):
             0
         )
         settings_grid.setHorizontalSpacing(
-            12
+            14
         )
         settings_grid.setVerticalSpacing(
-            8
+            10
         )
 
+        # ---------------------------------------------------------------------
+        # Global Size
+        # ---------------------------------------------------------------------
         global_scale_label = QLabel(
             u"Global Scale"
         )
-        self.face_ctrl_global_scale_spin = self.create_size_spin_box()
+        self.face_ctrl_global_scale_spin = self.create_size_spin_box(
+            value=1
+        )
 
         settings_grid.addWidget(
             global_scale_label,
@@ -627,6 +632,9 @@ class FaceRigWizard(QWidget):
             1
         )
 
+        # ---------------------------------------------------------------------
+        # Side Color
+        # ---------------------------------------------------------------------
         color_title = QLabel(
             u"Side Color"
         )
@@ -637,13 +645,15 @@ class FaceRigWizard(QWidget):
         settings_grid.addWidget(
             color_title,
             1,
-            0
+            0,
+            1,
+            2
         )
 
         side_items = [
-            ("lf", u"LF"),
-            ("rt", u"RT"),
-            ("md", u"MD"),
+            ("lf", u"LF", 6),
+            ("rt", u"RT", 13),
+            ("md", u"MD", 17),
         ]
 
         row = 2
@@ -651,20 +661,18 @@ class FaceRigWizard(QWidget):
         for side_item in side_items:
             side = side_item[0]
             label_text = side_item[1]
+            default_color = side_item[2]
 
             side_label = QLabel(
                 label_text
             )
-            color_spin = QSpinBox()
-            color_spin.setRange(
-                0,
-                31
-            )
-            color_spin.setMinimumWidth(
-                90
+            color_widget = MayaIndexColorSlider(
+                value=default_color
             )
 
-            self.controller_color_widgets[side] = color_spin
+            self.controller_color_widgets[
+                side
+            ] = color_widget
 
             settings_grid.addWidget(
                 side_label,
@@ -672,13 +680,16 @@ class FaceRigWizard(QWidget):
                 0
             )
             settings_grid.addWidget(
-                color_spin,
+                color_widget,
                 row,
                 1
             )
 
             row += 1
 
+        # ---------------------------------------------------------------------
+        # Module Size
+        # ---------------------------------------------------------------------
         module_title = QLabel(
             u"Module Size"
         )
@@ -689,17 +700,20 @@ class FaceRigWizard(QWidget):
         settings_grid.addWidget(
             module_title,
             1,
+            2,
+            1,
             2
         )
 
+        # 按面部从上到下排列。
         module_items = [
-            ("jaw", u"Jaw"),
-            ("lip", u"Lip"),
+            ("brow", u"Brow"),
             ("eye", u"Eye"),
             ("eyelid", u"Eyelid"),
-            ("brow", u"Brow"),
-            ("cheek", u"Cheek"),
             ("nose", u"Nose"),
+            ("cheek", u"Cheek"),
+            ("lip", u"Lip"),
+            ("jaw", u"Jaw"),
         ]
 
         module_row = 2
@@ -711,9 +725,13 @@ class FaceRigWizard(QWidget):
             module_label = QLabel(
                 label_text
             )
-            size_spin = self.create_size_spin_box()
+            size_spin = self.create_size_spin_box(
+                value=1
+            )
 
-            self.controller_size_widgets[module_name] = size_spin
+            self.controller_size_widgets[
+                module_name
+            ] = size_spin
 
             settings_grid.addWidget(
                 module_label,
@@ -727,6 +745,15 @@ class FaceRigWizard(QWidget):
             )
 
             module_row += 1
+
+        settings_grid.setColumnStretch(
+            1,
+            1
+        )
+        settings_grid.setColumnStretch(
+            3,
+            1
+        )
 
         controller_layout.addLayout(
             settings_grid
@@ -761,18 +788,31 @@ class FaceRigWizard(QWidget):
 
         return page
 
-    def create_size_spin_box(self):
-        u"""创建 Face Controller Size 使用的统一 Double SpinBox。"""
-        spin_box = QDoubleSpinBox()
-        spin_box.setDecimals(
-            2
-        )
+    def create_size_spin_box(
+            self,
+            value=1
+    ):
+        u"""
+        创建 Face Controller Size 使用的统一 QSpinBox。
+
+        Args:
+            value (int):
+                默认大小。
+
+        Returns:
+            QSpinBox:
+            数字选择框。
+        """
+        spin_box = QSpinBox()
         spin_box.setRange(
-            0.01,
-            100.0
+            1,
+            100
         )
         spin_box.setSingleStep(
-            0.05
+            1
+        )
+        spin_box.setValue(
+            int(value)
         )
         spin_box.setMinimumWidth(
             90
@@ -999,10 +1039,10 @@ class FaceRigWizard(QWidget):
         )
 
         for side in self.controller_color_widgets:
-            color_spin = self.controller_color_widgets.get(
+            color_widget = self.controller_color_widgets.get(
                 side
             )
-            color_spin.valueChanged.connect(
+            color_widget.value_changed.connect(
                 self.controller_settings_changed
             )
 
@@ -1032,11 +1072,7 @@ class FaceRigWizard(QWidget):
         return self.face_guide
 
     def restore_step_state(self):
-        u"""
-        从 Face Config 恢复已经完成的 Step，并进入第一个未完成步骤。
-
-        新场景没有 Config 时保持在 Step 01。
-        """
+        u"""从 Face Config 恢复已经完成的 Step，并进入第一个未完成步骤。"""
         self.completed_step_indexes.clear()
 
         face_guide = self.get_face_guide(
@@ -1061,7 +1097,6 @@ class FaceRigWizard(QWidget):
 
         current_step_index = 0
         found_incomplete_step = False
-
         step_value = 1
 
         while step_value <= 4:
@@ -1131,12 +1166,7 @@ class FaceRigWizard(QWidget):
         self.update_navigation_buttons()
 
     def update_step_buttons(self):
-        u"""
-        更新顶部步骤按钮状态。
-
-        当前 Step 永远可用；已经完成的历史 Step 可点击返回；
-        尚未到达的未来 Step 保持禁用。
-        """
+        u"""更新顶部步骤按钮状态。"""
         for step_index in range(
                 len(self.step_buttons)
         ):
@@ -1210,7 +1240,6 @@ class FaceRigWizard(QWidget):
             )
             return
 
-        # Step 03～04 尚未正式接入。
         self.next_button.setEnabled(
             False
         )
@@ -1244,9 +1273,7 @@ class FaceRigWizard(QWidget):
         )
 
     def clicked_next_button(self):
-        u"""
-        重新提交当前已经接入的 Step，并在成功后进入下一个步骤。
-        """
+        u"""重新提交当前已经接入的 Step，并在成功后进入下一个步骤。"""
         if self.current_step_index == 0:
             build_result = self.build_step1()
 
@@ -1338,8 +1365,6 @@ class FaceRigWizard(QWidget):
             0
         )
 
-        # Step 01 重新 Build 后创建新的 FaceGuide 实例，
-        # 让 Step 02 读取刚写入 Config 的最新 Setup 数据。
         self.get_face_guide(
             refresh=True
         )
@@ -1361,8 +1386,8 @@ class FaceRigWizard(QWidget):
         u"""
         进入 Step 02。
 
-        Guide 不存在时自动执行 FaceGuide.build_guide()；
-        已存在时直接复用，不重复导入也不改变当前 Step 完成状态。
+        Guide 不存在时使用正式 Guide Template Import Workflow 自动加载；
+        已存在时直接复用。
         """
         face_guide = self.get_face_guide(
             refresh=True
@@ -1372,7 +1397,9 @@ class FaceRigWizard(QWidget):
             guide_exists = face_guide.guide_exists()
 
             if not guide_exists:
-                result = face_guide.build_guide()
+                result = guide_template.build_guide(
+                    face_guide
+                )
 
                 imported = False
 
@@ -1418,7 +1445,7 @@ class FaceRigWizard(QWidget):
         return True
 
     def refresh_step2_summary(self):
-        u"""刷新 Step 02 简洁 Guide 状态，不提供额外操作按钮。"""
+        u"""刷新 Step 02 简洁 Guide 状态。"""
         face_guide = self.get_face_guide()
 
         try:
@@ -1521,16 +1548,16 @@ class FaceRigWizard(QWidget):
         u"""从 Step 02 UI 收集完整 Controller Settings。"""
         settings = {
             "face_ctrl_global_scale": self.face_ctrl_global_scale_spin.value(),
-            "face_ctrl_color_lf": self.controller_color_widgets["lf"].value(),
-            "face_ctrl_color_rt": self.controller_color_widgets["rt"].value(),
-            "face_ctrl_color_md": self.controller_color_widgets["md"].value(),
-            "jaw_ctrl_size": self.controller_size_widgets["jaw"].value(),
-            "lip_ctrl_size": self.controller_size_widgets["lip"].value(),
+            "face_ctrl_color_lf": self.controller_color_widgets["lf"].get_value(),
+            "face_ctrl_color_rt": self.controller_color_widgets["rt"].get_value(),
+            "face_ctrl_color_md": self.controller_color_widgets["md"].get_value(),
+            "brow_ctrl_size": self.controller_size_widgets["brow"].value(),
             "eye_ctrl_size": self.controller_size_widgets["eye"].value(),
             "eyelid_ctrl_size": self.controller_size_widgets["eyelid"].value(),
-            "brow_ctrl_size": self.controller_size_widgets["brow"].value(),
-            "cheek_ctrl_size": self.controller_size_widgets["cheek"].value(),
             "nose_ctrl_size": self.controller_size_widgets["nose"].value(),
+            "cheek_ctrl_size": self.controller_size_widgets["cheek"].value(),
+            "lip_ctrl_size": self.controller_size_widgets["lip"].value(),
+            "jaw_ctrl_size": self.controller_size_widgets["jaw"].value(),
         }
 
         return settings
@@ -1546,11 +1573,17 @@ class FaceRigWizard(QWidget):
         self.loading_controller_settings = True
 
         try:
+            global_scale = settings.get(
+                "face_ctrl_global_scale",
+                1
+            )
             self.face_ctrl_global_scale_spin.setValue(
-                float(
-                    settings.get(
-                        "face_ctrl_global_scale",
-                        1.0
+                max(
+                    1,
+                    int(
+                        round(
+                            float(global_scale)
+                        )
                     )
                 )
             )
@@ -1571,20 +1604,20 @@ class FaceRigWizard(QWidget):
 
                 self.controller_color_widgets[
                     side
-                ].setValue(
+                ].set_value(
                     int(
                         color_value
                     )
                 )
 
             module_attr_names = {
-                "jaw": "jaw_ctrl_size",
-                "lip": "lip_ctrl_size",
+                "brow": "brow_ctrl_size",
                 "eye": "eye_ctrl_size",
                 "eyelid": "eyelid_ctrl_size",
-                "brow": "brow_ctrl_size",
-                "cheek": "cheek_ctrl_size",
                 "nose": "nose_ctrl_size",
+                "cheek": "cheek_ctrl_size",
+                "lip": "lip_ctrl_size",
+                "jaw": "jaw_ctrl_size",
             }
 
             for module_name in module_attr_names:
@@ -1592,15 +1625,23 @@ class FaceRigWizard(QWidget):
                     module_name
                 )
                 size_value = settings.get(
-                    attr_name
+                    attr_name,
+                    1
+                )
+
+                size_value = max(
+                    1,
+                    int(
+                        round(
+                            float(size_value)
+                        )
+                    )
                 )
 
                 self.controller_size_widgets[
                     module_name
                 ].setValue(
-                    float(
-                        size_value
-                    )
+                    size_value
                 )
         finally:
             self.loading_controller_settings = False
@@ -1611,11 +1652,7 @@ class FaceRigWizard(QWidget):
             self,
             value=None
     ):
-        u"""
-        标记 Step 02 Controller Settings 已修改。
-
-        参数真正写入 Config 仍然只发生在点击“下一步”时。
-        """
+        u"""标记 Step 02 Controller Settings 已修改。"""
         if self.loading_controller_settings:
             return
 
@@ -1646,25 +1683,18 @@ class FaceRigWizard(QWidget):
     # =========================================================================
 
     def finalize_step2(self):
-        u"""
-        保存 Controller Settings，执行 FaceGuide.run_step()，
-        并把 Step 02 标记为完成。
-        """
+        u"""保存 Controller Settings，并正式提交 Face Guide Step。"""
         face_guide = self.get_face_guide()
-
         settings = self.get_step2_controller_settings()
 
         try:
-            # Step 02 参数属于 Face System 数据，由专用 Settings 模块写入 Config。
             guide_settings.save_controller_settings(
                 face_guide,
                 settings
             )
 
-            # 新 Guide Mirror 是一次性复制，左右允许独立调整；
-            # Finalize 不再要求旧版 LF -> RT 永久连接结构。
+            # 当前 Mirror 工作流允许左右独立编辑，不要求永久 LF -> RT 连接。
             face_guide.check_symmetry = False
-
             face_guide.run_step()
 
             validation = face_guide.validation_result
@@ -1713,13 +1743,7 @@ class FaceRigWizard(QWidget):
 
 
 def main():
-    u"""
-    创建 Face Rig UI 并返回 QWidget。
-
-    Returns:
-        object:
-        FaceRigWizard 实例。
-    """
+    u"""创建 Face Rig UI 并返回 QWidget。"""
     window = FaceRigWizard()
     return window
 
