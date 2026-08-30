@@ -40,6 +40,7 @@ except ImportError:
 from ...core import skin_utils
 from ...ui import theme
 from ...ui import window_utils
+from ...core import scene_utils
 
 
 class SkinTool(QWidget):
@@ -345,10 +346,7 @@ class SkinTool(QWidget):
 
         success_count = 0
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziImportSkinWeights"
-        )
+        scene_utils.open_undo_chunk("MuziImportSkinWeights")
 
         try:
             for geometry in geometries:
@@ -361,7 +359,7 @@ class SkinTool(QWidget):
                 except Exception as error:
                     cmds.warning(str(error))
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
         self.status_label.setText(
             u"已导入 {} 个模型".format(success_count)

@@ -13,7 +13,7 @@ Maya BlendShape / Corrective Shape 领域的通用底层工具。
 当前公开方法
 ------------
 名称 / Mesh 查询：
-    get_short_name(node)
+    rename_utils.get_sanitized_short_name(node)
         获取适合作为 BlendShape Alias 的短名称。
 
     get_mesh_shape(node)
@@ -98,27 +98,12 @@ import re
 
 import maya.cmds as cmds
 
+from . import rename_utils
+
 
 # =============================================================================
 # Name / Mesh Query
 # =============================================================================
-
-def get_short_name(node):
-    u"""
-    返回适合作为 Alias / 新 Mesh 名称的短名称。
-
-    DAG Path 被去掉，Namespace 冒号转换成下划线。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-    short_name = node.split("|")[-1]
-    return short_name.replace(":", "_")
 
 
 def get_mesh_shape(node):
@@ -540,7 +525,7 @@ def add_or_replace_target(blendshape_node, target_transform):
     # -------------------------------------------------------------------------
     # 步骤 3：用 Target 短名作为 Alias，并查询是否已存在同名 Target。
     # -------------------------------------------------------------------------
-    alias_name = get_short_name(target_transform)
+    alias_name = rename_utils.get_sanitized_short_name(target_transform)
     existing_targets = get_targets(blendshape_node)
     target_index = None
 
@@ -830,7 +815,7 @@ def invert_shapes(base_mesh, corrective_meshes):
 
             # 步骤 2.5：创建稳定目标名称，避免 Maya 自动命名不可控。
             target_name = "{}_invert_geo".format(
-                get_short_name(corrective)
+                rename_utils.get_sanitized_short_name(corrective)
             )
 
             if cmds.objExists(target_name):
@@ -863,7 +848,6 @@ def invert_shapes(base_mesh, corrective_meshes):
 
 
 __all__ = [
-    "get_short_name",
     "get_mesh_shape",
     "get_transform",
     "find_blendshape",

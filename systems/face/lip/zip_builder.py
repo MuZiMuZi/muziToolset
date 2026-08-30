@@ -54,11 +54,11 @@ def validate_joint(joint, label):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     try:
         # 使用 Joint Core 统一检查节点存在性和 Joint 类型。
@@ -100,7 +100,7 @@ def ensure_float_attribute(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 直接使用 Transform Core 检查 Attribute 所在节点。
     transform_utils.validate_transform(
@@ -153,7 +153,7 @@ def create_name(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 使用项目统一五段式 Name API 创建中线 Lip 节点名称。
     return name_utils.Name.create_name(
@@ -168,26 +168,6 @@ def create_name(
 # =============================================================================
 # Matrix Helpers
 # =============================================================================
-
-def get_parent(node):
-    u"""
-    返回直接 Parent，没有则返回 None。
-
-    保留旧入口，实际 Parent Query 统一由 hierarchy_utils 维护。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object:
-            方法执行后的结果数据。
-    """
-    # 使用 Hierarchy Core 获取直接 Parent Long Path。
-    return hierarchy_utils.Hierarchy.get_parent(
-        node,
-        full_path=True
-    )
 
 
 def insert_zip_offset_group(
@@ -208,14 +188,14 @@ def insert_zip_offset_group(
 
     Returns:
         dict:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 记录 Joint 原 Parent，Zip Offset 创建后需要插回同一 DAG 层级。
-    parent = get_parent(
+    parent = hierarchy_utils.Hierarchy.get_parent(
         joint
     )
 
@@ -291,7 +271,7 @@ def create_rest_world_matrix(
 
     Returns:
         dict:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     local_matrix = cmds.xform(
         zip_offset,
@@ -380,7 +360,7 @@ def connect_world_matrix_to_transform(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     nodes = []
     local_matrix_plug = world_matrix_plug
@@ -521,7 +501,7 @@ def create_zip_influence(
 
     Returns:
         dict:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     step = 1.0 / float(pair_count)
     item_number = pair_index + 1
@@ -681,7 +661,7 @@ def build_zip_pair(
 
     Returns:
         dict:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     item_number = pair_index + 1
 
@@ -897,13 +877,13 @@ def build_zip_lip(
 
     Returns:
         dict:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if upper_joints is None:
         upper_joints = []
@@ -1077,7 +1057,7 @@ def build_zip_lip(
             if cmds.nodeType(utility_node) != "transform":
                 continue
 
-            parent = hierarchy_utils.Hierarchy.get_parent(
+            parent = hierarchy_utils.Hierarchy.hierarchy_utils.Hierarchy.get_parent(
                 utility_node,
                 full_path=True
             )
@@ -1120,7 +1100,7 @@ def build_zip_lip(
                 full_path=True
             )
 
-            parent = hierarchy_utils.Hierarchy.get_parent(
+            parent = hierarchy_utils.Hierarchy.hierarchy_utils.Hierarchy.get_parent(
                 zip_offset,
                 full_path=True
             )

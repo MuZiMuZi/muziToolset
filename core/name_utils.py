@@ -61,9 +61,6 @@ Name.print_duplicate_object()
 Name.rename_duplicate_object()
     检查 / 修复重名 DAG 节点。
 
-maya_undo(function)
-    兼容旧装饰器名称；底层统一使用 scene_utils.undo_chunk，不再维护第二套 Undo 实现。
-
 和 rename_utils.py 的区别
 -------------------------
 name_utils.py
@@ -90,42 +87,13 @@ import re
 import maya.cmds as cmds
 
 from . import scene_utils
+from . import hierarchy_utils
 
 
 # =============================================================================
 # Undo / DAG Helper
 # =============================================================================
 
-def maya_undo(function):
-    u"""
-    兼容早期 ``@maya_undo`` 名称。
-
-    实际 Undo Chunk 逻辑统一由 scene_utils.undo_chunk 维护。
-
-    Args:
-        function (str | callable):
-            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-    return scene_utils.undo_chunk(function)
-
-
-def dag_depth(node):
-    u"""
-    返回 DAG 路径深度，用于 Rename 时让子节点优先处理。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-    return node.count("|")
 
 
 # =============================================================================
@@ -792,7 +760,7 @@ class Name(object):
 
         return self._name
 
-    @maya_undo
+    @scene_utils.undo_chunk
     def add_prefix(self, prefix):
         u"""
         给当前 Name 节点添加前缀。
@@ -811,7 +779,7 @@ class Name(object):
         )
         return self._name
 
-    @maya_undo
+    @scene_utils.undo_chunk
     def add_suffix(self, suffix):
         u"""
         给当前 Name 节点添加后缀。
@@ -855,7 +823,7 @@ class Name(object):
 
         return self.nodes
 
-    @maya_undo
+    @scene_utils.undo_chunk
     def add_hierarchy_prefix(self, prefix):
         u"""
         给当前 Selection 整个层级添加前缀。
@@ -866,7 +834,7 @@ class Name(object):
         """
         self.nodes = self._selection_list_nodes()
         self.nodes.sort(
-            key=dag_depth,
+            key=hierarchy_utils.Hierarchy.get_dag_depth,
             reverse=True
         )
 
@@ -878,7 +846,7 @@ class Name(object):
                 prefix + object_name
             )
 
-    @maya_undo
+    @scene_utils.undo_chunk
     def add_hierarchy_suffix(self, suffix):
         u"""
         给当前 Selection 整个层级添加后缀。
@@ -889,7 +857,7 @@ class Name(object):
         """
         self.nodes = self._selection_list_nodes()
         self.nodes.sort(
-            key=dag_depth,
+            key=hierarchy_utils.Hierarchy.get_dag_depth,
             reverse=True
         )
 
@@ -900,7 +868,7 @@ class Name(object):
                 object_name + suffix
             )
 
-    @maya_undo
+    @scene_utils.undo_chunk
     def search_replace_name(self, search, replace):
         u"""
         对当前 Name 节点执行普通字符串 Search / Replace。
@@ -945,7 +913,7 @@ class Name(object):
         )
         return self._name
 
-    @maya_undo
+    @scene_utils.undo_chunk
     def regex_search_replace_name(self, search, replace):
         u"""
         使用正则表达式 Search / Replace 当前 Selection 层级。
@@ -959,7 +927,7 @@ class Name(object):
         regex_object = re.compile(search)
         nodes = self._selection_list_nodes()
         nodes.sort(
-            key=dag_depth,
+            key=hierarchy_utils.Hierarchy.get_dag_depth,
             reverse=True
         )
 
@@ -1024,14 +992,14 @@ class Name(object):
         return duplicate_object_list
 
     @staticmethod
-    @maya_undo
+    @scene_utils.undo_chunk
     def rename_duplicate_object():
         u"""
         给场景中重名 DAG 节点追加三位数字后缀。
         """
         duplicate_object_list = Name.print_duplicate_object()
         duplicate_object_list.sort(
-            key=dag_depth,
+            key=hierarchy_utils.Hierarchy.get_dag_depth,
             reverse=True
         )
 
@@ -1061,6 +1029,4 @@ class Name(object):
 
 __all__ = [
     "Name",
-    "maya_undo",
-    "dag_depth",
 ]

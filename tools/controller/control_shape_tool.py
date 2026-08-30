@@ -92,6 +92,7 @@ except ImportError:
 from ...core import control_shape_utils
 from ...ui import theme
 from ...ui import window_utils
+from ...core import scene_utils
 
 
 index_rgb_map = [
@@ -292,10 +293,7 @@ class ShapeListWidget(QListWidget):
 
         transforms = control_shape_utils.get_selected_curve_transforms()
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziApplyControlShape"
-        )
+        scene_utils.open_undo_chunk("MuziApplyControlShape")
 
         try:
             if transforms:
@@ -320,7 +318,7 @@ class ShapeListWidget(QListWidget):
         except Exception as error:
             cmds.warning(str(error))
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
     def upload_control(self):
         u"""
@@ -783,10 +781,7 @@ class ControlShapeTool(QWidget):
             )
             return
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziReplaceControlShapes"
-        )
+        scene_utils.open_undo_chunk("MuziReplaceControlShapes")
 
         try:
             for target in targets:
@@ -795,7 +790,7 @@ class ControlShapeTool(QWidget):
                     source_data
                 )
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
 
 def main():

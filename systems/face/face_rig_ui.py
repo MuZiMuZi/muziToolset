@@ -154,11 +154,11 @@ class FaceRigWizard(QWidget):
         创建 Face Setup 页面。
 
         Step 01 页面只负责参数编辑。
-        真正提交当前参数统一通过底部“下一步”执行 FaceSetup.build()。
+        真正提交当前参数统一通过底部“下一步”执行 FaceSetup.run_step()。
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         page = QWidget()
 
@@ -304,7 +304,7 @@ class FaceRigWizard(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         page = QWidget()
 
@@ -499,7 +499,7 @@ class FaceRigWizard(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         page = QWidget()
 
@@ -611,7 +611,7 @@ class FaceRigWizard(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if refresh:
             self.face_guide = None
@@ -866,7 +866,7 @@ class FaceRigWizard(QWidget):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         slider_value = self.mouth_joint_slider.value()
         mouth_joint_number = slider_value * self.mouth_joint_step
@@ -874,14 +874,14 @@ class FaceRigWizard(QWidget):
 
     def build_step1(self):
         u"""
-        从 UI 重新收集当前参数并执行 FaceSetup.build()。
+        从 UI 重新收集当前参数并执行 FaceSetup.run_step()。
 
         每次点击 Step 01 的“下一步”都会重新执行，
         因此返回 Step 01 修改模型或参数后不需要额外的 Build 按钮。
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         face_setup = FaceSetup(
             face_head_model=self.face_head_picker.get_value(),
@@ -895,7 +895,7 @@ class FaceRigWizard(QWidget):
         )
 
         try:
-            face_setup.build()
+            face_setup.run_step()
         except Exception as error:
             self.status_label.setText(
                 u"Face Setup Build 失败"
@@ -942,7 +942,7 @@ class FaceRigWizard(QWidget):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not hasattr(self, "guide_state_label"):
             return False
@@ -1032,18 +1032,18 @@ class FaceRigWizard(QWidget):
 
     def build_step2(self):
         u"""
-        执行 FaceGuide.build()，导入或复用 Guide Template。
+        执行 FaceGuide.build_guide()，导入或复用 Guide Template。
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         face_guide = self.get_face_guide(
             refresh=True
         )
 
         try:
-            result = face_guide.build()
+            result = face_guide.build_guide()
         except Exception as error:
             self.status_label.setText(
                 u"Face Guide Build 失败"
@@ -1096,7 +1096,7 @@ class FaceRigWizard(QWidget):
 
         Returns:
             tuple:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         try:
             yes_button = QMessageBox.StandardButton.Yes
@@ -1113,7 +1113,7 @@ class FaceRigWizard(QWidget):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         yes_button, no_button = self.get_messagebox_standard_buttons()
 
@@ -1169,11 +1169,11 @@ class FaceRigWizard(QWidget):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         face_guide = self.get_face_guide()
 
@@ -1243,7 +1243,7 @@ class FaceRigWizard(QWidget):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         face_guide = self.get_face_guide()
 
@@ -1291,7 +1291,7 @@ class FaceRigWizard(QWidget):
 
         Returns:
             object | str:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not isinstance(validation, dict):
             return u"没有可显示的 Validation 结果。"
@@ -1368,7 +1368,7 @@ class FaceRigWizard(QWidget):
 
     def finalize_step2(self):
         u"""
-        执行 FaceGuide.finalize() 并把 Step 02 标记为完成。
+        执行 FaceGuide.run_step() 并把 Step 02 标记为完成。
 
         本方法没有独立页面按钮，只由底部“下一步”调用。
         即使 Step 02 之前已经 Finalize，返回本步骤后再次点击“下一步”
@@ -1376,14 +1376,14 @@ class FaceRigWizard(QWidget):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         face_guide = self.get_face_guide()
 
         try:
-            validation = face_guide.finalize(
-                check_symmetry=True
-            )
+            face_guide.check_symmetry = True
+            face_guide.run_step()
+            validation = face_guide.validation_result
         except Exception as error:
             try:
                 validation = face_guide.validate_guides(
@@ -1435,7 +1435,7 @@ def main():
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     window = FaceRigWizard()
     return window

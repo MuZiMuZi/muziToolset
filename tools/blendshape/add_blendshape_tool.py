@@ -37,6 +37,7 @@ except ImportError:
 from ...core import blendshape_utils
 from ...ui import theme
 from ...ui import window_utils
+from ...core import scene_utils
 
 
 class BlendShapeTargetTool(QWidget):
@@ -260,10 +261,7 @@ class BlendShapeTargetTool(QWidget):
 
         added_count = 0
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziAddBlendShapeTargets"
-        )
+        scene_utils.open_undo_chunk("MuziAddBlendShapeTargets")
 
         try:
             for target in selections:
@@ -276,7 +274,7 @@ class BlendShapeTargetTool(QWidget):
                 except Exception as error:
                     cmds.warning(str(error))
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
         self.refresh_targets()
         self.status_label.setText(

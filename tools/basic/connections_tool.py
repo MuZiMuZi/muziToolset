@@ -84,6 +84,7 @@ from ...core import attr_utils
 from ...core import connection_utils
 from ...ui import theme
 from ...ui import window_utils
+from ...core import scene_utils
 
 
 def get_selected_objects(minimum_count=1):
@@ -417,10 +418,7 @@ class ConnectionsTool(QWidget):
         driver = selected_objects[0]
         driven_objects = selected_objects[1:]
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziConnectDefaultAttrs"
-        )
+        scene_utils.open_undo_chunk("MuziConnectDefaultAttrs")
 
         try:
             created_count = connection_utils.connect_attribute_pairs(
@@ -430,7 +428,7 @@ class ConnectionsTool(QWidget):
                 force=False
             )
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
         self.status_label.setText(
             u"已创建 {} 条连接".format(created_count)
@@ -454,10 +452,7 @@ class ConnectionsTool(QWidget):
         driver = selected_objects[0]
         driven_objects = selected_objects[1:]
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziBreakDefaultAttrs"
-        )
+        scene_utils.open_undo_chunk("MuziBreakDefaultAttrs")
 
         try:
             disconnected_count = connection_utils.disconnect_attribute_pairs(
@@ -466,7 +461,7 @@ class ConnectionsTool(QWidget):
                 attribute_pairs
             )
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
         self.status_label.setText(
             u"已断开 {} 条连接".format(disconnected_count)
@@ -528,10 +523,7 @@ class ConnectionsTool(QWidget):
         if not driven_objects:
             return
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziConnectCustomAttrs"
-        )
+        scene_utils.open_undo_chunk("MuziConnectCustomAttrs")
 
         try:
             created_count = connection_utils.connect_source_to_attributes(
@@ -541,7 +533,7 @@ class ConnectionsTool(QWidget):
                 force=False
             )
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
         self.status_label.setText(
             u"已创建 {} 条自定义连接".format(created_count)
@@ -560,10 +552,7 @@ class ConnectionsTool(QWidget):
         if not driven_objects:
             return
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziBreakCustomAttrs"
-        )
+        scene_utils.open_undo_chunk("MuziBreakCustomAttrs")
 
         try:
             disconnected_count = connection_utils.disconnect_object_inputs(
@@ -571,7 +560,7 @@ class ConnectionsTool(QWidget):
                 self.driven_attr_names
             )
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
         self.status_label.setText(
             u"已断开 {} 条自定义连接".format(disconnected_count)
@@ -590,10 +579,7 @@ class ConnectionsTool(QWidget):
         source_object = selected_objects[0]
         target_objects = selected_objects[1:]
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziCopyInputConnections"
-        )
+        scene_utils.open_undo_chunk("MuziCopyInputConnections")
 
         try:
             copied_count = connection_utils.copy_input_connections(
@@ -603,7 +589,7 @@ class ConnectionsTool(QWidget):
                 force=True
             )
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
         self.status_label.setText(
             u"已复制 {} 条输入连接".format(copied_count)
@@ -619,10 +605,7 @@ class ConnectionsTool(QWidget):
         if not selected_objects or not attribute_names:
             return
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziBreakSelectedInputs"
-        )
+        scene_utils.open_undo_chunk("MuziBreakSelectedInputs")
 
         try:
             disconnected_count = connection_utils.disconnect_object_inputs(
@@ -630,7 +613,7 @@ class ConnectionsTool(QWidget):
                 attribute_names
             )
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
         self.status_label.setText(
             u"已断开 {} 条输入连接".format(disconnected_count)

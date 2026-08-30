@@ -44,13 +44,13 @@ def get_matrix(matrix_plug):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not matrix_plug:
         raise ValueError(
@@ -90,7 +90,7 @@ def matrix_to_list(matrix):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     matrix_values = []
 
@@ -117,7 +117,7 @@ def calculate_parent_offset_matrix(driver, driven):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 使用 Scene Core 统一验证 Driver。
     scene_utils.validate_node(
@@ -144,32 +144,6 @@ def calculate_parent_offset_matrix(driver, driven):
         * driver_world_inverse_matrix
     )
 
-
-def get_parent(node):
-    u"""
-    兼容旧调用的直接 Parent 查询入口。
-
-    真正 DAG Parent 查询统一由 hierarchy_utils.Hierarchy.get_parent 维护。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object | None:
-            方法执行后的结果数据。
-    """
-    if not node:
-        return None
-
-    if not cmds.objExists(node):
-        return None
-
-    # 使用 Hierarchy Core 查询直接 Parent Long Path。
-    return hierarchy_utils.Hierarchy.get_parent(
-        node,
-        full_path=True
-    )
 
 
 # =============================================================================
@@ -204,11 +178,11 @@ def create_parent_matrix_constraint(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 使用 Scene Core 统一验证 Driver。
     scene_utils.validate_node(
@@ -304,8 +278,9 @@ def create_parent_matrix_constraint(
     )
 
     # 使用统一 Parent API 获取 Driven Parent。
-    driven_parent = get_parent(
-        driven
+    driven_parent = hierarchy_utils.Hierarchy.get_parent(
+        driven,
+        full_path=True
     )
 
     if driven_parent:
@@ -343,7 +318,7 @@ def remove_parent_matrix_constraint(
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not driven:
         return False
@@ -392,7 +367,6 @@ __all__ = [
     "get_matrix",
     "matrix_to_list",
     "calculate_parent_offset_matrix",
-    "get_parent",
     "create_parent_matrix_constraint",
     "remove_parent_matrix_constraint",
 ]

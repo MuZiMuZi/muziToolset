@@ -110,11 +110,11 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 统一把所有模型输入转换成稳定的 DAG Short Name，避免 Reparent 后 Long Path 失效。
         self.face_head_model = rename_utils.get_short_name(
@@ -195,7 +195,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 确保 Face Rig 的基础层级已经创建完成，给后续模型整理提供目标 Group。
         self.ensure_hierarchy()
@@ -218,7 +218,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 把当前输入模型统一整理到 Face Model Group，建立稳定的模型层级。
         self.parent_input_models()
@@ -242,7 +242,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 把本次 Step 01 的模型引用和参数写入统一 Face Config。
         self.save_config()
@@ -260,19 +260,6 @@ class FaceSetup(face_base.FaceBase):
 
         return True
 
-    def build(self):
-        u"""
-        兼容旧版 FaceSetup.build()。
-
-        新代码统一使用 StepBase.run_step()。
-
-        Returns:
-            object:
-                方法执行后的结果数据。
-        """
-        # 旧入口只转调统一 Step 生命周期，避免维护第二套执行流程。
-        return self.run_step()
-
     # =========================================================================
     # Step 01 Business Validation
     # =========================================================================
@@ -283,15 +270,15 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
             TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if self.mouth_jnt_number is None:
             raise RuntimeError(
@@ -327,7 +314,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 逐个整理非空输入模型，避免可选模型为空时影响其它模型。
         for face_model in self.face_model_list:
@@ -347,7 +334,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 生成 Head Tweak 工作模型名称。
         face_head_tweak_name = name_utils.Name.create_name(
@@ -392,7 +379,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 按正式名称逐个删除旧结果；不存在的模型由 Core 安全忽略。
         for key in work_model_name_dict:
@@ -420,7 +407,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         face_head_tweak_name = work_model_name_dict.get(
             "tweak"
@@ -461,7 +448,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         result_models = [
             (u"Head Tweak Model", self.face_head_tweak_model),
@@ -491,7 +478,7 @@ class FaceSetup(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         model_config_dict = {
             "face_head_model": self.face_head_model,

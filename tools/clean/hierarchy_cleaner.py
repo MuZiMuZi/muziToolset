@@ -35,6 +35,7 @@ except ImportError:
 from ...core import scene_clean_utils
 from ...ui import theme
 from ...ui import window_utils
+from ...core import scene_utils
 
 
 class HierarchyCleaner(QDialog):
@@ -284,10 +285,7 @@ class HierarchyCleaner(QDialog):
             self.result_label.setText(u"请先选择需要清理的对象。")
             return
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziHierarchyCleaner"
-        )
+        scene_utils.open_undo_chunk("MuziHierarchyCleaner")
 
         try:
             result = scene_clean_utils.run_cleanup(
@@ -307,7 +305,7 @@ class HierarchyCleaner(QDialog):
             )
             return
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
         self.result_label.setText(
             self.format_result(result)

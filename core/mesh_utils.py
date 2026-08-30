@@ -12,7 +12,7 @@ Maya Mesh / Model 通用底层工具。
 
 公开方法
 --------
-validate_node(node, label=u"节点")
+scene_utils.validate_node(node, label=u"节点")
     兼容旧调用的基础节点存在性检查。
 
 validate_model_transform(node, label=u"模型")
@@ -56,46 +56,6 @@ from . import scene_utils
 # =============================================================================
 # Validate
 # =============================================================================
-
-def validate_node(node, label=u"节点"):
-    u"""
-    检查 Maya 节点是否存在。
-
-    这是早期 mesh_utils 的公开 API，继续保留用于兼容。
-    新的通用节点查询能力仍以 scene_utils 为正式底层实现。
-
-    Args:
-        node (str):
-            需要验证的 Maya 节点。
-        label (str):
-            错误信息中使用的中文说明，例如“源模型”“父节点”。
-
-    Returns:
-        bool:
-        验证通过返回 True。
-
-    Raises:
-        RuntimeError:
-        节点名称为空或场景中不存在时抛出。
-    """
-    if not node:
-        raise RuntimeError(
-            u"{}不能为空。".format(label)
-        )
-
-    try:
-        scene_utils.validate_node(
-            node
-        )
-    except RuntimeError:
-        raise RuntimeError(
-            u"{}不存在：{}".format(
-                label,
-                node
-            )
-        )
-
-    return True
 
 
 def validate_model_transform(node, label=u"模型"):
@@ -237,7 +197,7 @@ def duplicate_model(
 
     Notes:
         这里明确关闭 inputConnections / upstreamNodes，目的是得到相对独立的模型副本，
-            避免把旧 Rig / Deformer / DG 输入网络一起复制到新的工作模型上。
+                避免把旧 Rig / Deformer / DG 输入网络一起复制到新的工作模型上。
     """
     source_model = validate_model_transform(
         source_model,
@@ -250,7 +210,7 @@ def duplicate_model(
         )
 
     if parent:
-        validate_node(
+        scene_utils.validate_node(
             parent,
             label=u"父节点"
         )
@@ -292,7 +252,6 @@ def duplicate_model(
 
 
 __all__ = [
-    "validate_node",
     "validate_model_transform",
     "delete_model",
     "duplicate_model",

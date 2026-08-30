@@ -21,6 +21,9 @@ Hierarchy
 
 公开方法
 --------
+Hierarchy.get_dag_depth(node)
+    返回 DAG Long Path 层级深度。
+
 Hierarchy.get_parent(node, full_path=True)
     返回节点直接 Parent。
 
@@ -68,26 +71,31 @@ class Hierarchy(object):
     # =========================================================================
 
     @staticmethod
-    def _validate_node(node, label=u"节点"):
+    def get_dag_depth(node):
         u"""
-        兼容旧内部调用的 DAG 节点校验入口。
+        返回唯一 DAG Long Path 的层级深度。
 
-        真正的节点存在性规则统一由 scene_utils.validate_node 维护。
+        Args:
+            node (str):
+                需要查询层级深度的 Maya DAG 节点。
+
+        Returns:
+            int:
+            Root 为 1，层级越深数值越大。
         """
-        try:
-            # 使用 Scene Core 统一检查节点是否存在。
-            scene_utils.validate_node(
-                node
-            )
-        except RuntimeError:
-            raise RuntimeError(
-                u"{}不存在：{}".format(
-                    label,
-                    node
-                )
-            )
+        long_name = scene_utils.get_long_name(
+            node
+        )
 
-        return True
+        if not long_name:
+            return 0
+
+        depth = long_name.count("|")
+
+        if depth <= 0:
+            return 0
+
+        return depth
 
     @staticmethod
     def get_parent(node, full_path=True):
@@ -183,13 +191,13 @@ class Hierarchy(object):
             Parent 后 Maya 返回的 Child Path；已经是正确父子关系时返回原节点。
         """
         # 使用统一节点校验入口检查 Child。
-        Hierarchy._validate_node(
+        scene_utils.validate_node(
             child_node,
             label=u"子节点"
         )
 
         # 使用统一节点校验入口检查 Parent。
-        Hierarchy._validate_node(
+        scene_utils.validate_node(
             parent_node,
             label=u"父节点"
         )
@@ -243,14 +251,14 @@ class Hierarchy(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 使用统一节点校验入口检查需要插组的目标对象。
-        Hierarchy._validate_node(
+        scene_utils.validate_node(
             obj,
             label=u"目标对象"
         )
@@ -345,10 +353,10 @@ class Hierarchy(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 使用统一节点校验入口检查查询根对象。
-        Hierarchy._validate_node(
+        scene_utils.validate_node(
             object,
             label=u"根对象"
         )
@@ -383,7 +391,7 @@ class Hierarchy(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         selections = cmds.ls(
             selection=True,
@@ -432,11 +440,11 @@ class Hierarchy(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not grp:
             raise RuntimeError(u"Group 名称不能为空。")
@@ -446,7 +454,7 @@ class Hierarchy(object):
 
         if parent:
             # 使用统一节点校验入口确认指定 Parent 可用。
-            Hierarchy._validate_node(
+            scene_utils.validate_node(
                 parent,
                 label=u"父节点"
             )
@@ -470,7 +478,7 @@ class Hierarchy(object):
 
         Returns:
             tuple:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         top_main_group = "grp_m_group_001"
         child_groups = [
@@ -511,7 +519,7 @@ class Hierarchy(object):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 创建旧版默认顶层和 Geometry / Control / Custom 三个主要分区。
         group = Hierarchy.create_grp("Group")
@@ -587,7 +595,7 @@ class Hierarchy(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         controls = cmds.ls(
             selection=True,

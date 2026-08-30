@@ -121,6 +121,44 @@ from . import file_utils
 # Undo
 # =============================================================================
 
+def open_undo_chunk(chunk_name=None):
+    u"""
+    打开一个 Maya Undo Chunk。
+
+    Args:
+        chunk_name (str):
+            `chunk_name` 对应的 Maya 节点或资源名称。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+    """
+    kwargs = {
+        "openChunk": True,
+    }
+
+    if chunk_name:
+        kwargs["chunkName"] = chunk_name
+
+    cmds.undoInfo(
+        **kwargs
+    )
+    return True
+
+
+def close_undo_chunk():
+    u"""
+    关闭当前 Maya Undo Chunk。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+    """
+    cmds.undoInfo(
+        closeChunk=True
+    )
+    return True
+
 def undo_chunk(function):
     u"""
     将一个函数执行过程包装成一个 Maya Undo Chunk。
@@ -140,9 +178,8 @@ def undo_chunk(function):
     @wraps(function)
     def wrapped(*args, **kwargs):
         # 步骤 1：打开 Undo Chunk。
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName=function.__name__
+        open_undo_chunk(
+            function.__name__
         )
 
         try:
@@ -154,9 +191,7 @@ def undo_chunk(function):
         finally:
             # 步骤 3：无论函数成功还是抛异常，都必须关闭 Chunk。
             # 如果不使用 finally，异常可能导致 Maya Undo 栈处于错误状态。
-            cmds.undoInfo(
-                closeChunk=True
-            )
+            close_undo_chunk()
 
     return wrapped
 
@@ -165,13 +200,15 @@ def undo_chunk(function):
 # Node - 节点校验与创建
 # =============================================================================
 
-def validate_node(node):
+def validate_node(node, label=None):
     u"""
     检查 Maya 节点是否存在。
 
     Args:
         node (str):
             需要查询或处理的 Maya 节点名称。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
 
     Returns:
         bool: 节点存在时返回 True。
@@ -179,14 +216,23 @@ def validate_node(node):
     Raises:
         RuntimeError: 节点名称为空或场景中不存在。
     """
+    display_label = label or u"Maya 节点"
+
     # 步骤 1：空名称没有任何查询意义，直接报错。
     if not node:
-        raise RuntimeError(u"节点名称不能为空。")
+        raise RuntimeError(
+            u"{}名称不能为空。".format(
+                display_label
+            )
+        )
 
     # 步骤 2：使用 objExists 检查 DAG / DG 节点。
     if not cmds.objExists(node):
         raise RuntimeError(
-            u"Maya 节点不存在：{}".format(node)
+            u"{}不存在：{}".format(
+                display_label,
+                node
+            )
         )
 
     return True

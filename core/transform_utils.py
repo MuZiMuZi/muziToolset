@@ -97,7 +97,7 @@ def get_world_translation(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 确保输入节点可以作为 Transform 使用。
     validate_transform(
@@ -131,7 +131,7 @@ def set_world_translation(node, translation):
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 确保输入节点可以作为 Transform 使用。
     validate_transform(
@@ -167,7 +167,7 @@ def get_world_rotation(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 确保输入节点可以作为 Transform 使用。
     validate_transform(
@@ -201,7 +201,7 @@ def set_world_rotation(node, rotation):
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 确保输入节点可以作为 Transform 使用。
     validate_transform(
@@ -245,7 +245,7 @@ def move_relative(node, offset, object_space=False):
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 确保输入节点可以作为 Transform 使用。
     validate_transform(
@@ -295,7 +295,7 @@ def distance_between(node_a, node_b):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 获取两个节点的统一 World Translation 数据。
     position_a = get_world_translation(
@@ -334,7 +334,7 @@ def get_world_matrix(node):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 确保输入节点可以作为 Transform 使用。
     validate_transform(
@@ -368,7 +368,7 @@ def set_world_matrix(node, matrix_values):
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 确保输入节点可以作为 Transform 使用。
     validate_transform(

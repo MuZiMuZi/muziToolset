@@ -1,0 +1,152 @@
+# coding=utf-8
+u"""
+Core Single Source Gate
+=======================
+
+检查 core/ 中高确定性的 Generic 能力只有一个正式实现位置。
+
+本测试只扫描模块顶层 Function，不限制 Joint / Hierarchy 等领域类自己的业务 Method。
+"""
+
+from __future__ import print_function
+
+import ast
+import os
+
+
+OWNER_BY_FUNCTION = {
+    "undo_chunk": "core/scene_utils.py",
+    "validate_node": "core/scene_utils.py",
+    "get_long_name": "core/scene_utils.py",
+    "get_short_name": "core/rename_utils.py",
+    "validate_transform": "core/transform_utils.py",
+    "get_world_translation": "core/transform_utils.py",
+    "set_world_translation": "core/transform_utils.py",
+    "get_world_rotation": "core/transform_utils.py",
+    "set_world_rotation": "core/transform_utils.py",
+}
+
+FORBIDDEN_TOP_LEVEL_COMPATIBILITY_FUNCTIONS = {
+    "get_parent",
+    "get_world_position",
+    "maya_undo",
+    "dag_depth",
+}
+
+
+def get_package_root():
+    tests_directory = os.path.dirname(
+        os.path.abspath(__file__)
+    )
+    return os.path.dirname(tests_directory)
+
+
+def iter_core_python_files():
+    core_root = os.path.join(
+        get_package_root(),
+        "core"
+    )
+
+    for file_name in os.listdir(core_root):
+        if not file_name.endswith(".py"):
+            continue
+
+        yield os.path.join(
+            core_root,
+            file_name
+        )
+
+
+def get_relative_path(file_path):
+    relative_path = os.path.relpath(
+        file_path,
+        get_package_root()
+    )
+    return relative_path.replace(os.sep, "/")
+
+
+def scan_file(file_path):
+    with open(
+            file_path,
+            "r",
+            encoding="utf-8"
+    ) as source_file:
+        source_text = source_file.read()
+
+    syntax_tree = ast.parse(
+        source_text,
+        filename=file_path
+    )
+    relative_path = get_relative_path(file_path)
+    issues = []
+
+    for node in syntax_tree.body:
+        if not isinstance(
+                node,
+                (ast.FunctionDef, ast.AsyncFunctionDef)
+        ):
+            continue
+
+        function_name = node.name
+
+        if function_name in OWNER_BY_FUNCTION:
+            owner_path = OWNER_BY_FUNCTION[function_name]
+
+            if relative_path != owner_path:
+                issues.append({
+                    "file": relative_path,
+                    "line": node.lineno,
+                    "name": function_name,
+                    "owner": owner_path,
+                })
+
+        if function_name in FORBIDDEN_TOP_LEVEL_COMPATIBILITY_FUNCTIONS:
+            issues.append({
+                "file": relative_path,
+                "line": node.lineno,
+                "name": function_name,
+                "owner": "领域 Core API",
+            })
+
+    return issues
+
+
+def run():
+    print("=" * 78)
+    print("Muzi Toolset - Core Single Source Gate")
+    print("=" * 78)
+
+    issues = []
+    file_count = 0
+
+    for file_path in iter_core_python_files():
+        file_count += 1
+        file_issues = scan_file(file_path)
+
+        for issue in file_issues:
+            issues.append(issue)
+
+    if issues:
+        for issue in issues:
+            print(
+                u"[FAIL] {}:{} | {} 应统一归属 {}".format(
+                    issue["file"],
+                    issue["line"],
+                    issue["name"],
+                    issue["owner"]
+                )
+            )
+
+        return False
+
+    print(
+        u"[PASS] {} 个 Core Python 文件符合 Single Source 规则。".format(
+            file_count
+        )
+    )
+    return True
+
+
+if __name__ == "__main__":
+    if not run():
+        raise SystemExit(1)

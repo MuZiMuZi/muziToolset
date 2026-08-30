@@ -74,6 +74,8 @@ from __future__ import print_function
 
 import maya.cmds as cmds
 
+from . import rename_utils
+
 from . import scene_utils
 
 
@@ -115,20 +117,6 @@ history_ignore_types = [
 # =============================================================================
 # Common Query
 # =============================================================================
-
-def get_short_name(node):
-    u"""
-    返回 DAG Short Name。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-    return node.split("|")[-1]
 
 
 def is_referenced(node):
@@ -568,7 +556,7 @@ def check_duplicate_names(nodes=None):
 
     # 步骤 1：按 Short Name 分组。
     for node in dag_nodes:
-        short_name = get_short_name(node)
+        short_name = rename_utils.get_short_name(node)
 
         if short_name in default_cameras:
             continue
@@ -717,7 +705,7 @@ def check_transformations(meshes=None):
     issues = []
 
     for node in transforms:
-        if get_short_name(node) in default_cameras:
+        if rename_utils.get_short_name(node) in default_cameras:
             continue
 
         try:

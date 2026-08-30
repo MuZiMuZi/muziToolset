@@ -44,27 +44,8 @@ from ...core import scene_utils
 
 
 # =============================================================================
-# Name
+# Naming
 # =============================================================================
-
-def get_short_name(node):
-    u"""
-    返回 DAG Short Name。
-
-    保留旧公开入口，实际规则统一由 core.rename_utils 维护。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object:
-            方法执行后的结果数据。
-    """
-    # 使用统一 Rename Core 提取 DAG Short Name。
-    return rename_utils.get_short_name(
-        node
-    )
 
 
 def replace_control_prefix(control, prefix):
@@ -79,14 +60,14 @@ def replace_control_prefix(control, prefix):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 使用统一 Short Name 入口取得不带 DAG Path 的 Controller 名称。
-    short_name = get_short_name(
+    short_name = rename_utils.get_short_name(
         control
     )
 
@@ -103,49 +84,6 @@ def replace_control_prefix(control, prefix):
 
 
 # =============================================================================
-# Validate - Compatibility
-# =============================================================================
-
-def validate_node(node, label):
-    u"""
-    检查必要 Maya 节点。
-
-    保留旧公开入口，实际节点存在性规则统一由 scene_utils 维护。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-        label (str):
-            UI、Rig Node 或日志中展示的简短 Label。
-
-    Returns:
-        bool:
-            方法执行后的结果数据。
-
-    Raises:
-        RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-    """
-    if not node:
-        raise RuntimeError(
-            u"{}不能为空。".format(label)
-        )
-
-    try:
-        # 使用 Scene Core 统一检查节点存在性。
-        scene_utils.validate_node(
-            node
-        )
-    except RuntimeError:
-        raise RuntimeError(
-            u"{}不存在：{}".format(
-                label,
-                node
-            )
-        )
-
-    return True
-
 
 # =============================================================================
 # Attribute
@@ -169,10 +107,10 @@ def ensure_follow_attribute(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 先确认 Controller 节点有效，再操作其自定义 Attribute。
-    validate_node(
+    scene_utils.validate_node(
         control,
         u"控制器"
     )
@@ -246,16 +184,16 @@ def create_parent_space_blend(
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 检查外部 Space Driver 是否存在。
-    validate_node(
+    scene_utils.validate_node(
         driver,
         u"Driver"
     )
 
     # 检查需要增加 Follow 行为的 Controller 是否存在。
-    validate_node(
+    scene_utils.validate_node(
         control,
         u"Controller"
     )
@@ -275,13 +213,13 @@ def create_parent_space_blend(
         )
 
     # 确认 Controller 原始 Zero Space 节点可用。
-    validate_node(
+    scene_utils.validate_node(
         zero_group,
         u"Zero Group"
     )
 
     # 确认真正接收 Parent Space 混合的 Driven Group 可用。
-    validate_node(
+    scene_utils.validate_node(
         driven_group,
         u"Driven Group"
     )
@@ -293,7 +231,7 @@ def create_parent_space_blend(
         default_value=weight
     )
 
-    control_short_name = get_short_name(
+    control_short_name = rename_utils.get_short_name(
         control
     )
     control_name_part = control_short_name.replace(
@@ -413,9 +351,7 @@ def create_parent_space_blend(
 
 
 __all__ = [
-    "get_short_name",
     "replace_control_prefix",
-    "validate_node",
     "ensure_follow_attribute",
     "create_parent_space_blend",
 ]

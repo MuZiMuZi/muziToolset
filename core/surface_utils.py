@@ -17,7 +17,7 @@ Maya NURBS Surface / Follicle 领域的通用底层工具。
 当前公开方法
 ------------
 基础查询：
-    validate_node(node)
+    scene_utils.validate_node(node)
         检查 Maya 节点是否存在。
 
     get_surface_shape(surface)
@@ -94,40 +94,14 @@ from __future__ import print_function
 
 import maya.cmds as cmds
 
+from . import scene_utils
+
 from . import curve_utils
 
 
 # =============================================================================
 # Query - Surface 基础查询
 # =============================================================================
-
-def validate_node(node):
-    u"""
-    检查 Maya 节点是否存在；有效时返回 True。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        bool:
-        方法执行后的结果数据。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-    """
-    # 步骤 1：空参数直接报错。
-    if not node:
-        raise RuntimeError(u"节点名称不能为空。")
-
-    # 步骤 2：确认 Maya Scene 中存在节点。
-    if not cmds.objExists(node):
-        raise RuntimeError(
-            u"Maya 节点不存在：{}".format(node)
-        )
-
-    return True
 
 
 def get_surface_shape(surface):
@@ -149,7 +123,7 @@ def get_surface_shape(surface):
         输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：校验输入节点。
-    validate_node(surface)
+    scene_utils.validate_node(surface)
 
     # 步骤 2：输入已经是 Shape 时直接转 Long Name。
     if cmds.nodeType(surface) == "nurbsSurface":
@@ -520,7 +494,7 @@ def create_follicle(
     # 步骤 7：按需要整理 Parent。
     # -------------------------------------------------------------------------
     if parent:
-        validate_node(parent)
+        scene_utils.validate_node(parent)
 
         follicle_transform = cmds.parent(
             follicle_transform,
@@ -622,7 +596,6 @@ def create_even_follicles(
 
 
 __all__ = [
-    "validate_node",
     "get_surface_shape",
     "get_surface_transform",
     "move_curve_copy",

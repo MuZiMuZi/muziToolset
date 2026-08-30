@@ -41,7 +41,7 @@ def validate_side(side):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 使用统一 Rig Naming API 规范 Side Token。
     return name_utils.Name.normalize_side(
@@ -61,11 +61,11 @@ def normalize_name_part(value, label):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if value is None:
         raise ValueError(
@@ -121,7 +121,7 @@ def create_rig_name(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 统一规范 Side，避免 l / left / lf 等不同输入产生多套命名。
     side = validate_side(
@@ -210,11 +210,11 @@ def build_radial_curve_joints(
 
     Returns:
         dict:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 使用 Curve Core 验证输入 Curve，并取得真实 NURBS Curve Shape。
     curve_utils.get_curve_shape(
@@ -533,7 +533,7 @@ def build_eyelid_joints(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 复用统一 Radial Curve Joint Builder，只把 Feature 固定为 lid。
     return build_radial_curve_joints(
@@ -578,7 +578,7 @@ def build_eye_bag_joints(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 复用统一 Radial Curve Joint Builder，只把 Feature 固定为 eye_bag。
     return build_radial_curve_joints(

@@ -86,6 +86,7 @@ from ...config import controller_shapes_dir
 from ...systems import controller as controller_system
 from ...ui import theme
 from ...ui import window_utils
+from ...core import scene_utils
 
 
 maya_colors = {
@@ -600,10 +601,7 @@ class ControlCreatorDialog(QDialog):
 
         created_controls = []
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziCreateControllers"
-        )
+        scene_utils.open_undo_chunk("MuziCreateControllers")
 
         try:
             target_index = 0
@@ -638,7 +636,7 @@ class ControlCreatorDialog(QDialog):
             return
 
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
         if created_controls:
             cmds.select(

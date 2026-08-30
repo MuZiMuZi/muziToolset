@@ -13,7 +13,7 @@ Maya SkinCluster 领域的通用底层工具。
 当前公开方法
 ------------
 名称 / 查询：
-    get_short_name(node)
+    rename_utils.get_sanitized_short_name(node)
         获取适合 SkinCluster 名称和权重文件名使用的短名称。
 
     find_skin_cluster(geometry)
@@ -91,6 +91,8 @@ from __future__ import print_function
 import os
 
 import maya.cmds as cmds
+
+from . import rename_utils
 import maya.mel as mel
 
 from . import file_utils
@@ -99,28 +101,6 @@ from . import file_utils
 # =============================================================================
 # Name / Query - 名称与 SkinCluster 查询
 # =============================================================================
-
-def get_short_name(node):
-    u"""
-    返回适合 Maya 节点名和文件名使用的短名称。
-
-    处理规则：
-        - 去掉 DAG Path；
-        - Namespace 的冒号替换为下划线。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-    # 步骤 1：只保留 DAG 最后一段。
-    short_name = node.split("|")[-1]
-
-    # 步骤 2：Namespace 冒号不适合直接作为普通文件名的一部分，统一替换。
-    return short_name.replace(":", "_")
 
 
 def find_skin_cluster(geometry):
@@ -296,7 +276,7 @@ def copy_skin_weights(source, targets):
                 target,
                 toSelectedBones=True,
                 normalizeWeights=1,
-                name="sc_{}".format(get_short_name(target))
+                name="sc_{}".format(rename_utils.get_sanitized_short_name(target))
             )[0]
 
             # 步骤 3.4：按最近点匹配 Geometry，并优先按 Label / OneToOne 匹配 Influence。
@@ -336,7 +316,7 @@ def get_weight_file_names(geometry):
     Returns:
         dict: ``xml`` / ``influences``。
     """
-    short_name = get_short_name(geometry)
+    short_name = rename_utils.get_sanitized_short_name(geometry)
 
     return {
         "xml": "sc_{}.xml".format(short_name),
@@ -515,7 +495,7 @@ def import_skin_weights(geometry, directory):
         geometry,
         toSelectedBones=True,
         normalizeWeights=1,
-        name="sc_{}".format(get_short_name(geometry))
+        name="sc_{}".format(rename_utils.get_sanitized_short_name(geometry))
     )[0]
 
     # 步骤 7：导入 XML 权重。
@@ -626,7 +606,6 @@ def normalize_geometries(geometries):
 
 
 __all__ = [
-    "get_short_name",
     "find_skin_cluster",
     "get_influences",
     "copy_skin_weights",

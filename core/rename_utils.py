@@ -62,6 +62,31 @@ def get_short_name(node):
     return node
 
 
+def get_sanitized_short_name(node, namespace_separator="_"):
+    u"""
+    返回适合作为新 Maya 节点名或文件 Stem 使用的 Short Name。
+
+    先复用 get_short_name() 去掉 DAG Path，再把 Namespace 冒号替换为指定分隔符。
+
+    Args:
+        node (str | None):
+            Maya 节点名称或 Long DAG Path。
+        namespace_separator (str):
+            Namespace 冒号替换字符，默认使用下划线。
+
+    Returns:
+        str:
+        不含 DAG Path，且 Namespace 已安全转换的名称。
+    """
+    short_name = get_short_name(
+        node
+    )
+
+    return short_name.replace(
+        ":",
+        namespace_separator
+    )
+
 def get_selected_objects(show_warning=True):
     u"""
     返回当前 Maya Selection 的 Long DAG Path。
@@ -141,7 +166,7 @@ def get_objects_by_scope(scope_name):
 
     Returns:
         object | list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if scope_name == u"选中物体":
         return get_selected_objects()
@@ -213,7 +238,7 @@ def rename_node(node, new_name):
 
     Returns:
         None | object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not node:
         return None
@@ -258,7 +283,7 @@ def add_prefix(prefix):
 
     Returns:
         object | int:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not prefix:
         cmds.warning(
@@ -300,7 +325,7 @@ def add_suffix(suffix):
 
     Returns:
         object | int:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not suffix:
         cmds.warning(
@@ -354,7 +379,7 @@ def search_replace(
 
     Returns:
         object | int:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not search_text:
         cmds.warning(
@@ -417,16 +442,16 @@ def number_to_alpha(number, uppercase=True):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
 
     Example:
         0  -> A
-            25 -> Z
-            26 -> AA
+                25 -> Z
+                26 -> AA
     """
     if number < 0:
         raise ValueError(
@@ -481,7 +506,7 @@ def get_number_string(
 
     Returns:
         object | None:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if number_type == u"数字":
         number_string = str(
@@ -547,7 +572,7 @@ def auto_number(
 
     Returns:
         object | int:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     selected_objects = get_selected_objects()
 
@@ -611,11 +636,11 @@ def build_pattern_name(pattern, number):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Example:
         jnt_md_spine_bind_*** + 4
-            -> jnt_md_spine_bind_004
+                -> jnt_md_spine_bind_004
     """
     star_blocks = re.findall(
         r"\*+",
@@ -668,7 +693,7 @@ def pattern_rename(pattern):
 
     Returns:
         object | int:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not pattern:
         cmds.warning(

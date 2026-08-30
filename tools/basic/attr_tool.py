@@ -77,6 +77,7 @@ from ...config import icons_dir as icon_dir
 from ...core import attr_utils
 from ...ui import theme as ui_theme
 from ...ui import window_utils
+from ...core import scene_utils
 
 
 class AttrTool(QWidget):
@@ -381,10 +382,7 @@ class AttrTool(QWidget):
         # ---------------------------------------------------------------------
         # 步骤 1：把一次 UI Apply 包成一个 Undo Chunk。
         # -------------------------------------------------------------------------
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziAttrToolSetState"
-        )
+        scene_utils.open_undo_chunk("MuziAttrToolSetState")
 
         try:
             # -----------------------------------------------------------------
@@ -420,7 +418,7 @@ class AttrTool(QWidget):
                     hide=visibility_hide
                 )
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
     def clicked_attr_reset_button(self):
         u"""

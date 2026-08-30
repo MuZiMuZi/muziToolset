@@ -15,10 +15,10 @@ Maya 对象 / 组件快速吸附底层模块。
 is_component(item)
     判断给定 Maya 选择项是否属于 Vertex / Edge / Face / CV 等常见组件。
 
-get_world_position(item)
+get_item_world_position(item)
     获取对象或组件的世界空间位置。
 
-get_world_rotation(item)
+get_item_world_rotation(item)
     获取 Transform / Joint 的世界旋转；组件没有稳定的 Transform Rotation，因此返回 None。
 
 average_vectors(vectors)
@@ -45,6 +45,8 @@ snap_to_average(reference_items, target_item, include_rotation=True)
 from __future__ import print_function
 
 import maya.cmds as cmds
+
+from . import transform_utils
 
 
 # =============================================================================
@@ -99,7 +101,7 @@ def is_component(item):
 # World Space Query
 # =============================================================================
 
-def get_world_position(item):
+def get_item_world_position(item):
     u"""
     返回对象或组件的世界空间位置。
 
@@ -146,7 +148,7 @@ def get_world_position(item):
     ]
 
 
-def get_world_rotation(item):
+def get_item_world_rotation(item):
     u"""
     返回 Transform / Joint 世界旋转，组件返回 None。
 
@@ -199,22 +201,13 @@ def get_world_rotation(item):
         item = parents[0]
 
     # -------------------------------------------------------------------------
-    # 步骤 3：查询世界欧拉角。
+    # 步骤 3：Transform / Joint 世界旋转统一交给 Transform Core。
     # -------------------------------------------------------------------------
     try:
-        rotation = cmds.xform(
-            item,
-            query=True,
-            worldSpace=True,
-            rotation=True
+        rotation = transform_utils.get_world_rotation(
+            item
         )
     except Exception:
-        rotation = None
-
-    if not rotation:
-        return None
-
-    if len(rotation) < 3:
         return None
 
     return [
@@ -313,7 +306,7 @@ def snap_to_average(
     positions = []
 
     for item in reference_items:
-        position = get_world_position(item)
+        position = get_item_world_position(item)
 
         if position is not None:
             positions.append(position)
@@ -355,7 +348,7 @@ def snap_to_average(
     rotations = []
 
     for item in reference_items:
-        rotation = get_world_rotation(item)
+        rotation = get_item_world_rotation(item)
 
         if rotation is not None:
             rotations.append(rotation)

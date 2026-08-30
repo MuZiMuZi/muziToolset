@@ -3,27 +3,30 @@ u"""
 Upper Layer Core Reuse Gate
 ===========================
 
-静态检查 ``systems/`` 与 ``tools/`` 是否重新实现已经有明确 Core 归属的通用 Helper。
+静态检查 ``systems/``、``tools/`` 与 ``ui/`` 是否绕开已经有明确 Core 归属的通用能力。
 
 目标
 ----
-项目完成一次去重并不够。如果以后新的 System / Tool 又重新写：
+项目完成一次去重并不够。如果以后新的 System / Tool / UI 又重新写：
 
     validate_node()
     validate_transform()
     get_short_name()
     _ensure_group()
-    _world_position()
+    get_parent()
+    get_long_name()
+    get_world_position()
+    get_world_translation()
+    get_world_rotation()
 
 代码会再次产生多套规则。
 
 本测试把这些高确定性的重复实现直接变成 CI Failure。
 它只使用 Python AST，不 Import Maya，因此可以在 GitHub Actions 普通 Python 环境运行。
 
-当前 Compatibility Allowlist
------------------------------
-少量历史公开 API 目前仍作为薄兼容入口存在，但内部必须转发 Core。
-这些入口暂时列入 Allowlist；后续完成 API 迁移后应继续缩小 Allowlist，而不是新增条目。
+Compatibility Policy
+--------------------
+正式上层代码不保留 Generic Core Helper Allowlist。历史入口完成迁移后直接删除。
 """
 
 from __future__ import print_function
@@ -52,12 +55,13 @@ def get_scan_root_names():
     return [
         "systems",
         "tools",
+        "ui",
     ]
 
 
 def get_forbidden_helper_names():
     u"""
-    返回 System / Tool 不应重新实现的通用 Helper 名称。
+    返回 System / Tool / UI 不应重新实现的通用 Helper 名称。
 
     这些能力已经有唯一正式 Core：
         Node Exists      -> core.scene_utils
@@ -72,32 +76,20 @@ def get_forbidden_helper_names():
         "validate_transform",
         "get_short_name",
         "_short_name",
-        "_ensure_group",
+        "get_long_name",
+        "_get_long_name",
+        "get_parent",
+        "_get_parent",
+        "get_world_position",
         "_world_position",
+        "get_world_translation",
+        "_get_world_translation",
+        "get_world_rotation",
+        "_get_world_rotation",
+        "get_dag_depth",
+        "_ensure_group",
     }
 
-
-def get_compatibility_allowlist():
-    u"""
-    返回当前仍保留的历史公开兼容入口。
-
-    规则：
-        1. 只允许薄转发，不允许在这里新增第二套算法；
-        2. 新代码禁止新增 Allowlist；
-        3. 后续调用方迁移完成后应删除对应 Allowlist。
-    """
-    return {
-        "systems/controller/builder.py": {
-            "get_short_name",
-        },
-        "systems/controller/space_blend.py": {
-            "get_short_name",
-            "validate_node",
-        },
-        "systems/face/face_guide.py": {
-            "get_short_name",
-        },
-    }
 
 
 # =============================================================================
@@ -105,7 +97,7 @@ def get_compatibility_allowlist():
 # =============================================================================
 
 def iter_upper_layer_python_files():
-    u"""遍历 systems / tools 下全部正式 Python 文件。"""
+    u"""遍历 systems / tools / ui 下全部正式 Python 文件。"""
     package_root = get_package_root()
     root_names = get_scan_root_names()
 
@@ -161,7 +153,7 @@ def get_relative_path(file_path):
 # =============================================================================
 
 def scan_file(file_path):
-    u"""扫描单个 System / Tool 文件中的重复通用 Helper 定义。"""
+    u"""扫描单个 System / Tool / UI 文件中的重复通用 Helper 定义。"""
     with open(
             file_path,
             "r",
@@ -178,44 +170,88 @@ def scan_file(file_path):
         file_path
     )
     forbidden_names = get_forbidden_helper_names()
-    allowlist = get_compatibility_allowlist()
-    allowed_names = allowlist.get(
-        relative_path,
-        set()
-    )
-
     issues = []
 
     for node in ast.walk(syntax_tree):
-        if not isinstance(
+        if isinstance(
                 node,
                 (ast.FunctionDef, ast.AsyncFunctionDef)
         ):
+            function_name = node.name
+
+            if function_name in forbidden_names:
+                issues.append({
+                    "file": relative_path,
+                    "line": getattr(
+                        node,
+                        "lineno",
+                        None
+                    ),
+                    "name": function_name,
+                    "kind": "helper",
+                })
+
+        if not isinstance(node, ast.Call):
             continue
 
-        function_name = node.name
+        call_function = node.func
 
-        if function_name not in forbidden_names:
+        if not isinstance(call_function, ast.Attribute):
             continue
 
-        if function_name in allowed_names:
+        if not isinstance(call_function.value, ast.Name):
+            continue
+
+        if call_function.value.id != "cmds":
+            continue
+
+        command_name = call_function.attr
+
+        if command_name == "undoInfo":
+            issues.append({
+                "file": relative_path,
+                "line": getattr(node, "lineno", None),
+                "name": "cmds.undoInfo",
+                "kind": "core_bypass",
+            })
+            continue
+
+        constraint_commands = {
+            "parentConstraint",
+            "pointConstraint",
+            "orientConstraint",
+            "scaleConstraint",
+            "aimConstraint",
+            "poleVectorConstraint",
+        }
+
+        if command_name not in constraint_commands:
+            continue
+
+        is_query = False
+
+        for keyword in node.keywords:
+            if keyword.arg not in ["query", "q"]:
+                continue
+
+            if isinstance(keyword.value, ast.Constant):
+                is_query = bool(keyword.value.value)
+
+        if is_query:
             continue
 
         issues.append({
             "file": relative_path,
-            "line": getattr(
-                node,
-                "lineno",
-                None
-            ),
-            "name": function_name,
+            "line": getattr(node, "lineno", None),
+            "name": "cmds.{}".format(command_name),
+            "kind": "core_bypass",
         })
 
     return issues
 
 
 def scan_repository():
-    u"""扫描全部正式 System / Tool 文件。"""
+    u"""扫描全部正式 System / Tool / UI 文件。"""
     issues = []
     file_count = 0
 
@@ -253,7 +289,7 @@ def run():
     if issues:
         for issue in issues:
             print(
-                u"[FAIL] {}:{} | 上层代码重新实现通用 Helper: {}".format(
+                u"[FAIL] {}:{} | 上层代码绕开 Core: {}".format(
                     issue["file"],
                     issue["line"],
                     issue["name"]
@@ -266,7 +302,7 @@ def run():
         return False
 
     print(
-        u"[PASS] {} 个 System / Tool Python 文件没有新增重复 Core Helper。".format(
+        u"[PASS] {} 个 System / Tool / UI Python 文件没有新增重复 Core Helper。".format(
             result["file_count"]
         )
     )

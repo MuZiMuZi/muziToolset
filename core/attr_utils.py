@@ -148,7 +148,7 @@ class Attr(object):
 
         Notes:
             参数名 ``object`` 来自早期 API。虽然它会遮蔽 Python 内置名称，但为了兼容现有调用，
-                                                                    这里暂时不改名。
+                                                                        这里暂时不改名。
         """
         self.object = object
         self.attr = attr
@@ -1002,9 +1002,9 @@ class Attr(object):
 
         Example:
             {
-                                                                        "translateY": [(True, True), (-10.0, 10.0)],
-                                                                        "rotateX": [(True, False), (-45.0, 0.0)],
-                                                                    }
+                                                                            "translateY": [(True, True), (-10.0, 10.0)],
+                                                                            "rotateX": [(True, False), (-45.0, 0.0)],
+                                                                        }
         """
         if not self.object_exists():
             cmds.warning(

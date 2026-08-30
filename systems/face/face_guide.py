@@ -38,11 +38,6 @@ Step 02 有两个不同层级的操作：
     - Locator 颜色、初始层级、左右节点和默认连接属于 face_guide.ma 模板；
     - Lip / Brow / Eyelid Curve 和 Joint 不在这里创建；
     - 后续 Builder 只消费 FaceGuide 输出的有序 Guide 数据。
-
-兼容：
-    - build() 保留为旧入口，内部只转调 build_guide()；
-    - finalize() 保留为旧入口，内部转调统一 run_step()；
-    - mirror_left_guide() / mirror_left_guides() 继续保留 Repair Symmetry 兼容 API。
 """
 
 from __future__ import print_function
@@ -113,11 +108,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 重新读取并检查 Step 01 保存的 Head / Eye / Mouth Joint 等公共输入。
         self.validate_setup()
@@ -141,7 +136,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 确保 Face 系统基础层级仍然完整，避免外部删除 Group 后继续保存错误状态。
         self.ensure_hierarchy()
@@ -157,11 +152,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 对必要 Guide、重复命名和左右镜像结构执行完整 Validation。
         self.validation_result = self.validate_guides(
@@ -188,7 +183,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 保存当前 Guide Root / Move Ctrl / Version，给后续 Face Builder 读取。
         self.save_guide_config()
@@ -213,7 +208,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 使用 FaceBase 统一检查 Step 01 Config 和公共模型输入。
         return self.validate_setup_config(
@@ -223,77 +218,6 @@ class FaceGuide(face_base.FaceBase):
     # =========================================================================
     # Name / DAG Helper - Compatibility
     # =========================================================================
-
-    @staticmethod
-    def get_short_name(node):
-        u"""
-        返回 DAG Short Name。
-
-        保留 FaceGuide 旧调用入口，实际规则统一由 core.rename_utils 维护。
-
-        Args:
-            node (str):
-                需要查询或处理的 Maya 节点名称。
-
-        Returns:
-            object:
-                方法执行后的结果数据。
-        """
-        # 统一复用项目级 Short Name API，避免 FaceGuide 维护第二套 split("|") 规则。
-        return rename_utils.get_short_name(
-            node
-        )
-
-    @staticmethod
-    def get_dag_depth(node):
-        u"""
-        返回 DAG Path 深度，用于父节点优先排序。
-
-        Args:
-            node (str):
-                需要查询或处理的 Maya 节点名称。
-
-        Returns:
-            object | int:
-                方法执行后的结果数据。
-        """
-        if not node:
-            return 0
-
-        return node.count("|")
-
-    @staticmethod
-    def get_parent(node):
-        u"""
-        返回节点的直接 Parent Long Path。
-
-        Args:
-            node (str):
-                需要查询或处理的 Maya 节点名称。
-
-        Returns:
-            object | None:
-                方法执行后的结果数据。
-        """
-        if not node:
-            return None
-
-        if not cmds.objExists(node):
-            return None
-
-        parents = cmds.listRelatives(
-            node,
-            parent=True,
-            fullPath=True
-        )
-
-        if parents is None:
-            parents = []
-
-        if not parents:
-            return None
-
-        return parents[0]
 
     @staticmethod
     def get_locator_shapes(locator):
@@ -306,7 +230,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not locator:
             return []
@@ -343,7 +267,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             None | object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not short_name:
             return None
@@ -364,7 +288,7 @@ class FaceGuide(face_base.FaceBase):
 
             for child in children:
                 # 使用统一 Short Name 规则比较 Child，避免 Parent Path 影响名称判断。
-                child_short_name = self.get_short_name(
+                child_short_name = rename_utils.get_short_name(
                     child
                 )
 
@@ -397,7 +321,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         template_path = os.path.join(
             package_config.resources_dir,
@@ -418,11 +342,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 获取项目 resources/face 下正式 Guide Template 路径。
         template_path = self.get_guide_template_path()
@@ -442,7 +366,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object | bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         self.guide_root = None
         self.guide_move_ctrl = None
@@ -471,7 +395,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 每次查询前刷新 DAG 引用，保证 Reparent / Reset 后状态准确。
         self.refresh_guide_handles()
@@ -494,11 +418,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         imported_transforms = cmds.ls(
             imported_nodes,
@@ -513,7 +437,7 @@ class FaceGuide(face_base.FaceBase):
 
         for node in imported_transforms:
             # 查询导入 Transform 的直接 Parent，只有无 Parent 的节点才可能是 Template Root。
-            parent = self.get_parent(
+            parent = hierarchy_utils.Hierarchy.get_parent(
                 node
             )
 
@@ -521,7 +445,7 @@ class FaceGuide(face_base.FaceBase):
                 continue
 
             # 使用统一 Short Name 规则判断导入 Root 是否属于 Face Guide。
-            short_name = self.get_short_name(
+            short_name = rename_utils.get_short_name(
                 node
             )
 
@@ -553,11 +477,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not cmds.objExists(self.face_guide_grp):
             raise RuntimeError(
@@ -614,11 +538,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 确保正式 Face Guide Group 已经存在，给 Template 合并提供稳定父级。
         self.ensure_hierarchy()
@@ -675,7 +599,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not self.config_node_exists():
             return False
@@ -700,7 +624,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not cmds.objExists(self.face_guide_grp):
             # Guide Group 已不存在时只刷新内部缓存，保持对象状态和场景一致。
@@ -748,7 +672,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 删除当前用户调整后的 Guide Template 和对应 Config 引用。
         self.remove_guide()
@@ -777,7 +701,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 检查 Step 01 公共输入，确保 Guide 不是建立在无效 Setup 上。
         self.validate_setup()
@@ -824,11 +748,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             None | object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not short_name:
             if required:
@@ -849,7 +773,7 @@ class FaceGuide(face_base.FaceBase):
         candidates = []
 
         # 使用统一 Short Name 规则判断 Root 自己是否就是查询目标。
-        root_short_name = self.get_short_name(
+        root_short_name = rename_utils.get_short_name(
             self.face_guide_grp
         )
 
@@ -870,7 +794,7 @@ class FaceGuide(face_base.FaceBase):
 
         for node in descendants:
             # 使用统一 Short Name 规则在完整 Guide Hierarchy 中筛选目标节点。
-            node_short_name = self.get_short_name(
+            node_short_name = rename_utils.get_short_name(
                 node
             )
 
@@ -910,7 +834,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if parent_group is None:
             parent_group = self.face_guide_grp
@@ -932,7 +856,7 @@ class FaceGuide(face_base.FaceBase):
 
         for node in descendants:
             # 使用统一 Short Name 规则过滤 Face Guide Locator 命名。
-            short_name = self.get_short_name(
+            short_name = rename_utils.get_short_name(
                 node
             )
 
@@ -979,11 +903,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not part:
             raise ValueError(
@@ -1015,7 +939,7 @@ class FaceGuide(face_base.FaceBase):
         result = []
 
         for locator in locators:
-            short_name = self.get_short_name(
+            short_name = rename_utils.get_short_name(
                 locator
             )
             lower_name = short_name.lower()
@@ -1062,34 +986,6 @@ class FaceGuide(face_base.FaceBase):
         result.sort()
         return result
 
-    def get_world_position(self, guide):
-        u"""
-        获取一个 Guide Transform 的世界坐标。
-
-        保留 FaceGuide 旧入口，实际 Transform 查询统一由 core.transform_utils 维护。
-
-        Args:
-            guide (str):
-                需要查询或处理的 Guide Transform 名称。
-
-        Returns:
-            object:
-                方法执行后的结果数据。
-
-        Raises:
-            ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
-        """
-        if not guide:
-            raise ValueError(
-                u"Guide 不能为空。"
-            )
-
-        # 使用 Transform Core 统一验证 Transform 并读取 World Translation。
-        return transform_utils.get_world_translation(
-            guide
-        )
-
     def get_guide_positions(self, guides):
         u"""
         按输入顺序返回多个 Guide 的世界坐标。
@@ -1100,7 +996,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         positions = []
 
@@ -1109,7 +1005,7 @@ class FaceGuide(face_base.FaceBase):
 
         for guide in guides:
             # 通过统一 Guide 世界位置入口保持单个 / 批量查询行为一致。
-            position = self.get_world_position(
+            position = transform_utils.get_world_translation(
                 guide
             )
             positions.append(
@@ -1132,7 +1028,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         upper_names = [
             "loc_rt_mouth_corner_guide_001",
@@ -1218,11 +1114,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if side not in ["lf", "rt"]:
             raise ValueError(
@@ -1292,11 +1188,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if side not in ["lf", "rt"]:
             raise ValueError(
@@ -1313,7 +1209,7 @@ class FaceGuide(face_base.FaceBase):
         point_guides = []
 
         for guide in all_guides:
-            short_name = self.get_short_name(
+            short_name = rename_utils.get_short_name(
                 guide
             )
 
@@ -1343,11 +1239,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if side not in ["lf", "rt"]:
             raise ValueError(
@@ -1378,11 +1274,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if side not in ["lf", "rt"]:
             raise ValueError(
@@ -1400,7 +1296,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.get_part_guides(
             part="nose"
@@ -1412,7 +1308,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.get_part_guides(
             part="jaw"
@@ -1424,7 +1320,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.get_part_guides(
             part="teeth"
@@ -1436,7 +1332,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.get_part_guides(
             part="tongue"
@@ -1452,7 +1348,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.get_part_guides(
             part="ear",
@@ -1469,7 +1365,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return self.get_part_guides(
             part="zygoma",
@@ -1491,11 +1387,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if "_lf_" not in left_name:
             raise ValueError(
@@ -1520,17 +1416,17 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not left_parent:
             return None
 
         # 使用统一 Short Name 规则判断当前 Parent 是公共空间还是左侧嵌套空间。
-        left_parent_name = self.get_short_name(
+        left_parent_name = rename_utils.get_short_name(
             left_parent
         )
 
@@ -1568,7 +1464,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if parent_group is None:
             parent_group = self.face_guide_grp
@@ -1589,7 +1485,7 @@ class FaceGuide(face_base.FaceBase):
         left_zero_groups = []
 
         for node in descendants:
-            short_name = self.get_short_name(
+            short_name = rename_utils.get_short_name(
                 node
             )
 
@@ -1602,7 +1498,7 @@ class FaceGuide(face_base.FaceBase):
 
         # 父级 Guide 必须先修复，子级才可以找到已经建立好的正确 RT Parent。
         left_zero_groups.sort(
-            key=self.get_dag_depth
+            key=hierarchy_utils.Hierarchy.get_dag_depth
         )
 
         return left_zero_groups
@@ -1617,7 +1513,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             None | object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         children = cmds.listRelatives(
             left_zero_group,
@@ -1630,7 +1526,7 @@ class FaceGuide(face_base.FaceBase):
             children = []
 
         for child in children:
-            short_name = self.get_short_name(
+            short_name = rename_utils.get_short_name(
                 child
             )
 
@@ -1662,7 +1558,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         plug = "{}.{}".format(
             node,
@@ -1713,7 +1609,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool | object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not cmds.objExists(source_attr):
             return False
@@ -1762,10 +1658,10 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 取得左侧 Zero Short Name，并生成对应右侧名称。
-        left_zero_name = self.get_short_name(
+        left_zero_name = rename_utils.get_short_name(
             left_zero_group
         )
         right_zero_name = self.get_right_name(
@@ -1773,7 +1669,7 @@ class FaceGuide(face_base.FaceBase):
         )
 
         # 查询左侧 Zero Parent，并解析应该使用的右侧镜像 Parent。
-        left_parent = self.get_parent(
+        left_parent = hierarchy_utils.Hierarchy.get_parent(
             left_zero_group
         )
         right_parent = self.get_mirror_parent(
@@ -1801,7 +1697,7 @@ class FaceGuide(face_base.FaceBase):
             )
 
         # 查询当前 Parent，只有 Parent 错误时才重新挂接，减少无意义 DAG Path 变化。
-        current_parent = self.get_parent(
+        current_parent = hierarchy_utils.Hierarchy.get_parent(
             right_zero_group
         )
 
@@ -1857,7 +1753,7 @@ class FaceGuide(face_base.FaceBase):
         is_mirror_root = True
 
         if left_parent:
-            left_parent_name = self.get_short_name(
+            left_parent_name = rename_utils.get_short_name(
                 left_parent
             )
 
@@ -1960,10 +1856,10 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 根据左侧 Locator Short Name 生成对应右侧 Locator 名称。
-        left_locator_name = self.get_short_name(
+        left_locator_name = rename_utils.get_short_name(
             left_locator
         )
         right_locator_name = self.get_right_name(
@@ -1989,7 +1885,7 @@ class FaceGuide(face_base.FaceBase):
             )[0]
 
         # 检查现有右侧 Locator 是否已经位于正确镜像 Zero 下。
-        current_parent = self.get_parent(
+        current_parent = hierarchy_utils.Hierarchy.get_parent(
             right_locator
         )
 
@@ -2018,7 +1914,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         attributes = [
             "translateX",
@@ -2068,7 +1964,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 取得左右 Locator Shape，Shape 缺失时不继续建立 Shape Connection。
         left_shapes = self.get_locator_shapes(
@@ -2124,7 +2020,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         result = {
             "valid": True,
@@ -2147,7 +2043,7 @@ class FaceGuide(face_base.FaceBase):
         )
 
         for left_zero_group in left_zero_groups:
-            left_zero_name = self.get_short_name(
+            left_zero_name = rename_utils.get_short_name(
                 left_zero_group
             )
             right_zero_name = self.get_right_name(
@@ -2165,7 +2061,7 @@ class FaceGuide(face_base.FaceBase):
                 )
                 continue
 
-            left_parent = self.get_parent(
+            left_parent = hierarchy_utils.Hierarchy.get_parent(
                 left_zero_group
             )
 
@@ -2176,15 +2072,15 @@ class FaceGuide(face_base.FaceBase):
             except RuntimeError:
                 expected_right_parent = None
 
-            actual_right_parent = self.get_parent(
+            actual_right_parent = hierarchy_utils.Hierarchy.get_parent(
                 right_zero_group
             )
 
             if expected_right_parent:
-                expected_parent_name = self.get_short_name(
+                expected_parent_name = rename_utils.get_short_name(
                     expected_right_parent
                 )
-                actual_parent_name = self.get_short_name(
+                actual_parent_name = rename_utils.get_short_name(
                     actual_right_parent
                 )
 
@@ -2203,7 +2099,7 @@ class FaceGuide(face_base.FaceBase):
             if not left_locator:
                 continue
 
-            left_locator_name = self.get_short_name(
+            left_locator_name = rename_utils.get_short_name(
                 left_locator
             )
             right_locator_name = self.get_right_name(
@@ -2280,11 +2176,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 在当前左侧 Zero 下找到需要镜像的左侧 Locator。
         left_locator = self.get_left_locator(
@@ -2338,7 +2234,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if parent_group is None:
             parent_group = self.face_guide_grp
@@ -2368,7 +2264,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 按父级优先顺序修复全部 LF -> RT Guide 镜像结构。
         repair_results = self.mirror_left_guides(
@@ -2399,7 +2295,7 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         result = {
             "valid": True,
@@ -2454,7 +2350,7 @@ class FaceGuide(face_base.FaceBase):
         name_counts = {}
 
         for locator in locators:
-            short_name = self.get_short_name(
+            short_name = rename_utils.get_short_name(
                 locator
             )
 
@@ -2520,11 +2416,11 @@ class FaceGuide(face_base.FaceBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 保存前刷新 Guide DAG 引用，保证 Config 连接的是当前真实节点。
         self.refresh_guide_handles()
@@ -2562,46 +2458,6 @@ class FaceGuide(face_base.FaceBase):
         )
 
         return True
-
-    # =========================================================================
-    # Compatibility Entry
-    # =========================================================================
-
-    def build(self):
-        u"""
-        兼容旧版 FaceGuide.build()。
-
-        新代码使用 build_guide() 表示“加载可编辑 Guide Template”。
-
-        Returns:
-            object:
-                方法执行后的结果数据。
-        """
-        # 旧 Build API 只转发到明确命名的 Guide 编辑准备入口。
-        return self.build_guide()
-
-    def finalize(self, check_symmetry=True):
-        u"""
-        兼容旧版 FaceGuide.finalize()。
-
-        新代码使用 run_step() 正式提交 Step 02。
-
-        Args:
-            check_symmetry (bool):
-                Guide Validation / Finalize 时是否同时检查 LF → RT 镜像节点、Parent 和连接。
-
-        Returns:
-            object:
-                方法执行后的结果数据。
-        """
-        self.check_symmetry = bool(
-            check_symmetry
-        )
-
-        # 使用统一 Step 生命周期重新收集、检查并正式提交当前 Guide。
-        self.run_step()
-
-        return self.validation_result
 
 
 __all__ = [

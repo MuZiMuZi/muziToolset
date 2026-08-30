@@ -74,6 +74,7 @@ except ImportError:
 from ...core import constraint_utils
 from ...ui import theme as ui_theme
 from ...ui import window_utils
+from ...core import scene_utils
 
 
 class ConstraintTool(QWidget):
@@ -334,10 +335,7 @@ class ConstraintTool(QWidget):
         # ---------------------------------------------------------------------
         # 步骤 1：一次按钮操作只生成一个 Undo Chunk。
         # ---------------------------------------------------------------------
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName=chunk_name
-        )
+        scene_utils.open_undo_chunk(chunk_name)
 
         try:
             # -----------------------------------------------------------------
@@ -352,7 +350,7 @@ class ConstraintTool(QWidget):
         except RuntimeError as error:
             cmds.warning(str(error))
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
     def clicked_parent_constraint_button(self):
         u"""
@@ -419,10 +417,7 @@ class ConstraintTool(QWidget):
             )
             return
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziPoleVectorConstraint"
-        )
+        scene_utils.open_undo_chunk("MuziPoleVectorConstraint")
 
         try:
             constraint_utils.create_pole_vector_constraint(
@@ -432,7 +427,7 @@ class ConstraintTool(QWidget):
         except RuntimeError as error:
             cmds.warning(str(error))
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
     # =========================================================================
     # Manage
@@ -496,15 +491,12 @@ class ConstraintTool(QWidget):
             cmds.warning(u"没有找到需要删除的约束节点。")
             return
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziDeleteConstraints"
-        )
+        scene_utils.open_undo_chunk("MuziDeleteConstraints")
 
         try:
             constraint_utils.delete_constraints(selected_objects)
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
 
 def main():

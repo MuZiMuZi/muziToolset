@@ -119,7 +119,7 @@ class FaceBase(StepBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 创建或复用 Face Master Group，作为整个 Face Rig 的顶层容器。
         hierarchy_utils.Hierarchy.create_grp(
@@ -161,7 +161,7 @@ class FaceBase(StepBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 使用通用 ConfigNode 创建或复用 Face Config Network Node。
         config_node = self.config_data.ensure()
@@ -174,7 +174,7 @@ class FaceBase(StepBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 使用通用 ConfigNode 判断节点是否存在且类型正确。
         return self.config_data.exists()
@@ -187,7 +187,7 @@ class FaceBase(StepBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 获取当前 Config Node 对应的通用 Attr 操作对象。
         return self.config_data.get_attr()
@@ -202,7 +202,7 @@ class FaceBase(StepBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 从通用 ConfigNode 读取一个节点 Message 引用。
         return self.config_data.get_message(
@@ -219,7 +219,7 @@ class FaceBase(StepBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 从通用 ConfigNode 读取一个普通配置值。
         return self.config_data.get_value(
@@ -245,7 +245,7 @@ class FaceBase(StepBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 使用 Message Connection 批量保存节点引用，避免依赖容易失效的节点字符串。
         result = self.config_data.set_messages(
@@ -279,7 +279,7 @@ class FaceBase(StepBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 使用通用 ConfigNode 批量写入当前 Face Step 需要持久化的普通参数。
         result = self.config_data.set_values(
@@ -304,7 +304,7 @@ class FaceBase(StepBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 批量读取 Step 01 保存的模型 Message 引用。
         message_data = self.config_data.get_messages(
@@ -345,7 +345,7 @@ class FaceBase(StepBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if refresh:
             # 调用统一刷新入口，确保返回的是 Config 中最新的 Step 01 数据。
@@ -385,11 +385,11 @@ class FaceBase(StepBase):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 先确认 Step 01 已经创建有效的 Face Config，避免后续读取空配置。
         if not self.config_node_exists():
@@ -453,13 +453,13 @@ class FaceBase(StepBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not isinstance(step_value, int):
             raise TypeError(
@@ -485,13 +485,13 @@ class FaceBase(StepBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
             TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if step_value is None:
             step_value = self.step_value
@@ -524,7 +524,7 @@ class FaceBase(StepBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 解析调用方指定的 Step，未指定时使用当前 Face Step。
         step_value = self.resolve_step_value(
@@ -560,7 +560,7 @@ class FaceBase(StepBase):
 
         Returns:
             object | bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 解析需要查询的 Step 编号。
         step_value = self.resolve_step_value(
@@ -598,11 +598,11 @@ class FaceBase(StepBase):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 解析本次重新执行的当前 Step 编号。
         step_value = self.resolve_step_value(
@@ -645,11 +645,11 @@ class FaceBase(StepBase):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not isinstance(last_step, int):
             raise TypeError(

@@ -59,6 +59,8 @@ from __future__ import print_function
 
 import maya.cmds as cmds
 
+from . import rename_utils
+
 from . import scene_utils
 
 
@@ -104,20 +106,6 @@ anim_curve_types = [
 # Common Query
 # =============================================================================
 
-def get_short_name(node):
-    u"""
-    返回 DAG Short Name。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-    return node.split("|")[-1]
-
 
 def is_default_camera(node):
     u"""
@@ -131,7 +119,7 @@ def is_default_camera(node):
         object:
         方法执行后的结果数据。
     """
-    return get_short_name(node) in default_cameras
+    return rename_utils.get_short_name(node) in default_cameras
 
 
 def is_referenced(node):
@@ -834,7 +822,6 @@ def run_cleanup(
 
 
 __all__ = [
-    "get_short_name",
     "is_default_camera",
     "is_referenced",
     "existing_nodes",

@@ -21,6 +21,7 @@ from __future__ import print_function
 import maya.cmds as cmds
 
 from ...core import control_shape_utils
+from ...core import constraint_utils
 from ...core import hierarchy_utils
 from ...core import rename_utils
 from ...core import scene_utils
@@ -36,31 +37,6 @@ axis_rotation = {
 }
 
 
-def get_short_name(node):
-    u"""
-    返回 Controller Workflow 使用的节点短名称。
-
-    DAG Short Name 查询统一复用 rename_utils；Controller 名称不保留 Namespace，
-    因此这里只额外把 ``:`` 转换成 ``_``。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object:
-            方法执行后的结果数据。
-    """
-    # 使用 Core 统一提取 DAG Short Name，避免本模块维护第二套 Long Path 解析。
-    short_name = rename_utils.get_short_name(
-        node
-    )
-
-    return short_name.replace(
-        ":",
-        "_"
-    )
-
 
 def get_control_name_from_target(target):
     u"""
@@ -72,11 +48,15 @@ def get_control_name_from_target(target):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 先取得稳定的目标节点短名称，再根据来源类型替换 Controller 前缀。
-    short_name = get_short_name(
+    short_name = rename_utils.get_short_name(
         target
+    )
+    short_name = short_name.replace(
+        ":",
+        "_"
     )
 
     if short_name.startswith("jnt_"):
@@ -101,7 +81,7 @@ def get_side_color(name):
 
     Returns:
         int:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     lower_name = name.lower()
 
@@ -515,7 +495,7 @@ def create_fk_controls(
 
     Returns:
         object | list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     if not targets:
         return []
@@ -570,10 +550,11 @@ def create_fk_controls(
             )
 
         if constrain:
-            cmds.parentConstraint(
-                control,
-                target,
-                maintainOffset=False
+            constraint_utils.create_constraint(
+                driver_objects=control,
+                driven_object=target,
+                constraint_type="parentConstraint",
+                maintain_offset=False
             )
 
         controls.append(control)
@@ -590,7 +571,6 @@ def create_fk_controls(
 
 __all__ = [
     "axis_rotation",
-    "get_short_name",
     "get_control_name_from_target",
     "get_side_color",
     "create_controller",

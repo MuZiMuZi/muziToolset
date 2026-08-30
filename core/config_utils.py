@@ -50,7 +50,7 @@ class ConfigNode(object):
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not node:
             raise ValueError(
@@ -141,7 +141,7 @@ class ConfigNode(object):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 先确认当前 Config Node 有效，避免在不存在的节点上读取 Attribute。
         if not self.exists():
@@ -166,7 +166,7 @@ class ConfigNode(object):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 先确认当前 Config Node 有效，避免在不存在的节点上读取 Attribute。
         if not self.exists():
@@ -214,7 +214,7 @@ class ConfigNode(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         result = {}
 

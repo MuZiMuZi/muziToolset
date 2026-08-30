@@ -87,6 +87,8 @@ from ...core import skin_utils
 from ...ui import theme
 from ...ui import window_utils
 from . import joint_resamp_tool
+from ...core import constraint_utils
+from ...core import scene_utils
 
 
 class JointTool(QWidget):
@@ -492,10 +494,7 @@ class JointTool(QWidget):
         u"""
         在当前选择位置创建 Joint。
         """
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziCreateSnapJoints"
-        )
+        scene_utils.open_undo_chunk("MuziCreateSnapJoints")
 
         try:
             joints = joint_utils.Joint.create_from_selection(
@@ -512,7 +511,7 @@ class JointTool(QWidget):
         except Exception as error:
             cmds.warning(str(error))
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
     def create_child_joints(self):
         u"""
@@ -529,10 +528,7 @@ class JointTool(QWidget):
 
         created_joints = []
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziCreateChildJoints"
-        )
+        scene_utils.open_undo_chunk("MuziCreateChildJoints")
 
         try:
             for selected_object in selections:
@@ -544,7 +540,7 @@ class JointTool(QWidget):
         except Exception as error:
             cmds.warning(str(error))
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
         if created_joints:
             cmds.select(
@@ -571,17 +567,14 @@ class JointTool(QWidget):
         u"""
         按照选择顺序把 Joint 组成父子链。
         """
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziParentJointChain"
-        )
+        scene_utils.open_undo_chunk("MuziParentJointChain")
 
         try:
             joint_utils.JointChain.parent_selected_as_chain()
         except Exception as error:
             cmds.warning(str(error))
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
     def create_joints_on_curves(self):
         u"""
@@ -598,10 +591,7 @@ class JointTool(QWidget):
 
         created_joints = []
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziCurveJointChain"
-        )
+        scene_utils.open_undo_chunk("MuziCurveJointChain")
 
         try:
             for curve in selections:
@@ -619,7 +609,7 @@ class JointTool(QWidget):
         except Exception as error:
             cmds.warning(str(error))
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
         if created_joints:
             cmds.select(
@@ -646,10 +636,7 @@ class JointTool(QWidget):
             cmds.warning(u"请选择连续的多边形边。")
             return
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziEdgeJointChain"
-        )
+        scene_utils.open_undo_chunk("MuziEdgeJointChain")
 
         try:
             cmds.select(
@@ -682,7 +669,7 @@ class JointTool(QWidget):
         except Exception as error:
             cmds.warning(str(error))
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
     def enable_scale_compensate(self):
         u"""
@@ -711,10 +698,7 @@ class JointTool(QWidget):
         if not joints:
             return
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziScaleCompensate"
-        )
+        scene_utils.open_undo_chunk("MuziScaleCompensate")
 
         try:
             for joint in joints:
@@ -722,7 +706,7 @@ class JointTool(QWidget):
                     enabled=enabled
                 )
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
     def show_orient(self):
         u"""
@@ -768,16 +752,13 @@ class JointTool(QWidget):
         if not joints:
             return
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziClearJointOrient"
-        )
+        scene_utils.open_undo_chunk("MuziClearJointOrient")
 
         try:
             for joint in joints:
                 joint_utils.Joint(joint).clear_orient()
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
     def create_curve_on_joints(self):
         u"""
@@ -832,10 +813,7 @@ class JointTool(QWidget):
             )
             return
 
-        cmds.undoInfo(
-            openChunk=True,
-            chunkName="MuziBatchParentConstraint"
-        )
+        scene_utils.open_undo_chunk("MuziBatchParentConstraint")
 
         try:
             selection_index = 0
@@ -844,15 +822,16 @@ class JointTool(QWidget):
                 driver = selections[selection_index]
                 driven = selections[selection_index + 1]
 
-                cmds.parentConstraint(
-                    driver,
-                    driven,
-                    maintainOffset=True
+                constraint_utils.create_constraint(
+                    driver_objects=driver,
+                    driven_object=driven,
+                    constraint_type="parentConstraint",
+                    maintain_offset=True
                 )
 
                 selection_index += 2
         finally:
-            cmds.undoInfo(closeChunk=True)
+            scene_utils.close_undo_chunk()
 
     # =========================================================================
     # Skin

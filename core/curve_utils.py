@@ -13,7 +13,7 @@ Joint、Face、Lip、Eyelid 等更高层绑定逻辑继续放在对应 Core / Sy
 当前公开方法
 ------------
 基础校验与查询：
-    validate_node(node)
+    scene_utils.validate_node(node)
         检查 Maya 节点是否存在。
 
     get_curve_shape(curve)
@@ -108,40 +108,14 @@ Face Eyelid / Lip / Curve Attachment 会依赖这个规则。
 from __future__ import print_function
 
 import maya.cmds as cmds
+
+from . import scene_utils
 import maya.api.OpenMaya as om
 
 
 # =============================================================================
 # Validate / Query - Curve 基础校验与查询
 # =============================================================================
-
-def validate_node(node):
-    u"""
-    检查 Maya 节点是否存在；有效时返回 True。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        bool:
-        方法执行后的结果数据。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-    """
-    # 步骤 1：参数为空时直接报错。
-    if not node:
-        raise RuntimeError(u"节点名称不能为空。")
-
-    # 步骤 2：确认 Maya Scene 中真实存在该节点。
-    if not cmds.objExists(node):
-        raise RuntimeError(
-            u"Maya 节点不存在：{}".format(node)
-        )
-
-    return True
 
 
 def get_curve_shape(curve):
@@ -165,7 +139,7 @@ def get_curve_shape(curve):
     # -------------------------------------------------------------------------
     # 步骤 1：确认输入节点存在。
     # -------------------------------------------------------------------------
-    validate_node(curve)
+    scene_utils.validate_node(curve)
 
     # -------------------------------------------------------------------------
     # 步骤 2：输入本身就是 nurbsCurve Shape 时直接返回 Long Name。
@@ -338,7 +312,7 @@ def get_dag_path(node):
         方法执行后的结果数据。
     """
     # 步骤 1：确认节点存在。
-    validate_node(node)
+    scene_utils.validate_node(node)
 
     # 步骤 2：通过 SelectionList 取得 DagPath。
     selection = om.MSelectionList()
@@ -389,7 +363,7 @@ def get_even_percentages(sample_count):
 
     Example:
         get_even_percentages(5)
-                                                                -> [0.0, 0.25, 0.5, 0.75, 1.0]
+                                                                    -> [0.0, 0.25, 0.5, 0.75, 1.0]
     """
     # 步骤 1：至少需要首尾两个采样点。
     if sample_count < 2:
@@ -705,7 +679,7 @@ def create_point_on_curve_attachment(
     curve_shape = get_curve_shape(curve)
 
     if parent is not None:
-        validate_node(parent)
+        scene_utils.validate_node(parent)
 
     # 步骤 2：创建 Attachment Transform。
     attachment = cmds.createNode(
@@ -894,7 +868,7 @@ def create_curve_from_nodes(
     curve_points = []
 
     for node in nodes:
-        validate_node(node)
+        scene_utils.validate_node(node)
 
         position = cmds.xform(
             node,
@@ -969,7 +943,6 @@ def create_curve_from_selected_edges(
 
 
 __all__ = [
-    "validate_node",
     "get_curve_shape",
     "get_curve_transform",
     "get_curve_cvs",

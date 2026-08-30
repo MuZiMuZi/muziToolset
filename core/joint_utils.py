@@ -143,11 +143,11 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not name:
             raise RuntimeError(
@@ -228,7 +228,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 使用 Transform Core 验证参考对象。
         transform_utils.validate_transform(
@@ -291,7 +291,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 使用 Transform Core 验证 Parent / 参考对象。
         transform_utils.validate_transform(
@@ -352,11 +352,11 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not component:
             raise RuntimeError(
@@ -408,7 +408,7 @@ class Joint(object):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         selections = cmds.ls(
             selection=True,
@@ -469,7 +469,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return cmds.joint(
             self.joint,
@@ -483,7 +483,7 @@ class Joint(object):
 
         Returns:
             object | None:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 使用 Hierarchy Core 查询直接 Parent。
         parent = hierarchy_utils.Hierarchy.get_parent(
@@ -509,7 +509,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not all_descendents:
             # 直接 Child 查询统一交给 Hierarchy Core。
@@ -543,7 +543,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         value = 1 if visible else 0
 
@@ -560,7 +560,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return self.set_axis_visibility(
@@ -573,7 +573,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return self.set_axis_visibility(
@@ -590,7 +590,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         cmds.setAttr(
             self.joint + ".radius",
@@ -618,7 +618,7 @@ class Joint(object):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         if not joints:
             return []
@@ -676,7 +676,7 @@ class Joint(object):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 使用 Scene Core 查询当前选择的 Joint。
         joints = scene_utils.get_selected_nodes(
@@ -709,7 +709,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         joints = cmds.ls(
             type="joint",
@@ -732,7 +732,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         joints = cmds.ls(
             type="joint",
@@ -769,7 +769,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 查询直接 Child Joint，用于判断当前 Joint 是否是链末端。
         children = self.get_children(
@@ -801,7 +801,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         attrs = [
             "jointOrientX",
@@ -830,7 +830,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         attrs = [
             "jointOrientX",
@@ -855,7 +855,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return self.set_orient_keyable(
@@ -868,7 +868,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return self.set_orient_keyable(
@@ -885,7 +885,7 @@ class Joint(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         cmds.setAttr(
             self.joint + ".segmentScaleCompensate",
@@ -904,11 +904,11 @@ class Joint(object):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 使用统一 Short Name API 解析 Joint 名称。
         short_name = rename_utils.get_short_name(
@@ -989,7 +989,7 @@ class JointCurve(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return curve_utils.get_curve_shape(
@@ -1007,7 +1007,7 @@ class JointCurve(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return curve_utils.get_curve_transform(
@@ -1025,7 +1025,7 @@ class JointCurve(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return curve_utils.get_curve_cvs(
@@ -1043,7 +1043,7 @@ class JointCurve(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return curve_utils.get_curve_cv_count(
@@ -1061,7 +1061,7 @@ class JointCurve(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
 
         return curve_utils.get_curve_cv_positions(
@@ -1127,11 +1127,11 @@ class JointCurve(object):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 获取 Curve Transform 和 CV 世界位置。
         curve_transform = JointCurve.get_curve_transform(
@@ -1237,11 +1237,11 @@ class JointChain(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if not joints:
             raise RuntimeError(
@@ -1272,7 +1272,7 @@ class JointChain(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 验证输入 Joint 列表。
         joints = JointChain.validate_joint_list(
@@ -1302,7 +1302,7 @@ class JointChain(object):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 使用 Scene Core 查询当前选择 Joint。
         joints = scene_utils.get_selected_nodes(
@@ -1344,11 +1344,11 @@ class JointChain(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # 验证 Blueprint Joint 列表。
         blueprint_joints = JointChain.validate_joint_list(
@@ -1440,7 +1440,7 @@ class JointChain(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 验证输入 Joint 列表。
         joints = JointChain.validate_joint_list(

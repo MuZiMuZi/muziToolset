@@ -101,11 +101,11 @@ class SkirtRigBuilder(object):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if self.horizontal_count < 3:
             raise ValueError(
@@ -125,7 +125,7 @@ class SkirtRigBuilder(object):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         return {
             "name": self.name,
@@ -150,7 +150,7 @@ class SkirtRigBuilder(object):
 
         Returns:
             object:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 生成当前 Skirt System 使用的固定节点名称。
         names = self.get_names()
@@ -349,7 +349,7 @@ class SkirtRigBuilder(object):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 检查横向 / 纵向数量，避免使用无效参数创建 Setup。
         self.validate_parameters()
@@ -409,7 +409,7 @@ class SkirtRigBuilder(object):
 
         Returns:
             object | list:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 获取当前 Skirt System 的固定 Curve 名称。
         names = self.get_names()
@@ -507,7 +507,7 @@ class SkirtRigBuilder(object):
 
         Returns:
             dict:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 检查 Builder 数量参数，保证 Joint Chain 可以正常插值。
         self.validate_parameters()

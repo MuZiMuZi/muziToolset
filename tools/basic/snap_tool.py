@@ -18,6 +18,7 @@ from __future__ import print_function
 import maya.cmds as cmds
 
 from ...core import snap_utils
+from ...core import scene_utils
 
 
 TOOL_MODE = "action"
@@ -49,10 +50,7 @@ def main():
     reference_items = selected_items[:-1]
     target_item = selected_items[-1]
 
-    cmds.undoInfo(
-        openChunk=True,
-        chunkName="MuziQuickSnap"
-    )
+    scene_utils.open_undo_chunk("MuziQuickSnap")
 
     try:
         snap_utils.snap_to_average(
@@ -64,7 +62,7 @@ def main():
         cmds.warning(str(error))
         return False
     finally:
-        cmds.undoInfo(closeChunk=True)
+        scene_utils.close_undo_chunk()
 
     return True
 

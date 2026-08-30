@@ -51,11 +51,11 @@ def validate_joint(joint):
 
     Returns:
         bool:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     try:
         # 使用 Joint Core 统一检查节点存在性和 Joint 类型。
@@ -84,11 +84,11 @@ def normalize_name_part(value, label):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if value is None:
         raise ValueError(
@@ -139,7 +139,7 @@ def create_rig_name(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 使用统一 Name API 规范 Side Token。
     side = name_utils.Name.normalize_side(
@@ -202,11 +202,11 @@ def create_attachment_group(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 生成当前 Attachment 容器的正式名称。
     group_name = create_rig_name(
@@ -254,7 +254,7 @@ def create_curve_attachment(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 把统一弧长百分比转换成目标 Curve 自己的 Parameter。
     parameter = curve_utils.length_percentage_to_parameter(
@@ -315,11 +315,11 @@ def attach_joints_to_curves(
 
     Returns:
         dict:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if joints is None:
         joints = []

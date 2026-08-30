@@ -95,11 +95,11 @@ def add_extra_group(obj, group_name, world_orient=False):
 
     Returns:
         str:
-            新建或复用的 Driver Group。
+        新建或复用的 Driver Group。
 
     Raises:
         RuntimeError:
-            Controller 不存在时抛出。
+        Controller 不存在时抛出。
     """
     # 使用 Scene Core 统一验证 Controller 是否存在。
     scene_utils.validate_node(
@@ -202,11 +202,11 @@ def create_driven_key_setup(
 
     Returns:
         list[str]:
-            创建或复用的 Driver Group。
+        创建或复用的 Driver Group。
 
     Raises:
         RuntimeError:
-            输入为空或没有可构建 Controller 时抛出。
+        输入为空或没有可构建 Controller 时抛出。
     """
     if not driven_controls:
         raise RuntimeError(
@@ -351,7 +351,9 @@ class FaceDrivenKeyTool(QDialog):
         self.resize(540, 360)
 
     def create_widgets(self):
-        u"""创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(u"面部 Driven Key")
         self.subtitle_label = theme.make_subtitle(
             u"把当前面部控制器 Pose 固化到 Driver Group，并建立 0 → 10 驱动关系。"
@@ -382,7 +384,9 @@ class FaceDrivenKeyTool(QDialog):
         theme.style_primary(self.execute_button)
 
     def create_layouts(self):
-        u"""创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -420,7 +424,9 @@ class FaceDrivenKeyTool(QDialog):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        u"""连接按钮。"""
+        u"""
+        连接按钮。
+        """
         self.driver_pick_button.clicked.connect(
             self.pick_driver
         )
@@ -429,7 +435,9 @@ class FaceDrivenKeyTool(QDialog):
         )
 
     def pick_driver(self):
-        u"""拾取唯一选择的驱动控制器。"""
+        u"""
+        拾取唯一选择的驱动控制器。
+        """
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
@@ -450,7 +458,9 @@ class FaceDrivenKeyTool(QDialog):
         )
 
     def execute(self):
-        u"""创建当前 Pose 的 Driven Key。"""
+        u"""
+        创建当前 Pose 的 Driven Key。
+        """
         driver = self.driver_line.text().strip()
         attribute_name = self.attribute_line.text().strip()
 
@@ -509,7 +519,7 @@ def main():
 
     Returns:
         QDialog:
-            Face Driven Key 窗口。
+        Face Driven Key 窗口。
     """
     return window_utils.show_window(
         "tools.face.face_select_key_tool",

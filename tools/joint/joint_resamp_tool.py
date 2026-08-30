@@ -84,7 +84,9 @@ class JointResamplingTool(QWidget):
         self.resize(540, 360)
 
     def create_widgets(self):
-        u"""创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(u"关节重采样")
         self.subtitle_label = theme.make_subtitle(
             u"在一对直接父子 Joint 之间均匀插入新的中间 Joint。"
@@ -117,7 +119,9 @@ class JointResamplingTool(QWidget):
         theme.style_primary(self.resample_button)
 
     def create_layouts(self):
-        u"""创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -152,13 +156,17 @@ class JointResamplingTool(QWidget):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        u"""连接界面信号。"""
+        u"""
+        连接界面信号。
+        """
         self.resample_button.clicked.connect(
             self.resample
         )
 
     def resample(self):
-        u"""读取当前 UI 参数并执行 Joint Resample。"""
+        u"""
+        读取当前 UI 参数并执行 Joint Resample。
+        """
         start_joint = self.start_joint_picker.get_value()
         end_joint = self.end_joint_picker.get_value()
         joint_number = self.joint_number_spinbox.value()
@@ -189,7 +197,7 @@ def validate_joint(joint, label):
 
     Returns:
         bool:
-            合法 Joint 返回 True，否则 Warning 并返回 False。
+        合法 Joint 返回 True，否则 Warning 并返回 False。
     """
     if not joint:
         cmds.warning(
@@ -226,7 +234,7 @@ def is_direct_child_joint(start_joint, end_joint):
 
     Returns:
         bool:
-            End 是 Start 的直接子级时返回 True。
+        End 是 Start 的直接子级时返回 True。
     """
     # 使用 Scene Core 把 Start 解析成唯一 Long Path，避免重名 DAG 误判。
     try:
@@ -262,7 +270,7 @@ def get_interpolated_position(start_position, end_position, ratio):
 
     Returns:
         list[float]:
-            插值后的 XYZ 世界位置。
+        插值后的 XYZ 世界位置。
     """
     position = []
 
@@ -304,7 +312,7 @@ def resample_joint(start_joint, end_joint, joint_number):
 
     Returns:
         list[str]:
-            成功创建的中间 Joint；失败返回空列表。
+        成功创建的中间 Joint；失败返回空列表。
     """
     # 检查 Start / End 都是有效 Joint。
     if not validate_joint(
@@ -461,7 +469,7 @@ def main():
 
     Returns:
         QWidget:
-            Joint Resample 窗口。
+        Joint Resample 窗口。
     """
     return window_utils.show_window(
         "tools.joint.joint_resamp_tool",

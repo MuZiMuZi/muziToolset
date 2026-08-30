@@ -58,7 +58,7 @@ class StepBase(object):
 
         Raises:
             NotImplementedError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         raise NotImplementedError(
             u"子类必须实现 collect_inputs()。"
@@ -70,7 +70,7 @@ class StepBase(object):
 
         Raises:
             NotImplementedError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         raise NotImplementedError(
             u"子类必须实现 prepare_data()。"
@@ -82,7 +82,7 @@ class StepBase(object):
 
         Raises:
             NotImplementedError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         raise NotImplementedError(
             u"子类必须实现 process_data()。"
@@ -94,7 +94,7 @@ class StepBase(object):
 
         Raises:
             NotImplementedError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         raise NotImplementedError(
             u"子类必须实现 finalize_step()。"
@@ -106,7 +106,7 @@ class StepBase(object):
 
         Returns:
             bool:
-                方法执行后的结果数据。
+            方法执行后的结果数据。
         """
         # 收集并检查当前 Step 的全部输入，阻止无效数据继续进入后续阶段。
         self.collect_inputs()

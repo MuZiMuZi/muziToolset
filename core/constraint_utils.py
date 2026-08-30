@@ -39,25 +39,6 @@ constraint_types = [
 # Validate / Normalize
 # =============================================================================
 
-def validate_node(node):
-    u"""
-    兼容旧调用的节点校验入口。
-
-    真正的节点存在性规则统一由 scene_utils.validate_node 维护。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object:
-            方法执行后的结果数据。
-    """
-    # 使用 Scene Core 统一检查 Maya 节点是否存在。
-    return scene_utils.validate_node(
-        node
-    )
-
 
 def normalize_nodes(nodes):
     u"""
@@ -69,7 +50,7 @@ def normalize_nodes(nodes):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     result = []
 
@@ -112,11 +93,11 @@ def get_constraint_command(constraint_type):
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     command_map = {
         "parentConstraint": cmds.parentConstraint,
@@ -160,11 +141,11 @@ def create_constraint(
 
     Returns:
         object | list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 整理并验证 Driver 输入。
     driver_objects = normalize_nodes(
@@ -224,11 +205,11 @@ def create_constraints(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 整理 Driver 输入。
     driver_objects = normalize_nodes(
@@ -288,7 +269,7 @@ def create_pole_vector_constraint(
 
     Returns:
         object | list:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 使用 Scene Core 验证 Driver。
     scene_utils.validate_node(
@@ -331,7 +312,7 @@ def get_constraints(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 整理并验证查询目标。
     nodes = normalize_nodes(
@@ -383,7 +364,7 @@ def delete_constraints(
 
     Returns:
         object:
-            方法执行后的结果数据。
+        方法执行后的结果数据。
     """
     # 统一查询目标 Constraint。
     constraint_nodes = get_constraints(
@@ -410,7 +391,6 @@ def delete_constraints(
 
 __all__ = [
     "constraint_types",
-    "validate_node",
     "normalize_nodes",
     "get_constraint_command",
     "create_constraint",
