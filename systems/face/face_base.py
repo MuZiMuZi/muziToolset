@@ -3,12 +3,21 @@ u"""
 Face Rig 公共基础类
 ==================
 
+所有 Face Rig Step 的公共底座。
+
 负责：
-    1. Face Rig 公共配置；
-    2. Face Rig 公共层级名称；
-    3. 确保基础层级存在；
-    4. 确保 Config Network Node 存在；
-    5. 读取 Config Node 中保存的数据。
+    1. 保存 Face Rig 公共配置和层级名称；
+    2. 确保 Face Rig 基础层级存在；
+    3. 确保 Face Config Network Node 存在；
+    4. 统一读写 Config Message / Value；
+    5. 统一读取 Step 01 保存的 Face Setup 数据；
+    6. 统一管理 Step 完成状态。
+
+边界：
+    - 这里只放多个 Face Step 都会复用的能力；
+    - Guide 模板、Guide 查询、Guide 镜像属于 FaceGuide；
+    - Joint / Curve / Controller 构建属于各自 Builder；
+    - 通用 Maya DAG / 文件 / 属性能力继续放在 core。
 
 说明：
     正式系统代码不在模块 import 时主动 reload 依赖。
@@ -27,7 +36,27 @@ from . import config
 class FaceBase(object):
     u"""所有 Face Rig Step 共用的基础类。"""
 
+    setup_message_attr_names = [
+        "face_head_model",
+        "face_lf_eye_model",
+        "face_rt_eye_model",
+        "upper_teech_model",
+        "lower_teech_model",
+        "face_tongue_model",
+        "face_gum_model",
+    ]
+
+    setup_value_attr_names = [
+        "mouth_jnt_number",
+    ]
+
     def __init__(self):
+        # ------------------------------------------------------------
+        # 当前子类对应的 Step。
+        # FaceBase 本身没有 Step，具体子类负责设置。
+        # ------------------------------------------------------------
+        self.step_value = None
+
         # ------------------------------------------------------------
         # Face Rig 基础配置
         # ------------------------------------------------------------
@@ -66,6 +95,20 @@ class FaceBase(object):
         # ------------------------------------------------------------
         self.type_groups = config.type_grp_list
         self.model_groups = config.model_grp_list
+
+        # ------------------------------------------------------------
+        # Step 01 公共输入数据。
+        # 不在 Base 初始化时强制读取 Config，避免 Step 01 首次运行时
+        # Config 尚未创建而产生无意义的读取。
+        # ------------------------------------------------------------
+        self.face_head_model = None
+        self.face_lf_eye_model = None
+        self.face_rt_eye_model = None
+        self.upper_teech_model = None
+        self.lower_teech_model = None
+        self.face_tongue_model = None
+        self.face_gum_model = None
+        self.mouth_jnt_number = None
 
     # =========================================================================
     # Hierarchy
@@ -111,7 +154,9 @@ class FaceBase(object):
     def ensure_config_node(self):
         u"""确保 Face Rig Config Network Node 存在。"""
         if cmds.objExists(self.config_node):
-            node_type = cmds.nodeType(self.config_node)
+            node_type = cmds.nodeType(
+                self.config_node
+            )
 
             if node_type != "network":
                 raise RuntimeError(
@@ -143,21 +188,25 @@ class FaceBase(object):
         return True
 
     # =========================================================================
-    # Config Attr
+    # Config Attr - Read
     # =========================================================================
 
     def get_config_attr(self):
         u"""获取 Face Rig Config 节点的 Attr 操作对象。"""
-        config_attr = attr_utils.Attr(self.config_node)
+        config_attr = attr_utils.Attr(
+            self.config_node
+        )
         return config_attr
 
     def get_config_message(self, attr_name):
-        u"""读取 Config Node 中保存的 Maya 节点消息连接。"""
+        u"""读取 Config Node 中保存的 Maya 节点 Message。"""
         if not self.config_node_exists():
             return None
 
         config_attr = self.get_config_attr()
-        node = config_attr.get_message(attr_name)
+        node = config_attr.get_message(
+            attr_name
+        )
         return node
 
     def get_config_value(self, attr_name):
@@ -166,5 +215,319 @@ class FaceBase(object):
             return None
 
         config_attr = self.get_config_attr()
-        value = config_attr.get_attr_value(attr_name)
+        value = config_attr.get_attr_value(
+            attr_name
+        )
         return value
+
+    # =========================================================================
+    # Config Attr - Write
+    # =========================================================================
+
+    def set_config_messages(
+            self,
+            attrs_dict,
+            force=True,
+            clear_empty=True
+    ):
+        u"""
+        批量保存 Maya 节点引用到 Face Config。
+
+        节点引用统一使用 Message，而不是保存节点名称字符串。
+        这样场景中对象改名后，Config 仍然能够找到正确节点。
+        """
+        self.ensure_config_node()
+
+        config_attr = self.get_config_attr()
+        result = config_attr.connect_messages(
+            attrs_dict=attrs_dict,
+            force=force,
+            clear_empty=clear_empty
+        )
+
+        return result
+
+    def set_config_values(
+            self,
+            attrs_dict,
+            attr_types=None,
+            lock=False,
+            hide=False
+    ):
+        u"""批量保存普通数值 / 字符串配置到 Face Config。"""
+        self.ensure_config_node()
+
+        if attr_types is None:
+            attr_types = {}
+
+        config_attr = self.get_config_attr()
+        result = config_attr.set_attr_values(
+            attrs_dict=attrs_dict,
+            attr_types=attr_types,
+            lock=lock,
+            hide=hide
+        )
+
+        return result
+
+    # =========================================================================
+    # Setup Data
+    # =========================================================================
+
+    def refresh_setup_data(self):
+        u"""
+        从 Config Node 重新读取 Step 01 的最新数据。
+
+        Step 01 可以重复 Build，因此后续 Step 在执行前应该刷新数据，
+        不依赖对象初始化时缓存下来的旧值。
+        """
+        for attr_name in self.setup_message_attr_names:
+            node = self.get_config_message(
+                attr_name
+            )
+            setattr(
+                self,
+                attr_name,
+                node
+            )
+
+        for attr_name in self.setup_value_attr_names:
+            value = self.get_config_value(
+                attr_name
+            )
+            setattr(
+                self,
+                attr_name,
+                value
+            )
+
+        return self.get_setup_data(
+            refresh=False
+        )
+
+    def get_setup_data(self, refresh=False):
+        u"""返回 Step 01 公共输入数据字典。"""
+        if refresh:
+            self.refresh_setup_data()
+
+        setup_data = {}
+
+        for attr_name in self.setup_message_attr_names:
+            setup_data[attr_name] = getattr(
+                self,
+                attr_name,
+                None
+            )
+
+        for attr_name in self.setup_value_attr_names:
+            setup_data[attr_name] = getattr(
+                self,
+                attr_name,
+                None
+            )
+
+        return setup_data
+
+    def validate_setup_config(
+            self,
+            require_mouth_jnt_number=True
+    ):
+        u"""
+        检查后续 Face Step 所依赖的 Step 01 公共数据。
+
+        更具体的业务条件仍由各 Step 自己负责，避免 FaceBase
+        知道 Lip / Brow / Eyelid 等组件的实现细节。
+        """
+        if not self.config_node_exists():
+            raise RuntimeError(
+                u"没有找到 Face Config，请先完成 Face Setup。"
+            )
+
+        self.refresh_setup_data()
+
+        if not self.face_head_model:
+            raise RuntimeError(
+                u"没有读取到 Face Head Model，请先完成 Face Setup。"
+            )
+
+        if not cmds.objExists(self.face_head_model):
+            raise RuntimeError(
+                u"Face Head Model 已经不存在于当前场景中: {}".format(
+                    self.face_head_model
+                )
+            )
+
+        optional_models = [
+            self.face_lf_eye_model,
+            self.face_rt_eye_model,
+            self.upper_teech_model,
+            self.lower_teech_model,
+            self.face_tongue_model,
+            self.face_gum_model,
+        ]
+
+        for model in optional_models:
+            if not model:
+                continue
+
+            if cmds.objExists(model):
+                continue
+
+            raise RuntimeError(
+                u"Face Setup 中保存的模型已经不存在: {}".format(
+                    model
+                )
+            )
+
+        if require_mouth_jnt_number:
+            if self.mouth_jnt_number is None:
+                raise RuntimeError(
+                    u"没有读取到嘴唇 Joint 数量，请先完成 Face Setup。"
+                )
+
+        return True
+
+    # =========================================================================
+    # Step State
+    # =========================================================================
+
+    @staticmethod
+    def get_step_completed_attr_name(step_value):
+        u"""根据 Step 编号生成 Config 中的完成状态属性名称。"""
+        if not isinstance(step_value, int):
+            raise TypeError(
+                u"Step 编号必须是整数。"
+            )
+
+        if step_value < 1:
+            raise ValueError(
+                u"Step 编号不能小于 1。"
+            )
+
+        attr_name = "step_{:02d}_completed".format(
+            step_value
+        )
+        return attr_name
+
+    def resolve_step_value(self, step_value=None):
+        u"""获取当前操作使用的 Step 编号。"""
+        if step_value is None:
+            step_value = self.step_value
+
+        if step_value is None:
+            raise RuntimeError(
+                u"当前 Face 类没有设置 step_value。"
+            )
+
+        if not isinstance(step_value, int):
+            raise TypeError(
+                u"Step 编号必须是整数。"
+            )
+
+        return step_value
+
+    def set_step_completed(
+            self,
+            step_value=None,
+            completed=True
+    ):
+        u"""写入某个 Face Step 的完成状态。"""
+        step_value = self.resolve_step_value(
+            step_value
+        )
+
+        attr_name = self.get_step_completed_attr_name(
+            step_value
+        )
+
+        self.set_config_values(
+            attrs_dict={
+                attr_name: bool(completed),
+            },
+            attr_types={
+                attr_name: "bool",
+            },
+            lock=False,
+            hide=True
+        )
+
+        return bool(completed)
+
+    def is_step_completed(self, step_value=None):
+        u"""读取某个 Face Step 是否已经完成。"""
+        step_value = self.resolve_step_value(
+            step_value
+        )
+
+        attr_name = self.get_step_completed_attr_name(
+            step_value
+        )
+        value = self.get_config_value(
+            attr_name
+        )
+
+        if value is None:
+            return False
+
+        return bool(value)
+
+    def invalidate_later_steps(
+            self,
+            step_value=None,
+            last_step=4
+    ):
+        u"""
+        将当前 Step 之后的完成状态全部设为 False。
+
+        例如重新 Build Step 01 后，Step 02～04 的旧结果已经不能保证
+        继续有效，因此统一标记为未完成。
+        """
+        step_value = self.resolve_step_value(
+            step_value
+        )
+
+        if not isinstance(last_step, int):
+            raise TypeError(
+                u"last_step 必须是整数。"
+            )
+
+        if last_step <= step_value:
+            return []
+
+        invalidated_steps = []
+        current_step = step_value + 1
+
+        while current_step <= last_step:
+            self.set_step_completed(
+                step_value=current_step,
+                completed=False
+            )
+            invalidated_steps.append(
+                current_step
+            )
+            current_step += 1
+
+        return invalidated_steps
+
+    def get_step_status(self, last_step=4):
+        u"""返回 Face Wizard 各 Step 的完成状态。"""
+        if not isinstance(last_step, int):
+            raise TypeError(
+                u"last_step 必须是整数。"
+            )
+
+        status = {}
+        current_step = 1
+
+        while current_step <= last_step:
+            status[current_step] = self.is_step_completed(
+                step_value=current_step
+            )
+            current_step += 1
+
+        return status
+
+
+__all__ = [
+    "FaceBase",
+]
