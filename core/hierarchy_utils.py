@@ -21,6 +21,12 @@ Hierarchy
 
 公开方法
 --------
+Hierarchy.get_parent(node, full_path=True)
+    返回节点直接 Parent。
+
+Hierarchy.get_children(node, node_type=None, full_path=True)
+    返回节点直接 Child，可选按 Maya Node Type 过滤。
+
 Hierarchy.parent(child_node, parent_node)
     确保 child_node 位于指定 parent_node 下。
 
@@ -36,46 +42,44 @@ Hierarchy.select_sub_objects(obj_type="transform")
 Hierarchy.create_grp(grp, parent=None)
     安全创建一个 Transform Group；已存在时直接返回。
 
-Hierarchy.create_rig_grp()
-    创建早期 Rig 顶层组命名结构。保留用于兼容旧场景。
-
-Hierarchy.create_default_grp()
-    创建早期默认 Rig Group 结构。旧版曾同时创建 Controller，职责越界且依赖已删除的 controlUtils；
-    当前版本只创建层级组并返回结果，完整 Controller 构建应使用 systems.controller。
-
-Hierarchy.control_hierarchy()
-    兼容早期 Controller 层级创建入口。新代码应使用 systems.controller Builder。
-
 设计原则
 --------
-1. Core 只负责 DAG 层级，不 import Controller / Face / Body System；
-2. 插入额外 Group 时必须保持原对象世界 Transform；
-3. Generic Query 不读取 UI，只有明确标为 Legacy Compatibility 的方法允许使用 Selection；
-4. 已迁移到 systems.controller 的完整 Rig Workflow 不再继续扩张到本模块；
-5. 模块文件名与所有正式 Import 统一使用 snake_case。
+1. Maya 节点存在性统一复用 scene_utils.validate_node，不维护第二套底层校验；
+2. Core 只负责 DAG 层级，不 import Controller / Face / Body System；
+3. 插入额外 Group 时必须保持原对象世界 Transform；
+4. Generic Query 不读取 UI，只有明确标为 Legacy Compatibility 的方法允许使用 Selection；
+5. 已迁移到 systems.controller 的完整 Rig Workflow 不再继续扩张到本模块；
+6. 模块文件名与所有正式 Import 统一使用 snake_case。
 """
 
 from __future__ import print_function
 
 import maya.cmds as cmds
 
+from . import rename_utils
+from . import scene_utils
+
 
 class Hierarchy(object):
     """Maya DAG 层级操作兼容类。"""
 
     # =========================================================================
-    # Validate / Parent
+    # Validate / Query / Parent
     # =========================================================================
 
     @staticmethod
     def _validate_node(node, label=u"节点"):
-        """检查 Maya DAG 节点是否存在。"""
-        if not node:
-            raise RuntimeError(
-                u"{}不能为空。".format(label)
-            )
+        u"""
+        兼容旧内部调用的 DAG 节点校验入口。
 
-        if not cmds.objExists(node):
+        真正的节点存在性规则统一由 scene_utils.validate_node 维护。
+        """
+        try:
+            # 使用 Scene Core 统一检查节点是否存在。
+            scene_utils.validate_node(
+                node
+            )
+        except RuntimeError:
             raise RuntimeError(
                 u"{}不存在：{}".format(
                     label,
@@ -86,40 +90,109 @@ class Hierarchy(object):
         return True
 
     @staticmethod
-    def parent(child_node, parent_node):
+    def get_parent(node, full_path=True):
         u"""
-        确保 child_node 位于 parent_node 下。
+        返回一个 DAG 节点的直接 Parent。
 
         Args:
-            child_node (str):
-                需要重新挂接父级的 Child DAG 节点名称。
-            parent_node (str):
-                Child 最终需要挂接到的 Parent DAG 节点名称。
+            node (str):
+                需要查询 Parent 的 Maya DAG 节点。
+            full_path (bool):
+                True 时返回 Long DAG Path。
+
+        Returns:
+            str | None:
+                直接 Parent；没有 Parent 时返回 None。
+        """
+        # 使用 Scene Core 统一确认查询目标存在。
+        scene_utils.validate_node(
+            node
+        )
+
+        parents = cmds.listRelatives(
+            node,
+            parent=True,
+            fullPath=full_path
+        )
+
+        if parents is None:
+            parents = []
+
+        if not parents:
+            return None
+
+        return parents[0]
+
+    @staticmethod
+    def get_children(
+            node,
+            node_type=None,
+            full_path=True
+    ):
+        u"""
+        返回一个 DAG 节点的直接 Child。
+
+        Args:
+            node (str):
+                需要查询 Child 的 Maya DAG 节点。
+            node_type (str | None):
+                可选 Maya Node Type，例如 transform / joint。
+            full_path (bool):
+                True 时返回 Long DAG Path。
+
+        Returns:
+            list[str]:
+                直接 Child 列表。
+        """
+        # 使用 Scene Core 统一确认查询目标存在。
+        scene_utils.validate_node(
+            node
+        )
+
+        kwargs = {
+            "children": True,
+            "fullPath": full_path,
+        }
+
+        if node_type:
+            kwargs["type"] = node_type
+
+        children = cmds.listRelatives(
+            node,
+            **kwargs
+        )
+
+        if children is None:
+            children = []
+
+        return children
+
+    @staticmethod
+    def parent(child_node, parent_node):
+        u"""
+        确保 child_node 位于指定 parent_node 下。
 
         Returns:
             str:
-            Parent 后 Maya 返回的 Child Path；如果已经是正确父子关系则返回原节点。
+                Parent 后 Maya 返回的 Child Path；已经是正确父子关系时返回原节点。
         """
-        # ---------------------------------------------------------------------
-        # 步骤 1：验证 Child / Parent。
-        # ---------------------------------------------------------------------
+        # 使用统一节点校验入口检查 Child。
         Hierarchy._validate_node(
             child_node,
             label=u"子节点"
         )
+
+        # 使用统一节点校验入口检查 Parent。
         Hierarchy._validate_node(
             parent_node,
             label=u"父节点"
         )
 
-        # ---------------------------------------------------------------------
-        # 步骤 2：查询当前 Parent，避免重复 parent 导致无意义 DAG 路径变化。
-        # ---------------------------------------------------------------------
-        parent_original = cmds.listRelatives(
+        # 查询当前直接 Parent，避免重复 Parent 导致无意义 DAG Path 变化。
+        parent_original = Hierarchy.get_parent(
             child_node,
-            parent=True,
-            fullPath=True
-        ) or []
+            full_path=True
+        )
 
         parent_matches = cmds.ls(
             parent_node,
@@ -131,12 +204,9 @@ class Hierarchy(object):
         if parent_matches:
             parent_long_name = parent_matches[0]
 
-        if parent_original and parent_original[0] == parent_long_name:
+        if parent_original == parent_long_name:
             return child_node
 
-        # ---------------------------------------------------------------------
-        # 步骤 3：建立父子关系，并使用 Maya 返回值更新最终路径。
-        # ---------------------------------------------------------------------
         result = cmds.parent(
             child_node,
             parent_node,
@@ -155,26 +225,9 @@ class Hierarchy(object):
     @staticmethod
     def add_extra_group(obj, grp_name, world_orient=False):
         u"""
-        在对象上方插入一个额外 Transform Group。
-
-        Args:
-            obj (str):
-                需要插入额外组的对象。
-            grp_name (str):
-                新 Group 名称。
-            world_orient (bool):
-                False：Group 旋转与对象当前世界旋转一致； True：Group 使用世界零旋转。
-
-        Returns:
-            str: 新 Group。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-
-        Notes:
-            插组前先记录对象原 Parent 和世界 Transform，再插入 Group，确保对象视觉姿态不跳动。
+        在对象上方插入一个额外 Transform Group，并保持对象世界姿态。
         """
+        # 使用统一节点校验入口检查需要插组的目标对象。
         Hierarchy._validate_node(
             obj,
             label=u"目标对象"
@@ -188,9 +241,7 @@ class Hierarchy(object):
                 u"Group 名称已经存在：{}".format(grp_name)
             )
 
-        # ---------------------------------------------------------------------
-        # 步骤 1：记录目标对象世界位置 / 旋转 / 缩放以及原 Parent。
-        # ---------------------------------------------------------------------
+        # 记录目标对象世界位置 / 旋转 / 缩放，保证插入 Group 后视觉姿态不跳动。
         translation = cmds.xform(
             obj,
             query=True,
@@ -209,18 +260,16 @@ class Hierarchy(object):
             relative=True,
             scale=True
         )
-        original_parent = cmds.listRelatives(
+
+        # 使用统一 Parent 查询记录原层级，后面把新 Group 放回相同 Parent。
+        original_parent = Hierarchy.get_parent(
             obj,
-            parent=True,
-            fullPath=True
-        ) or []
+            full_path=True
+        )
 
         if world_orient:
             rotation = [0.0, 0.0, 0.0]
 
-        # ---------------------------------------------------------------------
-        # 步骤 2：创建 Group 并对齐到目标对象。
-        # ---------------------------------------------------------------------
         object_group = cmds.createNode(
             "transform",
             name=grp_name
@@ -242,24 +291,17 @@ class Hierarchy(object):
             scale=scale
         )
 
-        # ---------------------------------------------------------------------
-        # 步骤 3：先把新 Group 放回原 Parent，再把目标对象放进 Group。
-        # 这样不会丢失原来的 DAG 结构。
-        # ---------------------------------------------------------------------
         if original_parent:
-            parent_result = cmds.parent(
+            # 把新 Group 放回目标对象原来的父级空间。
+            object_group = Hierarchy.parent(
                 object_group,
-                original_parent[0],
-                absolute=True
+                original_parent
             )
 
-            if parent_result:
-                object_group = parent_result[0]
-
-        cmds.parent(
+        # 最后把目标对象放入新 Group，完成 Extra Group 插入。
+        Hierarchy.parent(
             obj,
-            object_group,
-            absolute=True
+            object_group
         )
 
         return object_group
@@ -272,17 +314,8 @@ class Hierarchy(object):
     def get_child_object(object, type="joint"):
         u"""
         获取指定类型的全部后代，并把根对象放在列表第一位。
-
-        Args:
-            object (str):
-                根对象。
-            type (str):
-                Maya Node Type，例如 joint / transform。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
         """
+        # 使用统一节点校验入口检查查询根对象。
         Hierarchy._validate_node(
             object,
             label=u"根对象"
@@ -295,8 +328,7 @@ class Hierarchy(object):
             fullPath=True
         ) or []
 
-        # Maya listRelatives(allDescendents=True) 的顺序通常从更深层开始。
-        # 这里反转后让结果更接近“根 -> 子 -> 孙”的阅读顺序。
+        # Maya allDescendents 通常从深层返回，这里反转成更直观的根到子层顺序。
         descendants.reverse()
 
         result = [object]
@@ -311,15 +343,7 @@ class Hierarchy(object):
         u"""
         兼容旧工具：选择当前 Selection 下指定类型的全部后代。
 
-        新 Core 逻辑不应依赖 Selection；新 Tool 可以自行读取 Selection 后调用 get_child_object。
-
-        Args:
-            obj_type (str):
-                当前 Maya / Rig 操作使用的 `obj_type` 名称或标记。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
+        新代码应由 Tool 读取 Selection，再调用无 UI 依赖的查询 API。
         """
         selections = cmds.ls(
             selection=True,
@@ -357,22 +381,7 @@ class Hierarchy(object):
 
     @staticmethod
     def create_grp(grp, parent=None):
-        u"""
-        创建一个 Transform Group；已存在时直接返回现有节点。
-
-        Args:
-            grp (object):
-                当前方法执行 Maya / Rig 操作时使用的 `grp` 数据。
-            parent (str):
-                父级 Maya 节点名称。
-
-        Returns:
-            str: Group 名称 / Path。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-        """
+        u"""创建一个 Transform Group；已存在时直接返回现有节点。"""
         if not grp:
             raise RuntimeError(u"Group 名称不能为空。")
 
@@ -380,6 +389,7 @@ class Hierarchy(object):
             return grp
 
         if parent:
+            # 使用统一节点校验入口确认指定 Parent 可用。
             Hierarchy._validate_node(
                 parent,
                 label=u"父节点"
@@ -399,16 +409,7 @@ class Hierarchy(object):
 
     @staticmethod
     def create_rig_grp():
-        u"""
-        创建早期项目使用的基础 Rig Group。
-
-        Returns:
-            tuple:
-            方法执行后的结果数据。
-
-        Notes:
-            这些名称属于旧场景兼容命名（m），新系统应使用项目当前 md / lf / rt 命名规范。
-        """
+        u"""创建早期项目使用的基础 Rig Group。"""
         top_main_group = "grp_m_group_001"
         child_groups = [
             "grp_m_bpjnt_001",
@@ -418,10 +419,12 @@ class Hierarchy(object):
             "grp_m_node_001",
         ]
 
+        # 创建或复用旧版 Rig 顶层 Group。
         Hierarchy.create_grp(
             top_main_group
         )
 
+        # 创建旧版 Blueprint / Control / Joint / Mesh / Node 子组。
         for group in child_groups:
             Hierarchy.create_grp(
                 group,
@@ -442,18 +445,9 @@ class Hierarchy(object):
         u"""
         创建早期默认 Rig Group 结构。
 
-        旧实现同时创建 Character / World / COG Controller，并依赖已经退出正式 Core 的 controlUtils，
-        因此该函数曾处于“调用即 NameError”的坏状态。
-        当前版本只做它名字真正表达的职责：创建默认 Group。完整 Controller / Rig Build 请使用
-        ``systems.controller`` 或具体 Body Rig System。
-
-        Returns:
-            dict:
-            方法执行后的结果数据。
+        完整 Controller / Rig Build 应使用 systems.controller 或具体 Body Rig System。
         """
-        # ---------------------------------------------------------------------
-        # 步骤 1：创建顶层结构。
-        # ---------------------------------------------------------------------
+        # 创建旧版默认顶层和 Geometry / Control / Custom 三个主要分区。
         group = Hierarchy.create_grp("Group")
         geometry = Hierarchy.create_grp(
             "Geometry",
@@ -468,9 +462,7 @@ class Hierarchy(object):
             parent=group
         )
 
-        # ---------------------------------------------------------------------
-        # 步骤 2：创建 Rig Node / Joint 子结构。
-        # ---------------------------------------------------------------------
+        # 创建 Rig Node / Joint 子结构。
         rig_nodes = Hierarchy.create_grp(
             "RigNodes",
             parent=custom
@@ -492,9 +484,7 @@ class Hierarchy(object):
             parent=custom
         )
 
-        # ---------------------------------------------------------------------
-        # 步骤 3：创建旧版 Low / Mid / High Model 分组。
-        # ---------------------------------------------------------------------
+        # 创建旧版 Low / Mid / High Model 分组。
         Hierarchy.create_grp(
             "grp_m_low_Modle_001",
             parent=geometry
@@ -527,11 +517,7 @@ class Hierarchy(object):
         u"""
         兼容早期 Selection 驱动的 Controller 打组入口。
 
-        新代码应使用 systems.controller Builder。本方法只保留基础 Zero / Driven / Connect / Offset
-        层级创建，不再复制 Sub Controller、颜色、Visibility 等完整 Controller System 职责。
-
-        Returns:
-            list(dict): 每个选中 Controller 对应的层级节点。
+        新代码应使用 systems.controller Builder。
         """
         controls = cmds.ls(
             selection=True,
@@ -541,7 +527,10 @@ class Hierarchy(object):
         results = []
 
         for control in controls:
-            short_name = control.split("|")[-1]
+            # 使用统一 Rename Core 获取 Controller Short Name。
+            short_name = rename_utils.get_short_name(
+                control
+            )
 
             if not short_name.startswith("ctrl_"):
                 cmds.warning(
@@ -549,9 +538,6 @@ class Hierarchy(object):
                 )
                 continue
 
-            # -----------------------------------------------------------------
-            # 步骤 1：创建标准上层组。
-            # -----------------------------------------------------------------
             zero_name = short_name.replace(
                 "ctrl_",
                 "zero_",
@@ -593,25 +579,18 @@ class Hierarchy(object):
                 parent=connect
             )
 
-            # -----------------------------------------------------------------
-            # 步骤 2：Zero 对齐 Controller，再把 Controller 放进 Offset。
-            # -----------------------------------------------------------------
             cmds.matchTransform(
                 zero,
                 control,
                 position=True,
                 rotation=True
             )
-            parent_result = cmds.parent(
+
+            # 使用统一 Hierarchy API 把 Controller 放入新建 Offset Group。
+            final_control = Hierarchy.parent(
                 control,
-                offset,
-                absolute=True
+                offset
             )
-
-            final_control = control
-
-            if parent_result:
-                final_control = parent_result[0]
 
             results.append({
                 "zero": zero,
