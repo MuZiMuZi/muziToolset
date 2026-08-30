@@ -3,7 +3,7 @@ u"""
 Face Curve Attachment Rig
 =========================
 
-从旧 pipelineUtils.attach_joints_on_curve 迁移出的 Face System 级功能。
+Face Joint -> Drive / Aim Curve 组合系统。
 
 职责：
     - 根据 Joint 当前世界位置查找 Drive Curve 最近位置；
@@ -13,17 +13,26 @@ Face Curve Attachment Rig
     - 使用 Up Curve 或 Up Object 控制 Aim Roll；
     - 创建 Joint Zero Group，把 Joint 接入 Curve 驱动网络。
 
-说明：
-    Curve 参数、采样和 Attachment 节点由 core.curve_utils 负责；
-    本模块只负责 Face Rig 的组合关系和层级结构。
+重要边界：
+    - Curve 参数、采样和 Attachment 节点由 core.curve_utils 负责；
+    - Transform 输入和世界位置由 core.transform_utils 负责；
+    - Group 创建由 core.scene_utils 负责；
+    - Parent 由 core.hierarchy_utils 负责；
+    - Constraint 由 core.constraint_utils 负责；
+    - Undo Chunk 由 core.scene_utils 负责；
+    - 本模块只负责 Face Curve Attachment 的组合关系。
 """
 
 from __future__ import print_function
 
 import maya.cmds as cmds
 
+from ...core import constraint_utils
 from ...core import curve_utils
+from ...core import hierarchy_utils
 from ...core import name_utils
+from ...core import scene_utils
+from ...core import transform_utils
 
 
 # =============================================================================
@@ -31,27 +40,20 @@ from ...core import name_utils
 # =============================================================================
 
 def validate_joint(joint):
-    u"""
-    检查 Joint。
-
-    Args:
-        joint (str):
-            需要处理的 Maya Joint 节点名称。
-
-    Returns:
-        bool:
-        方法执行后的结果数据。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-    """
+    u"""检查输入节点必须是 Maya Joint。"""
     if not joint:
         raise RuntimeError(u"Joint 名称不能为空。")
 
-    if not cmds.objExists(joint):
+    try:
+        # 先使用 Transform Core 确认 Joint 存在并具备 Transform 行为。
+        transform_utils.validate_transform(
+            joint
+        )
+    except RuntimeError as error:
         raise RuntimeError(
-            u"Joint 不存在：{}".format(joint)
+            u"Joint 无效：{}".format(
+                error
+            )
         )
 
     if cmds.nodeType(joint) != "joint":
@@ -69,40 +71,23 @@ def validate_transform(node, label):
     u"""
     检查 Transform / Joint 类型。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-        label (str):
-            UI、Rig Node 或日志中展示的简短 Label。
-
-    Returns:
-        bool:
-        方法执行后的结果数据。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+    保留旧入口，实际规则统一由 transform_utils 维护。
     """
     if not node:
         raise RuntimeError(
             u"{}不能为空。".format(label)
         )
 
-    if not cmds.objExists(node):
-        raise RuntimeError(
-            u"{}不存在：{}".format(
-                label,
-                node
-            )
+    try:
+        # 使用 Transform Core 统一检查节点存在性和 Transform / Joint 类型。
+        transform_utils.validate_transform(
+            node
         )
-
-    node_type = cmds.nodeType(node)
-
-    if node_type not in ["transform", "joint"]:
+    except RuntimeError as error:
         raise RuntimeError(
-            u"{}必须是 Transform 或 Joint：{}".format(
+            u"{}无效：{}".format(
                 label,
-                node
+                error
             )
         )
 
@@ -110,23 +95,7 @@ def validate_transform(node, label):
 
 
 def normalize_name_part(value, label):
-    u"""
-    清理命名字段。
-
-    Args:
-        value (float):
-            需要读取、写入或参与计算的数值。
-        label (str):
-            UI、Rig Node 或日志中展示的简短 Label。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-
-    Raises:
-        ValueError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-    """
+    u"""清理用于 Face Curve Rig 命名的字段。"""
     if value is None:
         raise ValueError(
             u"{}不能为空。".format(label)
@@ -157,28 +126,12 @@ def create_rig_name(
         role,
         index=1
 ):
-    u"""
-    创建 Face Curve Rig 标准名称。
+    u"""创建 Face Curve Rig 标准名称。"""
+    # 使用统一 Name API 规范 Side Token。
+    side = name_utils.Name.normalize_side(
+        side
+    )
 
-    Args:
-        node_type (str):
-            需要创建、查询或过滤的 Maya Node Type。
-        side (str):
-            方向标记，常用值为 lf、rt 或 md。
-        region (str):
-            Face Component 的区域标记，例如 upper、lower、inner、outer。
-        feature (str):
-            Face Component 的功能部位标记，例如 lid、bag、lip。
-        role (str):
-            当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
-        index (int):
-            目标元素或节点的序号。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-    side = name_utils.Name.normalize_side(side)
     region = normalize_name_part(
         region,
         "region"
@@ -197,6 +150,7 @@ def create_rig_name(
         role
     )
 
+    # 使用项目正式五段式命名 API 生成最终节点名称。
     return name_utils.Name.create_name(
         node_type=node_type,
         side=side,
@@ -217,29 +171,8 @@ def create_attachment_group(
         feature,
         role
 ):
-    u"""
-    创建 Drive / Aim / Up Attachment Group。
-
-    Args:
-        nodes_group (str):
-            当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
-        side (str):
-            方向标记，常用值为 lf、rt 或 md。
-        region (str):
-            Face Component 的区域标记，例如 upper、lower、inner、outer。
-        feature (str):
-            Face Component 的功能部位标记，例如 lid、bag、lip。
-        role (str):
-            当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-    """
+    u"""创建 Drive / Aim / Up Attachment Group。"""
+    # 生成当前 Attachment 容器的正式名称。
     group_name = create_rig_name(
         "grp",
         side,
@@ -256,9 +189,10 @@ def create_attachment_group(
             )
         )
 
-    return cmds.createNode(
+    # 使用 Scene Core 创建 Attachment Group 并直接放入 Rig Nodes Group。
+    return scene_utils.create_node(
         "transform",
-        name=group_name,
+        group_name,
         parent=nodes_group
     )
 
@@ -269,28 +203,14 @@ def create_curve_attachment(
         name,
         parent
 ):
-    u"""
-    按弧长百分比在指定 Curve 创建 Attachment。
-
-    Args:
-        curve (str):
-            需要处理的 Maya Curve Transform 或 Shape 名称。
-        percentage (float):
-            沿 Curve 或数据范围的归一化百分比，通常为 0.0～1.0。
-        name (str):
-            创建或查询时使用的节点名称。
-        parent (str):
-            父级 Maya 节点名称。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
+    u"""按弧长百分比在指定 Curve 创建 Attachment。"""
+    # 把统一弧长百分比转换成目标 Curve 自己的 Parameter。
     parameter = curve_utils.length_percentage_to_parameter(
         curve,
         percentage
     )
 
+    # 使用 Curve Core 创建真正的 Point On Curve Attachment 网络。
     return curve_utils.create_point_on_curve_attachment(
         curve=curve,
         parameter=parameter,
@@ -303,6 +223,7 @@ def create_curve_attachment(
 # Public Build
 # =============================================================================
 
+@scene_utils.undo_chunk
 def attach_joints_to_curves(
         joints,
         drive_curve,
@@ -315,65 +236,50 @@ def attach_joints_to_curves(
         parent_group=None,
         preserve_joint_offset=True
 ):
-    u"""
-    把一组 Joint 接入 Drive / Aim Curve 网络。
-
-    Args:
-        joints (list):
-            需要驱动的 Joint。
-        drive_curve (str):
-            决定位置的 Curve。
-        aim_curve (str):
-            决定朝向的 Curve。
-        side (str):
-            lf / rt / md。
-        region (str):
-            brow / lip / lid 等区域字段。
-        feature (str):
-            main / upper / lower 等功能字段。
-        up_object (str/None):
-            Object Rotation World Up。
-        up_curve (str/None):
-            如果给定，使用第三条 Curve 作为 World Up。
-        parent_group (str/None):
-            Rig Nodes Group Parent。
-        preserve_joint_offset (bool):
-            True  保留 Joint 原始位置偏移； False Joint 直接吸附到 Drive Attachment。
-
-    Returns:
-        dict: Rig 节点和 Attachment 数据。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-    """
+    u"""把一组 Joint 接入 Drive / Aim Curve 网络。"""
     if joints is None:
         joints = []
 
     if not joints:
         raise RuntimeError(u"没有给定需要附着的 Joint。")
 
+    # 逐个检查输入确实是有效 Joint，避免中途构建出残缺 Attachment 网络。
     for joint in joints:
-        validate_joint(joint)
+        validate_joint(
+            joint
+        )
 
-    curve_utils.get_curve_shape(drive_curve)
-    curve_utils.get_curve_shape(aim_curve)
+    # 使用 Curve Core 验证 Drive / Aim Curve。
+    curve_utils.get_curve_shape(
+        drive_curve
+    )
+    curve_utils.get_curve_shape(
+        aim_curve
+    )
 
     if up_curve is not None:
-        curve_utils.get_curve_shape(up_curve)
+        # 使用第三条 Up Curve 时同样先确认它是有效 NURBS Curve。
+        curve_utils.get_curve_shape(
+            up_curve
+        )
     else:
+        # 没有 Up Curve 时必须提供可用于 Aim World Up 的 Transform / Joint。
         validate_transform(
             up_object,
             u"Up Object"
         )
 
     if parent_group is not None:
+        # 如果给定 Rig Parent，先确认它可以参与 DAG 层级操作。
         validate_transform(
             parent_group,
             u"Parent Group"
         )
 
-    side = name_utils.Name.normalize_side(side)
+    # 规范 Side / Region / Feature，保证本次所有节点使用一致命名字段。
+    side = name_utils.Name.normalize_side(
+        side
+    )
     region = normalize_name_part(
         region,
         "region"
@@ -383,6 +289,7 @@ def attach_joints_to_curves(
         "feature"
     )
 
+    # 生成本次 Curve Attachment Rig 的主层级名称。
     nodes_group_name = create_rig_name(
         "grp",
         side,
@@ -416,24 +323,22 @@ def attach_joints_to_curves(
 
     nodes_group = None
 
-    cmds.undoInfo(
-        openChunk=True,
-        chunkName="MuziFaceCurveAttachment"
-    )
-
     try:
-        nodes_group = cmds.createNode(
+        # 使用 Scene Core 创建整个 Curve Attachment Rig 的顶层 Group。
+        nodes_group = scene_utils.create_node(
             "transform",
-            name=nodes_group_name,
+            nodes_group_name,
             parent=parent_group
         )
 
-        joints_group = cmds.createNode(
+        # 创建被接入 Curve 的 Joint / Zero Group 容器。
+        joints_group = scene_utils.create_node(
             "transform",
-            name=joints_group_name,
+            joints_group_name,
             parent=nodes_group
         )
 
+        # 创建 Drive Attachment 统一容器。
         drive_group = create_attachment_group(
             nodes_group,
             side,
@@ -441,6 +346,8 @@ def attach_joints_to_curves(
             feature,
             "drive_attaches"
         )
+
+        # 创建 Aim Attachment 统一容器。
         aim_group = create_attachment_group(
             nodes_group,
             side,
@@ -452,6 +359,7 @@ def attach_joints_to_curves(
         up_group = None
 
         if up_curve is not None:
+            # 使用 Up Curve 时额外创建 Up Attachment 统一容器。
             up_group = create_attachment_group(
                 nodes_group,
                 side,
@@ -476,23 +384,25 @@ def attach_joints_to_curves(
             joint = joints[index]
             item_index = index + 1
 
-            joint_position = cmds.xform(
-                joint,
-                query=True,
-                worldSpace=True,
-                translation=True
+            # 使用 Transform Core 读取 Joint 当前世界位置，作为 Drive Curve 最近点查询输入。
+            joint_position = transform_utils.get_world_translation(
+                joint
             )
 
+            # 在 Drive Curve 上找到离 Joint 最近的 Parameter。
             drive_parameter = curve_utils.get_closest_parameter(
                 drive_curve,
                 joint_position
             )
+
+            # 转换成弧长百分比，使 Drive / Aim / Up Curve 可以使用同一相对位置。
             percentage = curve_utils.parameter_to_length_percentage(
                 drive_curve,
                 drive_parameter
             )
             percentages.append(percentage)
 
+            # 生成当前 Joint 对应的 Drive / Aim Attachment 名称。
             drive_attachment_name = create_rig_name(
                 "grp",
                 side,
@@ -510,12 +420,15 @@ def attach_joints_to_curves(
                 item_index
             )
 
+            # 在 Drive Curve 的统一弧长百分比位置创建位置 Attachment。
             drive_result = create_curve_attachment(
                 drive_curve,
                 percentage,
                 drive_attachment_name,
                 drive_group
             )
+
+            # 在 Aim Curve 的相同弧长百分比位置创建朝向目标 Attachment。
             aim_result = create_curve_attachment(
                 aim_curve,
                 percentage,
@@ -545,6 +458,7 @@ def attach_joints_to_curves(
             current_up_attachment = None
 
             if up_curve is not None:
+                # 在 Up Curve 相同弧长百分比创建 World Up Attachment。
                 up_attachment_name = create_rig_name(
                     "grp",
                     side,
@@ -569,30 +483,43 @@ def attach_joints_to_curves(
                     matrix_nodes.append(matrix_node)
 
             if current_up_attachment is not None:
-                aim_constraint = cmds.aimConstraint(
-                    aim_attachment,
-                    drive_attachment,
+                # 使用 Up Curve Attachment 作为 Object World Up，让 Drive Attachment 稳定朝向 Aim Attachment。
+                aim_constraint_nodes = constraint_utils.create_constraint(
+                    driver_objects=aim_attachment,
+                    driven_object=drive_attachment,
+                    constraint_type="aimConstraint",
+                    maintain_offset=False,
                     aimVector=[1.0, 0.0, 0.0],
                     upVector=[0.0, 1.0, 0.0],
                     worldUpType="object",
                     worldUpObject=current_up_attachment,
-                    worldUpVector=[0.0, 1.0, 0.0],
-                    maintainOffset=False
-                )[0]
+                    worldUpVector=[0.0, 1.0, 0.0]
+                )
             else:
-                aim_constraint = cmds.aimConstraint(
-                    aim_attachment,
-                    drive_attachment,
+                # 使用外部 Up Object 的 Rotation 作为 World Up。
+                aim_constraint_nodes = constraint_utils.create_constraint(
+                    driver_objects=aim_attachment,
+                    driven_object=drive_attachment,
+                    constraint_type="aimConstraint",
+                    maintain_offset=False,
                     aimVector=[1.0, 0.0, 0.0],
                     upVector=[0.0, 1.0, 0.0],
                     worldUpType="objectrotation",
                     worldUpObject=up_object,
-                    worldUpVector=[0.0, 1.0, 0.0],
-                    maintainOffset=False
-                )[0]
+                    worldUpVector=[0.0, 1.0, 0.0]
+                )
 
+            if not aim_constraint_nodes:
+                raise RuntimeError(
+                    u"Aim Constraint 创建失败：{}".format(
+                        drive_attachment
+                    )
+                )
+
+            aim_constraint = aim_constraint_nodes[0]
             aim_constraints.append(aim_constraint)
 
+            # 生成并创建当前 Joint 上方的 Attachment Zero Group。
             zero_group_name = create_rig_name(
                 "zero",
                 side,
@@ -601,25 +528,36 @@ def attach_joints_to_curves(
                 "attach",
                 item_index
             )
-            zero_group = cmds.createNode(
+            zero_group = scene_utils.create_node(
                 "transform",
-                name=zero_group_name,
+                zero_group_name,
                 parent=joints_group
             )
 
-            parent_constraint = cmds.parentConstraint(
-                drive_attachment,
-                zero_group,
-                maintainOffset=False
-            )[0]
+            # 使用 Parent Constraint 让 Zero Group 完整跟随 Drive Attachment。
+            parent_constraint_nodes = constraint_utils.create_constraint(
+                driver_objects=drive_attachment,
+                driven_object=zero_group,
+                constraint_type="parentConstraint",
+                maintain_offset=False
+            )
 
+            if not parent_constraint_nodes:
+                raise RuntimeError(
+                    u"Parent Constraint 创建失败：{}".format(
+                        zero_group
+                    )
+                )
+
+            parent_constraint = parent_constraint_nodes[0]
             parent_constraints.append(parent_constraint)
             zero_groups.append(zero_group)
 
-            joint = cmds.parent(
+            # 把当前 Joint 放入 Attachment Zero Group，接入 Curve 驱动网络。
+            joint = hierarchy_utils.Hierarchy.parent(
                 joint,
                 zero_group
-            )[0]
+            )
 
             cmds.setAttr(
                 joint + ".rotateX",
@@ -650,7 +588,7 @@ def attach_joints_to_curves(
 
             index += 1
 
-        result = {
+        return {
             "nodes_group": nodes_group,
             "joints_group": joints_group,
             "drive_group": drive_group,
@@ -668,19 +606,15 @@ def attach_joints_to_curves(
             "percentages": percentages,
         }
 
-        return result
-
     except Exception:
+        # 构建失败时删除本次顶层 Nodes Group，连同所有新建 Attachment / Constraint 一起清理。
         if nodes_group is not None:
             if cmds.objExists(nodes_group):
-                cmds.delete(nodes_group)
+                cmds.delete(
+                    nodes_group
+                )
 
         raise
-
-    finally:
-        cmds.undoInfo(
-            closeChunk=True
-        )
 
 
 __all__ = [
