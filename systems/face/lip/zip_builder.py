@@ -16,6 +16,7 @@ Matrix 驱动 Zip Lip 系统。
 
 重要边界：
     - Transform 输入和 Matrix 读写统一复用 core.transform_utils；
+    - Joint 类型检查统一复用 core.joint_utils；
     - Attribute 创建统一复用 core.attr_utils；
     - DAG Parent / Parent Query 统一复用 core.hierarchy_utils；
     - DG Node 创建统一复用 core.scene_utils；
@@ -31,6 +32,7 @@ import maya.cmds as cmds
 from ....core import attr_utils
 from ....core import connection_utils
 from ....core import hierarchy_utils
+from ....core import joint_utils
 from ....core import name_utils
 from ....core import scene_utils
 from ....core import transform_utils
@@ -40,46 +42,18 @@ from ....core import transform_utils
 # Validate / Attribute
 # =============================================================================
 
-def validate_transform(node, label):
-    u"""
-    检查 Transform / Joint。
-
-    保留旧入口，实际 Transform 类型校验统一由 transform_utils 维护。
-    """
-    if not node:
-        raise RuntimeError(
-            u"{}不能为空。".format(label)
-        )
-
+def validate_joint(joint, label):
+    u"""检查输入节点必须是 Maya Joint。"""
     try:
-        # 使用 Transform Core 统一检查节点存在性以及 Transform / Joint 类型。
-        transform_utils.validate_transform(
-            node
+        # 使用 Joint Core 统一检查节点存在性和 Joint 类型。
+        joint_utils.Joint._validate_joint(
+            joint
         )
     except RuntimeError as error:
         raise RuntimeError(
             u"{}无效：{}".format(
                 label,
                 error
-            )
-        )
-
-    return True
-
-
-def validate_joint(joint, label):
-    u"""检查输入节点必须是 Maya Joint。"""
-    # 先复用统一 Transform 校验，确认节点存在且具备 Transform 行为。
-    validate_transform(
-        joint,
-        label
-    )
-
-    if cmds.nodeType(joint) != "joint":
-        raise RuntimeError(
-            u"{}必须是 Joint：{}".format(
-                label,
-                joint
             )
         )
 
@@ -94,10 +68,9 @@ def ensure_float_attribute(
         default_value
 ):
     u"""创建或复用一个 Keyable Float Attribute。"""
-    # 检查 Attribute 所在节点是否可以安全作为 Transform / Joint 使用。
-    validate_transform(
-        node,
-        u"Attribute Node"
+    # 直接使用 Transform Core 检查 Attribute 所在节点。
+    transform_utils.validate_transform(
+        node
     )
 
     # 使用统一 Attr Core 查询 / 创建属性；已有属性不会覆盖当前动画值。
@@ -779,27 +752,23 @@ def build_zip_lip(
         )
         index += 1
 
-    # 检查左右嘴角 Zip Controller。
-    validate_transform(
-        left_zip_control,
-        u"Left Zip Control"
+    # 直接使用 Transform Core 检查左右嘴角 Zip Controller。
+    transform_utils.validate_transform(
+        left_zip_control
     )
-    validate_transform(
-        right_zip_control,
-        u"Right Zip Control"
+    transform_utils.validate_transform(
+        right_zip_control
     )
 
-    # 检查 Jaw / Mouth 主 Controller。
-    validate_transform(
-        jaw_control,
-        u"Jaw Control"
+    # 直接使用 Transform Core 检查 Jaw / Mouth 主 Controller。
+    transform_utils.validate_transform(
+        jaw_control
     )
 
     if utility_parent is not None:
-        # 如果指定 Utility Parent，先确认该层级有效。
-        validate_transform(
-            utility_parent,
-            u"Utility Parent"
+        # 如果指定 Utility Parent，直接使用 Transform Core 验证 DAG 类型。
+        transform_utils.validate_transform(
+            utility_parent
         )
 
     zip_height = float(zip_height)
