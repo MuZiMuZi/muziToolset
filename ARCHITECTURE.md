@@ -120,16 +120,7 @@ snap_utils.py
 - `name_utils` 负责标准 Rig 名称语义；
 - `rename_utils` 负责批量 Rename Tool 行为。
 
-新正式代码不得再新增：
-
-```python
-from muziToolset.core import attrUtils
-from muziToolset.core import hierarchyUtils
-from muziToolset.core import jointUtils
-from muziToolset.core import nameUtils
-```
-
-统一改用：
+正式代码统一使用：
 
 ```python
 from muziToolset.core import attr_utils
@@ -178,9 +169,9 @@ Core 函数默认遵循：
 9. 新代码不新增 PyMel；
 10. 文件名、模块变量和函数统一使用 snake_case，Class 使用 PascalCase。
 
-## CamelCase 兼容入口
+## CamelCase Core 迁移完成
 
-以下早期文件目前只保留为 **Compatibility Shim**：
+以下早期兼容入口已经完成全仓库迁移并从正式 Core 删除：
 
 ```text
 attrUtils.py        -> attr_utils.py
@@ -189,12 +180,21 @@ jointUtils.py       -> joint_utils.py
 nameUtils.py        -> name_utils.py
 ```
 
-正式实现只维护在 snake_case 模块中，兼容文件不得再包含第二份业务实现，也不得被新的正式模块反向依赖。
+正式源码现在只维护 snake_case 实现，不再存在第二套 Compatibility Shim。
 
-迁移顺序固定为：
+为防止旧入口重新进入正式代码，GitHub Actions 会执行：
+
+```bash
+python tests/core_import_style_test.py
+```
+
+该测试使用 Python AST 扫描 `app / ui / core / tools / systems / tests`，不需要 Maya。
+如果正式代码重新引用已退休的 CamelCase Core 模块，CI 会直接失败。
+
+本次迁移遵循并已经完成：
 
 ```text
-正式 snake_case 模块
+创建正式 snake_case 模块
     ↓
 旧文件兼容转发
     ↓
@@ -202,7 +202,9 @@ nameUtils.py        -> name_utils.py
     ↓
 Maya 真机 Smoke Test
     ↓
-零正式引用后删除旧入口
+CI Import Gate 归零
+    ↓
+删除旧兼容入口
 ```
 
 ---
@@ -288,6 +290,12 @@ def main():
 
 例如 Quick Snap、根据 Selection 直接创建 FK Controller 这一类 Tool，`main()` 本身就是一次操作，不创建 QWidget，因此不要强行套 `window_utils`。
 
+当前 UI Tool Direct Main 已通过 Maya 2023 真机 Smoke Test：
+
+```text
+Total: 17 | Passed: 17 | Failed: 0
+```
+
 ---
 
 # UI / App
@@ -314,6 +322,49 @@ app.window_manager
 ```
 
 Tool 不应各自再维护一套 `_window` 全局变量。
+
+---
+
+# 测试门槛
+
+当前正式质量门槛分成两层。
+
+## GitHub CI
+
+不依赖 Maya：
+
+```text
+Core Import Style Gate
+        ↓
+AST API Reference Generation
+        ↓
+mkdocs build --strict
+        ↓
+GitHub Pages
+```
+
+## Maya 2023 真机 Smoke
+
+Extended Core 已验证：
+
+```text
+attr_utils
+hierarchy_utils
+joint_utils
+naming
+model_check_utils
+scene_clean_utils
+
+Total: 6 | Passed: 6 | Failed: 0
+```
+
+Tool Window 已验证：
+
+```text
+Total: 17 | Passed: 17 | Failed: 0
+```
+
+这两类测试互相补充：CI 保证静态架构和文档不会回退，Maya Smoke 保证真实 Maya 行为可运行。
 
 ---
 
