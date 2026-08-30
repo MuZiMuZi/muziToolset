@@ -48,73 +48,79 @@ jobs:
         run: python tests/core_import_style_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 2：检查所有正式公开 API 的 Docstring 是否完整。
+      # 步骤 2：禁止 System 重新实现已经有明确 Core 归属的通用 Helper。
+      # -----------------------------------------------------------------------
+      - name: Check System Core reuse
+        run: python tests/system_core_reuse_gate_test.py
+
+      # -----------------------------------------------------------------------
+      # 步骤 3：检查所有正式公开 API 的 Docstring 是否完整。
       # -----------------------------------------------------------------------
       - name: Check runtime docstring standard
         run: python scripts/normalize_runtime_docstrings.py --check
 
       # -----------------------------------------------------------------------
-      # 步骤 3：禁止自动占位式参数说明重新进入正式代码。
+      # 步骤 4：禁止自动占位式参数说明重新进入正式代码。
       # -----------------------------------------------------------------------
       - name: Check Maya and rigging terminology quality
         run: python scripts/refine_runtime_docstring_semantics.py --check
 
       # -----------------------------------------------------------------------
-      # 步骤 4：验证 API Reference Generator 本身。
+      # 步骤 5：验证 API Reference Generator 本身。
       # -----------------------------------------------------------------------
       - name: Test API reference generator
         run: python tests/docs_reference_generator_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 5：验证全部正式 Runtime Python 文件都有独立 API 页面。
+      # 步骤 6：验证全部正式 Runtime Python 文件都有独立 API 页面。
       # -----------------------------------------------------------------------
       - name: Check runtime API documentation coverage
         run: python tests/docs_runtime_api_coverage_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 6：生成完整 Runtime API Reference 和源码树导航。
+      # 步骤 7：生成完整 Runtime API Reference 和源码树导航。
       # -----------------------------------------------------------------------
       - name: Generate API reference
         run: python scripts/generate_mkdocs_reference.py
 
       # -----------------------------------------------------------------------
-      # 步骤 7：统一压缩模块概览，并在每个 Function / Method 下增加“作用”。
+      # 步骤 8：统一压缩模块概览，并在每个 Function / Method 下增加“作用”。
       # -----------------------------------------------------------------------
       - name: Refine generated API layout
         run: python scripts/refine_generated_reference.py
 
       # -----------------------------------------------------------------------
-      # 步骤 8：检查所有 Callable 标题后都有明确“作用”。
+      # 步骤 9：检查所有 Callable 标题后都有明确“作用”。
       # -----------------------------------------------------------------------
       - name: Validate callable purpose sections
         run: python scripts/refine_generated_callable_layout.py --check
 
       # -----------------------------------------------------------------------
-      # 步骤 9：检查全部生成 API 页面的最终布局和占位文本。
+      # 步骤 10：检查全部生成 API 页面的最终布局和占位文本。
       # -----------------------------------------------------------------------
       - name: Validate generated API page layout
         run: python tests/docs_generated_layout_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 10：把人工维护的任务型用户手册页面加入 SUMMARY 导航。
+      # 步骤 11：把人工维护的任务型用户手册页面加入 SUMMARY 导航。
       # -----------------------------------------------------------------------
       - name: Expand user manual navigation
         run: python scripts/extend_docs_summary.py
 
       # -----------------------------------------------------------------------
-      # 步骤 11：检查 README 文档入口与网站导航是否保持一致。
+      # 步骤 12：检查 README 文档入口与网站导航是否保持一致。
       # -----------------------------------------------------------------------
       - name: Check README and navigation consistency
         run: python tests/docs_readme_navigation_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 12：严格构建 MkDocs。任何 Warning 都视为失败。
+      # 步骤 13：严格构建 MkDocs。任何 Warning 都视为失败。
       # -----------------------------------------------------------------------
       - name: Build MkDocs site
         run: mkdocs build --strict
 
       # -----------------------------------------------------------------------
-      # 步骤 13：检查 GitHub Pages 是否已经启用。
+      # 步骤 14：检查 GitHub Pages 是否已经启用。
       # -----------------------------------------------------------------------
       - name: Check GitHub Pages status
         id: pages_status
@@ -144,7 +150,7 @@ jobs:
           fi
 
       # -----------------------------------------------------------------------
-      # 步骤 14：上传 Pages Artifact。
+      # 步骤 15：上传 Pages Artifact。
       # -----------------------------------------------------------------------
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
