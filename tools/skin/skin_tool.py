@@ -6,7 +6,11 @@ Skin Tool
 蒙皮工具 UI。
 
 权重数据操作统一维护在：
-    muzi_rigging.core.skin_utils
+    muziToolset.core.skin_utils
+
+窗口生命周期：
+    用户直接调用 main() 时，由 ui.window_utils 负责保存强引用并显示窗口；
+    从主工具箱打开时，仍可继续交给 app.window_manager 做应用级窗口管理。
 """
 
 from __future__ import print_function
@@ -35,6 +39,7 @@ except ImportError:
 
 from ...core import skin_utils
 from ...ui import theme
+from ...ui import window_utils
 
 
 class SkinTool(QWidget):
@@ -343,9 +348,11 @@ class SkinTool(QWidget):
 
 
 def main():
-    """创建并返回 Skin Tool。"""
-    window = SkinTool()
-    return window
+    """显示并返回 Skin Tool。"""
+    return window_utils.show_window(
+        "tools.skin.skin_tool",
+        SkinTool
+    )
 
 
 __all__ = [
