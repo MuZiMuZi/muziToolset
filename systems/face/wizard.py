@@ -349,10 +349,10 @@ class FaceRigWizard(QWidget):
         创建尚未完成的系统步骤页面。
 
         Args:
-            title (object):
-                `title` 对应的输入数据。
-            description (object):
-                `description` 对应的输入数据。
+            title (str):
+                窗口、Section、Dialog 或报告使用的标题文本。
+            description (str):
+                UI Step / Section 中展示的功能说明文本。
 
         Returns:
             object:
@@ -452,7 +452,7 @@ class FaceRigWizard(QWidget):
 
         Args:
             step_index (int):
-                `step_index` 对应的整数参数。
+                对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
         """
         if step_index < 0:
             return
@@ -572,8 +572,8 @@ class FaceRigWizard(QWidget):
         根据 Slider 档位实时更新嘴唇 Joint 数量显示。
 
         Args:
-            slider_value (object):
-                `slider_value` 对应的输入数据。
+            slider_value (int | float):
+                UI Slider 当前值；回调用于同步对应 Rig / Setup 参数。
         """
         mouth_joint_number = slider_value * self.mouth_joint_step
 

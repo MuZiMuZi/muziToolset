@@ -28,15 +28,15 @@ def create_fk_controls(
 
     Args:
         targets (str | list[str]):
-            `targets` 对应的输入数据。
+            需要批量处理的 Target 节点；在 Constraint / BlendShape / Controller API 中保持输入顺序。
         shape (str):
-            `shape` 对应的名称、标记或字符串参数。
+            Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
         radius (float):
             创建节点或控制器使用的半径值。
         axis (str):
             操作使用的轴向标记。
         constrain (bool):
-            是否启用 `constrain` 对应的处理。
+            创建 Controller 后是否建立 Controller / Output 到 Target 的约束关系。
 
     Returns:
         object:

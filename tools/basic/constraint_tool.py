@@ -319,8 +319,8 @@ class ConstraintTool(QWidget):
         收集 UI 参数并调用 Core 创建标准约束。
 
         Args:
-            constraint_type (object):
-                `constraint_type` 对应的输入数据。
+            constraint_type (str):
+                Maya Constraint 类型，例如 parentConstraint、pointConstraint、orientConstraint、scaleConstraint 或 aimConstraint。
             chunk_name (str):
                 `chunk_name` 对应的 Maya 节点或资源名称。
         """
@@ -445,7 +445,7 @@ class ConstraintTool(QWidget):
 
         Args:
             selected_objects (object):
-                `selected_objects` 对应的输入数据。
+                当前方法执行 Maya / Rig 操作时使用的 `selected_objects` 数据。
 
         Returns:
             object:

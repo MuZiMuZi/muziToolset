@@ -49,22 +49,22 @@ class FaceSetup(face_base.FaceBase):
         执行 `__init__` 对应的 Maya 工具操作。
 
         Args:
-            face_head_model (object):
-                `face_head_model` 对应的输入数据。
-            face_lf_eye_model (object):
-                `face_lf_eye_model` 对应的输入数据。
-            face_rt_eye_model (object):
-                `face_rt_eye_model` 对应的输入数据。
-            upper_teech_model (object):
-                `upper_teech_model` 对应的输入数据。
-            lower_teech_model (object):
-                `lower_teech_model` 对应的输入数据。
-            face_tongue_model (object):
-                `face_tongue_model` 对应的输入数据。
-            face_gum_model (object):
-                `face_gum_model` 对应的输入数据。
+            face_head_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+            face_lf_eye_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+            face_rt_eye_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+            upper_teech_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+            lower_teech_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+            face_tongue_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+            face_gum_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
             mouth_jnt_number (int):
-                `mouth_jnt_number` 对应的整数参数。
+                嘴唇分布系统需要创建的 Joint 总数量。
         """
 
         super(FaceSetup, self).__init__()
@@ -256,7 +256,7 @@ class FaceSetup(face_base.FaceBase):
 
         Args:
             work_model_name_dict (dict):
-                `work_model_name_dict` 对应的配置或映射字典。
+                Step 01 三个 Head Work Model（tweak / stretch / deform）的名称映射。
 
         Returns:
             bool:
@@ -285,7 +285,7 @@ class FaceSetup(face_base.FaceBase):
 
         Args:
             work_model_name_dict (dict):
-                `work_model_name_dict` 对应的配置或映射字典。
+                Step 01 三个 Head Work Model（tweak / stretch / deform）的名称映射。
 
         Returns:
             bool:

@@ -308,11 +308,11 @@ def create_surface_from_curve(
         name (str):
             创建或查询时使用的节点名称。
         offset (float):
-            `offset` 对应的数值参数。
+            当前 Rig / Shape / Surface 操作使用的 Offset 数值或偏移向量。
         offset_axis (str):
-            `offset_axis` 对应的名称、标记或字符串参数。
+            应用 Surface / Attachment Offset 的轴向。
         degree (int):
-            `degree` 对应的整数参数。
+            创建或重建 NURBS Curve 使用的 Degree。
 
     Returns:
         str: 新创建的 NURBS Surface Transform。
@@ -423,9 +423,9 @@ def create_follicle(
         name (str):
             创建或查询时使用的节点名称。
         parameter_u (float):
-            `parameter_u` 对应的数值参数。
+            NURBS Surface U 方向 Parameter。
         parameter_v (float):
-            `parameter_v` 对应的数值参数。
+            NURBS Surface V 方向 Parameter。
         parent (str):
             父级 Maya 节点名称。
 

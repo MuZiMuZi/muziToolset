@@ -57,8 +57,8 @@ def replace_control_prefix(control, prefix):
     Args:
         control (str):
             需要处理的控制器 Transform 名称。
-        prefix (object):
-            `prefix` 对应的输入数据。
+        prefix (str):
+            添加到 Maya 节点名称前部的 Prefix。
 
     Returns:
         object:
@@ -93,8 +93,8 @@ def validate_node(node, label):
     Args:
         node (str):
             需要查询或处理的 Maya 节点名称。
-        label (object):
-            `label` 对应的输入数据。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
 
     Returns:
         bool:
@@ -138,7 +138,7 @@ def ensure_follow_attribute(
         attribute_name (str):
             `attribute_name` 对应的 Maya 节点或资源名称。
         default_value (float):
-            `default_value` 对应的数值参数。
+            新建 Attribute、UI 控件或 Rig 参数使用的默认值。
 
     Returns:
         object:

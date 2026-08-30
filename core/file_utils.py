@@ -139,8 +139,8 @@ def normalize_extensions(extensions):
     将扩展名统一成小写、带点号、保持顺序去重的列表。
 
     Args:
-        extensions (object):
-            `extensions` 对应的输入数据。
+        extensions (str | list[str] | None):
+            允许匹配的文件扩展名，例如 `.ma`、`.mb`、`.json`。
 
     Returns:
         object | None:
@@ -148,7 +148,7 @@ def normalize_extensions(extensions):
 
     Example:
         ["MA", ".mb", "json"]
-                                                            -> [".ma", ".mb", ".json"]
+                                                                -> [".ma", ".mb", ".json"]
     """
     # 步骤 1：None 表示不过滤扩展名。
     if extensions is None:
@@ -353,14 +353,14 @@ def write_json(
     Args:
         file_path (str):
             需要读取或写入的文件路径。
-        data (object):
-            `data` 对应的输入数据。
+        data (dict | list | object):
+            需要序列化、恢复或传递的结构化数据。
         indent (int):
-            `indent` 对应的整数参数。
+            写入 JSON 时使用的缩进空格数；None 表示紧凑输出。
         ensure_ascii (bool):
-            是否启用 `ensure_ascii` 对应的处理。
+            写 JSON 时是否把非 ASCII 字符转义。
         sort_keys (bool):
-            是否启用 `sort_keys` 对应的处理。
+            写 JSON 时是否按 Key 排序，便于版本控制 Diff。
 
     Returns:
         str: 最终写入路径。

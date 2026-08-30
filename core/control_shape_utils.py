@@ -352,7 +352,7 @@ def get_shape_color(transform, default=None):
         transform (str):
             需要处理的 Maya Transform 节点名称。
         default (object):
-            `default` 对应的输入数据。
+            当前查询、配置或 UI 逻辑在没有显式值时使用的默认值。
 
     Returns:
         object:
@@ -502,7 +502,7 @@ def apply_shape_data(transform, shape_data_list):
         transform (str):
             需要处理的 Maya Transform 节点名称。
         shape_data_list (list):
-            `shape_data_list` 对应的数据列表。
+            Controller Shape 的 CV、Degree、Form 等序列化数据列表。
 
     Returns:
         object:
@@ -662,7 +662,7 @@ def delete_shape_data(shape_name, delete_previews=True):
         shape_name (str):
             `shape_name` 对应的 Maya 节点或资源名称。
         delete_previews (bool):
-            是否启用 `delete_previews` 对应的处理。
+            写入正式 Controller Shape 资源前是否删除临时 Preview 节点。
 
     Returns:
         list: 实际删除的文件路径。
@@ -710,7 +710,7 @@ def set_shape_color(transform, color_index):
         transform (str):
             需要处理的 Maya Transform 节点名称。
         color_index (int):
-            `color_index` 对应的整数参数。
+            对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
     """
     shapes = get_curve_shapes(transform)
 
@@ -742,7 +742,7 @@ def translate_shape(transform, offset):
         transform (str):
             需要处理的 Maya Transform 节点名称。
         offset (float):
-            `offset` 对应的数值参数。
+            当前 Rig / Shape / Surface 操作使用的 Offset 数值或偏移向量。
 
     Raises:
         ValueError:
@@ -778,8 +778,8 @@ def scale_shape(transform, scale_value):
     Args:
         transform (str):
             需要处理的 Maya Transform 节点名称。
-        scale_value (object):
-            `scale_value` 对应的输入数据。
+        scale_value (float | tuple[float, float, float]):
+            Controller Shape CV 使用的统一或 XYZ Scale 值。
     """
     cvs = get_shape_cvs(transform)
 
@@ -847,11 +847,11 @@ def rotate_shape(
         transform (str):
             需要处理的 Maya Transform 节点名称。
         rotate_x (float):
-            `rotate_x` 对应的数值参数。
+            Controller Shape / Transform 绕 X 轴应用的旋转角度。
         rotate_y (float):
-            `rotate_y` 对应的数值参数。
+            Controller Shape / Transform 绕 Y 轴应用的旋转角度。
         rotate_z (float):
-            `rotate_z` 对应的数值参数。
+            Controller Shape / Transform 绕 Z 轴应用的旋转角度。
     """
     cvs = get_shape_cvs(transform)
 

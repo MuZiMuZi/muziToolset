@@ -72,8 +72,8 @@ def validate_transform(node, label):
     Args:
         node (str):
             需要查询或处理的 Maya 节点名称。
-        label (object):
-            `label` 对应的输入数据。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
 
     Returns:
         bool:
@@ -116,8 +116,8 @@ def normalize_name_part(value, label):
     Args:
         value (float):
             需要读取、写入或参与计算的数值。
-        label (object):
-            `label` 对应的输入数据。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
 
     Returns:
         object:
@@ -162,15 +162,15 @@ def create_rig_name(
 
     Args:
         node_type (str):
-            `node_type` 对应的名称、标记或字符串参数。
+            需要创建、查询或过滤的 Maya Node Type。
         side (str):
             方向标记，常用值为 lf、rt 或 md。
         region (str):
-            `region` 对应的名称、标记或字符串参数。
+            Face Component 的区域标记，例如 upper、lower、inner、outer。
         feature (str):
-            `feature` 对应的名称、标记或字符串参数。
-        role (object):
-            `role` 对应的输入数据。
+            Face Component 的功能部位标记，例如 lid、bag、lip。
+        role (str):
+            当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
         index (int):
             目标元素或节点的序号。
 
@@ -221,16 +221,16 @@ def create_attachment_group(
     创建 Drive / Aim / Up Attachment Group。
 
     Args:
-        nodes_group (object):
-            `nodes_group` 对应的输入数据。
+        nodes_group (str):
+            当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
         side (str):
             方向标记，常用值为 lf、rt 或 md。
         region (str):
-            `region` 对应的名称、标记或字符串参数。
+            Face Component 的区域标记，例如 upper、lower、inner、outer。
         feature (str):
-            `feature` 对应的名称、标记或字符串参数。
-        role (object):
-            `role` 对应的输入数据。
+            Face Component 的功能部位标记，例如 lid、bag、lip。
+        role (str):
+            当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
 
     Returns:
         object:
@@ -275,8 +275,8 @@ def create_curve_attachment(
     Args:
         curve (str):
             需要处理的 Maya Curve Transform 或 Shape 名称。
-        percentage (object):
-            `percentage` 对应的输入数据。
+        percentage (float):
+            沿 Curve 或数据范围的归一化百分比，通常为 0.0～1.0。
         name (str):
             创建或查询时使用的节点名称。
         parent (str):

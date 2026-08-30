@@ -225,8 +225,8 @@ def clear_animation_keys(nodes=None):
 
     Notes:
         这个函数的语义是“删除动画曲线节点”。
-                                                        如果以后需要只删除某一个时间范围的 Key，应新增独立 API，
-                                                        不要让一个函数同时承担两种不同的清理行为。
+                                                            如果以后需要只删除某一个时间范围的 Key，应新增独立 API，
+                                                            不要让一个函数同时承担两种不同的清理行为。
     """
     # 步骤 1：先查询需要删除的曲线。
     animation_curves = get_animation_curves(
@@ -416,8 +416,8 @@ def reset_controls(
 
     Notes:
         这里只重置标准 TRS。
-                                                        IkFk、Stretch、Follow、Space 等角色专属属性必须由对应 Rig System
-                                                        自己定义默认值，不能再次硬编码到通用 Core。
+                                                            IkFk、Stretch、Follow、Space 等角色专属属性必须由对应 Rig System
+                                                            自己定义默认值，不能再次硬编码到通用 Core。
     """
     # 步骤 1：没有显式传入控制器时，按命名规则自动查找。
     if controls is None:
@@ -748,8 +748,8 @@ def validate_animation_data(data):
     “部分导入、部分失败”的脏状态。
 
     Args:
-        data (object):
-            `data` 对应的输入数据。
+        data (dict | list | object):
+            需要序列化、恢复或传递的结构化数据。
 
     Returns:
         bool:
@@ -793,10 +793,10 @@ def resolve_target_node(source_node, node_map=None):
     根据可选 node_map 解析动画导入目标节点。
 
     Args:
-        source_node (object):
-            `source_node` 对应的输入数据。
+        source_node (str):
+            作为数据来源、复制来源或驱动来源的 Maya 节点。
         node_map (dict):
-            `node_map` 对应的配置或映射字典。
+            源 Maya 节点名到目标 Maya 节点名的映射；常用于 Namespace / 动画数据恢复。
 
     Returns:
         object:
@@ -804,8 +804,8 @@ def resolve_target_node(source_node, node_map=None):
 
     Example:
         {
-                                                            "ctrl_lf_arm_001": "characterA:ctrl_lf_arm_001"
-                                                        }
+                                                                "ctrl_lf_arm_001": "characterA:ctrl_lf_arm_001"
+                                                            }
     """
     if node_map is None:
         return source_node
@@ -825,10 +825,10 @@ def apply_attribute_keys(
     将一个属性的 Key 数据写入目标 Maya 节点。
 
     Args:
-        target_node (object):
-            `target_node` 对应的输入数据。
-        attribute_info (object):
-            `attribute_info` 对应的输入数据。
+        target_node (str):
+            接收数据、匹配结果或操作结果的 Target Maya 节点。
+        attribute_info (dict):
+            动画 / Attribute 数据中的单个 Attribute 描述、Key 或 Value 信息。
         clear_existing (bool):
             写入新结果前是否先清理已有数据。
 

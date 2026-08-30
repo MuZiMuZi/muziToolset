@@ -112,7 +112,7 @@ def get_window(window_key):
 
     Args:
         window_key (object):
-            `window_key` 对应的输入数据。
+            当前方法执行 Maya / Rig 操作时使用的 `window_key` 数据。
 
     Returns:
         object | None:
@@ -200,10 +200,10 @@ def show_window(window_key, window_factory):
 
     Example:
         def main():
-                                                            return window_utils.show_window(
-                                                                "tools.basic.rename_tool",
-                                                                RenameTool
-                                                            )
+                                                                return window_utils.show_window(
+                                                                    "tools.basic.rename_tool",
+                                                                    RenameTool
+                                                                )
     """
     if not window_key:
         raise ValueError(u"window_key 不能为空。")
@@ -255,7 +255,7 @@ def close_window(window_key):
 
     Args:
         window_key (object):
-            `window_key` 对应的输入数据。
+            当前方法执行 Maya / Rig 操作时使用的 `window_key` 数据。
 
     Returns:
         bool:

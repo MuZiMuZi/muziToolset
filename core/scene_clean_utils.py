@@ -767,19 +767,19 @@ def run_cleanup(
         nodes (str | list[str]):
             需要批量查询或处理的 Maya 节点名称或节点列表。
         selected_only (bool):
-            是否启用 `selected_only` 对应的处理。
+            清理 / 检查范围是否限制为当前 Maya Selection。
         delete_empty (bool):
-            是否启用 `delete_empty` 对应的处理。
+            场景清理时是否删除确认无 Child / Shape 的空 Transform。
         delete_history_enabled (bool):
-            是否启用 `delete_history_enabled` 对应的处理。
+            清理流程是否执行 Modeling History 删除。
         freeze_enabled (bool):
-            是否启用 `freeze_enabled` 对应的处理。
+            清理流程是否执行 Freeze Transform。
         unlock_enabled (bool):
-            是否启用 `unlock_enabled` 对应的处理。
+            清理流程是否解除可安全处理的 Locked Channel。
         center_pivot_enabled (bool):
-            是否启用 `center_pivot_enabled` 对应的处理。
+            清理流程是否执行 Center Pivot。
         delete_unknown_enabled (bool):
-            是否启用 `delete_unknown_enabled` 对应的处理。
+            清理流程是否删除确认无用的 Unknown Node。
 
     Returns:
         object:

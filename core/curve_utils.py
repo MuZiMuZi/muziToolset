@@ -377,7 +377,7 @@ def get_even_percentages(sample_count):
 
     Args:
         sample_count (int):
-            `sample_count` 对应的整数参数。
+            当前构建、采样或查询过程使用的元素数量。
 
     Returns:
         object:
@@ -389,7 +389,7 @@ def get_even_percentages(sample_count):
 
     Example:
         get_even_percentages(5)
-                                                        -> [0.0, 0.25, 0.5, 0.75, 1.0]
+                                                            -> [0.0, 0.25, 0.5, 0.75, 1.0]
     """
     # 步骤 1：至少需要首尾两个采样点。
     if sample_count < 2:
@@ -425,9 +425,9 @@ def sample_curve_by_length(
         curve (str):
             需要处理的 Maya Curve Transform 或 Shape 名称。
         sample_count (int):
-            `sample_count` 对应的整数参数。
+            当前构建、采样或查询过程使用的元素数量。
         world_space (bool):
-            是否启用 `world_space` 对应的处理。
+            是否使用 Maya World Space，而不是 Local / Parent Space。
 
     Returns:
         dict:
@@ -515,8 +515,8 @@ def get_closest_parameter(
     Args:
         curve (str):
             需要处理的 Maya Curve Transform 或 Shape 名称。
-        world_position (object):
-            `world_position` 对应的输入数据。
+        world_position (list[float] | tuple[float, float, float]):
+            用于 Curve 最近点、参数查询或节点放置的 World Space Position。
 
     Returns:
         object:
@@ -578,8 +578,8 @@ def parameter_to_length_percentage(
     Args:
         curve (str):
             需要处理的 Maya Curve Transform 或 Shape 名称。
-        parameter (object):
-            `parameter` 对应的输入数据。
+        parameter (float):
+            NURBS Curve / Surface 参数空间中的 Parameter 值。
 
     Returns:
         object:
@@ -628,8 +628,8 @@ def length_percentage_to_parameter(
     Args:
         curve (str):
             需要处理的 Maya Curve Transform 或 Shape 名称。
-        percentage (object):
-            `percentage` 对应的输入数据。
+        percentage (float):
+            沿 Curve 或数据范围的归一化百分比，通常为 0.0～1.0。
 
     Returns:
         object:
@@ -690,8 +690,8 @@ def create_point_on_curve_attachment(
     Args:
         curve (str):
             需要处理的 Maya Curve Transform 或 Shape 名称。
-        parameter (object):
-            `parameter` 对应的输入数据。
+        parameter (float):
+            NURBS Curve / Surface 参数空间中的 Parameter 值。
         name (str):
             创建或查询时使用的节点名称。
         parent (str):
@@ -816,8 +816,8 @@ def create_closest_point_attachment(
     Args:
         curve (str):
             需要处理的 Maya Curve Transform 或 Shape 名称。
-        world_position (object):
-            `world_position` 对应的输入数据。
+        world_position (list[float] | tuple[float, float, float]):
+            用于 Curve 最近点、参数查询或节点放置的 World Space Position。
         name (str):
             创建或查询时使用的节点名称。
         parent (str):
@@ -860,7 +860,7 @@ def create_curve_from_nodes(
         name (str):
             创建或查询时使用的节点名称。
         degree (int):
-            `degree` 对应的整数参数。
+            创建或重建 NURBS Curve 使用的 Degree。
 
     Returns:
         str: 新 Curve Transform。
@@ -927,9 +927,9 @@ def create_curve_from_selected_edges(
         name (str):
             创建或查询时使用的节点名称。
         degree (int):
-            `degree` 对应的整数参数。
+            创建或重建 NURBS Curve 使用的 Degree。
         form (int):
-            `form` 对应的整数参数。
+            NURBS Curve Form 枚举值，用于区分 Open、Closed 或 Periodic Curve。
 
     Returns:
         object:

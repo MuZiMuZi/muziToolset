@@ -106,7 +106,7 @@ def get_selected_objects(show_warning=True):
 
     Args:
         show_warning (bool):
-            是否启用 `show_warning` 对应的处理。
+            遇到无效命名或空输入时是否在 Maya 中显示 Warning。
 
     Returns:
         object:
@@ -268,8 +268,8 @@ def add_prefix(prefix):
     给当前 Selection 批量添加前缀，并返回成功数量。
 
     Args:
-        prefix (object):
-            `prefix` 对应的输入数据。
+        prefix (str):
+            添加到 Maya 节点名称前部的 Prefix。
 
     Returns:
         object | int:
@@ -305,8 +305,8 @@ def add_suffix(suffix):
     给当前 Selection 批量添加后缀，并返回成功数量。
 
     Args:
-        suffix (object):
-            `suffix` 对应的输入数据。
+        suffix (str):
+            添加到 Maya 节点名称尾部的 Suffix。
 
     Returns:
         object | int:
@@ -346,10 +346,10 @@ def search_replace(search_text, replace_text, scope_name):
     按指定范围对节点 Short Name 做普通字符串 Search / Replace。
 
     Args:
-        search_text (object):
-            `search_text` 对应的输入数据。
-        replace_text (object):
-            `replace_text` 对应的输入数据。
+        search_text (str):
+            名称过滤、工具搜索或 Search / Replace 使用的搜索文本。
+        replace_text (str):
+            Search / Replace 操作中写回节点名称的新文本。
         scope_name (str):
             `scope_name` 对应的 Maya 节点或资源名称。
 
@@ -405,9 +405,9 @@ def number_to_alpha(number, uppercase=True):
 
     Args:
         number (int):
-            `number` 对应的整数参数。
+            自动编号或字母编号转换使用的序号。
         uppercase (bool):
-            是否启用 `uppercase` 对应的处理。
+            字母编号是否输出为大写。
 
     Returns:
         object:
@@ -419,8 +419,8 @@ def number_to_alpha(number, uppercase=True):
 
     Example:
         0 -> A
-                                                        25 -> Z
-                                                        26 -> AA
+                                                            25 -> Z
+                                                            26 -> AA
     """
     if number < 0:
         raise ValueError(u"字母编号不能小于 0。")
@@ -457,11 +457,11 @@ def get_number_string(number, padding, number_type):
 
     Args:
         number (int):
-            `number` 对应的整数参数。
-        padding (object):
-            `padding` 对应的输入数据。
-        number_type (object):
-            `number_type` 对应的输入数据。
+            自动编号或字母编号转换使用的序号。
+        padding (int):
+            数字编号输出时保留的位数，例如 3 表示 001。
+        number_type (str):
+            自动编号格式，例如数字、字母或项目定义的编号模式。
 
     Returns:
         object | None:
@@ -515,11 +515,11 @@ def auto_number(
         base_name (str):
             `base_name` 对应的 Maya 节点或资源名称。
         start_number (int):
-            `start_number` 对应的整数参数。
+            当前构建、采样或查询过程使用的元素数量。
         padding (int):
-            `padding` 对应的整数参数。
+            数字编号输出时保留的位数，例如 3 表示 001。
         number_type (str):
-            `number_type` 对应的名称、标记或字符串参数。
+            自动编号格式，例如数字、字母或项目定义的编号模式。
 
     Returns:
         object | int:
@@ -578,7 +578,7 @@ def build_pattern_name(pattern, number):
         pattern (str):
             用于筛选 Maya 节点名称的匹配模式。
         number (int):
-            `number` 对应的整数参数。
+            自动编号或字母编号转换使用的序号。
 
     Returns:
         object:
@@ -586,7 +586,7 @@ def build_pattern_name(pattern, number):
 
     Example:
         build_pattern_name("jnt_md_spine_bind_***", 4)
-                                                        -> jnt_md_spine_bind_004
+                                                            -> jnt_md_spine_bind_004
     """
     star_blocks = re.findall(
         r"\*+",

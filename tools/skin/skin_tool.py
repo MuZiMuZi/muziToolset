@@ -274,8 +274,8 @@ class SkinTool(QWidget):
         选择权重目录。
 
         Args:
-            title (object):
-                `title` 对应的输入数据。
+            title (str):
+                窗口、Section、Dialog 或报告使用的标题文本。
 
         Returns:
             object:

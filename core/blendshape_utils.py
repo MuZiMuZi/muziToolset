@@ -251,8 +251,8 @@ def get_base_transform(blendshape_node):
     返回 BlendShape 第一个 Base Geometry Transform。
 
     Args:
-        blendshape_node (object):
-            `blendshape_node` 对应的输入数据。
+        blendshape_node (str):
+            需要查询或编辑的 Maya blendShape Deformer 节点。
 
     Returns:
         object | None:
@@ -289,7 +289,7 @@ def sort_targets_by_index(targets):
 
     Args:
         targets (str | list[str]):
-            `targets` 对应的输入数据。
+            需要批量处理的 Target 节点；在 Constraint / BlendShape / Controller API 中保持输入顺序。
 
     Returns:
         object:
@@ -323,8 +323,8 @@ def get_targets(blendshape_node):
     返回 BlendShape 真实 Alias -> Weight Index 映射。
 
     Args:
-        blendshape_node (object):
-            `blendshape_node` 对应的输入数据。
+        blendshape_node (str):
+            需要查询或编辑的 Maya blendShape Deformer 节点。
 
     Returns:
         list:
@@ -389,8 +389,8 @@ def get_next_target_index(blendshape_node):
     返回下一个可使用的 BlendShape Weight Index。
 
     Args:
-        blendshape_node (object):
-            `blendshape_node` 对应的输入数据。
+        blendshape_node (str):
+            需要查询或编辑的 Maya blendShape Deformer 节点。
 
     Returns:
         object | int:
@@ -429,10 +429,10 @@ def remove_target(
         避免破坏外部 Driver Network。
 
     Args:
-        blendshape_node (object):
-            `blendshape_node` 对应的输入数据。
+        blendshape_node (str):
+            需要查询或编辑的 Maya blendShape Deformer 节点。
         target_index (int):
-            `target_index` 对应的整数参数。
+            BlendShape Target 在 Weight / Target Group 中使用的逻辑索引。
         alias_name (str):
             `alias_name` 对应的 Maya 节点或资源名称。
     """
@@ -504,10 +504,10 @@ def add_or_replace_target(blendshape_node, target_transform):
     按 Target 短名称新增或同名替换 BlendShape Target。
 
     Args:
-        blendshape_node (object):
-            `blendshape_node` 对应的输入数据。
-        target_transform (object):
-            `target_transform` 对应的输入数据。
+        blendshape_node (str):
+            需要查询或编辑的 Maya blendShape Deformer 节点。
+        target_transform (str):
+            对应 BlendShape Target Shape 的 Transform 节点。
 
     Returns:
         dict: Alias 和真实 Weight Index。
@@ -621,8 +621,8 @@ def duplicate_all_targets(blendshape_node):
     处理期间会临时修改 Weight，finally 中会恢复所有原始值。
 
     Args:
-        blendshape_node (object):
-            `blendshape_node` 对应的输入数据。
+        blendshape_node (str):
+            需要查询或编辑的 Maya blendShape Deformer 节点。
 
     Returns:
         object | list:
@@ -763,10 +763,10 @@ def invert_shapes(base_mesh, corrective_meshes):
         - 顶点数量和 Base 一致。
 
     Args:
-        base_mesh (object):
-            `base_mesh` 对应的输入数据。
-        corrective_meshes (object):
-            `corrective_meshes` 对应的输入数据。
+        base_mesh (str):
+            当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+        corrective_meshes (str | list[str]):
+            需要作为 Corrective Shape / BlendShape Target 处理的 Mesh 列表。
 
     Returns:
         list: 成功创建的 Inverted Shape Mesh。

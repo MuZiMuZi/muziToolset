@@ -94,9 +94,9 @@ class SkirtRigBuilder(object):
             name (str):
                 创建或查询时使用的节点名称。
             horizontal_count (int):
-                `horizontal_count` 对应的整数参数。
+                当前构建、采样或查询过程使用的元素数量。
             vertical_count (int):
-                `vertical_count` 对应的整数参数。
+                当前构建、采样或查询过程使用的元素数量。
         """
 
         self.name = _safe_name(name)

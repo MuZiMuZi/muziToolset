@@ -54,11 +54,11 @@ class MayaObjectPicker(QWidget):
 
         Args:
             label_text (str):
-                `label_text` 对应的名称、标记或字符串参数。
+                Object Picker 左侧显示的 Label 文本。
             placeholder (str):
-                `placeholder` 对应的名称、标记或字符串参数。
-            node_types (object):
-                `node_types` 对应的输入数据。
+                QLineEdit / Object Picker 在没有输入时显示的 Placeholder 文本。
+            node_types (str | list[str] | None):
+                Object Picker 允许选择的 Maya Node Type；None 表示不限制类型。
             parent (str):
                 父级 Maya 节点名称。
         """
