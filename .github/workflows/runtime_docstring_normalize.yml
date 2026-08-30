@@ -1,0 +1,54 @@
+name: Normalize Runtime Docstrings
+
+on:
+  push:
+    branches:
+      - refactor/runtime-docstring-standard
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: refactor/runtime-docstring-standard
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Normalize public runtime docstrings
+        run: python scripts/normalize_runtime_docstrings.py --write
+
+      - name: Validate public runtime docstrings
+        run: python scripts/normalize_runtime_docstrings.py --check
+
+      - name: Compile runtime source
+        shell: bash
+        run: |
+          python -m compileall -q app core systems tools ui __init__.py config.py
+
+      - name: Check whitespace errors
+        run: git diff --check
+
+      - name: Commit normalized runtime documentation
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "Runtime docstrings already satisfy the standard."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add __init__.py config.py app core systems tools ui
+          git commit -m "docs: normalize runtime api docstrings"
+          git push origin HEAD:refactor/runtime-docstring-standard
