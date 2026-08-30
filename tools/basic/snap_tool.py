@@ -20,6 +20,9 @@ import maya.cmds as cmds
 from ...core import snap_utils
 
 
+TOOL_MODE = "action"
+
+
 def main():
     u"""
     按当前 Maya 选择执行一次快速吸附。
