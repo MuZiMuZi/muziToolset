@@ -25,7 +25,7 @@ from __future__ import print_function
 
 import maya.cmds as cmds
 
-from ....core import nameUtils
+from ....core import name_utils
 
 
 # =============================================================================
@@ -132,7 +132,7 @@ def create_name(
         index=1
 ):
     """创建 Zip Lip 系统标准名称。"""
-    return nameUtils.Name.create_name(
+    return name_utils.Name.create_name(
         node_type=node_type,
         side="md",
         part="lip",
