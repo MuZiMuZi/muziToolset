@@ -23,7 +23,7 @@ from __future__ import print_function
 import maya.cmds as cmds
 
 from ...core import curve_utils
-from ...core import nameUtils
+from ...core import name_utils
 
 
 # =============================================================================
@@ -112,7 +112,7 @@ def create_rig_name(
         index=1
 ):
     """创建 Face Curve Rig 标准名称。"""
-    side = nameUtils.Name.normalize_side(side)
+    side = name_utils.Name.normalize_side(side)
     region = normalize_name_part(
         region,
         "region"
@@ -131,7 +131,7 @@ def create_rig_name(
         role
     )
 
-    return nameUtils.Name.create_name(
+    return name_utils.Name.create_name(
         node_type=node_type,
         side=side,
         part=region,
@@ -257,7 +257,7 @@ def attach_joints_to_curves(
             u"Parent Group"
         )
 
-    side = nameUtils.Name.normalize_side(side)
+    side = name_utils.Name.normalize_side(side)
     region = normalize_name_part(
         region,
         "region"
