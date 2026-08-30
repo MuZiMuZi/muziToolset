@@ -13,39 +13,21 @@ Joint Resample Tool
 4. 创建失败时清理本轮新节点并尽量恢复原父子关系；
 5. 提供可在 Maya Script Editor 中直接显示的 ``main()``。
 
-主要公开方法
-------------
-validate_joint(joint, label)
-    校验输入节点存在且为 Joint。
-
-is_direct_child_joint(start_joint, end_joint)
-    判断 End 是否为 Start 的直接 Child Joint。
-
-get_interpolated_position(start_position, end_position, ratio)
-    计算两点之间线性插值位置。
-
-resample_joint(start_joint, end_joint, joint_number)
-    安全插入中间 Joint。
-
-JointResamplingTool
-    参数和执行入口窗口。
-
-main()
-    创建或恢复窗口，立即显示并返回 QWidget。
+架构边界
+--------
+- Joint 类型校验统一复用 ``core.joint_utils``；
+- DAG Short Name 统一复用 ``core.rename_utils``；
+- DAG Parent 查询统一复用 ``core.hierarchy_utils``；
+- World Position 统一复用 ``core.transform_utils``；
+- Long DAG Path 与 Undo Chunk 统一复用 ``core.scene_utils``；
+- Tool 只保留“直接父子安全检查 + 线性重采样 + UI”工作流。
 
 安全规则
 --------
 - End Joint 必须是 Start Joint 的直接子 Joint；
 - 不跨越已有中间 Joint 重建层级；
 - 创建失败时删除本轮创建节点；
-- 所有创建过程放在一个 Maya Undo Chunk 内。
-
-直接运行
---------
-
-    from muziToolset.tools.joint import joint_resamp_tool
-
-    window = joint_resamp_tool.main()
+- 整个创建过程是一个 Maya Undo Chunk。
 """
 
 from __future__ import print_function
@@ -67,6 +49,11 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
+from ...core import hierarchy_utils
+from ...core import joint_utils
+from ...core import rename_utils
+from ...core import scene_utils
+from ...core import transform_utils
 from ...ui import theme
 from ...ui import window_utils
 from ...ui.widgets import MayaObjectPicker
@@ -77,13 +64,12 @@ class JointResamplingTool(QWidget):
 
     def __init__(self, parent=None):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
+        创建 Joint Resample 窗口。
 
         Args:
-            parent (str):
-                父级 Maya 节点名称。
+            parent (QWidget | None):
+                Qt 父窗口。
         """
-
         super(JointResamplingTool, self).__init__(parent)
 
         self.create_widgets()
@@ -98,9 +84,7 @@ class JointResamplingTool(QWidget):
         self.resize(540, 360)
 
     def create_widgets(self):
-        u"""
-        创建界面控件。
-        """
+        u"""创建界面控件。"""
         self.title_label = theme.make_title(u"关节重采样")
         self.subtitle_label = theme.make_subtitle(
             u"在一对直接父子 Joint 之间均匀插入新的中间 Joint。"
@@ -133,9 +117,7 @@ class JointResamplingTool(QWidget):
         theme.style_primary(self.resample_button)
 
     def create_layouts(self):
-        u"""
-        创建 Card 布局。
-        """
+        u"""创建 Card 布局。"""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -170,21 +152,18 @@ class JointResamplingTool(QWidget):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        u"""
-        连接界面信号。
-        """
+        u"""连接界面信号。"""
         self.resample_button.clicked.connect(
             self.resample
         )
 
     def resample(self):
-        u"""
-        读取当前 UI 参数并执行 Joint Resample。
-        """
+        u"""读取当前 UI 参数并执行 Joint Resample。"""
         start_joint = self.start_joint_picker.get_value()
         end_joint = self.end_joint_picker.get_value()
         joint_number = self.joint_number_spinbox.value()
 
+        # 调用参数化重采样函数，UI 不直接实现 Joint 构建算法。
         created_joints = resample_joint(
             start_joint=start_joint,
             end_joint=end_joint,
@@ -198,56 +177,36 @@ class JointResamplingTool(QWidget):
             )
 
 
-def get_short_name(node):
-    u"""
-    返回 Maya DAG 节点短名称。
-
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-    if "|" in node:
-        return node.rsplit("|", 1)[-1]
-
-    return node
-
-
 def validate_joint(joint, label):
     u"""
-    检查节点是否存在并且是 Joint。
+    使用 Joint Core 检查节点是否存在并且是 Joint。
 
     Args:
         joint (str):
-            需要处理的 Maya Joint 节点名称。
+            需要检查的 Maya Joint。
         label (str):
-            UI、Rig Node 或日志中展示的简短 Label。
+            Warning 中展示的输入名称。
 
     Returns:
         bool:
-        方法执行后的结果数据。
+            合法 Joint 返回 True，否则 Warning 并返回 False。
     """
     if not joint:
-        cmds.warning(u"{}不能为空。".format(label))
-        return False
-
-    if not cmds.objExists(joint):
         cmds.warning(
-            u"{}不存在：{}".format(
-                label,
-                joint
-            )
+            u"{}不能为空。".format(label)
         )
         return False
 
-    if cmds.nodeType(joint) != "joint":
+    try:
+        # 构造 Joint Core 对象，让 Joint 类型规则只维护在 core.joint_utils。
+        joint_utils.Joint(
+            joint
+        )
+    except RuntimeError as error:
         cmds.warning(
-            u"{}不是 Joint：{}".format(
+            u"{}无效：{}".format(
                 label,
-                joint
+                error
             )
         )
         return False
@@ -261,29 +220,32 @@ def is_direct_child_joint(start_joint, end_joint):
 
     Args:
         start_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+            父 Joint。
         end_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+            需要检查的 Child Joint。
 
     Returns:
-        object | bool:
-        方法执行后的结果数据。
+        bool:
+            End 是 Start 的直接子级时返回 True。
     """
-    parent_nodes = cmds.listRelatives(
-        end_joint,
-        parent=True,
-        fullPath=True
-    ) or []
-
-    start_long_names = cmds.ls(
-        start_joint,
-        long=True
-    ) or []
-
-    if not parent_nodes or not start_long_names:
+    # 使用 Scene Core 把 Start 解析成唯一 Long Path，避免重名 DAG 误判。
+    try:
+        start_long_name = scene_utils.get_long_name(
+            start_joint
+        )
+    except RuntimeError:
         return False
 
-    return parent_nodes[0] == start_long_names[0]
+    # 使用 Hierarchy Core 查询 End 的直接 Parent。
+    parent_node = hierarchy_utils.Hierarchy.get_parent(
+        end_joint,
+        full_path=True
+    )
+
+    if parent_node is None:
+        return False
+
+    return parent_node == start_long_name
 
 
 def get_interpolated_position(start_position, end_position, ratio):
@@ -291,30 +253,35 @@ def get_interpolated_position(start_position, end_position, ratio):
     计算两个三维位置之间的线性插值位置。
 
     Args:
-        start_position (list[float] | tuple[float, float, float] | float):
-            插值、Remap 或 Joint 分布的起始位置 / 起始值。
-        end_position (list[float] | tuple[float, float, float] | float):
-            插值、Remap 或 Joint 分布的结束位置 / 结束值。
+        start_position (list[float] | tuple[float, float, float]):
+            起始世界位置。
+        end_position (list[float] | tuple[float, float, float]):
+            结束世界位置。
         ratio (float):
-            Start 与 End 之间的插值比例，通常为 0.0～1.0。
+            0.0～1.0 插值比例。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        list[float]:
+            插值后的 XYZ 世界位置。
     """
     position = []
 
     for axis_index in range(3):
         start_value = start_position[axis_index]
         end_value = end_position[axis_index]
+
         value = start_value + (
             (end_value - start_value) * ratio
         )
-        position.append(value)
+
+        position.append(
+            value
+        )
 
     return position
 
 
+@scene_utils.undo_chunk
 def resample_joint(start_joint, end_joint, joint_number):
     u"""
     在直接父子 Joint 之间插入指定数量的新 Joint。
@@ -329,79 +296,87 @@ def resample_joint(start_joint, end_joint, joint_number):
 
     Args:
         start_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+            起始父 Joint。
         end_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+            末端直接子 Joint。
         joint_number (int):
-            当前构建、采样或查询过程使用的元素数量。
+            需要插入的新 Joint 数量。
 
     Returns:
-        object | list:
-        方法执行后的结果数据。
+        list[str]:
+            成功创建的中间 Joint；失败返回空列表。
     """
-    if not validate_joint(start_joint, u"起始 Joint"):
+    # 检查 Start / End 都是有效 Joint。
+    if not validate_joint(
+            start_joint,
+            u"起始 Joint"
+    ):
         return []
 
-    if not validate_joint(end_joint, u"末端 Joint"):
+    if not validate_joint(
+            end_joint,
+            u"末端 Joint"
+    ):
         return []
 
     if start_joint == end_joint:
-        cmds.warning(u"起始 Joint 和末端 Joint 不能相同。")
+        cmds.warning(
+            u"起始 Joint 和末端 Joint 不能相同。"
+        )
         return []
+
+    joint_number = int(
+        joint_number
+    )
 
     if joint_number < 1:
-        cmds.warning(u"插入 Joint 数量必须大于等于 1。")
+        cmds.warning(
+            u"插入 Joint 数量必须大于等于 1。"
+        )
         return []
 
-    if not is_direct_child_joint(start_joint, end_joint):
+    # 安全模式只允许重采样一段直接父子 Joint。
+    if not is_direct_child_joint(
+            start_joint,
+            end_joint
+    ):
         cmds.warning(
             u"安全模式只允许直接父子 Joint。当前末端 Joint 不是起始 Joint 的直接子级。"
         )
         return []
 
-    # -------------------------------------------------------------------------
-    # 步骤 1：记录两端世界位置。
-    # -------------------------------------------------------------------------
-    start_position = cmds.xform(
-        start_joint,
-        query=True,
-        worldSpace=True,
-        translation=True
+    # 使用 Transform Core 记录两端世界位置。
+    start_position = transform_utils.get_world_translation(
+        start_joint
     )
-    end_position = cmds.xform(
-        end_joint,
-        query=True,
-        worldSpace=True,
-        translation=True
+    end_position = transform_utils.get_world_translation(
+        end_joint
     )
 
-    start_short_name = get_short_name(start_joint)
+    # 使用统一 Short Name API 生成新 Joint 名称。
+    start_short_name = rename_utils.get_short_name(
+        start_joint
+    )
+
     created_joints = []
     previous_joint = start_joint
     success = False
 
-    cmds.undoInfo(
-        openChunk=True,
-        chunkName="MuziJointResampling"
-    )
-
     try:
-        # ---------------------------------------------------------------------
-        # 步骤 2：先把 End 暂时解除 Parent，避免创建新 Chain 时形成错误层级。
-        # ---------------------------------------------------------------------
+        # 临时把 End 放到 World，避免插入新 Chain 时形成错误层级。
         cmds.parent(
             end_joint,
-            world=True
+            world=True,
+            absolute=True
         )
 
-        # ---------------------------------------------------------------------
-        # 步骤 3：按等比例位置创建 Joint，并逐个组成 Chain。
-        # ---------------------------------------------------------------------
+        # 按等比例位置创建 Joint，并逐个组成 Chain。
         for joint_index in range(joint_number):
             ratio = float(joint_index + 1) / float(
                 joint_number + 1
             )
 
+            # 计算当前中间 Joint 的世界位置。
             position = get_interpolated_position(
                 start_position,
                 end_position,
@@ -413,67 +388,66 @@ def resample_joint(start_joint, end_joint, joint_number):
                 joint_index + 1
             )
 
-            cmds.select(clear=True)
-            new_joint = cmds.joint(
+            # 使用 Joint Core 创建新 Joint，不在 Tool 内维护另一套 Joint 创建逻辑。
+            new_joint = joint_utils.Joint.create(
                 name=new_joint_name,
-                position=position
+                position=position,
+                parent=previous_joint
             )
 
-            parent_result = cmds.parent(
-                new_joint,
-                previous_joint
+            created_joints.append(
+                new_joint
             )
-            new_joint = parent_result[0]
-
-            created_joints.append(new_joint)
             previous_joint = new_joint
 
-        # ---------------------------------------------------------------------
-        # 步骤 4：把原 End Joint 接到新 Chain 尾端。
-        # ---------------------------------------------------------------------
-        cmds.parent(
+        # 把原 End Joint 接回新 Chain 尾端。
+        hierarchy_utils.Hierarchy.parent(
             end_joint,
             previous_joint
         )
+
         success = True
 
     except Exception as error:
-        cmds.warning(str(error))
+        cmds.warning(
+            str(error)
+        )
 
     finally:
-        # ---------------------------------------------------------------------
-        # 步骤 5：失败时清理本轮新节点并尽量恢复原始父子关系。
-        # ---------------------------------------------------------------------
         if not success:
+            # 删除本轮创建的中间 Joint。
             delete_joints = []
 
             for created_joint in created_joints:
                 if cmds.objExists(created_joint):
-                    delete_joints.append(created_joint)
+                    delete_joints.append(
+                        created_joint
+                    )
 
             if delete_joints:
                 try:
-                    cmds.delete(delete_joints)
+                    cmds.delete(
+                        delete_joints
+                    )
                 except Exception:
                     pass
 
-            if cmds.objExists(end_joint) and cmds.objExists(start_joint):
-                try:
-                    current_parent = cmds.listRelatives(
-                        end_joint,
-                        parent=True,
-                        fullPath=True
-                    ) or []
-
-                    if not current_parent:
-                        cmds.parent(
+            # 尽量恢复 Start -> End 的原始直接父子关系。
+            if cmds.objExists(end_joint):
+                if cmds.objExists(start_joint):
+                    try:
+                        current_parent = hierarchy_utils.Hierarchy.get_parent(
                             end_joint,
-                            start_joint
+                            full_path=True
                         )
-                except Exception:
-                    pass
 
-        cmds.undoInfo(closeChunk=True)
+                        if current_parent is None:
+                            hierarchy_utils.Hierarchy.parent(
+                                end_joint,
+                                start_joint
+                            )
+                    except Exception:
+                        pass
 
     if not success:
         return []
@@ -486,8 +460,8 @@ def main():
     创建或恢复 Joint Resample Tool，立即显示并返回 QWidget。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        QWidget:
+            Joint Resample 窗口。
     """
     return window_utils.show_window(
         "tools.joint.joint_resamp_tool",
