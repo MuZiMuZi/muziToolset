@@ -5,21 +5,25 @@ Face Eyelid Builder
 
 把旧 pipelineUtils.create_eyelid_joints_on_curve 的有效算法迁入正式 Face System。
 
-设计变化：
+设计边界：
     1. Curve 查询和 Attachment 创建交给 core.curve_utils；
-    2. 不再修改或重新 Parent 输入 Curve；
-    3. 不再创建临时 nearestPointOnCurve 的重复代码；
-    4. Joint 使用眼球中心作为 Pivot，Aim Group 指向 Curve Attachment；
-    5. 眼皮和眼袋使用同一套构建函数；
-    6. 构建失败时自动清理本次创建的 Rig Nodes Group。
+    2. Transform / Joint 输入校验交给 core.transform_utils；
+    3. 通用 Transform Group 创建交给 core.scene_utils；
+    4. Aim Constraint 创建交给 core.constraint_utils；
+    5. Maya Undo Chunk 交给 core.scene_utils；
+    6. Joint 使用眼球中心作为 Pivot，沿 Local X 放射到 Curve Attachment；
+    7. 眼皮和眼袋使用同一套构建函数；
+    8. 构建失败时自动清理本次创建的 Rig Nodes Group。
 """
 
 from __future__ import print_function
 
 import maya.cmds as cmds
 
+from ....core import constraint_utils
 from ....core import curve_utils
 from ....core import name_utils
+from ....core import scene_utils
 from ....core import transform_utils
 
 
@@ -31,41 +35,23 @@ def validate_transform(node, label):
     u"""
     检查 Transform / Joint 输入。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-        label (str):
-            UI、Rig Node 或日志中展示的简短 Label。
-
-    Returns:
-        bool:
-        方法执行后的结果数据。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+    保留旧公开入口，实际节点类型校验统一由 transform_utils 维护。
     """
     if not node:
         raise RuntimeError(
             u"{}不能为空。".format(label)
         )
 
-    if not cmds.objExists(node):
-        raise RuntimeError(
-            u"{}不存在：{}".format(
-                label,
-                node
-            )
+    try:
+        # 使用 Transform Core 统一检查节点存在性和 Transform / Joint 类型。
+        transform_utils.validate_transform(
+            node
         )
-
-    node_type = cmds.nodeType(node)
-
-    if node_type not in ["transform", "joint"]:
+    except RuntimeError as error:
         raise RuntimeError(
-            u"{}必须是 Transform 或 Joint：{} | type={}".format(
+            u"{}无效：{}".format(
                 label,
-                node,
-                node_type
+                error
             )
         )
 
@@ -73,38 +59,15 @@ def validate_transform(node, label):
 
 
 def validate_side(side):
-    u"""
-    把方向统一成 lf / rt / md。
-
-    Args:
-        side (str):
-            方向标记，常用值为 lf、rt 或 md。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-    return name_utils.Name.normalize_side(side)
+    u"""把方向统一成 lf / rt / md。"""
+    # 使用统一 Rig Naming API 规范 Side Token。
+    return name_utils.Name.normalize_side(
+        side
+    )
 
 
 def normalize_name_part(value, label):
-    u"""
-    清理用于 Rig 命名的字段。
-
-    Args:
-        value (float):
-            需要读取、写入或参与计算的数值。
-        label (str):
-            UI、Rig Node 或日志中展示的简短 Label。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-
-    Raises:
-        ValueError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-    """
+    u"""清理用于 Rig 命名的字段。"""
     if value is None:
         raise ValueError(
             u"{}不能为空。".format(label)
@@ -146,26 +109,12 @@ def create_rig_name(
         grp_lf_upper_lid_rig_nodes_001
         grp_lf_lower_eye_bag_attach_003
         jnt_lf_upper_lid_bind_005
-
-    Args:
-        node_type (str):
-            需要创建、查询或过滤的 Maya Node Type。
-        side (str):
-            方向标记，常用值为 lf、rt 或 md。
-        region (str):
-            Face Component 的区域标记，例如 upper、lower、inner、outer。
-        feature (str):
-            Face Component 的功能部位标记，例如 lid、bag、lip。
-        role (str):
-            当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
-        index (int):
-            目标元素或节点的序号。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
     """
-    side = validate_side(side)
+    # 统一规范 Side，避免 l / left / lf 等不同输入产生多套命名。
+    side = validate_side(
+        side
+    )
+
     region = normalize_name_part(
         region,
         "region"
@@ -184,6 +133,7 @@ def create_rig_name(
         role
     )
 
+    # 使用项目正式五段式命名 API 创建最终节点名称。
     return name_utils.Name.create_name(
         node_type=node_type,
         side=side,
@@ -197,6 +147,7 @@ def create_rig_name(
 # Build
 # =============================================================================
 
+@scene_utils.undo_chunk
 def build_radial_curve_joints(
         curve,
         eye_joint,
@@ -215,59 +166,48 @@ def build_radial_curve_joints(
         lower lid
         upper eye bag
         lower eye bag
+
     原理：
         Eye Center
             -> Aim Group
                 -> Bind Joint
+
         Curve
             -> pointOnCurveInfo
                 -> Attachment
                     -> Aim Constraint -> Aim Group
+
     Joint 本身不承担 Aim Constraint，Aim Group 负责方向；
-    Joint 只沿 Local X 放置到眼皮 / 眼袋位置，便于后续蒙皮和驱动。
-
-    Args:
-        curve (str):
-            眼皮 / 眼袋驱动 Curve。
-        eye_joint (str):
-            眼球中心 Joint 或 Transform。
-        up_object (str):
-            Aim Constraint World Up 参考物体。
-        side (str):
-            lf / rt / md。
-        region (str):
-            upper / lower。
-        feature (str):
-            lid / eye_bag 等。
-        parent_group (str/None):
-            Rig Nodes Group 的父组。
-        joint_radius (float):
-            Joint 显示半径。
-
-    Returns:
-        dict: 构建结果。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+    Joint 只沿 Local X 放置到眼皮 / 眼袋位置。
     """
-    curve_utils.get_curve_shape(curve)
+    # 使用 Curve Core 验证输入 Curve，并取得真实 NURBS Curve Shape。
+    curve_utils.get_curve_shape(
+        curve
+    )
+
+    # 检查眼球中心 Joint / Transform 是否可以参与空间计算。
     validate_transform(
         eye_joint,
         u"Eye Joint"
     )
+
+    # 检查 Aim Constraint 使用的 Up Object。
     validate_transform(
         up_object,
         u"Up Object"
     )
 
     if parent_group is not None:
+        # 如果提供父层级，先确认它是有效 Transform / Joint。
         validate_transform(
             parent_group,
             u"Parent Group"
         )
 
-    side = validate_side(side)
+    # 规范 Side / Region / Feature，保证本次创建的全部节点命名一致。
+    side = validate_side(
+        side
+    )
     region = normalize_name_part(
         region,
         "region"
@@ -277,6 +217,7 @@ def build_radial_curve_joints(
         "feature"
     )
 
+    # 获取 Curve 全部 CV 世界位置，每个 CV 对应一个放射 Joint。
     cv_positions = curve_utils.get_curve_cv_positions(
         curve,
         world_space=True
@@ -289,6 +230,7 @@ def build_radial_curve_joints(
             )
         )
 
+    # 生成本次 Eye Area Rig 的三个主层级名称。
     nodes_group_name = create_rig_name(
         "grp",
         side,
@@ -330,27 +272,25 @@ def build_radial_curve_joints(
 
     nodes_group = None
 
-    cmds.undoInfo(
-        openChunk=True,
-        chunkName="MuziFaceEyelidBuild"
-    )
-
     try:
-        nodes_group = cmds.createNode(
+        # 使用 Scene Core 创建 Eye Area Rig 顶层 Nodes Group。
+        nodes_group = scene_utils.create_node(
             "transform",
-            name=nodes_group_name,
+            nodes_group_name,
             parent=parent_group
         )
 
-        attachments_group = cmds.createNode(
+        # 创建所有 Curve Attachment 的统一容器。
+        attachments_group = scene_utils.create_node(
             "transform",
-            name=attachments_group_name,
+            attachments_group_name,
             parent=nodes_group
         )
 
-        joints_group = cmds.createNode(
+        # 创建 Aim Group / Bind Joint 的统一容器。
+        joints_group = scene_utils.create_node(
             "transform",
-            name=joints_group_name,
+            joints_group_name,
             parent=nodes_group
         )
 
@@ -361,11 +301,9 @@ def build_radial_curve_joints(
         attachment_matrix_nodes = []
         aim_constraints = []
 
-        eye_position = cmds.xform(
-            eye_joint,
-            query=True,
-            worldSpace=True,
-            translation=True
+        # 使用 Transform Core 读取眼球中心世界位置，所有 Aim Group 都从此 Pivot 出发。
+        eye_position = transform_utils.get_world_translation(
+            eye_joint
         )
 
         index = 0
@@ -374,6 +312,7 @@ def build_radial_curve_joints(
             item_index = index + 1
             cv_position = cv_positions[index]
 
+            # 生成当前 CV 对应的 Curve Attachment 名称。
             attachment_name = create_rig_name(
                 "grp",
                 side,
@@ -383,6 +322,7 @@ def build_radial_curve_joints(
                 item_index
             )
 
+            # 使用 Curve Core 在最接近当前 CV 的位置创建稳定 Attachment。
             attachment_result = curve_utils.create_closest_point_attachment(
                 curve=curve,
                 world_position=cv_position,
@@ -399,6 +339,7 @@ def build_radial_curve_joints(
             for matrix_node in attachment_result["matrix_nodes"]:
                 attachment_matrix_nodes.append(matrix_node)
 
+            # 生成当前放射 Joint 使用的 Aim Group 名称。
             aim_group_name = create_rig_name(
                 "grp",
                 side,
@@ -408,29 +349,41 @@ def build_radial_curve_joints(
                 item_index
             )
 
-            aim_group = cmds.createNode(
+            # 创建 Aim Group，并把 Pivot 放在眼球中心位置。
+            aim_group = scene_utils.create_node(
                 "transform",
-                name=aim_group_name,
+                aim_group_name,
                 parent=joints_group
             )
 
-            cmds.xform(
+            transform_utils.set_world_translation(
                 aim_group,
-                worldSpace=True,
-                translation=eye_position
+                eye_position
             )
 
-            aim_constraint = cmds.aimConstraint(
-                attachment,
-                aim_group,
+            # 使用 Constraint Core 让 Aim Group 指向对应 Curve Attachment。
+            aim_constraint_nodes = constraint_utils.create_constraint(
+                driver_objects=attachment,
+                driven_object=aim_group,
+                constraint_type="aimConstraint",
+                maintain_offset=False,
                 aimVector=[1.0, 0.0, 0.0],
                 upVector=[0.0, 1.0, 0.0],
                 worldUpType="objectrotation",
                 worldUpObject=up_object,
-                worldUpVector=[0.0, 1.0, 0.0],
-                maintainOffset=False
-            )[0]
+                worldUpVector=[0.0, 1.0, 0.0]
+            )
 
+            if not aim_constraint_nodes:
+                raise RuntimeError(
+                    u"Aim Constraint 创建失败：{}".format(
+                        aim_group
+                    )
+                )
+
+            aim_constraint = aim_constraint_nodes[0]
+
+            # 生成当前放射 Bind Joint 的正式名称。
             joint_name = create_rig_name(
                 "jnt",
                 side,
@@ -440,12 +393,14 @@ def build_radial_curve_joints(
                 item_index
             )
 
+            # Joint 必须直接创建在 Aim Group 下，保持 Local Transform 从零开始。
             joint = cmds.createNode(
                 "joint",
                 name=joint_name,
                 parent=aim_group
             )
 
+            # 计算眼球中心到当前 Attachment 的距离，作为 Joint Local X 长度。
             joint_distance = transform_utils.distance_between(
                 eye_joint,
                 attachment
@@ -486,7 +441,7 @@ def build_radial_curve_joints(
 
             index += 1
 
-        result = {
+        return {
             "curve": curve,
             "eye_joint": eye_joint,
             "up_object": up_object,
@@ -504,19 +459,15 @@ def build_radial_curve_joints(
             "feature": feature,
         }
 
-        return result
-
     except Exception:
+        # 构建失败时删除本次顶层 Nodes Group，同时清理其全部子节点。
         if nodes_group is not None:
             if cmds.objExists(nodes_group):
-                cmds.delete(nodes_group)
+                cmds.delete(
+                    nodes_group
+                )
 
         raise
-
-    finally:
-        cmds.undoInfo(
-            closeChunk=True
-        )
 
 
 def build_eyelid_joints(
@@ -528,29 +479,8 @@ def build_eyelid_joints(
         parent_group=None,
         joint_radius=0.2
 ):
-    u"""
-    眼皮专用入口。
-
-    Args:
-        curve (str):
-            需要处理的 Maya Curve Transform 或 Shape 名称。
-        eye_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
-        up_object (str):
-            Eyelid / Radial Joint Aim 系统用于稳定 Orientation 的 Up Object。
-        side (str):
-            方向标记，常用值为 lf、rt 或 md。
-        region (str):
-            Face Component 的区域标记，例如 upper、lower、inner、outer。
-        parent_group (str | None):
-            新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
-        joint_radius (float):
-            当前 Joint、Controller 或辅助对象使用的半径。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
+    u"""眼皮专用入口。"""
+    # 复用统一 Radial Curve Joint Builder，只把 Feature 固定为 lid。
     return build_radial_curve_joints(
         curve=curve,
         eye_joint=eye_joint,
@@ -572,29 +502,8 @@ def build_eye_bag_joints(
         parent_group=None,
         joint_radius=0.2
 ):
-    u"""
-    眼袋专用入口。
-
-    Args:
-        curve (str):
-            需要处理的 Maya Curve Transform 或 Shape 名称。
-        eye_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
-        up_object (str):
-            Eyelid / Radial Joint Aim 系统用于稳定 Orientation 的 Up Object。
-        side (str):
-            方向标记，常用值为 lf、rt 或 md。
-        region (str):
-            Face Component 的区域标记，例如 upper、lower、inner、outer。
-        parent_group (str | None):
-            新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
-        joint_radius (float):
-            当前 Joint、Controller 或辅助对象使用的半径。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
+    u"""眼袋专用入口。"""
+    # 复用统一 Radial Curve Joint Builder，只把 Feature 固定为 eye_bag。
     return build_radial_curve_joints(
         curve=curve,
         eye_joint=eye_joint,
