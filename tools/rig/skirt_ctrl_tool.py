@@ -6,7 +6,11 @@ Skirt Rig Tool
 裙子绑定系统 UI。
 
 实际绑定逻辑维护在：
-    muzi_rigging.systems.body.skirt
+    muziToolset.systems.body.skirt
+
+窗口生命周期：
+    用户直接调用 main() 时，由 ui.window_utils 负责保存强引用并显示窗口；
+    从主工具箱打开时，仍可继续交给 app.window_manager 做应用级窗口管理。
 """
 
 from __future__ import print_function
@@ -34,6 +38,7 @@ except ImportError:
 
 from ...systems.body.skirt import SkirtRigBuilder
 from ...ui import theme
+from ...ui import window_utils
 
 
 class SkirtRigDialog(QDialog):
@@ -213,9 +218,11 @@ class SkirtRigDialog(QDialog):
 
 
 def main():
-    """创建并返回 Skirt Rig 窗口。"""
-    window = SkirtRigDialog()
-    return window
+    """显示并返回 Skirt Rig 窗口。"""
+    return window_utils.show_window(
+        "tools.rig.skirt_ctrl_tool",
+        SkirtRigDialog
+    )
 
 
 __all__ = [
