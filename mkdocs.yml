@@ -15,12 +15,12 @@ strict: true
 # Theme
 # =============================================================================
 #
-# 文档信息架构参考任务导向的用户手册：
-#   1. 用户先从“我要做什么”进入；
-#   2. API Reference 再负责完整技术细节；
-#   3. 左侧导航保持源码层级，右侧 TOC 展开到 Method。
-#
-# 不复制任何外部网站视觉样式，只借鉴清晰、渐进式的信息组织方式。
+# 文档与 Maya UI 共用同一套 MuziTools 信息设计原则：
+#   1. clean / calm；
+#   2. sidebar-first；
+#   3. 用留白、层级和柔和 Surface 组织内容；
+#   4. 关键操作和 Active State 必须清晰；
+#   5. Arc Browser 只作为交互与信息组织参考，不复制品牌素材。
 # =============================================================================
 theme:
   name: material
@@ -41,15 +41,15 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
-      accent: blue
+      primary: deep purple
+      accent: deep purple
       toggle:
         icon: material/brightness-7
         name: 切换到深色模式
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: blue
+      primary: deep purple
+      accent: purple
       toggle:
         icon: material/brightness-4
         name: 切换到浅色模式

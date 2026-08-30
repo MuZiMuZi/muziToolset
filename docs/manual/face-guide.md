@@ -2,125 +2,192 @@
 
 `FaceGuide` 是 Face Rig 的 **Step 02 定位数据管理层**。
 
-它只负责 Guide 的加载、查询、验证和最终确认，不创建正式 Joint 或动画 Controller。
-
-<div class="grid cards" markdown>
-
--   :material-download-box-outline:{ .lg .middle } **Build Guide**
-
-    ---
-
-    加载或复用 `face_guide.ma` 模板。
-
-    [:octicons-code-24: FaceGuide API](../reference/systems/face/face_guide.md)
-
--   :material-face-man-shimmer-outline:{ .lg .middle } **手动贴合**
-
-    ---
-
-    调整 Lip、Eye、Brow、Jaw、Nose 等 Locator 到角色位置。
-
--   :material-check-decagram-outline:{ .lg .middle } **Validate**
-
-    ---
-
-    检查必要 Guide、重复名称和左右镜像关系。
-
--   :material-flag-checkered:{ .lg .middle } **Finalize**
-
-    ---
-
-    确认 Step 02 完成，并把稳定 Guide 数据交给后续 Builder。
-
-</div>
+进入 Step 02 时，UI 会自动导入或复用 `resources/face/face_guide.ma`。绑定师主要负责摆放定位器、镜像、修复模板和设置后续 Controller 参数。
 
 ## 标准流程
 
 ```text
-FaceSetup.build()
-       ↓
-FaceGuide.build()
-       ↓
-手动贴合 Guide
-       ↓
-validate_guides()
-       ↓
-FaceGuide.finalize()
-       ↓
-Step 03 Builder
+Step 01 Setup 完成
+        ↓
+进入 Step 02
+        ↓
+自动导入 / 复用 face_guide.ma
+        ↓
+手动贴合 Locator
+        ↓
+需要时 LF ↔ RT Mirror
+        ↓
+设置 Controller Size / Color
+        ↓
+点击“下一步”
+        ↓
+检查模板中的全部 Locator
+        ↓
+全部存在 → 保存 Config → Step 03
+任意缺失 → 阻止继续并列出缺失名称
 ```
 
-## 1. 完成 Face Setup
+## 自动加载 Guide
 
-```python
-from muziToolset.systems.face import FaceSetup
-
-setup = FaceSetup(
-    face_head_model="head_geo",
-    mouth_jnt_number=40
-)
-
-setup.build()
-```
-
-## 2. 创建 Guide
+正常流程不需要手动点击 Build Guide。
 
 ```python
 from muziToolset.systems.face import FaceGuide
 
 guide = FaceGuide()
-guide.build()
+guide.build_guide()
 ```
 
-`build()` 只准备可编辑 Guide。此时 Step 02 **还没有完成**。
+`build_guide()` 是系统层公开入口，UI 会在进入 Step 02 时自动调用。
 
-## 3. 手动贴合
+## Guide Template Contract
 
-重点检查：
+`resources/face/face_guide.ma` 是标准 Locator 完整性的唯一来源。
 
-- Lip / Mouth Corner
-- Eye Ball / Iris
-- Upper / Lower Eyelid
-- Brow
-- Nose / Jaw
-- Teeth / Tongue
-- Ear / Zygoma
-
-!!! tip "左右 Guide"
-    正常左右结构已经保存在模板中。通常编辑 LF / MD Guide 即可，不需要每次重新创建 RT Guide。
-
-## 4. 检查 Guide
-
-```python
-report = guide.validate_guides()
-
-print(report["valid"])
-print(report["errors"])
-```
-
-如果左右镜像被改坏：
-
-```python
-guide.repair_symmetry()
-```
-
-## 5. Finalize
-
-```python
-guide.finalize()
-```
-
-通过后：
+`guide_data.py` 会读取模板中的全部：
 
 ```text
-Step 02 = completed
-Step 03 = not completed
-Step 04 = not completed
+loc_*_guide_###
 ```
 
-## Guide 数据怎么给 Builder 使用
+点击“下一步”时逐个验证。
 
-后续 Builder 不应该自己用 `cmds.ls()` 猜 Locator 顺序，而应该直接读取 FaceGuide：
+这意味着：
+
+- 绑定师误删任意标准 Locator 都会被发现；
+- 不只检查几个核心嘴唇 / 眼睛 Guide；
+- Template 以后新增 Locator 后，Validation 会自动跟随模板。
+
+## 重新导入模板
+
+Step 02 提供 **重新导入模板**。
+
+用途：绑定过程中误删了某个 Locator，但不希望丢失已经摆好的其它定位结果。
+
+流程：
+
+```text
+当前 Guide
+    ↓
+记录仍然存在 Locator 的世界矩阵
+    ↓
+重新导入完整 face_guide.ma
+    ↓
+按标准名称匹配 Locator
+    ↓
+恢复已有 Locator 的原位置
+    ↓
+缺失 Locator 使用模板默认位置补回
+```
+
+因此这个功能是 Repair / Reimport，不等同于完全 Reset。
+
+## Guide Mirror
+
+Step 02 支持：
+
+```text
+LF → RT
+RT → LF
+```
+
+Mirror 只复制当前 Guide 状态，不建立永久左右 Transform Connection。
+
+镜像后：
+
+- LF / RT 可以继续独立调整；
+- `md` 中线 Guide 不参与镜像；
+- 非对称角色仍然可以继续手工修改。
+
+## 撤销镜像
+
+每次 Guide Mirror 都作为一个 Maya Undo Chunk 执行，因此可以直接使用：
+
+```text
+Ctrl + Z
+```
+
+UI 同时提供：
+
+```text
+撤销上次镜像
+```
+
+按钮会恢复 Mirror 前记录的 Target Side Snapshot。
+
+## Controller Settings
+
+### Global Scale
+
+控制整个 Face Controller 的整体大小倍率。
+
+默认：
+
+```text
+1.0
+```
+
+### Side Color
+
+默认 Maya Index Color：
+
+```text
+LF = 6   蓝色
+RT = 13  红色
+MD = 17  黄色
+```
+
+UI 使用 Slider + Index + Color Preview。
+
+### Module Size
+
+全部默认：
+
+```text
+1.0
+```
+
+使用 `QDoubleSpinBox`：
+
+```text
+最小 0.1
+最大 100.0
+步进 0.1
+小数 1 位
+```
+
+按面部从上到下排列：
+
+```text
+Brow
+Eye
+Eyelid
+Nose
+Cheek
+Lip
+Jaw
+```
+
+## 完整性检查
+
+可以在代码中主动查询：
+
+```python
+validation = guide.validate_guides()
+
+print(validation["valid"])
+print(validation["missing_guide_names"])
+print(validation["guide_count"])
+print(validation["template_guide_count"])
+```
+
+如果 `valid == False`，Step 02 不应该进入 Step 03。
+
+## Guide 数据给 Builder 使用
+
+后续 Builder 不应该使用 `cmds.ls()` 猜 Locator 顺序。
+
+直接使用稳定 API：
 
 ```python
 lip_data = guide.get_lip_guides()
@@ -128,13 +195,22 @@ lid_data = guide.get_eyelid_guides("lf")
 brow_data = guide.get_brow_guides("lf")
 ```
 
-## 相关 API
+固定顺序和名称由 `guide/guide_data.py` 管理。
 
-- [face_base.py](../reference/systems/face/face_base.md)
-- [face_setup.py](../reference/systems/face/face_setup.md)
-- [face_guide.py](../reference/systems/face/face_guide.md)
-- [eyelid/builder.py](../reference/systems/face/eyelid/builder.md)
-- [lip/zip_builder.py](../reference/systems/face/lip/zip_builder.md)
+## 目录
+
+```text
+systems/face/guide/
+├── face_guide.py       Step 02 调度 / Query / Validation / Config
+├── guide_data.py       Template Contract / 固定数据 / Controller Default
+├── guide_template.py   Import / Reset / Repair / Reimport
+└── guide_mirror.py     LF ↔ RT / Undo
+```
+
+## 相关文档
+
+- [Face System Architecture](../architecture/face-system.md)
+- [UI Design System](../development/ui-design.md)
+- [总体架构](../architecture/index.md)
 
 [返回用户手册](index.md){ .md-button }
-[打开 FaceGuide API](../reference/systems/face/face_guide.md){ .md-button .md-button--primary }

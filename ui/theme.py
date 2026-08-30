@@ -5,19 +5,12 @@ MuziTools UI Theme
 
 Maya 2023 / PySide2 统一视觉系统。
 
-当前设计方向参考网易云音乐电脑版的桌面端布局语言：
-    - 浅灰色应用背景；
-    - 白色主内容区域和卡片；
-    - 左侧固定导航栏；
-    - 红色作为唯一主要强调色；
-    - 大量留白和轻量分割线；
-    - 搜索框、导航、按钮都采用柔和圆角；
-    - Hover 变化轻，不做厚重阴影；
-    - 保持 Maya 工具窗口需要的紧凑信息密度。
-
-说明：
-    这里只参考布局和视觉语言，不复制网易云音乐的品牌素材、Logo 或图标。
-    所有控件仍然使用 PySide2 / PySide6 原生组件，保证 Maya 中稳定运行。
+设计方向：
+    - 参考 Arc Browser 的 clean / calm / sidebar-first 信息组织；
+    - 使用柔和背景、轻量边框、浮层式卡片和明确内容层级；
+    - 主操作清晰，次级操作可见但不过度抢占注意力；
+    - 保留 MuziTools 自己的品牌和 Maya 工作流，不复制 Arc Logo、图标或品牌资产；
+    - 所有正式 UI 优先复用本 Theme，不在 Tool 中重复维护整套 QSS。
 """
 
 from __future__ import print_function
@@ -37,45 +30,47 @@ except ImportError:
 # =============================================================================
 # Theme Tokens
 # =============================================================================
-background = "#F5F5F7"
-background_alt = "#F0F1F3"
-sidebar_background = "#F7F7F9"
-surface = "#FFFFFF"
-surface_alt = "#FAFAFB"
-surface_hover = "#F3F3F5"
-surface_pressed = "#ECECEF"
 
-border = "#E4E5E8"
-border_soft = "#ECEDEF"
-border_focus = "#EC4141"
+# Arc-inspired 默认主题：柔和冷灰 + 淡紫色强调。
+background = "#F2F1F6"
+background_alt = "#ECEBF1"
+sidebar_background = "#E9E7F0"
+surface = "#FBFAFD"
+surface_alt = "#F6F5F9"
+surface_hover = "#EEEAF7"
+surface_pressed = "#E5E0F1"
 
-text = "#1F2024"
-text_secondary = "#55575F"
-text_muted = "#8A8D96"
-text_disabled = "#B8BBC2"
+border = "#DCD9E4"
+border_soft = "#E7E4EC"
+border_focus = "#6D68D9"
 
-accent = "#EC4141"
-accent_hover = "#F05252"
-accent_pressed = "#D93636"
-accent_soft = "#FFF0F0"
-accent_soft_hover = "#FFE4E4"
+text = "#242229"
+text_secondary = "#55515D"
+text_muted = "#8D8897"
+text_disabled = "#B7B2BF"
 
-success = "#31A66A"
-warning = "#D58A2D"
-danger = "#D94C4C"
-info = "#4D87D8"
+accent = "#6D68D9"
+accent_hover = "#5F5BC5"
+accent_pressed = "#514DB1"
+accent_soft = "#ECEAFA"
+accent_soft_hover = "#E2DFF7"
 
-radius_small = 6
-radius = 9
-radius_large = 12
+success = "#3B966B"
+warning = "#B7792D"
+danger = "#C94E59"
+info = "#4F78C7"
+
+radius_small = 8
+radius = 12
+radius_large = 16
 
 
 # =============================================================================
 # Global Style Sheet
 # =============================================================================
-def _build_style_sheet():
-    """生成 MuziTools 全局 QSS。"""
 
+def _build_style_sheet():
+    u"""生成 MuziTools 全局 QSS。"""
     return u"""
 /* -------------------------------------------------------------------------
    Base
@@ -100,7 +95,7 @@ QWidget[muziSidebar="true"],
 QFrame[muziSidebar="true"] {
     background-color: %(sidebar_background)s;
     border: none;
-    border-right: 1px solid %(border)s;
+    border-right: 1px solid %(border_soft)s;
 }
 
 QWidget[muziCard="true"],
@@ -108,6 +103,11 @@ QFrame[muziCard="true"] {
     background-color: %(surface)s;
     border: 1px solid %(border_soft)s;
     border-radius: %(radius_large)dpx;
+}
+
+QWidget[muziCard="true"]:hover,
+QFrame[muziCard="true"]:hover {
+    border-color: %(border)s;
 }
 
 QWidget[muziSubCard="true"],
@@ -139,8 +139,8 @@ QLabel[muziSubtitle="true"] {
 
 QLabel[muziSectionTitle="true"] {
     color: %(text)s;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 650;
 }
 
 QLabel[muziMuted="true"] {
@@ -153,12 +153,27 @@ QLabel[muziAccent="true"] {
 }
 
 QLabel[muziPill="true"] {
-    padding: 3px 8px;
+    padding: 4px 9px;
     background-color: %(accent_soft)s;
     color: %(accent)s;
-    border: 1px solid #FFDADA;
+    border: 1px solid #DAD6F3;
     border-radius: 10px;
     font-size: 11px;
+    font-weight: 600;
+}
+
+QLabel[muziSuccess="true"] {
+    color: %(success)s;
+    font-weight: 600;
+}
+
+QLabel[muziWarning="true"] {
+    color: %(warning)s;
+    font-weight: 600;
+}
+
+QLabel[muziDangerText="true"] {
+    color: %(danger)s;
     font-weight: 600;
 }
 
@@ -167,9 +182,9 @@ QLabel[muziPill="true"] {
    ------------------------------------------------------------------------- */
 QPushButton,
 QToolButton {
-    min-height: 30px;
-    padding: 0px 12px;
-    background-color: %(surface)s;
+    min-height: 32px;
+    padding: 0px 13px;
+    background-color: %(surface_alt)s;
     color: %(text)s;
     border: 1px solid %(border)s;
     border-radius: %(radius_small)dpx;
@@ -178,19 +193,19 @@ QToolButton {
 QPushButton:hover,
 QToolButton:hover {
     background-color: %(surface_hover)s;
-    border-color: #D6D8DC;
+    border-color: #CBC6D6;
 }
 
 QPushButton:pressed,
 QToolButton:pressed {
     background-color: %(surface_pressed)s;
-    border-color: #C8CAD0;
+    border-color: #BEB8CA;
 }
 
 QPushButton:checked,
 QToolButton:checked {
     background-color: %(accent_soft)s;
-    border-color: #FFCACA;
+    border-color: #CFC9EE;
     color: %(accent)s;
 }
 
@@ -221,52 +236,68 @@ QToolButton[muziPrimary="true"]:pressed {
     border-color: %(accent_pressed)s;
 }
 
+QPushButton[muziSecondary="true"],
+QToolButton[muziSecondary="true"] {
+    background-color: %(surface)s;
+    color: %(text)s;
+    border: 1px solid #CCC7D5;
+    font-weight: 600;
+}
+
+QPushButton[muziSecondary="true"]:hover,
+QToolButton[muziSecondary="true"]:hover {
+    background-color: %(accent_soft)s;
+    color: %(accent)s;
+    border-color: #C4BEE7;
+}
+
 QPushButton[muziDanger="true"] {
-    background-color: #FFF4F4;
-    border-color: #FFD9D9;
+    background-color: #FFF1F2;
+    border-color: #F3CCD0;
     color: %(danger)s;
 }
 
 QPushButton[muziDanger="true"]:hover {
-    background-color: #FFEAEA;
-    border-color: #FFBEBE;
+    background-color: #FFE7EA;
+    border-color: #EFB8BE;
 }
 
 QPushButton[muziGhost="true"],
 QToolButton[muziGhost="true"] {
     background-color: transparent;
-    border-color: transparent;
+    border: 1px solid transparent;
     color: %(text_secondary)s;
 }
 
 QPushButton[muziGhost="true"]:hover,
 QToolButton[muziGhost="true"]:hover {
-    background-color: %(surface_hover)s;
-    border-color: transparent;
+    background-color: rgba(255, 255, 255, 0.44);
+    border-color: %(border_soft)s;
     color: %(text)s;
 }
 
 QPushButton[muziNav="true"] {
     min-height: 34px;
-    padding-left: 14px;
+    padding-left: 13px;
     padding-right: 12px;
     text-align: left;
     background-color: transparent;
-    border: none;
+    border: 1px solid transparent;
     color: %(text_secondary)s;
-    border-radius: %(radius_small)dpx;
+    border-radius: 10px;
 }
 
 QPushButton[muziNav="true"]:hover {
-    background-color: #ECEDEF;
+    background-color: rgba(255, 255, 255, 0.42);
+    border-color: rgba(255, 255, 255, 0.28);
     color: %(text)s;
 }
 
 QPushButton[muziNav="true"]:checked,
 QPushButton[muziNavActive="true"] {
-    background-color: %(accent_soft)s;
-    color: %(accent)s;
-    border: none;
+    background-color: rgba(255, 255, 255, 0.70);
+    color: %(text)s;
+    border: 1px solid rgba(255, 255, 255, 0.78);
     font-weight: 600;
 }
 
@@ -282,9 +313,9 @@ QComboBox,
 QDateEdit,
 QTimeEdit,
 QDateTimeEdit {
-    min-height: 30px;
-    padding: 0px 9px;
-    background-color: %(surface)s;
+    min-height: 32px;
+    padding: 0px 10px;
+    background-color: rgba(255, 255, 255, 0.78);
     color: %(text)s;
     border: 1px solid %(border)s;
     border-radius: %(radius_small)dpx;
@@ -292,26 +323,26 @@ QDateTimeEdit {
 
 QTextEdit,
 QPlainTextEdit {
-    padding: 8px;
+    padding: 9px;
 }
 
 QLineEdit[muziSearch="true"] {
-    min-height: 32px;
+    min-height: 34px;
     padding-left: 14px;
     padding-right: 14px;
-    background-color: #F0F1F3;
-    border: 1px solid #F0F1F3;
-    border-radius: 16px;
+    background-color: rgba(255, 255, 255, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 17px;
 }
 
 QLineEdit[muziSearch="true"]:hover {
-    background-color: #ECEDEF;
-    border-color: #E4E5E8;
+    background-color: rgba(255, 255, 255, 0.78);
+    border-color: %(border)s;
 }
 
 QLineEdit[muziSearch="true"]:focus {
     background-color: %(surface)s;
-    border: 1px solid #FFBDBD;
+    border: 1px solid %(border_focus)s;
 }
 
 QLineEdit:hover,
@@ -323,7 +354,7 @@ QComboBox:hover,
 QDateEdit:hover,
 QTimeEdit:hover,
 QDateTimeEdit:hover {
-    border-color: #D3D5D9;
+    border-color: #CBC6D5;
 }
 
 QLineEdit:focus,
@@ -376,11 +407,6 @@ QRadioButton {
     background: transparent;
 }
 
-QCheckBox:hover,
-QRadioButton:hover {
-    color: %(text)s;
-}
-
 QCheckBox::indicator,
 QRadioButton::indicator {
     width: 15px;
@@ -389,19 +415,19 @@ QRadioButton::indicator {
 
 QCheckBox::indicator:unchecked {
     background-color: %(surface)s;
-    border: 1px solid #C8CBD0;
-    border-radius: 4px;
+    border: 1px solid #C8C3D0;
+    border-radius: 5px;
 }
 
 QCheckBox::indicator:checked {
     background-color: %(accent)s;
     border: 1px solid %(accent)s;
-    border-radius: 4px;
+    border-radius: 5px;
 }
 
 QRadioButton::indicator:unchecked {
     background-color: %(surface)s;
-    border: 1px solid #C8CBD0;
+    border: 1px solid #C8C3D0;
     border-radius: 8px;
 }
 
@@ -481,9 +507,9 @@ QListWidget::item,
 QTreeWidget::item,
 QListView::item,
 QTreeView::item {
-    min-height: 28px;
-    padding: 4px 7px;
-    border-radius: 6px;
+    min-height: 29px;
+    padding: 4px 8px;
+    border-radius: 7px;
 }
 
 QListWidget::item:hover,
@@ -505,7 +531,7 @@ QTableView::item:selected {
 }
 
 QHeaderView::section {
-    min-height: 28px;
+    min-height: 29px;
     padding: 0px 8px;
     background-color: %(surface_alt)s;
     color: %(text_secondary)s;
@@ -513,11 +539,6 @@ QHeaderView::section {
     border-right: 1px solid %(border_soft)s;
     border-bottom: 1px solid %(border_soft)s;
     font-weight: 600;
-}
-
-QTableCornerButton::section {
-    background-color: %(surface_alt)s;
-    border: none;
 }
 
 /* -------------------------------------------------------------------------
@@ -529,35 +550,35 @@ QScrollArea {
 }
 
 QScrollBar:vertical {
-    width: 8px;
+    width: 9px;
     margin: 2px;
     background: transparent;
 }
 
 QScrollBar::handle:vertical {
     min-height: 30px;
-    background-color: #C7C9CE;
+    background-color: #C7C2CE;
     border-radius: 4px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background-color: #AEB1B7;
+    background-color: #AAA4B3;
 }
 
 QScrollBar:horizontal {
-    height: 8px;
+    height: 9px;
     margin: 2px;
     background: transparent;
 }
 
 QScrollBar::handle:horizontal {
     min-width: 30px;
-    background-color: #C7C9CE;
+    background-color: #C7C2CE;
     border-radius: 4px;
 }
 
 QScrollBar::handle:horizontal:hover {
-    background-color: #AEB1B7;
+    background-color: #AAA4B3;
 }
 
 QScrollBar::add-line,
@@ -572,29 +593,34 @@ QScrollBar::sub-page {
    Slider / Progress
    ------------------------------------------------------------------------- */
 QSlider::groove:horizontal {
-    height: 4px;
-    background-color: #E5E6E9;
-    border-radius: 2px;
+    height: 6px;
+    background-color: #DCD8E2;
+    border-radius: 3px;
 }
 
 QSlider::sub-page:horizontal {
     background-color: %(accent)s;
-    border-radius: 2px;
+    border-radius: 3px;
 }
 
 QSlider::handle:horizontal {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     margin: -5px 0px;
     background-color: #FFFFFF;
     border: 2px solid %(accent)s;
-    border-radius: 7px;
+    border-radius: 8px;
+}
+
+QSlider::handle:horizontal:hover {
+    background-color: %(accent_soft)s;
+    border-color: %(accent_hover)s;
 }
 
 QProgressBar {
     min-height: 6px;
     max-height: 6px;
-    background-color: #E5E6E9;
+    background-color: #DDD9E3;
     border: none;
     border-radius: 3px;
     text-align: center;
@@ -610,7 +636,7 @@ QProgressBar::chunk {
    Menu / Tooltip
    ------------------------------------------------------------------------- */
 QMenu {
-    padding: 6px;
+    padding: 7px;
     background-color: %(surface)s;
     color: %(text)s;
     border: 1px solid %(border)s;
@@ -618,9 +644,9 @@ QMenu {
 }
 
 QMenu::item {
-    min-height: 26px;
+    min-height: 27px;
     padding: 2px 24px 2px 10px;
-    border-radius: 5px;
+    border-radius: 7px;
 }
 
 QMenu::item:selected {
@@ -634,11 +660,11 @@ QMenu::separator {
 }
 
 QToolTip {
-    padding: 6px 9px;
-    background-color: #2F3136;
+    padding: 7px 10px;
+    background-color: #2E2B33;
     color: #FFFFFF;
     border: none;
-    border-radius: 6px;
+    border-radius: 7px;
 }
 """ % {
         "background": background,
@@ -660,6 +686,8 @@ QToolTip {
         "accent_pressed": accent_pressed,
         "accent_soft": accent_soft,
         "accent_soft_hover": accent_soft_hover,
+        "success": success,
+        "warning": warning,
         "danger": danger,
         "radius_small": radius_small,
         "radius": radius,
@@ -673,15 +701,9 @@ style_sheet = _build_style_sheet()
 # =============================================================================
 # Helpers
 # =============================================================================
+
 def repolish(widget):
-    u"""
-    动态属性变化后重新刷新 QSS。
-
-    Args:
-        widget (QtWidgets.QWidget):
-            需要应用 MuziTools Theme / UI 状态的 Qt Widget。
-    """
-
+    u"""动态属性变化后重新刷新 QSS。"""
     if widget is None:
         return
 
@@ -696,22 +718,7 @@ def repolish(widget):
 
 
 def set_role(widget, role, enabled=True):
-    u"""
-    给 QWidget 设置 MuziTools 视觉角色。
-
-    Args:
-        widget (QtWidgets.QWidget):
-            需要应用 MuziTools Theme / UI 状态的 Qt Widget。
-        role (str):
-            当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
-        enabled (bool):
-            当前 UI 控件或 Rig 功能是否启用。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-
+    u"""给 QWidget 设置 MuziTools 视觉角色。"""
     if widget is None:
         return widget
 
@@ -726,7 +733,11 @@ def set_role(widget, role, enabled=True):
         "muted": "muziMuted",
         "accent": "muziAccent",
         "pill": "muziPill",
+        "success": "muziSuccess",
+        "warning": "muziWarning",
+        "danger_text": "muziDangerText",
         "primary": "muziPrimary",
+        "secondary": "muziSecondary",
         "danger": "muziDanger",
         "ghost": "muziGhost",
         "nav": "muziNav",
@@ -737,29 +748,25 @@ def set_role(widget, role, enabled=True):
     if property_name is None:
         return widget
 
-    widget.setProperty(property_name, bool(enabled))
-    repolish(widget)
+    widget.setProperty(
+        property_name,
+        bool(enabled)
+    )
+    repolish(
+        widget
+    )
     return widget
 
 
 def apply_theme(widget):
-    u"""
-    把统一主题应用到一个窗口。
-
-    Args:
-        widget (QtWidgets.QWidget):
-            需要应用 MuziTools Theme / UI 状态的 Qt Widget。
-
-    Returns:
-        object | None:
-        方法执行后的结果数据。
-    """
-
+    u"""把统一主题应用到一个窗口。"""
     if widget is None:
         return None
 
     try:
-        widget.setStyleSheet(style_sheet)
+        widget.setStyleSheet(
+            style_sheet
+        )
     except Exception:
         return widget
 
@@ -767,244 +774,189 @@ def apply_theme(widget):
 
 
 def make_title(text_value, parent=None):
-    u"""
-    执行 `make_title` 对应的 Maya 工具操作。
-
-    Args:
-        text_value (str):
-            需要显示、验证或写入 Qt 文本控件的字符串。
-        parent (str):
-            父级 Maya 节点名称。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-
-    label = QLabel(text_value, parent)
-    set_role(label, "title")
+    u"""创建主标题 Label。"""
+    label = QLabel(
+        text_value,
+        parent
+    )
+    set_role(
+        label,
+        "title"
+    )
     return label
 
 
 def make_subtitle(text_value, parent=None):
-    u"""
-    执行 `make_subtitle` 对应的 Maya 工具操作。
-
-    Args:
-        text_value (str):
-            需要显示、验证或写入 Qt 文本控件的字符串。
-        parent (str):
-            父级 Maya 节点名称。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-
-    label = QLabel(text_value, parent)
-    set_role(label, "subtitle")
-    label.setWordWrap(True)
+    u"""创建自动换行的次级说明 Label。"""
+    label = QLabel(
+        text_value,
+        parent
+    )
+    set_role(
+        label,
+        "subtitle"
+    )
+    label.setWordWrap(
+        True
+    )
     return label
 
 
 def make_section_title(text_value, parent=None):
-    u"""
-    执行 `make_section_title` 对应的 Maya 工具操作。
-
-    Args:
-        text_value (str):
-            需要显示、验证或写入 Qt 文本控件的字符串。
-        parent (str):
-            父级 Maya 节点名称。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-
-    label = QLabel(text_value, parent)
-    set_role(label, "section_title")
+    u"""创建 Section 标题 Label。"""
+    label = QLabel(
+        text_value,
+        parent
+    )
+    set_role(
+        label,
+        "section_title"
+    )
     return label
 
 
-def make_card(parent=None, margins=(16, 14, 16, 14), spacing=8):
-    u"""
-    创建标准白色内容卡片。
+def make_card(
+        parent=None,
+        margins=(16, 14, 16, 14),
+        spacing=8
+):
+    u"""创建标准浮层内容卡片。"""
+    card = QFrame(
+        parent
+    )
+    set_role(
+        card,
+        "card"
+    )
 
-    Args:
-        parent (str):
-            父级 Maya 节点名称。
-        margins (tuple):
-            Qt Layout 的 Left / Top / Right / Bottom Contents Margins。
-        spacing (int):
-            Qt Layout 中相邻控件之间的间距。
-
-    Returns:
-        tuple:
-        方法执行后的结果数据。
-    """
-
-    card = QFrame(parent)
-    set_role(card, "card")
-
-    layout = QVBoxLayout(card)
+    layout = QVBoxLayout(
+        card
+    )
     layout.setContentsMargins(
         margins[0],
         margins[1],
         margins[2],
         margins[3]
     )
-    layout.setSpacing(spacing)
+    layout.setSpacing(
+        spacing
+    )
 
     return card, layout
 
 
-def make_sub_card(parent=None, margins=(12, 10, 12, 10), spacing=6):
-    u"""
-    创建次级浅灰卡片。
+def make_sub_card(
+        parent=None,
+        margins=(12, 10, 12, 10),
+        spacing=6
+):
+    u"""创建次级柔和内容卡片。"""
+    card = QFrame(
+        parent
+    )
+    set_role(
+        card,
+        "sub_card"
+    )
 
-    Args:
-        parent (str):
-            父级 Maya 节点名称。
-        margins (tuple):
-            Qt Layout 的 Left / Top / Right / Bottom Contents Margins。
-        spacing (int):
-            Qt Layout 中相邻控件之间的间距。
-
-    Returns:
-        tuple:
-        方法执行后的结果数据。
-    """
-
-    card = QFrame(parent)
-    set_role(card, "sub_card")
-
-    layout = QVBoxLayout(card)
+    layout = QVBoxLayout(
+        card
+    )
     layout.setContentsMargins(
         margins[0],
         margins[1],
         margins[2],
         margins[3]
     )
-    layout.setSpacing(spacing)
+    layout.setSpacing(
+        spacing
+    )
 
     return card, layout
 
 
 def style_primary(button):
-    u"""
-    执行 `style_primary` 对应的 Maya 工具操作。
+    u"""设置主要操作按钮。"""
+    return set_role(
+        button,
+        "primary"
+    )
 
-    Args:
-        button (QtWidgets.QPushButton):
-            需要应用 MuziTools Button 样式或状态的 QPushButton。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-
-    return set_role(button, "primary")
+def style_secondary(button):
+    u"""设置清晰但不过度强调的次级操作按钮。"""
+    return set_role(
+        button,
+        "secondary"
+    )
 
 
 def style_danger(button):
-    u"""
-    执行 `style_danger` 对应的 Maya 工具操作。
-
-    Args:
-        button (QtWidgets.QPushButton):
-            需要应用 MuziTools Button 样式或状态的 QPushButton。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-
-    return set_role(button, "danger")
+    u"""设置危险操作按钮。"""
+    return set_role(
+        button,
+        "danger"
+    )
 
 
 def style_ghost(button):
-    u"""
-    执行 `style_ghost` 对应的 Maya 工具操作。
-
-    Args:
-        button (QtWidgets.QPushButton):
-            需要应用 MuziTools Button 样式或状态的 QPushButton。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-
-    return set_role(button, "ghost")
+    u"""设置弱强调 Ghost Button。"""
+    return set_role(
+        button,
+        "ghost"
+    )
 
 
 def style_navigation(button, active=False):
-    u"""
-    执行 `style_navigation` 对应的 Maya 工具操作。
-
-    Args:
-        button (QtWidgets.QPushButton):
-            需要应用 MuziTools Button 样式或状态的 QPushButton。
-        active (bool):
-            Button / UI State 当前是否处于 Active 状态。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-
-    set_role(button, "nav")
-    set_role(button, "nav_active", active)
+    u"""设置 Sidebar / Step Navigation Button。"""
+    set_role(
+        button,
+        "nav"
+    )
+    set_role(
+        button,
+        "nav_active",
+        active
+    )
     return button
 
 
 def style_search(line_edit):
-    u"""
-    执行 `style_search` 对应的 Maya 工具操作。
-
-    Args:
-        line_edit (QtWidgets.QLineEdit):
-            需要应用 MuziTools 输入框样式的 QLineEdit。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
-
-    return set_role(line_edit, "search")
+    u"""设置轻量搜索输入框。"""
+    return set_role(
+        line_edit,
+        "search"
+    )
 
 
-def style_window(widget, title=None, minimum_width=None):
-    u"""
-    统一设置窗口标题、最小宽度和主题。
-
-    Args:
-        widget (QtWidgets.QWidget):
-            需要应用 MuziTools Theme / UI 状态的 Qt Widget。
-        title (str):
-            窗口、Section、Dialog 或报告使用的标题文本。
-        minimum_width (int):
-            Qt Widget / Dialog 的最小宽度。
-
-    Returns:
-        object | None:
-        方法执行后的结果数据。
-    """
-
+def style_window(
+        widget,
+        title=None,
+        minimum_width=None
+):
+    u"""统一设置窗口标题、最小宽度和主题。"""
     if widget is None:
         return None
 
     if title:
-        widget.setWindowTitle(title)
+        widget.setWindowTitle(
+            title
+        )
 
     if minimum_width is not None:
-        widget.setMinimumWidth(minimum_width)
+        widget.setMinimumWidth(
+            minimum_width
+        )
 
-    apply_theme(widget)
+    apply_theme(
+        widget
+    )
 
     try:
-        widget.setAttribute(Qt.WA_StyledBackground, True)
+        widget.setAttribute(
+            Qt.WA_StyledBackground,
+            True
+        )
     except Exception:
         pass
 
@@ -1036,6 +988,7 @@ __all__ = [
     "make_card",
     "make_sub_card",
     "style_primary",
+    "style_secondary",
     "style_danger",
     "style_ghost",
     "style_navigation",

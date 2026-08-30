@@ -12,12 +12,8 @@ Maya Index Color Slider
     1. 使用 0～31 Slider 选择 Maya Index Color；
     2. 实时显示当前颜色 Index；
     3. 使用方块实时预览当前 Maya 颜色；
-    4. 对外提供统一 value_changed Signal 和 get_value / set_value API。
-
-重要边界：
-    - 本模块只负责 UI，不直接修改 Maya Controller；
-    - 真正的 Controller Shape Color 仍然由 core.control_shape_utils 负责；
-    - Maya Index Color 数据统一保存在本 Widget，不依赖 tools 层。
+    4. 对外提供统一 value_changed Signal 和 get_value / set_value API；
+    5. 视觉统一使用 MuziTools Theme Token。
 """
 
 from __future__ import print_function
@@ -36,6 +32,8 @@ except ImportError:
     from PySide6.QtWidgets import QLabel
     from PySide6.QtWidgets import QSlider
     from PySide6.QtWidgets import QWidget
+
+from .. import theme
 
 
 maya_index_colors = {
@@ -84,15 +82,7 @@ class MayaIndexColorSlider(QWidget):
             value=17,
             parent=None
     ):
-        u"""
-        初始化 Maya Index Color Slider。
-
-        Args:
-            value (int):
-                初始 Maya Index Color，范围 0～31。
-            parent (QWidget | None):
-                Qt 父窗口。
-        """
+        u"""初始化 Maya Index Color Slider。"""
         super(MayaIndexColorSlider, self).__init__(parent)
 
         self.color_slider = QSlider(
@@ -109,28 +99,15 @@ class MayaIndexColorSlider(QWidget):
             1
         )
         self.color_slider.setMinimumWidth(
-            150
+            160
         )
-        self.style_color_slider()
 
         self.index_label = QLabel()
-        self.index_label.setMinimumWidth(
-            30
+        self.index_label.setFixedWidth(
+            32
         )
         self.index_label.setAlignment(
             Qt.AlignCenter
-        )
-        self.index_label.setStyleSheet(
-            u"""
-            QLabel {
-                background-color: #F3F3F5;
-                color: #3A3C42;
-                border: 1px solid #D9DBE0;
-                border-radius: 5px;
-                padding: 2px 4px;
-                font-weight: 600;
-            }
-            """
         )
 
         self.color_preview = QLabel()
@@ -149,9 +126,8 @@ class MayaIndexColorSlider(QWidget):
             0
         )
         main_layout.setSpacing(
-            8
+            9
         )
-
         main_layout.addWidget(
             self.color_slider,
             1
@@ -162,6 +138,8 @@ class MayaIndexColorSlider(QWidget):
         main_layout.addWidget(
             self.color_preview
         )
+
+        self.style_widgets()
 
         self.color_slider.valueChanged.connect(
             self._slider_value_changed
@@ -175,8 +153,8 @@ class MayaIndexColorSlider(QWidget):
     # Style
     # =========================================================================
 
-    def style_color_slider(self):
-        u"""增强 Slider Track 和 Handle 对比度，保证浅色主题下仍然清晰。"""
+    def style_widgets(self):
+        u"""应用高可见度 Slider、Index 和 Preview 样式。"""
         self.color_slider.setStyleSheet(
             u"""
             QSlider {
@@ -184,43 +162,59 @@ class MayaIndexColorSlider(QWidget):
             }
 
             QSlider::groove:horizontal {
-                height: 8px;
-                background: #D8DADE;
-                border: 1px solid #C9CBD0;
-                border-radius: 4px;
+                height: 7px;
+                background: #D7D3DE;
+                border: 1px solid #CBC6D3;
+                border-radius: 3px;
             }
 
             QSlider::sub-page:horizontal {
-                background: #EC4141;
-                border: 1px solid #EC4141;
-                border-radius: 4px;
+                background: %(accent)s;
+                border: 1px solid %(accent)s;
+                border-radius: 3px;
             }
 
             QSlider::add-page:horizontal {
-                background: #E5E6E9;
-                border: 1px solid #D4D6DA;
-                border-radius: 4px;
+                background: #E7E3EA;
+                border: 1px solid #D7D2DE;
+                border-radius: 3px;
             }
 
             QSlider::handle:horizontal {
-                width: 18px;
-                height: 18px;
+                width: 17px;
+                height: 17px;
                 margin: -6px 0px;
                 background: #FFFFFF;
-                border: 3px solid #EC4141;
-                border-radius: 9px;
+                border: 2px solid %(accent)s;
+                border-radius: 8px;
             }
 
             QSlider::handle:horizontal:hover {
-                background: #FFF0F0;
-                border-color: #F05252;
+                background: %(accent_soft)s;
+                border-color: %(accent_hover)s;
             }
+            """ % {
+                "accent": theme.accent,
+                "accent_hover": theme.accent_hover,
+                "accent_soft": theme.accent_soft,
+            }
+        )
 
-            QSlider::handle:horizontal:pressed {
-                background: #FFE4E4;
-                border-color: #D93636;
+        self.index_label.setStyleSheet(
+            u"""
+            QLabel {
+                background-color: %(surface)s;
+                color: %(text)s;
+                border: 1px solid %(border)s;
+                border-radius: 7px;
+                padding: 3px 4px;
+                font-weight: 600;
             }
-            """
+            """ % {
+                "surface": theme.surface,
+                "text": theme.text,
+                "border": theme.border,
+            }
         )
 
     # =========================================================================
@@ -228,25 +222,13 @@ class MayaIndexColorSlider(QWidget):
     # =========================================================================
 
     def get_value(self):
-        u"""
-        返回当前 Maya Index Color。
-
-        Returns:
-            int:
-            当前颜色 Index。
-        """
+        u"""返回当前 Maya Index Color。"""
         return int(
             self.color_slider.value()
         )
 
     def set_value(self, value):
-        u"""
-        设置当前 Maya Index Color。
-
-        Args:
-            value (int):
-                Maya Index Color，自动限制到 0～31。
-        """
+        u"""设置当前 Maya Index Color，自动限制到 0～31。"""
         color_index = int(
             value
         )
@@ -260,8 +242,6 @@ class MayaIndexColorSlider(QWidget):
         self.color_slider.setValue(
             color_index
         )
-
-        # setValue 在数值没有变化时不会触发 Signal，仍然主动刷新一次显示。
         self.update_preview(
             color_index
         )
@@ -279,26 +259,18 @@ class MayaIndexColorSlider(QWidget):
         self.update_preview(
             color_index
         )
-
         self.value_changed.emit(
             color_index
         )
 
     def update_preview(self, color_index=None):
-        u"""
-        更新 Index Label 和方块颜色预览。
-
-        Args:
-            color_index (int | None):
-                不传时使用当前 Slider Value。
-        """
+        u"""更新 Index Label 和方块颜色预览。"""
         if color_index is None:
             color_index = self.get_value()
 
         color_index = int(
             color_index
         )
-
         rgb = maya_index_colors.get(
             color_index,
             maya_index_colors[0]
@@ -324,8 +296,8 @@ class MayaIndexColorSlider(QWidget):
             u"""
             QLabel {{
                 background-color: rgb({red}, {green}, {blue});
-                border: 2px solid #7C7F86;
-                border-radius: 5px;
+                border: 2px solid #77717E;
+                border-radius: 7px;
             }}
             """.format(
                 red=red,

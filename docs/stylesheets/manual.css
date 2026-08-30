@@ -2,18 +2,36 @@
 MuziTools Documentation
 =======================
 
+Arc-inspired documentation skin.
+
 设计目标：
-    1. 保持 MkDocs Material 原有可访问性和响应式行为；
-    2. 用更大的留白、清晰标题和任务卡片降低信息密度；
-    3. 用户手册偏“任务阅读”，API Reference 偏“快速扫描”；
-    4. 不复制任何外部产品的品牌颜色、图标或专有视觉资产。
+    1. 保持 MkDocs Material 的可访问性和响应式行为；
+    2. 参考 Arc 的 clean / calm / sidebar-first 信息组织；
+    3. 使用柔和背景、浮层内容、低对比边界和清晰 active state；
+    4. 不复制 Arc 的品牌 Logo、图标或专有视觉资产。
 */
 
 :root {
-    --muzi-content-width: 1040px;
-    --muzi-card-radius: 16px;
-    --muzi-soft-border: rgba(127, 127, 127, 0.22);
-    --muzi-soft-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 28px rgba(0, 0, 0, 0.06);
+    --muzi-content-width: 1060px;
+    --muzi-card-radius: 18px;
+    --muzi-small-radius: 10px;
+    --muzi-accent: #6d68d9;
+    --muzi-accent-soft: #eceafa;
+    --muzi-bg: #f2f1f6;
+    --muzi-surface: #fbfafd;
+    --muzi-surface-alt: #f6f5f9;
+    --muzi-border: rgba(73, 67, 83, 0.13);
+    --muzi-soft-shadow: 0 1px 2px rgba(45, 40, 52, 0.04), 0 12px 34px rgba(45, 40, 52, 0.07);
+
+    --md-primary-fg-color: #6d68d9;
+    --md-primary-fg-color--light: #837ee5;
+    --md-primary-fg-color--dark: #5652b8;
+    --md-accent-fg-color: #6d68d9;
+}
+
+[data-md-color-scheme="default"] {
+    --md-default-bg-color: var(--muzi-bg);
+    --md-code-bg-color: #eeedf3;
 }
 
 /* --------------------------------------------------------------------------
@@ -40,21 +58,21 @@ select {
 }
 
 .md-typeset h1 {
-    margin-bottom: 1.25rem;
-    font-weight: 600;
-    letter-spacing: -0.025em;
+    margin-bottom: 1.2rem;
+    font-weight: 680;
+    letter-spacing: -0.03em;
 }
 
 .md-typeset h2 {
-    margin-top: 2.25rem;
+    margin-top: 2.3rem;
     padding-top: 0.2rem;
-    font-weight: 600;
-    letter-spacing: -0.015em;
+    font-weight: 650;
+    letter-spacing: -0.018em;
 }
 
 .md-typeset h3,
 .md-typeset h4 {
-    font-weight: 600;
+    font-weight: 620;
 }
 
 .md-typeset p,
@@ -63,12 +81,71 @@ select {
 }
 
 /* --------------------------------------------------------------------------
+ * Header / navigation
+ * -------------------------------------------------------------------------- */
+
+.md-header {
+    box-shadow: none;
+    border-bottom: 1px solid var(--muzi-border);
+    backdrop-filter: blur(18px);
+}
+
+[data-md-color-scheme="default"] .md-header {
+    background: rgba(242, 241, 246, 0.88);
+    color: #29262f;
+}
+
+[data-md-color-scheme="default"] .md-tabs {
+    background: rgba(242, 241, 246, 0.92);
+    color: #5b5662;
+    border-bottom: 1px solid var(--muzi-border);
+}
+
+.md-nav__link {
+    line-height: 1.42;
+    border-radius: 8px;
+}
+
+.md-nav__link:hover {
+    color: var(--muzi-accent);
+}
+
+.md-nav__item .md-nav__link--active {
+    color: var(--muzi-accent);
+    font-weight: 650;
+}
+
+.md-nav--secondary .md-nav__link {
+    font-size: 0.72rem;
+}
+
+.md-nav code {
+    font-size: 0.92em;
+}
+
+/* --------------------------------------------------------------------------
+ * Content surface
+ * -------------------------------------------------------------------------- */
+
+@media screen and (min-width: 76.25em) {
+    .md-content__inner {
+        margin-top: 1.1rem;
+        margin-bottom: 2.5rem;
+        padding: 2rem 2.2rem 4rem;
+        background: var(--muzi-surface);
+        border: 1px solid var(--muzi-border);
+        border-radius: 22px;
+    }
+}
+
+/* --------------------------------------------------------------------------
  * Task cards
  * -------------------------------------------------------------------------- */
 
 .md-typeset .grid.cards > ul > li,
 .md-typeset .grid.cards > ol > li {
-    border: 1px solid var(--muzi-soft-border);
+    background: var(--muzi-surface);
+    border: 1px solid var(--muzi-border);
     border-radius: var(--muzi-card-radius);
     box-shadow: none;
     transition:
@@ -80,84 +157,66 @@ select {
 .md-typeset .grid.cards > ul > li:hover,
 .md-typeset .grid.cards > ol > li:hover {
     transform: translateY(-2px);
+    border-color: rgba(109, 104, 217, 0.28);
     box-shadow: var(--muzi-soft-shadow);
 }
 
 /* --------------------------------------------------------------------------
- * API tables
+ * Buttons / code / callouts
+ * -------------------------------------------------------------------------- */
+
+.md-typeset .md-button {
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.md-typeset .md-button--primary {
+    background-color: var(--muzi-accent);
+    border-color: var(--muzi-accent);
+}
+
+.md-typeset code {
+    word-break: normal;
+    border-radius: 6px;
+}
+
+.md-typeset pre > code {
+    line-height: 1.58;
+}
+
+.md-typeset .highlight,
+.md-typeset pre {
+    border-radius: 12px;
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+    border-radius: 12px;
+    box-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+ * Tables
  * -------------------------------------------------------------------------- */
 
 .md-typeset table:not([class]) {
     display: table;
     width: 100%;
-    border-radius: 10px;
+    border-radius: 12px;
     overflow: hidden;
 }
 
 .md-typeset table:not([class]) th {
     white-space: nowrap;
-    font-weight: 600;
+    font-weight: 650;
 }
 
 .md-typeset table:not([class]) td {
     vertical-align: top;
 }
 
-.md-typeset code {
-    word-break: normal;
-}
-
 /* --------------------------------------------------------------------------
- * Code / callouts
- * -------------------------------------------------------------------------- */
-
-.md-typeset pre > code {
-    line-height: 1.58;
-}
-
-.md-typeset .admonition,
-.md-typeset details {
-    border-radius: 10px;
-    box-shadow: none;
-}
-
-/* --------------------------------------------------------------------------
- * Navigation
- * -------------------------------------------------------------------------- */
-
-.md-nav__link {
-    line-height: 1.42;
-}
-
-.md-nav__item .md-nav__link--active {
-    font-weight: 600;
-}
-
-.md-nav--secondary .md-nav__link {
-    font-size: 0.72rem;
-}
-
-/* 让源码文件名更容易扫读。 */
-.md-nav code {
-    font-size: 0.92em;
-}
-
-/* --------------------------------------------------------------------------
- * Desktop reading rhythm
- * -------------------------------------------------------------------------- */
-
-@media screen and (min-width: 76.25em) {
-    .md-content__inner {
-        padding-bottom: 4rem;
-    }
-
-    .md-typeset > :first-child {
-        margin-top: 0;
-    }
-}
-
-/* --------------------------------------------------------------------------
- * Mobile tables
+ * Mobile
  * -------------------------------------------------------------------------- */
 
 @media screen and (max-width: 44.984375em) {

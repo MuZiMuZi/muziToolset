@@ -3,31 +3,24 @@ u"""
 Face Guide Mirror
 =================
 
-Face Guide 左右定位器镜像模块。
+Step 02 Guide 左右镜像和单步撤销模块。
 
 设计目标：
-    1. 支持 lf -> rt 和 rt -> lf 两个方向；
-    2. 镜像操作只复制当前 Guide 状态，不建立永久 Transform 连接；
-    3. 镜像完成后左右 Guide 仍然可以独立编辑；
-    4. md 中线 Guide 不参与左右镜像；
-    5. 复用 FaceGuide 的查询能力和 Core 的 DAG / Connection 能力。
-
-重要边界：
-    - 本模块只处理 Guide Mirror，不负责 Step Finalize；
-    - Guide Template 的初始层级仍然由 resources/face/face_guide.ma 提供；
-    - Maya Plug 输入断开统一复用 core.connection_utils；
-    - DAG Parent 操作统一复用 core.hierarchy_utils；
-    - 新建通用 Transform 统一复用 core.scene_utils。
+    1. 支持 lf -> rt 和 rt -> lf；
+    2. 镜像只复制当前状态，不建立永久左右连接；
+    3. Mirror 本身作为一次 Maya Undo Chunk，可直接 Ctrl + Z；
+    4. UI 同时保存上一次 Target Snapshot，可独立执行“撤销上次镜像”；
+    5. md 中线 Guide 不参与左右镜像。
 """
 
 from __future__ import print_function
 
 import maya.cmds as cmds
 
-from ...core import connection_utils
-from ...core import hierarchy_utils
-from ...core import rename_utils
-from ...core import scene_utils
+from ....core import connection_utils
+from ....core import hierarchy_utils
+from ....core import rename_utils
+from ....core import scene_utils
 
 
 valid_sides = [
@@ -46,6 +39,13 @@ transform_attributes = [
     "scaleY",
     "scaleZ",
 ]
+
+zero_attributes = list(
+    transform_attributes
+)
+zero_attributes.append(
+    "rotateOrder"
+)
 
 locator_attributes = [
     "translateX",
@@ -103,7 +103,7 @@ def get_mirror_name(
         source_side,
         target_side
 ):
-    u"""把标准 Rig 名称中的 Side Token 替换成目标 Side。"""
+    u"""把标准五段式名称中的 Side Token 替换为目标 Side。"""
     source_token = "_{}_".format(
         source_side
     )
@@ -259,11 +259,42 @@ def get_target_parent(
 # Attribute
 # =============================================================================
 
+def capture_attributes(
+        node,
+        attributes
+):
+    u"""记录节点指定 Attribute 的当前值。"""
+    values = {}
+
+    if not node:
+        return values
+
+    if not cmds.objExists(node):
+        return values
+
+    for attribute in attributes:
+        plug = "{}.{}".format(
+            node,
+            attribute
+        )
+
+        if not cmds.objExists(
+                plug
+        ):
+            continue
+
+        values[attribute] = cmds.getAttr(
+            plug
+        )
+
+    return values
+
+
 def disconnect_inputs(
         node,
         attributes
 ):
-    u"""断开目标节点指定属性的全部输入，保证镜像后可以独立编辑。"""
+    u"""断开指定属性输入，保证镜像后 Target 可以独立编辑。"""
     for attribute in attributes:
         destination_plug = "{}.{}".format(
             node,
@@ -288,7 +319,7 @@ def copy_attribute(
         target_node,
         attribute
 ):
-    u"""复制一个普通 Maya Attribute，并保留 Target 原 Lock 状态。"""
+    u"""复制一个普通 Attribute，并恢复 Target 原 Lock 状态。"""
     source_plug = "{}.{}".format(
         source_node,
         attribute
@@ -298,22 +329,18 @@ def copy_attribute(
         attribute
     )
 
-    if not cmds.objExists(
-            source_plug
-    ):
+    if not cmds.objExists(source_plug):
         return False
 
-    if not cmds.objExists(
-            target_plug
-    ):
+    if not cmds.objExists(target_plug):
         return False
-
-    connection_utils.disconnect_input(
-        target_plug
-    )
 
     value = cmds.getAttr(
         source_plug
+    )
+
+    connection_utils.disconnect_input(
+        target_plug
     )
 
     face_guide.set_attr_preserve_lock(
@@ -325,8 +352,274 @@ def copy_attribute(
     return True
 
 
+def restore_attributes(
+        face_guide,
+        node,
+        values
+):
+    u"""恢复节点 Attribute，并确保恢复后仍可独立编辑。"""
+    if not node:
+        return False
+
+    if not cmds.objExists(node):
+        return False
+
+    if not isinstance(values, dict):
+        return False
+
+    for attribute in values:
+        plug = "{}.{}".format(
+            node,
+            attribute
+        )
+
+        if not cmds.objExists(
+                plug
+        ):
+            continue
+
+        connection_utils.disconnect_input(
+            plug
+        )
+
+        face_guide.set_attr_preserve_lock(
+            node,
+            attribute,
+            values[attribute]
+        )
+
+    return True
+
+
 # =============================================================================
-# Mirror
+# Snapshot / Undo
+# =============================================================================
+
+def capture_side_state(
+        face_guide,
+        side
+):
+    u"""记录指定 Target Side 在镜像前的 Zero / Locator 状态。"""
+    if side not in valid_sides:
+        raise ValueError(
+            u"side 必须是 lf 或 rt。"
+        )
+
+    snapshot = {
+        "side": side,
+        "zero_names": [],
+        "items": [],
+    }
+
+    zero_groups = get_side_zero_groups(
+        face_guide,
+        side
+    )
+
+    for zero_group in zero_groups:
+        zero_name = rename_utils.get_short_name(
+            zero_group
+        )
+
+        snapshot["zero_names"].append(
+            zero_name
+        )
+
+        locator = get_side_locator(
+            zero_group,
+            side
+        )
+
+        locator_name = None
+        locator_values = {}
+        locator_shape_values = {}
+
+        if locator:
+            locator_name = rename_utils.get_short_name(
+                locator
+            )
+            locator_values = capture_attributes(
+                locator,
+                locator_attributes
+            )
+
+            locator_shapes = face_guide.get_locator_shapes(
+                locator
+            )
+
+            if locator_shapes:
+                locator_shape_values = capture_attributes(
+                    locator_shapes[0],
+                    locator_shape_attributes
+                )
+
+        snapshot["items"].append(
+            {
+                "zero_name": zero_name,
+                "zero_values": capture_attributes(
+                    zero_group,
+                    zero_attributes
+                ),
+                "locator_name": locator_name,
+                "locator_values": locator_values,
+                "locator_shape_values": locator_shape_values,
+            }
+        )
+
+    return snapshot
+
+
+def remove_new_target_nodes(
+        face_guide,
+        snapshot
+):
+    u"""删除 Mirror 过程中新增、但 Snapshot 中原本不存在的 Target Zero。"""
+    side = snapshot.get(
+        "side"
+    )
+    original_zero_names = snapshot.get(
+        "zero_names",
+        []
+    )
+
+    current_zero_groups = get_side_zero_groups(
+        face_guide,
+        side
+    )
+
+    current_zero_groups.sort(
+        key=hierarchy_utils.Hierarchy.get_dag_depth,
+        reverse=True
+    )
+
+    for zero_group in current_zero_groups:
+        zero_name = rename_utils.get_short_name(
+            zero_group
+        )
+
+        if zero_name in original_zero_names:
+            continue
+
+        if cmds.objExists(zero_group):
+            cmds.delete(
+                zero_group
+            )
+
+    return True
+
+
+def restore_snapshot(
+        face_guide,
+        snapshot
+):
+    u"""恢复 Target Side 到最近一次 Mirror 之前的状态。"""
+    if not isinstance(snapshot, dict):
+        raise TypeError(
+            u"Mirror Snapshot 必须是 dict。"
+        )
+
+    side = snapshot.get(
+        "side"
+    )
+
+    if side not in valid_sides:
+        raise ValueError(
+            u"Mirror Snapshot 缺少有效 Side。"
+        )
+
+    remove_new_target_nodes(
+        face_guide,
+        snapshot
+    )
+
+    restored_count = 0
+    items = snapshot.get(
+        "items",
+        []
+    )
+
+    for item in items:
+        zero_group = face_guide.get_guide_node(
+            item.get("zero_name"),
+            required=False
+        )
+
+        if not zero_group:
+            continue
+
+        restore_attributes(
+            face_guide,
+            zero_group,
+            item.get(
+                "zero_values",
+                {}
+            )
+        )
+
+        locator_name = item.get(
+            "locator_name"
+        )
+        current_locator = get_side_locator(
+            zero_group,
+            side
+        )
+
+        if not locator_name:
+            if current_locator:
+                if cmds.objExists(current_locator):
+                    cmds.delete(
+                        current_locator
+                    )
+
+            restored_count += 1
+            continue
+
+        locator = face_guide.get_guide_node(
+            locator_name,
+            required=False
+        )
+
+        if not locator:
+            continue
+
+        restore_attributes(
+            face_guide,
+            locator,
+            item.get(
+                "locator_values",
+                {}
+            )
+        )
+
+        locator_shapes = face_guide.get_locator_shapes(
+            locator
+        )
+
+        if locator_shapes:
+            restore_attributes(
+                face_guide,
+                locator_shapes[0],
+                item.get(
+                    "locator_shape_values",
+                    {}
+                )
+            )
+
+        restored_count += 1
+
+    face_guide.set_step_completed(
+        completed=False
+    )
+    face_guide.invalidate_later_steps()
+
+    return {
+        "side": side,
+        "restored_count": restored_count,
+    }
+
+
+# =============================================================================
+# Mirror Build
 # =============================================================================
 
 def create_or_update_target_zero(
@@ -385,14 +678,7 @@ def create_or_update_target_zero(
 
     disconnect_inputs(
         target_zero,
-        transform_attributes
-    )
-
-    copy_attribute(
-        face_guide,
-        source_zero,
-        target_zero,
-        "rotateOrder"
+        zero_attributes
     )
 
     is_mirror_root = True
@@ -409,85 +695,38 @@ def create_or_update_target_zero(
             is_mirror_root = False
 
     if is_mirror_root:
-        translate_x = cmds.getAttr(
-            source_zero + ".translateX"
-        )
-        translate_y = cmds.getAttr(
-            source_zero + ".translateY"
-        )
-        translate_z = cmds.getAttr(
-            source_zero + ".translateZ"
-        )
-
-        rotate_x = cmds.getAttr(
-            source_zero + ".rotateX"
-        )
-        rotate_y = cmds.getAttr(
-            source_zero + ".rotateY"
-        )
-        rotate_z = cmds.getAttr(
-            source_zero + ".rotateZ"
-        )
-
-        scale_x = cmds.getAttr(
-            source_zero + ".scaleX"
-        )
-        scale_y = cmds.getAttr(
-            source_zero + ".scaleY"
-        )
-        scale_z = cmds.getAttr(
-            source_zero + ".scaleZ"
-        )
-
         face_guide.set_attr_preserve_lock(
             target_zero,
             "translateX",
-            -translate_x
-        )
-        face_guide.set_attr_preserve_lock(
-            target_zero,
-            "translateY",
-            translate_y
-        )
-        face_guide.set_attr_preserve_lock(
-            target_zero,
-            "translateZ",
-            translate_z
+            -cmds.getAttr(source_zero + ".translateX")
         )
 
-        face_guide.set_attr_preserve_lock(
-            target_zero,
+        direct_attributes = [
+            "translateY",
+            "translateZ",
             "rotateX",
-            rotate_x
-        )
-        face_guide.set_attr_preserve_lock(
-            target_zero,
             "rotateY",
-            rotate_y
-        )
-        face_guide.set_attr_preserve_lock(
-            target_zero,
             "rotateZ",
-            rotate_z
-        )
+            "scaleY",
+            "scaleZ",
+            "rotateOrder",
+        ]
+
+        for attribute in direct_attributes:
+            copy_attribute(
+                face_guide,
+                source_zero,
+                target_zero,
+                attribute
+            )
 
         face_guide.set_attr_preserve_lock(
             target_zero,
             "scaleX",
-            -scale_x
-        )
-        face_guide.set_attr_preserve_lock(
-            target_zero,
-            "scaleY",
-            scale_y
-        )
-        face_guide.set_attr_preserve_lock(
-            target_zero,
-            "scaleZ",
-            scale_z
+            -cmds.getAttr(source_zero + ".scaleX")
         )
     else:
-        for attribute in transform_attributes:
+        for attribute in zero_attributes:
             copy_attribute(
                 face_guide,
                 source_zero,
@@ -505,7 +744,7 @@ def create_or_update_target_locator(
         source_side,
         target_side
 ):
-    u"""创建或更新一个 Target Side Locator，并复制当前 Source 状态。"""
+    u"""创建或更新一个 Target Side Locator，并复制 Source 当前状态。"""
     source_locator_name = rename_utils.get_short_name(
         source_locator
     )
@@ -540,11 +779,6 @@ def create_or_update_target_locator(
             target_locator,
             target_zero
         )
-
-    disconnect_inputs(
-        target_locator,
-        locator_attributes
-    )
 
     for attribute in locator_attributes:
         copy_attribute(
@@ -602,7 +836,6 @@ def mirror_guide(
         source_side,
         target_side
     )
-
     target_locator = create_or_update_target_locator(
         face_guide,
         source_locator,
@@ -619,21 +852,16 @@ def mirror_guide(
     }
 
 
-def mirror_guides(
+def apply_mirror(
         face_guide,
         source_side,
         target_side
 ):
-    u"""
-    批量把 Source Side Guide 镜像到 Target Side。
-
-    Mirror 只执行一次数据复制，不保留 Source -> Target 的永久 DG 连接。
-    """
+    u"""执行实际镜像，不创建 Snapshot / Undo Chunk。"""
     validate_mirror_sides(
         source_side,
         target_side
     )
-
     face_guide.validate_setup()
 
     if not face_guide.guide_exists():
@@ -662,15 +890,10 @@ def mirror_guides(
             source_side,
             target_side
         )
-
         results.append(
             result
         )
 
-    # 新镜像工作流允许左右独立编辑，不再要求 LF -> RT 永久连接。
-    face_guide.check_symmetry = False
-
-    # Guide 发生变化后，当前 Step 和后续 Build 结果都需要重新提交。
     face_guide.set_step_completed(
         completed=False
     )
@@ -684,15 +907,47 @@ def mirror_guides(
     }
 
 
+@scene_utils.undo_chunk
+def mirror_guides(
+        face_guide,
+        source_side,
+        target_side
+):
+    u"""保存 Target Snapshot，并把一次 Mirror 写入 Maya Undo Queue。"""
+    snapshot = capture_side_state(
+        face_guide,
+        target_side
+    )
+
+    result = apply_mirror(
+        face_guide,
+        source_side,
+        target_side
+    )
+    result["snapshot"] = snapshot
+
+    return result
+
+
+@scene_utils.undo_chunk
+def undo_mirror(
+        face_guide,
+        snapshot
+):
+    u"""独立恢复 UI 记录的上一次 Mirror Snapshot。"""
+    return restore_snapshot(
+        face_guide,
+        snapshot
+    )
+
+
 __all__ = [
     "valid_sides",
     "transform_attributes",
     "locator_attributes",
     "locator_shape_attributes",
-    "validate_mirror_sides",
-    "get_mirror_name",
-    "get_side_zero_groups",
-    "get_side_locator",
-    "mirror_guide",
+    "capture_side_state",
+    "apply_mirror",
     "mirror_guides",
+    "undo_mirror",
 ]
