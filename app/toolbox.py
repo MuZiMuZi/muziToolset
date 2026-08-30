@@ -8,9 +8,10 @@ Muzi Rigging Toolbox
 主窗口只负责：
     1. 分类浏览工具；
     2. 搜索当前分类中的工具；
-    3. 懒加载并启动工具；
-    4. 统一管理子工具窗口；
-    5. 刷新工具注册表。
+    3. 区分 UI 工具和直接执行工具；
+    4. 懒加载并启动工具；
+    5. 统一管理子工具窗口；
+    6. 刷新工具注册表。
 
 具体绑定算法不放在这个文件中。
 """
@@ -64,6 +65,9 @@ from . import window_manager
 
 _window = None
 
+TOOL_MODE_UI = "ui"
+TOOL_MODE_ACTION = "action"
+
 
 tool_display_names = {
     "rename_tool": u"重命名工具",
@@ -93,12 +97,12 @@ tool_descriptions = {
     "attr_tool": u"属性编辑、Channel Box 排序、锁定与隐藏。",
     "connections_tool": u"Transform、自定义属性与已有连接管理。",
     "constraint_tool": u"常用约束创建、查询和删除。",
-    "snap_tool": u"位置、旋转和矩阵吸附等常用对齐操作。",
+    "snap_tool": u"按当前选择立即执行位置、旋转和矩阵吸附。",
     "joint_tool": u"Joint 创建、显示、镜像与常用骨骼操作。",
     "joint_resamp_tool": u"在关节区间安全插入并重新分布 Joint。",
     "control_shape_tool": u"浏览、替换、缩放、旋转与管理 Controller Shape。",
     "create_ctrl_tool": u"创建标准控制器层级、颜色、轴向与输出结构。",
-    "create_fk_ctrl_tool": u"根据 Joint 链快速建立 FK Controller。",
+    "create_fk_ctrl_tool": u"按当前选择顺序立即创建 FK Controller 链。",
     "face_rig_tool": u"完整 Face Rig 系统入口。",
     "rig_tool": u"FK、IK、PV、层级、约束等常用绑定操作。",
     "skirt_ctrl_tool": u"裙子定位曲线、Blueprint、Bind Joint 与 FK 创建。",
@@ -140,8 +144,8 @@ def get_maya_main_window():
     返回 Maya 主窗口 QWidget。
 
     Returns:
-        None | object:
-        方法执行后的结果数据。
+        QWidget | None:
+            Maya 主窗口；无法获取时返回 None。
     """
     try:
         pointer = omui.MQtUtil.mainWindow()
@@ -163,11 +167,11 @@ def get_tool_display_name(tool_name):
 
     Args:
         tool_name (str):
-            `tool_name` 对应的 Maya 节点或资源名称。
+            Tool Registry 中的工具模块名称。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        str:
+            用于界面展示的工具名称。
     """
     if tool_name in tool_display_names:
         return tool_display_names[tool_name]
@@ -190,16 +194,51 @@ def get_tool_description(tool_name):
 
     Args:
         tool_name (str):
-            `tool_name` 对应的 Maya 节点或资源名称。
+            Tool Registry 中的工具模块名称。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        str:
+            工具卡片使用的一行功能说明。
     """
     if tool_name in tool_descriptions:
         return tool_descriptions[tool_name]
 
-    return u"打开 {} 模块。".format(tool_name)
+    return u"运行 {} 模块。".format(tool_name)
+
+
+def get_tool_mode(tool_function):
+    u"""
+    返回工具运行模式。
+
+    Tool Registry 会把 `tool_mode` 写到懒加载 Runner 上。
+    未声明时统一按照 UI 工具处理，保证旧工具继续可用。
+
+    Args:
+        tool_function (callable):
+            Tool Registry 创建的懒加载 Runner。
+
+    Returns:
+        str:
+            `ui` 或 `action`。
+    """
+    tool_mode = getattr(
+        tool_function,
+        "tool_mode",
+        TOOL_MODE_UI
+    )
+
+    if tool_mode == TOOL_MODE_ACTION:
+        return TOOL_MODE_ACTION
+
+    return TOOL_MODE_UI
+
+
+def get_tool_mode_display_name(tool_mode):
+    u"""返回工具模式的中文显示名称。"""
+    if tool_mode == TOOL_MODE_ACTION:
+        return u"直接执行"
+
+    return u"界面工具"
 
 
 class ToolCard(QFrame):
@@ -214,21 +253,20 @@ class ToolCard(QFrame):
         parent=None
     ):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
+        创建工具卡片。
 
         Args:
             category_name (str):
-                `category_name` 对应的 Maya 节点或资源名称。
+                当前工具所属分类。
             tool_name (str):
-                `tool_name` 对应的 Maya 节点或资源名称。
+                工具模块名称。
             tool_function (callable):
-                执行当前工具功能的 Callable。
+                Tool Registry 的懒加载 Runner。
             run_callback (callable):
-                用户触发按钮或 Tool Item 时执行的回调函数。
-            parent (str):
-                父级 Maya 节点名称。
+                用户点击卡片按钮时调用的主窗口回调。
+            parent (QWidget | None):
+                Qt 父对象。
         """
-
         super(ToolCard, self).__init__(parent)
 
         self.category_name = category_name
@@ -238,6 +276,8 @@ class ToolCard(QFrame):
 
         self.display_name = get_tool_display_name(tool_name)
         self.description = get_tool_description(tool_name)
+        self.tool_mode = get_tool_mode(tool_function)
+        self.search_visible = True
 
         theme.set_role(self, "card")
         self.setMinimumHeight(142)
@@ -251,9 +291,7 @@ class ToolCard(QFrame):
         self.create_connections()
 
     def create_widgets(self):
-        u"""
-        创建工具卡片控件。
-        """
+        u"""创建工具卡片控件。"""
         short_name = category_short_names.get(
             self.category_name,
             "TOOL"
@@ -261,6 +299,14 @@ class ToolCard(QFrame):
 
         self.category_label = QLabel(short_name)
         theme.set_role(self.category_label, "pill")
+
+        mode_text = "UI"
+
+        if self.tool_mode == TOOL_MODE_ACTION:
+            mode_text = "ACTION"
+
+        self.mode_label = QLabel(mode_text)
+        theme.set_role(self.mode_label, "pill")
 
         self.title_label = theme.make_section_title(
             self.display_name
@@ -275,21 +321,26 @@ class ToolCard(QFrame):
         )
         theme.set_role(self.module_label, "muted")
 
-        self.open_button = QPushButton(u"打开")
-        self.open_button.setMinimumWidth(76)
-        theme.style_primary(self.open_button)
+        button_text = u"打开"
+
+        if self.tool_mode == TOOL_MODE_ACTION:
+            button_text = u"执行"
+
+        self.action_button = QPushButton(button_text)
+        self.action_button.setMinimumWidth(76)
+        theme.style_primary(self.action_button)
 
     def create_layouts(self):
-        u"""
-        创建工具卡片布局。
-        """
+        u"""创建工具卡片布局。"""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 14, 16, 14)
         main_layout.setSpacing(7)
 
         top_layout = QHBoxLayout()
         top_layout.setContentsMargins(0, 0, 0, 0)
+        top_layout.setSpacing(6)
         top_layout.addWidget(self.category_label)
+        top_layout.addWidget(self.mode_label)
         top_layout.addStretch(1)
 
         main_layout.addLayout(top_layout)
@@ -301,14 +352,12 @@ class ToolCard(QFrame):
         bottom_layout.setContentsMargins(0, 0, 0, 0)
         bottom_layout.addWidget(self.module_label)
         bottom_layout.addStretch(1)
-        bottom_layout.addWidget(self.open_button)
+        bottom_layout.addWidget(self.action_button)
 
         main_layout.addLayout(bottom_layout)
 
     def create_connections(self):
-        u"""
-        连接工具卡片信号。
-        """
+        u"""连接工具卡片信号。"""
         tool_key = "{}/{}".format(
             self.category_name,
             self.tool_name
@@ -317,10 +366,11 @@ class ToolCard(QFrame):
         callback = partial(
             self.run_callback,
             tool_key,
-            self.tool_function
+            self.tool_function,
+            self.tool_mode
         )
 
-        self.open_button.clicked.connect(callback)
+        self.action_button.clicked.connect(callback)
 
     def matches_search(self, search_text):
         u"""
@@ -328,29 +378,143 @@ class ToolCard(QFrame):
 
         Args:
             search_text (str):
-                名称过滤、工具搜索或 Search / Replace 使用的搜索文本。
+                当前分类搜索框中的文本。
 
         Returns:
             bool:
-            方法执行后的结果数据。
+                是否显示当前卡片。
         """
         search_text = search_text.strip().lower()
 
         if not search_text:
             return True
 
+        mode_search_text = get_tool_mode_display_name(
+            self.tool_mode
+        )
+
         values = [
             self.tool_name,
             self.display_name,
             self.description,
             self.category_name,
+            self.tool_mode,
+            mode_search_text,
         ]
+
+        if self.tool_mode == TOOL_MODE_ACTION:
+            values.append(u"执行")
+        else:
+            values.append(u"打开")
 
         for value in values:
             if search_text in value.lower():
                 return True
 
         return False
+
+
+class ToolSection(QWidget):
+    """分类页面中的一组同类型工具。"""
+
+    def __init__(
+        self,
+        title,
+        description,
+        parent=None
+    ):
+        u"""
+        创建一个工具分区。
+
+        Args:
+            title (str):
+                分区标题。
+            description (str):
+                分区说明。
+            parent (QWidget | None):
+                Qt 父对象。
+        """
+        super(ToolSection, self).__init__(parent)
+
+        self.cards = []
+
+        self.title_label = theme.make_section_title(title)
+        self.description_label = QLabel(description)
+        self.description_label.setWordWrap(True)
+        theme.set_role(self.description_label, "muted")
+
+        self.count_label = QLabel()
+        theme.set_role(self.count_label, "accent")
+
+        self.card_widget = QWidget(self)
+        self.card_layout = QGridLayout(self.card_widget)
+        self.card_layout.setContentsMargins(0, 0, 6, 0)
+        self.card_layout.setHorizontalSpacing(12)
+        self.card_layout.setVerticalSpacing(12)
+
+        header_layout = QHBoxLayout()
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        header_layout.addWidget(self.title_label)
+        header_layout.addStretch(1)
+        header_layout.addWidget(self.count_label)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(8)
+        main_layout.addLayout(header_layout)
+        main_layout.addWidget(self.description_label)
+        main_layout.addWidget(self.card_widget)
+
+    def add_card(self, card):
+        u"""
+        把一张工具卡片加入当前分区。
+
+        Args:
+            card (ToolCard):
+                要加入的卡片。
+        """
+        self.cards.append(card)
+
+        card_index = len(self.cards) - 1
+        row = card_index // 2
+        column = card_index % 2
+
+        self.card_layout.addWidget(
+            card,
+            row,
+            column
+        )
+
+        self.card_layout.setColumnStretch(0, 1)
+        self.card_layout.setColumnStretch(1, 1)
+
+    def update_visibility(self):
+        u"""
+        根据搜索结果刷新分区可见性和数量。
+
+        Returns:
+            tuple[int, int]:
+                当前可见数量和分区总数量。
+        """
+        total_count = len(self.cards)
+        visible_count = 0
+
+        for card in self.cards:
+            if card.search_visible:
+                visible_count += 1
+
+        if visible_count == total_count:
+            count_text = u"{} 个".format(total_count)
+        else:
+            count_text = u"{} / {} 个".format(
+                visible_count,
+                total_count
+            )
+
+        self.count_label.setText(count_text)
+        self.setVisible(visible_count > 0)
+
+        return visible_count, total_count
 
 
 class CategoryPage(QWidget):
@@ -364,19 +528,18 @@ class CategoryPage(QWidget):
         parent=None
     ):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
+        创建一个分类页面。
 
         Args:
             category_name (str):
-                `category_name` 对应的 Maya 节点或资源名称。
+                分类显示名称。
             tools_dict (dict):
-                Tool Key 到工具元数据、入口和分类信息的 Registry 字典。
+                工具名到懒加载 Runner 的字典。
             run_callback (callable):
-                用户触发按钮或 Tool Item 时执行的回调函数。
-            parent (str):
-                父级 Maya 节点名称。
+                卡片执行回调。
+            parent (QWidget | None):
+                Qt 父对象。
         """
-
         super(CategoryPage, self).__init__(parent)
 
         self.category_name = category_name
@@ -389,9 +552,7 @@ class CategoryPage(QWidget):
         self.create_cards()
 
     def create_widgets(self):
-        u"""
-        创建分类页面控件。
-        """
+        u"""创建分类页面控件。"""
         self.title_label = theme.make_title(
             self.category_name
         )
@@ -413,17 +574,23 @@ class CategoryPage(QWidget):
         self.scroll_area.setFrameShape(QFrame.NoFrame)
 
         self.scroll_content = QWidget()
-        self.card_layout = QGridLayout(self.scroll_content)
-        self.card_layout.setContentsMargins(0, 0, 6, 0)
-        self.card_layout.setHorizontalSpacing(12)
-        self.card_layout.setVerticalSpacing(12)
+
+        self.ui_section = ToolSection(
+            u"界面工具",
+            u"点击「打开」进入独立工具界面，可继续调整参数和执行多步操作。",
+            self.scroll_content
+        )
+
+        self.action_section = ToolSection(
+            u"直接执行",
+            u"点击「执行」立即使用当前 Maya 选择或场景状态运行一次操作。",
+            self.scroll_content
+        )
 
         self.scroll_area.setWidget(self.scroll_content)
 
     def create_layouts(self):
-        u"""
-        创建分类页面布局。
-        """
+        u"""创建分类页面布局。"""
         header_layout = QHBoxLayout()
         header_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -440,6 +607,13 @@ class CategoryPage(QWidget):
             Qt.AlignTop | Qt.AlignRight
         )
 
+        scroll_layout = QVBoxLayout(self.scroll_content)
+        scroll_layout.setContentsMargins(0, 0, 0, 0)
+        scroll_layout.setSpacing(22)
+        scroll_layout.addWidget(self.ui_section)
+        scroll_layout.addWidget(self.action_section)
+        scroll_layout.addStretch(1)
+
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(24, 22, 24, 22)
         main_layout.setSpacing(18)
@@ -447,12 +621,7 @@ class CategoryPage(QWidget):
         main_layout.addWidget(self.scroll_area, 1)
 
     def create_cards(self):
-        u"""
-        创建当前分类中的工具卡片。
-        """
-        row = 0
-        column = 0
-
+        u"""创建当前分类中的工具卡片，并按照运行模式分组。"""
         tool_names = []
 
         for tool_name in self.tools_dict:
@@ -473,37 +642,56 @@ class CategoryPage(QWidget):
 
             self.tool_cards.append(card)
 
-            self.card_layout.addWidget(
-                card,
-                row,
-                column
-            )
-
-            column += 1
-
-            if column >= 2:
-                column = 0
-                row += 1
-
-        self.card_layout.setColumnStretch(0, 1)
-        self.card_layout.setColumnStretch(1, 1)
-        self.card_layout.setRowStretch(row + 1, 1)
+            if card.tool_mode == TOOL_MODE_ACTION:
+                self.action_section.add_card(card)
+            else:
+                self.ui_section.add_card(card)
 
         self.update_count_label()
 
     def update_count_label(self):
         u"""
-        更新当前可见工具数量。
+        更新当前分类的工具数量。
+
+        这里不再使用 QWidget.isVisible() 统计，因为页面尚未切换到前台时，
+        Qt 会让子控件的 effective visible 状态为 False，导致初次显示错误地
+        出现“0 个工具”。改为统计卡片自己的 search_visible 状态。
         """
-        visible_count = 0
-
-        for card in self.tool_cards:
-            if card.isVisible():
-                visible_count += 1
-
-        self.count_label.setText(
-            u"{} 个工具".format(visible_count)
+        visible_ui_count, total_ui_count = (
+            self.ui_section.update_visibility()
         )
+        visible_action_count, total_action_count = (
+            self.action_section.update_visibility()
+        )
+
+        visible_count = (
+            visible_ui_count
+            + visible_action_count
+        )
+        total_count = (
+            total_ui_count
+            + total_action_count
+        )
+
+        if visible_count == total_count:
+            count_text = (
+                u"{} 个工具 · 界面 {} · 执行 {}"
+            ).format(
+                total_count,
+                total_ui_count,
+                total_action_count
+            )
+        else:
+            count_text = (
+                u"{} / {} 个工具 · 界面 {} · 执行 {}"
+            ).format(
+                visible_count,
+                total_count,
+                visible_ui_count,
+                visible_action_count
+            )
+
+        self.count_label.setText(count_text)
 
     def filter_tools(self, search_text):
         u"""
@@ -511,13 +699,31 @@ class CategoryPage(QWidget):
 
         Args:
             search_text (str):
-                名称过滤、工具搜索或 Search / Replace 使用的搜索文本。
+                当前分类搜索文本。
         """
         for card in self.tool_cards:
             visible = card.matches_search(search_text)
+            card.search_visible = visible
             card.setVisible(visible)
 
         self.update_count_label()
+
+    def get_tool_counts(self):
+        u"""
+        返回当前分类的工具数量。
+
+        Returns:
+            dict:
+                `total`、`ui`、`action` 三类数量。
+        """
+        ui_count = len(self.ui_section.cards)
+        action_count = len(self.action_section.cards)
+
+        return {
+            "total": ui_count + action_count,
+            "ui": ui_count,
+            "action": action_count,
+        }
 
 
 class RiggingToolbox(QWidget):
@@ -525,13 +731,12 @@ class RiggingToolbox(QWidget):
 
     def __init__(self, parent=None):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
+        创建木子绑定工具集主窗口。
 
         Args:
-            parent (str):
-                父级 Maya 节点名称。
+            parent (QWidget | None):
+                Qt 父对象；默认使用 Maya 主窗口。
         """
-
         if parent is None:
             parent = get_maya_main_window()
 
@@ -560,9 +765,7 @@ class RiggingToolbox(QWidget):
         self.rebuild_tools(refresh_registry=False)
 
     def create_widgets(self):
-        u"""
-        创建主工具箱控件。
-        """
+        u"""创建主工具箱控件。"""
         self.sidebar = QFrame()
         theme.set_role(self.sidebar, "sidebar")
         self.sidebar.setFixedWidth(190)
@@ -615,8 +818,7 @@ class RiggingToolbox(QWidget):
             u"没有发现工具"
         )
         self.empty_message_label = theme.make_subtitle(
-            u"请检查 muzi_rigging/tools/<category>/*.py，"
-            u"并确认工具文件提供 main()。"
+            u"请检查 tools/<category>/*.py，并确认工具文件提供 main()。"
         )
 
         empty_layout = QVBoxLayout(self.empty_page)
@@ -634,9 +836,7 @@ class RiggingToolbox(QWidget):
         empty_layout.addStretch(1)
 
     def create_layouts(self):
-        u"""
-        创建左侧导航和右侧内容布局。
-        """
+        u"""创建左侧导航和右侧内容布局。"""
         sidebar_layout = QVBoxLayout(self.sidebar)
         sidebar_layout.setContentsMargins(16, 22, 16, 16)
         sidebar_layout.setSpacing(8)
@@ -655,6 +855,7 @@ class RiggingToolbox(QWidget):
         top_bar_layout.setContentsMargins(0, 0, 0, 0)
         top_bar_layout.addStretch(1)
         top_bar_layout.addWidget(self.search_edit, 0)
+
         self.search_edit.setMinimumWidth(280)
         self.search_edit.setMaximumWidth(420)
 
@@ -678,9 +879,7 @@ class RiggingToolbox(QWidget):
         main_layout.addWidget(self.content_frame, 1)
 
     def create_connections(self):
-        u"""
-        连接主窗口信号。
-        """
+        u"""连接主窗口信号。"""
         self.refresh_button.clicked.connect(
             self.refresh_tool_registry
         )
@@ -692,9 +891,7 @@ class RiggingToolbox(QWidget):
         )
 
     def clear_navigation(self):
-        u"""
-        清理旧分类按钮。
-        """
+        u"""清理旧分类按钮。"""
         while self.navigation_layout.count():
             item = self.navigation_layout.takeAt(0)
             widget = item.widget()
@@ -705,9 +902,7 @@ class RiggingToolbox(QWidget):
         self.category_buttons = {}
 
     def clear_pages(self):
-        u"""
-        清理旧分类页面。
-        """
+        u"""清理旧分类页面。"""
         while self.page_stack.count():
             widget = self.page_stack.widget(0)
             self.page_stack.removeWidget(widget)
@@ -721,7 +916,7 @@ class RiggingToolbox(QWidget):
 
         Args:
             refresh_registry (bool):
-                打开 / 刷新 Toolbox 前是否重新扫描 Tool Registry。
+                是否重新扫描 Tool Registry。
         """
         if refresh_registry:
             self.tools_by_category = refresh_tools()
@@ -778,9 +973,16 @@ class RiggingToolbox(QWidget):
         if first_category is not None:
             self.select_category(first_category)
 
+        total_tool_count = 0
+
+        for category_name in self.tools_by_category:
+            category_tools = self.tools_by_category[category_name]
+            total_tool_count += len(category_tools)
+
         self.status_label.setText(
-            u"已发现 {} 个工具分类".format(
-                len(category_names)
+            u"已发现 {} 个工具分类，共 {} 个工具".format(
+                len(category_names),
+                total_tool_count
             )
         )
 
@@ -790,7 +992,7 @@ class RiggingToolbox(QWidget):
 
         Args:
             category_name (str):
-                `category_name` 对应的 Maya 节点或资源名称。
+                要显示的分类名称。
         """
         if category_name not in self.category_pages:
             return
@@ -812,10 +1014,17 @@ class RiggingToolbox(QWidget):
 
         self.search_edit.clear()
 
+        counts = page.get_tool_counts()
+
         self.status_label.setText(
-            category_descriptions.get(
-                category_name,
-                category_name
+            u"{} · {} 个工具（界面 {} / 执行 {}）".format(
+                category_descriptions.get(
+                    category_name,
+                    category_name
+                ),
+                counts["total"],
+                counts["ui"],
+                counts["action"]
             )
         )
 
@@ -825,7 +1034,7 @@ class RiggingToolbox(QWidget):
 
         Args:
             search_text (str):
-                名称过滤、工具搜索或 Search / Replace 使用的搜索文本。
+                当前搜索文本。
         """
         if self.current_category is None:
             return
@@ -839,19 +1048,51 @@ class RiggingToolbox(QWidget):
 
         page.filter_tools(search_text)
 
-    def run_tool(self, tool_key, tool_function):
+    def run_tool(
+        self,
+        tool_key,
+        tool_function,
+        tool_mode=TOOL_MODE_UI
+    ):
         u"""
-        通过 Window Manager 启动工具。
+        打开 UI 工具或直接执行命令型工具。
 
         Args:
             tool_key (str):
-                Tool Registry / Window Manager 中唯一识别工具的 Key。
+                Tool Registry 中唯一识别工具的 Key。
             tool_function (callable):
-                执行当前工具功能的 Callable。
+                Tool Registry 的懒加载 Runner。
+            tool_mode (str):
+                `ui` 表示打开界面，`action` 表示立即执行。
 
         Returns:
             object | None:
-            方法执行后的结果数据。
+                工具 main() 的返回值。
+        """
+        if tool_mode == TOOL_MODE_ACTION:
+            return self.execute_action_tool(
+                tool_key,
+                tool_function
+            )
+
+        return self.open_ui_tool(
+            tool_key,
+            tool_function
+        )
+
+    def open_ui_tool(self, tool_key, tool_function):
+        u"""
+        通过 Window Manager 打开一个 UI 工具。
+
+        Args:
+            tool_key (str):
+                工具唯一 Key。
+            tool_function (callable):
+                Tool Registry 的懒加载 Runner。
+
+        Returns:
+            object | None:
+                工具窗口或 main() 返回值。
         """
         self.status_label.setText(
             u"正在打开 {}...".format(tool_key)
@@ -884,10 +1125,50 @@ class RiggingToolbox(QWidget):
         )
         return result
 
-    def refresh_tool_registry(self):
+    def execute_action_tool(self, tool_key, tool_function):
         u"""
-        重新扫描工具目录。
+        直接执行一个没有独立 UI 的工具。
+
+        Args:
+            tool_key (str):
+                工具唯一 Key。
+            tool_function (callable):
+                Tool Registry 的懒加载 Runner。
+
+        Returns:
+            object | None:
+                工具 main() 返回值。
         """
+        self.status_label.setText(
+            u"正在执行 {}...".format(tool_key)
+        )
+
+        try:
+            result = tool_function()
+        except Exception as error:
+            traceback.print_exc()
+
+            self.status_label.setText(
+                u"执行失败：{}".format(tool_key)
+            )
+
+            QMessageBox.critical(
+                self,
+                u"工具执行失败",
+                u"无法执行：{}\n\n{}".format(
+                    tool_key,
+                    error
+                )
+            )
+            return None
+
+        self.status_label.setText(
+            u"执行完成：{}".format(tool_key)
+        )
+        return result
+
+    def refresh_tool_registry(self):
+        u"""重新扫描工具目录并刷新界面。"""
         try:
             self.rebuild_tools(refresh_registry=True)
         except Exception as error:
@@ -900,9 +1181,7 @@ class RiggingToolbox(QWidget):
             )
 
     def close_all_subtools(self):
-        u"""
-        关闭所有由主工具箱管理的子工具。
-        """
+        u"""关闭所有由主工具箱管理的 UI 子工具。"""
         window_manager.close_all_tools()
         self.status_label.setText(u"已关闭全部子工具")
 
@@ -912,8 +1191,8 @@ def main():
     创建或恢复主工具箱。
 
     Returns:
-        object:
-        方法执行后的结果数据。
+        RiggingToolbox:
+            主工具箱实例。
     """
     global _window
 
