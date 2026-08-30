@@ -116,7 +116,7 @@ def duplicate_model(
 
     Notes:
         这里明确关闭 inputConnections / upstreamNodes，目的是得到相对独立的模型副本，
-                                                避免把旧 Rig / Deformer / DG 输入网络一起复制到新的工作模型上。
+                                                    避免把旧 Rig / Deformer / DG 输入网络一起复制到新的工作模型上。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：验证源模型。

@@ -282,8 +282,8 @@ def get_world_matrix(node):
 
     Notes:
         这里返回普通 list，而不是 MMatrix。
-                                                需要矩阵计算时由 matrix_utils 转成 Maya API Matrix，
-                                                这样 transform_utils 保持简单的数据读写职责。
+                                                    需要矩阵计算时由 matrix_utils 转成 Maya API Matrix，
+                                                    这样 transform_utils 保持简单的数据读写职责。
     """
     # 步骤 1：校验节点。
     validate_transform(node)
