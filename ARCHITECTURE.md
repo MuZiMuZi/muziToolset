@@ -7,7 +7,7 @@
 ```text
 muziToolset/
 ├─ app/                    # Maya 应用入口、主工具箱、窗口生命周期
-├─ ui/                     # PySide Theme 与可复用 UI Widget
+├─ ui/                     # PySide Theme、窗口辅助与可复用 UI Widget
 ├─ core/                   # 不依赖 UI 的 Maya / Python 通用底层能力
 ├─ tools/                  # 单功能、可独立启动的小工具
 ├─ systems/                # 可复用 Rig System / Builder
@@ -104,19 +104,39 @@ constraint_utils.py
 
 ### DAG / Attribute / Naming
 
+正式模块统一使用 snake_case：
+
 ```text
-attrUtils.py
-hierarchyUtils.py
-jointUtils.py
-nameUtils.py
+attr_utils.py
+hierarchy_utils.py
+joint_utils.py
+name_utils.py
 rename_utils.py
 snap_utils.py
 ```
 
-`nameUtils` 与 `rename_utils` 不合并：
+`name_utils` 与 `rename_utils` 不合并：
 
-- `nameUtils` 负责标准 Rig 名称语义；
+- `name_utils` 负责标准 Rig 名称语义；
 - `rename_utils` 负责批量 Rename Tool 行为。
+
+新正式代码不得再新增：
+
+```python
+from muziToolset.core import attrUtils
+from muziToolset.core import hierarchyUtils
+from muziToolset.core import jointUtils
+from muziToolset.core import nameUtils
+```
+
+统一改用：
+
+```python
+from muziToolset.core import attr_utils
+from muziToolset.core import hierarchy_utils
+from muziToolset.core import joint_utils
+from muziToolset.core import name_utils
+```
 
 ### Geometry / Deformer
 
@@ -155,34 +175,34 @@ Core 函数默认遵循：
 6. 不弹 UI；
 7. 大型操作使用单个 Maya Undo Chunk；
 8. 普通流程使用展开的 `for` 循环，不为了压缩代码滥用列表推导式；
-9. 新代码不新增 PyMel。
+9. 新代码不新增 PyMel；
+10. 文件名、模块变量和函数统一使用 snake_case，Class 使用 PascalCase。
 
-## CamelCase 文件兼容
+## CamelCase 兼容入口
 
-目前：
+以下早期文件目前只保留为 **Compatibility Shim**：
 
 ```text
-attrUtils.py
-hierarchyUtils.py
-jointUtils.py
-nameUtils.py
+attrUtils.py        -> attr_utils.py
+hierarchyUtils.py   -> hierarchy_utils.py
+jointUtils.py       -> joint_utils.py
+nameUtils.py        -> name_utils.py
 ```
 
-仍保留早期文件名，因为现有正式代码可能依赖这些 Import。
+正式实现只维护在 snake_case 模块中，兼容文件不得再包含第二份业务实现，也不得被新的正式模块反向依赖。
 
-本轮已经完成它们的内部重构、详细中文注释与重复逻辑收口，但不做破坏性文件改名。
-后续如统一 snake_case，应采用：
+迁移顺序固定为：
 
 ```text
-新 snake_case 模块
+正式 snake_case 模块
     ↓
 旧文件兼容转发
     ↓
-全仓库迁移
+全仓库正式代码迁移
     ↓
-真机测试
+Maya 真机 Smoke Test
     ↓
-最后删除旧入口
+零正式引用后删除旧入口
 ```
 
 ---
@@ -222,9 +242,9 @@ systems/face/
 - 接收用户参数；
 - 显示状态与 Warning；
 - 调用 Core / System；
-- 提供统一 `main()` 窗口入口。
+- 提供统一 `main()` 入口。
 
-Tool 中不要复制 Core 算法。
+Tool 中不要复制 Core 算法。已经存在于 `core` 的 Attribute、DAG、Connection、Constraint、Rename、Animation 等算法，应直接组合 Core API。
 
 例如：
 
@@ -234,17 +254,66 @@ connections_tool.py
 
 control_shape_tool.py
     -> core.control_shape_utils
+
+face_select_key_tool.py
+    -> core.hierarchy_utils
 ```
+
+## Tool main() 规则
+
+Tool 分两类，不要为了形式统一而混淆行为。
+
+### UI Tool
+
+UI Tool 的 `main()` 必须直接显示并返回 QWidget / QDialog：
+
+```python
+def main():
+    return window_utils.show_window(
+        "tools.basic.rename_tool",
+        RenameTool
+    )
+```
+
+`ui.window_utils` 负责用户在 Maya Script Editor 直接运行 Tool 时的：
+
+- Python 强引用；
+- `show()`；
+- 最小化恢复；
+- `raise_()`；
+- `activateWindow()`；
+- 同 Key 单实例。
+
+### 执行型 Tool
+
+例如 Quick Snap、根据 Selection 直接创建 FK Controller 这一类 Tool，`main()` 本身就是一次操作，不创建 QWidget，因此不要强行套 `window_utils`。
 
 ---
 
 # UI / App
 
-`ui` 只维护视觉和通用交互组件。
+`ui` 维护视觉和通用 UI 能力：
 
-`app` 只维护主工具箱、工具发现、懒加载、Window Manager 和应用生命周期。
+```text
+theme.py
+widgets.py
+window_utils.py
+```
 
-主工具箱统一通过 `app.window_manager` 管理窗口，不在每个 Tool 重新维护第二套全局窗口引用。
+`app` 维护主工具箱、工具发现、懒加载、Window Manager 和应用生命周期。
+
+窗口管理职责分开：
+
+```text
+ui.window_utils
+    用户直接调用单个 UI Tool.main() 时，保证窗口可见且不被 Python 回收。
+
+app.window_manager
+    从 MuziTools 主工具箱打开工具时，负责 Maya Main Window Parent、Window Flags、
+    应用级单实例和统一窗口生命周期。
+```
+
+Tool 不应各自再维护一套 `_window` 全局变量。
 
 ---
 
