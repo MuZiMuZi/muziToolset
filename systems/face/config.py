@@ -1,7 +1,7 @@
 # coding=utf-8
 u"""Face Rig 全局配置。"""
 
-from ...core import nameUtils
+from ...core import name_utils
 
 
 # ============================================================
@@ -35,7 +35,7 @@ face_part = "face"
 # Face Rig 层级名称
 # ============================================================
 
-face_master_grp = nameUtils.Name.create_name(
+face_master_grp = name_utils.Name.create_name(
     node_type="grp",
     side=face_side,
     part=face_part,
@@ -43,7 +43,7 @@ face_master_grp = nameUtils.Name.create_name(
     index=1
 )
 
-face_guide_grp = nameUtils.Name.create_name(
+face_guide_grp = name_utils.Name.create_name(
     node_type="grp",
     side=face_side,
     part=face_part,
@@ -51,7 +51,7 @@ face_guide_grp = nameUtils.Name.create_name(
     index=1
 )
 
-face_ctrl_grp = nameUtils.Name.create_name(
+face_ctrl_grp = name_utils.Name.create_name(
     node_type="grp",
     side=face_side,
     part=face_part,
@@ -59,7 +59,7 @@ face_ctrl_grp = nameUtils.Name.create_name(
     index=1
 )
 
-face_jnt_grp = nameUtils.Name.create_name(
+face_jnt_grp = name_utils.Name.create_name(
     node_type="grp",
     side=face_side,
     part=face_part,
@@ -67,7 +67,7 @@ face_jnt_grp = nameUtils.Name.create_name(
     index=1
 )
 
-face_rig_nodes_grp = nameUtils.Name.create_name(
+face_rig_nodes_grp = name_utils.Name.create_name(
     node_type="grp",
     side=face_side,
     part=face_part,
@@ -75,7 +75,7 @@ face_rig_nodes_grp = nameUtils.Name.create_name(
     index=1
 )
 
-face_pos_driver_grp = nameUtils.Name.create_name(
+face_pos_driver_grp = name_utils.Name.create_name(
     node_type="grp",
     side=face_side,
     part=face_part,
@@ -88,7 +88,7 @@ face_pos_driver_grp = nameUtils.Name.create_name(
 # Face 模型层级
 # ============================================================
 
-face_model_grp = nameUtils.Name.create_name(
+face_model_grp = name_utils.Name.create_name(
     node_type="grp",
     side=face_side,
     part=face_part,
@@ -96,7 +96,7 @@ face_model_grp = nameUtils.Name.create_name(
     index=1
 )
 
-face_tweak_grp = nameUtils.Name.create_name(
+face_tweak_grp = name_utils.Name.create_name(
     node_type="grp",
     side=face_side,
     part=face_part,
@@ -104,7 +104,7 @@ face_tweak_grp = nameUtils.Name.create_name(
     index=1
 )
 
-face_stretch_grp = nameUtils.Name.create_name(
+face_stretch_grp = name_utils.Name.create_name(
     node_type="grp",
     side=face_side,
     part=face_part,
@@ -112,7 +112,7 @@ face_stretch_grp = nameUtils.Name.create_name(
     index=1
 )
 
-face_deform_grp = nameUtils.Name.create_name(
+face_deform_grp = name_utils.Name.create_name(
     node_type="grp",
     side=face_side,
     part=face_part,
@@ -125,7 +125,7 @@ face_deform_grp = nameUtils.Name.create_name(
 # Set
 # ============================================================
 
-face_ctrl_set = nameUtils.Name.create_name(
+face_ctrl_set = name_utils.Name.create_name(
     node_type="set",
     side=face_side,
     part=face_part,
@@ -138,7 +138,7 @@ face_ctrl_set = nameUtils.Name.create_name(
 # Face 配置 Network Node
 # ============================================================
 
-config_node = nameUtils.Name.create_name(
+config_node = name_utils.Name.create_name(
     node_type="network",
     side=face_side,
     part=face_part,
