@@ -881,6 +881,10 @@ class FaceRigWizard(QWidget):
             guide_exists = False
 
         if not guide_exists:
+            self.completed_step_indexes.discard(1)
+            self.completed_step_indexes.discard(2)
+            self.completed_step_indexes.discard(3)
+
             self.guide_state_label.setText(
                 u"未加载"
             )
@@ -920,6 +924,10 @@ class FaceRigWizard(QWidget):
             )
             self.completed_step_indexes.add(1)
         else:
+            self.completed_step_indexes.discard(1)
+            self.completed_step_indexes.discard(2)
+            self.completed_step_indexes.discard(3)
+
             self.guide_state_label.setText(
                 u"已加载"
             )
