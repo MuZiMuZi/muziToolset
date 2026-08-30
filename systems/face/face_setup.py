@@ -3,43 +3,34 @@ u"""
 Step 01 - Face Setup
 ====================
 
-负责：
-    1. 指定头部模型；
-    2. 指定左右眼模型；
-    3. 指定上下牙模型；
-    4. 指定舌头模型；
-    5. 指定牙龈模型；
-    6. 设置嘴唇 Joint 数量；
-    7. 更新 Face Rig 工作模型；
-    8. 更新 Config Network Node；
-    9. 更新 Face UI Step 状态。
+Step 生命周期：
+    collect_inputs()
+    prepare_data()
+    process_data()
+    finalize_step()
 
-设计：
-    Config Node 只创建一次。
-    Step 01 可以重复执行。
-    用户修改 Step 01 后，会把最新配置写回同一个 Config Node。
-    后续 Step 统一从 FaceBase 读取最新数据。
+职责：
+    1. 收集并检查 Head / Eye / Teeth / Tongue / Gum 输入；
+    2. 检查嘴唇 Joint 数量；
+    3. 准备 Face 基础层级和 Work Model 名称；
+    4. 整理输入模型并创建 Tweak / Stretch / Deform Head；
+    5. 保存 Step 01 Config；
+    6. 完成 Step 01，并使后续旧 Step 状态失效。
 
-模型名称规则：
-    FaceSetup 内部统一保存 Maya 节点短名称，不保存 Long DAG Path。
-
-    原因是 Step 01 会重新整理输入模型 Parent。如果保存：
-        |grp_model|grp_head|model_md_head_001
-    这样的 Long DAG Path，reparent 后原路径会立即失效。
-
-    因此统一转换成：
-        model_md_head_001
-
-    同时要求短名称在场景中唯一，避免同名 DAG 节点产生歧义。
+重要边界：
+    - Short Name 统一由 core.rename_utils 处理；
+    - Model 有效性统一由 core.mesh_utils 处理；
+    - DAG Parent 统一由 core.hierarchy_utils 处理；
+    - Config 的底层 Network / Message / Value 操作由 FaceBase -> core.config_utils 处理；
+    - FaceSetup 只保留 Step 01 自己的业务规则。
 """
 
 from __future__ import print_function
 
-import maya.cmds as cmds
-
 from ...core import hierarchy_utils
 from ...core import mesh_utils
 from ...core import name_utils
+from ...core import rename_utils
 from . import face_base
 
 
@@ -57,59 +48,65 @@ class FaceSetup(face_base.FaceBase):
             face_gum_model=None,
             mouth_jnt_number=32
     ):
-        u"""
-        初始化 Face Setup。
-
-        Args:
-            face_head_model (str):
-                当前检查、绑定、复制或变形使用的模型 Transform。
-            face_lf_eye_model (str):
-                当前检查、绑定、复制或变形使用的模型 Transform。
-            face_rt_eye_model (str):
-                当前检查、绑定、复制或变形使用的模型 Transform。
-            upper_teech_model (str):
-                当前检查、绑定、复制或变形使用的模型 Transform。
-            lower_teech_model (str):
-                当前检查、绑定、复制或变形使用的模型 Transform。
-            face_tongue_model (str):
-                当前检查、绑定、复制或变形使用的模型 Transform。
-            face_gum_model (str):
-                当前检查、绑定、复制或变形使用的模型 Transform。
-            mouth_jnt_number (int):
-                嘴唇分布系统需要创建的 Joint 总数量。
-        """
+        u"""初始化 Step 01 输入。"""
         super(FaceSetup, self).__init__()
 
-        # ------------------------------------------------------------
-        # Face UI Step
-        # ------------------------------------------------------------
         self.step_value = 1
 
         # ------------------------------------------------------------
-        # 用户输入模型
+        # 原始输入。
+        # 名称规范化和有效性检查统一放到 collect_inputs()。
         # ------------------------------------------------------------
-        # UI Picker 正常已经返回短名称。
-        # 这里仍然再次规范化，保证直接调用 FaceSetup API 时也安全。
-        self.face_head_model = self.normalize_model_name(
-            face_head_model
+        self.face_head_model = face_head_model
+        self.face_lf_eye_model = face_lf_eye_model
+        self.face_rt_eye_model = face_rt_eye_model
+        self.upper_teech_model = upper_teech_model
+        self.lower_teech_model = lower_teech_model
+        self.face_tongue_model = face_tongue_model
+        self.face_gum_model = face_gum_model
+        self.mouth_jnt_number = mouth_jnt_number
+
+        self.face_model_list = []
+        self.work_model_name_dict = {}
+
+        # ------------------------------------------------------------
+        # Step 01 输出。
+        # ------------------------------------------------------------
+        self.face_head_tweak_model = None
+        self.face_head_stretch_model = None
+        self.face_head_deform_model = None
+
+    # =========================================================================
+    # Step Lifecycle
+    # =========================================================================
+
+    def collect_inputs(self):
+        u"""
+        收集、规范化并检查 Step 01 输入。
+
+        Collect 阶段同时完成输入 Validation。
+        只有本方法成功结束，后续 Prepare / Process 才允许继续。
+        """
+        self.face_head_model = rename_utils.get_short_name(
+            self.face_head_model
         )
-        self.face_lf_eye_model = self.normalize_model_name(
-            face_lf_eye_model
+        self.face_lf_eye_model = rename_utils.get_short_name(
+            self.face_lf_eye_model
         )
-        self.face_rt_eye_model = self.normalize_model_name(
-            face_rt_eye_model
+        self.face_rt_eye_model = rename_utils.get_short_name(
+            self.face_rt_eye_model
         )
-        self.upper_teech_model = self.normalize_model_name(
-            upper_teech_model
+        self.upper_teech_model = rename_utils.get_short_name(
+            self.upper_teech_model
         )
-        self.lower_teech_model = self.normalize_model_name(
-            lower_teech_model
+        self.lower_teech_model = rename_utils.get_short_name(
+            self.lower_teech_model
         )
-        self.face_tongue_model = self.normalize_model_name(
-            face_tongue_model
+        self.face_tongue_model = rename_utils.get_short_name(
+            self.face_tongue_model
         )
-        self.face_gum_model = self.normalize_model_name(
-            face_gum_model
+        self.face_gum_model = rename_utils.get_short_name(
+            self.face_gum_model
         )
 
         self.face_model_list = [
@@ -122,127 +119,114 @@ class FaceSetup(face_base.FaceBase):
             self.face_gum_model,
         ]
 
-        # ------------------------------------------------------------
-        # 构建参数
-        # ------------------------------------------------------------
-        self.mouth_jnt_number = mouth_jnt_number
-
-        # ------------------------------------------------------------
-        # Step 01 创建的工作模型
-        # ------------------------------------------------------------
-        self.face_head_tweak_model = None
-        self.face_head_stretch_model = None
-        self.face_head_deform_model = None
-
-    # =========================================================================
-    # Name
-    # =========================================================================
-
-    @staticmethod
-    def normalize_model_name(model):
-        u"""
-        把输入模型名称统一转换成 Maya DAG 短名称。
-
-        Args:
-            model (str | None):
-                Maya 节点名称或 Long DAG Path。
-
-        Returns:
-            str | None:
-                短名称；None 输入保持 None。
-        """
-        if model is None:
-            return None
-
-        model = str(model).strip()
-
-        if not model:
-            return ""
-
-        return model.split("|")[-1]
-
-    # =========================================================================
-    # Check
-    # =========================================================================
-
-    def check_model_exists(self):
-        u"""
-        检查 Step 01 指定的模型是否存在，并确认短名称唯一。
-
-        Returns:
-            bool:
-                检查通过返回 True。
-
-        Raises:
-            RuntimeError:
-                模型不存在、名称不唯一或不是 Transform 时抛出。
-        """
-        if self.face_head_model is None or self.face_head_model == "":
+        if not self.face_head_model:
             raise RuntimeError(
                 u"Face Setup 必须指定头部模型。"
             )
 
-        for face_model in self.face_model_list:
-            if face_model is None:
+        model_inputs = [
+            (u"Head Model", self.face_head_model),
+            (u"Left Eye Model", self.face_lf_eye_model),
+            (u"Right Eye Model", self.face_rt_eye_model),
+            (u"Upper Teeth Model", self.upper_teech_model),
+            (u"Lower Teeth Model", self.lower_teech_model),
+            (u"Tongue Model", self.face_tongue_model),
+            (u"Gum Model", self.face_gum_model),
+        ]
+
+        for model_input in model_inputs:
+            label = model_input[0]
+            model = model_input[1]
+
+            if not model:
                 continue
 
-            if face_model == "":
-                continue
-
-            matches = cmds.ls(
-                face_model,
-                long=True
+            mesh_utils.validate_model_transform(
+                model,
+                label=label
             )
 
-            if matches is None:
-                matches = []
-
-            if not matches:
-                raise RuntimeError(
-                    u"给定名称的模型不存在于当前 Maya 场景中: {}".format(
-                        face_model
-                    )
-                )
-
-            if len(matches) > 1:
-                raise RuntimeError(
-                    u"模型短名称不唯一，Face Setup 无法安全确定目标: {}\n"
-                    u"请先把场景中的同名节点重命名。".format(
-                        face_model
-                    )
-                )
-
-            node = matches[0]
-            node_type = cmds.nodeType(
-                node
-            )
-
-            if node_type != "transform":
-                raise RuntimeError(
-                    u"Face Setup 输入必须是 Transform，当前节点: {} | 类型: {}".format(
-                        face_model,
-                        node_type
-                    )
-                )
+        self.check_mouth_jnt_number()
 
         return True
 
-    def check_mouth_jnt_number(self):
+    def prepare_data(self):
         u"""
-        检查嘴唇 Joint 数量。
+        准备 Step 01 执行环境和中间数据。
 
-        Returns:
-            bool:
-            方法执行后的结果数据。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-            TypeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-            ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        本阶段不创建最终 Work Model，只负责：
+            1. 确保 Face Hierarchy；
+            2. 生成 Work Model 名称；
+            3. 清理上一次 Step 01 创建的旧 Work Model。
         """
+        self.ensure_hierarchy()
+
+        self.work_model_name_dict = self.get_work_model_names()
+
+        self.delete_old_work_models(
+            self.work_model_name_dict
+        )
+
+        return True
+
+    def process_data(self):
+        u"""
+        执行 Step 01 的核心场景处理。
+
+        负责整理输入模型层级，并创建三个 Head Work Model。
+        """
+        self.parent_input_models()
+
+        self.create_work_models(
+            self.work_model_name_dict
+        )
+
+        return True
+
+    def finalize_step(self):
+        u"""
+        保存、检查并完成 Step 01。
+
+        Finalize 成功后：
+            1. 保存最新 Config；
+            2. 验证三个 Work Model；
+            3. Step 01 = Completed；
+            4. Step 02～04 = Invalid。
+        """
+        self.save_config()
+        self.validate_results()
+
+        self.set_step_completed(
+            completed=True
+        )
+
+        self.invalidate_later_steps()
+
+        return True
+
+    def run_step(self):
+        u"""按照统一 Step 生命周期执行 Face Setup。"""
+        self.collect_inputs()
+        self.prepare_data()
+        self.process_data()
+        self.finalize_step()
+
+        return True
+
+    def build(self):
+        u"""
+        兼容旧版 FaceSetup.build()。
+
+        新代码统一使用 run_step()。
+        """
+        return self.run_step()
+
+    # =========================================================================
+    # Step 01 Business Validation
+    # =========================================================================
+
+    def check_mouth_jnt_number(self):
+        u"""检查 Face Lip 系统要求的嘴唇 Joint 数量。"""
         if self.mouth_jnt_number is None:
             raise RuntimeError(
                 u"没有设置嘴唇 Joint 数量。"
@@ -272,20 +256,9 @@ class FaceSetup(face_base.FaceBase):
     # =========================================================================
 
     def parent_input_models(self):
-        u"""
-        把 Step 01 指定的模型整理到 Face Model Group。
-
-        输入模型使用短名称，因此节点 reparent 后名称引用仍然有效。
-
-        Returns:
-            bool:
-            方法执行后的结果数据。
-        """
+        u"""把 Step 01 指定模型整理到 Face Model Group。"""
         for face_model in self.face_model_list:
-            if face_model is None:
-                continue
-
-            if face_model == "":
+            if not face_model:
                 continue
 
             hierarchy_utils.Hierarchy.parent(
@@ -296,13 +269,7 @@ class FaceSetup(face_base.FaceBase):
         return True
 
     def get_work_model_names(self):
-        u"""
-        生成 Step 01 三个头部工作模型名称。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+        u"""生成三个 Head Work Model 的正式名称。"""
         face_head_tweak_name = name_utils.Name.create_name(
             node_type="model",
             side=self.face_side,
@@ -327,26 +294,14 @@ class FaceSetup(face_base.FaceBase):
             index=1
         )
 
-        work_model_name_dict = {
+        return {
             "tweak": face_head_tweak_name,
             "stretch": face_head_stretch_name,
             "deform": face_head_deform_name,
         }
 
-        return work_model_name_dict
-
     def delete_old_work_models(self, work_model_name_dict):
-        u"""
-        删除 Step 01 之前生成的旧工作模型。
-
-        Args:
-            work_model_name_dict (dict):
-                Step 01 三个 Head Work Model（tweak / stretch / deform）的名称映射。
-
-        Returns:
-            bool:
-            方法执行后的结果数据。
-        """
+        u"""删除上一次 Step 01 创建的旧 Head Work Model。"""
         for key in work_model_name_dict:
             model = work_model_name_dict.get(
                 key
@@ -355,27 +310,15 @@ class FaceSetup(face_base.FaceBase):
             if not model:
                 continue
 
-            if not cmds.objExists(model):
-                continue
-
-            cmds.delete(
-                model
+            mesh_utils.delete_model(
+                model,
+                ignore_missing=True
             )
 
         return True
 
     def create_work_models(self, work_model_name_dict):
-        u"""
-        根据最新 Head Model 创建三个独立工作模型。
-
-        Args:
-            work_model_name_dict (dict):
-                Step 01 三个 Head Work Model（tweak / stretch / deform）的名称映射。
-
-        Returns:
-            bool:
-            方法执行后的结果数据。
-        """
+        u"""根据最新 Head Model 创建三个独立工作模型。"""
         face_head_tweak_name = work_model_name_dict.get(
             "tweak"
         )
@@ -406,25 +349,22 @@ class FaceSetup(face_base.FaceBase):
 
         return True
 
-    def update_work_models(self):
-        u"""
-        根据最新输入更新 Step 01 工作模型。
+    def validate_results(self):
+        u"""检查 Step 01 必须生成的三个 Head Work Model。"""
+        result_models = [
+            (u"Head Tweak Model", self.face_head_tweak_model),
+            (u"Head Stretch Model", self.face_head_stretch_model),
+            (u"Head Deform Model", self.face_head_deform_model),
+        ]
 
-        Returns:
-            bool:
-            方法执行后的结果数据。
-        """
-        self.parent_input_models()
+        for result_model in result_models:
+            label = result_model[0]
+            model = result_model[1]
 
-        work_model_name_dict = self.get_work_model_names()
-
-        self.delete_old_work_models(
-            work_model_name_dict
-        )
-
-        self.create_work_models(
-            work_model_name_dict
-        )
+            mesh_utils.validate_model_transform(
+                model,
+                label=label
+            )
 
         return True
 
@@ -433,16 +373,7 @@ class FaceSetup(face_base.FaceBase):
     # =========================================================================
 
     def save_config(self):
-        u"""
-        把 Step 01 最新设置更新到 Face Config。
-
-        Config 的具体读写动作统一交给 FaceBase，
-        FaceSetup 只负责组织 Step 01 自己的数据。
-
-        Returns:
-            bool:
-            方法执行后的结果数据。
-        """
+        u"""把 Step 01 最新设置保存到 Face Config。"""
         model_config_dict = {
             "face_head_model": self.face_head_model,
             "face_lf_eye_model": self.face_lf_eye_model,
@@ -473,39 +404,6 @@ class FaceSetup(face_base.FaceBase):
             lock=False,
             hide=False
         )
-
-        return True
-
-    # =========================================================================
-    # Build
-    # =========================================================================
-
-    def build(self):
-        u"""
-        执行可以重复运行的 Face Rig Step 01。
-
-        重新 Build Step 01 后：
-            1. Step 01 标记为完成；
-            2. Step 02～04 标记为未完成。
-        原因：
-            模型输入或嘴唇 Joint 数量改变后，
-            后续旧 Guide / Rig 结果不能继续被视为最新结果。
-
-        Returns:
-            bool:
-            方法执行后的结果数据。
-        """
-        self.check_model_exists()
-        self.check_mouth_jnt_number()
-
-        self.ensure_hierarchy()
-        self.update_work_models()
-        self.save_config()
-
-        self.set_step_completed(
-            completed=True
-        )
-        self.invalidate_later_steps()
 
         return True
 
