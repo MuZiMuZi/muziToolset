@@ -102,12 +102,13 @@ constraint_utils.py
 - `connection_utils` 是通用 Plug 连接；
 - `constraint_utils` 是 Maya 原生 Constraint。
 
-### DAG / Attribute / Naming
+### DAG / Attribute / Naming / Config
 
 正式模块统一使用 snake_case：
 
 ```text
 attr_utils.py
+config_utils.py
 hierarchy_utils.py
 joint_utils.py
 name_utils.py
@@ -115,18 +116,23 @@ rename_utils.py
 snap_utils.py
 ```
 
+`config_utils.ConfigNode` 负责通用 Maya `network` Config Node 的生命周期、Message 引用和普通 Value 配置。
+Face / Body / Hand 等 System 不应重复实现一套 Config CRUD。
+
 `name_utils` 与 `rename_utils` 不合并：
 
 - `name_utils` 负责标准 Rig 名称语义；
-- `rename_utils` 负责批量 Rename Tool 行为。
+- `rename_utils` 负责批量 Rename Tool 行为和通用 DAG Short Name 查询。
 
 正式代码统一使用：
 
 ```python
 from muziToolset.core import attr_utils
+from muziToolset.core import config_utils
 from muziToolset.core import hierarchy_utils
 from muziToolset.core import joint_utils
 from muziToolset.core import name_utils
+from muziToolset.core import rename_utils
 ```
 
 ### Geometry / Deformer
@@ -167,7 +173,8 @@ Core 函数默认遵循：
 7. 大型操作使用单个 Maya Undo Chunk；
 8. 普通流程使用展开的 `for` 循环，不为了压缩代码滥用列表推导式；
 9. 新代码不新增 PyMel；
-10. 文件名、模块变量和函数统一使用 snake_case，Class 使用 PascalCase。
+10. 文件名、模块变量和函数统一使用 snake_case，Class 使用 PascalCase；
+11. 已经存在于 Core 的基础能力禁止在 Tool / System 中复制第二套实现。
 
 ## CamelCase Core 迁移完成
 
@@ -216,6 +223,9 @@ CI Import Gate 归零
 当前主要系统：
 
 ```text
+systems/common/
+└─ step_base.py
+
 systems/controller/
 ├─ builder.py
 └─ space_blend.py
@@ -224,15 +234,102 @@ systems/body/
 └─ skirt/
 
 systems/face/
+├─ face_base.py
 ├─ face_setup.py
 ├─ face_guide.py
+├─ face_rig_ui.py
 ├─ curve_attachment.py
 ├─ eyelid/
-├─ lip/
-└─ wizard.py
+└─ lip/
 ```
 
 完整 Face、Controller、Body、Hair、Ribbon Workflow 不允许重新塞回 Core。
+
+## Step 生命周期规范
+
+凡是“按步骤提交、可以回退修改并重新执行”的 System Step，统一继承：
+
+```python
+from muziToolset.systems.common import StepBase
+```
+
+生命周期固定为：
+
+```text
+collect_inputs()
+      ↓
+prepare_data()
+      ↓
+process_data()
+      ↓
+finalize_step()
+```
+
+统一总入口为：
+
+```python
+run_step()
+```
+
+四个阶段的固定含义：
+
+```text
+collect_inputs
+    收集输入，同时完成输入规范化和有效性检查。
+
+prepare_data
+    准备层级、名称、中间数据，并清理会影响本次执行的旧结果。
+
+process_data
+    执行当前 Step 真正的核心数据或场景处理。
+
+finalize_step
+    检查输出、保存 Config、清理状态，并准备交给下一 Step。
+```
+
+不要重新拆成另一套同义顶层生命周期，例如：
+
+```text
+validate_inputs
+prepare_scene
+build_outputs
+complete_build
+```
+
+业务内部仍然允许存在更小的辅助方法，但它们必须归属于上述四个阶段之一。
+
+## 自定义方法调用注释规范
+
+在生命周期大方法或其它 Workflow 大方法中，只要调用项目自己封装的 Core / System / Tool 方法，
+调用前必须写一行中文注释，说明该调用在当前流程中的目的。
+
+推荐：
+
+```python
+def prepare_data(self):
+    # 确保 Face Rig 的基础层级已经创建完成。
+    self.ensure_hierarchy()
+
+    # 生成本次 Step 需要使用的 Work Model 名称。
+    self.work_model_name_dict = self.get_work_model_names()
+
+    # 删除上一次执行留下的旧 Work Model，避免旧数据冲突。
+    self.delete_old_work_models(
+        self.work_model_name_dict
+    )
+```
+
+不推荐：
+
+```python
+def prepare_data(self):
+    self.ensure_hierarchy()
+    self.work_model_name_dict = self.get_work_model_names()
+    self.delete_old_work_models(self.work_model_name_dict)
+```
+
+注释强调“**为什么调用**”，而不是机械重复方法名。
+普通变量赋值、简单 `if / for` 和明显的 Python 基础操作不要求逐行注释，避免代码被无意义注释淹没。
 
 ---
 
@@ -304,7 +401,7 @@ Total: 17 | Passed: 17 | Failed: 0
 
 ```text
 theme.py
-widgets.py
+widgets/
 window_utils.py
 ```
 
