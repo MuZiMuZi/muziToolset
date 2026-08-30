@@ -290,11 +290,11 @@ class FaceBase(object):
 
         Args:
             attrs_dict (dict):
-                `attrs_dict` 对应的配置或映射字典。
+                Attribute 名称到 Value / Config 数据的批量映射。
             force (bool):
                 是否强制覆盖已有连接、状态或结果。
             clear_empty (bool):
-                是否启用 `clear_empty` 对应的处理。
+                批量保存 Message / Config 时，空值是否主动断开旧连接。
 
         Returns:
             object:
@@ -323,13 +323,13 @@ class FaceBase(object):
 
         Args:
             attrs_dict (dict):
-                `attrs_dict` 对应的配置或映射字典。
-            attr_types (object):
-                `attr_types` 对应的输入数据。
+                Attribute 名称到 Value / Config 数据的批量映射。
+            attr_types (dict | None):
+                Attribute 名称到 Maya Attribute Type 的映射；未指定的属性由调用方默认规则处理。
             lock (bool):
-                是否启用 `lock` 对应的处理。
+                是否 Lock 对应 Maya Channel / Attribute。
             hide (bool):
-                是否启用 `hide` 对应的处理。
+                是否从 Channel Box 隐藏对应 Maya Attribute。
 
         Returns:
             object:
@@ -395,7 +395,7 @@ class FaceBase(object):
 
         Args:
             refresh (bool):
-                是否启用 `refresh` 对应的处理。
+                读取数据前是否先从 Maya Scene / Config 重新刷新缓存。
 
         Returns:
             object:
@@ -434,7 +434,7 @@ class FaceBase(object):
 
         Args:
             require_mouth_jnt_number (bool):
-                是否启用 `require_mouth_jnt_number` 对应的处理。
+                当前构建、采样或查询过程使用的元素数量。
 
         Returns:
             bool:
@@ -504,7 +504,7 @@ class FaceBase(object):
 
         Args:
             step_value (int):
-                `step_value` 对应的整数参数。
+                Face Wizard / Build Pipeline 当前 Step 编号。
 
         Returns:
             object:
@@ -537,7 +537,7 @@ class FaceBase(object):
 
         Args:
             step_value (int):
-                `step_value` 对应的整数参数。
+                Face Wizard / Build Pipeline 当前 Step 编号。
 
         Returns:
             object:
@@ -574,9 +574,9 @@ class FaceBase(object):
 
         Args:
             step_value (int):
-                `step_value` 对应的整数参数。
+                Face Wizard / Build Pipeline 当前 Step 编号。
             completed (bool):
-                是否启用 `completed` 对应的处理。
+                当前 Face Wizard / Build Step 是否标记为已完成。
 
         Returns:
             object:
@@ -609,7 +609,7 @@ class FaceBase(object):
 
         Args:
             step_value (int):
-                `step_value` 对应的整数参数。
+                Face Wizard / Build Pipeline 当前 Step 编号。
 
         Returns:
             object | bool:
@@ -644,9 +644,9 @@ class FaceBase(object):
 
         Args:
             step_value (int):
-                `step_value` 对应的整数参数。
+                Face Wizard / Build Pipeline 当前 Step 编号。
             last_step (int):
-                `last_step` 对应的整数参数。
+                Step 状态查询或失效处理时的最后一个 Step 编号。
 
         Returns:
             object | list:
@@ -689,7 +689,7 @@ class FaceBase(object):
 
         Args:
             last_step (int):
-                `last_step` 对应的整数参数。
+                Step 状态查询或失效处理时的最后一个 Step 编号。
 
         Returns:
             object:

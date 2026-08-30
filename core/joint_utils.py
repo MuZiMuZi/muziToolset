@@ -170,10 +170,10 @@ class Joint(object):
         Args:
             name (str):
                 创建或查询时使用的节点名称。
-            position (object):
-                `position` 对应的输入数据。
-            rotation (object):
-                `rotation` 对应的输入数据。
+            position (list[float] | tuple[float, float, float]):
+                Joint / Transform 使用的 XYZ Position。
+            rotation (list[float] | tuple[float, float, float]):
+                Joint / Transform 使用的 XYZ Rotation。
             parent (str):
                 父级 Maya 节点名称。
             radius (float):
@@ -247,14 +247,14 @@ class Joint(object):
         在指定 Transform / Joint 的世界位置创建 Joint。
 
         Args:
-            obj (object):
-                `obj` 对应的输入数据。
+            obj (str):
+                当前操作使用的 Maya DAG 节点或场景对象。
             name (str):
                 创建或查询时使用的节点名称。
             parent (str):
                 父级 Maya 节点名称。
             match_rotation (bool):
-                是否启用 `match_rotation` 对应的处理。
+                根据目标 Transform 创建 Joint 时是否同时匹配目标 Rotation。
             radius (float):
                 创建节点或控制器使用的半径值。
 
@@ -309,8 +309,8 @@ class Joint(object):
         在指定对象位置创建一个 Child Joint，并 Parent 到该对象下。
 
         Args:
-            obj (object):
-                `obj` 对应的输入数据。
+            obj (str):
+                当前操作使用的 Maya DAG 节点或场景对象。
             name (str):
                 创建或查询时使用的节点名称。
             radius (float):
@@ -362,8 +362,8 @@ class Joint(object):
         在 Vertex / CV 等组件世界位置创建 Joint。
 
         Args:
-            component (object):
-                `component` 对应的输入数据。
+            component (str):
+                用于创建 Joint 或查询位置的 Maya Component，例如 Vertex、CV 或 Edge。
             name (str):
                 创建或查询时使用的节点名称。
             parent (str):
@@ -414,9 +414,9 @@ class Joint(object):
 
         Args:
             name_prefix (str):
-                `name_prefix` 对应的名称、标记或字符串参数。
+                批量创建 Joint 时写入节点名称前部的 Prefix。
             parent_chain (bool):
-                是否启用 `parent_chain` 对应的处理。
+                创建多个 Joint 时是否按输入顺序建立父子 Joint Chain。
             radius (float):
                 创建节点或控制器使用的半径值。
 
@@ -511,7 +511,7 @@ class Joint(object):
 
         Args:
             all_descendents (bool):
-                是否启用 `all_descendents` 对应的处理。
+                Joint 查询时是否包含当前节点以下的全部 Descendant Joint。
 
         Returns:
             object:
@@ -537,7 +537,7 @@ class Joint(object):
 
         Args:
             visible (bool):
-                是否启用 `visible` 对应的处理。
+                Joint / Guide / UI 元素是否保持可见。
 
         Returns:
             object:
@@ -601,11 +601,11 @@ class Joint(object):
 
         Args:
             joints (str | list[str]):
-                `joints` 对应的输入数据。
+                需要批量处理的 Maya Joint 节点或 Joint Chain。
             visible (bool):
-                是否启用 `visible` 对应的处理。
+                Joint / Guide / UI 元素是否保持可见。
             include_descendents (bool):
-                是否启用 `include_descendents` 对应的处理。
+                Joint 查询或显示操作是否递归包含 Descendant Joint。
 
         Returns:
             object | list:
@@ -653,9 +653,9 @@ class Joint(object):
 
         Args:
             visible (bool):
-                是否启用 `visible` 对应的处理。
+                Joint / Guide / UI 元素是否保持可见。
             include_descendents (bool):
-                是否启用 `include_descendents` 对应的处理。
+                Joint 查询或显示操作是否递归包含 Descendant Joint。
 
         Returns:
             object | list:
@@ -684,7 +684,7 @@ class Joint(object):
 
         Args:
             visible (bool):
-                是否启用 `visible` 对应的处理。
+                Joint / Guide / UI 元素是否保持可见。
 
         Returns:
             object:
@@ -742,9 +742,9 @@ class Joint(object):
 
         Args:
             orient_joint (str):
-                `orient_joint` 对应的名称、标记或字符串参数。
+                当前 Rig 计算或构建使用的 Maya Joint 节点。
             secondary_axis_orient (str):
-                `secondary_axis_orient` 对应的名称、标记或字符串参数。
+                Maya Joint Orient 使用的 Secondary Axis World Orientation，例如 `yup`、`zdown`。
 
         Returns:
             object:
@@ -801,7 +801,7 @@ class Joint(object):
 
         Args:
             keyable (bool):
-                是否启用 `keyable` 对应的处理。
+                对应 Maya Attribute 是否允许 Animator Keyframe。
 
         Returns:
             object:
@@ -847,7 +847,7 @@ class Joint(object):
 
         Args:
             enabled (bool):
-                是否启用 `enabled` 对应的处理。
+                当前 UI 控件或 Rig 功能是否启用。
 
         Returns:
             object:
@@ -1063,9 +1063,9 @@ class JointCurve(object):
             joint_base_name (str):
                 `joint_base_name` 对应的 Maya 节点或资源名称。
             parent_chain (bool):
-                是否启用 `parent_chain` 对应的处理。
+                创建多个 Joint 时是否按输入顺序建立父子 Joint Chain。
             create_group (bool):
-                是否启用 `create_group` 对应的处理。
+                当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
             group_name (str):
                 `group_name` 对应的 Maya 节点或资源名称。
             radius (float):
@@ -1164,7 +1164,7 @@ class JointChain(object):
 
         Args:
             joints (str | list[str]):
-                `joints` 对应的输入数据。
+                需要批量处理的 Maya Joint 节点或 Joint Chain。
 
         Returns:
             object:
@@ -1192,7 +1192,7 @@ class JointChain(object):
 
         Args:
             joints (str | list[str]):
-                `joints` 对应的输入数据。
+                需要批量处理的 Maya Joint 节点或 Joint Chain。
 
         Returns:
             object:
@@ -1250,14 +1250,14 @@ class JointChain(object):
         命名统一复用 name_utils.Name，以保持项目标准命名规则。
 
         Args:
-            blueprint_joints (object):
-                `blueprint_joints` 对应的输入数据。
-            suffix (object):
-                `suffix` 对应的输入数据。
-            joint_parent (object):
-                `joint_parent` 对应的输入数据。
+            blueprint_joints (str | list[str]):
+                作为正式 Skeleton 构建来源的 Blueprint / Guide Joint 列表。
+            suffix (str):
+                添加到 Maya 节点名称尾部的 Suffix。
+            joint_parent (str | None):
+                新建 Joint Chain 的父 Joint / Parent Transform；None 表示保持在世界层级。
             hide_blueprint (bool):
-                是否启用 `hide_blueprint` 对应的处理。
+                生成正式 Skeleton 后是否隐藏 Blueprint / Guide Joint。
 
         Returns:
             object:
@@ -1346,11 +1346,11 @@ class JointChain(object):
 
         Args:
             joints (str | list[str]):
-                `joints` 对应的输入数据。
+                需要批量处理的 Maya Joint 节点或 Joint Chain。
             orient_joint (str):
-                `orient_joint` 对应的名称、标记或字符串参数。
+                当前 Rig 计算或构建使用的 Maya Joint 节点。
             secondary_axis_orient (str):
-                `secondary_axis_orient` 对应的名称、标记或字符串参数。
+                Maya Joint Orient 使用的 Secondary Axis World Orientation，例如 `yup`、`zdown`。
 
         Returns:
             object:

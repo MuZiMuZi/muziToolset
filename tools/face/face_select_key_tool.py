@@ -66,12 +66,12 @@ def add_extra_group(obj, group_name, world_orient=False):
     这里只保留 Face Driven Key 的“已有 Group 直接复用”兼容行为。
 
     Args:
-        obj (object):
-            `obj` 对应的输入数据。
+        obj (str):
+            当前操作使用的 Maya DAG 节点或场景对象。
         group_name (str):
             `group_name` 对应的 Maya 节点或资源名称。
         world_orient (bool):
-            是否启用 `world_orient` 对应的处理。
+            创建 Extra Group 时是否使用 World Orientation，而不是继承目标对象旋转。
 
     Returns:
         object:
@@ -140,14 +140,14 @@ def create_driven_key_setup(
     Args:
         driver (str):
             作为驱动端的 Maya 节点名称。
-        driver_attribute (object):
-            `driver_attribute` 对应的输入数据。
-        driven_controls (object):
-            `driven_controls` 对应的输入数据。
+        driver_attribute (str):
+            驱动 Set Driven Key / 属性关系的 Driver Plug，例如 `ctrl.smile`。
+        driven_controls (str | list[str]):
+            接收 Driver Attribute 结果的 Driven Controller 列表。
         minimum (float):
-            `minimum` 对应的数值参数。
+            数值 Attribute、Remap 或 UI 控件使用的最小值。
         maximum (float):
-            `maximum` 对应的数值参数。
+            数值 Attribute、Remap 或 UI 控件使用的最大值。
 
     Returns:
         object:

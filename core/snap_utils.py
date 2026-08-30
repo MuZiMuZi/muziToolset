@@ -107,8 +107,8 @@ def get_world_position(item):
     避免在调用端分别判断 Vertex / CV / Transform。
 
     Args:
-        item (object):
-            `item` 对应的输入数据。
+        item (str | object):
+            当前查询、吸附或 UI 操作使用的 Maya Item / 数据项。
 
     Returns:
         list | None:
@@ -153,8 +153,8 @@ def get_world_rotation(item):
     如果传入的是 Shape，会先尝试找到它的 Transform Parent，再查询 Transform Rotation。
 
     Args:
-        item (object):
-            `item` 对应的输入数据。
+        item (str | object):
+            当前查询、吸附或 UI 操作使用的 Maya Item / 数据项。
 
     Returns:
         list | None:

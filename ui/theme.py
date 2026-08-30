@@ -678,8 +678,8 @@ def repolish(widget):
     动态属性变化后重新刷新 QSS。
 
     Args:
-        widget (object):
-            `widget` 对应的输入数据。
+        widget (QtWidgets.QWidget):
+            需要应用 MuziTools Theme / UI 状态的 Qt Widget。
     """
 
     if widget is None:
@@ -700,12 +700,12 @@ def set_role(widget, role, enabled=True):
     给 QWidget 设置 MuziTools 视觉角色。
 
     Args:
-        widget (object):
-            `widget` 对应的输入数据。
-        role (object):
-            `role` 对应的输入数据。
+        widget (QtWidgets.QWidget):
+            需要应用 MuziTools Theme / UI 状态的 Qt Widget。
+        role (str):
+            当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
         enabled (bool):
-            是否启用 `enabled` 对应的处理。
+            当前 UI 控件或 Rig 功能是否启用。
 
     Returns:
         object:
@@ -747,8 +747,8 @@ def apply_theme(widget):
     把统一主题应用到一个窗口。
 
     Args:
-        widget (object):
-            `widget` 对应的输入数据。
+        widget (QtWidgets.QWidget):
+            需要应用 MuziTools Theme / UI 状态的 Qt Widget。
 
     Returns:
         object | None:
@@ -771,8 +771,8 @@ def make_title(text_value, parent=None):
     执行 `make_title` 对应的 Maya 工具操作。
 
     Args:
-        text_value (object):
-            `text_value` 对应的输入数据。
+        text_value (str):
+            需要显示、验证或写入 Qt 文本控件的字符串。
         parent (str):
             父级 Maya 节点名称。
 
@@ -791,8 +791,8 @@ def make_subtitle(text_value, parent=None):
     执行 `make_subtitle` 对应的 Maya 工具操作。
 
     Args:
-        text_value (object):
-            `text_value` 对应的输入数据。
+        text_value (str):
+            需要显示、验证或写入 Qt 文本控件的字符串。
         parent (str):
             父级 Maya 节点名称。
 
@@ -812,8 +812,8 @@ def make_section_title(text_value, parent=None):
     执行 `make_section_title` 对应的 Maya 工具操作。
 
     Args:
-        text_value (object):
-            `text_value` 对应的输入数据。
+        text_value (str):
+            需要显示、验证或写入 Qt 文本控件的字符串。
         parent (str):
             父级 Maya 节点名称。
 
@@ -835,9 +835,9 @@ def make_card(parent=None, margins=(16, 14, 16, 14), spacing=8):
         parent (str):
             父级 Maya 节点名称。
         margins (tuple):
-            `margins` 对应的输入数据。
+            Qt Layout 的 Left / Top / Right / Bottom Contents Margins。
         spacing (int):
-            `spacing` 对应的整数参数。
+            Qt Layout 中相邻控件之间的间距。
 
     Returns:
         tuple:
@@ -867,9 +867,9 @@ def make_sub_card(parent=None, margins=(12, 10, 12, 10), spacing=6):
         parent (str):
             父级 Maya 节点名称。
         margins (tuple):
-            `margins` 对应的输入数据。
+            Qt Layout 的 Left / Top / Right / Bottom Contents Margins。
         spacing (int):
-            `spacing` 对应的整数参数。
+            Qt Layout 中相邻控件之间的间距。
 
     Returns:
         tuple:
@@ -896,8 +896,8 @@ def style_primary(button):
     执行 `style_primary` 对应的 Maya 工具操作。
 
     Args:
-        button (object):
-            `button` 对应的输入数据。
+        button (QtWidgets.QPushButton):
+            需要应用 MuziTools Button 样式或状态的 QPushButton。
 
     Returns:
         object:
@@ -912,8 +912,8 @@ def style_danger(button):
     执行 `style_danger` 对应的 Maya 工具操作。
 
     Args:
-        button (object):
-            `button` 对应的输入数据。
+        button (QtWidgets.QPushButton):
+            需要应用 MuziTools Button 样式或状态的 QPushButton。
 
     Returns:
         object:
@@ -928,8 +928,8 @@ def style_ghost(button):
     执行 `style_ghost` 对应的 Maya 工具操作。
 
     Args:
-        button (object):
-            `button` 对应的输入数据。
+        button (QtWidgets.QPushButton):
+            需要应用 MuziTools Button 样式或状态的 QPushButton。
 
     Returns:
         object:
@@ -944,10 +944,10 @@ def style_navigation(button, active=False):
     执行 `style_navigation` 对应的 Maya 工具操作。
 
     Args:
-        button (object):
-            `button` 对应的输入数据。
+        button (QtWidgets.QPushButton):
+            需要应用 MuziTools Button 样式或状态的 QPushButton。
         active (bool):
-            是否启用 `active` 对应的处理。
+            Button / UI State 当前是否处于 Active 状态。
 
     Returns:
         object:
@@ -964,8 +964,8 @@ def style_search(line_edit):
     执行 `style_search` 对应的 Maya 工具操作。
 
     Args:
-        line_edit (object):
-            `line_edit` 对应的输入数据。
+        line_edit (QtWidgets.QLineEdit):
+            需要应用 MuziTools 输入框样式的 QLineEdit。
 
     Returns:
         object:
@@ -980,12 +980,12 @@ def style_window(widget, title=None, minimum_width=None):
     统一设置窗口标题、最小宽度和主题。
 
     Args:
-        widget (object):
-            `widget` 对应的输入数据。
-        title (object):
-            `title` 对应的输入数据。
-        minimum_width (object):
-            `minimum_width` 对应的输入数据。
+        widget (QtWidgets.QWidget):
+            需要应用 MuziTools Theme / UI 状态的 Qt Widget。
+        title (str):
+            窗口、Section、Dialog 或报告使用的标题文本。
+        minimum_width (int):
+            Qt Widget / Dialog 的最小宽度。
 
     Returns:
         object | None:

@@ -84,7 +84,7 @@ def get_input_connections(destination_plug):
 
     Args:
         destination_plug (str):
-            `destination_plug` 对应的名称、标记或字符串参数。
+            完整 Maya Plug，例如 `node.translateX`。
 
     Returns:
         list: Source Plug 列表；无输入时返回空列表。
@@ -117,7 +117,7 @@ def get_output_connections(source_plug):
 
     Args:
         source_plug (str):
-            `source_plug` 对应的名称、标记或字符串参数。
+            完整 Maya Plug，例如 `node.translateX`。
 
     Returns:
         list: Destination Plug 列表；无输出时返回空列表。
@@ -205,9 +205,9 @@ def can_connect(source_plug, destination_plug, force=False):
 
     Args:
         source_plug (str):
-            `source_plug` 对应的名称、标记或字符串参数。
+            完整 Maya Plug，例如 `node.translateX`。
         destination_plug (str):
-            `destination_plug` 对应的名称、标记或字符串参数。
+            完整 Maya Plug，例如 `node.translateX`。
         force (bool):
             是否强制覆盖已有连接、状态或结果。
 
@@ -248,9 +248,9 @@ def connect_plugs(source_plug, destination_plug, force=False):
 
     Args:
         source_plug (str):
-            `source_plug` 对应的名称、标记或字符串参数。
+            完整 Maya Plug，例如 `node.translateX`。
         destination_plug (str):
-            `destination_plug` 对应的名称、标记或字符串参数。
+            完整 Maya Plug，例如 `node.translateX`。
         force (bool):
             是否强制覆盖已有连接、状态或结果。
 
@@ -314,9 +314,9 @@ def disconnect_plugs(source_plug, destination_plug):
 
     Args:
         source_plug (str):
-            `source_plug` 对应的名称、标记或字符串参数。
+            完整 Maya Plug，例如 `node.translateX`。
         destination_plug (str):
-            `destination_plug` 对应的名称、标记或字符串参数。
+            完整 Maya Plug，例如 `node.translateX`。
 
     Returns:
         bool: 实际断开成功时返回 True。
@@ -350,7 +350,7 @@ def disconnect_input(destination_plug):
 
     Args:
         destination_plug (str):
-            `destination_plug` 对应的名称、标记或字符串参数。
+            完整 Maya Plug，例如 `node.translateX`。
 
     Returns:
         int: 实际断开的连接数量。
@@ -433,10 +433,10 @@ def disconnect_attribute_pairs(
     Args:
         driver (str):
             作为驱动端的 Maya 节点名称。
-        driven_objects (object):
-            `driven_objects` 对应的输入数据。
-        attribute_pairs (object):
-            `attribute_pairs` 对应的输入数据。
+        driven_objects (str | list[str]):
+            需要批量接收驱动结果的 Driven 节点或节点列表。
+        attribute_pairs (list[tuple[str, str]] | dict):
+            需要批量建立连接的 Source Plug / Destination Plug 配对数据。
 
     Returns:
         object:
@@ -480,11 +480,11 @@ def connect_source_to_attributes(
 
     Args:
         source_plug (str):
-            `source_plug` 对应的名称、标记或字符串参数。
-        driven_objects (object):
-            `driven_objects` 对应的输入数据。
-        attribute_names (object):
-            `attribute_names` 对应的输入数据。
+            完整 Maya Plug，例如 `node.translateX`。
+        driven_objects (str | list[str]):
+            需要批量接收驱动结果的 Driven 节点或节点列表。
+        attribute_names (str | list[str]):
+            需要查询、复制或批量连接的 Maya Attribute 名称列表。
         force (bool):
             是否强制覆盖已有连接、状态或结果。
 
@@ -520,8 +520,8 @@ def disconnect_object_inputs(objects, attribute_names):
     Args:
         objects (str | list[str]):
             需要批量处理的 Maya 场景对象名称或对象列表。
-        attribute_names (object):
-            `attribute_names` 对应的输入数据。
+        attribute_names (str | list[str]):
+            需要查询、复制或批量连接的 Maya Attribute 名称列表。
 
     Returns:
         int: 实际断开的总连接数量。
@@ -556,12 +556,12 @@ def copy_input_connections(
     本函数可以把同一个 Source Plug 接到多个 Target.translateX。
 
     Args:
-        source_object (object):
-            `source_object` 对应的输入数据。
-        target_objects (object):
-            `target_objects` 对应的输入数据。
-        attribute_names (object):
-            `attribute_names` 对应的输入数据。
+        source_object (str):
+            提供 Attribute、Transform 或连接数据的 Source Maya 对象。
+        target_objects (str | list[str]):
+            接收 Source 数据或连接的一个或多个 Target Maya 对象。
+        attribute_names (str | list[str]):
+            需要查询、复制或批量连接的 Maya Attribute 名称列表。
         force (bool):
             是否强制覆盖已有连接、状态或结果。
 

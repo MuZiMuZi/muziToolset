@@ -92,7 +92,7 @@ def get_selected_objects(minimum_count=1):
 
     Args:
         minimum_count (int):
-            `minimum_count` 对应的整数参数。
+            当前构建、采样或查询过程使用的元素数量。
 
     Returns:
         object | list:

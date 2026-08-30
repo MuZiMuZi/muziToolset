@@ -418,8 +418,8 @@ class ControlCreatorDialog(QDialog):
         根据搜索文字过滤 Shape。
 
         Args:
-            text_value (object):
-                `text_value` 对应的输入数据。
+            text_value (str):
+                需要显示、验证或写入 Qt 文本控件的字符串。
         """
         search_text = text_value.strip().lower()
         index = 0
@@ -547,9 +547,9 @@ class ControlCreatorDialog(QDialog):
             target (str):
                 接收结果或被处理的目标 Maya 节点名称。
             target_index (int):
-                `target_index` 对应的整数参数。
+                BlendShape Target 在 Weight / Target Group 中使用的逻辑索引。
             target_count (int):
-                `target_count` 对应的整数参数。
+                当前构建、采样或查询过程使用的元素数量。
 
         Returns:
             object | str:

@@ -221,7 +221,7 @@ def create_controller(
         name (str):
             创建或查询时使用的节点名称。
         shape (str):
-            `shape` 对应的名称、标记或字符串参数。
+            Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
         radius (float):
             创建节点或控制器使用的半径值。
         axis (str):
@@ -231,17 +231,17 @@ def create_controller(
         parent (str):
             父级 Maya 节点名称。
         color (int):
-            `color` 对应的整数参数。
+            Viewport Override 使用的 Index Color 或 RGB Color。
         rotate_x (float):
-            `rotate_x` 对应的数值参数。
+            Controller Shape / Transform 绕 X 轴应用的旋转角度。
         create_sub_control (bool):
-            是否启用 `create_sub_control` 对应的处理。
+            当前 Rig 操作或驱动使用的动画 Controller Transform。
         create_extra_groups (bool):
-            是否启用 `create_extra_groups` 对应的处理。
+            是否创建 Zero、Driven、Space、Connect、Offset 等标准 Controller Extra Groups。
         add_to_set (bool):
-            是否启用 `add_to_set` 对应的处理。
+            是否把创建后的 Controller 加入指定 Controller Set。
         control_set (str):
-            `control_set` 对应的名称、标记或字符串参数。
+            创建后的 Controller 需要加入的 Maya Set 名称。
 
     Returns:
         dict: 控制器、层级和输出节点信息。
@@ -461,19 +461,19 @@ def create_fk_controls(
 
     Args:
         targets (str | list[str]):
-            `targets` 对应的输入数据。
+            需要批量处理的 Target 节点；在 Constraint / BlendShape / Controller API 中保持输入顺序。
         shape (str):
-            `shape` 对应的名称、标记或字符串参数。
+            Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
         radius (float):
             创建节点或控制器使用的半径值。
         axis (str):
             操作使用的轴向标记。
         constrain (bool):
-            是否启用 `constrain` 对应的处理。
+            创建 Controller 后是否建立 Controller / Output 到 Target 的约束关系。
         create_extra_groups (bool):
-            是否启用 `create_extra_groups` 对应的处理。
+            是否创建 Zero、Driven、Space、Connect、Offset 等标准 Controller Extra Groups。
         add_to_set (bool):
-            是否启用 `add_to_set` 对应的处理。
+            是否把创建后的 Controller 加入指定 Controller Set。
 
     Returns:
         object | list:

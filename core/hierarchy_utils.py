@@ -91,10 +91,10 @@ class Hierarchy(object):
         确保 child_node 位于 parent_node 下。
 
         Args:
-            child_node (object):
-                `child_node` 对应的输入数据。
-            parent_node (object):
-                `parent_node` 对应的输入数据。
+            child_node (str):
+                需要重新挂接父级的 Child DAG 节点名称。
+            parent_node (str):
+                Child 最终需要挂接到的 Parent DAG 节点名称。
 
         Returns:
             str:
@@ -315,7 +315,7 @@ class Hierarchy(object):
 
         Args:
             obj_type (str):
-                `obj_type` 对应的名称、标记或字符串参数。
+                当前 Maya / Rig 操作使用的 `obj_type` 名称或标记。
 
         Returns:
             object:
@@ -362,7 +362,7 @@ class Hierarchy(object):
 
         Args:
             grp (object):
-                `grp` 对应的输入数据。
+                当前方法执行 Maya / Rig 操作时使用的 `grp` 数据。
             parent (str):
                 父级 Maya 节点名称。
 

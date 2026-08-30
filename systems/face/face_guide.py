@@ -167,8 +167,8 @@ class FaceGuide(face_base.FaceBase):
         获取 Locator Transform 下全部有效 Locator Shape。
 
         Args:
-            locator (object):
-                `locator` 对应的输入数据。
+            locator (str):
+                Face Guide 系统中的 Locator Transform。
 
         Returns:
             object | list:
@@ -355,8 +355,8 @@ class FaceGuide(face_base.FaceBase):
         因此不能依赖固定的 _002 名称，而要从 returnNewNodes 中定位。
 
         Args:
-            imported_nodes (object):
-                `imported_nodes` 对应的输入数据。
+            imported_nodes (list[str]):
+                本次导入 face_guide.ma 后 Maya 返回的新节点列表。
 
         Returns:
             object:
@@ -416,8 +416,8 @@ class FaceGuide(face_base.FaceBase):
         Import 后只保留模板 Root 的子内容，最后删除临时 Root。
 
         Args:
-            template_root (object):
-                `template_root` 对应的输入数据。
+            template_root (str):
+                刚导入的 Face Guide 模板临时 Root，用于合并到正式 Guide Group。
 
         Returns:
             object:
@@ -716,8 +716,8 @@ class FaceGuide(face_base.FaceBase):
         获取正式 Guide 层级中的全部 Locator Transform。
 
         Args:
-            parent_group (object):
-                `parent_group` 对应的输入数据。
+            parent_group (str | None):
+                新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
 
         Returns:
             object | list:
@@ -783,13 +783,13 @@ class FaceGuide(face_base.FaceBase):
 
         Args:
             part (str):
-                `part` 对应的名称、标记或字符串参数。
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
             side (str):
                 方向标记，常用值为 lf、rt 或 md。
-            include_tokens (object):
-                `include_tokens` 对应的输入数据。
-            exclude_tokens (object):
-                `exclude_tokens` 对应的输入数据。
+            include_tokens (str | list[str] | None):
+                Guide 名称必须包含的额外 Token；用于缩小部位查询范围。
+            exclude_tokens (str | list[str] | None):
+                Guide 名称出现这些 Token 时排除该节点。
 
         Returns:
             object:
@@ -920,7 +920,7 @@ class FaceGuide(face_base.FaceBase):
 
         Args:
             guides (str | list[str]):
-                `guides` 对应的输入数据。
+                需要按顺序查询或传递给 Builder 的 Guide Transform / Locator 列表。
 
         Returns:
             object:
@@ -1340,8 +1340,8 @@ class FaceGuide(face_base.FaceBase):
         LF Parent：必须找到对应的 RT Parent。
 
         Args:
-            left_parent (object):
-                `left_parent` 对应的输入数据。
+            left_parent (str):
+                左侧 Guide 当前 Parent；镜像修复时用于解析对应的右侧 Parent。
 
         Returns:
             object | None:
@@ -1385,8 +1385,8 @@ class FaceGuide(face_base.FaceBase):
         查找需要镜像 / 修复的 zero_lf_* Guide Group。
 
         Args:
-            parent_group (object):
-                `parent_group` 对应的输入数据。
+            parent_group (str | None):
+                新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
 
         Returns:
             object | list:
@@ -1434,8 +1434,8 @@ class FaceGuide(face_base.FaceBase):
         获取 zero_lf_* 下对应的 loc_lf_* Transform。
 
         Args:
-            left_zero_group (object):
-                `left_zero_group` 对应的输入数据。
+            left_zero_group (str):
+                当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
 
         Returns:
             None | object:
@@ -1529,9 +1529,9 @@ class FaceGuide(face_base.FaceBase):
 
         Args:
             source_attr (str):
-                `source_attr` 对应的名称、标记或字符串参数。
+                驱动端完整 Maya Plug，例如 `ctrl.translateX`。
             destination_attr (str):
-                `destination_attr` 对应的名称、标记或字符串参数。
+                接收连接的完整 Maya Plug，例如 `jnt.rotateY`。
 
         Returns:
             bool:
@@ -1583,8 +1583,8 @@ class FaceGuide(face_base.FaceBase):
         Nested LF Zero 的 Parent 已经是 RT 镜像空间，因此只复制 Local Transform。
 
         Args:
-            left_zero_group (object):
-                `left_zero_group` 对应的输入数据。
+            left_zero_group (str):
+                当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
 
         Returns:
             object:
@@ -1772,10 +1772,10 @@ class FaceGuide(face_base.FaceBase):
         创建、复用或重新挂接对应 loc_rt_*。
 
         Args:
-            left_locator (object):
-                `left_locator` 对应的输入数据。
-            right_zero_group (object):
-                `right_zero_group` 对应的输入数据。
+            left_locator (str):
+                当前 Rig 定位流程使用的 Guide / Locator Transform。
+            right_zero_group (str):
+                当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
 
         Returns:
             object:
@@ -1828,10 +1828,10 @@ class FaceGuide(face_base.FaceBase):
         把左侧 Locator Transform 属性直接连接到右侧。
 
         Args:
-            left_locator (object):
-                `left_locator` 对应的输入数据。
-            right_locator (object):
-                `right_locator` 对应的输入数据。
+            left_locator (str):
+                当前 Rig 定位流程使用的 Guide / Locator Transform。
+            right_locator (str):
+                当前 Rig 定位流程使用的 Guide / Locator Transform。
 
         Returns:
             bool:
@@ -1877,10 +1877,10 @@ class FaceGuide(face_base.FaceBase):
         连接 Locator Shape 的 localPosition / localScale。
 
         Args:
-            left_locator (object):
-                `left_locator` 对应的输入数据。
-            right_locator (object):
-                `right_locator` 对应的输入数据。
+            left_locator (str):
+                当前 Rig 定位流程使用的 Guide / Locator Transform。
+            right_locator (str):
+                当前 Rig 定位流程使用的 Guide / Locator Transform。
 
         Returns:
             bool:
@@ -2089,8 +2089,8 @@ class FaceGuide(face_base.FaceBase):
         保留旧 API 名称用于兼容，新代码推荐通过 repair_symmetry() 批量修复。
 
         Args:
-            left_zero_group (object):
-                `left_zero_group` 对应的输入数据。
+            left_zero_group (str):
+                当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
 
         Returns:
             dict:
@@ -2141,8 +2141,8 @@ class FaceGuide(face_base.FaceBase):
         批量修复全部 zero_lf_* Guide；正常 build() 不主动调用。
 
         Args:
-            parent_group (object):
-                `parent_group` 对应的输入数据。
+            parent_group (str | None):
+                新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
 
         Returns:
             object:
@@ -2200,7 +2200,7 @@ class FaceGuide(face_base.FaceBase):
 
         Args:
             check_symmetry (bool):
-                是否启用 `check_symmetry` 对应的处理。
+                Guide Validation / Finalize 时是否同时检查 LF → RT 镜像节点、Parent 和连接。
 
         Returns:
             object:
@@ -2403,7 +2403,7 @@ class FaceGuide(face_base.FaceBase):
 
         Args:
             check_symmetry (bool):
-                是否启用 `check_symmetry` 对应的处理。
+                Guide Validation / Finalize 时是否同时检查 LF → RT 镜像节点、Parent 和连接。
 
         Returns:
             object:

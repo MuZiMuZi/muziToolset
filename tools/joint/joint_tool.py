@@ -467,11 +467,11 @@ class JointTool(QWidget):
 
         Args:
             visible (bool):
-                是否启用 `visible` 对应的处理。
-            hierarchy (object):
-                `hierarchy` 对应的输入数据。
-            all_joints (object):
-                `all_joints` 对应的输入数据。
+                Joint / Guide / UI 元素是否保持可见。
+            hierarchy (bool | str):
+                Joint Tool 当前是否按 Skeleton Hierarchy 工作，或用于指定层级范围。
+            all_joints (str | list[str]):
+                当前 Joint Tool 已解析出的完整 Joint 列表。
         """
         if all_joints:
             joint_utils.Joint.set_all_axis_visibility(
@@ -704,7 +704,7 @@ class JointTool(QWidget):
 
         Args:
             enabled (bool):
-                是否启用 `enabled` 对应的处理。
+                当前 UI 控件或 Rig 功能是否启用。
         """
         joints = self.get_selected_joints()
 
@@ -744,7 +744,7 @@ class JointTool(QWidget):
 
         Args:
             visible (bool):
-                是否启用 `visible` 对应的处理。
+                Joint / Guide / UI 元素是否保持可见。
         """
         joints = self.get_selected_joints()
 

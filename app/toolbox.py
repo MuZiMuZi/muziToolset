@@ -221,10 +221,10 @@ class ToolCard(QFrame):
                 `category_name` 对应的 Maya 节点或资源名称。
             tool_name (str):
                 `tool_name` 对应的 Maya 节点或资源名称。
-            tool_function (object):
-                `tool_function` 对应的输入数据。
-            run_callback (object):
-                `run_callback` 对应的输入数据。
+            tool_function (callable):
+                执行当前工具功能的 Callable。
+            run_callback (callable):
+                用户触发按钮或 Tool Item 时执行的回调函数。
             parent (str):
                 父级 Maya 节点名称。
         """
@@ -327,8 +327,8 @@ class ToolCard(QFrame):
         判断工具是否匹配搜索关键字。
 
         Args:
-            search_text (object):
-                `search_text` 对应的输入数据。
+            search_text (str):
+                名称过滤、工具搜索或 Search / Replace 使用的搜索文本。
 
         Returns:
             bool:
@@ -370,9 +370,9 @@ class CategoryPage(QWidget):
             category_name (str):
                 `category_name` 对应的 Maya 节点或资源名称。
             tools_dict (dict):
-                `tools_dict` 对应的配置或映射字典。
-            run_callback (object):
-                `run_callback` 对应的输入数据。
+                Tool Key 到工具元数据、入口和分类信息的 Registry 字典。
+            run_callback (callable):
+                用户触发按钮或 Tool Item 时执行的回调函数。
             parent (str):
                 父级 Maya 节点名称。
         """
@@ -510,8 +510,8 @@ class CategoryPage(QWidget):
         按照关键字过滤当前分类的工具卡片。
 
         Args:
-            search_text (object):
-                `search_text` 对应的输入数据。
+            search_text (str):
+                名称过滤、工具搜索或 Search / Replace 使用的搜索文本。
         """
         for card in self.tool_cards:
             visible = card.matches_search(search_text)
@@ -721,7 +721,7 @@ class RiggingToolbox(QWidget):
 
         Args:
             refresh_registry (bool):
-                是否启用 `refresh_registry` 对应的处理。
+                打开 / 刷新 Toolbox 前是否重新扫描 Tool Registry。
         """
         if refresh_registry:
             self.tools_by_category = refresh_tools()
@@ -824,8 +824,8 @@ class RiggingToolbox(QWidget):
         过滤当前分类的工具卡片。
 
         Args:
-            search_text (object):
-                `search_text` 对应的输入数据。
+            search_text (str):
+                名称过滤、工具搜索或 Search / Replace 使用的搜索文本。
         """
         if self.current_category is None:
             return
@@ -844,10 +844,10 @@ class RiggingToolbox(QWidget):
         通过 Window Manager 启动工具。
 
         Args:
-            tool_key (object):
-                `tool_key` 对应的输入数据。
-            tool_function (object):
-                `tool_function` 对应的输入数据。
+            tool_key (str):
+                Tool Registry / Window Manager 中唯一识别工具的 Key。
+            tool_function (callable):
+                执行当前工具功能的 Callable。
 
         Returns:
             object | None:

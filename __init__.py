@@ -75,7 +75,7 @@ def smoke_test(test_window_manager=False):
 
     Args:
         test_window_manager (bool):
-            是否启用 `test_window_manager` 对应的处理。
+            包初始化阶段是否运行 Window Manager 自检。
 
     Returns:
         object:

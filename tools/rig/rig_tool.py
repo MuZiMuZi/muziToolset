@@ -109,10 +109,10 @@ def vector_subtract(vector_a, vector_b):
     三维向量相减。
 
     Args:
-        vector_a (object):
-            `vector_a` 对应的输入数据。
-        vector_b (object):
-            `vector_b` 对应的输入数据。
+        vector_a (list[float] | tuple[float, float, float]):
+            向量计算中的第一个 XYZ Vector。
+        vector_b (list[float] | tuple[float, float, float]):
+            向量计算中的第二个 XYZ Vector。
 
     Returns:
         list:
@@ -130,10 +130,10 @@ def vector_add(vector_a, vector_b):
     三维向量相加。
 
     Args:
-        vector_a (object):
-            `vector_a` 对应的输入数据。
-        vector_b (object):
-            `vector_b` 对应的输入数据。
+        vector_a (list[float] | tuple[float, float, float]):
+            向量计算中的第一个 XYZ Vector。
+        vector_b (list[float] | tuple[float, float, float]):
+            向量计算中的第二个 XYZ Vector。
 
     Returns:
         list:
@@ -151,8 +151,8 @@ def vector_multiply(vector, value):
     三维向量乘标量。
 
     Args:
-        vector (object):
-            `vector` 对应的输入数据。
+        vector (list[float] | tuple[float, float, float]):
+            参与方向、长度或向量计算的 XYZ Vector。
         value (float):
             需要读取、写入或参与计算的数值。
 
@@ -172,8 +172,8 @@ def vector_length(vector):
     返回三维向量长度。
 
     Args:
-        vector (object):
-            `vector` 对应的输入数据。
+        vector (list[float] | tuple[float, float, float]):
+            参与方向、长度或向量计算的 XYZ Vector。
 
     Returns:
         object:
@@ -191,8 +191,8 @@ def vector_normalize(vector):
     返回单位向量。
 
     Args:
-        vector (object):
-            `vector` 对应的输入数据。
+        vector (list[float] | tuple[float, float, float]):
+            参与方向、长度或向量计算的 XYZ Vector。
 
     Returns:
         list:
@@ -215,10 +215,10 @@ def dot_product(vector_a, vector_b):
     返回三维向量点积。
 
     Args:
-        vector_a (object):
-            `vector_a` 对应的输入数据。
-        vector_b (object):
-            `vector_b` 对应的输入数据。
+        vector_a (list[float] | tuple[float, float, float]):
+            向量计算中的第一个 XYZ Vector。
+        vector_b (list[float] | tuple[float, float, float]):
+            向量计算中的第二个 XYZ Vector。
 
     Returns:
         object:
@@ -236,10 +236,10 @@ def get_joint_path(start_joint, end_joint):
     返回 start_joint 到 end_joint 的 Joint 路径。
 
     Args:
-        start_joint (object):
-            `start_joint` 对应的输入数据。
-        end_joint (object):
-            `end_joint` 对应的输入数据。
+        start_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        end_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
 
     Returns:
         object | None | list:
@@ -304,12 +304,12 @@ def get_pole_vector_position(
     计算三关节链 Pole Vector 推荐位置。
 
     Args:
-        start_joint (object):
-            `start_joint` 对应的输入数据。
-        middle_joint (object):
-            `middle_joint` 对应的输入数据。
-        end_joint (object):
-            `end_joint` 对应的输入数据。
+        start_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        middle_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        end_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
 
     Returns:
         object:
@@ -399,10 +399,10 @@ def create_ik_rig(start_joint, end_joint):
     创建基础 RP IK、End Controller 和 Pole Vector Controller。
 
     Args:
-        start_joint (object):
-            `start_joint` 对应的输入数据。
-        end_joint (object):
-            `end_joint` 对应的输入数据。
+        start_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        end_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
 
     Returns:
         dict:
@@ -885,10 +885,10 @@ class RigTool(QWidget):
         通过统一 Window Manager 执行或打开专项工具。
 
         Args:
-            tool_key (object):
-                `tool_key` 对应的输入数据。
-            tool_module (object):
-                `tool_module` 对应的输入数据。
+            tool_key (str):
+                Tool Registry / Window Manager 中唯一识别工具的 Key。
+            tool_module (module | object):
+                已经加载的工具 Python Module，用于调用其公开入口。
 
         Returns:
             object:

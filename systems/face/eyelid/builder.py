@@ -34,8 +34,8 @@ def validate_transform(node, label):
     Args:
         node (str):
             需要查询或处理的 Maya 节点名称。
-        label (object):
-            `label` 对应的输入数据。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
 
     Returns:
         bool:
@@ -94,8 +94,8 @@ def normalize_name_part(value, label):
     Args:
         value (float):
             需要读取、写入或参与计算的数值。
-        label (object):
-            `label` 对应的输入数据。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
 
     Returns:
         object:
@@ -149,15 +149,15 @@ def create_rig_name(
 
     Args:
         node_type (str):
-            `node_type` 对应的名称、标记或字符串参数。
+            需要创建、查询或过滤的 Maya Node Type。
         side (str):
             方向标记，常用值为 lf、rt 或 md。
         region (str):
-            `region` 对应的名称、标记或字符串参数。
+            Face Component 的区域标记，例如 upper、lower、inner、outer。
         feature (str):
-            `feature` 对应的名称、标记或字符串参数。
-        role (object):
-            `role` 对应的输入数据。
+            Face Component 的功能部位标记，例如 lid、bag、lip。
+        role (str):
+            当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
         index (int):
             目标元素或节点的序号。
 
@@ -534,18 +534,18 @@ def build_eyelid_joints(
     Args:
         curve (str):
             需要处理的 Maya Curve Transform 或 Shape 名称。
-        eye_joint (object):
-            `eye_joint` 对应的输入数据。
+        eye_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
         up_object (str):
-            `up_object` 对应的名称、标记或字符串参数。
+            Eyelid / Radial Joint Aim 系统用于稳定 Orientation 的 Up Object。
         side (str):
             方向标记，常用值为 lf、rt 或 md。
         region (str):
-            `region` 对应的名称、标记或字符串参数。
-        parent_group (object):
-            `parent_group` 对应的输入数据。
+            Face Component 的区域标记，例如 upper、lower、inner、outer。
+        parent_group (str | None):
+            新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
         joint_radius (float):
-            `joint_radius` 对应的数值参数。
+            当前 Joint、Controller 或辅助对象使用的半径。
 
     Returns:
         object:
@@ -578,18 +578,18 @@ def build_eye_bag_joints(
     Args:
         curve (str):
             需要处理的 Maya Curve Transform 或 Shape 名称。
-        eye_joint (object):
-            `eye_joint` 对应的输入数据。
+        eye_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
         up_object (str):
-            `up_object` 对应的名称、标记或字符串参数。
+            Eyelid / Radial Joint Aim 系统用于稳定 Orientation 的 Up Object。
         side (str):
             方向标记，常用值为 lf、rt 或 md。
         region (str):
-            `region` 对应的名称、标记或字符串参数。
-        parent_group (object):
-            `parent_group` 对应的输入数据。
+            Face Component 的区域标记，例如 upper、lower、inner、outer。
+        parent_group (str | None):
+            新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
         joint_radius (float):
-            `joint_radius` 对应的数值参数。
+            当前 Joint、Controller 或辅助对象使用的半径。
 
     Returns:
         object:

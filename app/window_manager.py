@@ -392,10 +392,10 @@ def show_tool(tool_key, tool_function):
     显示新工具，或恢复已经打开的工具窗口。
 
     Args:
-        tool_key (object):
-            `tool_key` 对应的输入数据。
-        tool_function (object):
-            `tool_function` 对应的输入数据。
+        tool_key (str):
+            Tool Registry / Window Manager 中唯一识别工具的 Key。
+        tool_function (callable):
+            执行当前工具功能的 Callable。
 
     Returns:
         object:
@@ -438,8 +438,8 @@ def close_tool(tool_key):
     关闭并释放一个受管理的工具窗口。
 
     Args:
-        tool_key (object):
-            `tool_key` 对应的输入数据。
+        tool_key (str):
+            Tool Registry / Window Manager 中唯一识别工具的 Key。
     """
     window = _open_windows.pop(tool_key, None)
 

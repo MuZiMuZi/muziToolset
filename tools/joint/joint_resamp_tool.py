@@ -223,8 +223,8 @@ def validate_joint(joint, label):
     Args:
         joint (str):
             需要处理的 Maya Joint 节点名称。
-        label (object):
-            `label` 对应的输入数据。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
 
     Returns:
         bool:
@@ -260,10 +260,10 @@ def is_direct_child_joint(start_joint, end_joint):
     检查 end_joint 是否是 start_joint 的直接子 Joint。
 
     Args:
-        start_joint (object):
-            `start_joint` 对应的输入数据。
-        end_joint (object):
-            `end_joint` 对应的输入数据。
+        start_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        end_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
 
     Returns:
         object | bool:
@@ -291,12 +291,12 @@ def get_interpolated_position(start_position, end_position, ratio):
     计算两个三维位置之间的线性插值位置。
 
     Args:
-        start_position (object):
-            `start_position` 对应的输入数据。
-        end_position (object):
-            `end_position` 对应的输入数据。
+        start_position (list[float] | tuple[float, float, float] | float):
+            插值、Remap 或 Joint 分布的起始位置 / 起始值。
+        end_position (list[float] | tuple[float, float, float] | float):
+            插值、Remap 或 Joint 分布的结束位置 / 结束值。
         ratio (float):
-            `ratio` 对应的数值参数。
+            Start 与 End 之间的插值比例，通常为 0.0～1.0。
 
     Returns:
         object:
@@ -328,12 +328,12 @@ def resample_joint(start_joint, end_joint, joint_number):
         6. 失败时删除新节点并恢复原始 Parent。
 
     Args:
-        start_joint (object):
-            `start_joint` 对应的输入数据。
-        end_joint (object):
-            `end_joint` 对应的输入数据。
+        start_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        end_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
         joint_number (int):
-            `joint_number` 对应的整数参数。
+            当前构建、采样或查询过程使用的元素数量。
 
     Returns:
         object | list:

@@ -130,8 +130,8 @@ def undo_chunk(function):
     这个 Decorator 可以把整个工具操作合并成一次 Undo。
 
     Args:
-        function (object):
-            `function` 对应的输入数据。
+        function (str | callable):
+            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
 
     Returns:
         object:
@@ -340,11 +340,11 @@ def get_selected_nodes(
 
     Args:
         node_type (str):
-            `node_type` 对应的名称、标记或字符串参数。
+            需要创建、查询或过滤的 Maya Node Type。
         long (bool):
-            是否启用 `long` 对应的处理。
+            Maya 节点查询时是否返回完整 DAG Path。
         flatten (bool):
-            是否启用 `flatten` 对应的处理。
+            Maya Selection / Component 查询时是否展开 Range 为单独 Component。
 
     Returns:
         object:
@@ -398,9 +398,9 @@ def require_selected_nodes(
 
     Args:
         node_type (str):
-            `node_type` 对应的名称、标记或字符串参数。
+            需要创建、查询或过滤的 Maya Node Type。
         minimum_count (int):
-            `minimum_count` 对应的整数参数。
+            当前构建、采样或查询过程使用的元素数量。
 
     Returns:
         object:
@@ -675,7 +675,7 @@ def open_scene(file_path, force=False, ignore_version=True):
         force (bool):
             是否强制覆盖已有连接、状态或结果。
         ignore_version (bool):
-            是否启用 `ignore_version` 对应的处理。
+            导入 / 打开 Maya Scene 时是否忽略文件版本警告。
 
     Returns:
         object:
@@ -713,7 +713,7 @@ def import_scene(file_path, ignore_version=True):
         file_path (str):
             需要读取或写入的文件路径。
         ignore_version (bool):
-            是否启用 `ignore_version` 对应的处理。
+            导入 / 打开 Maya Scene 时是否忽略文件版本警告。
 
     Returns:
         list: Maya 本次 Import 新创建的节点。
@@ -750,14 +750,14 @@ def reference_scene(
     Args:
         file_path (str):
             需要读取或写入的文件路径。
-        namespace (object):
-            `namespace` 对应的输入数据。
+        namespace (str | None):
+            Reference / Import 或节点解析使用的 Maya Namespace。
         group_reference (bool):
-            是否启用 `group_reference` 对应的处理。
+            Reference Scene 时是否把引用内容放入独立 Group。
         group_name (str):
             `group_name` 对应的 Maya 节点或资源名称。
         ignore_version (bool):
-            是否启用 `ignore_version` 对应的处理。
+            导入 / 打开 Maya Scene 时是否忽略文件版本警告。
 
     Returns:
         object:

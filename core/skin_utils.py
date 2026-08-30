@@ -133,8 +133,8 @@ def find_skin_cluster(geometry):
     第二步是容错路径，避免某些特殊场景中 MEL 查询没有返回结果。
 
     Args:
-        geometry (object):
-            `geometry` 对应的输入数据。
+        geometry (str):
+            需要查询或绑定 SkinCluster / Deformer 的 Geometry Transform / Shape。
 
     Returns:
         None | object:
@@ -238,7 +238,7 @@ def copy_skin_weights(source, targets):
         source (str):
             作为输入或驱动来源的 Maya 节点名称。
         targets (str | list[str]):
-            `targets` 对应的输入数据。
+            需要批量处理的 Target 节点；在 Constraint / BlendShape / Controller API 中保持输入顺序。
 
     Returns:
         list: 新创建的 Target SkinCluster。
@@ -330,8 +330,8 @@ def get_weight_file_names(geometry):
     返回 Geometry 对应的 XML / Influence JSON 文件名称。
 
     Args:
-        geometry (object):
-            `geometry` 对应的输入数据。
+        geometry (str):
+            需要查询或绑定 SkinCluster / Deformer 的 Geometry Transform / Shape。
 
     Returns:
         dict: ``xml`` / ``influences``。
@@ -349,8 +349,8 @@ def export_skin_weights(geometry, directory):
     导出 Maya ``deformerWeights`` XML 和 Influence JSON。
 
     Args:
-        geometry (object):
-            `geometry` 对应的输入数据。
+        geometry (str):
+            需要查询或绑定 SkinCluster / Deformer 的 Geometry Transform / Shape。
         directory (str):
             需要读取或写入的目录路径。
 
@@ -438,8 +438,8 @@ def import_skin_weights(geometry, directory):
             -> Normalize
 
     Args:
-        geometry (object):
-            `geometry` 对应的输入数据。
+        geometry (str):
+            需要查询或绑定 SkinCluster / Deformer 的 Geometry Transform / Shape。
         directory (str):
             需要读取或写入的目录路径。
 
@@ -541,8 +541,8 @@ def normalize_skin_weights(geometry_or_skin_cluster):
     强制归一化一个 SkinCluster。
 
     Args:
-        geometry_or_skin_cluster (object):
-            `geometry_or_skin_cluster` 对应的输入数据。
+        geometry_or_skin_cluster (str):
+            Geometry 或 skinCluster 节点；方法会先解析到对应 SkinCluster。
 
     Returns:
         bool: 找到并完成归一化时返回 True。
@@ -576,8 +576,8 @@ def select_influences(geometries):
     这是明确带 ``select`` 语义的 Core 辅助函数，因此允许修改 Maya Selection。
 
     Args:
-        geometries (object):
-            `geometries` 对应的输入数据。
+        geometries (str | list[str]):
+            需要批量查询 SkinCluster / Deformer 的 Geometry 列表。
 
     Returns:
         object:
@@ -608,8 +608,8 @@ def normalize_geometries(geometries):
     批量归一化多个 Geometry，并返回实际成功的 Geometry。
 
     Args:
-        geometries (object):
-            `geometries` 对应的输入数据。
+        geometries (str | list[str]):
+            需要批量查询 SkinCluster / Deformer 的 Geometry 列表。
 
     Returns:
         object:

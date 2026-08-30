@@ -211,7 +211,7 @@ class HierarchyCleaner(QDialog):
 
         Args:
             result (object):
-                `result` 对应的输入数据。
+                上一步 Maya / Tool 操作返回的结果数据。
 
         Returns:
             object:

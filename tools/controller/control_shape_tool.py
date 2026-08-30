@@ -189,8 +189,8 @@ class ShapeListWidget(QListWidget):
         执行 `contextMenuEvent` 对应的 Maya 工具操作。
 
         Args:
-            event (object):
-                `event` 对应的输入数据。
+            event (QtCore.QEvent | object):
+                Qt Event 回调传入的事件对象。
         """
 
         self.menu.exec_(event.globalPos())
@@ -256,8 +256,8 @@ class ShapeListWidget(QListWidget):
         双击图库项目时应用 Shape。
 
         Args:
-            item (object):
-                `item` 对应的输入数据。
+            item (str | object):
+                当前查询、吸附或 UI 操作使用的 Maya Item / 数据项。
         """
         self.apply_shape_name(item.text())
 
@@ -470,8 +470,8 @@ class ColorListWidget(QListWidget):
         把 Index Color 应用到选择控制器 Shape。
 
         Args:
-            item (object):
-                `item` 对应的输入数据。
+            item (str | object):
+                当前查询、吸附或 UI 操作使用的 Maya Item / 数据项。
         """
         color_index = item.data(Qt.UserRole)
         transforms = control_shape_utils.get_selected_curve_transforms()

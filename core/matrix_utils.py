@@ -136,8 +136,8 @@ def matrix_to_list(matrix):
     因此在写入 multMatrix.matrixIn 时统一通过这个函数转换。
 
     Args:
-        matrix (object):
-            `matrix` 对应的输入数据。
+        matrix (list[float] | maya.api.OpenMaya.MMatrix):
+            用于 Transform、Constraint 或空间计算的 4x4 Matrix 数据。
 
     Returns:
         object:

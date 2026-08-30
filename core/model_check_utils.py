@@ -234,8 +234,8 @@ def get_mesh_transform(mesh_shape):
     返回 Mesh Shape 的 Transform Long Path。
 
     Args:
-        mesh_shape (object):
-            `mesh_shape` 对应的输入数据。
+        mesh_shape (str):
+            需要拓扑、Normal 或 History 检查的 Mesh Shape 节点。
 
     Returns:
         object:
@@ -259,7 +259,7 @@ def get_mesh_transforms(meshes):
 
     Args:
         meshes (str | list[str]):
-            `meshes` 对应的输入数据。
+            需要批量检查、清理或处理的 Mesh Transform / Shape 列表。
 
     Returns:
         object:
@@ -393,12 +393,12 @@ def make_issue(node, issue_type, details, fixable=False):
     Args:
         node (str):
             需要查询或处理的 Maya 节点名称。
-        issue_type (object):
-            `issue_type` 对应的输入数据。
-        details (object):
-            `details` 对应的输入数据。
+        issue_type (str):
+            模型检查结果的 Issue 类型标记，例如 NonManifold、History 或 Transform。
+        details (str | dict | list):
+            模型检查 Issue 的详细节点、Component 或诊断数据。
         fixable (bool):
-            是否启用 `fixable` 对应的处理。
+            当前模型检查 Issue 是否支持由工具自动修复。
 
     Returns:
         dict:
@@ -422,7 +422,7 @@ def check_nonmanifold_geometry(meshes=None):
 
     Args:
         meshes (str | list[str]):
-            `meshes` 对应的输入数据。
+            需要批量检查、清理或处理的 Mesh Transform / Shape 列表。
 
     Returns:
         object:
@@ -468,7 +468,7 @@ def check_lamina_faces(meshes=None):
 
     Args:
         meshes (str | list[str]):
-            `meshes` 对应的输入数据。
+            需要批量检查、清理或处理的 Mesh Transform / Shape 列表。
 
     Returns:
         object:
@@ -618,7 +618,7 @@ def check_construction_history(meshes=None):
 
     Args:
         meshes (str | list[str]):
-            `meshes` 对应的输入数据。
+            需要批量检查、清理或处理的 Mesh Transform / Shape 列表。
 
     Returns:
         object:
@@ -706,7 +706,7 @@ def check_transformations(meshes=None):
 
     Args:
         meshes (str | list[str]):
-            `meshes` 对应的输入数据。
+            需要批量检查、清理或处理的 Mesh Transform / Shape 列表。
 
     Returns:
         object:
@@ -775,9 +775,9 @@ def check_locked_normals(meshes=None, sample_limit=500):
 
     Args:
         meshes (str | list[str]):
-            `meshes` 对应的输入数据。
+            需要批量检查、清理或处理的 Mesh Transform / Shape 列表。
         sample_limit (int):
-            `sample_limit` 对应的整数参数。
+            模型检查报告中单类问题最多展示的 Component 样本数量。
 
     Returns:
         object:
@@ -869,17 +869,17 @@ def run_checks(
         nodes (str | list[str]):
             需要批量查询或处理的 Maya 节点名称或节点列表。
         check_nonmanifold (bool):
-            是否启用 `check_nonmanifold` 对应的处理。
+            是否检查 Nonmanifold Vertex / Edge。
         check_lamina (bool):
-            是否启用 `check_lamina` 对应的处理。
+            是否检查 Lamina Face。
         check_duplicates (bool):
-            是否启用 `check_duplicates` 对应的处理。
+            是否检查重复模型、重复 Shape 或重复命名问题。
         check_history (bool):
-            是否启用 `check_history` 对应的处理。
+            是否检查不需要的 Modeling History。
         check_transform (bool):
-            是否启用 `check_transform` 对应的处理。
+            是否检查异常 Translate / Rotate / Scale / Pivot。
         check_normals (bool):
-            是否启用 `check_normals` 对应的处理。
+            是否检查 Mesh Normal 方向和相关异常。
 
     Returns:
         object:
@@ -936,8 +936,8 @@ def fix_issue(issue):
     修复一个明确允许自动修复的 Issue。
 
     Args:
-        issue (object):
-            `issue` 对应的输入数据。
+        issue (dict | object):
+            单条模型检查 Issue 数据。
 
     Returns:
         bool:
@@ -996,8 +996,8 @@ def fix_issues(issues):
     批量修复允许自动修复的 Issue，并返回成功数量。
 
     Args:
-        issues (object):
-            `issues` 对应的输入数据。
+        issues (list):
+            模型检查产生的 Issue 结果列表。
 
     Returns:
         object:

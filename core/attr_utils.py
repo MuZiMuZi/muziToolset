@@ -148,7 +148,7 @@ class Attr(object):
 
         Notes:
             参数名 ``object`` 来自早期 API。虽然它会遮蔽 Python 内置名称，但为了兼容现有调用，
-                                                            这里暂时不改名。
+                                                                这里暂时不改名。
         """
         self.object = object
         self.attr = attr
@@ -224,9 +224,9 @@ class Attr(object):
             attr (str):
                 Maya Attribute 名称。
             lock (bool):
-                是否启用 `lock` 对应的处理。
+                是否 Lock 对应 Maya Channel / Attribute。
             hide (bool):
-                是否启用 `hide` 对应的处理。
+                是否从 Channel Box 隐藏对应 Maya Attribute。
 
         Returns:
             bool:
@@ -266,11 +266,11 @@ class Attr(object):
 
         Args:
             attrs_list (list):
-                `attrs_list` 对应的数据列表。
+                需要批量查询、Lock、Hide 或处理的 Attribute 名称列表。
             lock (bool):
-                是否启用 `lock` 对应的处理。
+                是否 Lock 对应 Maya Channel / Attribute。
             hide (bool):
-                是否启用 `hide` 对应的处理。
+                是否从 Channel Box 隐藏对应 Maya Attribute。
 
         Returns:
             object:
@@ -317,23 +317,23 @@ class Attr(object):
             attr (str):
                 Maya Attribute 名称。
             attr_type (str):
-                `attr_type` 对应的名称、标记或字符串参数。
+                创建 Maya Attribute 使用的数据类型，例如 double、long、bool、string 或 message。
             lock (bool):
-                是否启用 `lock` 对应的处理。
+                是否 Lock 对应 Maya Channel / Attribute。
             hide (bool):
-                是否启用 `hide` 对应的处理。
+                是否从 Channel Box 隐藏对应 Maya Attribute。
             default_value (object):
-                `default_value` 对应的输入数据。
-            min_value (object):
-                `min_value` 对应的输入数据。
-            max_value (object):
-                `max_value` 对应的输入数据。
+                新建 Attribute、UI 控件或 Rig 参数使用的默认值。
+            min_value (float | int | None):
+                Attribute / UI 数值允许的最小值；None 表示不设置下限。
+            max_value (float | int | None):
+                Attribute / UI 数值允许的最大值；None 表示不设置上限。
             enum_name (str):
                 `enum_name` 对应的 Maya 节点或资源名称。
             multi (bool):
-                是否启用 `multi` 对应的处理。
+                创建 Maya Attribute 时是否使用 Multi / Array Attribute。
             kwargs (dict):
-                `kwargs` 对应的配置或映射字典。
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
 
         Returns:
             object | None:
@@ -433,9 +433,9 @@ class Attr(object):
 
         Args:
             output_attr (str):
-                `output_attr` 对应的名称、标记或字符串参数。
+                需要查询、设置或连接的 Maya Attribute / Plug。
             input_attr (str):
-                `input_attr` 对应的名称、标记或字符串参数。
+                需要查询、设置或连接的 Maya Attribute / Plug。
             force (bool):
                 是否强制覆盖已有连接、状态或结果。
 
@@ -458,9 +458,9 @@ class Attr(object):
 
         Args:
             output_attr (str):
-                `output_attr` 对应的名称、标记或字符串参数。
+                需要查询、设置或连接的 Maya Attribute / Plug。
             input_attr (str):
-                `input_attr` 对应的名称、标记或字符串参数。
+                需要查询、设置或连接的 Maya Attribute / Plug。
 
         Returns:
             object:
@@ -482,7 +482,7 @@ class Attr(object):
             attr (str):
                 Maya Attribute 名称。
             plugs (bool):
-                是否启用 `plugs` 对应的处理。
+                查询连接时是否返回完整 Plug；False 时通常只返回节点名称。
 
         Returns:
             object:
@@ -508,7 +508,7 @@ class Attr(object):
             attr (str):
                 Maya Attribute 名称。
             plugs (bool):
-                是否启用 `plugs` 对应的处理。
+                查询连接时是否返回完整 Plug；False 时通常只返回节点名称。
 
         Returns:
             object:
@@ -570,16 +570,16 @@ class Attr(object):
                 Maya Attribute 名称。
             value (float):
                 需要读取、写入或参与计算的数值。
-            attr_type (object):
-                `attr_type` 对应的输入数据。
+            attr_type (str):
+                创建 Maya Attribute 使用的数据类型，例如 double、long、bool、string 或 message。
             lock (bool):
-                是否启用 `lock` 对应的处理。
+                是否 Lock 对应 Maya Channel / Attribute。
             hide (bool):
-                是否启用 `hide` 对应的处理。
-            min_value (object):
-                `min_value` 对应的输入数据。
-            max_value (object):
-                `max_value` 对应的输入数据。
+                是否从 Channel Box 隐藏对应 Maya Attribute。
+            min_value (float | int | None):
+                Attribute / UI 数值允许的最小值；None 表示不设置下限。
+            max_value (float | int | None):
+                Attribute / UI 数值允许的最大值；None 表示不设置上限。
             enum_name (str):
                 `enum_name` 对应的 Maya 节点或资源名称。
 
@@ -674,13 +674,13 @@ class Attr(object):
 
         Args:
             attrs_dict (dict):
-                `attrs_dict` 对应的配置或映射字典。
-            attr_types (object):
-                `attr_types` 对应的输入数据。
+                Attribute 名称到 Value / Config 数据的批量映射。
+            attr_types (dict | None):
+                Attribute 名称到 Maya Attribute Type 的映射；未指定的属性由调用方默认规则处理。
             lock (bool):
-                是否启用 `lock` 对应的处理。
+                是否 Lock 对应 Maya Channel / Attribute。
             hide (bool):
-                是否启用 `hide` 对应的处理。
+                是否从 Channel Box 隐藏对应 Maya Attribute。
 
         Returns:
             object:
@@ -717,7 +717,7 @@ class Attr(object):
             attr (str):
                 Maya Attribute 名称。
             multi (bool):
-                是否启用 `multi` 对应的处理。
+                创建 Maya Attribute 时是否使用 Multi / Array Attribute。
 
         Returns:
             object:
@@ -771,14 +771,14 @@ class Attr(object):
         Message 连接比保存节点名称字符串更可靠，因为 Maya Rename 后会自动维护连接关系。
 
         Args:
-            source_node (object):
-                `source_node` 对应的输入数据。
+            source_node (str):
+                作为数据来源、复制来源或驱动来源的 Maya 节点。
             attr (str):
                 Maya Attribute 名称。
             force (bool):
                 是否强制覆盖已有连接、状态或结果。
             clear_empty (bool):
-                是否启用 `clear_empty` 对应的处理。
+                批量保存 Message / Config 时，空值是否主动断开旧连接。
 
         Returns:
             object | bool:
@@ -828,11 +828,11 @@ class Attr(object):
 
         Args:
             attrs_dict (dict):
-                `attrs_dict` 对应的配置或映射字典。
+                Attribute 名称到 Value / Config 数据的批量映射。
             force (bool):
                 是否强制覆盖已有连接、状态或结果。
             clear_empty (bool):
-                是否启用 `clear_empty` 对应的处理。
+                批量保存 Message / Config 时，空值是否主动断开旧连接。
 
         Returns:
             object:
@@ -861,7 +861,7 @@ class Attr(object):
             attr (str):
                 Maya Attribute 名称。
             plugs (bool):
-                是否启用 `plugs` 对应的处理。
+                查询连接时是否返回完整 Plug；False 时通常只返回节点名称。
 
         Returns:
             object | None:
@@ -888,14 +888,14 @@ class Attr(object):
         list / tuple / dict 等通过 repr() 保存，读取时使用 literal_eval() 安全恢复。
 
         Args:
-            information (object):
-                `information` 对应的输入数据。
+            information (dict | list | object):
+                需要写入、恢复或应用到 Maya Attribute 的结构化信息。
             attr (str):
                 Maya Attribute 名称。
             lock (bool):
-                是否启用 `lock` 对应的处理。
+                是否 Lock 对应 Maya Channel / Attribute。
             hide (bool):
-                是否启用 `hide` 对应的处理。
+                是否从 Channel Box 隐藏对应 Maya Attribute。
 
         Returns:
             object:
@@ -994,7 +994,7 @@ class Attr(object):
 
         Args:
             attrs_dict (dict):
-                `attrs_dict` 对应的配置或映射字典。
+                Attribute 名称到 Value / Config 数据的批量映射。
 
         Returns:
             bool:
@@ -1002,9 +1002,9 @@ class Attr(object):
 
         Example:
             {
-                                                                "translateY": [(True, True), (-10.0, 10.0)],
-                                                                "rotateX": [(True, False), (-45.0, 0.0)],
-                                                            }
+                                                                    "translateY": [(True, True), (-10.0, 10.0)],
+                                                                    "rotateX": [(True, False), (-45.0, 0.0)],
+                                                                }
         """
         if not self.object_exists():
             cmds.warning(
@@ -1066,7 +1066,7 @@ class Attr(object):
 
         Args:
             attrs_list (list):
-                `attrs_list` 对应的数据列表。
+                需要批量查询、Lock、Hide 或处理的 Attribute 名称列表。
 
         Returns:
             object:
@@ -1122,7 +1122,7 @@ class Attr(object):
 
         Args:
             attrs_list (list):
-                `attrs_list` 对应的数据列表。
+                需要批量查询、Lock、Hide 或处理的 Attribute 名称列表。
 
         Returns:
             object:
@@ -1211,9 +1211,9 @@ class Attr(object):
 
         Args:
             up (bool):
-                是否启用 `up` 对应的处理。
+                是否把目标 Attribute 在 Channel Box 中上移。
             down (bool):
-                是否启用 `down` 对应的处理。
+                是否把目标 Attribute 在 Channel Box 中下移。
 
         Returns:
             bool:
@@ -1320,7 +1320,7 @@ class Attr(object):
             attr (str):
                 Maya Attribute 名称。
             lock (bool):
-                是否启用 `lock` 对应的处理。
+                是否 Lock 对应 Maya Channel / Attribute。
         """
         cmds.setAttr(
             "{}.{}".format(node, attr),
@@ -1338,7 +1338,7 @@ class Attr(object):
             attr (str):
                 Maya Attribute 名称。
             hide (bool):
-                是否启用 `hide` 对应的处理。
+                是否从 Channel Box 隐藏对应 Maya Attribute。
         """
         plug = "{}.{}".format(node, attr)
 
@@ -1366,7 +1366,7 @@ class Attr(object):
             attr (str):
                 Maya Attribute 名称。
             keyable (bool):
-                是否启用 `keyable` 对应的处理。
+                对应 Maya Attribute 是否允许 Animator Keyframe。
         """
         cmds.setAttr(
             "{}.{}".format(node, attr),
@@ -1384,9 +1384,9 @@ class Attr(object):
             attr (str):
                 Maya Attribute 名称。
             lock (bool):
-                是否启用 `lock` 对应的处理。
+                是否 Lock 对应 Maya Channel / Attribute。
             hide (bool):
-                是否启用 `hide` 对应的处理。
+                是否从 Channel Box 隐藏对应 Maya Attribute。
         """
         Attr.set_lock_attr(
             node,

@@ -39,8 +39,8 @@ def validate_transform(node, label):
     Args:
         node (str):
             需要查询或处理的 Maya 节点名称。
-        label (object):
-            `label` 对应的输入数据。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
 
     Returns:
         bool:
@@ -84,8 +84,8 @@ def validate_joint(joint, label):
     Args:
         joint (str):
             需要处理的 Maya Joint 节点名称。
-        label (object):
-            `label` 对应的输入数据。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
 
     Returns:
         bool:
@@ -126,12 +126,12 @@ def ensure_float_attribute(
             需要查询或处理的 Maya 节点名称。
         attribute (str):
             Maya Attribute 或完整 Plug 名称。
-        minimum (object):
-            `minimum` 对应的输入数据。
-        maximum (object):
-            `maximum` 对应的输入数据。
+        minimum (float | int):
+            数值 Attribute、Remap 或 UI 控件使用的最小值。
+        maximum (float | int):
+            数值 Attribute、Remap 或 UI 控件使用的最大值。
         default_value (object):
-            `default_value` 对应的输入数据。
+            新建 Attribute、UI 控件或 Rig 参数使用的默认值。
 
     Returns:
         object:
@@ -186,9 +186,9 @@ def create_name(
 
     Args:
         node_type (str):
-            `node_type` 对应的名称、标记或字符串参数。
-        function (object):
-            `function` 对应的输入数据。
+            需要创建、查询或过滤的 Maya Node Type。
+        function (str | callable):
+            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
         index (int):
             目标元素或节点的序号。
 
@@ -250,8 +250,8 @@ def insert_zip_offset_group(
     Args:
         joint (str):
             需要处理的 Maya Joint 节点名称。
-        function (object):
-            `function` 对应的输入数据。
+        function (str | callable):
+            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
         index (int):
             目标元素或节点的序号。
 
@@ -326,12 +326,12 @@ def create_rest_world_matrix(
     可以安全作为 blendMatrix 的基础矩阵，避免形成循环依赖。
 
     Args:
-        zip_offset (object):
-            `zip_offset` 对应的输入数据。
+        zip_offset (str):
+            Zip Lip 网络中位于 Lip Joint 上方、接收闭合 Matrix 结果的 Offset Transform。
         parent (str):
             父级 Maya 节点名称。
-        function (object):
-            `function` 对应的输入数据。
+        function (str | callable):
+            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
         index (int):
             目标元素或节点的序号。
 
@@ -409,13 +409,13 @@ def connect_world_matrix_to_transform(
 
     Args:
         world_matrix_plug (str):
-            `world_matrix_plug` 对应的名称、标记或字符串参数。
+            完整 Maya Plug，例如 `node.translateX`。
         transform (str):
             需要处理的 Maya Transform 节点名称。
         parent (str):
             父级 Maya 节点名称。
-        function (object):
-            `function` 对应的输入数据。
+        function (str | callable):
+            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
         index (int):
             目标元素或节点的序号。
 
@@ -493,12 +493,12 @@ def configure_remap(
     配置 0~1 的线性 Remap。
 
     Args:
-        remap_node (object):
-            `remap_node` 对应的输入数据。
-        start_position (object):
-            `start_position` 对应的输入数据。
-        end_position (object):
-            `end_position` 对应的输入数据。
+        remap_node (str):
+            Zip / Falloff 计算使用的 remapValue 节点。
+        start_position (list[float] | tuple[float, float, float] | float):
+            插值、Remap 或 Joint 分布的起始位置 / 起始值。
+        end_position (list[float] | tuple[float, float, float] | float):
+            插值、Remap 或 Joint 分布的结束位置 / 结束值。
     """
     if end_position <= start_position:
         end_position = start_position + 0.0001
@@ -540,15 +540,15 @@ def create_zip_influence(
 
     Args:
         left_zip_plug (str):
-            `left_zip_plug` 对应的名称、标记或字符串参数。
+            完整 Maya Plug，例如 `node.translateX`。
         right_zip_plug (str):
-            `right_zip_plug` 对应的名称、标记或字符串参数。
+            完整 Maya Plug，例如 `node.translateX`。
         pair_count (int):
-            `pair_count` 对应的整数参数。
+            当前构建、采样或查询过程使用的元素数量。
         pair_index (int):
-            `pair_index` 对应的整数参数。
-        falloff (object):
-            `falloff` 对应的输入数据。
+            对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
+        falloff (float):
+            Zip Lip 或局部驱动沿嘴唇分布的衰减范围 / Falloff。
 
     Returns:
         dict:
@@ -679,22 +679,22 @@ def build_zip_pair(
     构建一对 Upper / Lower Lip Joint 的 Matrix Zip 网络。
 
     Args:
-        upper_joint (object):
-            `upper_joint` 对应的输入数据。
-        lower_joint (object):
-            `lower_joint` 对应的输入数据。
+        upper_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        lower_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
         pair_index (int):
-            `pair_index` 对应的整数参数。
+            对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
         pair_count (int):
-            `pair_count` 对应的整数参数。
+            当前构建、采样或查询过程使用的元素数量。
         zip_height_reverse_plug (str):
-            `zip_height_reverse_plug` 对应的名称、标记或字符串参数。
+            完整 Maya Plug，例如 `node.translateX`。
         left_zip_plug (str):
-            `left_zip_plug` 对应的名称、标记或字符串参数。
+            完整 Maya Plug，例如 `node.translateX`。
         right_zip_plug (str):
-            `right_zip_plug` 对应的名称、标记或字符串参数。
-        falloff (object):
-            `falloff` 对应的输入数据。
+            完整 Maya Plug，例如 `node.translateX`。
+        falloff (float):
+            Zip Lip 或局部驱动沿嘴唇分布的衰减范围 / Falloff。
 
     Returns:
         dict:

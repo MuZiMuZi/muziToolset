@@ -161,8 +161,8 @@ def get_constraint_command(constraint_type):
     poleVectorConstraint 不走这里，因为它的调用签名和标准 Constraint 不一致。
 
     Args:
-        constraint_type (object):
-            `constraint_type` 对应的输入数据。
+        constraint_type (str):
+            Maya Constraint 类型，例如 parentConstraint、pointConstraint、orientConstraint、scaleConstraint 或 aimConstraint。
 
     Returns:
         object:
@@ -276,16 +276,16 @@ def create_constraints(
     使用同一组 Driver 批量约束多个 Driven。
 
     Args:
-        driver_objects (object):
-            `driver_objects` 对应的输入数据。
-        driven_objects (object):
-            `driven_objects` 对应的输入数据。
+        driver_objects (str | list[str]):
+            一个或多个 Driver Maya 节点；输入顺序会保留。
+        driven_objects (str | list[str]):
+            需要批量接收驱动结果的 Driven 节点或节点列表。
         constraint_type (str):
-            `constraint_type` 对应的名称、标记或字符串参数。
+            Maya Constraint 类型，例如 parentConstraint、pointConstraint、orientConstraint、scaleConstraint 或 aimConstraint。
         maintain_offset (bool):
             是否在建立约束或矩阵关系时保持当前偏移。
         kwargs (dict):
-            `kwargs` 对应的配置或映射字典。
+            继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
 
     Returns:
         list: 所有创建出来的 Constraint 节点，保持创建顺序并去重。
@@ -343,10 +343,10 @@ def create_pole_vector_constraint(
     调用签名和标准 Parent / Point / Orient Constraint 不同，因此单独封装。
 
     Args:
-        driver_object (object):
-            `driver_object` 对应的输入数据。
-        ik_handle (object):
-            `ik_handle` 对应的输入数据。
+        driver_object (str):
+            作为 Constraint、Matrix 或属性关系 Driver 的 Maya 节点。
+        ik_handle (str):
+            接收 Pole Vector Constraint 或 IK 操作的 Maya ikHandle 节点。
 
     Returns:
         object | list:
@@ -435,8 +435,8 @@ def delete_constraints(
     Args:
         nodes (str | list[str]):
             需要批量查询或处理的 Maya 节点名称或节点列表。
-        search_types (object):
-            `search_types` 对应的输入数据。
+        search_types (str | list[str] | None):
+            需要查询的 Maya 节点类型；None 表示使用方法默认的类型集合。
 
     Returns:
         list: 实际删除的 Constraint 节点名称。

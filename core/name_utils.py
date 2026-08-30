@@ -103,8 +103,8 @@ def maya_undo(function):
     实际 Undo Chunk 逻辑统一由 scene_utils.undo_chunk 维护。
 
     Args:
-        function (object):
-            `function` 对应的输入数据。
+        function (str | callable):
+            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
 
     Returns:
         object:
@@ -494,13 +494,13 @@ class Name(object):
 
         Args:
             node_type (str):
-                `node_type` 对应的名称、标记或字符串参数。
+                需要创建、查询或过滤的 Maya Node Type。
             side (str):
                 方向标记，常用值为 lf、rt 或 md。
             part (str):
-                `part` 对应的名称、标记或字符串参数。
-            function (object):
-                `function` 对应的输入数据。
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+            function (str | callable):
+                当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
             index (int):
                 目标元素或节点的序号。
 
@@ -554,13 +554,13 @@ class Name(object):
 
         Args:
             node_type (str):
-                `node_type` 对应的名称、标记或字符串参数。
+                需要创建、查询或过滤的 Maya Node Type。
             side (str):
                 方向标记，常用值为 lf、rt 或 md。
             part (str):
-                `part` 对应的名称、标记或字符串参数。
-            function (object):
-                `function` 对应的输入数据。
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+            function (str | callable):
+                当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
 
         Returns:
             object:
@@ -617,13 +617,13 @@ class Name(object):
 
         Args:
             node_type (str):
-                `node_type` 对应的名称、标记或字符串参数。
+                需要创建、查询或过滤的 Maya Node Type。
             side (str):
                 方向标记，常用值为 lf、rt 或 md。
             part (str):
-                `part` 对应的名称、标记或字符串参数。
-            function (object):
-                `function` 对应的输入数据。
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+            function (str | callable):
+                当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
 
         Returns:
             object:
@@ -798,8 +798,8 @@ class Name(object):
         给当前 Name 节点添加前缀。
 
         Args:
-            prefix (object):
-                `prefix` 对应的输入数据。
+            prefix (str):
+                添加到 Maya 节点名称前部的 Prefix。
 
         Returns:
             object:
@@ -817,8 +817,8 @@ class Name(object):
         给当前 Name 节点添加后缀。
 
         Args:
-            suffix (object):
-                `suffix` 对应的输入数据。
+            suffix (str):
+                添加到 Maya 节点名称尾部的 Suffix。
 
         Returns:
             object:
@@ -861,8 +861,8 @@ class Name(object):
         给当前 Selection 整个层级添加前缀。
 
         Args:
-            prefix (object):
-                `prefix` 对应的输入数据。
+            prefix (str):
+                添加到 Maya 节点名称前部的 Prefix。
         """
         self.nodes = self._selection_list_nodes()
         self.nodes.sort(
@@ -884,8 +884,8 @@ class Name(object):
         给当前 Selection 整个层级添加后缀。
 
         Args:
-            suffix (object):
-                `suffix` 对应的输入数据。
+            suffix (str):
+                添加到 Maya 节点名称尾部的 Suffix。
         """
         self.nodes = self._selection_list_nodes()
         self.nodes.sort(
@@ -906,10 +906,10 @@ class Name(object):
         对当前 Name 节点执行普通字符串 Search / Replace。
 
         Args:
-            search (object):
-                `search` 对应的输入数据。
+            search (str):
+                节点名称中需要查找并替换的字符串。
             replace (bool):
-                是否启用 `replace` 对应的处理。
+                替换 Search 内容的新字符串。
 
         Returns:
             object:
@@ -951,10 +951,10 @@ class Name(object):
         使用正则表达式 Search / Replace 当前 Selection 层级。
 
         Args:
-            search (object):
-                `search` 对应的输入数据。
+            search (str):
+                节点名称中需要查找并替换的字符串。
             replace (bool):
-                是否启用 `replace` 对应的处理。
+                替换 Search 内容的新字符串。
         """
         regex_object = re.compile(search)
         nodes = self._selection_list_nodes()
