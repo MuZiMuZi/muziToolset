@@ -11,7 +11,7 @@ Control Creator
 2. 设置名称、大小、轴向、颜色和创建模式；
 3. 把用户参数交给 ``systems.controller``；
 4. 提供可以从 Maya Script Editor 直接调用的 ``main()`` 窗口入口；
-5. 不在 UI 文件里重复维护 Controller 创建算法。
+5. 不在 UI 文件里重复维护 Controller 创建算法或窗口生命周期算法。
 
 主要公开 API
 ------------
@@ -31,14 +31,8 @@ main()
 
 窗口生命周期
 ------------
-``main()`` 使用模块级 ``_window`` 保存强引用。
-这样即使用户只执行 ``create_ctrl_tool.main()``，窗口也不会因为 Python 局部变量被释放而消失。
-
-主工具箱兼容
-------------
-MuziTools 主工具箱仍然可以通过 ``app.window_manager`` 调用本模块的 ``main()``。
-``main()`` 自己负责“窗口已经可见”，Window Manager 继续负责统一 Parent、Window Flags、Theme、
-恢复最小化窗口以及跨工具的窗口缓存。
+``main()`` 统一使用 ``ui.window_utils`` 保存强引用、恢复最小化窗口并激活已有实例。
+主工具箱继续由 ``app.window_manager`` 负责应用级 Parent、Window Flags 和跨工具窗口管理。
 """
 
 from __future__ import print_function
@@ -91,18 +85,7 @@ except ImportError:
 from ...config import controller_shapes_dir
 from ...systems import controller as controller_system
 from ...ui import theme
-
-
-# =============================================================================
-# Window Lifetime
-# =============================================================================
-#
-# Maya 中直接执行 ``main()`` 时，如果窗口只保存在函数局部变量里，Python 在函数结束后可能回收
-# QWidget，表现为“窗口不显示”或“刚出现就消失”。因此这里保存一个模块级强引用。
-#
-# 主工具箱的 Window Manager 还会再保存一份引用；两者并不冲突。
-# =============================================================================
-_window = None
+from ...ui import window_utils
 
 
 maya_colors = {
@@ -616,71 +599,12 @@ class ControlCreatorDialog(QDialog):
         )
 
 
-def _show_window(window):
-    """
-    显示并激活一个 Control Creator 窗口。
-
-    这个小辅助只服务于本模块的独立 ``main()`` 入口。
-    主工具箱仍然会在拿到 QWidget 后由 Window Manager 做统一窗口整理。
-    """
-    try:
-        if window.isMinimized():
-            window.showNormal()
-        else:
-            window.show()
-    except Exception:
-        window.show()
-
-    try:
-        window.raise_()
-    except Exception:
-        pass
-
-    try:
-        window.activateWindow()
-    except Exception:
-        pass
-
-    return window
-
-
 def main():
-    """
-    创建或恢复 Control Creator 窗口，并立即显示。
-
-    Returns:
-        ControlCreatorDialog:
-            当前有效的 Control Creator 窗口实例。
-
-    Notes:
-        - 直接在 Maya Script Editor 调用时，不需要再手动 ``window.show()``；
-        - 模块级 ``_window`` 保存强引用，避免局部 QWidget 被垃圾回收；
-        - 重复调用 ``main()`` 会优先恢复已有窗口，而不是不断创建重复实例。
-    """
-    global _window
-
-    # -------------------------------------------------------------------------
-    # 步骤 1：如果已经存在窗口，优先恢复现有实例。
-    # -------------------------------------------------------------------------
-    if _window is not None:
-        try:
-            return _show_window(_window)
-        except RuntimeError:
-            # Qt C++ 对象已经被 Maya / 用户关闭时，Python 包装对象可能仍存在。
-            _window = None
-        except Exception:
-            _window = None
-
-    # -------------------------------------------------------------------------
-    # 步骤 2：创建新的窗口，并在返回前立即显示。
-    # -------------------------------------------------------------------------
-    _window = ControlCreatorDialog()
-    _show_window(_window)
-
-    # -------------------------------------------------------------------------
-    # 步骤 3：返回 QWidget，方便主工具箱 Window Manager 或脚本继续管理。
-    # -------------------------------------------------------------------------
-    return _window
+    """显示并返回 Control Creator 窗口。"""
+    return window_utils.show_window(
+        "tools.controller.create_ctrl_tool",
+        ControlCreatorDialog
+    )
 
 
 __all__ = [
