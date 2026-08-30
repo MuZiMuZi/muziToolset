@@ -1,0 +1,71 @@
+name: Architecture Cleanup Phase 2
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/architecture_cleanup_phase2.yml
+      - scripts/architecture_cleanup_phase2.py
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run architecture migration
+        run: python scripts/architecture_cleanup_phase2.py
+
+      - name: Normalize runtime docstrings
+        run: python scripts/normalize_runtime_docstrings.py --write
+
+      - name: Refine runtime docstring semantics
+        run: python scripts/refine_runtime_docstring_semantics.py --write
+
+      - name: Check Core import style
+        run: python tests/core_import_style_test.py
+
+      - name: Check Core single source
+        run: python tests/core_single_source_gate_test.py
+
+      - name: Check upper layer Core reuse
+        run: python tests/system_core_reuse_gate_test.py
+
+      - name: Check Maya 2023 smoke contract
+        run: python tests/maya2023_smoke_contract_test.py
+
+      - name: Check runtime docstrings
+        run: python scripts/normalize_runtime_docstrings.py --check
+
+      - name: Check runtime docstring semantics
+        run: python scripts/refine_runtime_docstring_semantics.py --check
+
+      - name: Check whitespace
+        run: git diff --check
+
+      - name: Commit architecture cleanup
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No cleanup changes detected."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add core systems tools ui tests .github/workflows/docs.yml
+          git commit -m "refactor: complete core single-source cleanup"
+          git push origin HEAD:main
