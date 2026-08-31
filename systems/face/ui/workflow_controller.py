@@ -569,6 +569,12 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
 
         return True
 
+    def mark_step2_dirty(self):
+        u"""Step 02 变脏后重新应用 Config Channel Box 显示状态。"""
+        result = super(FaceRigWizard, self).mark_step2_dirty()
+        self.apply_config_channel_box_display()
+        return result
+
     # =========================================================================
     # Step 02 Persistence
     # =========================================================================
@@ -625,9 +631,6 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             return
 
         self.mark_step2_dirty()
-        self.apply_config_channel_box_display(
-            face_context
-        )
         self.status_label.setText(
             u"Controller Settings 已保存到 Scene Config，Step 02 需要重新提交"
         )
