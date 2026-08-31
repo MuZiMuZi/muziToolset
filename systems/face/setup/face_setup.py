@@ -3,7 +3,7 @@ u"""
 Step 01 - Face Setup
 ====================
 
-Step 生命周期：
+Component 生命周期：
     collect_inputs()
     prepare_data()
     process_data()
@@ -23,8 +23,8 @@ Step 生命周期：
     - Model 有效性统一由 core.mesh_utils 处理；
     - DAG Parent 统一由 core.hierarchy_utils 处理；
     - Config 的底层 Network / Message / Value 操作由 FaceBase -> core.config_utils 处理；
-    - Step 生命周期入口统一由 systems.common.StepBase 提供；
-    - FaceSetup 只保留 Step 01 自己的业务规则。
+    - Component 生命周期入口统一由 systems.component_base.ComponentBase 提供；
+    - FaceSetup 覆盖 process_data()，只保留 Step 01 自己的业务规则。
 """
 
 from __future__ import print_function
@@ -72,7 +72,7 @@ class FaceSetup(face_base.FaceBase):
         self.face_head_deform_model = None
 
     # =========================================================================
-    # Step Lifecycle
+    # Component Lifecycle
     # =========================================================================
 
     def collect_inputs(self):
