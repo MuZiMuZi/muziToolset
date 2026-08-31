@@ -1,6 +1,11 @@
 # coding=utf-8
 u"""Face Rig 全局配置。"""
 
+from __future__ import print_function
+
+import os
+
+from ... import config as package_config
 from ...core import name_utils
 
 
@@ -145,6 +150,71 @@ config_node = name_utils.Name.create_name(
     function="config",
     index=1
 )
+
+
+# ============================================================
+# Face Guide
+# ============================================================
+
+face_guide_template_file_name = "face_guide.ma"
+face_guide_template_path = os.path.join(
+    package_config.resources_dir,
+    "face",
+    face_guide_template_file_name
+)
+
+face_guide_move_ctrl = name_utils.Name.create_name(
+    node_type="ctrl",
+    side=face_side,
+    part=face_part,
+    function="move",
+    index=1
+)
+
+face_guide_version = "1.0"
+
+
+# ============================================================
+# Face Controller 默认设置
+# ============================================================
+
+face_controller_default_settings = {
+    "face_ctrl_global_scale": 1.0,
+    "face_ctrl_color_lf": 6,
+    "face_ctrl_color_rt": 13,
+    "face_ctrl_color_md": 17,
+    "brow_ctrl_size": 1.0,
+    "eye_ctrl_size": 1.0,
+    "eyelid_ctrl_size": 1.0,
+    "nose_ctrl_size": 1.0,
+    "cheek_ctrl_size": 1.0,
+    "lip_ctrl_size": 1.0,
+    "jaw_ctrl_size": 1.0,
+}
+
+face_controller_setting_attr_types = {
+    "face_ctrl_global_scale": "double",
+    "face_ctrl_color_lf": "long",
+    "face_ctrl_color_rt": "long",
+    "face_ctrl_color_md": "long",
+    "brow_ctrl_size": "double",
+    "eye_ctrl_size": "double",
+    "eyelid_ctrl_size": "double",
+    "nose_ctrl_size": "double",
+    "cheek_ctrl_size": "double",
+    "lip_ctrl_size": "double",
+    "jaw_ctrl_size": "double",
+}
+
+face_controller_module_order = [
+    "brow",
+    "eye",
+    "eyelid",
+    "nose",
+    "cheek",
+    "lip",
+    "jaw",
+]
 
 
 # ============================================================
