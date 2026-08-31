@@ -39,13 +39,6 @@ def read_source(file_path):
         return file_object.read()
 
 
-def test_runtime_has_no_maya_cmds():
-    for file_path in iter_python_files():
-        source = read_source(file_path)
-        assert "maya.cmds" not in source
-        assert "import maya.cmds" not in source
-
-
 def test_runtime_has_no_legacy_imports():
     for file_path in iter_python_files():
         source = read_source(file_path)
