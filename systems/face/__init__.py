@@ -5,13 +5,8 @@ Muzi Face Rig System
 
 Face Rig 的正式系统包。
 
-目录按 Workflow Step 分包：
-    setup/
-    guide/
-    build/
-    finalize/
-
-公共入口只暴露稳定 API，上层 Tool / UI 不依赖内部文件路径。
+公共入口只暴露稳定的 Face System API；
+上层 Tool / UI 不需要依赖各 Step / Component 内部文件路径。
 """
 
 from __future__ import print_function
@@ -28,9 +23,9 @@ from .setup import FaceSetup
 
 def show():
     u"""打开 Face Rig UI。"""
-    from .ui import show as show_ui
+    from .ui import face_rig_ui
 
-    return show_ui()
+    return face_rig_ui.main()
 
 
 __all__ = [
