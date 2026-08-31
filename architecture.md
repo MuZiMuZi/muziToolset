@@ -19,7 +19,9 @@ parent = joint.getParent()
 controller.translate >> joint.translate
 ```
 
-正式运行代码不使用 `maya.cmds`，也不恢复旧的 `*_utils` Wrapper。只有 PyMEL 不适合承担的底层几何 / 数学计算，才使用 `maya.api.OpenMaya`。
+`maya.cmds` 不是禁用项。当某个 Maya 命令用 cmds 表达更直接、PyMEL 包装行为不够清楚，或某些 UI / 特殊命令更适合 cmds 时，可以直接使用；但普通 Node / Attribute / Connection / Hierarchy 操作仍以 PyMEL 为默认选择。
+
+底层几何 / 数学计算优先使用 `maya.api.OpenMaya`。项目不恢复旧的 `*_utils` Wrapper，也不为了隐藏 PyMEL / cmds 而重复包装 Maya 已经提供的基础能力。
 
 ## 正式分层
 
@@ -97,12 +99,12 @@ Systems
     ↓
 Core
     ↓
-PyMEL
+PyMEL / cmds / Maya API 2.0
     ↓
 Maya
 ```
 
-允许 `Core -> maya.api.OpenMaya` 处理低层几何算法。禁止正式代码依赖 `legacy_reference`、`maya.cmds`、旧 `*_utils`，也禁止 Core 反向依赖 Systems / Tools。
+PyMEL 是普通 Maya Scene 操作的默认入口；cmds 按需使用；`maya.api.OpenMaya` 负责适合低层 API 的几何和数学工作。禁止正式代码依赖 `legacy_reference` 和旧 `*_utils`，也禁止 Core 反向依赖 Systems / Tools。
 
 ## 命名规范
 
