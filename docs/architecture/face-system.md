@@ -16,20 +16,14 @@ systems/face/
 │
 ├── guide/
 │   ├── __init__.py
-│   ├── face_guide.py
-│   ├── guide_data.py
-│   ├── guide_template.py
-│   └── guide_mirror.py
+│   └── face_guide.py
 │
 ├── build/
 │   ├── __init__.py
 │   ├── curve_attachment.py
+│   ├── teeth_component.py
 │   ├── eyelid/
-│   │   ├── __init__.py
-│   │   └── builder.py
 │   └── lip/
-│       ├── __init__.py
-│       └── zip_builder.py
 │
 ├── finalize/
 │   └── __init__.py
@@ -40,10 +34,9 @@ systems/face/
 │
 └── ui/
     ├── __init__.py
-    └── face_rig_ui.py
+    ├── face_rig_ui.py
+    └── workflow_controller.py
 ```
-
-以后 Jaw、Lip、Eye、Eyelid、Brow、Nose、Cheek 等正式 Component 继续放在 `build/` 下，不重新平铺回 `systems/face/` 根目录。
 
 ## 四步 Workflow
 
@@ -57,7 +50,7 @@ systems/face/
 04 Finalize
 ```
 
-每个真正需要提交状态的 Step 继续遵守 `StepBase`：
+真正的 Workflow Step 继续使用统一生命周期：
 
 ```text
 collect_inputs()
@@ -69,20 +62,20 @@ process_data()
 finalize_step()
 ```
 
-Step 和 Component 不是同一个概念：
+Step 和 Component 是两个概念：
 
 ```text
 Step
-    用户工作流阶段
+    Setup / Guide / Build / Finalize 用户工作流阶段
 
 Component
-    Jaw / Lip / Eyelid / Brow 等绑定模块
+    Teeth / Tongue / Jaw / Lip / Eye / Eyelid / Brow 等绑定模块
 
 Builder
-    Curve Attachment / Zip / Radial Joint 等可组合算法
+    Curve Attachment / Zip / Radial Joint 等可复用构建算法
 
 Core
-    Matrix / Curve / Joint / DAG / Attribute 等通用 Maya 能力
+    Matrix / Curve / Joint / DAG / Attribute / Naming 等通用 Maya 能力
 ```
 
 ## 根目录公共层
@@ -91,130 +84,42 @@ Core
 
 只保存所有 Face Step 共用的业务能力：
 
-- Face 基础层级；
+- Face Hierarchy；
 - Face Config；
 - Setup 公共数据；
 - Step 完成状态；
-- Current Face Step Workflow Progress；
-- Config Step 分区 Schema；
-- 公共 Config 语义 API。
+- Current Face Step；
+- Config Step 分区；
+- 公共 Config 读写语义。
 
-不要把 Guide Template 名称、Mirror、Repair 或具体 Component Algorithm 塞入 `FaceBase`。
+不要把具体 Guide / Component 构建算法继续塞入 `FaceBase`。
 
 ### `config.py`
 
-保存整个 Face System 的全局配置：
+`config.py` 是 Face System 的统一静态配置入口。
 
-- Group Name；
-- Set Name；
-- Config Network Name；
-- Center Axis；
-- Face Hierarchy。
+负责定义：
 
-### `data/`
+- Face Group / Set / Config Node 名称；
+- Guide Template 路径、Move Ctrl 名称和 Version；
+- Controller 默认 Size / Color；
+- Controller Module 顺序；
+- Step 顶层 Group Visibility Rule；
+- Step Model Display Rule。
 
-保存跨多个 Step 使用的 Face 公共数据，例如 Face Shape Dictionary。
+所有标准 Maya 节点名称优先使用：
 
-## Face Config Workflow State
-
-Face Config 不只保存各 Step 的数据，还保存整个 Wizard 当前真实制作进度。
-
-核心状态：
-
-```text
-face_current_step
+```python
+name_utils.Name.create_name(...)
 ```
 
-它使用只读 Enum 表示：
+左右名称优先使用：
 
-```text
-Step 01 Setup
-Step 02 Guide
-Step 03 Build
-Step 04 Finalize
+```python
+name_utils.Name.mirror_name(...)
 ```
 
-状态规则：
-
-```text
-Step 01 完成
-    → current_step = 2
-
-Step 02 完成
-    → current_step = 3
-
-Step 02 被重新修改
-    → step_02_completed = False
-    → Step 03 / 04 Invalid
-    → current_step = 2
-```
-
-“查看旧页面”和“工作流回退”必须分开：
-
-```text
-已经制作到 Step 03
-    ↓
-用户只是查看 Step 01
-    ↓
-current_step 仍然保持 Step 03
-```
-
-只有会让旧结果失效的实际数据修改，才更新 Current Step。
-
-Face Rig UI 初始化时：
-
-```text
-读取 Config
-    ↓
-读取 Step Completed
-    ↓
-读取 Current Face Step
-    ↓
-恢复顶部 Navigation
-    ↓
-自动跳转到当前 Workflow Step
-```
-
-旧场景没有 `face_current_step` 时，根据现有 `step_XX_completed` 状态推导当前步骤，并自动补齐新的 Workflow / Step Config 分区后写入正式进度。
-
-## Face Config Attribute 分区
-
-Face Config 的属性仍然保留现有正式名称，不为了 UI 分组复制第二套 Config。
-
-`FaceBase` 会创建只读分隔 Attribute，并使用 Maya 动态属性排序将数据整理为：
-
-```text
-FACE WORKFLOW
-    Current Face Step
-
-STEP 01 SETUP
-    Setup Model Message
-    Mouth Joint Number
-    Step 01 Completed
-
-STEP 02 GUIDE
-    Guide Root / Move Ctrl / Version
-    Controller Global Scale
-    Side Color
-    Module Size
-    Step 02 Completed
-
-STEP 03 BUILD
-    Step 03 Build Data
-    Step 03 Completed
-
-STEP 04 FINALIZE
-    Step 04 Finalize Data
-    Step 04 Completed
-```
-
-分隔属性只负责 Attribute Editor 可读性：
-
-- 不参与 Rig 计算；
-- 不改变已有 Attribute 名称；
-- 不断开 Message Connection；
-- `reorderAttr` 只改变动态 Attribute 显示顺序；
-- 后续 Step 03 / 04 新增 Config 数据时，只需要补入对应 Step Schema。
+不要在 Face System 里再复制第二套 Naming Logic。
 
 ## Step 01 - Setup
 
@@ -226,128 +131,216 @@ STEP 04 FINALIZE
 - Tweak / Stretch / Deform Work Model；
 - Mouth Joint Number；
 - Step 01 Config；
-- Step 01 完成后把 Workflow 推进到 Step 02。
+- Step 01 完成后推进到 Step 02。
 
 ## Step 02 - Guide
 
-### `face_guide.py`
-
-只负责 Step 02 调度、稳定查询、Validation 和 Config。
-
-不再维护大量散落的固定名称算法。
-
-Step 02 正式提交后：
+Guide 现在故意保持为单一实现文件：
 
 ```text
-step_02_completed = True
-Current Face Step = Step 03 Build
+guide/
+├── __init__.py
+└── face_guide.py
 ```
 
-### `guide_data.py`
+`FaceGuide` 直接负责：
 
-定义 Template Contract：
-
-```text
-face_guide.ma 路径
-Guide Root
-Move Ctrl
-Guide Version
-完整 Locator Name Contract
-Lip / Eyelid 有序 Guide
-Controller 默认参数
-```
-
-全部标准 Locator 直接从 `resources/face/face_guide.ma` 读取，因此 Template 是 Locator 完整性的唯一来源。
-
-### `guide_template.py`
-
-负责：
-
-- Import；
-- Reset；
+- Template Import；
 - Reimport / Repair；
-- 导入同名 Root 冲突处理；
-- Reimport 前记录现有 Locator 世界矩阵；
-- Reimport 后恢复仍存在 Locator；
-- 被误删 Locator 使用模板默认位置补回。
+- Guide Query；
+- LF ↔ RT Mirror；
+- Mirror Undo Snapshot；
+- Locator 完整性检查；
+- Controller Settings Config；
+- Step 02 Lifecycle。
 
-### `guide_mirror.py`
-
-负责：
-
-- LF → RT；
-- RT → LF；
-- 不建立永久左右连接；
-- Maya Undo Chunk；
-- 上一次 Mirror Snapshot；
-- 独立 Undo Mirror。
-
-`md` Guide 不参与左右 Mirror。
-
-Mirror、Guide Reimport 或 Controller Settings 修改后，Step 02 会变成 Dirty，Workflow Progress 同步退回 Step 02。
-
-## Step 02 完整性规则
-
-点击“下一步”前必须：
+不再维护：
 
 ```text
-读取 face_guide.ma 全部标准 Locator Name
-            ↓
-扫描当前正式 Face Guide
-            ↓
-逐个比较
-            ↓
-任意一个缺失 → 阻止进入 Step 03
+guide_data.py
+guide_template.py
+guide_mirror.py
 ```
 
-错误必须明确列出缺失名称。
+这些文件原本只是把一个很直接的 Step 02 行为拆成多层调用，当前规模下没有足够收益。
 
-恢复流程：
+### Guide 查询原则
+
+简单查询直接使用通用 API：
+
+```python
+guide.get_part_guides(
+    part="tongue"
+)
+```
+
+或者先使用 Naming API 创建明确名称，再查询单个 Guide：
+
+```python
+guide_name = name_utils.Name.create_name(
+    node_type="loc",
+    side="md",
+    part="upper_teeth",
+    function="guide",
+    index=1
+)
+
+guide_node = guide.get_guide_node(
+    guide_name,
+    required=True
+)
+```
+
+不再为了：
+
+```python
+get_tongue_guides()
+```
+
+这种仅仅转发一个固定参数的调用额外创建方法。
+
+只有真正增加了固定顺序、分组结构或额外语义的方法才保留，例如 Lip / Eyelid 等有序 Guide Query。
+
+## Guide Template 完整性
+
+`resources/face/face_guide.ma` 仍然是 Locator 完整性的最终模板来源。
+
+Step 02 点击“下一步”时：
 
 ```text
-[重新导入模板]
+读取 Template 全部 loc_*_guide_###
         ↓
+扫描当前 Face Guide
+        ↓
+逐个检查
+        ↓
+任意缺失
+        ↓
+阻止进入 Step 03
+```
+
+重新导入模板时：
+
+```text
 记录当前仍存在 Locator 世界位置
         ↓
 重新导入完整 face_guide.ma
         ↓
-按固定名称恢复已有 Locator
+恢复原来仍存在 Locator 的位置
         ↓
-被误删 Locator 保留 Template 默认位置
+误删 Locator 使用模板默认位置补回
 ```
+
+## Guide Mirror
+
+Mirror 直接由 `FaceGuide` 执行：
+
+```python
+face_guide.mirror_guides(
+    source_side="lf",
+    target_side="rt"
+)
+```
+
+左右名称统一通过 `name_utils.Name.mirror_name()` 获取。
+
+Mirror 不负责 Repair。如果目标 Guide 被误删，应先重新导入模板补回，再执行 Mirror。
+
+## Workflow 显示规则
+
+不再单独维护 `systems/face/workflow.py`。
+
+静态规则统一放在：
+
+```text
+systems/face/config.py
+```
+
+例如：
+
+```text
+Step 01
+    Model Show
+    Guide Hide
+    Ctrl Hide
+    Joint Hide
+
+Step 02
+    Model Show
+    Guide Show
+    Ctrl Hide
+    Joint Hide
+
+Step 03
+    Model Show
+    Guide Hide
+    Ctrl Show
+    Joint Show
+```
+
+`ui/workflow_controller.py` 在 Step 切换时直接读取这些规则并设置 Maya Visibility。
+
+Step 01 / 02 的 Model Group 内部继续只显示 Setup Config 中保存的原始输入模型，Tweak / Stretch / Deform 工作副本隐藏。
+
+## Face Config Workflow State
+
+Face Config 保存：
+
+```text
+face_current_step
+```
+
+用于重新打开工具时恢复真正制作进度。
+
+规则：
+
+```text
+Step 01 完成
+    → Current Step = 02
+
+Step 02 完成
+    → Current Step = 03
+
+Step 02 被修改
+    → Step 02 Dirty
+    → Step 03 / 04 Invalid
+    → Current Step = 02
+```
+
+UI 临时查看旧页面不会修改正式 Workflow Progress。
 
 ## Step 03 - Build
 
-Build Package 按 Component 扩展：
+Build 内按 Component 扩展。
+
+简单 Component 优先保持单文件：
+
+```text
+build/
+├── teeth_component.py
+├── tongue_component.py
+```
+
+只有模块真正复杂后再拆 Package：
 
 ```text
 build/
 ├── jaw/
 ├── lip/
-├── eye/
 ├── eyelid/
-├── brow/
-├── cheek/
-└── nose/
+└── ...
 ```
 
-现有的 `curve_attachment.py` 属于 Build Primitive；`eyelid/builder.py` 和 `lip/zip_builder.py` 属于具体面部构建算法。
-
-完整 Component 未来负责：
+Component 可以继续使用四阶段构建思路：
 
 ```text
-Inputs
-Settings
-Build
-Connections
-Outputs
-Ownership
-Rebuild
+collect_inputs()
+prepare_data()
+process_data()
+finalize_step()
 ```
 
-而 Builder 只负责单一算法，不承担整个 Component 生命周期。
-
-Step 03 后续接入正式生命周期时，也必须使用 `FaceBase` 的 Current Step 和 Config Step Schema，不再单独创建进度系统。
+但 Component 不等于 Step 03 本身。整个 FaceBuild 完成全部 Component 后，才正式标记 Step 03 Completed。
 
 ## Step 04 - Finalize
 
@@ -360,22 +353,16 @@ Step 03 后续接入正式生命周期时，也必须使用 `FaceBase` 的 Curre
 - Publish；
 - Build Result Summary。
 
-Step 04 同样复用统一 Workflow State / Config Schema。
-
 ## Public API
 
-外部 Tool 不依赖内部迁移路径。
-
-继续使用：
+外部 Tool 继续通过稳定入口：
 
 ```python
 from muziToolset.systems import face
 
 face.FaceSetup
 face.FaceGuide
-face.build_eyelid_joints
-face.build_zip_lip
 face.show()
 ```
 
-这样内部目录未来继续扩展，也不会强迫上层 Tool 修改 Import。
+内部目录继续调整时，上层 Tool 不需要跟着修改 Import。
