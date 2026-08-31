@@ -8,7 +8,7 @@ MuziTools Core
 Core 的定位
 -----------
 ``core/`` 不是“所有代码都可以往里放”的公共目录，而是整个 MuziTools 的底层能力层。
-一个模块通常对应一个清晰的 Maya / Python 领域，上层 Tool 和 System 通过组合 Core API 完成完整工作流。
+一个模块对应一个清晰的 Maya / Python 领域，上层 Tool 和 System 通过组合 Core API 完成完整工作流。
 
 依赖规则
 --------
@@ -64,7 +64,8 @@ DAG / Attribute / Config / Naming：
         DAG Parent、Extra Group、Child Query、基础 Group。
 
     joint_utils.py
-        Joint、JointCurve、JointChain；Curve 查询统一复用 curve_utils。
+        单个 Maya Joint 的创建、Transform、Joint Orient、Hierarchy、Display 和 Label。
+        不负责 Selection、批量 Joint、JointChain、Curve -> Joint、FK / IK 等更高层流程。
 
     name_utils.py
         五段式 Rig 标准名称、解析、Mirror Name、Unique Index、Duplicate DAG Name。
@@ -112,15 +113,15 @@ snake_case 迁移状态
     jointUtils.py       -> joint_utils.py
     nameUtils.py        -> name_utils.py
 
-正式代码、Tests、Tools、Systems 和 MkDocs 统一使用 snake_case 模块路径。
+正式 Core 不维护旧接口兼容壳。
 
 颗粒度原则
 ----------
-当前 Core 采用“一个领域一个模块”，而不是：
+Core 采用“一个领域一个模块”，而不是：
 
     一个函数 -> 一个 py 文件
 
-也不是重新回到：
+也不会重新回到：
 
     pipelineUtils.py -> 所有功能
 
@@ -131,7 +132,7 @@ Config 也遵守同样原则：
     systems/*        -> 决定具体保存哪些业务数据
 
 Import 原则
-----------
+-----------
 为了避免 ``import muziToolset.core`` 时一次性加载 Maya API、插件或较重模块，
 本文件不主动 Import 所有子模块。
 

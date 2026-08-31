@@ -7,7 +7,7 @@
 ```text
 legacy_reference/
 ├─ bind/           # 早期绑定相关代码
-├─ core/           # 已完成的 Core / Pipeline 迁移记录
+├─ core/           # Core 历史实现 / 迁移记录
 ├─ dev/            # 旧开发辅助脚本
 ├─ integrations/   # AdvancedSkeleton / MetaHuman 历史集成参考
 ├─ pyside/         # PySide 学习 / 旧界面代码
@@ -15,28 +15,34 @@ legacy_reference/
 └─ rigging/        # 旧 Body / IKFK / Ribbon / Controller Rig 参考实现
 ```
 
-## Core 迁移已完成
+## Core 历史参考
 
-`legacy_reference/core/` 现在只保留：
+`legacy_reference/core/` 只作为 Core 重构时的历史参考，不属于可 import 的正式 Package。
+
+当前保留：
 
 ```text
 legacy_reference/core/
-└─ PIPELINE_MIGRATION.md
+├─ PIPELINE_MIGRATION.md
+└─ joint_utils_pre_single_joint_refactor.py
 ```
 
-旧 `pipelineUtils.py` 已在 Maya 2023 真机验证通过后正式删除；空的 `__init__.py` 也一并移除，因此这里不再是可 import 的 Python Package。
+`joint_utils_pre_single_joint_refactor.py` 是把正式 `core/joint_utils.py`
+收口为“单个 Joint 底层对象”之前的完整快照。
 
-最终验证：
+这份历史快照中包含旧的：
 
-```text
-muziToolset.pipeline_smoke_test()
-9 / 9 PASS
+- Selection / 全场景批量 Joint 操作；
+- Component / Curve 到 Joint；
+- JointCurve；
+- JointChain；
+- 旧 Joint Orient / Display 工具接口。
 
-muziToolset.controller_component_smoke_test()
-1 / 1 PASS
-```
+这些接口不再约束新的正式 Core。后续如果仍有价值，应基于新的 `Joint`
+底层能力重新设计 Tool / JointChain / Rig Component，而不是把旧实现重新复制回 Core。
 
-旧 `attrUtils / hierarchyUtils / jointUtils / connectionUtils / vectorUtils / weightsUtils / fileUtils / snapUtils / nameUtils` 等已经由正式 Core 接管或明确淘汰，不再保存第二份实现。
+旧 `pipelineUtils.py` 已在 Maya 2023 真机验证通过后正式删除；空的 `__init__.py`
+也一并移除，因此 `legacy_reference/core/` 不应作为 Python Package 使用。
 
 迁移详情见 `legacy_reference/core/PIPELINE_MIGRATION.md`。
 
@@ -63,19 +69,7 @@ legacy_reference/rigging/controlUtils.py
 
 ## Face 已完成迁移
 
-旧 `legacy_reference/face/` 已完成审计并删除。正式 Face 开发位于：
-
-```text
-systems/face/
-├─ config.py
-├─ face_base.py
-├─ face_setup.py
-├─ face_guide.py
-├─ curve_attachment.py
-├─ eyelid/
-├─ lip/
-└─ wizard.py
-```
+旧 `legacy_reference/face/` 已完成审计并删除。正式 Face 开发位于 `systems/face/`。
 
 ## 使用规则
 
@@ -87,7 +81,8 @@ from legacy_reference import ...
 
 也不要通过修改 `sys.path` 把历史目录重新加入正式运行路径。
 
-如果历史代码仍有价值，应重新提取算法、去掉旧 UI / PyMel / 硬编码路径 / import-time 副作用，再按职责进入正式的 `core/`、`tools/` 或 `systems/`。
+如果历史代码仍有价值，应重新提取算法、去掉旧 UI / PyMel / 硬编码路径 /
+import-time 副作用，再按职责进入正式的 `core/`、`tools/` 或 `systems/`。
 
 当前正式运行框架始终是仓库根包：
 
