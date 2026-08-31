@@ -60,7 +60,8 @@ Transform / Math / DG：
 
 DAG / Attribute / Config / Naming：
     attr_utils.py
-        Attribute、Message、String Config、Transform Limits。
+        单节点 Attribute 创建、状态、Value、Message 与 Transform Limits。
+        通用 Plug Connection 统一由 connection_utils 负责；Channel Box UI 不属于 Core Attribute。
 
     config_utils.py
         通用 Network Config Node 生命周期、Message 引用和 Value 配置封装。
@@ -113,8 +114,8 @@ Utility：
 
 Core API 原则
 ------------
-有状态对象，例如 ``Joint(joint)``：
-    在 __init__() 建立并验证对象不变量，普通实例方法不重复做同一份校验。
+有状态对象，例如 ``Joint(joint)``、``Attr(node)``：
+    在 __init__() 建立并验证对象不变量，普通实例方法不重复做同一份节点校验。
 
 无状态 Utils，例如 ``transform_utils.get_world_translation(node)``：
     每次收到外部 Maya Node 参数时进行必要校验。
@@ -125,6 +126,8 @@ Core API 原则
     File Export        -> export_utils
     Transform 数值     -> transform_utils
     DAG Hierarchy      -> hierarchy_utils
+    Attribute          -> attr_utils.Attr
+    Plug Connection    -> connection_utils
     Rename             -> rename_utils
     Joint 专属属性     -> joint_utils.Joint
     Matrix 计算/网络   -> matrix_utils

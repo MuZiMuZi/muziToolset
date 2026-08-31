@@ -3,48 +3,21 @@ u"""
 Attr Tool
 =========
 
-Maya 属性管理工具窗口。
+Maya Attribute 管理工具窗口。
 
 模块职责
 --------
-1. 打开 Maya 自带 Add / Edit Attribute、Connection Editor、Channel Control；
-2. 调整 Channel Box 自定义属性顺序；
-3. 批量设置 Translate / Rotate / Scale / Visibility 的 Lock / Hide 状态；
-4. 把 Attribute 底层操作交给 ``core.attr_utils``；
-5. 提供可以在 Maya Script Editor 中直接显示的 ``main()`` 入口。
+1. 打开 Maya 原生 Add / Edit Attribute、Connection Editor、Channel Control；
+2. 处理 Channel Box 自定义属性顺序这类 UI / Selection 工作流；
+3. 批量设置 Translate / Rotate / Scale / Visibility 的 Attribute 状态；
+4. Attribute 底层状态统一交给 ``core.attr_utils``。
 
-主要公开类型 / 方法
-------------------
-AttrTool
-    属性工具主窗口。
-
-AttrTool.open_add_attr_window()
-AttrTool.open_edit_attr_window()
-AttrTool.open_connection_editor()
-AttrTool.open_channel_control()
-    打开 Maya 原生属性相关窗口。
-
-AttrTool.move_attr_up()
-AttrTool.move_attr_down()
-    调整当前 Channel Box 自定义属性顺序。
-
-AttrTool.clicked_attr_set_button()
-    把当前 UI Lock / Hide 状态应用到 Maya Selection。
-
-main()
-    创建或恢复窗口，立即显示并返回 QWidget。
-
-直接运行
+架构边界
 --------
-Maya Python Script Editor：
-
-    from muziToolset.tools.basic import attr_tool
-
-    window = attr_tool.main()
-
-设计边界
---------
-本文件负责 UI 和 Selection；Attribute 创建、连接、Lock / Hide 等通用能力统一维护在 ``core.attr_utils``。
+- Channel Box 与 Selection 属于 Tool；
+- Attribute Lock / Keyable / Channel Box 状态属于 core.attr_utils；
+- 通用 Plug Connection 属于 core.connection_utils；
+- 本文件不向 Core 反向塞入 Maya UI 状态。
 """
 
 from __future__ import print_function
@@ -75,23 +48,112 @@ except ImportError:
 
 from ...config import icons_dir as icon_dir
 from ...core import attr_utils
+from ...core import scene_utils
 from ...ui import theme as ui_theme
 from ...ui import window_utils
-from ...core import scene_utils
+
+
+def move_selected_channel_box_attr(up=True, down=False):
+    u"""调整 Channel Box 当前 User Defined Attribute 的顺序。"""
+    selections = scene_utils.get_selected_nodes(
+        long=True,
+        flatten=True
+    )
+
+    if not selections:
+        cmds.warning(u"请先选择一个对象。")
+        return False
+
+    selected_attrs = cmds.channelBox(
+        "mainChannelBox",
+        query=True,
+        selectedMainAttributes=True
+    ) or []
+
+    if not selected_attrs:
+        cmds.warning(u"请在 Channel Box 中选择一个自定义属性。")
+        return False
+
+    node = selections[0]
+    selected_attr = selected_attrs[0]
+    selected_plug = "{}.{}".format(
+        node,
+        selected_attr
+    )
+
+    if not cmds.objExists(selected_plug):
+        return False
+
+    if cmds.getAttr(selected_plug, lock=True):
+        cmds.warning(
+            u"{} Attribute 不可以被编辑。".format(
+                selected_plug
+            )
+        )
+        return False
+
+    attr_list = cmds.listAttr(
+        node,
+        userDefined=True
+    ) or []
+
+    if selected_attr not in attr_list:
+        return False
+
+    selected_index = attr_list.index(
+        selected_attr
+    )
+
+    scene_utils.open_undo_chunk(
+        "MuziMoveChannelBoxAttr"
+    )
+
+    try:
+        if up and selected_index > 0:
+            previous_attr = attr_list[selected_index - 1]
+            cmds.deleteAttr(
+                "{}.{}".format(
+                    node,
+                    previous_attr
+                )
+            )
+            cmds.undo()
+
+            index = selected_index + 1
+            while index < len(attr_list):
+                cmds.deleteAttr(
+                    "{}.{}".format(
+                        node,
+                        attr_list[index]
+                    )
+                )
+                cmds.undo()
+                index += 1
+
+        if down and selected_index < len(attr_list) - 1:
+            cmds.deleteAttr(selected_plug)
+            cmds.undo()
+
+            index = selected_index + 2
+            while index < len(attr_list):
+                cmds.deleteAttr(
+                    "{}.{}".format(
+                        node,
+                        attr_list[index]
+                    )
+                )
+                cmds.undo()
+                index += 1
+    finally:
+        scene_utils.close_undo_chunk()
+
+    return True
 
 
 class AttrTool(QWidget):
-    """属性工具窗口。"""
+    u"""Attribute 工具窗口。"""
 
     def __init__(self, parent=None):
-        u"""
-        执行 `__init__` 对应的 Maya 工具操作。
-
-        Args:
-            parent (str):
-                父级 Maya 节点名称。
-        """
-
         super(AttrTool, self).__init__(parent)
 
         self.window_title = u"属性工具"
@@ -108,43 +170,32 @@ class AttrTool(QWidget):
         self.resize(560, 520)
 
     def create_widgets(self):
-        u"""
-        创建界面部件。
-        """
+        u"""创建界面部件。"""
         self.title_label = ui_theme.make_title(u"属性工具")
         self.subtitle_label = ui_theme.make_subtitle(
-            u"管理 Maya 属性窗口、Channel Box 顺序以及常用 Transform 属性状态。"
+            u"管理 Maya 属性窗口、Channel Box 顺序以及常用 Transform Attribute 状态。"
         )
 
         self.add_attr_window_button = QPushButton(
             QIcon(icon_dir + "/add.png"),
             u"添加属性"
         )
-        self.add_attr_window_button.setToolTip(u"打开 Maya Add Attribute 窗口")
-
         self.edit_attr_window_button = QPushButton(
             QIcon(icon_dir + "/edit.png"),
             u"编辑属性"
         )
-        self.edit_attr_window_button.setToolTip(u"打开 Maya Edit Attribute 窗口")
-
         self.connect_attr_window_button = QPushButton(
             QIcon(icon_dir + "/connect-empty.png"),
             u"连接编辑器"
         )
-        self.connect_attr_window_button.setToolTip(u"打开 Maya Connection Editor")
-
         self.channel_control_window_button = QPushButton(
             QIcon(icon_dir + "/set.png"),
             u"Channel Control"
         )
-        self.channel_control_window_button.setToolTip(u"打开 Maya Channel Control")
-
         self.delete_attr_window_button = QPushButton(
             QIcon(icon_dir + "/delete.png"),
             u"删除属性"
         )
-        self.delete_attr_window_button.setToolTip(u"删除 Channel Box 中选中的自定义属性")
         ui_theme.style_danger(self.delete_attr_window_button)
 
         self.attr_move_info_label = QLabel(
@@ -184,7 +235,6 @@ class AttrTool(QWidget):
             QIcon(icon_dir + "/set.png"),
             u"应用到选择对象"
         )
-        self.attr_set_button.setToolTip(u"把当前锁定 / 隐藏设置应用到 Maya 选择对象")
         ui_theme.style_primary(self.attr_set_button)
 
         self.attr_reset_button = QPushButton(
@@ -205,9 +255,7 @@ class AttrTool(QWidget):
         ]
 
     def create_layouts(self):
-        u"""
-        创建 Card 布局。
-        """
+        u"""创建窗口布局。"""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -217,12 +265,6 @@ class AttrTool(QWidget):
 
         editor_card, editor_layout = ui_theme.make_card(self)
         editor_layout.addWidget(ui_theme.make_section_title(u"属性编辑"))
-
-        editor_description = QLabel(
-            u"直接调用 Maya 自带的属性管理窗口。"
-        )
-        ui_theme.set_role(editor_description, "muted")
-        editor_layout.addWidget(editor_description)
 
         editor_grid = QGridLayout()
         editor_grid.setHorizontalSpacing(8)
@@ -239,7 +281,6 @@ class AttrTool(QWidget):
         order_layout.addWidget(self.attr_move_info_label)
 
         order_button_layout = QHBoxLayout()
-        order_button_layout.setContentsMargins(0, 0, 0, 0)
         order_button_layout.addWidget(self.attr_up_button)
         order_button_layout.addWidget(self.attr_down_button)
         order_layout.addLayout(order_button_layout)
@@ -247,30 +288,20 @@ class AttrTool(QWidget):
         state_card, state_layout = ui_theme.make_card(self)
         state_layout.addWidget(ui_theme.make_section_title(u"属性状态"))
 
-        state_description = QLabel(
-            u"按通道统一设置 X / Y / Z，并可单独控制 Visibility。"
-        )
-        ui_theme.set_role(state_description, "muted")
-        state_layout.addWidget(state_description)
-
         state_grid = QGridLayout()
         state_grid.setHorizontalSpacing(18)
         state_grid.setVerticalSpacing(10)
         state_grid.addWidget(self.lock_header_label, 0, 1, Qt.AlignCenter)
         state_grid.addWidget(self.hide_header_label, 0, 2, Qt.AlignCenter)
-
         state_grid.addWidget(self.translation_set_label, 1, 0)
         state_grid.addWidget(self.translation_locked_checkbox, 1, 1, Qt.AlignCenter)
         state_grid.addWidget(self.translation_hidden_checkbox, 1, 2, Qt.AlignCenter)
-
         state_grid.addWidget(self.rotate_set_label, 2, 0)
         state_grid.addWidget(self.rotate_locked_checkbox, 2, 1, Qt.AlignCenter)
         state_grid.addWidget(self.rotate_hidden_checkbox, 2, 2, Qt.AlignCenter)
-
         state_grid.addWidget(self.scale_set_label, 3, 0)
         state_grid.addWidget(self.scale_locked_checkbox, 3, 1, Qt.AlignCenter)
         state_grid.addWidget(self.scale_hidden_checkbox, 3, 2, Qt.AlignCenter)
-
         state_grid.addWidget(self.visibility_set_label, 4, 0)
         state_grid.addWidget(self.visibility_locked_checkbox, 4, 1, Qt.AlignCenter)
         state_grid.addWidget(self.visibility_hidden_checkbox, 4, 2, Qt.AlignCenter)
@@ -278,7 +309,6 @@ class AttrTool(QWidget):
         state_layout.addLayout(state_grid)
 
         action_layout = QHBoxLayout()
-        action_layout.setContentsMargins(0, 4, 0, 0)
         action_layout.addWidget(self.attr_reset_button)
         action_layout.addStretch(1)
         action_layout.addWidget(self.attr_set_button)
@@ -290,9 +320,7 @@ class AttrTool(QWidget):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        u"""
-        连接界面信号。
-        """
+        u"""连接界面信号。"""
         self.add_attr_window_button.clicked.connect(self.open_add_attr_window)
         self.edit_attr_window_button.clicked.connect(self.open_edit_attr_window)
         self.connect_attr_window_button.clicked.connect(self.open_connection_editor)
@@ -303,65 +331,49 @@ class AttrTool(QWidget):
         self.attr_set_button.clicked.connect(self.clicked_attr_set_button)
         self.attr_reset_button.clicked.connect(self.clicked_attr_reset_button)
 
-    def open_add_attr_window(self):
-        u"""
-        打开 Maya 原生 Add Attribute 窗口。
-        """
+    @staticmethod
+    def open_add_attr_window():
         mel.eval("dynAddAttrWin({})")
 
-    def open_edit_attr_window(self):
-        u"""
-        打开 Maya 原生 Edit Attribute 窗口。
-        """
+    @staticmethod
+    def open_edit_attr_window():
         mel.eval("dynRenameAttrWin({})")
 
-    def open_connection_editor(self):
-        u"""
-        打开 Maya Connection Editor。
-        """
+    @staticmethod
+    def open_connection_editor():
         cmds.ConnectionEditor()
 
-    def open_channel_control(self):
-        u"""
-        打开 Maya Channel Control。
-        """
+    @staticmethod
+    def open_channel_control():
         cmds.ChannelControlEditor()
 
-    def delete_selected_attr(self):
-        u"""
-        打开 Maya 原生 Delete Attribute 操作。
-        """
+    @staticmethod
+    def delete_selected_attr():
         mel.eval("dynDeleteAttrWin({})")
 
-    def move_attr_up(self):
-        u"""
-        把 Channel Box 当前自定义属性向上移动。
-        """
-        attr_utils.Attr.move_channelBox_attr(
+    @staticmethod
+    def move_attr_up():
+        return move_selected_channel_box_attr(
             up=True,
             down=False
         )
 
-    def move_attr_down(self):
-        u"""
-        把 Channel Box 当前自定义属性向下移动。
-        """
-        attr_utils.Attr.move_channelBox_attr(
+    @staticmethod
+    def move_attr_down():
+        return move_selected_channel_box_attr(
             up=False,
             down=True
         )
 
     def clicked_attr_set_button(self):
-        u"""
-        根据界面状态设置当前选择物体的 Transform 属性。
-        """
-        selected_objects = cmds.ls(
-            selection=True,
-            long=True
+        u"""把界面状态应用到当前选择对象的 Transform Channels。"""
+        selected_objects = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
         )
 
         if not selected_objects:
-            cmds.warning(u"请先选择需要设置属性的物体。")
+            cmds.warning(u"请先选择需要设置 Attribute 的对象。")
             return
 
         translation_lock = self.translation_locked_checkbox.isChecked()
@@ -373,21 +385,11 @@ class AttrTool(QWidget):
         visibility_lock = self.visibility_locked_checkbox.isChecked()
         visibility_hide = self.visibility_hidden_checkbox.isChecked()
 
-        axis_list = [
-            "X",
-            "Y",
-            "Z",
-        ]
+        axis_list = ["X", "Y", "Z"]
 
-        # ---------------------------------------------------------------------
-        # 步骤 1：把一次 UI Apply 包成一个 Undo Chunk。
-        # -------------------------------------------------------------------------
         scene_utils.open_undo_chunk("MuziAttrToolSetState")
 
         try:
-            # -----------------------------------------------------------------
-            # 步骤 2：逐对象、逐轴调用正式 attr_utils API。
-            # -----------------------------------------------------------------
             for selected_object in selected_objects:
                 attr_handler = attr_utils.Attr(selected_object)
 
@@ -396,46 +398,42 @@ class AttrTool(QWidget):
                     rotate_attr = "rotate{}".format(axis)
                     scale_attr = "scale{}".format(axis)
 
-                    attr_handler.lock_and_hide_attr(
+                    attr_handler.set_attr_state(
                         translate_attr,
                         lock=translation_lock,
-                        hide=translation_hide
+                        keyable=not translation_hide,
+                        channel_box=not translation_hide
                     )
-                    attr_handler.lock_and_hide_attr(
+                    attr_handler.set_attr_state(
                         rotate_attr,
                         lock=rotate_lock,
-                        hide=rotate_hide
+                        keyable=not rotate_hide,
+                        channel_box=not rotate_hide
                     )
-                    attr_handler.lock_and_hide_attr(
+                    attr_handler.set_attr_state(
                         scale_attr,
                         lock=scale_lock,
-                        hide=scale_hide
+                        keyable=not scale_hide,
+                        channel_box=not scale_hide
                     )
 
-                attr_handler.lock_and_hide_attr(
+                attr_handler.set_attr_state(
                     "visibility",
                     lock=visibility_lock,
-                    hide=visibility_hide
+                    keyable=not visibility_hide,
+                    channel_box=not visibility_hide
                 )
         finally:
             scene_utils.close_undo_chunk()
 
     def clicked_attr_reset_button(self):
-        u"""
-        清空界面中所有 Locked / Hidden 选项。
-        """
+        u"""清空界面中的 Lock / Hidden 选项。"""
         for checkbox in self.attr_checkboxes:
             checkbox.setChecked(False)
 
 
 def main():
-    u"""
-    创建或恢复 Attr Tool，立即显示并返回 QWidget。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
+    u"""创建或恢复 Attr Tool，立即显示并返回 QWidget。"""
     return window_utils.show_window(
         "tools.basic.attr_tool",
         AttrTool
