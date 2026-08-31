@@ -11,15 +11,6 @@ Face Rig Workflow UI Controller
     3. Step 02 恢复并实时持久化 Controller Settings；
     4. 当前 UI Step 切换时直接应用 config.py 定义的场景显示规则；
     5. 不复制 Face Setup / Guide 的业务构建算法。
-
-设计原则：
-    - Scene Config 是可恢复 UI 参数的唯一持久化来源；
-    - UI 临时查看某个旧 Step 不修改正式 Workflow Progress；
-    - 修改 Step 02 参数会保存 Config，并把 Step 02 标记 Dirty；
-    - Guide Locator 的位置由 Maya Scene 自身保存；
-    - Workflow 显示规则直接定义在 systems.face.config；
-    - Controller Config Attribute 使用 [类型]_[方向]_[部位]_[功能]，不带序号；
-    - 只维护当前正式 Schema，不保留旧场景迁移和旧属性兼容。
 """
 
 from __future__ import print_function
@@ -90,9 +81,6 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             module_name = module_item[0]
             label_text = module_item[1]
 
-            if module_name in self.controller_size_widgets:
-                continue
-
             size_spin = self.create_size_spin_box(
                 value=1.0
             )
@@ -113,36 +101,8 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         return page
 
     # =========================================================================
-    # Config Schema
-    # =========================================================================
-
-    @staticmethod
-    def sync_controller_config_schema(face_context):
-        u"""让 Step 02 Attribute 排序直接使用 config.py 的正式 Schema。"""
-        if face_context is None:
-            return False
-
-        face_context.step_config_attr_names[2] = list(
-            config.face_step_02_config_attr_names
-        )
-        return True
-
-    # =========================================================================
     # Step Navigation / Restore
     # =========================================================================
-
-    def restore_step_state(self):
-        u"""恢复 Workflow，并使用当前正式 Step 02 Config Schema。"""
-        result = super(FaceRigWizard, self).restore_step_state()
-        face_context = self.get_face_guide()
-
-        if face_context.config_node_exists():
-            self.sync_controller_config_schema(
-                face_context
-            )
-            face_context.organize_config_attributes()
-
-        return result
 
     def set_current_step(
             self,
@@ -233,9 +193,6 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         if not face_context.config_node_exists():
             return False
 
-        self.sync_controller_config_schema(
-            face_context
-        )
         return self.load_step2_controller_settings()
 
     # =========================================================================
@@ -266,9 +223,6 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             attr_name = config.face_controller_size_attr_names.get(
                 module_name
             )
-
-            if not attr_name:
-                continue
 
             settings[attr_name] = size_widget.value()
 
@@ -320,9 +274,6 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                     module_name
                 )
 
-                if not attr_name:
-                    continue
-
                 size_widget.setValue(
                     float(
                         settings.get(
@@ -352,9 +303,6 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         if not face_context.config_node_exists():
             return True
 
-        self.sync_controller_config_schema(
-            face_context
-        )
         settings = self.get_step2_controller_settings()
         face_context.save_controller_settings(
             settings
@@ -375,9 +323,6 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         settings = self.get_step2_controller_settings()
 
         try:
-            self.sync_controller_config_schema(
-                face_context
-            )
             face_context.save_controller_settings(
                 settings
             )
@@ -397,16 +342,13 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         )
 
     def finalize_step2(self):
-        u"""提交 Step 02 后按当前正式 Schema 整理 Config Attribute。"""
+        u"""提交 Step 02 后整理 Config Attribute 顺序。"""
         result = super(FaceRigWizard, self).finalize_step2()
 
         if not result:
             return False
 
         face_context = self.get_face_guide()
-        self.sync_controller_config_schema(
-            face_context
-        )
         face_context.organize_config_attributes()
         return True
 
