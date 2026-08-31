@@ -3,20 +3,22 @@ u"""
 Matrix Utils
 ============
 
-Maya Matrix / offsetParentMatrix 领域的通用底层工具。
+Maya Matrix 数据、矩阵计算和通用 Matrix DG Network 底层工具。
 
 模块职责
 --------
-本模块专门处理 Matrix 数据和 Matrix DG Network，不负责传统 Maya Constraint。
-目前主要用于创建基于 ``multMatrix + offsetParentMatrix`` 的 Parent Matrix Constraint。
+- Matrix Plug -> MMatrix；
+- MMatrix -> 普通 16 数值 list；
+- 通用 Matrix Offset 计算；
+- 基于 multMatrix + offsetParentMatrix 的通用 Parent Matrix Network。
 
 模块边界
 --------
-- 节点存在性统一复用 scene_utils；
-- DAG Parent 查询统一复用 hierarchy_utils；
-- DAG Short Name 统一复用 rename_utils；
-- Plug 查询 / 连接 / 断开统一复用 connection_utils；
-- MMatrix 数学和 Matrix DG Network 保留在本模块。
+- Transform World Matrix 读取 / 写入 -> transform_utils；
+- DAG Parent 查询 -> hierarchy_utils；
+- Plug 查询 / 连接 / 断开 -> connection_utils；
+- Maya 原生 Constraint -> constraint_utils；
+- Face / Body 专属 Matrix Graph -> systems。
 """
 
 from __future__ import print_function
@@ -38,19 +40,9 @@ def get_matrix(matrix_plug):
     u"""
     读取 Maya Matrix Plug，并返回 maya.api.OpenMaya.MMatrix。
 
-    Args:
-        matrix_plug (str):
-            完整 Maya Plug，例如 `node.translateX`。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-
-    Raises:
-        ValueError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+    例如：
+        node.worldMatrix[0]
+        multMatrix1.matrixSum
     """
     if not matrix_plug:
         raise ValueError(
@@ -81,17 +73,7 @@ def get_matrix(matrix_plug):
 
 
 def matrix_to_list(matrix):
-    u"""
-    将 MMatrix 转换为 16 个数值的普通 list。
-
-    Args:
-        matrix (list[float] | maya.api.OpenMaya.MMatrix):
-            用于 Transform、Constraint 或空间计算的 4x4 Matrix 数据。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
+    u"""将 MMatrix 转换为 16 个数值的普通 list。"""
     matrix_values = []
 
     for index in range(16):
@@ -102,34 +84,24 @@ def matrix_to_list(matrix):
     return matrix_values
 
 
+# =============================================================================
+# Matrix Math
+# =============================================================================
+
 def calculate_parent_offset_matrix(driver, driven):
     u"""
     计算 Driven 当前相对 Driver 的 World Offset Matrix。
 
     计算：
         drivenWorld * inverse(driverWorld)
-
-    Args:
-        driver (str):
-            作为驱动端的 Maya 节点名称。
-        driven (str):
-            作为被驱动端的 Maya 节点名称。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
     """
-    # 使用 Scene Core 统一验证 Driver。
     scene_utils.validate_node(
         driver
     )
-
-    # 使用 Scene Core 统一验证 Driven。
     scene_utils.validate_node(
         driven
     )
 
-    # 读取 Driver / Driven 的 World Matrix。
     driver_world_matrix = get_matrix(
         driver + ".worldMatrix[0]"
     )
@@ -145,9 +117,8 @@ def calculate_parent_offset_matrix(driver, driven):
     )
 
 
-
 # =============================================================================
-# offsetParentMatrix Constraint
+# offsetParentMatrix Network
 # =============================================================================
 
 def create_parent_matrix_constraint(
@@ -156,40 +127,10 @@ def create_parent_matrix_constraint(
         maintain_offset=True,
         name=None
 ):
-    u"""
-    使用 ``multMatrix + offsetParentMatrix`` 创建 Parent Matrix Constraint。
-
-    计算关系：
-        drivenLocalInverse
-        * offset
-        * driverWorld
-        * parentWorldInverse
-        -> driven.offsetParentMatrix
-
-    Args:
-        driver (str):
-            作为驱动端的 Maya 节点名称。
-        driven (str):
-            作为被驱动端的 Maya 节点名称。
-        maintain_offset (bool):
-            是否在建立约束或矩阵关系时保持当前偏移。
-        name (str):
-            创建或查询时使用的节点名称。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-    """
-    # 使用 Scene Core 统一验证 Driver。
+    u"""使用 multMatrix + offsetParentMatrix 创建通用 Parent Matrix Network。"""
     scene_utils.validate_node(
         driver
     )
-
-    # 使用 Scene Core 统一验证 Driven。
     scene_utils.validate_node(
         driven
     )
@@ -205,7 +146,6 @@ def create_parent_matrix_constraint(
             )
         )
 
-    # 使用 Connection Core 查询 OPM 是否已经被其它网络驱动。
     existing_inputs = connection_utils.get_input_connections(
         offset_parent_matrix_plug
     )
@@ -218,24 +158,20 @@ def create_parent_matrix_constraint(
             )
         )
 
-    # 读取 Driven 当前 Local Matrix，并计算其逆矩阵。
     driven_local_matrix = get_matrix(
         driven + ".matrix"
     )
     driven_local_inverse_matrix = driven_local_matrix.inverse()
 
     if maintain_offset:
-        # 需要保持偏移时计算 Driver / Driven 当前 World Offset。
         offset_matrix = calculate_parent_offset_matrix(
             driver,
             driven
         )
     else:
-        # 不保持偏移时使用 Identity Matrix。
         offset_matrix = om.MMatrix()
 
     if name is None:
-        # 使用 Rename Core 统一取得 Driven Short Name。
         driven_short_name = rename_utils.get_short_name(
             driven
         )
@@ -245,13 +181,11 @@ def create_parent_matrix_constraint(
         )
         name = driven_short_name + "_parent_mm"
 
-    # 创建 Matrix Constraint 的核心 multMatrix 节点。
     mult_matrix = cmds.createNode(
         "multMatrix",
         name=name
     )
 
-    # 转换静态矩阵为 Maya setAttr 可以接收的普通数值。
     driven_local_inverse_values = matrix_to_list(
         driven_local_inverse_matrix
     )
@@ -270,28 +204,24 @@ def create_parent_matrix_constraint(
         type="matrix"
     )
 
-    # 使用 Connection Core 连接 Driver World Matrix。
     connection_utils.connect_plugs(
         driver + ".worldMatrix[0]",
         mult_matrix + ".matrixIn[2]",
         force=True
     )
 
-    # 使用统一 Parent API 获取 Driven Parent。
-    driven_parent = hierarchy_utils.Hierarchy.get_parent(
+    driven_parent = hierarchy_utils.get_parent(
         driven,
         full_path=True
     )
 
     if driven_parent:
-        # 有 Parent 时把 Parent World Inverse 接入 Local Space 转换。
         connection_utils.connect_plugs(
             driven_parent + ".worldInverseMatrix[0]",
             mult_matrix + ".matrixIn[3]",
             force=True
         )
 
-    # 最终 Matrix Sum 驱动 Driven offsetParentMatrix。
     connection_utils.connect_plugs(
         mult_matrix + ".matrixSum",
         offset_parent_matrix_plug,
@@ -303,22 +233,13 @@ def create_parent_matrix_constraint(
 
 def remove_parent_matrix_constraint(
         driven,
-        delete_node=True
+        delete_node=False
 ):
     u"""
     断开 Driven 的 offsetParentMatrix 输入。
 
-    本方法是可选清理操作，因此目标不存在时返回 False，而不是抛异常。
-
-    Args:
-        driven (str):
-            作为被驱动端的 Maya 节点名称。
-        delete_node (bool):
-            当前清理 / 重建流程是否执行 `delete_node` 对应的删除步骤。
-
-    Returns:
-        bool:
-        方法执行后的结果数据。
+    默认只断开连接，不删除来源节点。只有调用者明确确认来源节点属于当前
+    Matrix Network 时，才应传入 ``delete_node=True``。
     """
     if not driven:
         return False
@@ -333,7 +254,6 @@ def remove_parent_matrix_constraint(
     if not cmds.objExists(offset_parent_matrix_plug):
         return False
 
-    # 使用 Connection Core 查询当前 OPM 输入。
     input_plugs = connection_utils.get_input_connections(
         offset_parent_matrix_plug
     )
@@ -344,7 +264,6 @@ def remove_parent_matrix_constraint(
     source_plug = input_plugs[0]
     source_node = source_plug.split(".")[0]
 
-    # 使用 Connection Core 断开当前 Matrix 输入。
     disconnected = connection_utils.disconnect_plugs(
         source_plug,
         offset_parent_matrix_plug

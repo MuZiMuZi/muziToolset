@@ -39,12 +39,15 @@ Scene / File：
     file_utils.py
         纯 Python Path、Directory、JSON、文件扫描；不负责 Maya Scene。
 
-Transform / DG：
+Transform / Math / DG：
     transform_utils.py
-        World Position / Matrix / Distance / Relative Move。
+        Transform / Joint 的 World Translation、Rotation、Matrix 和 Relative Move。
+
+    math_utils.py
+        与 Maya Scene 无关的纯 Python Point / Vector 数学。
 
     matrix_utils.py
-        MMatrix、multMatrix、offsetParentMatrix Matrix Constraint。
+        MMatrix 数据、矩阵计算、multMatrix / offsetParentMatrix 通用 Matrix Network。
 
     connection_utils.py
         DG Plug 查询、连接、断开、批量复制连接。
@@ -61,11 +64,12 @@ DAG / Attribute / Config / Naming：
         Face / Body / Hand 等 System 应复用该模块，不重复实现 Config CRUD。
 
     hierarchy_utils.py
-        DAG Parent、Extra Group、Child Query、基础 Group。
+        DAG Parent / Child / Descendant、Extra Group 和通用 Transform Group。
+        正式 API 使用模块函数，不使用无状态 staticmethod 包装类。
 
     joint_utils.py
-        单个 Maya Joint 的创建、Transform、Joint Orient、Hierarchy、Display 和 Label。
-        不负责 Selection、批量 Joint、JointChain、Curve -> Joint、FK / IK 等更高层流程。
+        单个 Maya Joint 的 Joint Orient、Radius、Local Axis、Scale Compensate、Orient 和 Label。
+        通用 Transform / Hierarchy / Rename 能力不在 Joint 类重复包装。
 
     name_utils.py
         五段式 Rig 标准名称、解析、Mirror Name、Unique Index、Duplicate DAG Name。
@@ -104,56 +108,31 @@ Utility：
     snap_utils.py
         Object / Component 平均位置与轻量 Rotation Snap。
 
-snake_case 迁移状态
--------------------
-以下早期 CamelCase Core 入口已经完成全仓库迁移并删除：
+Core API 原则
+------------
+有状态对象，例如 ``Joint(joint)``：
+    在 __init__() 建立并验证对象不变量，普通实例方法不重复做同一份校验。
 
-    attrUtils.py        -> attr_utils.py
-    hierarchyUtils.py   -> hierarchy_utils.py
-    jointUtils.py       -> joint_utils.py
-    nameUtils.py        -> name_utils.py
+无状态 Utils，例如 ``transform_utils.get_world_translation(node)``：
+    每次收到外部 Maya Node 参数时进行必要校验。
 
-正式 Core 不维护旧接口兼容壳。
+通用操作只保留一个正式入口：
+    Transform 数值    -> transform_utils
+    DAG Hierarchy     -> hierarchy_utils
+    Rename            -> rename_utils
+    Joint 专属属性    -> joint_utils.Joint
+    Matrix 计算/网络  -> matrix_utils
+    纯数学            -> math_utils
 
-颗粒度原则
-----------
-Core 采用“一个领域一个模块”，而不是：
-
-    一个函数 -> 一个 py 文件
-
-也不会重新回到：
-
-    pipelineUtils.py -> 所有功能
-
-Config 也遵守同样原则：
-
-    attr_utils       -> 单个 Attribute / Message 的底层能力
-    config_utils     -> Network Config Node 的数据容器语义
-    systems/*        -> 决定具体保存哪些业务数据
+复杂 Face / Body / Controller Rig Graph 进入 ``systems/``，不能重新堆回 Core。
 
 Import 原则
 -----------
 为了避免 ``import muziToolset.core`` 时一次性加载 Maya API、插件或较重模块，
 本文件不主动 Import 所有子模块。
-
-推荐：
-
-    from muziToolset.core import config_utils
-    from muziToolset.core import curve_utils
-    from muziToolset.core import matrix_utils
-    from muziToolset.core import attr_utils
-    from muziToolset.core import hierarchy_utils
-    from muziToolset.core import joint_utils
-    from muziToolset.core import name_utils
-
-旧 Pipeline
-----------
-旧 ``pipelineUtils.py`` 已完成职责迁移并删除。
-Face / Controller / Body / Hair 等完整 Rig Workflow 必须进入 ``systems/``，不能重新堆回 Core。
 """
 
 from __future__ import print_function
 
 
-# 不主动 import 子模块，避免 package import 产生额外 Maya 副作用。
 __all__ = []
