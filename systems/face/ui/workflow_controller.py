@@ -6,12 +6,12 @@ Face Rig Workflow UI Controller
 在 FaceRigWizard 视图之上处理 Config -> UI 恢复和 Step Scene Visibility。
 
 职责：
-    1. 进入或回退 Step 时，从 Scene Config 恢复对应 UI；
+    1. 打开 / 激活 UI 时，从 Scene Config 重新读取当前 Step 数据；
     2. Step 01 恢复模型引用和 Mouth Joint Number；
     3. Step 02 恢复并实时持久化 Controller Settings；
     4. 当前 UI Step 切换时直接应用 config.py 定义的场景显示规则；
     5. 让中间 Step 内容区域可滚动，底部操作栏始终保持可见；
-    6. 把需要人工查看的 Workflow / Controller Config 显示在 Maya Channel Box；
+    6. Channel Box 只显示 Current Step、Step 分隔和当前阶段可编辑参数；
     7. 不复制 Face Setup / Guide 的业务构建算法。
 """
 
@@ -20,9 +20,11 @@ from __future__ import print_function
 import maya.cmds as cmds
 
 try:
+    from PySide2.QtCore import QEvent
     from PySide2.QtCore import Qt
     from PySide2.QtWidgets import QScrollArea
 except ImportError:
+    from PySide6.QtCore import QEvent
     from PySide6.QtCore import Qt
     from PySide6.QtWidgets import QScrollArea
 
@@ -39,8 +41,8 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             parent
         )
 
-        # Base UI 原来只限制宽度，较长 Step 会把窗口高度撑出屏幕。
-        # 正式 Workflow 允许窗口自由缩放，超出的 Step 内容交给 ScrollArea。
+        self.scene_reload_ready = True
+
         self.setMinimumSize(
             600,
             460
@@ -49,6 +51,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             780,
             720
         )
+
+        # 初始化完成后再以 Scene Config 为最终数据源刷新一次 UI。
+        self.reload_ui_from_scene()
 
     # =========================================================================
     # Main Layout
@@ -74,10 +79,6 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         main_layout.setSpacing(
             14
         )
-
-        # ---------------------------------------------------------------------
-        # 顶部固定区
-        # ---------------------------------------------------------------------
 
         main_layout.addWidget(
             self.title_label
@@ -115,10 +116,6 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             step_frame
         )
 
-        # ---------------------------------------------------------------------
-        # 中间可滚动 Step 内容区
-        # ---------------------------------------------------------------------
-
         self.content_scroll_area = QScrollArea()
         self.content_scroll_area.setWidgetResizable(
             True
@@ -140,10 +137,6 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             self.content_scroll_area,
             1
         )
-
-        # ---------------------------------------------------------------------
-        # 底部固定操作区
-        # ---------------------------------------------------------------------
 
         bottom_layout = face_rig_ui.QHBoxLayout()
         bottom_layout.setContentsMargins(
@@ -168,16 +161,131 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         )
 
     # =========================================================================
+    # Scene -> UI Reload
+    # =========================================================================
+
+    def event(self, qt_event):
+        u"""窗口重新激活时重新读取 Scene Config。"""
+        result = super(FaceRigWizard, self).event(
+            qt_event
+        )
+
+        if not getattr(
+                self,
+                "scene_reload_ready",
+                False
+        ):
+            return result
+
+        if qt_event.type() == QEvent.WindowActivate:
+            try:
+                self.reload_ui_from_scene()
+            except Exception:
+                pass
+
+        return result
+
+    def reload_ui_from_scene(self):
+        u"""
+        重新从 Maya Scene Config 恢复 Workflow 和当前 Step UI。
+
+        该方法只读取场景，不把 UI 默认值写回 Config。
+        """
+        face_context = self.get_face_guide(
+            refresh=True
+        )
+
+        if not face_context.config_node_exists():
+            return False
+
+        step_status = face_context.get_step_status(
+            last_step=face_context.last_step_value
+        )
+        current_step_value = face_context.get_current_step_value()
+
+        self.completed_step_indexes.clear()
+
+        step_value = 1
+
+        while step_value <= face_context.last_step_value:
+            if step_status.get(
+                    step_value,
+                    False
+            ):
+                self.completed_step_indexes.add(
+                    step_value - 1
+                )
+
+            step_value += 1
+
+        current_step_index = current_step_value - 1
+
+        if current_step_index < 0:
+            current_step_index = 0
+
+        if current_step_index >= self.page_stack.count():
+            current_step_index = 0
+
+        # 不调用 set_current_step()，避免进入 Step 时产生额外业务行为。
+        self.current_step_index = current_step_index
+        self.page_stack.setCurrentIndex(
+            current_step_index
+        )
+
+        self.load_step_config_to_ui(
+            current_step_index
+        )
+        self.apply_step_scene_visibility(
+            current_step_index
+        )
+        self.apply_config_channel_box_display(
+            face_context
+        )
+
+        self.update_step_buttons()
+        self.update_navigation_buttons()
+        return True
+
+    # =========================================================================
     # Config Channel Box
     # =========================================================================
 
     @staticmethod
-    def get_channel_box_config_attributes(face_context):
-        u"""返回需要在 Maya Channel Box 中显示的 Face Config 属性。"""
+    def get_channel_box_step_attributes(
+            face_context,
+            step_value
+    ):
+        u"""返回某个 Step 真正需要人工查看 / 修改的 Config 参数。"""
+        if step_value == 1:
+            return list(
+                face_context.setup_value_attr_names
+            )
+
+        if step_value == 2:
+            attr_names = []
+
+            for attr_name in config.face_controller_default_settings:
+                attr_names.append(
+                    attr_name
+                )
+
+            return attr_names
+
+        # Step 03 / 04 后续增加可调参数时在这里继续加入。
+        return []
+
+    @classmethod
+    def get_channel_box_config_attributes(
+            cls,
+            face_context
+    ):
+        u"""
+        返回 Channel Box 的正式显示顺序。
+
+        顺序：Current Step -> Step 01 -> Step 01 参数 -> Step 02 -> Step 02 参数 ...
+        """
         attr_names = [
-            face_context.workflow_section_attr_name,
             face_context.current_step_attr_name,
-            "mouth_jnt_number",
         ]
 
         step_value = 1
@@ -192,26 +300,24 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                     section_attr_name
                 )
 
-            attr_names.append(
-                face_context.get_step_completed_attr_name(
-                    step_value
-                )
+            step_attr_names = cls.get_channel_box_step_attributes(
+                face_context,
+                step_value
             )
+
+            for attr_name in step_attr_names:
+                attr_names.append(
+                    attr_name
+                )
 
             step_value += 1
-
-        for attr_name in config.face_controller_default_settings:
-            attr_names.append(
-                attr_name
-            )
 
         return attr_names
 
     @staticmethod
     def get_read_only_channel_box_attributes(face_context):
-        u"""返回只用于显示 Workflow 状态、不允许人工修改的 Config 属性。"""
+        u"""返回 Channel Box 中需要显示但不允许人工修改的属性。"""
         attr_names = [
-            face_context.workflow_section_attr_name,
             face_context.current_step_attr_name,
         ]
 
@@ -227,23 +333,81 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                     section_attr_name
                 )
 
-            attr_names.append(
-                face_context.get_step_completed_attr_name(
-                    step_value
-                )
-            )
-
             step_value += 1
 
         return attr_names
+
+    @staticmethod
+    def set_channel_box_state(
+            plug,
+            visible,
+            read_only=False
+    ):
+        u"""设置 Config Attribute 的 Channel Box 状态。"""
+        if not cmds.objExists(plug):
+            return False
+
+        try:
+            was_locked = cmds.getAttr(
+                plug,
+                lock=True
+            )
+        except Exception:
+            return False
+
+        if was_locked:
+            cmds.setAttr(
+                plug,
+                lock=False
+            )
+
+        try:
+            cmds.setAttr(
+                plug,
+                keyable=False
+            )
+            cmds.setAttr(
+                plug,
+                channelBox=bool(visible)
+            )
+
+            if visible and read_only:
+                cmds.setAttr(
+                    plug,
+                    lock=True
+                )
+            elif was_locked:
+                cmds.setAttr(
+                    plug,
+                    lock=True
+                )
+        except Exception:
+            if was_locked:
+                try:
+                    cmds.setAttr(
+                        plug,
+                        lock=True
+                    )
+                except Exception:
+                    pass
+            return False
+
+        return True
 
     def apply_config_channel_box_display(self, face_context=None):
         u"""
         应用 Face Config 的 Channel Box 显示规则。
 
-        Workflow 状态和 Step 分隔只读显示；
-        Mouth Joint Number 与 Controller Settings 可以直接在 Channel Box 中修改；
-        所有显示属性都保持 non-keyable，避免被当作动画通道。
+        显示：
+            Current Face Step；
+            Step 01 / 02 / 03 / 04 分隔；
+            各 Step 当前真正可调整的参数。
+
+        隐藏：
+            Workflow 总分隔；
+            Step Completed；
+            Model / Guide Message；
+            Guide Version 等内部数据。
         """
         if face_context is None:
             face_context = self.get_face_guide()
@@ -254,43 +418,40 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         if not face_context.config_node_exists():
             return False
 
-        attr_names = self.get_channel_box_config_attributes(
+        face_context.organize_config_attributes()
+
+        visible_attr_names = self.get_channel_box_config_attributes(
             face_context
         )
         read_only_attr_names = self.get_read_only_channel_box_attributes(
             face_context
         )
 
-        for attr_name in attr_names:
+        # 先把 Face Config 当前 Schema 全部从 Channel Box 隐藏。
+        all_attr_names = face_context.get_config_attribute_order()
+
+        for attr_name in all_attr_names:
             plug = "{}.{}".format(
                 face_context.config_node,
                 attr_name
             )
+            self.set_channel_box_state(
+                plug,
+                visible=False,
+                read_only=False
+            )
 
-            if not cmds.objExists(plug):
-                continue
-
-            try:
-                cmds.setAttr(
-                    plug,
-                    lock=False
-                )
-                cmds.setAttr(
-                    plug,
-                    keyable=False
-                )
-                cmds.setAttr(
-                    plug,
-                    channelBox=True
-                )
-
-                if attr_name in read_only_attr_names:
-                    cmds.setAttr(
-                        plug,
-                        lock=True
-                    )
-            except Exception:
-                continue
+        # 再只打开正式需要显示的属性。
+        for attr_name in visible_attr_names:
+            plug = "{}.{}".format(
+                face_context.config_node,
+                attr_name
+            )
+            self.set_channel_box_state(
+                plug,
+                visible=True,
+                read_only=attr_name in read_only_attr_names
+            )
 
         return True
 
@@ -506,6 +667,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                 module_name
             )
 
+            if not attr_name:
+                continue
+
             settings[attr_name] = size_widget.value()
 
         return settings
@@ -556,6 +720,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                     module_name
                 )
 
+                if not attr_name:
+                    continue
+
                 size_widget.setValue(
                     float(
                         settings.get(
@@ -580,7 +747,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
     # =========================================================================
 
     def enter_step2(self):
-        u"""进入 Step 02 后加载 Guide，并保存当前 Controller Settings。"""
+        u"""进入 Step 02：加载 Guide / Scene Config，但不主动写回 UI 默认值。"""
         result = super(FaceRigWizard, self).enter_step2()
 
         if not result:
@@ -588,18 +755,12 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
 
         face_context = self.get_face_guide()
 
-        if not face_context.config_node_exists():
-            return True
+        if face_context.config_node_exists():
+            face_context.organize_config_attributes()
+            self.apply_config_channel_box_display(
+                face_context
+            )
 
-        settings = self.get_step2_controller_settings()
-        face_context.save_controller_settings(
-            settings
-        )
-        face_context.ensure_config_layout()
-        face_context.organize_config_attributes()
-        self.apply_config_channel_box_display(
-            face_context
-        )
         return True
 
     def controller_settings_changed(
