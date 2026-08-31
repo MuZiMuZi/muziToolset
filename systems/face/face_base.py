@@ -18,7 +18,8 @@ Face Rig 公共基础类
     - Config Network Node 的创建、Message 引用、Value 读写由 core.config_utils.ConfigNode 负责；
     - Maya Model 有效性由 core.mesh_utils 负责；
     - Maya DAG 层级操作由 core.hierarchy_utils 负责；
-    - FaceBase 只保留 Face System 自己的业务语义。
+    - FaceBase 只保留 Face System 自己的公共业务语义；
+    - 只维护当前正式 Config Schema，不处理历史场景迁移。
 """
 
 from __future__ import print_function
@@ -52,6 +53,7 @@ class FaceBase(StepBase):
     last_step_value = 4
     current_step_attr_name = "face_current_step"
     workflow_section_attr_name = "face_workflow_section"
+
     current_step_enum_name = (
         "Not Started:"
         "Step 01 Setup:"
@@ -86,23 +88,9 @@ class FaceBase(StepBase):
             "mouth_jnt_number",
             "step_01_completed",
         ],
-        2: [
-            "face_guide_root",
-            "face_guide_move_ctrl",
-            "face_guide_version",
-            "face_ctrl_global_scale",
-            "face_ctrl_color_lf",
-            "face_ctrl_color_rt",
-            "face_ctrl_color_md",
-            "brow_ctrl_size",
-            "eye_ctrl_size",
-            "eyelid_ctrl_size",
-            "nose_ctrl_size",
-            "cheek_ctrl_size",
-            "lip_ctrl_size",
-            "jaw_ctrl_size",
-            "step_02_completed",
-        ],
+        2: list(
+            config.face_step_02_config_attr_names
+        ),
         3: [
             "step_03_completed",
         ],
@@ -178,7 +166,7 @@ class FaceBase(StepBase):
         return True
 
     # =========================================================================
-    # Config Node - Compatibility / Face API
+    # Config Node / Face API
     # =========================================================================
 
     def ensure_config_node(self):
@@ -246,12 +234,7 @@ class FaceBase(StepBase):
     # =========================================================================
 
     def ensure_config_layout(self):
-        u"""
-        创建 Face Config 的 Workflow / Step 分隔属性并整理显示顺序。
-
-        分隔属性只用于 Attribute Editor 中区分数据所属 Step，不参与 Rig 计算。
-        已有 Config 数据和 Message Connection 不会被重建或改名。
-        """
+        u"""创建当前正式 Face Config Workflow / Step 分隔属性。"""
         self.ensure_config_node()
         config_attr = self.get_config_attr()
 
@@ -335,11 +318,7 @@ class FaceBase(StepBase):
         return attr_names
 
     def organize_config_attributes(self):
-        u"""
-        按 Workflow Step 重新排序 Config Node 的 User Defined Attribute。
-
-        Maya reorderAttr 只改变动态属性的显示顺序，不改变 Attribute 名称、Value 或连接。
-        """
+        u"""按 Workflow Step 重新排序 Config Node 的 User Defined Attribute。"""
         if not self.config_node_exists():
             return []
 
@@ -352,9 +331,7 @@ class FaceBase(StepBase):
                 attr_name
             )
 
-            if not cmds.objExists(
-                    plug
-            ):
+            if not cmds.objExists(plug):
                 continue
 
             try:
@@ -363,7 +340,6 @@ class FaceBase(StepBase):
                     back=True
                 )
             except Exception:
-                # 属性排序只影响显示，不应该阻止 Rig Step 正常完成。
                 continue
 
             reordered_attrs.append(
@@ -372,35 +348,8 @@ class FaceBase(StepBase):
 
         return reordered_attrs
 
-    def derive_current_step_value(self, last_step=None):
-        u"""根据现有 Completed 状态推导当前应继续制作的 Step。"""
-        if last_step is None:
-            last_step = self.last_step_value
-
-        status = self.get_step_status(
-            last_step=last_step
-        )
-
-        step_value = 1
-
-        while step_value <= last_step:
-            if not status.get(
-                    step_value,
-                    False
-            ):
-                return step_value
-
-            step_value += 1
-
-        return last_step
-
     def get_current_step_value(self):
-        u"""
-        返回 Face Workflow 当前 Step。
-
-        新场景读取 face_current_step；旧场景没有该属性时，根据 Completed 状态推导，
-        并立即迁移到正式 Current Step / Config 分区 Schema。
-        """
+        u"""读取当前 Face Workflow Step；没有 Config 时从 Step 01 开始。"""
         if not self.config_node_exists():
             return 1
 
@@ -408,22 +357,15 @@ class FaceBase(StepBase):
             self.current_step_attr_name
         )
 
-        if isinstance(current_step_value, int):
-            if 1 <= current_step_value <= self.last_step_value:
-                # 已经有正式 Current Step 时，也补齐可能缺少的分区 Attribute。
-                self.ensure_config_layout()
-                return current_step_value
+        if not isinstance(current_step_value, int):
+            return 1
 
-        # 旧场景先根据 Completed 状态推导真实进度，避免新建 Enum 的默认值覆盖历史状态。
-        current_step_value = self.derive_current_step_value(
-            last_step=self.last_step_value
-        )
+        if current_step_value < 1:
+            return 1
 
-        # 把旧场景迁移到新的 Config Layout，并写入推导出的当前进度。
-        self.ensure_config_layout()
-        self.set_current_step_value(
-            current_step_value
-        )
+        if current_step_value > self.last_step_value:
+            return self.last_step_value
+
         return current_step_value
 
     def set_current_step_value(self, step_value):
@@ -605,7 +547,6 @@ class FaceBase(StepBase):
         step_value = self.resolve_step_value(
             step_value
         )
-
         attr_name = self.get_step_completed_attr_name(
             step_value
         )
@@ -628,11 +569,9 @@ class FaceBase(StepBase):
         step_value = self.resolve_step_value(
             step_value
         )
-
         attr_name = self.get_step_completed_attr_name(
             step_value
         )
-
         value = self.get_config_value(
             attr_name
         )
@@ -668,11 +607,9 @@ class FaceBase(StepBase):
                 step_value=current_step,
                 completed=False
             )
-
             invalidated_steps.append(
                 current_step
             )
-
             current_step += 1
 
         return invalidated_steps
@@ -691,7 +628,6 @@ class FaceBase(StepBase):
             status[current_step] = self.is_step_completed(
                 step_value=current_step
             )
-
             current_step += 1
 
         return status
