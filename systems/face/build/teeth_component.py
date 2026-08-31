@@ -51,7 +51,7 @@ class TeethComponent(face_base.FaceBase):
         # 步骤 2：动态生成必须的 Teeth Guide 名称
         # =========================================================================
 
-        upper_teeth_guide_name = name_utils.Name.create_name(
+        self.upper_teeth_guide_name = name_utils.Name.create_name(
             node_type="loc",
             side="md",
             part="upper_teeth",
@@ -59,7 +59,7 @@ class TeethComponent(face_base.FaceBase):
             index=1
         )
 
-        lower_teeth_guide_name = name_utils.Name.create_name(
+        self.lower_teeth_guide_name = name_utils.Name.create_name(
             node_type="loc",
             side="md",
             part="lower_teeth",
@@ -72,12 +72,12 @@ class TeethComponent(face_base.FaceBase):
         # =========================================================================
 
         self.upper_teeth_guide = self.face_guide.get_guide_node(
-            upper_teeth_guide_name,
+            self.upper_teeth_guide_name,
             required=True
         )
 
         self.lower_teeth_guide = self.face_guide.get_guide_node(
-            lower_teeth_guide_name,
+            self.lower_teeth_guide_name,
             required=True
         )
 
@@ -106,11 +106,65 @@ class TeethComponent(face_base.FaceBase):
 
     def prepare_data(self):
         u"""准备 Teeth Joint / Controller 名称、层级和旧结果清理数据。"""
-        return True
+        #准备上下牙床的绑定关节名称
+        self.upper_teeth_jnt_name = name_utils.Name.create_name (
+            node_type = "jnt" ,
+            side = "md" ,
+            part = "upper_teeth" ,
+            function = "bind" ,
+            index = 1
+        )
+
+        self.lower_teeth_jnt_name = name_utils.Name.create_name (
+            node_type = "jnt" ,
+            side = "md" ,
+            part = "lower_teeth" ,
+            function = "bind" ,
+            index = 1
+        )
+
+        #准备上下牙床的控制器名称
+        self.upper_teeth_ctrl_name = name_utils.Name.create_name (
+            node_type = "ctrl" ,
+            side = "md" ,
+            part = "upper_teeth" ,
+            function = "bind" ,
+            index = 1
+        )
+
+        self.lower_teeth_ctrl_name = name_utils.Name.create_name (
+            node_type = "ctrl" ,
+            side = "md" ,
+            part = "lower_teeth" ,
+            function = "bind" ,
+            index = 1
+        )
 
     def process_data(self):
         u"""创建 Teeth Component 的 Joint、Controller 和驱动关系。"""
-        return True
+        #开始根据定位器的位置创建上下牙床的关节
+        self.create_joint()
+
+        #开始创建对应的控制器组
+        self.create_controller()
+
+        #控制器组与关节建立绑定联系
+        self.create_connection()
+
+    def create_joint(self):
+        #根据定位器的位置创建上下牙床的关节
+        pass
+
+    def create_controller(self):
+        # 开始创建对应的控制器组
+        pass
+
+    def create_connection(self):
+        # 控制器组与关节建立绑定联系
+        pass
+
+
+
 
     def finalize_step(self):
         u"""检查 Teeth Component 最终结果并整理显示 / Metadata。"""
