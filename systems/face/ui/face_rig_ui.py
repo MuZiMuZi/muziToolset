@@ -13,6 +13,7 @@ Face Rig 的四步构建界面。
     - 点击“下一步”时必须检查模板中的全部 Locator 都仍然存在；
     - Controller Size 使用 QDoubleSpinBox，保留 1 位小数；
     - Controller Color 使用 Maya Index Color Slider + Index + Preview；
+    - 每次打开工具优先读取 Face Config 保存的 Current Face Step 自动恢复 Workflow；
     - UI 统一使用 MuziTools Arc-inspired Theme，不在本文件复制整套 QSS。
 """
 
@@ -932,7 +933,11 @@ class FaceRigWizard(QWidget):
         return self.face_guide
 
     def restore_step_state(self):
-        u"""从 Face Config 恢复 Step 完成状态。"""
+        u"""
+        从 Face Config 恢复完成状态，并跳转到正式保存的 Current Face Step。
+
+        旧场景没有 face_current_step 时，FaceBase 会根据 Step Completed 状态自动推导并迁移。
+        """
         self.completed_step_indexes.clear()
         face_guide = self.get_face_guide(
             refresh=True
@@ -948,14 +953,13 @@ class FaceRigWizard(QWidget):
             step_status = face_guide.get_step_status(
                 last_step=4
             )
+            current_step_value = face_guide.get_current_step_value()
         except Exception:
             self.set_current_step(
                 0
             )
             return
 
-        current_step_index = 0
-        found_incomplete_step = False
         step_value = 1
 
         while step_value <= 4:
@@ -970,18 +974,22 @@ class FaceRigWizard(QWidget):
                 self.completed_step_indexes.add(
                     step_value - 1
                 )
-                step_value += 1
-                continue
 
-            current_step_index = step_value - 1
-            found_incomplete_step = True
-            break
+            step_value += 1
 
-        if not found_incomplete_step:
-            current_step_index = 3
+        current_step_index = current_step_value - 1
+
+        if current_step_index < 0 or current_step_index >= self.page_stack.count():
+            current_step_index = 0
 
         self.set_current_step(
             current_step_index
+        )
+
+        self.status_label.setText(
+            u"已恢复到 Step {:02d}".format(
+                current_step_value
+            )
         )
 
     def invalidate_ui_steps_after(
@@ -1004,7 +1012,12 @@ class FaceRigWizard(QWidget):
             self,
             step_index
     ):
-        u"""切换当前 Step。"""
+        u"""
+        切换当前 UI 页面。
+
+        这里只改变当前查看页面，不直接修改 Config 的 Workflow Progress。
+        正式进度只在 Step 完成或旧 Step 被修改变脏时更新。
+        """
         if step_index < 0:
             return
 
@@ -1267,7 +1280,7 @@ class FaceRigWizard(QWidget):
         return False
 
     def mark_step2_dirty(self):
-        u"""把 Step 02 和后续 Step 标记为需要重新提交。"""
+        u"""把 Step 02 和后续 Step 标记为需要重新提交，并把 Workflow 退回 Step 02。"""
         face_guide = self.get_face_guide()
 
         if face_guide.config_node_exists():
@@ -1276,6 +1289,9 @@ class FaceRigWizard(QWidget):
                     completed=False
                 )
                 face_guide.invalidate_later_steps()
+                face_guide.set_current_step_value(
+                    2
+                )
             except Exception:
                 pass
 
