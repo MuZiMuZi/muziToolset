@@ -94,7 +94,9 @@ Core
 - Face 基础层级；
 - Face Config；
 - Setup 公共数据；
-- Step 状态；
+- Step 完成状态；
+- Current Face Step Workflow Progress；
+- Config Step 分区 Schema；
 - 公共 Config 语义 API。
 
 不要把 Guide Template 名称、Mirror、Repair 或具体 Component Algorithm 塞入 `FaceBase`。
@@ -113,6 +115,107 @@ Core
 
 保存跨多个 Step 使用的 Face 公共数据，例如 Face Shape Dictionary。
 
+## Face Config Workflow State
+
+Face Config 不只保存各 Step 的数据，还保存整个 Wizard 当前真实制作进度。
+
+核心状态：
+
+```text
+face_current_step
+```
+
+它使用只读 Enum 表示：
+
+```text
+Step 01 Setup
+Step 02 Guide
+Step 03 Build
+Step 04 Finalize
+```
+
+状态规则：
+
+```text
+Step 01 完成
+    → current_step = 2
+
+Step 02 完成
+    → current_step = 3
+
+Step 02 被重新修改
+    → step_02_completed = False
+    → Step 03 / 04 Invalid
+    → current_step = 2
+```
+
+“查看旧页面”和“工作流回退”必须分开：
+
+```text
+已经制作到 Step 03
+    ↓
+用户只是查看 Step 01
+    ↓
+current_step 仍然保持 Step 03
+```
+
+只有会让旧结果失效的实际数据修改，才更新 Current Step。
+
+Face Rig UI 初始化时：
+
+```text
+读取 Config
+    ↓
+读取 Step Completed
+    ↓
+读取 Current Face Step
+    ↓
+恢复顶部 Navigation
+    ↓
+自动跳转到当前 Workflow Step
+```
+
+旧场景没有 `face_current_step` 时，根据现有 `step_XX_completed` 状态推导当前步骤，并自动补齐新的 Workflow / Step Config 分区后写入正式进度。
+
+## Face Config Attribute 分区
+
+Face Config 的属性仍然保留现有正式名称，不为了 UI 分组复制第二套 Config。
+
+`FaceBase` 会创建只读分隔 Attribute，并使用 Maya 动态属性排序将数据整理为：
+
+```text
+FACE WORKFLOW
+    Current Face Step
+
+STEP 01 SETUP
+    Setup Model Message
+    Mouth Joint Number
+    Step 01 Completed
+
+STEP 02 GUIDE
+    Guide Root / Move Ctrl / Version
+    Controller Global Scale
+    Side Color
+    Module Size
+    Step 02 Completed
+
+STEP 03 BUILD
+    Step 03 Build Data
+    Step 03 Completed
+
+STEP 04 FINALIZE
+    Step 04 Finalize Data
+    Step 04 Completed
+```
+
+分隔属性只负责 Attribute Editor 可读性：
+
+- 不参与 Rig 计算；
+- 不改变已有 Attribute 名称；
+- 不断开 Message Connection；
+- `reorderAttr` 只改变动态 Attribute 显示顺序；
+- 后续 Step 03 / 04 新增 Config 数据时，只需要补入对应 Step Schema。
+
 ## Step 01 - Setup
 
 `setup/face_setup.py` 负责：
@@ -122,7 +225,8 @@ Core
 - Face Hierarchy；
 - Tweak / Stretch / Deform Work Model；
 - Mouth Joint Number；
-- Step 01 Config。
+- Step 01 Config；
+- Step 01 完成后把 Workflow 推进到 Step 02。
 
 ## Step 02 - Guide
 
@@ -131,6 +235,13 @@ Core
 只负责 Step 02 调度、稳定查询、Validation 和 Config。
 
 不再维护大量散落的固定名称算法。
+
+Step 02 正式提交后：
+
+```text
+step_02_completed = True
+Current Face Step = Step 03 Build
+```
 
 ### `guide_data.py`
 
@@ -172,6 +283,8 @@ Controller 默认参数
 - 独立 Undo Mirror。
 
 `md` Guide 不参与左右 Mirror。
+
+Mirror、Guide Reimport 或 Controller Settings 修改后，Step 02 会变成 Dirty，Workflow Progress 同步退回 Step 02。
 
 ## Step 02 完整性规则
 
@@ -234,6 +347,8 @@ Rebuild
 
 而 Builder 只负责单一算法，不承担整个 Component 生命周期。
 
+Step 03 后续接入正式生命周期时，也必须使用 `FaceBase` 的 Current Step 和 Config Step Schema，不再单独创建进度系统。
+
 ## Step 04 - Finalize
 
 后续统一放：
@@ -244,6 +359,8 @@ Rebuild
 - Cleanup；
 - Publish；
 - Build Result Summary。
+
+Step 04 同样复用统一 Workflow State / Config Schema。
 
 ## Public API
 
