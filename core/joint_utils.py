@@ -9,7 +9,7 @@ Maya 单个 Joint 的底层能力模块。
 --------
 Joint 类只负责“一个 Joint 节点本身应该具备的能力”：
 
-    - 创建与验证；
+    - 创建与初始化验证；
     - 名称；
     - World Position / Rotation；
     - Joint Orient；
@@ -18,6 +18,10 @@ Joint 类只负责“一个 Joint 节点本身应该具备的能力”：
     - Segment Scale Compensate；
     - 单 Joint Orient；
     - Maya Joint Label。
+
+Joint 实例在 __init__() 时只验证一次节点存在性和节点类型。
+初始化成功后，普通方法默认 self.joint 仍然是有效 Joint，
+不再为每一次操作重复执行存在性和类型检查。
 
 本模块明确不负责：
 
@@ -38,18 +42,45 @@ import maya.cmds as cmds
 
 from . import hierarchy_utils
 from . import rename_utils
-from . import scene_utils
 from . import transform_utils
 
 
 class Joint(object):
     u"""单个 Maya Joint 节点的统一操作对象。"""
 
-    def __init__(self, joint=None):
-        self.joint = joint
+    def __init__(self, joint):
+        if joint is None:
+            raise RuntimeError(
+                u"Joint 节点不能为空。"
+            )
 
-        if self.joint is not None:
-            self.validate()
+        joint = str(joint).strip()
+
+        if not joint:
+            raise RuntimeError(
+                u"Joint 节点不能为空。"
+            )
+
+        if not cmds.objExists(joint):
+            raise RuntimeError(
+                u"Joint 节点不存在：{}".format(
+                    joint
+                )
+            )
+
+        node_type = cmds.nodeType(
+            joint
+        )
+
+        if node_type != "joint":
+            raise RuntimeError(
+                u"节点不是 Joint：{} | type={}".format(
+                    joint,
+                    node_type
+                )
+            )
+
+        self.joint = joint
 
     # =========================================================================
     # Create
@@ -73,20 +104,28 @@ class Joint(object):
         避免创建结果受到当前 Maya Selection 影响。
         """
         if name is None:
-            raise RuntimeError(u"Joint 名称不能为空。")
+            raise RuntimeError(
+                u"Joint 名称不能为空。"
+            )
 
         name = str(name).strip()
 
         if not name:
-            raise RuntimeError(u"Joint 名称不能为空。")
+            raise RuntimeError(
+                u"Joint 名称不能为空。"
+            )
 
         if cmds.objExists(name):
             raise RuntimeError(
-                u"节点已经存在：{}".format(name)
+                u"节点已经存在：{}".format(
+                    name
+                )
             )
 
         if parent is not None:
-            transform_utils.validate_transform(parent)
+            transform_utils.validate_transform(
+                parent
+            )
 
         joint = cmds.createNode(
             "joint",
@@ -114,7 +153,12 @@ class Joint(object):
             )
 
         if radius is not None:
-            Joint(joint).set_radius(radius)
+            joint_object = Joint(
+                joint
+            )
+            joint_object.set_radius(
+                radius
+            )
 
         return joint
 
@@ -131,13 +175,19 @@ class Joint(object):
 
         match_rotation=True 时，同时匹配参考对象的 World Rotation。
         """
-        transform_utils.validate_transform(obj)
+        transform_utils.validate_transform(
+            obj
+        )
 
-        position = transform_utils.get_world_translation(obj)
+        position = transform_utils.get_world_translation(
+            obj
+        )
         rotation = None
 
         if match_rotation:
-            rotation = transform_utils.get_world_rotation(obj)
+            rotation = transform_utils.get_world_rotation(
+                obj
+            )
 
         return Joint.create(
             name=name,
@@ -148,42 +198,16 @@ class Joint(object):
         )
 
     # =========================================================================
-    # Validate
+    # State
     # =========================================================================
 
     def exists(self):
-        u"""当前 Joint 节点是否仍然存在于 Maya Scene。"""
-        if self.joint is None:
-            return False
-
+        u"""主动查询当前 Joint 节点是否仍然存在于 Maya Scene。"""
         return bool(
-            cmds.objExists(self.joint)
-        )
-
-    def validate(self):
-        u"""验证当前节点存在且类型为 joint，成功时返回节点名称。"""
-        self._validate_joint(self.joint)
-        return self.joint
-
-    @staticmethod
-    def _validate_joint(joint):
-        u"""内部 Joint 类型验证。"""
-        if joint is None:
-            raise RuntimeError(u"Joint 节点不能为空。")
-
-        scene_utils.validate_node(joint)
-
-        node_type = cmds.nodeType(joint)
-
-        if node_type != "joint":
-            raise RuntimeError(
-                u"节点不是 Joint：{} | type={}".format(
-                    joint,
-                    node_type
-                )
+            cmds.objExists(
+                self.joint
             )
-
-        return True
+        )
 
     # =========================================================================
     # Name
@@ -191,23 +215,23 @@ class Joint(object):
 
     def get_name(self):
         u"""返回当前 Joint 的 Short Name。"""
-        self.validate()
-
         return rename_utils.get_short_name(
             self.joint
         )
 
     def rename(self, new_name):
         u"""重命名当前 Joint，并同步更新 self.joint。"""
-        self.validate()
-
         if new_name is None:
-            raise RuntimeError(u"新的 Joint 名称不能为空。")
+            raise RuntimeError(
+                u"新的 Joint 名称不能为空。"
+            )
 
         new_name = str(new_name).strip()
 
         if not new_name:
-            raise RuntimeError(u"新的 Joint 名称不能为空。")
+            raise RuntimeError(
+                u"新的 Joint 名称不能为空。"
+            )
 
         result = rename_utils.rename_node(
             self.joint,
@@ -231,16 +255,12 @@ class Joint(object):
 
     def get_position(self):
         u"""返回当前 Joint 的 World Position。"""
-        self.validate()
-
         return transform_utils.get_world_translation(
             self.joint
         )
 
     def set_position(self, position):
         u"""设置当前 Joint 的 World Position。"""
-        self.validate()
-
         transform_utils.set_world_translation(
             self.joint,
             position
@@ -250,8 +270,6 @@ class Joint(object):
 
     def get_rotation(self):
         u"""返回当前 Joint 的 World Rotation。"""
-        self.validate()
-
         return transform_utils.get_world_rotation(
             self.joint
         )
@@ -262,8 +280,6 @@ class Joint(object):
 
         注意：rotation 和 jointOrient 是两套不同的数据。
         """
-        self.validate()
-
         transform_utils.set_world_rotation(
             self.joint,
             rotation
@@ -277,8 +293,6 @@ class Joint(object):
 
     def get_joint_orient(self):
         u"""返回 [jointOrientX, jointOrientY, jointOrientZ]。"""
-        self.validate()
-
         attributes = [
             "jointOrientX",
             "jointOrientY",
@@ -293,24 +307,32 @@ class Joint(object):
                     attribute
                 )
             )
-            joint_orient.append(value)
+            joint_orient.append(
+                value
+            )
 
         return joint_orient
 
     def set_joint_orient(self, joint_orient):
         u"""设置 jointOrientXYZ。"""
-        self.validate()
-
         if joint_orient is None:
-            raise ValueError(u"joint_orient 必须包含 3 个数值。")
+            raise ValueError(
+                u"joint_orient 必须包含 3 个数值。"
+            )
 
         try:
-            value_count = len(joint_orient)
+            value_count = len(
+                joint_orient
+            )
         except TypeError:
-            raise ValueError(u"joint_orient 必须包含 3 个数值。")
+            raise ValueError(
+                u"joint_orient 必须包含 3 个数值。"
+            )
 
         if value_count != 3:
-            raise ValueError(u"joint_orient 必须包含 3 个数值。")
+            raise ValueError(
+                u"joint_orient 必须包含 3 个数值。"
+            )
 
         attributes = [
             "jointOrientX",
@@ -319,6 +341,7 @@ class Joint(object):
         ]
 
         index = 0
+
         while index < len(attributes):
             cmds.setAttr(
                 "{}.{}".format(
@@ -347,8 +370,6 @@ class Joint(object):
 
         Parent 可以是 Transform，也可以是 Joint。
         """
-        self.validate()
-
         return hierarchy_utils.Hierarchy.get_parent(
             self.joint,
             full_path=True
@@ -356,8 +377,6 @@ class Joint(object):
 
     def get_children(self):
         u"""只返回当前 Joint 的直接 Child Joint。"""
-        self.validate()
-
         return hierarchy_utils.Hierarchy.get_children(
             self.joint,
             node_type="joint",
@@ -370,8 +389,6 @@ class Joint(object):
 
         parent=None 表示 Parent 到 World。
         """
-        self.validate()
-
         if parent is None:
             current_parent = self.get_parent()
 
@@ -389,7 +406,9 @@ class Joint(object):
 
             return self.joint
 
-        transform_utils.validate_transform(parent)
+        transform_utils.validate_transform(
+            parent
+        )
 
         self.joint = hierarchy_utils.Hierarchy.parent(
             self.joint,
@@ -404,23 +423,25 @@ class Joint(object):
 
     def get_radius(self):
         u"""返回当前 Joint 的 radius。"""
-        self.validate()
-
         return cmds.getAttr(
             self.joint + ".radius"
         )
 
     def set_radius(self, radius):
         u"""设置当前 Joint 的 radius。"""
-        self.validate()
-
         try:
-            radius = float(radius)
+            radius = float(
+                radius
+            )
         except (TypeError, ValueError):
-            raise ValueError(u"Joint radius 必须是数值。")
+            raise ValueError(
+                u"Joint radius 必须是数值。"
+            )
 
         if radius < 0.0:
-            raise ValueError(u"Joint radius 不能小于 0。")
+            raise ValueError(
+                u"Joint radius 不能小于 0。"
+            )
 
         cmds.setAttr(
             self.joint + ".radius",
@@ -431,8 +452,6 @@ class Joint(object):
 
     def show_axis(self):
         u"""显示当前 Joint 的 Local Rotation Axis。"""
-        self.validate()
-
         cmds.setAttr(
             self.joint + ".displayLocalAxis",
             1
@@ -442,8 +461,6 @@ class Joint(object):
 
     def hide_axis(self):
         u"""隐藏当前 Joint 的 Local Rotation Axis。"""
-        self.validate()
-
         cmds.setAttr(
             self.joint + ".displayLocalAxis",
             0
@@ -457,8 +474,6 @@ class Joint(object):
 
     def get_scale_compensate(self):
         u"""返回当前 Joint 的 segmentScaleCompensate 状态。"""
-        self.validate()
-
         return bool(
             cmds.getAttr(
                 self.joint + ".segmentScaleCompensate"
@@ -467,8 +482,6 @@ class Joint(object):
 
     def set_scale_compensate(self, enabled=True):
         u"""设置当前 Joint 的 segmentScaleCompensate。"""
-        self.validate()
-
         cmds.setAttr(
             self.joint + ".segmentScaleCompensate",
             bool(enabled)
@@ -490,8 +503,6 @@ class Joint(object):
 
         这里只处理当前 Joint，不递归整条 Joint Chain。
         """
-        self.validate()
-
         children = self.get_children()
 
         if not children:
@@ -532,10 +543,12 @@ class Joint(object):
 
         label_type=18 表示 Other。
         """
-        self.validate()
-
-        side = int(side)
-        label_type = int(label_type)
+        side = int(
+            side
+        )
+        label_type = int(
+            label_type
+        )
 
         if side not in [0, 1, 2]:
             raise ValueError(
@@ -545,7 +558,9 @@ class Joint(object):
         if other_type is None:
             other_type = ""
 
-        other_type = str(other_type)
+        other_type = str(
+            other_type
+        )
 
         cmds.setAttr(
             self.joint + ".side",
@@ -578,18 +593,28 @@ class Joint(object):
             jnt_md_spine_bind_001
         """
         short_name = self.get_name()
-        name_parts = short_name.split("_")
+        name_parts = short_name.split(
+            "_"
+        )
 
         if len(name_parts) < 3:
             raise RuntimeError(
-                u"Joint 名称格式不正确：{}".format(short_name)
+                u"Joint 名称格式不正确：{}".format(
+                    short_name
+                )
             )
 
         side_name = name_parts[1].lower()
 
-        if side_name in ["l", "lf"]:
+        if side_name in [
+                "l",
+                "lf",
+        ]:
             side_index = 1
-        elif side_name in ["r", "rt"]:
+        elif side_name in [
+                "r",
+                "rt",
+        ]:
             side_index = 2
         else:
             side_index = 0
@@ -603,11 +628,15 @@ class Joint(object):
             is_index = len(part) == 3 and part.isdigit()
 
             if not (is_last_part and is_index):
-                description_parts.append(part)
+                description_parts.append(
+                    part
+                )
 
             index += 1
 
-        description = "_".join(description_parts)
+        description = "_".join(
+            description_parts
+        )
 
         return self.set_label(
             side=side_index,
