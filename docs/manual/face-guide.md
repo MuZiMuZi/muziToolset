@@ -1,23 +1,19 @@
 # Face Guide
 
-`FaceGuide` 是 Face Rig 的 **Step 02 定位数据管理层**。
+`FaceGuide` 是 Face Rig 的 **Step 02 定位和 Guide 操作入口**。
 
-进入 Step 02 时，UI 会自动导入或复用 `resources/face/face_guide.ma`。绑定师主要负责摆放定位器、镜像、修复模板和设置后续 Controller 参数。
+进入 Step 02 时，UI 会自动导入或复用 `resources/face/face_guide.ma`。绑定师主要负责摆放 Locator、镜像、修复模板和设置后续 Controller 参数。
 
 ## 标准流程
 
 ```text
 Step 01 Setup 完成
         ↓
-Current Face Step = Step 02 Guide
-        ↓
-进入 / 重新打开 Face Rig
-        ↓
-自动跳转 Step 02
+进入 Step 02 Guide
         ↓
 自动导入 / 复用 face_guide.ma
         ↓
-手动贴合 Locator
+手动调整 Locator
         ↓
 需要时 LF ↔ RT Mirror
         ↓
@@ -27,257 +23,217 @@ Current Face Step = Step 02 Guide
         ↓
 检查模板中的全部 Locator
         ↓
-全部存在 → 保存 Config → Current Face Step = Step 03 Build
-任意缺失 → 阻止继续并列出缺失名称
+完整 → 保存 Config → 进入 Step 03
+缺失 → 阻止继续并列出缺失名称
 ```
+
+## 当前代码结构
+
+Guide 当前故意保持简单：
+
+```text
+systems/face/guide/
+├── __init__.py
+└── face_guide.py
+```
+
+Template、Mirror、Repair 不再分别拆成多个 Python 文件。
+
+固定名称、默认 Controller 参数和 Step Visibility Rule 统一定义在：
+
+```text
+systems/face/config.py
+```
+
+执行逻辑统一由：
+
+```text
+systems/face/guide/face_guide.py
+```
+
+负责。
+
+## 名称生成
+
+Guide / Joint / Controller 等标准节点名称不要重复硬编码。
+
+统一使用：
+
+```python
+from muziToolset.core import name_utils
+
+name = name_utils.Name.create_name(
+    node_type="loc",
+    side="md",
+    part="upper_teeth",
+    function="guide",
+    index=1
+)
+```
+
+结果：
+
+```text
+loc_md_upper_teeth_guide_001
+```
+
+左右镜像名称统一使用：
+
+```python
+mirror_name = name_utils.Name.mirror_name(
+    "loc_lf_eye_ball_guide_001"
+)
+```
+
+结果：
+
+```text
+loc_rt_eye_ball_guide_001
+```
+
+## Guide 查询
+
+### 查询一个明确 Guide
+
+```python
+from muziToolset.core import name_utils
+from muziToolset.systems.face import FaceGuide
+
+face_guide = FaceGuide()
+
+guide_name = name_utils.Name.create_name(
+    node_type="loc",
+    side="md",
+    part="upper_teeth",
+    function="guide",
+    index=1
+)
+
+upper_teeth_guide = face_guide.get_guide_node(
+    guide_name,
+    required=True
+)
+```
+
+### 查询一个部位
+
+例如 Tongue：
+
+```python
+tongue_guides = face_guide.get_part_guides(
+    part="tongue"
+)
+```
+
+例如左侧 Brow：
+
+```python
+lf_brow_guides = face_guide.get_part_guides(
+    part="brow",
+    side="lf"
+)
+```
+
+不要再额外创建这种没有新增逻辑的方法：
+
+```python
+def get_tongue_guides(self):
+    return self.get_part_guides(
+        part="tongue"
+    )
+```
+
+只有真正增加固定顺序、结构化结果或特殊校验的方法才值得保留。
 
 ## 自动加载 Guide
 
-正常流程不需要手动点击 Build Guide。
+UI 进入 Step 02 时自动调用：
 
 ```python
-from muziToolset.systems.face import FaceGuide
-
-guide = FaceGuide()
-guide.build_guide()
+face_guide.build_guide()
 ```
 
-`build_guide()` 是系统层公开入口，UI 会在进入 Step 02 时自动调用。
-
-## Workflow 进度恢复
-
-Face Config 会保存当前真正制作到的 Workflow Step：
+如果 Guide 已经存在，就直接复用；不存在时导入：
 
 ```text
-Current Face Step
+resources/face/face_guide.ma
 ```
-
-对应：
-
-```text
-Step 01 Setup
-Step 02 Guide
-Step 03 Build
-Step 04 Finalize
-```
-
-每次重新打开 Face Rig，UI 会读取这份状态并自动进入当前工作步骤。
-
-这个状态和“当前临时查看哪个页面”不是一回事：
-
-```text
-已经做到 Step 03
-    ↓
-临时点击 Step 01 查看
-    ↓
-Current Face Step 仍然是 Step 03
-```
-
-但如果返回旧步骤后真正修改了会影响后续结果的数据，例如：
-
-```text
-Step 02 Mirror
-重新导入 Guide
-修改 Controller Settings
-```
-
-则：
-
-```text
-Step 02 = Dirty
-Step 03 / 04 = Invalid
-Current Face Step = Step 02 Guide
-```
-
-重新打开工具会回到 Step 02，要求重新提交。
-
-旧场景如果还没有 `Current Face Step`，系统会根据已有 `Step XX Completed` 状态推导应该继续的步骤，并自动补齐新的 Workflow / Step Config 分区，然后写入正式 Current Step。
-
-## Face Config Step 分区
-
-`network_md_face_config_001` 的自定义属性按 Workflow Step 组织。
-
-Attribute Editor 中会按类似下面的结构显示：
-
-```text
-========== FACE WORKFLOW ==========
-Current Face Step
-
----------- STEP 01 SETUP ----------
-Face Head Model
-Face Lf Eye Model
-Face Rt Eye Model
-Upper Teech Model
-Lower Teech Model
-Face Tongue Model
-Face Gum Model
-Mouth Jnt Number
-Step 01 Completed
-
----------- STEP 02 GUIDE ----------
-Face Guide Root
-Face Guide Move Ctrl
-Face Guide Version
-Face Ctrl Global Scale
-Face Ctrl Color Lf
-Face Ctrl Color Rt
-Face Ctrl Color Md
-Brow Ctrl Size
-Eye Ctrl Size
-Eyelid Ctrl Size
-Nose Ctrl Size
-Cheek Ctrl Size
-Lip Ctrl Size
-Jaw Ctrl Size
-Step 02 Completed
-
----------- STEP 03 BUILD ----------
-Step 03 Completed
-
----------- STEP 04 FINALIZE ----------
-Step 04 Completed
-```
-
-分隔行只是 Config 的显示结构，不参与绑定计算。
-
-已有属性不会为了分区而改名，也不会重建 Message Connection。系统只通过 Maya 动态属性顺序把它们整理到对应 Step，因此已有场景数据可以继续复用。
-
-## Guide Template Contract
-
-`resources/face/face_guide.ma` 是标准 Locator 完整性的唯一来源。
-
-`guide_data.py` 会读取模板中的全部：
-
-```text
-loc_*_guide_###
-```
-
-点击“下一步”时逐个验证。
-
-这意味着：
-
-- 绑定师误删任意标准 Locator 都会被发现；
-- 不只检查几个核心嘴唇 / 眼睛 Guide；
-- Template 以后新增 Locator 后，Validation 会自动跟随模板。
 
 ## 重新导入模板
 
-Step 02 提供 **重新导入模板**。
+用于绑定过程中误删 Locator，但又不想丢掉其它已经调整好的位置。
 
-用途：绑定过程中误删了某个 Locator，但不希望丢失已经摆好的其它定位结果。
+```python
+result = face_guide.reimport_guide()
+```
 
 流程：
 
 ```text
-当前 Guide
-    ↓
-记录仍然存在 Locator 的世界矩阵
-    ↓
-重新导入完整 face_guide.ma
-    ↓
-按标准名称匹配 Locator
-    ↓
-恢复已有 Locator 的原位置
-    ↓
-缺失 Locator 使用模板默认位置补回
+记录当前仍存在 Locator 世界矩阵
+        ↓
+删除当前模板内容
+        ↓
+重新导入 face_guide.ma
+        ↓
+恢复原来仍存在 Locator 的位置
+        ↓
+被误删 Locator 使用模板默认位置
 ```
-
-因此这个功能是 Repair / Reimport，不等同于完全 Reset。
 
 ## Guide Mirror
 
-Step 02 支持：
+直接调用 `FaceGuide`：
 
-```text
-LF → RT
-RT → LF
+```python
+result = face_guide.mirror_guides(
+    source_side="lf",
+    target_side="rt"
+)
 ```
 
-Mirror 只复制当前 Guide 状态，不建立永久左右 Transform Connection。
+或者：
 
-镜像后：
+```python
+result = face_guide.mirror_guides(
+    source_side="rt",
+    target_side="lf"
+)
+```
 
-- LF / RT 可以继续独立调整；
-- `md` 中线 Guide 不参与镜像；
-- 非对称角色仍然可以继续手工修改。
+Mirror：
 
-## 撤销镜像
+- 只复制当前状态；
+- 不建立永久左右连接；
+- `md` Guide 不参与；
+- 使用 `name_utils.Name.mirror_name()` 获取目标名称；
+- 支持 Maya Undo Chunk；
+- UI 额外保存最近一次 Mirror Snapshot。
 
-每次 Guide Mirror 都作为一个 Maya Undo Chunk 执行，因此可以直接使用：
+如果目标 Guide 被误删，Mirror 不负责创建新节点，应先使用“重新导入模板”修复。
+
+## 撤销最近一次 Mirror
+
+```python
+result = face_guide.undo_mirror(
+    snapshot
+)
+```
+
+UI 会自动保存最近一次 `mirror_guides()` 返回的 `snapshot`。
+
+也可以直接使用 Maya：
 
 ```text
 Ctrl + Z
 ```
 
-UI 同时提供：
-
-```text
-撤销上次镜像
-```
-
-按钮会恢复 Mirror 前记录的 Target Side Snapshot。
-
-## Controller Settings
-
-### Global Scale
-
-控制整个 Face Controller 的整体大小倍率。
-
-默认：
-
-```text
-1.0
-```
-
-### Side Color
-
-默认 Maya Index Color：
-
-```text
-LF = 6   蓝色
-RT = 13  红色
-MD = 17  黄色
-```
-
-UI 使用 Slider + Index + Color Preview。
-
-### Module Size
-
-全部默认：
-
-```text
-1.0
-```
-
-使用 `QDoubleSpinBox`：
-
-```text
-最小 0.1
-最大 100.0
-步进 0.1
-小数 1 位
-```
-
-右侧 `↑ / ↓` 增减区域属于正式交互入口，统一 Theme 会保持清晰的背景、分隔线和 Hover 状态，不能为了轻量视觉把按钮做成不可见。
-
-按面部从上到下排列：
-
-```text
-Brow
-Eye
-Eyelid
-Nose
-Cheek
-Lip
-Jaw
-```
-
 ## 完整性检查
 
-可以在代码中主动查询：
+`face_guide.ma` 仍然是 Locator 完整性的最终来源。
 
 ```python
-validation = guide.validate_guides()
+validation = face_guide.validate_guides()
 
 print(validation["valid"])
 print(validation["missing_guide_names"])
@@ -285,31 +241,107 @@ print(validation["guide_count"])
 print(validation["template_guide_count"])
 ```
 
-如果 `valid == False`，Step 02 不应该进入 Step 03。
+任意模板 Locator 缺失，Step 02 都不能进入 Step 03。
 
-## Guide 数据给 Builder 使用
+## Controller Settings
 
-后续 Builder 不应该使用 `cmds.ls()` 猜 Locator 顺序。
+Controller Settings 保存到统一 Face Config，因此重新打开工具、返回 Step 02 或后续重建都能恢复。
 
-直接使用稳定 API：
-
-```python
-lip_data = guide.get_lip_guides()
-lid_data = guide.get_eyelid_guides("lf")
-brow_data = guide.get_brow_guides("lf")
-```
-
-固定顺序和名称由 `guide/guide_data.py` 管理。
-
-## 目录
+默认：
 
 ```text
-systems/face/guide/
-├── face_guide.py       Step 02 调度 / Query / Validation / Config
-├── guide_data.py       Template Contract / 固定数据 / Controller Default
-├── guide_template.py   Import / Reset / Repair / Reimport
-└── guide_mirror.py     LF ↔ RT / Undo
+Global Scale = 1.0
+LF Color     = 6
+RT Color     = 13
+MD Color     = 17
+Module Size  = 1.0
 ```
+
+Module Size 使用一位小数：
+
+```text
+0.1
+0.7
+1.0
+1.5
+...
+```
+
+Controller 默认配置统一定义在：
+
+```text
+systems/face/config.py
+```
+
+## Step Visibility
+
+不再使用单独的 `workflow.py`。
+
+静态显示规则直接定义在：
+
+```text
+systems/face/config.py
+```
+
+Step 切换时 `ui/workflow_controller.py` 直接执行这些规则。
+
+Step 02 默认：
+
+```text
+显示
+    原始 Setup Models
+    Face Guide
+
+隐藏
+    Tweak Work Model
+    Stretch Work Model
+    Deform Work Model
+    Controller Group
+    Joint Group
+    Rig Nodes
+```
+
+## 给 Build Component 使用
+
+简单 Component 直接表达自己需要什么 Guide。
+
+例如 Teeth：
+
+```python
+upper_teeth_name = name_utils.Name.create_name(
+    node_type="loc",
+    side="md",
+    part="upper_teeth",
+    function="guide",
+    index=1
+)
+
+upper_teeth_guide = self.get_guide_node(
+    upper_teeth_name,
+    required=True
+)
+```
+
+例如 Tongue：
+
+```python
+tongue_guides = self.get_part_guides(
+    part="tongue",
+    required=True
+)
+```
+
+这种写法是后续 Face Build Component 的推荐模式：
+
+```text
+Naming Rule
+    ↓
+直接 Query
+    ↓
+Component Build
+```
+
+避免为了一个简单查询继续增加中间文件和包装方法。
 
 ## 相关文档
 
