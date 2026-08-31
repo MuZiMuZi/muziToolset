@@ -495,7 +495,7 @@ def attach_joints_to_curves(
                 zero_group
             )
 
-            joint = hierarchy_utils.Hierarchy.parent(
+            joint = hierarchy_utils.parent(
                 joint,
                 zero_group
             )
