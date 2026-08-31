@@ -27,15 +27,6 @@ parent = joint.getParent()
 controller.translate >> joint.translate
 ```
 
-优先于再次包装成：
-
-```python
-Joint.set_radius()
-Joint.rename()
-Joint.get_parent()
-Connection.connect()
-```
-
 ## 2. 正式分层
 
 ```text
@@ -77,8 +68,6 @@ Component 可以直接持有 PyNode：
 self.joint = pm.PyNode("jnt_md_test_bind_001")
 ```
 
-而不是强制把 Maya Node 转成字符串保存。
-
 标准生命周期：
 
 ```text
@@ -104,15 +93,7 @@ create_connection()
 
 ### tools
 
-只负责：
-
-- Selection；
-- UI；
-- 用户参数收集；
-- 调用 Core / Systems；
-- 工作流组织。
-
-Tool 不应该反向定义底层 Rig 规则。
+只负责用户交互、Selection、参数收集和调用 Systems / Core。
 
 ## 3. 依赖方向
 
@@ -126,16 +107,7 @@ Core
 PyMEL / Maya API
 ```
 
-允许 Systems 直接使用 PyMEL。
-
-Core 也可以在需要时使用：
-
-```python
-import pymel.core as pm
-import maya.api.OpenMaya as om
-```
-
-但 Core 不应该 import Systems 或 Tools。
+Systems 可以直接使用 PyMEL。
 
 ## 4. PyMEL 使用规则
 
@@ -147,47 +119,23 @@ import pymel.core as pm
 
 优先使用 PyNode / Attribute，而不是频繁在字符串和节点之间转换。
 
-推荐：
-
-```python
-joint = pm.PyNode("jnt_md_test_bind_001")
-joint.radius.set(0.1)
-```
-
-避免：
-
-```python
-joint = "jnt_md_test_bind_001"
-pm.setAttr(joint + ".radius", 0.1)
-```
-
-字符串主要用于：
-
-- Naming 构建；
-- Config 序列化；
-- UI 输入输出；
-- 日志；
-- 外部文件数据。
-
 ## 5. 不做兼容
 
 本次架构重建不维护任何历史 API。
 
-禁止：
+禁止正式代码：
 
 ```python
 from legacy_reference import ...
 ```
 
-也禁止为了旧 Tool 恢复已经淘汰的 Core Wrapper。
-
-旧功能如果未来需要，先理解它的业务目标，再使用新架构重新实现。
+旧功能未来根据业务目标使用新架构重新实现。
 
 ## 6. Face Rig
 
-`systems/face/` 是当前唯一保留的现有业务系统。
+`systems/face/` 是当前唯一继续迁移的现有业务系统。
 
-旧 Face 实现不会反过来限制新底层设计。迁移时按以下顺序处理：
+迁移顺序：
 
 ```text
 FaceBase / Config
@@ -201,17 +149,44 @@ Build Components
 UI / Workflow
 ```
 
-迁移规则见：
+迁移状态：
 
 ```text
-systems/face/PYMEL_MIGRATION.md
+systems/face/pymel_migration.md
 ```
 
-## 7. 代码风格
+## 7. 命名规范
+
+正式运行区统一：
+
+```text
+folder / module / resource file    snake_case
+function / method                  snake_case
+variable                           snake_case
+module config variable             snake_case
+class                              PascalCase
+```
+
+项目自定义变量全部使用小写 `snake_case`，包括配置变量和逻辑上的常量。
+不使用 `UPPER_SNAKE_CASE` 保存项目配置。
+
+示例：
+
+```python
+face_side = "md"
+guide_version = "1.0"
+controller_default_settings = {}
+
+class FaceConfig(object):
+    pass
+```
+
+`README.md`、`LICENSE` 和平台约定文件保持社区标准名称。
+`legacy_reference/` 保持历史路径原样，不参与新架构命名清理。
+
+## 8. 代码风格
 
 优先可读性，不写为了缩短行数的复杂表达式。
-
-推荐：
 
 ```python
 for joint in joints:
@@ -220,14 +195,12 @@ for joint in joints:
     )
 ```
 
-而不是把 Rig 构建流程压成难以调试的一行代码。
+## 9. 当前状态
 
-## 8. 当前状态
-
-旧 Core、Tools、App、UI、Tests、Docs 和非 Face Systems 已归档到：
+旧实现保存在：
 
 ```text
-legacy_reference/pymel_rebuild_2026_08_31/
+legacy_reference/
 ```
 
 正式区从新的 PyMEL-first 架构重新开始。

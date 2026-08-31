@@ -1,7 +1,7 @@
 # coding=utf-8
 u"""
-Rig Naming
-==========
+Rig Name
+========
 
 Muzi Toolset 的正式 Rig Naming 规则。
 
@@ -15,7 +15,7 @@ import re
 import pymel.core as pm
 
 
-SIDE_ALIASES = {
+side_aliases = {
     "l": "lf",
     "left": "lf",
     "lf": "lf",
@@ -71,7 +71,7 @@ def normalize_side(side):
         "side"
     )
 
-    result = SIDE_ALIASES.get(
+    result = side_aliases.get(
         key
     )
 
@@ -165,7 +165,7 @@ def create_unique_name(
     index = start_index
 
     while True:
-        name = create_name(
+        node_name = create_name(
             node_type=node_type,
             side=side,
             part=part,
@@ -173,8 +173,8 @@ def create_unique_name(
             index=index
         )
 
-        if not pm.objExists(name):
-            return name
+        if not pm.objExists(node_name):
+            return node_name
 
         index += 1
 

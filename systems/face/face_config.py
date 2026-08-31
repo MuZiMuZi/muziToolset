@@ -25,7 +25,7 @@ class FaceConfig(object):
     u"""一个 Face Rig 的 Scene Config 数据对象。"""
 
     def __init__(self, node_name=None):
-        self.node_name = node_name or config.CONFIG_NODE_NAME
+        self.node_name = node_name or config.config_node_name
         self.node = None
         self.refresh()
 
@@ -269,7 +269,7 @@ class FaceConfig(object):
 
     def load_setup(self):
         result = self.get_nodes(
-            config.SETUP_NODE_ATTRIBUTES
+            config.setup_node_attributes
         )
         result["mouth_joint_count"] = self.get_value(
             "mouth_joint_count"
@@ -278,7 +278,7 @@ class FaceConfig(object):
 
     @staticmethod
     def _step_completed_attribute(step_value):
-        attribute_name = config.STEP_COMPLETED_ATTRIBUTES.get(step_value)
+        attribute_name = config.step_completed_attributes.get(step_value)
 
         if attribute_name is None:
             raise ValueError(
@@ -289,7 +289,7 @@ class FaceConfig(object):
 
     def get_current_step(self):
         value = self.get_value(
-            config.CURRENT_STEP_ATTRIBUTE,
+            config.current_step_attribute,
             1
         )
 
@@ -300,21 +300,21 @@ class FaceConfig(object):
 
         if value < 1:
             return 1
-        if value > config.LAST_STEP:
-            return config.LAST_STEP
+        if value > config.last_step:
+            return config.last_step
         return value
 
     def set_current_step(self, step_value):
         if not isinstance(step_value, int):
             raise TypeError(u"Face Step 必须是整数。")
 
-        if step_value < 1 or step_value > config.LAST_STEP:
+        if step_value < 1 or step_value > config.last_step:
             raise ValueError(
-                u"Face Step 必须在 1～{}。".format(config.LAST_STEP)
+                u"Face Step 必须在 1～{}。".format(config.last_step)
             )
 
         return self.set_value(
-            config.CURRENT_STEP_ATTRIBUTE,
+            config.current_step_attribute,
             step_value,
             "long"
         )
@@ -344,7 +344,7 @@ class FaceConfig(object):
         result = {}
         step_value = 1
 
-        while step_value <= config.LAST_STEP:
+        while step_value <= config.last_step:
             result[step_value] = self.is_step_completed(step_value)
             step_value += 1
 
@@ -353,7 +353,7 @@ class FaceConfig(object):
     def invalidate_steps_after(self, step_value):
         current_step = step_value + 1
 
-        while current_step <= config.LAST_STEP:
+        while current_step <= config.last_step:
             self.set_step_completed(
                 current_step,
                 False
@@ -369,15 +369,15 @@ class FaceConfig(object):
             guide_version
     ):
         self.set_node(
-            config.GUIDE_ROOT_ATTRIBUTE,
+            config.guide_root_attribute,
             guide_root
         )
         self.set_node(
-            config.GUIDE_MOVE_CONTROL_ATTRIBUTE,
+            config.guide_move_control_attribute,
             move_control
         )
         self.set_value(
-            config.GUIDE_VERSION_ATTRIBUTE,
+            config.guide_version_attribute,
             str(guide_version),
             "string"
         )
@@ -385,25 +385,25 @@ class FaceConfig(object):
 
     def load_guide(self):
         return {
-            "guide_root": self.get_node(config.GUIDE_ROOT_ATTRIBUTE),
-            "move_control": self.get_node(config.GUIDE_MOVE_CONTROL_ATTRIBUTE),
-            "guide_version": self.get_value(config.GUIDE_VERSION_ATTRIBUTE),
+            "guide_root": self.get_node(config.guide_root_attribute),
+            "move_control": self.get_node(config.guide_move_control_attribute),
+            "guide_version": self.get_value(config.guide_version_attribute),
         }
 
     def clear_guide(self):
         self.set_node(
-            config.GUIDE_ROOT_ATTRIBUTE,
+            config.guide_root_attribute,
             None
         )
         self.set_node(
-            config.GUIDE_MOVE_CONTROL_ATTRIBUTE,
+            config.guide_move_control_attribute,
             None
         )
         return True
 
     def save_controller_settings(self, settings):
         for attribute_name in settings:
-            attribute_type = config.CONTROLLER_SETTING_TYPES.get(
+            attribute_type = config.controller_setting_types.get(
                 attribute_name,
                 "double"
             )
@@ -418,8 +418,8 @@ class FaceConfig(object):
     def load_controller_settings(self):
         result = {}
 
-        for attribute_name in config.CONTROLLER_DEFAULT_SETTINGS:
-            default_value = config.CONTROLLER_DEFAULT_SETTINGS[attribute_name]
+        for attribute_name in config.controller_default_settings:
+            default_value = config.controller_default_settings[attribute_name]
             result[attribute_name] = self.get_value(
                 attribute_name,
                 default_value

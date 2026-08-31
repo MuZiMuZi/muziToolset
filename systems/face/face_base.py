@@ -30,8 +30,8 @@ class FaceBase(RigComponentBase):
     def __init__(self):
         self.step_value = None
 
-        self.side = face_settings.FACE_SIDE
-        self.center_axis = face_settings.CENTER_AXIS
+        self.side = face_settings.face_side
+        self.center_axis = face_settings.center_axis
 
         self.config = FaceConfig()
 
@@ -58,21 +58,21 @@ class FaceBase(RigComponentBase):
 
     @staticmethod
     def _ensure_transform_group(
-            name,
+            node_name,
             parent=None
     ):
         u"""创建或复用一个 Face 标准 Transform Group。"""
-        if pm.objExists(name):
-            group = pm.PyNode(name)
+        if pm.objExists(node_name):
+            group = pm.PyNode(node_name)
 
             if group.nodeType() != "transform":
                 raise RuntimeError(
-                    u"Face Group 名称已被非 Transform 节点占用：{}".format(name)
+                    u"Face Group 名称已被非 Transform 节点占用：{}".format(node_name)
                 )
         else:
             group = pm.createNode(
                 "transform",
-                name=name
+                name=node_name
             )
 
         if parent is not None:
@@ -86,42 +86,42 @@ class FaceBase(RigComponentBase):
     def ensure_hierarchy(self):
         u"""确保 Face Rig 标准层级存在，并缓存对应 PyNode。"""
         self.master_group = self._ensure_transform_group(
-            face_settings.MASTER_GROUP_NAME
+            face_settings.master_group_name
         )
         self.model_group = self._ensure_transform_group(
-            face_settings.MODEL_GROUP_NAME,
+            face_settings.model_group_name,
             self.master_group
         )
         self.guide_group = self._ensure_transform_group(
-            face_settings.GUIDE_GROUP_NAME,
+            face_settings.guide_group_name,
             self.master_group
         )
         self.control_group = self._ensure_transform_group(
-            face_settings.CONTROL_GROUP_NAME,
+            face_settings.control_group_name,
             self.master_group
         )
         self.joint_group = self._ensure_transform_group(
-            face_settings.JOINT_GROUP_NAME,
+            face_settings.joint_group_name,
             self.master_group
         )
         self.rig_nodes_group = self._ensure_transform_group(
-            face_settings.RIG_NODES_GROUP_NAME,
+            face_settings.rig_nodes_group_name,
             self.master_group
         )
         self.position_driver_group = self._ensure_transform_group(
-            face_settings.POSITION_DRIVER_GROUP_NAME,
+            face_settings.position_driver_group_name,
             self.master_group
         )
         self.tweak_group = self._ensure_transform_group(
-            face_settings.TWEAK_GROUP_NAME,
+            face_settings.tweak_group_name,
             self.model_group
         )
         self.stretch_group = self._ensure_transform_group(
-            face_settings.STRETCH_GROUP_NAME,
+            face_settings.stretch_group_name,
             self.model_group
         )
         self.deform_group = self._ensure_transform_group(
-            face_settings.DEFORM_GROUP_NAME,
+            face_settings.deform_group_name,
             self.model_group
         )
 
@@ -140,16 +140,16 @@ class FaceBase(RigComponentBase):
 
     def refresh_hierarchy(self):
         group_map = {
-            "master_group": face_settings.MASTER_GROUP_NAME,
-            "model_group": face_settings.MODEL_GROUP_NAME,
-            "guide_group": face_settings.GUIDE_GROUP_NAME,
-            "control_group": face_settings.CONTROL_GROUP_NAME,
-            "joint_group": face_settings.JOINT_GROUP_NAME,
-            "rig_nodes_group": face_settings.RIG_NODES_GROUP_NAME,
-            "position_driver_group": face_settings.POSITION_DRIVER_GROUP_NAME,
-            "tweak_group": face_settings.TWEAK_GROUP_NAME,
-            "stretch_group": face_settings.STRETCH_GROUP_NAME,
-            "deform_group": face_settings.DEFORM_GROUP_NAME,
+            "master_group": face_settings.master_group_name,
+            "model_group": face_settings.model_group_name,
+            "guide_group": face_settings.guide_group_name,
+            "control_group": face_settings.control_group_name,
+            "joint_group": face_settings.joint_group_name,
+            "rig_nodes_group": face_settings.rig_nodes_group_name,
+            "position_driver_group": face_settings.position_driver_group_name,
+            "tweak_group": face_settings.tweak_group_name,
+            "stretch_group": face_settings.stretch_group_name,
+            "deform_group": face_settings.deform_group_name,
         }
 
         for property_name in group_map:
@@ -323,7 +323,7 @@ class FaceBase(RigComponentBase):
 
     def apply_step_visibility(self, step_value):
         u"""应用 Face Step Group Visibility。"""
-        if step_value not in face_settings.STEP_VISIBILITY_RULES:
+        if step_value not in face_settings.step_visibility_rules:
             raise ValueError(
                 u"不支持的 Face Step：{}".format(step_value)
             )
@@ -338,7 +338,7 @@ class FaceBase(RigComponentBase):
             "rig_nodes": self.rig_nodes_group,
             "position_driver": self.position_driver_group,
         }
-        rules = face_settings.STEP_VISIBILITY_RULES[step_value]
+        rules = face_settings.step_visibility_rules[step_value]
 
         for group_key in rules:
             group = group_map[group_key]

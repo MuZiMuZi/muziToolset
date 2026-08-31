@@ -24,13 +24,40 @@ joint.radius.set(0.2)
 
 ```text
 muziToolset/
-├─ core/                 # 真正可复用的算法和项目规则
+├─ core/
 ├─ systems/
-│  ├─ component_base.py # Component 生命周期
-│  └─ face/             # 当前唯一继续开发的业务系统
-├─ tools/                # 新工具层，目前为空
-└─ legacy_reference/     # 历史实现，只允许查阅
+│  ├─ component_base.py
+│  └─ face/
+├─ tools/
+└─ legacy_reference/
 ```
+
+## 命名规范
+
+正式运行区统一使用：
+
+```text
+folder / module / resource file    snake_case
+function / method                  snake_case
+variable                           snake_case
+module config variable             snake_case
+class                              PascalCase
+```
+
+项目自定义变量全部小写，包括 `config.py` 顶层配置变量。
+
+示例：
+
+```python
+face_side = "md"
+guide_version = "1.0"
+controller_default_settings = {}
+
+class FaceConfig(object):
+    pass
+```
+
+`README.md`、`LICENSE` 和平台约定文件保持标准名称；历史归档内部不重命名。
 
 ## 架构原则
 
@@ -39,7 +66,6 @@ muziToolset/
 - `systems/` 负责完整 Rig Component；
 - `tools/` 负责用户交互和工作流入口；
 - 历史接口不兼容、不恢复；
-- 旧工具未来根据新架构重新实现；
 - `legacy_reference/` 永远不能被正式代码 import。
 
 ## Maya 依赖
@@ -50,8 +76,14 @@ muziToolset/
 mayapy -m pip install pymel
 ```
 
-当前 Face Rig 正在逐步从旧实现迁移到新的 PyMEL 架构，迁移状态见：
+依赖文件：
 
 ```text
-systems/face/PYMEL_MIGRATION.md
+requirements_maya.txt
+```
+
+当前 Face Rig 迁移状态：
+
+```text
+systems/face/pymel_migration.md
 ```

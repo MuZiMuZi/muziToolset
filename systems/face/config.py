@@ -5,21 +5,21 @@ from __future__ import print_function
 
 import os
 
-from ...core import naming
+from ...core import name
 
 
-FACE_SIDE = "md"
-FACE_PART = "face"
+face_side = "md"
+face_part = "face"
 
-PACKAGE_ROOT = os.path.abspath(
+package_root = os.path.abspath(
     os.path.join(
         os.path.dirname(__file__),
         "..",
         ".."
     )
 )
-RESOURCES_ROOT = os.path.join(
-    PACKAGE_ROOT,
+resources_root = os.path.join(
+    package_root,
     "resources"
 )
 
@@ -28,87 +28,87 @@ RESOURCES_ROOT = os.path.join(
 # Face Hierarchy
 # =============================================================================
 
-MASTER_GROUP_NAME = naming.create_name(
+master_group_name = name.create_name(
     "grp",
-    FACE_SIDE,
-    FACE_PART,
+    face_side,
+    face_part,
     "master"
 )
 
-MODEL_GROUP_NAME = naming.create_name(
+model_group_name = name.create_name(
     "grp",
-    FACE_SIDE,
-    FACE_PART,
+    face_side,
+    face_part,
     "model"
 )
 
-GUIDE_GROUP_NAME = naming.create_name(
+guide_group_name = name.create_name(
     "grp",
-    FACE_SIDE,
-    FACE_PART,
+    face_side,
+    face_part,
     "guide"
 )
 
-CONTROL_GROUP_NAME = naming.create_name(
+control_group_name = name.create_name(
     "grp",
-    FACE_SIDE,
-    FACE_PART,
+    face_side,
+    face_part,
     "ctrl"
 )
 
-JOINT_GROUP_NAME = naming.create_name(
+joint_group_name = name.create_name(
     "grp",
-    FACE_SIDE,
-    FACE_PART,
+    face_side,
+    face_part,
     "jnt"
 )
 
-RIG_NODES_GROUP_NAME = naming.create_name(
+rig_nodes_group_name = name.create_name(
     "grp",
-    FACE_SIDE,
-    FACE_PART,
+    face_side,
+    face_part,
     "rig_nodes"
 )
 
-POSITION_DRIVER_GROUP_NAME = naming.create_name(
+position_driver_group_name = name.create_name(
     "grp",
-    FACE_SIDE,
-    FACE_PART,
+    face_side,
+    face_part,
     "pos_driver"
 )
 
-TWEAK_GROUP_NAME = naming.create_name(
+tweak_group_name = name.create_name(
     "grp",
-    FACE_SIDE,
-    FACE_PART,
+    face_side,
+    face_part,
     "tweak"
 )
 
-STRETCH_GROUP_NAME = naming.create_name(
+stretch_group_name = name.create_name(
     "grp",
-    FACE_SIDE,
-    FACE_PART,
+    face_side,
+    face_part,
     "stretch"
 )
 
-DEFORM_GROUP_NAME = naming.create_name(
+deform_group_name = name.create_name(
     "grp",
-    FACE_SIDE,
-    FACE_PART,
+    face_side,
+    face_part,
     "deform"
 )
 
-CONTROL_SET_NAME = naming.create_name(
+control_set_name = name.create_name(
     "set",
-    FACE_SIDE,
-    FACE_PART,
+    face_side,
+    face_part,
     "ctrl"
 )
 
-CONFIG_NODE_NAME = naming.create_name(
+config_node_name = name.create_name(
     "network",
-    FACE_SIDE,
-    FACE_PART,
+    face_side,
+    face_part,
     "config"
 )
 
@@ -117,7 +117,7 @@ CONFIG_NODE_NAME = naming.create_name(
 # Face Setup Schema
 # =============================================================================
 
-SETUP_NODE_ATTRIBUTES = [
+setup_node_attributes = [
     "face_head_model",
     "face_lf_eye_model",
     "face_rt_eye_model",
@@ -127,7 +127,7 @@ SETUP_NODE_ATTRIBUTES = [
     "face_gum_model",
 ]
 
-SETUP_VALUE_ATTRIBUTES = {
+setup_value_attributes = {
     "mouth_joint_count": "long",
 }
 
@@ -136,10 +136,10 @@ SETUP_VALUE_ATTRIBUTES = {
 # Workflow Schema
 # =============================================================================
 
-LAST_STEP = 4
-CURRENT_STEP_ATTRIBUTE = "face_current_step"
+last_step = 4
+current_step_attribute = "face_current_step"
 
-STEP_COMPLETED_ATTRIBUTES = {
+step_completed_attributes = {
     1: "step_01_completed",
     2: "step_02_completed",
     3: "step_03_completed",
@@ -151,52 +151,52 @@ STEP_COMPLETED_ATTRIBUTES = {
 # Face Guide
 # =============================================================================
 
-GUIDE_TEMPLATE_FILE_NAME = "face_guide.ma"
-GUIDE_TEMPLATE_PATH = os.path.join(
-    RESOURCES_ROOT,
+guide_template_file_name = "face_guide.ma"
+guide_template_path = os.path.join(
+    resources_root,
     "face",
-    GUIDE_TEMPLATE_FILE_NAME
+    guide_template_file_name
 )
 
-GUIDE_MOVE_CONTROL_NAME = naming.create_name(
+guide_move_control_name = name.create_name(
     "ctrl",
-    FACE_SIDE,
-    FACE_PART,
+    face_side,
+    face_part,
     "move"
 )
 
-GUIDE_VERSION = "1.0"
+guide_version = "1.0"
 
-GUIDE_ROOT_ATTRIBUTE = "face_guide_root"
-GUIDE_MOVE_CONTROL_ATTRIBUTE = "face_guide_move_ctrl"
-GUIDE_VERSION_ATTRIBUTE = "face_guide_version"
+guide_root_attribute = "face_guide_root"
+guide_move_control_attribute = "face_guide_move_ctrl"
+guide_version_attribute = "face_guide_version"
 
 
 # =============================================================================
 # Controller Settings
 # =============================================================================
 
-CONTROLLER_GLOBAL_SCALE_ATTRIBUTE = naming.create_attribute_name(
+controller_global_scale_attribute = name.create_attribute_name(
     "ctrl",
     "md",
     "face",
     "global_scale"
 )
 
-CONTROLLER_COLOR_ATTRIBUTES = {
-    "lf": naming.create_attribute_name(
+controller_color_attributes = {
+    "lf": name.create_attribute_name(
         "ctrl",
         "lf",
         "face",
         "color"
     ),
-    "rt": naming.create_attribute_name(
+    "rt": name.create_attribute_name(
         "ctrl",
         "rt",
         "face",
         "color"
     ),
-    "md": naming.create_attribute_name(
+    "md": name.create_attribute_name(
         "ctrl",
         "md",
         "face",
@@ -204,7 +204,7 @@ CONTROLLER_COLOR_ATTRIBUTES = {
     ),
 }
 
-CONTROLLER_SIZE_ATTRIBUTES = {}
+controller_size_attributes = {}
 
 for module_name in [
         "brow",
@@ -217,43 +217,43 @@ for module_name in [
         "teeth",
         "tongue",
 ]:
-    CONTROLLER_SIZE_ATTRIBUTES[module_name] = naming.create_attribute_name(
+    controller_size_attributes[module_name] = name.create_attribute_name(
         "ctrl",
         "md",
         module_name,
         "size"
     )
 
-CONTROLLER_DEFAULT_SETTINGS = {
-    CONTROLLER_GLOBAL_SCALE_ATTRIBUTE: 1.0,
-    CONTROLLER_COLOR_ATTRIBUTES["lf"]: 6,
-    CONTROLLER_COLOR_ATTRIBUTES["rt"]: 13,
-    CONTROLLER_COLOR_ATTRIBUTES["md"]: 17,
+controller_default_settings = {
+    controller_global_scale_attribute: 1.0,
+    controller_color_attributes["lf"]: 6,
+    controller_color_attributes["rt"]: 13,
+    controller_color_attributes["md"]: 17,
 }
 
-for module_name in CONTROLLER_SIZE_ATTRIBUTES:
-    attribute_name = CONTROLLER_SIZE_ATTRIBUTES[module_name]
-    CONTROLLER_DEFAULT_SETTINGS[attribute_name] = 1.0
+for module_name in controller_size_attributes:
+    attribute_name = controller_size_attributes[module_name]
+    controller_default_settings[attribute_name] = 1.0
 
-CONTROLLER_SETTING_TYPES = {
-    CONTROLLER_GLOBAL_SCALE_ATTRIBUTE: "double",
-    CONTROLLER_COLOR_ATTRIBUTES["lf"]: "long",
-    CONTROLLER_COLOR_ATTRIBUTES["rt"]: "long",
-    CONTROLLER_COLOR_ATTRIBUTES["md"]: "long",
+controller_setting_types = {
+    controller_global_scale_attribute: "double",
+    controller_color_attributes["lf"]: "long",
+    controller_color_attributes["rt"]: "long",
+    controller_color_attributes["md"]: "long",
 }
 
-for module_name in CONTROLLER_SIZE_ATTRIBUTES:
-    attribute_name = CONTROLLER_SIZE_ATTRIBUTES[module_name]
-    CONTROLLER_SETTING_TYPES[attribute_name] = "double"
+for module_name in controller_size_attributes:
+    attribute_name = controller_size_attributes[module_name]
+    controller_setting_types[attribute_name] = "double"
 
 
 # =============================================================================
 # Display
 # =============================================================================
 
-CENTER_AXIS = "X"
+center_axis = "X"
 
-STEP_VISIBILITY_RULES = {
+step_visibility_rules = {
     1: {
         "model": True,
         "guide": False,

@@ -10,7 +10,7 @@ from __future__ import print_function
 
 import pymel.core as pm
 
-from ....core import naming
+from ....core import name
 from .. import face_base
 
 
@@ -96,19 +96,19 @@ class FaceSetup(face_base.FaceBase):
         self.ensure_hierarchy()
 
         self.work_model_names = {
-            "tweak": naming.create_name(
+            "tweak": name.create_name(
                 "model",
                 self.side,
                 "head",
                 "tweak"
             ),
-            "stretch": naming.create_name(
+            "stretch": name.create_name(
                 "model",
                 self.side,
                 "head",
                 "stretch"
             ),
-            "deform": naming.create_name(
+            "deform": name.create_name(
                 "model",
                 self.side,
                 "head",
