@@ -3,15 +3,14 @@ u"""
 Face Rig Workflow UI Controller
 ===============================
 
-在 FaceRigWizard 视图之上统一处理 Config -> UI 恢复和 Step Scene Visibility。
+在 FaceRigWizard 视图之上处理 Config -> UI 恢复和 Step Scene Visibility。
 
 职责：
     1. 进入或回退 Step 时，从 Scene Config 恢复对应 UI；
     2. Step 01 恢复模型引用和 Mouth Joint Number；
     3. Step 02 恢复并实时持久化 Controller Settings；
     4. 当前 UI Step 切换时直接应用 config.py 定义的场景显示规则；
-    5. 清理已经废弃的旧 Controller Settings Attribute；
-    6. 不复制 Face Setup / Guide 的业务构建算法。
+    5. 不复制 Face Setup / Guide 的业务构建算法。
 
 设计原则：
     - Scene Config 是可恢复 UI 参数的唯一持久化来源；
@@ -19,7 +18,8 @@ Face Rig Workflow UI Controller
     - 修改 Step 02 参数会保存 Config，并把 Step 02 标记 Dirty；
     - Guide Locator 的位置由 Maya Scene 自身保存；
     - Workflow 显示规则直接定义在 systems.face.config；
-    - Controller Config Attribute 使用 [类型]_[方向]_[部位]_[功能]，不带序号。
+    - Controller Config Attribute 使用 [类型]_[方向]_[部位]_[功能]，不带序号；
+    - 只维护当前正式 Schema，不保留旧场景迁移和旧属性兼容。
 """
 
 from __future__ import print_function
@@ -118,7 +118,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
 
     @staticmethod
     def sync_controller_config_schema(face_context):
-        u"""把 FaceBase Step 02 Attribute 顺序切换到当前正式 Config Schema。"""
+        u"""让 Step 02 Attribute 排序直接使用 config.py 的正式 Schema。"""
         if face_context is None:
             return False
 
@@ -127,123 +127,21 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         )
         return True
 
-    @staticmethod
-    def remove_legacy_controller_setting_attributes(face_context):
-        u"""删除旧版 Controller Settings Attribute，不迁移旧值。"""
-        if face_context is None:
-            return []
-
-        if not face_context.config_node_exists():
-            return []
-
-        removed_attrs = []
-
-        for attr_name in config.legacy_face_controller_setting_attr_names:
-            plug = "{}.{}".format(
-                face_context.config_node,
-                attr_name
-            )
-
-            if not cmds.objExists(plug):
-                continue
-
-            try:
-                if cmds.getAttr(
-                        plug,
-                        lock=True
-                ):
-                    cmds.setAttr(
-                        plug,
-                        lock=False
-                    )
-
-                cmds.deleteAttr(
-                    plug
-                )
-                removed_attrs.append(
-                    attr_name
-                )
-            except Exception:
-                continue
-
-        return removed_attrs
-
-    @staticmethod
-    def add_validation_aliases(settings):
-        u"""
-        给当前 FaceGuide 旧验证逻辑补充临时字典 Alias。
-
-        Alias 只存在于 Python dict 中，不会写入 Scene Config。
-        """
-        result = {}
-
-        for attr_name in settings:
-            result[attr_name] = settings.get(
-                attr_name
-            )
-
-        result["face_ctrl_global_scale"] = settings.get(
-            config.face_controller_global_scale_attr,
-            1.0
-        )
-        result["face_ctrl_color_lf"] = settings.get(
-            config.face_controller_color_attr_names["lf"],
-            6
-        )
-        result["face_ctrl_color_rt"] = settings.get(
-            config.face_controller_color_attr_names["rt"],
-            13
-        )
-        result["face_ctrl_color_md"] = settings.get(
-            config.face_controller_color_attr_names["md"],
-            17
-        )
-
-        return result
-
-    def prepare_controller_config_schema(self, face_context):
-        u"""应用新 Schema、删除旧属性并重新整理 Attribute 顺序。"""
-        if face_context is None:
-            return False
-
-        self.sync_controller_config_schema(
-            face_context
-        )
-        self.remove_legacy_controller_setting_attributes(
-            face_context
-        )
-
-        if face_context.config_node_exists():
-            face_context.ensure_config_layout()
-            face_context.organize_config_attributes()
-
-        return True
-
     # =========================================================================
     # Step Navigation / Restore
     # =========================================================================
 
     def restore_step_state(self):
-        u"""恢复 Workflow 后同步当前 Controller Config Schema。"""
+        u"""恢复 Workflow，并使用当前正式 Step 02 Config Schema。"""
         result = super(FaceRigWizard, self).restore_step_state()
         face_context = self.get_face_guide()
 
-        if not face_context.config_node_exists():
-            return result
+        if face_context.config_node_exists():
+            self.sync_controller_config_schema(
+                face_context
+            )
+            face_context.organize_config_attributes()
 
-        self.prepare_controller_config_schema(
-            face_context
-        )
-
-        # 新 Schema 不迁移旧值；没有保存值时直接使用 config.py 默认设置。
-        settings = face_context.load_controller_settings()
-        settings = self.add_validation_aliases(
-            settings
-        )
-        face_context.save_controller_settings(
-            settings
-        )
-        face_context.organize_config_attributes()
         return result
 
     def set_current_step(
@@ -335,7 +233,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         if not face_context.config_node_exists():
             return False
 
-        self.prepare_controller_config_schema(
+        self.sync_controller_config_schema(
             face_context
         )
         return self.load_step2_controller_settings()
@@ -345,7 +243,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
     # =========================================================================
 
     def get_step2_controller_settings(self):
-        u"""从 UI 收集使用正式命名的 Controller Settings。"""
+        u"""从 UI 收集当前正式命名的 Controller Settings。"""
         settings = {
             config.face_controller_global_scale_attr:
                 self.face_ctrl_global_scale_spin.value(),
@@ -374,12 +272,10 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
 
             settings[attr_name] = size_widget.value()
 
-        return self.add_validation_aliases(
-            settings
-        )
+        return settings
 
     def load_step2_controller_settings(self):
-        u"""从新命名的 Face Config Attribute 回填 Controller Settings。"""
+        u"""从 Face Config 回填当前正式 Controller Settings。"""
         face_context = self.get_face_guide()
         settings = face_context.load_controller_settings()
 
@@ -402,6 +298,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                 default_value = config.face_controller_default_settings.get(
                     attr_name
                 )
+
                 self.controller_color_widgets[side].set_value(
                     int(
                         settings.get(
@@ -444,7 +341,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
     # =========================================================================
 
     def enter_step2(self):
-        u"""进入 Step 02 后加载 Guide，并确保新 Controller Settings 已保存。"""
+        u"""进入 Step 02 后加载 Guide，并保存当前 Controller Settings。"""
         result = super(FaceRigWizard, self).enter_step2()
 
         if not result:
@@ -455,7 +352,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         if not face_context.config_node_exists():
             return True
 
-        self.prepare_controller_config_schema(
+        self.sync_controller_config_schema(
             face_context
         )
         settings = self.get_step2_controller_settings()
@@ -478,7 +375,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         settings = self.get_step2_controller_settings()
 
         try:
-            self.prepare_controller_config_schema(
+            self.sync_controller_config_schema(
                 face_context
             )
             face_context.save_controller_settings(
@@ -500,16 +397,17 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         )
 
     def finalize_step2(self):
-        u"""提交 Step 02 后再次按新 Schema 整理 Config Attribute。"""
+        u"""提交 Step 02 后按当前正式 Schema 整理 Config Attribute。"""
         result = super(FaceRigWizard, self).finalize_step2()
 
         if not result:
             return False
 
         face_context = self.get_face_guide()
-        self.prepare_controller_config_schema(
+        self.sync_controller_config_schema(
             face_context
         )
+        face_context.organize_config_attributes()
         return True
 
     # =========================================================================
@@ -707,7 +605,6 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         face_context = self.get_face_guide()
 
         try:
-            # 步骤 1：切换 Face 顶层功能组。
             for group_attr_name in visibility_rule:
                 group_name = getattr(
                     face_context,
@@ -719,7 +616,6 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                     visibility_rule[group_attr_name]
                 )
 
-            # 步骤 2：Step 01 / 02 只保留原始 Setup 模型可见。
             model_display_rule = config.face_step_model_display_rules.get(
                 step_value,
                 "preserve"
@@ -730,7 +626,6 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                     face_context
                 )
         except Exception:
-            # Visibility 只是工作流辅助，不阻止 Face Rig 打开。
             return False
 
         return True
