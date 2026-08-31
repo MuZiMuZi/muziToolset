@@ -52,6 +52,7 @@ Face System 已经按四步 Workflow 分包：
 systems/face/
 ├── face_base.py
 ├── config.py
+├── workflow.py
 ├── setup/
 ├── guide/
 ├── build/
@@ -73,10 +74,14 @@ finalize    Step 04 Final Check / Cleanup / Publish
 
 data        跨 Step 的 Face 公共数据
 
-ui          Face Wizard UI
+workflow    跨 Step 的场景显示状态
+
+ui          Face Wizard View / Workflow UI Controller
 ```
 
 详见：[Face System Architecture](face-system.md)。
+
+Face Rig 的 Config 恢复、UI 回填、Current Step 和 Scene Visibility 规则详见：[Face Workflow State](face-workflow-state.md)。
 
 ## Step 与 Component
 
