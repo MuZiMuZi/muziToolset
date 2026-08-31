@@ -9,8 +9,8 @@ Maya 常用约束工具窗口。
 --------
 1. Parent / Point / Orient / Scale / Aim / Pole Vector Constraint；
 2. 支持多对一 / 一对多 Selection 模式；
-3. 查询和删除关联 Constraint；
-4. UI 只收集选择模式和参数，实际 Maya Constraint 操作统一调用 ``core.constraint_utils``；
+3. 查询和删除当前选择 Driven 对象上的 Constraint；
+4. Selection、批量创建和删除决策由 Tool 负责，单个 Constraint 创建 / 查询复用 ``core.constraint_utils``；
 5. 提供可在 Maya Script Editor 中直接显示的 ``main()``。
 
 主要公开类型 / 方法
@@ -22,14 +22,14 @@ ConstraintTool.get_driver_and_driven_objects()
     根据 UI 模式拆分 Driver / Driven。
 
 ConstraintTool.create_standard_constraint(...)
-    调用 Core 创建标准约束。
+    按 UI Selection Workflow 循环调用 Core 创建单个标准约束。
 
 ConstraintTool.clicked_pole_vector_constraint_button()
     创建 Pole Vector Constraint。
 
 ConstraintTool.clicked_select_constraint_button()
 ConstraintTool.clicked_delete_constraint_button()
-    查询 / 删除关联约束。
+    查询 / 删除真正驱动当前选择对象的 Constraint。
 
 main()
     创建或恢复窗口，立即显示并返回 QWidget。
@@ -43,7 +43,8 @@ main()
 
 设计边界
 --------
-本文件不维护 Constraint 算法；所有场景操作统一由 ``core.constraint_utils`` 负责。
+本文件负责 Selection、批量 Workflow 和删除意图；
+实际 Maya Constraint 创建与 Driven 侧查询统一复用 ``core.constraint_utils``。
 """
 
 from __future__ import print_function
@@ -72,9 +73,9 @@ except ImportError:
     from PySide6.QtWidgets import QWidget
 
 from ...core import constraint_utils
+from ...core import scene_utils
 from ...ui import theme as ui_theme
 from ...ui import window_utils
-from ...core import scene_utils
 
 
 class ConstraintTool(QWidget):
@@ -112,7 +113,7 @@ class ConstraintTool(QWidget):
         """
         self.title_label = ui_theme.make_title(u"约束工具")
         self.subtitle_label = ui_theme.make_subtitle(
-            u"统一创建常用 Constraint，并管理选择对象已有的约束节点。"
+            u"统一创建常用 Constraint，并管理选择对象真正接收的约束节点。"
         )
 
         self.mult_to_one_radio = QRadioButton(u"多对一")
@@ -163,11 +164,11 @@ class ConstraintTool(QWidget):
 
         self.select_constraint_button = QPushButton(
             QIcon(":menuIconModify.png"),
-            u"选择关联约束"
+            u"选择对象约束"
         )
         self.delete_constraint_button = QPushButton(
             QIcon(":delete.png"),
-            u"删除关联约束"
+            u"删除对象约束"
         )
         ui_theme.style_danger(self.delete_constraint_button)
 
@@ -218,8 +219,9 @@ class ConstraintTool(QWidget):
         )
 
         manage_info_label = QLabel(
-            u"对当前选择对象查询或删除已连接的 Constraint 节点。"
+            u"只管理真正驱动当前选择对象的 Constraint；仅作为 Driver 的对象不会被匹配。"
         )
+        manage_info_label.setWordWrap(True)
         ui_theme.set_role(manage_info_label, "muted")
         manage_layout.addWidget(manage_info_label)
 
@@ -317,13 +319,13 @@ class ConstraintTool(QWidget):
             chunk_name
     ):
         u"""
-        收集 UI 参数并调用 Core 创建标准约束。
+        收集 UI 参数并按 Driven 循环调用 Core 创建标准约束。
 
         Args:
             constraint_type (str):
                 Maya Constraint 类型，例如 parentConstraint、pointConstraint、orientConstraint、scaleConstraint 或 aimConstraint。
             chunk_name (str):
-                `chunk_name` 对应的 Maya 节点或资源名称。
+                当前按钮操作使用的 Maya Undo Chunk 名称。
         """
         driver_objects, driven_objects = self.get_driver_and_driven_objects()
 
@@ -332,31 +334,25 @@ class ConstraintTool(QWidget):
 
         maintain_offset = self.maintain_offset_checkbox.isChecked()
 
-        # ---------------------------------------------------------------------
-        # 步骤 1：一次按钮操作只生成一个 Undo Chunk。
-        # ---------------------------------------------------------------------
         scene_utils.open_undo_chunk(chunk_name)
 
         try:
-            # -----------------------------------------------------------------
-            # 步骤 2：把 Driver / Driven 和 UI 参数交给 constraint_utils。
-            # -----------------------------------------------------------------
-            constraint_utils.create_constraints(
-                driver_objects=driver_objects,
-                driven_objects=driven_objects,
-                constraint_type=constraint_type,
-                maintain_offset=maintain_offset
-            )
-        except RuntimeError as error:
+            for driven_object in driven_objects:
+                constraint_utils.create_constraint(
+                    driver_objects=driver_objects,
+                    driven_object=driven_object,
+                    constraint_type=constraint_type,
+                    maintain_offset=maintain_offset
+                )
+        except (RuntimeError, ValueError) as error:
             cmds.warning(str(error))
         finally:
             scene_utils.close_undo_chunk()
 
     def clicked_parent_constraint_button(self):
         u"""
-        执行 `clicked_parent_constraint_button` 对应的 Maya 工具操作。
+        创建 Parent Constraint。
         """
-
         self.create_standard_constraint(
             "parentConstraint",
             "MuziParentConstraint"
@@ -364,9 +360,8 @@ class ConstraintTool(QWidget):
 
     def clicked_point_constraint_button(self):
         u"""
-        执行 `clicked_point_constraint_button` 对应的 Maya 工具操作。
+        创建 Point Constraint。
         """
-
         self.create_standard_constraint(
             "pointConstraint",
             "MuziPointConstraint"
@@ -374,9 +369,8 @@ class ConstraintTool(QWidget):
 
     def clicked_orient_constraint_button(self):
         u"""
-        执行 `clicked_orient_constraint_button` 对应的 Maya 工具操作。
+        创建 Orient Constraint。
         """
-
         self.create_standard_constraint(
             "orientConstraint",
             "MuziOrientConstraint"
@@ -384,9 +378,8 @@ class ConstraintTool(QWidget):
 
     def clicked_scale_constraint_button(self):
         u"""
-        执行 `clicked_scale_constraint_button` 对应的 Maya 工具操作。
+        创建 Scale Constraint。
         """
-
         self.create_standard_constraint(
             "scaleConstraint",
             "MuziScaleConstraint"
@@ -394,9 +387,8 @@ class ConstraintTool(QWidget):
 
     def clicked_aim_constraint_button(self):
         u"""
-        执行 `clicked_aim_constraint_button` 对应的 Maya 工具操作。
+        创建 Aim Constraint。
         """
-
         self.create_standard_constraint(
             "aimConstraint",
             "MuziAimConstraint"
@@ -436,21 +428,23 @@ class ConstraintTool(QWidget):
     @staticmethod
     def get_constraints_from_objects(selected_objects):
         u"""
-        从 Core 查询对象关联的约束节点。
+        从 Core 查询真正驱动输入对象的 Constraint 节点。
 
         Args:
-            selected_objects (object):
-                当前方法执行 Maya / Rig 操作时使用的 `selected_objects` 数据。
+            selected_objects (str | list[str]):
+                需要作为 Driven 查询 Constraint 的 Maya 节点。
 
         Returns:
-            object:
-            方法执行后的结果数据。
+            list[str]:
+                真正向这些对象输出驱动结果的 Constraint 节点。
         """
-        return constraint_utils.get_constraints(selected_objects)
+        return constraint_utils.get_constraints(
+            selected_objects
+        )
 
     def clicked_select_constraint_button(self):
         u"""
-        选择当前对象关联的所有约束节点。
+        选择真正驱动当前选择对象的所有 Constraint 节点。
         """
         selected_objects = cmds.ls(
             selection=True,
@@ -458,13 +452,15 @@ class ConstraintTool(QWidget):
         ) or []
 
         if not selected_objects:
-            cmds.warning(u"请先选择需要查询约束的物体。")
+            cmds.warning(u"请先选择需要查询约束的 Driven 对象。")
             return
 
-        constraint_nodes = self.get_constraints_from_objects(selected_objects)
+        constraint_nodes = self.get_constraints_from_objects(
+            selected_objects
+        )
 
         if not constraint_nodes:
-            cmds.warning(u"没有找到约束节点。")
+            cmds.warning(u"没有找到驱动所选对象的 Constraint 节点。")
             return
 
         cmds.select(
@@ -474,7 +470,7 @@ class ConstraintTool(QWidget):
 
     def clicked_delete_constraint_button(self):
         u"""
-        删除当前对象关联的所有约束节点。
+        删除真正驱动当前选择对象的所有 Constraint 节点。
         """
         selected_objects = cmds.ls(
             selection=True,
@@ -482,19 +478,23 @@ class ConstraintTool(QWidget):
         ) or []
 
         if not selected_objects:
-            cmds.warning(u"请先选择需要删除约束的物体。")
+            cmds.warning(u"请先选择需要删除约束的 Driven 对象。")
             return
 
-        constraint_nodes = self.get_constraints_from_objects(selected_objects)
+        constraint_nodes = self.get_constraints_from_objects(
+            selected_objects
+        )
 
         if not constraint_nodes:
-            cmds.warning(u"没有找到需要删除的约束节点。")
+            cmds.warning(u"没有找到需要删除的 Constraint 节点。")
             return
 
         scene_utils.open_undo_chunk("MuziDeleteConstraints")
 
         try:
-            constraint_utils.delete_constraints(selected_objects)
+            cmds.delete(
+                constraint_nodes
+            )
         finally:
             scene_utils.close_undo_chunk()
 
