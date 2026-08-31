@@ -31,7 +31,6 @@ except ImportError:
 # Theme Tokens
 # =============================================================================
 
-# Arc-inspired 默认主题：柔和冷灰 + 淡紫色强调。
 background = "#F2F1F6"
 background_alt = "#ECEBF1"
 sidebar_background = "#E9E7F0"
@@ -72,9 +71,6 @@ radius_large = 16
 def _build_style_sheet():
     u"""生成 MuziTools 全局 QSS。"""
     return u"""
-/* -------------------------------------------------------------------------
-   Base
-   ------------------------------------------------------------------------- */
 QWidget {
     background-color: %(background)s;
     color: %(text)s;
@@ -117,9 +113,6 @@ QFrame[muziSubCard="true"] {
     border-radius: %(radius)dpx;
 }
 
-/* -------------------------------------------------------------------------
-   Text
-   ------------------------------------------------------------------------- */
 QLabel {
     background: transparent;
     border: none;
@@ -177,9 +170,6 @@ QLabel[muziDangerText="true"] {
     font-weight: 600;
 }
 
-/* -------------------------------------------------------------------------
-   Push Buttons
-   ------------------------------------------------------------------------- */
 QPushButton,
 QToolButton {
     min-height: 32px;
@@ -301,9 +291,6 @@ QPushButton[muziNavActive="true"] {
     font-weight: 600;
 }
 
-/* -------------------------------------------------------------------------
-   Editors
-   ------------------------------------------------------------------------- */
 QLineEdit,
 QTextEdit,
 QPlainTextEdit,
@@ -377,13 +364,59 @@ QPlainTextEdit:read-only {
     background-color: %(surface_alt)s;
 }
 
-QComboBox::drop-down,
-QSpinBox::up-button,
-QSpinBox::down-button,
-QDoubleSpinBox::up-button,
-QDoubleSpinBox::down-button {
+QComboBox::drop-down {
     border: none;
     background: transparent;
+}
+
+QSpinBox,
+QDoubleSpinBox {
+    padding-right: 32px;
+}
+
+QSpinBox::up-button,
+QDoubleSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 26px;
+    background-color: #EEEAF4;
+    border-left: 1px solid #C9C3D2;
+    border-bottom: 1px solid #D7D2DE;
+    border-top-right-radius: %(radius_small)dpx;
+}
+
+QSpinBox::down-button,
+QDoubleSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 26px;
+    background-color: #EEEAF4;
+    border-left: 1px solid #C9C3D2;
+    border-top: 1px solid #D7D2DE;
+    border-bottom-right-radius: %(radius_small)dpx;
+}
+
+QSpinBox::up-button:hover,
+QSpinBox::down-button:hover,
+QDoubleSpinBox::up-button:hover,
+QDoubleSpinBox::down-button:hover {
+    background-color: %(accent_soft)s;
+    border-left-color: #AAA2C1;
+}
+
+QSpinBox::up-button:pressed,
+QSpinBox::down-button:pressed,
+QDoubleSpinBox::up-button:pressed,
+QDoubleSpinBox::down-button:pressed {
+    background-color: %(accent_soft_hover)s;
+}
+
+QSpinBox::up-arrow,
+QSpinBox::down-arrow,
+QDoubleSpinBox::up-arrow,
+QDoubleSpinBox::down-arrow {
+    width: 9px;
+    height: 9px;
 }
 
 QComboBox QAbstractItemView {
@@ -397,9 +430,6 @@ QComboBox QAbstractItemView {
     padding: 4px;
 }
 
-/* -------------------------------------------------------------------------
-   Check / Radio
-   ------------------------------------------------------------------------- */
 QCheckBox,
 QRadioButton {
     spacing: 7px;
@@ -437,9 +467,6 @@ QRadioButton::indicator:checked {
     border-radius: 8px;
 }
 
-/* -------------------------------------------------------------------------
-   Group / Tab
-   ------------------------------------------------------------------------- */
 QGroupBox {
     margin-top: 12px;
     padding: 12px 10px 10px 10px;
@@ -485,9 +512,6 @@ QTabBar::tab:selected {
     font-weight: 600;
 }
 
-/* -------------------------------------------------------------------------
-   Item Views
-   ------------------------------------------------------------------------- */
 QListWidget,
 QTreeWidget,
 QTableWidget,
@@ -541,9 +565,6 @@ QHeaderView::section {
     font-weight: 600;
 }
 
-/* -------------------------------------------------------------------------
-   Scroll Area / Scroll Bar
-   ------------------------------------------------------------------------- */
 QScrollArea {
     background: transparent;
     border: none;
@@ -589,9 +610,6 @@ QScrollBar::sub-page {
     border: none;
 }
 
-/* -------------------------------------------------------------------------
-   Slider / Progress
-   ------------------------------------------------------------------------- */
 QSlider::groove:horizontal {
     height: 6px;
     background-color: #DCD8E2;
@@ -632,9 +650,6 @@ QProgressBar::chunk {
     border-radius: 3px;
 }
 
-/* -------------------------------------------------------------------------
-   Menu / Tooltip
-   ------------------------------------------------------------------------- */
 QMenu {
     padding: 7px;
     background-color: %(surface)s;
@@ -698,20 +713,13 @@ QToolTip {
 style_sheet = _build_style_sheet()
 
 
-# =============================================================================
-# Helpers
-# =============================================================================
-
 def repolish(widget):
     u"""动态属性变化后重新刷新 QSS。"""
     if widget is None:
         return
-
     style = widget.style()
-
     if style is None:
         return
-
     style.unpolish(widget)
     style.polish(widget)
     widget.update()
@@ -721,7 +729,6 @@ def set_role(widget, role, enabled=True):
     u"""给 QWidget 设置 MuziTools 视觉角色。"""
     if widget is None:
         return widget
-
     property_name = {
         "surface": "muziSurface",
         "sidebar": "muziSidebar",
@@ -744,17 +751,10 @@ def set_role(widget, role, enabled=True):
         "nav_active": "muziNavActive",
         "search": "muziSearch",
     }.get(role)
-
     if property_name is None:
         return widget
-
-    widget.setProperty(
-        property_name,
-        bool(enabled)
-    )
-    repolish(
-        widget
-    )
+    widget.setProperty(property_name, bool(enabled))
+    repolish(widget)
     return widget
 
 
@@ -762,204 +762,100 @@ def apply_theme(widget):
     u"""把统一主题应用到一个窗口。"""
     if widget is None:
         return None
-
     try:
-        widget.setStyleSheet(
-            style_sheet
-        )
+        widget.setStyleSheet(style_sheet)
     except Exception:
         return widget
-
     return widget
 
 
 def make_title(text_value, parent=None):
     u"""创建主标题 Label。"""
-    label = QLabel(
-        text_value,
-        parent
-    )
-    set_role(
-        label,
-        "title"
-    )
+    label = QLabel(text_value, parent)
+    set_role(label, "title")
     return label
 
 
 def make_subtitle(text_value, parent=None):
     u"""创建自动换行的次级说明 Label。"""
-    label = QLabel(
-        text_value,
-        parent
-    )
-    set_role(
-        label,
-        "subtitle"
-    )
-    label.setWordWrap(
-        True
-    )
+    label = QLabel(text_value, parent)
+    set_role(label, "subtitle")
+    label.setWordWrap(True)
     return label
 
 
 def make_section_title(text_value, parent=None):
     u"""创建 Section 标题 Label。"""
-    label = QLabel(
-        text_value,
-        parent
-    )
-    set_role(
-        label,
-        "section_title"
-    )
+    label = QLabel(text_value, parent)
+    set_role(label, "section_title")
     return label
 
 
-def make_card(
-        parent=None,
-        margins=(16, 14, 16, 14),
-        spacing=8
-):
+def make_card(parent=None, margins=(16, 14, 16, 14), spacing=8):
     u"""创建标准浮层内容卡片。"""
-    card = QFrame(
-        parent
-    )
-    set_role(
-        card,
-        "card"
-    )
-
-    layout = QVBoxLayout(
-        card
-    )
-    layout.setContentsMargins(
-        margins[0],
-        margins[1],
-        margins[2],
-        margins[3]
-    )
-    layout.setSpacing(
-        spacing
-    )
-
+    card = QFrame(parent)
+    set_role(card, "card")
+    layout = QVBoxLayout(card)
+    layout.setContentsMargins(margins[0], margins[1], margins[2], margins[3])
+    layout.setSpacing(spacing)
     return card, layout
 
 
-def make_sub_card(
-        parent=None,
-        margins=(12, 10, 12, 10),
-        spacing=6
-):
+def make_sub_card(parent=None, margins=(12, 10, 12, 10), spacing=6):
     u"""创建次级柔和内容卡片。"""
-    card = QFrame(
-        parent
-    )
-    set_role(
-        card,
-        "sub_card"
-    )
-
-    layout = QVBoxLayout(
-        card
-    )
-    layout.setContentsMargins(
-        margins[0],
-        margins[1],
-        margins[2],
-        margins[3]
-    )
-    layout.setSpacing(
-        spacing
-    )
-
+    card = QFrame(parent)
+    set_role(card, "sub_card")
+    layout = QVBoxLayout(card)
+    layout.setContentsMargins(margins[0], margins[1], margins[2], margins[3])
+    layout.setSpacing(spacing)
     return card, layout
 
 
 def style_primary(button):
     u"""设置主要操作按钮。"""
-    return set_role(
-        button,
-        "primary"
-    )
+    return set_role(button, "primary")
 
 
 def style_secondary(button):
     u"""设置清晰但不过度强调的次级操作按钮。"""
-    return set_role(
-        button,
-        "secondary"
-    )
+    return set_role(button, "secondary")
 
 
 def style_danger(button):
     u"""设置危险操作按钮。"""
-    return set_role(
-        button,
-        "danger"
-    )
+    return set_role(button, "danger")
 
 
 def style_ghost(button):
     u"""设置弱强调 Ghost Button。"""
-    return set_role(
-        button,
-        "ghost"
-    )
+    return set_role(button, "ghost")
 
 
 def style_navigation(button, active=False):
     u"""设置 Sidebar / Step Navigation Button。"""
-    set_role(
-        button,
-        "nav"
-    )
-    set_role(
-        button,
-        "nav_active",
-        active
-    )
+    set_role(button, "nav")
+    set_role(button, "nav_active", active)
     return button
 
 
 def style_search(line_edit):
     u"""设置轻量搜索输入框。"""
-    return set_role(
-        line_edit,
-        "search"
-    )
+    return set_role(line_edit, "search")
 
 
-def style_window(
-        widget,
-        title=None,
-        minimum_width=None
-):
+def style_window(widget, title=None, minimum_width=None):
     u"""统一设置窗口标题、最小宽度和主题。"""
     if widget is None:
         return None
-
     if title:
-        widget.setWindowTitle(
-            title
-        )
-
+        widget.setWindowTitle(title)
     if minimum_width is not None:
-        widget.setMinimumWidth(
-            minimum_width
-        )
-
-    apply_theme(
-        widget
-    )
-
+        widget.setMinimumWidth(minimum_width)
+    apply_theme(widget)
     try:
-        widget.setAttribute(
-            Qt.WA_StyledBackground,
-            True
-        )
+        widget.setAttribute(Qt.WA_StyledBackground, True)
     except Exception:
         pass
-
     return widget
 
 
