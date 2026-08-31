@@ -9,19 +9,22 @@ Face Rig Workflow UI Controller
     1. 进入或回退 Step 时，从 Scene Config 恢复对应 UI；
     2. Step 01 恢复模型引用和 Mouth Joint Number；
     3. Step 02 恢复并实时持久化 Controller Settings；
-    4. 当前 UI Step 切换时应用 Face Workflow Scene Visibility；
+    4. 当前 UI Step 切换时直接应用 config.py 定义的场景显示规则；
     5. 不复制 Face Setup / Guide 的业务构建算法。
 
 设计原则：
     - Scene Config 是可恢复 UI 参数的唯一持久化来源；
     - UI 临时查看某个旧 Step 不修改正式 Workflow Progress；
-    - 修改 Step 02 参数会保存 Config，并把 Step 02 标记为 Dirty；
-    - Guide Locator 的位置由 Maya Scene 自身保存，不重复序列化到 UI Config。
+    - 修改 Step 02 参数会保存 Config，并把 Step 02 标记 Dirty；
+    - Guide Locator 的位置由 Maya Scene 自身保存；
+    - Workflow 显示规则直接定义在 systems.face.config，不再额外维护 workflow.py。
 """
 
 from __future__ import print_function
 
-from .. import workflow
+import maya.cmds as cmds
+
+from .. import config
 from . import face_rig_ui
 
 
@@ -36,11 +39,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             self,
             step_index
     ):
-        u"""
-        切换 UI Step，并恢复该 Step 的 Config 数据与场景显示状态。
-
-        正式 Workflow Progress 仍由 FaceBase 保存，本方法只控制当前查看页面。
-        """
+        u"""切换 UI Step，并恢复 Config 数据与场景显示状态。"""
         result = super(FaceRigWizard, self).set_current_step(
             step_index
         )
@@ -58,15 +57,13 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             self,
             step_index
     ):
-        u"""根据 Step Index 把 Scene Config 中已保存的数据回填到 UI。"""
+        u"""把当前 Step 已保存的 Scene Config 回填到 UI。"""
         if step_index == 0:
             return self.load_step1_config_to_ui()
 
         if step_index == 1:
             return self.load_step2_config_to_ui()
 
-        # Step 03 / 04 目前还是 Placeholder。
-        # 后续正式加入 Build / Finalize 参数时继续在这里接入对应 Loader。
         return True
 
     def load_step1_config_to_ui(self):
@@ -134,11 +131,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
     # =========================================================================
 
     def enter_step2(self):
-        u"""
-        进入 Step 02 后加载 Guide，并确保 Controller Settings 已持久化到 Config。
-
-        即使用户从未修改默认值，Scene Config 也会拥有完整的 Step 02 参数。
-        """
+        u"""进入 Step 02 后加载 Guide，并确保 Controller Settings 已保存。"""
         result = super(FaceRigWizard, self).enter_step2()
 
         if not result:
@@ -161,13 +154,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             self,
             value=None
     ):
-        u"""
-        Controller Settings 修改后立即保存到 Scene Config，并把 Step 02 标记 Dirty。
-
-        参数持久化和 Step Finalize 分开：
-            - 修改参数立即保存；
-            - 点击“下一步”仍负责 Guide Validation 和 Step Completed。
-        """
+        u"""Controller Settings 修改后立即保存，并把 Step 02 标记 Dirty。"""
         if self.loading_controller_settings:
             return
 
@@ -197,24 +184,221 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
     # Scene Visibility
     # =========================================================================
 
+    @staticmethod
+    def set_node_visibility(
+            node,
+            visible
+    ):
+        u"""设置一个 Face DAG 节点 Visibility，并保留原 Lock 状态。"""
+        if not node:
+            return False
+
+        if not cmds.objExists(node):
+            return False
+
+        plug = "{}.visibility".format(
+            node
+        )
+
+        if not cmds.objExists(plug):
+            return False
+
+        try:
+            was_locked = cmds.getAttr(
+                plug,
+                lock=True
+            )
+        except Exception:
+            return False
+
+        if was_locked:
+            cmds.setAttr(
+                plug,
+                lock=False
+            )
+
+        try:
+            cmds.setAttr(
+                plug,
+                bool(visible)
+            )
+        finally:
+            if was_locked:
+                cmds.setAttr(
+                    plug,
+                    lock=True
+                )
+
+        return True
+
+    @staticmethod
+    def get_long_node(node):
+        u"""返回唯一 Long Name。"""
+        if not node:
+            return None
+
+        matches = cmds.ls(
+            node,
+            long=True
+        )
+
+        if matches is None:
+            matches = []
+
+        if len(matches) != 1:
+            return None
+
+        return matches[0]
+
+    def get_model_branch_under_root(
+            self,
+            face_context,
+            node
+    ):
+        u"""返回一个模型在 Face Model Group 下所属的第一层分支。"""
+        model_root = self.get_long_node(
+            face_context.face_model_grp
+        )
+        current_node = self.get_long_node(
+            node
+        )
+
+        if not model_root or not current_node:
+            return None
+
+        while current_node:
+            parents = cmds.listRelatives(
+                current_node,
+                parent=True,
+                fullPath=True
+            )
+
+            if parents is None:
+                parents = []
+
+            if not parents:
+                return None
+
+            parent = parents[0]
+
+            if parent == model_root:
+                return current_node
+
+            current_node = parent
+
+        return None
+
+    def apply_setup_source_model_visibility(self, face_context):
+        u"""Step 01 / 02 只显示 Config 中保存的原始输入模型分支。"""
+        if not face_context.config_node_exists():
+            return False
+
+        setup_data = face_context.get_setup_data(
+            refresh=True
+        )
+        source_models = []
+
+        for attr_name in face_context.setup_message_attr_names:
+            model = setup_data.get(
+                attr_name
+            )
+
+            if not model:
+                continue
+
+            if not cmds.objExists(model):
+                continue
+
+            source_models.append(
+                model
+            )
+
+        if not source_models:
+            return False
+
+        model_children = cmds.listRelatives(
+            face_context.face_model_grp,
+            children=True,
+            type="transform",
+            fullPath=True
+        )
+
+        if model_children is None:
+            model_children = []
+
+        visible_branches = []
+
+        for source_model in source_models:
+            branch = self.get_model_branch_under_root(
+                face_context,
+                source_model
+            )
+
+            if not branch:
+                continue
+
+            if branch not in visible_branches:
+                visible_branches.append(
+                    branch
+                )
+
+        for model_child in model_children:
+            self.set_node_visibility(
+                model_child,
+                model_child in visible_branches
+            )
+
+        for source_model in source_models:
+            self.set_node_visibility(
+                source_model,
+                True
+            )
+
+        return True
+
     def apply_step_scene_visibility(
             self,
             step_index
     ):
-        u"""让当前查看 Step 自动控制 Face 顶层功能组 Visibility。"""
+        u"""切换 Step 时直接应用 config.py 定义的 Face 显示规则。"""
         if step_index < 0:
             return False
 
         step_value = step_index + 1
+        visibility_rule = config.face_step_visibility_rules.get(
+            step_value
+        )
+
+        if visibility_rule is None:
+            return False
+
         face_context = self.get_face_guide()
 
         try:
-            workflow.apply_step_scene_visibility(
-                face_context,
-                step_value
+            # 步骤 1：切换 Face 顶层功能组。
+            for group_attr_name in visibility_rule:
+                group_name = getattr(
+                    face_context,
+                    group_attr_name,
+                    None
+                )
+                self.set_node_visibility(
+                    group_name,
+                    visibility_rule[group_attr_name]
+                )
+
+            # 步骤 2：Step 01 / 02 只保留原始 Setup 模型可见。
+            model_display_rule = config.face_step_model_display_rules.get(
+                step_value,
+                "preserve"
             )
+
+            if model_display_rule == "setup_sources":
+                self.apply_setup_source_model_visibility(
+                    face_context
+                )
         except Exception:
-            # Visibility 属于工作流显示辅助，不应该阻止用户打开 Face Rig。
+            # Visibility 只是工作流辅助，不阻止 Face Rig 打开。
             return False
 
         return True
