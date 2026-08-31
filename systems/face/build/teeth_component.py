@@ -4,6 +4,7 @@ u"""
 
 """
 from systems.face import face_base
+from ....core import name_utils
 
 class  TeethComponent(face_base.FaceBase):
     def __init__(self):
@@ -12,17 +13,65 @@ class  TeethComponent(face_base.FaceBase):
 
 
     def collect_inputs (self) :
-        # 步骤 1：确认前置 Setup 数据有效。
-        self.validate_setup_config(require_mouth_jnt_number=False)
+        u"""收集并检查 Teeth Component 所需输入。"""
 
-        # 步骤 2：获取牙床 Guide。
-        self.teeth_guides = self.get_part_guides(part="teeth" )
+        # =========================================================================
+        # 步骤 1：检查 Step 01 Setup 数据
+        # =========================================================================
 
-        # 步骤 3：检查必须的 Guide 是否存在。
-        ...
+        self.validate_setup_config (
+            require_mouth_jnt_number = False
+        )
 
-        # 步骤 4：读取 Controller Settings。
-        ...
+        # =========================================================================
+        # 步骤 2：准备 Guide 名称
+        # =========================================================================
+
+        upper_teeth_guide_name = name_utils.Name.create_name (
+            node_type = "loc" ,
+            side = "md" ,
+            part = "upper_teeth" ,
+            function = "guide" ,
+            index = 1
+        )
+
+        lower_teeth_guide_name = name_utils.Name.create_name (
+            node_type = "loc" ,
+            side = "md" ,
+            part = "lower_teeth" ,
+            function = "guide" ,
+            index = 1
+        )
+
+        # =========================================================================
+        # 步骤 3：获取并检查 Guide
+        # =========================================================================
+
+        self.upper_teeth_guide = self.get_guide_node (
+            upper_teeth_guide_name ,
+            required = True
+        )
+
+        self.lower_teeth_guide = self.get_guide_node (
+            lower_teeth_guide_name ,
+            required = True
+        )
+
+        # =========================================================================
+        # 步骤 4：读取 Controller Settings
+        # =========================================================================
+
+        controller_settings = self.load_controller_settings ()
+
+        self.controller_global_scale = controller_settings.get (
+            "face_ctrl_global_scale"
+        )
+
+        self.controller_color = controller_settings.get (
+            "face_ctrl_color_md"
+        )
+
+        return True
 
 
     def prepare_data(self):
