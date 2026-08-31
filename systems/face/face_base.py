@@ -12,7 +12,7 @@ FaceBase 只负责：
     - FaceConfig 访问；
     - RigComponentBase 生命周期继承。
 
-Maya Node 的基础操作直接使用 PyMEL，不再经过通用 Wrapper。
+Maya Node 的常规操作优先直接使用 PyMEL；必要时允许使用 cmds。
 """
 
 from __future__ import print_function
@@ -54,6 +54,11 @@ class FaceBase(RigComponentBase):
         self.lower_teeth_model = None
         self.tongue_model = None
         self.gum_model = None
+
+        self.head_tweak_model = None
+        self.head_stretch_model = None
+        self.head_deform_model = None
+
         self.mouth_joint_count = None
 
     @staticmethod
@@ -171,13 +176,18 @@ class FaceBase(RigComponentBase):
         u"""从 FaceConfig 读取 Step 01 数据，并缓存为 PyNode。"""
         setup_data = self.config.load_setup()
 
-        self.head_model = setup_data.get("face_head_model")
-        self.left_eye_model = setup_data.get("face_lf_eye_model")
-        self.right_eye_model = setup_data.get("face_rt_eye_model")
+        self.head_model = setup_data.get("head_model")
+        self.left_eye_model = setup_data.get("left_eye_model")
+        self.right_eye_model = setup_data.get("right_eye_model")
         self.upper_teeth_model = setup_data.get("upper_teeth_model")
         self.lower_teeth_model = setup_data.get("lower_teeth_model")
-        self.tongue_model = setup_data.get("face_tongue_model")
-        self.gum_model = setup_data.get("face_gum_model")
+        self.tongue_model = setup_data.get("tongue_model")
+        self.gum_model = setup_data.get("gum_model")
+
+        self.head_tweak_model = setup_data.get("head_tweak_model")
+        self.head_stretch_model = setup_data.get("head_stretch_model")
+        self.head_deform_model = setup_data.get("head_deform_model")
+
         self.mouth_joint_count = setup_data.get("mouth_joint_count")
 
         return {
@@ -188,6 +198,9 @@ class FaceBase(RigComponentBase):
             "lower_teeth_model": self.lower_teeth_model,
             "tongue_model": self.tongue_model,
             "gum_model": self.gum_model,
+            "head_tweak_model": self.head_tweak_model,
+            "head_stretch_model": self.head_stretch_model,
+            "head_deform_model": self.head_deform_model,
             "mouth_joint_count": self.mouth_joint_count,
         }
 
@@ -233,7 +246,8 @@ class FaceBase(RigComponentBase):
 
     def validate_setup_data(
             self,
-            require_mouth_joint_count=True
+            require_mouth_joint_count=True,
+            require_work_models=False
     ):
         if not self.config.exists():
             raise RuntimeError(
@@ -271,6 +285,25 @@ class FaceBase(RigComponentBase):
                 property_name,
                 model
             )
+
+        if require_work_models:
+            work_models = [
+                (u"Head Tweak Model", "head_tweak_model"),
+                (u"Head Stretch Model", "head_stretch_model"),
+                (u"Head Deform Model", "head_deform_model"),
+            ]
+
+            for label, property_name in work_models:
+                model = getattr(self, property_name)
+                model = self.validate_model(
+                    model,
+                    label
+                )
+                setattr(
+                    self,
+                    property_name,
+                    model
+                )
 
         if require_mouth_joint_count:
             if self.mouth_joint_count is None:
