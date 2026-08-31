@@ -10,19 +10,161 @@ Face Rig Workflow UI Controller
     2. Step 01 恢复模型引用和 Mouth Joint Number；
     3. Step 02 恢复并实时持久化 Controller Settings；
     4. 当前 UI Step 切换时直接应用 config.py 定义的场景显示规则；
-    5. 不复制 Face Setup / Guide 的业务构建算法。
+    5. 让中间 Step 内容区域可滚动，底部操作栏始终保持可见；
+    6. 不复制 Face Setup / Guide 的业务构建算法。
 """
 
 from __future__ import print_function
 
 import maya.cmds as cmds
 
+try:
+    from PySide2.QtCore import Qt
+    from PySide2.QtWidgets import QScrollArea
+except ImportError:
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QScrollArea
+
 from .. import config
 from . import face_rig_ui
 
 
 class FaceRigWizard(face_rig_ui.FaceRigWizard):
-    u"""带 Config 恢复和 Scene Visibility 管理的正式 Face Rig Wizard。"""
+    u"""带 Config 恢复、滚动内容区和 Scene Visibility 管理的正式 Face Rig Wizard。"""
+
+    def __init__(self, parent=None):
+        u"""初始化正式 Face Rig Workflow UI。"""
+        super(FaceRigWizard, self).__init__(
+            parent
+        )
+
+        # Base UI 原来只限制宽度，较长 Step 会把窗口高度撑出屏幕。
+        # 正式 Workflow 允许窗口自由缩放，超出的 Step 内容交给 ScrollArea。
+        self.setMinimumSize(
+            600,
+            460
+        )
+        self.resize(
+            780,
+            720
+        )
+
+    # =========================================================================
+    # Main Layout
+    # =========================================================================
+
+    def create_layouts(self):
+        u"""
+        创建可缩放的主布局。
+
+        顶部标题和 Step Navigation 固定；
+        中间 Step 内容独立滚动；
+        底部 Status / 下一步始终固定在窗口底部。
+        """
+        main_layout = face_rig_ui.QVBoxLayout(
+            self
+        )
+        main_layout.setContentsMargins(
+            20,
+            18,
+            20,
+            16
+        )
+        main_layout.setSpacing(
+            14
+        )
+
+        # ---------------------------------------------------------------------
+        # 顶部固定区
+        # ---------------------------------------------------------------------
+
+        main_layout.addWidget(
+            self.title_label
+        )
+        main_layout.addWidget(
+            self.subtitle_label
+        )
+
+        step_frame = face_rig_ui.QFrame()
+        face_rig_ui.theme.set_role(
+            step_frame,
+            "sub_card"
+        )
+
+        step_layout = face_rig_ui.QHBoxLayout(
+            step_frame
+        )
+        step_layout.setContentsMargins(
+            7,
+            7,
+            7,
+            7
+        )
+        step_layout.setSpacing(
+            5
+        )
+
+        for step_button in self.step_buttons:
+            step_layout.addWidget(
+                step_button,
+                1
+            )
+
+        main_layout.addWidget(
+            step_frame
+        )
+
+        # ---------------------------------------------------------------------
+        # 中间可滚动 Step 内容区
+        # ---------------------------------------------------------------------
+
+        self.content_scroll_area = QScrollArea()
+        self.content_scroll_area.setWidgetResizable(
+            True
+        )
+        self.content_scroll_area.setFrameShape(
+            face_rig_ui.QFrame.NoFrame
+        )
+        self.content_scroll_area.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarAsNeeded
+        )
+        self.content_scroll_area.setVerticalScrollBarPolicy(
+            Qt.ScrollBarAsNeeded
+        )
+        self.content_scroll_area.setWidget(
+            self.page_stack
+        )
+
+        main_layout.addWidget(
+            self.content_scroll_area,
+            1
+        )
+
+        # ---------------------------------------------------------------------
+        # 底部固定操作区
+        # ---------------------------------------------------------------------
+
+        bottom_layout = face_rig_ui.QHBoxLayout()
+        bottom_layout.setContentsMargins(
+            0,
+            0,
+            0,
+            0
+        )
+        bottom_layout.setSpacing(
+            10
+        )
+        bottom_layout.addWidget(
+            self.status_label,
+            1
+        )
+        bottom_layout.addWidget(
+            self.next_button
+        )
+
+        main_layout.addLayout(
+            bottom_layout
+        )
 
     # =========================================================================
     # Step 02 UI Extension
@@ -119,6 +261,17 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         self.apply_step_scene_visibility(
             step_index
         )
+
+        if hasattr(
+                self,
+                "content_scroll_area"
+        ):
+            self.content_scroll_area.verticalScrollBar().setValue(
+                0
+            )
+            self.content_scroll_area.horizontalScrollBar().setValue(
+                0
+            )
 
         return result
 
