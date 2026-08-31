@@ -3,111 +3,53 @@ u"""
 Face Eyelid Builder
 ===================
 
-把旧 pipelineUtils.create_eyelid_joints_on_curve 的有效算法迁入正式 Face Build。
-
-设计边界：
-    1. Curve 查询和 Attachment 创建交给 core.curve_utils；
-    2. Transform / Joint 输入校验交给 core.transform_utils；
-    3. 通用 Transform Group 创建交给 core.scene_utils；
-    4. Aim Constraint 创建交给 core.constraint_utils；
-    5. Maya Undo Chunk 交给 core.scene_utils；
-    6. Joint 使用眼球中心作为 Pivot，沿 Local X 放射到 Curve Attachment；
-    7. 眼皮和眼袋使用同一套构建函数；
-    8. 构建失败时自动清理本次创建的 Rig Nodes Group。
+基于 Curve CV 创建以眼球中心为 Pivot 的放射状 Joint。
 """
 
 from __future__ import print_function
 
-import maya.cmds as cmds
+import pymel.core as pm
 
-from .....core import constraint_utils
-from .....core import curve_utils
-from .....core import name_utils
-from .....core import scene_utils
-from .....core import transform_utils
+from .....core import curve
+from .....core import name
+from .....core.undo import undo_chunk
 
 
-# =============================================================================
-# Naming
-# =============================================================================
-
-def validate_side(side):
-    u"""把方向统一成 lf / rt / md。"""
-    return name_utils.Name.normalize_side(
-        side
-    )
-
-
-def normalize_name_part(value, label):
-    u"""清理用于 Rig 命名的字段。"""
-    if value is None:
-        raise ValueError(
-            u"{}不能为空。".format(label)
-        )
-
-    value = str(value).strip().lower()
-    value = value.replace(" ", "_")
-    value = value.replace("-", "_")
-
-    while "__" in value:
-        value = value.replace("__", "_")
-
-    value = value.strip("_")
-
-    if not value:
-        raise ValueError(
-            u"{}不能为空。".format(label)
-        )
-
-    return value
+def resolve_transform(node, label):
+    if node is None:
+        raise ValueError(u"{} 不能为空。".format(label))
+    if isinstance(node, str):
+        if not pm.objExists(node):
+            raise RuntimeError(u"{} 不存在：{}".format(label, node))
+        node = pm.PyNode(node)
+    if node.nodeType() not in ["transform", "joint"]:
+        raise TypeError(u"{} 必须是 Transform 或 Joint：{}".format(label, node))
+    return node
 
 
-def create_rig_name(
-        node_type,
-        side,
-        region,
-        feature,
-        role,
-        index=1
-):
-    u"""创建 Eye Area Rig 名称。"""
-    side = validate_side(
-        side
-    )
-    region = normalize_name_part(
-        region,
-        "region"
-    )
-    feature = normalize_name_part(
-        feature,
-        "feature"
-    )
-    role = normalize_name_part(
-        role,
-        "role"
-    )
-
-    function_name = "{}_{}".format(
-        feature,
-        role
-    )
-
-    return name_utils.Name.create_name(
+def create_rig_name(node_type, side, region, feature, role, index=1):
+    return name.create_name(
         node_type=node_type,
-        side=side,
-        part=region,
-        function=function_name,
+        side=name.normalize_side(side),
+        part=name.normalize_name_part(region, "region"),
+        function="{}_{}".format(
+            name.normalize_name_part(feature, "feature"),
+            name.normalize_name_part(role, "role")
+        ),
         index=index
     )
 
 
-# =============================================================================
-# Build
-# =============================================================================
+def first_constraint(result):
+    if isinstance(result, (list, tuple)):
+        if not result:
+            return None
+        return result[0]
+    return result
 
-@scene_utils.undo_chunk
+
 def build_radial_curve_joints(
-        curve,
+        curve_node,
         eye_joint,
         up_object,
         side,
@@ -116,288 +58,155 @@ def build_radial_curve_joints(
         parent_group=None,
         joint_radius=0.2
 ):
-    u"""
-    基于 Curve CV 创建眼区放射状 Joint。
+    u"""基于 Curve CV 创建眼区放射状 Joint。"""
+    curve_shape = curve.get_curve_shape(curve_node)
+    eye_joint = resolve_transform(eye_joint, u"Eye Joint")
+    if eye_joint.nodeType() != "joint":
+        raise TypeError(u"Eye Joint 必须是 Joint：{}".format(eye_joint))
 
-    Eye Center
-        -> Aim Group
-            -> Bind Joint
-    Curve
-        -> pointOnCurveInfo
-            -> Attachment
-                -> Aim Constraint -> Aim Group
-    """
-    curve_utils.get_curve_shape(
-        curve
-    )
-    transform_utils.validate_transform(
-        eye_joint
-    )
-    transform_utils.validate_transform(
-        up_object
-    )
-
+    up_object = resolve_transform(up_object, u"Up Object")
     if parent_group is not None:
-        transform_utils.validate_transform(
-            parent_group
-        )
+        parent_group = resolve_transform(parent_group, u"Parent Group")
 
-    side = validate_side(
-        side
-    )
-    region = normalize_name_part(
-        region,
-        "region"
-    )
-    feature = normalize_name_part(
-        feature,
-        "feature"
-    )
-
-    cv_positions = curve_utils.get_curve_cv_positions(
-        curve,
-        world_space=True
-    )
+    side = name.normalize_side(side)
+    region = name.normalize_name_part(region, "region")
+    feature = name.normalize_name_part(feature, "feature")
+    cv_positions = curve.get_cv_positions(curve_shape, world_space=True)
 
     if not cv_positions:
-        raise RuntimeError(
-            u"Curve 没有可用于创建 Joint 的 CV：{}".format(
-                curve
-            )
-        )
+        raise RuntimeError(u"Curve 没有可用于创建 Joint 的 CV：{}".format(curve_shape))
 
     nodes_group_name = create_rig_name(
-        "grp",
-        side,
-        region,
-        feature,
-        "rig_nodes",
-        1
+        "grp", side, region, feature, "rig_nodes", 1
     )
     attachments_group_name = create_rig_name(
-        "grp",
-        side,
-        region,
-        feature,
-        "attaches",
-        1
+        "grp", side, region, feature, "attaches", 1
     )
     joints_group_name = create_rig_name(
-        "grp",
-        side,
-        region,
-        feature,
-        "joints",
-        1
+        "grp", side, region, feature, "joints", 1
     )
 
-    names_to_check = [
-        nodes_group_name,
-        attachments_group_name,
-        joints_group_name,
-    ]
-
-    for node_name in names_to_check:
-        if cmds.objExists(node_name):
+    for node_name in [nodes_group_name, attachments_group_name, joints_group_name]:
+        if pm.objExists(node_name):
             raise RuntimeError(
-                u"Eye Area Rig 节点已经存在，请先清理旧结果：{}".format(
-                    node_name
-                )
+                u"Eye Area Rig 节点已存在，请先清理旧结果：{}".format(node_name)
             )
 
     nodes_group = None
 
-    try:
-        nodes_group = scene_utils.create_node(
-            "transform",
-            nodes_group_name,
-            parent=parent_group
-        )
-        attachments_group = scene_utils.create_node(
-            "transform",
-            attachments_group_name,
-            parent=nodes_group
-        )
-        joints_group = scene_utils.create_node(
-            "transform",
-            joints_group_name,
-            parent=nodes_group
-        )
-
-        joints = []
-        aim_groups = []
-        attachments = []
-        point_on_curve_nodes = []
-        attachment_matrix_nodes = []
-        aim_constraints = []
-
-        eye_position = transform_utils.get_world_translation(
-            eye_joint
-        )
-
-        index = 0
-
-        while index < len(cv_positions):
-            item_index = index + 1
-            cv_position = cv_positions[index]
-
-            attachment_name = create_rig_name(
-                "grp",
-                side,
-                region,
-                feature,
-                "attach",
-                item_index
-            )
-            attachment_result = curve_utils.create_closest_point_attachment(
-                curve=curve,
-                world_position=cv_position,
-                name=attachment_name,
-                parent=attachments_group
-            )
-
-            attachment = attachment_result["transform"]
-            attachments.append(
-                attachment
-            )
-            point_on_curve_nodes.append(
-                attachment_result["point_on_curve"]
-            )
-
-            for matrix_node in attachment_result["matrix_nodes"]:
-                attachment_matrix_nodes.append(
-                    matrix_node
-                )
-
-            aim_group_name = create_rig_name(
-                "grp",
-                side,
-                region,
-                feature,
-                "aim",
-                item_index
-            )
-            aim_group = scene_utils.create_node(
+    with undo_chunk("build_radial_curve_joints"):
+        try:
+            nodes_group = pm.createNode(
                 "transform",
-                aim_group_name,
-                parent=joints_group
+                name=nodes_group_name,
+                parent=parent_group
             )
-            transform_utils.set_world_translation(
-                aim_group,
-                eye_position
+            attachments_group = pm.createNode(
+                "transform",
+                name=attachments_group_name,
+                parent=nodes_group
             )
-
-            aim_constraint_nodes = constraint_utils.create_constraint(
-                driver_objects=attachment,
-                driven_object=aim_group,
-                constraint_type="aimConstraint",
-                maintain_offset=False,
-                aimVector=[1.0, 0.0, 0.0],
-                upVector=[0.0, 1.0, 0.0],
-                worldUpType="objectrotation",
-                worldUpObject=up_object,
-                worldUpVector=[0.0, 1.0, 0.0]
+            joints_group = pm.createNode(
+                "transform",
+                name=joints_group_name,
+                parent=nodes_group
             )
 
-            if not aim_constraint_nodes:
-                raise RuntimeError(
-                    u"Aim Constraint 创建失败：{}".format(
-                        aim_group
+            joints = []
+            aim_groups = []
+            attachments = []
+            point_on_curve_nodes = []
+            attachment_matrix_nodes = []
+            aim_constraints = []
+            eye_position = eye_joint.getTranslation(space="world")
+
+            index = 0
+            while index < len(cv_positions):
+                item_index = index + 1
+                attachment_result = curve.create_closest_point_attachment(
+                    curve_node=curve_shape,
+                    world_position=cv_positions[index],
+                    name=create_rig_name(
+                        "grp", side, region, feature, "attach", item_index
+                    ),
+                    parent=attachments_group
+                )
+                attachment = attachment_result["transform"]
+                attachments.append(attachment)
+                point_on_curve_nodes.append(attachment_result["point_on_curve"])
+
+                for matrix_node in attachment_result["matrix_nodes"]:
+                    attachment_matrix_nodes.append(matrix_node)
+
+                aim_group = pm.createNode(
+                    "transform",
+                    name=create_rig_name(
+                        "grp", side, region, feature, "aim", item_index
+                    ),
+                    parent=joints_group
+                )
+                aim_group.setTranslation(eye_position, space="world")
+
+                constraint_result = pm.aimConstraint(
+                    attachment,
+                    aim_group,
+                    maintainOffset=False,
+                    aimVector=(1.0, 0.0, 0.0),
+                    upVector=(0.0, 1.0, 0.0),
+                    worldUpType="objectrotation",
+                    worldUpObject=up_object,
+                    worldUpVector=(0.0, 1.0, 0.0)
+                )
+                aim_constraint = first_constraint(constraint_result)
+                if aim_constraint is None:
+                    raise RuntimeError(
+                        u"Aim Constraint 创建失败：{}".format(aim_group)
                     )
+
+                joint = pm.createNode(
+                    "joint",
+                    name=create_rig_name(
+                        "jnt", side, region, feature, "bind", item_index
+                    ),
+                    parent=aim_group
                 )
+                attachment_position = attachment.getTranslation(space="world")
+                joint_distance = (attachment_position - eye_position).length()
+                joint.translate.set((joint_distance, 0.0, 0.0))
+                joint.rotate.set((0.0, 0.0, 0.0))
+                joint.radius.set(float(joint_radius))
 
-            aim_constraint = aim_constraint_nodes[0]
+                joints.append(joint)
+                aim_groups.append(aim_group)
+                aim_constraints.append(aim_constraint)
+                index += 1
 
-            joint_name = create_rig_name(
-                "jnt",
-                side,
-                region,
-                feature,
-                "bind",
-                item_index
-            )
-            joint = cmds.createNode(
-                "joint",
-                name=joint_name,
-                parent=aim_group
-            )
+            return {
+                "curve": curve_shape,
+                "eye_joint": eye_joint,
+                "up_object": up_object,
+                "nodes_group": nodes_group,
+                "attachments_group": attachments_group,
+                "joints_group": joints_group,
+                "attachments": attachments,
+                "point_on_curve_nodes": point_on_curve_nodes,
+                "attachment_matrix_nodes": attachment_matrix_nodes,
+                "aim_groups": aim_groups,
+                "aim_constraints": aim_constraints,
+                "joints": joints,
+                "side": side,
+                "region": region,
+                "feature": feature,
+            }
 
-            joint_distance = transform_utils.distance_between(
-                eye_joint,
-                attachment
-            )
-
-            cmds.setAttr(
-                joint + ".translateX",
-                joint_distance
-            )
-            cmds.setAttr(
-                joint + ".translateY",
-                0.0
-            )
-            cmds.setAttr(
-                joint + ".translateZ",
-                0.0
-            )
-            cmds.setAttr(
-                joint + ".rotateX",
-                0.0
-            )
-            cmds.setAttr(
-                joint + ".rotateY",
-                0.0
-            )
-            cmds.setAttr(
-                joint + ".rotateZ",
-                0.0
-            )
-            cmds.setAttr(
-                joint + ".radius",
-                joint_radius
-            )
-
-            joints.append(
-                joint
-            )
-            aim_groups.append(
-                aim_group
-            )
-            aim_constraints.append(
-                aim_constraint
-            )
-
-            index += 1
-
-        return {
-            "curve": curve,
-            "eye_joint": eye_joint,
-            "up_object": up_object,
-            "nodes_group": nodes_group,
-            "attachments_group": attachments_group,
-            "joints_group": joints_group,
-            "attachments": attachments,
-            "point_on_curve_nodes": point_on_curve_nodes,
-            "attachment_matrix_nodes": attachment_matrix_nodes,
-            "aim_groups": aim_groups,
-            "aim_constraints": aim_constraints,
-            "joints": joints,
-            "side": side,
-            "region": region,
-            "feature": feature,
-        }
-
-    except Exception:
-        if nodes_group is not None:
-            if cmds.objExists(nodes_group):
-                cmds.delete(
-                    nodes_group
-                )
-
-        raise
+        except Exception:
+            if nodes_group is not None and pm.objExists(nodes_group):
+                pm.delete(nodes_group)
+            raise
 
 
 def build_eyelid_joints(
-        curve,
+        curve_node,
         eye_joint,
         up_object,
         side,
@@ -405,9 +214,8 @@ def build_eyelid_joints(
         parent_group=None,
         joint_radius=0.2
 ):
-    u"""眼皮专用入口。"""
     return build_radial_curve_joints(
-        curve=curve,
+        curve_node=curve_node,
         eye_joint=eye_joint,
         up_object=up_object,
         side=side,
@@ -419,7 +227,7 @@ def build_eyelid_joints(
 
 
 def build_eye_bag_joints(
-        curve,
+        curve_node,
         eye_joint,
         up_object,
         side,
@@ -427,9 +235,8 @@ def build_eye_bag_joints(
         parent_group=None,
         joint_radius=0.2
 ):
-    u"""眼袋专用入口。"""
     return build_radial_curve_joints(
-        curve=curve,
+        curve_node=curve_node,
         eye_joint=eye_joint,
         up_object=up_object,
         side=side,

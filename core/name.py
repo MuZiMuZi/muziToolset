@@ -70,16 +70,13 @@ def normalize_side(side):
         side,
         "side"
     )
-
     result = side_aliases.get(
         key
     )
 
     if result is None:
         raise ValueError(
-            u"不支持的 Side：{}".format(
-                side
-            )
+            u"不支持的 Side：{}".format(side)
         )
 
     return result
@@ -92,12 +89,7 @@ def create_name(
         function,
         index=1
 ):
-    u"""
-    创建标准 Rig 名称。
-
-    格式：
-        [type]_[side]_[part]_[function]_[index]
-    """
+    u"""创建 [type]_[side]_[part]_[function]_[index] 标准名称。"""
     node_type = normalize_name_part(
         node_type,
         "node_type"
@@ -115,14 +107,9 @@ def create_name(
     )
 
     if not isinstance(index, int):
-        raise TypeError(
-            u"index 必须是整数。"
-        )
-
+        raise TypeError(u"index 必须是整数。")
     if index < 1:
-        raise ValueError(
-            u"index 不能小于 1。"
-        )
+        raise ValueError(u"index 不能小于 1。")
 
     return "{}_{}_{}_{}_{:03d}".format(
         node_type,
@@ -147,7 +134,6 @@ def create_attribute_name(
         function=function,
         index=1
     )
-
     return node_name.rsplit(
         "_",
         1
@@ -161,7 +147,7 @@ def create_unique_name(
         function,
         start_index=1
 ):
-    u"""根据当前 Maya Scene 返回第一个未被占用的标准名称。"""
+    u"""返回当前 Maya Scene 中第一个未占用的标准名称。"""
     index = start_index
 
     while True:
@@ -179,10 +165,59 @@ def create_unique_name(
         index += 1
 
 
+def mirror_name(node_name):
+    u"""交换标准名称中的 lf / rt Side Token。"""
+    node_name = str(node_name)
+
+    if "_lf_" in node_name:
+        return node_name.replace(
+            "_lf_",
+            "_rt_",
+            1
+        )
+
+    if "_rt_" in node_name:
+        return node_name.replace(
+            "_rt_",
+            "_lf_",
+            1
+        )
+
+    raise ValueError(
+        u"名称中没有可镜像的 lf / rt Side：{}".format(node_name)
+    )
+
+
+def replace_node_type(node_name, node_type):
+    u"""替换标准名称最前面的 Node Type Token。"""
+    node_name = str(node_name)
+    node_type = normalize_name_part(
+        node_type,
+        "node_type"
+    )
+
+    parts = node_name.split(
+        "_",
+        1
+    )
+
+    if len(parts) != 2:
+        raise ValueError(
+            u"不是有效的标准节点名称：{}".format(node_name)
+        )
+
+    return "{}_{}".format(
+        node_type,
+        parts[1]
+    )
+
+
 __all__ = [
     "normalize_name_part",
     "normalize_side",
     "create_name",
     "create_attribute_name",
     "create_unique_name",
+    "mirror_name",
+    "replace_node_type",
 ]

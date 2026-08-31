@@ -3,176 +3,234 @@ u"""
 Teeth Component
 ===============
 
-用于构建上下牙床的 Face Rig Component。
-
-继承关系：
-    ComponentBase
-        -> RigComponentBase
-            -> FaceBase
-                -> TeethComponent
-
-Teeth Component 使用 RigComponentBase 提供的标准 process_data()：
-    1. create_joint()；
-    2. create_controller()；
-    3. create_connection()。
-
-本类只负责上下牙床自己的输入、数据准备和三个具体构建阶段。
+PyMEL-first 的上下牙床 Face Rig Component。
 """
 
 from __future__ import print_function
 
-from ....core import name_utils
+import pymel.core as pm
+
+from ....core import control
+from ....core import name
 from .. import config
-from .. import face_base
+from ..face_base import FaceBase
 from ..guide import FaceGuide
 
 
-class TeethComponent(face_base.FaceBase):
+class TeethComponent(FaceBase):
     u"""Step 03 中的 Teeth Rig Component。"""
 
     def __init__(self):
-        u"""初始化 Teeth Component。"""
         super(TeethComponent, self).__init__()
-
         self.face_guide = FaceGuide()
-
-        self.upper_teeth_guide_name = None
-        self.lower_teeth_guide_name = None
         self.upper_teeth_guide = None
         self.lower_teeth_guide = None
-
-        self.upper_teeth_jnt_name = None
-        self.lower_teeth_jnt_name = None
-        self.upper_teeth_ctrl_name = None
-        self.lower_teeth_ctrl_name = None
-
+        self.upper_teeth_joint = None
+        self.lower_teeth_joint = None
+        self.upper_teeth_control = None
+        self.lower_teeth_control = None
+        self.upper_teeth_control_data = None
+        self.lower_teeth_control_data = None
+        self.connection_nodes = []
+        self.model_constraints = []
         self.controller_global_scale = 1.0
         self.controller_color = 17
         self.controller_size = 1.0
+        self.upper_teeth_joint_name = None
+        self.lower_teeth_joint_name = None
+        self.upper_teeth_control_name = None
+        self.lower_teeth_control_name = None
 
     def collect_inputs(self):
-        u"""收集并检查 Teeth Component 所需输入。"""
-
-        # =========================================================================
-        # 步骤 1：检查 Step 01 Setup 数据
-        # =========================================================================
-
-        self.validate_setup_config(
-            require_mouth_jnt_number=False
-        )
-
-        # =========================================================================
-        # 步骤 2：动态生成必须的 Teeth Guide 名称
-        # =========================================================================
-
-        self.upper_teeth_guide_name = name_utils.Name.create_name(
-            node_type="loc",
-            side="md",
-            part="upper_teeth",
-            function="guide",
-            index=1
-        )
-
-        self.lower_teeth_guide_name = name_utils.Name.create_name(
-            node_type="loc",
-            side="md",
-            part="lower_teeth",
-            function="guide",
-            index=1
-        )
-
-        # =========================================================================
-        # 步骤 3：获取并检查 Guide
-        # =========================================================================
-
+        self.validate_setup_data(require_mouth_joint_count=False)
         self.upper_teeth_guide = self.face_guide.get_guide_node(
-            self.upper_teeth_guide_name,
+            name.create_name("loc", "md", "upper_teeth", "guide", 1),
             required=True
         )
-
         self.lower_teeth_guide = self.face_guide.get_guide_node(
-            self.lower_teeth_guide_name,
+            name.create_name("loc", "md", "lower_teeth", "guide", 1),
             required=True
         )
-
-        # =========================================================================
-        # 步骤 4：读取 Controller Settings
-        # =========================================================================
 
         controller_settings = self.face_guide.load_controller_settings()
-
-        self.controller_global_scale = controller_settings.get(
-            config.face_controller_global_scale_attr,
-            1.0
+        self.controller_global_scale = float(
+            controller_settings.get(config.controller_global_scale_attribute, 1.0)
         )
-
-        self.controller_color = controller_settings.get(
-            config.face_controller_color_attr_names["md"],
-            17
+        self.controller_color = int(
+            controller_settings.get(config.controller_color_attributes["md"], 17)
         )
-
-        self.controller_size = controller_settings.get(
-            config.face_controller_size_attr_names["teeth"],
-            1.0
+        self.controller_size = float(
+            controller_settings.get(config.controller_size_attributes["teeth"], 1.0)
         )
-
         return True
 
     def prepare_data(self):
-        u"""准备 Teeth Joint / Controller 名称、层级和旧结果清理数据。"""
-
-        # 准备上牙床绑定 Joint 名称。
-        self.upper_teeth_jnt_name = name_utils.Name.create_name(
-            node_type="jnt",
-            side="md",
-            part="upper_teeth",
-            function="bind",
-            index=1
+        self.ensure_hierarchy()
+        self.upper_teeth_joint_name = name.create_name(
+            "jnt", "md", "upper_teeth", "bind", 1
         )
-
-        # 准备下牙床绑定 Joint 名称。
-        self.lower_teeth_jnt_name = name_utils.Name.create_name(
-            node_type="jnt",
-            side="md",
-            part="lower_teeth",
-            function="bind",
-            index=1
+        self.lower_teeth_joint_name = name.create_name(
+            "jnt", "md", "lower_teeth", "bind", 1
         )
-
-        # 准备上牙床 Controller 名称。
-        self.upper_teeth_ctrl_name = name_utils.Name.create_name(
-            node_type="ctrl",
-            side="md",
-            part="upper_teeth",
-            function="bind",
-            index=1
+        self.upper_teeth_control_name = name.create_name(
+            "ctrl", "md", "upper_teeth", "bind", 1
         )
-
-        # 准备下牙床 Controller 名称。
-        self.lower_teeth_ctrl_name = name_utils.Name.create_name(
-            node_type="ctrl",
-            side="md",
-            part="lower_teeth",
-            function="bind",
-            index=1
+        self.lower_teeth_control_name = name.create_name(
+            "ctrl", "md", "lower_teeth", "bind", 1
         )
+        self.delete_previous_result()
+        return True
 
+    def delete_previous_result(self):
+        node_names = [
+            self.upper_teeth_joint_name,
+            self.lower_teeth_joint_name,
+            name.replace_node_type(self.upper_teeth_control_name, "zero"),
+            name.replace_node_type(self.lower_teeth_control_name, "zero"),
+            name.create_name("mult", "md", "upper_teeth", "control", 1),
+            name.create_name("mult", "md", "lower_teeth", "control", 1),
+            name.create_name("dcmp", "md", "upper_teeth", "control", 1),
+            name.create_name("dcmp", "md", "lower_teeth", "control", 1),
+            name.create_name("parent", "md", "upper_teeth", "model", 1),
+            name.create_name("parent", "md", "lower_teeth", "model", 1),
+        ]
+        for node_name in node_names:
+            if pm.objExists(node_name):
+                pm.delete(pm.PyNode(node_name))
         return True
 
     def create_joint(self):
-        u"""根据 Teeth Guide 创建上下牙床绑定 Joint。"""
-        pass
+        self.upper_teeth_joint = pm.createNode(
+            "joint",
+            name=self.upper_teeth_joint_name,
+            parent=self.joint_group
+        )
+        self.lower_teeth_joint = pm.createNode(
+            "joint",
+            name=self.lower_teeth_joint_name,
+            parent=self.joint_group
+        )
+        self.upper_teeth_joint.setMatrix(
+            self.upper_teeth_guide.getMatrix(worldSpace=True),
+            worldSpace=True
+        )
+        self.lower_teeth_joint.setMatrix(
+            self.lower_teeth_guide.getMatrix(worldSpace=True),
+            worldSpace=True
+        )
+        self.upper_teeth_joint.radius.set(0.5)
+        self.lower_teeth_joint.radius.set(0.5)
+        return {
+            "upper": self.upper_teeth_joint,
+            "lower": self.lower_teeth_joint,
+        }
 
     def create_controller(self):
-        u"""创建上下牙床对应的标准 Controller Hierarchy。"""
-        pass
+        radius = self.controller_global_scale * self.controller_size
+        self.upper_teeth_control_data = control.create_control(
+            control_name=self.upper_teeth_control_name,
+            radius=radius,
+            axis="Y+",
+            target=self.upper_teeth_joint,
+            parent=self.control_group,
+            color=self.controller_color,
+            create_sub_control=False,
+            control_set=config.control_set_name
+        )
+        self.lower_teeth_control_data = control.create_control(
+            control_name=self.lower_teeth_control_name,
+            radius=radius,
+            axis="Y+",
+            target=self.lower_teeth_joint,
+            parent=self.control_group,
+            color=self.controller_color,
+            create_sub_control=False,
+            control_set=config.control_set_name
+        )
+        self.upper_teeth_control = self.upper_teeth_control_data["control"]
+        self.lower_teeth_control = self.lower_teeth_control_data["control"]
+        return {
+            "upper": self.upper_teeth_control_data,
+            "lower": self.lower_teeth_control_data,
+        }
+
+    def connect_control_to_joint(self, control_output, joint, part):
+        mult_matrix = pm.createNode(
+            "multMatrix",
+            name=name.create_name("mult", "md", part, "control", 1)
+        )
+        decompose_matrix = pm.createNode(
+            "decomposeMatrix",
+            name=name.create_name("dcmp", "md", part, "control", 1)
+        )
+        control_output.worldMatrix[0] >> mult_matrix.matrixIn[0]
+        joint_parent = joint.getParent()
+        if joint_parent is not None:
+            joint_parent.worldInverseMatrix[0] >> mult_matrix.matrixIn[1]
+        mult_matrix.matrixSum >> decompose_matrix.inputMatrix
+        decompose_matrix.outputTranslate >> joint.translate
+        decompose_matrix.outputRotate >> joint.rotate
+        self.connection_nodes.append(mult_matrix)
+        self.connection_nodes.append(decompose_matrix)
+        return {
+            "mult_matrix": mult_matrix,
+            "decompose_matrix": decompose_matrix,
+        }
+
+    def constrain_model(self, joint, model, part):
+        if model is None:
+            return None
+        result = pm.parentConstraint(
+            joint,
+            model,
+            maintainOffset=True,
+            name=name.create_name("parent", "md", part, "model", 1)
+        )
+        if isinstance(result, (list, tuple)):
+            constraint = result[0]
+        else:
+            constraint = result
+        self.model_constraints.append(constraint)
+        return constraint
 
     def create_connection(self):
-        u"""建立 Teeth Controller、Joint 和模型之间的驱动关系。"""
-        pass
+        upper_connection = self.connect_control_to_joint(
+            self.upper_teeth_control_data["output"],
+            self.upper_teeth_joint,
+            "upper_teeth"
+        )
+        lower_connection = self.connect_control_to_joint(
+            self.lower_teeth_control_data["output"],
+            self.lower_teeth_joint,
+            "lower_teeth"
+        )
+        upper_constraint = self.constrain_model(
+            self.upper_teeth_joint,
+            self.upper_teeth_model,
+            "upper_teeth"
+        )
+        lower_constraint = self.constrain_model(
+            self.lower_teeth_joint,
+            self.lower_teeth_model,
+            "lower_teeth"
+        )
+        return {
+            "upper_connection": upper_connection,
+            "lower_connection": lower_connection,
+            "upper_model_constraint": upper_constraint,
+            "lower_model_constraint": lower_constraint,
+        }
 
     def finalize_step(self):
-        u"""检查 Teeth Component 最终结果并整理显示 / Metadata。"""
+        required_nodes = [
+            self.upper_teeth_joint,
+            self.lower_teeth_joint,
+            self.upper_teeth_control,
+            self.lower_teeth_control,
+        ]
+        for node in required_nodes:
+            if node is None or not pm.objExists(node):
+                raise RuntimeError(u"Teeth Component 构建结果不完整：{}".format(node))
         return True
 
 

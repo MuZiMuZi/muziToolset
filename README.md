@@ -1,26 +1,36 @@
 # Muzi Toolset
 
-Muzi Toolset 正在重建为 **PyMEL-first Maya Rigging Framework**。
+Muzi Toolset 是一个 **PyMEL-first Maya Rigging Framework**，当前正式开发重点是程序化 Face Rig。
 
-## 当前方向
+## 核心原则
 
-Maya Node 的创建、属性、连接、父子关系等基础操作直接使用 PyMEL：
+```text
+Maya Node / Attribute / Connection
+                ↓
+              PyMEL
+
+项目自己的 Rig Algorithm / Rule
+                ↓
+              core
+
+完整 Rig Business
+                ↓
+             systems
+```
+
+不再为了对象化重复维护 Joint / Transform / Attribute Wrapper。
 
 ```python
 import pymel.core as pm
 
-joint = pm.joint(
-    name="jnt_md_test_bind_001",
-    position=(0, 0, 0),
-    radius=0.1
+joint = pm.createNode(
+    "joint",
+    name="jnt_md_test_bind_001"
 )
-
-joint.radius.set(0.2)
+joint.radius.set(0.1)
 ```
 
-不再为了对象化而额外维护 Joint / Transform / Attribute 包装类。
-
-## 正式结构
+## 项目结构
 
 ```text
 muziToolset/
@@ -29,61 +39,38 @@ muziToolset/
 │  ├─ component_base.py
 │  └─ face/
 ├─ tools/
+├─ resources/
 └─ legacy_reference/
 ```
 
-## 命名规范
-
-正式运行区统一使用：
+## Face Rig Workflow
 
 ```text
-folder / module / resource file    snake_case
-function / method                  snake_case
-variable                           snake_case
-module config variable             snake_case
-class                              PascalCase
+Step 01  FaceSetup
+Step 02  FaceGuide
+Step 03  FaceBuild
+Step 04  FaceFinalize
 ```
 
-项目自定义变量全部小写，包括 `config.py` 顶层配置变量。
-
-示例：
+打开 UI：
 
 ```python
-face_side = "md"
-guide_version = "1.0"
-controller_default_settings = {}
-
-class FaceConfig(object):
-    pass
+import muziToolset.systems.face as face
+face.show()
 ```
 
-`README.md`、`LICENSE` 和平台约定文件保持标准名称；历史归档内部不重命名。
+使用目标 Maya 的 `mayapy` 安装与该 Maya 版本匹配的 PyMEL。正式运行区不使用 `maya.cmds`；只有低层几何计算需要时使用 `maya.api.OpenMaya`。
 
-## 架构原则
-
-- PyMEL 是默认 Maya Node 操作层；
-- `core/` 不重复包装 PyMEL 已经清晰提供的基础能力；
-- `systems/` 负责完整 Rig Component；
-- `tools/` 负责用户交互和工作流入口；
-- 历史接口不兼容、不恢复；
-- `legacy_reference/` 永远不能被正式代码 import。
-
-## Maya 依赖
-
-在目标 Maya 的 Python 环境中安装与该 Maya 版本兼容的 PyMEL：
-
-```bash
-mayapy -m pip install pymel
-```
-
-依赖文件：
+## 命名
 
 ```text
-requirements_maya.txt
+folder / file          snake_case
+function / method      snake_case
+variable               snake_case
+config variable        snake_case
+class                  PascalCase
 ```
 
-当前 Face Rig 迁移状态：
+## 历史存档
 
-```text
-systems/face/pymel_migration.md
-```
+旧 cmds 架构固定保存在 `cmds-archive-2026-08-31`；其它历史实现保存在 `legacy_reference/`。正式代码不会 import 历史实现。

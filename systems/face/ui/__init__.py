@@ -1,16 +1,33 @@
 # coding=utf-8
-u"""Face Rig UI Package。"""
+u"""Face Rig UI。"""
 
 from __future__ import print_function
 
+from .workflow_controller import FaceRigWindow
+
+
+window_instance = None
+
 
 def show():
-    u"""创建并返回带 Config 恢复和 Workflow Visibility 的正式 Face Rig Wizard。"""
-    from . import workflow_controller
+    u"""打开唯一 Face Rig Window。"""
+    global window_instance
 
-    return workflow_controller.main()
+    if window_instance is not None:
+        try:
+            window_instance.close()
+            window_instance.deleteLater()
+        except Exception:
+            pass
+
+    window_instance = FaceRigWindow()
+    window_instance.show()
+    window_instance.raise_()
+    window_instance.activateWindow()
+    return window_instance
 
 
 __all__ = [
+    "FaceRigWindow",
     "show",
 ]
