@@ -3,27 +3,32 @@ u"""
 Teeth Component
 ===============
 
-用于构建上下牙床的简单 Face Component。
+用于构建上下牙床的 Face Rig Component。
 
-当前构建流程统一遵循 systems.component_base.ComponentBase：
+继承关系：
+    ComponentBase
+        -> RigComponentBase
+            -> FaceBase
+                -> TeethComponent
+
+Teeth Component 使用 RigComponentBase 提供的标准 process_data()：
     1. create_joint()；
     2. create_controller()；
     3. create_connection()。
 
-Teeth Component 自己只负责实现具体牙床业务，不再重复维护 process_data()。
+本类只负责上下牙床自己的输入、数据准备和三个具体构建阶段。
 """
 
 from __future__ import print_function
 
 from ....core import name_utils
-from ... import component_base
 from .. import config
 from .. import face_base
 from ..guide import FaceGuide
 
 
-class TeethComponent(component_base.ComponentBase, face_base.FaceBase):
-    u"""Step 03 中的 Teeth Component。"""
+class TeethComponent(face_base.FaceBase):
+    u"""Step 03 中的 Teeth Rig Component。"""
 
     def __init__(self):
         u"""初始化 Teeth Component。"""
