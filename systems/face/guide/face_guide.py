@@ -11,7 +11,8 @@ Face Guide Manager。
     3. 提供稳定的 Guide 节点查询接口；
     4. 从 guide_data 读取固定 Template Contract；
     5. “下一步”时检查 face_guide.ma 中全部 Locator 是否仍然存在；
-    6. 保存 Guide 和 Controller Settings 到统一 Face Config。
+    6. 保存 Guide 和 Controller Settings 到统一 Face Config；
+    7. Step 02 完成后把 Face Workflow 当前进度推进到 Step 03。
 
 重要边界：
     - 固定节点名称 / Guide 顺序 / 默认参数放在 guide_data.py；
@@ -70,8 +71,11 @@ class FaceGuide(face_base.FaceBase):
 
     def prepare_data(self):
         u"""确保 Face Hierarchy 和 Config 可用于保存 Step 02。"""
+        # 确保 Face Rig 基础层级存在，避免 Guide 保存到不完整层级。
         self.ensure_hierarchy()
-        self.ensure_config_node()
+
+        # 创建或复用 Workflow / Step Config 分隔结构，旧场景也会按新 Schema 整理显示。
+        self.ensure_config_layout()
         return True
 
     def process_data(self):
@@ -94,11 +98,24 @@ class FaceGuide(face_base.FaceBase):
 
     def finalize_step(self):
         u"""保存 Guide，并把 Step 02 正式标记为完成。"""
+        # 保存 Guide Root / Move Ctrl / Version，作为后续 Build 的稳定输入。
         self.save_guide_config()
+
+        # 正式记录 Step 02 已完成。
         self.set_step_completed(
             completed=True
         )
+
+        # Guide 重新提交后，旧的 Step 03 / 04 结果必须失效。
         self.invalidate_later_steps()
+
+        # Step 02 完成后，下一次打开 Face Rig 应直接回到 Step 03 Build。
+        self.set_current_step_value(
+            3
+        )
+
+        # 最后重新整理 Config Attribute 顺序，确保 Step 02 数据集中显示。
+        self.organize_config_attributes()
         return True
 
     # =========================================================================
