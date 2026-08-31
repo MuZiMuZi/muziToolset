@@ -11,7 +11,8 @@ Face Rig Workflow UI Controller
     3. Step 02 恢复并实时持久化 Controller Settings；
     4. 当前 UI Step 切换时直接应用 config.py 定义的场景显示规则；
     5. 让中间 Step 内容区域可滚动，底部操作栏始终保持可见；
-    6. 不复制 Face Setup / Guide 的业务构建算法。
+    6. 把需要人工查看的 Workflow / Controller Config 显示在 Maya Channel Box；
+    7. 不复制 Face Setup / Guide 的业务构建算法。
 """
 
 from __future__ import print_function
@@ -167,6 +168,133 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         )
 
     # =========================================================================
+    # Config Channel Box
+    # =========================================================================
+
+    @staticmethod
+    def get_channel_box_config_attributes(face_context):
+        u"""返回需要在 Maya Channel Box 中显示的 Face Config 属性。"""
+        attr_names = [
+            face_context.workflow_section_attr_name,
+            face_context.current_step_attr_name,
+            "mouth_jnt_number",
+        ]
+
+        step_value = 1
+
+        while step_value <= face_context.last_step_value:
+            section_attr_name = face_context.step_section_attr_names.get(
+                step_value
+            )
+
+            if section_attr_name:
+                attr_names.append(
+                    section_attr_name
+                )
+
+            attr_names.append(
+                face_context.get_step_completed_attr_name(
+                    step_value
+                )
+            )
+
+            step_value += 1
+
+        for attr_name in config.face_controller_default_settings:
+            attr_names.append(
+                attr_name
+            )
+
+        return attr_names
+
+    @staticmethod
+    def get_read_only_channel_box_attributes(face_context):
+        u"""返回只用于显示 Workflow 状态、不允许人工修改的 Config 属性。"""
+        attr_names = [
+            face_context.workflow_section_attr_name,
+            face_context.current_step_attr_name,
+        ]
+
+        step_value = 1
+
+        while step_value <= face_context.last_step_value:
+            section_attr_name = face_context.step_section_attr_names.get(
+                step_value
+            )
+
+            if section_attr_name:
+                attr_names.append(
+                    section_attr_name
+                )
+
+            attr_names.append(
+                face_context.get_step_completed_attr_name(
+                    step_value
+                )
+            )
+
+            step_value += 1
+
+        return attr_names
+
+    def apply_config_channel_box_display(self, face_context=None):
+        u"""
+        应用 Face Config 的 Channel Box 显示规则。
+
+        Workflow 状态和 Step 分隔只读显示；
+        Mouth Joint Number 与 Controller Settings 可以直接在 Channel Box 中修改；
+        所有显示属性都保持 non-keyable，避免被当作动画通道。
+        """
+        if face_context is None:
+            face_context = self.get_face_guide()
+
+        if face_context is None:
+            return False
+
+        if not face_context.config_node_exists():
+            return False
+
+        attr_names = self.get_channel_box_config_attributes(
+            face_context
+        )
+        read_only_attr_names = self.get_read_only_channel_box_attributes(
+            face_context
+        )
+
+        for attr_name in attr_names:
+            plug = "{}.{}".format(
+                face_context.config_node,
+                attr_name
+            )
+
+            if not cmds.objExists(plug):
+                continue
+
+            try:
+                cmds.setAttr(
+                    plug,
+                    lock=False
+                )
+                cmds.setAttr(
+                    plug,
+                    keyable=False
+                )
+                cmds.setAttr(
+                    plug,
+                    channelBox=True
+                )
+
+                if attr_name in read_only_attr_names:
+                    cmds.setAttr(
+                        plug,
+                        lock=True
+                    )
+            except Exception:
+                continue
+
+        return True
+
+    # =========================================================================
     # Step 02 UI Extension
     # =========================================================================
 
@@ -261,6 +389,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         self.apply_step_scene_visibility(
             step_index
         )
+        self.apply_config_channel_box_display()
 
         if hasattr(
                 self,
@@ -462,6 +591,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         )
         face_context.ensure_config_layout()
         face_context.organize_config_attributes()
+        self.apply_config_channel_box_display(
+            face_context
+        )
         return True
 
     def controller_settings_changed(
@@ -481,6 +613,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             )
             face_context.ensure_config_layout()
             face_context.organize_config_attributes()
+            self.apply_config_channel_box_display(
+                face_context
+            )
         except Exception as error:
             self.status_label.setText(
                 u"Controller Settings 保存失败：{}".format(
@@ -490,12 +625,15 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             return
 
         self.mark_step2_dirty()
+        self.apply_config_channel_box_display(
+            face_context
+        )
         self.status_label.setText(
             u"Controller Settings 已保存到 Scene Config，Step 02 需要重新提交"
         )
 
     def finalize_step2(self):
-        u"""提交 Step 02 后整理 Config Attribute 顺序。"""
+        u"""提交 Step 02 后整理 Config Attribute 顺序和 Channel Box 显示。"""
         result = super(FaceRigWizard, self).finalize_step2()
 
         if not result:
@@ -503,6 +641,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
 
         face_context = self.get_face_guide()
         face_context.organize_config_attributes()
+        self.apply_config_channel_box_display(
+            face_context
+        )
         return True
 
     # =========================================================================
