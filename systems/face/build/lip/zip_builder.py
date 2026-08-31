@@ -111,7 +111,7 @@ def insert_zip_offset_group(
         index
 ):
     u"""在 Joint 上方插入 Zip Offset Group，并保持当前世界姿态。"""
-    parent = hierarchy_utils.Hierarchy.get_parent(
+    parent = hierarchy_utils.get_parent(
         joint
     )
     world_matrix = transform_utils.get_world_matrix(
@@ -136,7 +136,7 @@ def insert_zip_offset_group(
     )
 
     if parent is not None:
-        zip_offset = hierarchy_utils.Hierarchy.parent(
+        zip_offset = hierarchy_utils.parent(
             zip_offset,
             parent
         )
@@ -145,7 +145,7 @@ def insert_zip_offset_group(
         zip_offset,
         world_matrix
     )
-    joint = hierarchy_utils.Hierarchy.parent(
+    joint = hierarchy_utils.parent(
         joint,
         zip_offset
     )
@@ -813,15 +813,15 @@ def build_zip_lip(
             if cmds.nodeType(utility_node) != "transform":
                 continue
 
-            parent = hierarchy_utils.Hierarchy.get_parent(
+            utility_parent_node = hierarchy_utils.get_parent(
                 utility_node,
                 full_path=True
             )
 
-            if parent:
+            if utility_parent_node:
                 continue
 
-            hierarchy_utils.Hierarchy.parent(
+            hierarchy_utils.parent(
                 utility_node,
                 node_group
             )
@@ -848,28 +848,21 @@ def build_zip_lip(
             if not cmds.objExists(zip_offset):
                 continue
 
-            children = hierarchy_utils.Hierarchy.get_children(
+            children = hierarchy_utils.get_children(
                 zip_offset,
                 node_type="joint",
                 full_path=True
             )
-            parent = hierarchy_utils.Hierarchy.get_parent(
+            original_parent = hierarchy_utils.get_parent(
                 zip_offset,
                 full_path=True
             )
 
             for child_joint in children:
-                if parent is None:
-                    cmds.parent(
-                        child_joint,
-                        world=True,
-                        absolute=True
-                    )
-                else:
-                    hierarchy_utils.Hierarchy.parent(
-                        child_joint,
-                        parent
-                    )
+                hierarchy_utils.parent(
+                    child_joint,
+                    original_parent
+                )
 
             if cmds.objExists(zip_offset):
                 cmds.delete(
