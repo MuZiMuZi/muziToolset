@@ -148,15 +148,9 @@ Class                                PascalCase
 
 `systems` 实现完整且可复用的 Rig Workflow、Component 和 Builder。
 
-## Step 生命周期
+## Component 生命周期
 
-凡是“按步骤提交、可以返回修改并重新执行”的 System Step，统一继承：
-
-```python
-from muziToolset.systems.common import StepBase
-```
-
-固定生命周期：
+所有具有明确构建过程的 System / Component，统一遵循 `systems/component_base.py` 定义的四阶段生命周期：
 
 ```text
 collect_inputs()
@@ -168,13 +162,65 @@ process_data()
 finalize_step()
 ```
 
-统一入口：
+统一执行入口：
 
 ```python
 run_step()
 ```
 
-不要重新发明另一套同义顶层生命周期。
+基础继承：
+
+```python
+from muziToolset.systems import ComponentBase
+```
+
+`ComponentBase` 只规定“输入 → 准备 → 处理 → 整理”这一套顶层 Workflow，不依赖 Maya，也不限制具体 Component 在 `process_data()` 中做什么。
+
+## Rig Component 构建规范
+
+只要属于真正的 Rig 构建，并且需要 Joint、Controller、Connection 等多层级参与，就继承：
+
+```python
+from muziToolset.systems import RigComponentBase
+```
+
+`RigComponentBase` 继承 `ComponentBase`，并把 `process_data()` 固定拆成：
+
+```text
+process_data()
+      │
+      ├─ create_joint()
+      ├─ create_controller()
+      └─ create_connection()
+```
+
+因此标准 Rig Component 最终结构统一为：
+
+```text
+collect_inputs()
+      ↓
+prepare_data()
+      ↓
+process_data()
+      ├─ create_joint()
+      ├─ create_controller()
+      └─ create_connection()
+      ↓
+finalize_step()
+```
+
+适用于：
+
+- Single Control Rig；
+- FK / IK / IK-FK Rig；
+- Face Rig；
+- Jaw / Teeth / Tongue / Eye / Brow；
+- Body / Spine / Ribbon；
+- 后续其它具有相同构建语义的 Rig Component。
+
+复杂 Rig 可以继续在 `create_joint()`、`create_controller()`、`create_connection()` 内部拆分更小的方法，但顶层结构保持一致。
+
+Setup / Guide 等特殊阶段可以继承同一套 Component 生命周期，并覆盖自己的 `process_data()`，不强迫实现无意义的 Joint / Controller / Connection。
 
 ## Face System
 
@@ -214,6 +260,22 @@ systems/face/
 docs/architecture/face-system.md
 ```
 
+### Face 继承关系
+
+Face 本身就是 Rig System，因此 `FaceBase` 直接继承统一 Rig Component 构建规范：
+
+```text
+ComponentBase
+      ↓
+RigComponentBase
+      ↓
+FaceBase
+      ↓
+Teeth / Jaw / Tongue / Eye / Brow / ...
+```
+
+`FaceSetup`、`FaceGuide` 等特殊 Workflow 阶段仍然继承 `FaceBase`，但会覆盖自己的 `process_data()`；具体 Build Component 则直接复用 `RigComponentBase.process_data()` 的三段构建规范。
+
 ### Step ≠ Component
 
 ```text
@@ -232,12 +294,13 @@ Core
 
 简单 Component 优先保持单文件；只有真正复杂后再拆 Package。
 
-Component 可以复用四阶段构建思路，但 Component 完成不代表整个 Step 03 Completed。
+Component 完成不代表整个 Step 03 Completed。
 
 ### FaceBase 边界
 
-`face_base.py` 只负责所有 Face Step 共用的：
+`face_base.py` 负责所有 Face Component 共用的：
 
+- 统一 Rig Component 构建规范继承；
 - Face Hierarchy；
 - Face Config；
 - Setup 公共数据；
