@@ -218,6 +218,56 @@ face_controller_module_order = [
 
 
 # ============================================================
+# Face Workflow 显示规则
+# ============================================================
+
+# 这里只定义每一步需要显示的顶层 Face Group，不执行 Maya 操作。
+face_step_visibility_rules = {
+    1: {
+        "face_model_grp": True,
+        "face_guide_grp": False,
+        "face_ctrl_grp": False,
+        "face_jnt_grp": False,
+        "face_rig_nodes_grp": False,
+        "face_pos_driver_grp": False,
+    },
+    2: {
+        "face_model_grp": True,
+        "face_guide_grp": True,
+        "face_ctrl_grp": False,
+        "face_jnt_grp": False,
+        "face_rig_nodes_grp": False,
+        "face_pos_driver_grp": False,
+    },
+    3: {
+        "face_model_grp": True,
+        "face_guide_grp": False,
+        "face_ctrl_grp": True,
+        "face_jnt_grp": True,
+        "face_rig_nodes_grp": False,
+        "face_pos_driver_grp": False,
+    },
+    4: {
+        "face_model_grp": True,
+        "face_guide_grp": False,
+        "face_ctrl_grp": True,
+        "face_jnt_grp": False,
+        "face_rig_nodes_grp": False,
+        "face_pos_driver_grp": False,
+    },
+}
+
+# Step 01 / 02 只显示 Setup 保存的原始输入模型。
+# Step 03 / 04 暂时保留当前模型内部显示状态，后续正式 Build 时再细化。
+face_step_model_display_rules = {
+    1: "setup_sources",
+    2: "setup_sources",
+    3: "preserve",
+    4: "preserve",
+}
+
+
+# ============================================================
 # Face 默认设置
 # ============================================================
 
