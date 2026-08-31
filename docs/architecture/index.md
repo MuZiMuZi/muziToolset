@@ -46,13 +46,12 @@ ui/
 
 `systems` 实现完整且可复用的 Rig Workflow / Component / Builder。
 
-Face System 已经按四步 Workflow 分包：
+Face System 按四步 Workflow 分包：
 
 ```text
 systems/face/
 ├── face_base.py
 ├── config.py
-├── workflow.py
 ├── setup/
 ├── guide/
 ├── build/
@@ -64,6 +63,8 @@ systems/face/
 其中：
 
 ```text
+config      Face 静态名称、默认参数和 Step 显示规则
+
 setup       Step 01 输入和基础场景
 
 guide       Step 02 Template / Query / Mirror / Repair / Validation
@@ -74,10 +75,17 @@ finalize    Step 04 Final Check / Cleanup / Publish
 
 data        跨 Step 的 Face 公共数据
 
-workflow    跨 Step 的场景显示状态
-
-ui          Face Wizard View / Workflow UI Controller
+ui          Face Wizard View / Config Restore / Step Visibility
 ```
+
+Guide 当前保持单文件实现：
+
+```text
+systems/face/guide/
+└── face_guide.py
+```
+
+不再为了 Guide Data、Template、Mirror 或 Workflow Visibility 单独增加中间管理文件。
 
 详见：[Face System Architecture](face-system.md)。
 
@@ -92,16 +100,16 @@ Step
     用户工作流阶段
 
 Component
-    Jaw / Lip / Eyelid / Brow 等面部绑定模块
+    Teeth / Tongue / Jaw / Lip / Eyelid / Brow 等面部绑定模块
 
 Builder
     Curve Attachment / Zip / Radial Joint 等可组合算法
 
 Core
-    Matrix / Curve / Joint / DAG / Attribute 等通用 Maya 能力
+    Matrix / Curve / Joint / DAG / Attribute / Naming 等通用 Maya 能力
 ```
 
-所有可重新提交的 Step 统一继承 `systems.common.StepBase`：
+所有可重新提交的 Step 统一使用：
 
 ```text
 collect_inputs()
@@ -113,11 +121,13 @@ process_data()
 finalize_step()
 ```
 
-## 为什么不再使用万能 Utils
+简单 Component 也可以复用这套四阶段构建思路，但 Component 本身不等于整个 Workflow Step。
+
+## 为什么不再使用万能 Utils，也不做无意义拆分
 
 早期项目存在 `pipelineUtils.py` 一类综合模块，把动画、Curve、Surface、Constraint、Face、Controller、文件 IO 等内容放在同一个类中。
 
-现在改成“一个 Maya 领域一个模块”：
+现在 Core 改成“一个 Maya 领域一个模块”：
 
 ```text
 animation_utils.py
@@ -132,4 +142,24 @@ skin_utils.py
 ...
 ```
 
-同时避免拆得过细：如果两个文件只是同一个业务生命周期中的少量辅助能力，应优先在所属 Package 内收敛，而不是让根目录无限增加小模块。
+但是 System 层不为了形式继续拆小文件。
+
+如果一个文件只是：
+
+- 转发固定参数；
+- 保存已经可以通过 Naming API 动态生成的完整名称；
+- 把一个很短的业务流程再包装一层；
+
+则优先合回所属 Step / Component。
+
+目标是：
+
+```text
+职责清楚
++
+调用路径短
++
+容易查询
++
+容易重建
+```
