@@ -5,7 +5,7 @@ Core Single Source Gate
 
 检查 core/ 中高确定性的 Generic 能力只有一个正式实现位置。
 
-本测试只扫描模块顶层 Function，不限制 Joint / Hierarchy 等领域类自己的业务 Method。
+本测试只扫描模块顶层 Function，不限制 Joint / Attr 等领域类自己的业务 Method。
 """
 
 from __future__ import print_function
@@ -24,10 +24,16 @@ OWNER_BY_FUNCTION = {
     "set_world_translation": "core/transform_utils.py",
     "get_world_rotation": "core/transform_utils.py",
     "set_world_rotation": "core/transform_utils.py",
+    "get_dag_depth": "core/hierarchy_utils.py",
+    "get_parent": "core/hierarchy_utils.py",
+    "get_children": "core/hierarchy_utils.py",
+    "get_descendants": "core/hierarchy_utils.py",
+    "parent": "core/hierarchy_utils.py",
+    "ensure_group": "core/hierarchy_utils.py",
+    "insert_parent_group": "core/hierarchy_utils.py",
 }
 
 FORBIDDEN_TOP_LEVEL_COMPATIBILITY_FUNCTIONS = {
-    "get_parent",
     "get_world_position",
     "maya_undo",
     "dag_depth",
