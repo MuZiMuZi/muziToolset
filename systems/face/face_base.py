@@ -142,26 +142,26 @@ class FaceBase(RigComponentBase):
     # =========================================================================
 
     def ensure_hierarchy(self):
-        u"""确保 Face Rig 基础层级存在。"""
-        hierarchy_utils.Hierarchy.create_grp(
+        u"""确保 Face Rig 基础 Group 存在，并修正到正式 Parent 层级。"""
+        face_master_group = hierarchy_utils.ensure_group(
             self.face_master_grp
         )
 
-        hierarchy_utils.Hierarchy.create_grp(
+        face_model_group = hierarchy_utils.ensure_group(
             self.face_model_grp,
-            parent=self.face_master_grp
+            parent_node=face_master_group
         )
 
         for group_name in self.type_groups:
-            hierarchy_utils.Hierarchy.create_grp(
+            hierarchy_utils.ensure_group(
                 group_name,
-                parent=self.face_master_grp
+                parent_node=face_master_group
             )
 
         for group_name in self.model_groups:
-            hierarchy_utils.Hierarchy.create_grp(
+            hierarchy_utils.ensure_group(
                 group_name,
-                parent=self.face_model_grp
+                parent_node=face_model_group
             )
 
         return True
