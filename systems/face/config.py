@@ -46,12 +46,7 @@ def create_config_attr_name(
         part,
         function
 ):
-    u"""
-    使用正式五段式 Naming Rule 创建不带序号的 Config Attribute 名称。
-
-    Config Attribute 不需要序号，因此先通过 Name.create_name() 完成统一规范化，
-    再移除最后的三位 Index。
-    """
+    u"""使用正式命名规范创建不带序号的 Config Attribute 名称。"""
     node_name = name_utils.Name.create_name(
         node_type=node_type,
         side=side,
@@ -342,22 +337,6 @@ face_controller_module_order = [
     "tongue",
 ]
 
-# 旧 Controller Settings Attribute 不做数据迁移。
-# 打开新版 Face Rig 后直接删除，新的 Attribute 使用上面的正式命名重新创建。
-legacy_face_controller_setting_attr_names = [
-    "face_ctrl_global_scale",
-    "face_ctrl_color_lf",
-    "face_ctrl_color_rt",
-    "face_ctrl_color_md",
-    "brow_ctrl_size",
-    "eye_ctrl_size",
-    "eyelid_ctrl_size",
-    "nose_ctrl_size",
-    "cheek_ctrl_size",
-    "lip_ctrl_size",
-    "jaw_ctrl_size",
-]
-
 face_step_02_config_attr_names = [
     "face_guide_root",
     "face_guide_move_ctrl",
@@ -383,7 +362,6 @@ face_step_02_config_attr_names = [
 # Face Workflow 显示规则
 # ============================================================
 
-# 这里只定义每一步需要显示的顶层 Face Group，不执行 Maya 操作。
 face_step_visibility_rules = {
     1: {
         "face_model_grp": True,
@@ -419,8 +397,6 @@ face_step_visibility_rules = {
     },
 }
 
-# Step 01 / 02 只显示 Setup 保存的原始输入模型。
-# Step 03 / 04 暂时保留当前模型内部显示状态，后续正式 Build 时再细化。
 face_step_model_display_rules = {
     1: "setup_sources",
     2: "setup_sources",
@@ -440,7 +416,6 @@ face_center_axis = "X"
 # 创建层级时使用的列表
 # ============================================================
 
-# 这里只保存名称，不在配置文件中创建 Maya 节点。
 type_grp_list = [
     face_guide_grp,
     face_ctrl_grp,
