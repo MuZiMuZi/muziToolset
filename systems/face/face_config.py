@@ -6,7 +6,7 @@ Face Config
 Face Rig 的持久化数据对象。
 
 FaceConfig 只负责本 Face System 的 Network Node 数据：
-    - Setup 模型引用；
+    - Setup Source / Work Model 引用；
     - Workflow Step 状态；
     - Guide 引用和版本；
     - Controller Settings。
@@ -155,6 +155,13 @@ class FaceConfig(object):
 
             scene_node = pm.PyNode(scene_node)
 
+        if not pm.objExists(scene_node):
+            raise RuntimeError(
+                u"需要保存到 Face Config 的节点不存在：{}".format(
+                    scene_node
+                )
+            )
+
         scene_node.message.connect(
             plug,
             force=True
@@ -247,16 +254,22 @@ class FaceConfig(object):
             lower_teeth_model=None,
             tongue_model=None,
             gum_model=None,
+            head_tweak_model=None,
+            head_stretch_model=None,
+            head_deform_model=None,
             mouth_joint_count=32
     ):
         node_values = {
-            "face_head_model": head_model,
-            "face_lf_eye_model": left_eye_model,
-            "face_rt_eye_model": right_eye_model,
+            "head_model": head_model,
+            "left_eye_model": left_eye_model,
+            "right_eye_model": right_eye_model,
             "upper_teeth_model": upper_teeth_model,
             "lower_teeth_model": lower_teeth_model,
-            "face_tongue_model": tongue_model,
-            "face_gum_model": gum_model,
+            "tongue_model": tongue_model,
+            "gum_model": gum_model,
+            "head_tweak_model": head_tweak_model,
+            "head_stretch_model": head_stretch_model,
+            "head_deform_model": head_deform_model,
         }
 
         self.set_nodes(node_values)
