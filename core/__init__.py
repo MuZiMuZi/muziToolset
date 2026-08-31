@@ -34,10 +34,13 @@ Animation：
 
 Scene / File：
     scene_utils.py
-        Undo、节点、Selection、Object Set、Callback、Scene Open / Import / Reference、FBX Export。
+        Undo、Node、Selection 查询、Object Set、Callback、Scene Open / Import / Reference。
 
     file_utils.py
         纯 Python Path、Directory、JSON、文件扫描；不负责 Maya Scene。
+
+    export_utils.py
+        显式对象列表的文件格式导出；当前包含 FBX Export。
 
 Transform / Math / DG：
     transform_utils.py
@@ -117,12 +120,15 @@ Core API 原则
     每次收到外部 Maya Node 参数时进行必要校验。
 
 通用操作只保留一个正式入口：
-    Transform 数值    -> transform_utils
-    DAG Hierarchy     -> hierarchy_utils
-    Rename            -> rename_utils
-    Joint 专属属性    -> joint_utils.Joint
-    Matrix 计算/网络  -> matrix_utils
-    纯数学            -> math_utils
+    Scene / Node       -> scene_utils
+    File / Path        -> file_utils
+    File Export        -> export_utils
+    Transform 数值     -> transform_utils
+    DAG Hierarchy      -> hierarchy_utils
+    Rename             -> rename_utils
+    Joint 专属属性     -> joint_utils.Joint
+    Matrix 计算/网络   -> matrix_utils
+    纯数学             -> math_utils
 
 复杂 Face / Body / Controller Rig Graph 进入 ``systems/``，不能重新堆回 Core。
 
