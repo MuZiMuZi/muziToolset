@@ -11,7 +11,7 @@ Pipeline Refactor Smoke Test
     animation_utils              AnimCurve / Reset / Animation JSON
     connection_utils             Query / Safe Connect / Force / Plug Pair / Disconnect
     matrix_utils                 offsetParentMatrix Parent Matrix Network
-    constraint_utils             Constraint Create / Query / Delete
+    constraint_utils             Constraint Create / Driven Query
     curve_utils / surface_utils  Curve / Surface / Follicle
 
 测试只创建带本轮 Token 的临时数据，并在 finally 中清理。
@@ -526,7 +526,7 @@ def test_matrix_utils(token):
 # =============================================================================
 
 def test_constraint_utils(token):
-    u"""验证标准 Constraint 创建、查询和删除。"""
+    u"""验证标准 Constraint 创建和 Driven 侧查询语义。"""
     driver = scene_utils.create_node(
         "transform",
         create_name(token, "constraint_driver")
@@ -546,13 +546,50 @@ def test_constraint_utils(token):
     if not created:
         raise RuntimeError(u"Parent Constraint 创建失败。")
 
-    if not constraint_utils.get_constraints([driven]):
-        raise RuntimeError(u"Constraint 查询失败。")
+    constraint_node = created[0]
 
-    if not constraint_utils.delete_constraints([driven]):
-        raise RuntimeError(u"Constraint 删除失败。")
+    driven_constraints = constraint_utils.get_constraints(
+        driven
+    )
 
-    return u"Create + Query + Delete Constraint 成功"
+    if constraint_node not in driven_constraints:
+        raise RuntimeError(
+            u"Driven Constraint 查询失败：{}".format(
+                driven_constraints
+            )
+        )
+
+    driver_constraints = constraint_utils.get_constraints(
+        driver
+    )
+
+    if driver_constraints:
+        raise RuntimeError(
+            u"Driver 不应该被识别为被约束对象：{}".format(
+                driver_constraints
+            )
+        )
+
+    filtered_constraints = constraint_utils.get_constraints(
+        driven,
+        search_types="parentConstraint"
+    )
+
+    if constraint_node not in filtered_constraints:
+        raise RuntimeError(
+            u"单字符串 search_types 查询失败：{}".format(
+                filtered_constraints
+            )
+        )
+
+    cmds.delete(
+        created
+    )
+
+    if constraint_utils.get_constraints(driven):
+        raise RuntimeError(u"删除 Constraint 后 Driven 仍查询到约束。")
+
+    return u"Create + Driven Query + Driver Exclusion + Type Filter 成功"
 
 
 # =============================================================================
