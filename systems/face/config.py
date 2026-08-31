@@ -13,13 +13,17 @@ from ...core import name_utils
 # 命名规范
 # ============================================================
 #
-# 标准：
+# Maya 节点：
 #     [类型]_[方向]_[部位]_[功能]_[序号]
+#
+# Config Attribute：
+#     [类型]_[方向]_[部位]_[功能]
 #
 # 例如：
 #     grp_md_face_master_001
 #     ctrl_lf_eye_main_001
-#     jnt_rt_brow_bind_001
+#     ctrl_md_face_color
+#     ctrl_md_brow_size
 #
 # 方向统一：
 #     lf = left
@@ -34,6 +38,32 @@ from ...core import name_utils
 
 face_side = "md"
 face_part = "face"
+
+
+def create_config_attr_name(
+        node_type,
+        side,
+        part,
+        function
+):
+    u"""
+    使用正式五段式 Naming Rule 创建不带序号的 Config Attribute 名称。
+
+    Config Attribute 不需要序号，因此先通过 Name.create_name() 完成统一规范化，
+    再移除最后的三位 Index。
+    """
+    node_name = name_utils.Name.create_name(
+        node_type=node_type,
+        side=side,
+        part=part,
+        function=function,
+        index=1
+    )
+
+    return node_name.rsplit(
+        "_",
+        1
+    )[0]
 
 
 # ============================================================
@@ -175,35 +205,129 @@ face_guide_version = "1.0"
 
 
 # ============================================================
+# Face Controller Config Attribute
+# ============================================================
+
+face_controller_global_scale_attr = create_config_attr_name(
+    node_type="ctrl",
+    side="md",
+    part="face",
+    function="global_scale"
+)
+
+face_controller_color_attr_names = {
+    "lf": create_config_attr_name(
+        node_type="ctrl",
+        side="lf",
+        part="face",
+        function="color"
+    ),
+    "rt": create_config_attr_name(
+        node_type="ctrl",
+        side="rt",
+        part="face",
+        function="color"
+    ),
+    "md": create_config_attr_name(
+        node_type="ctrl",
+        side="md",
+        part="face",
+        function="color"
+    ),
+}
+
+face_controller_size_attr_names = {
+    "brow": create_config_attr_name(
+        node_type="ctrl",
+        side="md",
+        part="brow",
+        function="size"
+    ),
+    "eye": create_config_attr_name(
+        node_type="ctrl",
+        side="md",
+        part="eye",
+        function="size"
+    ),
+    "eyelid": create_config_attr_name(
+        node_type="ctrl",
+        side="md",
+        part="eyelid",
+        function="size"
+    ),
+    "nose": create_config_attr_name(
+        node_type="ctrl",
+        side="md",
+        part="nose",
+        function="size"
+    ),
+    "cheek": create_config_attr_name(
+        node_type="ctrl",
+        side="md",
+        part="cheek",
+        function="size"
+    ),
+    "lip": create_config_attr_name(
+        node_type="ctrl",
+        side="md",
+        part="lip",
+        function="size"
+    ),
+    "jaw": create_config_attr_name(
+        node_type="ctrl",
+        side="md",
+        part="jaw",
+        function="size"
+    ),
+    "teeth": create_config_attr_name(
+        node_type="ctrl",
+        side="md",
+        part="teeth",
+        function="size"
+    ),
+    "tongue": create_config_attr_name(
+        node_type="ctrl",
+        side="md",
+        part="tongue",
+        function="size"
+    ),
+}
+
+
+# ============================================================
 # Face Controller 默认设置
 # ============================================================
 
 face_controller_default_settings = {
-    "face_ctrl_global_scale": 1.0,
-    "face_ctrl_color_lf": 6,
-    "face_ctrl_color_rt": 13,
-    "face_ctrl_color_md": 17,
-    "brow_ctrl_size": 1.0,
-    "eye_ctrl_size": 1.0,
-    "eyelid_ctrl_size": 1.0,
-    "nose_ctrl_size": 1.0,
-    "cheek_ctrl_size": 1.0,
-    "lip_ctrl_size": 1.0,
-    "jaw_ctrl_size": 1.0,
+    face_controller_global_scale_attr: 1.0,
+    face_controller_color_attr_names["lf"]: 6,
+    face_controller_color_attr_names["rt"]: 13,
+    face_controller_color_attr_names["md"]: 17,
+    face_controller_size_attr_names["brow"]: 1.0,
+    face_controller_size_attr_names["eye"]: 1.0,
+    face_controller_size_attr_names["eyelid"]: 1.0,
+    face_controller_size_attr_names["nose"]: 1.0,
+    face_controller_size_attr_names["cheek"]: 1.0,
+    face_controller_size_attr_names["lip"]: 1.0,
+    face_controller_size_attr_names["jaw"]: 1.0,
+    face_controller_size_attr_names["teeth"]: 1.0,
+    face_controller_size_attr_names["tongue"]: 1.0,
 }
 
 face_controller_setting_attr_types = {
-    "face_ctrl_global_scale": "double",
-    "face_ctrl_color_lf": "long",
-    "face_ctrl_color_rt": "long",
-    "face_ctrl_color_md": "long",
-    "brow_ctrl_size": "double",
-    "eye_ctrl_size": "double",
-    "eyelid_ctrl_size": "double",
-    "nose_ctrl_size": "double",
-    "cheek_ctrl_size": "double",
-    "lip_ctrl_size": "double",
-    "jaw_ctrl_size": "double",
+    face_controller_global_scale_attr: "double",
+    face_controller_color_attr_names["lf"]: "long",
+    face_controller_color_attr_names["rt"]: "long",
+    face_controller_color_attr_names["md"]: "long",
+    face_controller_size_attr_names["brow"]: "double",
+    face_controller_size_attr_names["eye"]: "double",
+    face_controller_size_attr_names["eyelid"]: "double",
+    face_controller_size_attr_names["nose"]: "double",
+    face_controller_size_attr_names["cheek"]: "double",
+    face_controller_size_attr_names["lip"]: "double",
+    face_controller_size_attr_names["jaw"]: "double",
+    face_controller_size_attr_names["teeth"]: "double",
+    face_controller_size_attr_names["tongue"]: "double",
 }
 
 face_controller_module_order = [
@@ -214,6 +338,44 @@ face_controller_module_order = [
     "cheek",
     "lip",
     "jaw",
+    "teeth",
+    "tongue",
+]
+
+# 旧 Controller Settings Attribute 不做数据迁移。
+# 打开新版 Face Rig 后直接删除，新的 Attribute 使用上面的正式命名重新创建。
+legacy_face_controller_setting_attr_names = [
+    "face_ctrl_global_scale",
+    "face_ctrl_color_lf",
+    "face_ctrl_color_rt",
+    "face_ctrl_color_md",
+    "brow_ctrl_size",
+    "eye_ctrl_size",
+    "eyelid_ctrl_size",
+    "nose_ctrl_size",
+    "cheek_ctrl_size",
+    "lip_ctrl_size",
+    "jaw_ctrl_size",
+]
+
+face_step_02_config_attr_names = [
+    "face_guide_root",
+    "face_guide_move_ctrl",
+    "face_guide_version",
+    face_controller_global_scale_attr,
+    face_controller_color_attr_names["lf"],
+    face_controller_color_attr_names["rt"],
+    face_controller_color_attr_names["md"],
+    face_controller_size_attr_names["brow"],
+    face_controller_size_attr_names["eye"],
+    face_controller_size_attr_names["eyelid"],
+    face_controller_size_attr_names["nose"],
+    face_controller_size_attr_names["cheek"],
+    face_controller_size_attr_names["lip"],
+    face_controller_size_attr_names["jaw"],
+    face_controller_size_attr_names["teeth"],
+    face_controller_size_attr_names["tongue"],
+    "step_02_completed",
 ]
 
 
