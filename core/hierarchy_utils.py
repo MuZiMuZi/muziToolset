@@ -10,9 +10,9 @@ Maya DAG 层级通用底层工具。
 - DAG 深度；
 - Direct Parent / Child 查询；
 - Descendant 查询；
-- Parent / Unparent；
-- 通用 Transform Group 创建；
-- 在对象上方插入 Extra Group。
+- Transform / Joint Parent 与 Unparent；
+- 确保通用 Transform Group 存在于指定层级；
+- 在 Transform / Joint 上方插入 Parent Group。
 
 模块边界
 --------
@@ -22,9 +22,11 @@ Controller 项目结构。具体 Rig Hierarchy 由对应 systems 模块组合这
 设计原则
 --------
 1. 无状态 Utils 使用模块函数，不使用只有 staticmethod 的包装类；
-2. 每个外部 Maya Node 参数在函数入口校验；
-3. Parent / Child API 不依赖当前 Selection；
-4. Transform 数值读写复用 transform_utils。
+2. Query 接口接受通用 DAG Node，Parent 写操作只接受 Transform / Joint；
+3. 所有 DAG 查询先解析唯一 Long Path，不对重名节点做猜测；
+4. Parent / Child API 不依赖当前 Selection；
+5. Transform 数值读写复用 transform_utils；
+6. Ensure 语义必须同时保证“节点存在”和“Parent 正确”。
 """
 
 from __future__ import print_function
@@ -36,31 +38,90 @@ from . import transform_utils
 
 
 # =============================================================================
-# Query
+# Internal
 # =============================================================================
 
-def get_dag_depth(node):
-    u"""返回唯一 DAG Long Path 的层级深度；Root 为 1。"""
+def _get_dag_long_name(
+        node,
+        label=None
+):
+    u"""验证输入为唯一 DAG Node，并返回 Long Path。"""
+    display_label = label or u"DAG 节点"
+
+    scene_utils.validate_node(
+        node,
+        label=display_label
+    )
+
     long_name = scene_utils.get_long_name(
         node
     )
 
-    if not long_name:
-        return 0
+    is_dag_node = cmds.objectType(
+        long_name,
+        isAType="dagNode"
+    )
 
-    return long_name.count(
+    if not is_dag_node:
+        raise RuntimeError(
+            u"{}必须是 DAG Node：{}".format(
+                display_label,
+                node
+            )
+        )
+
+    return long_name
+
+
+def _get_path_depth(path):
+    u"""返回已经解析好的 DAG Long Path 深度。"""
+    return path.count(
         "|"
     )
 
 
-def get_parent(node, full_path=True):
+def _get_transform_long_name(
+        node,
+        label
+):
+    u"""验证 Transform / Joint，并返回唯一 Long Path。"""
+    long_name = scene_utils.get_long_name(
+        node
+    )
+
+    transform_utils.validate_transform(
+        long_name
+    )
+
+    return long_name
+
+
+# =============================================================================
+# Query
+# =============================================================================
+
+def get_dag_depth(node):
+    u"""返回唯一 DAG Long Path 的层级深度；World 下节点为 1。"""
+    long_name = _get_dag_long_name(
+        node
+    )
+
+    return _get_path_depth(
+        long_name
+    )
+
+
+def get_parent(
+        node,
+        full_path=True
+):
     u"""返回 DAG 节点的直接 Parent；没有 Parent 时返回 None。"""
-    scene_utils.validate_node(
+    long_name = _get_dag_long_name(
         node
     )
 
     parents = cmds.listRelatives(
-        node,
+        long_name,
         parent=True,
         fullPath=full_path
     ) or []
@@ -77,7 +138,7 @@ def get_children(
         full_path=True
 ):
     u"""返回 DAG 节点的直接 Child，可选按 Maya Node Type 过滤。"""
-    scene_utils.validate_node(
+    long_name = _get_dag_long_name(
         node
     )
 
@@ -90,7 +151,7 @@ def get_children(
         kwargs["type"] = node_type
 
     return cmds.listRelatives(
-        node,
+        long_name,
         **kwargs
     ) or []
 
@@ -101,37 +162,63 @@ def get_descendants(
         include_root=False,
         full_path=True
 ):
-    u"""返回 DAG 节点的全部后代，并整理成由浅到深的顺序。"""
-    scene_utils.validate_node(
+    u"""
+    返回 DAG 节点的全部后代，并明确保证由浅到深排序。
+
+    ``include_root=True`` 时，Root 同样遵守 ``node_type`` 过滤规则。
+    ``full_path=True`` 时，Root 和 Descendant 全部返回 Long Path。
+    """
+    root_long_name = _get_dag_long_name(
         node
     )
 
     kwargs = {
         "allDescendents": True,
-        "fullPath": full_path,
+        "fullPath": True,
     }
 
     if node_type:
         kwargs["type"] = node_type
 
     descendants = cmds.listRelatives(
-        node,
+        root_long_name,
         **kwargs
     ) or []
 
-    descendants.reverse()
+    descendants.sort(
+        key=_get_path_depth
+    )
 
     result = []
 
     if include_root:
-        result.append(
-            node
-        )
+        include_current_root = True
+
+        if node_type:
+            root_type = cmds.nodeType(
+                root_long_name
+            )
+            include_current_root = root_type == node_type
+
+        if include_current_root:
+            if full_path:
+                result.append(
+                    root_long_name
+                )
+            else:
+                result.append(
+                    root_long_name.split("|")[-1]
+                )
 
     for descendant in descendants:
-        result.append(
-            descendant
-        )
+        if full_path:
+            result.append(
+                descendant
+            )
+        else:
+            result.append(
+                descendant.split("|")[-1]
+            )
 
     return result
 
@@ -145,78 +232,85 @@ def parent(
         parent_node=None
 ):
     u"""
-    设置 DAG Parent，并保持 Child 当前世界姿态。
+    设置 Transform / Joint Parent，并保持 Child 当前世界姿态。
 
     ``parent_node=None`` 表示 Parent 到 World。
+    所有成功路径统一返回 Child 最新的唯一 Long Path。
     """
-    scene_utils.validate_node(
+    child_long_name = _get_transform_long_name(
         child_node,
         label=u"子节点"
     )
 
-    if parent_node is None:
-        current_parent = get_parent(
-            child_node,
-            full_path=True
-        )
+    current_parent = get_parent(
+        child_long_name,
+        full_path=True
+    )
 
+    if parent_node is None:
         if current_parent is None:
-            return child_node
+            return child_long_name
 
         result = cmds.parent(
-            child_node,
+            child_long_name,
             world=True,
             absolute=True
         )
 
-        if result:
-            return result[0]
+        if not result:
+            return scene_utils.get_long_name(
+                child_long_name
+            )
 
-        return child_node
+        return scene_utils.get_long_name(
+            result[0]
+        )
 
-    scene_utils.validate_node(
+    parent_long_name = _get_transform_long_name(
         parent_node,
         label=u"父节点"
     )
 
-    current_parent = get_parent(
-        child_node,
-        full_path=True
-    )
-    parent_matches = cmds.ls(
-        parent_node,
-        long=True
-    ) or []
-
-    parent_long_name = parent_node
-
-    if parent_matches:
-        parent_long_name = parent_matches[0]
+    if child_long_name == parent_long_name:
+        raise RuntimeError(
+            u"节点不能 Parent 到自身：{}".format(
+                child_long_name
+            )
+        )
 
     if current_parent == parent_long_name:
-        return child_node
+        return child_long_name
 
     result = cmds.parent(
-        child_node,
-        parent_node,
+        child_long_name,
+        parent_long_name,
         absolute=True
     )
 
-    if result:
-        return result[0]
+    if not result:
+        return scene_utils.get_long_name(
+            child_long_name
+        )
 
-    return child_node
+    return scene_utils.get_long_name(
+        result[0]
+    )
 
 
 # =============================================================================
 # Group
 # =============================================================================
 
-def create_group(
+def ensure_group(
         name,
-        parent=None
+        parent_node=None
 ):
-    u"""创建或复用一个 Transform Group。"""
+    u"""
+    确保一个 Transform Group 存在，并处于指定 Parent 下。
+
+    ``parent_node=None`` 表示该 Group 应位于 World。
+    已存在但 Parent 错误时会通过 ``parent()`` 修正层级，同时保持世界姿态。
+    """
     if name is None:
         raise RuntimeError(
             u"Group 名称不能为空。"
@@ -229,9 +323,20 @@ def create_group(
             u"Group 名称不能为空。"
         )
 
+    parent_long_name = None
+
+    if parent_node is not None:
+        parent_long_name = _get_transform_long_name(
+            parent_node,
+            label=u"Group Parent"
+        )
+
     if cmds.objExists(name):
-        node_type = cmds.nodeType(
+        group_long_name = scene_utils.get_long_name(
             name
+        )
+        node_type = cmds.nodeType(
+            group_long_name
         )
 
         if node_type != "transform":
@@ -242,28 +347,54 @@ def create_group(
                 )
             )
 
-        return name
-
-    if parent is not None:
-        transform_utils.validate_transform(
-            parent
+        current_parent = get_parent(
+            group_long_name,
+            full_path=True
         )
 
-    return cmds.createNode(
+        if parent_long_name is None:
+            if current_parent is None:
+                return group_long_name
+
+            return parent(
+                group_long_name,
+                None
+            )
+
+        if current_parent == parent_long_name:
+            return group_long_name
+
+        return parent(
+            group_long_name,
+            parent_long_name
+        )
+
+    group = scene_utils.create_node(
         "transform",
-        name=name,
-        parent=parent
+        name,
+        parent=parent_long_name
+    )
+
+    return scene_utils.get_long_name(
+        group
     )
 
 
-def add_extra_group(
+def insert_parent_group(
         node,
         group_name,
-        world_orient=False
+        match_rotation=True
 ):
-    u"""在对象上方插入 Extra Group，并保持对象当前世界姿态。"""
-    transform_utils.validate_transform(
-        node
+    u"""
+    在 Transform / Joint 与原 Parent 之间插入一个新 Group。
+
+    新 Group 匹配对象世界位置；``match_rotation=True`` 时同时匹配对象世界旋转，
+    否则 Group 使用 World Orientation。函数不复制 Child Local Scale。
+    Child 通过 ``parent(..., absolute=True)`` 保持当前世界姿态。
+    """
+    node_long_name = _get_transform_long_name(
+        node,
+        label=u"插组对象"
     )
 
     if group_name is None:
@@ -286,31 +417,26 @@ def add_extra_group(
         )
 
     translation = transform_utils.get_world_translation(
-        node
+        node_long_name
     )
-    rotation = transform_utils.get_world_rotation(
-        node
-    )
-    scale = cmds.xform(
-        node,
-        query=True,
-        relative=True,
-        scale=True
-    )
+    rotation = [0.0, 0.0, 0.0]
+
+    if match_rotation:
+        rotation = transform_utils.get_world_rotation(
+            node_long_name
+        )
+
     original_parent = get_parent(
-        node,
+        node_long_name,
         full_path=True
     )
 
-    if world_orient:
-        rotation = [0.0, 0.0, 0.0]
-
-    object_group = cmds.createNode(
+    object_group = scene_utils.create_node(
         "transform",
-        name=group_name
+        group_name
     )
 
-    if original_parent:
+    if original_parent is not None:
         object_group = parent(
             object_group,
             original_parent
@@ -324,55 +450,15 @@ def add_extra_group(
         object_group,
         rotation
     )
-    cmds.xform(
-        object_group,
-        relative=True,
-        scale=scale
-    )
 
     parent(
-        node,
+        node_long_name,
         object_group
     )
 
-    return object_group
-
-
-# =============================================================================
-# Transitional Compatibility
-# =============================================================================
-
-def _legacy_create_grp(grp, parent=None):
-    return create_group(
-        grp,
-        parent=parent
+    return scene_utils.get_long_name(
+        object_group
     )
-
-
-def _legacy_get_child_object(node, type="joint"):
-    return get_descendants(
-        node,
-        node_type=type,
-        include_root=True,
-        full_path=True
-    )
-
-
-class _HierarchyCompatibility(object):
-    u"""旧 ``Hierarchy.xxx`` 调用的过渡入口；新代码不要使用。"""
-
-    get_dag_depth = staticmethod(get_dag_depth)
-    get_parent = staticmethod(get_parent)
-    get_children = staticmethod(get_children)
-    get_descendants = staticmethod(get_descendants)
-    parent = staticmethod(parent)
-    create_group = staticmethod(create_group)
-    create_grp = staticmethod(_legacy_create_grp)
-    add_extra_group = staticmethod(add_extra_group)
-    get_child_object = staticmethod(_legacy_get_child_object)
-
-
-Hierarchy = _HierarchyCompatibility()
 
 
 __all__ = [
@@ -381,6 +467,6 @@ __all__ = [
     "get_children",
     "get_descendants",
     "parent",
-    "create_group",
-    "add_extra_group",
+    "ensure_group",
+    "insert_parent_group",
 ]
