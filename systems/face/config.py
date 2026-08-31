@@ -117,15 +117,33 @@ config_node_name = name.create_name(
 # Face Setup Schema
 # =============================================================================
 
-setup_node_attributes = [
-    "face_head_model",
-    "face_lf_eye_model",
-    "face_rt_eye_model",
+setup_source_node_attributes = [
+    "head_model",
+    "left_eye_model",
+    "right_eye_model",
     "upper_teeth_model",
     "lower_teeth_model",
-    "face_tongue_model",
-    "face_gum_model",
+    "tongue_model",
+    "gum_model",
 ]
+
+setup_work_node_attributes = [
+    "head_tweak_model",
+    "head_stretch_model",
+    "head_deform_model",
+]
+
+setup_node_attributes = []
+
+for attribute_name in setup_source_node_attributes:
+    setup_node_attributes.append(
+        attribute_name
+    )
+
+for attribute_name in setup_work_node_attributes:
+    setup_node_attributes.append(
+        attribute_name
+    )
 
 setup_value_attributes = {
     "mouth_joint_count": "long",
