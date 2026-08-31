@@ -3,41 +3,95 @@ u"""
 Step 02 - Face Guide
 ====================
 
-Face Guide Manager。
+Face Guide 的单文件 Step 02 实现。
 
 职责：
     1. 组织 Step 02 生命周期；
-    2. 管理 Guide Template 的公开入口；
-    3. 提供稳定的 Guide 节点查询接口；
-    4. 从 guide_data 读取固定 Template Contract；
-    5. “下一步”时检查 face_guide.ma 中全部 Locator 是否仍然存在；
-    6. 保存 Guide 和 Controller Settings 到统一 Face Config；
-    7. Step 02 完成后把 Face Workflow 当前进度推进到 Step 03。
+    2. 导入 / 重新导入 Face Guide Template；
+    3. 提供通用 Guide 查询；
+    4. 提供 LF / RT Mirror 和单步撤销；
+    5. 检查模板中的全部 Locator 是否完整；
+    6. 保存 Guide 和 Controller Settings 到 Face Config；
+    7. Step 02 完成后把 Workflow 推进到 Step 03。
 
-重要边界：
-    - 固定节点名称 / Guide 顺序 / 默认参数放在 guide_data.py；
-    - Template Import / Repair 放在 guide_template.py；
-    - 左右 Mirror / Undo 放在 guide_mirror.py；
-    - FaceGuide 只负责 Step 02 的调度、查询、Validation 和 Config。
+设计原则：
+    - Face 固定名称和默认参数统一放 systems.face.config；
+    - 标准节点名称统一使用 core.name_utils；
+    - 不为简单 part 查询额外创建 get_xxx_guides() 包装；
+    - 只有需要固定顺序或结构化结果的查询保留专用方法；
+    - Template / Mirror 都属于 FaceGuide 自己的 Step 02 行为，不再拆分额外模块。
 """
 
 from __future__ import print_function
 
+import os
+import re
+
 import maya.cmds as cmds
 
+from ....core import connection_utils
+from ....core import hierarchy_utils
+from ....core import name_utils
 from ....core import rename_utils
+from ....core import scene_utils
 from ....core import transform_utils
+from .. import config
 from .. import face_base
-from . import guide_data
-from . import guide_template
+
+
+guide_locator_pattern = re.compile(
+    r'createNode\s+transform\s+-n\s+"(loc_[^"]+_guide_\d+)"'
+)
 
 
 class FaceGuide(face_base.FaceBase):
-    u"""Face Rig Step 02 - Guide 管理器。"""
+    u"""Face Rig Step 02 - Guide。"""
 
-    guide_template_file_name = guide_data.guide_template_file_name
-    guide_move_ctrl_name = guide_data.guide_move_ctrl_name
-    guide_version = guide_data.guide_version
+    guide_template_file_name = config.face_guide_template_file_name
+    guide_template_path = config.face_guide_template_path
+    guide_move_ctrl_name = config.face_guide_move_ctrl
+    guide_version = config.face_guide_version
+
+    mirror_sides = [
+        "lf",
+        "rt",
+    ]
+
+    zero_attributes = [
+        "translateX",
+        "translateY",
+        "translateZ",
+        "rotateX",
+        "rotateY",
+        "rotateZ",
+        "scaleX",
+        "scaleY",
+        "scaleZ",
+        "rotateOrder",
+    ]
+
+    locator_attributes = [
+        "translateX",
+        "translateY",
+        "translateZ",
+        "rotateX",
+        "rotateY",
+        "rotateZ",
+        "scaleX",
+        "scaleY",
+        "scaleZ",
+        "rotateOrder",
+        "visibility",
+    ]
+
+    locator_shape_attributes = [
+        "localPositionX",
+        "localPositionY",
+        "localPositionZ",
+        "localScaleX",
+        "localScaleY",
+        "localScaleZ",
+    ]
 
     def __init__(self):
         u"""初始化 Face Guide Step。"""
@@ -47,6 +101,7 @@ class FaceGuide(face_base.FaceBase):
         self.guide_root = None
         self.guide_move_ctrl = None
         self.validation_result = None
+        self.template_locator_names = None
 
         if self.config_node_exists():
             self.refresh_setup_data()
@@ -70,16 +125,17 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def prepare_data(self):
-        u"""确保 Face Hierarchy 和 Config 可用于保存 Step 02。"""
-        # 确保 Face Rig 基础层级存在，避免 Guide 保存到不完整层级。
+        u"""确保 Face Hierarchy 和 Config 可以保存 Step 02。"""
+        # 确保 Face Rig 基础层级存在。
         self.ensure_hierarchy()
 
-        # 创建或复用 Workflow / Step Config 分隔结构，旧场景也会按新 Schema 整理显示。
+        # 确保 Config Workflow / Step 分区已经创建。
         self.ensure_config_layout()
         return True
 
     def process_data(self):
         u"""执行完整 Guide Validation。"""
+        # 下一步之前检查模板中的全部 Locator，避免误删节点进入 Build。
         self.validation_result = self.validate_guides()
 
         if self.validation_result["valid"]:
@@ -98,7 +154,7 @@ class FaceGuide(face_base.FaceBase):
 
     def finalize_step(self):
         u"""保存 Guide，并把 Step 02 正式标记为完成。"""
-        # 保存 Guide Root / Move Ctrl / Version，作为后续 Build 的稳定输入。
+        # 保存 Guide Root / Move Ctrl / Version。
         self.save_guide_config()
 
         # 正式记录 Step 02 已完成。
@@ -106,15 +162,15 @@ class FaceGuide(face_base.FaceBase):
             completed=True
         )
 
-        # Guide 重新提交后，旧的 Step 03 / 04 结果必须失效。
+        # Guide 重新提交后，旧 Step 03 / 04 结果必须失效。
         self.invalidate_later_steps()
 
-        # Step 02 完成后，下一次打开 Face Rig 应直接回到 Step 03 Build。
+        # Step 02 完成后推进到 Step 03。
         self.set_current_step_value(
             3
         )
 
-        # 最后重新整理 Config Attribute 顺序，确保 Step 02 数据集中显示。
+        # 整理 Config Attribute 显示顺序。
         self.organize_config_attributes()
         return True
 
@@ -123,40 +179,429 @@ class FaceGuide(face_base.FaceBase):
     # =========================================================================
 
     def validate_setup(self):
-        u"""检查 Step 02 所依赖的 Step 01 公共数据。"""
+        u"""检查 Step 02 所依赖的 Step 01 数据。"""
         return self.validate_setup_config(
             require_mouth_jnt_number=True
         )
 
     def get_guide_template_path(self):
-        u"""返回 face_guide.ma 的规范绝对路径。"""
-        return guide_data.get_guide_template_path()
+        u"""返回 Face Guide Template 路径。"""
+        return os.path.normpath(
+            self.guide_template_path
+        )
 
     def validate_guide_template_file(self):
-        u"""检查 Face Guide 模板文件是否存在。"""
-        return guide_data.validate_guide_template_file()
+        u"""检查 Face Guide Template 文件是否存在。"""
+        template_path = self.get_guide_template_path()
+
+        if not os.path.isfile(template_path):
+            raise RuntimeError(
+                u"Face Guide 模板文件不存在: {}".format(
+                    template_path
+                )
+            )
+
+        return template_path
+
+    def get_template_locator_names(self, refresh=False):
+        u"""从 face_guide.ma 读取全部标准 Locator 名称。"""
+        if self.template_locator_names is not None:
+            if not refresh:
+                return list(
+                    self.template_locator_names
+                )
+
+        template_path = self.validate_guide_template_file()
+
+        with open(template_path, "rb") as file_object:
+            file_data = file_object.read()
+
+        template_text = file_data.decode(
+            "latin-1"
+        )
+        matches = guide_locator_pattern.findall(
+            template_text
+        )
+        locator_names = []
+
+        for locator_name in matches:
+            if locator_name in locator_names:
+                continue
+
+            locator_names.append(
+                locator_name
+            )
+
+        if not locator_names:
+            raise RuntimeError(
+                u"Face Guide 模板中没有读取到标准 Locator: {}".format(
+                    template_path
+                )
+            )
+
+        self.template_locator_names = locator_names
+        return list(
+            locator_names
+        )
+
+    def get_temporary_guide_name(self):
+        u"""返回一个未被占用的临时 Guide Container 名称。"""
+        return name_utils.Name.create_unique_name(
+            node_type="grp",
+            side="md",
+            part="face",
+            function="guide_container"
+        )
+
+    def get_imported_template_root(self, imported_nodes):
+        u"""从本次导入的新节点中找到唯一 Face Guide Root。"""
+        imported_transforms = cmds.ls(
+            imported_nodes,
+            type="transform",
+            long=True
+        )
+
+        if imported_transforms is None:
+            imported_transforms = []
+
+        candidates = []
+
+        for node in imported_transforms:
+            parent = hierarchy_utils.Hierarchy.get_parent(
+                node
+            )
+
+            if parent:
+                continue
+
+            short_name = rename_utils.get_short_name(
+                node
+            )
+
+            if short_name != self.face_guide_grp:
+                continue
+
+            candidates.append(
+                node
+            )
+
+        if len(candidates) != 1:
+            raise RuntimeError(
+                u"无法唯一识别 Face Guide Template Root，候选数量: {}".format(
+                    len(candidates)
+                )
+            )
+
+        return candidates[0]
+
+    def clear_guide_config(self):
+        u"""清除 Config 中保存的 Guide Message。"""
+        if not self.config_node_exists():
+            return False
+
+        self.set_config_messages(
+            attrs_dict={
+                "face_guide_root": None,
+                "face_guide_move_ctrl": None,
+            },
+            force=True,
+            clear_empty=True
+        )
+        return True
+
+    def remove_guide_content(self):
+        u"""删除 Face Guide Root 下的模板内容，但保留 Root Container。"""
+        if not cmds.objExists(self.face_guide_grp):
+            self.ensure_hierarchy()
+
+        children = self.get_children(
+            self.face_guide_grp
+        )
+
+        for child in children:
+            if cmds.objExists(child):
+                cmds.delete(
+                    child
+                )
+
+        self.clear_guide_config()
+        self.refresh_guide_handles()
+        return True
 
     def build_guide(self):
         u"""导入或复用可编辑的 Face Guide Template。"""
-        return guide_template.build_guide(
-            self
+        self.validate_setup()
+        self.ensure_hierarchy()
+        self.ensure_config_node()
+
+        if self.guide_exists():
+            return {
+                "imported": False,
+                "guide_root": self.guide_root,
+                "guide_move_ctrl": self.guide_move_ctrl,
+                "new_nodes": [],
+            }
+
+        guide_container = scene_utils.get_long_name(
+            self.face_guide_grp
+        )
+        container_children = self.get_children(
+            guide_container
         )
 
-    def reset_guide(self):
-        u"""恢复一份完全干净的 Face Guide Template。"""
-        return guide_template.reset_template(
-            self
+        if container_children:
+            raise RuntimeError(
+                u"Face Guide Group 中存在未知内容，无法安全导入模板: {}".format(
+                    self.face_guide_grp
+                )
+            )
+
+        template_path = self.validate_guide_template_file()
+        temporary_name = self.get_temporary_guide_name()
+        temporary_container = rename_utils.rename_node(
+            guide_container,
+            temporary_name
         )
 
+        imported_nodes = []
+
+        try:
+            imported_nodes = scene_utils.import_scene(
+                template_path,
+                ignore_version=True
+            )
+            template_root = self.get_imported_template_root(
+                imported_nodes
+            )
+            hierarchy_utils.Hierarchy.parent(
+                template_root,
+                self.face_master_grp
+            )
+
+            if temporary_container:
+                if cmds.objExists(temporary_container):
+                    cmds.delete(
+                        temporary_container
+                    )
+        except Exception:
+            for imported_node in imported_nodes:
+                if not cmds.objExists(imported_node):
+                    continue
+
+                try:
+                    cmds.delete(
+                        imported_node
+                    )
+                except Exception:
+                    pass
+
+            if temporary_container:
+                if cmds.objExists(temporary_container):
+                    rename_utils.rename_node(
+                        temporary_container,
+                        self.face_guide_grp
+                    )
+
+            raise
+
+        self.refresh_guide_handles()
+
+        if not self.guide_exists():
+            raise RuntimeError(
+                u"Face Guide 模板导入完成，但没有找到 {}。".format(
+                    self.guide_move_ctrl_name
+                )
+            )
+
+        # 模板可能保留旧版左右连接；导入后复制一次 LF 到 RT 并断开 Target 输入。
+        self.apply_mirror(
+            source_side="lf",
+            target_side="rt"
+        )
+
+        self.save_guide_config()
+        self.set_step_completed(
+            completed=False
+        )
+        self.invalidate_later_steps()
+
+        return {
+            "imported": True,
+            "guide_root": self.guide_root,
+            "guide_move_ctrl": self.guide_move_ctrl,
+            "new_nodes": imported_nodes,
+        }
+
+    def capture_guide_state(self):
+        u"""记录当前仍存在的 Move Ctrl 和 Locator 世界矩阵。"""
+        state = {
+            "move_ctrl_matrix": None,
+            "locators": {},
+        }
+
+        self.refresh_guide_handles()
+
+        if self.guide_move_ctrl:
+            if cmds.objExists(self.guide_move_ctrl):
+                state["move_ctrl_matrix"] = transform_utils.get_world_matrix(
+                    self.guide_move_ctrl
+                )
+
+        locators = self.get_guide_locators()
+
+        for locator in locators:
+            short_name = rename_utils.get_short_name(
+                locator
+            )
+            state["locators"][short_name] = transform_utils.get_world_matrix(
+                locator
+            )
+
+        return state
+
+    def set_world_matrix_preserve_lock(
+            self,
+            node,
+            matrix_values
+    ):
+        u"""临时解锁 Transform Channel，写入 World Matrix 后恢复 Lock。"""
+        transform_attributes = [
+            "translateX",
+            "translateY",
+            "translateZ",
+            "rotateX",
+            "rotateY",
+            "rotateZ",
+            "scaleX",
+            "scaleY",
+            "scaleZ",
+        ]
+        lock_states = {}
+
+        for attribute in transform_attributes:
+            plug = "{}.{}".format(
+                node,
+                attribute
+            )
+
+            if not cmds.objExists(plug):
+                continue
+
+            lock_states[attribute] = bool(
+                cmds.getAttr(
+                    plug,
+                    lock=True
+                )
+            )
+
+            if lock_states[attribute]:
+                cmds.setAttr(
+                    plug,
+                    lock=False
+                )
+
+        try:
+            transform_utils.set_world_matrix(
+                node,
+                matrix_values
+            )
+        finally:
+            for attribute in lock_states:
+                cmds.setAttr(
+                    "{}.{}".format(node, attribute),
+                    lock=lock_states[attribute]
+                )
+
+        return node
+
+    def restore_guide_state(self, state):
+        u"""恢复重新导入前仍存在的 Locator 位置。"""
+        restored_locators = []
+        self.refresh_guide_handles()
+
+        move_ctrl_matrix = state.get(
+            "move_ctrl_matrix"
+        )
+
+        if move_ctrl_matrix:
+            if self.guide_move_ctrl:
+                self.set_world_matrix_preserve_lock(
+                    self.guide_move_ctrl,
+                    move_ctrl_matrix
+                )
+
+        locator_states = state.get(
+            "locators",
+            {}
+        )
+
+        for short_name in locator_states:
+            locator = self.get_guide_node(
+                short_name,
+                required=False
+            )
+
+            if not locator:
+                continue
+
+            self.set_world_matrix_preserve_lock(
+                locator,
+                locator_states[short_name]
+            )
+            restored_locators.append(
+                locator
+            )
+
+        return restored_locators
+
+    @scene_utils.undo_chunk
     def reimport_guide(self):
-        u"""重新导入模板，同时保留当前仍存在 Locator 的位置。"""
-        return guide_template.reimport_template_preserve_guide(
-            self
+        u"""重新导入完整模板，同时保留当前仍存在 Locator 的位置。"""
+        self.validate_setup()
+
+        state = self.capture_guide_state()
+        self.remove_guide_content()
+        self.build_guide()
+        restored_locators = self.restore_guide_state(
+            state
         )
 
+        self.set_step_completed(
+            completed=False
+        )
+        self.invalidate_later_steps()
+        self.save_guide_config()
+
+        return {
+            "restored_count": len(restored_locators),
+            "template_locator_count": len(
+                self.get_template_locator_names()
+            ),
+        }
+
     # =========================================================================
-    # DAG Helper
+    # DAG / Guide Query
     # =========================================================================
+
+    @staticmethod
+    def get_children(node):
+        u"""返回一个 DAG 节点的全部直接 Child。"""
+        if not node:
+            return []
+
+        if not cmds.objExists(node):
+            return []
+
+        children = cmds.listRelatives(
+            node,
+            children=True,
+            fullPath=True
+        )
+
+        if children is None:
+            children = []
+
+        return children
 
     @staticmethod
     def get_locator_shapes(locator):
@@ -179,53 +624,6 @@ class FaceGuide(face_base.FaceBase):
             shapes = []
 
         return shapes
-
-    def get_node_under_parent(
-            self,
-            parent,
-            short_name
-    ):
-        u"""获取指定 Parent 下的直接子 Transform。"""
-        if not short_name:
-            return None
-
-        if parent:
-            if not cmds.objExists(parent):
-                return None
-
-            children = cmds.listRelatives(
-                parent,
-                children=True,
-                type="transform",
-                fullPath=True
-            )
-
-            if children is None:
-                children = []
-
-            for child in children:
-                child_short_name = rename_utils.get_short_name(
-                    child
-                )
-
-                if child_short_name == short_name:
-                    return child
-
-            return None
-
-        matches = cmds.ls(
-            short_name,
-            type="transform",
-            long=True
-        )
-
-        if matches is None:
-            matches = []
-
-        if len(matches) == 1:
-            return matches[0]
-
-        return None
 
     @staticmethod
     def set_attr_preserve_lock(
@@ -267,12 +665,8 @@ class FaceGuide(face_base.FaceBase):
 
         return True
 
-    # =========================================================================
-    # Guide State / Query
-    # =========================================================================
-
     def refresh_guide_handles(self):
-        u"""刷新当前场景中的 Guide Root 和 Face Move Ctrl 引用。"""
+        u"""刷新当前场景中的 Guide Root 和 Face Move Ctrl。"""
         self.guide_root = None
         self.guide_move_ctrl = None
 
@@ -280,13 +674,10 @@ class FaceGuide(face_base.FaceBase):
             return False
 
         self.guide_root = self.face_guide_grp
-        move_ctrl = self.get_node_under_parent(
-            self.face_guide_grp,
-            self.guide_move_ctrl_name
+        self.guide_move_ctrl = self.get_guide_node(
+            self.guide_move_ctrl_name,
+            required=False
         )
-
-        if move_ctrl:
-            self.guide_move_ctrl = move_ctrl
 
         return bool(
             self.guide_move_ctrl
@@ -351,12 +742,10 @@ class FaceGuide(face_base.FaceBase):
                 node
             )
 
-            if node_short_name != short_name:
-                continue
-
-            candidates.append(
-                node
-            )
+            if node_short_name == short_name:
+                candidates.append(
+                    node
+                )
 
         if len(candidates) == 1:
             return candidates[0]
@@ -412,7 +801,9 @@ class FaceGuide(face_base.FaceBase):
                 node
             )
 
-        locators.sort()
+        locators.sort(
+            key=rename_utils.get_short_name
+        )
         return locators
 
     def get_guides_from_names(
@@ -420,7 +811,7 @@ class FaceGuide(face_base.FaceBase):
             guide_names,
             required=True
     ):
-        u"""按固定名称顺序解析 Guide Transform。"""
+        u"""按输入名称顺序解析 Guide Transform。"""
         guides = []
 
         for guide_name in guide_names:
@@ -440,57 +831,113 @@ class FaceGuide(face_base.FaceBase):
             self,
             part,
             side=None,
-            include_tokens=None,
-            exclude_tokens=None,
             required=False
     ):
-        u"""从 Guide Template Contract 中解析某个 Face 部位。"""
-        guide_names = guide_data.get_part_guide_names(
-            part=part,
-            side=side,
-            include_tokens=include_tokens,
-            exclude_tokens=exclude_tokens
+        u"""按标准名称中的 Token 获取某个 Face 部位 Guide。"""
+        if not part:
+            raise ValueError(
+                u"part 不能为空。"
+            )
+
+        part_token = "_{}_".format(
+            str(part).strip().lower()
+        )
+        side_token = None
+
+        if side is not None:
+            normalized_side = name_utils.Name.normalize_side(
+                side
+            )
+            side_token = "_{}_".format(
+                normalized_side
+            )
+
+        guides = []
+        locators = self.get_guide_locators()
+
+        for locator in locators:
+            short_name = rename_utils.get_short_name(
+                locator
+            ).lower()
+
+            if part_token not in short_name:
+                continue
+
+            if side_token:
+                if side_token not in short_name:
+                    continue
+
+            guides.append(
+                locator
+            )
+
+        guides.sort(
+            key=rename_utils.get_short_name
         )
 
-        return self.get_guides_from_names(
-            guide_names,
-            required=required
-        )
+        if required:
+            if not guides:
+                raise RuntimeError(
+                    u"没有找到 {} Guide。".format(
+                        part
+                    )
+                )
+
+        return guides
 
     def get_guide_positions(self, guides):
         u"""按输入顺序返回多个 Guide 的世界坐标。"""
         positions = []
 
-        if not guides:
-            return positions
-
         for guide in guides:
-            position = transform_utils.get_world_translation(
-                guide
-            )
             positions.append(
-                position
+                transform_utils.get_world_translation(
+                    guide
+                )
             )
 
         return positions
 
     # =========================================================================
-    # Face Part Query
+    # Ordered Guide Query
     # =========================================================================
 
     def get_lip_guides(self, required=True):
         u"""返回上下嘴唇和嘴角的固定有序 Guide。"""
+        upper_names = [
+            name_utils.Name.create_name("loc", "rt", "mouth", "corner_guide", 1),
+            name_utils.Name.create_name("loc", "rt", "upper", "lip_guide", 2),
+            name_utils.Name.create_name("loc", "rt", "upper", "lip_guide", 1),
+            name_utils.Name.create_name("loc", "md", "upper", "lip_guide", 1),
+            name_utils.Name.create_name("loc", "lf", "upper", "lip_guide", 1),
+            name_utils.Name.create_name("loc", "lf", "upper", "lip_guide", 2),
+            name_utils.Name.create_name("loc", "lf", "mouth", "corner_guide", 1),
+        ]
+        lower_names = [
+            name_utils.Name.create_name("loc", "rt", "mouth", "corner_guide", 1),
+            name_utils.Name.create_name("loc", "rt", "lower", "lip_guide", 2),
+            name_utils.Name.create_name("loc", "rt", "lower", "lip_guide", 1),
+            name_utils.Name.create_name("loc", "md", "lower", "lip_guide", 1),
+            name_utils.Name.create_name("loc", "lf", "lower", "lip_guide", 1),
+            name_utils.Name.create_name("loc", "lf", "lower", "lip_guide", 2),
+            name_utils.Name.create_name("loc", "lf", "mouth", "corner_guide", 1),
+        ]
+        corner_names = [
+            name_utils.Name.create_name("loc", "rt", "mouth", "corner_guide", 1),
+            name_utils.Name.create_name("loc", "lf", "mouth", "corner_guide", 1),
+        ]
+
         return {
             "upper": self.get_guides_from_names(
-                guide_data.lip_guide_names["upper"],
+                upper_names,
                 required=required
             ),
             "lower": self.get_guides_from_names(
-                guide_data.lip_guide_names["lower"],
+                lower_names,
                 required=required
             ),
             "corners": self.get_guides_from_names(
-                guide_data.lip_guide_names["corners"],
+                corner_names,
                 required=required
             ),
         }
@@ -501,17 +948,51 @@ class FaceGuide(face_base.FaceBase):
             required=True
     ):
         u"""返回某一侧 Upper / Lower Eyelid 的固定有序 Guide。"""
-        guide_names = guide_data.get_eyelid_guide_names(
+        side = name_utils.Name.normalize_side(
             side
         )
 
+        if side not in self.mirror_sides:
+            raise ValueError(
+                u"Eyelid side 必须是 lf 或 rt。"
+            )
+
+        inner_name = name_utils.Name.create_name(
+            "loc",
+            side,
+            "inner",
+            "lid_guide",
+            1
+        )
+        outer_name = name_utils.Name.create_name(
+            "loc",
+            side,
+            "outer",
+            "lid_guide",
+            1
+        )
+        upper_names = [
+            inner_name,
+            name_utils.Name.create_name("loc", side, "upper", "lid_guide", 1),
+            name_utils.Name.create_name("loc", side, "upper", "lid_guide", 2),
+            name_utils.Name.create_name("loc", side, "upper", "lid_guide", 3),
+            outer_name,
+        ]
+        lower_names = [
+            inner_name,
+            name_utils.Name.create_name("loc", side, "lower", "lid_guide", 1),
+            name_utils.Name.create_name("loc", side, "lower", "lid_guide", 2),
+            name_utils.Name.create_name("loc", side, "lower", "lid_guide", 3),
+            outer_name,
+        ]
+
         return {
             "upper": self.get_guides_from_names(
-                guide_names["upper"],
+                upper_names,
                 required=required
             ),
             "lower": self.get_guides_from_names(
-                guide_names["lower"],
+                lower_names,
                 required=required
             ),
         }
@@ -522,7 +1003,6 @@ class FaceGuide(face_base.FaceBase):
             part="brow",
             side=side
         )
-
         main_guide = None
         point_guides = []
 
@@ -551,65 +1031,516 @@ class FaceGuide(face_base.FaceBase):
             required=False
     ):
         u"""返回某一侧 Eye Ball / Iris Guide。"""
-        if side not in ["lf", "rt"]:
+        side = name_utils.Name.normalize_side(
+            side
+        )
+
+        if side not in self.mirror_sides:
             raise ValueError(
                 u"Eye side 必须是 lf 或 rt。"
             )
 
+        eye_ball_name = name_utils.Name.create_name(
+            "loc",
+            side,
+            "eye",
+            "ball_guide",
+            1
+        )
+        eye_iris_name = name_utils.Name.create_name(
+            "loc",
+            side,
+            "eye",
+            "iris_guide",
+            1
+        )
+
         return {
             "eye_ball": self.get_guide_node(
-                "loc_{}_eye_ball_guide_001".format(side),
+                eye_ball_name,
                 required=required
             ),
             "eye_iris": self.get_guide_node(
-                "loc_{}_eye_iris_guide_001".format(side),
+                eye_iris_name,
                 required=required
             ),
         }
 
-    def get_eye_bag_guides(self, side):
-        u"""返回某一侧 Eye Bag Guide。"""
-        return self.get_part_guides(
-            part="eye_bag",
-            side=side
+    # =========================================================================
+    # Mirror
+    # =========================================================================
+
+    def validate_mirror_sides(
+            self,
+            source_side,
+            target_side
+    ):
+        u"""检查 Mirror Source / Target Side。"""
+        if source_side not in self.mirror_sides:
+            raise ValueError(
+                u"source_side 必须是 lf 或 rt。"
+            )
+
+        if target_side not in self.mirror_sides:
+            raise ValueError(
+                u"target_side 必须是 lf 或 rt。"
+            )
+
+        if source_side == target_side:
+            raise ValueError(
+                u"Mirror Source / Target Side 不能相同。"
+            )
+
+        return True
+
+    def get_side_zero_groups(self, side):
+        u"""返回指定 Side 下全部 Guide Zero Group。"""
+        prefix = "zero_{}_".format(
+            side
+        )
+        descendants = cmds.listRelatives(
+            self.face_guide_grp,
+            allDescendents=True,
+            type="transform",
+            fullPath=True
         )
 
-    def get_nose_guides(self):
-        u"""返回全部 Nose Guide。"""
-        return self.get_part_guides(
-            part="nose"
+        if descendants is None:
+            descendants = []
+
+        zero_groups = []
+
+        for node in descendants:
+            short_name = rename_utils.get_short_name(
+                node
+            )
+
+            if short_name.startswith(prefix):
+                zero_groups.append(
+                    node
+                )
+
+        zero_groups.sort(
+            key=hierarchy_utils.Hierarchy.get_dag_depth
+        )
+        return zero_groups
+
+    def get_side_locator(
+            self,
+            zero_group,
+            side
+    ):
+        u"""返回一个 Guide Zero Group 下对应 Side 的 Locator。"""
+        prefix = "loc_{}_".format(
+            side
+        )
+        children = cmds.listRelatives(
+            zero_group,
+            children=True,
+            type="transform",
+            fullPath=True
         )
 
-    def get_jaw_guides(self):
-        u"""返回全部 Jaw Guide。"""
-        return self.get_part_guides(
-            part="jaw"
+        if children is None:
+            children = []
+
+        for child in children:
+            short_name = rename_utils.get_short_name(
+                child
+            )
+
+            if short_name.startswith(prefix):
+                return child
+
+        return None
+
+    @staticmethod
+    def capture_attributes(
+            node,
+            attributes
+    ):
+        u"""记录节点指定 Attribute 的当前值。"""
+        values = {}
+
+        if not node:
+            return values
+
+        if not cmds.objExists(node):
+            return values
+
+        for attribute in attributes:
+            plug = "{}.{}".format(
+                node,
+                attribute
+            )
+
+            if not cmds.objExists(plug):
+                continue
+
+            values[attribute] = cmds.getAttr(
+                plug
+            )
+
+        return values
+
+    def copy_attribute(
+            self,
+            source_node,
+            target_node,
+            attribute
+    ):
+        u"""复制一个 Attribute，并断开 Target 原输入。"""
+        source_plug = "{}.{}".format(
+            source_node,
+            attribute
+        )
+        target_plug = "{}.{}".format(
+            target_node,
+            attribute
         )
 
-    def get_teeth_guides(self):
-        u"""返回全部 Teeth Guide。"""
-        return self.get_part_guides(
-            part="teeth"
+        if not cmds.objExists(source_plug):
+            return False
+
+        if not cmds.objExists(target_plug):
+            return False
+
+        connection_utils.disconnect_input(
+            target_plug
+        )
+        self.set_attr_preserve_lock(
+            target_node,
+            attribute,
+            cmds.getAttr(source_plug)
+        )
+        return True
+
+    def capture_side_state(self, side):
+        u"""记录 Target Side 在 Mirror 前的状态。"""
+        snapshot = {
+            "side": side,
+            "items": [],
+        }
+        zero_groups = self.get_side_zero_groups(
+            side
         )
 
-    def get_tongue_guides(self):
-        u"""返回全部 Tongue Guide。"""
-        return self.get_part_guides(
-            part="tongue"
+        for zero_group in zero_groups:
+            locator = self.get_side_locator(
+                zero_group,
+                side
+            )
+            item = {
+                "zero_name": rename_utils.get_short_name(zero_group),
+                "zero_values": self.capture_attributes(
+                    zero_group,
+                    self.zero_attributes
+                ),
+                "locator_name": None,
+                "locator_values": {},
+                "locator_shape_values": {},
+            }
+
+            if locator:
+                item["locator_name"] = rename_utils.get_short_name(
+                    locator
+                )
+                item["locator_values"] = self.capture_attributes(
+                    locator,
+                    self.locator_attributes
+                )
+                locator_shapes = self.get_locator_shapes(
+                    locator
+                )
+
+                if locator_shapes:
+                    item["locator_shape_values"] = self.capture_attributes(
+                        locator_shapes[0],
+                        self.locator_shape_attributes
+                    )
+
+            snapshot["items"].append(
+                item
+            )
+
+        return snapshot
+
+    def restore_attributes(
+            self,
+            node,
+            values
+    ):
+        u"""恢复 Snapshot 中保存的 Attribute。"""
+        for attribute in values:
+            plug = "{}.{}".format(
+                node,
+                attribute
+            )
+
+            if not cmds.objExists(plug):
+                continue
+
+            connection_utils.disconnect_input(
+                plug
+            )
+            self.set_attr_preserve_lock(
+                node,
+                attribute,
+                values[attribute]
+            )
+
+        return True
+
+    def restore_mirror_snapshot(self, snapshot):
+        u"""恢复最近一次 Mirror 前的 Target Side 状态。"""
+        if not isinstance(snapshot, dict):
+            raise TypeError(
+                u"Mirror Snapshot 必须是 dict。"
+            )
+
+        restored_count = 0
+        items = snapshot.get(
+            "items",
+            []
         )
 
-    def get_ear_guides(self, side=None):
-        u"""返回 Ear Guide。"""
-        return self.get_part_guides(
-            part="ear",
-            side=side
+        for item in items:
+            zero_group = self.get_guide_node(
+                item.get("zero_name"),
+                required=False
+            )
+
+            if not zero_group:
+                continue
+
+            self.restore_attributes(
+                zero_group,
+                item.get("zero_values", {})
+            )
+
+            locator_name = item.get(
+                "locator_name"
+            )
+
+            if locator_name:
+                locator = self.get_guide_node(
+                    locator_name,
+                    required=False
+                )
+
+                if locator:
+                    self.restore_attributes(
+                        locator,
+                        item.get("locator_values", {})
+                    )
+                    locator_shapes = self.get_locator_shapes(
+                        locator
+                    )
+
+                    if locator_shapes:
+                        self.restore_attributes(
+                            locator_shapes[0],
+                            item.get("locator_shape_values", {})
+                        )
+
+            restored_count += 1
+
+        self.set_step_completed(
+            completed=False
+        )
+        self.invalidate_later_steps()
+
+        return {
+            "restored_count": restored_count,
+        }
+
+    def mirror_zero_group(
+            self,
+            source_zero,
+            target_zero,
+            source_side
+    ):
+        u"""把一个 Source Guide Zero 的当前状态复制到 Target。"""
+        source_parent = hierarchy_utils.Hierarchy.get_parent(
+            source_zero
+        )
+        is_mirror_root = True
+
+        if source_parent:
+            source_parent_name = rename_utils.get_short_name(
+                source_parent
+            )
+            source_token = "_{}_".format(
+                source_side
+            )
+
+            if source_token in source_parent_name:
+                is_mirror_root = False
+
+        if is_mirror_root:
+            self.set_attr_preserve_lock(
+                target_zero,
+                "translateX",
+                -cmds.getAttr(source_zero + ".translateX")
+            )
+            self.set_attr_preserve_lock(
+                target_zero,
+                "scaleX",
+                -cmds.getAttr(source_zero + ".scaleX")
+            )
+            direct_attributes = [
+                "translateY",
+                "translateZ",
+                "rotateX",
+                "rotateY",
+                "rotateZ",
+                "scaleY",
+                "scaleZ",
+                "rotateOrder",
+            ]
+
+            for attribute in direct_attributes:
+                self.copy_attribute(
+                    source_zero,
+                    target_zero,
+                    attribute
+                )
+        else:
+            for attribute in self.zero_attributes:
+                self.copy_attribute(
+                    source_zero,
+                    target_zero,
+                    attribute
+                )
+
+        return True
+
+    def mirror_locator(
+            self,
+            source_locator,
+            target_locator
+    ):
+        u"""复制 Locator Transform 和 Shape 参数。"""
+        for attribute in self.locator_attributes:
+            self.copy_attribute(
+                source_locator,
+                target_locator,
+                attribute
+            )
+
+        source_shapes = self.get_locator_shapes(
+            source_locator
+        )
+        target_shapes = self.get_locator_shapes(
+            target_locator
         )
 
-    def get_zygoma_guides(self, side=None):
-        u"""返回 Zygoma Guide。"""
-        return self.get_part_guides(
-            part="zygoma",
-            side=side
+        if source_shapes and target_shapes:
+            for attribute in self.locator_shape_attributes:
+                self.copy_attribute(
+                    source_shapes[0],
+                    target_shapes[0],
+                    attribute
+                )
+
+        return True
+
+    def apply_mirror(
+            self,
+            source_side,
+            target_side
+    ):
+        u"""执行 Guide Mirror，不创建 Snapshot。"""
+        self.validate_mirror_sides(
+            source_side,
+            target_side
+        )
+
+        if not self.guide_exists():
+            raise RuntimeError(
+                u"Face Guide 尚未加载。"
+            )
+
+        source_zero_groups = self.get_side_zero_groups(
+            source_side
+        )
+        mirrored_count = 0
+
+        for source_zero in source_zero_groups:
+            source_zero_name = rename_utils.get_short_name(
+                source_zero
+            )
+            target_zero_name = name_utils.Name.mirror_name(
+                source_zero_name
+            )
+            target_zero = self.get_guide_node(
+                target_zero_name,
+                required=True
+            )
+
+            source_locator = self.get_side_locator(
+                source_zero,
+                source_side
+            )
+
+            if not source_locator:
+                continue
+
+            source_locator_name = rename_utils.get_short_name(
+                source_locator
+            )
+            target_locator_name = name_utils.Name.mirror_name(
+                source_locator_name
+            )
+            target_locator = self.get_guide_node(
+                target_locator_name,
+                required=True
+            )
+
+            self.mirror_zero_group(
+                source_zero,
+                target_zero,
+                source_side
+            )
+            self.mirror_locator(
+                source_locator,
+                target_locator
+            )
+            mirrored_count += 1
+
+        self.set_step_completed(
+            completed=False
+        )
+        self.invalidate_later_steps()
+
+        return {
+            "source_side": source_side,
+            "target_side": target_side,
+            "count": mirrored_count,
+        }
+
+    @scene_utils.undo_chunk
+    def mirror_guides(
+            self,
+            source_side,
+            target_side
+    ):
+        u"""记录 Target Snapshot，并执行一次可撤销 Guide Mirror。"""
+        snapshot = self.capture_side_state(
+            target_side
+        )
+        result = self.apply_mirror(
+            source_side,
+            target_side
+        )
+        result["snapshot"] = snapshot
+        return result
+
+    @scene_utils.undo_chunk
+    def undo_mirror(self, snapshot):
+        u"""恢复 UI 保存的最近一次 Mirror Snapshot。"""
+        return self.restore_mirror_snapshot(
+            snapshot
         )
 
     # =========================================================================
@@ -617,12 +1548,7 @@ class FaceGuide(face_base.FaceBase):
     # =========================================================================
 
     def validate_guides(self):
-        u"""
-        检查 Step 02 Guide 是否完整。
-
-        核心规则：face_guide.ma 中定义的每一个 Locator 都必须仍然存在，
-        任意 Locator 被误删都会阻止进入 Step 03。
-        """
+        u"""检查模板中的每一个 Locator 是否仍然存在。"""
         result = {
             "valid": True,
             "errors": [],
@@ -642,21 +1568,13 @@ class FaceGuide(face_base.FaceBase):
             result["valid"] = False
             return result
 
-        if not self.guide_exists():
-            result["errors"].append(
-                u"Face Guide 模板尚未完整加载，缺少 {}。".format(
-                    self.guide_move_ctrl_name
-                )
-            )
-
         locators = self.get_guide_locators()
-        result["guide_count"] = len(locators)
-
-        expected_names = guide_data.get_template_locator_names()
-        result["template_guide_count"] = len(expected_names)
-
+        expected_names = self.get_template_locator_names()
         current_names = []
         name_counts = {}
+
+        result["guide_count"] = len(locators)
+        result["template_guide_count"] = len(expected_names)
 
         for locator in locators:
             short_name = rename_utils.get_short_name(
@@ -685,27 +1603,21 @@ class FaceGuide(face_base.FaceBase):
             )
 
         for short_name in name_counts:
-            count = name_counts.get(
-                short_name
-            )
-
-            if count <= 1:
+            if name_counts[short_name] <= 1:
                 continue
 
             result["errors"].append(
                 u"Guide 短名称重复: {} x {}".format(
                     short_name,
-                    count
+                    name_counts[short_name]
                 )
             )
 
         for current_name in current_names:
-            if current_name in expected_names:
-                continue
-
-            result["unexpected_guide_names"].append(
-                current_name
-            )
+            if current_name not in expected_names:
+                result["unexpected_guide_names"].append(
+                    current_name
+                )
 
         if result["unexpected_guide_names"]:
             result["warnings"].append(
@@ -718,7 +1630,7 @@ class FaceGuide(face_base.FaceBase):
         return result
 
     # =========================================================================
-    # Config - Guide
+    # Config
     # =========================================================================
 
     def save_guide_config(self):
@@ -743,7 +1655,6 @@ class FaceGuide(face_base.FaceBase):
             force=True,
             clear_empty=True
         )
-
         self.set_config_values(
             attrs_dict={
                 "face_guide_version": self.guide_version,
@@ -754,23 +1665,82 @@ class FaceGuide(face_base.FaceBase):
             lock=False,
             hide=True
         )
+        return True
+
+    @staticmethod
+    def get_default_controller_settings():
+        u"""返回一份独立的 Face Controller 默认设置。"""
+        settings = {}
+
+        for attr_name in config.face_controller_default_settings:
+            settings[attr_name] = config.face_controller_default_settings.get(
+                attr_name
+            )
+
+        return settings
+
+    @staticmethod
+    def validate_controller_settings(settings):
+        u"""检查 Step 02 Controller Settings。"""
+        if not isinstance(settings, dict):
+            raise TypeError(
+                u"Controller Settings 必须是 dict。"
+            )
+
+        global_scale = settings.get(
+            "face_ctrl_global_scale"
+        )
+
+        if global_scale is None or float(global_scale) <= 0.0:
+            raise ValueError(
+                u"Face Controller Global Scale 必须大于 0。"
+            )
+
+        for attr_name in config.face_controller_default_settings:
+            if not attr_name.endswith("_ctrl_size"):
+                continue
+
+            value = settings.get(
+                attr_name
+            )
+
+            if value is None or float(value) <= 0.0:
+                raise ValueError(
+                    u"Controller Size 必须大于 0: {}".format(
+                        attr_name
+                    )
+                )
+
+        color_attr_names = [
+            "face_ctrl_color_lf",
+            "face_ctrl_color_rt",
+            "face_ctrl_color_md",
+        ]
+
+        for attr_name in color_attr_names:
+            color_index = int(
+                settings.get(attr_name, -1)
+            )
+
+            if color_index < 0 or color_index > 31:
+                raise ValueError(
+                    u"Maya Index Color 必须在 0～31: {}".format(
+                        attr_name
+                    )
+                )
 
         return True
 
-    # =========================================================================
-    # Config - Controller Settings
-    # =========================================================================
-
     def load_controller_settings(self):
         u"""从 Face Config 读取 Controller Settings。"""
-        settings = guide_data.get_default_controller_settings()
+        settings = self.get_default_controller_settings()
 
         if not self.config_node_exists():
             return settings
 
         attr_names = []
 
-        for attr_name in guide_data.default_controller_settings:
+        for attr_name in config.face_controller_default_settings:
             attr_names.append(
                 attr_name
             )
@@ -784,29 +1754,26 @@ class FaceGuide(face_base.FaceBase):
                 attr_name
             )
 
-            if saved_value is None:
-                continue
-
-            settings[attr_name] = saved_value
+            if saved_value is not None:
+                settings[attr_name] = saved_value
 
         return settings
 
     def save_controller_settings(self, settings):
         u"""把 Step 02 Controller Settings 保存到统一 Face Config。"""
-        guide_data.validate_controller_settings(
+        self.validate_controller_settings(
             settings
         )
-
         values = {}
 
-        for attr_name in guide_data.default_controller_settings:
+        for attr_name in config.face_controller_default_settings:
             values[attr_name] = settings.get(
                 attr_name
             )
 
         return self.set_config_values(
             attrs_dict=values,
-            attr_types=guide_data.controller_setting_attr_types,
+            attr_types=config.face_controller_setting_attr_types,
             lock=False,
             hide=True
         )
