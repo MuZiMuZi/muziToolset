@@ -162,18 +162,20 @@ class FaceRigWindow(FaceRigView):
             return False
 
         setup_data = face_config.load_setup()
-        picker_map = {
-            "head_model": "face_head_model",
-            "left_eye_model": "face_lf_eye_model",
-            "right_eye_model": "face_rt_eye_model",
-            "upper_teeth_model": "upper_teeth_model",
-            "lower_teeth_model": "lower_teeth_model",
-            "tongue_model": "face_tongue_model",
-            "gum_model": "face_gum_model",
-        }
-        for picker_key in picker_map:
-            node = setup_data.get(picker_map[picker_key])
+        picker_keys = [
+            "head_model",
+            "left_eye_model",
+            "right_eye_model",
+            "upper_teeth_model",
+            "lower_teeth_model",
+            "tongue_model",
+            "gum_model",
+        ]
+
+        for picker_key in picker_keys:
+            node = setup_data.get(picker_key)
             picker = self.node_pickers[picker_key]
+
             if node is None:
                 picker.clear()
             else:
