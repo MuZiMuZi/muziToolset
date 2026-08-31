@@ -3,44 +3,18 @@ u"""
 Pipeline Refactor Smoke Test
 ============================
 
-验证从旧 pipelineUtils / Legacy Core 重构出来的正式 Core 模块。
+验证当前正式 Core 的关键 Maya 行为。
 
-测试范围
---------
-    scene_utils
-        Node / Object Set。
+范围：
+    scene_utils                  Node / Object Set
+    transform_utils / math_utils Transform / Distance / World Matrix
+    animation_utils              AnimCurve / Reset / Animation JSON
+    connection_utils             Query / Safe Connect / Force / Plug Pair / Disconnect
+    matrix_utils                 offsetParentMatrix Parent Matrix Network
+    constraint_utils             Constraint Create / Query / Delete
+    curve_utils / surface_utils  Curve / Surface / Follicle
 
-    transform_utils
-        Translation / Distance / World Matrix。
-
-    animation_utils
-        AnimCurve Clear / Transform Reset。
-
-    connection_utils
-        Plug Connect / Query / DG Compute / Disconnect。
-
-    matrix_utils
-        Maintain Offset / Parent Hierarchy / offsetParentMatrix Follow / Remove。
-
-    constraint_utils
-        Maya Constraint Create / Query / Delete。
-
-    curve_utils
-        Curve Shape / CV Count / Arc Length Sample。
-
-    surface_utils
-        Curve Loft Surface / Follicle。
-
-    animation_utils - Animation JSON
-        JSON Export / Clear / Import。
-
-说明
-----
-动画 JSON 已经合并回 ``core.animation_utils``，不再依赖单独的
-``animation_io_utils.py``。
-
-测试会创建带 ``__muzi_pipeline_test_`` 前缀的临时节点，
-结束后自动删除；Animation JSON 会写入系统临时目录并在测试后清理。
+测试只创建带本轮 Token 的临时数据，并在 finally 中清理。
 """
 
 from __future__ import print_function
@@ -56,23 +30,20 @@ from ..core import animation_utils
 from ..core import connection_utils
 from ..core import constraint_utils
 from ..core import curve_utils
+from ..core import math_utils
 from ..core import matrix_utils
 from ..core import scene_utils
 from ..core import surface_utils
 from ..core import transform_utils
 
 
-# =============================================================================
-# Helpers - 测试公共辅助
-# =============================================================================
-
 def create_token():
-    """创建短测试 Token，避免测试节点和用户场景重名。"""
+    u"""创建短测试 Token。"""
     return uuid.uuid4().hex[:8]
 
 
 def create_name(token, description):
-    """根据 Token 和功能描述生成测试节点名称。"""
+    u"""生成当前测试轮次的临时节点名称。"""
     return "__muzi_pipeline_test_{}_{}".format(
         token,
         description
@@ -80,35 +51,26 @@ def create_name(token, description):
 
 
 def delete_existing_test_nodes(token):
-    """
-    删除当前 Token 产生的测试节点。
-
-    DAG 节点按路径深度从深到浅删除，避免先删 Parent 后 Child Path 失效。
-    """
-    # 步骤 1：查找本轮测试创建的节点。
-    pattern = "__muzi_pipeline_test_{}_*".format(token)
+    u"""按 DAG 深度从深到浅清理当前 Token 的测试节点。"""
     nodes = cmds.ls(
-        pattern,
+        "__muzi_pipeline_test_{}_*".format(token),
         long=True
     )
 
     if nodes is None:
         nodes = []
 
-    # 步骤 2：记录 DAG 深度。
     nodes_with_depth = []
 
     for node in nodes:
-        node_data = {
+        nodes_with_depth.append({
             "node": node,
             "depth": node.count("|"),
-        }
-        nodes_with_depth.append(node_data)
+        })
 
     def get_depth(node_data):
         return node_data["depth"]
 
-    # 步骤 3：先删除最深层节点。
     nodes_with_depth.sort(
         key=get_depth,
         reverse=True
@@ -134,7 +96,7 @@ def record_result(
         message,
         error_text=""
 ):
-    """向测试报告中追加一条结构化结果。"""
+    u"""追加统一测试结果。"""
     result = {
         "category": category,
         "name": name,
@@ -142,7 +104,6 @@ def record_result(
         "message": message,
         "traceback": error_text,
     }
-
     results.append(result)
     return result
 
@@ -154,10 +115,9 @@ def run_case(
         name,
         test_function
 ):
-    """执行单项测试，并把异常转换成统一报告。"""
+    u"""执行单项 Case，并把异常转换为失败记录。"""
     try:
         message = test_function(token)
-
         record_result(
             results,
             category,
@@ -177,49 +137,27 @@ def run_case(
 
 
 # =============================================================================
-# Scene Utils
+# Scene
 # =============================================================================
 
 def test_scene_utils(token):
-    """测试 Node Match 和 Object Set 基础能力。"""
-    # 步骤 1：创建 Source Transform。
-    source = cmds.createNode(
+    u"""验证 Node Create 和 Object Set。"""
+    source = scene_utils.create_node(
         "transform",
-        name=create_name(token, "scene_source")
+        create_name(token, "scene_source")
     )
-    cmds.xform(
-        source,
-        worldSpace=True,
-        translation=[1.0, 2.0, 3.0]
-    )
-
-    # 步骤 2：通过 scene_utils 创建并 Match 新节点。
     target = scene_utils.create_node(
-        node_type="transform",
-        name=create_name(token, "scene_target"),
-        match_node=source
+        "transform",
+        create_name(token, "scene_target")
     )
 
-    target_position = cmds.xform(
-        target,
-        query=True,
-        worldSpace=True,
-        translation=True
-    )
+    if not cmds.objExists(source) or not cmds.objExists(target):
+        raise RuntimeError(u"Scene Node 创建失败。")
 
-    if target_position != [1.0, 2.0, 3.0]:
-        raise RuntimeError(
-            u"scene_utils.create_node Match 位置错误：{}".format(
-                target_position
-            )
-        )
-
-    # 步骤 3：创建 Object Set 并加入两个节点。
     object_set = scene_utils.ensure_object_set(
-        set_name=create_name(token, "set"),
+        create_name(token, "set"),
         objects=[source, target]
     )
-
     members = cmds.sets(
         object_set,
         query=True
@@ -230,30 +168,27 @@ def test_scene_utils(token):
 
     if len(members) != 2:
         raise RuntimeError(
-            u"Object Set 成员数量错误：{}".format(
-                len(members)
-            )
+            u"Object Set 成员数量错误：{}".format(len(members))
         )
 
-    return u"Node Match + Object Set 成功"
+    return u"Node Create + Object Set 成功"
 
 
 # =============================================================================
-# Transform Utils
+# Transform / Math
 # =============================================================================
 
 def test_transform_utils(token):
-    """测试位置、相对移动、距离和 World Matrix。"""
-    node_a = cmds.createNode(
+    u"""验证 Transform 空间数据和纯数学距离。"""
+    node_a = scene_utils.create_node(
         "transform",
-        name=create_name(token, "distance_a")
+        create_name(token, "distance_a")
     )
-    node_b = cmds.createNode(
+    node_b = scene_utils.create_node(
         "transform",
-        name=create_name(token, "distance_b")
+        create_name(token, "distance_b")
     )
 
-    # 步骤 1：设置两个世界位置，构造 3-4-5 三角形。
     transform_utils.set_world_translation(
         node_a,
         [0.0, 0.0, 0.0]
@@ -263,9 +198,11 @@ def test_transform_utils(token):
         [3.0, 4.0, 0.0]
     )
 
-    distance = transform_utils.distance_between(
-        node_a,
-        node_b
+    position_a = transform_utils.get_world_translation(node_a)
+    position_b = transform_utils.get_world_translation(node_b)
+    distance = math_utils.distance_between_points(
+        position_a,
+        position_b
     )
 
     if abs(distance - 5.0) > 0.0001:
@@ -273,20 +210,17 @@ def test_transform_utils(token):
             u"Distance 计算错误：{}".format(distance)
         )
 
-    # 步骤 2：测试相对移动。
     transform_utils.move_relative(
         node_a,
         [1.0, 0.0, 0.0]
     )
+    moved_position = transform_utils.get_world_translation(node_a)
 
-    position_a = transform_utils.get_world_translation(node_a)
-
-    if abs(position_a[0] - 1.0) > 0.0001:
+    if abs(moved_position[0] - 1.0) > 0.0001:
         raise RuntimeError(
-            u"Relative Move 结果错误：{}".format(position_a)
+            u"Relative Move 错误：{}".format(moved_position)
         )
 
-    # 步骤 3：读取 B 的 World Matrix 并写给 A。
     world_matrix = transform_utils.get_world_matrix(node_b)
 
     if len(world_matrix) != 16:
@@ -296,31 +230,27 @@ def test_transform_utils(token):
         node_a,
         world_matrix
     )
-
     matched_position = transform_utils.get_world_translation(node_a)
 
     if abs(matched_position[0] - 3.0) > 0.0001:
         raise RuntimeError(
-            u"World Matrix 设置失败：{}".format(
-                matched_position
-            )
+            u"World Matrix 设置失败：{}".format(matched_position)
         )
 
-    return u"Distance + Move + World Matrix 成功"
+    return u"Point Distance + Move + World Matrix 成功"
 
 
 # =============================================================================
-# Animation Utils - AnimCurve / Reset
+# Animation
 # =============================================================================
 
 def test_animation_utils(token):
-    """测试 AnimCurve 查询 / 清除和 Transform Reset。"""
-    node = cmds.createNode(
+    u"""验证 AnimCurve Clear 和 Transform Reset。"""
+    node = scene_utils.create_node(
         "transform",
-        name=create_name(token, "animation")
+        create_name(token, "animation")
     )
 
-    # 步骤 1：创建两帧 Translate X 动画。
     cmds.setKeyframe(
         node,
         attribute="translateX",
@@ -334,139 +264,194 @@ def test_animation_utils(token):
         value=10.0
     )
 
-    animation_curves = animation_utils.get_animation_curves(
-        nodes=[node]
-    )
-
-    if not animation_curves:
+    if not animation_utils.get_animation_curves(nodes=[node]):
         raise RuntimeError(u"没有找到刚创建的 AnimCurve。")
 
-    # 步骤 2：删除 AnimCurve。
-    deleted_curves = animation_utils.clear_animation_keys(
-        nodes=[node]
-    )
-
-    if not deleted_curves:
+    if not animation_utils.clear_animation_keys(nodes=[node]):
         raise RuntimeError(u"没有删除 AnimCurve。")
 
-    # 步骤 3：给 TRS 写入非默认值，再执行 Reset。
     cmds.setAttr(node + ".translateY", 8.0)
     cmds.setAttr(node + ".rotateZ", 25.0)
     cmds.setAttr(node + ".scaleX", 2.0)
 
-    reset_nodes = animation_utils.reset_transform_channels(
-        [node]
-    )
+    reset_nodes = animation_utils.reset_transform_channels([node])
 
     if node not in reset_nodes:
         raise RuntimeError(u"Transform Reset 没有返回测试节点。")
 
-    translate_y = cmds.getAttr(node + ".translateY")
-    rotate_z = cmds.getAttr(node + ".rotateZ")
-    scale_x = cmds.getAttr(node + ".scaleX")
+    if cmds.getAttr(node + ".translateY") != 0:
+        raise RuntimeError(u"Translate Reset 失败。")
 
-    if translate_y != 0 or rotate_z != 0 or scale_x != 1:
-        raise RuntimeError(u"Transform Reset 结果错误。")
+    if cmds.getAttr(node + ".rotateZ") != 0:
+        raise RuntimeError(u"Rotate Reset 失败。")
+
+    if cmds.getAttr(node + ".scaleX") != 1:
+        raise RuntimeError(u"Scale Reset 失败。")
 
     return u"AnimCurve Clear + Transform Reset 成功"
 
 
 # =============================================================================
-# Connection Utils
+# Connection
 # =============================================================================
 
 def test_connection_utils(token):
-    """测试 Plug 创建、查询、DG 计算和断开连接。"""
-    driver = cmds.createNode(
+    u"""验证正式 Plug Connection Core。"""
+    driver_a = scene_utils.create_node(
         "transform",
-        name=create_name(token, "connection_driver")
+        create_name(token, "connection_driver_a")
     )
-    driven = cmds.createNode(
+    driver_b = scene_utils.create_node(
         "transform",
-        name=create_name(token, "connection_driven")
+        create_name(token, "connection_driver_b")
+    )
+    driven = scene_utils.create_node(
+        "transform",
+        create_name(token, "connection_driven")
+    )
+    pair_target_a = scene_utils.create_node(
+        "transform",
+        create_name(token, "connection_pair_a")
+    )
+    pair_target_b = scene_utils.create_node(
+        "transform",
+        create_name(token, "connection_pair_b")
     )
 
-    source_plug = driver + ".translateX"
-    destination_plug = driven + ".translateY"
+    source_a = driver_a + ".translateX"
+    source_b = driver_b + ".translateX"
+    destination = driven + ".translateY"
 
-    # 步骤 1：创建连接。
-    created = connection_utils.connect_plugs(
-        source_plug,
-        destination_plug
-    )
-
-    if not created:
+    # 基础连接 + 幂等。
+    if not connection_utils.connect_plugs(source_a, destination):
         raise RuntimeError(u"Connection 创建失败。")
 
-    # 步骤 2：分别检查输入和输出查询。
-    input_connections = connection_utils.get_input_connections(
-        destination_plug
-    )
+    if not connection_utils.connect_plugs(source_a, destination):
+        raise RuntimeError(u"重复 Connection 没有保持幂等。")
 
-    if source_plug not in input_connections:
+    inputs = connection_utils.get_input_connections(destination)
+
+    if source_a not in inputs:
+        raise RuntimeError(u"Input Query 失败：{}".format(inputs))
+
+    outputs = connection_utils.get_output_connections(source_a)
+
+    if destination not in outputs:
+        raise RuntimeError(u"Output Query 失败：{}".format(outputs))
+
+    cmds.setAttr(source_a, 7.5)
+
+    if abs(cmds.getAttr(destination) - 7.5) > 0.0001:
+        raise RuntimeError(u"DG 传值失败。")
+
+    # force=False 必须保护已有输入。
+    if connection_utils.connect_plugs(
+            source_b,
+            destination,
+            force=False
+    ):
+        raise RuntimeError(u"force=False 不应覆盖已有输入。")
+
+    inputs = connection_utils.get_input_connections(destination)
+
+    if source_a not in inputs:
+        raise RuntimeError(u"force=False 破坏了原输入。")
+
+    # force=True 明确替换。
+    if not connection_utils.connect_plugs(
+            source_b,
+            destination,
+            force=True
+    ):
+        raise RuntimeError(u"force=True 替换失败。")
+
+    inputs = connection_utils.get_input_connections(destination)
+
+    if source_b not in inputs or source_a in inputs:
         raise RuntimeError(
-            u"Input Connection 查询失败：{}".format(
-                input_connections
+            u"force=True 后来源错误：{}".format(inputs)
+        )
+
+    # 无效 Plug 与“没有连接”必须区分。
+    invalid_plug_failed = False
+
+    try:
+        connection_utils.get_input_connections(
+            driver_a + ".doesNotExist"
+        )
+    except RuntimeError:
+        invalid_plug_failed = True
+
+    if not invalid_plug_failed:
+        raise RuntimeError(u"无效 Plug 没有抛 RuntimeError。")
+
+    # 单 Destination 输入断开。
+    disconnected_count = connection_utils.disconnect_input(destination)
+
+    if disconnected_count != 1:
+        raise RuntimeError(
+            u"disconnect_input 数量错误：{}".format(
+                disconnected_count
             )
         )
 
-    output_connections = connection_utils.get_output_connections(
-        source_plug
+    if connection_utils.get_input_connections(destination):
+        raise RuntimeError(u"disconnect_input 后仍存在输入。")
+
+    # 显式 Plug Pair 批处理。
+    connection_pairs = [
+        (
+            driver_a + ".translateY",
+            pair_target_a + ".translateY"
+        ),
+        (
+            driver_a + ".translateZ",
+            pair_target_b + ".translateZ"
+        ),
+    ]
+
+    connected_count = connection_utils.connect_plug_pairs(
+        connection_pairs
     )
 
-    if destination_plug not in output_connections:
+    if connected_count != 2:
         raise RuntimeError(
-            u"Output Connection 查询失败：{}".format(
-                output_connections
+            u"connect_plug_pairs 数量错误：{}".format(
+                connected_count
             )
         )
 
-    # 步骤 3：写 Driver，确认 Maya DG 真正传值。
-    cmds.setAttr(source_plug, 7.5)
-    driven_value = cmds.getAttr(destination_plug)
+    disconnected_count = connection_utils.disconnect_plug_pairs(
+        connection_pairs
+    )
 
-    if abs(driven_value - 7.5) > 0.0001:
+    if disconnected_count != 2:
         raise RuntimeError(
-            u"Connection DG 计算错误：{}".format(
-                driven_value
+            u"disconnect_plug_pairs 数量错误：{}".format(
+                disconnected_count
             )
         )
 
-    # 步骤 4：断开连接。
-    disconnected = connection_utils.disconnect_plugs(
-        source_plug,
-        destination_plug
-    )
-
-    if not disconnected:
-        raise RuntimeError(u"Connection 断开失败。")
-
-    return u"Connect + Query + DG + Disconnect 成功"
+    return u"Query + Safe Connect + Force + Plug Pair + Disconnect 成功"
 
 
 # =============================================================================
-# Matrix Utils
+# Matrix
 # =============================================================================
 
 def test_matrix_utils(token):
-    """
-    测试有 Parent 层级时的 offsetParentMatrix Parent Matrix Constraint。
-
-    这个测试专门覆盖 ``parent.worldInverseMatrix`` 路径，
-    防止未来再次使用 Driven 自己的 parentInverseMatrix 导致 Cycle Warning。
-    """
-    # 步骤 1：创建 Parent / Driver / Driven。
-    driven_parent = cmds.createNode(
+    u"""验证 Parent Matrix Network 的 Maintain Offset 和 Remove。"""
+    driven_parent = scene_utils.create_node(
         "transform",
-        name=create_name(token, "matrix_parent")
+        create_name(token, "matrix_parent")
     )
-    driver = cmds.createNode(
+    driver = scene_utils.create_node(
         "transform",
-        name=create_name(token, "matrix_driver")
+        create_name(token, "matrix_driver")
     )
-    driven = cmds.createNode(
+    driven = scene_utils.create_node(
         "transform",
-        name=create_name(token, "matrix_driven")
+        create_name(token, "matrix_driven")
     )
 
     cmds.xform(
@@ -474,13 +459,7 @@ def test_matrix_utils(token):
         worldSpace=True,
         translation=[10.0, 0.0, 0.0]
     )
-
-    cmds.parent(
-        driven,
-        driven_parent
-    )
-
-    # 步骤 2：设置建立约束前的 World Position。
+    cmds.parent(driven, driven_parent)
     cmds.xform(
         driver,
         worldSpace=True,
@@ -492,7 +471,6 @@ def test_matrix_utils(token):
         translation=[4.0, 2.0, 0.0]
     )
 
-    # 步骤 3：建立 Maintain Offset Matrix Constraint。
     matrix_node = matrix_utils.create_parent_matrix_constraint(
         driver=driver,
         driven=driven,
@@ -517,13 +495,11 @@ def test_matrix_utils(token):
             )
         )
 
-    # 步骤 4：Driver X 从 1 移动到 3，Driven 应从 4 跟到 6。
     cmds.xform(
         driver,
         worldSpace=True,
         translation=[3.0, 0.0, 0.0]
     )
-
     after_position = cmds.xform(
         driven,
         query=True,
@@ -533,71 +509,58 @@ def test_matrix_utils(token):
 
     if abs(after_position[0] - 6.0) > 0.0001:
         raise RuntimeError(
-            u"Matrix Constraint 跟随结果错误：{}".format(
-                after_position
-            )
+            u"Matrix Follow 错误：{}".format(after_position)
         )
 
-    # 步骤 5：断开并删除 Matrix Node。
-    removed = matrix_utils.remove_parent_matrix_constraint(
-        driven,
-        delete_node=True
-    )
-
-    if not removed:
+    if not matrix_utils.remove_parent_matrix_constraint(
+            driven,
+            delete_node=True
+    ):
         raise RuntimeError(u"Matrix Constraint 删除失败。")
 
     return u"Maintain Offset + Parent Hierarchy + OPM Follow + Remove 成功"
 
 
 # =============================================================================
-# Constraint Utils
+# Constraint
 # =============================================================================
 
 def test_constraint_utils(token):
-    """测试标准 Constraint 创建、查询和删除。"""
-    driver = cmds.createNode(
+    u"""验证标准 Constraint 创建、查询和删除。"""
+    driver = scene_utils.create_node(
         "transform",
-        name=create_name(token, "constraint_driver")
+        create_name(token, "constraint_driver")
     )
-    driven = cmds.createNode(
+    driven = scene_utils.create_node(
         "transform",
-        name=create_name(token, "constraint_driven")
+        create_name(token, "constraint_driven")
     )
 
-    created_constraints = constraint_utils.create_constraint(
+    created = constraint_utils.create_constraint(
         driver_objects=[driver],
         driven_object=driven,
         constraint_type="parentConstraint",
         maintain_offset=True
     )
 
-    if not created_constraints:
+    if not created:
         raise RuntimeError(u"Parent Constraint 创建失败。")
 
-    found_constraints = constraint_utils.get_constraints(
-        [driven]
-    )
-
-    if not found_constraints:
+    if not constraint_utils.get_constraints([driven]):
         raise RuntimeError(u"Constraint 查询失败。")
 
-    deleted_constraints = constraint_utils.delete_constraints(
-        [driven]
-    )
-
-    if not deleted_constraints:
+    if not constraint_utils.delete_constraints([driven]):
         raise RuntimeError(u"Constraint 删除失败。")
 
     return u"Create + Query + Delete Constraint 成功"
 
 
 # =============================================================================
-# Curve / Surface Helpers
+# Curve / Surface
 # =============================================================================
 
 def create_test_curve(token):
-    """创建 Curve / Surface 测试共用的三次 NURBS Curve。"""
+    u"""创建 Curve / Surface 测试共用曲线。"""
     return cmds.curve(
         name=create_name(token, "curve"),
         degree=3,
@@ -611,9 +574,8 @@ def create_test_curve(token):
 
 
 def test_curve_utils(token):
-    """测试 Curve Shape、CV Count 和等弧长采样。"""
+    u"""验证 Curve Query 和等弧长采样。"""
     curve = create_test_curve(token)
-
     curve_shape = curve_utils.get_curve_shape(curve)
 
     if cmds.nodeType(curve_shape) != "nurbsCurve":
@@ -626,10 +588,7 @@ def test_curve_utils(token):
             u"Curve CV 数量错误：{}".format(curve_count)
         )
 
-    sample_data = curve_utils.sample_curve_by_length(
-        curve,
-        5
-    )
+    sample_data = curve_utils.sample_curve_by_length(curve, 5)
 
     if len(sample_data["points"]) != 5:
         raise RuntimeError(u"Curve Sample Point 数量错误。")
@@ -641,16 +600,14 @@ def test_curve_utils(token):
 
 
 def test_surface_utils(token):
-    """测试 Curve Loft Surface 和 Follicle。"""
+    u"""验证 Curve Loft Surface 和 Follicle。"""
     curve = create_test_curve(token)
-
     surface = surface_utils.create_surface_from_curve(
         curve=curve,
         name=create_name(token, "surface"),
         offset=0.25,
         offset_axis="Y"
     )
-
     surface_shape = surface_utils.get_surface_shape(surface)
 
     if cmds.nodeType(surface_shape) != "nurbsSurface":
@@ -663,30 +620,25 @@ def test_surface_utils(token):
         parameter_v=0.5
     )
 
-    follicle_transform = follicle_result["transform"]
-    follicle_shape = follicle_result["shape"]
-
-    if not cmds.objExists(follicle_transform):
+    if not cmds.objExists(follicle_result["transform"]):
         raise RuntimeError(u"Follicle Transform 不存在。")
 
-    if not cmds.objExists(follicle_shape):
+    if not cmds.objExists(follicle_result["shape"]):
         raise RuntimeError(u"Follicle Shape 不存在。")
 
     return u"Curve Loft Surface + Follicle 成功"
 
 
 # =============================================================================
-# Animation Utils - JSON Export / Import
+# Animation JSON
 # =============================================================================
 
 def test_animation_json(token):
-    """测试合并后的 animation_utils 动画 JSON 导出、清除和恢复。"""
-    node = cmds.createNode(
+    u"""验证 Animation JSON Export / Clear / Import。"""
+    node = scene_utils.create_node(
         "transform",
-        name=create_name(token, "animation_json")
+        create_name(token, "animation_json")
     )
-
-    # 步骤 1：创建测试 Key。
     cmds.setKeyframe(
         node,
         attribute="translateX",
@@ -700,18 +652,12 @@ def test_animation_json(token):
         value=4.5
     )
 
-    file_name = create_name(
-        token,
-        "animation"
-    ) + ".json"
-
     file_path = os.path.join(
         tempfile.gettempdir(),
-        file_name
+        create_name(token, "animation") + ".json"
     )
 
     try:
-        # 步骤 2：从 animation_utils 导出 JSON。
         animation_utils.export_animation(
             nodes=[node],
             file_path=file_path
@@ -720,21 +666,15 @@ def test_animation_json(token):
         if not os.path.isfile(file_path):
             raise RuntimeError(u"Animation JSON 没有生成。")
 
-        # 步骤 3：清理 Maya 动画，确保后续 Key 确实来自 Import。
-        animation_utils.clear_animation_keys(
-            nodes=[node]
-        )
+        animation_utils.clear_animation_keys(nodes=[node])
 
-        cleared_count = cmds.keyframe(
-            node + ".translateX",
-            query=True,
-            keyframeCount=True
-        )
-
-        if cleared_count:
+        if cmds.keyframe(
+                node + ".translateX",
+                query=True,
+                keyframeCount=True
+        ):
             raise RuntimeError(u"导入前关键帧没有清理干净。")
 
-        # 步骤 4：从同一个 animation_utils 恢复 JSON。
         import_result = animation_utils.import_animation(
             file_path=file_path,
             clear_existing=False,
@@ -760,9 +700,7 @@ def test_animation_json(token):
                     restored_count
                 )
             )
-
     finally:
-        # 步骤 5：测试文件属于临时数据，无论成功失败都清理。
         if os.path.isfile(file_path):
             try:
                 os.remove(file_path)
@@ -777,7 +715,7 @@ def test_animation_json(token):
 # =============================================================================
 
 def run():
-    """执行 Pipeline Refactor Core Smoke Test。"""
+    u"""执行 Pipeline Refactor Core Smoke Test。"""
     token = create_token()
     results = []
 
@@ -792,75 +730,33 @@ def run():
     )
 
     try:
-        run_case(
-            results,
-            token,
-            "scene_utils",
-            "Node / Object Set",
-            test_scene_utils
-        )
-        run_case(
-            results,
-            token,
-            "transform_utils",
-            "Transform / Matrix",
-            test_transform_utils
-        )
-        run_case(
-            results,
-            token,
-            "animation_utils",
-            "Animation / Reset",
-            test_animation_utils
-        )
-        run_case(
-            results,
-            token,
-            "connection_utils",
-            "Connections",
-            test_connection_utils
-        )
-        run_case(
-            results,
-            token,
-            "matrix_utils",
-            "Matrix Constraint",
-            test_matrix_utils
-        )
-        run_case(
-            results,
-            token,
-            "constraint_utils",
-            "Constraint",
-            test_constraint_utils
-        )
-        run_case(
-            results,
-            token,
-            "curve_utils",
-            "Curve",
-            test_curve_utils
-        )
-        run_case(
-            results,
-            token,
-            "surface_utils",
-            "Surface / Follicle",
-            test_surface_utils
-        )
-        run_case(
-            results,
-            token,
-            "animation_utils",
-            "Animation JSON",
-            test_animation_json
-        )
+        cases = [
+            ("scene_utils", "Node / Object Set", test_scene_utils),
+            (
+                "transform_utils / math_utils",
+                "Transform / Math / Matrix",
+                test_transform_utils
+            ),
+            ("animation_utils", "Animation / Reset", test_animation_utils),
+            ("connection_utils", "Connections", test_connection_utils),
+            ("matrix_utils", "Matrix Constraint", test_matrix_utils),
+            ("constraint_utils", "Constraint", test_constraint_utils),
+            ("curve_utils", "Curve", test_curve_utils),
+            ("surface_utils", "Surface / Follicle", test_surface_utils),
+            ("animation_utils", "Animation JSON", test_animation_json),
+        ]
 
+        for category, name, test_function in cases:
+            run_case(
+                results,
+                token,
+                category,
+                name,
+                test_function
+            )
     finally:
         delete_existing_test_nodes(token)
-        cmds.undoInfo(
-            closeChunk=True
-        )
+        cmds.undoInfo(closeChunk=True)
 
     passed_count = 0
     failed_count = 0

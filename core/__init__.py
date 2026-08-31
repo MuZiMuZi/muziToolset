@@ -53,7 +53,7 @@ Transform / Math / DG：
         MMatrix 数据、矩阵计算、multMatrix / offsetParentMatrix 通用 Matrix Network。
 
     connection_utils.py
-        DG Plug 查询、连接、断开、批量复制连接。
+        DG Plug 输入 / 输出查询、单条连接 / 断开和显式 Plug Pair 批处理。
 
     constraint_utils.py
         Maya 原生 Parent / Point / Orient / Scale / Aim Constraint。
@@ -118,7 +118,7 @@ Core API 原则
     在 __init__() 建立并验证对象不变量，普通实例方法不重复做同一份节点校验。
 
 无状态 Utils，例如 ``transform_utils.get_world_translation(node)``：
-    每次收到外部 Maya Node 参数时进行必要校验。
+    每次收到外部 Maya Node / Plug 参数时进行必要校验。
 
 通用操作只保留一个正式入口：
     Scene / Node       -> scene_utils
