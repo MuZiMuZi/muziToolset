@@ -139,6 +139,8 @@ Workflow Wizard 例如 Face Rig：
 
 当前 Step 明确，完成过的 Step 可以返回，未来 Step 在前置条件未满足时保持 Disabled。
 
+Workflow 页面当前显示状态和持久化制作进度必须区分：临时返回旧页面查看不能覆盖 Current Step；只有真正修改旧步骤、导致后续结果失效时，才回退保存的 Workflow Progress。
+
 ## Input
 
 - 单行参数优先 `QSpinBox / QDoubleSpinBox / QComboBox`；
@@ -146,6 +148,21 @@ Workflow Wizard 例如 Face Rig：
 - 需要准确输入的 Size 不使用纯 Slider；
 - Controller Size 使用 `QDoubleSpinBox`：一位小数，步进 `0.1`；
 - Controller Color 使用 `MayaIndexColorSlider`，同时显示 Slider、Index 和 Color Preview。
+
+### SpinBox 可见性规则
+
+Arc-inspired 的轻量视觉不能以牺牲交互可发现性为代价。
+
+`QSpinBox / QDoubleSpinBox` 右侧增减按钮必须：
+
+- 有独立可见背景；
+- 与数值编辑区有明确竖向分隔；
+- Up / Down 两区之间有分隔；
+- Hover / Pressed 状态明显；
+- 在浅色 Maya Theme 中仍能看出这是可点击区域；
+- 不使用透明按钮把系统 Arrow 淹没。
+
+因此全项目 SpinBox 样式统一维护在 `ui/theme.py`，Tool 不单独覆写右侧按钮 QSS。
 
 ## Face Rig Step 02 示例
 
@@ -187,6 +204,7 @@ ui/widgets/
 4. 关键按钮是否因为 Ghost 样式而过弱；
 5. 内容是否可以通过 Card / Section 层级理解；
 6. 参数控件是否与数据类型匹配；
-7. 错误信息是否明确告诉用户如何恢复；
-8. PySide2 / PySide6 fallback 是否保持一致；
-9. UI 是否只做 UI，不复制 System / Core 算法。
+7. SpinBox 的增减入口在浅色主题下是否仍然可辨识；
+8. 错误信息是否明确告诉用户如何恢复；
+9. PySide2 / PySide6 fallback 是否保持一致；
+10. UI 是否只做 UI，不复制 System / Core 算法。
