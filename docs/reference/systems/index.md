@@ -1,19 +1,59 @@
 # Systems API
 
-Systems 是 MuziTools 的完整 Rig Builder / Workflow 层。
+Systems 是 MuziTools 的完整 Rig Builder / Workflow / Component 层。
 
-当前正式分类：
+当前正式结构：
 
 ```text
-systems/body/
-systems/common/
-systems/controller/
-systems/face/
+systems/
+├─ component_base.py       # 所有 Component 的统一生命周期与 Rig 构建规范
+├─ body/
+├─ controller/
+└─ face/
 ```
 
-已知主要方向包括：
+## Component 构建规范
+
+所有具有明确构建过程的 Component，统一继承：
+
+```python
+from muziToolset.systems import ComponentBase
+```
+
+并按照四阶段生命周期组织：
 
 ```text
+collect_inputs()
+      ↓
+prepare_data()
+      ↓
+process_data()
+      ↓
+finalize_step()
+```
+
+真正涉及 Joint、Controller、Connection 的 Rig Component 统一继承：
+
+```python
+from muziToolset.systems import RigComponentBase
+```
+
+它会把核心 `process_data()` 固定拆成：
+
+```text
+create_joint()
+      ↓
+create_controller()
+      ↓
+create_connection()
+```
+
+因此 FK、IK、Single Control、Face、Jaw、Teeth、Tongue、Eye、Brow、Body、Spine、Ribbon 等 Rig 都可以使用同一套构建规范。
+
+## 当前主要方向
+
+```text
+ComponentBase / RigComponentBase
 Controller Builder / Parent Space Blend
 Body / Skirt
 Face Setup / Guide
