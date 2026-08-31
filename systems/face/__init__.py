@@ -22,10 +22,10 @@ from .setup import FaceSetup
 
 
 def show():
-    u"""打开 Face Rig UI。"""
-    from .ui import face_rig_ui
+    u"""打开正式 Face Rig Workflow UI。"""
+    from . import ui
 
-    return face_rig_ui.main()
+    return ui.show()
 
 
 __all__ = [
