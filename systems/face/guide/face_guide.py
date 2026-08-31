@@ -19,7 +19,8 @@ Face Guide 的单文件 Step 02 实现。
     - 标准节点名称统一使用 core.name_utils；
     - 不为简单 part 查询额外创建 get_xxx_guides() 包装；
     - 只有需要固定顺序或结构化结果的查询保留专用方法；
-    - Template / Mirror 都属于 FaceGuide 自己的 Step 02 行为，不再拆分额外模块。
+    - Template / Mirror 都属于 FaceGuide 自己的 Step 02 行为；
+    - Controller Config Attribute 只使用当前正式 Schema，不维护旧属性兼容。
 """
 
 from __future__ import print_function
@@ -119,23 +120,25 @@ class FaceGuide(face_base.FaceBase):
 
         if not self.guide_exists():
             raise RuntimeError(
-                u"Face Guide 尚未完整加载，请使用“重新导入模板”修复后再继续。"
+                u"Face Guide 尚未完整加载，请重新导入模板后再继续。"
             )
 
         return True
 
     def prepare_data(self):
         u"""确保 Face Hierarchy 和 Config 可以保存 Step 02。"""
-        # 确保 Face Rig 基础层级存在。
         self.ensure_hierarchy()
 
-        # 确保 Config Workflow / Step 分区已经创建。
+        # Step 02 Config Attribute 使用 config.py 当前正式 Schema。
+        self.step_config_attr_names[2] = list(
+            config.face_step_02_config_attr_names
+        )
+
         self.ensure_config_layout()
         return True
 
     def process_data(self):
         u"""执行完整 Guide Validation。"""
-        # 下一步之前检查模板中的全部 Locator，避免误删节点进入 Build。
         self.validation_result = self.validate_guides()
 
         if self.validation_result["valid"]:
@@ -154,23 +157,15 @@ class FaceGuide(face_base.FaceBase):
 
     def finalize_step(self):
         u"""保存 Guide，并把 Step 02 正式标记为完成。"""
-        # 保存 Guide Root / Move Ctrl / Version。
         self.save_guide_config()
 
-        # 正式记录 Step 02 已完成。
         self.set_step_completed(
             completed=True
         )
-
-        # Guide 重新提交后，旧 Step 03 / 04 结果必须失效。
         self.invalidate_later_steps()
-
-        # Step 02 完成后推进到 Step 03。
         self.set_current_step_value(
             3
         )
-
-        # 整理 Config Attribute 显示顺序。
         self.organize_config_attributes()
         return True
 
@@ -319,10 +314,12 @@ class FaceGuide(face_base.FaceBase):
         )
 
         for child in children:
-            if cmds.objExists(child):
-                cmds.delete(
-                    child
-                )
+            if not cmds.objExists(child):
+                continue
+
+            cmds.delete(
+                child
+            )
 
         self.clear_guide_config()
         self.refresh_guide_handles()
@@ -362,7 +359,6 @@ class FaceGuide(face_base.FaceBase):
             guide_container,
             temporary_name
         )
-
         imported_nodes = []
 
         try:
@@ -413,7 +409,6 @@ class FaceGuide(face_base.FaceBase):
                 )
             )
 
-        # 模板可能保留旧版左右连接；导入后复制一次 LF 到 RT 并断开 Target 输入。
         self.apply_mirror(
             source_side="lf",
             target_side="rt"
@@ -1681,45 +1676,65 @@ class FaceGuide(face_base.FaceBase):
 
     @staticmethod
     def validate_controller_settings(settings):
-        u"""检查 Step 02 Controller Settings。"""
+        u"""检查当前正式 Schema 的 Step 02 Controller Settings。"""
         if not isinstance(settings, dict):
             raise TypeError(
                 u"Controller Settings 必须是 dict。"
             )
 
         global_scale = settings.get(
-            "face_ctrl_global_scale"
+            config.face_controller_global_scale_attr
         )
 
-        if global_scale is None or float(global_scale) <= 0.0:
+        if global_scale is None:
+            raise ValueError(
+                u"缺少 Face Controller Global Scale。"
+            )
+
+        if float(global_scale) <= 0.0:
             raise ValueError(
                 u"Face Controller Global Scale 必须大于 0。"
             )
 
-        for attr_name in config.face_controller_default_settings:
-            if not attr_name.endswith("_ctrl_size"):
-                continue
-
+        for module_name in config.face_controller_size_attr_names:
+            attr_name = config.face_controller_size_attr_names.get(
+                module_name
+            )
             value = settings.get(
                 attr_name
             )
 
-            if value is None or float(value) <= 0.0:
+            if value is None:
+                raise ValueError(
+                    u"缺少 Controller Size: {}".format(
+                        attr_name
+                    )
+                )
+
+            if float(value) <= 0.0:
                 raise ValueError(
                     u"Controller Size 必须大于 0: {}".format(
                         attr_name
                     )
                 )
 
-        color_attr_names = [
-            "face_ctrl_color_lf",
-            "face_ctrl_color_rt",
-            "face_ctrl_color_md",
-        ]
+        for side in config.face_controller_color_attr_names:
+            attr_name = config.face_controller_color_attr_names.get(
+                side
+            )
+            value = settings.get(
+                attr_name
+            )
 
-        for attr_name in color_attr_names:
+            if value is None:
+                raise ValueError(
+                    u"缺少 Controller Color: {}".format(
+                        attr_name
+                    )
+                )
+
             color_index = int(
-                settings.get(attr_name, -1)
+                value
             )
 
             if color_index < 0 or color_index > 31:
@@ -1732,7 +1747,7 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def load_controller_settings(self):
-        u"""从 Face Config 读取 Controller Settings。"""
+        u"""从 Face Config 读取当前正式 Controller Settings。"""
         settings = self.get_default_controller_settings()
 
         if not self.config_node_exists():
@@ -1760,7 +1775,7 @@ class FaceGuide(face_base.FaceBase):
         return settings
 
     def save_controller_settings(self, settings):
-        u"""把 Step 02 Controller Settings 保存到统一 Face Config。"""
+        u"""把当前正式 Controller Settings 保存到 Face Config。"""
         self.validate_controller_settings(
             settings
         )
