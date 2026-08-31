@@ -117,6 +117,24 @@ rt
 md
 ```
 
+标准名称统一由：
+
+```python
+name_utils.Name.create_name(...)
+```
+
+生成。
+
+左右名称统一由：
+
+```python
+name_utils.Name.mirror_name(...)
+```
+
+计算。
+
+System / Component 不再复制第二套字符串 Naming Logic。
+
 正式 Python 命名：
 
 ```text
@@ -172,13 +190,11 @@ systems/face/
 │   └── face_setup.py
 │
 ├── guide/                 # 02 Guide
-│   ├── face_guide.py
-│   ├── guide_data.py
-│   ├── guide_template.py
-│   └── guide_mirror.py
+│   └── face_guide.py
 │
 ├── build/                 # 03 Build
 │   ├── curve_attachment.py
+│   ├── teeth_component.py
 │   ├── eyelid/
 │   └── lip/
 │
@@ -188,7 +204,8 @@ systems/face/
 │   └── shape_dictionary.py
 │
 └── ui/
-    └── face_rig_ui.py
+    ├── face_rig_ui.py
+    └── workflow_controller.py
 ```
 
 详细规范见：
@@ -204,14 +221,18 @@ Step
     Setup / Guide / Build / Finalize 用户工作流阶段
 
 Component
-    Jaw / Lip / Eye / Eyelid / Brow / Nose / Cheek 等绑定模块
+    Teeth / Tongue / Jaw / Lip / Eye / Eyelid / Brow 等绑定模块
 
 Builder
     Curve Attachment / Zip / Radial Joint 等可组合算法
 
 Core
-    Matrix / Curve / Joint / DAG / Attribute 等通用能力
+    Matrix / Curve / Joint / DAG / Attribute / Naming 等通用能力
 ```
+
+简单 Component 优先保持单文件；只有真正复杂后再拆 Package。
+
+Component 可以复用四阶段构建思路，但 Component 完成不代表整个 Step 03 Completed。
 
 ### FaceBase 边界
 
@@ -221,15 +242,73 @@ Core
 - Face Config；
 - Setup 公共数据；
 - Step State；
-- Config 语义 API。
+- Current Face Step；
+- Config Step 分区；
+- 公共 Config 语义 API。
 
-Guide Template 固定名称、Mirror、Repair 和具体 Build Algorithm 不放进 FaceBase。
+具体 Guide / Component 构建算法不放进 FaceBase。
+
+### Face Config
+
+`systems/face/config.py` 是 Face System 的统一静态配置入口。
+
+保存：
+
+- Face Group / Set / Config Node 名称；
+- Guide Template 路径、Move Ctrl 和 Version；
+- Controller 默认 Size / Color；
+- Controller Module 顺序；
+- Step 顶层 Visibility Rule；
+- Step Model Display Rule。
+
+Config 只定义“是什么”，不执行 Maya Rig 操作。
+
+### Face Guide
+
+Guide 当前故意保持单文件：
+
+```text
+systems/face/guide/
+├── __init__.py
+└── face_guide.py
+```
+
+`FaceGuide` 直接负责：
+
+- Template Import；
+- Reimport / Repair；
+- Guide Query；
+- LF ↔ RT Mirror；
+- Mirror Undo；
+- Locator 完整性检查；
+- Controller Settings Config；
+- Step 02 Lifecycle。
+
+不再维护 `guide_data.py / guide_template.py / guide_mirror.py`。
+
+简单 Guide 查询直接使用：
+
+```python
+face_guide.get_part_guides(
+    part="tongue"
+)
+```
+
+或用 `name_utils.Name.create_name()` 动态生成明确名称，再调用：
+
+```python
+face_guide.get_guide_node(...)
+```
+
+不为单纯固定参数转发额外创建 `get_xxx_guides()`。
+
+只有固定顺序、结构化返回或额外校验确实有价值时才保留专用 Query。
 
 ### Guide Template Contract
 
-`resources/face/face_guide.ma` 是标准 Locator 完整性的唯一来源。
+`resources/face/face_guide.ma` 仍然是标准 Locator 完整性的最终来源。
 
-`guide/guide_data.py` 读取模板中的全部标准 Locator 名称。点击 Step 02“下一步”时：
+点击 Step 02“下一步”时：
 
 ```text
 Template 全部 Locator
@@ -238,7 +317,7 @@ Template 全部 Locator
         ↓
 逐个检查
         ↓
-任意缺失 → 阻止进入 Step 03，并列出缺失名称
+任意缺失 → 阻止进入 Step 03
 ```
 
 重新导入模板：
@@ -248,19 +327,26 @@ Template 全部 Locator
         ↓
 重新导入完整模板
         ↓
-按固定名称恢复已有 Locator
+恢复已有 Locator
         ↓
-被误删 Locator 使用模板默认位置补回
+误删 Locator 使用模板默认位置补回
 ```
 
-Guide Mirror：
+Guide Mirror 使用 Naming API 查找对应左右节点，不负责创建被误删的目标 Guide；缺失时先 Repair。
+
+### Face Workflow Visibility
+
+不再单独维护 `systems/face/workflow.py`。
+
+静态显示规则统一定义在：
 
 ```text
-LF → RT
-RT → LF
+systems/face/config.py
 ```
 
-只做一次数据复制，不建立永久左右连接；支持 Maya Undo Chunk 和 UI“撤销上次镜像”。
+`ui/workflow_controller.py` 在 Step 切换时直接执行这些规则。
+
+Step 01 / 02 只显示 Setup Config 中保存的原始输入模型，自动隐藏 Tweak / Stretch / Deform 工作副本。
 
 ---
 
