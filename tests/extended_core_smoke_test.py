@@ -13,7 +13,7 @@ attr_utils
     Attribute Value、String Config、Message Config。
 
 hierarchy_utils
-    DAG Parent、Extra Group、World Transform 保持。
+    DAG Parent、Ensure Group、Parent Group 插入、World Transform 保持。
 
 joint_utils
     Joint Create、Joint Chain、Radius、Maya Joint Label。
@@ -172,18 +172,12 @@ def cleanup_test_nodes(token, test_root):
         1. 先删除 Test Root，它会连同所有标准命名 Child 一起删除；
         2. 再按 Token 扫描一次，清理由异常中断产生且尚未 Parent 到 Root 的节点。
     """
-    # -------------------------------------------------------------------------
-    # 步骤 1：优先删除 Root。
-    # -------------------------------------------------------------------------
     if test_root and cmds.objExists(test_root):
         try:
             cmds.delete(test_root)
         except Exception:
             pass
 
-    # -------------------------------------------------------------------------
-    # 步骤 2：Token 兜底扫描，并按 Child First 顺序删除。
-    # -------------------------------------------------------------------------
     pattern = "*{}*".format(token)
     nodes = cmds.ls(
         pattern,
@@ -292,9 +286,6 @@ def test_attr_utils(token, test_root):
 
     attr = attr_utils.Attr(config_node)
 
-    # -------------------------------------------------------------------------
-    # 步骤 1：创建并读取普通 Double 属性。
-    # -------------------------------------------------------------------------
     value_plug = attr.set_attr_value(
         attr="test_value",
         value=3.5,
@@ -312,9 +303,6 @@ def test_attr_utils(token, test_root):
         label=u"Attribute Value"
     )
 
-    # -------------------------------------------------------------------------
-    # 步骤 2：把 Python 基础数据写入 String Config，再恢复原数据。
-    # -------------------------------------------------------------------------
     config_data = {
         "mode": "extended_smoke",
         "count": 3,
@@ -334,9 +322,6 @@ def test_attr_utils(token, test_root):
             u"String Config 恢复错误：{}".format(restored_data)
         )
 
-    # -------------------------------------------------------------------------
-    # 步骤 3：Message 保存节点引用。
-    # -------------------------------------------------------------------------
     connected = attr.connect_message(
         source_node=source_node,
         attr="source_node",
@@ -367,7 +352,7 @@ def test_attr_utils(token, test_root):
 # =============================================================================
 
 def test_hierarchy_utils(token, test_root):
-    """验证 Extra Group 插入后 DAG 关系和对象世界姿态保持。"""
+    """验证正式 DAG Query、Ensure Group、插组和世界姿态保持。"""
     hierarchy_root = cmds.createNode(
         "transform",
         name=create_name(token, "hierarchy_parent"),
@@ -408,53 +393,31 @@ def test_hierarchy_utils(token, test_root):
         rotation=True
     )
 
-    # -------------------------------------------------------------------------
-    # 步骤 1：插入 Extra Group。
-    # -------------------------------------------------------------------------
-    extra_group = hierarchy_utils.Hierarchy.add_extra_group(
+    extra_group = hierarchy_utils.insert_parent_group(
         target,
         create_name(token, "hierarchy_zero"),
-        world_orient=False
+        match_rotation=True
     )
 
     if not cmds.objExists(extra_group):
-        raise RuntimeError(u"Extra Group 没有创建。")
+        raise RuntimeError(u"Parent Group 没有创建。")
 
-    # -------------------------------------------------------------------------
-    # 步骤 2：重新解析 Target Long Path，确认 Parent 已经是 Extra Group。
-    # -------------------------------------------------------------------------
-    target_matches = cmds.ls(
+    target_long = cmds.ls(
         target.split("|")[-1],
         long=True
-    ) or []
-
-    if not target_matches:
-        raise RuntimeError(u"插组后找不到 Target。")
-
-    target_long = target_matches[0]
-    parents = cmds.listRelatives(
+    )[0]
+    target_parent = hierarchy_utils.get_parent(
         target_long,
-        parent=True,
-        fullPath=True
-    ) or []
+        full_path=True
+    )
 
-    if not parents:
-        raise RuntimeError(u"插组后 Target 没有 Parent。")
-
-    extra_matches = cmds.ls(
-        extra_group,
-        long=True
-    ) or []
-    extra_long = extra_matches[0] if extra_matches else extra_group
-
-    if parents[0] != extra_long:
+    if target_parent != extra_group:
         raise RuntimeError(
-            u"Target Parent 错误：{}".format(parents[0])
+            u"Target Parent 错误：{}".format(
+                target_parent
+            )
         )
 
-    # -------------------------------------------------------------------------
-    # 步骤 3：验证世界姿态没有因插组跳动。
-    # -------------------------------------------------------------------------
     after_translation = cmds.xform(
         target_long,
         query=True,
@@ -480,7 +443,92 @@ def test_hierarchy_utils(token, test_root):
         label=u"Hierarchy World Rotation"
     )
 
-    return u"Extra Group + Parent + World Transform 保持成功"
+    descendants = hierarchy_utils.get_descendants(
+        hierarchy_root,
+        include_root=True,
+        full_path=True
+    )
+
+    if not descendants:
+        raise RuntimeError(u"Hierarchy Descendant Query 返回为空。")
+
+    hierarchy_root_long = cmds.ls(
+        hierarchy_root,
+        long=True
+    )[0]
+
+    if descendants[0] != hierarchy_root_long:
+        raise RuntimeError(
+            u"include_root 没有返回统一 Long Path：{}".format(
+                descendants
+            )
+        )
+
+    previous_depth = 0
+
+    for descendant in descendants:
+        current_depth = hierarchy_utils.get_dag_depth(
+            descendant
+        )
+
+        if current_depth < previous_depth:
+            raise RuntimeError(
+                u"Descendant 没有保持由浅到深顺序：{}".format(
+                    descendants
+                )
+            )
+
+        previous_depth = current_depth
+
+    wrong_parent = cmds.createNode(
+        "transform",
+        name=create_name(token, "wrong_parent"),
+        parent=test_root
+    )
+    ensured_group_name = create_name(token, "ensure_group")
+    cmds.createNode(
+        "transform",
+        name=ensured_group_name,
+        parent=wrong_parent
+    )
+
+    ensured_group = hierarchy_utils.ensure_group(
+        ensured_group_name,
+        parent_node=hierarchy_root
+    )
+    ensured_parent = hierarchy_utils.get_parent(
+        ensured_group,
+        full_path=True
+    )
+    hierarchy_root_long = cmds.ls(
+        hierarchy_root,
+        long=True
+    )[0]
+
+    if ensured_parent != hierarchy_root_long:
+        raise RuntimeError(
+            u"ensure_group 没有修正错误 Parent：{}".format(
+                ensured_parent
+            )
+        )
+
+    ensured_group = hierarchy_utils.ensure_group(
+        ensured_group,
+        parent_node=None
+    )
+
+    if hierarchy_utils.get_parent(
+            ensured_group,
+            full_path=True
+    ) is not None:
+        raise RuntimeError(u"ensure_group(parent_node=None) 没有恢复到 World。")
+
+    hierarchy_utils.parent(
+        ensured_group,
+        test_root
+    )
+
+    return u"Query + Ensure Group + Parent Group + World Transform 保持成功"
 
 
 # =============================================================================
@@ -504,9 +552,6 @@ def test_joint_utils(token, test_root):
         parent=test_root
     )
 
-    # -------------------------------------------------------------------------
-    # 步骤 1：把两个 Joint 组成 Chain。
-    # -------------------------------------------------------------------------
     chain = joint_utils.JointChain.parent_joints_as_chain(
         [root_joint, child_joint]
     )
@@ -544,11 +589,6 @@ def test_joint_utils(token, test_root):
         label=u"Joint Radius"
     )
 
-    # -------------------------------------------------------------------------
-    # 步骤 2：创建符合五段式规则的 Joint，并把它挂到 Test Root 下。
-    #
-    # 这样既能测试 Joint.tag()，又能确保 finally 删除 Test Root 时不会留下标准命名 Joint。
-    # -------------------------------------------------------------------------
     tagged_name = "jnt_lf_{}_bind_001".format(
         token.lower()
     )
@@ -586,9 +626,6 @@ def test_joint_utils(token, test_root):
 
 def test_naming_utils(token, test_root):
     """验证五段式名称、Side Alias、Parse、Mirror Name 和 Maya Rename。"""
-    # -------------------------------------------------------------------------
-    # 步骤 1：left Alias 必须统一成 lf。
-    # -------------------------------------------------------------------------
     standard_name = name_utils.Name.create_name(
         node_type="jnt",
         side="left",
@@ -602,9 +639,6 @@ def test_naming_utils(token, test_root):
             u"标准名称生成错误：{}".format(standard_name)
         )
 
-    # -------------------------------------------------------------------------
-    # 步骤 2：Parse 必须完整恢复字段。
-    # -------------------------------------------------------------------------
     parsed = name_utils.Name.parse_name(standard_name)
     expected_values = {
         "type": "jnt",
@@ -623,9 +657,6 @@ def test_naming_utils(token, test_root):
                 )
             )
 
-    # -------------------------------------------------------------------------
-    # 步骤 3：Mirror Name 只翻转 lf / rt。
-    # -------------------------------------------------------------------------
     mirror_name = name_utils.Name.mirror_name(standard_name)
 
     if mirror_name != "jnt_rt_arm_bind_001":
@@ -633,9 +664,6 @@ def test_naming_utils(token, test_root):
             u"Mirror Name 错误：{}".format(mirror_name)
         )
 
-    # -------------------------------------------------------------------------
-    # 步骤 4：rename_utils 必须真正 Rename Maya DAG 节点。
-    # -------------------------------------------------------------------------
     source = cmds.createNode(
         "transform",
         name=create_name(token, "rename_source"),
@@ -663,9 +691,6 @@ def test_naming_utils(token, test_root):
 
 def test_model_check_utils(token, test_root):
     """验证 Model Check 能发现一个明确的未冻结 Mesh。"""
-    # -------------------------------------------------------------------------
-    # 步骤 1：创建普通 Cube，并放进 Test Root。
-    # -------------------------------------------------------------------------
     cube_result = cmds.polyCube(
         name=create_name(token, "model_cube"),
         constructionHistory=True
@@ -679,9 +704,6 @@ def test_model_check_utils(token, test_root):
     cmds.setAttr(cube + ".rotateY", 15.0)
     cmds.setAttr(cube + ".scaleZ", 1.5)
 
-    # -------------------------------------------------------------------------
-    # 步骤 2：Transform Check 应返回统一 Issue。
-    # -------------------------------------------------------------------------
     issues = model_check_utils.check_transformations(
         meshes=[cube]
     )
@@ -722,9 +744,6 @@ def test_model_check_utils(token, test_root):
 
 def test_scene_clean_utils(token, test_root):
     """验证安全 Freeze Transform 和递归 Empty Group 清理。"""
-    # -------------------------------------------------------------------------
-    # 步骤 1：创建没有 Animation / Constraint / Deformer 的普通 Mesh。
-    # -------------------------------------------------------------------------
     cube_result = cmds.polyCube(
         name=create_name(token, "clean_cube"),
         constructionHistory=False
@@ -766,9 +785,6 @@ def test_scene_clean_utils(token, test_root):
         label=u"Freeze Scale"
     )
 
-    # -------------------------------------------------------------------------
-    # 步骤 2：创建 Test Root 下的 Parent -> Child 两层空 Group。
-    # -------------------------------------------------------------------------
     empty_parent = cmds.createNode(
         "transform",
         name=create_name(token, "empty_parent"),
@@ -878,7 +894,7 @@ def run():
         ),
         (
             "hierarchy_utils",
-            "DAG / Extra Group",
+            "DAG / Ensure / Parent Group",
             test_hierarchy_utils,
         ),
         (
