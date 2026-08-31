@@ -1,89 +1,122 @@
 # coding=utf-8
 u"""
-这个类用来制作牙床component的绑定
+Teeth Component
+===============
 
+用于构建上下牙床的简单 Face Component。
+
+当前先完成 Component 生命周期和输入数据收集，后续再在 process_data() 中加入：
+    1. Upper / Lower Teeth Joint；
+    2. 单控制器；
+    3. Controller -> Joint 驱动；
+    4. Teeth Model 绑定关系。
 """
-from systems.face import face_base
+
+from __future__ import print_function
+
 from ....core import name_utils
+from .. import config
+from .. import face_base
+from ..guide import FaceGuide
 
-class  TeethComponent(face_base.FaceBase):
+
+class TeethComponent(face_base.FaceBase):
+    u"""Step 03 中的 Teeth Component。"""
+
     def __init__(self):
-        #继承face_base.FaceBase类，获得整体face绑定的命名结构
-        face_base.FaceBase.__init__(self)
+        u"""初始化 Teeth Component。"""
+        super(TeethComponent, self).__init__()
 
+        self.face_guide = FaceGuide()
 
-    def collect_inputs (self) :
+        self.upper_teeth_guide = None
+        self.lower_teeth_guide = None
+
+        self.controller_global_scale = 1.0
+        self.controller_color = 17
+        self.controller_size = 1.0
+
+    def collect_inputs(self):
         u"""收集并检查 Teeth Component 所需输入。"""
 
         # =========================================================================
         # 步骤 1：检查 Step 01 Setup 数据
         # =========================================================================
 
-        self.validate_setup_config (
-            require_mouth_jnt_number = False
+        self.validate_setup_config(
+            require_mouth_jnt_number=False
         )
 
         # =========================================================================
-        # 步骤 2：准备 Guide 名称
+        # 步骤 2：动态生成必须的 Teeth Guide 名称
         # =========================================================================
 
-        upper_teeth_guide_name = name_utils.Name.create_name (
-            node_type = "loc" ,
-            side = "md" ,
-            part = "upper_teeth" ,
-            function = "guide" ,
-            index = 1
+        upper_teeth_guide_name = name_utils.Name.create_name(
+            node_type="loc",
+            side="md",
+            part="upper_teeth",
+            function="guide",
+            index=1
         )
 
-        lower_teeth_guide_name = name_utils.Name.create_name (
-            node_type = "loc" ,
-            side = "md" ,
-            part = "lower_teeth" ,
-            function = "guide" ,
-            index = 1
+        lower_teeth_guide_name = name_utils.Name.create_name(
+            node_type="loc",
+            side="md",
+            part="lower_teeth",
+            function="guide",
+            index=1
         )
 
         # =========================================================================
         # 步骤 3：获取并检查 Guide
         # =========================================================================
 
-        self.upper_teeth_guide = self.get_guide_node (
-            upper_teeth_guide_name ,
-            required = True
+        self.upper_teeth_guide = self.face_guide.get_guide_node(
+            upper_teeth_guide_name,
+            required=True
         )
 
-        self.lower_teeth_guide = self.get_guide_node (
-            lower_teeth_guide_name ,
-            required = True
+        self.lower_teeth_guide = self.face_guide.get_guide_node(
+            lower_teeth_guide_name,
+            required=True
         )
 
         # =========================================================================
         # 步骤 4：读取 Controller Settings
         # =========================================================================
 
-        controller_settings = self.load_controller_settings ()
+        controller_settings = self.face_guide.load_controller_settings()
 
-        self.controller_global_scale = controller_settings.get (
-            "face_ctrl_global_scale"
+        self.controller_global_scale = controller_settings.get(
+            config.face_controller_global_scale_attr,
+            1.0
         )
 
-        self.controller_color = controller_settings.get (
-            "face_ctrl_color_md"
+        self.controller_color = controller_settings.get(
+            config.face_controller_color_attr_names["md"],
+            17
+        )
+
+        self.controller_size = controller_settings.get(
+            config.face_controller_size_attr_names["teeth"],
+            1.0
         )
 
         return True
 
-
     def prepare_data(self):
-        # 准备本次执行需要的层级、名称、中间数据以及旧结果清理。
-        super(TeethComponent, self).process_data()
-
+        u"""准备 Teeth Joint / Controller 名称、层级和旧结果清理数据。"""
+        return True
 
     def process_data(self):
-        # 执行当前 Step 真正的核心场景或数据处理。
-        super(TeethComponent, self).self.process_data()
-
+        u"""创建 Teeth Component 的 Joint、Controller 和驱动关系。"""
+        return True
 
     def finalize_step(self):
-        # 检查最终结果、保存配置并完成当前 Step 状态。
-        super(TeethComponent, self).finalize_step()
+        u"""检查 Teeth Component 最终结果并整理显示 / Metadata。"""
+        return True
+
+
+__all__ = [
+    "TeethComponent",
+]
