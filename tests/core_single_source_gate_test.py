@@ -37,6 +37,9 @@ FORBIDDEN_TOP_LEVEL_COMPATIBILITY_FUNCTIONS = {
     "get_world_position",
     "maya_undo",
     "dag_depth",
+    "require_selected_nodes",
+    "ensure_fbx_plugin_loaded",
+    "export_selected_fbx",
 }
 
 
