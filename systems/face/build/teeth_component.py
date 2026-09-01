@@ -107,7 +107,13 @@ class TeethComponent(face_base.FaceBase):
     # =========================================================================
 
     def collect_inputs(self):
-        u"""收集并检查 Teeth Component 所需输入。"""
+        u"""
+        收集并检查 Teeth Component 所需输入。
+
+        Returns:
+            bool:
+                Setup、Guide 和 Controller Settings 全部读取成功后返回 True。
+        """
 
         # =========================================================================
         # 步骤 1：检查 Step 01 Setup 数据
@@ -175,7 +181,13 @@ class TeethComponent(face_base.FaceBase):
         return True
 
     def prepare_data(self):
-        u"""准备 Teeth Joint / Controller 名称、层级和构建前检查数据。"""
+        u"""
+        准备 Teeth Joint / Controller 名称、层级和构建前检查数据。
+
+        Returns:
+            bool:
+                命名、层级与构建前安全检查全部完成后返回 True。
+        """
 
         # 确保 Face 的正式层级存在。
         self.ensure_hierarchy()
@@ -328,6 +340,8 @@ class TeethComponent(face_base.FaceBase):
             self.lower_teeth_jnt_name,
             self.upper_teeth_matrix_name,
             self.lower_teeth_matrix_name,
+            self.upper_teeth_skin_name,
+            self.lower_teeth_skin_name,
         ]
 
         upper_control_nodes = self._get_controller_hierarchy_names(
@@ -394,7 +408,13 @@ class TeethComponent(face_base.FaceBase):
     # =========================================================================
 
     def create_joint(self):
-        u"""根据 Teeth Guide 创建上下牙床绑定 Joint。"""
+        u"""
+        根据 Teeth Guide 创建上下牙床绑定 Joint。
+
+        Returns:
+            list[str]:
+                按 Upper、Lower 顺序返回创建完成的两个 Joint。
+        """
         joint_radius = self.controller_radius * 0.25
 
         self.upper_teeth_joint = joint_utils.Joint.create_at_object(
@@ -423,29 +443,39 @@ class TeethComponent(face_base.FaceBase):
     # =========================================================================
 
     def create_controller(self):
-        u"""创建上下牙床对应的标准 Controller Hierarchy。"""
-        common_kwargs = {
-            "shape": "circle",
-            "radius": self.controller_radius,
-            "axis": "Z+",
-            "parent": self.face_ctrl_grp,
-            "color": self.controller_color,
-            "create_sub_control": False,
-            "create_extra_groups": True,
-            "add_to_set": True,
-            "control_set": config.face_ctrl_set,
-        }
+        u"""
+        创建上下牙床对应的标准 Controller Hierarchy。
 
+        Returns:
+            list[dict]:
+                按 Upper、Lower 顺序返回 Controller Builder 的结果字典。
+        """
         self.upper_teeth_controller = controller_builder.create_controller(
             name=self.upper_teeth_ctrl_name,
+            shape="circle",
+            radius=self.controller_radius,
+            axis="Z+",
             target=self.upper_teeth_guide,
-            **common_kwargs
+            parent=self.face_ctrl_grp,
+            color=self.controller_color,
+            create_sub_control=False,
+            create_extra_groups=True,
+            add_to_set=True,
+            control_set=config.face_ctrl_set
         )
 
         self.lower_teeth_controller = controller_builder.create_controller(
             name=self.lower_teeth_ctrl_name,
+            shape="circle",
+            radius=self.controller_radius,
+            axis="Z+",
             target=self.lower_teeth_guide,
-            **common_kwargs
+            parent=self.face_ctrl_grp,
+            color=self.controller_color,
+            create_sub_control=False,
+            create_extra_groups=True,
+            add_to_set=True,
+            control_set=config.face_ctrl_set
         )
 
         self.upper_teeth_control = self.upper_teeth_controller["control"]
@@ -467,7 +497,13 @@ class TeethComponent(face_base.FaceBase):
     # =========================================================================
 
     def create_connection(self):
-        u"""建立 Teeth Controller、Joint 和独立牙齿模型之间的驱动关系。"""
+        u"""
+        建立 Teeth Controller、Joint 和独立牙齿模型之间的驱动关系。
+
+        Returns:
+            bool:
+                上下牙床 Matrix 驱动及可选模型刚性 Skin 全部完成后返回 True。
+        """
 
         # ---------------------------------------------------------------------
         # Controller Output -> Joint
@@ -550,7 +586,13 @@ class TeethComponent(face_base.FaceBase):
     # =========================================================================
 
     def finalize_step(self):
-        u"""检查 Teeth Component 最终结果并整理显示 / Metadata。"""
+        u"""
+        检查 Teeth Component 最终结果并整理显示 / Metadata。
+
+        Returns:
+            bool:
+                必须节点及可选牙齿模型 Skin 结果全部有效时返回 True。
+        """
         required_nodes = [
             self.upper_teeth_joint,
             self.lower_teeth_joint,
