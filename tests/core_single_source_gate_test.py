@@ -31,6 +31,7 @@ OWNER_BY_FUNCTION = {
     "parent": "core/hierarchy_utils.py",
     "ensure_group": "core/hierarchy_utils.py",
     "insert_parent_group": "core/hierarchy_utils.py",
+    "ensure_fbx_plugin_loaded": "core/export_utils.py",
 }
 
 FORBIDDEN_TOP_LEVEL_COMPATIBILITY_FUNCTIONS = {
@@ -38,7 +39,6 @@ FORBIDDEN_TOP_LEVEL_COMPATIBILITY_FUNCTIONS = {
     "maya_undo",
     "dag_depth",
     "require_selected_nodes",
-    "ensure_fbx_plugin_loaded",
     "export_selected_fbx",
 }
 
