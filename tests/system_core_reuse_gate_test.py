@@ -19,9 +19,13 @@ Upper Layer Core Reuse Gate
     get_world_translation()
     get_world_rotation()
 
+或者重新使用已经退休的：
+
+    hierarchy_utils.Hierarchy.xxx
+
 代码会再次产生多套规则。
 
-本测试把这些高确定性的重复实现直接变成 CI Failure。
+本测试把这些高确定性的重复实现和退休入口直接变成 CI Failure。
 它只使用 Python AST，不 Import Maya，因此可以在 GitHub Actions 普通 Python 环境运行。
 
 Compatibility Policy
@@ -91,7 +95,6 @@ def get_forbidden_helper_names():
     }
 
 
-
 # =============================================================================
 # File Discovery
 # =============================================================================
@@ -152,6 +155,46 @@ def get_relative_path(file_path):
 # AST Scan
 # =============================================================================
 
+def get_hierarchy_utils_aliases(syntax_tree):
+    u"""返回当前文件中 ``core.hierarchy_utils`` 使用的模块变量名。"""
+    aliases = {
+        "hierarchy_utils",
+    }
+
+    for node in syntax_tree.body:
+        if isinstance(node, ast.Import):
+            for imported_name in node.names:
+                if not imported_name.name.endswith(
+                        ".hierarchy_utils"
+                ):
+                    continue
+
+                if imported_name.asname:
+                    aliases.add(
+                        imported_name.asname
+                    )
+
+            continue
+
+        if not isinstance(node, ast.ImportFrom):
+            continue
+
+        module_name = node.module or ""
+
+        if not module_name.endswith("core"):
+            continue
+
+        for imported_name in node.names:
+            if imported_name.name != "hierarchy_utils":
+                continue
+
+            aliases.add(
+                imported_name.asname or imported_name.name
+            )
+
+    return aliases
+
+
 def scan_file(file_path):
     u"""扫描单个 System / Tool / UI 文件中的重复通用 Helper 定义。"""
     with open(
@@ -170,6 +213,9 @@ def scan_file(file_path):
         file_path
     )
     forbidden_names = get_forbidden_helper_names()
+    hierarchy_utils_aliases = get_hierarchy_utils_aliases(
+        syntax_tree
+    )
     issues = []
 
     for node in ast.walk(syntax_tree):
@@ -190,6 +236,46 @@ def scan_file(file_path):
                     "name": function_name,
                     "kind": "helper",
                 })
+
+        if isinstance(node, ast.ImportFrom):
+            module_name = node.module or ""
+
+            if module_name.endswith("hierarchy_utils"):
+                for imported_name in node.names:
+                    if imported_name.name != "Hierarchy":
+                        continue
+
+                    issues.append({
+                        "file": relative_path,
+                        "line": getattr(
+                            node,
+                            "lineno",
+                            None
+                        ),
+                        "name": "hierarchy_utils.Hierarchy",
+                        "kind": "retired_compatibility",
+                    })
+
+            continue
+
+        if isinstance(node, ast.Attribute):
+            if node.attr == "Hierarchy":
+                attribute_owner = node.value
+
+                if isinstance(attribute_owner, ast.Name):
+                    if attribute_owner.id in hierarchy_utils_aliases:
+                        issues.append({
+                            "file": relative_path,
+                            "line": getattr(
+                                node,
+                                "lineno",
+                                None
+                            ),
+                            "name": "hierarchy_utils.Hierarchy",
+                            "kind": "retired_compatibility",
+                        })
+
+            continue
 
         if not isinstance(node, ast.Call):
             continue
@@ -288,21 +374,27 @@ def run():
 
     if issues:
         for issue in issues:
+            issue_label = u"上层代码绕开 Core"
+
+            if issue["kind"] == "retired_compatibility":
+                issue_label = u"上层代码重新使用退休兼容入口"
+
             print(
-                u"[FAIL] {}:{} | 上层代码绕开 Core: {}".format(
+                u"[FAIL] {}:{} | {}: {}".format(
                     issue["file"],
                     issue["line"],
+                    issue_label,
                     issue["name"]
                 )
             )
 
         print(
-            u"请优先复用 core.scene_utils / transform_utils / rename_utils / hierarchy_utils。"
+            u"请优先复用 core.scene_utils / transform_utils / rename_utils / hierarchy_utils 的正式 API。"
         )
         return False
 
     print(
-        u"[PASS] {} 个 System / Tool / UI Python 文件没有新增重复 Core Helper。".format(
+        u"[PASS] {} 个 System / Tool / UI Python 文件没有新增重复 Core Helper 或退休兼容调用。".format(
             result["file_count"]
         )
     )
