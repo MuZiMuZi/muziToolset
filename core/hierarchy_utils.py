@@ -101,7 +101,17 @@ def _get_transform_long_name(
 # =============================================================================
 
 def get_dag_depth(node):
-    u"""返回唯一 DAG Long Path 的层级深度；World 下节点为 1。"""
+    u"""
+    返回唯一 DAG Long Path 的层级深度；World 下节点为 1。
+
+    Args:
+        node (str):
+            需要查询 DAG 层级深度的 Maya 节点名称或唯一 DAG Path。
+
+    Returns:
+        int:
+            节点 Long Path 的 DAG 深度；直接位于 World 下的节点返回 1。
+    """
     long_name = _get_dag_long_name(
         node
     )
@@ -115,7 +125,19 @@ def get_parent(
         node,
         full_path=True
 ):
-    u"""返回 DAG 节点的直接 Parent；没有 Parent 时返回 None。"""
+    u"""
+    返回 DAG 节点的直接 Parent；没有 Parent 时返回 None。
+
+    Args:
+        node (str):
+            需要查询直接 Parent 的 Maya DAG 节点名称或唯一 DAG Path。
+        full_path (bool):
+            True 时返回 Parent Long Path；False 时返回 Maya Short Name。
+
+    Returns:
+        str | None:
+            直接 Parent 名称；节点位于 World 下时返回 None。
+    """
     long_name = _get_dag_long_name(
         node
     )
@@ -137,7 +159,21 @@ def get_children(
         node_type=None,
         full_path=True
 ):
-    u"""返回 DAG 节点的直接 Child，可选按 Maya Node Type 过滤。"""
+    u"""
+    返回 DAG 节点的直接 Child，可选按 Maya Node Type 过滤。
+
+    Args:
+        node (str):
+            需要查询直接 Child 的 Maya DAG 节点名称或唯一 DAG Path。
+        node_type (str | None):
+            可选 Maya Node Type，例如 ``joint`` 或 ``transform``；None 表示不过滤类型。
+        full_path (bool):
+            True 时返回 Child Long Path；False 时返回 Maya Short Name。
+
+    Returns:
+        list[str]:
+            按 Maya DAG 查询结果顺序返回的直接 Child 列表；没有 Child 时返回空列表。
+    """
     long_name = _get_dag_long_name(
         node
     )
@@ -167,6 +203,20 @@ def get_descendants(
 
     ``include_root=True`` 时，Root 同样遵守 ``node_type`` 过滤规则。
     ``full_path=True`` 时，Root 和 Descendant 全部返回 Long Path。
+
+    Args:
+        node (str):
+            作为 Descendant 查询起点的 Maya DAG Root 节点名称或唯一 DAG Path。
+        node_type (str | None):
+            可选 Maya Node Type；提供后只返回该类型的 Root / Descendant。
+        include_root (bool):
+            是否把查询起点本身加入结果；Root 仍会遵守 ``node_type`` 过滤。
+        full_path (bool):
+            True 时统一返回 Long Path；False 时返回 Maya Short Name。
+
+    Returns:
+        list[str]:
+            由浅到深排列的 Descendant 列表；启用 ``include_root`` 时 Root 位于最前面。
     """
     root_long_name = _get_dag_long_name(
         node
@@ -236,6 +286,20 @@ def parent(
 
     ``parent_node=None`` 表示 Parent 到 World。
     所有成功路径统一返回 Child 最新的唯一 Long Path。
+
+    Args:
+        child_node (str):
+            需要重新挂接 Parent 的 Transform 或 Joint 节点名称。
+        parent_node (str | None):
+            Child 最终需要挂接到的 Transform / Joint；None 表示挂到 World。
+
+    Returns:
+        str:
+            Parent 操作完成后 Child 最新的唯一 DAG Long Path。
+
+    Raises:
+        RuntimeError:
+            Child / Parent 无效、不是 Transform / Joint，或尝试 Parent 到自身时抛出。
     """
     child_long_name = _get_transform_long_name(
         child_node,
@@ -310,6 +374,20 @@ def ensure_group(
 
     ``parent_node=None`` 表示该 Group 应位于 World。
     已存在但 Parent 错误时会通过 ``parent()`` 修正层级，同时保持世界姿态。
+
+    Args:
+        name (str):
+            需要创建或复用的 Transform Group 名称；必须能唯一解析现有同名 DAG 节点。
+        parent_node (str | None):
+            Group 应处于的 Transform / Joint Parent；None 表示 Group 必须位于 World 下。
+
+    Returns:
+        str:
+            已确认存在且 Parent 正确的 Group 唯一 DAG Long Path。
+
+    Raises:
+        RuntimeError:
+            Group 名称为空、现有名称被非 Transform 节点占用，或 Parent 无效时抛出。
     """
     if name is None:
         raise RuntimeError(
@@ -391,6 +469,22 @@ def insert_parent_group(
     新 Group 匹配对象世界位置；``match_rotation=True`` 时同时匹配对象世界旋转，
     否则 Group 使用 World Orientation。函数不复制 Child Local Scale。
     Child 通过 ``parent(..., absolute=True)`` 保持当前世界姿态。
+
+    Args:
+        node (str):
+            需要插入 Parent Group 的 Transform 或 Joint 节点名称。
+        group_name (str):
+            新建 Parent Group 的名称；该名称在当前场景中必须尚未被占用。
+        match_rotation (bool):
+            True 时新 Group 匹配 Child 世界旋转；False 时新 Group 保持 World Orientation。
+
+    Returns:
+        str:
+            新建 Parent Group 的唯一 DAG Long Path。
+
+    Raises:
+        RuntimeError:
+            输入节点无效、Group 名称为空，或 Group 名称已经被占用时抛出。
     """
     node_long_name = _get_transform_long_name(
         node,
