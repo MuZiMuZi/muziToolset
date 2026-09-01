@@ -245,7 +245,7 @@ def is_direct_child_joint(start_joint, end_joint):
         return False
 
     # 使用 Hierarchy Core 查询 End 的直接 Parent。
-    parent_node = hierarchy_utils.Hierarchy.get_parent(
+    parent_node = hierarchy_utils.get_parent(
         end_joint,
         full_path=True
     )
@@ -372,10 +372,9 @@ def resample_joint(start_joint, end_joint, joint_number):
 
     try:
         # 临时把 End 放到 World，避免插入新 Chain 时形成错误层级。
-        cmds.parent(
+        end_joint = hierarchy_utils.parent(
             end_joint,
-            world=True,
-            absolute=True
+            None
         )
 
         # 按等比例位置创建 Joint，并逐个组成 Chain。
@@ -409,7 +408,7 @@ def resample_joint(start_joint, end_joint, joint_number):
             previous_joint = new_joint
 
         # 把原 End Joint 接回新 Chain 尾端。
-        hierarchy_utils.Hierarchy.parent(
+        end_joint = hierarchy_utils.parent(
             end_joint,
             previous_joint
         )
@@ -444,13 +443,13 @@ def resample_joint(start_joint, end_joint, joint_number):
             if cmds.objExists(end_joint):
                 if cmds.objExists(start_joint):
                     try:
-                        current_parent = hierarchy_utils.Hierarchy.get_parent(
+                        current_parent = hierarchy_utils.get_parent(
                             end_joint,
                             full_path=True
                         )
 
                         if current_parent is None:
-                            hierarchy_utils.Hierarchy.parent(
+                            end_joint = hierarchy_utils.parent(
                                 end_joint,
                                 start_joint
                             )

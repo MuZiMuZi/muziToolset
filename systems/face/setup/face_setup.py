@@ -158,29 +158,16 @@ class FaceSetup(face_base.FaceBase):
 
     def finalize_step(self):
         u"""保存、检查并完成 Step 01。"""
-        # 先创建统一 Workflow / Step 分隔属性，让本次写入的数据能按 Step 归档显示。
         self.ensure_config_layout()
-
-        # 保存 Step 01 的模型 Message 和嘴唇 Joint 数量。
         self.save_config()
-
-        # 验证三个工作模型都已经正确创建，避免错误状态被标记为完成。
         self.validate_results()
-
-        # 正式记录 Step 01 已完成。
         self.set_step_completed(
             completed=True
         )
-
-        # Step 01 重新提交后，旧的 Step 02～04 结果都必须重新构建。
         self.invalidate_later_steps()
-
-        # Step 01 完成后，下一次打开 Face Rig 应直接回到 Step 02 Guide。
         self.set_current_step_value(
             2
         )
-
-        # 最后重新整理 Config Attribute 顺序，让 Step 01 数据保持在对应分区中。
         self.organize_config_attributes()
         return True
 
@@ -224,7 +211,7 @@ class FaceSetup(face_base.FaceBase):
             if not face_model:
                 continue
 
-            hierarchy_utils.Hierarchy.parent(
+            hierarchy_utils.parent(
                 face_model,
                 self.face_model_grp
             )

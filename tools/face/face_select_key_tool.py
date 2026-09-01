@@ -82,7 +82,7 @@ def add_extra_group(obj, group_name, world_orient=False):
     u"""
     在控制器上方创建或复用 Driver Group。
 
-    实际 DAG 插组逻辑统一复用 ``hierarchy_utils.Hierarchy.add_extra_group``，
+    实际 DAG 插组逻辑统一复用 ``hierarchy_utils.insert_parent_group``，
     这里只保留 Face Driven Key 的“已有 Group 直接复用”工作流语义。
 
     Args:
@@ -110,10 +110,10 @@ def add_extra_group(obj, group_name, world_orient=False):
         return group_name
 
     # 使用 Hierarchy Core 在 Controller 上方插入 Driver Group。
-    return hierarchy_utils.Hierarchy.add_extra_group(
-        obj=obj,
-        grp_name=group_name,
-        world_orient=world_orient
+    return hierarchy_utils.insert_parent_group(
+        node=obj,
+        group_name=group_name,
+        match_rotation=not world_orient
     )
 
 

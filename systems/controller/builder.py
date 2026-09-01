@@ -207,7 +207,7 @@ def create_controller(
                 name=group_name
             )
 
-            hierarchy_utils.Hierarchy.parent(
+            current_child = hierarchy_utils.parent(
                 current_child,
                 group
             )
@@ -241,7 +241,7 @@ def create_controller(
             sub_control,
             sub_color
         )
-        hierarchy_utils.Hierarchy.parent(
+        sub_control = hierarchy_utils.parent(
             sub_control,
             control
         )
@@ -300,7 +300,7 @@ def create_controller(
 
     if parent is not None:
         scene_utils.validate_node(parent)
-        hierarchy_utils.Hierarchy.parent(
+        top_group = hierarchy_utils.parent(
             top_group,
             parent
         )
@@ -363,7 +363,7 @@ def create_fk_controls(
         top_group = result["top_group"]
 
         if previous_control is not None:
-            hierarchy_utils.Hierarchy.parent(
+            top_group = hierarchy_utils.parent(
                 top_group,
                 previous_control
             )

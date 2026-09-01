@@ -68,8 +68,8 @@ DAG / Attribute / Config / Naming：
         Face / Body / Hand 等 System 应复用该模块，不重复实现 Config CRUD。
 
     hierarchy_utils.py
-        DAG Parent / Child / Descendant、Extra Group 和通用 Transform Group。
-        正式 API 使用模块函数，不使用无状态 staticmethod 包装类。
+        DAG Parent / Child / Descendant、Ensure Group 和 Parent Group 插入。
+        所有 Query 先解析唯一 DAG Long Path；正式 API 只使用模块函数，不保留无状态包装类。
 
     joint_utils.py
         单个 Maya Joint 的 Joint Orient、Radius、Local Axis、Scale Compensate、Orient 和 Label。

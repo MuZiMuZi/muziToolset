@@ -129,7 +129,6 @@ class FaceGuide(face_base.FaceBase):
         u"""确保 Face Hierarchy 和 Config 可以保存 Step 02。"""
         self.ensure_hierarchy()
 
-        # Step 02 Config Attribute 使用 config.py 当前正式 Schema。
         self.step_config_attr_names[2] = list(
             config.face_step_02_config_attr_names
         )
@@ -262,7 +261,7 @@ class FaceGuide(face_base.FaceBase):
         candidates = []
 
         for node in imported_transforms:
-            parent = hierarchy_utils.Hierarchy.get_parent(
+            parent = hierarchy_utils.get_parent(
                 node
             )
 
@@ -309,8 +308,9 @@ class FaceGuide(face_base.FaceBase):
         if not cmds.objExists(self.face_guide_grp):
             self.ensure_hierarchy()
 
-        children = self.get_children(
-            self.face_guide_grp
+        children = hierarchy_utils.get_children(
+            self.face_guide_grp,
+            full_path=True
         )
 
         for child in children:
@@ -342,8 +342,9 @@ class FaceGuide(face_base.FaceBase):
         guide_container = scene_utils.get_long_name(
             self.face_guide_grp
         )
-        container_children = self.get_children(
-            guide_container
+        container_children = hierarchy_utils.get_children(
+            guide_container,
+            full_path=True
         )
 
         if container_children:
@@ -369,7 +370,7 @@ class FaceGuide(face_base.FaceBase):
             template_root = self.get_imported_template_root(
                 imported_nodes
             )
-            hierarchy_utils.Hierarchy.parent(
+            template_root = hierarchy_utils.parent(
                 template_root,
                 self.face_master_grp
             )
@@ -577,26 +578,6 @@ class FaceGuide(face_base.FaceBase):
     # =========================================================================
     # DAG / Guide Query
     # =========================================================================
-
-    @staticmethod
-    def get_children(node):
-        u"""返回一个 DAG 节点的全部直接 Child。"""
-        if not node:
-            return []
-
-        if not cmds.objExists(node):
-            return []
-
-        children = cmds.listRelatives(
-            node,
-            children=True,
-            fullPath=True
-        )
-
-        if children is None:
-            children = []
-
-        return children
 
     @staticmethod
     def get_locator_shapes(locator):
@@ -1116,7 +1097,7 @@ class FaceGuide(face_base.FaceBase):
                 )
 
         zero_groups.sort(
-            key=hierarchy_utils.Hierarchy.get_dag_depth
+            key=hierarchy_utils.get_dag_depth
         )
         return zero_groups
 
@@ -1356,7 +1337,7 @@ class FaceGuide(face_base.FaceBase):
             source_side
     ):
         u"""把一个 Source Guide Zero 的当前状态复制到 Target。"""
-        source_parent = hierarchy_utils.Hierarchy.get_parent(
+        source_parent = hierarchy_utils.get_parent(
             source_zero
         )
         is_mirror_root = True

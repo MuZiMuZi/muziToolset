@@ -14,7 +14,7 @@ Rig Tool
 架构边界：
     - Animation 清理统一调用 core.animation_utils；
     - Constraint 创建统一调用 core.constraint_utils；
-    - DAG Parent / Extra Group 统一调用 core.hierarchy_utils；
+    - DAG Parent / Parent Group 统一调用 core.hierarchy_utils；
     - Joint 类型检查统一调用 core.joint_utils；
     - DAG Short / Long Name 统一调用 core.rename_utils / scene_utils；
     - Selection / Node 创建 / Undo 统一调用 core.scene_utils；
@@ -234,7 +234,7 @@ def get_joint_path(start_joint, end_joint):
 
     def walk(current_joint, current_path):
         # 使用 Hierarchy Core 获取当前 Joint 的直接 Child Joint。
-        children = hierarchy_utils.Hierarchy.get_children(
+        children = hierarchy_utils.get_children(
             current_joint,
             node_type="joint",
             full_path=True
@@ -472,7 +472,7 @@ def create_ik_rig(start_joint, end_joint):
     effector = ik_handle_result[1]
 
     # 把 IK Handle 收进当前 Rig Module Root。
-    ik_handle = hierarchy_utils.Hierarchy.parent(
+    ik_handle = hierarchy_utils.parent(
         ik_handle,
         rig_group
     )
@@ -513,7 +513,7 @@ def create_ik_rig(start_joint, end_joint):
     end_top_group = end_control_result["top_group"]
 
     # 把 End Controller 顶层组收进当前 IK Module。
-    hierarchy_utils.Hierarchy.parent(
+    end_top_group = hierarchy_utils.parent(
         end_top_group,
         rig_group
     )
@@ -575,7 +575,7 @@ def create_ik_rig(start_joint, end_joint):
         )
 
         # 把 Pole Controller 收进当前 IK Module。
-        hierarchy_utils.Hierarchy.parent(
+        pole_top_group = hierarchy_utils.parent(
             pole_top_group,
             rig_group
         )
@@ -633,7 +633,7 @@ def find_rig_root(node):
             return current_node
 
         # 使用 Hierarchy Core 向上查询直接 Parent。
-        current_node = hierarchy_utils.Hierarchy.get_parent(
+        current_node = hierarchy_utils.get_parent(
             current_node,
             full_path=True
         )
@@ -1167,9 +1167,15 @@ class RigTool(QWidget):
         ]
         created_groups = {}
 
-        # 使用 Hierarchy Core 创建或复用每个固定 Group。
+        # 新 Group 通过 Hierarchy Core 创建；已有 Group 保留当前层级，避免工具擅自搬动用户节点。
         for group_name in group_names:
-            created_groups[group_name] = hierarchy_utils.Hierarchy.create_grp(
+            if cmds.objExists(group_name):
+                created_groups[group_name] = scene_utils.get_long_name(
+                    group_name
+                )
+                continue
+
+            created_groups[group_name] = hierarchy_utils.ensure_group(
                 group_name
             )
 
@@ -1184,7 +1190,7 @@ class RigTool(QWidget):
             child_group = created_groups[child_name]
 
             # 只处理当前还没有 Parent 的 Group，保持旧工具安全语义。
-            parent_node = hierarchy_utils.Hierarchy.get_parent(
+            parent_node = hierarchy_utils.get_parent(
                 child_group,
                 full_path=True
             )
@@ -1192,10 +1198,11 @@ class RigTool(QWidget):
             if parent_node is not None:
                 continue
 
-            hierarchy_utils.Hierarchy.parent(
+            child_group = hierarchy_utils.parent(
                 child_group,
                 created_groups["rig_grp"]
             )
+            created_groups[child_name] = child_group
 
         cmds.setAttr(
             created_groups["noTouch_grp"] + ".visibility",
@@ -1251,10 +1258,10 @@ class RigTool(QWidget):
                 continue
 
             # 使用 Hierarchy Core 插入 Zero Group，并保持原世界姿态 / Parent。
-            zero_group = hierarchy_utils.Hierarchy.add_extra_group(
-                obj=node,
-                grp_name=zero_name,
-                world_orient=False
+            zero_group = hierarchy_utils.insert_parent_group(
+                node=node,
+                group_name=zero_name,
+                match_rotation=True
             )
 
             created_groups.append(

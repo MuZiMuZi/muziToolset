@@ -155,8 +155,8 @@ class SkirtRigBuilder(object):
         # 生成当前 Skirt System 使用的固定节点名称。
         names = self.get_names()
 
-        # 创建或复用裙子系统顶层 Group。
-        root = hierarchy_utils.Hierarchy.create_grp(
+        # 确保裙子系统顶层 Group 位于 World。
+        root = hierarchy_utils.ensure_group(
             names["root"]
         )
 
@@ -168,11 +168,11 @@ class SkirtRigBuilder(object):
             "nodes",
         ]
 
-        # 创建或复用 Setup / Blueprint / Control / Joint / Node 子组。
+        # 确保 Setup / Blueprint / Control / Joint / Node 子组都位于 Root 下。
         for group_key in child_group_keys:
-            hierarchy_utils.Hierarchy.create_grp(
+            hierarchy_utils.ensure_group(
                 names[group_key],
-                parent=root
+                parent_node=root
             )
 
         return names
@@ -245,7 +245,7 @@ class SkirtRigBuilder(object):
         )[0]
 
         # 使用统一 Hierarchy API 把定位曲线整理到 Setup Group。
-        hierarchy_utils.Hierarchy.parent(
+        curve = hierarchy_utils.parent(
             curve,
             parent
         )
