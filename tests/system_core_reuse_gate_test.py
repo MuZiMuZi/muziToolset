@@ -22,6 +22,9 @@ Upper Layer Core Reuse Gate
 或者重新使用已经退休的：
 
     hierarchy_utils.Hierarchy.xxx
+    scene_utils.require_selected_nodes()
+    scene_utils.ensure_fbx_plugin_loaded()
+    scene_utils.export_selected_fbx()
 
 代码会再次产生多套规则。
 
@@ -95,6 +98,15 @@ def get_forbidden_helper_names():
     }
 
 
+def get_retired_scene_utils_functions():
+    u"""返回已经从 Scene Core 正式 API 退休的兼容函数名称。"""
+    return {
+        "require_selected_nodes",
+        "ensure_fbx_plugin_loaded",
+        "export_selected_fbx",
+    }
+
+
 # =============================================================================
 # File Discovery
 # =============================================================================
@@ -155,17 +167,20 @@ def get_relative_path(file_path):
 # AST Scan
 # =============================================================================
 
-def get_hierarchy_utils_aliases(syntax_tree):
-    u"""返回当前文件中 ``core.hierarchy_utils`` 使用的模块变量名。"""
+def get_core_module_aliases(
+        syntax_tree,
+        target_module_name
+):
+    u"""返回一个 ``core`` 子模块在当前文件中的可用模块变量名。"""
     aliases = {
-        "hierarchy_utils",
+        target_module_name,
     }
 
     for node in syntax_tree.body:
         if isinstance(node, ast.Import):
             for imported_name in node.names:
                 if not imported_name.name.endswith(
-                        ".hierarchy_utils"
+                        ".{}".format(target_module_name)
                 ):
                     continue
 
@@ -185,7 +200,7 @@ def get_hierarchy_utils_aliases(syntax_tree):
             continue
 
         for imported_name in node.names:
-            if imported_name.name != "hierarchy_utils":
+            if imported_name.name != target_module_name:
                 continue
 
             aliases.add(
@@ -213,8 +228,14 @@ def scan_file(file_path):
         file_path
     )
     forbidden_names = get_forbidden_helper_names()
-    hierarchy_utils_aliases = get_hierarchy_utils_aliases(
-        syntax_tree
+    retired_scene_functions = get_retired_scene_utils_functions()
+    hierarchy_utils_aliases = get_core_module_aliases(
+        syntax_tree,
+        "hierarchy_utils"
+    )
+    scene_utils_aliases = get_core_module_aliases(
+        syntax_tree,
+        "scene_utils"
     )
     issues = []
 
@@ -256,14 +277,34 @@ def scan_file(file_path):
                         "kind": "retired_compatibility",
                     })
 
+            if module_name.endswith("scene_utils"):
+                for imported_name in node.names:
+                    if imported_name.name not in retired_scene_functions:
+                        continue
+
+                    issues.append({
+                        "file": relative_path,
+                        "line": getattr(
+                            node,
+                            "lineno",
+                            None
+                        ),
+                        "name": "scene_utils.{}".format(
+                            imported_name.name
+                        ),
+                        "kind": "retired_compatibility",
+                    })
+
             continue
 
         if isinstance(node, ast.Attribute):
-            if node.attr == "Hierarchy":
-                attribute_owner = node.value
+            attribute_owner = node.value
 
-                if isinstance(attribute_owner, ast.Name):
-                    if attribute_owner.id in hierarchy_utils_aliases:
+            if isinstance(attribute_owner, ast.Name):
+                owner_name = attribute_owner.id
+
+                if node.attr == "Hierarchy":
+                    if owner_name in hierarchy_utils_aliases:
                         issues.append({
                             "file": relative_path,
                             "line": getattr(
@@ -272,6 +313,21 @@ def scan_file(file_path):
                                 None
                             ),
                             "name": "hierarchy_utils.Hierarchy",
+                            "kind": "retired_compatibility",
+                        })
+
+                if node.attr in retired_scene_functions:
+                    if owner_name in scene_utils_aliases:
+                        issues.append({
+                            "file": relative_path,
+                            "line": getattr(
+                                node,
+                                "lineno",
+                                None
+                            ),
+                            "name": "scene_utils.{}".format(
+                                node.attr
+                            ),
                             "kind": "retired_compatibility",
                         })
 
@@ -389,7 +445,7 @@ def run():
             )
 
         print(
-            u"请优先复用 core.scene_utils / transform_utils / rename_utils / hierarchy_utils 的正式 API。"
+            u"请优先复用 core.scene_utils / transform_utils / rename_utils / hierarchy_utils / export_utils 的正式 API。"
         )
         return False
 

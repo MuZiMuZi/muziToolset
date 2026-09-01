@@ -32,7 +32,8 @@ Maya Scene 领域的通用底层工具。
 2. 创建函数先完成输入验证，再修改 Maya Scene；
 3. validate_node() 只接受 Maya Node，不接受 Plug / Component；
 4. get_selected_nodes() 只负责查询 Selection，不规定工具必须选择多少对象；
-5. 特定文件格式的导出逻辑不继续堆进 Scene Core。
+5. 特定文件格式的导出逻辑不继续堆进 Scene Core；
+6. Scene Core 不保留 Selection Workflow 或文件格式导出的历史兼容入口。
 """
 
 from __future__ import print_function
@@ -52,7 +53,17 @@ from . import file_utils
 # =============================================================================
 
 def open_undo_chunk(chunk_name=None):
-    u"""打开一个 Maya Undo Chunk。"""
+    u"""
+    打开一个 Maya Undo Chunk。
+
+    Args:
+        chunk_name (str | None):
+            可选 Undo Chunk 名称；None 时使用 Maya 默认命名。
+
+    Returns:
+        bool:
+            Undo Chunk 成功打开后返回 True。
+    """
     kwargs = {
         "openChunk": True,
     }
@@ -67,7 +78,13 @@ def open_undo_chunk(chunk_name=None):
 
 
 def close_undo_chunk():
-    u"""关闭当前 Maya Undo Chunk。"""
+    u"""
+    关闭当前 Maya Undo Chunk。
+
+    Returns:
+        bool:
+            Undo Chunk 成功关闭后返回 True。
+    """
     cmds.undoInfo(
         closeChunk=True
     )
@@ -75,7 +92,17 @@ def close_undo_chunk():
 
 
 def undo_chunk(function):
-    u"""把一次完整工具执行包装成一个 Maya Undo Chunk。"""
+    u"""
+    把一次完整函数执行包装成一个 Maya Undo Chunk。
+
+    Args:
+        function (callable):
+            需要在单个 Maya Undo Chunk 中执行的函数。
+
+    Returns:
+        callable:
+            保留原函数元数据的 Undo Wrapper。
+    """
 
     @wraps(function)
     def wrapped(*args, **kwargs):
@@ -102,10 +129,22 @@ def validate_node(node, label=None):
     u"""
     检查输入是否为真实存在的 Maya Node。
 
-    Plug / Component 不属于 Node，因此例如：
-        pCube1.translateX
-        pCube1.vtx[0]
-    都会被拒绝。
+    Plug / Component 不属于 Node，因此例如 ``pCube1.translateX`` 和
+    ``pCube1.vtx[0]`` 都会被拒绝。
+
+    Args:
+        node (str):
+            需要验证的 Maya Node 名称或唯一 DAG Path。
+        label (str | None):
+            可选错误提示标签；None 时使用“ Maya 节点”。
+
+    Returns:
+        bool:
+            节点存在且输入不是 Plug / Component 时返回 True。
+
+    Raises:
+        RuntimeError:
+            名称为空、输入为 Plug / Component，或 Maya Node 不存在时抛出。
     """
     display_label = label or u"Maya 节点"
 
@@ -149,6 +188,18 @@ def get_long_name(node):
     返回唯一 Maya DAG Long Path；非 DAG 节点返回 Maya 查询得到的节点名。
 
     短名称对应多个 DAG 节点时拒绝猜测。
+
+    Args:
+        node (str):
+            需要解析的 Maya Node 名称或唯一 DAG Path。
+
+    Returns:
+        str:
+            DAG 节点的唯一 Long Path，或非 DAG 节点的 Maya 节点名。
+
+    Raises:
+        RuntimeError:
+            节点不存在，或输入短名称对应多个 DAG 节点时抛出。
     """
     validate_node(
         node
@@ -184,7 +235,25 @@ def create_node(
     创建一个 Maya Node，可选在创建时指定 DAG Parent。
 
     本函数不负责 Match / Snap。已经存在节点的 Reparent 统一交给
-    hierarchy_utils.parent()。
+    ``hierarchy_utils.parent()``。
+
+    Args:
+        node_type (str):
+            Maya Node Type，例如 ``transform``、``network`` 或 ``multMatrix``。
+        name (str):
+            新节点名称；当前场景中不能已经存在同名节点。
+        parent (str | None):
+            仅在创建 DAG Node 时使用的可选 Parent；None 表示不指定 Parent。
+
+    Returns:
+        str:
+            Maya 创建后返回的节点名称。
+
+    Raises:
+        ValueError:
+            ``node_type`` 或 ``name`` 为空时抛出。
+        RuntimeError:
+            同名节点已经存在，或指定 Parent 不存在时抛出。
     """
     if not node_type:
         raise ValueError(
@@ -230,7 +299,24 @@ def get_selected_nodes(
         long=True,
         flatten=True
 ):
-    u"""返回当前 Maya Selection，可选按 Maya Node Type 过滤。"""
+    u"""
+    返回当前 Maya Selection，可选按 Maya Node Type 过滤。
+
+    未指定 ``node_type`` 时保留 Maya 当前 Selection Item；因此 Component
+    Selection 也可能出现在结果中。指定 ``node_type`` 后 Component 会被忽略。
+
+    Args:
+        node_type (str | None):
+            可选 Maya Node Type；None 时不过滤 Selection Item。
+        long (bool):
+            是否让 Maya 尽量返回 DAG Long Path。
+        flatten (bool):
+            是否展开 Maya Component Selection。
+
+    Returns:
+        list[str]:
+            当前 Selection；没有选择或过滤后没有匹配项时返回空列表。
+    """
     selected_nodes = cmds.ls(
         selection=True,
         long=long,
@@ -275,7 +361,27 @@ def ensure_object_set(
         objects=None,
         parent_set=None
 ):
-    u"""创建或复用 Object Set，并可安全加入对象和父 Set。"""
+    u"""
+    创建或复用 Object Set，并可安全加入对象和父 Set。
+
+    Args:
+        set_name (str):
+            需要创建或复用的 Maya Object Set 名称。
+        objects (str | list[str] | None):
+            可选需要加入 Set 的 Maya Node；None 时只确保 Set 本身存在。
+        parent_set (str | None):
+            可选父 Object Set；不存在时会自动创建。
+
+    Returns:
+        str:
+            已确认存在并完成成员维护的 Object Set 名称。
+
+    Raises:
+        ValueError:
+            ``set_name`` 为空时抛出。
+        RuntimeError:
+            Set 名称或 Parent Set 名称被非 Object Set 节点占用，或成员节点无效时抛出。
+    """
     if not set_name:
         raise ValueError(
             u"Set 名称不能为空。"
@@ -345,7 +451,25 @@ def create_native_event_callback(
         event_name,
         callback
 ):
-    u"""创建 Maya MEventMessage Callback，并返回对应的删除函数。"""
+    u"""
+    创建 Maya ``MEventMessage`` Callback，并返回对应的删除函数。
+
+    Args:
+        event_name (str):
+            Maya Native Event 名称，例如 ``SelectionChanged``。
+        callback (callable):
+            Event 触发时由 Maya 调用的函数。
+
+    Returns:
+        callable:
+            无参数删除函数；调用后移除本次创建的 Maya Callback。
+
+    Raises:
+        ValueError:
+            ``event_name`` 为空时抛出。
+        TypeError:
+            ``callback`` 不是可调用对象时抛出。
+    """
     if not event_name:
         raise ValueError(
             u"event_name 不能为空。"
@@ -374,7 +498,13 @@ def create_native_event_callback(
 # =============================================================================
 
 def get_current_scene_path():
-    u"""返回当前 Maya Scene 的规范路径；未保存时返回空字符串。"""
+    u"""
+    返回当前 Maya Scene 的规范路径；未保存时返回空字符串。
+
+    Returns:
+        str:
+            当前 Scene 的规范化文件路径；Untitled Scene 返回空字符串。
+    """
     scene_path = cmds.file(
         query=True,
         sceneName=True
@@ -389,7 +519,13 @@ def get_current_scene_path():
 
 
 def is_scene_modified():
-    u"""返回当前 Maya Scene 是否存在未保存修改。"""
+    u"""
+    返回当前 Maya Scene 是否存在未保存修改。
+
+    Returns:
+        bool:
+            当前 Scene 有未保存修改时返回 True，否则返回 False。
+    """
     return bool(
         cmds.file(
             query=True,
@@ -399,7 +535,23 @@ def is_scene_modified():
 
 
 def validate_scene_file(file_path):
-    u"""检查 Maya Scene 文件是否存在，并返回规范化路径。"""
+    u"""
+    检查 Maya Scene 输入文件是否存在，并返回规范化路径。
+
+    Args:
+        file_path (str):
+            需要 Open / Import / Reference 的文件路径。
+
+    Returns:
+        str:
+            经过 ``file_utils.normalize_path()`` 处理后的现有文件路径。
+
+    Raises:
+        ValueError:
+            ``file_path`` 为空时抛出。
+        RuntimeError:
+            规范化后的文件路径不存在时抛出。
+    """
     normalized_path = file_utils.normalize_path(
         file_path
     )
@@ -428,7 +580,25 @@ def open_scene(
         force=False,
         ignore_version=True
 ):
-    u"""打开 Maya Scene；Core 不弹保存确认窗口。"""
+    u"""
+    打开 Maya Scene；Core 不弹保存确认窗口。
+
+    Args:
+        file_path (str):
+            需要打开的 Maya Scene 文件路径。
+        force (bool):
+            是否允许 Maya 强制打开文件；False 时若当前 Scene 有未保存修改会先拒绝操作。
+        ignore_version (bool):
+            是否让 Maya 忽略文件版本差异。
+
+    Returns:
+        str:
+            成功打开后的规范化 Scene 文件路径。
+
+    Raises:
+        RuntimeError:
+            文件不存在，或当前 Scene 有未保存修改且 ``force=False`` 时抛出。
+    """
     normalized_path = validate_scene_file(
         file_path
     )
@@ -452,7 +622,23 @@ def import_scene(
         file_path,
         ignore_version=True
 ):
-    u"""将 Maya Scene 导入当前场景，并返回本次新创建节点。"""
+    u"""
+    将 Maya Scene 导入当前场景，并返回本次新创建节点。
+
+    Args:
+        file_path (str):
+            需要 Import 的 Maya Scene 文件路径。
+        ignore_version (bool):
+            是否让 Maya 忽略文件版本差异。
+
+    Returns:
+        list[str]:
+            本次 Import 新创建的 Maya Node；没有新节点时返回空列表。
+
+    Raises:
+        RuntimeError:
+            输入文件不存在时抛出。
+    """
     normalized_path = validate_scene_file(
         file_path
     )
@@ -480,7 +666,27 @@ def reference_scene(
     u"""
     在当前 Maya Scene 创建 Reference，并返回 Maya Reference Node。
 
-    namespace 未指定时使用文件名 Stem。
+    ``namespace`` 未指定时使用输入文件名 Stem。
+
+    Args:
+        file_path (str):
+            需要 Reference 的 Maya Scene 文件路径。
+        namespace (str | None):
+            Reference Namespace；None 时使用文件名 Stem。
+        group_reference (bool):
+            是否让 Maya 为本次 Reference 创建 Reference Group。
+        group_name (str | None):
+            ``group_reference=True`` 时可选的 Reference Group 名称。
+        ignore_version (bool):
+            是否让 Maya 忽略文件版本差异。
+
+    Returns:
+        str:
+            Maya 为本次 Reference 创建的 Reference Node 名称。
+
+    Raises:
+        RuntimeError:
+            输入文件不存在时抛出。
     """
     normalized_path = validate_scene_file(
         file_path
@@ -516,79 +722,6 @@ def reference_scene(
     )
 
     return reference_node
-
-
-# =============================================================================
-# Legacy Compatibility
-# =============================================================================
-
-def require_selected_nodes(
-        node_type=None,
-        minimum_count=1
-):
-    u"""
-    旧 Selection Workflow 兼容入口。
-
-    新代码应直接使用 get_selected_nodes()，并在 Tool 层判断数量。
-    本函数不属于正式 Scene Core API。
-    """
-    selected_nodes = get_selected_nodes(
-        node_type=node_type,
-        long=True,
-        flatten=True
-    )
-
-    if len(selected_nodes) < minimum_count:
-        if node_type:
-            raise RuntimeError(
-                u"请至少选择 {} 个 {} 节点。".format(
-                    minimum_count,
-                    node_type
-                )
-            )
-
-        raise RuntimeError(
-            u"请至少选择 {} 个 Maya 节点。".format(
-                minimum_count
-            )
-        )
-
-    return selected_nodes
-
-
-def ensure_fbx_plugin_loaded():
-    u"""
-    旧 FBX 兼容入口。
-
-    新代码请使用 core.export_utils.ensure_fbx_plugin_loaded()。
-    """
-    from . import export_utils
-
-    return export_utils.ensure_fbx_plugin_loaded()
-
-
-def export_selected_fbx(file_path):
-    u"""
-    旧 FBX Selection 兼容入口。
-
-    新代码请使用 export_utils.export_fbx(objects, file_path)。
-    """
-    from . import export_utils
-
-    selected_nodes = get_selected_nodes(
-        long=True,
-        flatten=False
-    )
-
-    if not selected_nodes:
-        raise RuntimeError(
-            u"导出 FBX 前请先选择对象。"
-        )
-
-    return export_utils.export_fbx(
-        selected_nodes,
-        file_path
-    )
 
 
 __all__ = [
