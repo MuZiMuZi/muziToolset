@@ -3,7 +3,7 @@ u"""
 Teeth Component
 ===============
 
-用于构建上下牙床的 Face Rig Component。
+用于构建上下牙床与 Gum 的 Face Rig Component。
 
 继承关系：
     ComponentBase
@@ -11,43 +11,44 @@ Teeth Component
             -> FaceBase
                 -> TeethComponent
 
-Teeth Component 使用 RigComponentBase 提供的标准 process_data()：
+标准构建顺序：
     1. create_joint()；
     2. create_controller()；
     3. create_connection()。
 
 当前职责：
-    - 根据 Teeth Guide 创建上下牙床绑定 Joint；
-    - 创建上下牙床标准 Controller Hierarchy；
-    - 使用 Matrix Network 建立 Controller Output -> Joint 驱动；
+    - 根据 Teeth Guide 创建 Upper / Lower Teeth Bind Joint；
+    - 创建 Upper / Lower Teeth Controller Hierarchy；
+    - 使用 Matrix Network 建立 Controller -> Joint 驱动；
     - 对独立 Upper / Lower Teeth Model 创建单 Influence 刚性 SkinCluster；
-    - 对一个 Gum Model 按 Connected Mesh Shell 自动分成 Upper / Lower 两组刚性权重；
+    - 调用 gum_binding 完成 Gum Connected Shell 分类与双 Influence 刚性权重；
     - 保留 Lower Teeth Controller Top Group，供后续 Jaw Component 接管 Follow。
 
-重要边界：
-    - Gum 自动权重只处理上下牙龈为两个或多个断开 Mesh Shell 的情况；
-    - 每个 Gum Shell 会完整归属 Upper 或 Lower Teeth Joint，不使用 Maya 默认 Smooth Bind 猜权重；
-    - 如果 Gum 是一整块连通拓扑，本 Component 会明确停止，不生成不可靠的自动权重；
-    - 本 Component 不修改已有的未知 SkinCluster，避免破坏艺术家已有权重。
+边界：
+    - Teeth Component 负责 Rig 生命周期与节点关系；
+    - Gum Mesh Shell 几何分析和 Gum 权重算法放在 gum_binding.py；
+    - 不覆盖已有未知 SkinCluster；
+    - 不使用 Maya 默认 Smooth Bind 结果作为最终牙床权重。
 """
 
 from __future__ import print_function
 
-import maya.api.OpenMaya as om
 import maya.cmds as cmds
 
 from ....core import joint_utils
 from ....core import matrix_utils
 from ....core import name_utils
+from ....core import scene_utils
 from ....core import skin_utils
 from ...controller import builder as controller_builder
 from .. import config
 from .. import face_base
 from ..guide import FaceGuide
+from . import gum_binding
 
 
 class TeethComponent(face_base.FaceBase):
-    u"""Step 03 中的 Teeth Rig Component。"""
+    u"""Step 03 中负责 Upper / Lower Teeth 与 Gum 的 Rig Component。"""
 
     def __init__(self):
         u"""初始化 Teeth Component。"""
@@ -85,7 +86,7 @@ class TeethComponent(face_base.FaceBase):
         self.controller_radius = 1.0
 
         # ---------------------------------------------------------------------
-        # Gum Weight Data
+        # Prepared Gum Data
         # ---------------------------------------------------------------------
         self.gum_shell_data = []
 
@@ -97,11 +98,8 @@ class TeethComponent(face_base.FaceBase):
 
         self.upper_teeth_controller = None
         self.lower_teeth_controller = None
-
         self.upper_teeth_control = None
         self.lower_teeth_control = None
-        self.upper_teeth_output = None
-        self.lower_teeth_output = None
         self.upper_teeth_top_group = None
         self.lower_teeth_top_group = None
 
@@ -124,18 +122,9 @@ class TeethComponent(face_base.FaceBase):
             bool:
                 Setup、Guide 和 Controller Settings 全部读取成功后返回 True。
         """
-
-        # =========================================================================
-        # 步骤 1：检查 Step 01 Setup 数据
-        # =========================================================================
-
         self.validate_setup_config(
             require_mouth_jnt_number=False
         )
-
-        # =========================================================================
-        # 步骤 2：动态生成必须的 Teeth Guide 名称
-        # =========================================================================
 
         self.upper_teeth_guide_name = name_utils.Name.create_name(
             node_type="loc",
@@ -153,10 +142,6 @@ class TeethComponent(face_base.FaceBase):
             index=1
         )
 
-        # =========================================================================
-        # 步骤 3：获取并检查 Guide
-        # =========================================================================
-
         self.upper_teeth_guide = self.face_guide.get_guide_node(
             self.upper_teeth_guide_name,
             required=True
@@ -166,10 +151,6 @@ class TeethComponent(face_base.FaceBase):
             self.lower_teeth_guide_name,
             required=True
         )
-
-        # =========================================================================
-        # 步骤 4：读取 Controller Settings
-        # =========================================================================
 
         controller_settings = self.face_guide.load_controller_settings()
 
@@ -192,19 +173,55 @@ class TeethComponent(face_base.FaceBase):
 
     def prepare_data(self):
         u"""
-        准备 Teeth Joint / Controller 名称、层级和构建前检查数据。
+        准备 Teeth 名称、层级、Gum Shell 数据和构建前安全检查。
 
         Returns:
             bool:
-                命名、层级与构建前安全检查全部完成后返回 True。
+                所有构建数据准备完成后返回 True。
         """
-
-        # 确保 Face 的正式层级存在。
         self.ensure_hierarchy()
+        self._prepare_names()
 
-        # ---------------------------------------------------------------------
-        # Joint Name
-        # ---------------------------------------------------------------------
+        self.controller_radius = (
+            float(self.controller_global_scale) *
+            float(self.controller_size)
+        )
+
+        if self.controller_radius <= 0.0:
+            raise ValueError(
+                u"Teeth Controller Radius 必须大于 0。"
+            )
+
+        self._validate_model_inputs_unique()
+        self._validate_build_nodes_available()
+
+        self._validate_model_skin_state(
+            self.upper_teech_model,
+            label=u"Upper Teeth Model"
+        )
+
+        self._validate_model_skin_state(
+            self.lower_teech_model,
+            label=u"Lower Teeth Model"
+        )
+
+        self._validate_model_skin_state(
+            self.face_gum_model,
+            label=u"Gum Model"
+        )
+
+        # 在创建任何 Rig 节点前先验证 Gum 拓扑和 Shell 分类。
+        # 如果 Gum 不符合自动绑定条件，本次构建会在干净状态直接停止。
+        self.gum_shell_data = gum_binding.prepare_gum_shell_data(
+            model=self.face_gum_model,
+            upper_reference=self.upper_teeth_guide,
+            lower_reference=self.lower_teeth_guide
+        )
+
+        return True
+
+    def _prepare_names(self):
+        u"""准备 Teeth / Gum 构建使用的确定性标准名称。"""
         self.upper_teeth_jnt_name = name_utils.Name.create_name(
             node_type="jnt",
             side="md",
@@ -221,9 +238,6 @@ class TeethComponent(face_base.FaceBase):
             index=1
         )
 
-        # ---------------------------------------------------------------------
-        # Controller Name
-        # ---------------------------------------------------------------------
         self.upper_teeth_ctrl_name = name_utils.Name.create_name(
             node_type="ctrl",
             side="md",
@@ -240,9 +254,6 @@ class TeethComponent(face_base.FaceBase):
             index=1
         )
 
-        # ---------------------------------------------------------------------
-        # Rig Node Name
-        # ---------------------------------------------------------------------
         self.upper_teeth_matrix_name = name_utils.Name.create_name(
             node_type="mult",
             side="md",
@@ -283,45 +294,6 @@ class TeethComponent(face_base.FaceBase):
             index=1
         )
 
-        # ---------------------------------------------------------------------
-        # Controller Radius
-        # ---------------------------------------------------------------------
-        self.controller_radius = (
-            float(self.controller_global_scale) *
-            float(self.controller_size)
-        )
-
-        if self.controller_radius <= 0.0:
-            raise ValueError(
-                u"Teeth Controller Radius 必须大于 0。"
-            )
-
-        # ---------------------------------------------------------------------
-        # Build 前安全检查
-        # ---------------------------------------------------------------------
-        self._validate_build_nodes_available()
-
-        self._validate_model_skin_state(
-            self.upper_teech_model,
-            label=u"Upper Teeth Model"
-        )
-
-        self._validate_model_skin_state(
-            self.lower_teech_model,
-            label=u"Lower Teeth Model"
-        )
-
-        self._validate_model_skin_state(
-            self.face_gum_model,
-            label=u"Gum Model"
-        )
-
-        # Gum 的 Shell 分组和 Upper / Lower 判定必须在真正创建 Rig 前完成。
-        # 这样拓扑不符合要求时，不会留下半套 Teeth Rig。
-        self.gum_shell_data = self._prepare_gum_shell_data(
-            self.face_gum_model
-        )
-
         return True
 
     # =========================================================================
@@ -346,23 +318,48 @@ class TeethComponent(face_base.FaceBase):
             if prefix == "ctrl":
                 node_name = control_name
             else:
-                if control_name.startswith("ctrl_"):
-                    node_name = control_name.replace(
-                        "ctrl_",
-                        prefix + "_",
-                        1
-                    )
-                else:
-                    node_name = "{}_{}".format(
-                        prefix,
-                        control_name
-                    )
+                node_name = control_name.replace(
+                    "ctrl_",
+                    prefix + "_",
+                    1
+                )
 
             node_names.append(
                 node_name
             )
 
         return node_names
+
+    def _validate_model_inputs_unique(self):
+        u"""确保 Upper Teeth、Lower Teeth 与 Gum 没有误指向同一个 Transform。"""
+        model_inputs = [
+            (u"Upper Teeth Model", self.upper_teech_model),
+            (u"Lower Teeth Model", self.lower_teech_model),
+            (u"Gum Model", self.face_gum_model),
+        ]
+        resolved_models = {}
+
+        for label, model in model_inputs:
+            if not model:
+                continue
+
+            long_name = scene_utils.get_long_name(
+                model
+            )
+
+            if long_name in resolved_models:
+                other_label = resolved_models[long_name]
+                raise RuntimeError(
+                    u"{} 与 {} 指向同一个模型：{}。当前 Teeth Rig 需要独立输入。".format(
+                        other_label,
+                        label,
+                        long_name
+                    )
+                )
+
+            resolved_models[long_name] = label
+
+        return True
 
     def _validate_build_nodes_available(self):
         u"""阻止旧 Teeth Rig 残留导致 Builder 静默生成带后缀的重复节点。"""
@@ -408,9 +405,6 @@ class TeethComponent(face_base.FaceBase):
         existing_nodes = []
 
         for node_name in expected_nodes:
-            if not node_name:
-                continue
-
             if not cmds.objExists(node_name):
                 continue
 
@@ -448,229 +442,12 @@ class TeethComponent(face_base.FaceBase):
         )
 
     # =========================================================================
-    # Gum Geometry / Weight Preparation
-    # =========================================================================
-
-    @staticmethod
-    def _get_mesh_shape(model):
-        u"""返回 Gum Model 唯一的非 Intermediate Mesh Shape。"""
-        if not model:
-            return None
-
-        mesh_shapes = cmds.listRelatives(
-            model,
-            shapes=True,
-            noIntermediate=True,
-            fullPath=True,
-            type="mesh"
-        )
-
-        if mesh_shapes is None:
-            mesh_shapes = []
-
-        if len(mesh_shapes) != 1:
-            raise RuntimeError(
-                u"Gum Model 必须包含且只包含一个有效 Mesh Shape：{} | shapes={}".format(
-                    model,
-                    len(mesh_shapes)
-                )
-            )
-
-        return mesh_shapes[0]
-
-    @staticmethod
-    def _distance_squared(point_a, point_b):
-        u"""返回两个三维点之间的平方距离。"""
-        delta_x = point_a[0] - point_b[0]
-        delta_y = point_a[1] - point_b[1]
-        delta_z = point_a[2] - point_b[2]
-
-        return (
-            delta_x * delta_x +
-            delta_y * delta_y +
-            delta_z * delta_z
-        )
-
-    def _get_mesh_shell_data(self, model):
-        u"""使用 Maya API 读取模型 Connected Vertex Shell 及世界空间中心。"""
-        mesh_shape = self._get_mesh_shape(
-            model
-        )
-
-        selection = om.MSelectionList()
-        selection.add(
-            mesh_shape
-        )
-        mesh_path = selection.getDagPath(
-            0
-        )
-
-        mesh_function = om.MFnMesh(
-            mesh_path
-        )
-        world_points = mesh_function.getPoints(
-            om.MSpace.kWorld
-        )
-
-        # 先完整建立 Vertex 邻接表，再用普通 BFS 分 Shell。
-        adjacency = {}
-        vertex_iterator = om.MItMeshVertex(
-            mesh_path
-        )
-
-        while not vertex_iterator.isDone():
-            vertex_index = vertex_iterator.index()
-            connected_vertices = vertex_iterator.getConnectedVertices()
-
-            adjacency[vertex_index] = []
-
-            for connected_vertex in connected_vertices:
-                adjacency[vertex_index].append(
-                    connected_vertex
-                )
-
-            vertex_iterator.next()
-
-        visited_vertices = set()
-        shell_data = []
-        vertex_count = mesh_function.numVertices
-        vertex_index = 0
-
-        while vertex_index < vertex_count:
-            if vertex_index in visited_vertices:
-                vertex_index += 1
-                continue
-
-            stack = [
-                vertex_index
-            ]
-            shell_vertices = []
-
-            while stack:
-                current_vertex = stack.pop()
-
-                if current_vertex in visited_vertices:
-                    continue
-
-                visited_vertices.add(
-                    current_vertex
-                )
-                shell_vertices.append(
-                    current_vertex
-                )
-
-                connected_vertices = adjacency.get(
-                    current_vertex,
-                    []
-                )
-
-                for connected_vertex in connected_vertices:
-                    if connected_vertex in visited_vertices:
-                        continue
-
-                    stack.append(
-                        connected_vertex
-                    )
-
-            center_x = 0.0
-            center_y = 0.0
-            center_z = 0.0
-
-            for shell_vertex in shell_vertices:
-                point = world_points[shell_vertex]
-                center_x += point.x
-                center_y += point.y
-                center_z += point.z
-
-            shell_vertex_count = len(
-                shell_vertices
-            )
-
-            if shell_vertex_count <= 0:
-                vertex_index += 1
-                continue
-
-            shell_center = [
-                center_x / shell_vertex_count,
-                center_y / shell_vertex_count,
-                center_z / shell_vertex_count,
-            ]
-
-            shell_data.append({
-                "vertices": shell_vertices,
-                "center": shell_center,
-                "side": None,
-            })
-
-            vertex_index += 1
-
-        return shell_data
-
-    def _prepare_gum_shell_data(self, model):
-        u"""按 Connected Shell 中心到上下 Teeth Guide 的距离预分类 Gum 权重。"""
-        if not model:
-            return []
-
-        shell_data = self._get_mesh_shell_data(
-            model
-        )
-
-        if len(shell_data) < 2:
-            raise RuntimeError(
-                u"Gum Model 至少需要两个断开的 Mesh Shell 才能自动区分上下牙龈：{}".format(
-                    model
-                )
-            )
-
-        upper_position = cmds.xform(
-            self.upper_teeth_guide,
-            query=True,
-            worldSpace=True,
-            translation=True
-        )
-        lower_position = cmds.xform(
-            self.lower_teeth_guide,
-            query=True,
-            worldSpace=True,
-            translation=True
-        )
-
-        upper_shell_count = 0
-        lower_shell_count = 0
-
-        for shell in shell_data:
-            shell_center = shell["center"]
-
-            upper_distance = self._distance_squared(
-                shell_center,
-                upper_position
-            )
-            lower_distance = self._distance_squared(
-                shell_center,
-                lower_position
-            )
-
-            if upper_distance <= lower_distance:
-                shell["side"] = "upper"
-                upper_shell_count += 1
-            else:
-                shell["side"] = "lower"
-                lower_shell_count += 1
-
-        if upper_shell_count == 0 or lower_shell_count == 0:
-            raise RuntimeError(
-                u"Gum Shell 自动分类失败，必须至少存在一组 Upper 和一组 Lower Shell。"
-            )
-
-        return shell_data
-
-    # =========================================================================
     # Joint
     # =========================================================================
 
     def create_joint(self):
         u"""
-        根据 Teeth Guide 创建上下牙床绑定 Joint。
+        根据 Teeth Guide 创建 Upper / Lower Teeth Bind Joint。
 
         Returns:
             list[str]:
@@ -705,7 +482,7 @@ class TeethComponent(face_base.FaceBase):
 
     def create_controller(self):
         u"""
-        创建上下牙床对应的标准 Controller Hierarchy。
+        创建 Upper / Lower Teeth 标准 Controller Hierarchy。
 
         Returns:
             list[dict]:
@@ -741,10 +518,6 @@ class TeethComponent(face_base.FaceBase):
 
         self.upper_teeth_control = self.upper_teeth_controller["control"]
         self.lower_teeth_control = self.lower_teeth_controller["control"]
-
-        self.upper_teeth_output = self.upper_teeth_controller["output"]
-        self.lower_teeth_output = self.lower_teeth_controller["output"]
-
         self.upper_teeth_top_group = self.upper_teeth_controller["top_group"]
         self.lower_teeth_top_group = self.lower_teeth_controller["top_group"]
 
@@ -763,29 +536,24 @@ class TeethComponent(face_base.FaceBase):
 
         Returns:
             bool:
-                Matrix 驱动、牙齿刚性 Skin 与可选 Gum Shell Skin 全部完成后返回 True。
+                Matrix 驱动与全部可选 Skin 构建完成后返回 True。
         """
-
-        # ---------------------------------------------------------------------
-        # Controller Output -> Joint
-        # ---------------------------------------------------------------------
+        # 两个 Teeth Controller 都关闭 Sub Control，因此可见 Control 的 worldMatrix
+        # 就是最终动画矩阵。直接使用 Control 可避免依赖额外 Output 层级语义。
         self.upper_teeth_matrix_node = matrix_utils.create_parent_matrix_constraint(
-            driver=self.upper_teeth_output,
+            driver=self.upper_teeth_control,
             driven=self.upper_teeth_joint,
             maintain_offset=False,
             name=self.upper_teeth_matrix_name
         )
 
         self.lower_teeth_matrix_node = matrix_utils.create_parent_matrix_constraint(
-            driver=self.lower_teeth_output,
+            driver=self.lower_teeth_control,
             driven=self.lower_teeth_joint,
             maintain_offset=False,
             name=self.lower_teeth_matrix_name
         )
 
-        # ---------------------------------------------------------------------
-        # Joint -> Teeth Model
-        # ---------------------------------------------------------------------
         self.upper_teeth_skin_cluster = self._create_rigid_skin_cluster(
             model=self.upper_teech_model,
             joint=self.upper_teeth_joint,
@@ -798,10 +566,7 @@ class TeethComponent(face_base.FaceBase):
             skin_name=self.lower_teeth_skin_name
         )
 
-        # ---------------------------------------------------------------------
-        # Upper + Lower Joint -> Gum Model
-        # ---------------------------------------------------------------------
-        self.gum_skin_cluster = self._create_gum_skin_cluster(
+        self.gum_skin_cluster = gum_binding.create_gum_skin_cluster(
             model=self.face_gum_model,
             upper_joint=self.upper_teeth_joint,
             lower_joint=self.lower_teeth_joint,
@@ -817,7 +582,7 @@ class TeethComponent(face_base.FaceBase):
             joint,
             skin_name
     ):
-        u"""使用单个 Joint 创建全权重为 1 的刚性 SkinCluster。"""
+        u"""使用单个 Joint 创建全权重为 1 的刚性 Teeth SkinCluster。"""
         if not model:
             return None
 
@@ -853,112 +618,23 @@ class TeethComponent(face_base.FaceBase):
 
         return skin_result[0]
 
-    @staticmethod
-    def _create_gum_skin_cluster(
-            model,
-            upper_joint,
-            lower_joint,
-            skin_name,
-            shell_data
-    ):
-        u"""创建双 Influence Gum SkinCluster，并把每个 Connected Shell 刚性分配给一侧。"""
-        if not model:
-            return None
-
-        if not shell_data:
-            raise RuntimeError(
-                u"没有可用于 Gum 绑定的 Shell 数据。"
-            )
-
-        existing_skin_cluster = skin_utils.find_skin_cluster(
-            model
-        )
-
-        if existing_skin_cluster:
-            raise RuntimeError(
-                u"Gum Model 已经存在 SkinCluster：{}".format(
-                    existing_skin_cluster
-                )
-            )
-
-        skin_result = cmds.skinCluster(
-            [
-                upper_joint,
-                lower_joint,
-            ],
-            model,
-            name=skin_name,
-            toSelectedBones=True,
-            bindMethod=0,
-            skinMethod=0,
-            normalizeWeights=1,
-            maximumInfluences=1,
-            obeyMaxInfluences=True
-        )
-
-        if not skin_result:
-            raise RuntimeError(
-                u"创建 Gum SkinCluster 失败：{}".format(
-                    model
-                )
-            )
-
-        skin_cluster = skin_result[0]
-
-        for shell in shell_data:
-            vertex_components = []
-
-            for vertex_index in shell["vertices"]:
-                vertex_components.append(
-                    "{}.vtx[{}]".format(
-                        model,
-                        vertex_index
-                    )
-                )
-
-            if shell["side"] == "upper":
-                transform_values = [
-                    (upper_joint, 1.0),
-                    (lower_joint, 0.0),
-                ]
-            elif shell["side"] == "lower":
-                transform_values = [
-                    (upper_joint, 0.0),
-                    (lower_joint, 1.0),
-                ]
-            else:
-                raise RuntimeError(
-                    u"Gum Shell 没有 Upper / Lower 分类结果。"
-                )
-
-            cmds.skinPercent(
-                skin_cluster,
-                vertex_components,
-                transformValue=transform_values,
-                normalize=True
-            )
-
-        return skin_cluster
-
     # =========================================================================
     # Finalize
     # =========================================================================
 
     def finalize_step(self):
         u"""
-        检查 Teeth Component 最终结果并整理显示 / Metadata。
+        检查 Teeth Component 最终节点与可选 SkinCluster。
 
         Returns:
             bool:
-                必须节点及可选牙齿 / Gum Skin 结果全部有效时返回 True。
+                所有必须结果都存在时返回 True。
         """
         required_nodes = [
             self.upper_teeth_joint,
             self.lower_teeth_joint,
             self.upper_teeth_control,
             self.lower_teeth_control,
-            self.upper_teeth_output,
-            self.lower_teeth_output,
             self.upper_teeth_matrix_node,
             self.lower_teeth_matrix_node,
         ]
@@ -976,44 +652,50 @@ class TeethComponent(face_base.FaceBase):
                     )
                 )
 
-        if self.upper_teech_model:
-            if not self.upper_teeth_skin_cluster:
-                raise RuntimeError(
-                    u"Upper Teeth Model 没有完成刚性 Skin 绑定。"
-                )
+        self._validate_skin_result(
+            model=self.upper_teech_model,
+            skin_cluster=self.upper_teeth_skin_cluster,
+            label=u"Upper Teeth"
+        )
 
-            if not cmds.objExists(self.upper_teeth_skin_cluster):
-                raise RuntimeError(
-                    u"Upper Teeth SkinCluster 不存在：{}".format(
-                        self.upper_teeth_skin_cluster
-                    )
-                )
+        self._validate_skin_result(
+            model=self.lower_teech_model,
+            skin_cluster=self.lower_teeth_skin_cluster,
+            label=u"Lower Teeth"
+        )
 
-        if self.lower_teech_model:
-            if not self.lower_teeth_skin_cluster:
-                raise RuntimeError(
-                    u"Lower Teeth Model 没有完成刚性 Skin 绑定。"
-                )
+        self._validate_skin_result(
+            model=self.face_gum_model,
+            skin_cluster=self.gum_skin_cluster,
+            label=u"Gum"
+        )
 
-            if not cmds.objExists(self.lower_teeth_skin_cluster):
-                raise RuntimeError(
-                    u"Lower Teeth SkinCluster 不存在：{}".format(
-                        self.lower_teeth_skin_cluster
-                    )
-                )
+        return True
 
-        if self.face_gum_model:
-            if not self.gum_skin_cluster:
-                raise RuntimeError(
-                    u"Gum Model 没有完成 Upper / Lower Shell Skin 绑定。"
-                )
+    @staticmethod
+    def _validate_skin_result(
+            model,
+            skin_cluster,
+            label
+    ):
+        u"""检查可选模型对应的 SkinCluster 构建结果。"""
+        if not model:
+            return True
 
-            if not cmds.objExists(self.gum_skin_cluster):
-                raise RuntimeError(
-                    u"Gum SkinCluster 不存在：{}".format(
-                        self.gum_skin_cluster
-                    )
+        if not skin_cluster:
+            raise RuntimeError(
+                u"{} Model 没有完成 Skin 绑定。".format(
+                    label
                 )
+            )
+
+        if not cmds.objExists(skin_cluster):
+            raise RuntimeError(
+                u"{} SkinCluster 不存在：{}".format(
+                    label,
+                    skin_cluster
+                )
+            )
 
         return True
 
