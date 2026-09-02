@@ -1,12 +1,10 @@
 # coding=utf-8
 u"""
-Face Rig Step 03 - Build
+Face Rig Build Utilities
 ========================
 
-Step 03 的正式构建包。
-
-公共入口只暴露稳定 Builder API；具体 Jaw / Lip / Eye / Eyelid / Brow 等
-Component 可以继续在本包下独立扩展。
+本包只保留可复用的底层 Face Build Algorithm。
+Jaw / Teeth / Eye / Brow 等完整业务单元统一放在 systems.face.modules。
 """
 
 from __future__ import print_function
@@ -16,8 +14,6 @@ from .eyelid import build_eye_bag_joints
 from .eyelid import build_eyelid_joints
 from .eyelid import build_radial_curve_joints
 from .lip import build_zip_lip
-from .teeth_builder import TeethComponent
-from .teeth_builder import build_teeth
 
 
 __all__ = [
@@ -26,6 +22,4 @@ __all__ = [
     "build_eyelid_joints",
     "build_eye_bag_joints",
     "build_zip_lip",
-    "TeethComponent",
-    "build_teeth",
 ]
