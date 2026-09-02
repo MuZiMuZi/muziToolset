@@ -325,6 +325,14 @@ class Joint(object):
 
         return self.joint
 
+    def is_axis_visible(self):
+        u"""返回当前 Joint 的 Local Rotation Axis 是否显示。"""
+        return bool(
+            cmds.getAttr(
+                self.joint + ".displayLocalAxis"
+            )
+        )
+
     def show_axis(self):
         u"""显示当前 Joint 的 Local Rotation Axis。"""
         cmds.setAttr(
