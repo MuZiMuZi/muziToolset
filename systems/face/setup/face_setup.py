@@ -221,21 +221,21 @@ class FaceSetup(face_base.FaceBase):
     def get_work_model_names(self):
         u"""生成三个 Head Work Model 的正式名称。"""
         face_head_tweak_name = self.create_name(
-            type="model",
+            node_type="model",
             side=self.face_side,
             part="head",
             function="tweak",
             index=1
         )
         face_head_stretch_name = self.create_name(
-            type="model",
+            node_type="model",
             side=self.face_side,
             part="head",
             function="stretch",
             index=1
         )
         face_head_deform_name = self.create_name(
-            type="model",
+            node_type="model",
             side=self.face_side,
             part="head",
             function="deform",
