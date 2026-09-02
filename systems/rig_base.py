@@ -22,8 +22,8 @@ RigBase 支持两种使用方式：
 
 设计原则：
     1. Rig Naming 来自项目内部统一规则，默认可信；
-    2. 不重复做 side / type / function / index 格式清洗和校验；
-    3. 对已有 Maya 场景进行 Rebuild / Query 时，重点检查节点是否存在；
+    2. 不在每个调用层重复做 side / type / function / index 格式防御；
+    3. 对已有 Maya 场景进行 Rebuild / Query 时，重点检查真实 Scene State；
     4. part 可以包含下划线；
     5. index 输出固定补齐为三位数字；
     6. RigBase 不负责 Joint、Controller、Matrix、Hierarchy 或 UI。
@@ -176,7 +176,12 @@ class RigBase(object):
             side=None,
             part=None
     ):
-        u"""返回 Maya 场景中同一 Naming Base 的下一个序号。"""
+        u"""
+        返回 Maya 场景中同一 Naming Base 的下一个序号。
+
+        这里查询的是已有 Scene State，因此同前缀但不符合数字后缀的外部节点会被跳过，
+        不让异常场景名称破坏正常 Rig Build。
+        """
         if cmds is None:
             raise RuntimeError(
                 u"get_next_index() 必须在 Maya 环境中运行。"
@@ -205,8 +210,16 @@ class RigBase(object):
         for node in node_list:
             short_name = node.split("|")[-1]
             short_name = short_name.split(":")[-1]
+            index_text = short_name.rsplit(
+                "_",
+                1
+            )[-1]
+
+            if not index_text.isdigit():
+                continue
+
             node_index = int(
-                short_name.rsplit("_", 1)[-1]
+                index_text
             )
 
             if node_index > max_index:
