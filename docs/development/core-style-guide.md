@@ -252,6 +252,62 @@ Cleanup
 
 ---
 
+# 复用优先
+
+新增代码前，先检查 Core 是否已经提供同类能力。**能调用现有 Core API 时，不在 System / Tool 中重新创建同功能 Helper。**
+
+推荐顺序：
+
+```text
+1. 先查现有 core/*_utils.py
+2. 已有能力 → 直接调用
+3. 多个 System / Tool 出现相同 Maya 底层逻辑 → 提取到对应 Core 模块
+4. 只有明确 Rig 业务语义的代码 → 留在 System / Module / Builder
+5. 只有 UI / Selection 交互语义的代码 → 留在 Tool / UI
+```
+
+例如：
+
+```text
+节点存在、Scene Query       → scene_utils
+Parent / Child / Descendant → hierarchy_utils
+Transform / Matrix Space    → transform_utils / matrix_utils
+Attribute                   → attr_utils
+Plug Connection             → connection_utils
+Short Name / Maya Rename    → rename_utils
+Joint                       → joint_utils
+Curve                        → curve_utils
+Controller Shape             → control_shape_utils
+```
+
+不推荐在业务模块中重新包装：
+
+```python
+def get_parent(node):
+    return cmds.listRelatives(node, parent=True)
+```
+
+如果已有：
+
+```python
+hierarchy_utils.get_parent(node)
+```
+
+就直接调用现有 Core。
+
+只有满足下面条件时才新增 Core API：
+
+```text
+- 与具体 Face / Teeth / Lip / Jaw 等业务无关；
+- 至少有多个调用场景，或明显会成为通用底层能力；
+- 现有 Core 中没有等价 API；
+- 能明确归属到一个 Core 领域模块，而不是建立万能 Utils。
+```
+
+代码 Review 时，新增私有 Helper 也必须先判断是否已经有 Core 等价能力。
+
+---
+
 # Core Import Style Gate
 
 ```bash
@@ -330,6 +386,9 @@ cmds.delete
 提交新 API 前判断：
 
 ```text
+现有 Core 已经能做？
+    → 直接复用，不新增 Helper
+
 可被多个 Tool / System 复用的 Maya 底层能力？
     → Core
 
