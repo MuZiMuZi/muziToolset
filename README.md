@@ -23,6 +23,11 @@ import muziToolset
 window = muziToolset.show()
 ```
 
+第一次使用：
+
+- [安装与启动](docs/getting-started/installation.md)
+- [在 Maya 中运行](docs/getting-started/maya-usage.md)
+
 ---
 
 # 当前架构
@@ -65,7 +70,7 @@ Controller 的唯一正式实现是 `systems/ctrl_base.py`；旧 `systems/contro
     ↓
 02 Guide
     ↓
-03 Build
+03 Build Modules
     ↓
 04 Finalize
 ```
@@ -105,22 +110,6 @@ Teeth Model
 
 Gum 不属于 Teeth 刚体绑定，后续由 Jaw / Mouth Deformation 处理。
 
-Step 02 Controller Settings 当前包括：
-
-```text
-Global Scale
-LF / RT / MD Color
-Brow
-Eye
-Eyelid
-Nose
-Cheek
-Lip
-Jaw
-Teeth
-Tongue Size
-```
-
 ---
 
 # Rig Naming
@@ -143,13 +132,11 @@ lf / rt / md
 from muziToolset.systems.rig_base import RigBase
 ```
 
-Maya 普通 Rename / Short Name 继续使用：
+Maya 普通 Rename / Short Name：
 
 ```python
 from muziToolset.core import rename_utils
 ```
-
-两者职责不混合。
 
 ---
 
@@ -183,27 +170,6 @@ Control Creator、FK Creator、Face Module、Body Skirt 都应直接调用 `ctrl
 
 ---
 
-# UI Design System
-
-项目正式 UI 统一使用：
-
-```text
-ui/theme.py
-ui/widgets/
-```
-
-窗口生命周期：
-
-```text
-ui.window_utils
-    独立 Tool
-
-app.window_manager
-    主工具箱打开的 Tool
-```
-
----
-
 # 测试
 
 静态架构门禁：
@@ -230,27 +196,48 @@ muziToolset.maya2023_smoke_test()
 muziToolset.functional_smoke_test()
 ```
 
-其中 `rig_architecture_gate_test.py` 会阻止以下退休架构重新进入正式代码：
-
-```text
-core/name_utils.py
-systems/component_base.py
-systems/controller/
-TeethComponent
-```
-
 ---
 
-# 文档
+# 文档导航
+
+## 1. 用户手册
+
+- [MuziTools 用户手册](docs/manual/index.md)
+- [常用工具工作流](docs/manual/tools.md)
+- [基础工具](docs/manual/basic-tools.md)
+- [Controller](docs/manual/controller.md)
+- [Joint](docs/manual/joint.md)
+- [Skin](docs/manual/skin.md)
+- [BlendShape](docs/manual/blendshape.md)
+- [场景清理与模型检查](docs/manual/cleanup.md)
+- [完整绑定工作流](docs/manual/rigging.md)
+- [Face Guide](docs/manual/face-guide.md)
+
+## 2. 架构
 
 - [总体架构](docs/architecture/index.md)
-- [Face System Architecture](docs/architecture/face-system.md)
-- [Face Workflow State](docs/architecture/face-workflow-state.md)
 - [Core 设计](docs/architecture/core.md)
 - [Tools 与 Systems](docs/architecture/tools-systems.md)
-- [测试](docs/development/testing.md)
+- [Face System Architecture](docs/architecture/face-system.md)
+- [Face Workflow State](docs/architecture/face-workflow-state.md)
+- [Procedural Rig 架构参考](docs/architecture/xiong-lin-procedure-auto-rig.md)
 
-API Reference 由源码 Docstring 通过 AST Generator 生成。
+## 3. API Reference
+
+- [API Reference](docs/reference/index.md)
+
+API 页面由源码 Docstring 通过 AST Generator 自动生成。
+
+## 4. 开发指南
+
+- [文档维护](docs/development/documentation.md)
+- [Core 编码规范](docs/development/core-style-guide.md)
+- [测试](docs/development/testing.md)
+- [UI Design System](docs/development/ui-design.md)
+
+## 5. 迁移记录
+
+- [Pipeline / Core Migration](docs/migration/pipeline.md)
 
 ---
 
