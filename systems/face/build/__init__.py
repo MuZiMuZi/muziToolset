@@ -16,6 +16,8 @@ from .eyelid import build_eye_bag_joints
 from .eyelid import build_eyelid_joints
 from .eyelid import build_radial_curve_joints
 from .lip import build_zip_lip
+from .teeth_builder import TeethComponent
+from .teeth_builder import build_teeth
 
 
 __all__ = [
@@ -24,4 +26,6 @@ __all__ = [
     "build_eyelid_joints",
     "build_eye_bag_joints",
     "build_zip_lip",
+    "TeethComponent",
+    "build_teeth",
 ]
