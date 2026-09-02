@@ -19,7 +19,7 @@ import math
 
 
 def _validate_point3(point, label):
-    u"""检查输入是否为包含 3 个数值的 Point / Vector。"""
+    u"""检查输入是否为包含 3 个数值的 Point / Vector，并返回 float 列表。"""
     if point is None:
         raise ValueError(
             u"{} 必须包含 3 个数值。".format(
@@ -88,6 +88,72 @@ def distance_between_points(point_a, point_b):
     )
 
 
+def lerp_point3(
+        start_point,
+        end_point,
+        ratio
+):
+    u"""按 ratio 对两个三维 Point / Vector 做线性插值。"""
+    start_point = _validate_point3(
+        start_point,
+        "start_point"
+    )
+    end_point = _validate_point3(
+        end_point,
+        "end_point"
+    )
+    ratio = float(
+        ratio
+    )
+
+    result = []
+    axis_index = 0
+
+    while axis_index < 3:
+        value = start_point[axis_index] + (
+            end_point[axis_index] - start_point[axis_index]
+        ) * ratio
+        result.append(
+            value
+        )
+        axis_index += 1
+
+    return result
+
+
+def average_point3(points):
+    u"""返回一组三维 Point / Vector 的算术平均值；空输入返回 None。"""
+    if not points:
+        return None
+
+    total_x = 0.0
+    total_y = 0.0
+    total_z = 0.0
+    point_count = 0
+
+    for point in points:
+        point = _validate_point3(
+            point,
+            "point"
+        )
+        total_x += point[0]
+        total_y += point[1]
+        total_z += point[2]
+        point_count += 1
+
+    count = float(
+        point_count
+    )
+
+    return [
+        total_x / count,
+        total_y / count,
+        total_z / count,
+    ]
+
+
 __all__ = [
     "distance_between_points",
+    "lerp_point3",
+    "average_point3",
 ]
