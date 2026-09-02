@@ -11,7 +11,7 @@ Face Eyelid Builder
     3. 通用 Maya Node 创建和 Scene Availability 交给 core.scene_utils；
     4. Aim Constraint 创建交给 core.constraint_utils；
     5. Maya Undo Chunk 交给 core.scene_utils；
-    6. Rig Naming 统一使用 systems.rig_base.RigBase；
+    6. Face Builder Naming 统一复用 systems.face.naming；
     7. Joint 使用眼球中心作为 Pivot，沿 Local X 放射到 Curve Attachment；
     8. 眼皮和眼袋使用同一套构建函数；
     9. 构建失败时自动清理本次创建的 Rig Nodes Group。
@@ -25,56 +25,8 @@ from .....core import constraint_utils
 from .....core import curve_utils
 from .....core import scene_utils
 from .....core import transform_utils
-from ....rig_base import RigBase
+from ... import naming as face_naming
 
-
-# =============================================================================
-# Naming
-# =============================================================================
-
-def create_rig_name(
-        type,
-        side,
-        region,
-        feature,
-        role,
-        index=1
-):
-    u"""根据项目内部固定 Naming 字段创建 Eye Area Rig Name。"""
-    role_parts = role.split("_")
-    function = role_parts[-1]
-
-    part_tokens = [
-        region,
-        feature,
-    ]
-
-    if len(role_parts) > 1:
-        role_prefix = "_".join(
-            role_parts[:-1]
-        )
-        part_tokens.append(
-            role_prefix
-        )
-
-    part = "_".join(
-        part_tokens
-    )
-
-    rig_name = RigBase(
-        type=type,
-        side=side,
-        part=part,
-        function=function,
-        index=index
-    )
-
-    return rig_name.name
-
-
-# =============================================================================
-# Build
-# =============================================================================
 
 @scene_utils.undo_chunk
 def build_radial_curve_joints(
@@ -126,7 +78,7 @@ def build_radial_curve_joints(
             )
         )
 
-    nodes_group_name = create_rig_name(
+    nodes_group_name = face_naming.create_feature_name(
         "grp",
         side,
         region,
@@ -134,7 +86,7 @@ def build_radial_curve_joints(
         "rig_nodes",
         1
     )
-    attachments_group_name = create_rig_name(
+    attachments_group_name = face_naming.create_feature_name(
         "grp",
         side,
         region,
@@ -142,7 +94,7 @@ def build_radial_curve_joints(
         "attaches",
         1
     )
-    joints_group_name = create_rig_name(
+    joints_group_name = face_naming.create_feature_name(
         "grp",
         side,
         region,
@@ -196,7 +148,7 @@ def build_radial_curve_joints(
             item_index = index + 1
             cv_position = cv_positions[index]
 
-            attachment_name = create_rig_name(
+            attachment_name = face_naming.create_feature_name(
                 "grp",
                 side,
                 region,
@@ -224,7 +176,7 @@ def build_radial_curve_joints(
                     matrix_node
                 )
 
-            aim_group_name = create_rig_name(
+            aim_group_name = face_naming.create_feature_name(
                 "grp",
                 side,
                 region,
@@ -263,7 +215,7 @@ def build_radial_curve_joints(
 
             aim_constraint = aim_constraint_nodes[0]
 
-            joint_name = create_rig_name(
+            joint_name = face_naming.create_feature_name(
                 "jnt",
                 side,
                 region,
