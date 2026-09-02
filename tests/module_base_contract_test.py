@@ -3,7 +3,7 @@ u"""
 ModuleBase Contract Test
 ========================
 
-验证 ModuleBase / RigModuleBase 的统一生命周期与 Rig Identity 继承。
+验证 ModuleBase / RigModuleBase 的统一生命周期与 RigBase 直接实例属性继承。
 本测试不依赖 Maya。
 
 支持：
@@ -125,20 +125,49 @@ class TestRigModule(RigModuleBase):
         return True
 
 
-def run():
-    u"""运行 Module 生命周期和 Rig Identity 契约检查。"""
-    module = TestModule()
-
-    if module.identity != {
-            "side": "lf",
-            "part": "test_module",
-            "index": 2,
-    }:
+def validate_attributes(rig_object, side, part, index, label):
+    u"""验证继承自 RigBase 的直接实例属性。"""
+    if rig_object.side != side:
         print(
-            "[FAIL] ModuleBase Identity: {}".format(
-                module.identity
+            "[FAIL] {}.side: {}".format(
+                label,
+                rig_object.side
             )
         )
+        return False
+
+    if rig_object.part != part:
+        print(
+            "[FAIL] {}.part: {}".format(
+                label,
+                rig_object.part
+            )
+        )
+        return False
+
+    if rig_object.index != index:
+        print(
+            "[FAIL] {}.index: {}".format(
+                label,
+                rig_object.index
+            )
+        )
+        return False
+
+    return True
+
+
+def run():
+    u"""运行 Module 生命周期和 RigBase 属性契约检查。"""
+    module = TestModule()
+
+    if not validate_attributes(
+            module,
+            side="lf",
+            part="test_module",
+            index=2,
+            label="ModuleBase"
+    ):
         return False
 
     module_name = module.create_name(
@@ -148,7 +177,7 @@ def run():
 
     if module_name != "grp_lf_test_module_main_002":
         print(
-            "[FAIL] ModuleBase Identity Naming: {}".format(
+            "[FAIL] ModuleBase Attribute Naming: {}".format(
                 module_name
             )
         )
@@ -173,16 +202,13 @@ def run():
 
     rig_module = TestRigModule()
 
-    if rig_module.identity != {
-            "side": "rt",
-            "part": "test_rig",
-            "index": 4,
-    }:
-        print(
-            "[FAIL] RigModuleBase Identity: {}".format(
-                rig_module.identity
-            )
-        )
+    if not validate_attributes(
+            rig_module,
+            side="rt",
+            part="test_rig",
+            index=4,
+            label="RigModuleBase"
+    ):
         return False
 
     rig_module.run_step()
@@ -204,7 +230,7 @@ def run():
         )
         return False
 
-    print("[PASS] ModuleBase / RigModuleBase Identity + Lifecycle Contract 正常。")
+    print("[PASS] ModuleBase / RigModuleBase Direct Attribute + Lifecycle Contract 正常。")
     return True
 
 
