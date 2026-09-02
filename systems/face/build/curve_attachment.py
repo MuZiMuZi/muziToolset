@@ -16,11 +16,11 @@ Face Joint -> Drive / Aim Curve 组合系统。
 重要边界：
     - Curve 参数、采样和 Attachment 节点由 core.curve_utils 负责；
     - Transform 输入和世界位置由 core.transform_utils 负责；
-    - Joint 类型校验由 core.joint_utils 负责；
-    - Group 创建由 core.scene_utils 负责；
+    - Joint 类型检查复用 core.joint_utils.Joint；
+    - Group 创建和 Scene Availability 由 core.scene_utils 负责；
     - Parent 由 core.hierarchy_utils 负责；
     - Constraint 由 core.constraint_utils 负责；
-    - Rig Naming 统一使用 systems.rig_base.RigBase；
+    - Face Builder Naming 统一复用 systems.face.naming；
     - Undo Chunk 由 core.scene_utils 负责；
     - 本模块只负责 Face Curve Attachment 的组合关系。
 """
@@ -35,67 +35,7 @@ from ....core import hierarchy_utils
 from ....core import joint_utils
 from ....core import scene_utils
 from ....core import transform_utils
-from ...rig_base import RigBase
-
-
-# =============================================================================
-# Scene Validate / Naming
-# =============================================================================
-
-def validate_joint(joint):
-    u"""检查输入节点必须是 Maya Joint。"""
-    try:
-        joint_utils.Joint._validate_joint(
-            joint
-        )
-    except RuntimeError as error:
-        raise RuntimeError(
-            u"Joint 无效：{}".format(
-                error
-            )
-        )
-
-    return True
-
-
-def create_rig_name(
-        type,
-        side,
-        region,
-        feature,
-        role,
-        index=1
-):
-    u"""根据项目内部固定字段创建 Face Curve Rig 标准名称。"""
-    role_parts = role.split("_")
-    function = role_parts[-1]
-
-    part_tokens = [
-        region,
-        feature,
-    ]
-
-    if len(role_parts) > 1:
-        role_prefix = "_".join(
-            role_parts[:-1]
-        )
-        part_tokens.append(
-            role_prefix
-        )
-
-    part = "_".join(
-        part_tokens
-    )
-
-    rig_name = RigBase(
-        type=type,
-        side=side,
-        part=part,
-        function=function,
-        index=index
-    )
-
-    return rig_name.name
+from .. import naming as face_naming
 
 
 # =============================================================================
@@ -110,7 +50,7 @@ def create_attachment_group(
         role
 ):
     u"""创建 Drive / Aim / Up Attachment Group。"""
-    group_name = create_rig_name(
+    group_name = face_naming.create_feature_name(
         "grp",
         side,
         region,
@@ -118,13 +58,6 @@ def create_attachment_group(
         role,
         1
     )
-
-    if cmds.objExists(group_name):
-        raise RuntimeError(
-            u"Attachment Group 已经存在：{}".format(
-                group_name
-            )
-        )
 
     return scene_utils.create_node(
         "transform",
@@ -180,7 +113,7 @@ def attach_joints_to_curves(
         )
 
     for joint in joints:
-        validate_joint(
+        joint_utils.Joint(
             joint
         )
 
@@ -205,7 +138,7 @@ def attach_joints_to_curves(
             parent_group
         )
 
-    nodes_group_name = create_rig_name(
+    nodes_group_name = face_naming.create_feature_name(
         "grp",
         side,
         region,
@@ -213,7 +146,7 @@ def attach_joints_to_curves(
         "rig_nodes",
         1
     )
-    joints_group_name = create_rig_name(
+    joints_group_name = face_naming.create_feature_name(
         "grp",
         side,
         region,
@@ -222,19 +155,13 @@ def attach_joints_to_curves(
         1
     )
 
-    if cmds.objExists(nodes_group_name):
-        raise RuntimeError(
-            u"Curve Rig Nodes Group 已经存在：{}".format(
-                nodes_group_name
-            )
-        )
-
-    if cmds.objExists(joints_group_name):
-        raise RuntimeError(
-            u"Curve Rig Joint Group 已经存在：{}".format(
-                joints_group_name
-            )
-        )
+    scene_utils.ensure_nodes_available(
+        [
+            nodes_group_name,
+            joints_group_name,
+        ],
+        label=u"Curve Attachment Build Node"
+    )
 
     nodes_group = None
 
@@ -305,7 +232,7 @@ def attach_joints_to_curves(
                 percentage
             )
 
-            drive_attachment_name = create_rig_name(
+            drive_attachment_name = face_naming.create_feature_name(
                 "grp",
                 side,
                 region,
@@ -313,7 +240,7 @@ def attach_joints_to_curves(
                 "drive_attach",
                 item_index
             )
-            aim_attachment_name = create_rig_name(
+            aim_attachment_name = face_naming.create_feature_name(
                 "grp",
                 side,
                 region,
@@ -363,7 +290,7 @@ def attach_joints_to_curves(
             current_up_attachment = None
 
             if up_curve is not None:
-                up_attachment_name = create_rig_name(
+                up_attachment_name = face_naming.create_feature_name(
                     "grp",
                     side,
                     region,
@@ -427,7 +354,7 @@ def attach_joints_to_curves(
                 aim_constraint
             )
 
-            zero_group_name = create_rig_name(
+            zero_group_name = face_naming.create_feature_name(
                 "zero",
                 side,
                 region,
