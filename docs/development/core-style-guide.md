@@ -71,7 +71,7 @@ nameUtils.py
 
 ---
 
-# Rig Identity / Naming 已经移出 Core
+# Rig Naming
 
 旧：
 
@@ -87,62 +87,76 @@ core/name_utils.py
 systems/rig_base.py
 ```
 
-`RigBase` 是可实例化的 Rig Object Identity 基类，不是 Name Utility。
-
-Rig Object Identity：
+标准命名统一为：
 
 ```text
+[type]_[side]_[part]_[function]_[index]
+```
+
+正式字段统一使用：
+
+```text
+type
 side
 part
+function
 index
 ```
 
-正式使用：
+不要再使用 `node_type` 作为 Rig Naming 字段。
+
+## 直接创建名称
 
 ```python
 from muziToolset.systems.rig_base import RigBase
 
-rig = RigBase(
-    side="lf",
-    part="upper_arm",
+jaw_ctrl = RigBase(
+    type="ctrl",
+    side="md",
+    part="jaw",
+    function="bind",
     index=1
 )
 
-name = rig.create_name(
-    node_type="jnt",
-    function="bind"
+print(jaw_ctrl.name)
+# ctrl_md_jaw_bind_001
+```
+
+## 从已有名称快速拆分
+
+```python
+jaw_ctrl = RigBase(
+    name="ctrl_md_jaw_bind_001"
+)
+
+print(jaw_ctrl.type)
+print(jaw_ctrl.side)
+print(jaw_ctrl.part)
+print(jaw_ctrl.function)
+print(jaw_ctrl.index)
+```
+
+也可以单独读取字段：
+
+```python
+name_data = RigBase.parse_name(
+    "jnt_lf_upper_teeth_bind_003"
 )
 ```
 
-不要写：
+返回：
 
 ```python
-RigBase.create_name(...)
+{
+    "type": "jnt",
+    "side": "lf",
+    "part": "upper_teeth",
+    "function": "bind",
+    "index": 3,
+}
 ```
 
-也不要在 RigBase Naming API 中使用退休参数：
-
-```python
-type="jnt"
-```
-
-正式参数始终是：
-
-```python
-node_type="jnt"
-```
-
-需要解析已有 Rig Name 时，可以使用纯 Class Method：
-
-```python
-fields = RigBase.parse_name(
-    "jnt_lf_upper_arm_bind_001"
-)
-
-valid = RigBase.validate_name(
-    "jnt_lf_upper_arm_bind_001"
-)
-```
+Module 可以只继承和保存自己需要的 `side / part / index`，需要具体节点名称时再补充 `type / function`。
 
 Core 中的：
 
@@ -158,18 +172,83 @@ rename_node()
 批量 Rename 行为
 ```
 
-职责规则：
+Core 不允许重新建立第二套 Rig Naming Convention。
 
-```text
-RigBase
-    一个 Rig 对象是谁：side / part / index
-    并基于这个 Identity 创建正式 Rig Node 名称
+---
 
-rename_utils
-    对 Maya 节点执行 Rename / Short Name
+# 内部 Naming 默认可信
+
+绑定库内部创建的名称全部来自统一 Rig Naming API，因此**不要在每一层重复判断名称是否符合规范**。
+
+不推荐：
+
+```python
+if not isinstance(ctrl_name, str):
+    ...
+
+if not ctrl_name.startswith("ctrl_"):
+    ...
+
+if ":" in ctrl_name:
+    ...
+
+if "|" in ctrl_name:
+    ...
 ```
 
-Core 不允许重新建立第二套 Rig Identity 或 Rig Naming Convention。
+也不需要在每次创建名称时重复做：
+
+```text
+normalize_side
+normalize_type
+normalize_part
+normalize_function
+validate_index
+validate_name
+```
+
+项目约定：
+
+```text
+内部 Rig 数据
+    → 默认符合统一规范
+    → 直接组合 / 拆分 / 使用
+
+已有 Maya 场景数据
+    → 可能来自上一次 Build / Rebuild
+    → 判断目标节点、属性、连接是否真实存在
+```
+
+因此真正应该重点检查的是 Scene State，例如：
+
+```python
+if cmds.objExists(node_name):
+    # 已存在节点：进入 Rebuild / Cleanup / Update 逻辑
+```
+
+以及：
+
+```python
+if cmds.attributeQuery(
+        attr_name,
+        node=node_name,
+        exists=True
+):
+    # 已有属性：复用或恢复
+```
+
+这类存在性判断主要用于：
+
+```text
+Rebuild
+Restore
+Cleanup
+重复执行 Build
+恢复 Attribute / Connection
+查找上一次创建的节点
+```
+
+不要把“名称格式防御”与“场景状态判断”混在一起。
 
 ---
 
@@ -193,12 +272,10 @@ python tests/rig_architecture_gate_test.py
 core/name_utils.py
 systems/component_base.py
 systems/controller/
-RigBase.create_name(...)
-RigBase(name=...)
-create_name(type=...)
+退休 Component 类名
+RigBase 重新加入多余 Normalize / Validate Naming 层
+Rig Naming 重新使用 node_type 字段
 ```
-
-重新出现。
 
 ---
 
@@ -259,11 +336,14 @@ cmds.delete
 已经知道自己在做 Teeth / Eyelid / Lip / Arm？
     → System / Module / Builder
 
-正在描述一个 Rig Object 的 Identity 或基于 Identity 创建正式节点名？
+正在创建、组合或拆分正式 Rig Name？
     → RigBase
 
 正在创建完整 Controller Hierarchy？
     → CtrlBase
+
+正在确认上一次 Build 的节点是否还存在？
+    → Scene / Rebuild 逻辑
 ```
 
 Core 不应该重新长成万能 `pipelineUtils`，也不应该承载 Rig 业务基类。
