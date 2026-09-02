@@ -23,13 +23,13 @@ Rig Architecture Migration Gate
     TeethComponent
 
 RigBase Contract：
-    - RigBase 是实例化 Rig Object Base；
-    - side / part / index 直接作为实例属性；
-    - 不维护 identity / set_identity / resolve_identity 等属性包装；
+    - Rig Naming 字段统一为 type / side / part / function / index；
+    - RigBase 支持 RigBase(name=...) 自动拆分名称；
     - create_name / mirror_name / create_unique_name 等必须通过实例调用；
-    - parse_name / validate_name / normalize_* 可以继续作为 Class Method 使用；
-    - 不允许恢复旧 Name Object Constructor：RigBase(name=...)；
-    - RigBase Naming 参数统一使用 node_type=，退休旧 type= Keyword。
+    - parse_name 可以作为 Class Method 使用；
+    - 不恢复 identity / set_identity 等属性包装；
+    - 不恢复 normalize_* / validate_name / validate_index 等重复 Naming 校验层；
+    - Rig Naming API 不再使用 node_type= Keyword。
 """
 
 from __future__ import print_function
@@ -63,12 +63,15 @@ RIG_BASE_INSTANCE_METHODS = {
     "get_next_index",
     "create_unique_name",
     "get_opposite_side",
+    "compose",
+    "decompose",
 }
 
-RIG_BASE_NODE_TYPE_METHODS = {
+RIG_NAMING_METHODS = {
     "create_name",
     "get_next_index",
     "create_unique_name",
+    "compose",
 }
 
 RETIRED_RIG_BASE_MEMBERS = {
@@ -79,6 +82,13 @@ RETIRED_RIG_BASE_MEMBERS = {
     "is_left",
     "is_right",
     "is_center",
+    "_normalize_token",
+    "normalize_side",
+    "normalize_part",
+    "normalize_node_type",
+    "normalize_function",
+    "validate_index",
+    "validate_name",
 }
 
 
@@ -238,42 +248,42 @@ def is_rig_base_class_method_call(call_node):
     if not isinstance(value_node, ast.Name):
         return False
 
-    if value_node.id != "RigBase":
-        return False
-
-    return True
+    return value_node.id == "RigBase"
 
 
 def check_retired_node_type_keyword(call_node, relative_path):
-    u"""禁止 Rig Naming 方法重新使用退休的 type= Keyword。"""
+    u"""禁止 Rig Naming API 继续使用 node_type=。"""
     issues = []
-    function_node = call_node.func
-
-    if not isinstance(function_node, ast.Attribute):
-        return issues
-
-    method_name = function_node.attr
-
-    if method_name not in RIG_BASE_NODE_TYPE_METHODS:
-        return issues
-
     keyword_names = get_keyword_names(
         call_node
     )
 
-    if "type" not in keyword_names:
+    if "node_type" not in keyword_names:
+        return issues
+
+    function_node = call_node.func
+
+    if isinstance(function_node, ast.Name):
+        if function_node.id != "RigBase":
+            return issues
+
+    elif isinstance(function_node, ast.Attribute):
+        if function_node.attr not in RIG_NAMING_METHODS:
+            return issues
+
+    else:
         return issues
 
     issues.append({
         "file": relative_path,
         "line": call_node.lineno,
-        "detail": "RigBase Naming 已退休 type=，请使用 node_type=",
+        "detail": "Rig Naming 已统一使用 type=，请删除 node_type=",
     })
     return issues
 
 
 def check_rig_base_definition(class_node, relative_path):
-    u"""禁止 RigBase 重新加入已删除的属性包装方法。"""
+    u"""禁止 RigBase 重新加入已经删除的包装和重复校验方法。"""
     issues = []
 
     if class_node.name != "RigBase":
@@ -301,33 +311,18 @@ def check_rig_base_definition(class_node, relative_path):
 
 
 def check_rig_base_call(call_node, relative_path):
-    u"""检查 RigBase 是否被重新当成 Name Utility / Name Object。"""
+    u"""检查 RigBase Instance API 和正式 Naming Keyword。"""
     issues = []
 
-    retired_keyword_issues = check_retired_node_type_keyword(
+    keyword_issues = check_retired_node_type_keyword(
         call_node,
         relative_path
     )
 
-    for issue in retired_keyword_issues:
+    for issue in keyword_issues:
         issues.append(
             issue
         )
-
-    if isinstance(call_node.func, ast.Name):
-        if call_node.func.id == "RigBase":
-            keyword_names = get_keyword_names(
-                call_node
-            )
-
-            if "name" in keyword_names:
-                issues.append({
-                    "file": relative_path,
-                    "line": call_node.lineno,
-                    "detail": "RigBase 不允许恢复 name= Name Object Constructor",
-                })
-
-        return issues
 
     if not is_rig_base_class_method_call(call_node):
         return issues
@@ -493,7 +488,7 @@ def run():
         return False
 
     print(
-        u"[PASS] {} 个 Python 文件符合 RigBase Direct Attribute / ModuleBase / CtrlBase 架构。".format(
+        u"[PASS] {} 个 Python 文件符合 RigBase Naming / ModuleBase / CtrlBase 架构。".format(
             file_count
         )
     )
