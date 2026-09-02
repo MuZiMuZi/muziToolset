@@ -5,7 +5,7 @@ Rig Base
 
 MuziTools 所有 Rig Object / Module 共用的最底层实例基类。
 
-RigBase 不再是 Name Object，也不保存某一个 Maya Node 的 type / function。
+RigBase 不再是 Name Object，也不保存某一个 Maya Node 的 node_type / function。
 它代表一个 Rig 对象自己的 Identity：
 
     side
@@ -251,6 +251,14 @@ class RigBase(object):
                 u"Rig Index 必须是整数，不能是 bool。"
             )
 
+        if isinstance(index, float):
+            if not index.is_integer():
+                raise TypeError(
+                    u"Rig Index 必须是整数，不能是小数：{}".format(
+                        index
+                    )
+                )
+
         try:
             index = int(
                 index
@@ -268,6 +276,44 @@ class RigBase(object):
             )
 
         return index
+
+    @staticmethod
+    def _resolve_node_type_alias(
+            node_type,
+            kwargs,
+            method_name
+    ):
+        u"""处理 0.4 迁移期间遗留的 type Keyword Alias。"""
+        legacy_node_type = kwargs.pop(
+            "type",
+            None
+        )
+
+        if kwargs:
+            invalid_keys = []
+
+            for key in kwargs:
+                invalid_keys.append(
+                    key
+                )
+
+            raise TypeError(
+                u"{}() 不支持参数：{}".format(
+                    method_name,
+                    ", ".join(invalid_keys)
+                )
+            )
+
+        if node_type is None:
+            node_type = legacy_node_type
+        elif legacy_node_type is not None:
+            raise TypeError(
+                u"{}() 的 node_type 和旧 type 参数不能同时传入。".format(
+                    method_name
+                )
+            )
+
+        return node_type
 
     def resolve_identity(
             self,
@@ -315,34 +361,14 @@ class RigBase(object):
 
         side / part / index 没有显式传入时，自动使用当前实例 Identity。
 
-        `type` 仅作为当前仓库迁移期间的旧 Keyword Alias；新代码统一使用
-        `node_type`。它不会成为新的公开命名规范。
+        `type` 仅作为 0.4 迁移期间的旧 Keyword Alias；正式新代码统一使用
+        `node_type`。
         """
-        legacy_node_type = kwargs.pop(
-            "type",
-            None
+        node_type = self._resolve_node_type_alias(
+            node_type=node_type,
+            kwargs=kwargs,
+            method_name="create_name"
         )
-
-        if kwargs:
-            invalid_keys = []
-
-            for key in kwargs:
-                invalid_keys.append(
-                    key
-                )
-
-            raise TypeError(
-                u"create_name() 不支持参数：{}".format(
-                    ", ".join(invalid_keys)
-                )
-            )
-
-        if node_type is None:
-            node_type = legacy_node_type
-        elif legacy_node_type is not None:
-            raise TypeError(
-                u"node_type 和旧 type 参数不能同时传入。"
-            )
 
         node_type = self.normalize_node_type(
             node_type
@@ -464,16 +490,29 @@ class RigBase(object):
 
     def get_next_index(
             self,
-            node_type,
-            function,
+            node_type=None,
+            function=None,
             side=None,
-            part=None
+            part=None,
+            **kwargs
     ):
         u"""返回场景中同一 Naming Base 的下一个可用序号。"""
         if cmds is None:
             raise RuntimeError(
                 u"get_next_index() 必须在 Maya 环境中运行。"
             )
+
+        node_type = self._resolve_node_type_alias(
+            node_type=node_type,
+            kwargs=kwargs,
+            method_name="get_next_index"
+        )
+        node_type = self.normalize_node_type(
+            node_type
+        )
+        function = self.normalize_function(
+            function
+        )
 
         identity = self.resolve_identity(
             side=side,
@@ -511,7 +550,7 @@ class RigBase(object):
                 short_name
             )
 
-            if fields["node_type"] != self.normalize_node_type(node_type):
+            if fields["node_type"] != node_type:
                 continue
 
             if fields["side"] != identity["side"]:
@@ -520,7 +559,7 @@ class RigBase(object):
             if fields["part"] != identity["part"]:
                 continue
 
-            if fields["function"] != self.normalize_function(function):
+            if fields["function"] != function:
                 continue
 
             if fields["index"] > max_index:
@@ -540,12 +579,19 @@ class RigBase(object):
 
     def create_unique_name(
             self,
-            node_type,
-            function,
+            node_type=None,
+            function=None,
             side=None,
-            part=None
+            part=None,
+            **kwargs
     ):
         u"""创建场景中下一个可用的标准 Rig Name。"""
+        node_type = self._resolve_node_type_alias(
+            node_type=node_type,
+            kwargs=kwargs,
+            method_name="create_unique_name"
+        )
+
         next_index = self.get_next_index(
             node_type=node_type,
             function=function,
