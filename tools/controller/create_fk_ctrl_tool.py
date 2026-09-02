@@ -6,7 +6,7 @@ FK Control Creator
 根据 Maya 当前选择顺序创建 FK Controller Chain。
 
 实际控制器创建统一使用 systems.ctrl_base；
-Rig Name 统一使用 systems.rig_base.RigBase。
+Rig Name 统一使用实例化的 systems.rig_base.RigBase。
 """
 
 from __future__ import print_function
@@ -41,7 +41,7 @@ def _clean_part(text):
 
 
 def get_fk_ctrl_name(target, fallback_index):
-    u"""根据 Target 生成标准 FK Ctrl Name。"""
+    u"""根据 Target Identity 生成标准 FK Ctrl Name。"""
     short_name = rename_utils.get_short_name(
         target
     )
@@ -50,20 +50,26 @@ def get_fk_ctrl_name(target, fallback_index):
         fields = RigBase.parse_name(
             short_name
         )
-        return RigBase.create_name(
-            type="ctrl",
+        rig_object = RigBase(
             side=fields["side"],
             part=fields["part"],
-            function=fields["function"],
             index=fields["index"]
         )
 
-    return RigBase.create_name(
-        type="ctrl",
+        return rig_object.create_name(
+            node_type="ctrl",
+            function=fields["function"]
+        )
+
+    rig_object = RigBase(
         side="md",
         part=_clean_part(short_name),
-        function="fk",
         index=fallback_index
+    )
+
+    return rig_object.create_name(
+        node_type="ctrl",
+        function="fk"
     )
 
 
