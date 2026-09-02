@@ -9,7 +9,7 @@ Maya 2023 Runtime Smoke Test
     - Core 正式 API；
     - CtrlBase 标准控制器；
     - Face Setup / Guide Module 生命周期；
-    - RigBase 实例 Identity；
+    - RigBase 直接实例属性；
     - Face Build Algorithm Smoke Test。
 """
 
@@ -206,25 +206,41 @@ def test_controller_contract(root_group):
     return u"CtrlBase 标准层级创建正常"
 
 
-def assert_identity(rig_object, expected_identity, label):
-    u"""验证一个 Rig Object 的实例 Identity。"""
-    identity = getattr(
+def assert_rig_attributes(
         rig_object,
-        "identity",
-        None
-    )
-
-    if identity != expected_identity:
+        side,
+        part,
+        index,
+        label
+):
+    u"""验证一个 Rig Object 的 side / part / index 实例属性。"""
+    if rig_object.side != side:
         raise RuntimeError(
-            u"{} Identity 错误：{}".format(
+            u"{}.side 错误：{}".format(
                 label,
-                identity
+                rig_object.side
+            )
+        )
+
+    if rig_object.part != part:
+        raise RuntimeError(
+            u"{}.part 错误：{}".format(
+                label,
+                rig_object.part
+            )
+        )
+
+    if rig_object.index != index:
+        raise RuntimeError(
+            u"{}.index 错误：{}".format(
+                label,
+                rig_object.index
             )
         )
 
 
 def test_face_step_contract(root_group):
-    u"""验证 Face Workflow / Module 生命周期和 Rig Identity。"""
+    u"""验证 Face Workflow / Module 生命周期和 RigBase 属性。"""
     head_model = cmds.polySphere(
         name="model_md_head_smoke_001",
         radius=2.0
@@ -239,14 +255,12 @@ def test_face_step_contract(root_group):
         mouth_jnt_number=32
     )
 
-    assert_identity(
+    assert_rig_attributes(
         face_setup,
-        {
-            "side": "md",
-            "part": "face",
-            "index": 1,
-        },
-        u"FaceSetup"
+        side="md",
+        part="face",
+        index=1,
+        label=u"FaceSetup"
     )
 
     face_setup.run_step()
@@ -267,14 +281,12 @@ def test_face_step_contract(root_group):
 
     face_guide = face_system.FaceGuide()
 
-    assert_identity(
+    assert_rig_attributes(
         face_guide,
-        {
-            "side": "md",
-            "part": "face",
-            "index": 1,
-        },
-        u"FaceGuide"
+        side="md",
+        part="face",
+        index=1,
+        label=u"FaceGuide"
     )
 
     if not callable(
@@ -293,14 +305,12 @@ def test_face_step_contract(root_group):
 
     teeth_module = face_system.TeethModule()
 
-    assert_identity(
+    assert_rig_attributes(
         teeth_module,
-        {
-            "side": "md",
-            "part": "teeth",
-            "index": 1,
-        },
-        u"TeethModule"
+        side="md",
+        part="teeth",
+        index=1,
+        label=u"TeethModule"
     )
 
     teeth_joint_name = teeth_module.create_name(
@@ -311,7 +321,7 @@ def test_face_step_contract(root_group):
 
     if teeth_joint_name != "jnt_md_upper_teeth_bind_001":
         raise RuntimeError(
-            u"TeethModule Identity Naming 错误：{}".format(
+            u"TeethModule Attribute Naming 错误：{}".format(
                 teeth_joint_name
             )
         )
@@ -326,7 +336,7 @@ def test_face_step_contract(root_group):
             u"FaceGuide 仍残留 build/finalize Compatibility Wrapper。"
         )
 
-    return u"Face Module Lifecycle 与 RigBase Identity 正常"
+    return u"Face Module Lifecycle 与 RigBase Direct Attributes 正常"
 
 
 def run_case(results, name, test_function, root_group):
@@ -382,7 +392,7 @@ def run():
         )
         run_case(
             results,
-            "Face Identity / Step Contract",
+            "Face Attribute / Step Contract",
             test_face_step_contract,
             root_group
         )
