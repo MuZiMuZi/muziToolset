@@ -83,6 +83,9 @@ class MayaIndexColorSlider(QWidget):
             parent=None
     ):
         u"""初始化 Maya Index Color Slider。"""
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         super(MayaIndexColorSlider, self).__init__(parent)
 
         self.color_slider = QSlider(
@@ -98,6 +101,9 @@ class MayaIndexColorSlider(QWidget):
         self.color_slider.setPageStep(
             1
         )
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.color_slider.setMinimumWidth(
             160
         )
@@ -111,6 +117,9 @@ class MayaIndexColorSlider(QWidget):
         )
 
         self.color_preview = QLabel()
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.color_preview.setFixedSize(
             28,
             28
@@ -132,6 +141,9 @@ class MayaIndexColorSlider(QWidget):
             self.color_slider,
             1
         )
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         main_layout.addWidget(
             self.index_label
         )
@@ -145,6 +157,9 @@ class MayaIndexColorSlider(QWidget):
             self._slider_value_changed
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.set_value(
             value
         )
@@ -155,6 +170,9 @@ class MayaIndexColorSlider(QWidget):
 
     def style_widgets(self):
         u"""应用高可见度 Slider、Index 和 Preview 样式。"""
+        # -------------------------------------------------------------------------
+        # Step 01：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.color_slider.setStyleSheet(
             u"""
             QSlider {
@@ -200,6 +218,9 @@ class MayaIndexColorSlider(QWidget):
             }
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.index_label.setStyleSheet(
             u"""
             QLabel {

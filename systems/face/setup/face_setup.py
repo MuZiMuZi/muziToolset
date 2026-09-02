@@ -71,24 +71,39 @@ class FaceSetup(face_base.FaceBase):
             mouth_jnt_number (int):
                 嘴唇分布系统需要创建的 Joint 总数量。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         super(FaceSetup, self).__init__()
 
         self.step_value = 1
 
         self.face_head_model = face_head_model
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.face_lf_eye_model = face_lf_eye_model
         self.face_rt_eye_model = face_rt_eye_model
         self.upper_teech_model = upper_teech_model
         self.lower_teech_model = lower_teech_model
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.face_tongue_model = face_tongue_model
         self.face_gum_model = face_gum_model
         self.mouth_jnt_number = mouth_jnt_number
 
         self.face_model_list = []
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.work_model_name_dict = {}
 
         self.face_head_tweak_model = None
         self.face_head_stretch_model = None
+        # -------------------------------------------------------------------------
+        # Step 05：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.face_head_deform_model = None
 
     # =========================================================================
@@ -107,6 +122,9 @@ class FaceSetup(face_base.FaceBase):
             RuntimeError:
                 输入数据、场景状态或操作条件不满足要求时抛出。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.face_head_model = rename_utils.get_short_name(
             self.face_head_model
         )
@@ -116,6 +134,9 @@ class FaceSetup(face_base.FaceBase):
         self.face_rt_eye_model = rename_utils.get_short_name(
             self.face_rt_eye_model
         )
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.upper_teech_model = rename_utils.get_short_name(
             self.upper_teech_model
         )
@@ -125,6 +146,9 @@ class FaceSetup(face_base.FaceBase):
         self.face_tongue_model = rename_utils.get_short_name(
             self.face_tongue_model
         )
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.face_gum_model = rename_utils.get_short_name(
             self.face_gum_model
         )
@@ -144,6 +168,9 @@ class FaceSetup(face_base.FaceBase):
                 u"Face Setup 必须指定头部模型。"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         model_inputs = [
             (u"Head Model", self.face_head_model),
             (u"Left Eye Model", self.face_lf_eye_model),
@@ -167,6 +194,9 @@ class FaceSetup(face_base.FaceBase):
             )
 
         self.check_mouth_jnt_number()
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def prepare_data(self):

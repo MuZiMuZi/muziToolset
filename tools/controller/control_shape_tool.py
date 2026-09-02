@@ -143,19 +143,34 @@ class ShapeListWidget(QListWidget):
                 父级 Maya 节点名称。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         super(ShapeListWidget, self).__init__(parent)
 
         self.setMovement(QListWidget.Static)
         self.setSelectionMode(QListWidget.ExtendedSelection)
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.setViewMode(QListWidget.IconMode)
         self.setIconSize(QSize(82, 82))
         self.setGridSize(QSize(124, 112))
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.setResizeMode(QListWidget.Adjust)
         self.setSpacing(4)
         self.setMinimumHeight(300)
 
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.create_menu()
         self.create_connections()
+        # -------------------------------------------------------------------------
+        # Step 05：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self.refresh()
 
     def create_menu(self):
@@ -200,14 +215,23 @@ class ShapeListWidget(QListWidget):
         u"""
         重新扫描 Controller Shape 资源目录。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：清理当前阶段不再需要的数据或场景状态
+        # -------------------------------------------------------------------------
         self.clear()
 
         library_dir = control_shape_utils.get_library_dir()
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not os.path.isdir(library_dir):
             os.makedirs(library_dir)
 
         file_names = os.listdir(library_dir)
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         shape_names = []
 
         for file_name in file_names:
@@ -218,8 +242,14 @@ class ShapeListWidget(QListWidget):
 
             shape_names.append(shape_name)
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         shape_names.sort()
 
+        # -------------------------------------------------------------------------
+        # Step 05：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for shape_name in shape_names:
             jpg_file = os.path.join(
                 library_dir,
@@ -324,6 +354,9 @@ class ShapeListWidget(QListWidget):
         u"""
         把当前一个 Curve Controller 保存进图库。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         transforms = control_shape_utils.get_selected_curve_transforms()
 
         if len(transforms) != 1:
@@ -332,6 +365,9 @@ class ShapeListWidget(QListWidget):
             )
             return
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         default_name = transforms[0].split("|")[-1]
 
         shape_name, accepted = QInputDialog.getText(
@@ -344,11 +380,17 @@ class ShapeListWidget(QListWidget):
         if not accepted:
             return
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         shape_name = shape_name.strip()
 
         if not shape_name:
             return
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         invalid_characters = [
             "/",
             "\\",
@@ -370,6 +412,9 @@ class ShapeListWidget(QListWidget):
                 )
                 return
 
+        # -------------------------------------------------------------------------
+        # Step 05：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             file_path = control_shape_utils.save_shape_data(
                 shape_name,
@@ -514,6 +559,9 @@ class ControlShapeTool(QWidget):
         u"""
         创建窗口控件。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.title_label = theme.make_title(
             u"控制器 Shape 图库"
         )
@@ -531,6 +579,9 @@ class ControlShapeTool(QWidget):
         )
 
         self.shape_list = ShapeListWidget(self)
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.color_list = ColorListWidget(self)
 
         self.rotate_spin = QDoubleSpinBox()
@@ -543,6 +594,9 @@ class ControlShapeTool(QWidget):
         self.rotate_x_check = QCheckBox("X")
         self.rotate_y_check = QCheckBox("Y")
         self.rotate_z_check = QCheckBox("Z")
+        # -------------------------------------------------------------------------
+        # Step 03：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.rotate_x_check.setChecked(True)
 
         self.rotate_button = QPushButton(
@@ -561,6 +615,9 @@ class ControlShapeTool(QWidget):
             u"缩放 Shape"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.mirror_x_button = QPushButton(u"镜像 X")
         self.mirror_y_button = QPushButton(u"镜像 Y")
         self.mirror_z_button = QPushButton(u"镜像 Z")
@@ -573,12 +630,18 @@ class ControlShapeTool(QWidget):
         self.refresh_button = QPushButton(
             u"刷新 Shape 图库"
         )
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.style_ghost(self.refresh_button)
 
     def create_layouts(self):
         u"""
         创建统一 Card 布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(
             16,
@@ -599,6 +662,9 @@ class ControlShapeTool(QWidget):
         library_layout.addWidget(self.shape_list)
 
         color_card, color_layout = theme.make_card(self)
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         color_layout.addWidget(
             theme.make_section_title(u"Maya Index Color")
         )
@@ -616,6 +682,9 @@ class ControlShapeTool(QWidget):
         rotate_layout.addWidget(self.rotate_x_check)
         rotate_layout.addWidget(self.rotate_y_check)
         rotate_layout.addWidget(self.rotate_z_check)
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         rotate_layout.addWidget(self.rotate_button)
         edit_layout.addLayout(rotate_layout)
 
@@ -628,6 +697,9 @@ class ControlShapeTool(QWidget):
 
         mirror_layout = QGridLayout()
         mirror_layout.setHorizontalSpacing(8)
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         mirror_layout.setVerticalSpacing(8)
         mirror_layout.addWidget(self.mirror_x_button, 0, 0)
         mirror_layout.addWidget(self.mirror_y_button, 0, 1)
@@ -639,6 +711,9 @@ class ControlShapeTool(QWidget):
         main_layout.addWidget(library_card)
         main_layout.addWidget(color_card)
         main_layout.addWidget(edit_card)
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addStretch(1)
 
     def create_connections(self):
@@ -671,26 +746,41 @@ class ControlShapeTool(QWidget):
         u"""
         旋转选择控制器的 Shape CV。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         transforms = control_shape_utils.get_selected_curve_transforms()
 
         if not transforms:
             cmds.warning(u"请先选择 Curve 控制器。")
             return
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         angle = self.rotate_spin.value()
         rotate_x = 0.0
         rotate_y = 0.0
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         rotate_z = 0.0
 
         if self.rotate_x_check.isChecked():
             rotate_x = angle
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.rotate_y_check.isChecked():
             rotate_y = angle
 
         if self.rotate_z_check.isChecked():
             rotate_z = angle
 
+        # -------------------------------------------------------------------------
+        # Step 05：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for transform in transforms:
             control_shape_utils.rotate_shape(
                 transform,

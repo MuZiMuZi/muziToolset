@@ -51,6 +51,9 @@ class TeethModule(FaceBase):
         u"""
         初始化 Teeth Module Identity、输入、设置和构建结果。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         super(TeethModule, self).__init__(
             side="md",
             part="teeth",
@@ -65,6 +68,9 @@ class TeethModule(FaceBase):
         self.lower_teeth_guide = None
 
         self.upper_teeth_jnt_name = None
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.lower_teeth_jnt_name = None
         self.upper_teeth_ctrl_name = None
         self.lower_teeth_ctrl_name = None
@@ -74,6 +80,9 @@ class TeethModule(FaceBase):
         self.lower_teeth_skin_name = None
 
         self.controller_global_scale = 1.0
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.controller_color = 17
         self.controller_size = 1.0
         self.controller_radius = 1.0
@@ -83,6 +92,9 @@ class TeethModule(FaceBase):
 
         self.upper_teeth_ctrl_dict = None
         self.lower_teeth_ctrl_dict = None
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.upper_teeth_control = None
         self.lower_teeth_control = None
         self.upper_teeth_top_group = None
@@ -91,6 +103,9 @@ class TeethModule(FaceBase):
         self.upper_teeth_matrix_node = None
         self.lower_teeth_matrix_node = None
         self.upper_teeth_skin_cluster = None
+        # -------------------------------------------------------------------------
+        # Step 05：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.lower_teeth_skin_cluster = None
 
     # =========================================================================
@@ -105,6 +120,9 @@ class TeethModule(FaceBase):
             bool:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.validate_setup_config(
             require_mouth_jnt_number=False
         )
@@ -114,6 +132,9 @@ class TeethModule(FaceBase):
             part="upper_teeth",
             function="guide"
         )
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.lower_teeth_guide_name = self.create_name(
             type="loc",
             part="lower_teeth",
@@ -129,12 +150,18 @@ class TeethModule(FaceBase):
             required=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         controller_settings = self.face_guide.load_controller_settings()
 
         self.controller_global_scale = controller_settings.get(
             config.face_controller_global_scale_attr,
             1.0
         )
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.controller_color = controller_settings.get(
             config.face_controller_color_attr_names["md"],
             17
@@ -144,6 +171,9 @@ class TeethModule(FaceBase):
             1.0
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def prepare_data(self):
@@ -233,6 +263,9 @@ class TeethModule(FaceBase):
 
     def _prepare_names(self):
         u"""根据 TeethModule Identity 准备全部标准名称。"""
+        # -------------------------------------------------------------------------
+        # Step 01：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.upper_teeth_jnt_name = self.create_name(
             type="jnt",
             part="upper_teeth",
@@ -244,6 +277,9 @@ class TeethModule(FaceBase):
             function="bind"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.upper_teeth_ctrl_name = self.create_name(
             type="ctrl",
             part="upper_teeth",
@@ -255,6 +291,9 @@ class TeethModule(FaceBase):
             function="bind"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.upper_teeth_matrix_name = self.create_name(
             type="mult",
             part="upper_teeth",
@@ -266,6 +305,9 @@ class TeethModule(FaceBase):
             function="parent"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.upper_teeth_skin_name = self.create_name(
             type="skin",
             part="upper_teeth",
@@ -276,6 +318,9 @@ class TeethModule(FaceBase):
             part="lower_teeth",
             function="bind"
         )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def _validate_model_inputs_unique(self):
@@ -310,6 +355,9 @@ class TeethModule(FaceBase):
 
     def _validate_build_nodes_available(self):
         u"""构建前检查上一次 Build 的确定性节点是否已经存在。"""
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         expected_nodes = [
             self.upper_teeth_jnt_name,
             self.lower_teeth_jnt_name,
@@ -317,6 +365,9 @@ class TeethModule(FaceBase):
             self.lower_teeth_matrix_name,
         ]
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.upper_teech_model:
             expected_nodes.append(
                 self.upper_teeth_skin_name
@@ -327,6 +378,9 @@ class TeethModule(FaceBase):
                 self.lower_teeth_skin_name
             )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         ctrl_names = [
             self.upper_teeth_ctrl_name,
             self.lower_teeth_ctrl_name,
@@ -347,10 +401,16 @@ class TeethModule(FaceBase):
                     hierarchy_name
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         scene_utils.ensure_nodes_available(
             expected_nodes,
             label=u"Teeth Module Build Node"
         )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     @staticmethod

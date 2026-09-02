@@ -95,11 +95,17 @@ class InvertShapeTool(QDialog):
         u"""
         创建 Card 布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
 
         main_layout.addWidget(self.title_label)
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         main_layout.addWidget(self.subtitle_label)
 
         source_card, source_layout = theme.make_card(self)
@@ -108,6 +114,9 @@ class InvertShapeTool(QDialog):
         )
         source_layout.addWidget(self.base_picker)
         source_layout.addWidget(self.corrective_button)
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         source_layout.addWidget(self.corrective_count_label)
 
         execute_card, execute_layout = theme.make_card(self)
@@ -115,11 +124,17 @@ class InvertShapeTool(QDialog):
             theme.make_section_title(u"反算")
         )
         execute_layout.addWidget(self.topology_info_label)
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         execute_layout.addWidget(self.execute_button)
 
         main_layout.addWidget(source_card)
         main_layout.addWidget(execute_card)
         main_layout.addWidget(self.status_label)
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addStretch(1)
 
     def create_connections(self):
@@ -137,6 +152,9 @@ class InvertShapeTool(QDialog):
         u"""
         拾取当前选择中的全部有效 Mesh。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         selections = cmds.ls(
             selection=True,
             long=True
@@ -145,12 +163,18 @@ class InvertShapeTool(QDialog):
         if selections is None:
             selections = []
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not selections:
             cmds.warning(u"请选择一个或多个 Corrective Mesh。")
             return
 
         valid_meshes = []
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for node in selections:
             if blendshape_utils.get_mesh_shape(node):
                 valid_meshes.append(node)
@@ -159,7 +183,13 @@ class InvertShapeTool(QDialog):
             cmds.warning(u"选择中没有有效 Mesh。")
             return
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.corrective_meshes = valid_meshes
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.corrective_count_label.setText(
             u"已拾取 {} 个 Corrective Mesh".format(
                 len(valid_meshes)

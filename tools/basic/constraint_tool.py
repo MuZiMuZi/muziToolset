@@ -111,6 +111,9 @@ class ConstraintTool(QWidget):
         u"""
         创建窗口中使用的所有部件。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.title_label = ui_theme.make_title(u"约束工具")
         self.subtitle_label = ui_theme.make_subtitle(
             u"统一创建常用 Constraint，并管理选择对象真正接收的约束节点。"
@@ -122,6 +125,9 @@ class ConstraintTool(QWidget):
         )
         self.mult_to_one_radio.setChecked(True)
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.one_to_mult_radio = QRadioButton(u"一对多")
         self.one_to_mult_radio.setToolTip(
             u"第一个选择物体驱动后面的所有选择物体"
@@ -134,6 +140,9 @@ class ConstraintTool(QWidget):
             u"多对一：前面选择作为 Driver，最后一个作为 Driven。\n"
             u"一对多：第一个作为 Driver，其余对象作为 Driven。"
         )
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.mode_info_label.setWordWrap(True)
         ui_theme.set_role(self.mode_info_label, "muted")
 
@@ -149,6 +158,9 @@ class ConstraintTool(QWidget):
             QIcon(":orientConstraint.png"),
             u"Orient"
         )
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.scale_constraint_button = QPushButton(
             QIcon(":scaleConstraint.png"),
             u"Scale"
@@ -170,12 +182,18 @@ class ConstraintTool(QWidget):
             QIcon(":delete.png"),
             u"删除对象约束"
         )
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         ui_theme.style_danger(self.delete_constraint_button)
 
     def create_layouts(self):
         u"""
         创建 Card 布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -191,6 +209,9 @@ class ConstraintTool(QWidget):
 
         mode_row = QHBoxLayout()
         mode_row.setContentsMargins(0, 0, 0, 0)
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         mode_row.addWidget(self.mult_to_one_radio)
         mode_row.addWidget(self.one_to_mult_radio)
         mode_row.addStretch(1)
@@ -206,6 +227,9 @@ class ConstraintTool(QWidget):
         constraint_grid.setHorizontalSpacing(8)
         constraint_grid.setVerticalSpacing(8)
         constraint_grid.addWidget(self.parent_constraint_button, 0, 0)
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         constraint_grid.addWidget(self.point_constraint_button, 0, 1)
         constraint_grid.addWidget(self.orient_constraint_button, 0, 2)
         constraint_grid.addWidget(self.scale_constraint_button, 1, 0)
@@ -222,6 +246,9 @@ class ConstraintTool(QWidget):
             u"只管理真正驱动当前选择对象的 Constraint；仅作为 Driver 的对象不会被匹配。"
         )
         manage_info_label.setWordWrap(True)
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         ui_theme.set_role(manage_info_label, "muted")
         manage_layout.addWidget(manage_info_label)
 
@@ -234,6 +261,9 @@ class ConstraintTool(QWidget):
         main_layout.addWidget(mode_card)
         main_layout.addWidget(create_card)
         main_layout.addWidget(manage_card)
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addStretch(1)
 
     def create_connections(self):

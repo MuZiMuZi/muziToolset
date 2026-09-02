@@ -73,6 +73,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         中间 Step 内容独立滚动；
         底部 Status / 下一步始终固定在窗口底部。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = face_rig_ui.QVBoxLayout(
             self
         )
@@ -94,6 +97,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         )
 
         step_frame = face_rig_ui.QFrame()
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         face_rig_ui.theme.set_role(
             step_frame,
             "sub_card"
@@ -122,6 +128,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             step_frame
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.content_scroll_area = QScrollArea()
         self.content_scroll_area.setWidgetResizable(
             True
@@ -139,6 +148,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             self.page_stack
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         main_layout.addWidget(
             self.content_scroll_area,
             1
@@ -162,6 +174,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             self.next_button
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addLayout(
             bottom_layout
         )
@@ -211,6 +226,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             bool:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         face_context = self.get_face_guide(
             refresh=True
         )
@@ -223,6 +241,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         )
         current_step_value = face_context.get_current_step_value()
 
+        # -------------------------------------------------------------------------
+        # Step 02：清理当前阶段不再需要的数据或场景状态
+        # -------------------------------------------------------------------------
         self.completed_step_indexes.clear()
 
         step_value = 1
@@ -243,6 +264,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         if current_step_index < 0:
             current_step_index = 0
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if current_step_index >= self.page_stack.count():
             current_step_index = 0
 
@@ -255,6 +279,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         self.load_step_config_to_ui(
             current_step_index
         )
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.apply_step_scene_visibility(
             current_step_index
         )
@@ -264,6 +291,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
 
         self.update_step_buttons()
         self.update_navigation_buttons()
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     # =========================================================================
@@ -324,12 +354,21 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             object:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         attr_names = [
             face_context.current_step_attr_name,
         ]
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         step_value = 1
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         while step_value <= face_context.last_step_value:
             section_attr_name = face_context.step_section_attr_names.get(
                 step_value
@@ -352,6 +391,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
 
             step_value += 1
 
+        # -------------------------------------------------------------------------
+        # Step 04：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return attr_names
 
     @staticmethod
@@ -408,9 +450,15 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             bool:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not cmds.objExists(plug):
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 02：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             was_locked = cmds.getAttr(
                 plug,
@@ -419,12 +467,18 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         except Exception:
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if was_locked:
             cmds.setAttr(
                 plug,
                 lock=False
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             cmds.setAttr(
                 plug,
@@ -456,6 +510,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                     pass
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def apply_config_channel_box_display(self, face_context=None):
@@ -480,12 +537,18 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             bool:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if face_context is None:
             face_context = self.get_face_guide()
 
         if face_context is None:
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not face_context.config_node_exists():
             return False
 
@@ -494,6 +557,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         visible_attr_names = self.get_channel_box_config_attributes(
             face_context
         )
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         read_only_attr_names = self.get_read_only_channel_box_attributes(
             face_context
         )
@@ -501,6 +567,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         # 先把 Face Config 当前 Schema 全部从 Channel Box 隐藏。
         all_attr_names = face_context.get_config_attribute_order()
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for attr_name in all_attr_names:
             plug = "{}.{}".format(
                 face_context.config_node,
@@ -524,6 +593,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                 read_only=attr_name in read_only_attr_names
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     # =========================================================================
@@ -538,6 +610,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             object:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         page = super(FaceRigWizard, self).create_step2_page()
 
         brow_spin = self.controller_size_widgets.get(
@@ -547,6 +622,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         if brow_spin is None:
             return page
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         controller_card = brow_spin.parentWidget()
 
         if controller_card is None:
@@ -557,6 +635,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         if controller_layout is None:
             return page
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         settings_grid = None
         layout_index = 0
 
@@ -578,6 +659,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         if settings_grid is None:
             return page
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         module_items = [
             ("teeth", u"Teeth"),
             ("tongue", u"Tongue"),
@@ -606,6 +690,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             )
             row += 1
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return page
 
     # =========================================================================
@@ -683,11 +770,17 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             bool:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         face_context = self.get_face_guide()
 
         if not face_context.config_node_exists():
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         setup_data = face_context.get_setup_data(
             refresh=True
         )
@@ -702,6 +795,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             (self.face_gum_picker, "face_gum_model"),
         ]
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for picker_item in picker_data:
             picker = picker_item[0]
             attr_name = picker_item[1]
@@ -720,6 +816,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             "mouth_jnt_number"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if mouth_jnt_number is not None:
             slider_value = int(
                 round(
@@ -730,6 +829,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                 slider_value
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def load_step2_config_to_ui(self):
@@ -797,11 +899,23 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             bool:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         face_context = self.get_face_guide()
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         settings = face_context.load_controller_settings()
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.loading_controller_settings = True
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             self.face_ctrl_global_scale_spin.setValue(
                 float(
@@ -855,6 +969,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         finally:
             self.loading_controller_settings = False
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def mark_step2_dirty(self):
@@ -977,12 +1094,18 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             bool:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not node:
             return False
 
         if not cmds.objExists(node):
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         plug = "{}.visibility".format(
             node
         )
@@ -990,6 +1113,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         if not cmds.objExists(plug):
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 03：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             was_locked = cmds.getAttr(
                 plug,
@@ -1004,6 +1130,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                 lock=False
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             cmds.setAttr(
                 plug,
@@ -1016,6 +1145,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                     lock=True
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     @staticmethod
@@ -1065,16 +1197,28 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             None | object:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         model_root = self.get_long_node(
             face_context.face_model_grp
         )
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         current_node = self.get_long_node(
             node
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not model_root or not current_node:
             return None
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         while current_node:
             parents = cmds.listRelatives(
                 current_node,
@@ -1095,6 +1239,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
 
             current_node = parent
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return None
 
     def apply_setup_source_model_visibility(self, face_context):
@@ -1109,6 +1256,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             bool:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not face_context.config_node_exists():
             return False
 
@@ -1117,6 +1267,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         )
         source_models = []
 
+        # -------------------------------------------------------------------------
+        # Step 02：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for attr_name in face_context.setup_message_attr_names:
             model = setup_data.get(
                 attr_name
@@ -1142,6 +1295,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             fullPath=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if model_children is None:
             model_children = []
 
@@ -1161,6 +1317,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                     branch
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for model_child in model_children:
             self.set_node_visibility(
                 model_child,
@@ -1173,6 +1332,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
                 True
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def apply_step_scene_visibility(
@@ -1190,19 +1352,31 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             bool:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if step_index < 0:
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         step_value = step_index + 1
         visibility_rule = config.face_step_visibility_rules.get(
             step_value
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if visibility_rule is None:
             return False
 
         face_context = self.get_face_guide()
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             for group_attr_name in visibility_rule:
                 group_name = getattr(
@@ -1227,6 +1401,9 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         except Exception:
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
 

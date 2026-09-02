@@ -70,6 +70,9 @@ class SkirtRigDialog(QDialog):
         u"""
         创建界面控件。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.title_label = theme.make_title(u"裙子绑定")
         self.subtitle_label = theme.make_subtitle(
             u"先创建上下定位曲线并调整造型，再生成纵向 Joint Chain 和 FK Controller。"
@@ -78,30 +81,45 @@ class SkirtRigDialog(QDialog):
         self.name_line = QLineEdit("skirt")
         self.name_line.setPlaceholderText(u"系统名称，例如 skirt")
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.horizontal_spin = QSpinBox()
         self.horizontal_spin.setRange(3, 64)
         self.horizontal_spin.setValue(8)
 
         self.vertical_spin = QSpinBox()
         self.vertical_spin.setRange(2, 32)
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.vertical_spin.setValue(4)
 
         self.create_setup_button = QPushButton(u"01 生成 / 重建定位")
         theme.style_primary(self.create_setup_button)
 
         self.select_setup_button = QPushButton(u"选择定位曲线")
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.style_ghost(self.select_setup_button)
 
         self.build_button = QPushButton(u"02 生成绑定")
         theme.style_primary(self.build_button)
 
         self.status_label = QLabel(u"准备就绪")
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.set_role(self.status_label, "muted")
 
     def create_layouts(self):
         u"""
         创建 Card 布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -117,6 +135,9 @@ class SkirtRigDialog(QDialog):
         config_grid = QGridLayout()
         config_grid.setHorizontalSpacing(12)
         config_grid.setVerticalSpacing(10)
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         config_grid.addWidget(QLabel(u"名称"), 0, 0)
         config_grid.addWidget(self.name_line, 0, 1, 1, 3)
         config_grid.addWidget(QLabel(u"横向链数量"), 1, 0)
@@ -132,6 +153,9 @@ class SkirtRigDialog(QDialog):
             theme.make_section_title(u"Step 01 · 定位")
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         setup_info = QLabel(
             u"生成 Up / Down 两条曲线。Blueprint Joint 会实时跟随曲线，"
             u"请在 Maya 视图中调整曲线贴合裙子轮廓。"
@@ -148,6 +172,9 @@ class SkirtRigDialog(QDialog):
         setup_layout.addLayout(setup_action_layout)
 
         build_card, build_layout = theme.make_card(self)
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         build_layout.addWidget(
             theme.make_section_title(u"Step 02 · Build")
         )
@@ -164,6 +191,9 @@ class SkirtRigDialog(QDialog):
         main_layout.addWidget(setup_card)
         main_layout.addWidget(build_card)
         main_layout.addWidget(self.status_label)
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addStretch(1)
 
     def create_connections(self):

@@ -117,6 +117,9 @@ class JointResamplingTool(QWidget):
         u"""
         创建 Card 布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -124,6 +127,9 @@ class JointResamplingTool(QWidget):
         main_layout.addWidget(self.title_label)
         main_layout.addWidget(self.subtitle_label)
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         range_card, range_layout = theme.make_card(self)
         range_layout.addWidget(
             theme.make_section_title(u"Joint 范围")
@@ -136,18 +142,27 @@ class JointResamplingTool(QWidget):
             theme.make_section_title(u"插入参数")
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         number_layout = QHBoxLayout()
         number_layout.setContentsMargins(0, 0, 0, 0)
         number_layout.addWidget(QLabel(u"插入数量"))
         number_layout.addWidget(self.joint_number_spinbox)
         number_layout.addStretch(1)
 
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         parameter_layout.addLayout(number_layout)
         parameter_layout.addWidget(self.safety_label)
         parameter_layout.addWidget(self.resample_button)
 
         main_layout.addWidget(range_card)
         main_layout.addWidget(parameter_card)
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addStretch(1)
 
     def create_connections(self):
@@ -264,6 +279,9 @@ def resample_joint(start_joint, end_joint, joint_number):
         object | list:
             方法执行后的结果数据。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not validate_joint(
             start_joint,
             u"起始 Joint"
@@ -282,6 +300,9 @@ def resample_joint(start_joint, end_joint, joint_number):
         )
         return []
 
+    # -------------------------------------------------------------------------
+    # Step 02：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     joint_number = int(
         joint_number
     )
@@ -304,6 +325,9 @@ def resample_joint(start_joint, end_joint, joint_number):
     start_position = transform_utils.get_world_translation(
         start_joint
     )
+    # -------------------------------------------------------------------------
+    # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     end_position = transform_utils.get_world_translation(
         end_joint
     )
@@ -313,6 +337,9 @@ def resample_joint(start_joint, end_joint, joint_number):
 
     created_joints = []
     previous_joint = start_joint
+    # -------------------------------------------------------------------------
+    # Step 04：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     success = False
 
     try:
@@ -397,6 +424,9 @@ def resample_joint(start_joint, end_joint, joint_number):
     if not success:
         return []
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return created_joints
 
 

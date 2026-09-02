@@ -69,6 +69,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             object:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         page = super(FaceRigWizard, self).create_step2_page()
         main_layout = page.layout()
 
@@ -87,6 +90,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         description.setWordWrap(
             True
         )
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.set_role(
             description,
             "muted"
@@ -109,6 +115,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             10
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.controller_size_widgets["teeth"] = self.create_size_spin_box(
             value=1.0
         )
@@ -136,6 +145,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             1,
             1
         )
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         settings_grid.setColumnStretch(
             1,
             1
@@ -154,6 +166,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             insert_index,
             extra_card
         )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return page
 
     def get_step2_controller_settings(self):
@@ -207,11 +222,23 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             bool:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         face_guide = self.get_face_guide()
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         settings = face_guide.load_controller_settings()
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.loading_controller_settings = True
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             self.face_ctrl_global_scale_spin.setValue(
                 float(
@@ -265,6 +292,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         finally:
             self.loading_controller_settings = False
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     # =========================================================================
@@ -298,6 +328,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             object:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         page = QWidget()
         main_layout = QVBoxLayout(
             page
@@ -331,6 +364,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             intro_description,
             "muted"
         )
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         intro_layout.addWidget(
             intro_description
         )
@@ -369,6 +405,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             10
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.teeth_build_status_label = QLabel(
             u"未构建"
         )
@@ -401,6 +440,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         future_card, future_layout = theme.make_card(
             page
         )
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         future_layout.addWidget(
             theme.make_section_title(
                 u"Next Modules"
@@ -434,6 +476,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             1
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return page
 
     # =========================================================================
@@ -462,12 +507,18 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             bool:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.build_teeth_button.setEnabled(
             False
         )
         self.teeth_build_status_label.setText(
             u"构建中"
         )
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.status_label.setText(
             u"正在构建 Teeth Module"
         )
@@ -498,6 +549,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             return False
 
         self.teeth_build_result = result
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.teeth_build_status_label.setText(
             u"构建完成"
         )
@@ -505,6 +559,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             self.teeth_build_status_label,
             "pill"
         )
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.status_label.setText(
             u"Teeth Module 构建完成"
         )
@@ -512,6 +569,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         self.build_teeth_button.setEnabled(
             False
         )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
 

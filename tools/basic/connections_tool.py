@@ -213,6 +213,9 @@ class ConnectionsTool(QWidget):
         u"""
         创建界面控件。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.title_label = theme.make_title(u"属性连接")
         self.subtitle_label = theme.make_subtitle(
             u"管理 Transform、自定义属性和已有输入连接。"
@@ -227,6 +230,9 @@ class ConnectionsTool(QWidget):
             QIcon(icon_dir + "/reset.png"),
             u"重置"
         )
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.style_ghost(self.reset_default_button)
 
         self.connect_default_button = QPushButton(u"创建默认连接")
@@ -240,6 +246,9 @@ class ConnectionsTool(QWidget):
 
         self.driver_line = QLineEdit()
         self.driver_line.setReadOnly(True)
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.driver_line.setPlaceholderText(u"Driver Plug")
         self.pick_driver_button = QPushButton(u"拾取 Driver")
 
@@ -249,6 +258,9 @@ class ConnectionsTool(QWidget):
         self.pick_driven_button = QPushButton(u"拾取 Driven")
 
         self.connect_custom_button = QPushButton(u"创建自定义连接")
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.style_primary(self.connect_custom_button)
 
         self.break_custom_button = QPushButton(u"断开自定义连接")
@@ -266,12 +278,18 @@ class ConnectionsTool(QWidget):
         theme.style_danger(self.break_selected_input_button)
 
         self.status_label = QLabel(u"准备就绪")
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.set_role(self.status_label, "muted")
 
     def create_layouts(self):
         u"""
         创建界面布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -291,6 +309,9 @@ class ConnectionsTool(QWidget):
         default_option_layout.addWidget(self.scale_checkbox)
         default_option_layout.addWidget(self.matrix_checkbox)
         default_option_layout.addStretch(1)
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         default_option_layout.addWidget(self.reset_default_button)
         default_layout.addLayout(default_option_layout)
 
@@ -310,6 +331,9 @@ class ConnectionsTool(QWidget):
         custom_grid.setHorizontalSpacing(8)
         custom_grid.setVerticalSpacing(8)
         custom_grid.addWidget(QLabel(u"Driver"), 0, 0)
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         custom_grid.addWidget(self.driver_line, 0, 1)
         custom_grid.addWidget(self.pick_driver_button, 0, 2)
         custom_grid.addWidget(QLabel(u"Driven"), 1, 0)
@@ -326,6 +350,9 @@ class ConnectionsTool(QWidget):
         custom_layout.addLayout(custom_action_layout)
 
         existing_card, existing_layout = theme.make_card(self)
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         existing_layout.addWidget(
             theme.make_section_title(u"已有连接")
         )
@@ -348,6 +375,9 @@ class ConnectionsTool(QWidget):
         main_layout.addWidget(custom_card)
         main_layout.addWidget(existing_card)
         main_layout.addWidget(self.status_label)
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addStretch(1)
 
     def create_connections(self):
@@ -455,6 +485,9 @@ class ConnectionsTool(QWidget):
         u"""
         第一个选择驱动其余选择。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         attribute_pairs = self.get_default_attr_pairs()
 
         if not attribute_pairs:
@@ -463,11 +496,17 @@ class ConnectionsTool(QWidget):
             )
             return
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         selected_objects = get_selected_objects(2)
 
         if not selected_objects:
             return
 
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         plug_pairs = build_attribute_plug_pairs(
             selected_objects[0],
             selected_objects[1:],
@@ -478,6 +517,9 @@ class ConnectionsTool(QWidget):
             "MuziConnectDefaultAttrs"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             created_count = connection_utils.connect_plug_pairs(
                 plug_pairs,
@@ -491,6 +533,9 @@ class ConnectionsTool(QWidget):
         finally:
             scene_utils.close_undo_chunk()
 
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.status_label.setText(
             u"已创建 {} 条连接".format(
                 created_count
@@ -593,6 +638,9 @@ class ConnectionsTool(QWidget):
         u"""
         把 Driver Plug 连接到当前选择对象的 Driven Attr。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self.driver_plug:
             cmds.warning(
                 u"请先拾取 Driver 属性。"
@@ -605,11 +653,17 @@ class ConnectionsTool(QWidget):
             )
             return
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         driven_objects = get_selected_objects(1)
 
         if not driven_objects:
             return
 
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         plug_pairs = build_source_plug_pairs(
             self.driver_plug,
             driven_objects,
@@ -620,6 +674,9 @@ class ConnectionsTool(QWidget):
             "MuziConnectCustomAttrs"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             created_count = connection_utils.connect_plug_pairs(
                 plug_pairs,
@@ -633,6 +690,9 @@ class ConnectionsTool(QWidget):
         finally:
             scene_utils.close_undo_chunk()
 
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.status_label.setText(
             u"已创建 {} 条自定义连接".format(
                 created_count
@@ -643,22 +703,34 @@ class ConnectionsTool(QWidget):
         u"""
         断开当前选择对象对应的自定义属性输入。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self.driven_attr_names:
             cmds.warning(
                 u"请先拾取 Driven 属性。"
             )
             return
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         driven_objects = get_selected_objects(1)
 
         if not driven_objects:
             return
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         disconnected_count = 0
         scene_utils.open_undo_chunk(
             "MuziBreakCustomAttrs"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             for driven_object in driven_objects:
                 for attribute_name in self.driven_attr_names:
@@ -677,6 +749,9 @@ class ConnectionsTool(QWidget):
         finally:
             scene_utils.close_undo_chunk()
 
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.status_label.setText(
             u"已断开 {} 条自定义连接".format(
                 disconnected_count
@@ -687,16 +762,28 @@ class ConnectionsTool(QWidget):
         u"""
         复制来源对象 Channel Box 选中属性的输入连接。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         selected_objects = get_selected_objects(2)
         attribute_names = get_channel_box_attrs()
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not selected_objects or not attribute_names:
             return
 
         source_object = selected_objects[0]
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         target_objects = selected_objects[1:]
         copied_count = 0
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         scene_utils.open_undo_chunk(
             "MuziCopyInputConnections"
         )
@@ -736,6 +823,9 @@ class ConnectionsTool(QWidget):
         finally:
             scene_utils.close_undo_chunk()
 
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.status_label.setText(
             u"已复制 {} 条输入连接".format(
                 copied_count

@@ -277,20 +277,32 @@ class ToolCard(QFrame):
             parent (QWidget | None):
                 Qt 父对象。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         super(ToolCard, self).__init__(parent)
 
         self.category_name = category_name
         self.tool_name = tool_name
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.tool_function = tool_function
         self.run_callback = run_callback
 
         self.display_name = get_tool_display_name(tool_name)
         self.description = get_tool_description(tool_name)
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.tool_mode = get_tool_mode(tool_function)
         self.search_visible = True
 
         theme.set_role(self, "card")
         self.setMinimumHeight(142)
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.setSizePolicy(
             QSizePolicy.Expanding,
             QSizePolicy.Fixed
@@ -298,12 +310,18 @@ class ToolCard(QFrame):
 
         self.create_widgets()
         self.create_layouts()
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.create_connections()
 
     def create_widgets(self):
         u"""
         创建工具卡片控件。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         short_name = category_short_names.get(
             self.category_name,
             "TOOL"
@@ -314,6 +332,9 @@ class ToolCard(QFrame):
 
         mode_text = "UI"
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.tool_mode == TOOL_MODE_ACTION:
             mode_text = "ACTION"
 
@@ -325,6 +346,9 @@ class ToolCard(QFrame):
         )
 
         self.description_label = QLabel(self.description)
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.description_label.setWordWrap(True)
         theme.set_role(self.description_label, "muted")
 
@@ -333,6 +357,9 @@ class ToolCard(QFrame):
         )
         theme.set_role(self.module_label, "muted")
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         button_text = u"打开"
 
         if self.tool_mode == TOOL_MODE_ACTION:
@@ -340,34 +367,52 @@ class ToolCard(QFrame):
 
         self.action_button = QPushButton(button_text)
         self.action_button.setMinimumWidth(76)
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.style_primary(self.action_button)
 
     def create_layouts(self):
         u"""
         创建工具卡片布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 14, 16, 14)
         main_layout.setSpacing(7)
 
         top_layout = QHBoxLayout()
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         top_layout.setContentsMargins(0, 0, 0, 0)
         top_layout.setSpacing(6)
         top_layout.addWidget(self.category_label)
         top_layout.addWidget(self.mode_label)
         top_layout.addStretch(1)
 
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addLayout(top_layout)
         main_layout.addWidget(self.title_label)
         main_layout.addWidget(self.description_label)
         main_layout.addStretch(1)
 
         bottom_layout = QHBoxLayout()
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         bottom_layout.setContentsMargins(0, 0, 0, 0)
         bottom_layout.addWidget(self.module_label)
         bottom_layout.addStretch(1)
         bottom_layout.addWidget(self.action_button)
 
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addLayout(bottom_layout)
 
     def create_connections(self):
@@ -450,6 +495,9 @@ class ToolSection(QWidget):
             parent (QWidget | None):
                 Qt 父对象。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         super(ToolSection, self).__init__(parent)
 
         self.cards = []
@@ -459,6 +507,9 @@ class ToolSection(QWidget):
         self.description_label.setWordWrap(True)
         theme.set_role(self.description_label, "muted")
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.count_label = QLabel()
         theme.set_role(self.count_label, "accent")
 
@@ -466,6 +517,9 @@ class ToolSection(QWidget):
         self.card_layout = QGridLayout(self.card_widget)
         self.card_layout.setContentsMargins(0, 0, 6, 0)
         self.card_layout.setHorizontalSpacing(12)
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.card_layout.setVerticalSpacing(12)
 
         header_layout = QHBoxLayout()
@@ -474,11 +528,17 @@ class ToolSection(QWidget):
         header_layout.addStretch(1)
         header_layout.addWidget(self.count_label)
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(8)
         main_layout.addLayout(header_layout)
         main_layout.addWidget(self.description_label)
+        # -------------------------------------------------------------------------
+        # Step 05：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         main_layout.addWidget(self.card_widget)
 
     def add_card(self, card):
@@ -611,12 +671,18 @@ class CategoryPage(QWidget):
         u"""
         创建分类页面布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         header_layout = QHBoxLayout()
         header_layout.setContentsMargins(0, 0, 0, 0)
 
         title_layout = QVBoxLayout()
         title_layout.setContentsMargins(0, 0, 0, 0)
         title_layout.setSpacing(3)
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         title_layout.addWidget(self.title_label)
         title_layout.addWidget(self.subtitle_label)
 
@@ -628,16 +694,25 @@ class CategoryPage(QWidget):
         )
 
         scroll_layout = QVBoxLayout(self.scroll_content)
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         scroll_layout.setContentsMargins(0, 0, 0, 0)
         scroll_layout.setSpacing(22)
         scroll_layout.addWidget(self.ui_section)
         scroll_layout.addWidget(self.action_section)
         scroll_layout.addStretch(1)
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(24, 22, 24, 22)
         main_layout.setSpacing(18)
         main_layout.addLayout(header_layout)
+        # -------------------------------------------------------------------------
+        # Step 05：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         main_layout.addWidget(self.scroll_area, 1)
 
     def create_cards(self):
@@ -790,6 +865,9 @@ class RiggingToolbox(QWidget):
         u"""
         创建主工具箱控件。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.sidebar = QFrame()
         theme.set_role(self.sidebar, "sidebar")
         self.sidebar.setFixedWidth(190)
@@ -807,6 +885,9 @@ class RiggingToolbox(QWidget):
         self.nav_title_label = QLabel(u"工具分类")
         theme.set_role(self.nav_title_label, "muted")
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.navigation_widget = QWidget()
         self.navigation_layout = QVBoxLayout(
             self.navigation_widget
@@ -820,6 +901,9 @@ class RiggingToolbox(QWidget):
 
         self.close_subtools_button = QToolButton()
         self.close_subtools_button.setText(u"关闭子工具")
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.style_ghost(self.close_subtools_button)
 
         self.content_frame = QFrame()
@@ -835,6 +919,9 @@ class RiggingToolbox(QWidget):
         self.page_stack = QStackedWidget()
 
         self.status_label = QLabel(u"准备就绪")
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.set_role(self.status_label, "muted")
 
         self.empty_page = QWidget()
@@ -857,12 +944,18 @@ class RiggingToolbox(QWidget):
             0,
             Qt.AlignCenter
         )
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         empty_layout.addStretch(1)
 
     def create_layouts(self):
         u"""
         创建左侧导航和右侧内容布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         sidebar_layout = QVBoxLayout(self.sidebar)
         sidebar_layout.setContentsMargins(16, 22, 16, 16)
         sidebar_layout.setSpacing(8)
@@ -872,6 +965,9 @@ class RiggingToolbox(QWidget):
         sidebar_layout.addWidget(self.version_label)
         sidebar_layout.addSpacing(22)
         sidebar_layout.addWidget(self.nav_title_label)
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         sidebar_layout.addWidget(self.navigation_widget)
         sidebar_layout.addStretch(1)
         sidebar_layout.addWidget(self.refresh_button)
@@ -882,6 +978,9 @@ class RiggingToolbox(QWidget):
         top_bar_layout.addStretch(1)
         top_bar_layout.addWidget(self.search_edit, 0)
 
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.search_edit.setMinimumWidth(280)
         self.search_edit.setMaximumWidth(420)
 
@@ -892,6 +991,9 @@ class RiggingToolbox(QWidget):
         content_layout.addWidget(self.page_stack, 1)
 
         status_layout = QHBoxLayout()
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         status_layout.setContentsMargins(24, 0, 24, 0)
         status_layout.addWidget(self.status_label)
         status_layout.addStretch(1)
@@ -902,6 +1004,9 @@ class RiggingToolbox(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         main_layout.addWidget(self.sidebar)
+        # -------------------------------------------------------------------------
+        # Step 05：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         main_layout.addWidget(self.content_frame, 1)
 
     def create_connections(self):
@@ -950,6 +1055,9 @@ class RiggingToolbox(QWidget):
             refresh_registry (bool):
                 是否重新扫描 Tool Registry。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if refresh_registry:
             self.tools_by_category = refresh_tools()
         else:
@@ -957,6 +1065,9 @@ class RiggingToolbox(QWidget):
 
         self.search_edit.clear()
         self.clear_navigation()
+        # -------------------------------------------------------------------------
+        # Step 02：清理当前阶段不再需要的数据或场景状态
+        # -------------------------------------------------------------------------
         self.clear_pages()
 
         if not self.tools_by_category:
@@ -970,6 +1081,9 @@ class RiggingToolbox(QWidget):
         for category_name in self.tools_by_category:
             category_names.append(category_name)
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         first_category = None
 
         for category_name in category_names:
@@ -1002,6 +1116,9 @@ class RiggingToolbox(QWidget):
 
         self.navigation_layout.addStretch(1)
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if first_category is not None:
             self.select_category(first_category)
 
@@ -1011,6 +1128,9 @@ class RiggingToolbox(QWidget):
             category_tools = self.tools_by_category[category_name]
             total_tool_count += len(category_tools)
 
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.status_label.setText(
             u"已发现 {} 个工具分类，共 {} 个工具".format(
                 len(category_names),

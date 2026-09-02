@@ -69,6 +69,9 @@ class BlendShapeTargetTool(QWidget):
         u"""
         创建界面控件。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.title_label = theme.make_title(u"BlendShape Target")
         self.subtitle_label = theme.make_subtitle(
             u"使用真实 weight[index] 管理、添加、替换和烘焙 Target。"
@@ -77,6 +80,9 @@ class BlendShapeTargetTool(QWidget):
         self.blendshape_line = QLineEdit()
         self.blendshape_line.setPlaceholderText(u"BlendShape 节点")
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.pick_blendshape_button = QPushButton(u"从选择获取")
         self.refresh_button = QPushButton(u"刷新")
         theme.style_ghost(self.refresh_button)
@@ -84,6 +90,9 @@ class BlendShapeTargetTool(QWidget):
         self.target_count_label = QLabel(u"0 个 Target")
         theme.set_role(self.target_count_label, "accent")
 
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.target_list = QListWidget()
         self.target_list.setMinimumHeight(240)
 
@@ -93,18 +102,27 @@ class BlendShapeTargetTool(QWidget):
         self.target_info_label.setWordWrap(True)
         theme.set_role(self.target_info_label, "muted")
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.add_target_button = QPushButton(u"添加 / 同名替换 Target")
         theme.style_primary(self.add_target_button)
 
         self.duplicate_targets_button = QPushButton(u"复制所有 Target Mesh")
 
         self.status_label = QLabel(u"准备就绪")
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.set_role(self.status_label, "muted")
 
     def create_layouts(self):
         u"""
         创建 Card 布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -117,6 +135,9 @@ class BlendShapeTargetTool(QWidget):
             theme.make_section_title(u"BlendShape Node")
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         node_row = QHBoxLayout()
         node_row.setContentsMargins(0, 0, 0, 0)
         node_row.addWidget(self.blendshape_line, 1)
@@ -127,6 +148,9 @@ class BlendShapeTargetTool(QWidget):
         target_card, target_layout = theme.make_card(self)
 
         target_header = QHBoxLayout()
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         target_header.setContentsMargins(0, 0, 0, 0)
         target_header.addWidget(
             theme.make_section_title(u"Targets")
@@ -138,6 +162,9 @@ class BlendShapeTargetTool(QWidget):
         target_layout.addWidget(self.target_list, 1)
 
         action_row = QHBoxLayout()
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         action_row.setContentsMargins(0, 0, 0, 0)
         action_row.addWidget(self.duplicate_targets_button)
         action_row.addStretch(1)
@@ -146,6 +173,9 @@ class BlendShapeTargetTool(QWidget):
 
         main_layout.addWidget(node_card)
         main_layout.addWidget(target_card, 1)
+        # -------------------------------------------------------------------------
+        # Step 05：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         main_layout.addWidget(self.status_label)
 
     def create_connections(self):
@@ -241,12 +271,18 @@ class BlendShapeTargetTool(QWidget):
         u"""
         把当前选择 Mesh 添加到 BlendShape。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         blendshape_node = self.get_blendshape_node()
 
         if not blendshape_node:
             cmds.warning(u"请先指定 BlendShape 节点。")
             return
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         selections = cmds.ls(
             selection=True,
             long=True
@@ -259,10 +295,16 @@ class BlendShapeTargetTool(QWidget):
             cmds.warning(u"请选择一个或多个 Target Mesh。")
             return
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         added_count = 0
 
         scene_utils.open_undo_chunk("MuziAddBlendShapeTargets")
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             for target in selections:
                 try:
@@ -277,6 +319,9 @@ class BlendShapeTargetTool(QWidget):
             scene_utils.close_undo_chunk()
 
         self.refresh_targets()
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.status_label.setText(
             u"已添加 / 替换 {} 个 Target".format(added_count)
         )

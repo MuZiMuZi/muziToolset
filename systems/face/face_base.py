@@ -118,6 +118,9 @@ class FaceBase(RigModuleBase):
             index (int):
                 目标元素或节点的序号。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if side is None:
             side = config.face_side
 
@@ -136,6 +139,9 @@ class FaceBase(RigModuleBase):
         self.face_center_axis = config.face_center_axis
 
         self.config_node = config.config_node
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.config_data = config_utils.ConfigNode(
             self.config_node
         )
@@ -147,6 +153,9 @@ class FaceBase(RigModuleBase):
         self.face_ctrl_grp = config.face_ctrl_grp
         self.face_jnt_grp = config.face_jnt_grp
         self.face_rig_nodes_grp = config.face_rig_nodes_grp
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.face_pos_driver_grp = config.face_pos_driver_grp
 
         self.face_tweak_grp = config.face_tweak_grp
@@ -157,12 +166,18 @@ class FaceBase(RigModuleBase):
         self.model_groups = config.model_grp_list
 
         self.face_head_model = None
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.face_lf_eye_model = None
         self.face_rt_eye_model = None
         self.upper_teech_model = None
         self.lower_teech_model = None
         self.face_tongue_model = None
         self.face_gum_model = None
+        # -------------------------------------------------------------------------
+        # Step 05：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.mouth_jnt_number = None
 
     # =========================================================================
@@ -344,9 +359,15 @@ class FaceBase(RigModuleBase):
             bool:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.ensure_config_node()
         config_attr = self.get_config_attr()
 
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         config_attr.add_attr(
             self.workflow_section_attr_name,
             attr_type="enum",
@@ -370,6 +391,9 @@ class FaceBase(RigModuleBase):
                 niceName="Current Face Step"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         step_value = 1
 
         while step_value <= self.last_step_value:
@@ -392,7 +416,13 @@ class FaceBase(RigModuleBase):
 
             step_value += 1
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self.organize_config_attributes()
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def get_config_attribute_order(self):
@@ -630,6 +660,9 @@ class FaceBase(RigModuleBase):
             RuntimeError:
                 输入数据、场景状态或操作条件不满足要求时抛出。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self.config_node_exists():
             raise RuntimeError(
                 u"没有找到 Face Config，请先完成 Face Setup。"
@@ -637,6 +670,9 @@ class FaceBase(RigModuleBase):
 
         self.refresh_setup_data()
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self.face_head_model:
             raise RuntimeError(
                 u"没有读取到 Face Head Model，请先完成 Face Setup。"
@@ -647,6 +683,9 @@ class FaceBase(RigModuleBase):
             label=u"Face Head Model"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         optional_models = [
             self.face_lf_eye_model,
             self.face_rt_eye_model,
@@ -665,12 +704,18 @@ class FaceBase(RigModuleBase):
                 label=u"Face Setup Model"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if require_mouth_jnt_number:
             if self.mouth_jnt_number is None:
                 raise RuntimeError(
                     u"没有读取到嘴唇 Joint 数量，请先完成 Face Setup。"
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     # =========================================================================
@@ -830,10 +875,16 @@ class FaceBase(RigModuleBase):
             TypeError:
                 输入数据、场景状态或操作条件不满足要求时抛出。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         step_value = self.resolve_step_value(
             step_value
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not isinstance(last_step, int):
             raise TypeError(
                 u"last_step 必须是整数。"
@@ -842,9 +893,15 @@ class FaceBase(RigModuleBase):
         if last_step <= step_value:
             return []
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         invalidated_steps = []
         current_step = step_value + 1
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         while current_step <= last_step:
             self.set_step_completed(
                 step_value=current_step,
@@ -855,6 +912,9 @@ class FaceBase(RigModuleBase):
             )
             current_step += 1
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return invalidated_steps
 
     def get_step_status(self, last_step=4):

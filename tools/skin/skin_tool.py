@@ -72,6 +72,9 @@ class SkinTool(QWidget):
         u"""
         创建界面控件。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.title_label = theme.make_title(u"Skin Tool")
         self.subtitle_label = theme.make_subtitle(
             u"绑定、刷权重、复制权重、影响骨骼和 XML 权重文件管理。"
@@ -80,6 +83,9 @@ class SkinTool(QWidget):
         self.bind_button = QPushButton(u"Smooth Bind")
         self.detach_button = QPushButton(u"Detach Skin")
         self.paint_button = QPushButton(u"Paint Weights")
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.mirror_button = QPushButton(u"Mirror Weights")
 
         self.copy_button = QPushButton(u"复制权重")
@@ -88,6 +94,9 @@ class SkinTool(QWidget):
         self.select_influences_button = QPushButton(u"选择影响 Joint")
         self.normalize_button = QPushButton(u"强制归一化")
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.export_button = QPushButton(u"导出权重")
         self.import_button = QPushButton(u"导入权重")
 
@@ -97,6 +106,9 @@ class SkinTool(QWidget):
         self.copy_info_label.setWordWrap(True)
         theme.set_role(self.copy_info_label, "muted")
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.file_info_label = QLabel(
             u"每个模型使用 sc_<模型名>.xml 和 sc_<模型名>.infs.json。"
         )
@@ -104,12 +116,18 @@ class SkinTool(QWidget):
         theme.set_role(self.file_info_label, "muted")
 
         self.status_label = QLabel(u"准备就绪")
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.set_role(self.status_label, "muted")
 
     def create_layouts(self):
         u"""
         创建 Card 布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -128,6 +146,9 @@ class SkinTool(QWidget):
         theme.set_role(maya_description, "muted")
         maya_layout.addWidget(maya_description)
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         maya_grid = QGridLayout()
         maya_grid.setHorizontalSpacing(8)
         maya_grid.setVerticalSpacing(8)
@@ -141,6 +162,9 @@ class SkinTool(QWidget):
         weight_layout.addWidget(
             theme.make_section_title(u"权重工具")
         )
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         weight_layout.addWidget(self.copy_info_label)
         weight_layout.addWidget(self.copy_button)
 
@@ -156,6 +180,9 @@ class SkinTool(QWidget):
         )
         file_layout.addWidget(self.file_info_label)
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         file_action_layout = QHBoxLayout()
         file_action_layout.setContentsMargins(0, 0, 0, 0)
         file_action_layout.addWidget(self.export_button)
@@ -166,6 +193,9 @@ class SkinTool(QWidget):
         main_layout.addWidget(weight_card)
         main_layout.addWidget(file_card)
         main_layout.addWidget(self.status_label)
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addStretch(1)
 
     def create_connections(self):
@@ -333,21 +363,33 @@ class SkinTool(QWidget):
         u"""
         从目录导入权重到选择模型。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         geometries = self.get_selected_geometries()
 
         if not geometries:
             cmds.warning(u"请选择需要导入权重的模型。")
             return
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         directory = self.choose_directory(u"选择权重目录")
 
         if not directory:
             return
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         success_count = 0
 
         scene_utils.open_undo_chunk("MuziImportSkinWeights")
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             for geometry in geometries:
                 try:
@@ -361,6 +403,9 @@ class SkinTool(QWidget):
         finally:
             scene_utils.close_undo_chunk()
 
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.status_label.setText(
             u"已导入 {} 个模型".format(success_count)
         )

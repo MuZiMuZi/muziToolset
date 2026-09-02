@@ -154,6 +154,9 @@ class ControlCreatorDialog(QDialog):
         u"""
         创建界面控件。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.title_label = theme.make_title(
             u"创建控制器"
         )
@@ -191,6 +194,9 @@ class ControlCreatorDialog(QDialog):
         self.shape_list.setSpacing(
             4
         )
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.shape_list.setMinimumHeight(
             310
         )
@@ -224,6 +230,9 @@ class ControlCreatorDialog(QDialog):
             "Y+"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.rotate_x_spin = QDoubleSpinBox()
         self.rotate_x_spin.setDecimals(2)
         self.rotate_x_spin.setRange(-3600.0, 3600.0)
@@ -240,6 +249,9 @@ class ControlCreatorDialog(QDialog):
         self.color_spin.setValue(6)
 
         self.color_preview = QLabel()
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.color_preview.setFixedSize(32, 32)
 
         self.name_line = QLineEdit()
@@ -278,6 +290,9 @@ class ControlCreatorDialog(QDialog):
         self.status_label = QLabel(
             u"准备就绪"
         )
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.set_role(
             self.status_label,
             "muted"
@@ -287,6 +302,9 @@ class ControlCreatorDialog(QDialog):
         u"""
         创建窗口布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(
             self
         )
@@ -309,6 +327,9 @@ class ControlCreatorDialog(QDialog):
         shape_layout.addWidget(self.shape_list)
 
         parameter_card, parameter_layout = theme.make_card(self)
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         parameter_layout.addWidget(
             theme.make_section_title(u"创建参数")
         )
@@ -328,6 +349,9 @@ class ControlCreatorDialog(QDialog):
         parameter_grid.setColumnStretch(3, 1)
         parameter_layout.addLayout(parameter_grid)
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         color_card, color_layout = theme.make_card(self)
         color_layout.addWidget(
             theme.make_section_title(u"颜色")
@@ -356,6 +380,9 @@ class ControlCreatorDialog(QDialog):
             standard_hint,
             "muted"
         )
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         hierarchy_layout.addWidget(
             standard_hint
         )
@@ -375,6 +402,9 @@ class ControlCreatorDialog(QDialog):
         main_layout.addWidget(parameter_card)
         main_layout.addWidget(color_card)
         main_layout.addWidget(hierarchy_card)
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addLayout(action_layout)
 
     def create_connections(self):
@@ -402,6 +432,9 @@ class ControlCreatorDialog(QDialog):
         u"""
         重新读取正式 Controller Shape 资源目录。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：清理当前阶段不再需要的数据或场景状态
+        # -------------------------------------------------------------------------
         self.shape_list.clear()
 
         if not os.path.isdir(controller_shapes_dir):
@@ -410,6 +443,9 @@ class ControlCreatorDialog(QDialog):
             )
             return
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         file_names = os.listdir(
             controller_shapes_dir
         )
@@ -428,6 +464,9 @@ class ControlCreatorDialog(QDialog):
                     shape_name
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 03：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         shape_names.sort()
 
         for shape_name in shape_names:
@@ -465,12 +504,18 @@ class ControlCreatorDialog(QDialog):
             item.setToolTip(shape_name)
             self.shape_list.addItem(item)
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.shape_list.count() > 0:
             self.shape_list.setCurrentRow(0)
 
         self.filter_shape_library(
             self.shape_search_line.text()
         )
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.status_label.setText(
             u"已加载 {} 个 Shape".format(
                 self.shape_list.count()
@@ -555,11 +600,17 @@ class ControlCreatorDialog(QDialog):
             object | list:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         mode = self.create_mode_combo.currentData()
 
         if mode == "world":
             return [None]
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
@@ -571,11 +622,17 @@ class ControlCreatorDialog(QDialog):
             )
             return []
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if mode == "selection":
             return selections
 
         targets = []
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for root in selections:
             if root not in targets:
                 targets.append(
@@ -604,6 +661,9 @@ class ControlCreatorDialog(QDialog):
                         descendant
                     )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return targets
 
     @staticmethod
@@ -639,8 +699,14 @@ class ControlCreatorDialog(QDialog):
             object:
                 方法执行后的结果数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         custom_name = self.name_line.text().strip()
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if custom_name:
             try:
                 custom_rig_name = RigBase(
@@ -668,6 +734,9 @@ class ControlCreatorDialog(QDialog):
                     index=target_index + 1
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if target is None:
             return self._create_control_name(
                 side="md",
@@ -676,10 +745,16 @@ class ControlCreatorDialog(QDialog):
                 index=target_index + 1
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         target_name = rename_utils.get_short_name(
             target
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             target_rig_name = RigBase(
                 name=target_name
@@ -709,6 +784,9 @@ class ControlCreatorDialog(QDialog):
         u"""
         根据 UI 参数调用 ctrl_base.create_ctrl()。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         shape_name = self.selected_shape_name()
 
         if not shape_name:
@@ -719,18 +797,27 @@ class ControlCreatorDialog(QDialog):
 
         targets = self.get_create_targets()
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not targets:
             return
 
         radius = self.radius_spin.value()
         axis = self.axis_combo.currentText()
         rotate_x = self.rotate_x_spin.value()
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         color = self.color_spin.value()
         create_sub_ctrl = self.create_sub_checkbox.isChecked()
         add_to_set = self.add_set_checkbox.isChecked()
 
         created_controls = []
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         scene_utils.open_undo_chunk(
             "MuziCreateControllers"
         )
@@ -781,6 +868,9 @@ class ControlCreatorDialog(QDialog):
                 replace=True
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.status_label.setText(
             u"已创建 {} 个控制器".format(
                 len(created_controls)

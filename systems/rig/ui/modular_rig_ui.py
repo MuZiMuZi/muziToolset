@@ -485,6 +485,9 @@ class ModularRigWindow(QWidget):
         u"""
         按照三栏模块化绑定设计创建主布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         header_layout = QHBoxLayout(self.header_frame)
         header_layout.setContentsMargins(12, 6, 12, 6)
         header_layout.setSpacing(6)
@@ -518,6 +521,9 @@ class ModularRigWindow(QWidget):
 
         left_layout.addWidget(self.module_title_label)
         left_layout.addLayout(module_search_layout)
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         left_layout.addWidget(self.module_list, 1)
         left_layout.addWidget(_make_separator())
         left_layout.addWidget(self.template_title_label)
@@ -553,6 +559,9 @@ class ModularRigWindow(QWidget):
         jnt_size_layout.setContentsMargins(0, 0, 0, 0)
         jnt_size_layout.setSpacing(8)
         jnt_size_layout.addWidget(self.jnt_size_label)
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         jnt_size_layout.addWidget(self.jnt_size_slider, 1)
         jnt_size_layout.addWidget(self.jnt_size_spin)
         jnt_axis_layout = QHBoxLayout()
@@ -590,6 +599,9 @@ class ModularRigWindow(QWidget):
         right_layout.addLayout(self.create_property_row(self.aim_axis_label, self.aim_axis_combo))
         right_layout.addLayout(self.create_property_row(self.up_axis_label, self.up_axis_combo))
         right_layout.addWidget(_make_separator())
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         right_layout.addWidget(self.joints_section_button)
         right_layout.addWidget(self.controls_section_button)
         right_layout.addWidget(self.deformation_section_button)
@@ -624,6 +636,9 @@ class ModularRigWindow(QWidget):
         main_layout.setContentsMargins(6, 6, 6, 6)
         main_layout.setSpacing(6)
         main_layout.addWidget(self.header_frame)
+        # -------------------------------------------------------------------------
+        # Step 05：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         main_layout.addWidget(self.main_splitter, 1)
 
     def create_property_row(self, label, widget):
@@ -653,23 +668,38 @@ class ModularRigWindow(QWidget):
         u"""
         连接界面 Signal。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.module_search.textChanged.connect(self.filter_module_library)
         self.template_search.textChanged.connect(self.filter_template_library)
         self.module_list.itemDoubleClicked.connect(self.add_module_from_library)
         self.template_list.itemDoubleClicked.connect(self.load_template)
+        # -------------------------------------------------------------------------
+        # Step 02：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.add_module_button.clicked.connect(self.clicked_add_module)
         self.copy_module_button.clicked.connect(self.copy_current_module)
         self.delete_module_button.clicked.connect(self.delete_current_module)
         self.module_tree.currentItemChanged.connect(self.current_module_changed)
         self.module_name_edit.editingFinished.connect(self.module_name_changed)
+        # -------------------------------------------------------------------------
+        # Step 03：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.side_combo.currentIndexChanged.connect(self.side_changed)
         self.jnt_size_slider.valueChanged.connect(self.jnt_size_slider_changed)
         self.jnt_size_spin.valueChanged.connect(self.jnt_size_spin_changed)
         self.jnt_axis_switch.toggled.connect(self.jnt_axis_changed)
+        # -------------------------------------------------------------------------
+        # Step 04：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.build_button.clicked.connect(self.clicked_build)
         self.delete_action_button.clicked.connect(self.delete_current_module)
         self.reset_action_button.clicked.connect(self.reset_current_module_settings)
         self.undo_button.clicked.connect(self.undo_maya)
+        # -------------------------------------------------------------------------
+        # Step 05：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.redo_button.clicked.connect(self.redo_maya)
 
     # =========================================================================
@@ -961,22 +991,34 @@ class ModularRigWindow(QWidget):
             previous_item (object):
                 当前方法执行 Maya / Rig 操作时使用的 `previous_item` 数据。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if current_item is None:
             return
 
         self.current_module_item = current_item
         self.loading_module_settings = True
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         module_name = current_item.data(0, Qt.UserRole)
         side = current_item.data(1, Qt.UserRole)
 
         if module_name is None:
             module_name = current_item.text(0)
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if side is None:
             side = ""
 
         self.module_name_edit.setText(str(module_name))
         self.current_module_title.setText(str(module_name).upper())
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         side_index = 0
 
         if side in ["L", "LF", "Left"]:
@@ -985,6 +1027,9 @@ class ModularRigWindow(QWidget):
             side_index = 2
 
         self.side_combo.setCurrentIndex(side_index)
+        # -------------------------------------------------------------------------
+        # Step 05：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.loading_module_settings = False
 
     def module_name_changed(self):
@@ -1091,9 +1136,15 @@ class ModularRigWindow(QWidget):
         u"""
         从 Maya 当前场景恢复 Jnt Size / Jnt Axis 显示状态。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.loading_joint_display = True
         joint_size = 1.0
 
+        # -------------------------------------------------------------------------
+        # Step 02：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             joint_size = joint_utils.get_display_scale()
         except Exception:
@@ -1106,6 +1157,9 @@ class ModularRigWindow(QWidget):
         self.jnt_size_spin.setValue(
             joint_size
         )
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.jnt_size_slider.setValue(
             int(round(joint_size * 100.0))
         )
@@ -1116,6 +1170,9 @@ class ModularRigWindow(QWidget):
             long=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for joint_node in joint_list:
             try:
                 joint_object = joint_utils.Joint(
@@ -1132,6 +1189,9 @@ class ModularRigWindow(QWidget):
         self.jnt_axis_switch.setChecked(
             show_axis
         )
+        # -------------------------------------------------------------------------
+        # Step 05：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.loading_joint_display = False
 
     def jnt_size_slider_changed(self, slider_value):
