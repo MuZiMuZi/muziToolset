@@ -7,7 +7,9 @@ Rig Integration Test
 
 测试链：
 
-    RigBase Naming
+    RigBase Identity
+        ↓
+    Rig Naming
         ↓
     Joint
         ↓
@@ -212,12 +214,15 @@ def test_rig_integration(token, keep_result=False):
         parent_node=rig_root
     )
 
-    joint_name = RigBase.create_name(
-        type="jnt",
+    rig_identity = RigBase(
         side="md",
         part=token,
-        function="bind",
         index=1
+    )
+
+    joint_name = rig_identity.create_name(
+        node_type="jnt",
+        function="bind"
     )
     joint = joint_utils.Joint.create(
         name=joint_name,
@@ -240,12 +245,9 @@ def test_rig_integration(token, keep_result=False):
         u"Joint 初始位置错误"
     )
 
-    control_name = RigBase.create_name(
-        type="ctrl",
-        side="md",
-        part=token,
-        function="main",
-        index=1
+    control_name = rig_identity.create_name(
+        node_type="ctrl",
+        function="main"
     )
     control_result = ctrl_base.create_ctrl(
         name=control_name,
@@ -331,12 +333,9 @@ def test_rig_integration(token, keep_result=False):
         u"Controller 没有正确吸附 Joint"
     )
 
-    matrix_name = RigBase.create_name(
-        type="mult",
-        side="md",
-        part=token,
-        function="parent",
-        index=1
+    matrix_name = rig_identity.create_name(
+        node_type="mult",
+        function="parent"
     )
     matrix_node = matrix_utils.create_parent_matrix_constraint(
         driver=control,
@@ -416,7 +415,7 @@ def test_rig_integration(token, keep_result=False):
             replace=True
         )
         return {
-            "message": u"RigBase + CtrlBase + OPM Integration 成功，测试 Rig 已保留",
+            "message": u"RigBase Identity + CtrlBase + OPM Integration 成功，测试 Rig 已保留",
             "rig_root": rig_root,
             "control": control,
             "joint": joint,
@@ -456,7 +455,7 @@ def test_rig_integration(token, keep_result=False):
         )
 
     return {
-        "message": u"RigBase + CtrlBase + OPM + Cleanup 成功",
+        "message": u"RigBase Identity + CtrlBase + OPM + Cleanup 成功",
         "rig_root": None,
         "control": None,
         "joint": None,
@@ -500,7 +499,7 @@ def run(keep_result=False):
         passed_count = 1
 
         print(
-            u"[PASS] Rig | RigBase -> CtrlBase -> OPM -> Joint | {}".format(
+            u"[PASS] Rig | RigBase Identity -> CtrlBase -> OPM -> Joint | {}".format(
                 test_result["message"]
             )
         )
@@ -509,7 +508,7 @@ def run(keep_result=False):
         error_text = traceback.format_exc()
 
         print(
-            u"[FAIL] Rig | RigBase -> CtrlBase -> OPM -> Joint | {}".format(
+            u"[FAIL] Rig | RigBase Identity -> CtrlBase -> OPM -> Joint | {}".format(
                 error
             )
         )
