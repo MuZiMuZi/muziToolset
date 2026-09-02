@@ -1,105 +1,166 @@
 # muziToolset
 
-A Maya rigging toolkit focused on maintainable production tools, reusable Core APIs, and clear rig-system boundaries.
+A Maya 2023 rigging toolkit focused on maintainable production tools, reusable Core APIs, and explicit rig-system boundaries.
+
+Current architecture version: **0.4.0**.
 
 ## Runtime package
 
-The repository root itself is the production Python package:
-
 ```text
 muziToolset/
-├─ app/          # toolbox entry and application-level Maya window management
-├─ ui/           # shared theme, widgets, and standalone Tool window helpers
-├─ core/         # reusable Maya/Python logic without UI dependencies
+├─ app/          # toolbox entry and application-level window management
+├─ ui/           # shared theme, widgets, and standalone window helpers
+├─ core/         # reusable Maya/Python primitives
 ├─ tools/        # standalone user-facing tools
-├─ systems/      # reusable rig builders and larger workflows
-├─ resources/    # icons and controller shape data
+├─ systems/      # RigBase, ModuleBase, CtrlBase, and rig systems
+├─ resources/    # guide templates and controller shape data
 ├─ tests/        # Maya smoke tests and static architecture gates
-├─ docs/         # MkDocs documentation
-├─ scripts/      # AST API documentation generator
-└─ legacy_reference/
+└─ docs/         # MkDocs documentation
 ```
 
-Historical implementations are stored under `legacy_reference/`. They are reference-only and must not be imported by production modules.
+Historical implementations under `legacy_reference/` are reference-only and must not be imported by production modules.
 
 ## Maya target
 
 - Maya 2023 first
 - PySide2 first, with PySide6 fallback where practical
 - `maya.cmds` preferred for scene operations
-- New production code should not add PyMel dependencies
-- Production module names use `snake_case`; classes use `PascalCase`
+- no new PyMel dependencies
+- production modules/functions use `snake_case`
+- classes use `PascalCase`
 
 ## Launch
 
-Place the repository where Maya can import `muziToolset`, then run:
-
 ```python
 import muziToolset
-
 window = muziToolset.show()
 ```
 
-## Core naming
+## 0.4 architecture foundations
 
-Production Core modules use snake_case, for example:
-
-```text
-animation_utils.py
-scene_utils.py
-attr_utils.py
-hierarchy_utils.py
-joint_utils.py
-name_utils.py
-rename_utils.py
-matrix_utils.py
-curve_utils.py
-skin_utils.py
-```
-
-The former CamelCase compatibility modules have completed migration and were removed:
+### RigBase
 
 ```text
-attrUtils.py
-hierarchyUtils.py
-jointUtils.py
-nameUtils.py
+systems/rig_base.py
 ```
 
-A static AST gate prevents these retired module names or files from returning to production code.
-
-## Tool windows
-
-UI Tools support direct use from Maya's Python Script Editor:
-
-```python
-from muziToolset.tools.controller import create_ctrl_tool
-
-window = create_ctrl_tool.main()
-```
-
-Standalone Tool lifetime is handled by `ui.window_utils`; the main toolbox still uses `app.window_manager` for application-level window behavior.
-
-Non-UI action tools are not forced into a QWidget lifecycle.
-
-## Documentation
-
-MkDocs Material documentation is published at:
+Owns the production rig naming convention:
 
 ```text
-https://muzimuzi.github.io/muziToolset/
+[type]_[side]_[part]_[function]_[index]
 ```
 
-API Reference pages are generated from Python source using the standard-library `ast` module. The generator does not import Maya modules, so documentation can be built on GitHub Actions Linux runners.
+Rig naming no longer belongs to Core. The former `core/name_utils.py` has been removed.
+
+`core/rename_utils.py` is limited to generic Maya rename and short-name operations.
+
+### ModuleBase
+
+```text
+systems/module_base.py
+```
+
+Production business units are called **Modules**, not Components.
+
+Standard lifecycle:
+
+```text
+collect_inputs
+prepare_data
+process_data
+finalize_step
+```
+
+`RigModuleBase` specializes `process_data` into:
+
+```text
+create_joint
+create_controller
+create_connection
+```
+
+The former `systems/component_base.py` has been removed.
+
+### CtrlBase
+
+```text
+systems/ctrl_base.py
+```
+
+This is the single production controller workflow implementation.
+
+It owns controller hierarchy creation, FK controls, follow, space switch, and space blend behavior.
+
+The former `systems/controller/` package has been removed.
+
+## Face system
+
+```text
+systems/face/
+├── setup/
+├── guide/
+├── modules/
+├── build/
+├── finalize/
+├── data/
+├── ui/
+├── face_base.py
+└── config.py
+```
+
+The distinction is explicit:
+
+```text
+Step
+    Setup / Guide / Build / Finalize workflow stage
+
+Module
+    complete rig business unit such as Teeth / Jaw / Tongue / Eye
+
+Builder
+    reusable build algorithm such as Curve Attachment or Zip Lip
+
+Core
+    generic Maya primitive
+```
+
+Current production Step 03 module:
+
+```text
+TeethModule
+```
+
+## Controller hierarchy
+
+`systems.ctrl_base.create_ctrl()` creates the standard hierarchy:
+
+```text
+zero
+  ↓
+driven
+  ↓
+space
+  ↓
+connect
+  ↓
+offset
+  ↓
+ctrl
+  ↓
+output
+```
+
+Controller tools and rig modules call `ctrl_base` directly rather than maintaining wrapper builders.
 
 ## Quality gates
 
-Static CI:
+Static architecture checks include:
 
 ```bash
 python tests/core_import_style_test.py
-python scripts/generate_mkdocs_reference.py
-mkdocs build --strict
+python tests/rig_architecture_gate_test.py
+python tests/rig_base_contract_test.py
+python tests/module_base_contract_test.py
 ```
 
 Maya 2023 runtime checks include:
@@ -107,26 +168,26 @@ Maya 2023 runtime checks include:
 ```python
 import muziToolset
 
+muziToolset.smoke_test()
 muziToolset.pipeline_smoke_test()
 muziToolset.extended_core_smoke_test()
-muziToolset.tool_window_smoke_test()
+muziToolset.ctrl_base_smoke_test()
+muziToolset.face_build_smoke_test()
+muziToolset.rig_integration_test()
+muziToolset.maya2023_smoke_test()
+muziToolset.functional_smoke_test()
 ```
 
-Recorded Maya 2023 results for the current refactor:
+`rig_architecture_gate_test.py` prevents the retired `core/name_utils.py`, `systems/component_base.py`, `systems/controller/`, and Component class names from returning to production code.
+
+## Documentation
+
+The detailed architecture is documented in:
 
 ```text
-Extended Core Smoke: 6 passed / 0 failed
-Tool Window Smoke:   17 passed / 0 failed
+ARCHITECTURE.md
+docs/architecture/
+docs/development/testing.md
 ```
 
-## Architecture rules
-
-- `core` must not depend on `ui`, `tools`, `systems`, or `app`.
-- `tools` collect user input and call Core/System APIs.
-- `systems` contain reusable rig-building workflows.
-- `ui.window_utils` keeps directly launched standalone UI Tools alive and visible.
-- `app.window_manager` owns application-level toolbox window behavior.
-- Historical code is used only as a source for algorithms that are rewritten into the production architecture.
-- Large one-click workflows must not grow back into a universal Core utility class.
-
-See `README.md`, `ARCHITECTURE.md`, and the MkDocs site for the detailed project documentation.
+API reference pages are generated from Python source with the standard-library `ast` module, so documentation generation does not require Maya.
