@@ -21,9 +21,6 @@ get_item_world_position(item)
 get_item_world_rotation(item)
     获取 Transform / Joint 的世界旋转；组件没有稳定的 Transform Rotation，因此返回 None。
 
-average_vectors(vectors)
-    为历史公开名称；实际三维平均算法统一来自 math_utils.average_point3。
-
 snap_to_average(reference_items, target_item, include_rotation=True)
     把目标对象吸附到多个参考项的平均位置，并在条件允许时应用平均旋转。
 
@@ -32,7 +29,7 @@ snap_to_average(reference_items, target_item, include_rotation=True)
 - Core 不读取“最后选择的是目标”这类 UI 语义；这部分由 tools/snap_tool.py 决定。
 - Component 可以提供位置，但通常不能直接作为 Rotation 参考。
 - DAG Parent 查询复用 hierarchy_utils，不在本模块重新包装 listRelatives。
-- Point / Vector 数学统一复用 math_utils，不在 Snap 模块维护第二套数学实现。
+- Point / Vector 数学统一复用 math_utils，不在 Snap 模块维护第二套数学实现或兼容别名。
 - 复杂 Orientation Blend 应进入 Matrix / Rig System，而不是继续扩张 Snap Utils。
 """
 
@@ -43,10 +40,6 @@ import maya.cmds as cmds
 from . import hierarchy_utils
 from . import math_utils
 from . import transform_utils
-
-
-# 保留现有公开入口，但算法只有 math_utils 一份实现。
-average_vectors = math_utils.average_point3
 
 
 # =============================================================================
@@ -245,6 +238,5 @@ __all__ = [
     "is_component",
     "get_item_world_position",
     "get_item_world_rotation",
-    "average_vectors",
     "snap_to_average",
 ]
