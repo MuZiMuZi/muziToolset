@@ -3,11 +3,6 @@ Runtime Docstring Standard
 ==============================================================================
 Runtime files:  99
 Changed files:  0
-Errors:         5
-Validation errors:
-  - /home/runner/work/muziToolset/muziToolset/ui/widgets/color_index_slider.py:287 update_preview.color_index 缺少 Args 说明
-  - /home/runner/work/muziToolset/muziToolset/ui/widgets/color_index_slider.py:251 set_value.value 缺少 Args 说明
-  - /home/runner/work/muziToolset/muziToolset/ui/widgets/color_index_slider.py:245 get_value 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/ui/widgets/color_index_slider.py:80 __init__.value 缺少 Args 说明
-  - /home/runner/work/muziToolset/muziToolset/ui/widgets/color_index_slider.py:80 __init__.parent 缺少 Args 说明
+Errors:         0
+Status:         PASS
 ==============================================================================
