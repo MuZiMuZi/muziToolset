@@ -44,9 +44,9 @@ app / ui / tools
 systems/rig_base.py
 ```
 
-`RigBase` 是所有 Rig Object / Module 共用的**可实例化 Identity 基类**，不是 Naming Utility，也不是单个 Maya Node 的 Name Object。
+`RigBase` 是所有 Rig Object / Module 共用的**可实例化基础类**，不是 Naming Utility，也不是单个 Maya Node 的 Name Object。
 
-Rig Object Identity 只包含：
+每个实例直接保存三个基础属性：
 
 ```text
 side
@@ -64,6 +64,10 @@ rig = RigBase(
     part="brow",
     index=1
 )
+
+print(rig.side)
+print(rig.part)
+print(rig.index)
 ```
 
 具体 Maya Node 的 `node_type` 和 `function` 在创建名称时提供：
@@ -99,20 +103,22 @@ function    单一 Token
 index       001 ~ 999
 ```
 
-实例 API：
+正式实例属性：
 
 ```text
-identity
-set_identity()
+side
+part
+index
+```
+
+正式实例方法：
+
+```text
 create_name()
 mirror_name()
 get_next_index()
 create_unique_name()
 get_opposite_side()
-flip_side()
-is_left()
-is_right()
-is_center()
 ```
 
 纯解析 / 校验能力可以直接通过类调用：
@@ -139,7 +145,19 @@ node_type=
 
 旧 `type=` Keyword 已退休，不再提供兼容入口。
 
-同样已经退休：
+为了保持基础类简单，以下属性包装 API 已删除：
+
+```text
+identity
+set_identity()
+resolve_identity()
+flip_side()
+is_left()
+is_right()
+is_center()
+```
+
+同时继续保持退休：
 
 ```text
 RigBase(name=...)
@@ -148,6 +166,23 @@ compose()
 decompose()
 flip()
 ```
+
+读取状态直接使用：
+
+```python
+rig.side
+rig.part
+rig.index
+```
+
+判断 Side 直接使用：
+
+```python
+if rig.side == "lf":
+    pass
+```
+
+需要修改属性时直接赋值；正式 Naming 时 `create_name()` 会再次执行字段校验和规范化。
 
 `parse_name()` 只返回解析字段，不会反向修改 RigBase 实例。
 
@@ -202,7 +237,7 @@ ModuleBase
 RigModuleBase
 ```
 
-因此每个 Module 都天然拥有自己的 Rig Identity 和 Naming 能力。
+因此每个 Module 都天然拥有自己的 `side / part / index` 属性和 Naming 能力。
 
 旧 `systems/component_base.py` 已删除。
 
@@ -292,7 +327,7 @@ Core 不负责：
 
 - Teeth / Jaw / Face / Body 等业务语义；
 - 完整 Rig Workflow；
-- Rig Identity / Rig Naming Convention；
+- Rig Object 基础属性 / Rig Naming Convention；
 - PySide UI；
 - PyMel。
 
@@ -300,7 +335,7 @@ Core 不负责：
 
 # Systems
 
-`systems` 负责 Rig Object Identity、完整 Rig Workflow、Module 和可复用 Builder。
+`systems` 负责 Rig Object 基础属性、完整 Rig Workflow、Module 和可复用 Builder。
 
 当前基础结构：
 
@@ -410,17 +445,21 @@ FaceBase
 FaceSetup / FaceGuide / TeethModule / ...
 ```
 
-`FaceBase` 默认 Identity：
+`FaceBase` 默认实例属性：
 
 ```text
-md / face / 001
+side = md
+part = face
+index = 1
 ```
 
-具体业务 Module 应设置自己的 Identity，例如：
+具体业务 Module 应设置自己的实例属性，例如：
 
 ```text
 TeethModule
-    md / teeth / 001
+    side = md
+    part = teeth
+    index = 1
 ```
 
 `FaceSetup`、`FaceGuide` 属于特殊 Workflow Module，因此可以覆盖 `process_data()`。
@@ -476,7 +515,7 @@ ui/face_rig_ui.py
 
 Tool 不复制 Core / System 算法。
 
-需要 Rig Naming 的 Tool 应先创建一个明确的 `RigBase` Identity 实例，再通过实例生成节点名称。
+需要 Rig Naming 的 Tool 应先创建一个明确的 `RigBase` 实例，再通过 `rig.side / rig.part / rig.index` 和 Naming 方法完成工作。
 
 Controller Tool 必须调用 `systems.ctrl_base`，不允许重新建立 Controller Builder。
 
@@ -523,6 +562,8 @@ TeethComponent
 RigBase.create_name(...)
 RigBase(name=...)
 create_name(type=...)
+identity / set_identity / resolve_identity
+flip_side / is_left / is_right / is_center
 ```
 
 静态测试负责阻止架构回退；Maya Smoke 负责验证真实 Maya 行为。
