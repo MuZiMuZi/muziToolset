@@ -44,10 +44,43 @@ app / ui / tools
 systems/rig_base.py
 ```
 
-负责 Rig Naming：
+`RigBase` 是所有 Rig Object / Module 共用的**可实例化 Identity 基类**，不是 Naming Utility，也不是单个 Maya Node 的 Name Object。
+
+Rig Object Identity 只包含：
 
 ```text
-[type]_[side]_[part]_[function]_[index]
+side
+part
+index
+```
+
+例如：
+
+```python
+from muziToolset.systems.rig_base import RigBase
+
+rig = RigBase(
+    side="lf",
+    part="brow",
+    index=1
+)
+```
+
+具体 Maya Node 的 `node_type` 和 `function` 在创建名称时提供：
+
+```python
+joint_name = rig.create_name(
+    node_type="jnt",
+    function="bind"
+)
+
+# jnt_lf_brow_bind_001
+```
+
+标准 Rig Naming：
+
+```text
+[node_type]_[side]_[part]_[function]_[index]
 ```
 
 方向统一为：
@@ -56,19 +89,67 @@ systems/rig_base.py
 lf / rt / md
 ```
 
-`part` 可以包含下划线，`function` 必须是单一 Token，`index` 使用三位数字。
+字段规则：
 
-正式 API：
+```text
+node_type   单一 Token
+side        lf / rt / md
+part        可以包含下划线
+function    单一 Token
+index       001 ~ 999
+```
+
+实例 API：
+
+```text
+identity
+set_identity()
+create_name()
+mirror_name()
+get_next_index()
+create_unique_name()
+get_opposite_side()
+flip_side()
+is_left()
+is_right()
+is_center()
+```
+
+纯解析 / 校验能力可以直接通过类调用：
 
 ```python
-from muziToolset.systems.rig_base import RigBase
+fields = RigBase.parse_name(
+    "jnt_lf_brow_bind_001"
+)
 
-RigBase.create_name(...)
-RigBase.parse_name(...)
-RigBase.validate_name(...)
-RigBase.mirror_name(...)
-RigBase.create_unique_name(...)
+valid = RigBase.validate_name(
+    "jnt_lf_brow_bind_001"
+)
+
+side = RigBase.normalize_side(
+    "left"
+)
 ```
+
+正式 Naming 参数统一使用：
+
+```text
+node_type=
+```
+
+旧 `type=` Keyword 已退休，不再提供兼容入口。
+
+同样已经退休：
+
+```text
+RigBase(name=...)
+name
+compose()
+decompose()
+flip()
+```
+
+`parse_name()` 只返回解析字段，不会反向修改 RigBase 实例。
 
 Rig Naming 已从 Core 移出。旧 `core/name_utils.py` 已删除。
 
@@ -120,6 +201,8 @@ ModuleBase
    ↓
 RigModuleBase
 ```
+
+因此每个 Module 都天然拥有自己的 Rig Identity 和 Naming 能力。
 
 旧 `systems/component_base.py` 已删除。
 
@@ -209,7 +292,7 @@ Core 不负责：
 
 - Teeth / Jaw / Face / Body 等业务语义；
 - 完整 Rig Workflow；
-- Rig Naming Convention；
+- Rig Identity / Rig Naming Convention；
 - PySide UI；
 - PyMel。
 
@@ -217,7 +300,7 @@ Core 不负责：
 
 # Systems
 
-`systems` 负责完整 Rig Workflow、Module 和可复用 Builder。
+`systems` 负责 Rig Object Identity、完整 Rig Workflow、Module 和可复用 Builder。
 
 当前基础结构：
 
@@ -327,6 +410,19 @@ FaceBase
 FaceSetup / FaceGuide / TeethModule / ...
 ```
 
+`FaceBase` 默认 Identity：
+
+```text
+md / face / 001
+```
+
+具体业务 Module 应设置自己的 Identity，例如：
+
+```text
+TeethModule
+    md / teeth / 001
+```
+
 `FaceSetup`、`FaceGuide` 属于特殊 Workflow Module，因此可以覆盖 `process_data()`。
 
 真正的 Rig Module 使用标准三段构建：
@@ -380,6 +476,8 @@ ui/face_rig_ui.py
 
 Tool 不复制 Core / System 算法。
 
+需要 Rig Naming 的 Tool 应先创建一个明确的 `RigBase` Identity 实例，再通过实例生成节点名称。
+
 Controller Tool 必须调用 `systems.ctrl_base`，不允许重新建立 Controller Builder。
 
 ---
@@ -415,13 +513,16 @@ rig_integration_test.py
 maya2023_smoke_test.py
 ```
 
-`rig_architecture_gate_test.py` 明确禁止以下退休架构重新出现：
+`rig_architecture_gate_test.py` 明确禁止以下架构回退：
 
 ```text
 core/name_utils.py
 systems/component_base.py
 systems/controller/
 TeethComponent
+RigBase.create_name(...)
+RigBase(name=...)
+create_name(type=...)
 ```
 
 静态测试负责阻止架构回退；Maya Smoke 负责验证真实 Maya 行为。
