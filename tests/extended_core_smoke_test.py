@@ -6,14 +6,16 @@ Extended Core / RigBase Smoke Test
 Maya 真机验证第二层基础能力：
     - attr_utils
     - hierarchy_utils
-    - joint_utils
-    - systems.rig_base.RigBase Identity + core.rename_utils
+    - joint_utils / joint_chain_utils
+    - systems.rig_base.RigBase + core.rename_utils
     - model_check_utils
     - scene_clean_utils
 
-Rig Naming 已经从 Core 迁到 systems.rig_base；
-RigBase 是实例化 Rig Object 基类；
-Core rename_utils 只负责 Maya Rename / Short Name 等通用节点操作。
+架构约定：
+    - Rig Naming 统一使用 type / side / part / function / index；
+    - 多 Joint / Joint Chain 统一使用 core.joint_chain_utils；
+    - Core rename_utils 只负责 Maya Rename / Short Name / 外部名称 Token；
+    - Smoke Test 不保留退休 API 的兼容调用。
 """
 
 from __future__ import print_function
@@ -25,6 +27,7 @@ import maya.cmds as cmds
 
 from ..core import attr_utils
 from ..core import hierarchy_utils
+from ..core import joint_chain_utils
 from ..core import joint_utils
 from ..core import model_check_utils
 from ..core import rename_utils
@@ -103,7 +106,9 @@ def assert_vector_close(
     u"""向量断言。"""
     if len(actual) != len(expected):
         raise RuntimeError(
-            u"{}长度错误。".format(label)
+            u"{}长度错误。".format(
+                label
+            )
         )
 
     index = 0
@@ -268,25 +273,16 @@ def test_attr_utils(token, test_root):
             u"String Attribute 保存失败。"
         )
 
-    node_attr.add_attr(
-        "targetMessage",
-        attr_type="message",
-        lock=False,
-        hide=True
-    )
-    cmds.connectAttr(
-        target + ".message",
-        node + ".targetMessage",
+    node_attr.connect_message(
+        target,
+        attr="targetMessage",
         force=True
     )
-
-    connections = cmds.listConnections(
-        node + ".targetMessage",
-        source=True,
-        destination=False
+    message_node = node_attr.get_message(
+        "targetMessage"
     )
 
-    if not connections:
+    if not message_node:
         raise RuntimeError(
             u"Message Attribute 连接失败。"
         )
@@ -362,7 +358,7 @@ def test_hierarchy_utils(token, test_root):
 
 
 # =============================================================================
-# Joint Utils
+# Joint Utils / Joint Chain Utils
 # =============================================================================
 
 def test_joint_utils(token, test_root):
@@ -379,8 +375,11 @@ def test_joint_utils(token, test_root):
         parent=test_root
     )
 
-    chain = joint_utils.JointChain.parent_joints_as_chain(
-        [root_joint, child_joint]
+    chain = joint_chain_utils.parent_joints_as_chain(
+        [
+            root_joint,
+            child_joint,
+        ]
     )
 
     if len(chain) != 2:
@@ -394,15 +393,13 @@ def test_joint_utils(token, test_root):
         label=u"Joint Radius"
     )
 
-    tagged_identity = RigBase(
+    tagged_name = RigBase(
+        type="jnt",
         side="lf",
         part=token.lower(),
+        function="bind",
         index=1
-    )
-    tagged_name = tagged_identity.create_name(
-        node_type="jnt",
-        function="bind"
-    )
+    ).name
     tagged_joint = joint_utils.Joint.create(
         name=tagged_name,
         position=[0.0, 0.0, 0.0],
@@ -426,7 +423,7 @@ def test_joint_utils(token, test_root):
             )
         )
 
-    return u"Create + Chain + Radius + Joint Label 成功"
+    return u"Create + Joint Chain + Radius + Joint Label 成功"
 
 
 # =============================================================================
@@ -434,16 +431,15 @@ def test_joint_utils(token, test_root):
 # =============================================================================
 
 def test_naming_utils(token, test_root):
-    u"""验证 RigBase Identity / Naming + Maya Rename。"""
+    u"""验证当前 RigBase Naming Object + Maya Rename。"""
     rig_object = RigBase(
-        side="left",
+        type="jnt",
+        side="lf",
         part="upper_arm",
+        function="bind",
         index=1
     )
-    standard_name = rig_object.create_name(
-        node_type="jnt",
-        function="bind"
-    )
+    standard_name = rig_object.name
 
     if standard_name != "jnt_lf_upper_arm_bind_001":
         raise RuntimeError(
@@ -463,16 +459,14 @@ def test_naming_utils(token, test_root):
             )
         )
 
-    if parsed["node_type"] != "jnt":
+    if parsed["type"] != "jnt":
         raise RuntimeError(
-            u"RigBase Node Type Parse 错误：{}".format(
+            u"RigBase Type Parse 错误：{}".format(
                 parsed
             )
         )
 
-    mirror_name = rig_object.mirror_name(
-        standard_name
-    )
+    mirror_name = rig_object.mirror_name()
 
     if mirror_name != "jnt_rt_upper_arm_bind_001":
         raise RuntimeError(
@@ -483,7 +477,7 @@ def test_naming_utils(token, test_root):
 
     if rig_object.side != "lf":
         raise RuntimeError(
-            u"mirror_name() 不应该修改 Rig Object Identity。"
+            u"mirror_name() 不应该修改 RigBase.side。"
         )
 
     source = cmds.createNode(
@@ -510,7 +504,7 @@ def test_naming_utils(token, test_root):
             u"Maya 节点没有完成 Rename。"
         )
 
-    return u"RigBase Identity / Create / Parse / Mirror + Maya Rename 成功"
+    return u"RigBase Create / Parse / Mirror + Maya Rename 成功"
 
 
 # =============================================================================
@@ -624,7 +618,7 @@ def test_scene_clean_utils(token, test_root):
 # =============================================================================
 
 def print_report(results):
-    u"""打印报告。"""
+    u"""打印报告并返回汇总。"""
     print("")
     print("=" * 78)
     print("Muzi Toolset - Extended Core / RigBase Smoke Test")
@@ -681,7 +675,7 @@ def run():
         ("attr_utils", "Attribute / Config", test_attr_utils),
         ("hierarchy_utils", "DAG / Ensure / Parent", test_hierarchy_utils),
         ("joint_utils", "Joint / Chain / Label", test_joint_utils),
-        ("rig_base", "Rig Identity / Naming / Maya Rename", test_naming_utils),
+        ("rig_base", "Rig Naming / Maya Rename", test_naming_utils),
         ("model_check_utils", "Model Quality Check", test_model_check_utils),
         ("scene_clean_utils", "Safe Scene Clean", test_scene_clean_utils),
     ]
