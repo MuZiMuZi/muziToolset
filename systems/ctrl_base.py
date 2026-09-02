@@ -91,56 +91,44 @@ axis_rotation = {
 # Naming
 # =============================================================================
 
-def get_ctrl_name_from_target(target_node):
-    u"""根据 Target Node 生成标准 ctrl_ 名称。"""
-    scene_utils.validate_node(target_node, u"Target Node")
+def _validate_ctrl_name(ctrl_name):
+    u"""
+    检查传入的 Controller Name 是否符合 Ctrl Base 的最基础要求。
 
-    target_name = rename_utils.get_short_name(target_node)
-    target_name = target_name.replace(":", "_")
+    Ctrl Base 不负责自动补全、修正或推导控制器名称。
+    Controller Name 必须由上层 Component 在 Naming 阶段准备完成。
+    """
+    if not isinstance(ctrl_name, str):
+        raise TypeError(
+            u"Ctrl Name 必须是字符串：{}".format(ctrl_name)
+        )
 
-    if target_name.startswith("jnt_"):
-        return target_name.replace("jnt_", "ctrl_", 1)
-
-    if target_name.startswith("bpjnt_"):
-        return target_name.replace("bpjnt_", "ctrl_", 1)
-
-    if target_name.startswith("ctrl_"):
-        return target_name
-
-    return "ctrl_{}".format(target_name)
-
-
-def get_side_color(ctrl_name):
-    u"""根据标准左右命名返回 Maya Index Color。"""
-    lower_name = ctrl_name.lower()
-
-    left_token_list = ["_lf_", "_l_", "ctrl_lf_", "ctrl_l_"]
-    right_token_list = ["_rt_", "_r_", "ctrl_rt_", "ctrl_r_"]
-
-    for token in left_token_list:
-        if token in lower_name or lower_name.startswith(token):
-            return 6
-
-    for token in right_token_list:
-        if token in lower_name or lower_name.startswith(token):
-            return 13
-
-    return 17
-
-
-def _get_safe_ctrl_name(ctrl_name):
-    u"""整理 Ctrl Name，并确保使用 ctrl_ 前缀。"""
-    clean_name = ctrl_name.replace("|", "_")
-    clean_name = clean_name.replace(":", "_")
-    clean_name = clean_name.strip()
-
-    if not clean_name:
+    if not ctrl_name:
         raise ValueError(u"Ctrl Name 不能为空。")
 
-    if not clean_name.startswith("ctrl_"):
-        clean_name = "ctrl_" + clean_name
+    if ctrl_name != ctrl_name.strip():
+        raise ValueError(
+            u"Ctrl Name 不能包含首尾空格：{}".format(ctrl_name)
+        )
 
-    return clean_name
+    if "|" in ctrl_name:
+        raise ValueError(
+            u"Ctrl Name 必须是节点名称，不能传入 DAG Path：{}".format(
+                ctrl_name
+            )
+        )
+
+    if ":" in ctrl_name:
+        raise ValueError(
+            u"Ctrl Name 不应该包含 Namespace：{}".format(ctrl_name)
+        )
+
+    if not ctrl_name.startswith("ctrl_"):
+        raise ValueError(
+            u"Ctrl Name 必须使用 ctrl_ 前缀：{}".format(ctrl_name)
+        )
+
+    return True
 
 
 def _build_related_name(ctrl_name, node_type, function_name=None):
@@ -261,11 +249,12 @@ def create_ctrl(
     创建 MuziTools 标准 Controller。
 
     制作思路：
-        1. zero / driven / space / connect / offset 固定创建；
-        2. 调用方只传真正会变化的参数；
-        3. 所有名称保持确定性，同名时直接报错；
-        4. Output 是最终动画输入节点的 Identity Child；
-        5. Component 可以直接把 top_grp Parent 到自己的 ctrl_grp。
+        1. Controller Name 由调用方提前准备，Ctrl Base 不再自动修正名称；
+        2. zero / driven / space / connect / offset 固定创建；
+        3. 调用方只传真正会变化的参数；
+        4. 所有名称保持确定性，同名时直接报错；
+        5. Output 是最终动画输入节点的 Identity Child；
+        6. Component 可以直接把 top_grp Parent 到自己的 ctrl_grp。
 
     Returns:
         dict:
@@ -279,6 +268,8 @@ def create_ctrl(
     # -------------------------------------------------------------------------
     # Step 01：检查创建参数
     # -------------------------------------------------------------------------
+    _validate_ctrl_name(name)
+
     if float(radius) <= 0.0:
         raise ValueError(u"Controller Radius 必须大于 0。")
 
@@ -299,7 +290,7 @@ def create_ctrl(
     # -------------------------------------------------------------------------
     # Step 02：准备固定名称
     # -------------------------------------------------------------------------
-    ctrl_name = _get_safe_ctrl_name(name)
+    ctrl_name = name
 
     zero_grp_name = _build_related_name(ctrl_name, "zero")
     driven_grp_name = _build_related_name(ctrl_name, "driven")
@@ -501,30 +492,43 @@ def create_ctrl(
 @scene_utils.undo_chunk
 def create_fk_ctrl(
         target_list,
+        ctrl_name_list,
         shape="circle",
         radius=1.0,
+        color=17,
         axis="Y+",
         parent_node=None,
         constrain=True,
         add_to_set=True,
         ctrl_set="ctrl_set"
 ):
-    u"""根据 Target List 创建标准 FK Controller Chain。"""
+    u"""
+    根据 Target List 和明确的 Ctrl Name List 创建标准 FK Controller Chain。
+
+    Ctrl Base 不根据 Target 自动推导 Controller Name，也不根据左右侧自动推导颜色。
+    名称和颜色属于上层 Component 的 Build Setting。
+    """
     if not target_list:
         return []
 
+    if not ctrl_name_list:
+        raise ValueError(u"FK Ctrl Name List 不能为空。")
+
+    if len(target_list) != len(ctrl_name_list):
+        raise ValueError(
+            u"FK Target List 和 Ctrl Name List 数量必须一致。"
+        )
+
     ctrl_dict_list = []
     previous_ctrl_node = None
+    target_index = 0
 
-    for target_node in target_list:
-        try:
-            scene_utils.validate_node(target_node, u"FK Target")
-        except RuntimeError:
-            cmds.warning(u"FK Target 不存在，跳过：{}".format(target_node))
-            continue
+    while target_index < len(target_list):
+        target_node = target_list[target_index]
+        ctrl_name = ctrl_name_list[target_index]
 
-        ctrl_name = get_ctrl_name_from_target(target_node)
-        ctrl_color = get_side_color(ctrl_name)
+        scene_utils.validate_node(target_node, u"FK Target")
+        _validate_ctrl_name(ctrl_name)
 
         current_parent_node = parent_node
 
@@ -535,7 +539,7 @@ def create_fk_ctrl(
             name=ctrl_name,
             shape=shape,
             radius=radius,
-            color=ctrl_color,
+            color=color,
             axis=axis,
             target_node=target_node,
             parent_node=current_parent_node,
@@ -556,6 +560,7 @@ def create_fk_ctrl(
 
         ctrl_dict_list.append(ctrl_dict)
         previous_ctrl_node = ctrl_node
+        target_index += 1
 
     ctrl_list = []
 
@@ -1513,8 +1518,6 @@ def delete_rebuild_cache(cache_node):
 
 __all__ = [
     "axis_rotation",
-    "get_ctrl_name_from_target",
-    "get_side_color",
     "create_ctrl",
     "create_fk_ctrl",
     "create_follow",
