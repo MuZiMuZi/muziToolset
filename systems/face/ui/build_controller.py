@@ -3,16 +3,16 @@ u"""
 Face Rig Step 03 Build UI Controller
 ====================================
 
-在现有 Workflow Controller 之上补充 Step 03 Component Build 页面，
+在现有 Workflow Controller 之上补充 Step 03 Module Build 页面，
 同时修正 UI 与当前 Face Controller Config Schema 的映射。
 
 设计边界：
     1. Step 01 / Step 02 的稳定基础 UI 和 Workflow 逻辑保持不变；
     2. 本层补充 Teeth / Tongue Controller Size，并使用正式 Config Attribute；
-    3. 本层负责 Step 03 的 Component 触发和状态反馈；
-    4. 具体 Teeth Rig 算法仍然只存在于 systems.face.build；
-    5. Step 03 暂时不自动标记完成，因为其它 Component 尚未全部接入；
-    6. 后续 Component 继续按照相同 Card + Public Build API 的模式加入。
+    3. 本层负责 Step 03 的 Module 触发和状态反馈；
+    4. Teeth Rig 业务逻辑统一位于 systems.face.modules；
+    5. Step 03 暂时不自动标记完成，因为其它 Module 尚未全部接入；
+    6. 后续 Module 继续按照相同 Card + Public Build API 的模式加入。
 """
 
 from __future__ import print_function
@@ -36,12 +36,12 @@ except ImportError:
 
 from ....ui import theme
 from .. import config
-from ..build import build_teeth
+from ..modules import build_teeth
 from . import workflow_controller
 
 
 class FaceRigWizard(workflow_controller.FaceRigWizard):
-    u"""增加正式 Controller Schema 和 Step 03 Build 页面的 Face Rig Wizard。"""
+    u"""增加正式 Controller Schema 和 Step 03 Module Build 页面的 Face Rig Wizard。"""
 
     def __init__(self, parent=None):
         u"""初始化 Step 03 Build UI。"""
@@ -133,7 +133,6 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             settings_grid
         )
 
-        # Base Step 02 最后一项是 Stretch；把扩展 Card 插到 Stretch 前面。
         insert_index = main_layout.count() - 1
 
         if insert_index < 0:
@@ -169,7 +168,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
             if size_widget is None:
                 raise RuntimeError(
-                    u"Controller Size UI 缺少模块：{}".format(
+                    u"Controller Size UI 缺少 Module：{}".format(
                         module_name
                     )
                 )
@@ -245,7 +244,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
     # =========================================================================
 
     def create_pages(self):
-        u"""创建原有页面，并把 Step 03 占位页替换成正式 Build 页面。"""
+        u"""创建原有页面，并把 Step 03 占位页替换成正式 Module Build 页面。"""
         super(FaceRigWizard, self).create_pages()
 
         old_step3_page = self.step3_page
@@ -262,7 +261,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         )
 
     def create_step3_page(self):
-        u"""创建 Step 03 Component Build 页面。"""
+        u"""创建 Step 03 Module Build 页面。"""
         page = QWidget()
         main_layout = QVBoxLayout(
             page
@@ -287,7 +286,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         )
 
         intro_description = QLabel(
-            u"Face Component 按模块独立构建。当前先接入 Teeth；后续 Jaw、Lip、Eye、Eyelid、Brow、Nose、Cheek、Tongue 会继续加入同一页面。"
+            u"Face Module 按模块独立构建。当前先接入 Teeth；后续 Jaw、Lip、Eye、Eyelid、Brow、Nose、Cheek、Tongue 会继续加入同一页面。"
         )
         intro_description.setWordWrap(
             True
@@ -310,7 +309,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         )
 
         teeth_description = QLabel(
-            u"Upper / Lower Teeth 使用 Guide → Controller → Bind Joint → Rigid Skin。Gum 不在 Teeth Component 中绑定，后续由 Mouth / Jaw Deformation 处理。"
+            u"Upper / Lower Teeth 使用 Guide → Controller → Bind Joint → Rigid Skin。Gum 不在 Teeth Module 中绑定，后续由 Mouth / Jaw Deformation 处理。"
         )
         teeth_description.setWordWrap(
             True
@@ -368,7 +367,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         )
         future_layout.addWidget(
             theme.make_section_title(
-                u"Next Components"
+                u"Next Modules"
             )
         )
 
@@ -418,7 +417,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
     # =========================================================================
 
     def clicked_build_teeth(self):
-        u"""通过 Face System 公共 API 构建 Teeth Component。"""
+        u"""通过 Face System 公共 API 构建 Teeth Module。"""
         self.build_teeth_button.setEnabled(
             False
         )
@@ -426,7 +425,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             u"构建中"
         )
         self.status_label.setText(
-            u"正在构建 Teeth Component"
+            u"正在构建 Teeth Module"
         )
 
         try:
@@ -441,7 +440,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
                 "danger_text"
             )
             self.status_label.setText(
-                u"Teeth Component 构建失败"
+                u"Teeth Module 构建失败"
             )
             self.build_teeth_button.setEnabled(
                 True
@@ -449,7 +448,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
             QMessageBox.critical(
                 self,
-                u"Teeth Component 构建失败",
+                u"Teeth Module 构建失败",
                 u"{}".format(error)
             )
             return False
@@ -463,10 +462,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             "pill"
         )
         self.status_label.setText(
-            u"Teeth Component 构建完成"
+            u"Teeth Module 构建完成"
         )
 
-        # Teeth Component 会主动阻止重复构建，因此成功后保持按钮禁用。
         self.build_teeth_button.setEnabled(
             False
         )
@@ -474,7 +472,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
 
 def main():
-    u"""创建带 Step 03 Build 页面的正式 Face Rig UI。"""
+    u"""创建带 Step 03 Module Build 页面的正式 Face Rig UI。"""
     return FaceRigWizard()
 
 
