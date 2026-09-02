@@ -10,36 +10,28 @@ Quick Snap Tool
     4. Transform / Joint 同时使用有效参考对象的平均旋转。
 
 实际吸附算法维护在：
-    muzi_rigging.core.snap_utils
+    muziToolset.core.snap_utils
+
+当前 Selection 查询统一复用 core.scene_utils，Tool 只解释选择顺序的交互语义。
 """
 
 from __future__ import print_function
 
 import maya.cmds as cmds
 
-from ...core import snap_utils
 from ...core import scene_utils
+from ...core import snap_utils
 
 
 TOOL_MODE = "action"
 
 
 def main():
-    u"""
-    按当前 Maya 选择执行一次快速吸附。
-
-    Returns:
-        bool:
-        方法执行后的结果数据。
-    """
-    selected_items = cmds.ls(
-        selection=True,
-        flatten=True,
-        long=True
+    u"""按当前 Maya 选择执行一次快速吸附。"""
+    selected_items = scene_utils.get_selected_nodes(
+        long=True,
+        flatten=True
     )
-
-    if selected_items is None:
-        selected_items = []
 
     if len(selected_items) < 2:
         cmds.warning(
@@ -50,7 +42,9 @@ def main():
     reference_items = selected_items[:-1]
     target_item = selected_items[-1]
 
-    scene_utils.open_undo_chunk("MuziQuickSnap")
+    scene_utils.open_undo_chunk(
+        "MuziQuickSnap"
+    )
 
     try:
         snap_utils.snap_to_average(
@@ -59,7 +53,9 @@ def main():
             include_rotation=True
         )
     except Exception as error:
-        cmds.warning(str(error))
+        cmds.warning(
+            str(error)
+        )
         return False
     finally:
         scene_utils.close_undo_chunk()
