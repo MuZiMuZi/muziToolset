@@ -50,7 +50,7 @@ Face / Body System
 
     ---
 
-    创建标准控制器、FK 和 Space Blend。
+    创建标准控制器、FK、Follow 和 Space。
 
     [:octicons-arrow-right-24: Controller](controller.md)
 
@@ -74,7 +74,7 @@ Face / Body System
 
     ---
 
-    Face Setup、Guide 和后续面部 Builder。
+    Face Setup、Guide、Module Build 和 Finalize。
 
     [:octicons-arrow-right-24: Face Guide](face-guide.md)
 
@@ -91,15 +91,18 @@ Face / Body System
 ## 开发时怎么选目录
 
 ```text
-通用 Maya 算法        → core/
-用户操作 / UI         → tools/
-完整可重复 Rig Builder → systems/
-公共界面组件          → ui/
-应用入口和窗口管理    → app/
+通用 Maya 算法           → core/
+用户操作 / UI            → tools/
+Rig Naming               → systems/rig_base.py
+Module Lifecycle         → systems/module_base.py
+Controller Workflow      → systems/ctrl_base.py
+完整 Rig Module / System → systems/
+公共界面组件             → ui/
+应用入口和窗口管理       → app/
 ```
 
 !!! tip "不要跨层重复实现"
-    如果一个算法已经存在于 Core，Tool 和 System 应调用它；如果一个 Rig Component 已经进入 System，Tool 只负责收集输入和触发 Build。
+    如果一个算法已经存在于 Core，Tool 和 System 应直接复用；如果完整 Rig Module 已经进入 System，Tool 只负责收集输入和触发正式 API。
 
 ## 继续查看
 
