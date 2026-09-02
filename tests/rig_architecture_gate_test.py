@@ -21,6 +21,12 @@ Rig Architecture Migration Gate
     ComponentBase
     RigComponentBase
     TeethComponent
+
+RigBase Contract：
+    - RigBase 是实例化 Rig Object Base；
+    - create_name / mirror_name / create_unique_name 等必须通过实例调用；
+    - parse_name / validate_name / normalize_* 可以继续作为 Class Method 使用；
+    - 不允许恢复旧 Name Object Constructor：RigBase(name=...)。
 """
 
 from __future__ import print_function
@@ -48,6 +54,24 @@ FORBIDDEN_IMPORT_TOKENS = {
     "component_base",
 }
 
+RIG_BASE_INSTANCE_METHODS = {
+    "create_name",
+    "mirror_name",
+    "get_next_index",
+    "create_unique_name",
+    "get_opposite_side",
+    "flip_side",
+    "is_left",
+    "is_right",
+    "is_center",
+    "resolve_identity",
+    "set_identity",
+}
+
+
+# =============================================================================
+# Path
+# =============================================================================
 
 def get_package_root():
     u"""返回 muziToolset 根目录。"""
@@ -117,6 +141,10 @@ def get_relative_path(file_path):
     )
 
 
+# =============================================================================
+# Import
+# =============================================================================
+
 def get_import_names(node):
     u"""从 Import AST 节点提取完整模块和导入名称。"""
     names = []
@@ -166,8 +194,86 @@ def import_is_forbidden(import_name):
     return False
 
 
+# =============================================================================
+# RigBase AST Contract
+# =============================================================================
+
+def get_keyword_names(call_node):
+    u"""返回一个 AST Call 的 Keyword 名称。"""
+    keyword_names = []
+
+    for keyword in call_node.keywords:
+        if keyword.arg is None:
+            continue
+
+        keyword_names.append(
+            keyword.arg
+        )
+
+    return keyword_names
+
+
+def is_rig_base_class_method_call(call_node):
+    u"""判断是否为 RigBase.some_method(...) 形式。"""
+    function_node = call_node.func
+
+    if not isinstance(function_node, ast.Attribute):
+        return False
+
+    value_node = function_node.value
+
+    if not isinstance(value_node, ast.Name):
+        return False
+
+    if value_node.id != "RigBase":
+        return False
+
+    return True
+
+
+def check_rig_base_call(call_node, relative_path):
+    u"""检查 RigBase 是否被重新当成 Name Utility / Name Object。"""
+    issues = []
+
+    if isinstance(call_node.func, ast.Name):
+        if call_node.func.id == "RigBase":
+            keyword_names = get_keyword_names(
+                call_node
+            )
+
+            if "name" in keyword_names:
+                issues.append({
+                    "file": relative_path,
+                    "line": call_node.lineno,
+                    "detail": "RigBase 不允许恢复 name= Name Object Constructor",
+                })
+
+        return issues
+
+    if not is_rig_base_class_method_call(call_node):
+        return issues
+
+    method_name = call_node.func.attr
+
+    if method_name not in RIG_BASE_INSTANCE_METHODS:
+        return issues
+
+    issues.append({
+        "file": relative_path,
+        "line": call_node.lineno,
+        "detail": "RigBase.{}() 必须通过 RigBase 实例调用".format(
+            method_name
+        ),
+    })
+    return issues
+
+
+# =============================================================================
+# Scan
+# =============================================================================
+
 def scan_file(file_path):
-    u"""扫描一个 Python 文件中的退休 Import / Class。"""
+    u"""扫描一个 Python 文件中的退休 Import / Class / RigBase 调用。"""
     with open(
             file_path,
             "r",
@@ -192,6 +298,19 @@ def scan_file(file_path):
                     "line": node.lineno,
                     "detail": "退休类名 {}".format(node.name),
                 })
+            continue
+
+        if isinstance(node, ast.Call):
+            rig_base_issues = check_rig_base_call(
+                node,
+                relative_path
+            )
+
+            for issue in rig_base_issues:
+                issues.append(
+                    issue
+                )
+
             continue
 
         if not isinstance(
@@ -240,6 +359,10 @@ def scan_forbidden_paths():
     return issues
 
 
+# =============================================================================
+# Runner
+# =============================================================================
+
 def run():
     u"""运行 Rig Architecture Migration Gate。"""
     print("=" * 78)
@@ -280,7 +403,7 @@ def run():
         return False
 
     print(
-        u"[PASS] {} 个 Python 文件符合 RigBase / ModuleBase / CtrlBase 架构。".format(
+        u"[PASS] {} 个 Python 文件符合 RigBase Identity / ModuleBase / CtrlBase 架构。".format(
             file_count
         )
     )
