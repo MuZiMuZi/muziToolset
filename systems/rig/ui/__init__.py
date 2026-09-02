@@ -6,11 +6,13 @@ from __future__ import print_function
 
 def create_window():
     u"""
-    创建 Modular Rig Window。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        创建 Modular Rig Window。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
     """
     from .modular_rig_ui import ModularRigWindow
 

@@ -43,19 +43,21 @@ from . import scene_utils
 
 def validate_transform(node):
     u"""
-    检查节点存在，并确认它是 Maya Transform / Joint。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
+        检查节点存在，并确认它是 Maya Transform / Joint。
 
-    Returns:
-        bool:
-            方法执行后的结果数据。
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
 
-    Raises:
-        RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        Returns:
+            bool:
+                当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+
     """
     scene_utils.validate_node(
         node
@@ -112,15 +114,17 @@ def _validate_vector3(value, label):
 
 def get_world_translation(node):
     u"""
-    返回 Transform / Joint 的 World Translation。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
+        返回 Transform / Joint 的 World Translation。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+
+        Returns:
+            object:
+                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
     """
     validate_transform(
         node
@@ -136,17 +140,19 @@ def get_world_translation(node):
 
 def set_world_translation(node, translation):
     u"""
-    设置 Transform / Joint 的 World Translation。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-        translation (object):
-            当前方法执行 Maya / Rig 操作时使用的 `translation` 数据。
+        设置 Transform / Joint 的 World Translation。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            translation (object):
+                当前方法执行 Maya / Rig 操作时使用的 `translation` 数据。
+
+        Returns:
+            object:
+                完成设置或应用后的目标对象 / 状态结果。
+
     """
     validate_transform(
         node
@@ -171,15 +177,17 @@ def set_world_translation(node, translation):
 
 def get_world_rotation(node):
     u"""
-    返回 Transform / Joint 的 World Rotation。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
+        返回 Transform / Joint 的 World Rotation。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+
+        Returns:
+            object:
+                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
     """
     validate_transform(
         node
@@ -195,17 +203,19 @@ def get_world_rotation(node):
 
 def set_world_rotation(node, rotation):
     u"""
-    设置 Transform / Joint 的 World Rotation。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-        rotation (list[float] | tuple[float, float, float]):
-            Joint / Transform 使用的 XYZ Rotation。
+        设置 Transform / Joint 的 World Rotation。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            rotation (list[float] | tuple[float, float, float]):
+                Joint / Transform 使用的 XYZ Rotation。
+
+        Returns:
+            object:
+                完成设置或应用后的目标对象 / 状态结果。
+
     """
     validate_transform(
         node
@@ -230,15 +240,17 @@ def set_world_rotation(node, rotation):
 
 def get_world_matrix(node):
     u"""
-    返回 Transform / Joint 的完整 4x4 World Matrix 普通 list。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
+        返回 Transform / Joint 的完整 4x4 World Matrix 普通 list。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+
+        Returns:
+            object:
+                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
     """
     validate_transform(
         node
@@ -254,21 +266,23 @@ def get_world_matrix(node):
 
 def set_world_matrix(node, matrix_values):
     u"""
-    设置 Transform / Joint 的完整 4x4 World Matrix。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-        matrix_values (object):
-            当前方法执行 Maya / Rig 操作时使用的 `matrix_values` 数据。
+        设置 Transform / Joint 的完整 4x4 World Matrix。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            matrix_values (object):
+                当前方法执行 Maya / Rig 操作时使用的 `matrix_values` 数据。
 
-    Raises:
-        ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        Returns:
+            object:
+                完成设置或应用后的目标对象 / 状态结果。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+
     """
     # -------------------------------------------------------------------------
     # Step 01：验证并规范化当前阶段需要的输入数据
@@ -328,25 +342,27 @@ def move_relative(
         object_space=None
 ):
     u"""
-    相对移动一个 Transform / Joint。
 
-    Args:
-        node (str):
-            Transform / Joint。
-        offset (list | tuple):
-            [x, y, z] 相对偏移量。
-        space (str):
-            ``world`` 或 ``object``。
-        object_space (bool | None):
-            旧调用兼容参数；新代码请使用 space。
+        相对移动一个 Transform / Joint。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            node (str):
+                Transform / Joint。
+            offset (list | tuple):
+                [x, y, z] 相对偏移量。
+            space (str):
+                ``world`` 或 ``object``。
+            object_space (bool | None):
+                旧调用兼容参数；新代码请使用 space。
 
-    Raises:
-        ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+
     """
     # -------------------------------------------------------------------------
     # Step 01：验证并规范化当前阶段需要的输入数据
@@ -417,20 +433,22 @@ def move_relative(
 
 def distance_between(node_a, node_b):
     u"""
-    旧 Transform 距离入口。
 
-    新代码应读取 World Translation 后调用
-    math_utils.distance_between_points()。
+        旧 Transform 距离入口。
 
-    Args:
-        node_a (object):
-            当前方法执行 Maya / Rig 操作时使用的 `node_a` 数据。
-        node_b (object):
-            当前方法执行 Maya / Rig 操作时使用的 `node_b` 数据。
+        新代码应读取 World Translation 后调用
+        math_utils.distance_between_points()。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            node_a (object):
+                当前方法执行 Maya / Rig 操作时使用的 `node_a` 数据。
+            node_b (object):
+                当前方法执行 Maya / Rig 操作时使用的 `node_b` 数据。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     position_a = get_world_translation(
         node_a

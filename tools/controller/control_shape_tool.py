@@ -136,11 +136,13 @@ class ShapeListWidget(QListWidget):
 
     def __init__(self, parent=None):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
 
-        Args:
-            parent (str):
-                父级 Maya 节点名称。
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+                Args:
+                    parent (str):
+                        父级 Maya 节点名称。
+
         """
 
         # -------------------------------------------------------------------------
@@ -202,11 +204,13 @@ class ShapeListWidget(QListWidget):
 
     def contextMenuEvent(self, event):
         u"""
-        执行 `contextMenuEvent` 对应的 Maya 工具操作。
 
-        Args:
-            event (QtCore.QEvent | object):
-                Qt Event 回调传入的事件对象。
+                执行当前 API 的主要处理流程。
+
+                Args:
+                    event (QtCore.QEvent | object):
+                        Qt Event 回调传入的事件对象。
+
         """
 
         self.menu.exec_(event.globalPos())
@@ -460,11 +464,13 @@ class ColorListWidget(QListWidget):
 
     def __init__(self, parent=None):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
 
-        Args:
-            parent (str):
-                父级 Maya 节点名称。
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+                Args:
+                    parent (str):
+                        父级 Maya 节点名称。
+
         """
 
         super(ColorListWidget, self).__init__(parent)
@@ -535,11 +541,13 @@ class ControlShapeTool(QWidget):
 
     def __init__(self, parent=None):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
 
-        Args:
-            parent (str):
-                父级 Maya 节点名称。
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+                Args:
+                    parent (str):
+                        父级 Maya 节点名称。
+
         """
 
         super(ControlShapeTool, self).__init__(parent)
@@ -809,21 +817,27 @@ class ControlShapeTool(QWidget):
 
     def mirror_x_shapes(self):
         u"""
-        执行 `mirror_x_shapes` 对应的 Maya 工具操作。
+
+                镜像当前 x shapes。
+
         """
 
         self.mirror_shapes("x")
 
     def mirror_y_shapes(self):
         u"""
-        执行 `mirror_y_shapes` 对应的 Maya 工具操作。
+
+                镜像当前 y shapes。
+
         """
 
         self.mirror_shapes("y")
 
     def mirror_z_shapes(self):
         u"""
-        执行 `mirror_z_shapes` 对应的 Maya 工具操作。
+
+                镜像当前 z shapes。
+
         """
 
         self.mirror_shapes("z")
@@ -885,13 +899,15 @@ class ControlShapeTool(QWidget):
 
 def main():
     u"""
-    创建或恢复 Controller Shape 工具，并立即显示。
 
-    直接从 Maya Script Editor 调用时无需额外执行 ``window.show()``。
+        创建或恢复 Controller Shape 工具，并立即显示。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        直接从 Maya Script Editor 调用时无需额外执行 ``window.show()``。
+
+        Returns:
+            object:
+            当前工具入口创建并显示的窗口或执行结果。
+
     """
     return window_utils.show_window(
         "tools.controller.control_shape_tool",

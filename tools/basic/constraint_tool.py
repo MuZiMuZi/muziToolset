@@ -83,11 +83,13 @@ class ConstraintTool(QWidget):
 
     def __init__(self, parent=None):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
 
-        Args:
-            parent (str):
-                父级 Maya 节点名称。
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+                Args:
+                    parent (str):
+                        父级 Maya 节点名称。
+
         """
 
         super(ConstraintTool, self).__init__(parent)
@@ -301,11 +303,13 @@ class ConstraintTool(QWidget):
 
     def get_driver_and_driven_objects(self):
         u"""
-        根据当前模式拆分 Driver / Driven。
 
-        Returns:
-            tuple:
-            方法执行后的结果数据。
+                根据当前模式拆分 Driver / Driven。
+
+                Returns:
+                    tuple:
+                    按当前 API 约定组织的结果元组。
+
         """
         selected_objects = cmds.ls(
             selection=True,
@@ -531,11 +535,13 @@ class ConstraintTool(QWidget):
 
 def main():
     u"""
-    创建或恢复 Constraint Tool，立即显示并返回 QWidget。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        创建或恢复 Constraint Tool，立即显示并返回 QWidget。
+
+        Returns:
+            object:
+            当前工具入口创建并显示的窗口或执行结果。
+
     """
     return window_utils.show_window(
         "tools.basic.constraint_tool",

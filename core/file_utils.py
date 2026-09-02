@@ -100,21 +100,23 @@ def normalize_path(file_path):
 
 def ensure_directory(directory):
     u"""
-    确保目录存在，并返回规范后的目录路径。
 
-    目录不存在时会递归创建。
+        确保目录存在，并返回规范后的目录路径。
 
-    Args:
-        directory (str):
-            需要读取或写入的目录路径。
+        目录不存在时会递归创建。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        Args:
+            directory (str):
+                需要读取或写入的目录路径。
 
-    Raises:
-        ValueError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+
+        Raises:
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+
     """
     # 步骤 1：目录参数不能为空。
     if not directory:
@@ -136,19 +138,21 @@ def ensure_directory(directory):
 
 def normalize_extensions(extensions):
     u"""
-    将扩展名统一成小写、带点号、保持顺序去重的列表。
 
-    Args:
-        extensions (str | list[str] | None):
-            允许匹配的文件扩展名，例如 `.ma`、`.mb`、`.json`。
+        将扩展名统一成小写、带点号、保持顺序去重的列表。
 
-    Returns:
-        object | None:
-        方法执行后的结果数据。
+        Args:
+            extensions (str | list[str] | None):
+                允许匹配的文件扩展名，例如 `.ma`、`.mb`、`.json`。
 
-    Example:
-        ["MA", ".mb", "json"]
-                                                                            -> [".ma", ".mb", ".json"]
+        Returns:
+            object | None:
+            当前 API 完成处理后返回的结果。
+
+        Example:
+            ["MA", ".mb", "json"]
+                                                                                -> [".ma", ".mb", ".json"]
+
     """
     # 步骤 1：None 表示不过滤扩展名。
     # -------------------------------------------------------------------------
@@ -332,23 +336,25 @@ def find_files(
 
 def read_json(file_path, default=None):
     u"""
-    读取 UTF-8 JSON 文件。
 
-    Args:
-        file_path (str):
-            JSON 文件路径。
-        default (any):
-            文件不存在时可返回的默认值； default=None 时文件不存在会抛 RuntimeError。
+        读取 UTF-8 JSON 文件。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        Args:
+            file_path (str):
+                JSON 文件路径。
+            default (any):
+                文件不存在时可返回的默认值； default=None 时文件不存在会抛 RuntimeError。
 
-    Raises:
-        ValueError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+
+        Raises:
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+
     """
     # 步骤 1：规范化路径。
     normalized_path = normalize_path(file_path)
@@ -445,15 +451,17 @@ def write_json(
 
 def get_file_name(file_path):
     u"""
-    返回路径中的完整文件名，例如 ``character.ma``。
 
-    Args:
-        file_path (str):
-            需要读取或写入的文件路径。
+        返回路径中的完整文件名，例如 ``character.ma``。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        Args:
+            file_path (str):
+                需要读取或写入的文件路径。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
     """
     normalized_path = normalize_path(file_path)
     return os.path.basename(normalized_path)
@@ -461,15 +469,17 @@ def get_file_name(file_path):
 
 def get_file_stem(file_path):
     u"""
-    返回不包含扩展名的文件名，例如 ``character``。
 
-    Args:
-        file_path (str):
-            需要读取或写入的文件路径。
+        返回不包含扩展名的文件名，例如 ``character``。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        Args:
+            file_path (str):
+                需要读取或写入的文件路径。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
     """
     # 步骤 1：先取得文件名。
     file_name = get_file_name(file_path)

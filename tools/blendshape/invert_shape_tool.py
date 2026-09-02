@@ -39,11 +39,13 @@ class InvertShapeTool(QDialog):
 
     def __init__(self, parent=None):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
 
-        Args:
-            parent (str):
-                父级 Maya 节点名称。
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+                Args:
+                    parent (str):
+                        父级 Maya 节点名称。
+
         """
 
         super(InvertShapeTool, self).__init__(parent)
@@ -233,11 +235,13 @@ class InvertShapeTool(QDialog):
 
 def main():
     u"""
-    显示并返回 Invert Shape Tool。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        显示并返回 Invert Shape Tool。
+
+        Returns:
+            object:
+            当前工具入口创建并显示的窗口或执行结果。
+
     """
     return window_utils.show_window(
         "tools.blendshape.invert_shape_tool",

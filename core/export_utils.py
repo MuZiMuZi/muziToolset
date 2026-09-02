@@ -39,15 +39,17 @@ from . import scene_utils
 
 def ensure_fbx_plugin_loaded():
     u"""
-    确保 Maya FBX Plugin ``fbxmaya`` 已加载。
 
-    Returns:
-        bool:
-            方法执行后的结果数据。
+        确保 Maya FBX Plugin ``fbxmaya`` 已加载。
 
-    Raises:
-        RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        Returns:
+            bool:
+                当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+
     """
     plugin_name = "fbxmaya"
 

@@ -25,17 +25,19 @@ TOOL_MODE = "action"
 
 def get_fk_ctrl_name(target, fallback_index):
     u"""
-    根据 Target 名称生成标准 FK Ctrl Name。
 
-    Args:
-        target (str):
-            接收结果或被处理的目标 Maya 节点名称。
-        fallback_index (int):
-            对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
+        根据 Target 名称生成标准 FK Ctrl Name。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            target (str):
+                接收结果或被处理的目标 Maya 节点名称。
+            fallback_index (int):
+                对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
+
+        Returns:
+            object:
+                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
     """
     short_name = rename_utils.get_short_name(
         target
@@ -73,23 +75,25 @@ def create_fk_controls(
         constrain=True
 ):
     u"""
-    使用 CtrlBase 创建标准 FK Controller Chain。
 
-    Args:
-        targets (str | list[str]):
-            需要批量处理的 Target 节点；在 Constraint / BlendShape / Controller API 中保持输入顺序。
-        shape (str):
-            Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
-        radius (float):
-            创建节点或控制器使用的半径值。
-        axis (str):
-            操作使用的轴向标记。
-        constrain (bool):
-            创建 Controller 后是否建立 Controller / Output 到 Target 的约束关系。
+        使用 CtrlBase 创建标准 FK Controller Chain。
 
-    Returns:
-        object | list:
-            方法执行后的结果数据。
+        Args:
+            targets (str | list[str]):
+                需要批量处理的 Target 节点；在 Constraint / BlendShape / Controller API 中保持输入顺序。
+            shape (str):
+                Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
+            radius (float):
+                创建节点或控制器使用的半径值。
+            axis (str):
+                操作使用的轴向标记。
+            constrain (bool):
+                创建 Controller 后是否建立 Controller / Output 到 Target 的约束关系。
+
+        Returns:
+            object | list:
+                按当前 API 约定顺序返回的结果列表。
+
     """
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支
@@ -135,11 +139,13 @@ def create_fk_controls(
 
 def main():
     u"""
-    按当前 Maya 选择顺序创建 FK Controller Chain。
 
-    Returns:
-        object | list:
-            方法执行后的结果数据。
+        按当前 Maya 选择顺序创建 FK Controller Chain。
+
+        Returns:
+            object | list:
+                按当前 API 约定顺序返回的结果列表。
+
     """
     selections = scene_utils.get_selected_nodes(
         long=True,

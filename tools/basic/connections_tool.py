@@ -55,15 +55,17 @@ from ...ui import window_utils
 
 def get_selected_objects(minimum_count=1):
     u"""
-    返回 Maya 当前选择，并校验最少数量。
 
-    Args:
-        minimum_count (int):
-            当前构建、采样或查询过程使用的元素数量。
+        返回 Maya 当前选择，并校验最少数量。
 
-    Returns:
-        object | list:
-            方法执行后的结果数据。
+        Args:
+            minimum_count (int):
+                当前构建、采样或查询过程使用的元素数量。
+
+        Returns:
+            object | list:
+                按当前 API 约定顺序返回的结果列表。
+
     """
     selected_objects = scene_utils.get_selected_nodes(
         long=True,
@@ -83,11 +85,13 @@ def get_selected_objects(minimum_count=1):
 
 def get_channel_box_attrs():
     u"""
-    返回 Maya Channel Box 当前选中的主属性。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        返回 Maya Channel Box 当前选中的主属性。
+
+        Returns:
+            object:
+                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
     """
     attribute_names = cmds.channelBox(
         "mainChannelBox",
@@ -112,19 +116,21 @@ def build_attribute_plug_pairs(
         attribute_pairs
 ):
     u"""
-    把 Tool 层的 Object + Attribute Mapping 展开成明确 Plug Pair。
 
-    Args:
-        driver (str):
-            作为驱动端的 Maya 节点名称。
-        driven_objects (str | list[str]):
-            需要批量接收驱动结果的 Driven 节点或节点列表。
-        attribute_pairs (list[tuple[str, str]] | dict):
-            需要批量建立连接的 Source Plug / Destination Plug 配对数据。
+        把 Tool 层的 Object + Attribute Mapping 展开成明确 Plug Pair。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            driver (str):
+                作为驱动端的 Maya 节点名称。
+            driven_objects (str | list[str]):
+                需要批量接收驱动结果的 Driven 节点或节点列表。
+            attribute_pairs (list[tuple[str, str]] | dict):
+                需要批量建立连接的 Source Plug / Destination Plug 配对数据。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
     """
     plug_pairs = []
 
@@ -152,19 +158,21 @@ def build_source_plug_pairs(
         attribute_names
 ):
     u"""
-    把一个 Source Plug 展开到多个对象的同名 Attribute。
 
-    Args:
-        source_plug (str):
-            完整 Maya Plug，例如 `node.translateX`。
-        driven_objects (str | list[str]):
-            需要批量接收驱动结果的 Driven 节点或节点列表。
-        attribute_names (str | list[str]):
-            需要查询、复制或批量连接的 Maya Attribute 名称列表。
+        把一个 Source Plug 展开到多个对象的同名 Attribute。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            source_plug (str):
+                完整 Maya Plug，例如 `node.translateX`。
+            driven_objects (str | list[str]):
+                需要批量接收驱动结果的 Driven 节点或节点列表。
+            attribute_names (str | list[str]):
+                需要查询、复制或批量连接的 Maya Attribute 名称列表。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
     """
     plug_pairs = []
 
@@ -462,11 +470,13 @@ class ConnectionsTool(QWidget):
 
     def get_default_attr_pairs(self):
         u"""
-        返回当前勾选的默认属性映射。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                返回当前勾选的默认属性映射。
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
         attribute_pairs = []
 
@@ -874,11 +884,13 @@ class ConnectionsTool(QWidget):
 
 def main():
     u"""
-    创建或恢复 Connections Tool，立即显示并返回 QWidget。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        创建或恢复 Connections Tool，立即显示并返回 QWidget。
+
+        Returns:
+            object:
+                当前工具入口创建并显示的窗口或执行结果。
+
     """
     return window_utils.show_window(
         "tools.basic.connections_tool",

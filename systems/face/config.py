@@ -53,21 +53,23 @@ def create_config_attr_name(
         function
 ):
     u"""
-    使用统一 Rig Naming 创建不带序号的 Config Attribute 名称。
 
-    Args:
-        type (object):
-            当前方法执行 Maya / Rig 操作时使用的 `type` 数据。
-        side (str):
-            方向标记，常用值为 lf、rt 或 md。
-        part (str):
-            Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
-        function (str | callable):
-            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
+        使用统一 Rig Naming 创建不带序号的 Config Attribute 名称。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            type (object):
+                当前方法执行 Maya / Rig 操作时使用的 `type` 数据。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            part (str):
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+            function (str | callable):
+                当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
     """
     rig_object = RigBase(
         side=side,

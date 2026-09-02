@@ -115,11 +115,13 @@ class ModuleBase(RigBase):
 
     def run_step(self):
         u"""
-        按照统一生命周期完整执行当前 Module。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                按照统一生命周期完整执行当前 Module。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         self.collect_inputs()
         self.prepare_data()
@@ -133,11 +135,13 @@ class RigModuleBase(ModuleBase):
 
     def process_data(self):
         u"""
-        按标准顺序执行 Rig Module 的核心构建。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                按标准顺序执行 Rig Module 的核心构建。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         self.create_joint()
         self.create_controller()

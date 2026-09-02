@@ -268,21 +268,23 @@ def clear_animation_keys(nodes=None):
 
 def can_set_attribute(attribute):
     u"""
-    判断属性是否可以被安全直接设置。
 
-    属性必须同时满足：
-        1. Plug 存在；
-        2. Attribute 没有被 Lock；
-        3. Maya 当前认为它是 Settable。
-    这样可以避免 Reset 时强行覆盖 Constraint、Connection 或锁定通道。
+        判断属性是否可以被安全直接设置。
 
-    Args:
-        attribute (str):
-            Maya Attribute 或完整 Plug 名称。
+        属性必须同时满足：
+            1. Plug 存在；
+            2. Attribute 没有被 Lock；
+            3. Maya 当前认为它是 Settable。
+        这样可以避免 Reset 时强行覆盖 Constraint、Connection 或锁定通道。
 
-    Returns:
-        bool:
-        方法执行后的结果数据。
+        Args:
+            attribute (str):
+                Maya Attribute 或完整 Plug 名称。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
     """
     # 步骤 1：Plug 不存在时直接返回 False。
     if not cmds.objExists(attribute):
@@ -475,17 +477,19 @@ def reset_controls(
 
 def normalize_nodes(nodes):
     u"""
-    将单个节点或节点列表整理成有效 Maya 节点列表。
 
-    不存在的节点会被跳过，避免批量动画导出因为一个坏节点全部失败。
+        将单个节点或节点列表整理成有效 Maya 节点列表。
 
-    Args:
-        nodes (str | list[str]):
-            需要批量查询或处理的 Maya 节点名称或节点列表。
+        不存在的节点会被跳过，避免批量动画导出因为一个坏节点全部失败。
 
-    Returns:
-        object | list:
-        方法执行后的结果数据。
+        Args:
+            nodes (str | list[str]):
+                需要批量查询或处理的 Maya 节点名称或节点列表。
+
+        Returns:
+            object | list:
+            按当前 API 约定顺序返回的结果列表。
+
     """
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支
@@ -526,18 +530,20 @@ def normalize_nodes(nodes):
 
 def get_keyed_plugs(node):
     u"""
-    返回节点上当前真正存在关键帧的可动画 Plug。
 
-    ``cmds.listAnimatable`` 只能说明属性“可以动画”，并不能说明它已经有 Key。
-    因此这里还会使用 ``keyframeCount`` 做第二次过滤。
+        返回节点上当前真正存在关键帧的可动画 Plug。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
+        ``cmds.listAnimatable`` 只能说明属性“可以动画”，并不能说明它已经有 Key。
+        因此这里还会使用 ``keyframeCount`` 做第二次过滤。
 
-    Returns:
-        object | list:
-        方法执行后的结果数据。
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+
+        Returns:
+            object | list:
+            按当前 API 约定顺序返回的结果列表。
+
     """
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支
@@ -584,15 +590,17 @@ def get_keyed_plugs(node):
 
 def get_attribute_name(plug):
     u"""
-    从 ``node.attribute`` 形式的完整 Plug 中取得 Attribute 名称。
 
-    Args:
-        plug (str):
-            完整 Maya Plug 名称，例如 node.translateX。
+        从 ``node.attribute`` 形式的完整 Plug 中取得 Attribute 名称。
 
-    Returns:
-        object | str:
-        方法执行后的结果数据。
+        Args:
+            plug (str):
+                完整 Maya Plug 名称，例如 node.translateX。
+
+        Returns:
+            object | str:
+            当前查询、生成或处理后的名称字符串。
+
     """
     if "." not in plug:
         return ""
@@ -676,21 +684,23 @@ def get_key_data(plug):
 
 def collect_animation(nodes):
     u"""
-    将多个 Maya 节点的动画整理成结构化数据。
 
-    数据层级：
-        Animation File
-            -> Node
-                -> Attribute
-                    -> Key
+        将多个 Maya 节点的动画整理成结构化数据。
 
-    Args:
-        nodes (str | list[str]):
-            需要批量查询或处理的 Maya 节点名称或节点列表。
+        数据层级：
+            Animation File
+                -> Node
+                    -> Attribute
+                        -> Key
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        Args:
+            nodes (str | list[str]):
+                需要批量查询或处理的 Maya 节点名称或节点列表。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+
     """
     # 步骤 1：整理输入节点。
     # -------------------------------------------------------------------------
@@ -800,15 +810,17 @@ def export_animation(nodes, file_path):
 
 def export_selected_animation(file_path):
     u"""
-    将当前 Maya Selection 中节点的动画导出为 JSON。
 
-    Args:
-        file_path (str):
-            需要读取或写入的文件路径。
+        将当前 Maya Selection 中节点的动画导出为 JSON。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        Args:
+            file_path (str):
+                需要读取或写入的文件路径。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+
     """
     # 步骤 1：读取当前选择。
     selected_nodes = cmds.ls(
@@ -832,22 +844,24 @@ def export_selected_animation(file_path):
 
 def validate_animation_data(data):
     u"""
-    检查 Muzi Animation JSON 的格式名、版本和基础数据结构。
 
-    数据结构错误时直接抛异常，因为继续往 Maya Scene 写入会产生
-    “部分导入、部分失败”的脏状态。
+        检查 Muzi Animation JSON 的格式名、版本和基础数据结构。
 
-    Args:
-        data (dict | list | object):
-            需要序列化、恢复或传递的结构化数据。
+        数据结构错误时直接抛异常，因为继续往 Maya Scene 写入会产生
+        “部分导入、部分失败”的脏状态。
 
-    Returns:
-        bool:
-        方法执行后的结果数据。
+        Args:
+            data (dict | list | object):
+                需要序列化、恢复或传递的结构化数据。
 
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+
     """
     # 步骤 1：根对象必须是 dict。
     # -------------------------------------------------------------------------
@@ -895,22 +909,24 @@ def validate_animation_data(data):
 
 def resolve_target_node(source_node, node_map=None):
     u"""
-    根据可选 node_map 解析动画导入目标节点。
 
-    Args:
-        source_node (str):
-            作为数据来源、复制来源或驱动来源的 Maya 节点。
-        node_map (dict):
-            源 Maya 节点名到目标 Maya 节点名的映射；常用于 Namespace / 动画数据恢复。
+        根据可选 node_map 解析动画导入目标节点。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        Args:
+            source_node (str):
+                作为数据来源、复制来源或驱动来源的 Maya 节点。
+            node_map (dict):
+                源 Maya 节点名到目标 Maya 节点名的映射；常用于 Namespace / 动画数据恢复。
 
-    Example:
-        {
-                                                                            "ctrl_lf_arm_001": "characterA:ctrl_lf_arm_001"
-                                                                        }
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+
+        Example:
+            {
+                                                                                "ctrl_lf_arm_001": "characterA:ctrl_lf_arm_001"
+                                                                            }
+
     """
     if node_map is None:
         return source_node

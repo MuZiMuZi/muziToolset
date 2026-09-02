@@ -114,11 +114,13 @@ class TeethModule(FaceBase):
 
     def collect_inputs(self):
         u"""
-        读取 Setup、Guide 和 Controller Settings。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                读取 Setup、Guide 和 Controller Settings。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         # -------------------------------------------------------------------------
         # Step 01：验证并规范化当前阶段需要的输入数据
@@ -178,15 +180,17 @@ class TeethModule(FaceBase):
 
     def prepare_data(self):
         u"""
-        准备确定性名称、层级并执行构建前安全检查。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                准备确定性名称、层级并执行构建前安全检查。
 
-        Raises:
-            ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+                Raises:
+                    ValueError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
         """
         self.ensure_hierarchy()
         self._prepare_names()
@@ -215,15 +219,17 @@ class TeethModule(FaceBase):
 
     def finalize_step(self):
         u"""
-        检查 Teeth Module 的最终构建结果。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                检查 Teeth Module 的最终构建结果。
 
-        Raises:
-            RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
         """
         required_nodes = [
             self.upper_teeth_joint,
@@ -439,11 +445,13 @@ class TeethModule(FaceBase):
 
     def create_joint(self):
         u"""
-        根据 Teeth Guide 创建 Upper / Lower Bind Joint。
 
-        Returns:
-            list:
-                方法执行后的结果数据。
+                根据 Teeth Guide 创建 Upper / Lower Bind Joint。
+
+                Returns:
+                    list:
+                        按当前 API 约定顺序返回的结果列表。
+
         """
         joint_radius = self.controller_radius * 0.25
 
@@ -469,11 +477,13 @@ class TeethModule(FaceBase):
 
     def create_controller(self):
         u"""
-        使用 ctrl_base 创建 Upper / Lower Teeth Controller。
 
-        Returns:
-            list:
-                方法执行后的结果数据。
+                使用 ctrl_base 创建 Upper / Lower Teeth Controller。
+
+                Returns:
+                    list:
+                        按当前 API 约定顺序返回的结果列表。
+
         """
         self.upper_teeth_ctrl_dict = ctrl_base.create_ctrl(
             name=self.upper_teeth_ctrl_name,
@@ -512,11 +522,13 @@ class TeethModule(FaceBase):
 
     def create_connection(self):
         u"""
-        创建 Controller -> Joint -> Teeth Model 的驱动链。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                创建 Controller -> Joint -> Teeth Model 的驱动链。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         self.upper_teeth_matrix_node = matrix_utils.create_parent_matrix_constraint(
             driver=self.upper_teeth_control,
@@ -611,11 +623,13 @@ class TeethModule(FaceBase):
 
 def build_teeth():
     u"""
-    执行 TeethModule 并返回后续 Module 需要的公开结果。
 
-    Returns:
-        dict:
-            方法执行后的结果数据。
+        执行 TeethModule 并返回后续 Module 需要的公开结果。
+
+        Returns:
+            dict:
+                包含本次构建、查询或处理结果的结构化字典。
+
     """
     module = TeethModule()
     module.run_step()

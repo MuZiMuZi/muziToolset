@@ -8,11 +8,13 @@ from . import toolbox
 
 def main():
     u"""
-    打开 Muzi Rigging 主工具箱。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        打开 Muzi Rigging 主工具箱。
+
+        Returns:
+            object:
+            当前工具入口创建并显示的窗口或执行结果。
+
     """
     return toolbox.main()
 

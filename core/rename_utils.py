@@ -35,15 +35,17 @@ from . import scene_utils
 
 def get_short_name(node):
     u"""
-    返回 Maya DAG Short Name；None / 空值统一返回空字符串。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
+        返回 Maya DAG Short Name；None / 空值统一返回空字符串。
 
-    Returns:
-        object | str:
-            方法执行后的结果数据。
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+
+        Returns:
+            object | str:
+                当前查询、生成或处理后的名称字符串。
+
     """
     if node is None:
         return ""
@@ -67,17 +69,19 @@ def get_sanitized_short_name(
         namespace_separator="_"
 ):
     u"""
-    返回去掉 DAG Path，并安全替换 Namespace 的 Short Name。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-        namespace_separator (str):
-            当前 Maya / Rig 操作使用的 `namespace_separator` 名称或标记。
+        返回去掉 DAG Path，并安全替换 Namespace 的 Short Name。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            namespace_separator (str):
+                当前 Maya / Rig 操作使用的 `namespace_separator` 名称或标记。
+
+        Returns:
+            object:
+                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
     """
     short_name = get_short_name(
         node
@@ -94,20 +98,22 @@ def get_name_token(
         fallback="new"
 ):
     u"""
-    把任意外部 Maya 名称整理成适合作为新名称组成部分的 Token。
 
-    这个 API 面向用户选择、外部场景节点等不受 Rig Naming 完全控制的数据。
-    内部 Rig Naming 不应该先调用本方法做重复 Normalize。
+        把任意外部 Maya 名称整理成适合作为新名称组成部分的 Token。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-        fallback (str):
-            当前 Maya / Rig 操作使用的 `fallback` 名称或标记。
+        这个 API 面向用户选择、外部场景节点等不受 Rig Naming 完全控制的数据。
+        内部 Rig Naming 不应该先调用本方法做重复 Normalize。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            fallback (str):
+                当前 Maya / Rig 操作使用的 `fallback` 名称或标记。
+
+        Returns:
+            object:
+                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
     """
     # -------------------------------------------------------------------------
     # Step 01：查询并整理当前阶段需要的 Maya 场景数据
@@ -160,15 +166,17 @@ def get_name_token(
 
 def get_selected_objects(show_warning=True):
     u"""
-    返回当前 Maya Selection 的 Long DAG Path。
 
-    Args:
-        show_warning (bool):
-            遇到无效命名或空输入时是否在 Maya 中显示 Warning。
+        返回当前 Maya Selection 的 Long DAG Path。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            show_warning (bool):
+                遇到无效命名或空输入时是否在 Maya 中显示 Warning。
+
+        Returns:
+            object:
+                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
     """
     selected_objects = cmds.ls(
         selection=True,
@@ -188,15 +196,17 @@ def get_selected_objects(show_warning=True):
 
 def sort_objects_child_first(objects):
     u"""
-    对 DAG 节点去重，并按层级深度从深到浅排序。
 
-    Args:
-        objects (str | list[str]):
-            需要批量处理的 Maya 场景对象名称或对象列表。
+        对 DAG 节点去重，并按层级深度从深到浅排序。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            objects (str | list[str]):
+                需要批量处理的 Maya 场景对象名称或对象列表。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     result = []
 
@@ -218,15 +228,17 @@ def sort_objects_child_first(objects):
 
 def get_objects_by_scope(scope_name):
     u"""
-    根据 Rename Tool 的范围名称返回目标 Transform。
 
-    Args:
-        scope_name (str):
-            `scope_name` 对应的 Maya 节点或资源名称。
+        根据 Rename Tool 的范围名称返回目标 Transform。
 
-    Returns:
-        object | list:
-            方法执行后的结果数据。
+        Args:
+            scope_name (str):
+                `scope_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            object | list:
+                按当前 API 约定顺序返回的结果列表。
+
     """
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支
@@ -297,17 +309,19 @@ def get_objects_by_scope(scope_name):
 
 def rename_node(node, new_name):
     u"""
-    安全重命名单个 Maya 节点；名称没有变化时不调用 cmds.rename。
 
-    Args:
-        node (str):
-            需要查询或处理的 Maya 节点名称。
-        new_name (str):
-            `new_name` 对应的 Maya 节点或资源名称。
+        安全重命名单个 Maya 节点；名称没有变化时不调用 cmds.rename。
 
-    Returns:
-        None | object:
-            方法执行后的结果数据。
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            new_name (str):
+                `new_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            None | object:
+                当前 API 完成处理后返回的结果。
+
     """
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支
@@ -359,15 +373,17 @@ def rename_node(node, new_name):
 @scene_utils.undo_chunk
 def add_prefix(prefix):
     u"""
-    给当前 Selection 批量添加 Prefix。
 
-    Args:
-        prefix (str):
-            添加到 Maya 节点名称前部的 Prefix。
+        给当前 Selection 批量添加 Prefix。
 
-    Returns:
-        object | int:
-            方法执行后的结果数据。
+        Args:
+            prefix (str):
+                添加到 Maya 节点名称前部的 Prefix。
+
+        Returns:
+            object | int:
+                本次操作得到的整数结果或成功处理数量。
+
     """
     if not prefix:
         cmds.warning(
@@ -401,15 +417,17 @@ def add_prefix(prefix):
 @scene_utils.undo_chunk
 def add_suffix(suffix):
     u"""
-    给当前 Selection 批量添加 Suffix。
 
-    Args:
-        suffix (str):
-            添加到 Maya 节点名称尾部的 Suffix。
+        给当前 Selection 批量添加 Suffix。
 
-    Returns:
-        object | int:
-            方法执行后的结果数据。
+        Args:
+            suffix (str):
+                添加到 Maya 节点名称尾部的 Suffix。
+
+        Returns:
+            object | int:
+                本次操作得到的整数结果或成功处理数量。
+
     """
     if not suffix:
         cmds.warning(
@@ -451,19 +469,21 @@ def search_replace(
         scope_name
 ):
     u"""
-    按指定范围执行普通字符串 Search / Replace。
 
-    Args:
-        search_text (str):
-            名称过滤、工具搜索或 Search / Replace 使用的搜索文本。
-        replace_text (str):
-            Search / Replace 操作中写回节点名称的新文本。
-        scope_name (str):
-            `scope_name` 对应的 Maya 节点或资源名称。
+        按指定范围执行普通字符串 Search / Replace。
 
-    Returns:
-        object | int:
-            方法执行后的结果数据。
+        Args:
+            search_text (str):
+                名称过滤、工具搜索或 Search / Replace 使用的搜索文本。
+            replace_text (str):
+                Search / Replace 操作中写回节点名称的新文本。
+            scope_name (str):
+                `scope_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            object | int:
+                本次操作得到的整数结果或成功处理数量。
+
     """
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支
@@ -531,21 +551,23 @@ def search_replace(
 
 def number_to_alpha(number, uppercase=True):
     u"""
-    把从 0 开始的整数转换成字母编号。
 
-    Args:
-        number (int):
-            自动编号或字母编号转换使用的序号。
-        uppercase (bool):
-            字母编号是否输出为大写。
+        把从 0 开始的整数转换成字母编号。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            number (int):
+                自动编号或字母编号转换使用的序号。
+            uppercase (bool):
+                字母编号是否输出为大写。
 
-    Raises:
-        ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+
     """
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支
@@ -605,19 +627,21 @@ def get_number_string(
         number_type
 ):
     u"""
-    根据编号类型返回数字 / 大写字母 / 小写字母字符串。
 
-    Args:
-        number (int):
-            自动编号或字母编号转换使用的序号。
-        padding (int):
-            数字编号输出时保留的位数，例如 3 表示 001。
-        number_type (str):
-            自动编号格式，例如数字、字母或项目定义的编号模式。
+        根据编号类型返回数字 / 大写字母 / 小写字母字符串。
 
-    Returns:
-        object | None:
-            方法执行后的结果数据。
+        Args:
+            number (int):
+                自动编号或字母编号转换使用的序号。
+            padding (int):
+                数字编号输出时保留的位数，例如 3 表示 001。
+            number_type (str):
+                自动编号格式，例如数字、字母或项目定义的编号模式。
+
+        Returns:
+            object | None:
+                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
     """
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支
@@ -684,21 +708,23 @@ def auto_number(
         number_type=u"数字"
 ):
     u"""
-    按照当前 Selection 顺序自动编号。
 
-    Args:
-        base_name (str):
-            `base_name` 对应的 Maya 节点或资源名称。
-        start_number (int):
-            当前构建、采样或查询过程使用的元素数量。
-        padding (int):
-            数字编号输出时保留的位数，例如 3 表示 001。
-        number_type (str):
-            自动编号格式，例如数字、字母或项目定义的编号模式。
+        按照当前 Selection 顺序自动编号。
 
-    Returns:
-        object | int:
-            方法执行后的结果数据。
+        Args:
+            base_name (str):
+                `base_name` 对应的 Maya 节点或资源名称。
+            start_number (int):
+                当前构建、采样或查询过程使用的元素数量。
+            padding (int):
+                数字编号输出时保留的位数，例如 3 表示 001。
+            number_type (str):
+                自动编号格式，例如数字、字母或项目定义的编号模式。
+
+        Returns:
+            object | int:
+                本次操作得到的整数结果或成功处理数量。
+
     """
     # -------------------------------------------------------------------------
     # Step 01：查询并整理当前阶段需要的 Maya 场景数据
@@ -767,17 +793,19 @@ def auto_number(
 
 def build_pattern_name(pattern, number):
     u"""
-    根据 ``*`` 数字占位块生成名称。
 
-    Args:
-        pattern (str):
-            用于筛选 Maya 节点名称的匹配模式。
-        number (int):
-            自动编号或字母编号转换使用的序号。
+        根据 ``*`` 数字占位块生成名称。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            pattern (str):
+                用于筛选 Maya 节点名称的匹配模式。
+            number (int):
+                自动编号或字母编号转换使用的序号。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
     """
     # -------------------------------------------------------------------------
     # Step 01：查询并整理当前阶段需要的 Maya 场景数据
@@ -837,15 +865,17 @@ def build_pattern_name(pattern, number):
 @scene_utils.undo_chunk
 def pattern_rename(pattern):
     u"""
-    按照 ``*`` 数字占位规则重命名当前 Selection。
 
-    Args:
-        pattern (str):
-            用于筛选 Maya 节点名称的匹配模式。
+        按照 ``*`` 数字占位规则重命名当前 Selection。
 
-    Returns:
-        object | int:
-            方法执行后的结果数据。
+        Args:
+            pattern (str):
+                用于筛选 Maya 节点名称的匹配模式。
+
+        Returns:
+            object | int:
+                本次操作得到的整数结果或成功处理数量。
+
     """
     if not pattern:
         cmds.warning(

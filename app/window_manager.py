@@ -479,17 +479,19 @@ def _connect_destroyed_signal(tool_key, window):
 
 def show_tool(tool_key, tool_function):
     u"""
-    显示新工具，或恢复已经打开的工具窗口。
 
-    Args:
-        tool_key (str):
-            Tool Registry / Window Manager 中唯一识别工具的 Key。
-        tool_function (callable):
-            执行当前工具功能的 Callable。
+        显示新工具，或恢复已经打开的工具窗口。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        Args:
+            tool_key (str):
+                Tool Registry / Window Manager 中唯一识别工具的 Key。
+            tool_function (callable):
+                执行当前工具功能的 Callable。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+
     """
     old_window = _open_windows.get(tool_key)
 
@@ -562,11 +564,13 @@ def close_all_tools():
 
 def get_open_windows():
     u"""
-    返回当前有效工具窗口字典的浅拷贝。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        返回当前有效工具窗口字典的浅拷贝。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
     """
     result = {}
     invalid_keys = []

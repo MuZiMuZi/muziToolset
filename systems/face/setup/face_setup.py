@@ -112,15 +112,17 @@ class FaceSetup(face_base.FaceBase):
 
     def collect_inputs(self):
         u"""
-        收集、规范化并检查 Step 01 输入。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                收集、规范化并检查 Step 01 输入。
 
-        Raises:
-            RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
         """
         # -------------------------------------------------------------------------
         # Step 01：查询并整理当前阶段需要的 Maya 场景数据
@@ -201,11 +203,13 @@ class FaceSetup(face_base.FaceBase):
 
     def prepare_data(self):
         u"""
-        准备 Step 01 执行环境和中间数据。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                准备 Step 01 执行环境和中间数据。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         self.ensure_hierarchy()
         self.work_model_name_dict = self.get_work_model_names()
@@ -216,11 +220,13 @@ class FaceSetup(face_base.FaceBase):
 
     def process_data(self):
         u"""
-        执行 Step 01 的核心场景处理。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                执行 Step 01 的核心场景处理。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         self.parent_input_models()
         self.create_work_models(
@@ -230,11 +236,13 @@ class FaceSetup(face_base.FaceBase):
 
     def finalize_step(self):
         u"""
-        保存、检查并完成 Step 01。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                保存、检查并完成 Step 01。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         self.ensure_config_layout()
         self.save_config()
@@ -255,19 +263,21 @@ class FaceSetup(face_base.FaceBase):
 
     def check_mouth_jnt_number(self):
         u"""
-        检查 Face Lip 系统要求的嘴唇 Joint 数量。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                检查 Face Lip 系统要求的嘴唇 Joint 数量。
 
-        Raises:
-            RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
-            TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
-            ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                    TypeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                    ValueError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
         """
         if self.mouth_jnt_number is None:
             raise RuntimeError(
@@ -299,11 +309,13 @@ class FaceSetup(face_base.FaceBase):
 
     def parent_input_models(self):
         u"""
-        把 Step 01 指定模型整理到 Face Model Group。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                把 Step 01 指定模型整理到 Face Model Group。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         for face_model in self.face_model_list:
             if not face_model:
@@ -318,11 +330,13 @@ class FaceSetup(face_base.FaceBase):
 
     def get_work_model_names(self):
         u"""
-        生成三个 Head Work Model 的正式名称。
 
-        Returns:
-            dict:
-                方法执行后的结果数据。
+                生成三个 Head Work Model 的正式名称。
+
+                Returns:
+                    dict:
+                        包含本次构建、查询或处理结果的结构化字典。
+
         """
         face_head_tweak_name = self.create_name(
             type="model",
@@ -354,15 +368,17 @@ class FaceSetup(face_base.FaceBase):
 
     def delete_old_work_models(self, work_model_name_dict):
         u"""
-        删除上一次 Step 01 创建的旧 Head Work Model。
 
-        Args:
-            work_model_name_dict (dict):
-                Step 01 三个 Head Work Model（tweak / stretch / deform）的名称映射。
+                删除上一次 Step 01 创建的旧 Head Work Model。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                Args:
+                    work_model_name_dict (dict):
+                        Step 01 三个 Head Work Model（tweak / stretch / deform）的名称映射。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         for key in work_model_name_dict:
             model = work_model_name_dict.get(
@@ -381,15 +397,17 @@ class FaceSetup(face_base.FaceBase):
 
     def create_work_models(self, work_model_name_dict):
         u"""
-        根据最新 Head Model 创建三个独立工作模型。
 
-        Args:
-            work_model_name_dict (dict):
-                Step 01 三个 Head Work Model（tweak / stretch / deform）的名称映射。
+                根据最新 Head Model 创建三个独立工作模型。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                Args:
+                    work_model_name_dict (dict):
+                        Step 01 三个 Head Work Model（tweak / stretch / deform）的名称映射。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         face_head_tweak_name = work_model_name_dict.get(
             "tweak"
@@ -421,11 +439,13 @@ class FaceSetup(face_base.FaceBase):
 
     def validate_results(self):
         u"""
-        检查 Step 01 必须生成的三个 Head Work Model。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                检查 Step 01 必须生成的三个 Head Work Model。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         result_models = [
             (u"Head Tweak Model", self.face_head_tweak_model),
@@ -450,11 +470,13 @@ class FaceSetup(face_base.FaceBase):
 
     def save_config(self):
         u"""
-        把 Step 01 最新设置保存到 Face Config。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                把 Step 01 最新设置保存到 Face Config。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         model_config_dict = {
             "face_head_model": self.face_head_model,

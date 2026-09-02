@@ -105,20 +105,22 @@ from . import file_utils
 
 def find_skin_cluster(geometry):
     u"""
-    返回 Geometry 关联的第一个 SkinCluster；找不到时返回 None。
 
-    查询分两步：
-        1. Maya MEL ``findRelatedSkinCluster``；
-        2. History 中按 nodeType 再查一次。
-    第二步是容错路径，避免某些特殊场景中 MEL 查询没有返回结果。
+        返回 Geometry 关联的第一个 SkinCluster；找不到时返回 None。
 
-    Args:
-        geometry (str):
-            需要查询或绑定 SkinCluster / Deformer 的 Geometry Transform / Shape。
+        查询分两步：
+            1. Maya MEL ``findRelatedSkinCluster``；
+            2. History 中按 nodeType 再查一次。
+        第二步是容错路径，避免某些特殊场景中 MEL 查询没有返回结果。
 
-    Returns:
-        None | object:
-        方法执行后的结果数据。
+        Args:
+            geometry (str):
+                需要查询或绑定 SkinCluster / Deformer 的 Geometry Transform / Shape。
+
+        Returns:
+            None | object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
     """
     # 步骤 1：过滤空参数和不存在节点。
     # -------------------------------------------------------------------------
@@ -452,29 +454,31 @@ def export_skin_weights(geometry, directory):
 
 def import_skin_weights(geometry, directory):
     u"""
-    导入 XML 权重和 Influence Joint 列表。
 
-    流程：
-        Influence JSON
-            -> 验证 Joint 全部存在
-            -> 删除旧 SkinCluster
-            -> 创建新 SkinCluster
-            -> Import XML
-            -> Normalize
+        导入 XML 权重和 Influence Joint 列表。
 
-    Args:
-        geometry (str):
-            需要查询或绑定 SkinCluster / Deformer 的 Geometry Transform / Shape。
-        directory (str):
-            需要读取或写入的目录路径。
+        流程：
+            Influence JSON
+                -> 验证 Joint 全部存在
+                -> 删除旧 SkinCluster
+                -> 创建新 SkinCluster
+                -> Import XML
+                -> Normalize
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        Args:
+            geometry (str):
+                需要查询或绑定 SkinCluster / Deformer 的 Geometry Transform / Shape。
+            directory (str):
+                需要读取或写入的目录路径。
 
-    Raises:
-        RuntimeError:
-        输入数据、场景状态或操作条件不满足要求时抛出。
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+
     """
     # 步骤 1：整理文件路径。
     # -------------------------------------------------------------------------
@@ -611,17 +615,19 @@ def normalize_skin_weights(geometry_or_skin_cluster):
 
 def select_influences(geometries):
     u"""
-    选择多个 Geometry 的全部 Influence Joint。
 
-    这是明确带 ``select`` 语义的 Core 辅助函数，因此允许修改 Maya Selection。
+        选择多个 Geometry 的全部 Influence Joint。
 
-    Args:
-        geometries (str | list[str]):
-            需要批量查询 SkinCluster / Deformer 的 Geometry 列表。
+        这是明确带 ``select`` 语义的 Core 辅助函数，因此允许修改 Maya Selection。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        Args:
+            geometries (str | list[str]):
+                需要批量查询 SkinCluster / Deformer 的 Geometry 列表。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+
     """
     influences = []
 
@@ -645,15 +651,17 @@ def select_influences(geometries):
 
 def normalize_geometries(geometries):
     u"""
-    批量归一化多个 Geometry，并返回实际成功的 Geometry。
 
-    Args:
-        geometries (str | list[str]):
-            需要批量查询 SkinCluster / Deformer 的 Geometry 列表。
+        批量归一化多个 Geometry，并返回实际成功的 Geometry。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        Args:
+            geometries (str | list[str]):
+                需要批量查询 SkinCluster / Deformer 的 Geometry 列表。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+
     """
     normalized = []
 

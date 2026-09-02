@@ -28,11 +28,13 @@ __version__ = "0.4.0"
 
 def show():
     u"""
-    打开 Muzi Rigging 主工具箱。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        打开 Muzi Rigging 主工具箱。
+
+        Returns:
+            object:
+                当前工具入口创建并显示的窗口或执行结果。
+
     """
     from .app import toolbox
 
@@ -41,26 +43,30 @@ def show():
 
 def initialize():
     u"""
-    初始化并打开主工具箱。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        初始化并打开主工具箱。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     return show()
 
 
 def smoke_test(test_window_manager=False):
     u"""
-    运行 Maya 2023 非破坏性全工具 Smoke Test。
 
-    Args:
-        test_window_manager (bool):
-            包初始化阶段是否运行 Window Manager 自检。
+        运行 Maya 2023 非破坏性全工具 Smoke Test。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            test_window_manager (bool):
+                包初始化阶段是否运行 Window Manager 自检。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     from .tests import maya_smoke_test
 
@@ -71,11 +77,13 @@ def smoke_test(test_window_manager=False):
 
 def functional_smoke_test():
     u"""
-    运行 Maya 2023 全工具真实功能 Smoke Test。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        运行 Maya 2023 全工具真实功能 Smoke Test。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     from .tests import maya_functional_smoke_test
 
@@ -84,11 +92,13 @@ def functional_smoke_test():
 
 def maya2023_smoke_test():
     u"""
-    运行当前 Rig 架构的 Maya 2023 Runtime Smoke Test。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        运行当前 Rig 架构的 Maya 2023 Runtime Smoke Test。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     from .tests import maya2023_smoke_test
 
@@ -97,11 +107,13 @@ def maya2023_smoke_test():
 
 def pipeline_smoke_test():
     u"""
-    运行基础 Core / Legacy Pipeline 拆分后的功能 Smoke Test。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        运行基础 Core / Legacy Pipeline 拆分后的功能 Smoke Test。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     from .tests import pipeline_refactor_smoke_test
 
@@ -110,19 +122,21 @@ def pipeline_smoke_test():
 
 def extended_core_smoke_test():
     u"""
-    运行 Extended Core / RigBase Smoke Test。
 
-    测试范围：
-        attr_utils
-        hierarchy_utils
-        joint_utils
-        RigBase / rename_utils
-        model_check_utils
-        scene_clean_utils
+        运行 Extended Core / RigBase Smoke Test。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        测试范围：
+            attr_utils
+            hierarchy_utils
+            joint_utils
+            RigBase / rename_utils
+            model_check_utils
+            scene_clean_utils
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     from .tests import extended_core_smoke_test
 
@@ -131,11 +145,13 @@ def extended_core_smoke_test():
 
 def core_import_style_test():
     u"""
-    运行旧 CamelCase Core Import Gate。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        运行旧 CamelCase Core Import Gate。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     from .tests import core_import_style_test
 
@@ -144,11 +160,13 @@ def core_import_style_test():
 
 def rig_architecture_gate_test():
     u"""
-    检查退休的 name_utils / Component / controller 包是否重新出现。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        检查退休的 name_utils / Component / controller 包是否重新出现。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     from .tests import rig_architecture_gate_test
 
@@ -157,11 +175,13 @@ def rig_architecture_gate_test():
 
 def rig_base_contract_test():
     u"""
-    运行 RigBase Naming Contract Test。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        运行 RigBase Naming Contract Test。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     from .tests import rig_base_contract_test
 
@@ -170,11 +190,13 @@ def rig_base_contract_test():
 
 def module_base_contract_test():
     u"""
-    运行 ModuleBase / RigModuleBase Lifecycle Contract Test。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        运行 ModuleBase / RigModuleBase Lifecycle Contract Test。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     from .tests import module_base_contract_test
 
@@ -183,11 +205,13 @@ def module_base_contract_test():
 
 def tool_window_smoke_test():
     u"""
-    运行所有正式 UI Tool 的 Direct Main 窗口 Smoke Test。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        运行所有正式 UI Tool 的 Direct Main 窗口 Smoke Test。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     from .tests import tool_window_smoke_test
 
@@ -196,11 +220,13 @@ def tool_window_smoke_test():
 
 def face_build_smoke_test():
     u"""
-    运行 Face Eyelid / Curve Attachment / Zip Lip Build Smoke Test。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        运行 Face Eyelid / Curve Attachment / Zip Lip Build Smoke Test。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     from .tests import face_build_smoke_test
 
@@ -209,11 +235,13 @@ def face_build_smoke_test():
 
 def ctrl_base_smoke_test():
     u"""
-    运行 CtrlBase Controller / Follow Smoke Test。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        运行 CtrlBase Controller / Follow Smoke Test。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     from .tests import ctrl_base_smoke_test
 
@@ -222,15 +250,17 @@ def ctrl_base_smoke_test():
 
 def rig_integration_test(keep_result=False):
     u"""
-    运行基础 Rig 跨模块 Integration Test。
 
-    Args:
-        keep_result (bool):
-            控制当前方法中的 `keep_result` 选项是否启用。
+        运行基础 Rig 跨模块 Integration Test。
 
-    Returns:
-        object:
-            方法执行后的结果数据。
+        Args:
+            keep_result (bool):
+                控制当前方法中的 `keep_result` 选项是否启用。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
     from .tests import rig_integration_test
 

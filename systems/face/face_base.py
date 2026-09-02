@@ -186,11 +186,13 @@ class FaceBase(RigModuleBase):
 
     def ensure_hierarchy(self):
         u"""
-        确保 Face Rig 基础 Group 存在，并修正到正式 Parent 层级。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                确保 Face Rig 基础 Group 存在，并修正到正式 Parent 层级。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         face_master_group = hierarchy_utils.ensure_group(
             self.face_master_grp
@@ -221,11 +223,13 @@ class FaceBase(RigModuleBase):
 
     def ensure_config_node(self):
         u"""
-        确保 Face Config 存在。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                确保 Face Config 存在。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
         """
         config_node = self.config_data.ensure()
         self.config_node = config_node
@@ -233,35 +237,41 @@ class FaceBase(RigModuleBase):
 
     def config_node_exists(self):
         u"""
-        检查 Face Config Network Node 是否有效。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                检查 Face Config Network Node 是否有效。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
         """
         return self.config_data.exists()
 
     def get_config_attr(self):
         u"""
-        返回 Config 的底层 Attr 对象。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                返回 Config 的底层 Attr 对象。
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
         return self.config_data.get_attr()
 
     def get_config_message(self, attr_name):
         u"""
-        读取 Face Config 中保存的 Maya 节点 Message 引用。
 
-        Args:
-            attr_name (str):
-                `attr_name` 对应的 Maya 节点或资源名称。
+                读取 Face Config 中保存的 Maya 节点 Message 引用。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                Args:
+                    attr_name (str):
+                        `attr_name` 对应的 Maya 节点或资源名称。
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
         return self.config_data.get_message(
             attr_name
@@ -269,15 +279,17 @@ class FaceBase(RigModuleBase):
 
     def get_config_value(self, attr_name):
         u"""
-        读取 Face Config 中保存的普通属性值。
 
-        Args:
-            attr_name (str):
-                `attr_name` 对应的 Maya 节点或资源名称。
+                读取 Face Config 中保存的普通属性值。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                Args:
+                    attr_name (str):
+                        `attr_name` 对应的 Maya 节点或资源名称。
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
         return self.config_data.get_value(
             attr_name
@@ -290,19 +302,21 @@ class FaceBase(RigModuleBase):
             clear_empty=True
     ):
         u"""
-        批量保存 Maya 节点引用到 Face Config。
 
-        Args:
-            attrs_dict (dict):
-                Attribute 名称到 Value / Config 数据的批量映射。
-            force (bool):
-                是否强制覆盖已有连接、状态或结果。
-            clear_empty (bool):
-                批量保存 Message / Config 时，空值是否主动断开旧连接。
+                批量保存 Maya 节点引用到 Face Config。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                Args:
+                    attrs_dict (dict):
+                        Attribute 名称到 Value / Config 数据的批量映射。
+                    force (bool):
+                        是否强制覆盖已有连接、状态或结果。
+                    clear_empty (bool):
+                        批量保存 Message / Config 时，空值是否主动断开旧连接。
+
+                Returns:
+                    object:
+                        完成设置或应用后的目标对象 / 状态结果。
+
         """
         result = self.config_data.set_messages(
             attrs_dict=attrs_dict,
@@ -321,21 +335,23 @@ class FaceBase(RigModuleBase):
             hide=False
     ):
         u"""
-        批量保存普通数值 / 字符串配置到 Face Config。
 
-        Args:
-            attrs_dict (dict):
-                Attribute 名称到 Value / Config 数据的批量映射。
-            attr_types (dict | None):
-                Attribute 名称到 Maya Attribute Type 的映射；未指定的属性由调用方默认规则处理。
-            lock (bool):
-                是否 Lock 对应 Maya Channel / Attribute。
-            hide (bool):
-                是否从 Channel Box 隐藏对应 Maya Attribute。
+                批量保存普通数值 / 字符串配置到 Face Config。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                Args:
+                    attrs_dict (dict):
+                        Attribute 名称到 Value / Config 数据的批量映射。
+                    attr_types (dict | None):
+                        Attribute 名称到 Maya Attribute Type 的映射；未指定的属性由调用方默认规则处理。
+                    lock (bool):
+                        是否 Lock 对应 Maya Channel / Attribute。
+                    hide (bool):
+                        是否从 Channel Box 隐藏对应 Maya Attribute。
+
+                Returns:
+                    object:
+                        完成设置或应用后的目标对象 / 状态结果。
+
         """
         result = self.config_data.set_values(
             attrs_dict=attrs_dict,
@@ -353,11 +369,13 @@ class FaceBase(RigModuleBase):
 
     def ensure_config_layout(self):
         u"""
-        创建当前正式 Face Config Workflow / Step 分隔属性。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                创建当前正式 Face Config Workflow / Step 分隔属性。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         # -------------------------------------------------------------------------
         # Step 01：创建并配置当前阶段需要的 Maya / Rig 对象
@@ -427,11 +445,13 @@ class FaceBase(RigModuleBase):
 
     def get_config_attribute_order(self):
         u"""
-        返回 Face Config 在 Attribute Editor 中推荐的动态属性顺序。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                返回 Face Config 在 Attribute Editor 中推荐的动态属性顺序。
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
         attr_names = [
             self.workflow_section_attr_name,
@@ -464,11 +484,13 @@ class FaceBase(RigModuleBase):
 
     def organize_config_attributes(self):
         u"""
-        按 Workflow Step 重新排序 Config Node 的 User Defined Attribute。
 
-        Returns:
-            object | list:
-                方法执行后的结果数据。
+                按 Workflow Step 重新排序 Config Node 的 User Defined Attribute。
+
+                Returns:
+                    object | list:
+                        按当前 API 约定顺序返回的结果列表。
+
         """
         if not self.config_node_exists():
             return []
@@ -501,11 +523,13 @@ class FaceBase(RigModuleBase):
 
     def get_current_step_value(self):
         u"""
-        读取当前 Face Workflow Step；没有 Config 时从 Step 01 开始。
 
-        Returns:
-            object | int:
-                方法执行后的结果数据。
+                读取当前 Face Workflow Step；没有 Config 时从 Step 01 开始。
+
+                Returns:
+                    object | int:
+                        当前查询得到的整数值。
+
         """
         if not self.config_node_exists():
             return 1
@@ -527,21 +551,23 @@ class FaceBase(RigModuleBase):
 
     def set_current_step_value(self, step_value):
         u"""
-        把当前 Face Workflow Step 保存到 Config Node。
 
-        Args:
-            step_value (int):
-                Face Wizard / Build Pipeline 当前 Step 编号。
+                把当前 Face Workflow Step 保存到 Config Node。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                Args:
+                    step_value (int):
+                        Face Wizard / Build Pipeline 当前 Step 编号。
 
-        Raises:
-            TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
-            ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+                Returns:
+                    object:
+                        完成设置或应用后的目标对象 / 状态结果。
+
+                Raises:
+                    TypeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                    ValueError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
         """
         if not isinstance(step_value, int):
             raise TypeError(
@@ -576,11 +602,13 @@ class FaceBase(RigModuleBase):
 
     def refresh_setup_data(self):
         u"""
-        从 Config Node 重新读取 Step 01 的最新数据。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                从 Config Node 重新读取 Step 01 的最新数据。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
         """
         message_data = self.config_data.get_messages(
             self.setup_message_attr_names
@@ -610,15 +638,17 @@ class FaceBase(RigModuleBase):
 
     def get_setup_data(self, refresh=False):
         u"""
-        返回 Step 01 公共输入数据字典。
 
-        Args:
-            refresh (bool):
-                读取数据前是否先从 Maya Scene / Config 重新刷新缓存。
+                返回 Step 01 公共输入数据字典。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                Args:
+                    refresh (bool):
+                        读取数据前是否先从 Maya Scene / Config 重新刷新缓存。
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
         if refresh:
             self.refresh_setup_data()
@@ -646,19 +676,21 @@ class FaceBase(RigModuleBase):
             require_mouth_jnt_number=True
     ):
         u"""
-        检查后续 Face Step 所依赖的 Step 01 公共数据。
 
-        Args:
-            require_mouth_jnt_number (bool):
-                当前构建、采样或查询过程使用的元素数量。
+                检查后续 Face Step 所依赖的 Step 01 公共数据。
 
-        Returns:
-            bool:
-                方法执行后的结果数据。
+                Args:
+                    require_mouth_jnt_number (bool):
+                        当前构建、采样或查询过程使用的元素数量。
 
-        Raises:
-            RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
         """
         # -------------------------------------------------------------------------
         # Step 01：检查当前条件与边界情况，并进入对应处理分支
@@ -725,21 +757,23 @@ class FaceBase(RigModuleBase):
     @staticmethod
     def get_step_completed_attr_name(step_value):
         u"""
-        根据 Step 编号生成 Config 完成状态属性名称。
 
-        Args:
-            step_value (int):
-                Face Wizard / Build Pipeline 当前 Step 编号。
+                根据 Step 编号生成 Config 完成状态属性名称。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                Args:
+                    step_value (int):
+                        Face Wizard / Build Pipeline 当前 Step 编号。
 
-        Raises:
-            TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
-            ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+                Raises:
+                    TypeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                    ValueError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
         """
         if not isinstance(step_value, int):
             raise TypeError(
@@ -757,21 +791,23 @@ class FaceBase(RigModuleBase):
 
     def resolve_step_value(self, step_value=None):
         u"""
-        获取当前操作使用的 Step 编号。
 
-        Args:
-            step_value (int):
-                Face Wizard / Build Pipeline 当前 Step 编号。
+                获取当前操作使用的 Step 编号。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                Args:
+                    step_value (int):
+                        Face Wizard / Build Pipeline 当前 Step 编号。
 
-        Raises:
-            RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
-            TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                    TypeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
         """
         if step_value is None:
             step_value = self.step_value
@@ -794,17 +830,19 @@ class FaceBase(RigModuleBase):
             completed=True
     ):
         u"""
-        写入某个 Face Step 的完成状态。
 
-        Args:
-            step_value (int):
-                Face Wizard / Build Pipeline 当前 Step 编号。
-            completed (bool):
-                当前 Face Wizard / Build Step 是否标记为已完成。
+                写入某个 Face Step 的完成状态。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                Args:
+                    step_value (int):
+                        Face Wizard / Build Pipeline 当前 Step 编号。
+                    completed (bool):
+                        当前 Face Wizard / Build Step 是否标记为已完成。
+
+                Returns:
+                    object:
+                        完成设置或应用后的目标对象 / 状态结果。
+
         """
         step_value = self.resolve_step_value(
             step_value
@@ -828,15 +866,17 @@ class FaceBase(RigModuleBase):
 
     def is_step_completed(self, step_value=None):
         u"""
-        读取某个 Face Step 是否已经完成。
 
-        Args:
-            step_value (int):
-                Face Wizard / Build Pipeline 当前 Step 编号。
+                读取某个 Face Step 是否已经完成。
 
-        Returns:
-            object | bool:
-                方法执行后的结果数据。
+                Args:
+                    step_value (int):
+                        Face Wizard / Build Pipeline 当前 Step 编号。
+
+                Returns:
+                    object | bool:
+                        条件成立时返回 True，否则返回 False。
+
         """
         step_value = self.resolve_step_value(
             step_value
@@ -859,21 +899,23 @@ class FaceBase(RigModuleBase):
             last_step=4
     ):
         u"""
-        将当前 Step 之后的完成状态全部设为 False。
 
-        Args:
-            step_value (int):
-                Face Wizard / Build Pipeline 当前 Step 编号。
-            last_step (int):
-                Step 状态查询或失效处理时的最后一个 Step 编号。
+                将当前 Step 之后的完成状态全部设为 False。
 
-        Returns:
-            object | list:
-                方法执行后的结果数据。
+                Args:
+                    step_value (int):
+                        Face Wizard / Build Pipeline 当前 Step 编号。
+                    last_step (int):
+                        Step 状态查询或失效处理时的最后一个 Step 编号。
 
-        Raises:
-            TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+                Returns:
+                    object | list:
+                        按当前 API 约定顺序返回的结果列表。
+
+                Raises:
+                    TypeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
         """
         # -------------------------------------------------------------------------
         # Step 01：准备当前阶段计算和后续处理需要的数据
@@ -919,19 +961,21 @@ class FaceBase(RigModuleBase):
 
     def get_step_status(self, last_step=4):
         u"""
-        返回 Face Wizard 各 Step 的完成状态。
 
-        Args:
-            last_step (int):
-                Step 状态查询或失效处理时的最后一个 Step 编号。
+                返回 Face Wizard 各 Step 的完成状态。
 
-        Returns:
-            object:
-                方法执行后的结果数据。
+                Args:
+                    last_step (int):
+                        Step 状态查询或失效处理时的最后一个 Step 编号。
 
-        Raises:
-            TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+                Raises:
+                    TypeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
         """
         if not isinstance(last_step, int):
             raise TypeError(

@@ -43,11 +43,13 @@ class HierarchyCleaner(QDialog):
 
     def __init__(self, parent=None):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
 
-        Args:
-            parent (str):
-                父级 Maya 节点名称。
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+                Args:
+                    parent (str):
+                        父级 Maya 节点名称。
+
         """
 
         super(HierarchyCleaner, self).__init__(parent)
@@ -194,11 +196,13 @@ class HierarchyCleaner(QDialog):
 
     def confirm_whole_scene(self):
         u"""
-        全场景模式二次确认。
 
-        Returns:
-            object | bool:
-            方法执行后的结果数据。
+                全场景模式二次确认。
+
+                Returns:
+                    object | bool:
+                    当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
         """
         if self.selected_only_checkbox.isChecked():
             return True
@@ -217,11 +221,13 @@ class HierarchyCleaner(QDialog):
 
     def get_scope_nodes(self):
         u"""
-        返回当前清理范围。
 
-        Returns:
-            object:
-            方法执行后的结果数据。
+                返回当前清理范围。
+
+                Returns:
+                    object:
+                    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
         if self.selected_only_checkbox.isChecked():
             nodes = cmds.ls(
@@ -238,15 +244,17 @@ class HierarchyCleaner(QDialog):
 
     def format_result(self, result):
         u"""
-        把 Core 返回字典格式化成 UI 文本。
 
-        Args:
-            result (object):
-                上一步 Maya / Tool 操作返回的结果数据。
+                把 Core 返回字典格式化成 UI 文本。
 
-        Returns:
-            object:
-            方法执行后的结果数据。
+                Args:
+                    result (object):
+                        上一步 Maya / Tool 操作返回的结果数据。
+
+                Returns:
+                    object:
+                    当前 API 完成处理后返回的结果。
+
         """
         # -------------------------------------------------------------------------
         # Step 01：准备当前阶段计算和后续处理需要的数据
@@ -374,11 +382,13 @@ class HierarchyCleaner(QDialog):
 
 def main():
     u"""
-    显示并返回 Hierarchy Cleaner。
 
-    Returns:
-        object:
-        方法执行后的结果数据。
+        显示并返回 Hierarchy Cleaner。
+
+        Returns:
+            object:
+            当前工具入口创建并显示的窗口或执行结果。
+
     """
     return window_utils.show_window(
         "tools.clean.hierarchy_cleaner",
