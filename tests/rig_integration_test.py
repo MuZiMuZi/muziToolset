@@ -7,9 +7,7 @@ Rig Integration Test
 
 测试链：
 
-    RigBase Identity
-        ↓
-    Rig Naming
+    RigBase Naming
         ↓
     Joint
         ↓
@@ -29,6 +27,7 @@ Rig Integration Test
     core.matrix_utils
     core.transform_utils
     core.connection_utils
+    core.scene_utils
 """
 
 from __future__ import print_function
@@ -42,6 +41,8 @@ from ..core import connection_utils
 from ..core import hierarchy_utils
 from ..core import joint_utils
 from ..core import matrix_utils
+from ..core import rename_utils
+from ..core import scene_utils
 from ..core import transform_utils
 from ..systems import ctrl_base
 from ..systems.rig_base import RigBase
@@ -69,23 +70,6 @@ def create_temp_name(token, description):
 def almost_equal(value_a, value_b, tolerance=0.0001):
     u"""浮点比较。"""
     return abs(value_a - value_b) <= tolerance
-
-
-def get_parent(node):
-    u"""返回节点直接 Parent 的短名称。"""
-    parents = cmds.listRelatives(
-        node,
-        parent=True,
-        fullPath=False
-    )
-
-    if parents is None:
-        parents = []
-
-    if not parents:
-        return None
-
-    return parents[0]
 
 
 def delete_test_nodes(token):
@@ -130,10 +114,13 @@ def delete_test_nodes(token):
 
 def assert_parent(child, expected_parent):
     u"""验证直接父子关系。"""
-    actual_parent = get_parent(
-        child
+    actual_parent = hierarchy_utils.get_parent(
+        child,
+        full_path=False
     )
-    expected_short_name = expected_parent.split("|")[-1]
+    expected_short_name = rename_utils.get_short_name(
+        expected_parent
+    )
 
     if actual_parent != expected_short_name:
         raise RuntimeError(
@@ -221,7 +208,7 @@ def test_rig_integration(token, keep_result=False):
     )
 
     joint_name = rig_identity.create_name(
-        node_type="jnt",
+        type="jnt",
         function="bind"
     )
     joint = joint_utils.Joint.create(
@@ -246,7 +233,7 @@ def test_rig_integration(token, keep_result=False):
     )
 
     control_name = rig_identity.create_name(
-        node_type="ctrl",
+        type="ctrl",
         function="main"
     )
     control_result = ctrl_base.create_ctrl(
@@ -290,34 +277,13 @@ def test_rig_integration(token, keep_result=False):
                 )
             )
 
-    assert_parent(
-        control,
-        groups["offset"]
-    )
-    assert_parent(
-        groups["offset"],
-        groups["connect"]
-    )
-    assert_parent(
-        groups["connect"],
-        groups["space"]
-    )
-    assert_parent(
-        groups["space"],
-        groups["driven"]
-    )
-    assert_parent(
-        groups["driven"],
-        groups["zero"]
-    )
-    assert_parent(
-        groups["zero"],
-        control_group
-    )
-    assert_parent(
-        joint,
-        joint_group
-    )
+    assert_parent(control, groups["offset"])
+    assert_parent(groups["offset"], groups["connect"])
+    assert_parent(groups["connect"], groups["space"])
+    assert_parent(groups["space"], groups["driven"])
+    assert_parent(groups["driven"], groups["zero"])
+    assert_parent(groups["zero"], control_group)
+    assert_parent(joint, joint_group)
 
     if top_group != groups["zero"]:
         raise RuntimeError(
@@ -334,7 +300,7 @@ def test_rig_integration(token, keep_result=False):
     )
 
     matrix_name = rig_identity.create_name(
-        node_type="mult",
+        type="mult",
         function="parent"
     )
     matrix_node = matrix_utils.create_parent_matrix_constraint(
@@ -415,7 +381,7 @@ def test_rig_integration(token, keep_result=False):
             replace=True
         )
         return {
-            "message": u"RigBase Identity + CtrlBase + OPM Integration 成功，测试 Rig 已保留",
+            "message": u"RigBase + CtrlBase + OPM Integration 成功，测试 Rig 已保留",
             "rig_root": rig_root,
             "control": control,
             "joint": joint,
@@ -455,7 +421,7 @@ def test_rig_integration(token, keep_result=False):
         )
 
     return {
-        "message": u"RigBase Identity + CtrlBase + OPM + Cleanup 成功",
+        "message": u"RigBase + CtrlBase + OPM + Cleanup 成功",
         "rig_root": None,
         "control": None,
         "joint": None,
@@ -486,9 +452,8 @@ def run(keep_result=False):
         print("Mode: KEEP RESULT")
         print("-" * 78)
 
-    cmds.undoInfo(
-        openChunk=True,
-        chunkName="MuziRigIntegrationTest"
+    scene_utils.open_undo_chunk(
+        "MuziRigIntegrationTest"
     )
 
     try:
@@ -499,7 +464,7 @@ def run(keep_result=False):
         passed_count = 1
 
         print(
-            u"[PASS] Rig | RigBase Identity -> CtrlBase -> OPM -> Joint | {}".format(
+            u"[PASS] Rig | RigBase -> CtrlBase -> OPM -> Joint | {}".format(
                 test_result["message"]
             )
         )
@@ -508,7 +473,7 @@ def run(keep_result=False):
         error_text = traceback.format_exc()
 
         print(
-            u"[FAIL] Rig | RigBase Identity -> CtrlBase -> OPM -> Joint | {}".format(
+            u"[FAIL] Rig | RigBase -> CtrlBase -> OPM -> Joint | {}".format(
                 error
             )
         )
@@ -521,9 +486,7 @@ def run(keep_result=False):
                 token
             )
 
-        cmds.undoInfo(
-            closeChunk=True
-        )
+        scene_utils.close_undo_chunk()
 
     print("-" * 78)
     print(
