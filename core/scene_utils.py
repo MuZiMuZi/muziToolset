@@ -11,6 +11,7 @@ Maya Scene 领域的通用底层工具。
 
     - Undo Chunk；
     - Maya Node 存在性、唯一 DAG Long Path 和节点创建；
+    - 一组待创建节点的 Scene Availability 检查；
     - 当前 Selection 查询；
     - Object Set 创建与维护；
     - Maya Native Event Callback；
@@ -31,9 +32,10 @@ Maya Scene 领域的通用底层工具。
 1. Core 不弹确认窗口，交互确认由 Tool / App 负责；
 2. 创建函数先完成输入验证，再修改 Maya Scene；
 3. validate_node() 只接受 Maya Node，不接受 Plug / Component；
-4. get_selected_nodes() 只负责查询 Selection，不规定工具必须选择多少对象；
-5. 特定文件格式的导出逻辑不继续堆进 Scene Core；
-6. Scene Core 不保留 Selection Workflow 或文件格式导出的历史兼容入口。
+4. ensure_nodes_available() 只检查已有 Scene State，不判断 Rig Naming 格式；
+5. get_selected_nodes() 只负责查询 Selection，不规定工具必须选择多少对象；
+6. 特定文件格式的导出逻辑不继续堆进 Scene Core；
+7. Scene Core 不保留 Selection Workflow 或文件格式导出的历史兼容入口。
 """
 
 from __future__ import print_function
@@ -183,6 +185,57 @@ def validate_node(node, label=None):
     return True
 
 
+def ensure_nodes_available(node_names, label=u"待创建节点"):
+    u"""
+    确保一组准备创建的 Maya 节点名称当前都没有被 Scene 占用。
+
+    本方法只检查 Scene State，不负责验证名称格式。Rig / Tool 内部名称应由
+    对应 Naming 系统提前确定。
+
+    Args:
+        node_names (str | list[str] | tuple[str] | None):
+            准备创建的一个或多个节点名称。None / 空值会被忽略。
+        label (str):
+            冲突时用于错误提示的上下文标签。
+
+    Returns:
+        bool:
+            所有名称当前都未存在时返回 True。
+
+    Raises:
+        RuntimeError:
+            当前 Scene 中已经存在任一同名节点时抛出，并列出全部冲突名称。
+    """
+    if node_names is None:
+        return True
+
+    if isinstance(node_names, str):
+        node_names = [
+            node_names
+        ]
+
+    existing_nodes = []
+
+    for node_name in node_names:
+        if not node_name:
+            continue
+
+        if cmds.objExists(node_name):
+            existing_nodes.append(
+                node_name
+            )
+
+    if existing_nodes:
+        raise RuntimeError(
+            u"{}已存在：{}".format(
+                label,
+                ", ".join(existing_nodes)
+            )
+        )
+
+    return True
+
+
 def get_long_name(node):
     u"""
     返回唯一 Maya DAG Long Path；非 DAG 节点返回 Maya 查询得到的节点名。
@@ -265,12 +318,10 @@ def create_node(
             u"节点名称不能为空。"
         )
 
-    if cmds.objExists(name):
-        raise RuntimeError(
-            u"节点已经存在：{}".format(
-                name
-            )
-        )
+    ensure_nodes_available(
+        name,
+        label=u"节点"
+    )
 
     if parent is not None:
         validate_node(
@@ -729,6 +780,7 @@ __all__ = [
     "close_undo_chunk",
     "undo_chunk",
     "validate_node",
+    "ensure_nodes_available",
     "get_long_name",
     "create_node",
     "get_selected_nodes",
