@@ -10,6 +10,8 @@ Face Build Functional Smoke Test
 
 完整 Jaw / Teeth / Eye 等业务单元统一称为 Module；
 本文件只测试可复用 Build Algorithm，因此不使用 Component 术语。
+
+测试辅助逻辑同样优先复用 Core；通用 Point / Vector Math 不在测试文件重复实现。
 """
 
 from __future__ import print_function
@@ -19,6 +21,7 @@ import uuid
 
 import maya.cmds as cmds
 
+from ..core import math_utils
 from ..systems import face as face_system
 
 
@@ -115,19 +118,6 @@ def create_curve(name, points):
     )
 
 
-def distance_between_points(point_a, point_b):
-    u"""计算两点距离。"""
-    delta_x = point_b[0] - point_a[0]
-    delta_y = point_b[1] - point_a[1]
-    delta_z = point_b[2] - point_a[2]
-
-    return (
-        delta_x * delta_x
-        + delta_y * delta_y
-        + delta_z * delta_z
-    ) ** 0.5
-
-
 def run_case(results, name, test_function, root_group):
     u"""执行一个测试 Case。"""
     try:
@@ -219,7 +209,7 @@ def test_eyelid_builder(root_group):
             translation=True
         )
 
-        if distance_between_points(
+        if math_utils.distance_between_points(
                 joint_position,
                 attachment_position
         ) > 0.001:
@@ -453,7 +443,7 @@ def test_zip_lip(root_group):
             translation=True
         )
 
-        distance = distance_between_points(
+        distance = math_utils.distance_between_points(
             upper_position,
             lower_position
         )
