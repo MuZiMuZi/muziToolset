@@ -2,6 +2,8 @@
 
 面向 **Autodesk Maya 2023** 的 Rigging Toolset 与可扩展绑定框架。
 
+当前架构版本：**0.4.0**。
+
 正式 Python Package：
 
 ```python
@@ -21,13 +23,6 @@ import muziToolset
 window = muziToolset.show()
 ```
 
-第一次使用：
-
-- [安装与启动](docs/getting-started/installation.md)
-- [在 Maya 中运行](docs/getting-started/maya-usage.md)
-
-在线文档：<https://muzimuzi.github.io/muziToolset/>
-
 ---
 
 # 当前架构
@@ -35,31 +30,29 @@ window = muziToolset.show()
 ```text
 core     Maya 通用底层能力
 tools    用户直接操作的小工具 / UI
-systems  可复用 Rig Component / Workflow
+systems  RigBase / ModuleBase / CtrlBase / 完整 Rig System
 ui       通用 PySide Theme / Widget
 app      主程序和窗口生命周期
 ```
 
-Face Rig 已采用正式四步 Package：
+0.4 三个基础入口：
 
 ```text
-systems/face/
-├── setup/       # 01 Setup
-├── guide/       # 02 Guide
-├── build/       # 03 Build
-├── finalize/    # 04 Finalize
-├── data/        # Face 公共数据
-├── ui/          # Face Wizard
-├── face_base.py
-└── config.py
+systems/rig_base.py
+    Rig Naming
+
+systems/module_base.py
+    Module Lifecycle
+
+systems/ctrl_base.py
+    Controller Workflow
 ```
 
-详细说明：
+正式业务单元统一使用 **Module** 术语，不再使用 Component。
 
-- [总体架构](docs/architecture/index.md)
-- [Face System Architecture](docs/architecture/face-system.md)
-- [Core 设计](docs/architecture/core.md)
-- [Tools 与 Systems](docs/architecture/tools-systems.md)
+Rig Naming 已从 Core 移到 `RigBase`；旧 `core/name_utils.py` 已删除。
+
+Controller 的唯一正式实现是 `systems/ctrl_base.py`；旧 `systems/controller/` 已删除。
 
 ---
 
@@ -77,28 +70,116 @@ systems/face/
 04 Finalize
 ```
 
-Step 02 会自动导入或复用 `resources/face/face_guide.ma`。
-
-点击“下一步”时会检查 Template 中的**全部标准 Locator**。如果绑定师误删定位器，会阻止进入 Step 03，并列出缺失名称。
-
-Step 02 还提供：
+正式结构：
 
 ```text
-重新导入模板
-    保留现有 Locator 位置并补回缺失 Locator
-
-LF → RT / RT → LF
-    一次性镜像，不建立永久左右连接
-
-撤销上次镜像
-    同时支持 Maya Ctrl + Z
-
-Controller Settings
-    Size 使用 1 位小数 QDoubleSpinBox
-    LF = 6 蓝 / RT = 13 红 / MD = 17 黄
+systems/face/
+├── setup/       # Step 01
+├── guide/       # Step 02
+├── modules/     # Step 03 完整 Rig Module
+├── build/       # 可复用 Build Algorithm
+├── finalize/    # Step 04
+├── data/
+├── ui/
+├── face_base.py
+└── config.py
 ```
 
-详见：[Face Guide](docs/manual/face-guide.md)。
+当前已经接入的 Step 03 Module：
+
+```text
+TeethModule
+```
+
+Teeth Rig：
+
+```text
+Teeth Guide
+    ↓
+Controller
+    ↓ Matrix
+Bind Joint
+    ↓ Rigid Skin
+Teeth Model
+```
+
+Gum 不属于 Teeth 刚体绑定，后续由 Jaw / Mouth Deformation 处理。
+
+Step 02 Controller Settings 当前包括：
+
+```text
+Global Scale
+LF / RT / MD Color
+Brow
+Eye
+Eyelid
+Nose
+Cheek
+Lip
+Jaw
+Teeth
+Tongue Size
+```
+
+---
+
+# Rig Naming
+
+正式 Maya Rig 节点格式：
+
+```text
+[type]_[side]_[part]_[function]_[index]
+```
+
+方向：
+
+```text
+lf / rt / md
+```
+
+正式入口：
+
+```python
+from muziToolset.systems.rig_base import RigBase
+```
+
+Maya 普通 Rename / Short Name 继续使用：
+
+```python
+from muziToolset.core import rename_utils
+```
+
+两者职责不混合。
+
+---
+
+# Controller
+
+正式 Controller System：
+
+```python
+from muziToolset.systems import ctrl_base
+```
+
+标准层级：
+
+```text
+zero
+  ↓
+driven
+  ↓
+space
+  ↓
+connect
+  ↓
+offset
+  ↓
+ctrl
+  ↓
+output
+```
+
+Control Creator、FK Creator、Face Module、Body Skirt 都应直接调用 `ctrl_base`。
 
 ---
 
@@ -111,64 +192,75 @@ ui/theme.py
 ui/widgets/
 ```
 
-当前视觉方向参考 Arc Browser 的 **clean / calm / sidebar-first** 信息组织：柔和背景、轻量边框、浮层 Card、明确主次操作和稳定 Sidebar。
+窗口生命周期：
 
-这里借鉴的是布局和交互原则，MuziTools 保留自己的品牌、Maya 工作流和 Theme Token，不复制 Arc 的 Logo、专有图标或品牌素材。
+```text
+ui.window_utils
+    独立 Tool
 
-详见：[MuziTools UI Design System](docs/development/ui-design.md)。
+app.window_manager
+    主工具箱打开的 Tool
+```
 
 ---
 
-# 文档导航
+# 测试
 
-## 用户手册
-
-- [MuziTools 用户手册](docs/manual/index.md)
-- [常用工具工作流](docs/manual/tools.md)
-- [Controller](docs/manual/controller.md)
-- [Joint](docs/manual/joint.md)
-- [Skin](docs/manual/skin.md)
-- [BlendShape](docs/manual/blendshape.md)
-- [场景清理与模型检查](docs/manual/cleanup.md)
-- [完整绑定工作流](docs/manual/rigging.md)
-- [Face Guide](docs/manual/face-guide.md)
-
-## 开发指南
-
-- [UI Design System](docs/development/ui-design.md)
-- [文档维护与 Docstring 规范](docs/development/documentation.md)
-- [Core 编码规范](docs/development/core-style-guide.md)
-- [测试](docs/development/testing.md)
-
-## API Reference
-
-- [API Reference 说明](docs/reference/index.md)
-
-AST Generator 会为正式 Runtime Python 文件自动生成 API 页面：
+静态架构门禁：
 
 ```text
-__init__.py
-config.py
-app/**/*.py
-core/**/*.py
-systems/**/*.py
-tools/**/*.py
-ui/**/*.py
+core_import_style_test.py
+rig_architecture_gate_test.py
+rig_base_contract_test.py
+module_base_contract_test.py
 ```
 
-源码 Docstring 是 API 文档的第一事实来源。
+Maya Runtime：
+
+```python
+import muziToolset
+
+muziToolset.smoke_test()
+muziToolset.pipeline_smoke_test()
+muziToolset.extended_core_smoke_test()
+muziToolset.ctrl_base_smoke_test()
+muziToolset.face_build_smoke_test()
+muziToolset.rig_integration_test()
+muziToolset.maya2023_smoke_test()
+muziToolset.functional_smoke_test()
+```
+
+其中 `rig_architecture_gate_test.py` 会阻止以下退休架构重新进入正式代码：
+
+```text
+core/name_utils.py
+systems/component_base.py
+systems/controller/
+TeethComponent
+```
+
+---
+
+# 文档
+
+- [总体架构](docs/architecture/index.md)
+- [Face System Architecture](docs/architecture/face-system.md)
+- [Face Workflow State](docs/architecture/face-workflow-state.md)
+- [Core 设计](docs/architecture/core.md)
+- [Tools 与 Systems](docs/architecture/tools-systems.md)
+- [测试](docs/development/testing.md)
+
+API Reference 由源码 Docstring 通过 AST Generator 生成。
 
 ---
 
 # 代码规范
 
-正式 Runtime 继续遵守：
-
 ```text
 模块 / 文件 / 函数 / 变量    snake_case
 Class                       PascalCase
 Side                        lf / rt / md
-Maya Scene Node             [类型]_[方向]_[部位]_[功能]_[序号]
+Maya Rig Node               [type]_[side]_[part]_[function]_[index]
 ```
 
-流程代码优先显式 `for` 循环和清晰中文注释，不为了缩短行数滥用列表推导；Maya 场景代码优先 `maya.cmds`，正式新代码不新增 PyMel。
+流程代码优先显式 `for` 循环和清晰中文注释；Maya 场景代码优先 `maya.cmds`，正式新代码不新增 PyMel。
