@@ -72,85 +72,91 @@ jobs:
         run: python tests/core_single_source_gate_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 6：禁止 System / Tool / UI 重复 Core Helper。
+      # 步骤 6：检查 Core __all__ 是否只导出真实存在的 Public API。
+      # -----------------------------------------------------------------------
+      - name: Check Core public API exports
+        run: python tests/core_public_api_gate_test.py
+
+      # -----------------------------------------------------------------------
+      # 步骤 7：禁止 System / Tool / UI 重复 Core Helper。
       # -----------------------------------------------------------------------
       - name: Check upper layer Core reuse
         run: python tests/system_core_reuse_gate_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 7：静态验证 Maya 2023 Runtime Smoke Runner 契约。
+      # 步骤 8：静态验证 Maya 2023 Runtime Smoke Runner 契约。
       # -----------------------------------------------------------------------
       - name: Check Maya 2023 smoke contract
         run: python tests/maya2023_smoke_contract_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 8：检查正式公开 API Docstring。
+      # 步骤 9：检查正式公开 API Docstring。
       # -----------------------------------------------------------------------
       - name: Check runtime docstring standard
         run: python scripts/normalize_runtime_docstrings.py --check
 
       # -----------------------------------------------------------------------
-      # 步骤 9：检查 Maya / Rigging 术语质量。
+      # 步骤 10：检查 Maya / Rigging 术语质量。
       # -----------------------------------------------------------------------
       - name: Check Maya and rigging terminology quality
         run: python scripts/refine_runtime_docstring_semantics.py --check
 
       # -----------------------------------------------------------------------
-      # 步骤 10：验证 API Reference Generator。
+      # 步骤 11：验证 API Reference Generator。
       # -----------------------------------------------------------------------
       - name: Test API reference generator
         run: python tests/docs_reference_generator_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 11：验证全部 Runtime Python 文件都有 API 页面。
+      # 步骤 12：验证全部 Runtime Python 文件都有 API 页面。
       # -----------------------------------------------------------------------
       - name: Check runtime API documentation coverage
         run: python tests/docs_runtime_api_coverage_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 12：生成 Runtime API Reference 和源码树导航。
+      # 步骤 13：生成 Runtime API Reference 和源码树导航。
       # -----------------------------------------------------------------------
       - name: Generate API reference
         run: python scripts/generate_mkdocs_reference.py
 
       # -----------------------------------------------------------------------
-      # 步骤 13：统一生成 API 布局。
+      # 步骤 14：统一生成 API 布局。
       # -----------------------------------------------------------------------
       - name: Refine generated API layout
         run: python scripts/refine_generated_reference.py
 
       # -----------------------------------------------------------------------
-      # 步骤 14：检查 Callable Purpose Section。
+      # 步骤 15：检查 Callable Purpose Section。
       # -----------------------------------------------------------------------
       - name: Validate callable purpose sections
         run: python scripts/refine_generated_callable_layout.py --check
 
       # -----------------------------------------------------------------------
-      # 步骤 15：检查生成 API 页面布局。
+      # 步骤 16：检查生成 API 页面布局。
       # -----------------------------------------------------------------------
       - name: Validate generated API page layout
         run: python tests/docs_generated_layout_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 16：扩展用户手册 SUMMARY 导航。
+      # 步骤 17：扩展用户手册 SUMMARY 导航。
       # -----------------------------------------------------------------------
       - name: Expand user manual navigation
         run: python scripts/extend_docs_summary.py
 
       # -----------------------------------------------------------------------
-      # 步骤 17：检查 README 与导航一致性。
+      # 步骤 18：检查 README 与导航一致性。
       # -----------------------------------------------------------------------
       - name: Check README and navigation consistency
         run: python tests/docs_readme_navigation_test.py
 
       # -----------------------------------------------------------------------
-      # 步骤 18：严格构建 MkDocs。
+      # 步骤 19：严格构建 MkDocs。
       # -----------------------------------------------------------------------
       - name: Build MkDocs site
         run: mkdocs build --strict
 
       # -----------------------------------------------------------------------
-      # 步骤 19：检查 GitHub Pages 是否启用。
+      # 步骤 20：检查 GitHub Pages 是否启用。
       # -----------------------------------------------------------------------
       - name: Check GitHub Pages status
         id: pages_status
@@ -180,7 +186,7 @@ jobs:
           fi
 
       # -----------------------------------------------------------------------
-      # 步骤 20：上传 Pages Artifact。
+      # 步骤 21：上传 Pages Artifact。
       # -----------------------------------------------------------------------
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
