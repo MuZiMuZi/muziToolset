@@ -8,6 +8,7 @@ Maya 多 Joint / Joint Chain 的通用底层算法。
 模块职责
 --------
 - 验证一组 Joint；
+- 查询一个 Start Joint 到 Descendant Joint 的有序路径；
 - 按明确输入顺序组成 Joint Chain；
 - 根据一组 Maya Item 的世界位置创建 Joint；
 - 根据 Curve CV 世界位置创建 Joint Chain。
@@ -77,8 +78,67 @@ def validate_joint_list(joints):
 
 
 # =============================================================================
-# Chain
+# Chain Query / Edit
 # =============================================================================
+
+def get_joint_path(start_joint, end_joint):
+    u"""返回 Start Joint 到指定 Descendant Joint 的有序路径；不连通时返回 None。"""
+    joint_utils.Joint(
+        start_joint
+    )
+    joint_utils.Joint(
+        end_joint
+    )
+
+    start_joint = scene_utils.get_long_name(
+        start_joint
+    )
+    end_joint = scene_utils.get_long_name(
+        end_joint
+    )
+
+    if start_joint == end_joint:
+        return [
+            start_joint
+        ]
+
+    def walk(current_joint, current_path):
+        children = hierarchy_utils.get_children(
+            current_joint,
+            node_type="joint",
+            full_path=True
+        )
+
+        for child_joint in children:
+            child_path = []
+
+            for path_joint in current_path:
+                child_path.append(
+                    path_joint
+                )
+
+            child_path.append(
+                child_joint
+            )
+
+            if child_joint == end_joint:
+                return child_path
+
+            result = walk(
+                child_joint,
+                child_path
+            )
+
+            if result:
+                return result
+
+        return None
+
+    return walk(
+        start_joint,
+        [start_joint]
+    )
+
 
 def parent_joints_as_chain(joints):
     u"""按照输入顺序把 Joint 组成父子链，并返回原顺序 Joint 列表。"""
@@ -311,6 +371,7 @@ def create_joints_on_curve_cvs(
 
 __all__ = [
     "validate_joint_list",
+    "get_joint_path",
     "parent_joints_as_chain",
     "create_joints_at_items",
     "get_curve_joint_base_name",
