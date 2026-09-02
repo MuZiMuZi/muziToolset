@@ -1,9 +1,10 @@
-name: Normalize Runtime Docstrings
+name: Normalize Runtime Documentation
 
 on:
   push:
     branches:
-      - refactor/runtime-docstring-standard
+      - refactor/full-code-cn-comments
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -16,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: refactor/runtime-docstring-standard
+          ref: refactor/full-code-cn-comments
           fetch-depth: 0
 
       - name: Setup Python
@@ -24,23 +25,39 @@ jobs:
         with:
           python-version: "3.11"
 
-      # 第一轮结构化 Docstring 已经写入分支。
-      # 这里不再重复 --write，避免已有 Example / Notes 产生无意义缩进变化。
-      - name: Validate public runtime docstrings
-        run: python scripts/normalize_runtime_docstrings.py --check
+      # -----------------------------------------------------------------------
+      # Step 01：统一补齐 Runtime 公开 API 中文 Docstring
+      # -----------------------------------------------------------------------
+      - name: Normalize public runtime docstrings
+        run: python scripts/normalize_runtime_docstrings.py --write
 
+      # -----------------------------------------------------------------------
+      # Step 02：进一步修正 Maya / Rigging 参数语义
+      # -----------------------------------------------------------------------
       - name: Refine Maya and rigging parameter semantics
         run: python scripts/refine_runtime_docstring_semantics.py --write
 
+      # -----------------------------------------------------------------------
+      # Step 03：清理行尾空白，保证源码格式稳定
+      # -----------------------------------------------------------------------
       - name: Normalize runtime whitespace
         shell: bash
         run: |
           find app core systems tools ui -type f -name '*.py' -print0 | xargs -0 sed -i 's/[[:space:]]\+$//'
           sed -i 's/[[:space:]]\+$//' __init__.py config.py
 
+      # -----------------------------------------------------------------------
+      # Step 04：再次检查 Docstring 与绑定术语契约
+      # -----------------------------------------------------------------------
+      - name: Validate public runtime docstrings
+        run: python scripts/normalize_runtime_docstrings.py --check
+
       - name: Validate rigging terminology quality
         run: python scripts/refine_runtime_docstring_semantics.py --check
 
+      # -----------------------------------------------------------------------
+      # Step 05：静态编译全部 Runtime Python，防止整理产生语法错误
+      # -----------------------------------------------------------------------
       - name: Compile runtime source
         shell: bash
         run: |
@@ -49,11 +66,14 @@ jobs:
       - name: Check whitespace errors
         run: git diff --check
 
-      - name: Commit refined runtime documentation
+      # -----------------------------------------------------------------------
+      # Step 06：把自动整理结果提交回当前 Refactor Branch
+      # -----------------------------------------------------------------------
+      - name: Commit normalized runtime documentation
         shell: bash
         run: |
           if git diff --quiet; then
-            echo "Runtime docstrings already satisfy the semantic standard."
+            echo "Runtime documentation already satisfies the standard."
             exit 0
           fi
 
@@ -61,5 +81,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add __init__.py config.py app core systems tools ui
-          git commit -m "docs: refine maya rigging api semantics"
-          git push origin HEAD:refactor/runtime-docstring-standard
+          git commit -m "docs: normalize runtime chinese api comments"
+          git push origin HEAD:refactor/full-code-cn-comments
