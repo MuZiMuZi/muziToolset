@@ -10,7 +10,7 @@ Skirt Rig Builder
     2. 通过 pointOnCurveInfo 驱动 Blueprint Joint；
     3. 调整定位曲线贴合裙子；
     4. 根据横向和纵向数量创建 Bind Joint Chain；
-    5. 统一调用 systems.controller 创建 FK Controller。
+    5. 统一调用 systems.ctrl_base 创建 FK Controller。
 
 重要边界：
     - Group 创建和 Parent 统一复用 core.hierarchy_utils；
@@ -18,6 +18,7 @@ Skirt Rig Builder
     - Joint 创建统一复用 core.joint_utils；
     - DG Plug 连接统一复用 core.connection_utils；
     - Constraint 创建统一复用 core.constraint_utils；
+    - Controller 创建统一复用 systems.ctrl_base；
     - Undo Chunk 统一复用 core.scene_utils；
     - 本模块只保留 Skirt Rig Workflow。
 
@@ -34,7 +35,7 @@ from ....core import hierarchy_utils
 from ....core import joint_utils
 from ....core import scene_utils
 from ....core import transform_utils
-from ... import controller as controller_system
+from ... import ctrl_base
 
 
 def _safe_name(text):
@@ -73,22 +74,10 @@ class SkirtRigBuilder(object):
             horizontal_count=8,
             vertical_count=4
     ):
-        u"""
-        初始化裙子绑定系统参数。
-
-        Args:
-            name (str):
-                创建或查询时使用的节点名称。
-            horizontal_count (int):
-                当前构建、采样或查询过程使用的元素数量。
-            vertical_count (int):
-                当前构建、采样或查询过程使用的元素数量。
-        """
+        u"""初始化裙子绑定系统参数。"""
         self.name = _safe_name(name)
         self.horizontal_count = int(horizontal_count)
         self.vertical_count = int(vertical_count)
-
-        # 初始化后立即验证数量参数，避免无效配置进入后续 Setup / Build。
         self.validate_parameters()
 
     # -------------------------------------------------------------------------
@@ -96,17 +85,7 @@ class SkirtRigBuilder(object):
     # -------------------------------------------------------------------------
 
     def validate_parameters(self):
-        u"""
-        检查 Builder 参数。
-
-        Returns:
-            bool:
-            方法执行后的结果数据。
-
-        Raises:
-            ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-        """
+        u"""检查 Builder 参数。"""
         if self.horizontal_count < 3:
             raise ValueError(
                 u"裙子横向链数量不能小于 3。"
@@ -120,13 +99,7 @@ class SkirtRigBuilder(object):
         return True
 
     def get_names(self):
-        u"""
-        返回系统内所有固定节点名称。
-
-        Returns:
-            dict:
-            方法执行后的结果数据。
-        """
+        u"""返回系统内所有固定节点名称。"""
         return {
             "name": self.name,
             "root": "grp_m_{}_001".format(self.name),
@@ -145,17 +118,8 @@ class SkirtRigBuilder(object):
     # -------------------------------------------------------------------------
 
     def ensure_root_groups(self):
-        u"""
-        确保裙子系统基础层级存在。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-        # 生成当前 Skirt System 使用的固定节点名称。
+        u"""确保裙子系统基础层级存在。"""
         names = self.get_names()
-
-        # 确保裙子系统顶层 Group 位于 World。
         root = hierarchy_utils.ensure_group(
             names["root"]
         )
@@ -168,7 +132,6 @@ class SkirtRigBuilder(object):
             "nodes",
         ]
 
-        # 确保 Setup / Blueprint / Control / Joint / Node 子组都位于 Root 下。
         for group_key in child_group_keys:
             hierarchy_utils.ensure_group(
                 names[group_key],
@@ -244,7 +207,6 @@ class SkirtRigBuilder(object):
             constructionHistory=False
         )[0]
 
-        # 使用统一 Hierarchy API 把定位曲线整理到 Setup Group。
         curve = hierarchy_utils.parent(
             curve,
             parent
@@ -285,7 +247,6 @@ class SkirtRigBuilder(object):
                 index + 1
             )
 
-            # 使用 Scene Core 创建 Blueprint Point Group，并直接放入 Blueprint 层级。
             point_group = scene_utils.create_node(
                 "transform",
                 point_group_name,
@@ -297,14 +258,11 @@ class SkirtRigBuilder(object):
                 place,
                 index + 1
             )
-
-            # 创建 pointOnCurveInfo，作为定位曲线到 Blueprint Point 的实时采样节点。
             poci = scene_utils.create_node(
                 "pointOnCurveInfo",
                 poci_name
             )
 
-            # 把 Curve WorldSpace 输出接入 pointOnCurveInfo 输入。
             connection_utils.connect_plugs(
                 curve_shape + ".worldSpace[0]",
                 poci + ".inputCurve",
@@ -320,7 +278,6 @@ class SkirtRigBuilder(object):
                 float(index) / float(self.horizontal_count)
             )
 
-            # 用 pointOnCurveInfo 的 Position 实时驱动 Blueprint Point Group。
             connection_utils.connect_plugs(
                 poci + ".position",
                 point_group + ".translate",
@@ -333,7 +290,6 @@ class SkirtRigBuilder(object):
                 index + 1
             )
 
-            # 使用统一 Joint API 在 Point Group 下创建 Blueprint Joint。
             joint_utils.Joint.create(
                 name=joint_name,
                 parent=point_group,
@@ -344,33 +300,19 @@ class SkirtRigBuilder(object):
 
     @scene_utils.undo_chunk
     def create_setup(self):
-        u"""
-        创建或重建裙子定位系统。
-
-        Returns:
-            dict:
-            方法执行后的结果数据。
-        """
-        # 检查横向 / 纵向数量，避免使用无效参数创建 Setup。
+        u"""创建或重建裙子定位系统。"""
         self.validate_parameters()
-
-        # 创建或复用 Skirt Rig 的基础层级，并取得本次需要的固定名称。
         names = self.ensure_root_groups()
-
-        # 删除上一次 Setup 创建的 Curve、Blueprint 和 POCI，保证本次从干净状态开始。
         self._delete_setup_nodes(
             names
         )
 
-        # 创建上方定位环线，作为裙子腰部采样边界。
         up_curve = self._create_setup_curve(
             names["up_curve"],
             y_value=5.0,
             radius=2.0,
             parent=names["setup"]
         )
-
-        # 创建下方定位环线，作为裙摆采样边界。
         down_curve = self._create_setup_curve(
             names["down_curve"],
             y_value=0.0,
@@ -378,14 +320,11 @@ class SkirtRigBuilder(object):
             parent=names["setup"]
         )
 
-        # 根据上方定位曲线创建实时 Up Blueprint Joint。
         self._create_curve_blueprints(
             up_curve,
             "Up",
             names
         )
-
-        # 根据下方定位曲线创建实时 Down Blueprint Joint。
         self._create_curve_blueprints(
             down_curve,
             "Down",
@@ -404,14 +343,7 @@ class SkirtRigBuilder(object):
         }
 
     def select_setup_curves(self):
-        u"""
-        选择当前裙子系统的两条定位曲线。
-
-        Returns:
-            object | list:
-            方法执行后的结果数据。
-        """
-        # 获取当前 Skirt System 的固定 Curve 名称。
+        u"""选择当前裙子系统的两条定位曲线。"""
         names = self.get_names()
         curves = []
 
@@ -502,30 +434,16 @@ class SkirtRigBuilder(object):
 
     @scene_utils.undo_chunk
     def build(self):
-        u"""
-        根据当前 Blueprint 创建完整裙子 FK 绑定。
-
-        Returns:
-            dict:
-            方法执行后的结果数据。
-        """
-        # 检查 Builder 数量参数，保证 Joint Chain 可以正常插值。
+        u"""根据当前 Blueprint 创建完整裙子 FK 绑定。"""
         self.validate_parameters()
-
-        # 创建或复用基础层级，并取得当前 Skirt System 的全部固定名称。
         names = self.ensure_root_groups()
-
-        # 确认所有 Up / Down Blueprint Joint 都存在，避免构建出残缺 Joint Chain。
         self._validate_blueprints(
             names
         )
-
-        # 删除上一次生成的 Joint / Controller / Build Metadata，保证 Build 可重复执行。
         self._delete_previous_build(
             names
         )
 
-        # 创建本次 Build 的 Metadata Group，用于保存构建参数。
         build_group = scene_utils.create_node(
             "transform",
             names["build"],
@@ -546,12 +464,9 @@ class SkirtRigBuilder(object):
                 horizontal_index + 1
             )
 
-            # 使用 Transform Core 读取当前纵向链的上端 Blueprint 世界位置。
             up_position = transform_utils.get_world_translation(
                 up_joint
             )
-
-            # 使用 Transform Core 读取当前纵向链的下端 Blueprint 世界位置。
             down_position = transform_utils.get_world_translation(
                 down_joint
             )
@@ -582,7 +497,6 @@ class SkirtRigBuilder(object):
                 if previous_joint is not None:
                     joint_parent = previous_joint
 
-                # 使用统一 Joint API 在上下 Blueprint 之间创建当前 Bind Joint。
                 joint = joint_utils.Joint.create(
                     name=joint_name,
                     position=position,
@@ -600,23 +514,20 @@ class SkirtRigBuilder(object):
                 if previous_control is not None:
                     parent_control = previous_control
 
-                # 使用统一 Controller System 创建当前 Joint 对应的 FK Controller。
-                control_result = controller_system.create_controller(
+                control_result = ctrl_base.create_ctrl(
                     name=control_name,
                     shape="circle",
                     radius=0.6,
                     axis="Y+",
-                    target=joint,
-                    parent=parent_control,
+                    target_node=joint,
+                    parent_node=parent_control,
                     color=17,
-                    create_sub_control=False,
-                    create_extra_groups=True,
+                    create_sub_ctrl=False,
                     add_to_set=True
                 )
 
-                control = control_result["control"]
+                control = control_result["ctrl_node"]
 
-                # 使用统一 Constraint Core 建立 Controller 到 Joint 的 Parent Constraint。
                 constraint_utils.create_constraint(
                     driver_objects=control,
                     driven_object=joint,
