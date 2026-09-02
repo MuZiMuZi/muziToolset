@@ -7,11 +7,12 @@ Maya 真机验证第二层基础能力：
     - attr_utils
     - hierarchy_utils
     - joint_utils
-    - systems.rig_base.RigBase + core.rename_utils
+    - systems.rig_base.RigBase Identity + core.rename_utils
     - model_check_utils
     - scene_clean_utils
 
 Rig Naming 已经从 Core 迁到 systems.rig_base；
+RigBase 是实例化 Rig Object 基类；
 Core rename_utils 只负责 Maya Rename / Short Name 等通用节点操作。
 """
 
@@ -393,12 +394,14 @@ def test_joint_utils(token, test_root):
         label=u"Joint Radius"
     )
 
-    tagged_name = RigBase.create_name(
-        type="jnt",
+    tagged_identity = RigBase(
         side="lf",
         part=token.lower(),
-        function="bind",
         index=1
+    )
+    tagged_name = tagged_identity.create_name(
+        node_type="jnt",
+        function="bind"
     )
     tagged_joint = joint_utils.Joint.create(
         name=tagged_name,
@@ -431,13 +434,15 @@ def test_joint_utils(token, test_root):
 # =============================================================================
 
 def test_naming_utils(token, test_root):
-    u"""验证 RigBase Name + Maya Rename。"""
-    standard_name = RigBase.create_name(
-        type="jnt",
+    u"""验证 RigBase Identity / Naming + Maya Rename。"""
+    rig_object = RigBase(
         side="left",
         part="upper_arm",
-        function="bind",
         index=1
+    )
+    standard_name = rig_object.create_name(
+        node_type="jnt",
+        function="bind"
     )
 
     if standard_name != "jnt_lf_upper_arm_bind_001":
@@ -458,7 +463,14 @@ def test_naming_utils(token, test_root):
             )
         )
 
-    mirror_name = RigBase.mirror_name(
+    if parsed["node_type"] != "jnt":
+        raise RuntimeError(
+            u"RigBase Node Type Parse 错误：{}".format(
+                parsed
+            )
+        )
+
+    mirror_name = rig_object.mirror_name(
         standard_name
     )
 
@@ -467,6 +479,11 @@ def test_naming_utils(token, test_root):
             u"RigBase Mirror Name 错误：{}".format(
                 mirror_name
             )
+        )
+
+    if rig_object.side != "lf":
+        raise RuntimeError(
+            u"mirror_name() 不应该修改 Rig Object Identity。"
         )
 
     source = cmds.createNode(
@@ -493,7 +510,7 @@ def test_naming_utils(token, test_root):
             u"Maya 节点没有完成 Rename。"
         )
 
-    return u"RigBase Create / Parse / Mirror + Maya Rename 成功"
+    return u"RigBase Identity / Create / Parse / Mirror + Maya Rename 成功"
 
 
 # =============================================================================
@@ -664,7 +681,7 @@ def run():
         ("attr_utils", "Attribute / Config", test_attr_utils),
         ("hierarchy_utils", "DAG / Ensure / Parent", test_hierarchy_utils),
         ("joint_utils", "Joint / Chain / Label", test_joint_utils),
-        ("rig_base", "Rig Naming / Maya Rename", test_naming_utils),
+        ("rig_base", "Rig Identity / Naming / Maya Rename", test_naming_utils),
         ("model_check_utils", "Model Quality Check", test_model_check_utils),
         ("scene_clean_utils", "Safe Scene Clean", test_scene_clean_utils),
     ]
