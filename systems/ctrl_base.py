@@ -8,11 +8,13 @@ MuziTools 所有绑定系统共用的 Controller 基础模块。
 本模块只维护：
 
     1. Ctrl Creation
-    2. Follow
-    3. Space Switch
-    4. Rebuild Cache
+    2. Controller Hierarchy Naming
+    3. Follow
+    4. Space Switch
+    5. Rebuild Cache
 
 Rig Naming 统一交给 systems.rig_base.RigBase。
+Scene / Attr / Connection / Hierarchy / Snap 等通用能力统一复用 Core。
 内部 Controller Name 默认来自统一 Naming API，不重复检查名称格式。
 只有在 Build / Rebuild / Restore 面对 Maya 场景状态时检查节点、属性和连接是否存在。
 
@@ -34,12 +36,14 @@ import json
 
 import maya.cmds as cmds
 
+from ..core import attr_utils
 from ..core import connection_utils
 from ..core import control_shape_utils
 from ..core import constraint_utils
 from ..core import hierarchy_utils
 from ..core import rename_utils
 from ..core import scene_utils
+from ..core import snap_utils
 from .rig_base import RigBase
 
 
@@ -58,7 +62,7 @@ axis_rotation = {
 
 
 # =============================================================================
-# Naming / Scene State
+# Naming
 # =============================================================================
 
 def _get_rig_name(node_name):
@@ -79,27 +83,39 @@ def _get_ctrl_part(ctrl_rig):
     )
 
 
-def _check_build_nodes_available(node_name_list):
-    u"""创建前检查上一次 Build 的同名节点是否仍存在。"""
-    exists_node_list = []
+def get_ctrl_hierarchy_names(
+        name,
+        create_sub_ctrl=False
+):
+    u"""
+    根据标准 Controller Name 返回 CtrlBase 会创建的确定性层级名称。
 
-    for node_name in node_name_list:
-        if not node_name:
-            continue
+    其它 Module 如果需要在 Build 前检查 Controller 层级残留，应调用本方法，
+    不要再次手写 ctrl_ -> zero_ / driven_ / space_ 等字符串替换。
+    """
+    ctrl_rig = _get_rig_name(
+        name
+    )
 
-        if cmds.objExists(node_name):
-            exists_node_list.append(
-                node_name
-            )
+    names = {
+        "zero": ctrl_rig.create_name(type="zero"),
+        "driven": ctrl_rig.create_name(type="driven"),
+        "space": ctrl_rig.create_name(type="space"),
+        "connect": ctrl_rig.create_name(type="connect"),
+        "offset": ctrl_rig.create_name(type="offset"),
+        "ctrl": ctrl_rig.name,
+        "output": ctrl_rig.create_name(type="output"),
+        "sub_ctrl": None,
+    }
 
-    if exists_node_list:
-        raise RuntimeError(
-            u"Controller Build Node 已存在，请先执行 Rebuild Cleanup：{}".format(
-                ", ".join(exists_node_list)
-            )
+    if create_sub_ctrl:
+        names["sub_ctrl"] = ctrl_rig.create_name(
+            type="ctrl",
+            part=_get_ctrl_part(ctrl_rig),
+            function="sub"
         )
 
-    return True
+    return names
 
 
 # =============================================================================
@@ -120,30 +136,6 @@ def _apply_shape_transform(ctrl_node, radius, axis, rotate_x=0.0):
         rotate_y=rotation_value[1],
         rotate_z=rotation_value[2]
     )
-
-
-def _lock_ctrl_attr(ctrl_node, lock_attr_list):
-    u"""锁定并隐藏指定 Controller Attribute。"""
-    if not lock_attr_list:
-        return True
-
-    for attr_name in lock_attr_list:
-        attr_plug = "{}.{}".format(
-            ctrl_node,
-            attr_name
-        )
-
-        if not cmds.objExists(attr_plug):
-            continue
-
-        cmds.setAttr(
-            attr_plug,
-            lock=True,
-            keyable=False,
-            channelBox=False
-        )
-
-    return True
 
 
 def create_ctrl(
@@ -195,48 +187,29 @@ def create_ctrl(
         )
 
     # -------------------------------------------------------------------------
-    # Step 02：由 RigBase 生成固定层级名称
+    # Step 02：由 CtrlBase 自己的 Naming API 准备固定层级名称
     # -------------------------------------------------------------------------
-    ctrl_rig = _get_rig_name(
-        name
-    )
-    ctrl_name = ctrl_rig.name
-
-    zero_grp_name = ctrl_rig.create_name(
-        type="zero"
-    )
-    driven_grp_name = ctrl_rig.create_name(
-        type="driven"
-    )
-    space_grp_name = ctrl_rig.create_name(
-        type="space"
-    )
-    connect_grp_name = ctrl_rig.create_name(
-        type="connect"
-    )
-    offset_grp_name = ctrl_rig.create_name(
-        type="offset"
-    )
-    output_name = ctrl_rig.create_name(
-        type="output"
+    hierarchy_names = get_ctrl_hierarchy_names(
+        name,
+        create_sub_ctrl=create_sub_ctrl
     )
 
-    sub_ctrl_name = None
-
-    if create_sub_ctrl:
-        sub_ctrl_name = ctrl_rig.create_name(
-            type="ctrl",
-            part=_get_ctrl_part(ctrl_rig),
-            function="sub"
-        )
+    ctrl_name = hierarchy_names["ctrl"]
+    zero_grp_name = hierarchy_names["zero"]
+    driven_grp_name = hierarchy_names["driven"]
+    space_grp_name = hierarchy_names["space"]
+    connect_grp_name = hierarchy_names["connect"]
+    offset_grp_name = hierarchy_names["offset"]
+    output_name = hierarchy_names["output"]
+    sub_ctrl_name = hierarchy_names["sub_ctrl"]
 
     create_name_list = [
-        ctrl_name,
         zero_grp_name,
         driven_grp_name,
         space_grp_name,
         connect_grp_name,
         offset_grp_name,
+        ctrl_name,
         output_name,
     ]
 
@@ -245,35 +218,36 @@ def create_ctrl(
             sub_ctrl_name
         )
 
-    _check_build_nodes_available(
-        create_name_list
+    scene_utils.ensure_nodes_available(
+        create_name_list,
+        label=u"Controller Build Node"
     )
 
     # -------------------------------------------------------------------------
     # Step 03：创建固定 Controller Hierarchy
     # -------------------------------------------------------------------------
-    zero_grp = cmds.createNode(
+    zero_grp = scene_utils.create_node(
         "transform",
-        name=zero_grp_name
+        zero_grp_name
     )
-    driven_grp = cmds.createNode(
+    driven_grp = scene_utils.create_node(
         "transform",
-        name=driven_grp_name,
+        driven_grp_name,
         parent=zero_grp
     )
-    space_grp = cmds.createNode(
+    space_grp = scene_utils.create_node(
         "transform",
-        name=space_grp_name,
+        space_grp_name,
         parent=driven_grp
     )
-    connect_grp = cmds.createNode(
+    connect_grp = scene_utils.create_node(
         "transform",
-        name=connect_grp_name,
+        connect_grp_name,
         parent=space_grp
     )
-    offset_grp = cmds.createNode(
+    offset_grp = scene_utils.create_node(
         "transform",
-        name=offset_grp_name,
+        offset_grp_name,
         parent=connect_grp
     )
 
@@ -284,9 +258,9 @@ def create_ctrl(
         shape
     )
 
-    ctrl_node = cmds.createNode(
+    ctrl_node = scene_utils.create_node(
         "transform",
-        name=ctrl_name,
+        ctrl_name,
         parent=offset_grp
     )
     control_shape_utils.apply_shape_data(
@@ -311,9 +285,9 @@ def create_ctrl(
     output_parent_node = ctrl_node
 
     if create_sub_ctrl:
-        sub_ctrl_node = cmds.createNode(
+        sub_ctrl_node = scene_utils.create_node(
             "transform",
-            name=sub_ctrl_name,
+            sub_ctrl_name,
             parent=ctrl_node
         )
         control_shape_utils.apply_shape_data(
@@ -338,24 +312,21 @@ def create_ctrl(
             int(sub_color)
         )
 
-        if not cmds.attributeQuery(
-                "subCtrlVis",
-                node=ctrl_node,
-                exists=True
-        ):
-            cmds.addAttr(
-                ctrl_node,
-                longName="subCtrlVis",
-                attributeType="bool",
-                defaultValue=0
-            )
-            cmds.setAttr(
-                ctrl_node + ".subCtrlVis",
-                channelBox=True
-            )
+        ctrl_attr = attr_utils.Attr(
+            ctrl_node
+        )
+        sub_ctrl_vis_plug = ctrl_attr.add_attr(
+            "subCtrlVis",
+            attr_type="bool",
+            lock=False,
+            hide=True,
+            default_value=0,
+            keyable=False,
+            channel_box=True
+        )
 
         connection_utils.connect_plugs(
-            ctrl_node + ".subCtrlVis",
+            sub_ctrl_vis_plug,
             sub_ctrl_node + ".visibility",
             force=True
         )
@@ -364,9 +335,9 @@ def create_ctrl(
     # -------------------------------------------------------------------------
     # Step 06：创建最终 Output
     # -------------------------------------------------------------------------
-    output_node = cmds.createNode(
+    output_node = scene_utils.create_node(
         "transform",
-        name=output_name,
+        output_name,
         parent=output_parent_node
     )
 
@@ -374,11 +345,10 @@ def create_ctrl(
     # Step 07：对齐 Target
     # -------------------------------------------------------------------------
     if target_node is not None:
-        cmds.matchTransform(
+        snap_utils.snap_to_average(
+            [target_node],
             zero_grp,
-            target_node,
-            position=True,
-            rotation=True
+            include_rotation=True
         )
 
     # -------------------------------------------------------------------------
@@ -393,16 +363,27 @@ def create_ctrl(
     # -------------------------------------------------------------------------
     # Step 09：锁定通道并加入 Animation Set
     # -------------------------------------------------------------------------
-    _lock_ctrl_attr(
-        ctrl_node,
-        lock_attr_list
-    )
-
-    if sub_ctrl_node is not None:
-        _lock_ctrl_attr(
-            sub_ctrl_node,
-            lock_attr_list
+    if lock_attr_list:
+        ctrl_attr = attr_utils.Attr(
+            ctrl_node
         )
+        ctrl_attr.set_attrs_state(
+            lock_attr_list,
+            lock=True,
+            keyable=False,
+            channel_box=False
+        )
+
+        if sub_ctrl_node is not None:
+            sub_ctrl_attr = attr_utils.Attr(
+                sub_ctrl_node
+            )
+            sub_ctrl_attr.set_attrs_state(
+                lock_attr_list,
+                lock=True,
+                keyable=False,
+                channel_box=False
+            )
 
     if add_to_set:
         scene_utils.ensure_object_set(
@@ -534,49 +515,6 @@ def create_fk_ctrl(
 
 
 # =============================================================================
-# Ctrl Attribute
-# =============================================================================
-
-def _ensure_float_attr(
-        ctrl_node,
-        attr_name,
-        default_value,
-        min_value=0.0,
-        max_value=1.0
-):
-    u"""创建或复用一个 Keyable Float Attribute。"""
-    scene_utils.validate_node(
-        ctrl_node,
-        u"Ctrl Node"
-    )
-
-    if cmds.attributeQuery(
-            attr_name,
-            node=ctrl_node,
-            exists=True
-    ):
-        return "{}.{}".format(
-            ctrl_node,
-            attr_name
-        )
-
-    cmds.addAttr(
-        ctrl_node,
-        longName=attr_name,
-        attributeType="double",
-        defaultValue=float(default_value),
-        minValue=float(min_value),
-        maxValue=float(max_value),
-        keyable=True
-    )
-
-    return "{}.{}".format(
-        ctrl_node,
-        attr_name
-    )
-
-
-# =============================================================================
 # Follow
 # =============================================================================
 
@@ -615,10 +553,19 @@ def create_follow(
         0.0,
         min(1.0, float(weight))
     )
-    follow_plug = _ensure_float_attr(
-        ctrl_node,
+    ctrl_attr = attr_utils.Attr(
+        ctrl_node
+    )
+    follow_plug = ctrl_attr.add_attr(
         attr_name,
-        default_value=weight
+        attr_type="double",
+        lock=False,
+        hide=False,
+        default_value=weight,
+        min_value=0.0,
+        max_value=1.0,
+        keyable=True,
+        channel_box=True
     )
 
     ctrl_rig = _get_rig_name(
@@ -638,10 +585,10 @@ def create_follow(
         function=attr_name
     )
 
-    _check_build_nodes_available([
-        constraint_name,
-        reverse_name,
-    ])
+    scene_utils.ensure_nodes_available(
+        [constraint_name, reverse_name],
+        label=u"Follow Build Node"
+    )
 
     constraint_node_list = constraint_utils.create_constraint(
         driver_objects=[
@@ -786,10 +733,12 @@ def create_space_switch(
     if default_index >= len(space_target_list):
         default_index = len(space_target_list) - 1
 
-    if cmds.attributeQuery(
-            attr_name,
-            node=ctrl_node,
-            exists=True
+    ctrl_attr = attr_utils.Attr(
+        ctrl_node
+    )
+
+    if ctrl_attr.attr_exists(
+            attr_name
     ):
         raise RuntimeError(
             u"Ctrl 上已经存在 Space Attribute：{}.{}".format(
@@ -798,17 +747,15 @@ def create_space_switch(
             )
         )
 
-    cmds.addAttr(
-        ctrl_node,
-        longName=attr_name,
-        attributeType="enum",
-        enumName=":".join(space_label_list),
-        defaultValue=int(default_index),
-        keyable=True
-    )
-    space_plug = "{}.{}".format(
-        ctrl_node,
-        attr_name
+    space_plug = ctrl_attr.add_attr(
+        attr_name,
+        attr_type="enum",
+        lock=False,
+        hide=False,
+        default_value=int(default_index),
+        enum_name=":".join(space_label_list),
+        keyable=True,
+        channel_box=True
     )
 
     ctrl_rig = _get_rig_name(
@@ -823,9 +770,10 @@ def create_space_switch(
         function=attr_name
     )
 
-    _check_build_nodes_available([
-        constraint_name
-    ])
+    scene_utils.ensure_nodes_available(
+        constraint_name,
+        label=u"Space Constraint"
+    )
 
     constraint_node_list = constraint_utils.create_constraint(
         driver_objects=space_target_list,
@@ -876,9 +824,10 @@ def create_space_switch(
             function=str(space_index + 1)
         )
 
-        _check_build_nodes_available([
-            condition_name
-        ])
+        scene_utils.ensure_nodes_available(
+            condition_name,
+            label=u"Space Condition"
+        )
 
         condition_node = scene_utils.create_node(
             "condition",
@@ -1075,16 +1024,9 @@ def _get_external_connection_data(
         attr_data["name"]
     )
 
-    input_plug_list = cmds.listConnections(
-        attr_plug,
-        source=True,
-        destination=False,
-        plugs=True,
-        skipConversionNodes=False
+    input_plug_list = connection_utils.get_input_connections(
+        attr_plug
     )
-
-    if input_plug_list is None:
-        input_plug_list = []
 
     for input_plug in input_plug_list:
         if _is_owned_connection(
@@ -1097,16 +1039,9 @@ def _get_external_connection_data(
             input_plug
         )
 
-    output_plug_list = cmds.listConnections(
-        attr_plug,
-        source=False,
-        destination=True,
-        plugs=True,
-        skipConversionNodes=False
+    output_plug_list = connection_utils.get_output_connections(
+        attr_plug
     )
-
-    if output_plug_list is None:
-        output_plug_list = []
 
     for output_plug in output_plug_list:
         if _is_owned_connection(
@@ -1151,12 +1086,10 @@ def save_rebuild_cache(
             function="cache"
         )
 
-    if cmds.objExists(cache_name):
-        raise RuntimeError(
-            u"Rebuild Cache 已存在：{}".format(
-                cache_name
-            )
-        )
+    scene_utils.ensure_nodes_available(
+        cache_name,
+        label=u"Rebuild Cache"
+    )
 
     owned_node_set = set()
 
@@ -1207,26 +1140,21 @@ def save_rebuild_cache(
             attr_data
         )
 
-    cache_node = cmds.createNode(
+    cache_node = scene_utils.create_node(
         "network",
-        name=cache_name
+        cache_name
     )
 
-    cmds.addAttr(
-        cache_node,
-        longName="sourceCtrlName",
-        dataType="string"
+    cache_attr = attr_utils.Attr(
+        cache_node
     )
-    cmds.addAttr(
-        cache_node,
-        longName="ctrlData",
-        dataType="string"
-    )
-
-    cmds.setAttr(
-        cache_node + ".sourceCtrlName",
+    cache_attr.set_value(
+        "sourceCtrlName",
         rename_utils.get_short_name(ctrl_node),
-        type="string"
+        attr_type="string",
+        lock=False,
+        keyable=False,
+        channel_box=False
     )
 
     cache_data = {
@@ -1238,11 +1166,13 @@ def save_rebuild_cache(
         ensure_ascii=False,
         indent=2
     )
-
-    cmds.setAttr(
-        cache_node + ".ctrlData",
+    cache_attr.set_value(
+        "ctrlData",
         cache_text,
-        type="string"
+        attr_type="string",
+        lock=False,
+        keyable=False,
+        channel_box=False
     )
 
     return cache_node
@@ -1255,63 +1185,20 @@ def save_rebuild_cache(
 def _create_cached_attr(ctrl_node, attr_data):
     u"""根据 Cache Data 重新创建一个自定义 Attribute。"""
     attr_name = attr_data["name"]
-
-    if cmds.attributeQuery(
-            attr_name,
-            node=ctrl_node,
-            exists=True
-    ):
-        return "{}.{}".format(
-            ctrl_node,
-            attr_name
-        )
-
     attr_type = attr_data["type"]
-    numeric_attr_type_list = [
+    supported_types = [
         "double",
         "float",
         "long",
         "short",
         "byte",
         "bool",
+        "enum",
+        "string",
+        "message",
     ]
-    add_attr_kwargs = {
-        "longName": attr_name,
-    }
 
-    if attr_type in numeric_attr_type_list:
-        add_attr_kwargs["attributeType"] = attr_type
-
-        if attr_data["default"] is not None:
-            add_attr_kwargs["defaultValue"] = attr_data["default"]
-
-        if attr_data["min"] is not None:
-            add_attr_kwargs["minValue"] = attr_data["min"]
-
-        if attr_data["max"] is not None:
-            add_attr_kwargs["maxValue"] = attr_data["max"]
-
-    elif attr_type == "enum":
-        add_attr_kwargs["attributeType"] = "enum"
-        enum_name = attr_data["enum_name"]
-
-        if not enum_name:
-            enum_name = "Item"
-
-        add_attr_kwargs["enumName"] = enum_name
-
-        if attr_data["default"] is not None:
-            add_attr_kwargs["defaultValue"] = int(
-                attr_data["default"]
-            )
-
-    elif attr_type == "string":
-        add_attr_kwargs["dataType"] = "string"
-
-    elif attr_type == "message":
-        add_attr_kwargs["attributeType"] = "message"
-
-    else:
+    if attr_type not in supported_types:
         cmds.warning(
             u"暂不自动恢复复合 / 特殊自定义属性：{}.{} ({})".format(
                 ctrl_node,
@@ -1321,59 +1208,58 @@ def _create_cached_attr(ctrl_node, attr_data):
         )
         return None
 
-    cmds.addAttr(
-        ctrl_node,
-        **add_attr_kwargs
+    enum_name = attr_data["enum_name"]
+
+    if attr_type == "enum" and not enum_name:
+        enum_name = "Item"
+
+    ctrl_attr = attr_utils.Attr(
+        ctrl_node
     )
-    return "{}.{}".format(
-        ctrl_node,
-        attr_name
+    return ctrl_attr.add_attr(
+        attr_name,
+        attr_type=attr_type,
+        lock=False,
+        hide=True,
+        default_value=attr_data["default"],
+        min_value=attr_data["min"],
+        max_value=attr_data["max"],
+        enum_name=enum_name,
+        keyable=False,
+        channel_box=False
     )
 
 
-def _restore_cached_attr_value(attr_plug, attr_data):
+def _restore_cached_attr_value(ctrl_node, attr_data):
     u"""恢复 Attribute Value 和 Channel State。"""
-    if attr_plug is None:
-        return False
-
+    attr_name = attr_data["name"]
     attr_type = attr_data["type"]
     attr_value = attr_data["value"]
+    ctrl_attr = attr_utils.Attr(
+        ctrl_node
+    )
 
     if attr_type != "message" and attr_value is not None:
         try:
-            if attr_type == "string":
-                cmds.setAttr(
-                    attr_plug,
-                    attr_value,
-                    type="string"
-                )
-            else:
-                cmds.setAttr(
-                    attr_plug,
-                    attr_value
-                )
+            ctrl_attr.set_value(
+                attr_name,
+                attr_value,
+                attr_type=attr_type
+            )
         except Exception as error:
             cmds.warning(
-                u"恢复 Attribute Value 失败：{} | {}".format(
-                    attr_plug,
+                u"恢复 Attribute Value 失败：{}.{} | {}".format(
+                    ctrl_node,
+                    attr_name,
                     error
                 )
             )
 
-    try:
-        cmds.setAttr(
-            attr_plug,
-            keyable=bool(attr_data["keyable"])
-        )
-
-        if not attr_data["keyable"]:
-            cmds.setAttr(
-                attr_plug,
-                channelBox=bool(attr_data["channel_box"])
-            )
-    except Exception:
-        pass
-
+    ctrl_attr.set_attr_state(
+        attr_name,
+        keyable=bool(attr_data["keyable"]),
+        channel_box=bool(attr_data["channel_box"])
+    )
     return True
 
 
@@ -1399,33 +1285,18 @@ def _restore_cached_connections(ctrl_node, attr_data):
             )
             continue
 
-        if cmds.isConnected(
+        if connection_utils.connect_plugs(
                 source_plug,
-                attr_plug
+                attr_plug,
+                force=False
         ):
-            continue
-
-        current_input_list = cmds.listConnections(
-            attr_plug,
-            source=True,
-            destination=False,
-            plugs=True
-        )
-
-        if current_input_list:
+            restored_connection_list.append(
+                connection_text
+            )
+        else:
             skipped_connection_list.append(
                 connection_text
             )
-            continue
-
-        cmds.connectAttr(
-            source_plug,
-            attr_plug,
-            force=False
-        )
-        restored_connection_list.append(
-            connection_text
-        )
 
     for destination_plug in attr_data["output_plug_list"]:
         connection_text = "{} -> {}".format(
@@ -1439,33 +1310,18 @@ def _restore_cached_connections(ctrl_node, attr_data):
             )
             continue
 
-        if cmds.isConnected(
+        if connection_utils.connect_plugs(
                 attr_plug,
-                destination_plug
+                destination_plug,
+                force=False
         ):
-            continue
-
-        current_input_list = cmds.listConnections(
-            destination_plug,
-            source=True,
-            destination=False,
-            plugs=True
-        )
-
-        if current_input_list:
+            restored_connection_list.append(
+                connection_text
+            )
+        else:
             skipped_connection_list.append(
                 connection_text
             )
-            continue
-
-        cmds.connectAttr(
-            attr_plug,
-            destination_plug,
-            force=False
-        )
-        restored_connection_list.append(
-            connection_text
-        )
 
     return {
         "restored_connection_list": restored_connection_list,
@@ -1488,10 +1344,12 @@ def restore_rebuild_cache(
         u"New Ctrl Node"
     )
 
-    if not cmds.attributeQuery(
-            "ctrlData",
-            node=cache_node,
-            exists=True
+    cache_attr = attr_utils.Attr(
+        cache_node
+    )
+
+    if not cache_attr.attr_exists(
+            "ctrlData"
     ):
         raise RuntimeError(
             u"Rebuild Cache 缺少 ctrlData：{}".format(
@@ -1499,8 +1357,8 @@ def restore_rebuild_cache(
             )
         )
 
-    cache_text = cmds.getAttr(
-        cache_node + ".ctrlData"
+    cache_text = cache_attr.get_value(
+        "ctrlData"
     )
 
     if not cache_text:
@@ -1532,7 +1390,7 @@ def restore_rebuild_cache(
             continue
 
         _restore_cached_attr_value(
-            attr_plug,
+            ctrl_node,
             attr_data
         )
         restored_attr_list.append(
@@ -1540,12 +1398,12 @@ def restore_rebuild_cache(
         )
 
     for attr_data in attr_data_list:
-        attr_name = attr_data["name"]
+        ctrl_attr = attr_utils.Attr(
+            ctrl_node
+        )
 
-        if not cmds.attributeQuery(
-                attr_name,
-                node=ctrl_node,
-                exists=True
+        if not ctrl_attr.attr_exists(
+                attr_data["name"]
         ):
             continue
 
@@ -1568,22 +1426,22 @@ def restore_rebuild_cache(
                 connection_text
             )
 
-    for attr_data in attr_data_list:
-        attr_plug = "{}.{}".format(
-            ctrl_node,
-            attr_data["name"]
-        )
+    ctrl_attr = attr_utils.Attr(
+        ctrl_node
+    )
 
-        if not cmds.objExists(attr_plug):
+    for attr_data in attr_data_list:
+        attr_name = attr_data["name"]
+
+        if not ctrl_attr.attr_exists(
+                attr_name
+        ):
             continue
 
-        try:
-            cmds.setAttr(
-                attr_plug,
-                lock=bool(attr_data["lock"])
-            )
-        except Exception:
-            pass
+        ctrl_attr.set_attr_state(
+            attr_name,
+            lock=bool(attr_data["lock"])
+        )
 
     if delete_cache:
         cmds.delete(
@@ -1614,6 +1472,7 @@ def delete_rebuild_cache(cache_node):
 
 __all__ = [
     "axis_rotation",
+    "get_ctrl_hierarchy_names",
     "create_ctrl",
     "create_fk_ctrl",
     "create_follow",
