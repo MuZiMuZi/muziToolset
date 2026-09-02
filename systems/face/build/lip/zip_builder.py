@@ -12,8 +12,9 @@ Matrix 驱动 Zip Lip 系统。
     4. 每对上下嘴唇使用动态 Rest World Matrix 计算闭合中间矩阵；
     5. 每个 Joint 上方插入独立 Zip Offset Group；
     6. Zip Offset 使用 blendMatrix 混合 Rest Matrix 和 Mid Matrix；
-    7. Rig Naming 统一使用 systems.rig_base.RigBase；
-    8. 不直接修改 Joint translateY。
+    7. Face Naming 统一复用 systems.face.naming；
+    8. Joint / Attribute / Scene / Connection 通用操作统一复用 Core；
+    9. 不直接修改 Joint translateY。
 """
 
 from __future__ import print_function
@@ -26,96 +27,7 @@ from .....core import hierarchy_utils
 from .....core import joint_utils
 from .....core import scene_utils
 from .....core import transform_utils
-from ....rig_base import RigBase
-
-
-# =============================================================================
-# Scene Validate / Attribute
-# =============================================================================
-
-def validate_joint(joint, label):
-    u"""检查输入节点必须是 Maya Joint。"""
-    try:
-        joint_utils.Joint._validate_joint(
-            joint
-        )
-    except RuntimeError as error:
-        raise RuntimeError(
-            u"{}无效：{}".format(
-                label,
-                error
-            )
-        )
-
-    return True
-
-
-def ensure_float_attribute(
-        node,
-        attribute,
-        minimum,
-        maximum,
-        default_value
-):
-    u"""创建或复用一个 Keyable Float Attribute。"""
-    transform_utils.validate_transform(
-        node
-    )
-
-    node_attr = attr_utils.Attr(
-        node
-    )
-
-    if not node_attr.attr_exists(attribute):
-        node_attr.add_attr(
-            attribute,
-            attr_type="double",
-            lock=False,
-            hide=False,
-            default_value=default_value,
-            min_value=minimum,
-            max_value=maximum
-        )
-
-    return "{}.{}".format(
-        node,
-        attribute
-    )
-
-
-# =============================================================================
-# Naming
-# =============================================================================
-
-def create_name(
-        type,
-        function,
-        index=1
-):
-    u"""根据项目内部固定字段创建 Zip Lip 标准名称。"""
-    function_parts = function.split("_")
-    final_function = function_parts[-1]
-
-    part = "lip"
-
-    if len(function_parts) > 1:
-        function_prefix = "_".join(
-            function_parts[:-1]
-        )
-        part = "{}_{}".format(
-            part,
-            function_prefix
-        )
-
-    rig_name = RigBase(
-        type=type,
-        side="md",
-        part=part,
-        function=final_function,
-        index=index
-    )
-
-    return rig_name.name
+from ... import naming as face_naming
 
 
 # =============================================================================
@@ -134,18 +46,13 @@ def insert_zip_offset_group(
     world_matrix = transform_utils.get_world_matrix(
         joint
     )
-    group_name = create_name(
-        "grp",
-        function,
-        index
+    group_name = face_naming.create_role_name(
+        type="grp",
+        side="md",
+        part="lip",
+        role=function,
+        index=index
     )
-
-    if cmds.objExists(group_name):
-        raise RuntimeError(
-            u"Zip Offset Group 已经存在：{}".format(
-                group_name
-            )
-        )
 
     zip_offset = scene_utils.create_node(
         "transform",
@@ -190,10 +97,12 @@ def create_rest_world_matrix(
 
     hold_matrix = scene_utils.create_node(
         "holdMatrix",
-        create_name(
-            "hold",
-            "{}_rest".format(function),
-            index
+        face_naming.create_role_name(
+            type="hold",
+            side="md",
+            part="lip",
+            role="{}_rest".format(function),
+            index=index
         )
     )
 
@@ -211,10 +120,12 @@ def create_rest_world_matrix(
     if parent is not None:
         rest_mult_matrix = scene_utils.create_node(
             "multMatrix",
-            create_name(
-                "mult",
-                "{}_rest_world".format(function),
-                index
+            face_naming.create_role_name(
+                type="mult",
+                side="md",
+                part="lip",
+                role="{}_rest_world".format(function),
+                index=index
             )
         )
         connection_utils.connect_plugs(
@@ -253,10 +164,12 @@ def connect_world_matrix_to_transform(
     if parent is not None:
         local_mult_matrix = scene_utils.create_node(
             "multMatrix",
-            create_name(
-                "mult",
-                "{}_local".format(function),
-                index
+            face_naming.create_role_name(
+                type="mult",
+                side="md",
+                part="lip",
+                role="{}_local".format(function),
+                index=index
             )
         )
         connection_utils.connect_plugs(
@@ -277,10 +190,12 @@ def connect_world_matrix_to_transform(
 
     decompose_matrix = scene_utils.create_node(
         "decomposeMatrix",
-        create_name(
-            "dcmp",
-            function,
-            index
+        face_naming.create_role_name(
+            type="dcmp",
+            side="md",
+            part="lip",
+            role=function,
+            index=index
         )
     )
     connection_utils.connect_plugs(
@@ -369,18 +284,22 @@ def create_zip_influence(
 
     left_remap = scene_utils.create_node(
         "remapValue",
-        create_name(
-            "remap",
-            "zip_left",
-            item_number
+        face_naming.create_role_name(
+            type="remap",
+            side="md",
+            part="lip",
+            role="zip_left",
+            index=item_number
         )
     )
     right_remap = scene_utils.create_node(
         "remapValue",
-        create_name(
-            "remap",
-            "zip_right",
-            item_number
+        face_naming.create_role_name(
+            type="remap",
+            side="md",
+            part="lip",
+            role="zip_right",
+            index=item_number
         )
     )
 
@@ -408,18 +327,22 @@ def create_zip_influence(
 
     add_node = scene_utils.create_node(
         "addDoubleLinear",
-        create_name(
-            "add",
-            "zip_weight",
-            item_number
+        face_naming.create_role_name(
+            type="add",
+            side="md",
+            part="lip",
+            role="zip_weight",
+            index=item_number
         )
     )
     clamp_node = scene_utils.create_node(
         "clamp",
-        create_name(
-            "clamp",
-            "zip_weight",
-            item_number
+        face_naming.create_role_name(
+            type="clamp",
+            side="md",
+            part="lip",
+            role="zip_weight",
+            index=item_number
         )
     )
 
@@ -502,10 +425,12 @@ def build_zip_pair(
 
     mid_blend = scene_utils.create_node(
         "blendMatrix",
-        create_name(
-            "blend",
-            "zip_mid",
-            item_number
+        face_naming.create_role_name(
+            type="blend",
+            side="md",
+            part="lip",
+            role="zip_mid",
+            index=item_number
         )
     )
     connection_utils.connect_plugs(
@@ -534,18 +459,22 @@ def build_zip_pair(
 
     upper_zip_blend = scene_utils.create_node(
         "blendMatrix",
-        create_name(
-            "blend",
-            "upper_zip",
-            item_number
+        face_naming.create_role_name(
+            type="blend",
+            side="md",
+            part="lip",
+            role="upper_zip",
+            index=item_number
         )
     )
     lower_zip_blend = scene_utils.create_node(
         "blendMatrix",
-        create_name(
-            "blend",
-            "lower_zip",
-            item_number
+        face_naming.create_role_name(
+            type="blend",
+            side="md",
+            part="lip",
+            role="lower_zip",
+            index=item_number
         )
     )
 
@@ -684,13 +613,11 @@ def build_zip_lip(
     index = 0
 
     while index < len(upper_joints):
-        validate_joint(
-            upper_joints[index],
-            u"Upper Lip Joint"
+        joint_utils.Joint(
+            upper_joints[index]
         )
-        validate_joint(
-            lower_joints[index],
-            u"Lower Lip Joint"
+        joint_utils.Joint(
+            lower_joints[index]
         )
         index += 1
 
@@ -727,39 +654,61 @@ def build_zip_lip(
             u"falloff 必须大于或等于 1。"
         )
 
-    node_group_name = create_name(
-        "grp",
-        "zip_nodes",
-        1
+    node_group_name = face_naming.create_role_name(
+        type="grp",
+        side="md",
+        part="lip",
+        role="zip_nodes",
+        index=1
+    )
+    scene_utils.ensure_nodes_available(
+        node_group_name,
+        label=u"Zip Lip Build Node"
     )
 
-    if cmds.objExists(node_group_name):
-        raise RuntimeError(
-            u"Zip Lip 系统已经存在：{}".format(
-                node_group_name
-            )
-        )
+    left_zip_attr = attr_utils.Attr(
+        left_zip_control
+    )
+    left_zip_plug = left_zip_attr.add_attr(
+        "zip",
+        attr_type="double",
+        lock=False,
+        hide=False,
+        default_value=0.0,
+        min_value=0.0,
+        max_value=1.0,
+        keyable=True,
+        channel_box=True
+    )
 
-    left_zip_plug = ensure_float_attribute(
-        left_zip_control,
-        "zip",
-        0.0,
-        1.0,
-        0.0
+    right_zip_attr = attr_utils.Attr(
+        right_zip_control
     )
-    right_zip_plug = ensure_float_attribute(
-        right_zip_control,
+    right_zip_plug = right_zip_attr.add_attr(
         "zip",
-        0.0,
-        1.0,
-        0.0
+        attr_type="double",
+        lock=False,
+        hide=False,
+        default_value=0.0,
+        min_value=0.0,
+        max_value=1.0,
+        keyable=True,
+        channel_box=True
     )
-    zip_height_plug = ensure_float_attribute(
-        jaw_control,
+
+    jaw_attr = attr_utils.Attr(
+        jaw_control
+    )
+    zip_height_plug = jaw_attr.add_attr(
         "zipHeight",
-        0.0,
-        1.0,
-        zip_height
+        attr_type="double",
+        lock=False,
+        hide=False,
+        default_value=zip_height,
+        min_value=0.0,
+        max_value=1.0,
+        keyable=True,
+        channel_box=True
     )
 
     created_zip_offsets = []
@@ -778,10 +727,12 @@ def build_zip_lip(
 
         height_reverse = scene_utils.create_node(
             "reverse",
-            create_name(
-                "rvs",
-                "zip_height",
-                1
+            face_naming.create_role_name(
+                type="rvs",
+                side="md",
+                part="lip",
+                role="zip_height",
+                index=1
             )
         )
         connection_utils.connect_plugs(
