@@ -41,7 +41,7 @@ systems/
 
 ```text
 RigBase
-    Rig Naming
+    Rig Object Identity + Rig Naming
 
 ModuleBase / RigModuleBase
     Module Lifecycle
@@ -49,6 +49,31 @@ ModuleBase / RigModuleBase
 CtrlBase
     Controller Workflow
 ```
+
+`RigBase` 是可实例化的 Rig Object 基类。Identity 只包含：
+
+```text
+side / part / index
+```
+
+具体节点的 `node_type / function` 在创建名称时提供：
+
+```python
+from muziToolset.systems.rig_base import RigBase
+
+rig = RigBase(
+    side="lf",
+    part="brow",
+    index=1
+)
+
+name = rig.create_name(
+    node_type="jnt",
+    function="bind"
+)
+```
+
+正式 Naming Keyword 使用 `node_type=`，旧 `type=` 已退休。
 
 完整业务单元统一称为 **Module**，不再使用 Component。
 
@@ -105,13 +130,15 @@ systems/face/modules/teeth.py
     TeethModule
 ```
 
+`FaceBase` 默认 Identity 为 `md / face / 001`；具体业务 Module 设置自己的 Identity，例如 `TeethModule` 为 `md / teeth / 001`。
+
 完整说明见：[Face System Architecture](face-system.md)。
 
 Face Config 恢复和 UI 状态见：[Face Workflow State](face-workflow-state.md)。
 
 ## Core Naming 边界
 
-Rig Naming 已从 Core 移到：
+Rig Identity / Rig Naming 已从 Core 移到：
 
 ```text
 systems/rig_base.py
