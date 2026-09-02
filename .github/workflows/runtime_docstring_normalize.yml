@@ -7,6 +7,7 @@ on:
     paths-ignore:
       - docs/development/runtime-step-comment-audit.md
       - docs/development/runtime-compile-audit.txt
+      - docs/development/runtime-docstring-audit.txt
   workflow_dispatch:
 
 permissions:
@@ -30,48 +31,60 @@ jobs:
 
       # -----------------------------------------------------------------------
       # Step 01：生成复杂 Runtime 函数的中文步骤注释审计清单
-      # 这里只做审计，不再自动改写任何 Runtime 源码。
       # -----------------------------------------------------------------------
       - name: Generate runtime step comment audit
         run: python scripts/audit_runtime_step_comments.py --write-report
 
       # -----------------------------------------------------------------------
-      # Step 02：保存最新审计清单，方便按 Core → Systems → Tools → UI 逐项整理
+      # Step 02：记录完整 Docstring 检查输出，便于逐条人工修复
       # -----------------------------------------------------------------------
-      - name: Commit runtime step comment audit
+      - name: Capture runtime docstring audit
         shell: bash
         run: |
-          if git diff --quiet -- docs/development/runtime-step-comment-audit.md; then
-            echo "Runtime step comment audit is already current."
+          mkdir -p docs/development
+          python scripts/normalize_runtime_docstrings.py --check \
+            > docs/development/runtime-docstring-audit.txt 2>&1 || true
+
+      # -----------------------------------------------------------------------
+      # Step 03：保存两份审计清单；只改报告文件时不会再次触发本 Workflow
+      # -----------------------------------------------------------------------
+      - name: Commit runtime documentation audits
+        shell: bash
+        run: |
+          if git diff --quiet -- \
+            docs/development/runtime-step-comment-audit.md \
+            docs/development/runtime-docstring-audit.txt; then
+            echo "Runtime documentation audits are already current."
           else
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add docs/development/runtime-step-comment-audit.md
-            git commit -m "docs: update runtime step comment audit"
+            git add \
+              docs/development/runtime-step-comment-audit.md \
+              docs/development/runtime-docstring-audit.txt
+            git commit -m "docs: update runtime documentation audits"
             git push origin HEAD:refactor/full-code-cn-comments
           fi
 
       # -----------------------------------------------------------------------
-      # Step 03：静态编译全部 Runtime Python，确保注释整理没有破坏语法
+      # Step 04：静态编译全部 Runtime Python，确保注释整理没有破坏语法
       # -----------------------------------------------------------------------
       - name: Validate runtime compile
-        shell: bash
         run: python -m compileall -q app core systems tools ui __init__.py config.py
 
       # -----------------------------------------------------------------------
-      # Step 04：检查所有公开 Runtime API 的中文 Docstring 结构
+      # Step 05：严格检查所有公开 Runtime API 的中文 Docstring 结构
       # -----------------------------------------------------------------------
       - name: Validate public runtime docstrings
         run: python scripts/normalize_runtime_docstrings.py --check
 
       # -----------------------------------------------------------------------
-      # Step 05：检查 Maya / Rigging 参数语义质量
+      # Step 06：检查 Maya / Rigging 参数语义质量
       # -----------------------------------------------------------------------
       - name: Validate rigging terminology quality
         run: python scripts/refine_runtime_docstring_semantics.py --check
 
       # -----------------------------------------------------------------------
-      # Step 06：检查源码空白格式
+      # Step 07：检查源码空白格式
       # -----------------------------------------------------------------------
       - name: Check whitespace errors
         run: git diff --check
