@@ -79,7 +79,21 @@ def get_pole_vector_position(
         middle_joint,
         end_joint
 ):
-    u"""计算三关节链 Pole Vector 推荐世界位置。"""
+    u"""
+    计算三关节链 Pole Vector 推荐世界位置。
+
+    Args:
+        start_joint (str):
+            RP IK Chain 的起始 Joint。
+        middle_joint (str):
+            RP IK Chain 中用于确定弯曲平面的中间 Joint。
+        end_joint (str):
+            RP IK Chain 的末端 Joint。
+
+    Returns:
+        list:
+            推荐的 Pole Vector 世界坐标 [x, y, z]。
+    """
     start_position = transform_utils.get_world_translation(
         start_joint
     )
@@ -157,7 +171,23 @@ def get_pole_vector_position(
 
 @scene_utils.undo_chunk
 def create_ik_rig(start_joint, end_joint):
-    u"""创建基础 RP IK、End Controller 和 Pole Vector Controller。"""
+    u"""
+    创建基础 RP IK、End Controller 和 Pole Vector Controller。
+
+    Args:
+        start_joint (str):
+            RP IK Chain 的起始 Joint。
+        end_joint (str):
+            RP IK Chain 的末端 Joint。
+
+    Returns:
+        dict:
+            返回 Rig Group、IK Handle、Effector、End Controller 和可选 Pole Controller。
+
+    Raises:
+        RuntimeError:
+            Joint 输入无效、两端不属于同一子 Joint Chain 或 Chain 长度不足时抛出。
+    """
     joint_utils.Joint(
         start_joint
     )
@@ -373,7 +403,17 @@ def create_ik_rig(start_joint, end_joint):
 # =============================================================================
 
 def find_rig_root(node):
-    u"""沿父层级查找带 muziRigType 的 Rig Module Root。"""
+    u"""
+    沿父层级查找带 muziRigType 的 Rig Module Root。
+
+    Args:
+        node (str):
+            需要向上查询所属 Rig Module 的 Maya Node。
+
+    Returns:
+        str | None:
+            找到时返回 Rig Module Root；没有标记节点时返回 None。
+    """
     try:
         current_node = scene_utils.get_long_name(
             node
@@ -400,7 +440,13 @@ def find_rig_root(node):
 
 
 def get_duplicate_map():
-    u"""按短名称收集场景重名 DAG 节点。"""
+    u"""
+    按短名称收集场景重名 DAG 节点。
+
+    Returns:
+        dict:
+            Key 为重复 Short Name，Value 为对应的 Long DAG Path 列表。
+    """
     nodes = cmds.ls(
         long=True,
         dagObjects=True
@@ -439,6 +485,13 @@ class RigTool(QWidget):
     u"""通用 Rig 主工具面板。"""
 
     def __init__(self, parent=None):
+        u"""
+        初始化 Rig Tool 窗口及其控件、布局和信号连接。
+
+        Args:
+            parent (QWidget | None):
+                可选 Qt Parent Widget。
+        """
         super(RigTool, self).__init__(parent)
 
         self.create_widgets()
@@ -611,35 +664,71 @@ class RigTool(QWidget):
 
     @staticmethod
     def open_tool(tool_key, tool_module):
-        u"""通过统一 Window Manager 执行或打开专项工具。"""
+        u"""
+        通过统一 Window Manager 执行或打开专项工具。
+
+        Args:
+            tool_key (str):
+                Window Manager 使用的 Rig Tool Key。
+            tool_module (object):
+                提供 main() 入口的 Tool Module。
+
+        Returns:
+            object:
+                Window Manager 返回的 Tool 执行结果或窗口对象。
+        """
         return window_manager.show_tool(
             "rig/{}".format(tool_key),
             tool_module.main
         )
 
     def open_fk_tool(self):
-        u"""打开 FK Controller Tool。"""
+        u"""
+        打开 FK Controller Tool。
+
+        Returns:
+            object:
+                Window Manager 返回的 FK Controller Tool 窗口或执行结果。
+        """
         return self.open_tool(
             "fk_controller",
             create_fk_ctrl_tool
         )
 
     def open_control_creator(self):
-        u"""打开 Controller Creator。"""
+        u"""
+        打开 Controller Creator。
+
+        Returns:
+            object:
+                Window Manager 返回的 Controller Creator 窗口或执行结果。
+        """
         return self.open_tool(
             "controller_creator",
             create_ctrl_tool
         )
 
     def open_joint_tool(self):
-        u"""打开 Joint Tool。"""
+        u"""
+        打开 Joint Tool。
+
+        Returns:
+            object:
+                Window Manager 返回的 Joint Tool 窗口或执行结果。
+        """
         return self.open_tool(
             "joint_tool",
             joint_tool
         )
 
     def open_skirt_tool(self):
-        u"""打开 Skirt Rig Tool。"""
+        u"""
+        打开 Skirt Rig Tool。
+
+        Returns:
+            object:
+                Window Manager 返回的 Skirt Rig Tool 窗口或执行结果。
+        """
         return self.open_tool(
             "skirt_rig",
             skirt_ctrl_tool
@@ -1088,7 +1177,13 @@ class RigTool(QWidget):
 
 
 def main():
-    u"""显示并返回 Rig Tool。"""
+    u"""
+    显示并返回 Rig Tool。
+
+    Returns:
+        QWidget:
+            当前显示的 Rig Tool 窗口实例。
+    """
     return window_utils.show_window(
         "tools.rig.rig_tool",
         RigTool
