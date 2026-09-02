@@ -71,7 +71,7 @@ nameUtils.py
 
 ---
 
-# Rig Naming 已经移出 Core
+# Rig Identity / Naming 已经移出 Core
 
 旧：
 
@@ -81,23 +81,66 @@ core/name_utils.py
 
 已删除。
 
-正式 Rig Naming：
+正式入口：
 
 ```text
 systems/rig_base.py
 ```
 
-使用：
+`RigBase` 是可实例化的 Rig Object Identity 基类，不是 Name Utility。
+
+Rig Object Identity：
+
+```text
+side
+part
+index
+```
+
+正式使用：
 
 ```python
 from muziToolset.systems.rig_base import RigBase
 
-name = RigBase.create_name(
-    type="jnt",
+rig = RigBase(
     side="lf",
     part="upper_arm",
-    function="bind",
     index=1
+)
+
+name = rig.create_name(
+    node_type="jnt",
+    function="bind"
+)
+```
+
+不要写：
+
+```python
+RigBase.create_name(...)
+```
+
+也不要在 RigBase Naming API 中使用退休参数：
+
+```python
+type="jnt"
+```
+
+正式参数始终是：
+
+```python
+node_type="jnt"
+```
+
+需要解析已有 Rig Name 时，可以使用纯 Class Method：
+
+```python
+fields = RigBase.parse_name(
+    "jnt_lf_upper_arm_bind_001"
+)
+
+valid = RigBase.validate_name(
+    "jnt_lf_upper_arm_bind_001"
 )
 ```
 
@@ -119,13 +162,14 @@ rename_node()
 
 ```text
 RigBase
-    一个 Rig 节点应该叫什么
+    一个 Rig 对象是谁：side / part / index
+    并基于这个 Identity 创建正式 Rig Node 名称
 
 rename_utils
     对 Maya 节点执行 Rename / Short Name
 ```
 
-Core 不允许重新建立第二套 Rig Naming Convention。
+Core 不允许重新建立第二套 Rig Identity 或 Rig Naming Convention。
 
 ---
 
@@ -149,6 +193,9 @@ python tests/rig_architecture_gate_test.py
 core/name_utils.py
 systems/component_base.py
 systems/controller/
+RigBase.create_name(...)
+RigBase(name=...)
+create_name(type=...)
 ```
 
 重新出现。
@@ -212,7 +259,7 @@ cmds.delete
 已经知道自己在做 Teeth / Eyelid / Lip / Arm？
     → System / Module / Builder
 
-正在决定 Rig Node 的正式命名？
+正在描述一个 Rig Object 的 Identity 或基于 Identity 创建正式节点名？
     → RigBase
 
 正在创建完整 Controller Hierarchy？
