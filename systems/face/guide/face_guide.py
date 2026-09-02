@@ -16,7 +16,7 @@ Face Guide 的单文件 Step 02 实现。
 
 设计原则：
     - Face 固定名称和默认参数统一放 systems.face.config；
-    - 标准节点名称统一使用 core.name_utils；
+    - 标准 Rig Name 统一继承 FaceBase -> RigBase；
     - 不为简单 part 查询额外创建 get_xxx_guides() 包装；
     - 只有需要固定顺序或结构化结果的查询保留专用方法；
     - Template / Mirror 都属于 FaceGuide 自己的 Step 02 行为；
@@ -32,7 +32,6 @@ import maya.cmds as cmds
 
 from ....core import connection_utils
 from ....core import hierarchy_utils
-from ....core import name_utils
 from ....core import rename_utils
 from ....core import scene_utils
 from ....core import transform_utils
@@ -240,11 +239,11 @@ class FaceGuide(face_base.FaceBase):
 
     def get_temporary_guide_name(self):
         u"""返回一个未被占用的临时 Guide Container 名称。"""
-        return name_utils.Name.create_unique_name(
-            node_type="grp",
+        return self.create_unique_name(
+            type="grp",
             side="md",
-            part="face",
-            function="guide_container"
+            part="face_guide",
+            function="container"
         )
 
     def get_imported_template_root(self, imported_nodes):
@@ -821,7 +820,7 @@ class FaceGuide(face_base.FaceBase):
         side_token = None
 
         if side is not None:
-            normalized_side = name_utils.Name.normalize_side(
+            normalized_side = self.normalize_side(
                 side
             )
             side_token = "_{}_".format(
@@ -878,29 +877,44 @@ class FaceGuide(face_base.FaceBase):
     # Ordered Guide Query
     # =========================================================================
 
+    def _create_guide_name(
+            self,
+            side,
+            part,
+            index=1
+    ):
+        u"""创建以 guide 为 function 的标准 Locator 名称。"""
+        return self.create_name(
+            type="loc",
+            side=side,
+            part=part,
+            function="guide",
+            index=index
+        )
+
     def get_lip_guides(self, required=True):
         u"""返回上下嘴唇和嘴角的固定有序 Guide。"""
         upper_names = [
-            name_utils.Name.create_name("loc", "rt", "mouth", "corner_guide", 1),
-            name_utils.Name.create_name("loc", "rt", "upper", "lip_guide", 2),
-            name_utils.Name.create_name("loc", "rt", "upper", "lip_guide", 1),
-            name_utils.Name.create_name("loc", "md", "upper", "lip_guide", 1),
-            name_utils.Name.create_name("loc", "lf", "upper", "lip_guide", 1),
-            name_utils.Name.create_name("loc", "lf", "upper", "lip_guide", 2),
-            name_utils.Name.create_name("loc", "lf", "mouth", "corner_guide", 1),
+            self._create_guide_name("rt", "mouth_corner", 1),
+            self._create_guide_name("rt", "upper_lip", 2),
+            self._create_guide_name("rt", "upper_lip", 1),
+            self._create_guide_name("md", "upper_lip", 1),
+            self._create_guide_name("lf", "upper_lip", 1),
+            self._create_guide_name("lf", "upper_lip", 2),
+            self._create_guide_name("lf", "mouth_corner", 1),
         ]
         lower_names = [
-            name_utils.Name.create_name("loc", "rt", "mouth", "corner_guide", 1),
-            name_utils.Name.create_name("loc", "rt", "lower", "lip_guide", 2),
-            name_utils.Name.create_name("loc", "rt", "lower", "lip_guide", 1),
-            name_utils.Name.create_name("loc", "md", "lower", "lip_guide", 1),
-            name_utils.Name.create_name("loc", "lf", "lower", "lip_guide", 1),
-            name_utils.Name.create_name("loc", "lf", "lower", "lip_guide", 2),
-            name_utils.Name.create_name("loc", "lf", "mouth", "corner_guide", 1),
+            self._create_guide_name("rt", "mouth_corner", 1),
+            self._create_guide_name("rt", "lower_lip", 2),
+            self._create_guide_name("rt", "lower_lip", 1),
+            self._create_guide_name("md", "lower_lip", 1),
+            self._create_guide_name("lf", "lower_lip", 1),
+            self._create_guide_name("lf", "lower_lip", 2),
+            self._create_guide_name("lf", "mouth_corner", 1),
         ]
         corner_names = [
-            name_utils.Name.create_name("loc", "rt", "mouth", "corner_guide", 1),
-            name_utils.Name.create_name("loc", "lf", "mouth", "corner_guide", 1),
+            self._create_guide_name("rt", "mouth_corner", 1),
+            self._create_guide_name("lf", "mouth_corner", 1),
         ]
 
         return {
@@ -924,7 +938,7 @@ class FaceGuide(face_base.FaceBase):
             required=True
     ):
         u"""返回某一侧 Upper / Lower Eyelid 的固定有序 Guide。"""
-        side = name_utils.Name.normalize_side(
+        side = self.normalize_side(
             side
         )
 
@@ -933,32 +947,28 @@ class FaceGuide(face_base.FaceBase):
                 u"Eyelid side 必须是 lf 或 rt。"
             )
 
-        inner_name = name_utils.Name.create_name(
-            "loc",
+        inner_name = self._create_guide_name(
             side,
-            "inner",
-            "lid_guide",
+            "inner_lid",
             1
         )
-        outer_name = name_utils.Name.create_name(
-            "loc",
+        outer_name = self._create_guide_name(
             side,
-            "outer",
-            "lid_guide",
+            "outer_lid",
             1
         )
         upper_names = [
             inner_name,
-            name_utils.Name.create_name("loc", side, "upper", "lid_guide", 1),
-            name_utils.Name.create_name("loc", side, "upper", "lid_guide", 2),
-            name_utils.Name.create_name("loc", side, "upper", "lid_guide", 3),
+            self._create_guide_name(side, "upper_lid", 1),
+            self._create_guide_name(side, "upper_lid", 2),
+            self._create_guide_name(side, "upper_lid", 3),
             outer_name,
         ]
         lower_names = [
             inner_name,
-            name_utils.Name.create_name("loc", side, "lower", "lid_guide", 1),
-            name_utils.Name.create_name("loc", side, "lower", "lid_guide", 2),
-            name_utils.Name.create_name("loc", side, "lower", "lid_guide", 3),
+            self._create_guide_name(side, "lower_lid", 1),
+            self._create_guide_name(side, "lower_lid", 2),
+            self._create_guide_name(side, "lower_lid", 3),
             outer_name,
         ]
 
@@ -1007,7 +1017,7 @@ class FaceGuide(face_base.FaceBase):
             required=False
     ):
         u"""返回某一侧 Eye Ball / Iris Guide。"""
-        side = name_utils.Name.normalize_side(
+        side = self.normalize_side(
             side
         )
 
@@ -1016,18 +1026,14 @@ class FaceGuide(face_base.FaceBase):
                 u"Eye side 必须是 lf 或 rt。"
             )
 
-        eye_ball_name = name_utils.Name.create_name(
-            "loc",
+        eye_ball_name = self._create_guide_name(
             side,
-            "eye",
-            "ball_guide",
+            "eye_ball",
             1
         )
-        eye_iris_name = name_utils.Name.create_name(
-            "loc",
+        eye_iris_name = self._create_guide_name(
             side,
-            "eye",
-            "iris_guide",
+            "eye_iris",
             1
         )
 
@@ -1446,7 +1452,7 @@ class FaceGuide(face_base.FaceBase):
             source_zero_name = rename_utils.get_short_name(
                 source_zero
             )
-            target_zero_name = name_utils.Name.mirror_name(
+            target_zero_name = self.mirror_name(
                 source_zero_name
             )
             target_zero = self.get_guide_node(
@@ -1465,7 +1471,7 @@ class FaceGuide(face_base.FaceBase):
             source_locator_name = rename_utils.get_short_name(
                 source_locator
             )
-            target_locator_name = name_utils.Name.mirror_name(
+            target_locator_name = self.mirror_name(
                 source_locator_name
             )
             target_locator = self.get_guide_node(
