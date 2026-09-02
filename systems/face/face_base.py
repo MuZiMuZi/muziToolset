@@ -3,7 +3,7 @@ u"""
 Face Rig 公共基础类
 ==================
 
-所有 Face Rig Component 的公共业务底座。
+所有 Face Rig Module 的公共业务底座。
 
 负责：
     1. 保存 Face Rig 公共命名和层级配置；
@@ -11,11 +11,12 @@ Face Rig 公共基础类
     3. 定义 Step 01 公共 Setup 数据；
     4. 统一管理 Face Step 完成状态和当前 Workflow Step；
     5. 统一整理 Face Config Network Node 的 Step 属性分区；
-    6. 继承 systems.component_base.RigComponentBase 的统一 Rig Component 构建规范。
+    6. 继承 systems.module_base.RigModuleBase 的统一 Rig Module 构建规范。
 
 重要边界：
-    - Component 四阶段生命周期由 systems.component_base.ComponentBase 负责；
-    - 标准 Rig 的 Joint / Controller / Connection 三阶段构建由 RigComponentBase 负责；
+    - Module 四阶段生命周期由 systems.module_base.ModuleBase 负责；
+    - 标准 Rig 的 Joint / Controller / Connection 三阶段构建由 RigModuleBase 负责；
+    - Rig Naming 统一继承 systems.rig_base.RigBase；
     - Config Network Node 的创建、Message 引用、Value 读写由 core.config_utils.ConfigNode 负责；
     - Maya Model 有效性由 core.mesh_utils 负责；
     - Maya DAG 层级操作由 core.hierarchy_utils 负责；
@@ -30,12 +31,12 @@ import maya.cmds as cmds
 from ...core import config_utils
 from ...core import hierarchy_utils
 from ...core import mesh_utils
-from ..component_base import RigComponentBase
+from ..module_base import RigModuleBase
 from . import config
 
 
-class FaceBase(RigComponentBase):
-    u"""所有 Face Rig Component 共用的基础类。"""
+class FaceBase(RigModuleBase):
+    u"""所有 Face Rig Module 共用的基础类。"""
 
     setup_message_attr_names = [
         "face_head_model",
