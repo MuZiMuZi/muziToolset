@@ -3,7 +3,7 @@ u"""
 Step 01 - Face Setup
 ====================
 
-Component 生命周期：
+Module 生命周期：
     collect_inputs()
     prepare_data()
     process_data()
@@ -19,11 +19,12 @@ Component 生命周期：
     7. 把 Face Workflow 当前进度推进到 Step 02。
 
 重要边界：
+    - Rig Name 统一继承 FaceBase -> RigBase；
     - Short Name 统一由 core.rename_utils 处理；
     - Model 有效性统一由 core.mesh_utils 处理；
     - DAG Parent 统一由 core.hierarchy_utils 处理；
     - Config 的底层 Network / Message / Value 操作由 FaceBase -> core.config_utils 处理；
-    - Component 生命周期入口统一由 systems.component_base.ComponentBase 提供；
+    - Module 生命周期入口统一由 systems.module_base.ModuleBase 提供；
     - FaceSetup 覆盖 process_data()，只保留 Step 01 自己的业务规则。
 """
 
@@ -31,7 +32,6 @@ from __future__ import print_function
 
 from ....core import hierarchy_utils
 from ....core import mesh_utils
-from ....core import name_utils
 from ....core import rename_utils
 from .. import face_base
 
@@ -72,7 +72,7 @@ class FaceSetup(face_base.FaceBase):
         self.face_head_deform_model = None
 
     # =========================================================================
-    # Component Lifecycle
+    # Module Lifecycle
     # =========================================================================
 
     def collect_inputs(self):
@@ -220,22 +220,22 @@ class FaceSetup(face_base.FaceBase):
 
     def get_work_model_names(self):
         u"""生成三个 Head Work Model 的正式名称。"""
-        face_head_tweak_name = name_utils.Name.create_name(
-            node_type="model",
+        face_head_tweak_name = self.create_name(
+            type="model",
             side=self.face_side,
             part="head",
             function="tweak",
             index=1
         )
-        face_head_stretch_name = name_utils.Name.create_name(
-            node_type="model",
+        face_head_stretch_name = self.create_name(
+            type="model",
             side=self.face_side,
             part="head",
             function="stretch",
             index=1
         )
-        face_head_deform_name = name_utils.Name.create_name(
-            node_type="model",
+        face_head_deform_name = self.create_name(
+            type="model",
             side=self.face_side,
             part="head",
             function="deform",
