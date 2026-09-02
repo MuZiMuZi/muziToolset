@@ -171,7 +171,7 @@ def run():
         return False
 
     module_name = module.create_name(
-        node_type="grp",
+        type="grp",
         function="main"
     )
 
