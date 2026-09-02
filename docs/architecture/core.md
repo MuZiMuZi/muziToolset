@@ -67,7 +67,7 @@ Core 不应该：
 - 创建 PySide 窗口；
 - 决定具体 Rig Workflow；
 - 硬编码 Face / Teeth / Jaw / Body 等业务；
-- 负责 Rig Naming Convention；
+- 负责 Rig Object Identity / Rig Naming Convention；
 - import `tools / systems / ui / app / legacy_reference`；
 - 新增 PyMel。
 
@@ -127,7 +127,7 @@ Joint Label
 Joint Curve 辅助
 ```
 
-Joint 的正式 Rig 名称由上层 `RigBase` 或 Module 生成后传入。
+Joint 的正式 Rig 名称由上层 `RigBase` 实例或 Module 生成后传入。
 
 ## `rename_utils.py`
 
@@ -148,28 +148,50 @@ Auto Number
 Pattern Rename
 ```
 
-它不定义 Rig 名称应该是什么。
+它不定义 Rig Object Identity，也不定义 Rig 名称应该是什么。
 
 ---
 
-# Rig Naming 不属于 Core
+# Rig Identity / Naming 不属于 Core
 
-正式 Rig Naming 已迁到：
+正式入口：
 
 ```text
 systems/rig_base.py
 ```
 
-正式 API：
+`RigBase` 是可实例化 Rig Object 基类，Identity 为：
+
+```text
+side / part / index
+```
+
+正式用法：
 
 ```python
 from muziToolset.systems.rig_base import RigBase
 
-RigBase.create_name(...)
-RigBase.parse_name(...)
-RigBase.validate_name(...)
-RigBase.mirror_name(...)
+rig = RigBase(
+    side="lf",
+    part="upper_arm",
+    index=1
+)
+
+name = rig.create_name(
+    node_type="jnt",
+    function="bind"
+)
 ```
+
+解析已有名称可以使用：
+
+```python
+fields = RigBase.parse_name(
+    "jnt_lf_upper_arm_bind_001"
+)
+```
+
+旧 `type=` RigBase Naming Keyword 已退休，统一使用 `node_type=`。
 
 旧文件：
 
@@ -183,7 +205,8 @@ core/name_utils.py
 
 ```text
 RigBase
-    决定一个 Rig Node 应该叫什么
+    描述一个 Rig Object 的 side / part / index
+    基于 Identity 创建正式 Rig Node 名称
 
 rename_utils
     对 Maya 节点执行 Rename / Short Name 等通用操作
