@@ -5,14 +5,16 @@ Ctrl Base
 
 MuziTools 所有绑定系统共用的 Controller 基础模块。
 
-本模块当前集中维护四部分能力：
+本模块只维护：
 
     1. Ctrl Creation
     2. Follow
     3. Space Switch
     4. Rebuild Cache
 
-这里不包含 Jaw / Teeth / Arm / Leg 等具体 Component 的业务逻辑。
+Rig Naming 统一交给 systems.rig_base.RigBase。
+内部 Controller Name 默认来自统一 Naming API，不重复检查名称格式。
+只有在 Build / Rebuild / Restore 面对 Maya 场景状态时检查节点、属性和连接是否存在。
 
 标准控制器层级：
 
@@ -24,39 +26,6 @@ MuziTools 所有绑定系统共用的 Controller 基础模块。
                       └── ctrl
                           ├── sub ctrl（可选）
                           └── output
-
-层级职责：
-
-    zero
-        保存控制器初始空间。
-
-    driven
-        接收 Follow 和系统自动驱动。
-
-    space
-        接收 Space Switch。
-
-    connect
-        预留 Component 内部连接。
-
-    offset
-        预留绑定师局部 Offset。
-
-    ctrl
-        动画师直接操作。
-
-    output
-        最终输出 Transform。
-        Output 直接 Parent 到最终动画输入节点，不再重复连接 Transform Channel，
-        避免旧写法中 Parent + Channel Connection 可能产生的双重变换。
-
-Rebuild Cache：
-
-    Component Rebuild 前，把 Ctrl 上的 User Defined Attribute 和外部连接
-    写入临时 Maya network Node。
-
-    新 Ctrl 创建完成以后，再恢复 Attribute / Value / Connection。
-    Rebuild 成功后删除 Cache；中途失败则保留 Cache。
 """
 
 from __future__ import print_function
@@ -71,6 +40,7 @@ from ..core import constraint_utils
 from ..core import hierarchy_utils
 from ..core import rename_utils
 from ..core import scene_utils
+from .rig_base import RigBase
 
 
 # =============================================================================
@@ -88,44 +58,45 @@ axis_rotation = {
 
 
 # =============================================================================
-# Naming
+# Naming / Scene State
 # =============================================================================
 
-def _validate_ctrl_name(ctrl_name):
-    u"""
-    检查传入的 Controller Name 是否符合 Ctrl Base 的最基础要求。
+def _get_rig_name(node_name):
+    u"""把内部标准节点名称转换成 RigBase Name Object。"""
+    short_name = rename_utils.get_short_name(
+        node_name
+    )
+    return RigBase(
+        name=short_name
+    )
 
-    Ctrl Base 不负责自动补全、修正或推导控制器名称。
-    Controller Name 必须由上层 Component 在 Naming 阶段准备完成。
-    """
-    if not isinstance(ctrl_name, str):
-        raise TypeError(
-            u"Ctrl Name 必须是字符串：{}".format(ctrl_name)
-        )
 
-    if not ctrl_name:
-        raise ValueError(u"Ctrl Name 不能为空。")
+def _get_ctrl_part(ctrl_rig):
+    u"""返回包含 Controller 原 function 的派生节点 part。"""
+    return "{}_{}".format(
+        ctrl_rig.part,
+        ctrl_rig.function
+    )
 
-    if ctrl_name != ctrl_name.strip():
-        raise ValueError(
-            u"Ctrl Name 不能包含首尾空格：{}".format(ctrl_name)
-        )
 
-    if "|" in ctrl_name:
-        raise ValueError(
-            u"Ctrl Name 必须是节点名称，不能传入 DAG Path：{}".format(
-                ctrl_name
+def _check_build_nodes_available(node_name_list):
+    u"""创建前检查上一次 Build 的同名节点是否仍存在。"""
+    exists_node_list = []
+
+    for node_name in node_name_list:
+        if not node_name:
+            continue
+
+        if cmds.objExists(node_name):
+            exists_node_list.append(
+                node_name
             )
-        )
 
-    if ":" in ctrl_name:
-        raise ValueError(
-            u"Ctrl Name 不应该包含 Namespace：{}".format(ctrl_name)
-        )
-
-    if not ctrl_name.startswith("ctrl_"):
-        raise ValueError(
-            u"Ctrl Name 必须使用 ctrl_ 前缀：{}".format(ctrl_name)
+    if exists_node_list:
+        raise RuntimeError(
+            u"Controller Build Node 已存在，请先执行 Rebuild Cleanup：{}".format(
+                ", ".join(exists_node_list)
+            )
         )
 
     return True
@@ -135,30 +106,12 @@ def _validate_ctrl_name(ctrl_name):
 # Ctrl Creation
 # =============================================================================
 
-def _validate_create_name_list(node_name_list):
-    u"""创建前一次性检查所有确定性节点名称。"""
-    exists_node_list = []
-
-    for node_name in node_name_list:
-        if not node_name:
-            continue
-
-        if cmds.objExists(node_name):
-            exists_node_list.append(node_name)
-
-    if exists_node_list:
-        raise RuntimeError(
-            u"Controller Build Node 已存在，请先执行 Component Rebuild Cleanup：{}".format(
-                ", ".join(exists_node_list)
-            )
-        )
-
-    return True
-
-
 def _apply_shape_transform(ctrl_node, radius, axis, rotate_x=0.0):
     u"""设置 Controller Shape 的大小和轴向。"""
-    control_shape_utils.scale_shape(ctrl_node, float(radius))
+    control_shape_utils.scale_shape(
+        ctrl_node,
+        float(radius)
+    )
 
     rotation_value = axis_rotation[axis]
     control_shape_utils.rotate_shape(
@@ -175,7 +128,10 @@ def _lock_ctrl_attr(ctrl_node, lock_attr_list):
         return True
 
     for attr_name in lock_attr_list:
-        attr_plug = "{}.{}".format(ctrl_node, attr_name)
+        attr_plug = "{}.{}".format(
+            ctrl_node,
+            attr_name
+        )
 
         if not cmds.objExists(attr_plug):
             continue
@@ -205,65 +161,74 @@ def create_ctrl(
         add_to_set=True,
         ctrl_set="ctrl_set"
 ):
-    u"""
-    创建 MuziTools 标准 Controller。
-
-    制作思路：
-        1. Controller Name 由调用方提前准备，Ctrl Base 不再自动修正名称；
-        2. zero / driven / space / connect / offset 固定创建；
-        3. 调用方只传真正会变化的参数；
-        4. 所有名称保持确定性，同名时直接报错；
-        5. Output 是最终动画输入节点的 Identity Child；
-        6. Component 可以直接把 top_grp Parent 到自己的 ctrl_grp。
-
-    Returns:
-        dict:
-            ctrl_node
-            sub_ctrl_node
-            output_node
-            top_grp
-            grp_dict
-            build_node_list
-    """
+    u"""创建 MuziTools 标准 Controller。"""
     # -------------------------------------------------------------------------
-    # Step 01：检查创建参数
+    # Step 01：检查创建参数与 Scene 输入
     # -------------------------------------------------------------------------
-    _validate_ctrl_name(name)
-
     if float(radius) <= 0.0:
-        raise ValueError(u"Controller Radius 必须大于 0。")
+        raise ValueError(
+            u"Controller Radius 必须大于 0。"
+        )
 
     if axis not in axis_rotation:
-        raise ValueError(u"不支持的 Controller Axis：{}".format(axis))
+        raise ValueError(
+            u"不支持的 Controller Axis：{}".format(axis)
+        )
 
     color = int(color)
 
     if color < 0 or color > 31:
-        raise ValueError(u"Maya Index Color 必须在 0 - 31 之间。")
+        raise ValueError(
+            u"Maya Index Color 必须在 0 - 31 之间。"
+        )
 
     if target_node is not None:
-        scene_utils.validate_node(target_node, u"Target Node")
+        scene_utils.validate_node(
+            target_node,
+            u"Target Node"
+        )
 
     if parent_node is not None:
-        scene_utils.validate_node(parent_node, u"Parent Node")
+        scene_utils.validate_node(
+            parent_node,
+            u"Parent Node"
+        )
 
     # -------------------------------------------------------------------------
-    # Step 02：准备固定名称
+    # Step 02：由 RigBase 生成固定层级名称
     # -------------------------------------------------------------------------
-    ctrl_name = name
+    ctrl_rig = _get_rig_name(
+        name
+    )
+    ctrl_name = ctrl_rig.name
 
-    zero_grp_name = ctrl_name.replace("ctrl_", "zero_", 1)
-    driven_grp_name = ctrl_name.replace("ctrl_", "driven_", 1)
-    space_grp_name = ctrl_name.replace("ctrl_", "space_", 1)
-    connect_grp_name = ctrl_name.replace("ctrl_", "connect_", 1)
-    offset_grp_name = ctrl_name.replace("ctrl_", "offset_", 1)
-    output_name = ctrl_name.replace("ctrl_", "output_", 1)
+    zero_grp_name = ctrl_rig.create_name(
+        type="zero"
+    )
+    driven_grp_name = ctrl_rig.create_name(
+        type="driven"
+    )
+    space_grp_name = ctrl_rig.create_name(
+        type="space"
+    )
+    connect_grp_name = ctrl_rig.create_name(
+        type="connect"
+    )
+    offset_grp_name = ctrl_rig.create_name(
+        type="offset"
+    )
+    output_name = ctrl_rig.create_name(
+        type="output"
+    )
 
     sub_ctrl_name = None
 
     if create_sub_ctrl:
-        ctrl_name_base, ctrl_index = ctrl_name.rsplit("_", 1)
-        sub_ctrl_name = "{}_sub_{}".format(ctrl_name_base, ctrl_index)
+        sub_ctrl_name = ctrl_rig.create_name(
+            type="ctrl",
+            part=_get_ctrl_part(ctrl_rig),
+            function="sub"
+        )
 
     create_name_list = [
         ctrl_name,
@@ -275,15 +240,22 @@ def create_ctrl(
         output_name,
     ]
 
-    if sub_ctrl_name:
-        create_name_list.append(sub_ctrl_name)
+    if sub_ctrl_name is not None:
+        create_name_list.append(
+            sub_ctrl_name
+        )
 
-    _validate_create_name_list(create_name_list)
+    _check_build_nodes_available(
+        create_name_list
+    )
 
     # -------------------------------------------------------------------------
     # Step 03：创建固定 Controller Hierarchy
     # -------------------------------------------------------------------------
-    zero_grp = cmds.createNode("transform", name=zero_grp_name)
+    zero_grp = cmds.createNode(
+        "transform",
+        name=zero_grp_name
+    )
     driven_grp = cmds.createNode(
         "transform",
         name=driven_grp_name,
@@ -308,21 +280,29 @@ def create_ctrl(
     # -------------------------------------------------------------------------
     # Step 04：创建主 Ctrl
     # -------------------------------------------------------------------------
-    shape_data = control_shape_utils.load_shape_data(shape)
+    shape_data = control_shape_utils.load_shape_data(
+        shape
+    )
 
     ctrl_node = cmds.createNode(
         "transform",
         name=ctrl_name,
         parent=offset_grp
     )
-    control_shape_utils.apply_shape_data(ctrl_node, shape_data)
+    control_shape_utils.apply_shape_data(
+        ctrl_node,
+        shape_data
+    )
     _apply_shape_transform(
         ctrl_node,
         radius=radius,
         axis=axis,
         rotate_x=rotate_x
     )
-    control_shape_utils.set_shape_color(ctrl_node, color)
+    control_shape_utils.set_shape_color(
+        ctrl_node,
+        color
+    )
 
     # -------------------------------------------------------------------------
     # Step 05：创建可选 Sub Ctrl
@@ -336,7 +316,10 @@ def create_ctrl(
             name=sub_ctrl_name,
             parent=ctrl_node
         )
-        control_shape_utils.apply_shape_data(sub_ctrl_node, shape_data)
+        control_shape_utils.apply_shape_data(
+            sub_ctrl_node,
+            shape_data
+        )
         _apply_shape_transform(
             sub_ctrl_node,
             radius=float(radius) * 0.7,
@@ -345,7 +328,10 @@ def create_ctrl(
         )
 
         if sub_color is None:
-            sub_color = min(color + 1, 31)
+            sub_color = min(
+                color + 1,
+                31
+            )
 
         control_shape_utils.set_shape_color(
             sub_ctrl_node,
@@ -396,18 +382,27 @@ def create_ctrl(
         )
 
     # -------------------------------------------------------------------------
-    # Step 08：整理到 Component Ctrl Group
+    # Step 08：整理到 Module Ctrl Group
     # -------------------------------------------------------------------------
     if parent_node is not None:
-        zero_grp = hierarchy_utils.parent(zero_grp, parent_node)
+        zero_grp = hierarchy_utils.parent(
+            zero_grp,
+            parent_node
+        )
 
     # -------------------------------------------------------------------------
     # Step 09：锁定通道并加入 Animation Set
     # -------------------------------------------------------------------------
-    _lock_ctrl_attr(ctrl_node, lock_attr_list)
+    _lock_ctrl_attr(
+        ctrl_node,
+        lock_attr_list
+    )
 
     if sub_ctrl_node is not None:
-        _lock_ctrl_attr(sub_ctrl_node, lock_attr_list)
+        _lock_ctrl_attr(
+            sub_ctrl_node,
+            lock_attr_list
+        )
 
     if add_to_set:
         scene_utils.ensure_object_set(
@@ -434,7 +429,9 @@ def create_ctrl(
     ]
 
     if sub_ctrl_node is not None:
-        build_node_list.append(sub_ctrl_node)
+        build_node_list.append(
+            sub_ctrl_node
+        )
 
     return {
         "ctrl_node": ctrl_node,
@@ -459,17 +456,14 @@ def create_fk_ctrl(
         add_to_set=True,
         ctrl_set="ctrl_set"
 ):
-    u"""
-    根据 Target List 和明确的 Ctrl Name List 创建标准 FK Controller Chain。
-
-    Ctrl Base 不根据 Target 自动推导 Controller Name，也不根据左右侧自动推导颜色。
-    名称和颜色属于上层 Component 的 Build Setting。
-    """
+    u"""根据 Target List 和明确的 Ctrl Name List 创建 FK Controller Chain。"""
     if not target_list:
         return []
 
     if not ctrl_name_list:
-        raise ValueError(u"FK Ctrl Name List 不能为空。")
+        raise ValueError(
+            u"FK Ctrl Name List 不能为空。"
+        )
 
     if len(target_list) != len(ctrl_name_list):
         raise ValueError(
@@ -484,8 +478,10 @@ def create_fk_ctrl(
         target_node = target_list[target_index]
         ctrl_name = ctrl_name_list[target_index]
 
-        scene_utils.validate_node(target_node, u"FK Target")
-        _validate_ctrl_name(ctrl_name)
+        scene_utils.validate_node(
+            target_node,
+            u"FK Target"
+        )
 
         current_parent_node = parent_node
 
@@ -515,17 +511,24 @@ def create_fk_ctrl(
                 maintain_offset=False
             )
 
-        ctrl_dict_list.append(ctrl_dict)
+        ctrl_dict_list.append(
+            ctrl_dict
+        )
         previous_ctrl_node = ctrl_node
         target_index += 1
 
     ctrl_list = []
 
     for ctrl_dict in ctrl_dict_list:
-        ctrl_list.append(ctrl_dict["ctrl_node"])
+        ctrl_list.append(
+            ctrl_dict["ctrl_node"]
+        )
 
     if ctrl_list:
-        cmds.select(ctrl_list, replace=True)
+        cmds.select(
+            ctrl_list,
+            replace=True
+        )
 
     return ctrl_dict_list
 
@@ -542,14 +545,20 @@ def _ensure_float_attr(
         max_value=1.0
 ):
     u"""创建或复用一个 Keyable Float Attribute。"""
-    scene_utils.validate_node(ctrl_node, u"Ctrl Node")
+    scene_utils.validate_node(
+        ctrl_node,
+        u"Ctrl Node"
+    )
 
     if cmds.attributeQuery(
             attr_name,
             node=ctrl_node,
             exists=True
     ):
-        return "{}.{}".format(ctrl_node, attr_name)
+        return "{}.{}".format(
+            ctrl_node,
+            attr_name
+        )
 
     cmds.addAttr(
         ctrl_node,
@@ -561,7 +570,10 @@ def _ensure_float_attr(
         keyable=True
     )
 
-    return "{}.{}".format(ctrl_node, attr_name)
+    return "{}.{}".format(
+        ctrl_node,
+        attr_name
+    )
 
 
 # =============================================================================
@@ -575,54 +587,58 @@ def create_follow(
         attr_name="follow",
         maintain_offset=True
 ):
-    u"""
-    给标准 Controller 创建 0 - 1 Follow。
-
-    Follow 只作用在 driven_grp：
-
-        zero
-          └── driven   <- Follow
-              └── space
-                  └── ...
-
-    Follow = 1：完全跟随外部 Driver。
-    Follow = 0：回到自己的 Zero Space。
-    """
-    # -------------------------------------------------------------------------
-    # Step 01：取得标准 Ctrl / Group
-    # -------------------------------------------------------------------------
-    scene_utils.validate_node(driver_node, u"Follow Driver")
+    u"""给标准 Controller 创建 0 - 1 Follow。"""
+    scene_utils.validate_node(
+        driver_node,
+        u"Follow Driver"
+    )
 
     ctrl_node = ctrl_dict["ctrl_node"]
     grp_dict = ctrl_dict["grp_dict"]
     zero_grp = grp_dict["zero"]
     driven_grp = grp_dict["driven"]
 
-    scene_utils.validate_node(ctrl_node, u"Ctrl Node")
-    scene_utils.validate_node(zero_grp, u"Zero Group")
-    scene_utils.validate_node(driven_grp, u"Driven Group")
+    scene_utils.validate_node(
+        ctrl_node,
+        u"Ctrl Node"
+    )
+    scene_utils.validate_node(
+        zero_grp,
+        u"Zero Group"
+    )
+    scene_utils.validate_node(
+        driven_grp,
+        u"Driven Group"
+    )
 
-    # -------------------------------------------------------------------------
-    # Step 02：创建 Follow Attribute
-    # -------------------------------------------------------------------------
-    weight = max(0.0, min(1.0, float(weight)))
+    weight = max(
+        0.0,
+        min(1.0, float(weight))
+    )
     follow_plug = _ensure_float_attr(
         ctrl_node,
         attr_name,
         default_value=weight
     )
 
-    # -------------------------------------------------------------------------
-    # Step 03：创建 Constraint 和 Reverse
-    # -------------------------------------------------------------------------
-    ctrl_name = rename_utils.get_short_name(ctrl_node)
-    ctrl_name_base, ctrl_index = ctrl_name.rsplit("_", 1)
-    ctrl_name_base = ctrl_name_base.replace("ctrl_", "", 1)
+    ctrl_rig = _get_rig_name(
+        ctrl_node
+    )
+    related_part = _get_ctrl_part(
+        ctrl_rig
+    )
+    constraint_name = ctrl_rig.create_name(
+        type="cns",
+        part=related_part,
+        function=attr_name
+    )
+    reverse_name = ctrl_rig.create_name(
+        type="reverse",
+        part=related_part,
+        function=attr_name
+    )
 
-    constraint_name = "cns_{}_{}_{}".format(ctrl_name_base, attr_name, ctrl_index)
-    reverse_name = "reverse_{}_{}_{}".format(ctrl_name_base, attr_name, ctrl_index)
-
-    _validate_create_name_list([
+    _check_build_nodes_available([
         constraint_name,
         reverse_name,
     ])
@@ -640,7 +656,9 @@ def create_follow(
 
     if not constraint_node_list:
         raise RuntimeError(
-            u"Follow Parent Constraint 创建失败：{}".format(driven_grp)
+            u"Follow Parent Constraint 创建失败：{}".format(
+                driven_grp
+            )
         )
 
     constraint_node = constraint_node_list[0]
@@ -654,7 +672,9 @@ def create_follow(
         weight_alias_list = []
 
     if len(weight_alias_list) != 2:
-        cmds.delete(constraint_node)
+        cmds.delete(
+            constraint_node
+        )
         raise RuntimeError(
             u"Follow Constraint Target 数量异常：{}".format(
                 constraint_node
@@ -676,7 +696,10 @@ def create_follow(
         force=True
     )
 
-    reverse_node = scene_utils.create_node("reverse", reverse_name)
+    reverse_node = scene_utils.create_node(
+        "reverse",
+        reverse_name
+    )
     connection_utils.connect_plugs(
         follow_plug,
         reverse_node + ".inputX",
@@ -714,43 +737,48 @@ def create_space_switch(
         default_index=0,
         maintain_offset=True
 ):
-    u"""
-    给标准 Controller 创建 Enum Space Switch。
-
-    space_target_dict Example：
-
-        {
-            "World": "ctrl_md_global_001",
-            "Chest": "ctrl_md_chest_001",
-            "Head": "ctrl_md_head_001",
-        }
-
-    Space Switch 只作用在 space_grp。
-    """
-    # -------------------------------------------------------------------------
-    # Step 01：检查 Target
-    # -------------------------------------------------------------------------
+    u"""给标准 Controller 创建 Enum Space Switch。"""
     if not space_target_dict:
-        raise ValueError(u"Space Target Dict 不能为空。")
+        raise ValueError(
+            u"Space Target Dict 不能为空。"
+        )
 
     if len(space_target_dict) < 2:
-        raise ValueError(u"Space Switch 至少需要两个 Space Target。")
+        raise ValueError(
+            u"Space Switch 至少需要两个 Space Target。"
+        )
 
     ctrl_node = ctrl_dict["ctrl_node"]
     space_grp = ctrl_dict["grp_dict"]["space"]
 
-    scene_utils.validate_node(ctrl_node, u"Ctrl Node")
-    scene_utils.validate_node(space_grp, u"Space Group")
+    scene_utils.validate_node(
+        ctrl_node,
+        u"Ctrl Node"
+    )
+    scene_utils.validate_node(
+        space_grp,
+        u"Space Group"
+    )
 
     space_label_list = []
     space_target_list = []
 
     for space_label, target_node in space_target_dict.items():
-        scene_utils.validate_node(target_node, u"Space Target")
+        scene_utils.validate_node(
+            target_node,
+            u"Space Target"
+        )
 
-        clean_label = str(space_label).replace(":", "_")
-        space_label_list.append(clean_label)
-        space_target_list.append(target_node)
+        clean_label = str(space_label).replace(
+            ":",
+            "_"
+        )
+        space_label_list.append(
+            clean_label
+        )
+        space_target_list.append(
+            target_node
+        )
 
     if default_index < 0:
         default_index = 0
@@ -758,9 +786,6 @@ def create_space_switch(
     if default_index >= len(space_target_list):
         default_index = len(space_target_list) - 1
 
-    # -------------------------------------------------------------------------
-    # Step 02：创建 Enum Attribute
-    # -------------------------------------------------------------------------
     if cmds.attributeQuery(
             attr_name,
             node=ctrl_node,
@@ -781,17 +806,26 @@ def create_space_switch(
         defaultValue=int(default_index),
         keyable=True
     )
-    space_plug = "{}.{}".format(ctrl_node, attr_name)
+    space_plug = "{}.{}".format(
+        ctrl_node,
+        attr_name
+    )
 
-    # -------------------------------------------------------------------------
-    # Step 03：创建 Parent Constraint
-    # -------------------------------------------------------------------------
-    ctrl_name = rename_utils.get_short_name(ctrl_node)
-    ctrl_name_base, ctrl_index = ctrl_name.rsplit("_", 1)
-    ctrl_name_base = ctrl_name_base.replace("ctrl_", "", 1)
-    constraint_name = "cns_{}_{}_{}".format(ctrl_name_base, attr_name, ctrl_index)
+    ctrl_rig = _get_rig_name(
+        ctrl_node
+    )
+    related_part = _get_ctrl_part(
+        ctrl_rig
+    )
+    constraint_name = ctrl_rig.create_name(
+        type="cns",
+        part=related_part,
+        function=attr_name
+    )
 
-    _validate_create_name_list([constraint_name])
+    _check_build_nodes_available([
+        constraint_name
+    ])
 
     constraint_node_list = constraint_utils.create_constraint(
         driver_objects=space_target_list,
@@ -803,7 +837,9 @@ def create_space_switch(
 
     if not constraint_node_list:
         raise RuntimeError(
-            u"Space Parent Constraint 创建失败：{}".format(space_grp)
+            u"Space Parent Constraint 创建失败：{}".format(
+                space_grp
+            )
         )
 
     constraint_node = constraint_node_list[0]
@@ -817,37 +853,54 @@ def create_space_switch(
         weight_alias_list = []
 
     if len(weight_alias_list) != len(space_target_list):
-        cmds.delete(constraint_node)
+        cmds.delete(
+            constraint_node
+        )
         raise RuntimeError(
             u"Space Constraint Target 数量异常：{}".format(
                 constraint_node
             )
         )
 
-    # -------------------------------------------------------------------------
-    # Step 04：使用 Condition 控制每个 Space Weight
-    # -------------------------------------------------------------------------
     condition_node_list = []
     space_index = 0
 
     while space_index < len(space_target_list):
-        condition_name = "condition_{}_{}_{}_{}".format(
-            ctrl_name_base,
-            attr_name,
-            space_index + 1,
-            ctrl_index
+        condition_part = "{}_{}".format(
+            related_part,
+            attr_name
         )
-        _validate_create_name_list([condition_name])
+        condition_name = ctrl_rig.create_name(
+            type="condition",
+            part=condition_part,
+            function=str(space_index + 1)
+        )
+
+        _check_build_nodes_available([
+            condition_name
+        ])
 
         condition_node = scene_utils.create_node(
             "condition",
             condition_name
         )
 
-        cmds.setAttr(condition_node + ".operation", 0)
-        cmds.setAttr(condition_node + ".secondTerm", space_index)
-        cmds.setAttr(condition_node + ".colorIfTrueR", 1.0)
-        cmds.setAttr(condition_node + ".colorIfFalseR", 0.0)
+        cmds.setAttr(
+            condition_node + ".operation",
+            0
+        )
+        cmds.setAttr(
+            condition_node + ".secondTerm",
+            space_index
+        )
+        cmds.setAttr(
+            condition_node + ".colorIfTrueR",
+            1.0
+        )
+        cmds.setAttr(
+            condition_node + ".colorIfFalseR",
+            0.0
+        )
 
         connection_utils.connect_plugs(
             space_plug,
@@ -865,13 +918,19 @@ def create_space_switch(
             force=True
         )
 
-        condition_node_list.append(condition_node)
+        condition_node_list.append(
+            condition_node
+        )
         space_index += 1
 
-    build_node_list = [constraint_node]
+    build_node_list = [
+        constraint_node
+    ]
 
     for condition_node in condition_node_list:
-        build_node_list.append(condition_node)
+        build_node_list.append(
+            condition_node
+        )
 
     return {
         "ctrl_node": ctrl_node,
@@ -891,8 +950,14 @@ def create_space_switch(
 
 def _get_attr_definition(ctrl_node, attr_name):
     u"""读取一个 User Defined Attribute 的定义和值。"""
-    attr_plug = "{}.{}".format(ctrl_node, attr_name)
-    attr_type = cmds.getAttr(attr_plug, type=True)
+    attr_plug = "{}.{}".format(
+        ctrl_node,
+        attr_name
+    )
+    attr_type = cmds.getAttr(
+        attr_plug,
+        type=True
+    )
 
     attr_data = {
         "name": attr_name,
@@ -961,7 +1026,9 @@ def _get_attr_definition(ctrl_node, attr_name):
 
     if attr_type != "message":
         try:
-            attr_data["value"] = cmds.getAttr(attr_plug)
+            attr_data["value"] = cmds.getAttr(
+                attr_plug
+            )
         except Exception:
             attr_data["value"] = None
 
@@ -970,7 +1037,10 @@ def _get_attr_definition(ctrl_node, attr_name):
 
 def _get_plug_node(plug_name):
     u"""从 Maya Plug 字符串中取得 Node Name。"""
-    return plug_name.split(".", 1)[0]
+    return plug_name.split(
+        ".",
+        1
+    )[0]
 
 
 def _is_owned_connection(connected_plug, owned_node_set):
@@ -978,8 +1048,12 @@ def _is_owned_connection(connected_plug, owned_node_set):
     if not owned_node_set:
         return False
 
-    connected_node = _get_plug_node(connected_plug)
-    connected_short_name = rename_utils.get_short_name(connected_node)
+    connected_node = _get_plug_node(
+        connected_plug
+    )
+    connected_short_name = rename_utils.get_short_name(
+        connected_node
+    )
 
     if connected_node in owned_node_set:
         return True
@@ -1013,10 +1087,15 @@ def _get_external_connection_data(
         input_plug_list = []
 
     for input_plug in input_plug_list:
-        if _is_owned_connection(input_plug, owned_node_set):
+        if _is_owned_connection(
+                input_plug,
+                owned_node_set
+        ):
             continue
 
-        attr_data["input_plug_list"].append(input_plug)
+        attr_data["input_plug_list"].append(
+            input_plug
+        )
 
     output_plug_list = cmds.listConnections(
         attr_plug,
@@ -1030,10 +1109,15 @@ def _get_external_connection_data(
         output_plug_list = []
 
     for output_plug in output_plug_list:
-        if _is_owned_connection(output_plug, owned_node_set):
+        if _is_owned_connection(
+                output_plug,
+                owned_node_set
+        ):
             continue
 
-        attr_data["output_plug_list"].append(output_plug)
+        attr_data["output_plug_list"].append(
+            output_plug
+        )
 
     return attr_data
 
@@ -1047,23 +1131,32 @@ def save_rebuild_cache(
         cache_name=None,
         owned_node_list=None
 ):
-    u"""
-    把 Ctrl 自定义属性和外部连接保存到 Maya Network Node。
-
-    owned_node_list：
-        当前 Component 自己创建、Rebuild 时会被删除的节点。
-        与这些节点之间的内部连接不保存。
-    """
-    scene_utils.validate_node(ctrl_node, u"Ctrl Node")
+    u"""把 Ctrl 自定义属性和外部连接保存到 Maya Network Node。"""
+    scene_utils.validate_node(
+        ctrl_node,
+        u"Ctrl Node"
+    )
 
     if cache_name is None:
-        ctrl_name = rename_utils.get_short_name(ctrl_node)
-        ctrl_name_base, ctrl_index = ctrl_name.rsplit("_", 1)
-        ctrl_name_base = ctrl_name_base.replace("ctrl_", "", 1)
-        cache_name = "network_{}_rebuild_cache_{}".format(ctrl_name_base, ctrl_index)
+        ctrl_rig = _get_rig_name(
+            ctrl_node
+        )
+        cache_part = "{}_{}_rebuild".format(
+            ctrl_rig.part,
+            ctrl_rig.function
+        )
+        cache_name = ctrl_rig.create_name(
+            type="network",
+            part=cache_part,
+            function="cache"
+        )
 
     if cmds.objExists(cache_name):
-        raise RuntimeError(u"Rebuild Cache 已存在：{}".format(cache_name))
+        raise RuntimeError(
+            u"Rebuild Cache 已存在：{}".format(
+                cache_name
+            )
+        )
 
     owned_node_set = set()
 
@@ -1072,19 +1165,24 @@ def save_rebuild_cache(
             if not owned_node:
                 continue
 
-            owned_node_set.add(owned_node)
+            owned_node_set.add(
+                owned_node
+            )
 
             if cmds.objExists(owned_node):
                 owned_node_set.add(
-                    rename_utils.get_short_name(owned_node)
+                    rename_utils.get_short_name(
+                        owned_node
+                    )
                 )
 
-    owned_node_set.add(ctrl_node)
-    owned_node_set.add(rename_utils.get_short_name(ctrl_node))
+    owned_node_set.add(
+        ctrl_node
+    )
+    owned_node_set.add(
+        rename_utils.get_short_name(ctrl_node)
+    )
 
-    # -------------------------------------------------------------------------
-    # Step 01：读取 User Defined Attribute
-    # -------------------------------------------------------------------------
     user_attr_list = cmds.listAttr(
         ctrl_node,
         userDefined=True
@@ -1105,12 +1203,14 @@ def save_rebuild_cache(
             attr_data,
             owned_node_set
         )
-        attr_data_list.append(attr_data)
+        attr_data_list.append(
+            attr_data
+        )
 
-    # -------------------------------------------------------------------------
-    # Step 02：写入临时 Network Node
-    # -------------------------------------------------------------------------
-    cache_node = cmds.createNode("network", name=cache_name)
+    cache_node = cmds.createNode(
+        "network",
+        name=cache_name
+    )
 
     cmds.addAttr(
         cache_node,
@@ -1161,7 +1261,10 @@ def _create_cached_attr(ctrl_node, attr_data):
             node=ctrl_node,
             exists=True
     ):
-        return "{}.{}".format(ctrl_node, attr_name)
+        return "{}.{}".format(
+            ctrl_node,
+            attr_name
+        )
 
     attr_type = attr_data["type"]
     numeric_attr_type_list = [
@@ -1198,7 +1301,9 @@ def _create_cached_attr(ctrl_node, attr_data):
         add_attr_kwargs["enumName"] = enum_name
 
         if attr_data["default"] is not None:
-            add_attr_kwargs["defaultValue"] = int(attr_data["default"])
+            add_attr_kwargs["defaultValue"] = int(
+                attr_data["default"]
+            )
 
     elif attr_type == "string":
         add_attr_kwargs["dataType"] = "string"
@@ -1216,8 +1321,14 @@ def _create_cached_attr(ctrl_node, attr_data):
         )
         return None
 
-    cmds.addAttr(ctrl_node, **add_attr_kwargs)
-    return "{}.{}".format(ctrl_node, attr_name)
+    cmds.addAttr(
+        ctrl_node,
+        **add_attr_kwargs
+    )
+    return "{}.{}".format(
+        ctrl_node,
+        attr_name
+    )
 
 
 def _restore_cached_attr_value(attr_plug, attr_data):
@@ -1231,9 +1342,16 @@ def _restore_cached_attr_value(attr_plug, attr_data):
     if attr_type != "message" and attr_value is not None:
         try:
             if attr_type == "string":
-                cmds.setAttr(attr_plug, attr_value, type="string")
+                cmds.setAttr(
+                    attr_plug,
+                    attr_value,
+                    type="string"
+                )
             else:
-                cmds.setAttr(attr_plug, attr_value)
+                cmds.setAttr(
+                    attr_plug,
+                    attr_value
+                )
         except Exception as error:
             cmds.warning(
                 u"恢复 Attribute Value 失败：{} | {}".format(
@@ -1269,9 +1387,6 @@ def _restore_cached_connections(ctrl_node, attr_data):
     restored_connection_list = []
     skipped_connection_list = []
 
-    # -------------------------------------------------------------------------
-    # Input Connection
-    # -------------------------------------------------------------------------
     for source_plug in attr_data["input_plug_list"]:
         connection_text = "{} -> {}".format(
             source_plug,
@@ -1279,10 +1394,15 @@ def _restore_cached_connections(ctrl_node, attr_data):
         )
 
         if not cmds.objExists(source_plug):
-            skipped_connection_list.append(connection_text)
+            skipped_connection_list.append(
+                connection_text
+            )
             continue
 
-        if cmds.isConnected(source_plug, attr_plug):
+        if cmds.isConnected(
+                source_plug,
+                attr_plug
+        ):
             continue
 
         current_input_list = cmds.listConnections(
@@ -1293,15 +1413,20 @@ def _restore_cached_connections(ctrl_node, attr_data):
         )
 
         if current_input_list:
-            skipped_connection_list.append(connection_text)
+            skipped_connection_list.append(
+                connection_text
+            )
             continue
 
-        cmds.connectAttr(source_plug, attr_plug, force=False)
-        restored_connection_list.append(connection_text)
+        cmds.connectAttr(
+            source_plug,
+            attr_plug,
+            force=False
+        )
+        restored_connection_list.append(
+            connection_text
+        )
 
-    # -------------------------------------------------------------------------
-    # Output Connection
-    # -------------------------------------------------------------------------
     for destination_plug in attr_data["output_plug_list"]:
         connection_text = "{} -> {}".format(
             attr_plug,
@@ -1309,10 +1434,15 @@ def _restore_cached_connections(ctrl_node, attr_data):
         )
 
         if not cmds.objExists(destination_plug):
-            skipped_connection_list.append(connection_text)
+            skipped_connection_list.append(
+                connection_text
+            )
             continue
 
-        if cmds.isConnected(attr_plug, destination_plug):
+        if cmds.isConnected(
+                attr_plug,
+                destination_plug
+        ):
             continue
 
         current_input_list = cmds.listConnections(
@@ -1323,11 +1453,19 @@ def _restore_cached_connections(ctrl_node, attr_data):
         )
 
         if current_input_list:
-            skipped_connection_list.append(connection_text)
+            skipped_connection_list.append(
+                connection_text
+            )
             continue
 
-        cmds.connectAttr(attr_plug, destination_plug, force=False)
-        restored_connection_list.append(connection_text)
+        cmds.connectAttr(
+            attr_plug,
+            destination_plug,
+            force=False
+        )
+        restored_connection_list.append(
+            connection_text
+        )
 
     return {
         "restored_connection_list": restored_connection_list,
@@ -1340,22 +1478,15 @@ def restore_rebuild_cache(
         ctrl_node,
         delete_cache=True
 ):
-    u"""
-    把 Rebuild Cache 恢复到新 Ctrl。
-
-    顺序：
-        Attribute Definition
-            ↓
-        Attribute Value
-            ↓
-        External Connection
-            ↓
-        Lock State
-            ↓
-        Delete Cache
-    """
-    scene_utils.validate_node(cache_node, u"Rebuild Cache")
-    scene_utils.validate_node(ctrl_node, u"New Ctrl Node")
+    u"""把 Rebuild Cache 恢复到新 Ctrl。"""
+    scene_utils.validate_node(
+        cache_node,
+        u"Rebuild Cache"
+    )
+    scene_utils.validate_node(
+        ctrl_node,
+        u"New Ctrl Node"
+    )
 
     if not cmds.attributeQuery(
             "ctrlData",
@@ -1363,38 +1494,51 @@ def restore_rebuild_cache(
             exists=True
     ):
         raise RuntimeError(
-            u"Rebuild Cache 缺少 ctrlData：{}".format(cache_node)
+            u"Rebuild Cache 缺少 ctrlData：{}".format(
+                cache_node
+            )
         )
 
-    cache_text = cmds.getAttr(cache_node + ".ctrlData")
+    cache_text = cmds.getAttr(
+        cache_node + ".ctrlData"
+    )
 
     if not cache_text:
         raise RuntimeError(
-            u"Rebuild Cache 没有可恢复数据：{}".format(cache_node)
+            u"Rebuild Cache 没有可恢复数据：{}".format(
+                cache_node
+            )
         )
 
-    cache_data = json.loads(cache_text)
-    attr_data_list = cache_data.get("attr_data_list", [])
+    cache_data = json.loads(
+        cache_text
+    )
+    attr_data_list = cache_data.get(
+        "attr_data_list",
+        []
+    )
 
     restored_attr_list = []
     restored_connection_list = []
     skipped_connection_list = []
 
-    # -------------------------------------------------------------------------
-    # Step 01：恢复 Attribute Definition / Value
-    # -------------------------------------------------------------------------
     for attr_data in attr_data_list:
-        attr_plug = _create_cached_attr(ctrl_node, attr_data)
+        attr_plug = _create_cached_attr(
+            ctrl_node,
+            attr_data
+        )
 
         if attr_plug is None:
             continue
 
-        _restore_cached_attr_value(attr_plug, attr_data)
-        restored_attr_list.append(attr_plug)
+        _restore_cached_attr_value(
+            attr_plug,
+            attr_data
+        )
+        restored_attr_list.append(
+            attr_plug
+        )
 
-    # -------------------------------------------------------------------------
-    # Step 02：恢复 External Connection
-    # -------------------------------------------------------------------------
     for attr_data in attr_data_list:
         attr_name = attr_data["name"]
 
@@ -1413,16 +1557,17 @@ def restore_rebuild_cache(
         for connection_text in connection_result[
                 "restored_connection_list"
         ]:
-            restored_connection_list.append(connection_text)
+            restored_connection_list.append(
+                connection_text
+            )
 
         for connection_text in connection_result[
                 "skipped_connection_list"
         ]:
-            skipped_connection_list.append(connection_text)
+            skipped_connection_list.append(
+                connection_text
+            )
 
-    # -------------------------------------------------------------------------
-    # Step 03：最后恢复 Lock State
-    # -------------------------------------------------------------------------
     for attr_data in attr_data_list:
         attr_plug = "{}.{}".format(
             ctrl_node,
@@ -1440,11 +1585,10 @@ def restore_rebuild_cache(
         except Exception:
             pass
 
-    # -------------------------------------------------------------------------
-    # Step 04：成功后删除 Cache
-    # -------------------------------------------------------------------------
     if delete_cache:
-        cmds.delete(cache_node)
+        cmds.delete(
+            cache_node
+        )
 
     return {
         "ctrl_node": ctrl_node,
@@ -1462,7 +1606,9 @@ def delete_rebuild_cache(cache_node):
     if not cmds.objExists(cache_node):
         return False
 
-    cmds.delete(cache_node)
+    cmds.delete(
+        cache_node
+    )
     return True
 
 
