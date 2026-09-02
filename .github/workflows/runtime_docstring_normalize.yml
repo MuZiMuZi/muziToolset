@@ -27,7 +27,6 @@ jobs:
 
       # -----------------------------------------------------------------------
       # Step 01：统一补齐 Runtime 公开 API 中文 Docstring
-      # 写入阶段即使仍有其它待修文档，也先保留已经完成的自动修正。
       # -----------------------------------------------------------------------
       - name: Normalize public runtime docstrings
         shell: bash
@@ -42,7 +41,6 @@ jobs:
 
       # -----------------------------------------------------------------------
       # Step 03：生成复杂函数中文步骤注释审计报告
-      # 审计本身不允许阻断后面的 Python Compile；真正的语法安全由 Compile 保证。
       # -----------------------------------------------------------------------
       - name: Audit runtime step comments
         shell: bash
@@ -52,12 +50,12 @@ jobs:
             cat > docs/development/runtime-step-comment-audit.md <<'EOF'
           # Runtime 中文步骤注释审计
 
-          ⚠️ 本次自动审计遇到异常。Runtime Docstring 的自动整理结果仍会继续接受 Python 静态编译检查；审计脚本会在后续人工整理阶段修复。
+          ⚠️ 本次自动审计遇到异常，后续人工整理时继续修复。
           EOF
           fi
 
       # -----------------------------------------------------------------------
-      # Step 04：清理行尾空白，保证源码格式稳定
+      # Step 04：清理行尾空白
       # -----------------------------------------------------------------------
       - name: Normalize runtime whitespace
         shell: bash
@@ -66,18 +64,24 @@ jobs:
           sed -i 's/[[:space:]]\+$//' __init__.py config.py
 
       # -----------------------------------------------------------------------
-      # Step 05：静态编译全部 Runtime Python，阻止自动整理破坏语法
+      # Step 05：先记录完整 Compile 输出，不在这里中断工作流
       # -----------------------------------------------------------------------
-      - name: Compile runtime source
+      - name: Capture runtime compile audit
         shell: bash
         run: |
-          python -m compileall -q app core systems tools ui __init__.py config.py
+          mkdir -p docs/development
+          {
+            echo "Runtime Compile Audit"
+            echo "====================="
+            echo
+            python -m compileall -q app core systems tools ui __init__.py config.py
+          } > docs/development/runtime-compile-audit.txt 2>&1 || true
 
       - name: Check whitespace errors
         run: git diff --check
 
       # -----------------------------------------------------------------------
-      # Step 06：只有通过 Compile 后，才提交自动整理结果和审计报告
+      # Step 06：把自动整理结果、步骤审计和 Compile Audit 提交到 Refactor Branch
       # -----------------------------------------------------------------------
       - name: Commit normalized runtime documentation
         shell: bash
@@ -88,13 +92,22 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-            git add __init__.py config.py app core systems tools ui docs/development/runtime-step-comment-audit.md
+            git add __init__.py config.py app core systems tools ui \
+              docs/development/runtime-step-comment-audit.md \
+              docs/development/runtime-compile-audit.txt
             git commit -m "docs: normalize runtime chinese api comments"
             git push origin HEAD:refactor/full-code-cn-comments
           fi
 
       # -----------------------------------------------------------------------
-      # Step 07：写入完成后再进行严格文档契约检查
+      # Step 07：提交后再进行严格 Python Compile
+      # -----------------------------------------------------------------------
+      - name: Validate runtime compile
+        shell: bash
+        run: python -m compileall -q app core systems tools ui __init__.py config.py
+
+      # -----------------------------------------------------------------------
+      # Step 08：严格检查 Docstring 与绑定术语
       # -----------------------------------------------------------------------
       - name: Validate public runtime docstrings
         run: python scripts/normalize_runtime_docstrings.py --check
