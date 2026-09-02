@@ -6,7 +6,7 @@ FK Control Creator
 根据 Maya 当前选择顺序创建 FK Controller Chain。
 
 实际控制器创建统一使用 systems.ctrl_base；
-Rig Name 统一使用实例化的 systems.rig_base.RigBase。
+Rig Name 统一使用 systems.rig_base.RigBase。
 """
 
 from __future__ import print_function
@@ -22,7 +22,7 @@ TOOL_MODE = "action"
 
 
 def _clean_part(text):
-    u"""把任意 Maya Short Name 整理成 RigBase part。"""
+    u"""把任意 Maya Short Name 整理成可用于 FK Rig Name 的 part。"""
     text = str(text).strip().lower()
     text = text.replace("|", "_")
     text = text.replace(":", "_")
@@ -41,36 +41,30 @@ def _clean_part(text):
 
 
 def get_fk_ctrl_name(target, fallback_index):
-    u"""根据 Target Identity 生成标准 FK Ctrl Name。"""
+    u"""根据 Target 名称生成标准 FK Ctrl Name。"""
     short_name = rename_utils.get_short_name(
         target
     )
 
-    if RigBase.validate_name(short_name):
-        fields = RigBase.parse_name(
-            short_name
+    try:
+        target_name = RigBase(
+            name=short_name
         )
-        rig_object = RigBase(
-            side=fields["side"],
-            part=fields["part"],
-            index=fields["index"]
+        return target_name.create_name(
+            type="ctrl"
         )
+    except (IndexError, ValueError):
+        pass
 
-        return rig_object.create_name(
-            node_type="ctrl",
-            function=fields["function"]
-        )
-
-    rig_object = RigBase(
+    rig_name = RigBase(
+        type="ctrl",
         side="md",
         part=_clean_part(short_name),
+        function="fk",
         index=fallback_index
     )
 
-    return rig_object.create_name(
-        node_type="ctrl",
-        function="fk"
-    )
+    return rig_name.name
 
 
 def create_fk_controls(
