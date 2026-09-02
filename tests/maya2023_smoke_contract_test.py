@@ -17,6 +17,7 @@ REQUIRED_FUNCTIONS = {
 
 
 def get_smoke_path():
+    u"""返回 Maya 2023 Runtime Smoke Runner 路径。"""
     tests_directory = os.path.dirname(
         os.path.abspath(__file__)
     )
@@ -27,6 +28,7 @@ def get_smoke_path():
 
 
 def run():
+    u"""检查 Maya 2023 Smoke Runner 的当前架构契约。"""
     smoke_path = get_smoke_path()
 
     if not os.path.isfile(smoke_path):
@@ -49,28 +51,36 @@ def run():
 
     for node in syntax_tree.body:
         if isinstance(node, ast.FunctionDef):
-            function_names.add(node.name)
+            function_names.add(
+                node.name
+            )
 
     missing_functions = []
 
     for function_name in REQUIRED_FUNCTIONS:
         if function_name not in function_names:
-            missing_functions.append(function_name)
+            missing_functions.append(
+                function_name
+            )
 
     if missing_functions:
         print(
             "[FAIL] Maya 2023 Smoke Runner 缺少入口：{}".format(
-                ", ".join(sorted(missing_functions))
+                ", ".join(
+                    sorted(missing_functions)
+                )
             )
         )
         return False
 
     required_texts = [
         "import maya.cmds as cmds",
-        "face_component_smoke_test",
+        "face_build_smoke_test",
+        "ctrl_base.create_ctrl",
         "face_setup.run_step()",
         "FaceGuide",
         "build_guide",
+        "create_name",
     ]
 
     for required_text in required_texts:
@@ -82,7 +92,25 @@ def run():
             )
             return False
 
-    print("[PASS] Maya 2023 Smoke Runner 静态契约完整。")
+    retired_texts = [
+        "face_component_smoke_test",
+        "systems import controller",
+        "Hierarchy.parent",
+        "Hierarchy.get_parent",
+    ]
+
+    for retired_text in retired_texts:
+        if retired_text in source_text:
+            print(
+                "[FAIL] Maya 2023 Smoke Runner 仍包含退休入口：{}".format(
+                    retired_text
+                )
+            )
+            return False
+
+    print(
+        "[PASS] Maya 2023 Smoke Runner 当前架构静态契约完整。"
+    )
     return True
 
 
