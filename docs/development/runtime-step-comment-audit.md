@@ -4,7 +4,7 @@
 
 扫描 Runtime Python 文件：**97**
 
-需要补充步骤注释的复杂函数：**292**
+需要补充步骤注释的复杂函数：**290**
 
 ## `app/toolbox.py`
 
@@ -113,10 +113,6 @@
 - `Joint.set_joint_orient` — L324，54 行，控制流 4，Call 7
 - `Joint.set_label` — L575，64 行，控制流 2，Call 7
 - `Joint.tag` — L640，65 行，控制流 5，Call 13
-## `core/math_utils.py`
-
-- `_validate_point3` — L28，42 行，控制流 5，Call 11
-- `lerp_point3` — L274，45 行，控制流 1，Call 4
 ## `core/matrix_utils.py`
 
 - `get_matrix` — L39，48 行，控制流 5，Call 9
