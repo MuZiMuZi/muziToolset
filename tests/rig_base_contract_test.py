@@ -181,12 +181,12 @@ def run():
         print("[FAIL] 缺少三位 index 的名称被错误判定为有效。")
         return False
 
-    invalid_index_values = [
+    invalid_range_values = [
         0,
         1000,
     ]
 
-    for invalid_index in invalid_index_values:
+    for invalid_index in invalid_range_values:
         try:
             RigBase(
                 side="md",
@@ -197,7 +197,29 @@ def run():
             pass
         else:
             print(
-                "[FAIL] RigBase 接受了非法 Index：{}".format(
+                "[FAIL] RigBase 接受了越界 Index：{}".format(
+                    invalid_index
+                )
+            )
+            return False
+
+    invalid_type_values = [
+        True,
+        1.5,
+    ]
+
+    for invalid_index in invalid_type_values:
+        try:
+            RigBase(
+                side="md",
+                part="jaw",
+                index=invalid_index
+            )
+        except TypeError:
+            pass
+        else:
+            print(
+                "[FAIL] RigBase 接受了非整数 Index：{}".format(
                     invalid_index
                 )
             )
