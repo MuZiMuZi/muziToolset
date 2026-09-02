@@ -43,6 +43,20 @@ def get_matrix(matrix_plug):
     例如：
         node.worldMatrix[0]
         multMatrix1.matrixSum
+
+    Args:
+        matrix_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not matrix_plug:
         raise ValueError(
@@ -73,7 +87,17 @@ def get_matrix(matrix_plug):
 
 
 def matrix_to_list(matrix):
-    u"""将 MMatrix 转换为 16 个数值的普通 list。"""
+    u"""
+    将 MMatrix 转换为 16 个数值的普通 list。
+
+    Args:
+        matrix (list[float] | maya.api.OpenMaya.MMatrix):
+            用于 Transform、Constraint 或空间计算的 4x4 Matrix 数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     matrix_values = []
 
     for index in range(16):
@@ -94,6 +118,16 @@ def calculate_parent_offset_matrix(driver, driven):
 
     计算：
         drivenWorld * inverse(driverWorld)
+
+    Args:
+        driver (str):
+            作为驱动端的 Maya 节点名称。
+        driven (str):
+            作为被驱动端的 Maya 节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     scene_utils.validate_node(
         driver
@@ -127,7 +161,27 @@ def create_parent_matrix_constraint(
         maintain_offset=True,
         name=None
 ):
-    u"""使用 multMatrix + offsetParentMatrix 创建通用 Parent Matrix Network。"""
+    u"""
+    使用 multMatrix + offsetParentMatrix 创建通用 Parent Matrix Network。
+
+    Args:
+        driver (str):
+            作为驱动端的 Maya 节点名称。
+        driven (str):
+            作为被驱动端的 Maya 节点名称。
+        maintain_offset (bool):
+            是否在建立约束或矩阵关系时保持当前偏移。
+        name (str):
+            创建或查询时使用的节点名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     scene_utils.validate_node(
         driver
     )
@@ -240,6 +294,16 @@ def remove_parent_matrix_constraint(
 
     默认只断开连接，不删除来源节点。只有调用者明确确认来源节点属于当前
     Matrix Network 时，才应传入 ``delete_node=True``。
+
+    Args:
+        driven (str):
+            作为被驱动端的 Maya 节点名称。
+        delete_node (bool):
+            当前清理 / 重建流程是否执行 `delete_node` 对应的删除步骤。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
     """
     if not driven:
         return False

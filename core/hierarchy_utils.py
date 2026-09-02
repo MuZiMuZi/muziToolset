@@ -110,7 +110,7 @@ def get_dag_depth(node):
 
     Returns:
         int:
-            节点 Long Path 的 DAG 深度；直接位于 World 下的节点返回 1。
+        节点 Long Path 的 DAG 深度；直接位于 World 下的节点返回 1。
     """
     long_name = _get_dag_long_name(
         node
@@ -136,7 +136,7 @@ def get_parent(
 
     Returns:
         str | None:
-            直接 Parent 名称；节点位于 World 下时返回 None。
+        直接 Parent 名称；节点位于 World 下时返回 None。
     """
     long_name = _get_dag_long_name(
         node
@@ -172,7 +172,7 @@ def get_children(
 
     Returns:
         list[str]:
-            按 Maya DAG 查询结果顺序返回的直接 Child 列表；没有 Child 时返回空列表。
+        按 Maya DAG 查询结果顺序返回的直接 Child 列表；没有 Child 时返回空列表。
     """
     long_name = _get_dag_long_name(
         node
@@ -216,7 +216,7 @@ def get_descendants(
 
     Returns:
         list[str]:
-            由浅到深排列的 Descendant 列表；启用 ``include_root`` 时 Root 位于最前面。
+        由浅到深排列的 Descendant 列表；启用 ``include_root`` 时 Root 位于最前面。
     """
     root_long_name = _get_dag_long_name(
         node
@@ -295,11 +295,11 @@ def parent(
 
     Returns:
         str:
-            Parent 操作完成后 Child 最新的唯一 DAG Long Path。
+        Parent 操作完成后 Child 最新的唯一 DAG Long Path。
 
     Raises:
         RuntimeError:
-            Child / Parent 无效、不是 Transform / Joint，或尝试 Parent 到自身时抛出。
+        Child / Parent 无效、不是 Transform / Joint，或尝试 Parent 到自身时抛出。
     """
     child_long_name = _get_transform_long_name(
         child_node,
@@ -383,11 +383,11 @@ def ensure_group(
 
     Returns:
         str:
-            已确认存在且 Parent 正确的 Group 唯一 DAG Long Path。
+        已确认存在且 Parent 正确的 Group 唯一 DAG Long Path。
 
     Raises:
         RuntimeError:
-            Group 名称为空、现有名称被非 Transform 节点占用，或 Parent 无效时抛出。
+        Group 名称为空、现有名称被非 Transform 节点占用，或 Parent 无效时抛出。
     """
     if name is None:
         raise RuntimeError(
@@ -480,11 +480,11 @@ def insert_parent_group(
 
     Returns:
         str:
-            新建 Parent Group 的唯一 DAG Long Path。
+        新建 Parent Group 的唯一 DAG Long Path。
 
     Raises:
         RuntimeError:
-            输入节点无效、Group 名称为空，或 Group 名称已经被占用时抛出。
+        输入节点无效、Group 名称为空，或 Group 名称已经被占用时抛出。
     """
     node_long_name = _get_transform_long_name(
         node,

@@ -70,7 +70,19 @@ def _validate_point3(point, label):
 
 
 def add_vector3(vector_a, vector_b):
-    u"""返回两个三维 Vector 相加的结果。"""
+    u"""
+    返回两个三维 Vector 相加的结果。
+
+    Args:
+        vector_a (list[float] | tuple[float, float, float]):
+            向量计算中的第一个 XYZ Vector。
+        vector_b (list[float] | tuple[float, float, float]):
+            向量计算中的第二个 XYZ Vector。
+
+    Returns:
+        list:
+            方法执行后的结果数据。
+    """
     vector_a = _validate_point3(
         vector_a,
         "vector_a"
@@ -88,7 +100,19 @@ def add_vector3(vector_a, vector_b):
 
 
 def subtract_vector3(vector_a, vector_b):
-    u"""返回 vector_a - vector_b。"""
+    u"""
+    返回 vector_a - vector_b。
+
+    Args:
+        vector_a (list[float] | tuple[float, float, float]):
+            向量计算中的第一个 XYZ Vector。
+        vector_b (list[float] | tuple[float, float, float]):
+            向量计算中的第二个 XYZ Vector。
+
+    Returns:
+        list:
+            方法执行后的结果数据。
+    """
     vector_a = _validate_point3(
         vector_a,
         "vector_a"
@@ -106,7 +130,19 @@ def subtract_vector3(vector_a, vector_b):
 
 
 def multiply_vector3(vector, value):
-    u"""返回三维 Vector 与标量相乘的结果。"""
+    u"""
+    返回三维 Vector 与标量相乘的结果。
+
+    Args:
+        vector (list[float] | tuple[float, float, float]):
+            参与方向、长度或向量计算的 XYZ Vector。
+        value (float):
+            需要读取、写入或参与计算的数值。
+
+    Returns:
+        list:
+            方法执行后的结果数据。
+    """
     vector = _validate_point3(
         vector,
         "vector"
@@ -123,7 +159,17 @@ def multiply_vector3(vector, value):
 
 
 def length_vector3(vector):
-    u"""返回三维 Vector 的欧氏长度。"""
+    u"""
+    返回三维 Vector 的欧氏长度。
+
+    Args:
+        vector (list[float] | tuple[float, float, float]):
+            参与方向、长度或向量计算的 XYZ Vector。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     vector = _validate_point3(
         vector,
         "vector"
@@ -137,7 +183,19 @@ def length_vector3(vector):
 
 
 def normalize_vector3(vector, epsilon=0.000001):
-    u"""返回三维单位 Vector；长度接近零时返回 [0, 0, 0]。"""
+    u"""
+    返回三维单位 Vector；长度接近零时返回 [0, 0, 0]。
+
+    Args:
+        vector (list[float] | tuple[float, float, float]):
+            参与方向、长度或向量计算的 XYZ Vector。
+        epsilon (float):
+            当前 Maya / Rig 计算使用的 `epsilon` 数值参数。
+
+    Returns:
+        list:
+            方法执行后的结果数据。
+    """
     vector = _validate_point3(
         vector,
         "vector"
@@ -161,7 +219,19 @@ def normalize_vector3(vector, epsilon=0.000001):
 
 
 def dot_vector3(vector_a, vector_b):
-    u"""返回两个三维 Vector 的 Dot Product。"""
+    u"""
+    返回两个三维 Vector 的 Dot Product。
+
+    Args:
+        vector_a (list[float] | tuple[float, float, float]):
+            向量计算中的第一个 XYZ Vector。
+        vector_b (list[float] | tuple[float, float, float]):
+            向量计算中的第二个 XYZ Vector。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     vector_a = _validate_point3(
         vector_a,
         "vector_a"
@@ -179,7 +249,19 @@ def dot_vector3(vector_a, vector_b):
 
 
 def distance_between_points(point_a, point_b):
-    u"""返回两个三维 Point 之间的欧氏距离。"""
+    u"""
+    返回两个三维 Point 之间的欧氏距离。
+
+    Args:
+        point_a (object):
+            当前方法执行 Maya / Rig 操作时使用的 `point_a` 数据。
+        point_b (object):
+            当前方法执行 Maya / Rig 操作时使用的 `point_b` 数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     delta = subtract_vector3(
         point_b,
         point_a
@@ -194,7 +276,21 @@ def lerp_point3(
         end_point,
         ratio
 ):
-    u"""按 ratio 对两个三维 Point / Vector 做线性插值。"""
+    u"""
+    按 ratio 对两个三维 Point / Vector 做线性插值。
+
+    Args:
+        start_point (object):
+            当前方法执行 Maya / Rig 操作时使用的 `start_point` 数据。
+        end_point (object):
+            当前方法执行 Maya / Rig 操作时使用的 `end_point` 数据。
+        ratio (float):
+            Start 与 End 之间的插值比例，通常为 0.0～1.0。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     start_point = _validate_point3(
         start_point,
         "start_point"
@@ -223,7 +319,17 @@ def lerp_point3(
 
 
 def average_point3(points):
-    u"""返回一组三维 Point / Vector 的算术平均值；空输入返回 None。"""
+    u"""
+    返回一组三维 Point / Vector 的算术平均值；空输入返回 None。
+
+    Args:
+        points (object):
+            当前方法执行 Maya / Rig 操作时使用的 `points` 数据。
+
+    Returns:
+        list | None:
+            方法执行后的结果数据。
+    """
     if not points:
         return None
 

@@ -50,7 +50,21 @@ from . import transform_utils
 # =============================================================================
 
 def validate_joint_list(joints):
-    u"""验证并返回一份独立的 Joint 列表。"""
+    u"""
+    验证并返回一份独立的 Joint 列表。
+
+    Args:
+        joints (str | list[str]):
+            需要批量处理的 Maya Joint 节点或 Joint Chain。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if joints is None:
         joints = []
 
@@ -82,7 +96,19 @@ def validate_joint_list(joints):
 # =============================================================================
 
 def get_joint_path(start_joint, end_joint):
-    u"""返回 Start Joint 到指定 Descendant Joint 的有序路径；不连通时返回 None。"""
+    u"""
+    返回 Start Joint 到指定 Descendant Joint 的有序路径；不连通时返回 None。
+
+    Args:
+        start_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        end_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+
+    Returns:
+        object | list | None:
+            方法执行后的结果数据。
+    """
     joint_utils.Joint(
         start_joint
     )
@@ -141,7 +167,17 @@ def get_joint_path(start_joint, end_joint):
 
 
 def parent_joints_as_chain(joints):
-    u"""按照输入顺序把 Joint 组成父子链，并返回原顺序 Joint 列表。"""
+    u"""
+    按照输入顺序把 Joint 组成父子链，并返回原顺序 Joint 列表。
+
+    Args:
+        joints (str | list[str]):
+            需要批量处理的 Maya Joint 节点或 Joint Chain。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     joints = validate_joint_list(
         joints
     )
@@ -171,6 +207,24 @@ def create_joints_at_items(
     在明确给定的一组 Maya Object / Component 世界位置创建 Joint。
 
     Component 只提供位置；Transform / Joint 同时复制世界位置和旋转。
+
+    Args:
+        items (object):
+            当前方法执行 Maya / Rig 操作时使用的 `items` 数据。
+        name_prefix (str):
+            批量创建 Joint 时写入节点名称前部的 Prefix。
+        parent_chain (bool):
+            创建多个 Joint 时是否按输入顺序建立父子 Joint Chain。
+        radius (float):
+            创建节点或控制器使用的半径值。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if items is None:
         items = []
@@ -251,7 +305,17 @@ def create_joints_at_items(
 # =============================================================================
 
 def get_curve_joint_base_name(curve):
-    u"""根据 Curve Transform Short Name 生成默认 Joint Base Name。"""
+    u"""
+    根据 Curve Transform Short Name 生成默认 Joint Base Name。
+
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     curve_transform = curve_utils.get_curve_transform(
         curve
     )
@@ -285,7 +349,31 @@ def create_joints_on_curve_cvs(
         group_name=None,
         radius=None
 ):
-    u"""根据 Curve CV 世界位置创建 Joint，并可按顺序组成 Chain。"""
+    u"""
+    根据 Curve CV 世界位置创建 Joint，并可按顺序组成 Chain。
+
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+        joint_base_name (str):
+            `joint_base_name` 对应的 Maya 节点或资源名称。
+        parent_chain (bool):
+            创建多个 Joint 时是否按输入顺序建立父子 Joint Chain。
+        create_group (bool):
+            当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
+        group_name (str):
+            `group_name` 对应的 Maya 节点或资源名称。
+        radius (float):
+            创建节点或控制器使用的半径值。
+
+    Returns:
+        dict:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     curve_transform = curve_utils.get_curve_transform(
         curve
     )

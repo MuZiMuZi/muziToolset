@@ -107,7 +107,17 @@ class FaceBase(RigModuleBase):
             part=None,
             index=1
     ):
-        u"""初始化 Face Rig 公共配置和当前 Rig Object Identity。"""
+        u"""
+        初始化 Face Rig 公共配置和当前 Rig Object Identity。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            part (str):
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+            index (int):
+                目标元素或节点的序号。
+        """
         if side is None:
             side = config.face_side
 
@@ -160,7 +170,13 @@ class FaceBase(RigModuleBase):
     # =========================================================================
 
     def ensure_hierarchy(self):
-        u"""确保 Face Rig 基础 Group 存在，并修正到正式 Parent 层级。"""
+        u"""
+        确保 Face Rig 基础 Group 存在，并修正到正式 Parent 层级。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         face_master_group = hierarchy_utils.ensure_group(
             self.face_master_grp
         )
@@ -189,27 +205,65 @@ class FaceBase(RigModuleBase):
     # =========================================================================
 
     def ensure_config_node(self):
-        u"""确保 Face Config 存在。"""
+        u"""
+        确保 Face Config 存在。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         config_node = self.config_data.ensure()
         self.config_node = config_node
         return config_node
 
     def config_node_exists(self):
-        u"""检查 Face Config Network Node 是否有效。"""
+        u"""
+        检查 Face Config Network Node 是否有效。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return self.config_data.exists()
 
     def get_config_attr(self):
-        u"""返回 Config 的底层 Attr 对象。"""
+        u"""
+        返回 Config 的底层 Attr 对象。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return self.config_data.get_attr()
 
     def get_config_message(self, attr_name):
-        u"""读取 Face Config 中保存的 Maya 节点 Message 引用。"""
+        u"""
+        读取 Face Config 中保存的 Maya 节点 Message 引用。
+
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return self.config_data.get_message(
             attr_name
         )
 
     def get_config_value(self, attr_name):
-        u"""读取 Face Config 中保存的普通属性值。"""
+        u"""
+        读取 Face Config 中保存的普通属性值。
+
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return self.config_data.get_value(
             attr_name
         )
@@ -220,7 +274,21 @@ class FaceBase(RigModuleBase):
             force=True,
             clear_empty=True
     ):
-        u"""批量保存 Maya 节点引用到 Face Config。"""
+        u"""
+        批量保存 Maya 节点引用到 Face Config。
+
+        Args:
+            attrs_dict (dict):
+                Attribute 名称到 Value / Config 数据的批量映射。
+            force (bool):
+                是否强制覆盖已有连接、状态或结果。
+            clear_empty (bool):
+                批量保存 Message / Config 时，空值是否主动断开旧连接。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         result = self.config_data.set_messages(
             attrs_dict=attrs_dict,
             force=force,
@@ -237,7 +305,23 @@ class FaceBase(RigModuleBase):
             lock=False,
             hide=False
     ):
-        u"""批量保存普通数值 / 字符串配置到 Face Config。"""
+        u"""
+        批量保存普通数值 / 字符串配置到 Face Config。
+
+        Args:
+            attrs_dict (dict):
+                Attribute 名称到 Value / Config 数据的批量映射。
+            attr_types (dict | None):
+                Attribute 名称到 Maya Attribute Type 的映射；未指定的属性由调用方默认规则处理。
+            lock (bool):
+                是否 Lock 对应 Maya Channel / Attribute。
+            hide (bool):
+                是否从 Channel Box 隐藏对应 Maya Attribute。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         result = self.config_data.set_values(
             attrs_dict=attrs_dict,
             attr_types=attr_types,
@@ -253,7 +337,13 @@ class FaceBase(RigModuleBase):
     # =========================================================================
 
     def ensure_config_layout(self):
-        u"""创建当前正式 Face Config Workflow / Step 分隔属性。"""
+        u"""
+        创建当前正式 Face Config Workflow / Step 分隔属性。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         self.ensure_config_node()
         config_attr = self.get_config_attr()
 
@@ -306,7 +396,13 @@ class FaceBase(RigModuleBase):
         return True
 
     def get_config_attribute_order(self):
-        u"""返回 Face Config 在 Attribute Editor 中推荐的动态属性顺序。"""
+        u"""
+        返回 Face Config 在 Attribute Editor 中推荐的动态属性顺序。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         attr_names = [
             self.workflow_section_attr_name,
             self.current_step_attr_name,
@@ -337,7 +433,13 @@ class FaceBase(RigModuleBase):
         return attr_names
 
     def organize_config_attributes(self):
-        u"""按 Workflow Step 重新排序 Config Node 的 User Defined Attribute。"""
+        u"""
+        按 Workflow Step 重新排序 Config Node 的 User Defined Attribute。
+
+        Returns:
+            object | list:
+                方法执行后的结果数据。
+        """
         if not self.config_node_exists():
             return []
 
@@ -368,7 +470,13 @@ class FaceBase(RigModuleBase):
         return reordered_attrs
 
     def get_current_step_value(self):
-        u"""读取当前 Face Workflow Step；没有 Config 时从 Step 01 开始。"""
+        u"""
+        读取当前 Face Workflow Step；没有 Config 时从 Step 01 开始。
+
+        Returns:
+            object | int:
+                方法执行后的结果数据。
+        """
         if not self.config_node_exists():
             return 1
 
@@ -388,7 +496,23 @@ class FaceBase(RigModuleBase):
         return current_step_value
 
     def set_current_step_value(self, step_value):
-        u"""把当前 Face Workflow Step 保存到 Config Node。"""
+        u"""
+        把当前 Face Workflow Step 保存到 Config Node。
+
+        Args:
+            step_value (int):
+                Face Wizard / Build Pipeline 当前 Step 编号。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if not isinstance(step_value, int):
             raise TypeError(
                 u"Current Face Step 必须是整数。"
@@ -421,7 +545,13 @@ class FaceBase(RigModuleBase):
     # =========================================================================
 
     def refresh_setup_data(self):
-        u"""从 Config Node 重新读取 Step 01 的最新数据。"""
+        u"""
+        从 Config Node 重新读取 Step 01 的最新数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         message_data = self.config_data.get_messages(
             self.setup_message_attr_names
         )
@@ -449,7 +579,17 @@ class FaceBase(RigModuleBase):
         )
 
     def get_setup_data(self, refresh=False):
-        u"""返回 Step 01 公共输入数据字典。"""
+        u"""
+        返回 Step 01 公共输入数据字典。
+
+        Args:
+            refresh (bool):
+                读取数据前是否先从 Maya Scene / Config 重新刷新缓存。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         if refresh:
             self.refresh_setup_data()
 
@@ -475,7 +615,21 @@ class FaceBase(RigModuleBase):
             self,
             require_mouth_jnt_number=True
     ):
-        u"""检查后续 Face Step 所依赖的 Step 01 公共数据。"""
+        u"""
+        检查后续 Face Step 所依赖的 Step 01 公共数据。
+
+        Args:
+            require_mouth_jnt_number (bool):
+                当前构建、采样或查询过程使用的元素数量。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if not self.config_node_exists():
             raise RuntimeError(
                 u"没有找到 Face Config，请先完成 Face Setup。"
@@ -525,7 +679,23 @@ class FaceBase(RigModuleBase):
 
     @staticmethod
     def get_step_completed_attr_name(step_value):
-        u"""根据 Step 编号生成 Config 完成状态属性名称。"""
+        u"""
+        根据 Step 编号生成 Config 完成状态属性名称。
+
+        Args:
+            step_value (int):
+                Face Wizard / Build Pipeline 当前 Step 编号。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if not isinstance(step_value, int):
             raise TypeError(
                 u"Step 编号必须是整数。"
@@ -541,7 +711,23 @@ class FaceBase(RigModuleBase):
         )
 
     def resolve_step_value(self, step_value=None):
-        u"""获取当前操作使用的 Step 编号。"""
+        u"""
+        获取当前操作使用的 Step 编号。
+
+        Args:
+            step_value (int):
+                Face Wizard / Build Pipeline 当前 Step 编号。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if step_value is None:
             step_value = self.step_value
 
@@ -562,7 +748,19 @@ class FaceBase(RigModuleBase):
             step_value=None,
             completed=True
     ):
-        u"""写入某个 Face Step 的完成状态。"""
+        u"""
+        写入某个 Face Step 的完成状态。
+
+        Args:
+            step_value (int):
+                Face Wizard / Build Pipeline 当前 Step 编号。
+            completed (bool):
+                当前 Face Wizard / Build Step 是否标记为已完成。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         step_value = self.resolve_step_value(
             step_value
         )
@@ -584,7 +782,17 @@ class FaceBase(RigModuleBase):
         return bool(completed)
 
     def is_step_completed(self, step_value=None):
-        u"""读取某个 Face Step 是否已经完成。"""
+        u"""
+        读取某个 Face Step 是否已经完成。
+
+        Args:
+            step_value (int):
+                Face Wizard / Build Pipeline 当前 Step 编号。
+
+        Returns:
+            object | bool:
+                方法执行后的结果数据。
+        """
         step_value = self.resolve_step_value(
             step_value
         )
@@ -605,7 +813,23 @@ class FaceBase(RigModuleBase):
             step_value=None,
             last_step=4
     ):
-        u"""将当前 Step 之后的完成状态全部设为 False。"""
+        u"""
+        将当前 Step 之后的完成状态全部设为 False。
+
+        Args:
+            step_value (int):
+                Face Wizard / Build Pipeline 当前 Step 编号。
+            last_step (int):
+                Step 状态查询或失效处理时的最后一个 Step 编号。
+
+        Returns:
+            object | list:
+                方法执行后的结果数据。
+
+        Raises:
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         step_value = self.resolve_step_value(
             step_value
         )
@@ -634,7 +858,21 @@ class FaceBase(RigModuleBase):
         return invalidated_steps
 
     def get_step_status(self, last_step=4):
-        u"""返回 Face Wizard 各 Step 的完成状态。"""
+        u"""
+        返回 Face Wizard 各 Step 的完成状态。
+
+        Args:
+            last_step (int):
+                Step 状态查询或失效处理时的最后一个 Step 编号。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if not isinstance(last_step, int):
             raise TypeError(
                 u"last_step 必须是整数。"

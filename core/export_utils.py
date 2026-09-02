@@ -38,7 +38,17 @@ from . import scene_utils
 
 
 def ensure_fbx_plugin_loaded():
-    u"""确保 Maya FBX Plugin ``fbxmaya`` 已加载。"""
+    u"""
+    确保 Maya FBX Plugin ``fbxmaya`` 已加载。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     plugin_name = "fbxmaya"
 
     if cmds.pluginInfo(
@@ -77,7 +87,11 @@ def export_fbx(
 
     Returns:
         str:
-            规范化后的最终输出路径。
+        规范化后的最终输出路径。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
     if not objects:
         raise ValueError(

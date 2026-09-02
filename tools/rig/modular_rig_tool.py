@@ -18,7 +18,13 @@ TOOL_MODE = "ui"
 
 
 def main():
-    u"""显示并返回 Modular Rig 主窗口。"""
+    u"""
+    显示并返回 Modular Rig 主窗口。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.rig.modular_rig_tool",
         rig_system.create_ui

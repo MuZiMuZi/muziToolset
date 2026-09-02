@@ -436,7 +436,7 @@ class ConstraintTool(QWidget):
 
         Returns:
             list[str]:
-                真正向这些对象输出驱动结果的 Constraint 节点。
+            真正向这些对象输出驱动结果的 Constraint 节点。
         """
         return constraint_utils.get_constraints(
             selected_objects

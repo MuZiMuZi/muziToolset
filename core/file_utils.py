@@ -148,7 +148,7 @@ def normalize_extensions(extensions):
 
     Example:
         ["MA", ".mb", "json"]
-                                                                        -> [".ma", ".mb", ".json"]
+                                                                            -> [".ma", ".mb", ".json"]
     """
     # 步骤 1：None 表示不过滤扩展名。
     if extensions is None:

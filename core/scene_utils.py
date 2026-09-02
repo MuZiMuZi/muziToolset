@@ -65,7 +65,7 @@ def open_undo_chunk(chunk_name=None):
 
     Returns:
         bool:
-            Undo Chunk 成功打开后返回 True。
+        Undo Chunk 成功打开后返回 True。
     """
     kwargs = {
         "openChunk": True,
@@ -86,7 +86,7 @@ def close_undo_chunk():
 
     Returns:
         bool:
-            Undo Chunk 成功关闭后返回 True。
+        Undo Chunk 成功关闭后返回 True。
     """
     cmds.undoInfo(
         closeChunk=True
@@ -104,7 +104,7 @@ def undo_chunk(function):
 
     Returns:
         callable:
-            保留原函数元数据的 Undo Wrapper。
+        保留原函数元数据的 Undo Wrapper。
     """
 
     @wraps(function)
@@ -143,11 +143,11 @@ def validate_node(node, label=None):
 
     Returns:
         bool:
-            节点存在且输入不是 Plug / Component 时返回 True。
+        节点存在且输入不是 Plug / Component 时返回 True。
 
     Raises:
         RuntimeError:
-            名称为空、输入为 Plug / Component，或 Maya Node 不存在时抛出。
+        名称为空、输入为 Plug / Component，或 Maya Node 不存在时抛出。
     """
     display_label = label or u"Maya 节点"
 
@@ -198,11 +198,11 @@ def ensure_nodes_available(node_names, label=u"待创建节点"):
 
     Returns:
         bool:
-            所有有效名称都未被当前 Scene 占用时返回 True。
+        所有有效名称都未被当前 Scene 占用时返回 True。
 
     Raises:
         RuntimeError:
-            任意名称已经对应现有 Maya Node 时抛出，并列出全部冲突名称。
+        任意名称已经对应现有 Maya Node 时抛出，并列出全部冲突名称。
     """
     if node_names is None:
         return True
@@ -244,11 +244,11 @@ def get_long_name(node):
 
     Returns:
         str:
-            DAG 节点的唯一 Long Path，或非 DAG 节点的 Maya 节点名。
+        DAG 节点的唯一 Long Path，或非 DAG 节点的 Maya 节点名。
 
     Raises:
         RuntimeError:
-            节点不存在，或输入短名称对应多个 DAG 节点时抛出。
+        节点不存在，或输入短名称对应多个 DAG 节点时抛出。
     """
     validate_node(
         node
@@ -296,13 +296,13 @@ def create_node(
 
     Returns:
         str:
-            Maya 创建后返回的节点名称。
+        Maya 创建后返回的节点名称。
 
     Raises:
         ValueError:
-            ``node_type`` 或 ``name`` 为空时抛出。
+        ``node_type`` 或 ``name`` 为空时抛出。
         RuntimeError:
-            同名节点已经存在，或指定 Parent 不存在时抛出。
+        同名节点已经存在，或指定 Parent 不存在时抛出。
     """
     if not node_type:
         raise ValueError(
@@ -352,11 +352,11 @@ def get_nodes_by_type(
 
     Returns:
         list[str]:
-            指定类型的 Maya Node 列表；没有匹配节点时返回空列表。
+        指定类型的 Maya Node 列表；没有匹配节点时返回空列表。
 
     Raises:
         ValueError:
-            ``node_type`` 为空时抛出。
+        ``node_type`` 为空时抛出。
     """
     if not node_type:
         raise ValueError(
@@ -399,7 +399,7 @@ def get_selected_nodes(
 
     Returns:
         list[str]:
-            当前 Selection；没有选择或过滤后没有匹配项时返回空列表。
+        当前 Selection；没有选择或过滤后没有匹配项时返回空列表。
     """
     selected_nodes = cmds.ls(
         selection=True,
@@ -458,13 +458,13 @@ def ensure_object_set(
 
     Returns:
         str:
-            已确认存在并完成成员维护的 Object Set 名称。
+        已确认存在并完成成员维护的 Object Set 名称。
 
     Raises:
         ValueError:
-            ``set_name`` 为空时抛出。
+        ``set_name`` 为空时抛出。
         RuntimeError:
-            Set 名称或 Parent Set 名称被非 Object Set 节点占用，或成员节点无效时抛出。
+        Set 名称或 Parent Set 名称被非 Object Set 节点占用，或成员节点无效时抛出。
     """
     if not set_name:
         raise ValueError(
@@ -546,13 +546,13 @@ def create_native_event_callback(
 
     Returns:
         callable:
-            无参数删除函数；调用后移除本次创建的 Maya Callback。
+        无参数删除函数；调用后移除本次创建的 Maya Callback。
 
     Raises:
         ValueError:
-            ``event_name`` 为空时抛出。
+        ``event_name`` 为空时抛出。
         TypeError:
-            ``callback`` 不是可调用对象时抛出。
+        ``callback`` 不是可调用对象时抛出。
     """
     if not event_name:
         raise ValueError(
@@ -587,7 +587,7 @@ def get_current_scene_path():
 
     Returns:
         str:
-            当前 Scene 的规范化文件路径；Untitled Scene 返回空字符串。
+        当前 Scene 的规范化文件路径；Untitled Scene 返回空字符串。
     """
     scene_path = cmds.file(
         query=True,
@@ -608,7 +608,7 @@ def is_scene_modified():
 
     Returns:
         bool:
-            当前 Scene 有未保存修改时返回 True，否则返回 False。
+        当前 Scene 有未保存修改时返回 True，否则返回 False。
     """
     return bool(
         cmds.file(
@@ -628,13 +628,13 @@ def validate_scene_file(file_path):
 
     Returns:
         str:
-            经过 ``file_utils.normalize_path()`` 处理后的现有文件路径。
+        经过 ``file_utils.normalize_path()`` 处理后的现有文件路径。
 
     Raises:
         ValueError:
-            ``file_path`` 为空时抛出。
+        ``file_path`` 为空时抛出。
         RuntimeError:
-            规范化后的文件路径不存在时抛出。
+        规范化后的文件路径不存在时抛出。
     """
     normalized_path = file_utils.normalize_path(
         file_path
@@ -677,11 +677,11 @@ def open_scene(
 
     Returns:
         str:
-            成功打开后的规范化 Scene 文件路径。
+        成功打开后的规范化 Scene 文件路径。
 
     Raises:
         RuntimeError:
-            文件不存在，或当前 Scene 有未保存修改且 ``force=False`` 时抛出。
+        文件不存在，或当前 Scene 有未保存修改且 ``force=False`` 时抛出。
     """
     normalized_path = validate_scene_file(
         file_path
@@ -717,11 +717,11 @@ def import_scene(
 
     Returns:
         list[str]:
-            本次 Import 新创建的 Maya Node；没有新节点时返回空列表。
+        本次 Import 新创建的 Maya Node；没有新节点时返回空列表。
 
     Raises:
         RuntimeError:
-            输入文件不存在时抛出。
+        输入文件不存在时抛出。
     """
     normalized_path = validate_scene_file(
         file_path
@@ -766,11 +766,11 @@ def reference_scene(
 
     Returns:
         str:
-            Maya 为本次 Reference 创建的 Reference Node 名称。
+        Maya 为本次 Reference 创建的 Reference Node 名称。
 
     Raises:
         RuntimeError:
-            输入文件不存在时抛出。
+        输入文件不存在时抛出。
     """
     normalized_path = validate_scene_file(
         file_path

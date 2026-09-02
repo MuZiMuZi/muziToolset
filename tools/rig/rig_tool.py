@@ -92,7 +92,7 @@ def get_pole_vector_position(
 
     Returns:
         list:
-            推荐的 Pole Vector 世界坐标 [x, y, z]。
+        推荐的 Pole Vector 世界坐标 [x, y, z]。
     """
     start_position = transform_utils.get_world_translation(
         start_joint
@@ -182,11 +182,11 @@ def create_ik_rig(start_joint, end_joint):
 
     Returns:
         dict:
-            返回 Rig Group、IK Handle、Effector、End Controller 和可选 Pole Controller。
+        返回 Rig Group、IK Handle、Effector、End Controller 和可选 Pole Controller。
 
     Raises:
         RuntimeError:
-            Joint 输入无效、两端不属于同一子 Joint Chain 或 Chain 长度不足时抛出。
+        Joint 输入无效、两端不属于同一子 Joint Chain 或 Chain 长度不足时抛出。
     """
     joint_utils.Joint(
         start_joint
@@ -412,7 +412,7 @@ def find_rig_root(node):
 
     Returns:
         str | None:
-            找到时返回 Rig Module Root；没有标记节点时返回 None。
+        找到时返回 Rig Module Root；没有标记节点时返回 None。
     """
     try:
         current_node = scene_utils.get_long_name(
@@ -445,7 +445,7 @@ def get_duplicate_map():
 
     Returns:
         dict:
-            Key 为重复 Short Name，Value 为对应的 Long DAG Path 列表。
+        Key 为重复 Short Name，Value 为对应的 Long DAG Path 列表。
     """
     nodes = cmds.ls(
         long=True,
@@ -509,7 +509,9 @@ class RigTool(QWidget):
         )
 
     def create_widgets(self):
-        u"""创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(
             u"Rig 工具"
         )
@@ -554,7 +556,9 @@ class RigTool(QWidget):
         self.rename_duplicates_button = QPushButton(u"重命名重复节点")
 
     def create_layouts(self):
-        u"""创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
         root_layout = QVBoxLayout(
             self
         )
@@ -645,7 +649,9 @@ class RigTool(QWidget):
         root_layout.addWidget(scroll_area, 1)
 
     def create_connections(self):
-        u"""连接界面信号。"""
+        u"""
+        连接界面信号。
+        """
         self.create_fk_button.clicked.connect(self.open_fk_tool)
         self.open_control_creator_button.clicked.connect(self.open_control_creator)
         self.open_joint_tool_button.clicked.connect(self.open_joint_tool)
@@ -675,7 +681,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                Window Manager 返回的 Tool 执行结果或窗口对象。
+            Window Manager 返回的 Tool 执行结果或窗口对象。
         """
         return window_manager.show_tool(
             "rig/{}".format(tool_key),
@@ -688,7 +694,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                Window Manager 返回的 FK Controller Tool 窗口或执行结果。
+            Window Manager 返回的 FK Controller Tool 窗口或执行结果。
         """
         return self.open_tool(
             "fk_controller",
@@ -701,7 +707,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                Window Manager 返回的 Controller Creator 窗口或执行结果。
+            Window Manager 返回的 Controller Creator 窗口或执行结果。
         """
         return self.open_tool(
             "controller_creator",
@@ -714,7 +720,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                Window Manager 返回的 Joint Tool 窗口或执行结果。
+            Window Manager 返回的 Joint Tool 窗口或执行结果。
         """
         return self.open_tool(
             "joint_tool",
@@ -727,7 +733,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                Window Manager 返回的 Skirt Rig Tool 窗口或执行结果。
+            Window Manager 返回的 Skirt Rig Tool 窗口或执行结果。
         """
         return self.open_tool(
             "skirt_rig",
@@ -735,7 +741,9 @@ class RigTool(QWidget):
         )
 
     def create_ik(self):
-        u"""根据当前 Picker 创建基础 RP IK Rig。"""
+        u"""
+        根据当前 Picker 创建基础 RP IK Rig。
+        """
         start_joint = self.ik_start_picker.get_value()
         end_joint = self.ik_end_picker.get_value()
 
@@ -761,7 +769,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def delete_selected_rig():
-        u"""删除选择节点所属的 Muzi Rig Module。"""
+        u"""
+        删除选择节点所属的 Muzi Rig Module。
+        """
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
@@ -795,7 +805,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def clear_keys():
-        u"""删除选择对象关键帧；没有选择时清理场景 AnimCurve。"""
+        u"""
+        删除选择对象关键帧；没有选择时清理场景 AnimCurve。
+        """
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
@@ -812,7 +824,9 @@ class RigTool(QWidget):
     @staticmethod
     @scene_utils.undo_chunk
     def reset_attributes():
-        u"""把选择对象可设置的 Keyable Attribute 恢复 Attribute Default。"""
+        u"""
+        把选择对象可设置的 Keyable Attribute 恢复 Attribute Default。
+        """
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
@@ -872,7 +886,9 @@ class RigTool(QWidget):
     @staticmethod
     @scene_utils.undo_chunk
     def batch_parent_constraint():
-        u"""按 driver/driven 成对顺序批量创建 Parent Constraint。"""
+        u"""
+        按 driver/driven 成对顺序批量创建 Parent Constraint。
+        """
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
@@ -908,7 +924,9 @@ class RigTool(QWidget):
     @staticmethod
     @scene_utils.undo_chunk
     def create_default_groups():
-        u"""创建基础 Rig 层级。"""
+        u"""
+        创建基础 Rig 层级。
+        """
         group_names = [
             "rig_grp",
             "geo_grp",
@@ -964,7 +982,9 @@ class RigTool(QWidget):
     @staticmethod
     @scene_utils.undo_chunk
     def add_zero_groups():
-        u"""为选择对象创建匹配 Transform 的 Zero Group。"""
+        u"""
+        为选择对象创建匹配 Transform 的 Zero Group。
+        """
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
@@ -1029,7 +1049,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def select_children():
-        u"""选择当前对象全部后代 DAG 节点。"""
+        u"""
+        选择当前对象全部后代 DAG 节点。
+        """
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
@@ -1065,7 +1087,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def snap_last_to_center():
-        u"""把最后选择对象吸附到前面参考项平均位置和旋转。"""
+        u"""
+        把最后选择对象吸附到前面参考项平均位置和旋转。
+        """
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
@@ -1093,7 +1117,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def print_duplicate_nodes():
-        u"""打印重名 DAG 节点。"""
+        u"""
+        打印重名 DAG 节点。
+        """
         duplicates = get_duplicate_map()
 
         if not duplicates:
@@ -1132,7 +1158,9 @@ class RigTool(QWidget):
     @staticmethod
     @scene_utils.undo_chunk
     def rename_duplicate_nodes():
-        u"""给重名 DAG 节点追加递增编号。"""
+        u"""
+        给重名 DAG 节点追加递增编号。
+        """
         duplicates = get_duplicate_map()
 
         if not duplicates:
@@ -1182,7 +1210,7 @@ def main():
 
     Returns:
         QWidget:
-            当前显示的 Rig Tool 窗口实例。
+        当前显示的 Rig Tool 窗口实例。
     """
     return window_utils.show_window(
         "tools.rig.rig_tool",

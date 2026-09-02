@@ -95,7 +95,9 @@ class FaceGuide(face_base.FaceBase):
     ]
 
     def __init__(self):
-        u"""初始化 Face Guide Step。"""
+        u"""
+        初始化 Face Guide Step。
+        """
         super(FaceGuide, self).__init__()
 
         self.step_value = 2
@@ -114,7 +116,17 @@ class FaceGuide(face_base.FaceBase):
     # =========================================================================
 
     def collect_inputs(self):
-        u"""检查 Step 01 和当前 Guide 是否可以正式提交。"""
+        u"""
+        检查 Step 01 和当前 Guide 是否可以正式提交。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         self.validate_setup()
         self.refresh_guide_handles()
 
@@ -126,7 +138,13 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def prepare_data(self):
-        u"""确保 Face Hierarchy 和 Config 可以保存 Step 02。"""
+        u"""
+        确保 Face Hierarchy 和 Config 可以保存 Step 02。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         self.ensure_hierarchy()
 
         self.step_config_attr_names[2] = list(
@@ -137,7 +155,17 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def process_data(self):
-        u"""执行完整 Guide Validation。"""
+        u"""
+        执行完整 Guide Validation。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         self.validation_result = self.validate_guides()
 
         if self.validation_result["valid"]:
@@ -155,7 +183,13 @@ class FaceGuide(face_base.FaceBase):
         )
 
     def finalize_step(self):
-        u"""保存 Guide，并把 Step 02 正式标记为完成。"""
+        u"""
+        保存 Guide，并把 Step 02 正式标记为完成。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         self.save_guide_config()
 
         self.set_step_completed(
@@ -173,25 +207,57 @@ class FaceGuide(face_base.FaceBase):
     # =========================================================================
 
     def validate_setup(self):
-        u"""检查 Step 02 所依赖的 Step 01 数据。"""
+        u"""
+        检查 Step 02 所依赖的 Step 01 数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return self.validate_setup_config(
             require_mouth_jnt_number=True
         )
 
     def get_guide_template_path(self):
-        u"""返回 Face Guide Template 路径。"""
+        u"""
+        返回 Face Guide Template 路径。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return os.path.normpath(
             self.guide_template_path
         )
 
     def validate_guide_template_file(self):
-        u"""检查 Face Guide Template 文件是否存在。"""
+        u"""
+        检查 Face Guide Template 文件是否存在。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return scene_utils.validate_scene_file(
             self.get_guide_template_path()
         )
 
     def get_template_locator_names(self, refresh=False):
-        u"""从 face_guide.ma 读取全部标准 Locator 名称。"""
+        u"""
+        从 face_guide.ma 读取全部标准 Locator 名称。
+
+        Args:
+            refresh (bool):
+                读取数据前是否先从 Maya Scene / Config 重新刷新缓存。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if self.template_locator_names is not None:
             if not refresh:
                 return list(
@@ -232,7 +298,13 @@ class FaceGuide(face_base.FaceBase):
         )
 
     def get_temporary_guide_name(self):
-        u"""返回一个未被占用的临时 Guide Container 名称。"""
+        u"""
+        返回一个未被占用的临时 Guide Container 名称。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return self.create_unique_name(
             type="grp",
             side="md",
@@ -241,7 +313,21 @@ class FaceGuide(face_base.FaceBase):
         )
 
     def get_imported_template_root(self, imported_nodes):
-        u"""从本次导入的新节点中找到唯一 Face Guide Root。"""
+        u"""
+        从本次导入的新节点中找到唯一 Face Guide Root。
+
+        Args:
+            imported_nodes (list[str]):
+                本次导入 face_guide.ma 后 Maya 返回的新节点列表。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         imported_transforms = cmds.ls(
             imported_nodes,
             type="transform",
@@ -282,7 +368,13 @@ class FaceGuide(face_base.FaceBase):
         return candidates[0]
 
     def clear_guide_config(self):
-        u"""清除 Config 中保存的 Guide Message。"""
+        u"""
+        清除 Config 中保存的 Guide Message。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         if not self.config_node_exists():
             return False
 
@@ -297,7 +389,13 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def remove_guide_content(self):
-        u"""删除 Face Guide Root 下的模板内容，但保留 Root Container。"""
+        u"""
+        删除 Face Guide Root 下的模板内容，但保留 Root Container。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         if not cmds.objExists(self.face_guide_grp):
             self.ensure_hierarchy()
 
@@ -319,7 +417,17 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def build_guide(self):
-        u"""导入或复用可编辑的 Face Guide Template。"""
+        u"""
+        导入或复用可编辑的 Face Guide Template。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         self.validate_setup()
         self.ensure_hierarchy()
         self.ensure_config_node()
@@ -422,7 +530,13 @@ class FaceGuide(face_base.FaceBase):
         }
 
     def capture_guide_state(self):
-        u"""记录当前仍存在的 Move Ctrl 和 Locator 世界矩阵。"""
+        u"""
+        记录当前仍存在的 Move Ctrl 和 Locator 世界矩阵。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         state = {
             "move_ctrl_matrix": None,
             "locators": {},
@@ -453,7 +567,19 @@ class FaceGuide(face_base.FaceBase):
             node,
             matrix_values
     ):
-        u"""临时解锁 Transform Channel，写入 World Matrix 后恢复 Lock。"""
+        u"""
+        临时解锁 Transform Channel，写入 World Matrix 后恢复 Lock。
+
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            matrix_values (object):
+                当前方法执行 Maya / Rig 操作时使用的 `matrix_values` 数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         transform_attributes = [
             "translateX",
             "translateY",
@@ -504,7 +630,17 @@ class FaceGuide(face_base.FaceBase):
         return node
 
     def restore_guide_state(self, state):
-        u"""恢复重新导入前仍存在的 Locator 位置。"""
+        u"""
+        恢复重新导入前仍存在的 Locator 位置。
+
+        Args:
+            state (object):
+                当前方法执行 Maya / Rig 操作时使用的 `state` 数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         restored_locators = []
         self.refresh_guide_handles()
 
@@ -545,7 +681,13 @@ class FaceGuide(face_base.FaceBase):
 
     @scene_utils.undo_chunk
     def reimport_guide(self):
-        u"""重新导入完整模板，同时保留当前仍存在 Locator 的位置。"""
+        u"""
+        重新导入完整模板，同时保留当前仍存在 Locator 的位置。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+        """
         self.validate_setup()
 
         state = self.capture_guide_state()
@@ -574,7 +716,17 @@ class FaceGuide(face_base.FaceBase):
 
     @staticmethod
     def get_locator_shapes(locator):
-        u"""获取 Locator Transform 下全部有效 Locator Shape。"""
+        u"""
+        获取 Locator Transform 下全部有效 Locator Shape。
+
+        Args:
+            locator (str):
+                Face Guide 系统中的 Locator Transform。
+
+        Returns:
+            object | list:
+                方法执行后的结果数据。
+        """
         if not locator:
             return []
 
@@ -600,7 +752,21 @@ class FaceGuide(face_base.FaceBase):
             attribute,
             value
     ):
-        u"""设置 Attribute，并恢复原来的 Lock 状态。"""
+        u"""
+        设置 Attribute，并恢复原来的 Lock 状态。
+
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            attribute (str):
+                Maya Attribute 或完整 Plug 名称。
+            value (float):
+                需要读取、写入或参与计算的数值。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         plug = "{}.{}".format(
             node,
             attribute
@@ -635,7 +801,13 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def refresh_guide_handles(self):
-        u"""刷新当前场景中的 Guide Root 和 Face Move Ctrl。"""
+        u"""
+        刷新当前场景中的 Guide Root 和 Face Move Ctrl。
+
+        Returns:
+            object | bool:
+                方法执行后的结果数据。
+        """
         self.guide_root = None
         self.guide_move_ctrl = None
 
@@ -653,7 +825,13 @@ class FaceGuide(face_base.FaceBase):
         )
 
     def guide_exists(self):
-        u"""检查正式 Guide 内容是否已经加载。"""
+        u"""
+        检查正式 Guide 内容是否已经加载。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         self.refresh_guide_handles()
 
         if not self.guide_root:
@@ -669,7 +847,23 @@ class FaceGuide(face_base.FaceBase):
             short_name,
             required=False
     ):
-        u"""在正式 Face Guide 层级中按 Short Name 查找 Transform。"""
+        u"""
+        在正式 Face Guide 层级中按 Short Name 查找 Transform。
+
+        Args:
+            short_name (str):
+                `short_name` 对应的 Maya 节点或资源名称。
+            required (bool):
+                目标不存在或数据缺失时是否直接抛出异常。
+
+        Returns:
+            None | object:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if not short_name:
             if required:
                 raise RuntimeError(
@@ -732,7 +926,13 @@ class FaceGuide(face_base.FaceBase):
         return None
 
     def get_guide_locators(self):
-        u"""获取正式 Guide 层级中的全部 Locator Transform。"""
+        u"""
+        获取正式 Guide 层级中的全部 Locator Transform。
+
+        Returns:
+            object | list:
+                方法执行后的结果数据。
+        """
         if not cmds.objExists(self.face_guide_grp):
             return []
 
@@ -771,7 +971,19 @@ class FaceGuide(face_base.FaceBase):
             guide_names,
             required=True
     ):
-        u"""按输入名称顺序解析 Guide Transform。"""
+        u"""
+        按输入名称顺序解析 Guide Transform。
+
+        Args:
+            guide_names (object):
+                当前方法执行 Maya / Rig 操作时使用的 `guide_names` 数据。
+            required (bool):
+                目标不存在或数据缺失时是否直接抛出异常。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         guides = []
 
         for guide_name in guide_names:
@@ -793,7 +1005,27 @@ class FaceGuide(face_base.FaceBase):
             side=None,
             required=False
     ):
-        u"""按标准名称中的 Token 获取某个 Face 部位 Guide。"""
+        u"""
+        按标准名称中的 Token 获取某个 Face 部位 Guide。
+
+        Args:
+            part (str):
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            required (bool):
+                目标不存在或数据缺失时是否直接抛出异常。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if not part:
             raise ValueError(
                 u"part 不能为空。"
@@ -843,7 +1075,17 @@ class FaceGuide(face_base.FaceBase):
         return guides
 
     def get_guide_positions(self, guides):
-        u"""按输入顺序返回多个 Guide 的世界坐标。"""
+        u"""
+        按输入顺序返回多个 Guide 的世界坐标。
+
+        Args:
+            guides (str | list[str]):
+                需要按顺序查询或传递给 Builder 的 Guide Transform / Locator 列表。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         positions = []
 
         for guide in guides:
@@ -875,7 +1117,17 @@ class FaceGuide(face_base.FaceBase):
         )
 
     def get_lip_guides(self, required=True):
-        u"""返回上下嘴唇和嘴角的固定有序 Guide。"""
+        u"""
+        返回上下嘴唇和嘴角的固定有序 Guide。
+
+        Args:
+            required (bool):
+                目标不存在或数据缺失时是否直接抛出异常。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+        """
         upper_names = [
             self._create_guide_name("rt", "mouth_corner", 1),
             self._create_guide_name("rt", "upper_lip", 2),
@@ -919,7 +1171,23 @@ class FaceGuide(face_base.FaceBase):
             side,
             required=True
     ):
-        u"""返回某一侧 Upper / Lower Eyelid 的固定有序 Guide。"""
+        u"""
+        返回某一侧 Upper / Lower Eyelid 的固定有序 Guide。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            required (bool):
+                目标不存在或数据缺失时是否直接抛出异常。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if side not in self.mirror_sides:
             raise ValueError(
                 u"Eyelid side 必须是 lf 或 rt。"
@@ -962,7 +1230,17 @@ class FaceGuide(face_base.FaceBase):
         }
 
     def get_brow_guides(self, side):
-        u"""返回某一侧 Brow Main 和 Brow Point Guide。"""
+        u"""
+        返回某一侧 Brow Main 和 Brow Point Guide。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+        """
         all_guides = self.get_part_guides(
             part="brow",
             side=side
@@ -994,7 +1272,23 @@ class FaceGuide(face_base.FaceBase):
             side,
             required=False
     ):
-        u"""返回某一侧 Eye Ball / Iris Guide。"""
+        u"""
+        返回某一侧 Eye Ball / Iris Guide。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            required (bool):
+                目标不存在或数据缺失时是否直接抛出异常。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if side not in self.mirror_sides:
             raise ValueError(
                 u"Eye side 必须是 lf 或 rt。"
@@ -1031,7 +1325,23 @@ class FaceGuide(face_base.FaceBase):
             source_side,
             target_side
     ):
-        u"""检查 Mirror Source / Target Side。"""
+        u"""
+        检查 Mirror Source / Target Side。
+
+        Args:
+            source_side (str):
+                当前 Maya / Rig 操作使用的 `source_side` 名称或标记。
+            target_side (str):
+                当前 Maya / Rig 操作使用的 `target_side` 名称或标记。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if source_side not in self.mirror_sides:
             raise ValueError(
                 u"source_side 必须是 lf 或 rt。"
@@ -1050,7 +1360,17 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def get_side_zero_groups(self, side):
-        u"""返回指定 Side 下全部 Guide Zero Group。"""
+        u"""
+        返回指定 Side 下全部 Guide Zero Group。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         prefix = "zero_{}_".format(
             side
         )
@@ -1081,7 +1401,19 @@ class FaceGuide(face_base.FaceBase):
             zero_group,
             side
     ):
-        u"""返回一个 Guide Zero Group 下对应 Side 的 Locator。"""
+        u"""
+        返回一个 Guide Zero Group 下对应 Side 的 Locator。
+
+        Args:
+            zero_group (str):
+                当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+
+        Returns:
+            None | object:
+                方法执行后的结果数据。
+        """
         prefix = "loc_{}_".format(
             side
         )
@@ -1106,7 +1438,19 @@ class FaceGuide(face_base.FaceBase):
             node,
             attributes
     ):
-        u"""记录节点指定 Attribute 的当前值。"""
+        u"""
+        记录节点指定 Attribute 的当前值。
+
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            attributes (str | list[str]):
+                当前方法按顺序处理的 `attributes` 数据集合。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         values = {}
 
         if not node:
@@ -1136,7 +1480,21 @@ class FaceGuide(face_base.FaceBase):
             target_node,
             attribute
     ):
-        u"""复制一个 Attribute，并断开 Target 原输入。"""
+        u"""
+        复制一个 Attribute，并断开 Target 原输入。
+
+        Args:
+            source_node (str):
+                作为数据来源、复制来源或驱动来源的 Maya 节点。
+            target_node (str):
+                接收数据、匹配结果或操作结果的 Target Maya 节点。
+            attribute (str):
+                Maya Attribute 或完整 Plug 名称。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         source_plug = "{}.{}".format(
             source_node,
             attribute
@@ -1163,7 +1521,17 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def capture_side_state(self, side):
-        u"""记录 Target Side 在 Mirror 前的状态。"""
+        u"""
+        记录 Target Side 在 Mirror 前的状态。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         snapshot = {
             "side": side,
             "items": [],
@@ -1217,7 +1585,19 @@ class FaceGuide(face_base.FaceBase):
             node,
             values
     ):
-        u"""恢复 Snapshot 中保存的 Attribute。"""
+        u"""
+        恢复 Snapshot 中保存的 Attribute。
+
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            values (object):
+                当前方法执行 Maya / Rig 操作时使用的 `values` 数据。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         for attribute in values:
             plug = "{}.{}".format(
                 node,
@@ -1239,7 +1619,21 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def restore_mirror_snapshot(self, snapshot):
-        u"""恢复最近一次 Mirror 前的 Target Side 状态。"""
+        u"""
+        恢复最近一次 Mirror 前的 Target Side 状态。
+
+        Args:
+            snapshot (object):
+                当前方法执行 Maya / Rig 操作时使用的 `snapshot` 数据。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+
+        Raises:
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if not isinstance(snapshot, dict):
             raise TypeError(
                 u"Mirror Snapshot 必须是 dict。"
@@ -1307,7 +1701,21 @@ class FaceGuide(face_base.FaceBase):
             target_zero,
             source_side
     ):
-        u"""把一个 Source Guide Zero 的当前状态复制到 Target。"""
+        u"""
+        把一个 Source Guide Zero 的当前状态复制到 Target。
+
+        Args:
+            source_zero (object):
+                当前方法执行 Maya / Rig 操作时使用的 `source_zero` 数据。
+            target_zero (object):
+                当前方法执行 Maya / Rig 操作时使用的 `target_zero` 数据。
+            source_side (str):
+                当前 Maya / Rig 操作使用的 `source_side` 名称或标记。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         source_parent = hierarchy_utils.get_parent(
             source_zero
         )
@@ -1367,7 +1775,19 @@ class FaceGuide(face_base.FaceBase):
             source_locator,
             target_locator
     ):
-        u"""复制 Locator Transform 和 Shape 参数。"""
+        u"""
+        复制 Locator Transform 和 Shape 参数。
+
+        Args:
+            source_locator (str):
+                当前 Rig 定位流程使用的 Guide / Locator Transform。
+            target_locator (str):
+                当前 Rig 定位流程使用的 Guide / Locator Transform。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         for attribute in self.locator_attributes:
             self.copy_attribute(
                 source_locator,
@@ -1397,7 +1817,23 @@ class FaceGuide(face_base.FaceBase):
             source_side,
             target_side
     ):
-        u"""执行 Guide Mirror，不创建 Snapshot。"""
+        u"""
+        执行 Guide Mirror，不创建 Snapshot。
+
+        Args:
+            source_side (str):
+                当前 Maya / Rig 操作使用的 `source_side` 名称或标记。
+            target_side (str):
+                当前 Maya / Rig 操作使用的 `target_side` 名称或标记。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         self.validate_mirror_sides(
             source_side,
             target_side
@@ -1472,7 +1908,19 @@ class FaceGuide(face_base.FaceBase):
             source_side,
             target_side
     ):
-        u"""记录 Target Snapshot，并执行一次可撤销 Guide Mirror。"""
+        u"""
+        记录 Target Snapshot，并执行一次可撤销 Guide Mirror。
+
+        Args:
+            source_side (str):
+                当前 Maya / Rig 操作使用的 `source_side` 名称或标记。
+            target_side (str):
+                当前 Maya / Rig 操作使用的 `target_side` 名称或标记。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         snapshot = self.capture_side_state(
             target_side
         )
@@ -1485,7 +1933,17 @@ class FaceGuide(face_base.FaceBase):
 
     @scene_utils.undo_chunk
     def undo_mirror(self, snapshot):
-        u"""恢复 UI 保存的最近一次 Mirror Snapshot。"""
+        u"""
+        恢复 UI 保存的最近一次 Mirror Snapshot。
+
+        Args:
+            snapshot (object):
+                当前方法执行 Maya / Rig 操作时使用的 `snapshot` 数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         return self.restore_mirror_snapshot(
             snapshot
         )
@@ -1495,7 +1953,13 @@ class FaceGuide(face_base.FaceBase):
     # =========================================================================
 
     def validate_guides(self):
-        u"""检查模板中的每一个 Locator 是否仍然存在。"""
+        u"""
+        检查模板中的每一个 Locator 是否仍然存在。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         result = {
             "valid": True,
             "errors": [],
@@ -1581,7 +2045,17 @@ class FaceGuide(face_base.FaceBase):
     # =========================================================================
 
     def save_guide_config(self):
-        u"""保存 Step 02 Guide Root、Move Ctrl 和 Guide Version。"""
+        u"""
+        保存 Step 02 Guide Root、Move Ctrl 和 Guide Version。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         self.refresh_guide_handles()
 
         if not self.guide_root:
@@ -1616,7 +2090,13 @@ class FaceGuide(face_base.FaceBase):
 
     @staticmethod
     def get_default_controller_settings():
-        u"""返回一份独立的 Face Controller 默认设置。"""
+        u"""
+        返回一份独立的 Face Controller 默认设置。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         settings = {}
 
         for attr_name in config.face_controller_default_settings:
@@ -1628,7 +2108,23 @@ class FaceGuide(face_base.FaceBase):
 
     @staticmethod
     def validate_controller_settings(settings):
-        u"""检查当前正式 Schema 的 Step 02 Controller Settings。"""
+        u"""
+        检查当前正式 Schema 的 Step 02 Controller Settings。
+
+        Args:
+            settings (object):
+                当前方法执行 Maya / Rig 操作时使用的 `settings` 数据。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+
+        Raises:
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if not isinstance(settings, dict):
             raise TypeError(
                 u"Controller Settings 必须是 dict。"
@@ -1699,7 +2195,13 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def load_controller_settings(self):
-        u"""从 Face Config 读取当前正式 Controller Settings。"""
+        u"""
+        从 Face Config 读取当前正式 Controller Settings。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         settings = self.get_default_controller_settings()
 
         if not self.config_node_exists():
@@ -1727,7 +2229,17 @@ class FaceGuide(face_base.FaceBase):
         return settings
 
     def save_controller_settings(self, settings):
-        u"""把当前正式 Controller Settings 保存到 Face Config。"""
+        u"""
+        把当前正式 Controller Settings 保存到 Face Config。
+
+        Args:
+            settings (object):
+                当前方法执行 Maya / Rig 操作时使用的 `settings` 数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         self.validate_controller_settings(
             settings
         )

@@ -54,7 +54,17 @@ from ...ui import window_utils
 
 
 def get_selected_objects(minimum_count=1):
-    u"""返回 Maya 当前选择，并校验最少数量。"""
+    u"""
+    返回 Maya 当前选择，并校验最少数量。
+
+    Args:
+        minimum_count (int):
+            当前构建、采样或查询过程使用的元素数量。
+
+    Returns:
+        object | list:
+            方法执行后的结果数据。
+    """
     selected_objects = scene_utils.get_selected_nodes(
         long=True,
         flatten=True
@@ -72,7 +82,13 @@ def get_selected_objects(minimum_count=1):
 
 
 def get_channel_box_attrs():
-    u"""返回 Maya Channel Box 当前选中的主属性。"""
+    u"""
+    返回 Maya Channel Box 当前选中的主属性。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     attribute_names = cmds.channelBox(
         "mainChannelBox",
         query=True,
@@ -95,7 +111,21 @@ def build_attribute_plug_pairs(
         driven_objects,
         attribute_pairs
 ):
-    u"""把 Tool 层的 Object + Attribute Mapping 展开成明确 Plug Pair。"""
+    u"""
+    把 Tool 层的 Object + Attribute Mapping 展开成明确 Plug Pair。
+
+    Args:
+        driver (str):
+            作为驱动端的 Maya 节点名称。
+        driven_objects (str | list[str]):
+            需要批量接收驱动结果的 Driven 节点或节点列表。
+        attribute_pairs (list[tuple[str, str]] | dict):
+            需要批量建立连接的 Source Plug / Destination Plug 配对数据。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     plug_pairs = []
 
     for driven_object in driven_objects:
@@ -121,7 +151,21 @@ def build_source_plug_pairs(
         driven_objects,
         attribute_names
 ):
-    u"""把一个 Source Plug 展开到多个对象的同名 Attribute。"""
+    u"""
+    把一个 Source Plug 展开到多个对象的同名 Attribute。
+
+    Args:
+        source_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+        driven_objects (str | list[str]):
+            需要批量接收驱动结果的 Driven 节点或节点列表。
+        attribute_names (str | list[str]):
+            需要查询、复制或批量连接的 Maya Attribute 名称列表。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     plug_pairs = []
 
     for driven_object in driven_objects:
@@ -142,7 +186,13 @@ class ConnectionsTool(QWidget):
     """属性连接工具窗口。"""
 
     def __init__(self, parent=None):
-        u"""创建 Connections Tool。"""
+        u"""
+        创建 Connections Tool。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
         super(ConnectionsTool, self).__init__(parent)
 
         self.driver_plug = None
@@ -160,7 +210,9 @@ class ConnectionsTool(QWidget):
         self.resize(590, 560)
 
     def create_widgets(self):
-        u"""创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(u"属性连接")
         self.subtitle_label = theme.make_subtitle(
             u"管理 Transform、自定义属性和已有输入连接。"
@@ -217,7 +269,9 @@ class ConnectionsTool(QWidget):
         theme.set_role(self.status_label, "muted")
 
     def create_layouts(self):
-        u"""创建界面布局。"""
+        u"""
+        创建界面布局。
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -297,7 +351,9 @@ class ConnectionsTool(QWidget):
         main_layout.addStretch(1)
 
     def create_connections(self):
-        u"""连接界面信号。"""
+        u"""
+        连接界面信号。
+        """
         self.matrix_checkbox.stateChanged.connect(
             self.changed_matrix_checkbox
         )
@@ -339,7 +395,9 @@ class ConnectionsTool(QWidget):
         )
 
     def changed_matrix_checkbox(self):
-        u"""Matrix 和普通 SRT 连接互斥。"""
+        u"""
+        Matrix 和普通 SRT 连接互斥。
+        """
         if not self.matrix_checkbox.isChecked():
             return
 
@@ -348,7 +406,9 @@ class ConnectionsTool(QWidget):
         self.scale_checkbox.setChecked(False)
 
     def changed_transform_checkbox(self):
-        u"""普通 SRT 被勾选时取消 Matrix。"""
+        u"""
+        普通 SRT 被勾选时取消 Matrix。
+        """
         checked = False
 
         if self.translate_checkbox.isChecked():
@@ -362,14 +422,22 @@ class ConnectionsTool(QWidget):
             self.matrix_checkbox.setChecked(False)
 
     def reset_default_options(self):
-        u"""重置 Transform 连接选项。"""
+        u"""
+        重置 Transform 连接选项。
+        """
         self.translate_checkbox.setChecked(False)
         self.rotate_checkbox.setChecked(False)
         self.scale_checkbox.setChecked(False)
         self.matrix_checkbox.setChecked(False)
 
     def get_default_attr_pairs(self):
-        u"""返回当前勾选的默认属性映射。"""
+        u"""
+        返回当前勾选的默认属性映射。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         attribute_pairs = []
 
         if self.translate_checkbox.isChecked():
@@ -384,7 +452,9 @@ class ConnectionsTool(QWidget):
         return attribute_pairs
 
     def connect_default_attrs(self):
-        u"""第一个选择驱动其余选择。"""
+        u"""
+        第一个选择驱动其余选择。
+        """
         attribute_pairs = self.get_default_attr_pairs()
 
         if not attribute_pairs:
@@ -428,7 +498,9 @@ class ConnectionsTool(QWidget):
         )
 
     def break_default_attrs(self):
-        u"""断开选择对象对应的默认属性连接。"""
+        u"""
+        断开选择对象对应的默认属性连接。
+        """
         attribute_pairs = self.get_default_attr_pairs()
 
         if not attribute_pairs:
@@ -471,7 +543,9 @@ class ConnectionsTool(QWidget):
         )
 
     def pick_driver_attr(self):
-        u"""拾取唯一 Driver Object + Channel Box Attr。"""
+        u"""
+        拾取唯一 Driver Object + Channel Box Attr。
+        """
         selected_objects = get_selected_objects(1)
         attribute_names = get_channel_box_attrs()
 
@@ -496,7 +570,9 @@ class ConnectionsTool(QWidget):
         )
 
     def pick_driven_attrs(self):
-        u"""记录 Driven Channel Box 属性名。"""
+        u"""
+        记录 Driven Channel Box 属性名。
+        """
         attribute_names = get_channel_box_attrs()
 
         if not attribute_names:
@@ -514,7 +590,9 @@ class ConnectionsTool(QWidget):
         )
 
     def connect_custom_attrs(self):
-        u"""把 Driver Plug 连接到当前选择对象的 Driven Attr。"""
+        u"""
+        把 Driver Plug 连接到当前选择对象的 Driven Attr。
+        """
         if not self.driver_plug:
             cmds.warning(
                 u"请先拾取 Driver 属性。"
@@ -562,7 +640,9 @@ class ConnectionsTool(QWidget):
         )
 
     def break_custom_attrs(self):
-        u"""断开当前选择对象对应的自定义属性输入。"""
+        u"""
+        断开当前选择对象对应的自定义属性输入。
+        """
         if not self.driven_attr_names:
             cmds.warning(
                 u"请先拾取 Driven 属性。"
@@ -604,7 +684,9 @@ class ConnectionsTool(QWidget):
         )
 
     def copy_input_connections(self):
-        u"""复制来源对象 Channel Box 选中属性的输入连接。"""
+        u"""
+        复制来源对象 Channel Box 选中属性的输入连接。
+        """
         selected_objects = get_selected_objects(2)
         attribute_names = get_channel_box_attrs()
 
@@ -661,7 +743,9 @@ class ConnectionsTool(QWidget):
         )
 
     def break_selected_inputs(self):
-        u"""断开当前选择对象 Channel Box 属性的输入。"""
+        u"""
+        断开当前选择对象 Channel Box 属性的输入。
+        """
         selected_objects = get_selected_objects(1)
         attribute_names = get_channel_box_attrs()
 
@@ -699,7 +783,13 @@ class ConnectionsTool(QWidget):
 
 
 def main():
-    u"""创建或恢复 Connections Tool，立即显示并返回 QWidget。"""
+    u"""
+    创建或恢复 Connections Tool，立即显示并返回 QWidget。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.basic.connections_tool",
         ConnectionsTool

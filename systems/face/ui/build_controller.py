@@ -44,7 +44,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
     u"""增加正式 Controller Schema 和 Step 03 Module Build 页面的 Face Rig Wizard。"""
 
     def __init__(self, parent=None):
-        u"""初始化 Step 03 Build UI。"""
+        u"""
+        初始化 Step 03 Build UI。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
         self.teeth_build_result = None
 
         super(FaceRigWizard, self).__init__(
@@ -56,7 +62,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
     # =========================================================================
 
     def create_step2_page(self):
-        u"""创建原有 Step 02 页面，并补充 Teeth / Tongue Controller Size。"""
+        u"""
+        创建原有 Step 02 页面，并补充 Teeth / Tongue Controller Size。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         page = super(FaceRigWizard, self).create_step2_page()
         main_layout = page.layout()
 
@@ -145,7 +157,17 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         return page
 
     def get_step2_controller_settings(self):
-        u"""使用当前 config.py 正式 Attribute 名称收集完整 Controller Settings。"""
+        u"""
+        使用当前 config.py 正式 Attribute 名称收集完整 Controller Settings。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         settings = {}
 
         settings[config.face_controller_global_scale_attr] = (
@@ -178,7 +200,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         return settings
 
     def load_step2_controller_settings(self):
-        u"""使用当前正式 Config Schema 回填全部 Controller Settings。"""
+        u"""
+        使用当前正式 Config Schema 回填全部 Controller Settings。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         face_guide = self.get_face_guide()
         settings = face_guide.load_controller_settings()
 
@@ -244,7 +272,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
     # =========================================================================
 
     def create_pages(self):
-        u"""创建原有页面，并把 Step 03 占位页替换成正式 Module Build 页面。"""
+        u"""
+        创建原有页面，并把 Step 03 占位页替换成正式 Module Build 页面。
+        """
         super(FaceRigWizard, self).create_pages()
 
         old_step3_page = self.step3_page
@@ -261,7 +291,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         )
 
     def create_step3_page(self):
-        u"""创建 Step 03 Module Build 页面。"""
+        u"""
+        创建 Step 03 Module Build 页面。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         page = QWidget()
         main_layout = QVBoxLayout(
             page
@@ -405,7 +441,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
     # =========================================================================
 
     def create_connections(self):
-        u"""连接原有信号和 Step 03 Teeth Build 信号。"""
+        u"""
+        连接原有信号和 Step 03 Teeth Build 信号。
+        """
         super(FaceRigWizard, self).create_connections()
 
         self.build_teeth_button.clicked.connect(
@@ -417,7 +455,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
     # =========================================================================
 
     def clicked_build_teeth(self):
-        u"""通过 Face System 公共 API 构建 Teeth Module。"""
+        u"""
+        通过 Face System 公共 API 构建 Teeth Module。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+        """
         self.build_teeth_button.setEnabled(
             False
         )
@@ -472,7 +516,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
 
 def main():
-    u"""创建带 Step 03 Module Build 页面的正式 Face Rig UI。"""
+    u"""
+    创建带 Step 03 Module Build 页面的正式 Face Rig UI。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return FaceRigWizard()
 
 

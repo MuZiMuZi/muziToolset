@@ -55,7 +55,17 @@ class SkirtRigBuilder(object):
             horizontal_count=8,
             vertical_count=4
     ):
-        u"""初始化裙子绑定系统参数。"""
+        u"""
+        初始化裙子绑定系统参数。
+
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
+            horizontal_count (int):
+                当前构建、采样或查询过程使用的元素数量。
+            vertical_count (int):
+                当前构建、采样或查询过程使用的元素数量。
+        """
         self.name = rename_utils.get_name_token(
             name,
             fallback="skirt"
@@ -69,7 +79,17 @@ class SkirtRigBuilder(object):
     # -------------------------------------------------------------------------
 
     def validate_parameters(self):
-        u"""检查 Builder 参数。"""
+        u"""
+        检查 Builder 参数。
+
+        Returns:
+            bool:
+                方法执行后的结果数据。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if self.horizontal_count < 3:
             raise ValueError(
                 u"裙子横向链数量不能小于 3。"
@@ -83,7 +103,13 @@ class SkirtRigBuilder(object):
         return True
 
     def get_names(self):
-        u"""返回系统内所有固定节点名称。"""
+        u"""
+        返回系统内所有固定节点名称。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+        """
         return {
             "name": self.name,
             "root": "grp_m_{}_001".format(self.name),
@@ -102,7 +128,13 @@ class SkirtRigBuilder(object):
     # -------------------------------------------------------------------------
 
     def ensure_root_groups(self):
-        u"""确保裙子系统基础层级存在。"""
+        u"""
+        确保裙子系统基础层级存在。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         names = self.get_names()
         root = hierarchy_utils.ensure_group(
             names["root"]
@@ -270,7 +302,13 @@ class SkirtRigBuilder(object):
 
     @scene_utils.undo_chunk
     def create_setup(self):
-        u"""创建或重建裙子定位系统。"""
+        u"""
+        创建或重建裙子定位系统。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+        """
         self.validate_parameters()
         names = self.ensure_root_groups()
         self._delete_setup_nodes(
@@ -313,7 +351,13 @@ class SkirtRigBuilder(object):
         }
 
     def select_setup_curves(self):
-        u"""选择当前裙子系统的两条定位曲线。"""
+        u"""
+        选择当前裙子系统的两条定位曲线。
+
+        Returns:
+            object | list:
+                方法执行后的结果数据。
+        """
         names = self.get_names()
         curves = []
 
@@ -411,7 +455,13 @@ class SkirtRigBuilder(object):
 
     @scene_utils.undo_chunk
     def build(self):
-        u"""根据当前 Blueprint 创建完整裙子 FK 绑定。"""
+        u"""
+        根据当前 Blueprint 创建完整裙子 FK 绑定。
+
+        Returns:
+            dict:
+                方法执行后的结果数据。
+        """
         self.validate_parameters()
         names = self.ensure_root_groups()
         self._validate_blueprints(

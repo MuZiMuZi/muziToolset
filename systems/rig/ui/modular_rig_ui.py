@@ -234,7 +234,13 @@ class ModularRigWindow(QWidget):
     build_requested = Signal(str)
 
     def __init__(self, parent=None):
-        u"""初始化 Modular Rig UI。"""
+        u"""
+        初始化 Modular Rig UI。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
         super(ModularRigWindow, self).__init__(parent)
 
         self.current_module_item = None
@@ -261,7 +267,9 @@ class ModularRigWindow(QWidget):
     # =========================================================================
 
     def create_widgets(self):
-        u"""创建主窗口全部控件。"""
+        u"""
+        创建主窗口全部控件。
+        """
         # ---------------------------------------------------------------------
         # Step 01：顶部 Header
         # ---------------------------------------------------------------------
@@ -474,7 +482,9 @@ class ModularRigWindow(QWidget):
         _set_role(self.build_button, "buildButton")
 
     def create_layouts(self):
-        u"""按照三栏模块化绑定设计创建主布局。"""
+        u"""
+        按照三栏模块化绑定设计创建主布局。
+        """
         header_layout = QHBoxLayout(self.header_frame)
         header_layout.setContentsMargins(12, 6, 12, 6)
         header_layout.setSpacing(6)
@@ -617,7 +627,19 @@ class ModularRigWindow(QWidget):
         main_layout.addWidget(self.main_splitter, 1)
 
     def create_property_row(self, label, widget):
-        u"""创建右侧属性的一行 Label + Widget。"""
+        u"""
+        创建右侧属性的一行 Label + Widget。
+
+        Args:
+            label (str):
+                UI、Rig Node 或日志中展示的简短 Label。
+            widget (QtWidgets.QWidget):
+                需要应用 MuziTools Theme / UI 状态的 Qt Widget。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         row_layout = QHBoxLayout()
         row_layout.setContentsMargins(0, 0, 0, 0)
         row_layout.setSpacing(10)
@@ -628,7 +650,9 @@ class ModularRigWindow(QWidget):
         return row_layout
 
     def create_connections(self):
-        u"""连接界面 Signal。"""
+        u"""
+        连接界面 Signal。
+        """
         self.module_search.textChanged.connect(self.filter_module_library)
         self.template_search.textChanged.connect(self.filter_template_library)
         self.module_list.itemDoubleClicked.connect(self.add_module_from_library)
@@ -653,7 +677,9 @@ class ModularRigWindow(QWidget):
     # =========================================================================
 
     def populate_module_library(self):
-        u"""填充 Module Library。"""
+        u"""
+        填充 Module Library。
+        """
         self.module_list.clear()
 
         for module_name in module_name_list:
@@ -667,7 +693,9 @@ class ModularRigWindow(QWidget):
         self.update_library_count()
 
     def populate_template_library(self):
-        u"""填充 Template Library。"""
+        u"""
+        填充 Template Library。
+        """
         self.template_list.clear()
 
         for template_name in template_name_list:
@@ -678,12 +706,20 @@ class ModularRigWindow(QWidget):
         self.update_library_count()
 
     def update_library_count(self):
-        u"""更新左下 Library 数量。"""
+        u"""
+        更新左下 Library 数量。
+        """
         total_count = self.module_list.count() + self.template_list.count()
         self.library_count_label.setText(u"Library: {} items".format(total_count))
 
     def filter_module_library(self, search_text):
-        u"""按照搜索内容过滤 Module Library。"""
+        u"""
+        按照搜索内容过滤 Module Library。
+
+        Args:
+            search_text (str):
+                名称过滤、工具搜索或 Search / Replace 使用的搜索文本。
+        """
         search_text = search_text.strip().lower()
         row_index = 0
 
@@ -703,7 +739,13 @@ class ModularRigWindow(QWidget):
             row_index += 1
 
     def filter_template_library(self, search_text):
-        u"""按照搜索内容过滤 Template Library。"""
+        u"""
+        按照搜索内容过滤 Template Library。
+
+        Args:
+            search_text (str):
+                名称过滤、工具搜索或 Search / Replace 使用的搜索文本。
+        """
         search_text = search_text.strip().lower()
         row_index = 0
 
@@ -727,7 +769,9 @@ class ModularRigWindow(QWidget):
     # =========================================================================
 
     def populate_default_module_tree(self):
-        u"""创建与 UI 设计图一致的默认 Module Tree 示例。"""
+        u"""
+        创建与 UI 设计图一致的默认 Module Tree 示例。
+        """
         self.module_tree.clear()
 
         for module_data in default_module_data_list:
@@ -743,7 +787,19 @@ class ModularRigWindow(QWidget):
             self.module_tree.setCurrentItem(root_item)
 
     def create_module_tree_item(self, module_data, parent_item=None):
-        u"""根据 Module Data 创建一个 Settings Tree Item。"""
+        u"""
+        根据 Module Data 创建一个 Settings Tree Item。
+
+        Args:
+            module_data (dict):
+                当前方法使用的 `module_data` 配置 / 映射数据。
+            parent_item (object):
+                当前方法执行 Maya / Rig 操作时使用的 `parent_item` 数据。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         module_name = module_data.get("name", "module")
         side = module_data.get("side", "")
         item = QTreeWidgetItem()
@@ -765,7 +821,17 @@ class ModularRigWindow(QWidget):
         return item
 
     def find_first_module_item(self, module_name):
-        u"""在 Settings Tree 中查找第一个同名 Module。"""
+        u"""
+        在 Settings Tree 中查找第一个同名 Module。
+
+        Args:
+            module_name (str):
+                `module_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            None | object:
+                方法执行后的结果数据。
+        """
         top_index = 0
 
         while top_index < self.module_tree.topLevelItemCount():
@@ -780,7 +846,19 @@ class ModularRigWindow(QWidget):
         return None
 
     def find_module_item_recursive(self, item, module_name):
-        u"""递归查找 Module Tree Item。"""
+        u"""
+        递归查找 Module Tree Item。
+
+        Args:
+            item (str | object):
+                当前查询、吸附或 UI 操作使用的 Maya Item / 数据项。
+            module_name (str):
+                `module_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            None | object:
+                方法执行后的结果数据。
+        """
         if item is None:
             return None
 
@@ -803,7 +881,9 @@ class ModularRigWindow(QWidget):
         return None
 
     def clicked_add_module(self):
-        u"""点击 + 时把左侧当前 Module 添加到 Settings Tree。"""
+        u"""
+        点击 + 时把左侧当前 Module 添加到 Settings Tree。
+        """
         current_item = self.module_list.currentItem()
 
         if current_item is None:
@@ -812,7 +892,13 @@ class ModularRigWindow(QWidget):
         self.add_module_from_library(current_item)
 
     def add_module_from_library(self, item):
-        u"""从 Module Library 添加一个新的 Module Instance。"""
+        u"""
+        从 Module Library 添加一个新的 Module Instance。
+
+        Args:
+            item (str | object):
+                当前查询、吸附或 UI 操作使用的 Maya Item / 数据项。
+        """
         if item is None:
             return
 
@@ -826,7 +912,9 @@ class ModularRigWindow(QWidget):
         self.module_tree.setCurrentItem(new_item)
 
     def copy_current_module(self):
-        u"""复制当前 Module 的 UI 配置。"""
+        u"""
+        复制当前 Module 的 UI 配置。
+        """
         source_item = self.module_tree.currentItem()
 
         if source_item is None:
@@ -840,7 +928,9 @@ class ModularRigWindow(QWidget):
         self.module_tree.setCurrentItem(new_item)
 
     def delete_current_module(self):
-        u"""从 Settings Tree 删除当前 Module UI Instance。"""
+        u"""
+        从 Settings Tree 删除当前 Module UI Instance。
+        """
         current_item = self.module_tree.currentItem()
 
         if current_item is None:
@@ -862,7 +952,15 @@ class ModularRigWindow(QWidget):
         self.current_module_item = None
 
     def current_module_changed(self, current_item, previous_item):
-        u"""Settings Tree 当前 Module 变化后刷新右侧参数。"""
+        u"""
+        Settings Tree 当前 Module 变化后刷新右侧参数。
+
+        Args:
+            current_item (object):
+                当前方法执行 Maya / Rig 操作时使用的 `current_item` 数据。
+            previous_item (object):
+                当前方法执行 Maya / Rig 操作时使用的 `previous_item` 数据。
+        """
         if current_item is None:
             return
 
@@ -890,7 +988,9 @@ class ModularRigWindow(QWidget):
         self.loading_module_settings = False
 
     def module_name_changed(self):
-        u"""把 Name 输入框同步到当前 Module Tree Item。"""
+        u"""
+        把 Name 输入框同步到当前 Module Tree Item。
+        """
         if self.loading_module_settings:
             return
 
@@ -909,7 +1009,13 @@ class ModularRigWindow(QWidget):
         self.current_module_title.setText(module_name.upper())
 
     def side_changed(self, combo_index):
-        u"""把 Side UI 同步到当前 Module Tree Item。"""
+        u"""
+        把 Side UI 同步到当前 Module Tree Item。
+
+        Args:
+            combo_index (int):
+                对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
+        """
         if self.loading_module_settings:
             return
 
@@ -929,7 +1035,9 @@ class ModularRigWindow(QWidget):
         current_item.setText(1, side_value)
 
     def reset_current_module_settings(self):
-        u"""恢复当前 Module UI 的基础显示参数。"""
+        u"""
+        恢复当前 Module UI 的基础显示参数。
+        """
         current_item = self.module_tree.currentItem()
 
         if current_item is None:
@@ -951,7 +1059,13 @@ class ModularRigWindow(QWidget):
     # =========================================================================
 
     def load_template(self, item):
-        u"""载入 Template UI 预设；当前版本先建立可编辑 Module Tree。"""
+        u"""
+        载入 Template UI 预设；当前版本先建立可编辑 Module Tree。
+
+        Args:
+            item (str | object):
+                当前查询、吸附或 UI 操作使用的 Maya Item / 数据项。
+        """
         if item is None:
             return
 
@@ -974,7 +1088,9 @@ class ModularRigWindow(QWidget):
     # =========================================================================
 
     def restore_joint_display_settings(self):
-        u"""从 Maya 当前场景恢复 Jnt Size / Jnt Axis 显示状态。"""
+        u"""
+        从 Maya 当前场景恢复 Jnt Size / Jnt Axis 显示状态。
+        """
         self.loading_joint_display = True
         joint_size = 1.0
 
@@ -1019,7 +1135,13 @@ class ModularRigWindow(QWidget):
         self.loading_joint_display = False
 
     def jnt_size_slider_changed(self, slider_value):
-        u"""Slider 改变时同步数值并实时修改 Maya Joint Display Scale。"""
+        u"""
+        Slider 改变时同步数值并实时修改 Maya Joint Display Scale。
+
+        Args:
+            slider_value (int | float):
+                UI Slider 当前值；回调用于同步对应 Rig / Setup 参数。
+        """
         if self.loading_joint_display:
             return
 
@@ -1030,7 +1152,13 @@ class ModularRigWindow(QWidget):
         self.set_maya_joint_size(joint_size)
 
     def jnt_size_spin_changed(self, joint_size):
-        u"""数值框改变时同步 Slider 并修改 Maya Joint Display Scale。"""
+        u"""
+        数值框改变时同步 Slider 并修改 Maya Joint Display Scale。
+
+        Args:
+            joint_size (float):
+                当前 Maya / Rig 计算使用的 `joint_size` 数值参数。
+        """
         if self.loading_joint_display:
             return
 
@@ -1042,7 +1170,13 @@ class ModularRigWindow(QWidget):
         self.set_maya_joint_size(joint_size)
 
     def set_maya_joint_size(self, joint_size):
-        u"""设置 Maya 全局 Joint Display Scale。"""
+        u"""
+        设置 Maya 全局 Joint Display Scale。
+
+        Args:
+            joint_size (float):
+                当前 Maya / Rig 计算使用的 `joint_size` 数值参数。
+        """
         try:
             joint_utils.set_display_scale(
                 joint_size
@@ -1055,7 +1189,13 @@ class ModularRigWindow(QWidget):
             )
 
     def jnt_axis_changed(self, checked):
-        u"""显示或隐藏场景全部 Joint 的 Local Axis。"""
+        u"""
+        显示或隐藏场景全部 Joint 的 Local Axis。
+
+        Args:
+            checked (object):
+                当前方法执行 Maya / Rig 操作时使用的 `checked` 数据。
+        """
         if self.loading_joint_display:
             return
 
@@ -1087,7 +1227,9 @@ class ModularRigWindow(QWidget):
     # =========================================================================
 
     def clicked_build(self):
-        u"""发出当前 Module Build 请求。"""
+        u"""
+        发出当前 Module Build 请求。
+        """
         current_item = self.module_tree.currentItem()
 
         if current_item is None:
@@ -1115,14 +1257,18 @@ class ModularRigWindow(QWidget):
         )
 
     def undo_maya(self):
-        u"""调用 Maya Undo。"""
+        u"""
+        调用 Maya Undo。
+        """
         try:
             cmds.undo()
         except Exception:
             pass
 
     def redo_maya(self):
-        u"""调用 Maya Redo。"""
+        u"""
+        调用 Maya Redo。
+        """
         try:
             cmds.redo()
         except Exception:

@@ -27,19 +27,41 @@ __version__ = "0.4.0"
 
 
 def show():
-    u"""打开 Muzi Rigging 主工具箱。"""
+    u"""
+    打开 Muzi Rigging 主工具箱。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from .app import toolbox
 
     return toolbox.main()
 
 
 def initialize():
-    u"""初始化并打开主工具箱。"""
+    u"""
+    初始化并打开主工具箱。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return show()
 
 
 def smoke_test(test_window_manager=False):
-    u"""运行 Maya 2023 非破坏性全工具 Smoke Test。"""
+    u"""
+    运行 Maya 2023 非破坏性全工具 Smoke Test。
+
+    Args:
+        test_window_manager (bool):
+            包初始化阶段是否运行 Window Manager 自检。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from .tests import maya_smoke_test
 
     return maya_smoke_test.run(
@@ -48,21 +70,39 @@ def smoke_test(test_window_manager=False):
 
 
 def functional_smoke_test():
-    u"""运行 Maya 2023 全工具真实功能 Smoke Test。"""
+    u"""
+    运行 Maya 2023 全工具真实功能 Smoke Test。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from .tests import maya_functional_smoke_test
 
     return maya_functional_smoke_test.run()
 
 
 def maya2023_smoke_test():
-    u"""运行当前 Rig 架构的 Maya 2023 Runtime Smoke Test。"""
+    u"""
+    运行当前 Rig 架构的 Maya 2023 Runtime Smoke Test。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from .tests import maya2023_smoke_test
 
     return maya2023_smoke_test.run()
 
 
 def pipeline_smoke_test():
-    u"""运行基础 Core / Legacy Pipeline 拆分后的功能 Smoke Test。"""
+    u"""
+    运行基础 Core / Legacy Pipeline 拆分后的功能 Smoke Test。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from .tests import pipeline_refactor_smoke_test
 
     return pipeline_refactor_smoke_test.run()
@@ -79,6 +119,10 @@ def extended_core_smoke_test():
         RigBase / rename_utils
         model_check_utils
         scene_clean_utils
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     from .tests import extended_core_smoke_test
 
@@ -86,56 +130,108 @@ def extended_core_smoke_test():
 
 
 def core_import_style_test():
-    u"""运行旧 CamelCase Core Import Gate。"""
+    u"""
+    运行旧 CamelCase Core Import Gate。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from .tests import core_import_style_test
 
     return core_import_style_test.run()
 
 
 def rig_architecture_gate_test():
-    u"""检查退休的 name_utils / Component / controller 包是否重新出现。"""
+    u"""
+    检查退休的 name_utils / Component / controller 包是否重新出现。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from .tests import rig_architecture_gate_test
 
     return rig_architecture_gate_test.run()
 
 
 def rig_base_contract_test():
-    u"""运行 RigBase Naming Contract Test。"""
+    u"""
+    运行 RigBase Naming Contract Test。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from .tests import rig_base_contract_test
 
     return rig_base_contract_test.run()
 
 
 def module_base_contract_test():
-    u"""运行 ModuleBase / RigModuleBase Lifecycle Contract Test。"""
+    u"""
+    运行 ModuleBase / RigModuleBase Lifecycle Contract Test。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from .tests import module_base_contract_test
 
     return module_base_contract_test.run()
 
 
 def tool_window_smoke_test():
-    u"""运行所有正式 UI Tool 的 Direct Main 窗口 Smoke Test。"""
+    u"""
+    运行所有正式 UI Tool 的 Direct Main 窗口 Smoke Test。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from .tests import tool_window_smoke_test
 
     return tool_window_smoke_test.run()
 
 
 def face_build_smoke_test():
-    u"""运行 Face Eyelid / Curve Attachment / Zip Lip Build Smoke Test。"""
+    u"""
+    运行 Face Eyelid / Curve Attachment / Zip Lip Build Smoke Test。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from .tests import face_build_smoke_test
 
     return face_build_smoke_test.run()
 
 
 def ctrl_base_smoke_test():
-    u"""运行 CtrlBase Controller / Follow Smoke Test。"""
+    u"""
+    运行 CtrlBase Controller / Follow Smoke Test。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from .tests import ctrl_base_smoke_test
 
     return ctrl_base_smoke_test.run()
 
 
 def rig_integration_test(keep_result=False):
-    u"""运行基础 Rig 跨模块 Integration Test。"""
+    u"""
+    运行基础 Rig 跨模块 Integration Test。
+
+    Args:
+        keep_result (bool):
+            控制当前方法中的 `keep_result` 选项是否启用。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from .tests import rig_integration_test
 
     return rig_integration_test.run(

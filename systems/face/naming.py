@@ -55,7 +55,7 @@ def create_role_name(
 
     Returns:
         str:
-            根据当前 Face Naming 业务规则组合后的标准 Rig Name。
+        根据当前 Face Naming 业务规则组合后的标准 Rig Name。
     """
     role_parts = role.split("_")
     function = role_parts[-1]
@@ -108,7 +108,7 @@ def create_feature_name(
 
     Returns:
         str:
-            根据 Region、Feature 和 Role 组合后的标准 Rig Name。
+        根据 Region、Feature 和 Role 组合后的标准 Rig Name。
     """
     part = "{}_{}".format(
         region,

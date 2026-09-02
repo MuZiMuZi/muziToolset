@@ -120,6 +120,14 @@ class ControlCreatorDialog(QDialog):
     u"""Controller Creator 主窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        执行 `__init__` 对应的 Maya 工具操作。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(ControlCreatorDialog, self).__init__(parent)
 
         self.create_widgets()
@@ -143,7 +151,9 @@ class ControlCreatorDialog(QDialog):
     # =========================================================================
 
     def create_widgets(self):
-        u"""创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(
             u"创建控制器"
         )
@@ -274,7 +284,9 @@ class ControlCreatorDialog(QDialog):
         )
 
     def create_layouts(self):
-        u"""创建窗口布局。"""
+        u"""
+        创建窗口布局。
+        """
         main_layout = QVBoxLayout(
             self
         )
@@ -366,7 +378,9 @@ class ControlCreatorDialog(QDialog):
         main_layout.addLayout(action_layout)
 
     def create_connections(self):
-        u"""连接 UI Signal。"""
+        u"""
+        连接 UI Signal。
+        """
         self.shape_search_line.textChanged.connect(
             self.filter_shape_library
         )
@@ -385,7 +399,9 @@ class ControlCreatorDialog(QDialog):
     # =========================================================================
 
     def refresh_shape_library(self):
-        u"""重新读取正式 Controller Shape 资源目录。"""
+        u"""
+        重新读取正式 Controller Shape 资源目录。
+        """
         self.shape_list.clear()
 
         if not os.path.isdir(controller_shapes_dir):
@@ -462,7 +478,13 @@ class ControlCreatorDialog(QDialog):
         )
 
     def filter_shape_library(self, text_value):
-        u"""根据搜索文字过滤 Shape。"""
+        u"""
+        根据搜索文字过滤 Shape。
+
+        Args:
+            text_value (str):
+                需要显示、验证或写入 Qt 文本控件的字符串。
+        """
         search_text = text_value.strip().lower()
         index = 0
 
@@ -479,7 +501,13 @@ class ControlCreatorDialog(QDialog):
             index += 1
 
     def selected_shape_name(self):
-        u"""返回当前选中的 Shape 名称。"""
+        u"""
+        返回当前选中的 Shape 名称。
+
+        Returns:
+            object | None:
+                方法执行后的结果数据。
+        """
         selected_items = self.shape_list.selectedItems()
 
         if not selected_items:
@@ -494,7 +522,9 @@ class ControlCreatorDialog(QDialog):
     # =========================================================================
 
     def update_color_preview(self):
-        u"""刷新 Maya Index Color 预览块。"""
+        u"""
+        刷新 Maya Index Color 预览块。
+        """
         color_index = self.color_spin.value()
         rgb = maya_colors.get(
             color_index,
@@ -518,7 +548,13 @@ class ControlCreatorDialog(QDialog):
     # =========================================================================
 
     def get_create_targets(self):
-        u"""根据当前创建模式返回 Target List。"""
+        u"""
+        根据当前创建模式返回 Target List。
+
+        Returns:
+            object | list:
+                方法执行后的结果数据。
+        """
         mode = self.create_mode_combo.currentData()
 
         if mode == "world":
@@ -588,7 +624,21 @@ class ControlCreatorDialog(QDialog):
         return rig_name.name
 
     def get_control_name(self, target, target_index, target_count):
-        u"""生成当前 Controller 的正式名称。"""
+        u"""
+        生成当前 Controller 的正式名称。
+
+        Args:
+            target (str):
+                接收结果或被处理的目标 Maya 节点名称。
+            target_index (int):
+                BlendShape Target 在 Weight / Target Group 中使用的逻辑索引。
+            target_count (int):
+                当前构建、采样或查询过程使用的元素数量。
+
+        Returns:
+            object:
+                方法执行后的结果数据。
+        """
         custom_name = self.name_line.text().strip()
 
         if custom_name:
@@ -656,7 +706,9 @@ class ControlCreatorDialog(QDialog):
     # =========================================================================
 
     def create_controls(self):
-        u"""根据 UI 参数调用 ctrl_base.create_ctrl()。"""
+        u"""
+        根据 UI 参数调用 ctrl_base.create_ctrl()。
+        """
         shape_name = self.selected_shape_name()
 
         if not shape_name:
@@ -737,7 +789,13 @@ class ControlCreatorDialog(QDialog):
 
 
 def main():
-    u"""显示并返回 Control Creator 窗口。"""
+    u"""
+    显示并返回 Control Creator 窗口。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     return window_utils.show_window(
         "tools.controller.create_ctrl_tool",
         ControlCreatorDialog

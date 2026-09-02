@@ -92,6 +92,16 @@ def get_ctrl_hierarchy_names(
 
     其它 Module 如果需要在 Build 前检查 Controller 层级残留，应调用本方法，
     不要再次手写 ctrl_ -> zero_ / driven_ / space_ 等字符串替换。
+
+    Args:
+        name (str):
+            创建或查询时使用的节点名称。
+        create_sub_ctrl (bool):
+            当前 Rig 操作或驱动使用的动画 Controller Transform。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
     """
     ctrl_rig = _get_rig_name(
         name
@@ -153,7 +163,45 @@ def create_ctrl(
         add_to_set=True,
         ctrl_set="ctrl_set"
 ):
-    u"""创建 MuziTools 标准 Controller。"""
+    u"""
+    创建 MuziTools 标准 Controller。
+
+    Args:
+        name (str):
+            创建或查询时使用的节点名称。
+        shape (str):
+            Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
+        radius (float):
+            创建节点或控制器使用的半径值。
+        color (int):
+            Viewport Override 使用的 Index Color 或 RGB Color。
+        axis (str):
+            操作使用的轴向标记。
+        target_node (str):
+            接收数据、匹配结果或操作结果的 Target Maya 节点。
+        parent_node (str):
+            Child 最终需要挂接到的 Parent DAG 节点名称。
+        rotate_x (float):
+            Controller Shape / Transform 绕 X 轴应用的旋转角度。
+        create_sub_ctrl (bool):
+            当前 Rig 操作或驱动使用的动画 Controller Transform。
+        sub_color (object):
+            当前方法执行 Maya / Rig 操作时使用的 `sub_color` 数据。
+        lock_attr_list (list):
+            当前方法需要保持顺序批量处理的数据列表。
+        add_to_set (bool):
+            是否把创建后的 Controller 加入指定 Controller Set。
+        ctrl_set (str):
+            当前 Maya / Rig 操作使用的 `ctrl_set` 名称或标记。
+
+    Returns:
+        dict:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     # -------------------------------------------------------------------------
     # Step 01：检查创建参数与 Scene 输入
     # -------------------------------------------------------------------------
@@ -437,7 +485,39 @@ def create_fk_ctrl(
         add_to_set=True,
         ctrl_set="ctrl_set"
 ):
-    u"""根据 Target List 和明确的 Ctrl Name List 创建 FK Controller Chain。"""
+    u"""
+    根据 Target List 和明确的 Ctrl Name List 创建 FK Controller Chain。
+
+    Args:
+        target_list (list):
+            当前方法需要保持顺序批量处理的数据列表。
+        ctrl_name_list (list):
+            当前方法需要保持顺序批量处理的数据列表。
+        shape (str):
+            Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
+        radius (float):
+            创建节点或控制器使用的半径值。
+        color (int):
+            Viewport Override 使用的 Index Color 或 RGB Color。
+        axis (str):
+            操作使用的轴向标记。
+        parent_node (str):
+            Child 最终需要挂接到的 Parent DAG 节点名称。
+        constrain (bool):
+            创建 Controller 后是否建立 Controller / Output 到 Target 的约束关系。
+        add_to_set (bool):
+            是否把创建后的 Controller 加入指定 Controller Set。
+        ctrl_set (str):
+            当前 Maya / Rig 操作使用的 `ctrl_set` 名称或标记。
+
+    Returns:
+        object | list:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if not target_list:
         return []
 
@@ -525,7 +605,29 @@ def create_follow(
         attr_name="follow",
         maintain_offset=True
 ):
-    u"""给标准 Controller 创建 0 - 1 Follow。"""
+    u"""
+    给标准 Controller 创建 0 - 1 Follow。
+
+    Args:
+        driver_node (object):
+            当前方法执行 Maya / Rig 操作时使用的 `driver_node` 数据。
+        ctrl_dict (dict):
+            当前方法使用的结构化配置 / 映射数据。
+        weight (float):
+            当前计算、混合或变形使用的权重值。
+        attr_name (str):
+            `attr_name` 对应的 Maya 节点或资源名称。
+        maintain_offset (bool):
+            是否在建立约束或矩阵关系时保持当前偏移。
+
+    Returns:
+        dict:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     scene_utils.validate_node(
         driver_node,
         u"Follow Driver"
@@ -684,7 +786,31 @@ def create_space_switch(
         default_index=0,
         maintain_offset=True
 ):
-    u"""给标准 Controller 创建 Enum Space Switch。"""
+    u"""
+    给标准 Controller 创建 Enum Space Switch。
+
+    Args:
+        ctrl_dict (dict):
+            当前方法使用的结构化配置 / 映射数据。
+        space_target_dict (dict):
+            当前方法使用的结构化配置 / 映射数据。
+        attr_name (str):
+            `attr_name` 对应的 Maya 节点或资源名称。
+        default_index (int):
+            对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
+        maintain_offset (bool):
+            是否在建立约束或矩阵关系时保持当前偏移。
+
+    Returns:
+        dict:
+            方法执行后的结果数据。
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     if not space_target_dict:
         raise ValueError(
             u"Space Target Dict 不能为空。"
@@ -1066,7 +1192,21 @@ def save_rebuild_cache(
         cache_name=None,
         owned_node_list=None
 ):
-    u"""把 Ctrl 自定义属性和外部连接保存到 Maya Network Node。"""
+    u"""
+    把 Ctrl 自定义属性和外部连接保存到 Maya Network Node。
+
+    Args:
+        ctrl_node (object):
+            当前方法执行 Maya / Rig 操作时使用的 `ctrl_node` 数据。
+        cache_name (str):
+            `cache_name` 对应的 Maya 节点或资源名称。
+        owned_node_list (list):
+            当前方法需要保持顺序批量处理的数据列表。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     scene_utils.validate_node(
         ctrl_node,
         u"Ctrl Node"
@@ -1334,7 +1474,25 @@ def restore_rebuild_cache(
         ctrl_node,
         delete_cache=True
 ):
-    u"""把 Rebuild Cache 恢复到新 Ctrl。"""
+    u"""
+    把 Rebuild Cache 恢复到新 Ctrl。
+
+    Args:
+        cache_node (object):
+            当前方法执行 Maya / Rig 操作时使用的 `cache_node` 数据。
+        ctrl_node (object):
+            当前方法执行 Maya / Rig 操作时使用的 `ctrl_node` 数据。
+        delete_cache (bool):
+            当前清理 / 重建流程是否执行 `delete_cache` 对应的删除步骤。
+
+    Returns:
+        dict:
+            方法执行后的结果数据。
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     scene_utils.validate_node(
         cache_node,
         u"Rebuild Cache"
@@ -1457,7 +1615,17 @@ def restore_rebuild_cache(
 
 
 def delete_rebuild_cache(cache_node):
-    u"""手动删除 Controller Rebuild Cache。"""
+    u"""
+    手动删除 Controller Rebuild Cache。
+
+    Args:
+        cache_node (object):
+            当前方法执行 Maya / Rig 操作时使用的 `cache_node` 数据。
+
+    Returns:
+        bool:
+            方法执行后的结果数据。
+    """
     if not cache_node:
         return False
 

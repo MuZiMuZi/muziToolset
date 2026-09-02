@@ -24,7 +24,13 @@ from .setup import FaceSetup
 
 
 def show():
-    u"""打开正式 Face Rig Workflow UI。"""
+    u"""
+    打开正式 Face Rig Workflow UI。
+
+    Returns:
+        object:
+            方法执行后的结果数据。
+    """
     from . import ui
 
     return ui.show()

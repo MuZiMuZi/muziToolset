@@ -56,7 +56,7 @@ def is_component(item):
 
     Returns:
         bool:
-            输入是 Vertex、Edge、Face、CV 等常见组件时返回 True。
+        输入是 Vertex、Edge、Face、CV 等常见组件时返回 True。
     """
     if not item:
         return False
@@ -95,7 +95,7 @@ def get_item_world_position(item):
 
     Returns:
         list | None:
-            有效时返回 [x, y, z]；无法查询位置时返回 None。
+        有效时返回 [x, y, z]；无法查询位置时返回 None。
     """
     try:
         position = cmds.xform(
@@ -130,7 +130,7 @@ def get_item_world_rotation(item):
 
     Returns:
         list | None:
-            有效时返回 [rotateX, rotateY, rotateZ]；组件或无法查询时返回 None。
+        有效时返回 [rotateX, rotateY, rotateZ]；组件或无法查询时返回 None。
     """
     if is_component(item):
         return None
@@ -196,11 +196,11 @@ def snap_to_average(
 
     Returns:
         dict:
-            返回 position 和 rotation；没有有效平均旋转时 rotation 为 None。
+        返回 position 和 rotation；没有有效平均旋转时 rotation 为 None。
 
     Raises:
         RuntimeError:
-            没有参考项、目标为空或无法取得任何有效参考位置时抛出。
+        没有参考项、目标为空或无法取得任何有效参考位置时抛出。
     """
     if not reference_items:
         raise RuntimeError(
