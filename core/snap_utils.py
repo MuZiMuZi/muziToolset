@@ -26,7 +26,7 @@ snap_to_average(reference_items, target_item, include_rotation=True)
 
 设计原则
 --------
-- Core 不读取“最后选择的是目标”这类 UI 语义；这部分由 tools/snap_tool.py 决定。
+- Core 不读取“最后选择的是目标”这类 UI 语义；这部分由 tools/basic/snap_tool.py 决定。
 - Component 可以提供位置，但通常不能直接作为 Rotation 参考。
 - DAG Parent 查询复用 hierarchy_utils，不在本模块重新包装 listRelatives。
 - Point / Vector 数学统一复用 math_utils，不在 Snap 模块维护第二套数学实现或兼容别名。
@@ -47,7 +47,17 @@ from . import transform_utils
 # =============================================================================
 
 def is_component(item):
-    u"""判断 Maya 选择项是否为常见组件。"""
+    u"""
+    判断 Maya 选择项是否为常见组件。
+
+    Args:
+        item (str):
+            Maya Node 或 Component 字符串。
+
+    Returns:
+        bool:
+            输入是 Vertex、Edge、Face、CV 等常见组件时返回 True。
+    """
     if not item:
         return False
 
@@ -76,7 +86,17 @@ def is_component(item):
 # =============================================================================
 
 def get_item_world_position(item):
-    u"""返回对象或组件的世界空间位置。"""
+    u"""
+    返回对象或组件的世界空间位置。
+
+    Args:
+        item (str):
+            需要查询的 Maya Transform、Joint 或 Component。
+
+    Returns:
+        list | None:
+            有效时返回 [x, y, z]；无法查询位置时返回 None。
+    """
     try:
         position = cmds.xform(
             item,
@@ -101,7 +121,17 @@ def get_item_world_position(item):
 
 
 def get_item_world_rotation(item):
-    u"""返回 Transform / Joint 世界旋转，组件返回 None。"""
+    u"""
+    返回 Transform / Joint 世界旋转，组件返回 None。
+
+    Args:
+        item (str):
+            需要查询的 Maya Transform、Joint 或 Shape 名称。
+
+    Returns:
+        list | None:
+            有效时返回 [rotateX, rotateY, rotateZ]；组件或无法查询时返回 None。
+    """
     if is_component(item):
         return None
 
@@ -153,7 +183,25 @@ def snap_to_average(
         target_item,
         include_rotation=True
 ):
-    u"""把目标吸附到参考项平均位置和平均旋转。"""
+    u"""
+    把目标吸附到参考项平均位置和平均旋转。
+
+    Args:
+        reference_items (list[str]):
+            一个或多个参考 Transform、Joint 或 Component。
+        target_item (str):
+            需要被移动的目标 Maya Item。
+        include_rotation (bool):
+            是否在位置之外尝试应用有效参考对象的平均世界旋转。
+
+    Returns:
+        dict:
+            返回 position 和 rotation；没有有效平均旋转时 rotation 为 None。
+
+    Raises:
+        RuntimeError:
+            没有参考项、目标为空或无法取得任何有效参考位置时抛出。
+    """
     if not reference_items:
         raise RuntimeError(
             u"参考对象不能为空。"
