@@ -44,13 +44,56 @@ window = muziToolset.show()
 systems/rig_base.py
 ```
 
-Owns the production rig naming convention:
+`RigBase` is an instantiable base class for Rig Object identity. A Rig Object identity contains only:
 
 ```text
-[type]_[side]_[part]_[function]_[index]
+side
+part
+index
 ```
 
-Rig naming no longer belongs to Core. The former `core/name_utils.py` has been removed.
+Example:
+
+```python
+from muziToolset.systems.rig_base import RigBase
+
+rig = RigBase(
+    side="lf",
+    part="brow",
+    index=1
+)
+
+joint_name = rig.create_name(
+    node_type="jnt",
+    function="bind"
+)
+
+# jnt_lf_brow_bind_001
+```
+
+`node_type` and `function` describe the individual Maya node and are not part of the Rig Object identity.
+
+The production naming convention is:
+
+```text
+[node_type]_[side]_[part]_[function]_[index]
+```
+
+Pure parsing and validation remain class-level operations where appropriate:
+
+```python
+fields = RigBase.parse_name(
+    "jnt_lf_brow_bind_001"
+)
+
+valid = RigBase.validate_name(
+    "jnt_lf_brow_bind_001"
+)
+```
+
+The official naming keyword is `node_type=`. The former `type=` compatibility keyword is retired.
+
+Rig identity and naming no longer belong to Core. The former `core/name_utils.py` has been removed.
 
 `core/rename_utils.py` is limited to generic Maya rename and short-name operations.
 
@@ -78,6 +121,8 @@ create_joint
 create_controller
 create_connection
 ```
+
+Because `ModuleBase` inherits `RigBase`, each Module carries its own Rig Object identity and naming capability.
 
 The former `systems/component_base.py` has been removed.
 
@@ -130,6 +175,8 @@ Current production Step 03 module:
 TeethModule
 ```
 
+`FaceBase` uses the default identity `md / face / 001`; concrete business Modules define their own identity, for example `TeethModule` uses `md / teeth / 001`.
+
 ## Controller hierarchy
 
 `systems.ctrl_base.create_ctrl()` creates the standard hierarchy:
@@ -178,7 +225,7 @@ muziToolset.maya2023_smoke_test()
 muziToolset.functional_smoke_test()
 ```
 
-`rig_architecture_gate_test.py` prevents the retired `core/name_utils.py`, `systems/component_base.py`, `systems/controller/`, and Component class names from returning to production code.
+`rig_architecture_gate_test.py` prevents retired Component architecture, class-style RigBase naming calls, `RigBase(name=...)`, and the retired `type=` RigBase naming keyword from returning to production code.
 
 ## Documentation
 
@@ -188,6 +235,7 @@ The detailed architecture is documented in:
 ARCHITECTURE.md
 docs/architecture/
 docs/development/testing.md
+docs/migration/rig-architecture-0.4.md
 ```
 
 API reference pages are generated from Python source with the standard-library `ast` module, so documentation generation does not require Maya.
