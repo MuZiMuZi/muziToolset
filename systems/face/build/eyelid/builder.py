@@ -11,7 +11,7 @@ Face Eyelid Builder
     3. 通用 Transform Group 创建交给 core.scene_utils；
     4. Aim Constraint 创建交给 core.constraint_utils；
     5. Maya Undo Chunk 交给 core.scene_utils；
-    6. Rig Naming 统一使用 systems.rig_base.RigBase；
+    6. Rig Naming 统一使用实例化的 systems.rig_base.RigBase；
     7. Joint 使用眼球中心作为 Pivot，沿 Local X 放射到 Curve Attachment；
     8. 眼皮和眼袋使用同一套构建函数；
     9. 构建失败时自动清理本次创建的 Rig Nodes Group。
@@ -67,11 +67,13 @@ def create_rig_name(
     u"""
     创建 Eye Area Rig Name。
 
+    Builder 本身不是 Module，因此这里为当前节点创建一个短生命周期 Rig Identity。
+
     为保持原有节点字符串不变，同时满足 RigBase 的规则：
         part     可以包含下划线；
         function 必须是单一 Token。
 
-    因此 role 如果包含下划线，会把最后一个 Token 作为 function，
+    role 如果包含下划线，会把最后一个 Token 作为 function，
     前面的 Token 合并到 part。
     """
     side = RigBase.normalize_side(
@@ -110,12 +112,15 @@ def create_rig_name(
         part_tokens
     )
 
-    return RigBase.create_name(
-        type=node_type,
+    rig_object = RigBase(
         side=side,
         part=part,
-        function=function,
         index=index
+    )
+
+    return rig_object.create_name(
+        node_type=node_type,
+        function=function
     )
 
 
