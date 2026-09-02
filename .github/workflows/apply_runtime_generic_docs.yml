@@ -35,28 +35,41 @@ jobs:
         run: python scripts/refine_runtime_generic_docs.py --write
 
       # -----------------------------------------------------------------------
-      # Step 02：严格保证精修脚本没有碰坏 Python Syntax
+      # Step 02：统一清理 Runtime 行尾空格
+      # 这一步只删除每行末尾的空白字符，不改变 Python 语句、缩进层级或业务逻辑。
+      # -----------------------------------------------------------------------
+      - name: Normalize runtime trailing whitespace
+        shell: bash
+        run: |
+          find app core systems tools ui -type f -name '*.py' -print0 | xargs -0 sed -i 's/[[:space:]]\+$//'
+          sed -i 's/[[:space:]]\+$//' __init__.py config.py
+
+      # -----------------------------------------------------------------------
+      # Step 03：严格保证文档精修和空白整理没有碰坏 Python Syntax
       # -----------------------------------------------------------------------
       - name: Validate Python compile
         run: python -m compileall -q app core systems tools ui __init__.py config.py
 
       # -----------------------------------------------------------------------
-      # Step 03：确认所有通用占位句已经被清理
+      # Step 04：确认所有通用占位句已经被清理
       # -----------------------------------------------------------------------
       - name: Validate generic documentation quality
         run: python scripts/refine_runtime_generic_docs.py --check
 
       # -----------------------------------------------------------------------
-      # Step 04：继续通过正式 Runtime Docstring Contract
+      # Step 05：继续通过正式 Runtime Docstring Contract
       # -----------------------------------------------------------------------
       - name: Validate public runtime docstrings
         run: python scripts/normalize_runtime_docstrings.py --check
 
+      # -----------------------------------------------------------------------
+      # Step 06：确认整理后的 Diff 不再包含行尾空格等格式错误
+      # -----------------------------------------------------------------------
       - name: Check whitespace errors
         run: git diff --check
 
       # -----------------------------------------------------------------------
-      # Step 05：所有静态检查通过后才提交 Runtime 文档变化
+      # Step 07：所有静态检查通过后才提交 Runtime 文档变化
       # -----------------------------------------------------------------------
       - name: Commit refined runtime documentation
         shell: bash
