@@ -6,7 +6,8 @@ FK Control Creator
 根据 Maya 当前选择顺序创建 FK Controller Chain。
 
 实际控制器创建统一使用 systems.ctrl_base；
-Rig Name 统一使用 systems.rig_base.RigBase。
+Rig Name 统一使用 systems.rig_base.RigBase；
+外部 Maya Name Token 和 Selection 查询统一复用 Core。
 """
 
 from __future__ import print_function
@@ -14,30 +15,12 @@ from __future__ import print_function
 import maya.cmds as cmds
 
 from ...core import rename_utils
+from ...core import scene_utils
 from ...systems import ctrl_base
 from ...systems.rig_base import RigBase
 
 
 TOOL_MODE = "action"
-
-
-def _clean_part(text):
-    u"""把任意 Maya Short Name 整理成可用于 FK Rig Name 的 part。"""
-    text = str(text).strip().lower()
-    text = text.replace("|", "_")
-    text = text.replace(":", "_")
-    text = text.replace(" ", "_")
-    text = text.replace("-", "_")
-
-    while "__" in text:
-        text = text.replace("__", "_")
-
-    text = text.strip("_")
-
-    if not text:
-        text = "fk"
-
-    return text
 
 
 def get_fk_ctrl_name(target, fallback_index):
@@ -59,7 +42,10 @@ def get_fk_ctrl_name(target, fallback_index):
     rig_name = RigBase(
         type="ctrl",
         side="md",
-        part=_clean_part(short_name),
+        part=rename_utils.get_name_token(
+            short_name,
+            fallback="fk"
+        ),
         function="fk",
         index=fallback_index
     )
@@ -104,13 +90,10 @@ def create_fk_controls(
 
 def main():
     u"""按当前 Maya 选择顺序创建 FK Controller Chain。"""
-    selections = cmds.ls(
-        selection=True,
-        long=True
+    selections = scene_utils.get_selected_nodes(
+        long=True,
+        flatten=True
     )
-
-    if selections is None:
-        selections = []
 
     if not selections:
         cmds.warning(
