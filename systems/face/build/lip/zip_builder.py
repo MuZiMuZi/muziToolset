@@ -12,7 +12,7 @@ Matrix 驱动 Zip Lip 系统。
     4. 每对上下嘴唇使用动态 Rest World Matrix 计算闭合中间矩阵；
     5. 每个 Joint 上方插入独立 Zip Offset Group；
     6. Zip Offset 使用 blendMatrix 混合 Rest Matrix 和 Mid Matrix；
-    7. Rig Naming 统一使用实例化的 systems.rig_base.RigBase；
+    7. Rig Naming 统一使用 systems.rig_base.RigBase；
     8. 不直接修改 Joint translateY。
 """
 
@@ -30,7 +30,7 @@ from ....rig_base import RigBase
 
 
 # =============================================================================
-# Validate / Attribute
+# Scene Validate / Attribute
 # =============================================================================
 
 def validate_joint(joint, label):
@@ -87,42 +87,12 @@ def ensure_float_attribute(
 # Naming
 # =============================================================================
 
-def normalize_name_part(value):
-    u"""清理 Zip Lip Naming 字段。"""
-    value = str(value).strip().lower()
-    value = value.replace(" ", "_")
-    value = value.replace("-", "_")
-
-    while "__" in value:
-        value = value.replace("__", "_")
-
-    value = value.strip("_")
-
-    if not value:
-        raise ValueError(
-            u"Zip Lip Naming Function 不能为空。"
-        )
-
-    return value
-
-
 def create_name(
-        node_type,
+        type,
         function,
         index=1
 ):
-    u"""
-    创建 Zip Lip 系统标准名称。
-
-    Builder 本身不是 Module，因此为当前节点创建一个短生命周期 Rig Identity。
-
-    旧 Zip Lip Function 中存在 upper_zip_offset / zip_height 等多 Token 名称。
-    RigBase 要求 function 为单一 Token，因此把最后一个 Token 作为 function，
-    其它 Token 合并到 part，同时保持最终 Maya 节点字符串不变。
-    """
-    function = normalize_name_part(
-        function
-    )
+    u"""根据项目内部固定字段创建 Zip Lip 标准名称。"""
     function_parts = function.split("_")
     final_function = function_parts[-1]
 
@@ -137,16 +107,15 @@ def create_name(
             function_prefix
         )
 
-    rig_object = RigBase(
+    rig_name = RigBase(
+        type=type,
         side="md",
         part=part,
+        function=final_function,
         index=index
     )
 
-    return rig_object.create_name(
-        node_type=node_type,
-        function=final_function
-    )
+    return rig_name.name
 
 
 # =============================================================================
