@@ -13,9 +13,13 @@ Skirt Rig Builder
     5. 统一调用 systems.ctrl_base 创建 FK Controller。
 
 重要边界：
-    - Group 创建和 Parent 统一复用 core.hierarchy_utils；
+    - 外部名称 Token 统一复用 core.rename_utils；
+    - 三维插值统一复用 core.math_utils；
+    - Curve Shape 查询统一复用 core.curve_utils；
+    - Group / Child / Parent 统一复用 core.hierarchy_utils；
     - 世界位置查询统一复用 core.transform_utils；
     - Joint 创建统一复用 core.joint_utils；
+    - Attribute 创建统一复用 core.attr_utils；
     - DG Plug 连接统一复用 core.connection_utils；
     - Constraint 创建统一复用 core.constraint_utils；
     - Controller 创建统一复用 systems.ctrl_base；
@@ -29,40 +33,17 @@ from __future__ import print_function
 
 import maya.cmds as cmds
 
+from ....core import attr_utils
 from ....core import connection_utils
 from ....core import constraint_utils
+from ....core import curve_utils
 from ....core import hierarchy_utils
 from ....core import joint_utils
+from ....core import math_utils
+from ....core import rename_utils
 from ....core import scene_utils
 from ....core import transform_utils
 from ... import ctrl_base
-
-
-def _safe_name(text):
-    """整理裙子系统名称。"""
-    result = text.strip()
-    result = result.replace(" ", "_")
-    result = result.replace(":", "_")
-
-    if not result:
-        result = "skirt"
-
-    return result
-
-
-def _lerp(start_value, end_value, ratio):
-    """三维位置线性插值。"""
-    result = []
-    axis_index = 0
-
-    while axis_index < 3:
-        value = start_value[axis_index] + (
-            end_value[axis_index] - start_value[axis_index]
-        ) * ratio
-        result.append(value)
-        axis_index += 1
-
-    return result
 
 
 class SkirtRigBuilder(object):
@@ -75,7 +56,10 @@ class SkirtRigBuilder(object):
             vertical_count=4
     ):
         u"""初始化裙子绑定系统参数。"""
-        self.name = _safe_name(name)
+        self.name = rename_utils.get_name_token(
+            name,
+            fallback="skirt"
+        )
         self.horizontal_count = int(horizontal_count)
         self.vertical_count = int(vertical_count)
         self.validate_parameters()
@@ -159,18 +143,16 @@ class SkirtRigBuilder(object):
             if not cmds.objExists(group):
                 continue
 
-            children = cmds.listRelatives(
+            children = hierarchy_utils.get_children(
                 group,
-                children=True,
-                fullPath=True
+                full_path=True
             )
-
-            if children is None:
-                children = []
 
             for child in children:
                 if child not in delete_nodes:
-                    delete_nodes.append(child)
+                    delete_nodes.append(
+                        child
+                    )
 
         poci_nodes = cmds.ls(
             "poci_m_{}_*".format(self.name),
@@ -182,7 +164,9 @@ class SkirtRigBuilder(object):
 
         for node in poci_nodes:
             if node not in delete_nodes:
-                delete_nodes.append(node)
+                delete_nodes.append(
+                    node
+                )
 
         if delete_nodes:
             cmds.delete(
@@ -221,23 +205,9 @@ class SkirtRigBuilder(object):
             names
     ):
         """在定位曲线上创建实时 Blueprint Joint。"""
-        curve_shapes = cmds.listRelatives(
-            curve,
-            shapes=True,
-            noIntermediate=True,
-            fullPath=True,
-            type="nurbsCurve"
+        curve_shape = curve_utils.get_curve_shape(
+            curve
         )
-
-        if curve_shapes is None:
-            curve_shapes = []
-
-        if not curve_shapes:
-            raise RuntimeError(
-                u"定位曲线没有 nurbsCurve Shape：{}".format(curve)
-            )
-
-        curve_shape = curve_shapes[0]
         index = 0
 
         while index < self.horizontal_count:
@@ -356,10 +326,14 @@ class SkirtRigBuilder(object):
             curve = names[curve_key]
 
             if cmds.objExists(curve):
-                curves.append(curve)
+                curves.append(
+                    curve
+                )
 
         if not curves:
-            cmds.warning(u"尚未生成定位曲线。")
+            cmds.warning(
+                u"尚未生成定位曲线。"
+            )
             return []
 
         cmds.select(
@@ -391,10 +365,9 @@ class SkirtRigBuilder(object):
             if not cmds.objExists(group):
                 continue
 
-            children = cmds.listRelatives(
+            children = hierarchy_utils.get_children(
                 group,
-                children=True,
-                fullPath=True
+                full_path=True
             )
 
             if children:
@@ -418,10 +391,14 @@ class SkirtRigBuilder(object):
             )
 
             if not cmds.objExists(up_joint):
-                missing.append(up_joint)
+                missing.append(
+                    up_joint
+                )
 
             if not cmds.objExists(down_joint):
-                missing.append(down_joint)
+                missing.append(
+                    down_joint
+                )
 
             horizontal_index += 1
 
@@ -480,7 +457,7 @@ class SkirtRigBuilder(object):
                     self.vertical_count - 1
                 )
 
-                position = _lerp(
+                position = math_utils.lerp_point3(
                     up_position,
                     down_position,
                     ratio
@@ -535,25 +512,34 @@ class SkirtRigBuilder(object):
                     maintain_offset=False
                 )
 
-                created_controls.append(control)
-                created_joints.append(joint)
+                created_controls.append(
+                    control
+                )
+                created_joints.append(
+                    joint
+                )
                 previous_joint = joint
                 previous_control = control
                 vertical_index += 1
 
             horizontal_index += 1
 
-        cmds.addAttr(
-            build_group,
-            longName="horizontalCount",
-            attributeType="long",
-            defaultValue=self.horizontal_count
+        build_attr = attr_utils.Attr(
+            build_group
         )
-        cmds.addAttr(
-            build_group,
-            longName="verticalCount",
-            attributeType="long",
-            defaultValue=self.vertical_count
+        build_attr.add_attr(
+            "horizontalCount",
+            attr_type="long",
+            lock=False,
+            hide=True,
+            default_value=self.horizontal_count
+        )
+        build_attr.add_attr(
+            "verticalCount",
+            attr_type="long",
+            lock=False,
+            hide=True,
+            default_value=self.vertical_count
         )
 
         if created_controls:
