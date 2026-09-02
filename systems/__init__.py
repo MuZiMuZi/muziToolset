@@ -1,11 +1,13 @@
 # coding=utf-8
-u"""完整绑定系统集合。"""
+u"""MuziTools 完整 Rig System 集合。"""
 
-from .component_base import ComponentBase
-from .component_base import RigComponentBase
+from .module_base import ModuleBase
+from .module_base import RigModuleBase
+from .rig_base import RigBase
 
 
 __all__ = [
-    "ComponentBase",
-    "RigComponentBase",
+    "RigBase",
+    "ModuleBase",
+    "RigModuleBase",
 ]
