@@ -7,7 +7,7 @@ Maya 2023+ Joint 工具面板。
 
 模块职责
 --------
-1. Joint Radius、Local Rotation Axis 与 Joint Orient 显示管理；
+1. Joint Radius、Local Rotation Axis 与 Joint Orient Channel 显示管理；
 2. Maya 原生 Joint / IK / Skin Options 入口；
 3. Joint 创建、Child Joint、Joint Chain 和 Curve / Edge 转 Joint；
 4. Segment Scale Compensate 管理；
@@ -15,46 +15,18 @@ Maya 2023+ Joint 工具面板。
 6. Skin Weight Copy 入口；
 7. 提供可在 Maya Script Editor 中直接显示的 ``main()``。
 
-主要公开入口
-------------
-JointTool
-    Joint 工具主窗口。
-
-JointTool.set_axis_visibility(...)
-    批量切换 Joint Local Rotation Axis。
-
-JointTool.create_snap_joints()
-JointTool.create_child_joints()
-JointTool.parent_selected_chain()
-JointTool.create_joints_on_curves()
-JointTool.create_joints_on_edges()
-    Joint 创建与链处理入口。
-
-JointTool.set_scale_compensate(...)
-JointTool.set_orient_visibility(...)
-JointTool.clear_joint_orient()
-    Joint 属性与 Orient 管理。
-
-JointTool.copy_skin_weights()
-    Skin Weight Copy Tool 入口。
-
-main()
-    创建或恢复窗口，立即显示并返回 QWidget。
-
 架构边界
 --------
-- Joint 通用算法使用 ``core.joint_utils``；
+- Selection / Scene Query 使用 ``core.scene_utils``；
+- 单 Joint 能力使用 ``core.joint_utils``；
+- 多 Joint / Curve CV -> Joint 使用 ``core.joint_chain_utils``；
+- DAG Hierarchy 使用 ``core.hierarchy_utils``；
+- Curve 创建使用 ``core.curve_utils``；
+- Attribute Channel State 使用 ``core.attr_utils``；
+- Constraint 使用 ``core.constraint_utils``；
 - Skin 使用 ``core.skin_utils``；
-- 子工具窗口通过 ``app.window_manager``；
-- 本文件只负责 UI、Selection 与参数收集；
-- 完整 Arm / Leg / Spine 等 Rig System 不放进本文件。
-
-直接运行
---------
-
-    from muziToolset.tools.joint import joint_tool
-
-    window = joint_tool.main()
+- Tool 只保留 UI、Selection 语义、Warning 和命令编排；
+- 不重新引入退休的 JointChain / JointCurve / Selection Compatibility 类。
 """
 
 from __future__ import print_function
@@ -82,27 +54,26 @@ except ImportError:
     from PySide6.QtWidgets import QWidget
 
 from ...app import window_manager
+from ...core import attr_utils
+from ...core import constraint_utils
+from ...core import curve_utils
+from ...core import hierarchy_utils
+from ...core import joint_chain_utils
 from ...core import joint_utils
+from ...core import rename_utils
+from ...core import scene_utils
 from ...core import skin_utils
+from ...core import transform_utils
 from ...ui import theme
 from ...ui import window_utils
 from . import joint_resamp_tool
-from ...core import constraint_utils
-from ...core import scene_utils
 
 
 class JointTool(QWidget):
     """木子绑定工具集 Joint 工具。"""
 
     def __init__(self, parent=None):
-        u"""
-        执行 `__init__` 对应的 Maya 工具操作。
-
-        Args:
-            parent (str):
-                父级 Maya 节点名称。
-        """
-
+        u"""创建 Joint 工具窗口。"""
         super(JointTool, self).__init__(parent)
 
         self.create_widgets()
@@ -121,9 +92,7 @@ class JointTool(QWidget):
     # =========================================================================
 
     def create_widgets(self):
-        u"""
-        创建窗口控件。
-        """
+        u"""创建窗口控件。"""
         self.title_label = theme.make_title(u"Joint 工具")
         self.subtitle_label = theme.make_subtitle(
             u"集中处理 Joint 显示、创建、链编辑、Orient、IK 入口和常用 Skin 操作。"
@@ -182,9 +151,7 @@ class JointTool(QWidget):
         theme.style_primary(self.copy_skin_button)
 
     def create_layouts(self):
-        u"""
-        创建滚动 Card 布局。
-        """
+        u"""创建滚动 Card 布局。"""
         root_layout = QVBoxLayout(self)
         root_layout.setContentsMargins(16, 16, 16, 16)
         root_layout.setSpacing(12)
@@ -283,9 +250,7 @@ class JointTool(QWidget):
         root_layout.addWidget(scroll_area, 1)
 
     def create_connections(self):
-        u"""
-        连接界面信号。
-        """
+        u"""连接界面信号。"""
         self.joint_size_spinbox.valueChanged.connect(self.set_joint_size)
         self.show_axis_selected_button.clicked.connect(self.show_axis_selected)
         self.hide_axis_selected_button.clicked.connect(self.hide_axis_selected)
@@ -322,182 +287,170 @@ class JointTool(QWidget):
 
     @staticmethod
     def open_orient_options():
-        u"""
-        执行 `open_orient_options` 对应的 Maya 工具操作。
-        """
-
+        u"""打开 Maya Joint Orient Options。"""
         mel.eval("OrientJointOptions;")
 
     @staticmethod
     def open_mirror_options():
-        u"""
-        执行 `open_mirror_options` 对应的 Maya 工具操作。
-        """
-
+        u"""打开 Maya Mirror Joint Options。"""
         mel.eval("MirrorJointOptions;")
 
     @staticmethod
     def open_ik_handle_options():
-        u"""
-        执行 `open_ik_handle_options` 对应的 Maya 工具操作。
-        """
-
+        u"""打开 Maya IK Handle Options。"""
         mel.eval("IKHandleToolOptions;")
 
     @staticmethod
     def open_ik_spline_options():
-        u"""
-        执行 `open_ik_spline_options` 对应的 Maya 工具操作。
-        """
-
+        u"""打开 Maya IK Spline Options。"""
         mel.eval("IKSplineHandleToolOptions;")
 
     @staticmethod
     def open_bind_skin_options():
-        u"""
-        执行 `open_bind_skin_options` 对应的 Maya 工具操作。
-        """
-
+        u"""打开 Maya Smooth Bind Skin Options。"""
         mel.eval("SmoothBindSkinOptions;")
 
     @staticmethod
     def open_detach_skin_options():
-        u"""
-        执行 `open_detach_skin_options` 对应的 Maya 工具操作。
-        """
-
+        u"""打开 Maya Detach Skin Options。"""
         mel.eval("DetachSkinOptions;")
 
     @staticmethod
     def open_paint_skin_options():
-        u"""
-        执行 `open_paint_skin_options` 对应的 Maya 工具操作。
-        """
-
+        u"""打开 Maya Paint Skin Weights。"""
         mel.eval("ArtPaintSkinWeightsToolOptions;")
 
     @staticmethod
     def open_mirror_skin_options():
-        u"""
-        执行 `open_mirror_skin_options` 对应的 Maya 工具操作。
-        """
-
+        u"""打开 Maya Mirror Skin Weights Options。"""
         mel.eval("MirrorSkinWeightsOptions;")
+
+    # =========================================================================
+    # Selection
+    # =========================================================================
+
+    @staticmethod
+    def get_selected_joints():
+        u"""返回当前选择 Joint；空选择时显示 Tool Warning。"""
+        joints = scene_utils.get_selected_nodes(
+            node_type="joint",
+            long=True,
+            flatten=True
+        )
+
+        if not joints:
+            cmds.warning(
+                u"请先选择一个或以上的 Joint。"
+            )
+
+        return joints
 
     # =========================================================================
     # Joint Display
     # =========================================================================
 
-    @staticmethod
-    def get_selected_joints():
-        u"""
-        返回当前选择 Joint。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
-        joints = cmds.ls(
-            selection=True,
-            type="joint",
-            long=True
-        ) or []
-
-        if not joints:
-            cmds.warning(u"请先选择一个或以上的 Joint。")
-
-        return joints
-
     def set_joint_size(self, value):
-        u"""
-        设置全场景 Joint Radius。
-
-        Args:
-            value (float):
-                需要读取、写入或参与计算的数值。
-        """
-        joint_utils.Joint.set_all_radius(
-            float(value)
+        u"""设置全场景 Joint Radius。"""
+        joints = scene_utils.get_nodes_by_type(
+            "joint",
+            long=True
         )
 
-    def show_axis_selected(self):
-        u"""
-        执行 `show_axis_selected` 对应的 Maya 工具操作。
-        """
+        for joint in joints:
+            joint_utils.Joint(
+                joint
+            ).set_radius(
+                float(value)
+            )
 
+    def show_axis_selected(self):
         self.set_axis_visibility(True, False, False)
 
     def hide_axis_selected(self):
-        u"""
-        执行 `hide_axis_selected` 对应的 Maya 工具操作。
-        """
-
         self.set_axis_visibility(False, False, False)
 
     def show_axis_hierarchy(self):
-        u"""
-        执行 `show_axis_hierarchy` 对应的 Maya 工具操作。
-        """
-
         self.set_axis_visibility(True, True, False)
 
     def hide_axis_hierarchy(self):
-        u"""
-        执行 `hide_axis_hierarchy` 对应的 Maya 工具操作。
-        """
-
         self.set_axis_visibility(False, True, False)
 
     def show_axis_all(self):
-        u"""
-        执行 `show_axis_all` 对应的 Maya 工具操作。
-        """
-
         self.set_axis_visibility(True, False, True)
 
     def hide_axis_all(self):
-        u"""
-        执行 `hide_axis_all` 对应的 Maya 工具操作。
-        """
-
         self.set_axis_visibility(False, False, True)
 
     @staticmethod
     def set_axis_visibility(visible, hierarchy, all_joints):
-        u"""
-        设置 Joint Local Rotation Axis 显示。
+        u"""设置选择、选择层级或场景全部 Joint 的 Local Rotation Axis。"""
+        process_joints = []
 
-        Args:
-            visible (bool):
-                Joint / Guide / UI 元素是否保持可见。
-            hierarchy (bool | str):
-                Joint Tool 当前是否按 Skeleton Hierarchy 工作，或用于指定层级范围。
-            all_joints (str | list[str]):
-                当前 Joint Tool 已解析出的完整 Joint 列表。
-        """
         if all_joints:
-            joint_utils.Joint.set_all_axis_visibility(
-                visible=visible
+            process_joints = scene_utils.get_nodes_by_type(
+                "joint",
+                long=True
             )
-            return
+        else:
+            selected_joints = JointTool.get_selected_joints()
 
-        joint_utils.Joint.set_selected_axis_visibility(
-            visible=visible,
-            include_descendents=hierarchy
-        )
+            if not selected_joints:
+                return
+
+            for selected_joint in selected_joints:
+                if hierarchy:
+                    hierarchy_joints = hierarchy_utils.get_descendants(
+                        selected_joint,
+                        node_type="joint",
+                        include_root=True,
+                        full_path=True
+                    )
+
+                    for hierarchy_joint in hierarchy_joints:
+                        if hierarchy_joint not in process_joints:
+                            process_joints.append(
+                                hierarchy_joint
+                            )
+                else:
+                    if selected_joint not in process_joints:
+                        process_joints.append(
+                            selected_joint
+                        )
+
+        for joint in process_joints:
+            joint_object = joint_utils.Joint(
+                joint
+            )
+
+            if visible:
+                joint_object.show_axis()
+            else:
+                joint_object.hide_axis()
 
     # =========================================================================
     # Joint Create / Edit
     # =========================================================================
 
     def create_snap_joints(self):
-        u"""
-        在当前选择位置创建 Joint。
-        """
-        scene_utils.open_undo_chunk("MuziCreateSnapJoints")
+        u"""在当前选择的 Object / Component 世界位置创建 Joint。"""
+        selections = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
+        )
+
+        if not selections:
+            cmds.warning(
+                u"请选择一个或以上的物体或组件。"
+            )
+            return
+
+        scene_utils.open_undo_chunk(
+            "MuziCreateSnapJoints"
+        )
 
         try:
-            joints = joint_utils.Joint.create_from_selection(
+            joints = joint_chain_utils.create_joints_at_items(
+                items=selections,
                 name_prefix="jnt_snap",
                 parent_chain=False,
                 radius=self.joint_size_spinbox.value()
@@ -509,36 +462,62 @@ class JointTool(QWidget):
                     replace=True
                 )
         except Exception as error:
-            cmds.warning(str(error))
+            cmds.warning(
+                str(error)
+            )
         finally:
             scene_utils.close_undo_chunk()
 
     def create_child_joints(self):
-        u"""
-        为选择 Transform / Joint 创建子 Joint。
-        """
-        selections = cmds.ls(
-            selection=True,
-            long=True
-        ) or []
+        u"""为当前选择的 Transform / Joint 创建同姿态 Child Joint。"""
+        selections = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
+        )
 
         if not selections:
-            cmds.warning(u"请选择一个或以上的 Transform / Joint。")
+            cmds.warning(
+                u"请选择一个或以上的 Transform / Joint。"
+            )
             return
 
         created_joints = []
 
-        scene_utils.open_undo_chunk("MuziCreateChildJoints")
+        scene_utils.open_undo_chunk(
+            "MuziCreateChildJoints"
+        )
 
         try:
             for selected_object in selections:
-                joint = joint_utils.Joint.create_child(
+                transform_utils.validate_transform(
+                    selected_object
+                )
+                short_name = rename_utils.get_short_name(
+                    selected_object
+                )
+                child_name = "{}_child".format(
+                    short_name
+                )
+
+                if not child_name.startswith("jnt_"):
+                    child_name = "jnt_{}".format(
+                        child_name
+                    )
+
+                joint = joint_utils.Joint.create_at_object(
                     obj=selected_object,
+                    name=child_name,
+                    parent=selected_object,
+                    match_rotation=True,
                     radius=self.joint_size_spinbox.value()
                 )
-                created_joints.append(joint)
+                created_joints.append(
+                    joint
+                )
         except Exception as error:
-            cmds.warning(str(error))
+            cmds.warning(
+                str(error)
+            )
         finally:
             scene_utils.close_undo_chunk()
 
@@ -550,13 +529,7 @@ class JointTool(QWidget):
 
     @staticmethod
     def open_resample_tool():
-        u"""
-        通过统一 Window Manager 打开 Joint Resample。
-
-        Returns:
-            object:
-            方法执行后的结果数据。
-        """
+        u"""通过统一 Window Manager 打开 Joint Resample。"""
         return window_manager.show_tool(
             "joint/joint_resample",
             joint_resamp_tool.main
@@ -564,50 +537,66 @@ class JointTool(QWidget):
 
     @staticmethod
     def parent_selected_chain():
-        u"""
-        按照选择顺序把 Joint 组成父子链。
-        """
-        scene_utils.open_undo_chunk("MuziParentJointChain")
+        u"""按照当前 Joint Selection 顺序组成父子链。"""
+        joints = JointTool.get_selected_joints()
+
+        if not joints:
+            return
+
+        scene_utils.open_undo_chunk(
+            "MuziParentJointChain"
+        )
 
         try:
-            joint_utils.JointChain.parent_selected_as_chain()
+            joint_chain_utils.parent_joints_as_chain(
+                joints
+            )
         except Exception as error:
-            cmds.warning(str(error))
+            cmds.warning(
+                str(error)
+            )
         finally:
             scene_utils.close_undo_chunk()
 
     def create_joints_on_curves(self):
-        u"""
-        根据选择 Curve 的 CV 创建 Joint Chain。
-        """
-        selections = cmds.ls(
-            selection=True,
-            long=True
-        ) or []
+        u"""根据选择 Curve 的 CV 创建 Joint Chain。"""
+        selections = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
+        )
 
         if not selections:
-            cmds.warning(u"请选择一条或多条 NURBS Curve。")
+            cmds.warning(
+                u"请选择一条或多条 NURBS Curve。"
+            )
             return
 
         created_joints = []
 
-        scene_utils.open_undo_chunk("MuziCurveJointChain")
+        scene_utils.open_undo_chunk(
+            "MuziCurveJointChain"
+        )
 
         try:
             for curve in selections:
-                result = joint_utils.JointCurve.create_joints_on_curve_points(
+                result = joint_chain_utils.create_joints_on_curve_cvs(
                     curve=curve,
                     parent_chain=True,
                     create_group=True,
                     radius=self.joint_size_spinbox.value()
                 )
-
-                joints = result.get("jnt_list") or []
+                joints = result.get(
+                    "jnt_list"
+                ) or []
 
                 for joint in joints:
-                    created_joints.append(joint)
+                    created_joints.append(
+                        joint
+                    )
         except Exception as error:
-            cmds.warning(str(error))
+            cmds.warning(
+                str(error)
+            )
         finally:
             scene_utils.close_undo_chunk()
 
@@ -618,48 +607,26 @@ class JointTool(QWidget):
             )
 
     def create_joints_on_edges(self):
-        u"""
-        把连续 Polygon Edge 转 Curve 后创建 Joint Chain。
-        """
-        selections = cmds.ls(
-            selection=True,
-            flatten=True
-        ) or []
-
-        valid_edges = []
-
-        for selected_item in selections:
-            if ".e[" in selected_item:
-                valid_edges.append(selected_item)
-
-        if not valid_edges:
-            cmds.warning(u"请选择连续的多边形边。")
-            return
-
-        scene_utils.open_undo_chunk("MuziEdgeJointChain")
+        u"""把当前 Polygon Edge Selection 转 Curve 后创建 Joint Chain。"""
+        scene_utils.open_undo_chunk(
+            "MuziEdgeJointChain"
+        )
 
         try:
-            cmds.select(
-                valid_edges,
-                replace=True
-            )
-
-            curve_result = cmds.polyToCurve(
-                form=2,
+            curve = curve_utils.create_curve_from_selected_edges(
+                name="crv_edge_joint_chain_001",
                 degree=3,
-                conformToSmoothMeshPreview=1,
-                constructionHistory=False
+                form=2
             )
-            curve = curve_result[0]
-
-            result = joint_utils.JointCurve.create_joints_on_curve_points(
+            result = joint_chain_utils.create_joints_on_curve_cvs(
                 curve=curve,
                 parent_chain=True,
                 create_group=True,
                 radius=self.joint_size_spinbox.value()
             )
-
-            joints = result.get("jnt_list") or []
+            joints = result.get(
+                "jnt_list"
+            ) or []
 
             if joints:
                 cmds.select(
@@ -667,130 +634,112 @@ class JointTool(QWidget):
                     replace=True
                 )
         except Exception as error:
-            cmds.warning(str(error))
+            cmds.warning(
+                str(error)
+            )
         finally:
             scene_utils.close_undo_chunk()
 
     def enable_scale_compensate(self):
-        u"""
-        执行 `enable_scale_compensate` 对应的 Maya 工具操作。
-        """
-
         self.set_scale_compensate(True)
 
     def disable_scale_compensate(self):
-        u"""
-        执行 `disable_scale_compensate` 对应的 Maya 工具操作。
-        """
-
         self.set_scale_compensate(False)
 
     def set_scale_compensate(self, enabled):
-        u"""
-        设置选择 Joint 的 Segment Scale Compensate。
-
-        Args:
-            enabled (bool):
-                当前 UI 控件或 Rig 功能是否启用。
-        """
+        u"""设置选择 Joint 的 Segment Scale Compensate。"""
         joints = self.get_selected_joints()
 
         if not joints:
             return
 
-        scene_utils.open_undo_chunk("MuziScaleCompensate")
+        scene_utils.open_undo_chunk(
+            "MuziScaleCompensate"
+        )
 
         try:
             for joint in joints:
-                joint_utils.Joint(joint).set_scale_compensate(
+                joint_utils.Joint(
+                    joint
+                ).set_scale_compensate(
                     enabled=enabled
                 )
         finally:
             scene_utils.close_undo_chunk()
 
     def show_orient(self):
-        u"""
-        执行 `show_orient` 对应的 Maya 工具操作。
-        """
-
         self.set_orient_visibility(True)
 
     def hide_orient(self):
-        u"""
-        执行 `hide_orient` 对应的 Maya 工具操作。
-        """
-
         self.set_orient_visibility(False)
 
     def set_orient_visibility(self, visible):
-        u"""
-        显示或隐藏 Joint Orient。
-
-        Args:
-            visible (bool):
-                Joint / Guide / UI 元素是否保持可见。
-        """
+        u"""显示或隐藏选择 Joint 的 jointOrient Channel。"""
         joints = self.get_selected_joints()
 
         if not joints:
             return
+
+        orient_attrs = [
+            "jointOrientX",
+            "jointOrientY",
+            "jointOrientZ",
+        ]
 
         for joint in joints:
-            joint_handler = joint_utils.Joint(joint)
-
-            if visible:
-                joint_handler.show_orient()
-            else:
-                joint_handler.hide_orient()
+            joint_attr = attr_utils.Attr(
+                joint
+            )
+            joint_attr.set_attrs_state(
+                orient_attrs,
+                keyable=visible
+            )
 
     def clear_joint_orient(self):
-        u"""
-        清空选择 Joint 的 Joint Orient。
-        """
+        u"""清空选择 Joint 的 jointOrientXYZ。"""
         joints = self.get_selected_joints()
 
         if not joints:
             return
 
-        scene_utils.open_undo_chunk("MuziClearJointOrient")
+        scene_utils.open_undo_chunk(
+            "MuziClearJointOrient"
+        )
 
         try:
             for joint in joints:
-                joint_utils.Joint(joint).clear_orient()
+                joint_utils.Joint(
+                    joint
+                ).clear_joint_orient()
         finally:
             scene_utils.close_undo_chunk()
 
     def create_curve_on_joints(self):
-        u"""
-        按照选择 Joint 世界位置创建 Curve。
-        """
+        u"""按照选择 Joint 世界位置创建 Curve。"""
         joints = self.get_selected_joints()
 
         if len(joints) < 2:
-            cmds.warning(u"至少选择两个 Joint。")
-            return
-
-        positions = []
-
-        for joint in joints:
-            position = cmds.xform(
-                joint,
-                query=True,
-                worldSpace=True,
-                translation=True
+            cmds.warning(
+                u"至少选择两个 Joint。"
             )
-            positions.append(position)
+            return
 
         degree = 3
 
-        if len(positions) < 4:
+        if len(joints) < 4:
             degree = 1
 
-        curve = cmds.curve(
-            name="crv_joint_chain_001",
-            degree=degree,
-            point=positions
-        )
+        try:
+            curve = curve_utils.create_curve_from_nodes(
+                nodes=joints,
+                name="crv_joint_chain_001",
+                degree=degree
+            )
+        except Exception as error:
+            cmds.warning(
+                str(error)
+            )
+            return
 
         cmds.select(
             curve,
@@ -799,13 +748,11 @@ class JointTool(QWidget):
 
     @staticmethod
     def batch_parent_constraint():
-        u"""
-        按照 driver/driven 成对顺序批量创建 Parent Constraint。
-        """
-        selections = cmds.ls(
-            selection=True,
-            long=True
-        ) or []
+        u"""按照 driver/driven 成对顺序批量创建 Parent Constraint。"""
+        selections = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
+        )
 
         if len(selections) < 2 or len(selections) % 2 != 0:
             cmds.warning(
@@ -813,7 +760,9 @@ class JointTool(QWidget):
             )
             return
 
-        scene_utils.open_undo_chunk("MuziBatchParentConstraint")
+        scene_utils.open_undo_chunk(
+            "MuziBatchParentConstraint"
+        )
 
         try:
             selection_index = 0
@@ -839,16 +788,16 @@ class JointTool(QWidget):
 
     @staticmethod
     def copy_skin_weights():
-        u"""
-        把第一个选择模型 Skin Weight 复制到后续选择模型。
-        """
-        selections = cmds.ls(
-            selection=True,
-            long=True
-        ) or []
+        u"""把第一个选择模型 Skin Weight 复制到后续选择模型。"""
+        selections = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
+        )
 
         if len(selections) < 2:
-            cmds.warning(u"请先选择源模型，再选择一个或多个目标模型。")
+            cmds.warning(
+                u"请先选择源模型，再选择一个或多个目标模型。"
+            )
             return
 
         source_mesh = selections[0]
@@ -860,7 +809,9 @@ class JointTool(QWidget):
                 targets=target_meshes
             )
         except Exception as error:
-            cmds.warning(str(error))
+            cmds.warning(
+                str(error)
+            )
             return
 
         if result:
@@ -872,13 +823,7 @@ class JointTool(QWidget):
 
 
 def main():
-    u"""
-    创建或恢复 Joint Tool，立即显示并返回 QWidget。
-
-    Returns:
-        object:
-        方法执行后的结果数据。
-    """
+    u"""创建或恢复 Joint Tool，立即显示并返回 QWidget。"""
     return window_utils.show_window(
         "tools.joint.joint_tool",
         JointTool
