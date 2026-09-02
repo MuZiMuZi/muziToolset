@@ -26,7 +26,8 @@ RigBase Contract：
     - RigBase 是实例化 Rig Object Base；
     - create_name / mirror_name / create_unique_name 等必须通过实例调用；
     - parse_name / validate_name / normalize_* 可以继续作为 Class Method 使用；
-    - 不允许恢复旧 Name Object Constructor：RigBase(name=...)。
+    - 不允许恢复旧 Name Object Constructor：RigBase(name=...)；
+    - RigBase Naming 参数统一使用 node_type=，退休旧 type= Keyword。
 """
 
 from __future__ import print_function
@@ -66,6 +67,12 @@ RIG_BASE_INSTANCE_METHODS = {
     "is_center",
     "resolve_identity",
     "set_identity",
+}
+
+RIG_BASE_NODE_TYPE_METHODS = {
+    "create_name",
+    "get_next_index",
+    "create_unique_name",
 }
 
 
@@ -231,9 +238,47 @@ def is_rig_base_class_method_call(call_node):
     return True
 
 
+def check_retired_node_type_keyword(call_node, relative_path):
+    u"""禁止 Rig Naming 方法重新使用退休的 type= Keyword。"""
+    issues = []
+    function_node = call_node.func
+
+    if not isinstance(function_node, ast.Attribute):
+        return issues
+
+    method_name = function_node.attr
+
+    if method_name not in RIG_BASE_NODE_TYPE_METHODS:
+        return issues
+
+    keyword_names = get_keyword_names(
+        call_node
+    )
+
+    if "type" not in keyword_names:
+        return issues
+
+    issues.append({
+        "file": relative_path,
+        "line": call_node.lineno,
+        "detail": "RigBase Naming 已退休 type=，请使用 node_type=",
+    })
+    return issues
+
+
 def check_rig_base_call(call_node, relative_path):
     u"""检查 RigBase 是否被重新当成 Name Utility / Name Object。"""
     issues = []
+
+    retired_keyword_issues = check_retired_node_type_keyword(
+        call_node,
+        relative_path
+    )
+
+    for issue in retired_keyword_issues:
+        issues.append(
+            issue
+        )
 
     if isinstance(call_node.func, ast.Name):
         if call_node.func.id == "RigBase":
