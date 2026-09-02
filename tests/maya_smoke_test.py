@@ -3,31 +3,18 @@ u"""
 Maya 2023 Smoke Test
 ====================
 
-对 muziToolset 根包正式运行架构做一次非破坏性的启动检查。
+对 muziToolset 0.4 正式运行架构做一次非破坏性的启动检查。
 
-默认只测试：
+验证：
     1. Maya / PySide 环境；
-    2. 根包与 Tool Registry；
-    3. Core / Systems 模块 import；
-    4. Resources 路径与 Controller Shape JSON；
-    5. 所有窗口型工具 main() 是否可以成功创建 QWidget；
-    6. 命令型工具是否存在可调用 main()。
+    2. Tool Registry；
+    3. 当前 snake_case Core 模块；
+    4. RigBase / ModuleBase / CtrlBase / Face Modules；
+    5. Resources 和 Controller Shape JSON；
+    6. UI Tool main() 是否能创建 QWidget；
+    7. Command Tool 是否存在可调用 main()。
 
-不会：
-    - 新建 Maya 场景；
-    - 删除或创建绑定节点；
-    - 执行 Snap；
-    - 执行 FK 创建；
-    - 点击任何 Build / Clean / Skin / BlendShape 操作按钮。
-
-Maya Script Editor 使用：
-
-    from muziToolset.tests import maya_smoke_test
-    report = maya_smoke_test.run()
-
-如果需要额外测试 Window Manager 的真实 show / close 生命周期：
-
-    report = maya_smoke_test.run(test_window_manager=True)
+不会执行任何 Rig Build / Skin / Clean 场景修改。
 """
 
 from __future__ import print_function
@@ -51,39 +38,22 @@ package_name = __name__.split(".")[0]
 
 
 ui_tool_modules = [
-    # 主工具箱
     "app.toolbox",
-
-    # Basic
     "tools.basic.attr_tool",
     "tools.basic.connections_tool",
     "tools.basic.constraint_tool",
     "tools.basic.rename_tool",
-
-    # Joint
     "tools.joint.joint_tool",
     "tools.joint.joint_resamp_tool",
-
-    # Controller
     "tools.controller.control_shape_tool",
     "tools.controller.create_ctrl_tool",
-
-    # Rig
     "tools.rig.rig_tool",
     "tools.rig.skirt_ctrl_tool",
-
-    # Face
     "tools.face.face_rig_tool",
     "tools.face.face_select_key_tool",
-
-    # Skin
     "tools.skin.skin_tool",
-
-    # BlendShape
     "tools.blendshape.add_blendshape_tool",
     "tools.blendshape.invert_shape_tool",
-
-    # Clean
     "tools.clean.hierarchy_cleaner",
     "tools.clean.model_checker",
 ]
@@ -96,30 +66,45 @@ command_tool_modules = [
 
 
 core_modules = [
-    "core.attrUtils",
+    "core.attr_utils",
     "core.blendshape_utils",
+    "core.config_utils",
+    "core.connection_utils",
+    "core.constraint_utils",
     "core.control_shape_utils",
-    "core.hierarchyUtils",
-    "core.jointUtils",
+    "core.curve_utils",
+    "core.hierarchy_utils",
+    "core.joint_utils",
+    "core.matrix_utils",
     "core.mesh_utils",
     "core.model_check_utils",
-    "core.nameUtils",
     "core.rename_utils",
     "core.scene_clean_utils",
+    "core.scene_utils",
     "core.skin_utils",
     "core.snap_utils",
+    "core.transform_utils",
 ]
 
 
 system_modules = [
-    "systems.controller",
-    "systems.controller.builder",
+    "systems",
+    "systems.rig_base",
+    "systems.module_base",
+    "systems.ctrl_base",
     "systems.face",
     "systems.face.config",
     "systems.face.face_base",
-    "systems.face.face_setup",
-    "systems.face.face_guide",
-    "systems.face.wizard",
+    "systems.face.setup",
+    "systems.face.setup.face_setup",
+    "systems.face.guide",
+    "systems.face.guide.face_guide",
+    "systems.face.build",
+    "systems.face.modules",
+    "systems.face.modules.teeth",
+    "systems.face.ui",
+    "systems.face.ui.workflow_controller",
+    "systems.face.ui.build_controller",
     "systems.body.skirt",
     "systems.body.skirt.builder",
 ]
@@ -165,7 +150,7 @@ expected_registry = {
 
 
 def _full_module_name(relative_name):
-    """返回 muziToolset 根包下的完整模块名称。"""
+    u"""返回 muziToolset 根包下的完整模块名称。"""
     return "{}.{}".format(
         package_name,
         relative_name
@@ -173,7 +158,7 @@ def _full_module_name(relative_name):
 
 
 def _new_result(name, category):
-    """创建单项测试结果。"""
+    u"""创建单项测试结果。"""
     return {
         "name": name,
         "category": category,
@@ -184,26 +169,35 @@ def _new_result(name, category):
 
 
 def _record_pass(results, name, category, message=u"通过"):
-    """记录通过项。"""
-    result = _new_result(name, category)
+    u"""记录通过项。"""
+    result = _new_result(
+        name,
+        category
+    )
     result["passed"] = True
     result["message"] = message
-    results.append(result)
+    results.append(
+        result
+    )
     return result
 
 
 def _record_fail(results, name, category, error):
-    """记录失败项和 traceback。"""
-    result = _new_result(name, category)
-    result["passed"] = False
+    u"""记录失败项和 traceback。"""
+    result = _new_result(
+        name,
+        category
+    )
     result["message"] = str(error)
     result["traceback"] = traceback.format_exc()
-    results.append(result)
+    results.append(
+        result
+    )
     return result
 
 
 def _safe_delete_widget(widget):
-    """关闭并释放 Smoke Test 创建的 QWidget。"""
+    u"""关闭并释放 Smoke Test 创建的 QWidget。"""
     if widget is None:
         return
 
@@ -230,19 +224,22 @@ def _safe_delete_widget(widget):
 
 
 def _test_environment(results):
-    """检查 Maya 与 Qt 基础环境。"""
+    u"""检查 Maya 与 Qt 基础环境。"""
     try:
-        maya_version = cmds.about(version=True)
-        api_version = cmds.about(apiVersion=True)
-        message = u"Maya {} | API {}".format(
-            maya_version,
-            api_version
+        maya_version = cmds.about(
+            version=True
+        )
+        api_version = cmds.about(
+            apiVersion=True
         )
         _record_pass(
             results,
             "Maya Environment",
             "environment",
-            message
+            u"Maya {} | API {}".format(
+                maya_version,
+                api_version
+            )
         )
     except Exception as error:
         _record_fail(
@@ -276,7 +273,7 @@ def _test_environment(results):
 
 
 def _test_registry(results):
-    """检查主工具注册表是否包含全部正式工具。"""
+    u"""检查主工具注册表是否包含全部正式工具。"""
     try:
         tools_module = importlib.import_module(
             _full_module_name("tools")
@@ -295,7 +292,9 @@ def _test_registry(results):
         results,
         "Tool Registry Import",
         "registry",
-        u"已发现 {} 个分类".format(len(registered))
+        u"已发现 {} 个分类".format(
+            len(registered)
+        )
     )
 
     for category_name in expected_registry:
@@ -304,24 +303,24 @@ def _test_registry(results):
             category_name,
             {}
         )
-
         missing_tools = []
 
         for tool_name in expected_tools:
             if tool_name not in category_tools:
-                missing_tools.append(tool_name)
+                missing_tools.append(
+                    tool_name
+                )
 
         if missing_tools:
-            error = RuntimeError(
-                u"缺少工具：{}".format(
-                    ", ".join(missing_tools)
-                )
-            )
             _record_fail(
                 results,
                 category_name,
                 "registry",
-                error
+                RuntimeError(
+                    u"缺少工具：{}".format(
+                        ", ".join(missing_tools)
+                    )
+                )
             )
             continue
 
@@ -329,17 +328,19 @@ def _test_registry(results):
             results,
             category_name,
             "registry",
-            u"{} 个工具".format(len(expected_tools))
+            u"{} 个工具".format(
+                len(expected_tools)
+            )
         )
 
 
 def _test_import_list(results, relative_names, category):
-    """批量测试普通 Python 模块 import。"""
+    u"""批量测试普通 Python 模块 Import。"""
     for relative_name in relative_names:
-        full_name = _full_module_name(relative_name)
-
         try:
-            importlib.import_module(full_name)
+            importlib.import_module(
+                _full_module_name(relative_name)
+            )
             _record_pass(
                 results,
                 relative_name,
@@ -356,19 +357,15 @@ def _test_import_list(results, relative_names, category):
 
 
 def _test_resources(results):
-    """检查正式资源路径和 Controller Shape JSON。"""
+    u"""检查正式资源路径和 Controller Shape JSON。"""
     try:
         config_module = importlib.import_module(
             _full_module_name("config")
         )
-
         resource_paths = [
             ("resources_dir", config_module.resources_dir),
             ("icons_dir", config_module.icons_dir),
-            (
-                "controller_shapes_dir",
-                config_module.controller_shapes_dir
-            ),
+            ("controller_shapes_dir", config_module.controller_shapes_dir),
         ]
 
         for path_name, path_value in resource_paths:
@@ -402,10 +399,10 @@ def _test_resources(results):
         )
 
         for file_name in file_names:
-            if not file_name.lower().endswith(".json"):
-                continue
-
-            shape_files.append(file_name)
+            if file_name.lower().endswith(".json"):
+                shape_files.append(
+                    file_name
+                )
 
         shape_files.sort()
 
@@ -420,7 +417,9 @@ def _test_resources(results):
         )
 
         with open(first_shape_path, "r") as file_object:
-            json.load(file_object)
+            json.load(
+                file_object
+            )
 
         _record_pass(
             results,
@@ -440,12 +439,12 @@ def _test_resources(results):
 
 
 def _test_command_tools(results):
-    """命令型工具只检查 import 和 main()，不执行场景修改。"""
+    u"""命令型工具只检查 Import 和 main()，不执行场景修改。"""
     for relative_name in command_tool_modules:
-        full_name = _full_module_name(relative_name)
-
         try:
-            module = importlib.import_module(full_name)
+            module = importlib.import_module(
+                _full_module_name(relative_name)
+            )
             main_function = getattr(
                 module,
                 "main",
@@ -473,7 +472,7 @@ def _test_command_tools(results):
 
 
 def _test_ui_tools(results, test_window_manager=False):
-    """创建全部窗口型工具，验证 QWidget 和 Window Manager。"""
+    u"""创建全部窗口型工具，验证 QWidget 和 Window Manager。"""
     window_manager = None
 
     if test_window_manager:
@@ -491,12 +490,15 @@ def _test_ui_tools(results, test_window_manager=False):
             test_window_manager = False
 
     for relative_name in ui_tool_modules:
-        full_name = _full_module_name(relative_name)
         widget = None
-        tool_key = "smoke/{}".format(relative_name)
+        tool_key = "smoke/{}".format(
+            relative_name
+        )
 
         try:
-            module = importlib.import_module(full_name)
+            module = importlib.import_module(
+                _full_module_name(relative_name)
+            )
             main_function = getattr(
                 module,
                 "main",
@@ -536,7 +538,6 @@ def _test_ui_tools(results, test_window_manager=False):
                     widget.__class__.__name__
                 )
             )
-
         except Exception as error:
             _record_fail(
                 results,
@@ -544,24 +545,30 @@ def _test_ui_tools(results, test_window_manager=False):
                 "ui_tool",
                 error
             )
-
         finally:
-            if test_window_manager and window_manager is not None:
-                try:
-                    window_manager.close_tool(tool_key)
-                except Exception:
-                    pass
+            if test_window_manager:
+                if window_manager is not None:
+                    try:
+                        window_manager.close_tool(
+                            tool_key
+                        )
+                    except Exception:
+                        pass
             else:
-                _safe_delete_widget(widget)
+                _safe_delete_widget(
+                    widget
+                )
 
 
 def _restore_selection(selection):
-    """恢复运行 Smoke Test 前的 Maya 选择。"""
+    u"""恢复运行 Smoke Test 前的 Maya 选择。"""
     valid_selection = []
 
     for node in selection:
         if cmds.objExists(node):
-            valid_selection.append(node)
+            valid_selection.append(
+                node
+            )
 
     try:
         if valid_selection:
@@ -570,21 +577,22 @@ def _restore_selection(selection):
                 replace=True
             )
         else:
-            cmds.select(clear=True)
+            cmds.select(
+                clear=True
+            )
     except Exception:
         pass
 
 
 def _print_report(report):
-    """把 Smoke Test 结果输出到 Maya Script Editor。"""
+    u"""把 Smoke Test 结果输出到 Maya Script Editor。"""
     print("")
     print("=" * 78)
     print("Muzi Toolset - Maya Smoke Test")
+    print("Architecture: RigBase / ModuleBase / CtrlBase")
     print("=" * 78)
 
-    results = report["results"]
-
-    for result in results:
+    for result in report["results"]:
         status = "PASS"
 
         if not result["passed"]:
@@ -600,13 +608,10 @@ def _print_report(report):
         )
 
         if not result["passed"]:
-            traceback_text = result.get(
-                "traceback",
-                ""
-            )
-
-            if traceback_text:
-                print(traceback_text)
+            if result["traceback"]:
+                print(
+                    result["traceback"]
+                )
 
     print("-" * 78)
     print(
@@ -620,18 +625,8 @@ def _print_report(report):
 
 
 def run(test_window_manager=False):
-    """运行完整非破坏性 Maya Smoke Test。
-
-    Args:
-        test_window_manager (bool):
-            False：只构造 QWidget，不显示窗口。
-            True：通过 app.window_manager 真实 show / close 每个窗口。
-
-    Returns:
-        dict: 测试汇总与逐项结果。
-    """
+    u"""运行完整非破坏性 Maya Smoke Test。"""
     results = []
-
     original_selection = cmds.ls(
         selection=True,
         long=True
@@ -641,8 +636,12 @@ def run(test_window_manager=False):
         original_selection = []
 
     try:
-        _test_environment(results)
-        _test_registry(results)
+        _test_environment(
+            results
+        )
+        _test_registry(
+            results
+        )
         _test_import_list(
             results,
             core_modules,
@@ -653,14 +652,20 @@ def run(test_window_manager=False):
             system_modules,
             "systems"
         )
-        _test_resources(results)
-        _test_command_tools(results)
+        _test_resources(
+            results
+        )
+        _test_command_tools(
+            results
+        )
         _test_ui_tools(
             results,
             test_window_manager=test_window_manager
         )
     finally:
-        _restore_selection(original_selection)
+        _restore_selection(
+            original_selection
+        )
 
     passed_count = 0
     failed_count = 0
@@ -678,7 +683,9 @@ def run(test_window_manager=False):
         "results": results,
     }
 
-    _print_report(report)
+    _print_report(
+        report
+    )
     return report
 
 
