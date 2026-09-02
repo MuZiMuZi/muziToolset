@@ -24,8 +24,9 @@ Module Identity：
 边界：
     - Teeth 只处理 Upper / Lower Teeth；
     - Gum 属于 Mouth / Jaw Deformation，不在本 Module 中刚性绑定；
-    - Rig Identity / Naming 继承 FaceBase -> RigBase；
-    - Controller 创建统一使用 systems.ctrl_base；
+    - Rig Naming 继承 FaceBase -> RigBase；
+    - Controller 创建与层级名称统一使用 systems.ctrl_base；
+    - Scene Node Availability 统一使用 core.scene_utils；
     - Module 生命周期统一使用 systems.module_base.RigModuleBase。
 """
 
@@ -38,7 +39,6 @@ from ....core import matrix_utils
 from ....core import scene_utils
 from ....core import skin_utils
 from ... import ctrl_base
-from ...rig_base import RigBase
 from .. import config
 from ..face_base import FaceBase
 from ..guide import FaceGuide
@@ -182,12 +182,10 @@ class TeethModule(FaceBase):
                     u"Teeth Module 构建结果不完整。"
                 )
 
-            if not cmds.objExists(node):
-                raise RuntimeError(
-                    u"Teeth Module 构建节点不存在：{}".format(
-                        node
-                    )
-                )
+            scene_utils.validate_node(
+                node,
+                label=u"Teeth Module Build Node"
+            )
 
         self._validate_skin_result(
             model=self.upper_teech_model,
@@ -252,33 +250,6 @@ class TeethModule(FaceBase):
         )
         return True
 
-    @staticmethod
-    def _get_ctrl_hierarchy_names(ctrl_name):
-        u"""返回 ctrl_base.create_ctrl() 会创建的确定性层级名称。"""
-        ctrl_rig = RigBase(
-            name=ctrl_name
-        )
-        type_list = [
-            "ctrl",
-            "zero",
-            "driven",
-            "space",
-            "connect",
-            "offset",
-            "output",
-        ]
-        node_name_list = []
-
-        for type_name in type_list:
-            node_name = ctrl_rig.create_name(
-                type=type_name
-            )
-            node_name_list.append(
-                node_name
-            )
-
-        return node_name_list
-
     def _validate_model_inputs_unique(self):
         u"""检查 Upper / Lower Teeth 是否误用了同一个模型。"""
         model_inputs = [
@@ -328,38 +299,30 @@ class TeethModule(FaceBase):
                 self.lower_teeth_skin_name
             )
 
-        upper_ctrl_nodes = self._get_ctrl_hierarchy_names(
-            self.upper_teeth_ctrl_name
-        )
-        lower_ctrl_nodes = self._get_ctrl_hierarchy_names(
-            self.lower_teeth_ctrl_name
-        )
+        ctrl_names = [
+            self.upper_teeth_ctrl_name,
+            self.lower_teeth_ctrl_name,
+        ]
 
-        for node_name in upper_ctrl_nodes:
-            expected_nodes.append(
-                node_name
+        for ctrl_name in ctrl_names:
+            hierarchy_names = ctrl_base.get_ctrl_hierarchy_names(
+                ctrl_name
             )
 
-        for node_name in lower_ctrl_nodes:
-            expected_nodes.append(
-                node_name
-            )
+            for hierarchy_key in hierarchy_names:
+                hierarchy_name = hierarchy_names[hierarchy_key]
 
-        existing_nodes = []
+                if hierarchy_name is None:
+                    continue
 
-        for node_name in expected_nodes:
-            if cmds.objExists(node_name):
-                existing_nodes.append(
-                    node_name
+                expected_nodes.append(
+                    hierarchy_name
                 )
 
-        if existing_nodes:
-            raise RuntimeError(
-                u"Teeth Module 已存在或存在同名残留节点，请先清理后再构建：{}".format(
-                    ", ".join(existing_nodes)
-                )
-            )
-
+        scene_utils.ensure_nodes_available(
+            expected_nodes,
+            label=u"Teeth Module Build Node"
+        )
         return True
 
     @staticmethod
@@ -533,14 +496,10 @@ class TeethModule(FaceBase):
                 )
             )
 
-        if not cmds.objExists(skin_cluster):
-            raise RuntimeError(
-                u"{} SkinCluster 不存在：{}".format(
-                    label,
-                    skin_cluster
-                )
-            )
-
+        scene_utils.validate_node(
+            skin_cluster,
+            label=u"{} SkinCluster".format(label)
+        )
         return True
 
 
