@@ -44,7 +44,7 @@ app      主程序和窗口生命周期
 
 ```text
 systems/rig_base.py
-    Rig Object Identity + Rig Naming
+    Rig Object Attributes + Rig Naming
 
 systems/module_base.py
     Module Lifecycle
@@ -55,7 +55,7 @@ systems/ctrl_base.py
 
 正式业务单元统一使用 **Module** 术语，不再使用 Component。
 
-Rig Identity / Rig Naming 已从 Core 移到 `RigBase`；旧 `core/name_utils.py` 已删除。
+Rig Object 基础属性和 Rig Naming 由 `RigBase` 提供；旧 `core/name_utils.py` 已删除。
 
 Controller 的唯一正式实现是 `systems/ctrl_base.py`；旧 `systems/controller/` 已删除。
 
@@ -116,10 +116,12 @@ Gum 不属于 Teeth 刚体绑定，后续由 Jaw / Mouth Deformation 处理。
 
 `RigBase` 是可实例化的 Rig Object 基类。
 
-一个 Rig Object 的 Identity 只包含：
+每个实例直接保存：
 
 ```text
-side / part / index
+side
+part
+index
 ```
 
 正式 Maya Rig 节点格式：
@@ -145,6 +147,10 @@ rig = RigBase(
     index=1
 )
 
+print(rig.side)
+print(rig.part)
+print(rig.index)
+
 joint_name = rig.create_name(
     node_type="jnt",
     function="bind"
@@ -153,7 +159,14 @@ joint_name = rig.create_name(
 # jnt_lf_brow_bind_001
 ```
 
-`node_type` 和 `function` 描述具体 Maya 节点，不属于 Rig Object Identity。
+简单状态不再通过额外包装方法读取；直接使用：
+
+```python
+if rig.side == "lf":
+    pass
+```
+
+`node_type` 和 `function` 描述具体 Maya 节点，不属于 Rig Object 实例属性。
 
 纯解析 / 校验可以直接调用：
 
