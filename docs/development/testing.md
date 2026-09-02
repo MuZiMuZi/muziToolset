@@ -4,7 +4,7 @@ MuziTools 的质量门槛分成两层：
 
 ```text
 普通 Python / GitHub Actions
-    -> 静态架构 + MkDocs 构建
+    -> 静态架构 + 文档构建
 
 Maya 2023
     -> 真实 Scene / DG / DAG / UI 行为
@@ -14,17 +14,114 @@ Maya 2023
 
 ---
 
-# 1. Pipeline / Core Smoke Test
+# 1. Static Architecture Gates
+
+## Core Import Style
+
+```bash
+python tests/core_import_style_test.py
+```
+
+检查正式 Core 只使用当前 snake_case 模块，不重新引入退休 CamelCase 文件。
+
+## Rig Architecture Gate
+
+```bash
+python tests/rig_architecture_gate_test.py
+```
+
+阻止以下退休架构重新出现：
+
+```text
+core/name_utils.py
+systems/component_base.py
+systems/controller/
+systems/face/build/teeth_component.py
+systems/face/build/teeth_builder.py
+```
+
+同时检查正式 Python 源码不能重新 Import：
+
+```text
+name_utils
+component_base
+systems.controller
+```
+
+并禁止退休类名：
+
+```text
+ComponentBase
+RigComponentBase
+TeethComponent
+```
+
+## RigBase Contract
+
+```bash
+python tests/rig_base_contract_test.py
+```
+
+验证 Rig Naming 的创建、解析、Mirror、Side Normalize 和字段限制。
+
+## ModuleBase Contract
+
+```bash
+python tests/module_base_contract_test.py
+```
+
+验证：
+
+```text
+ModuleBase
+    collect_inputs
+    prepare_data
+    process_data
+    finalize_step
+
+RigModuleBase
+    collect_inputs
+    prepare_data
+    create_joint
+    create_controller
+    create_connection
+    finalize_step
+```
+
+---
+
+# 2. Maya Non-destructive Smoke
 
 Maya Python Script Editor：
 
 ```python
 import muziToolset
 
+report = muziToolset.smoke_test()
+```
+
+验证：
+
+- Maya / Qt 环境；
+- Tool Registry；
+- 当前 Core Import；
+- `RigBase / ModuleBase / CtrlBase` Import；
+- Face Module Import；
+- Resources；
+- UI Tool `main()`；
+- Command Tool `main()` 存在。
+
+不会点击实际 Build / Skin / Clean 操作。
+
+---
+
+# 3. Pipeline / Core Smoke
+
+```python
 report = muziToolset.pipeline_smoke_test()
 ```
 
-这组测试用于验证基础 Core 拆分后的关键底层能力，例如：
+验证基础 Core：
 
 ```text
 Scene
@@ -35,218 +132,208 @@ Matrix
 Constraint
 Curve
 Surface
-Animation IO
 ```
 
-测试过程中会创建临时 Maya 节点，完成计算验证后自动清理。
-
-Matrix Case 会重点验证 `offsetParentMatrix` 网络，防止重新出现由 Driven 自身 `parentInverseMatrix` 引起的 Evaluation Cycle。
+测试创建临时节点后自动清理。
 
 ---
 
-# 2. Extended Core Smoke Test
-
-Maya Python Script Editor：
+# 4. Extended Core / RigBase Smoke
 
 ```python
-import muziToolset
-
 report = muziToolset.extended_core_smoke_test()
 ```
 
-测试范围：
+验证：
 
 ```text
 attr_utils
-    Attribute / String Config / Message Config
-
 hierarchy_utils
-    Extra Group / Parent / World Transform 保持
-
 joint_utils
-    Joint Create / Chain / Radius / Joint Label
-
-name_utils + rename_utils
-    Standard Name / Parse / Mirror / Maya Rename
-
+RigBase + rename_utils
 model_check_utils
-    Model Issue / Issue Schema
-
 scene_clean_utils
-    Safe Freeze / Recursive Empty Group Clean
 ```
 
-当前 Maya 2023 已验证结果：
+其中 Naming 职责已经拆开：
 
 ```text
-Total: 6 | Passed: 6 | Failed: 0
+RigBase
+    Standard Rig Name / Parse / Mirror
+
+rename_utils
+    Maya Rename
 ```
 
-这组测试是这轮 Core snake_case 整理后的主要真机质量门槛。
+不要再把 Rig Naming 写回 Core。
 
 ---
 
-# 3. Tool Window Smoke Test
-
-所有正式 UI Tool 都要求下面这种调用在 Maya Script Editor 中直接显示窗口：
+# 5. CtrlBase Smoke
 
 ```python
-from muziToolset.tools.controller import create_ctrl_tool
-
-window = create_ctrl_tool.main()
+report = muziToolset.ctrl_base_smoke_test()
 ```
 
-完整自动验证入口：
+验证当前唯一 Controller System：
+
+```text
+CtrlBase Create
+Follow 0 / 1
+```
+
+后续 Space Switch / FK 等专项行为继续扩展此测试。
+
+---
+
+# 6. Face Build Smoke
 
 ```python
-import muziToolset
+report = muziToolset.face_build_smoke_test()
+```
 
+验证 Face Build Algorithm：
+
+```text
+Eyelid Radial Joint
+Curve Attachment
+Matrix Zip Lip
+```
+
+这些是可复用 Builder / Algorithm，不称为 Component。
+
+完整 Teeth / Jaw / Eye 等业务单元统一称为 Module。
+
+---
+
+# 7. Rig Integration Test
+
+```python
+report = muziToolset.rig_integration_test()
+```
+
+验证跨层构建链：
+
+```text
+RigBase Naming
+    ↓
+Joint
+    ↓
+CtrlBase
+    ↓
+Standard Controller Hierarchy
+    ↓
+offsetParentMatrix
+    ↓
+Joint Follow
+```
+
+需要保留测试结果查看时：
+
+```python
+report = muziToolset.rig_integration_test(
+    keep_result=True
+)
+```
+
+---
+
+# 8. Maya 2023 Architecture Smoke
+
+```python
+report = muziToolset.maya2023_smoke_test()
+```
+
+重点检查当前 0.4 架构：
+
+```text
+Core Contract
+CtrlBase Contract
+Face Module Lifecycle
+Face Build Algorithms
+```
+
+该测试要求真实 Maya 2023 Runtime。
+
+---
+
+# 9. Functional Smoke Suite
+
+```python
+report = muziToolset.functional_smoke_test()
+```
+
+当前作为总调度器组合：
+
+```text
+Pipeline Core
+Extended Core / RigBase
+CtrlBase
+Face Build
+Rig Integration
+```
+
+总调度器不再复制各 System 的构建实现。
+
+---
+
+# 10. Tool Window Smoke
+
+```python
 report = muziToolset.tool_window_smoke_test()
 ```
 
-测试步骤：
+用于检查所有正式 UI Tool：
 
 ```text
-调用 Tool.main()
+main()
     ↓
-确认返回 QWidget / QDialog
+QWidget / QDialog
     ↓
-确认窗口 Visible
-    ↓
-再次调用 main()
-    ↓
-确认还是同一个实例
-    ↓
-关闭测试窗口
+窗口生命周期
 ```
 
-测试只检查窗口生命周期，不点击实际 Rig 功能按钮，因此不会创建 Joint、修改 Skin 或执行 Scene Clean。
-
-当前 Maya 2023 已验证结果：
-
-```text
-Total: 17 | Passed: 17 | Failed: 0
-```
-
-执行型 Tool，例如 Quick Snap 或根据 Selection 直接创建 FK Controller，不属于窗口测试范围。
+不执行实际 Rig 场景操作。
 
 ---
 
-# 4. Core Import Style Gate
+# 11. 文档 / CI
 
-Core 已经统一为 snake_case：
-
-```text
-attr_utils.py
-hierarchy_utils.py
-joint_utils.py
-name_utils.py
-```
-
-以下历史 CamelCase 文件已经删除：
-
-```text
-attrUtils.py
-hierarchyUtils.py
-jointUtils.py
-nameUtils.py
-```
-
-静态检查：
+推荐静态顺序：
 
 ```bash
 python tests/core_import_style_test.py
-```
-
-该测试不 Import Maya，使用 Python AST 检查：
-
-1. `core/` 下不能重新出现退休 CamelCase 文件；
-2. `app / ui / core / tools / systems / tests` 不能重新 Import 退休模块。
-
-发现问题时脚本返回非零退出码，因此可以作为 GitHub Actions 的硬质量门槛。
-
----
-
-# 5. Controller Component Test
-
-```python
-report = muziToolset.controller_component_smoke_test()
-```
-
-用于验证 Controller System，例如 Parent Space Blend。
-
----
-
-# 6. Face Component Test
-
-```python
-report = muziToolset.face_component_smoke_test()
-```
-
-用于验证 Face System 中已经正式化的组件。
-
-这组测试与 Core Smoke 分开维护。只有在 Maya 真机运行并得到明确 PASS 输出后，才应该在文档中记录为已验证状态。
-
----
-
-# 7. 文档 / CI 测试
-
-文档本身不需要 Maya。
-
-本地可以执行：
-
-```bash
-python tests/core_import_style_test.py
+python tests/rig_architecture_gate_test.py
+python tests/rig_base_contract_test.py
+python tests/module_base_contract_test.py
 python scripts/generate_mkdocs_reference.py
 mkdocs build --strict
 ```
 
-GitHub Actions 的正式顺序：
-
-```text
-Checkout
-    ↓
-Install Documentation Dependencies
-    ↓
-Core Import Style Gate
-    ↓
-Generate API Reference
-    ↓
-mkdocs build --strict
-    ↓
-Upload Pages Artifact
-    ↓
-Deploy GitHub Pages
-```
-
-AST Reference 生成器不会 Import `maya.cmds`，因此 Linux Runner 可以直接构建文档。
+AST Reference Generator 不 Import Maya，因此可以在 GitHub Actions Linux Runner 运行。
 
 ---
 
-# 8. 重构 Core 时的推荐顺序
+# 12. 重构推荐顺序
 
 ```text
 读取现有调用
     ↓
-确定正式模块职责
+确定正式职责
     ↓
-保持 API 或准备兼容迁移
+建立新 API
     ↓
-修改 Core
+迁移全部调用方
     ↓
-更新 Tool / System 调用
+迁移 Smoke / Contract Test
     ↓
-更新 Smoke Test
+静态反查退休入口
     ↓
-运行静态 Import Gate
+删除旧实现
+    ↓
+更新文档
     ↓
 Maya 2023 真机验证
-    ↓
-删除确认无引用的旧入口
-    ↓
-更新 MkDocs 文档
-    ↓
-确认 GitHub Actions 全绿
 ```
 
-不要在静态引用归零和 Maya 真机测试之前删除仍可能被正式代码引用的旧 API。
+旧 API 已经明确退休时，不保留会让新代码继续误用的 Compatibility Wrapper。
