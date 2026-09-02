@@ -5,7 +5,7 @@ Rig Base
 
 MuziTools 所有 Rig Object / Module 共用的最底层实例基类。
 
-RigBase 不再是 Name Object，也不保存某一个 Maya Node 的 node_type / function。
+RigBase 不是 Name Object，也不保存某一个 Maya Node 的 node_type / function。
 它代表一个 Rig 对象自己的 Identity：
 
     side
@@ -42,10 +42,11 @@ RigBase 不再是 Name Object，也不保存某一个 Maya Node 的 node_type / 
     1. RigBase 是可实例化的 Rig 对象基础类；
     2. 实例 Identity 只包含 side / part / index；
     3. create_name() 没有显式覆盖字段时，读取实例 Identity；
-    4. parse_name() 只解析输入名称，不修改当前实例；
-    5. Rig Naming 属于 systems 层，不属于 core；
-    6. Core rename_utils 只负责 Maya Rename / Short Name 等通用操作；
-    7. RigBase 不负责 Joint、Controller、Matrix、Config、Hierarchy 或 UI。
+    4. node_type / function 描述具体 Maya 节点，不属于 Rig Object Identity；
+    5. parse_name() 只解析输入名称，不修改当前实例；
+    6. Rig Naming 属于 systems 层，不属于 core；
+    7. Core rename_utils 只负责 Maya Rename / Short Name 等通用操作；
+    8. RigBase 不负责 Joint、Controller、Matrix、Config、Hierarchy 或 UI。
 """
 
 from __future__ import print_function
@@ -277,44 +278,6 @@ class RigBase(object):
 
         return index
 
-    @staticmethod
-    def _resolve_node_type_alias(
-            node_type,
-            kwargs,
-            method_name
-    ):
-        u"""处理 0.4 迁移期间遗留的 type Keyword Alias。"""
-        legacy_node_type = kwargs.pop(
-            "type",
-            None
-        )
-
-        if kwargs:
-            invalid_keys = []
-
-            for key in kwargs:
-                invalid_keys.append(
-                    key
-                )
-
-            raise TypeError(
-                u"{}() 不支持参数：{}".format(
-                    method_name,
-                    ", ".join(invalid_keys)
-                )
-            )
-
-        if node_type is None:
-            node_type = legacy_node_type
-        elif legacy_node_type is not None:
-            raise TypeError(
-                u"{}() 的 node_type 和旧 type 参数不能同时传入。".format(
-                    method_name
-                )
-            )
-
-        return node_type
-
     def resolve_identity(
             self,
             side=None,
@@ -349,27 +312,18 @@ class RigBase(object):
 
     def create_name(
             self,
-            node_type=None,
-            function=None,
+            node_type,
+            function,
             side=None,
             part=None,
-            index=None,
-            **kwargs
+            index=None
     ):
         u"""
         根据当前 Rig Identity 创建标准 Rig Name。
 
         side / part / index 没有显式传入时，自动使用当前实例 Identity。
-
-        `type` 仅作为 0.4 迁移期间的旧 Keyword Alias；正式新代码统一使用
-        `node_type`。
+        node_type / function 始终描述本次要创建的具体 Maya 节点。
         """
-        node_type = self._resolve_node_type_alias(
-            node_type=node_type,
-            kwargs=kwargs,
-            method_name="create_name"
-        )
-
         node_type = self.normalize_node_type(
             node_type
         )
@@ -490,11 +444,10 @@ class RigBase(object):
 
     def get_next_index(
             self,
-            node_type=None,
-            function=None,
+            node_type,
+            function,
             side=None,
-            part=None,
-            **kwargs
+            part=None
     ):
         u"""返回场景中同一 Naming Base 的下一个可用序号。"""
         if cmds is None:
@@ -502,11 +455,6 @@ class RigBase(object):
                 u"get_next_index() 必须在 Maya 环境中运行。"
             )
 
-        node_type = self._resolve_node_type_alias(
-            node_type=node_type,
-            kwargs=kwargs,
-            method_name="get_next_index"
-        )
         node_type = self.normalize_node_type(
             node_type
         )
@@ -579,19 +527,12 @@ class RigBase(object):
 
     def create_unique_name(
             self,
-            node_type=None,
-            function=None,
+            node_type,
+            function,
             side=None,
-            part=None,
-            **kwargs
+            part=None
     ):
         u"""创建场景中下一个可用的标准 Rig Name。"""
-        node_type = self._resolve_node_type_alias(
-            node_type=node_type,
-            kwargs=kwargs,
-            method_name="create_unique_name"
-        )
-
         next_index = self.get_next_index(
             node_type=node_type,
             function=function,
