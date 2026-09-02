@@ -3,7 +3,7 @@ u"""
 Face Eyelid Builder
 ===================
 
-把旧 pipelineUtils.create_eyelid_joints_on_curve 的有效算法迁入正式 Face Build。
+基于 Curve CV 创建眼皮 / 眼袋放射状 Joint Rig。
 
 设计边界：
     1. Curve 查询和 Attachment 创建交给 core.curve_utils；
@@ -11,9 +11,10 @@ Face Eyelid Builder
     3. 通用 Transform Group 创建交给 core.scene_utils；
     4. Aim Constraint 创建交给 core.constraint_utils；
     5. Maya Undo Chunk 交给 core.scene_utils；
-    6. Joint 使用眼球中心作为 Pivot，沿 Local X 放射到 Curve Attachment；
-    7. 眼皮和眼袋使用同一套构建函数；
-    8. 构建失败时自动清理本次创建的 Rig Nodes Group。
+    6. Rig Naming 统一使用 systems.rig_base.RigBase；
+    7. Joint 使用眼球中心作为 Pivot，沿 Local X 放射到 Curve Attachment；
+    8. 眼皮和眼袋使用同一套构建函数；
+    9. 构建失败时自动清理本次创建的 Rig Nodes Group。
 """
 
 from __future__ import print_function
@@ -22,24 +23,17 @@ import maya.cmds as cmds
 
 from .....core import constraint_utils
 from .....core import curve_utils
-from .....core import name_utils
 from .....core import scene_utils
 from .....core import transform_utils
+from ....rig_base import RigBase
 
 
 # =============================================================================
 # Naming
 # =============================================================================
 
-def validate_side(side):
-    u"""把方向统一成 lf / rt / md。"""
-    return name_utils.Name.normalize_side(
-        side
-    )
-
-
 def normalize_name_part(value, label):
-    u"""清理用于 Rig 命名的字段。"""
+    u"""清理用于 Rig Naming part 的字段。"""
     if value is None:
         raise ValueError(
             u"{}不能为空。".format(label)
@@ -70,8 +64,17 @@ def create_rig_name(
         role,
         index=1
 ):
-    u"""创建 Eye Area Rig 名称。"""
-    side = validate_side(
+    u"""
+    创建 Eye Area Rig Name。
+
+    为保持原有节点字符串不变，同时满足 RigBase 的规则：
+        part     可以包含下划线；
+        function 必须是单一 Token。
+
+    因此 role 如果包含下划线，会把最后一个 Token 作为 function，
+    前面的 Token 合并到 part。
+    """
+    side = RigBase.normalize_side(
         side
     )
     region = normalize_name_part(
@@ -87,16 +90,31 @@ def create_rig_name(
         "role"
     )
 
-    function_name = "{}_{}".format(
+    role_parts = role.split("_")
+    function = role_parts[-1]
+
+    part_tokens = [
+        region,
         feature,
-        role
+    ]
+
+    if len(role_parts) > 1:
+        role_prefix = "_".join(
+            role_parts[:-1]
+        )
+        part_tokens.append(
+            role_prefix
+        )
+
+    part = "_".join(
+        part_tokens
     )
 
-    return name_utils.Name.create_name(
-        node_type=node_type,
+    return RigBase.create_name(
+        type=node_type,
         side=side,
-        part=region,
-        function=function_name,
+        part=part,
+        function=function,
         index=index
     )
 
@@ -122,6 +140,7 @@ def build_radial_curve_joints(
     Eye Center
         -> Aim Group
             -> Bind Joint
+
     Curve
         -> pointOnCurveInfo
             -> Attachment
@@ -142,7 +161,7 @@ def build_radial_curve_joints(
             parent_group
         )
 
-    side = validate_side(
+    side = RigBase.normalize_side(
         side
     )
     region = normalize_name_part(
