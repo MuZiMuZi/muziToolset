@@ -5,12 +5,23 @@ MuziTools UI Theme
 
 Maya 2023 / PySide2 统一视觉系统。
 
+模块职责：
+    1. 统一维护 MuziTools 的颜色、圆角和基础视觉常量；
+    2. 统一生成全局 Qt Style Sheet；
+    3. 提供常用 Label / Card / Button 的样式辅助函数；
+    4. 通过 Qt Dynamic Property 管理控件的视觉角色。
+
+模块边界：
+    - 本模块只负责视觉样式，不处理 Maya Scene 数据；
+    - 不在具体 Tool 中重复维护整套 QSS；
+    - 不负责窗口生命周期，窗口显示和引用由 ui.window_utils / app.window_manager 负责；
+    - PySide2 用于 Maya 2020-2024，PySide6 作为 Maya 2025+ 兼容入口。
+
 设计方向：
-    - 参考 Arc Browser 的 clean / calm / sidebar-first 信息组织；
     - 使用柔和背景、轻量边框、浮层式卡片和明确内容层级；
     - 主操作清晰，次级操作可见但不过度抢占注意力；
-    - 保留 MuziTools 自己的品牌和 Maya 工作流，不复制 Arc Logo、图标或品牌资产；
-    - 所有正式 UI 优先复用本 Theme，不在 Tool 中重复维护整套 QSS。
+    - 保留 MuziTools 自己的品牌和 Maya 工作流；
+    - 所有正式 UI 优先复用本 Theme。
 """
 
 from __future__ import print_function
@@ -26,6 +37,10 @@ except ImportError:
     from PySide6.QtWidgets import QLabel
     from PySide6.QtWidgets import QVBoxLayout
 
+
+# =============================================================================
+# Theme Constants
+# =============================================================================
 
 background = "#F2F1F6"
 background_alt = "#ECEBF1"
@@ -55,8 +70,12 @@ radius = 12
 radius_large = 16
 
 
+# =============================================================================
+# Global Style Sheet
+# =============================================================================
+
 def _build_style_sheet():
-    u"""生成 MuziTools 全局 QSS。"""
+    u"""生成 MuziTools 全局 QSS 字符串。"""
     return u"""
 QWidget {
     background-color: %(background)s;
@@ -162,23 +181,33 @@ QToolTip { padding: 7px 10px; background-color: #2E2B33; color: #FFFFFF; border:
         "radius_large": radius_large,
     }
 
+
 style_sheet = _build_style_sheet()
 
 
+# =============================================================================
+# Dynamic Property Helpers
+# =============================================================================
+
 def repolish(widget):
     u"""
-    执行 `repolish` 对应的 Maya 工具操作。
+    重新刷新一个 Qt Widget 的当前样式。
+
+    Dynamic Property 修改后，Qt 不一定会立即重新计算 Style Sheet。
+    本函数通过 unpolish / polish 让新的属性状态立即生效。
 
     Args:
-        widget (QtWidgets.QWidget):
-            需要应用 MuziTools Theme / UI 状态的 Qt Widget。
+        widget (QtWidgets.QWidget | None):
+            需要刷新样式的 Qt Widget；None 时直接返回。
     """
-
     if widget is None:
         return
+
     style = widget.style()
+
     if style is None:
         return
+
     style.unpolish(widget)
     style.polish(widget)
     widget.update()
@@ -186,288 +215,473 @@ def repolish(widget):
 
 def set_role(widget, role, enabled=True):
     u"""
-    执行 `set_role` 对应的 Maya 工具操作。
+    给 Qt Widget 设置 MuziTools 语义样式角色。
 
     Args:
-        widget (QtWidgets.QWidget):
-            需要应用 MuziTools Theme / UI 状态的 Qt Widget。
+        widget (QtWidgets.QWidget | None):
+            需要设置样式角色的 Qt Widget。
         role (str):
-            当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
+            MuziTools 角色名称，例如 ``primary``、``card``、``muted``。
         enabled (bool):
-            当前 UI 控件或 Rig 功能是否启用。
+            True 时启用角色，False 时关闭角色。
 
     Returns:
-        object:
-            方法执行后的结果数据。
+        QtWidgets.QWidget | None:
+            处理后的原 Widget；输入 None 时返回 None。
     """
-
+    # -------------------------------------------------------------------------
+    # Step 01：空 Widget 不执行任何 Qt 操作
+    # -------------------------------------------------------------------------
     if widget is None:
         return widget
-    property_name = {
-        "surface": "muziSurface", "sidebar": "muziSidebar", "card": "muziCard", "sub_card": "muziSubCard",
-        "title": "muziTitle", "subtitle": "muziSubtitle", "section_title": "muziSectionTitle", "muted": "muziMuted",
-        "accent": "muziAccent", "pill": "muziPill", "success": "muziSuccess", "warning": "muziWarning",
-        "danger_text": "muziDangerText", "primary": "muziPrimary", "secondary": "muziSecondary", "danger": "muziDanger",
-        "ghost": "muziGhost", "nav": "muziNav", "nav_active": "muziNavActive", "search": "muziSearch",
-    }.get(role)
+
+    # -------------------------------------------------------------------------
+    # Step 02：把项目语义角色映射为 QSS 使用的 Dynamic Property
+    # -------------------------------------------------------------------------
+    property_map = {
+        "surface": "muziSurface",
+        "sidebar": "muziSidebar",
+        "card": "muziCard",
+        "sub_card": "muziSubCard",
+        "title": "muziTitle",
+        "subtitle": "muziSubtitle",
+        "section_title": "muziSectionTitle",
+        "muted": "muziMuted",
+        "accent": "muziAccent",
+        "pill": "muziPill",
+        "success": "muziSuccess",
+        "warning": "muziWarning",
+        "danger_text": "muziDangerText",
+        "primary": "muziPrimary",
+        "secondary": "muziSecondary",
+        "danger": "muziDanger",
+        "ghost": "muziGhost",
+        "nav": "muziNav",
+        "nav_active": "muziNavActive",
+        "search": "muziSearch",
+    }
+    property_name = property_map.get(
+        role
+    )
+
+    # -------------------------------------------------------------------------
+    # Step 03：未知角色保持原控件不变，避免写入无意义 Property
+    # -------------------------------------------------------------------------
     if property_name is None:
         return widget
-    widget.setProperty(property_name, bool(enabled))
-    repolish(widget)
+
+    # -------------------------------------------------------------------------
+    # Step 04：写入 Dynamic Property，并主动刷新 Style Sheet
+    # -------------------------------------------------------------------------
+    widget.setProperty(
+        property_name,
+        bool(enabled)
+    )
+    repolish(
+        widget
+    )
     return widget
 
 
 def apply_theme(widget):
     u"""
-    执行 `apply_theme` 对应的 Maya 工具操作。
+    把 MuziTools 全局 Style Sheet 应用到指定 Widget。
 
     Args:
-        widget (QtWidgets.QWidget):
-            需要应用 MuziTools Theme / UI 状态的 Qt Widget。
+        widget (QtWidgets.QWidget | None):
+            需要应用全局主题的 Qt Widget。
 
     Returns:
-        object | None:
-            方法执行后的结果数据。
+        QtWidgets.QWidget | None:
+            应用主题后的原 Widget；输入 None 时返回 None。
     """
-
     if widget is None:
         return None
-    widget.setStyleSheet(style_sheet)
+
+    widget.setStyleSheet(
+        style_sheet
+    )
     return widget
 
 
+# =============================================================================
+# Common Widget Factory
+# =============================================================================
+
 def make_title(text_value, parent=None):
     u"""
-    执行 `make_title` 对应的 Maya 工具操作。
+    创建 MuziTools 一级标题 QLabel。
 
     Args:
         text_value (str):
-            需要显示、验证或写入 Qt 文本控件的字符串。
-        parent (str):
-            父级 Maya 节点名称。
+            标题显示文本。
+        parent (QtWidgets.QWidget | None):
+            可选 Qt 父控件。
 
     Returns:
-        object:
-            方法执行后的结果数据。
+        QtWidgets.QLabel:
+            已设置 ``title`` 角色的 QLabel。
     """
-
-    label = QLabel(text_value, parent)
-    set_role(label, "title")
+    label = QLabel(
+        text_value,
+        parent
+    )
+    set_role(
+        label,
+        "title"
+    )
     return label
 
 
 def make_subtitle(text_value, parent=None):
     u"""
-    执行 `make_subtitle` 对应的 Maya 工具操作。
+    创建支持自动换行的 MuziTools 副标题 QLabel。
 
     Args:
         text_value (str):
-            需要显示、验证或写入 Qt 文本控件的字符串。
-        parent (str):
-            父级 Maya 节点名称。
+            副标题显示文本。
+        parent (QtWidgets.QWidget | None):
+            可选 Qt 父控件。
 
     Returns:
-        object:
-            方法执行后的结果数据。
+        QtWidgets.QLabel:
+            已设置 ``subtitle`` 角色并开启 Word Wrap 的 QLabel。
     """
-
-    label = QLabel(text_value, parent)
-    set_role(label, "subtitle")
-    label.setWordWrap(True)
+    label = QLabel(
+        text_value,
+        parent
+    )
+    set_role(
+        label,
+        "subtitle"
+    )
+    label.setWordWrap(
+        True
+    )
     return label
 
 
 def make_section_title(text_value, parent=None):
     u"""
-    执行 `make_section_title` 对应的 Maya 工具操作。
+    创建 MuziTools Section 标题 QLabel。
 
     Args:
         text_value (str):
-            需要显示、验证或写入 Qt 文本控件的字符串。
-        parent (str):
-            父级 Maya 节点名称。
+            Section 标题显示文本。
+        parent (QtWidgets.QWidget | None):
+            可选 Qt 父控件。
 
     Returns:
-        object:
-            方法执行后的结果数据。
+        QtWidgets.QLabel:
+            已设置 ``section_title`` 角色的 QLabel。
     """
-
-    label = QLabel(text_value, parent)
-    set_role(label, "section_title")
+    label = QLabel(
+        text_value,
+        parent
+    )
+    set_role(
+        label,
+        "section_title"
+    )
     return label
 
 
-def make_card(parent=None, margins=(16, 14, 16, 14), spacing=8):
+def make_card(
+        parent=None,
+        margins=(16, 14, 16, 14),
+        spacing=8
+):
     u"""
-    执行 `make_card` 对应的 Maya 工具操作。
+    创建标准 MuziTools Card 和内部垂直布局。
 
     Args:
-        parent (str):
-            父级 Maya 节点名称。
-        margins (tuple):
-            Qt Layout 的 Left / Top / Right / Bottom Contents Margins。
+        parent (QtWidgets.QWidget | None):
+            可选 Qt 父控件。
+        margins (tuple[int, int, int, int]):
+            Left / Top / Right / Bottom Contents Margins。
         spacing (int):
-            Qt Layout 中相邻控件之间的间距。
+            Card 内相邻控件的 Layout Spacing。
 
     Returns:
-        tuple:
-            方法执行后的结果数据。
+        tuple[QtWidgets.QFrame, QtWidgets.QVBoxLayout]:
+            Card QFrame 和对应的 QVBoxLayout。
     """
+    card = QFrame(
+        parent
+    )
+    set_role(
+        card,
+        "card"
+    )
 
-    card = QFrame(parent)
-    set_role(card, "card")
-    layout = QVBoxLayout(card)
-    layout.setContentsMargins(margins[0], margins[1], margins[2], margins[3])
-    layout.setSpacing(spacing)
+    layout = QVBoxLayout(
+        card
+    )
+    layout.setContentsMargins(
+        margins[0],
+        margins[1],
+        margins[2],
+        margins[3]
+    )
+    layout.setSpacing(
+        spacing
+    )
     return card, layout
 
 
-def make_sub_card(parent=None, margins=(12, 10, 12, 10), spacing=6):
+def make_sub_card(
+        parent=None,
+        margins=(12, 10, 12, 10),
+        spacing=6
+):
     u"""
-    执行 `make_sub_card` 对应的 Maya 工具操作。
+    创建层级更轻的 MuziTools Sub Card 和内部垂直布局。
 
     Args:
-        parent (str):
-            父级 Maya 节点名称。
-        margins (tuple):
-            Qt Layout 的 Left / Top / Right / Bottom Contents Margins。
+        parent (QtWidgets.QWidget | None):
+            可选 Qt 父控件。
+        margins (tuple[int, int, int, int]):
+            Left / Top / Right / Bottom Contents Margins。
         spacing (int):
-            Qt Layout 中相邻控件之间的间距。
+            Sub Card 内相邻控件的 Layout Spacing。
 
     Returns:
-        tuple:
-            方法执行后的结果数据。
+        tuple[QtWidgets.QFrame, QtWidgets.QVBoxLayout]:
+            Sub Card QFrame 和对应的 QVBoxLayout。
     """
+    card = QFrame(
+        parent
+    )
+    set_role(
+        card,
+        "sub_card"
+    )
 
-    card = QFrame(parent)
-    set_role(card, "sub_card")
-    layout = QVBoxLayout(card)
-    layout.setContentsMargins(margins[0], margins[1], margins[2], margins[3])
-    layout.setSpacing(spacing)
+    layout = QVBoxLayout(
+        card
+    )
+    layout.setContentsMargins(
+        margins[0],
+        margins[1],
+        margins[2],
+        margins[3]
+    )
+    layout.setSpacing(
+        spacing
+    )
     return card, layout
 
 
-                           u"""
-                           执行 `style_primary` 对应的 Maya 工具操作。
+# =============================================================================
+# Button / Input Style Helpers
+# =============================================================================
 
-                           Args:
-                               button (QtWidgets.QPushButton):
-                                   需要应用 MuziTools Button 样式或状态的 QPushButton。
-
-                           Returns:
-                               object:
-                                   方法执行后的结果数据。
-                           """
-
-def style_primary(button): return set_role(button, "primary")
-                             u"""
-                             执行 `style_secondary` 对应的 Maya 工具操作。
-
-                             Args:
-                                 button (QtWidgets.QPushButton):
-                                     需要应用 MuziTools Button 样式或状态的 QPushButton。
-
-                             Returns:
-                                 object:
-                                     方法执行后的结果数据。
-                             """
-
-def style_secondary(button): return set_role(button, "secondary")
-                          u"""
-                          执行 `style_danger` 对应的 Maya 工具操作。
-
-                          Args:
-                              button (QtWidgets.QPushButton):
-                                  需要应用 MuziTools Button 样式或状态的 QPushButton。
-
-                          Returns:
-                              object:
-                                  方法执行后的结果数据。
-                          """
-
-def style_danger(button): return set_role(button, "danger")
-                         u"""
-                         执行 `style_ghost` 对应的 Maya 工具操作。
-
-                         Args:
-                             button (QtWidgets.QPushButton):
-                                 需要应用 MuziTools Button 样式或状态的 QPushButton。
-
-                         Returns:
-                             object:
-                                 方法执行后的结果数据。
-                         """
-
-def style_ghost(button): return set_role(button, "ghost")
-
-def style_navigation(button, active=False):
+def style_primary(button):
     u"""
-    执行 `style_navigation` 对应的 Maya 工具操作。
+    把按钮设置为主要操作样式。
+
+    Args:
+        button (QtWidgets.QPushButton | QtWidgets.QToolButton):
+            需要设置为 Primary 的按钮。
+
+    Returns:
+        QtWidgets.QWidget | None:
+            处理后的原按钮。
+    """
+    return set_role(
+        button,
+        "primary"
+    )
+
+
+def style_secondary(button):
+    u"""
+    把按钮设置为次级操作样式。
+
+    Args:
+        button (QtWidgets.QPushButton | QtWidgets.QToolButton):
+            需要设置为 Secondary 的按钮。
+
+    Returns:
+        QtWidgets.QWidget | None:
+            处理后的原按钮。
+    """
+    return set_role(
+        button,
+        "secondary"
+    )
+
+
+def style_danger(button):
+    u"""
+    把按钮设置为危险操作样式。
 
     Args:
         button (QtWidgets.QPushButton):
-            需要应用 MuziTools Button 样式或状态的 QPushButton。
-        active (bool):
-            Button / UI State 当前是否处于 Active 状态。
+            需要设置为 Danger 的按钮。
 
     Returns:
-        object:
-            方法执行后的结果数据。
+        QtWidgets.QWidget | None:
+            处理后的原按钮。
     """
+    return set_role(
+        button,
+        "danger"
+    )
 
-    set_role(button, "nav")
-    set_role(button, "nav_active", active)
-    return button
 
-                             u"""
-                             执行 `style_search` 对应的 Maya 工具操作。
-
-                             Args:
-                                 line_edit (QtWidgets.QLineEdit):
-                                     需要应用 MuziTools 输入框样式的 QLineEdit。
-
-                             Returns:
-                                 object:
-                                     方法执行后的结果数据。
-                             """
-
-def style_search(line_edit): return set_role(line_edit, "search")
-
-def style_window(widget, title=None, minimum_width=None):
+def style_ghost(button):
     u"""
-    执行 `style_window` 对应的 Maya 工具操作。
+    把按钮设置为弱化的 Ghost 样式。
 
     Args:
-        widget (QtWidgets.QWidget):
-            需要应用 MuziTools Theme / UI 状态的 Qt Widget。
-        title (str):
-            窗口、Section、Dialog 或报告使用的标题文本。
-        minimum_width (int):
-            Qt Widget / Dialog 的最小宽度。
+        button (QtWidgets.QPushButton | QtWidgets.QToolButton):
+            需要设置为 Ghost 的按钮。
 
     Returns:
-        object | None:
-            方法执行后的结果数据。
+        QtWidgets.QWidget | None:
+            处理后的原按钮。
     """
+    return set_role(
+        button,
+        "ghost"
+    )
 
+
+def style_navigation(button, active=False):
+    u"""
+    设置侧边栏 Navigation Button 的基础和 Active 样式。
+
+    Args:
+        button (QtWidgets.QPushButton):
+            需要设置为 Navigation 的按钮。
+        active (bool):
+            当前 Navigation Item 是否处于激活状态。
+
+    Returns:
+        QtWidgets.QPushButton | None:
+            处理后的原按钮。
+    """
+    set_role(
+        button,
+        "nav"
+    )
+    set_role(
+        button,
+        "nav_active",
+        active
+    )
+    return button
+
+
+def style_search(line_edit):
+    u"""
+    把 QLineEdit 设置为 MuziTools Search 输入框样式。
+
+    Args:
+        line_edit (QtWidgets.QLineEdit):
+            需要设置 Search 样式的输入框。
+
+    Returns:
+        QtWidgets.QWidget | None:
+            处理后的原输入框。
+    """
+    return set_role(
+        line_edit,
+        "search"
+    )
+
+
+# =============================================================================
+# Window Style
+# =============================================================================
+
+def style_window(
+        widget,
+        title=None,
+        minimum_width=None
+):
+    u"""
+    给 Tool Window 统一设置标题、最小宽度和 MuziTools Theme。
+
+    Args:
+        widget (QtWidgets.QWidget | None):
+            需要设置统一窗口样式的 Qt Widget。
+        title (str | None):
+            可选 Window Title。
+        minimum_width (int | None):
+            可选窗口最小宽度。
+
+    Returns:
+        QtWidgets.QWidget | None:
+            处理后的原 Widget；输入 None 时返回 None。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：保护空窗口输入
+    # -------------------------------------------------------------------------
     if widget is None:
         return None
+
+    # -------------------------------------------------------------------------
+    # Step 02：应用调用方明确提供的窗口基本属性
+    # -------------------------------------------------------------------------
     if title:
-        widget.setWindowTitle(title)
+        widget.setWindowTitle(
+            title
+        )
+
     if minimum_width is not None:
-        widget.setMinimumWidth(minimum_width)
-    apply_theme(widget)
+        widget.setMinimumWidth(
+            minimum_width
+        )
+
+    # -------------------------------------------------------------------------
+    # Step 03：应用统一 Theme，并尽量启用 Styled Background
+    # -------------------------------------------------------------------------
+    apply_theme(
+        widget
+    )
+
     try:
-        widget.setAttribute(Qt.WA_StyledBackground, True)
+        widget.setAttribute(
+            Qt.WA_StyledBackground,
+            True
+        )
     except Exception:
         pass
+
     return widget
 
 
 __all__ = [
-    "background", "background_alt", "sidebar_background", "surface", "surface_alt", "border", "text",
-    "text_secondary", "text_muted", "accent", "success", "warning", "danger", "info", "style_sheet",
-    "apply_theme", "repolish", "set_role", "make_title", "make_subtitle", "make_section_title", "make_card",
-    "make_sub_card", "style_primary", "style_secondary", "style_danger", "style_ghost", "style_navigation",
-    "style_search", "style_window",
+    "background",
+    "background_alt",
+    "sidebar_background",
+    "surface",
+    "surface_alt",
+    "border",
+    "text",
+    "text_secondary",
+    "text_muted",
+    "accent",
+    "success",
+    "warning",
+    "danger",
+    "info",
+    "style_sheet",
+    "apply_theme",
+    "repolish",
+    "set_role",
+    "make_title",
+    "make_subtitle",
+    "make_section_title",
+    "make_card",
+    "make_sub_card",
+    "style_primary",
+    "style_secondary",
+    "style_danger",
+    "style_ghost",
+    "style_navigation",
+    "style_search",
+    "style_window",
 ]
