@@ -84,13 +84,19 @@ jobs:
         run: python scripts/normalize_runtime_docstrings.py --check
 
       # -----------------------------------------------------------------------
-      # Step 07：检查 Maya / Rigging 参数语义质量
+      # Step 07：禁止重新出现自动生成的空泛 Summary / Returns 占位说明
+      # -----------------------------------------------------------------------
+      - name: Validate runtime documentation specificity
+        run: python scripts/refine_runtime_generic_docs.py --check
+
+      # -----------------------------------------------------------------------
+      # Step 08：检查 Maya / Rigging 参数语义质量
       # -----------------------------------------------------------------------
       - name: Validate rigging terminology quality
         run: python scripts/refine_runtime_docstring_semantics.py --check
 
       # -----------------------------------------------------------------------
-      # Step 08：检查源码空白格式
+      # Step 09：检查源码空白格式
       # -----------------------------------------------------------------------
       - name: Check whitespace errors
         run: git diff --check
