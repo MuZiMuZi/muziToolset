@@ -5,12 +5,40 @@ ModuleBase Contract Test
 
 验证 ModuleBase / RigModuleBase 的统一生命周期顺序。
 本测试不依赖 Maya。
+
+支持：
+    python tests/module_base_contract_test.py
+
+也支持作为 muziToolset.tests 包内模块调用。
 """
 
 from __future__ import print_function
 
-from ..systems.module_base import ModuleBase
-from ..systems.module_base import RigModuleBase
+import os
+import sys
+
+
+if __package__:
+    from ..systems.module_base import ModuleBase
+    from ..systems.module_base import RigModuleBase
+else:
+    package_root = os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    )
+    package_parent = os.path.dirname(
+        package_root
+    )
+
+    if package_parent not in sys.path:
+        sys.path.insert(
+            0,
+            package_parent
+        )
+
+    from muziToolset.systems.module_base import ModuleBase
+    from muziToolset.systems.module_base import RigModuleBase
 
 
 class TestModule(ModuleBase):
