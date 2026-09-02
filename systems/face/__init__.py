@@ -11,10 +11,12 @@ Face Rig 的正式系统包。
 
 from __future__ import print_function
 
+from .build import TeethComponent
 from .build import attach_joints_to_curves
 from .build import build_eye_bag_joints
 from .build import build_eyelid_joints
 from .build import build_radial_curve_joints
+from .build import build_teeth
 from .build import build_zip_lip
 from .face_base import FaceBase
 from .guide import FaceGuide
@@ -32,10 +34,12 @@ __all__ = [
     "FaceBase",
     "FaceGuide",
     "FaceSetup",
+    "TeethComponent",
     "attach_joints_to_curves",
     "build_radial_curve_joints",
     "build_eyelid_joints",
     "build_eye_bag_joints",
     "build_zip_lip",
+    "build_teeth",
     "show",
 ]
