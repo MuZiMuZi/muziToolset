@@ -475,22 +475,6 @@ class Joint(object):
             other_type=description
         )
 
-    # =========================================================================
-    # Transitional Compatibility
-    # =========================================================================
-
-    @staticmethod
-    def _validate_joint(joint):
-        u"""
-        旧内部调用的过渡入口。
-
-        验证逻辑仍然只有 Joint.__init__() 一份；新代码直接构造 Joint(joint)。
-        """
-        Joint(
-            joint
-        )
-        return True
-
 
 __all__ = [
     "Joint",
