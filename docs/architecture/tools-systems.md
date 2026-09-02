@@ -40,7 +40,7 @@ core.control_shape_utils / hierarchy_utils / ...
 
 # Systems
 
-`systems/` 保存完整、可复用的 Rig Workflow 和业务 Module。
+`systems/` 保存 Rig Object Identity、完整可复用 Rig Workflow 和业务 Module。
 
 0.4 基础结构：
 
@@ -56,7 +56,35 @@ systems/
 
 ## RigBase
 
-负责 Rig Naming。
+负责：
+
+```text
+Rig Object Identity
+    side / part / index
+
+Rig Naming
+    [node_type]_[side]_[part]_[function]_[index]
+
+Side Semantic
+    Mirror / Left / Right / Center
+```
+
+`RigBase` 是实例化基类，不作为 `RigBase.create_name(...)` 工具类使用。
+
+例如：
+
+```python
+rig = RigBase(
+    side="lf",
+    part="arm",
+    index=1
+)
+
+joint_name = rig.create_name(
+    node_type="jnt",
+    function="bind"
+)
+```
 
 ## ModuleBase
 
@@ -72,6 +100,8 @@ EyeModule
 ```
 
 不再使用 Component 术语。
+
+因为 `ModuleBase` 继承 `RigBase`，Module 自己就是一个带 Identity 的 Rig Object。
 
 ## CtrlBase
 
@@ -109,6 +139,8 @@ systems/face/build/lip/
 
 这些 Builder 可以被未来的 EyeModule / BrowModule / LipModule 组合使用。
 
+Builder 如果需要标准 Rig Naming，应创建明确的短生命周期 `RigBase` Identity 实例，而不是把 `RigBase` 当静态 Naming Utility。
+
 ---
 
 # 如何判断放哪里
@@ -121,6 +153,16 @@ systems/face/build/lip/
 
 ```text
 core/constraint_utils.py
+```
+
+如果一个流程是：
+
+> 描述一个 Rig Object 的 side / part / index，并基于这个 Identity 创建节点名。
+
+放：
+
+```text
+systems/rig_base.py
 ```
 
 如果一个流程是：
@@ -160,10 +202,12 @@ tools/
 正式架构禁止同一职责存在两套实现。
 
 ```text
-Rig Naming       -> systems.rig_base
-Module Lifecycle -> systems.module_base
-Controller Rig   -> systems.ctrl_base
-Maya Rename      -> core.rename_utils
+Rig Identity / Naming -> systems.rig_base
+Module Lifecycle      -> systems.module_base
+Controller Rig        -> systems.ctrl_base
+Maya Rename           -> core.rename_utils
 ```
+
+RigBase Naming Keyword 统一为 `node_type=`；旧 `type=` 不保留 Compatibility Wrapper。
 
 旧入口不保留 Compatibility Wrapper，避免后续新代码再次依赖退休架构。
