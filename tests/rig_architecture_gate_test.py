@@ -24,6 +24,8 @@ Rig Architecture Migration Gate
 
 RigBase Contract：
     - RigBase 是实例化 Rig Object Base；
+    - side / part / index 直接作为实例属性；
+    - 不维护 identity / set_identity / resolve_identity 等属性包装；
     - create_name / mirror_name / create_unique_name 等必须通过实例调用；
     - parse_name / validate_name / normalize_* 可以继续作为 Class Method 使用；
     - 不允许恢复旧 Name Object Constructor：RigBase(name=...)；
@@ -61,18 +63,22 @@ RIG_BASE_INSTANCE_METHODS = {
     "get_next_index",
     "create_unique_name",
     "get_opposite_side",
-    "flip_side",
-    "is_left",
-    "is_right",
-    "is_center",
-    "resolve_identity",
-    "set_identity",
 }
 
 RIG_BASE_NODE_TYPE_METHODS = {
     "create_name",
     "get_next_index",
     "create_unique_name",
+}
+
+RETIRED_RIG_BASE_MEMBERS = {
+    "identity",
+    "set_identity",
+    "resolve_identity",
+    "flip_side",
+    "is_left",
+    "is_right",
+    "is_center",
 }
 
 
@@ -266,6 +272,34 @@ def check_retired_node_type_keyword(call_node, relative_path):
     return issues
 
 
+def check_rig_base_definition(class_node, relative_path):
+    u"""禁止 RigBase 重新加入已删除的属性包装方法。"""
+    issues = []
+
+    if class_node.name != "RigBase":
+        return issues
+
+    for child_node in class_node.body:
+        if not isinstance(
+                child_node,
+                (ast.FunctionDef, ast.AsyncFunctionDef)
+        ):
+            continue
+
+        if child_node.name not in RETIRED_RIG_BASE_MEMBERS:
+            continue
+
+        issues.append({
+            "file": relative_path,
+            "line": child_node.lineno,
+            "detail": "RigBase 已精简成员重新出现：{}".format(
+                child_node.name
+            ),
+        })
+
+    return issues
+
+
 def check_rig_base_call(call_node, relative_path):
     u"""检查 RigBase 是否被重新当成 Name Utility / Name Object。"""
     issues = []
@@ -343,6 +377,17 @@ def scan_file(file_path):
                     "line": node.lineno,
                     "detail": "退休类名 {}".format(node.name),
                 })
+
+            rig_base_definition_issues = check_rig_base_definition(
+                node,
+                relative_path
+            )
+
+            for issue in rig_base_definition_issues:
+                issues.append(
+                    issue
+                )
+
             continue
 
         if isinstance(node, ast.Call):
@@ -448,7 +493,7 @@ def run():
         return False
 
     print(
-        u"[PASS] {} 个 Python 文件符合 RigBase Identity / ModuleBase / CtrlBase 架构。".format(
+        u"[PASS] {} 个 Python 文件符合 RigBase Direct Attribute / ModuleBase / CtrlBase 架构。".format(
             file_count
         )
     )
