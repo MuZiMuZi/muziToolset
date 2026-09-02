@@ -1,0 +1,92 @@
+# coding=utf-8
+u"""
+Face Naming
+===========
+
+Face System 内部共享的 Rig Naming 组合规则。
+
+本模块只处理 Face Builder 经常使用的一个业务约定：
+
+    part + multi-token role
+        ↓
+    [type]_[side]_[part + role prefix]_[role last token]_[index]
+
+例如：
+
+    part = "lip"
+    role = "upper_zip_offset"
+
+得到：
+
+    grp_md_lip_upper_zip_offset_001
+
+边界：
+    - 五段式名称对象仍由 systems.rig_base.RigBase 负责；
+    - 本模块只是 Face System 内多个 Builder 的共享组合规则；
+    - 不进入 Core，因为 region / feature / role 属于 Rig 业务语义。
+"""
+
+from __future__ import print_function
+
+from ..rig_base import RigBase
+
+
+def create_role_name(
+        type,
+        side,
+        part,
+        role,
+        index=1
+):
+    u"""把多 Token Role 合并进 Part，并返回标准 Rig Name。"""
+    role_parts = role.split("_")
+    function = role_parts[-1]
+    final_part = part
+
+    if len(role_parts) > 1:
+        role_prefix = "_".join(
+            role_parts[:-1]
+        )
+        final_part = "{}_{}".format(
+            part,
+            role_prefix
+        )
+
+    rig_name = RigBase(
+        type=type,
+        side=side,
+        part=final_part,
+        function=function,
+        index=index
+    )
+
+    return rig_name.name
+
+
+def create_feature_name(
+        type,
+        side,
+        region,
+        feature,
+        role,
+        index=1
+):
+    u"""创建 region + feature 形式的 Face Builder 标准名称。"""
+    part = "{}_{}".format(
+        region,
+        feature
+    )
+
+    return create_role_name(
+        type=type,
+        side=side,
+        part=part,
+        role=role,
+        index=index
+    )
+
+
+__all__ = [
+    "create_role_name",
+    "create_feature_name",
+]
