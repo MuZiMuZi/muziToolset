@@ -17,6 +17,7 @@ Face Guide 的单文件 Step 02 实现。
 设计原则：
     - Face 固定名称和默认参数统一放 systems.face.config；
     - 标准 Rig Name 统一继承 FaceBase -> RigBase；
+    - DAG Parent / Child / Descendant 查询统一复用 hierarchy_utils；
     - 不为简单 part 查询额外创建 get_xxx_guides() 包装；
     - 只有需要固定顺序或结构化结果的查询保留专用方法；
     - Template / Mirror 都属于 FaceGuide 自己的 Step 02 行为；
@@ -185,16 +186,9 @@ class FaceGuide(face_base.FaceBase):
 
     def validate_guide_template_file(self):
         u"""检查 Face Guide Template 文件是否存在。"""
-        template_path = self.get_guide_template_path()
-
-        if not os.path.isfile(template_path):
-            raise RuntimeError(
-                u"Face Guide 模板文件不存在: {}".format(
-                    template_path
-                )
-            )
-
-        return template_path
+        return scene_utils.validate_scene_file(
+            self.get_guide_template_path()
+        )
 
     def get_template_locator_names(self, refresh=False):
         u"""从 face_guide.ma 读取全部标准 Locator 名称。"""
@@ -240,7 +234,7 @@ class FaceGuide(face_base.FaceBase):
     def get_temporary_guide_name(self):
         u"""返回一个未被占用的临时 Guide Container 名称。"""
         return self.create_unique_name(
-            node_type="grp",
+            type="grp",
             side="md",
             part="face_guide",
             function="container"
@@ -702,15 +696,11 @@ class FaceGuide(face_base.FaceBase):
                 self.face_guide_grp
             )
 
-        descendants = cmds.listRelatives(
+        descendants = hierarchy_utils.get_descendants(
             self.face_guide_grp,
-            allDescendents=True,
-            type="transform",
-            fullPath=True
+            node_type="transform",
+            full_path=True
         )
-
-        if descendants is None:
-            descendants = []
 
         for node in descendants:
             node_short_name = rename_utils.get_short_name(
@@ -746,16 +736,11 @@ class FaceGuide(face_base.FaceBase):
         if not cmds.objExists(self.face_guide_grp):
             return []
 
-        descendants = cmds.listRelatives(
+        descendants = hierarchy_utils.get_descendants(
             self.face_guide_grp,
-            allDescendents=True,
-            type="transform",
-            fullPath=True
+            node_type="transform",
+            full_path=True
         )
-
-        if descendants is None:
-            descendants = []
-
         locators = []
 
         for node in descendants:
@@ -815,16 +800,13 @@ class FaceGuide(face_base.FaceBase):
             )
 
         part_token = "_{}_".format(
-            str(part).strip().lower()
+            part
         )
         side_token = None
 
         if side is not None:
-            normalized_side = self.normalize_side(
-                side
-            )
             side_token = "_{}_".format(
-                normalized_side
+                side
             )
 
         guides = []
@@ -833,7 +815,7 @@ class FaceGuide(face_base.FaceBase):
         for locator in locators:
             short_name = rename_utils.get_short_name(
                 locator
-            ).lower()
+            )
 
             if part_token not in short_name:
                 continue
@@ -885,7 +867,7 @@ class FaceGuide(face_base.FaceBase):
     ):
         u"""创建以 guide 为 function 的标准 Locator 名称。"""
         return self.create_name(
-            node_type="loc",
+            type="loc",
             side=side,
             part=part,
             function="guide",
@@ -938,10 +920,6 @@ class FaceGuide(face_base.FaceBase):
             required=True
     ):
         u"""返回某一侧 Upper / Lower Eyelid 的固定有序 Guide。"""
-        side = self.normalize_side(
-            side
-        )
-
         if side not in self.mirror_sides:
             raise ValueError(
                 u"Eyelid side 必须是 lf 或 rt。"
@@ -1017,10 +995,6 @@ class FaceGuide(face_base.FaceBase):
             required=False
     ):
         u"""返回某一侧 Eye Ball / Iris Guide。"""
-        side = self.normalize_side(
-            side
-        )
-
         if side not in self.mirror_sides:
             raise ValueError(
                 u"Eye side 必须是 lf 或 rt。"
@@ -1080,16 +1054,11 @@ class FaceGuide(face_base.FaceBase):
         prefix = "zero_{}_".format(
             side
         )
-        descendants = cmds.listRelatives(
+        descendants = hierarchy_utils.get_descendants(
             self.face_guide_grp,
-            allDescendents=True,
-            type="transform",
-            fullPath=True
+            node_type="transform",
+            full_path=True
         )
-
-        if descendants is None:
-            descendants = []
-
         zero_groups = []
 
         for node in descendants:
@@ -1116,15 +1085,11 @@ class FaceGuide(face_base.FaceBase):
         prefix = "loc_{}_".format(
             side
         )
-        children = cmds.listRelatives(
+        children = hierarchy_utils.get_children(
             zero_group,
-            children=True,
-            type="transform",
-            fullPath=True
+            node_type="transform",
+            full_path=True
         )
-
-        if children is None:
-            children = []
 
         for child in children:
             short_name = rename_utils.get_short_name(
