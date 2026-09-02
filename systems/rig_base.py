@@ -5,12 +5,13 @@ Rig Base
 
 MuziTools 所有 Rig Object / Module 共用的最底层实例基类。
 
-RigBase 不是 Name Object，也不保存某一个 Maya Node 的 node_type / function。
-它代表一个 Rig 对象自己的 Identity：
+RigBase 只保存最基础的 Rig Object 属性：
 
     side
     part
     index
+
+这些值直接作为实例属性使用，不额外包装 get / set / identity 方法。
 
 标准 Rig Naming：
 
@@ -22,31 +23,14 @@ RigBase 不是 Name Object，也不保存某一个 Maya Node 的 node_type / fun
     jnt_lf_brow_bind_003
     grp_md_face_rig_nodes_001
 
-字段边界：
-    node_type
-        Maya / Rig 节点类型，必须是单一 Token。
-
-    side
-        lf / rt / md。
-
-    part
-        Rig 部位，允许包含下划线，例如 upper_teeth。
-
-    function
-        节点功能，必须是单一 Token。
-
-    index
-        001 ~ 999。
-
 核心原则：
     1. RigBase 是可实例化的 Rig 对象基础类；
-    2. 实例 Identity 只包含 side / part / index；
-    3. create_name() 没有显式覆盖字段时，读取实例 Identity；
-    4. node_type / function 描述具体 Maya 节点，不属于 Rig Object Identity；
+    2. side / part / index 直接通过实例属性读取；
+    3. create_name() 没有显式覆盖时使用当前实例属性；
+    4. node_type / function 描述具体 Maya 节点，不属于 Rig Object 属性；
     5. parse_name() 只解析输入名称，不修改当前实例；
     6. Rig Naming 属于 systems 层，不属于 core；
-    7. Core rename_utils 只负责 Maya Rename / Short Name 等通用操作；
-    8. RigBase 不负责 Joint、Controller、Matrix、Config、Hierarchy 或 UI。
+    7. RigBase 不负责 Joint、Controller、Matrix、Config、Hierarchy 或 UI。
 """
 
 from __future__ import print_function
@@ -58,7 +42,7 @@ except ImportError:
 
 
 class RigBase(object):
-    u"""所有 Rig Object 共用的 Identity 与 Naming 基类。"""
+    u"""所有 Rig Object 共用的基础属性与 Naming 基类。"""
 
     sides = [
         "lf",
@@ -88,17 +72,7 @@ class RigBase(object):
             part=None,
             index=1
     ):
-        u"""
-        初始化一个 Rig Object Identity。
-
-        Args:
-            side (str):
-                Rig Side，支持 lf / rt / md 和常用 Alias。
-            part (str):
-                Rig Part，例如 jaw / teeth / upper_teeth。
-            index (int):
-                Rig Object 序号，范围 1 ~ 999。
-        """
+        u"""初始化 Rig Object 的基础属性。"""
         self.side = self.normalize_side(
             side
         )
@@ -108,43 +82,6 @@ class RigBase(object):
         self.index = self.validate_index(
             index
         )
-
-    # =========================================================================
-    # Identity
-    # =========================================================================
-
-    @property
-    def identity(self):
-        u"""返回当前 Rig Object Identity。"""
-        return {
-            "side": self.side,
-            "part": self.part,
-            "index": self.index,
-        }
-
-    def set_identity(
-            self,
-            side=None,
-            part=None,
-            index=None
-    ):
-        u"""显式更新当前 Rig Object Identity。"""
-        if side is not None:
-            self.side = self.normalize_side(
-                side
-            )
-
-        if part is not None:
-            self.part = self.normalize_part(
-                part
-            )
-
-        if index is not None:
-            self.index = self.validate_index(
-                index
-            )
-
-        return self.identity
 
     # =========================================================================
     # Normalize / Validate
@@ -278,34 +215,6 @@ class RigBase(object):
 
         return index
 
-    def resolve_identity(
-            self,
-            side=None,
-            part=None,
-            index=None
-    ):
-        u"""解析 Naming 使用的 Identity；None 表示继承当前实例。"""
-        if side is None:
-            side = self.side
-
-        if part is None:
-            part = self.part
-
-        if index is None:
-            index = self.index
-
-        return {
-            "side": self.normalize_side(
-                side
-            ),
-            "part": self.normalize_part(
-                part
-            ),
-            "index": self.validate_index(
-                index
-            ),
-        }
-
     # =========================================================================
     # Naming
     # =========================================================================
@@ -318,39 +227,43 @@ class RigBase(object):
             part=None,
             index=None
     ):
-        u"""
-        根据当前 Rig Identity 创建标准 Rig Name。
+        u"""根据实例属性创建标准 Rig Name。"""
+        if side is None:
+            side = self.side
 
-        side / part / index 没有显式传入时，自动使用当前实例 Identity。
-        node_type / function 始终描述本次要创建的具体 Maya 节点。
-        """
+        if part is None:
+            part = self.part
+
+        if index is None:
+            index = self.index
+
         node_type = self.normalize_node_type(
             node_type
+        )
+        side = self.normalize_side(
+            side
+        )
+        part = self.normalize_part(
+            part
         )
         function = self.normalize_function(
             function
         )
-        identity = self.resolve_identity(
-            side=side,
-            part=part,
-            index=index
+        index = self.validate_index(
+            index
         )
 
         return "{node_type}_{side}_{part}_{function}_{index:03d}".format(
             node_type=node_type,
-            side=identity["side"],
-            part=identity["part"],
+            side=side,
+            part=part,
             function=function,
-            index=identity["index"]
+            index=index
         )
 
     @classmethod
     def parse_name(cls, name):
-        u"""
-        解析标准 Rig Name。
-
-        本方法只返回字段，不修改任何 RigBase 实例。
-        """
+        u"""解析标准 Rig Name，不修改任何 RigBase 实例。"""
         if not isinstance(name, str):
             raise TypeError(
                 u"Rig Name 必须是字符串。"
@@ -455,22 +368,29 @@ class RigBase(object):
                 u"get_next_index() 必须在 Maya 环境中运行。"
             )
 
+        if side is None:
+            side = self.side
+
+        if part is None:
+            part = self.part
+
         node_type = self.normalize_node_type(
             node_type
+        )
+        side = self.normalize_side(
+            side
+        )
+        part = self.normalize_part(
+            part
         )
         function = self.normalize_function(
             function
         )
 
-        identity = self.resolve_identity(
-            side=side,
-            part=part,
-            index=1
-        )
         base_name = self.create_name(
             node_type=node_type,
-            side=identity["side"],
-            part=identity["part"],
+            side=side,
+            part=part,
             function=function,
             index=1
         ).rsplit(
@@ -501,10 +421,10 @@ class RigBase(object):
             if fields["node_type"] != node_type:
                 continue
 
-            if fields["side"] != identity["side"]:
+            if fields["side"] != side:
                 continue
 
-            if fields["part"] != identity["part"]:
+            if fields["part"] != part:
                 continue
 
             if fields["function"] != function:
@@ -553,7 +473,7 @@ class RigBase(object):
     # =========================================================================
 
     def get_opposite_side(self, side=None):
-        u"""返回相反 Side；md 保持 md，不修改当前实例。"""
+        u"""返回相反 Side；md 保持 md，不修改实例属性。"""
         if side is None:
             side = self.side
 
@@ -568,25 +488,6 @@ class RigBase(object):
             return "lf"
 
         return "md"
-
-    def flip_side(self):
-        u"""把当前 Rig Object Side 翻转为相反 Side。"""
-        self.side = self.get_opposite_side(
-            self.side
-        )
-        return self.side
-
-    def is_left(self):
-        u"""当前 Rig Object 是否为 Left。"""
-        return self.side == "lf"
-
-    def is_right(self):
-        u"""当前 Rig Object 是否为 Right。"""
-        return self.side == "rt"
-
-    def is_center(self):
-        u"""当前 Rig Object 是否为 Middle / Center。"""
-        return self.side == "md"
 
 
 __all__ = [
