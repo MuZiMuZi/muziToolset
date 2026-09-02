@@ -5,10 +5,10 @@ from __future__ import print_function
 
 
 def show():
-    u"""创建并返回带 Config 恢复和 Workflow Visibility 的正式 Face Rig Wizard。"""
-    from . import workflow_controller
+    u"""创建并返回带 Config 恢复、Workflow Visibility 和 Step 03 Build 的正式 Face Rig Wizard。"""
+    from . import build_controller
 
-    return workflow_controller.main()
+    return build_controller.main()
 
 
 __all__ = [
