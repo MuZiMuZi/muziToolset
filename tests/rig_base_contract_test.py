@@ -11,6 +11,7 @@ RigBase Contract Test
     Mirror
     Side Semantic
     Index Contract
+    node_type Contract
 
 支持：
     python tests/rig_base_contract_test.py
@@ -245,6 +246,21 @@ def run():
         pass
     else:
         print("[FAIL] function 允许了下划线。")
+        return False
+
+    retired_type_kwargs = {
+        "type": "ctrl",
+        "function": "bind",
+    }
+
+    try:
+        rig_object.create_name(
+            **retired_type_kwargs
+        )
+    except TypeError:
+        pass
+    else:
+        print("[FAIL] RigBase.create_name() 仍接受退休的 type= Keyword。")
         return False
 
     retired_attributes = [
