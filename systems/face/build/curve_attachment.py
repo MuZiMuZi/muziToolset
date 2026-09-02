@@ -20,6 +20,7 @@ Face Joint -> Drive / Aim Curve 组合系统。
     - Group 创建由 core.scene_utils 负责；
     - Parent 由 core.hierarchy_utils 负责；
     - Constraint 由 core.constraint_utils 负责；
+    - Rig Naming 统一使用 systems.rig_base.RigBase；
     - Undo Chunk 由 core.scene_utils 负责；
     - 本模块只负责 Face Curve Attachment 的组合关系。
 """
@@ -32,9 +33,9 @@ from ....core import constraint_utils
 from ....core import curve_utils
 from ....core import hierarchy_utils
 from ....core import joint_utils
-from ....core import name_utils
 from ....core import scene_utils
 from ....core import transform_utils
+from ...rig_base import RigBase
 
 
 # =============================================================================
@@ -58,7 +59,7 @@ def validate_joint(joint):
 
 
 def normalize_name_part(value, label):
-    u"""清理用于 Face Curve Rig 命名的字段。"""
+    u"""清理用于 Face Curve Rig Naming part 的字段。"""
     if value is None:
         raise ValueError(
             u"{}不能为空。".format(label)
@@ -89,8 +90,13 @@ def create_rig_name(
         role,
         index=1
 ):
-    u"""创建 Face Curve Rig 标准名称。"""
-    side = name_utils.Name.normalize_side(
+    u"""
+    创建 Face Curve Rig 标准名称。
+
+    为保持历史生成的节点字符串不变，region / feature / role 前缀全部并入 part，
+    role 的最后一个 Token 作为单一 function。
+    """
+    side = RigBase.normalize_side(
         side
     )
     region = normalize_name_part(
@@ -106,16 +112,31 @@ def create_rig_name(
         "role"
     )
 
-    function_name = "{}_{}".format(
+    role_parts = role.split("_")
+    function = role_parts[-1]
+
+    part_tokens = [
+        region,
         feature,
-        role
+    ]
+
+    if len(role_parts) > 1:
+        role_prefix = "_".join(
+            role_parts[:-1]
+        )
+        part_tokens.append(
+            role_prefix
+        )
+
+    part = "_".join(
+        part_tokens
     )
 
-    return name_utils.Name.create_name(
-        node_type=node_type,
+    return RigBase.create_name(
+        type=node_type,
         side=side,
-        part=region,
-        function=function_name,
+        part=part,
+        function=function,
         index=index
     )
 
@@ -197,7 +218,9 @@ def attach_joints_to_curves(
         joints = []
 
     if not joints:
-        raise RuntimeError(u"没有给定需要附着的 Joint。")
+        raise RuntimeError(
+            u"没有给定需要附着的 Joint。"
+        )
 
     for joint in joints:
         validate_joint(
@@ -225,7 +248,7 @@ def attach_joints_to_curves(
             parent_group
         )
 
-    side = name_utils.Name.normalize_side(
+    side = RigBase.normalize_side(
         side
     )
     region = normalize_name_part(
