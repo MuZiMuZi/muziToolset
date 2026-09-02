@@ -1,0 +1,67 @@
+name: Apply Runtime Chinese Step Comments
+
+on:
+  push:
+    branches:
+      - refactor/full-code-cn-comments
+    paths:
+      - scripts/annotate_runtime_steps.py
+      - .github/workflows/apply_runtime_step_comments.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout refactor branch
+        uses: actions/checkout@v4
+        with:
+          ref: refactor/full-code-cn-comments
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # -----------------------------------------------------------------------
+      # Step 01：只给尚未存在 Step 01 的复杂函数插入中文步骤注释
+      # -----------------------------------------------------------------------
+      - name: Apply runtime step comments
+        run: python scripts/annotate_runtime_steps.py --write
+
+      # -----------------------------------------------------------------------
+      # Step 02：严格编译全部 Runtime，任何语法变化都禁止提交
+      # -----------------------------------------------------------------------
+      - name: Validate Python compile
+        run: python -m compileall -q app core systems tools ui __init__.py config.py
+
+      # -----------------------------------------------------------------------
+      # Step 03：确认自动注释器已经覆盖全部审计目标
+      # -----------------------------------------------------------------------
+      - name: Validate step comment coverage
+        run: python scripts/annotate_runtime_steps.py --check
+
+      - name: Check whitespace errors
+        run: git diff --check
+
+      # -----------------------------------------------------------------------
+      # Step 04：只有所有安全检查通过后才提交源码注释变化
+      # -----------------------------------------------------------------------
+      - name: Commit generated step comments
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "All complex runtime functions already contain Step comments."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app core systems tools ui
+          git commit -m "docs: add runtime chinese step comments"
+          git push origin HEAD:refactor/full-code-cn-comments
