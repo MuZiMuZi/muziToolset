@@ -240,7 +240,7 @@ class FaceGuide(face_base.FaceBase):
     def get_temporary_guide_name(self):
         u"""返回一个未被占用的临时 Guide Container 名称。"""
         return self.create_unique_name(
-            type="grp",
+            node_type="grp",
             side="md",
             part="face_guide",
             function="container"
@@ -885,7 +885,7 @@ class FaceGuide(face_base.FaceBase):
     ):
         u"""创建以 guide 为 function 的标准 Locator 名称。"""
         return self.create_name(
-            type="loc",
+            node_type="loc",
             side=side,
             part=part,
             function="guide",
