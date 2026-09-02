@@ -15,10 +15,16 @@ Rig 关系：
         ↓ Rigid Skin
     Teeth Model
 
+Module Identity：
+
+    side  = md
+    part  = teeth
+    index = 001
+
 边界：
     - Teeth 只处理 Upper / Lower Teeth；
     - Gum 属于 Mouth / Jaw Deformation，不在本 Module 中刚性绑定；
-    - Rig Name 直接继承 FaceBase -> RigBase；
+    - Rig Identity / Naming 继承 FaceBase -> RigBase；
     - Controller 创建统一使用 systems.ctrl_base；
     - Module 生命周期统一使用 systems.module_base.RigModuleBase。
 """
@@ -41,8 +47,12 @@ class TeethModule(FaceBase):
     u"""构建 Upper / Lower Teeth 刚体 Rig。"""
 
     def __init__(self):
-        u"""初始化 Teeth Module 输入、设置和构建结果。"""
-        super(TeethModule, self).__init__()
+        u"""初始化 Teeth Module Identity、输入、设置和构建结果。"""
+        super(TeethModule, self).__init__(
+            side="md",
+            part="teeth",
+            index=1
+        )
 
         self.face_guide = FaceGuide()
 
@@ -91,18 +101,14 @@ class TeethModule(FaceBase):
         )
 
         self.upper_teeth_guide_name = self.create_name(
-            type="loc",
-            side="md",
+            node_type="loc",
             part="upper_teeth",
-            function="guide",
-            index=1
+            function="guide"
         )
         self.lower_teeth_guide_name = self.create_name(
-            type="loc",
-            side="md",
+            node_type="loc",
             part="lower_teeth",
-            function="guide",
-            index=1
+            function="guide"
         )
 
         self.upper_teeth_guide = self.face_guide.get_guide_node(
@@ -199,65 +205,49 @@ class TeethModule(FaceBase):
     # =========================================================================
 
     def _prepare_names(self):
-        u"""准备 Teeth Module 的全部标准名称。"""
+        u"""根据 TeethModule Identity 准备全部标准名称。"""
         self.upper_teeth_jnt_name = self.create_name(
-            type="jnt",
-            side="md",
+            node_type="jnt",
             part="upper_teeth",
-            function="bind",
-            index=1
+            function="bind"
         )
         self.lower_teeth_jnt_name = self.create_name(
-            type="jnt",
-            side="md",
+            node_type="jnt",
             part="lower_teeth",
-            function="bind",
-            index=1
+            function="bind"
         )
 
         self.upper_teeth_ctrl_name = self.create_name(
-            type="ctrl",
-            side="md",
+            node_type="ctrl",
             part="upper_teeth",
-            function="bind",
-            index=1
+            function="bind"
         )
         self.lower_teeth_ctrl_name = self.create_name(
-            type="ctrl",
-            side="md",
+            node_type="ctrl",
             part="lower_teeth",
-            function="bind",
-            index=1
+            function="bind"
         )
 
         self.upper_teeth_matrix_name = self.create_name(
-            type="mult",
-            side="md",
+            node_type="mult",
             part="upper_teeth",
-            function="parent",
-            index=1
+            function="parent"
         )
         self.lower_teeth_matrix_name = self.create_name(
-            type="mult",
-            side="md",
+            node_type="mult",
             part="lower_teeth",
-            function="parent",
-            index=1
+            function="parent"
         )
 
         self.upper_teeth_skin_name = self.create_name(
-            type="skin",
-            side="md",
+            node_type="skin",
             part="upper_teeth",
-            function="bind",
-            index=1
+            function="bind"
         )
         self.lower_teeth_skin_name = self.create_name(
-            type="skin",
-            side="md",
+            node_type="skin",
             part="lower_teeth",
-            function="bind",
-            index=1
+            function="bind"
         )
         return True
 
