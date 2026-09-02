@@ -44,7 +44,7 @@ app      主程序和窗口生命周期
 
 ```text
 systems/rig_base.py
-    Rig Naming
+    Rig Object Identity + Rig Naming
 
 systems/module_base.py
     Module Lifecycle
@@ -55,7 +55,7 @@ systems/ctrl_base.py
 
 正式业务单元统一使用 **Module** 术语，不再使用 Component。
 
-Rig Naming 已从 Core 移到 `RigBase`；旧 `core/name_utils.py` 已删除。
+Rig Identity / Rig Naming 已从 Core 移到 `RigBase`；旧 `core/name_utils.py` 已删除。
 
 Controller 的唯一正式实现是 `systems/ctrl_base.py`；旧 `systems/controller/` 已删除。
 
@@ -112,12 +112,20 @@ Gum 不属于 Teeth 刚体绑定，后续由 Jaw / Mouth Deformation 处理。
 
 ---
 
-# Rig Naming
+# RigBase / Rig Naming
+
+`RigBase` 是可实例化的 Rig Object 基类。
+
+一个 Rig Object 的 Identity 只包含：
+
+```text
+side / part / index
+```
 
 正式 Maya Rig 节点格式：
 
 ```text
-[type]_[side]_[part]_[function]_[index]
+[node_type]_[side]_[part]_[function]_[index]
 ```
 
 方向：
@@ -126,11 +134,40 @@ Gum 不属于 Teeth 刚体绑定，后续由 Jaw / Mouth Deformation 处理。
 lf / rt / md
 ```
 
-正式入口：
+正式用法：
 
 ```python
 from muziToolset.systems.rig_base import RigBase
+
+rig = RigBase(
+    side="lf",
+    part="brow",
+    index=1
+)
+
+joint_name = rig.create_name(
+    node_type="jnt",
+    function="bind"
+)
+
+# jnt_lf_brow_bind_001
 ```
+
+`node_type` 和 `function` 描述具体 Maya 节点，不属于 Rig Object Identity。
+
+纯解析 / 校验可以直接调用：
+
+```python
+fields = RigBase.parse_name(
+    "jnt_lf_brow_bind_001"
+)
+
+valid = RigBase.validate_name(
+    "jnt_lf_brow_bind_001"
+)
+```
+
+RigBase Naming 正式参数使用 `node_type=`；旧 `type=` 已退休。
 
 Maya 普通 Rename / Short Name：
 
@@ -238,6 +275,7 @@ API 页面由源码 Docstring 通过 AST Generator 自动生成。
 ## 5. 迁移记录
 
 - [Pipeline / Core Migration](docs/migration/pipeline.md)
+- [Rig Architecture 0.4 Migration](docs/migration/rig-architecture-0.4.md)
 
 ---
 
@@ -247,7 +285,7 @@ API 页面由源码 Docstring 通过 AST Generator 自动生成。
 模块 / 文件 / 函数 / 变量    snake_case
 Class                       PascalCase
 Side                        lf / rt / md
-Maya Rig Node               [type]_[side]_[part]_[function]_[index]
+Maya Rig Node               [node_type]_[side]_[part]_[function]_[index]
 ```
 
 流程代码优先显式 `for` 循环和清晰中文注释；Maya 场景代码优先 `maya.cmds`，正式新代码不新增 PyMel。
