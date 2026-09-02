@@ -7,8 +7,8 @@ Face Eyelid Builder
 
 设计边界：
     1. Curve 查询和 Attachment 创建交给 core.curve_utils；
-    2. Transform / Joint 输入校验交给 core.transform_utils；
-    3. 通用 Transform Group 创建交给 core.scene_utils；
+    2. Transform 输入校验交给 core.transform_utils；
+    3. 通用 Maya Node 创建和 Scene Availability 交给 core.scene_utils；
     4. Aim Constraint 创建交给 core.constraint_utils；
     5. Maya Undo Chunk 交给 core.scene_utils；
     6. Rig Naming 统一使用 systems.rig_base.RigBase；
@@ -151,19 +151,14 @@ def build_radial_curve_joints(
         1
     )
 
-    names_to_check = [
-        nodes_group_name,
-        attachments_group_name,
-        joints_group_name,
-    ]
-
-    for node_name in names_to_check:
-        if cmds.objExists(node_name):
-            raise RuntimeError(
-                u"Eye Area Rig 节点已经存在，请先清理旧结果：{}".format(
-                    node_name
-                )
-            )
+    scene_utils.ensure_nodes_available(
+        [
+            nodes_group_name,
+            attachments_group_name,
+            joints_group_name,
+        ],
+        label=u"Eye Area Rig Build Node"
+    )
 
     nodes_group = None
 
@@ -276,9 +271,9 @@ def build_radial_curve_joints(
                 "bind",
                 item_index
             )
-            joint = cmds.createNode(
+            joint = scene_utils.create_node(
                 "joint",
-                name=joint_name,
+                joint_name,
                 parent=aim_group
             )
 
