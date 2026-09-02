@@ -3,11 +3,18 @@ u"""
 Rig Base
 ========
 
-MuziTools 所有 Rig System / Module 共用的命名基础类。
+MuziTools 所有 Rig Object / Module 共用的最底层实例基类。
 
-正式命名规则：
+RigBase 不再是 Name Object，也不保存某一个 Maya Node 的 type / function。
+它代表一个 Rig 对象自己的 Identity：
 
-    [type]_[side]_[part]_[function]_[index]
+    side
+    part
+    index
+
+标准 Rig Naming：
+
+    [node_type]_[side]_[part]_[function]_[index]
 
 例如：
 
@@ -16,8 +23,8 @@ MuziTools 所有 Rig System / Module 共用的命名基础类。
     grp_md_face_rig_nodes_001
 
 字段边界：
-    type
-        Maya / Rig 节点类型。
+    node_type
+        Maya / Rig 节点类型，必须是单一 Token。
 
     side
         lf / rt / md。
@@ -26,17 +33,19 @@ MuziTools 所有 Rig System / Module 共用的命名基础类。
         Rig 部位，允许包含下划线，例如 upper_teeth。
 
     function
-        单一功能 Token，不允许包含下划线。
+        节点功能，必须是单一 Token。
 
     index
-        三位整数序号。
+        001 ~ 999。
 
-设计原则：
-    1. Rig 命名属于 systems 层，不再放在 core；
-    2. Core rename_utils 只负责 Maya Rename / Short Name 等通用操作；
-    3. 不保留 resolution / description 等旧 Naming API；
-    4. Module 通过继承 RigBase 直接使用 self.create_name() 等方法；
-    5. 模块级 Config 可以直接调用 RigBase.create_name()。
+核心原则：
+    1. RigBase 是可实例化的 Rig 对象基础类；
+    2. 实例 Identity 只包含 side / part / index；
+    3. create_name() 没有显式覆盖字段时，读取实例 Identity；
+    4. parse_name() 只解析输入名称，不修改当前实例；
+    5. Rig Naming 属于 systems 层，不属于 core；
+    6. Core rename_utils 只负责 Maya Rename / Short Name 等通用操作；
+    7. RigBase 不负责 Joint、Controller、Matrix、Config、Hierarchy 或 UI。
 """
 
 from __future__ import print_function
@@ -48,7 +57,7 @@ except ImportError:
 
 
 class RigBase(object):
-    u"""Rig System / Module 共用的标准命名基础类。"""
+    u"""所有 Rig Object 共用的 Identity 与 Naming 基类。"""
 
     sides = [
         "lf",
@@ -74,32 +83,75 @@ class RigBase(object):
 
     def __init__(
             self,
-            name=None,
-            type=None,
-            side=None,
+            side="md",
             part=None,
-            function=None,
-            index=None
+            index=1
     ):
-        u"""初始化 Rig Name 数据；传入 name 时自动解析。"""
-        self._name = None
-        self.type = type
-        self.side = side
-        self.part = part
-        self.function = function
-        self.index = index
+        u"""
+        初始化一个 Rig Object Identity。
 
-        if name is not None:
-            self._name = name
-            self.decompose()
+        Args:
+            side (str):
+                Rig Side，支持 lf / rt / md 和常用 Alias。
+            part (str):
+                Rig Part，例如 jaw / teeth / upper_teeth。
+            index (int):
+                Rig Object 序号，范围 1 ~ 999。
+        """
+        self.side = self.normalize_side(
+            side
+        )
+        self.part = self.normalize_part(
+            part
+        )
+        self.index = self.validate_index(
+            index
+        )
 
     # =========================================================================
-    # Normalize
+    # Identity
+    # =========================================================================
+
+    @property
+    def identity(self):
+        u"""返回当前 Rig Object Identity。"""
+        return {
+            "side": self.side,
+            "part": self.part,
+            "index": self.index,
+        }
+
+    def set_identity(
+            self,
+            side=None,
+            part=None,
+            index=None
+    ):
+        u"""显式更新当前 Rig Object Identity。"""
+        if side is not None:
+            self.side = self.normalize_side(
+                side
+            )
+
+        if part is not None:
+            self.part = self.normalize_part(
+                part
+            )
+
+        if index is not None:
+            self.index = self.validate_index(
+                index
+            )
+
+        return self.identity
+
+    # =========================================================================
+    # Normalize / Validate
     # =========================================================================
 
     @staticmethod
     def _normalize_token(value):
-        u"""规范一个 Naming Token。"""
+        u"""规范一个 Naming Token / Part 字符串。"""
         if value is None:
             return None
 
@@ -120,95 +172,209 @@ class RigBase(object):
     def normalize_side(cls, side):
         u"""把 Side Alias 统一为 lf / rt / md。"""
         if side is None:
-            return "md"
+            side = "md"
 
-        side = cls._normalize_token(side)
+        side = cls._normalize_token(
+            side
+        )
 
         if side in cls.side_aliases:
             return cls.side_aliases[side]
 
         raise ValueError(
-            u"不支持的 Rig Side：{}".format(side)
+            u"不支持的 Rig Side：{}".format(
+                side
+            )
         )
 
     @classmethod
-    def _validate_fields(
-            cls,
-            type,
-            side,
-            part,
-            function,
-            index
-    ):
-        u"""验证正式五段式 Rig Name 字段。"""
-        node_type = cls._normalize_token(type)
-        normalized_side = cls.normalize_side(side)
-        normalized_part = cls._normalize_token(part)
-        normalized_function = cls._normalize_token(function)
+    def normalize_part(cls, part):
+        u"""规范 Rig Part；Part 可以包含下划线。"""
+        part = cls._normalize_token(
+            part
+        )
+
+        if part is None:
+            raise ValueError(
+                u"Rig Part 不能为空。"
+            )
+
+        return part
+
+    @classmethod
+    def normalize_node_type(cls, node_type):
+        u"""规范 Node Type，并保证它是单一 Token。"""
+        node_type = cls._normalize_token(
+            node_type
+        )
 
         if node_type is None:
-            raise ValueError(u"Rig Name type 不能为空。")
-
-        if normalized_part is None:
-            raise ValueError(u"Rig Name part 不能为空。")
-
-        if normalized_function is None:
-            raise ValueError(u"Rig Name function 不能为空。")
-
-        if "_" in normalized_function:
             raise ValueError(
-                u"Rig Name function 必须是单一 Token，不能包含下划线：{}".format(
-                    normalized_function
+                u"Rig Name node_type 不能为空。"
+            )
+
+        if "_" in node_type:
+            raise ValueError(
+                u"Rig Name node_type 必须是单一 Token：{}".format(
+                    node_type
                 )
             )
 
+        return node_type
+
+    @classmethod
+    def normalize_function(cls, function):
+        u"""规范 Function，并保证它是单一 Token。"""
+        function = cls._normalize_token(
+            function
+        )
+
+        if function is None:
+            raise ValueError(
+                u"Rig Name function 不能为空。"
+            )
+
+        if "_" in function:
+            raise ValueError(
+                u"Rig Name function 必须是单一 Token：{}".format(
+                    function
+                )
+            )
+
+        return function
+
+    @staticmethod
+    def validate_index(index):
+        u"""验证三位 Rig Index，并返回 int。"""
+        if isinstance(index, bool):
+            raise TypeError(
+                u"Rig Index 必须是整数，不能是 bool。"
+            )
+
+        try:
+            index = int(
+                index
+            )
+        except (TypeError, ValueError):
+            raise TypeError(
+                u"Rig Index 必须是整数。"
+            )
+
+        if index < 1 or index > 999:
+            raise ValueError(
+                u"Rig Index 必须在 1 ~ 999，当前值：{}".format(
+                    index
+                )
+            )
+
+        return index
+
+    def resolve_identity(
+            self,
+            side=None,
+            part=None,
+            index=None
+    ):
+        u"""解析 Naming 使用的 Identity；None 表示继承当前实例。"""
+        if side is None:
+            side = self.side
+
+        if part is None:
+            part = self.part
+
         if index is None:
-            index = 1
-
-        index = int(index)
-
-        if index < 0:
-            raise ValueError(u"Rig Name index 不能小于 0。")
+            index = self.index
 
         return {
-            "type": node_type,
-            "side": normalized_side,
-            "part": normalized_part,
-            "function": normalized_function,
-            "index": index,
+            "side": self.normalize_side(
+                side
+            ),
+            "part": self.normalize_part(
+                part
+            ),
+            "index": self.validate_index(
+                index
+            ),
         }
 
     # =========================================================================
-    # Create / Parse
+    # Naming
     # =========================================================================
 
-    @classmethod
     def create_name(
-            cls,
-            type,
-            side,
-            part,
-            function,
-            index=1
+            self,
+            node_type=None,
+            function=None,
+            side=None,
+            part=None,
+            index=None,
+            **kwargs
     ):
-        u"""根据正式五段式规则创建 Rig Name。"""
-        fields = cls._validate_fields(
-            type=type,
+        u"""
+        根据当前 Rig Identity 创建标准 Rig Name。
+
+        side / part / index 没有显式传入时，自动使用当前实例 Identity。
+
+        `type` 仅作为当前仓库迁移期间的旧 Keyword Alias；新代码统一使用
+        `node_type`。它不会成为新的公开命名规范。
+        """
+        legacy_node_type = kwargs.pop(
+            "type",
+            None
+        )
+
+        if kwargs:
+            invalid_keys = []
+
+            for key in kwargs:
+                invalid_keys.append(
+                    key
+                )
+
+            raise TypeError(
+                u"create_name() 不支持参数：{}".format(
+                    ", ".join(invalid_keys)
+                )
+            )
+
+        if node_type is None:
+            node_type = legacy_node_type
+        elif legacy_node_type is not None:
+            raise TypeError(
+                u"node_type 和旧 type 参数不能同时传入。"
+            )
+
+        node_type = self.normalize_node_type(
+            node_type
+        )
+        function = self.normalize_function(
+            function
+        )
+        identity = self.resolve_identity(
             side=side,
             part=part,
-            function=function,
             index=index
         )
 
-        return "{type}_{side}_{part}_{function}_{index:03d}".format(
-            **fields
+        return "{node_type}_{side}_{part}_{function}_{index:03d}".format(
+            node_type=node_type,
+            side=identity["side"],
+            part=identity["part"],
+            function=function,
+            index=identity["index"]
         )
 
     @classmethod
     def parse_name(cls, name):
-        u"""解析正式 Rig Name 并返回字段字典。"""
+        u"""
+        解析标准 Rig Name。
+
+        本方法只返回字段，不修改任何 RigBase 实例。
+        """
         if not isinstance(name, str):
-            raise TypeError(u"Rig Name 必须是字符串。")
+            raise TypeError(
+                u"Rig Name 必须是字符串。"
+            )
 
         short_name = name.split("|")[-1]
         short_name = short_name.split(":")[-1]
@@ -216,33 +382,52 @@ class RigBase(object):
 
         if len(name_parts) < 5:
             raise ValueError(
-                u"不是有效的五段式 Rig Name：{}".format(name)
+                u"不是有效的五段式 Rig Name：{}".format(
+                    name
+                )
             )
 
         index_string = name_parts[-1]
 
         if len(index_string) != 3:
             raise ValueError(
-                u"Rig Name index 必须是三位数字：{}".format(name)
+                u"Rig Name index 必须是三位数字：{}".format(
+                    name
+                )
             )
 
         if not index_string.isdigit():
             raise ValueError(
-                u"Rig Name index 必须是数字：{}".format(name)
+                u"Rig Name index 必须是数字：{}".format(
+                    name
+                )
             )
 
-        part = "_".join(
-            name_parts[2:-2]
+        node_type = cls.normalize_node_type(
+            name_parts[0]
+        )
+        side = cls.normalize_side(
+            name_parts[1]
+        )
+        part = cls.normalize_part(
+            "_".join(
+                name_parts[2:-2]
+            )
+        )
+        function = cls.normalize_function(
+            name_parts[-2]
+        )
+        index = cls.validate_index(
+            int(index_string)
         )
 
-        fields = cls._validate_fields(
-            type=name_parts[0],
-            side=name_parts[1],
-            part=part,
-            function=name_parts[-2],
-            index=int(index_string)
-        )
-        return fields
+        return {
+            "node_type": node_type,
+            "side": side,
+            "part": part,
+            "function": function,
+            "index": index,
+        }
 
     @classmethod
     def validate_name(cls, name):
@@ -256,17 +441,33 @@ class RigBase(object):
 
         return True
 
+    def mirror_name(self, name):
+        u"""返回 lf / rt 镜像名称；md 名称保持 md。"""
+        fields = self.parse_name(
+            name
+        )
+        mirrored_side = self.get_opposite_side(
+            fields["side"]
+        )
+
+        return self.create_name(
+            node_type=fields["node_type"],
+            side=mirrored_side,
+            part=fields["part"],
+            function=fields["function"],
+            index=fields["index"]
+        )
+
     # =========================================================================
-    # Unique / Mirror
+    # Scene Unique Name
     # =========================================================================
 
-    @classmethod
     def get_next_index(
-            cls,
-            type,
-            side,
-            part,
-            function
+            self,
+            node_type,
+            function,
+            side=None,
+            part=None
     ):
         u"""返回场景中同一 Naming Base 的下一个可用序号。"""
         if cmds is None:
@@ -274,10 +475,15 @@ class RigBase(object):
                 u"get_next_index() 必须在 Maya 环境中运行。"
             )
 
-        base_name = cls.create_name(
-            type=type,
+        identity = self.resolve_identity(
             side=side,
             part=part,
+            index=1
+        )
+        base_name = self.create_name(
+            node_type=node_type,
+            side=identity["side"],
+            part=identity["part"],
             function=function,
             index=1
         ).rsplit(
@@ -298,119 +504,102 @@ class RigBase(object):
             short_name = node.split("|")[-1]
             short_name = short_name.split(":")[-1]
 
-            if not cls.validate_name(short_name):
+            if not self.validate_name(short_name):
                 continue
 
-            fields = cls.parse_name(short_name)
+            fields = self.parse_name(
+                short_name
+            )
 
-            if fields["type"] != cls._normalize_token(type):
+            if fields["node_type"] != self.normalize_node_type(node_type):
                 continue
 
-            if fields["side"] != cls.normalize_side(side):
+            if fields["side"] != identity["side"]:
                 continue
 
-            if fields["part"] != cls._normalize_token(part):
+            if fields["part"] != identity["part"]:
                 continue
 
-            if fields["function"] != cls._normalize_token(function):
+            if fields["function"] != self.normalize_function(function):
                 continue
 
             if fields["index"] > max_index:
                 max_index = fields["index"]
 
-        return max_index + 1
+        next_index = max_index + 1
 
-    @classmethod
+        if next_index > 999:
+            raise RuntimeError(
+                u"Rig Naming Index 已超过 999：{}_{}".format(
+                    base_name,
+                    next_index
+                )
+            )
+
+        return next_index
+
     def create_unique_name(
-            cls,
-            type,
-            side,
-            part,
-            function
+            self,
+            node_type,
+            function,
+            side=None,
+            part=None
     ):
         u"""创建场景中下一个可用的标准 Rig Name。"""
-        index = cls.get_next_index(
-            type=type,
-            side=side,
-            part=part,
-            function=function
-        )
-
-        return cls.create_name(
-            type=type,
-            side=side,
-            part=part,
+        next_index = self.get_next_index(
+            node_type=node_type,
             function=function,
-            index=index
+            side=side,
+            part=part
         )
 
-    @classmethod
-    def mirror_name(cls, name):
-        u"""计算 lf / rt 镜像名称；md 保持不变。"""
-        fields = cls.parse_name(
-            name
-        )
-
-        if fields["side"] == "lf":
-            fields["side"] = "rt"
-        elif fields["side"] == "rt":
-            fields["side"] = "lf"
-
-        return cls.create_name(
-            type=fields["type"],
-            side=fields["side"],
-            part=fields["part"],
-            function=fields["function"],
-            index=fields["index"]
+        return self.create_name(
+            node_type=node_type,
+            function=function,
+            side=side,
+            part=part,
+            index=next_index
         )
 
     # =========================================================================
-    # Object API
+    # Side
     # =========================================================================
 
-    @property
-    def name(self):
-        u"""返回当前字段组合后的正式 Rig Name。"""
-        return self.compose()
+    def get_opposite_side(self, side=None):
+        u"""返回相反 Side；md 保持 md，不修改当前实例。"""
+        if side is None:
+            side = self.side
 
-    def compose(self):
-        u"""根据当前对象字段重新组合名称。"""
-        self._name = self.create_name(
-            type=self.type,
-            side=self.side,
-            part=self.part,
-            function=self.function,
-            index=self.index
-        )
-        return self._name
-
-    def decompose(self):
-        u"""把当前 name 解析回对象字段。"""
-        fields = self.parse_name(
-            self._name
+        side = self.normalize_side(
+            side
         )
 
-        self.type = fields["type"]
-        self.side = fields["side"]
-        self.part = fields["part"]
-        self.function = fields["function"]
-        self.index = fields["index"]
-        return True
+        if side == "lf":
+            return "rt"
 
-    def flip(self):
-        u"""翻转当前对象 Side。"""
-        normalized_side = self.normalize_side(
+        if side == "rt":
+            return "lf"
+
+        return "md"
+
+    def flip_side(self):
+        u"""把当前 Rig Object Side 翻转为相反 Side。"""
+        self.side = self.get_opposite_side(
             self.side
         )
-
-        if normalized_side == "lf":
-            self.side = "rt"
-        elif normalized_side == "rt":
-            self.side = "lf"
-        else:
-            self.side = "md"
-
         return self.side
+
+    def is_left(self):
+        u"""当前 Rig Object 是否为 Left。"""
+        return self.side == "lf"
+
+    def is_right(self):
+        u"""当前 Rig Object 是否为 Right。"""
+        return self.side == "rt"
+
+    def is_center(self):
+        u"""当前 Rig Object 是否为 Middle / Center。"""
+        return self.side == "md"
 
 
 __all__ = [
