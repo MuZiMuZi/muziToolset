@@ -131,46 +131,6 @@ def _validate_ctrl_name(ctrl_name):
     return True
 
 
-def _build_related_name(ctrl_name, node_type, function_name=None):
-    u"""
-    根据 Ctrl Name 创建关联节点名称。
-
-    Example:
-        ctrl_md_jaw_001
-            -> zero_md_jaw_001
-            -> output_md_jaw_001
-            -> network_md_jaw_rebuild_cache_001
-    """
-    short_name = rename_utils.get_short_name(ctrl_name)
-
-    if short_name.startswith("ctrl_"):
-        short_name = short_name.replace("ctrl_", "", 1)
-
-    name_token_list = short_name.split("_")
-    index_token = None
-
-    if name_token_list:
-        last_token = name_token_list[-1]
-
-        if last_token.isdigit():
-            index_token = last_token
-            name_token_list = name_token_list[:-1]
-
-    result_token_list = [node_type]
-
-    for token in name_token_list:
-        if token:
-            result_token_list.append(token)
-
-    if function_name:
-        result_token_list.append(function_name)
-
-    if index_token:
-        result_token_list.append(index_token)
-
-    return "_".join(result_token_list)
-
-
 # =============================================================================
 # Ctrl Creation
 # =============================================================================
@@ -292,21 +252,18 @@ def create_ctrl(
     # -------------------------------------------------------------------------
     ctrl_name = name
 
-    zero_grp_name = _build_related_name(ctrl_name, "zero")
-    driven_grp_name = _build_related_name(ctrl_name, "driven")
-    space_grp_name = _build_related_name(ctrl_name, "space")
-    connect_grp_name = _build_related_name(ctrl_name, "connect")
-    offset_grp_name = _build_related_name(ctrl_name, "offset")
-    output_name = _build_related_name(ctrl_name, "output")
+    zero_grp_name = ctrl_name.replace("ctrl_", "zero_", 1)
+    driven_grp_name = ctrl_name.replace("ctrl_", "driven_", 1)
+    space_grp_name = ctrl_name.replace("ctrl_", "space_", 1)
+    connect_grp_name = ctrl_name.replace("ctrl_", "connect_", 1)
+    offset_grp_name = ctrl_name.replace("ctrl_", "offset_", 1)
+    output_name = ctrl_name.replace("ctrl_", "output_", 1)
 
     sub_ctrl_name = None
 
     if create_sub_ctrl:
-        sub_ctrl_name = _build_related_name(
-            ctrl_name,
-            "ctrl",
-            function_name="sub"
-        )
+        ctrl_name_base, ctrl_index = ctrl_name.rsplit("_", 1)
+        sub_ctrl_name = "{}_sub_{}".format(ctrl_name_base, ctrl_index)
 
     create_name_list = [
         ctrl_name,
@@ -658,16 +615,12 @@ def create_follow(
     # -------------------------------------------------------------------------
     # Step 03：创建 Constraint 和 Reverse
     # -------------------------------------------------------------------------
-    constraint_name = _build_related_name(
-        ctrl_node,
-        "cns",
-        function_name=attr_name
-    )
-    reverse_name = _build_related_name(
-        ctrl_node,
-        "reverse",
-        function_name=attr_name
-    )
+    ctrl_name = rename_utils.get_short_name(ctrl_node)
+    ctrl_name_base, ctrl_index = ctrl_name.rsplit("_", 1)
+    ctrl_name_base = ctrl_name_base.replace("ctrl_", "", 1)
+
+    constraint_name = "cns_{}_{}_{}".format(ctrl_name_base, attr_name, ctrl_index)
+    reverse_name = "reverse_{}_{}_{}".format(ctrl_name_base, attr_name, ctrl_index)
 
     _validate_create_name_list([
         constraint_name,
@@ -833,11 +786,11 @@ def create_space_switch(
     # -------------------------------------------------------------------------
     # Step 03：创建 Parent Constraint
     # -------------------------------------------------------------------------
-    constraint_name = _build_related_name(
-        ctrl_node,
-        "cns",
-        function_name=attr_name
-    )
+    ctrl_name = rename_utils.get_short_name(ctrl_node)
+    ctrl_name_base, ctrl_index = ctrl_name.rsplit("_", 1)
+    ctrl_name_base = ctrl_name_base.replace("ctrl_", "", 1)
+    constraint_name = "cns_{}_{}_{}".format(ctrl_name_base, attr_name, ctrl_index)
+
     _validate_create_name_list([constraint_name])
 
     constraint_node_list = constraint_utils.create_constraint(
@@ -878,13 +831,11 @@ def create_space_switch(
     space_index = 0
 
     while space_index < len(space_target_list):
-        condition_name = _build_related_name(
-            ctrl_node,
-            "condition",
-            function_name="{}_{}".format(
-                attr_name,
-                space_index + 1
-            )
+        condition_name = "condition_{}_{}_{}_{}".format(
+            ctrl_name_base,
+            attr_name,
+            space_index + 1,
+            ctrl_index
         )
         _validate_create_name_list([condition_name])
 
@@ -1106,11 +1057,10 @@ def save_rebuild_cache(
     scene_utils.validate_node(ctrl_node, u"Ctrl Node")
 
     if cache_name is None:
-        cache_name = _build_related_name(
-            ctrl_node,
-            "network",
-            function_name="rebuild_cache"
-        )
+        ctrl_name = rename_utils.get_short_name(ctrl_node)
+        ctrl_name_base, ctrl_index = ctrl_name.rsplit("_", 1)
+        ctrl_name_base = ctrl_name_base.replace("ctrl_", "", 1)
+        cache_name = "network_{}_rebuild_cache_{}".format(ctrl_name_base, ctrl_index)
 
     if cmds.objExists(cache_name):
         raise RuntimeError(u"Rebuild Cache 已存在：{}".format(cache_name))
