@@ -3,20 +3,16 @@ u"""
 RigBase Contract Test
 =====================
 
-非 Maya 环境下验证 RigBase 的正式对象契约：
+非 Maya 环境下验证 RigBase 的正式 Naming 契约：
 
-    Direct Instance Attributes
-    Naming
-    Parse
-    Mirror
-    Side Semantic
-    Index Contract
-    node_type Contract
+    type / side / part / function / index
+    name
+    compose
+    decompose
+    parse_name
+    mirror_name
 
-支持：
-    python tests/rig_base_contract_test.py
-
-也支持作为 muziToolset.tests 包内模块调用。
+绑定库内部 Naming 默认可信，不测试重复的名称格式 Normalize / Validate。
 """
 
 from __future__ import print_function
@@ -47,219 +43,129 @@ else:
 
 
 def run():
-    u"""验证 RigBase 使用直接实例属性，而不是额外 Identity 包装。"""
-    rig_object = RigBase(
-        side="left",
-        part="upper_teeth",
-        index=3
-    )
-
-    if rig_object.side != "lf":
-        print("[FAIL] RigBase.side: {}".format(rig_object.side))
-        return False
-
-    if rig_object.part != "upper_teeth":
-        print("[FAIL] RigBase.part: {}".format(rig_object.part))
-        return False
-
-    if rig_object.index != 3:
-        print("[FAIL] RigBase.index: {}".format(rig_object.index))
-        return False
-
-    name = rig_object.create_name(
-        node_type="ctrl",
-        function="bind"
-    )
-
-    if name != "ctrl_lf_upper_teeth_bind_003":
-        print(
-            "[FAIL] RigBase.create_name: {}".format(
-                name
-            )
-        )
-        return False
-
-    override_name = rig_object.create_name(
-        node_type="jnt",
-        part="lower_teeth",
+    u"""验证 RigBase 既能组合名称，也能从已有名称拆分属性。"""
+    jaw_ctrl = RigBase(
+        type="ctrl",
+        side="md",
+        part="jaw",
         function="bind",
         index=1
     )
 
-    if override_name != "jnt_lf_lower_teeth_bind_001":
-        print(
-            "[FAIL] RigBase.create_name Override: {}".format(
-                override_name
-            )
-        )
+    if jaw_ctrl.name != "ctrl_md_jaw_bind_001":
+        print("[FAIL] RigBase.name: {}".format(jaw_ctrl.name))
         return False
 
-    if rig_object.side != "lf":
-        print("[FAIL] create_name() Override 修改了实例 side。")
+    if jaw_ctrl.type != "ctrl":
+        print("[FAIL] RigBase.type: {}".format(jaw_ctrl.type))
         return False
 
-    if rig_object.part != "upper_teeth":
-        print("[FAIL] create_name() Override 修改了实例 part。")
+    if jaw_ctrl.side != "md":
+        print("[FAIL] RigBase.side: {}".format(jaw_ctrl.side))
         return False
 
-    if rig_object.index != 3:
-        print("[FAIL] create_name() Override 修改了实例 index。")
+    if jaw_ctrl.part != "jaw":
+        print("[FAIL] RigBase.part: {}".format(jaw_ctrl.part))
         return False
 
-    fields = RigBase.parse_name(
-        name
+    if jaw_ctrl.function != "bind":
+        print("[FAIL] RigBase.function: {}".format(jaw_ctrl.function))
+        return False
+
+    if jaw_ctrl.index != 1:
+        print("[FAIL] RigBase.index: {}".format(jaw_ctrl.index))
+        return False
+
+    parsed_ctrl = RigBase(
+        name="ctrl_lf_upper_teeth_anim_003"
     )
 
-    expected_fields = {
-        "node_type": "ctrl",
+    expected_attributes = {
+        "type": "ctrl",
         "side": "lf",
         "part": "upper_teeth",
-        "function": "bind",
+        "function": "anim",
         "index": 3,
     }
 
-    for field_name in expected_fields:
-        if fields.get(field_name) != expected_fields[field_name]:
+    for attribute_name in expected_attributes:
+        current_value = getattr(
+            parsed_ctrl,
+            attribute_name
+        )
+
+        if current_value != expected_attributes[attribute_name]:
+            print(
+                "[FAIL] RigBase.decompose {}: {}".format(
+                    attribute_name,
+                    current_value
+                )
+            )
+            return False
+
+    if parsed_ctrl.name != "ctrl_lf_upper_teeth_anim_003":
+        print("[FAIL] RigBase.decompose name: {}".format(parsed_ctrl.name))
+        return False
+
+    name_data = RigBase.parse_name(
+        "jnt_rt_brow_bind_012"
+    )
+
+    expected_name_data = {
+        "type": "jnt",
+        "side": "rt",
+        "part": "brow",
+        "function": "bind",
+        "index": 12,
+    }
+
+    for field_name in expected_name_data:
+        if name_data[field_name] != expected_name_data[field_name]:
             print(
                 "[FAIL] RigBase.parse_name {}: {}".format(
                     field_name,
-                    fields.get(field_name)
+                    name_data[field_name]
                 )
             )
             return False
 
-    mirrored_name = rig_object.mirror_name(
-        name
+    override_name = jaw_ctrl.create_name(
+        type="jnt",
+        side="lf",
+        part="jaw_corner",
+        function="bind",
+        index=2
     )
 
-    if mirrored_name != "ctrl_rt_upper_teeth_bind_003":
-        print(
-            "[FAIL] RigBase.mirror_name: {}".format(
-                mirrored_name
-            )
-        )
+    if override_name != "jnt_lf_jaw_corner_bind_002":
+        print("[FAIL] RigBase.create_name: {}".format(override_name))
         return False
 
-    if rig_object.get_opposite_side() != "rt":
+    if jaw_ctrl.name != "ctrl_md_jaw_bind_001":
+        print("[FAIL] create_name() 临时覆盖修改了实例属性。")
+        return False
+
+    mirror_name = parsed_ctrl.mirror_name()
+
+    if mirror_name != "ctrl_rt_upper_teeth_anim_003":
+        print("[FAIL] RigBase.mirror_name: {}".format(mirror_name))
+        return False
+
+    if parsed_ctrl.get_opposite_side() != "rt":
         print("[FAIL] RigBase.get_opposite_side() 错误。")
         return False
 
-    if rig_object.side != "lf":
-        print("[FAIL] get_opposite_side() 修改了实例 side。")
-        return False
-
-    center_object = RigBase(
-        side="center",
-        part="jaw",
+    module_identity = RigBase(
+        side="md",
+        part="face",
         index=1
     )
 
-    if center_object.side != "md":
-        print("[FAIL] center Side 没有规范为 md。")
-        return False
-
-    if center_object.get_opposite_side() != "md":
-        print("[FAIL] Center Opposite Side 应保持 md。")
-        return False
-
-    if not RigBase.validate_name(
-            "jnt_md_jaw_bind_001"
-    ):
-        print("[FAIL] 标准 Rig Name 被错误判定为无效。")
-        return False
-
-    if RigBase.validate_name(
-            "ctrl_md_face_global_scale"
-    ):
-        print("[FAIL] 缺少三位 index 的名称被错误判定为有效。")
-        return False
-
-    invalid_range_values = [
-        0,
-        1000,
-    ]
-
-    for invalid_index in invalid_range_values:
-        try:
-            RigBase(
-                side="md",
-                part="jaw",
-                index=invalid_index
-            )
-        except ValueError:
-            pass
-        else:
-            print(
-                "[FAIL] RigBase 接受了越界 Index：{}".format(
-                    invalid_index
-                )
-            )
-            return False
-
-    invalid_type_values = [
-        True,
-        1.5,
-    ]
-
-    for invalid_index in invalid_type_values:
-        try:
-            RigBase(
-                side="md",
-                part="jaw",
-                index=invalid_index
-            )
-        except TypeError:
-            pass
-        else:
-            print(
-                "[FAIL] RigBase 接受了非整数 Index：{}".format(
-                    invalid_index
-                )
-            )
-            return False
-
-    try:
-        rig_object.create_name(
-            node_type="parent_matrix",
-            function="bind"
-        )
-    except ValueError:
-        pass
-    else:
-        print("[FAIL] node_type 允许了下划线。")
-        return False
-
-    try:
-        rig_object.create_name(
-            node_type="ctrl",
-            function="global_scale"
-        )
-    except ValueError:
-        pass
-    else:
-        print("[FAIL] function 允许了下划线。")
-        return False
-
-    retired_type_kwargs = {
-        "type": "ctrl",
-        "function": "bind",
-    }
-
-    try:
-        rig_object.create_name(
-            **retired_type_kwargs
-        )
-    except TypeError:
-        pass
-    else:
-        print("[FAIL] RigBase.create_name() 仍接受退休的 type= Keyword。")
+    if module_identity.name is not None:
+        print("[FAIL] 不完整 Naming 不应该生成节点名称。")
         return False
 
     retired_attributes = [
-        "name",
-        "compose",
-        "decompose",
-        "flip",
         "identity",
         "set_identity",
         "resolve_identity",
@@ -267,18 +173,25 @@ def run():
         "is_left",
         "is_right",
         "is_center",
+        "_normalize_token",
+        "normalize_side",
+        "normalize_part",
+        "normalize_node_type",
+        "normalize_function",
+        "validate_index",
+        "validate_name",
     ]
 
     for attribute_name in retired_attributes:
-        if hasattr(rig_object, attribute_name):
+        if hasattr(jaw_ctrl, attribute_name):
             print(
-                "[FAIL] RigBase 仍保留已精简 API：{}".format(
+                "[FAIL] RigBase 重新出现已删除 API：{}".format(
                     attribute_name
                 )
             )
             return False
 
-    print("[PASS] RigBase Direct Attribute + Naming Contract 正常。")
+    print("[PASS] RigBase Naming Object Contract 正常。")
     return True
 
 
