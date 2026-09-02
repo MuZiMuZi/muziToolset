@@ -314,7 +314,7 @@ def test_face_step_contract(root_group):
     )
 
     teeth_joint_name = teeth_module.create_name(
-        node_type="jnt",
+        type="jnt",
         part="upper_teeth",
         function="bind"
     )
