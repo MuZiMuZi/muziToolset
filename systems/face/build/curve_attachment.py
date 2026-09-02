@@ -20,7 +20,7 @@ Face Joint -> Drive / Aim Curve 组合系统。
     - Group 创建由 core.scene_utils 负责；
     - Parent 由 core.hierarchy_utils 负责；
     - Constraint 由 core.constraint_utils 负责；
-    - Rig Naming 统一使用 systems.rig_base.RigBase；
+    - Rig Naming 统一使用实例化的 systems.rig_base.RigBase；
     - Undo Chunk 由 core.scene_utils 负责；
     - 本模块只负责 Face Curve Attachment 的组合关系。
 """
@@ -93,6 +93,8 @@ def create_rig_name(
     u"""
     创建 Face Curve Rig 标准名称。
 
+    Builder 本身不是 Module，因此为当前节点创建一个短生命周期 Rig Identity。
+
     为保持历史生成的节点字符串不变，region / feature / role 前缀全部并入 part，
     role 的最后一个 Token 作为单一 function。
     """
@@ -132,12 +134,15 @@ def create_rig_name(
         part_tokens
     )
 
-    return RigBase.create_name(
-        type=node_type,
+    rig_object = RigBase(
         side=side,
         part=part,
-        function=function,
         index=index
+    )
+
+    return rig_object.create_name(
+        node_type=node_type,
+        function=function
     )
 
 
