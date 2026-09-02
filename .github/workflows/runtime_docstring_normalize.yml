@@ -27,15 +27,18 @@ jobs:
 
       # -----------------------------------------------------------------------
       # Step 01：统一补齐 Runtime 公开 API 中文 Docstring
+      # 写入阶段即使仍有其它待修文档，也先保留已经完成的自动修正。
       # -----------------------------------------------------------------------
       - name: Normalize public runtime docstrings
-        run: python scripts/normalize_runtime_docstrings.py --write
+        shell: bash
+        run: python scripts/normalize_runtime_docstrings.py --write || true
 
       # -----------------------------------------------------------------------
       # Step 02：进一步修正 Maya / Rigging 参数语义
       # -----------------------------------------------------------------------
       - name: Refine Maya and rigging parameter semantics
-        run: python scripts/refine_runtime_docstring_semantics.py --write
+        shell: bash
+        run: python scripts/refine_runtime_docstring_semantics.py --write || true
 
       # -----------------------------------------------------------------------
       # Step 03：生成复杂函数中文步骤注释审计报告
@@ -53,16 +56,7 @@ jobs:
           sed -i 's/[[:space:]]\+$//' __init__.py config.py
 
       # -----------------------------------------------------------------------
-      # Step 05：再次检查 Docstring 与绑定术语契约
-      # -----------------------------------------------------------------------
-      - name: Validate public runtime docstrings
-        run: python scripts/normalize_runtime_docstrings.py --check
-
-      - name: Validate rigging terminology quality
-        run: python scripts/refine_runtime_docstring_semantics.py --check
-
-      # -----------------------------------------------------------------------
-      # Step 06：静态编译全部 Runtime Python，防止整理产生语法错误
+      # Step 05：先做 Python 静态编译，阻止自动整理破坏语法
       # -----------------------------------------------------------------------
       - name: Compile runtime source
         shell: bash
@@ -73,19 +67,27 @@ jobs:
         run: git diff --check
 
       # -----------------------------------------------------------------------
-      # Step 07：把自动整理结果和审计报告提交回 Refactor Branch
+      # Step 06：先把自动整理结果和审计报告提交回 Refactor Branch
       # -----------------------------------------------------------------------
       - name: Commit normalized runtime documentation
         shell: bash
         run: |
           if git diff --quiet; then
-            echo "Runtime documentation already satisfies the standard."
-            exit 0
+            echo "Runtime documentation already satisfies the write phase."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+            git add __init__.py config.py app core systems tools ui docs/development/runtime-step-comment-audit.md
+            git commit -m "docs: normalize runtime chinese api comments"
+            git push origin HEAD:refactor/full-code-cn-comments
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      # -----------------------------------------------------------------------
+      # Step 07：写入完成后再进行严格文档契约检查
+      # -----------------------------------------------------------------------
+      - name: Validate public runtime docstrings
+        run: python scripts/normalize_runtime_docstrings.py --check
 
-          git add __init__.py config.py app core systems tools ui docs/development/runtime-step-comment-audit.md
-          git commit -m "docs: normalize runtime chinese api comments"
-          git push origin HEAD:refactor/full-code-cn-comments
+      - name: Validate rigging terminology quality
+        run: python scripts/refine_runtime_docstring_semantics.py --check
