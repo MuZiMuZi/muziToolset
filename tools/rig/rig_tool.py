@@ -19,7 +19,7 @@ Rig Tool
     - DAG Short / Long Name 统一调用 core.rename_utils / scene_utils；
     - Selection / Node 创建 / Undo 统一调用 core.scene_utils；
     - World Position 统一调用 core.transform_utils；
-    - Rig Naming 统一调用 systems.rig_base.RigBase；
+    - Rig Identity / Naming 统一调用 systems.rig_base.RigBase；
     - Controller 创建统一调用 systems.ctrl_base；
     - Snap 算法统一调用 core.snap_utils；
     - 子窗口统一交给 app.window_manager；
@@ -445,33 +445,27 @@ def create_ik_rig(start_joint, end_joint):
         if not rig_part:
             rig_part = "ik"
 
-    rig_group_name = RigBase.create_name(
-        type="grp",
+    rig_identity = RigBase(
         side=rig_side,
         part=rig_part,
-        function="ik",
         index=1
     )
-    ik_handle_name = RigBase.create_name(
-        type="ikh",
-        side=rig_side,
-        part=rig_part,
-        function="ik",
-        index=1
+
+    rig_group_name = rig_identity.create_name(
+        node_type="grp",
+        function="ik"
     )
-    end_control_name = RigBase.create_name(
-        type="ctrl",
-        side=rig_side,
-        part=rig_part,
-        function="ik",
-        index=1
+    ik_handle_name = rig_identity.create_name(
+        node_type="ikh",
+        function="ik"
     )
-    pole_control_name = RigBase.create_name(
-        type="ctrl",
-        side=rig_side,
-        part=rig_part,
-        function="pv",
-        index=1
+    end_control_name = rig_identity.create_name(
+        node_type="ctrl",
+        function="ik"
+    )
+    pole_control_name = rig_identity.create_name(
+        node_type="ctrl",
+        function="pv"
     )
 
     if cmds.objExists(rig_group_name):
