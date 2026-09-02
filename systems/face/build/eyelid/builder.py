@@ -11,7 +11,7 @@ Face Eyelid Builder
     3. 通用 Transform Group 创建交给 core.scene_utils；
     4. Aim Constraint 创建交给 core.constraint_utils；
     5. Maya Undo Chunk 交给 core.scene_utils；
-    6. Rig Naming 统一使用实例化的 systems.rig_base.RigBase；
+    6. Rig Naming 统一使用 systems.rig_base.RigBase；
     7. Joint 使用眼球中心作为 Pivot，沿 Local X 放射到 Curve Attachment；
     8. 眼皮和眼袋使用同一套构建函数；
     9. 构建失败时自动清理本次创建的 Rig Nodes Group。
@@ -32,66 +32,15 @@ from ....rig_base import RigBase
 # Naming
 # =============================================================================
 
-def normalize_name_part(value, label):
-    u"""清理用于 Rig Naming part 的字段。"""
-    if value is None:
-        raise ValueError(
-            u"{}不能为空。".format(label)
-        )
-
-    value = str(value).strip().lower()
-    value = value.replace(" ", "_")
-    value = value.replace("-", "_")
-
-    while "__" in value:
-        value = value.replace("__", "_")
-
-    value = value.strip("_")
-
-    if not value:
-        raise ValueError(
-            u"{}不能为空。".format(label)
-        )
-
-    return value
-
-
 def create_rig_name(
-        node_type,
+        type,
         side,
         region,
         feature,
         role,
         index=1
 ):
-    u"""
-    创建 Eye Area Rig Name。
-
-    Builder 本身不是 Module，因此这里为当前节点创建一个短生命周期 Rig Identity。
-
-    为保持原有节点字符串不变，同时满足 RigBase 的规则：
-        part     可以包含下划线；
-        function 必须是单一 Token。
-
-    role 如果包含下划线，会把最后一个 Token 作为 function，
-    前面的 Token 合并到 part。
-    """
-    side = RigBase.normalize_side(
-        side
-    )
-    region = normalize_name_part(
-        region,
-        "region"
-    )
-    feature = normalize_name_part(
-        feature,
-        "feature"
-    )
-    role = normalize_name_part(
-        role,
-        "role"
-    )
-
+    u"""根据项目内部固定 Naming 字段创建 Eye Area Rig Name。"""
     role_parts = role.split("_")
     function = role_parts[-1]
 
@@ -112,16 +61,15 @@ def create_rig_name(
         part_tokens
     )
 
-    rig_object = RigBase(
+    rig_name = RigBase(
+        type=type,
         side=side,
         part=part,
+        function=function,
         index=index
     )
 
-    return rig_object.create_name(
-        node_type=node_type,
-        function=function
-    )
+    return rig_name.name
 
 
 # =============================================================================
@@ -165,18 +113,6 @@ def build_radial_curve_joints(
         transform_utils.validate_transform(
             parent_group
         )
-
-    side = RigBase.normalize_side(
-        side
-    )
-    region = normalize_name_part(
-        region,
-        "region"
-    )
-    feature = normalize_name_part(
-        feature,
-        "feature"
-    )
 
     cv_positions = curve_utils.get_curve_cv_positions(
         curve,
