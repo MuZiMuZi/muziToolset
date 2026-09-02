@@ -7,7 +7,7 @@ Control Creator
 
 边界：
     - Controller Shape 数据来自 resources/controller_shapes；
-    - Rig Name 统一使用 systems.rig_base.RigBase；
+    - Rig Name 统一使用实例化的 systems.rig_base.RigBase；
     - Controller Hierarchy 统一使用 systems.ctrl_base.create_ctrl；
     - 标准 zero / driven / space / connect / offset / ctrl / output 层级固定创建；
     - UI 不重复实现 Controller 构建算法。
@@ -146,7 +146,7 @@ class ControlCreatorDialog(QDialog):
             u"创建控制器"
         )
         self.subtitle_label = theme.make_subtitle(
-            u"统一使用 RigBase 命名和 CtrlBase 标准控制器层级。"
+            u"统一使用 RigBase Identity 命名和 CtrlBase 标准控制器层级。"
         )
 
         self.shape_search_line = QLineEdit()
@@ -595,8 +595,27 @@ class ControlCreatorDialog(QDialog):
 
         return text
 
+    @staticmethod
+    def _create_control_name(
+            side,
+            part,
+            function,
+            index
+    ):
+        u"""根据一个明确 Rig Identity 创建 Controller Name。"""
+        rig_object = RigBase(
+            side=side,
+            part=part,
+            index=index
+        )
+
+        return rig_object.create_name(
+            node_type="ctrl",
+            function=function
+        )
+
     def get_control_name(self, target, target_index, target_count):
-        u"""使用 RigBase 生成当前 Controller 的正式名称。"""
+        u"""使用 RigBase Identity 生成当前 Controller 的正式名称。"""
         custom_name = self.name_line.text().strip()
 
         if custom_name:
@@ -609,16 +628,14 @@ class ControlCreatorDialog(QDialog):
                 if target_count > 1:
                     index = target_index + 1
 
-                return RigBase.create_name(
-                    type="ctrl",
+                return self._create_control_name(
                     side=fields["side"],
                     part=fields["part"],
                     function=fields["function"],
                     index=index
                 )
 
-            return RigBase.create_name(
-                type="ctrl",
+            return self._create_control_name(
                 side="md",
                 part=self._clean_part(custom_name),
                 function="main",
@@ -626,8 +643,7 @@ class ControlCreatorDialog(QDialog):
             )
 
         if target is None:
-            return RigBase.create_name(
-                type="ctrl",
+            return self._create_control_name(
                 side="md",
                 part="new",
                 function="main",
@@ -642,16 +658,14 @@ class ControlCreatorDialog(QDialog):
             fields = RigBase.parse_name(
                 target_name
             )
-            return RigBase.create_name(
-                type="ctrl",
+            return self._create_control_name(
                 side=fields["side"],
                 part=fields["part"],
                 function=fields["function"],
                 index=fields["index"]
             )
 
-        return RigBase.create_name(
-            type="ctrl",
+        return self._create_control_name(
             side="md",
             part=self._clean_part(target_name),
             function="main",
