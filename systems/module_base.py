@@ -5,8 +5,16 @@ Module Base
 
 所有 MuziTools Rig Module 共用的统一构建规范。
 
-术语统一：
-    Component -> Module
+继承关系：
+
+    RigBase
+        ↓
+    ModuleBase
+        ↓
+    RigModuleBase
+
+ModuleBase 不重新定义 Rig Identity。
+每个具体 Module 在初始化时把自己的 side / part / index 交给 RigBase。
 
 标准 Module 生命周期：
 
@@ -24,13 +32,6 @@ Module Base
     create_joint()
     create_controller()
     create_connection()
-
-Rig Module 同时继承 RigBase，因此可以直接使用：
-
-    self.create_name()
-    self.parse_name()
-    self.normalize_side()
-    self.mirror_name()
 """
 
 from __future__ import print_function
@@ -39,7 +40,20 @@ from .rig_base import RigBase
 
 
 class ModuleBase(RigBase):
-    u"""所有 Rig Module 共用的四阶段生命周期基础类。"""
+    u"""所有 Rig Module 共用的 Identity + 四阶段生命周期基础类。"""
+
+    def __init__(
+            self,
+            side="md",
+            part=None,
+            index=1
+    ):
+        u"""初始化 Module Identity。"""
+        super(ModuleBase, self).__init__(
+            side=side,
+            part=part,
+            index=index
+        )
 
     def collect_inputs(self):
         u"""收集、规范化并检查当前 Module 输入。"""
