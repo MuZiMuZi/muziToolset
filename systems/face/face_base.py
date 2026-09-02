@@ -3,20 +3,20 @@ u"""
 Face Rig 公共基础类
 ==================
 
-所有 Face Rig Module 的公共业务底座。
+所有 Face Rig Workflow / Module 的公共业务底座。
 
 负责：
-    1. 保存 Face Rig 公共命名和层级配置；
-    2. 确保 Face Rig 基础层级存在；
-    3. 定义 Step 01 公共 Setup 数据；
-    4. 统一管理 Face Step 完成状态和当前 Workflow Step；
-    5. 统一整理 Face Config Network Node 的 Step 属性分区；
-    6. 继承 systems.module_base.RigModuleBase 的统一 Rig Module 构建规范。
+    1. 把 Face Rig Object Identity 接入 RigBase；
+    2. 保存 Face Rig 公共命名和层级配置；
+    3. 确保 Face Rig 基础层级存在；
+    4. 定义 Step 01 公共 Setup 数据；
+    5. 统一管理 Face Step 完成状态和当前 Workflow Step；
+    6. 统一整理 Face Config Network Node 的 Step 属性分区。
 
 重要边界：
+    - Rig Object Identity / Naming 由 systems.rig_base.RigBase 负责；
     - Module 四阶段生命周期由 systems.module_base.ModuleBase 负责；
     - 标准 Rig 的 Joint / Controller / Connection 三阶段构建由 RigModuleBase 负责；
-    - Rig Naming 统一继承 systems.rig_base.RigBase；
     - Config Network Node 的创建、Message 引用、Value 读写由 core.config_utils.ConfigNode 负责；
     - Maya Model 有效性由 core.mesh_utils 负责；
     - Maya DAG 层级操作由 core.hierarchy_utils 负责；
@@ -36,7 +36,7 @@ from . import config
 
 
 class FaceBase(RigModuleBase):
-    u"""所有 Face Rig Module 共用的基础类。"""
+    u"""所有 Face Rig Workflow / Module 共用的基础类。"""
 
     setup_message_attr_names = [
         "face_head_model",
@@ -101,8 +101,25 @@ class FaceBase(RigModuleBase):
         ],
     }
 
-    def __init__(self):
-        u"""初始化 Face Rig 公共配置。"""
+    def __init__(
+            self,
+            side=None,
+            part=None,
+            index=1
+    ):
+        u"""初始化 Face Rig 公共配置和当前 Rig Object Identity。"""
+        if side is None:
+            side = config.face_side
+
+        if part is None:
+            part = config.face_part
+
+        super(FaceBase, self).__init__(
+            side=side,
+            part=part,
+            index=index
+        )
+
         self.step_value = None
 
         self.face_side = config.face_side
