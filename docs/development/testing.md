@@ -24,6 +24,41 @@ python tests/core_import_style_test.py
 
 检查正式 Core 只使用当前 snake_case 模块，不重新引入退休 CamelCase 文件。
 
+## Core Single Source Gate
+
+```bash
+python tests/core_single_source_gate_test.py
+```
+
+检查已经明确归属的 Generic 能力只有一个正式 Core Owner，例如：
+
+```text
+Scene / Node                  -> core.scene_utils
+Rename / Maya Name Token      -> core.rename_utils
+Transform                     -> core.transform_utils
+Hierarchy                     -> core.hierarchy_utils
+Point / Vector Math           -> core.math_utils
+Joint Chain                   -> core.joint_chain_utils
+```
+
+新增 Helper 前应先检查现有 Core；已有正式 Owner 时，不允许在第二个 Core 模块重新实现同名能力。
+
+## Core Public API Gate
+
+```bash
+python tests/core_public_api_gate_test.py
+```
+
+静态检查每个 `core/*.py` 的 `__all__`：
+
+```text
+导出的名称必须真实存在
+不允许重复导出
+Helper 迁移 / 删除后不允许残留旧公开入口
+```
+
+该测试不 Import Maya，可以直接在普通 Python 环境运行。
+
 ## Rig Architecture Gate
 
 ```bash
@@ -56,26 +91,17 @@ RigComponentBase
 TeethComponent
 ```
 
-RigBase 额外禁止：
+当前 Rig Naming 字段统一为：
 
 ```text
-RigBase.create_name(...)
-RigBase.mirror_name(...)
-RigBase.create_unique_name(...)
-RigBase(name=...)
-create_name(type=...)
-get_next_index(type=...)
-create_unique_name(type=...)
-identity
-set_identity()
-resolve_identity()
-flip_side()
-is_left()
-is_right()
-is_center()
+type
+side
+part
+function
+index
 ```
 
-正式 Naming Keyword 是 `node_type=`。
+正式 Naming Keyword 是 `type=`，不要重新引入第二套 `node_type=` 字段。
 
 ## RigBase Contract
 
@@ -83,20 +109,21 @@ is_center()
 python tests/rig_base_contract_test.py
 ```
 
-验证：
+验证当前 RigBase Naming Object 契约：
 
 ```text
-Direct Attributes = side / part / index
-Instance Naming
-Naming Override 不修改实例属性
-Parse 不修改实例属性
-Mirror
+type / side / part / function / index
+name
+compose()
+decompose()
+create_name()
+parse_name()
+mirror_name()
 get_opposite_side()
-001 ~ 999 Index Contract
-node_type / function Token Contract
-退休 type= Keyword 已失效
-退休 Name Object / Identity Wrapper API 已失效
+Scene Unique Name
 ```
+
+内部 Rig Name 默认来自统一 Naming API，不在每个调用层重复创建 Normalize / Validate 包装。
 
 ## ModuleBase Contract
 
@@ -186,22 +213,33 @@ report = muziToolset.extended_core_smoke_test()
 attr_utils
 hierarchy_utils
 joint_utils
+joint_chain_utils
+math_utils
 RigBase + rename_utils
 model_check_utils
 scene_clean_utils
 ```
 
-其中职责已经拆开：
+职责保持分离：
 
 ```text
 RigBase
-    side / part / index + Standard Rig Name / Parse / Mirror
+    Standard Rig Naming Object / Parse / Mirror / Scene Unique Name
 
 rename_utils
-    Maya Rename
+    Maya Short Name / External Name Token / Rename
+
+joint_utils
+    Single Joint
+
+joint_chain_utils
+    Multi Joint / Joint Chain
+
+math_utils
+    Pure Python Point / Vector Math
 ```
 
-不要再把 Rig Object 属性 / Rig Naming 写回 Core。
+不要把 Rig Naming 写回 Core，也不要在 Tool / System 重新实现已有 Generic Core 算法。
 
 ---
 
@@ -251,7 +289,7 @@ report = muziToolset.rig_integration_test()
 验证跨层构建链：
 
 ```text
-RigBase Attributes / Naming
+RigBase Naming
     ↓
 Joint
     ↓
@@ -280,14 +318,12 @@ report = muziToolset.rig_integration_test(
 report = muziToolset.maya2023_smoke_test()
 ```
 
-重点检查当前 0.4 架构：
+重点检查当前架构：
 
 ```text
 Core Contract
 CtrlBase Contract
-FaceSetup side / part / index
-FaceGuide side / part / index
-TeethModule side / part / index
+FaceSetup / FaceGuide / TeethModule
 Face Module Lifecycle
 Face Build Algorithms
 ```
@@ -342,6 +378,8 @@ QWidget / QDialog
 
 ```bash
 python tests/core_import_style_test.py
+python tests/core_single_source_gate_test.py
+python tests/core_public_api_gate_test.py
 python tests/rig_architecture_gate_test.py
 python tests/rig_base_contract_test.py
 python tests/module_base_contract_test.py
@@ -349,7 +387,7 @@ python scripts/generate_mkdocs_reference.py
 mkdocs build --strict
 ```
 
-AST Reference Generator 不 Import Maya，因此可以在 GitHub Actions Linux Runner 运行。
+AST Gate / Reference Generator 不 Import Maya，因此可以在 GitHub Actions Linux Runner 运行。
 
 ---
 
@@ -358,9 +396,11 @@ AST Reference Generator 不 Import Maya，因此可以在 GitHub Actions Linux R
 ```text
 读取现有调用
     ↓
-确定正式职责
+先查 Core / System 公共 API 是否已有能力
     ↓
-建立新 API
+确定正式职责和 Owner
+    ↓
+只有确实缺少通用能力时才建立新 API
     ↓
 迁移全部调用方
     ↓
