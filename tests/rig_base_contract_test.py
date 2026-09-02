@@ -5,7 +5,7 @@ RigBase Contract Test
 
 非 Maya 环境下验证 RigBase 的正式对象契约：
 
-    Rig Identity
+    Direct Instance Attributes
     Naming
     Parse
     Mirror
@@ -47,25 +47,23 @@ else:
 
 
 def run():
-    u"""验证 RigBase 是实例化 Rig Object Base，而不是 Name Object。"""
+    u"""验证 RigBase 使用直接实例属性，而不是额外 Identity 包装。"""
     rig_object = RigBase(
         side="left",
         part="upper_teeth",
         index=3
     )
 
-    expected_identity = {
-        "side": "lf",
-        "part": "upper_teeth",
-        "index": 3,
-    }
+    if rig_object.side != "lf":
+        print("[FAIL] RigBase.side: {}".format(rig_object.side))
+        return False
 
-    if rig_object.identity != expected_identity:
-        print(
-            "[FAIL] RigBase Identity: {}".format(
-                rig_object.identity
-            )
-        )
+    if rig_object.part != "upper_teeth":
+        print("[FAIL] RigBase.part: {}".format(rig_object.part))
+        return False
+
+    if rig_object.index != 3:
+        print("[FAIL] RigBase.index: {}".format(rig_object.index))
         return False
 
     name = rig_object.create_name(
@@ -96,8 +94,16 @@ def run():
         )
         return False
 
-    if rig_object.identity != expected_identity:
-        print("[FAIL] create_name() Override 修改了实例 Identity。")
+    if rig_object.side != "lf":
+        print("[FAIL] create_name() Override 修改了实例 side。")
+        return False
+
+    if rig_object.part != "upper_teeth":
+        print("[FAIL] create_name() Override 修改了实例 part。")
+        return False
+
+    if rig_object.index != 3:
+        print("[FAIL] create_name() Override 修改了实例 index。")
         return False
 
     fields = RigBase.parse_name(
@@ -122,10 +128,6 @@ def run():
             )
             return False
 
-    if rig_object.identity != expected_identity:
-        print("[FAIL] parse_name() 修改了实例 Identity。")
-        return False
-
     mirrored_name = rig_object.mirror_name(
         name
     )
@@ -142,18 +144,8 @@ def run():
         print("[FAIL] RigBase.get_opposite_side() 错误。")
         return False
 
-    if not rig_object.is_left():
-        print("[FAIL] RigBase.is_left() 错误。")
-        return False
-
-    rig_object.flip_side()
-
-    if rig_object.side != "rt":
-        print("[FAIL] RigBase.flip_side() 没有修改实例 Side。")
-        return False
-
-    if not rig_object.is_right():
-        print("[FAIL] RigBase.is_right() 错误。")
+    if rig_object.side != "lf":
+        print("[FAIL] get_opposite_side() 修改了实例 side。")
         return False
 
     center_object = RigBase(
@@ -162,8 +154,8 @@ def run():
         index=1
     )
 
-    if not center_object.is_center():
-        print("[FAIL] RigBase.is_center() 错误。")
+    if center_object.side != "md":
+        print("[FAIL] center Side 没有规范为 md。")
         return False
 
     if center_object.get_opposite_side() != "md":
@@ -268,18 +260,25 @@ def run():
         "compose",
         "decompose",
         "flip",
+        "identity",
+        "set_identity",
+        "resolve_identity",
+        "flip_side",
+        "is_left",
+        "is_right",
+        "is_center",
     ]
 
     for attribute_name in retired_attributes:
         if hasattr(rig_object, attribute_name):
             print(
-                "[FAIL] RigBase 仍保留 Name Object API：{}".format(
+                "[FAIL] RigBase 仍保留已精简 API：{}".format(
                     attribute_name
                 )
             )
             return False
 
-    print("[PASS] RigBase Rig Identity Object Contract 正常。")
+    print("[PASS] RigBase Direct Attribute + Naming Contract 正常。")
     return True
 
 
