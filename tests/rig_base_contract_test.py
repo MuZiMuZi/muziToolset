@@ -4,11 +4,38 @@ RigBase Contract Test
 =====================
 
 非 Maya 环境下验证正式 Rig Naming Contract。
+
+支持：
+    python tests/rig_base_contract_test.py
+
+也支持作为 muziToolset.tests 包内模块调用。
 """
 
 from __future__ import print_function
 
-from ..systems.rig_base import RigBase
+import os
+import sys
+
+
+if __package__:
+    from ..systems.rig_base import RigBase
+else:
+    package_root = os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    )
+    package_parent = os.path.dirname(
+        package_root
+    )
+
+    if package_parent not in sys.path:
+        sys.path.insert(
+            0,
+            package_parent
+        )
+
+    from muziToolset.systems.rig_base import RigBase
 
 
 def run():
