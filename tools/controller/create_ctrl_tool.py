@@ -9,6 +9,7 @@ Control Creator
     - Controller Shape 数据来自 resources/controller_shapes；
     - Rig Name 统一使用 systems.rig_base.RigBase；
     - Controller Hierarchy 统一使用 systems.ctrl_base.create_ctrl；
+    - 外部 Maya Name Token、Selection 和 DAG 查询统一复用 Core；
     - 标准 zero / driven / space / connect / offset / ctrl / output 层级固定创建；
     - UI 不重复实现 Controller 构建算法。
 """
@@ -61,6 +62,7 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
 
 from ...config import controller_shapes_dir
+from ...core import hierarchy_utils
 from ...core import rename_utils
 from ...core import scene_utils
 from ...systems import ctrl_base
@@ -522,13 +524,10 @@ class ControlCreatorDialog(QDialog):
         if mode == "world":
             return [None]
 
-        selections = cmds.ls(
-            selection=True,
-            long=True
+        selections = scene_utils.get_selected_nodes(
+            long=True,
+            flatten=True
         )
-
-        if selections is None:
-            selections = []
 
         if not selections:
             cmds.warning(
@@ -547,15 +546,10 @@ class ControlCreatorDialog(QDialog):
                     root
                 )
 
-            descendants = cmds.listRelatives(
+            descendants = hierarchy_utils.get_descendants(
                 root,
-                allDescendents=True,
-                fullPath=True
+                full_path=True
             )
-
-            if descendants is None:
-                descendants = []
-
             descendants.reverse()
 
             for descendant in descendants:
@@ -575,25 +569,6 @@ class ControlCreatorDialog(QDialog):
                     )
 
         return targets
-
-    @staticmethod
-    def _clean_part(text):
-        u"""把任意 Tool 输入整理成可用于 Rig Name 的 part。"""
-        text = str(text).strip().lower()
-        text = text.replace("|", "_")
-        text = text.replace(":", "_")
-        text = text.replace(" ", "_")
-        text = text.replace("-", "_")
-
-        while "__" in text:
-            text = text.replace("__", "_")
-
-        text = text.strip("_")
-
-        if not text:
-            text = "new"
-
-        return text
 
     @staticmethod
     def _create_control_name(
@@ -635,7 +610,10 @@ class ControlCreatorDialog(QDialog):
             except (IndexError, ValueError):
                 return self._create_control_name(
                     side="md",
-                    part=self._clean_part(custom_name),
+                    part=rename_utils.get_name_token(
+                        custom_name,
+                        fallback="new"
+                    ),
                     function="main",
                     index=target_index + 1
                 )
@@ -665,7 +643,10 @@ class ControlCreatorDialog(QDialog):
         except (IndexError, ValueError):
             return self._create_control_name(
                 side="md",
-                part=self._clean_part(target_name),
+                part=rename_utils.get_name_token(
+                    target_name,
+                    fallback="new"
+                ),
                 function="main",
                 index=target_index + 1
             )
