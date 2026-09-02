@@ -37,20 +37,30 @@ from ..rig_base import RigBase
 face_side = "md"
 face_part = "face"
 
+# Face System 自己也是一个明确的 Rig Object。
+# Config 中绝大多数固定名称直接继承这个 Identity。
+face_rig = RigBase(
+    side=face_side,
+    part=face_part,
+    index=1
+)
+
 
 def create_config_attr_name(
-        type,
+        node_type,
         side,
         part,
         function
 ):
-    u"""使用 RigBase 创建不带序号的 Config Attribute 名称。"""
-    node_name = RigBase.create_name(
-        type=type,
+    u"""使用一个明确 Rig Identity 创建不带序号的 Config Attribute 名称。"""
+    rig_object = RigBase(
         side=side,
         part=part,
-        function=function,
         index=1
+    )
+    node_name = rig_object.create_name(
+        node_type=node_type,
+        function=function
     )
 
     return node_name.rsplit(
@@ -63,52 +73,36 @@ def create_config_attr_name(
 # Face Rig 层级名称
 # ============================================================
 
-face_master_grp = RigBase.create_name(
-    type="grp",
-    side=face_side,
-    part=face_part,
-    function="master",
-    index=1
+face_master_grp = face_rig.create_name(
+    node_type="grp",
+    function="master"
 )
 
-face_guide_grp = RigBase.create_name(
-    type="grp",
-    side=face_side,
-    part=face_part,
-    function="guide",
-    index=1
+face_guide_grp = face_rig.create_name(
+    node_type="grp",
+    function="guide"
 )
 
-face_ctrl_grp = RigBase.create_name(
-    type="grp",
-    side=face_side,
-    part=face_part,
-    function="ctrl",
-    index=1
+face_ctrl_grp = face_rig.create_name(
+    node_type="grp",
+    function="ctrl"
 )
 
-face_jnt_grp = RigBase.create_name(
-    type="grp",
-    side=face_side,
-    part=face_part,
-    function="jnt",
-    index=1
+face_jnt_grp = face_rig.create_name(
+    node_type="grp",
+    function="jnt"
 )
 
-face_rig_nodes_grp = RigBase.create_name(
-    type="grp",
-    side=face_side,
+face_rig_nodes_grp = face_rig.create_name(
+    node_type="grp",
     part="face_rig",
-    function="nodes",
-    index=1
+    function="nodes"
 )
 
-face_pos_driver_grp = RigBase.create_name(
-    type="grp",
-    side=face_side,
+face_pos_driver_grp = face_rig.create_name(
+    node_type="grp",
     part="face_pos",
-    function="driver",
-    index=1
+    function="driver"
 )
 
 
@@ -116,36 +110,24 @@ face_pos_driver_grp = RigBase.create_name(
 # Face 模型层级
 # ============================================================
 
-face_model_grp = RigBase.create_name(
-    type="grp",
-    side=face_side,
-    part=face_part,
-    function="model",
-    index=1
+face_model_grp = face_rig.create_name(
+    node_type="grp",
+    function="model"
 )
 
-face_tweak_grp = RigBase.create_name(
-    type="grp",
-    side=face_side,
-    part=face_part,
-    function="tweak",
-    index=1
+face_tweak_grp = face_rig.create_name(
+    node_type="grp",
+    function="tweak"
 )
 
-face_stretch_grp = RigBase.create_name(
-    type="grp",
-    side=face_side,
-    part=face_part,
-    function="stretch",
-    index=1
+face_stretch_grp = face_rig.create_name(
+    node_type="grp",
+    function="stretch"
 )
 
-face_deform_grp = RigBase.create_name(
-    type="grp",
-    side=face_side,
-    part=face_part,
-    function="deform",
-    index=1
+face_deform_grp = face_rig.create_name(
+    node_type="grp",
+    function="deform"
 )
 
 
@@ -153,12 +135,9 @@ face_deform_grp = RigBase.create_name(
 # Set
 # ============================================================
 
-face_ctrl_set = RigBase.create_name(
-    type="set",
-    side=face_side,
-    part=face_part,
-    function="ctrl",
-    index=1
+face_ctrl_set = face_rig.create_name(
+    node_type="set",
+    function="ctrl"
 )
 
 
@@ -166,12 +145,9 @@ face_ctrl_set = RigBase.create_name(
 # Face 配置 Network Node
 # ============================================================
 
-config_node = RigBase.create_name(
-    type="network",
-    side=face_side,
-    part=face_part,
-    function="config",
-    index=1
+config_node = face_rig.create_name(
+    node_type="network",
+    function="config"
 )
 
 
@@ -186,12 +162,9 @@ face_guide_template_path = os.path.join(
     face_guide_template_file_name
 )
 
-face_guide_move_ctrl = RigBase.create_name(
-    type="ctrl",
-    side=face_side,
-    part=face_part,
-    function="move",
-    index=1
+face_guide_move_ctrl = face_rig.create_name(
+    node_type="ctrl",
+    function="move"
 )
 
 face_guide_version = "1.0"
@@ -202,7 +175,7 @@ face_guide_version = "1.0"
 # ============================================================
 
 face_controller_global_scale_attr = create_config_attr_name(
-    type="ctrl",
+    node_type="ctrl",
     side="md",
     part="face_global",
     function="scale"
@@ -210,19 +183,19 @@ face_controller_global_scale_attr = create_config_attr_name(
 
 face_controller_color_attr_names = {
     "lf": create_config_attr_name(
-        type="ctrl",
+        node_type="ctrl",
         side="lf",
         part="face",
         function="color"
     ),
     "rt": create_config_attr_name(
-        type="ctrl",
+        node_type="ctrl",
         side="rt",
         part="face",
         function="color"
     ),
     "md": create_config_attr_name(
-        type="ctrl",
+        node_type="ctrl",
         side="md",
         part="face",
         function="color"
@@ -231,55 +204,55 @@ face_controller_color_attr_names = {
 
 face_controller_size_attr_names = {
     "brow": create_config_attr_name(
-        type="ctrl",
+        node_type="ctrl",
         side="md",
         part="brow",
         function="size"
     ),
     "eye": create_config_attr_name(
-        type="ctrl",
+        node_type="ctrl",
         side="md",
         part="eye",
         function="size"
     ),
     "eyelid": create_config_attr_name(
-        type="ctrl",
+        node_type="ctrl",
         side="md",
         part="eyelid",
         function="size"
     ),
     "nose": create_config_attr_name(
-        type="ctrl",
+        node_type="ctrl",
         side="md",
         part="nose",
         function="size"
     ),
     "cheek": create_config_attr_name(
-        type="ctrl",
+        node_type="ctrl",
         side="md",
         part="cheek",
         function="size"
     ),
     "lip": create_config_attr_name(
-        type="ctrl",
+        node_type="ctrl",
         side="md",
         part="lip",
         function="size"
     ),
     "jaw": create_config_attr_name(
-        type="ctrl",
+        node_type="ctrl",
         side="md",
         part="jaw",
         function="size"
     ),
     "teeth": create_config_attr_name(
-        type="ctrl",
+        node_type="ctrl",
         side="md",
         part="teeth",
         function="size"
     ),
     "tongue": create_config_attr_name(
-        type="ctrl",
+        node_type="ctrl",
         side="md",
         part="tongue",
         function="size"
