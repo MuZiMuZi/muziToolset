@@ -66,6 +66,13 @@ RigBase(name=...)
 create_name(type=...)
 get_next_index(type=...)
 create_unique_name(type=...)
+identity
+set_identity()
+resolve_identity()
+flip_side()
+is_left()
+is_right()
+is_center()
 ```
 
 正式 Naming Keyword 是 `node_type=`。
@@ -79,16 +86,16 @@ python tests/rig_base_contract_test.py
 验证：
 
 ```text
-Rig Object Identity = side / part / index
+Direct Attributes = side / part / index
 Instance Naming
-Naming Override 不修改 Identity
-Parse 不修改 Identity
+Naming Override 不修改实例属性
+Parse 不修改实例属性
 Mirror
-Left / Right / Center Side Semantic
+get_opposite_side()
 001 ~ 999 Index Contract
 node_type / function Token Contract
 退休 type= Keyword 已失效
-退休 Name Object API 已失效
+退休 Name Object / Identity Wrapper API 已失效
 ```
 
 ## ModuleBase Contract
@@ -101,14 +108,14 @@ python tests/module_base_contract_test.py
 
 ```text
 ModuleBase
-    RigBase Identity
+    side / part / index
     collect_inputs
     prepare_data
     process_data
     finalize_step
 
 RigModuleBase
-    RigBase Identity
+    side / part / index
     collect_inputs
     prepare_data
     create_joint
@@ -188,13 +195,13 @@ scene_clean_utils
 
 ```text
 RigBase
-    Rig Object Identity + Standard Rig Name / Parse / Mirror
+    side / part / index + Standard Rig Name / Parse / Mirror
 
 rename_utils
     Maya Rename
 ```
 
-不要再把 Rig Identity / Rig Naming 写回 Core。
+不要再把 Rig Object 属性 / Rig Naming 写回 Core。
 
 ---
 
@@ -244,7 +251,7 @@ report = muziToolset.rig_integration_test()
 验证跨层构建链：
 
 ```text
-RigBase Identity / Naming
+RigBase Attributes / Naming
     ↓
 Joint
     ↓
@@ -278,9 +285,9 @@ report = muziToolset.maya2023_smoke_test()
 ```text
 Core Contract
 CtrlBase Contract
-FaceSetup Identity
-FaceGuide Identity
-TeethModule Identity
+FaceSetup side / part / index
+FaceGuide side / part / index
+TeethModule side / part / index
 Face Module Lifecycle
 Face Build Algorithms
 ```
