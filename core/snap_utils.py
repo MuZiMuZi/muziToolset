@@ -22,25 +22,18 @@ get_item_world_rotation(item)
     获取 Transform / Joint 的世界旋转；组件没有稳定的 Transform Rotation，因此返回 None。
 
 average_vectors(vectors)
-    计算一组三维向量的算术平均值。
+    为历史公开名称；实际三维平均算法统一来自 math_utils.average_point3。
 
 snap_to_average(reference_items, target_item, include_rotation=True)
     把目标对象吸附到多个参考项的平均位置，并在条件允许时应用平均旋转。
-
-典型使用场景
-------------
-1. 把 Joint 放到两个 Vertex 中间；
-2. 把 Locator 放到多个 CV 的平均位置；
-3. 把 Controller Zero Group 对齐到多个参考 Transform 的平均位置；
-4. UI Tool 先解释用户当前选择，再把明确的 reference_items / target_item 交给本模块。
 
 设计原则
 --------
 - Core 不读取“最后选择的是目标”这类 UI 语义；这部分由 tools/snap_tool.py 决定。
 - Component 可以提供位置，但通常不能直接作为 Rotation 参考。
 - DAG Parent 查询复用 hierarchy_utils，不在本模块重新包装 listRelatives。
-- 本模块使用普通循环展开数据处理，方便后续在 Maya Script Editor 中逐步调试。
-- 这里只提供简单欧拉角平均；复杂 Orientation Blend 应进入 Matrix / Rig System，而不是继续扩张 Snap Utils。
+- Point / Vector 数学统一复用 math_utils，不在 Snap 模块维护第二套数学实现。
+- 复杂 Orientation Blend 应进入 Matrix / Rig System，而不是继续扩张 Snap Utils。
 """
 
 from __future__ import print_function
@@ -48,7 +41,12 @@ from __future__ import print_function
 import maya.cmds as cmds
 
 from . import hierarchy_utils
+from . import math_utils
 from . import transform_utils
+
+
+# 保留现有公开入口，但算法只有 math_utils 一份实现。
+average_vectors = math_utils.average_point3
 
 
 # =============================================================================
@@ -154,35 +152,6 @@ def get_item_world_rotation(item):
 
 
 # =============================================================================
-# Math
-# =============================================================================
-
-def average_vectors(vectors):
-    u"""计算三维向量列表平均值。"""
-    if not vectors:
-        return None
-
-    total_x = 0.0
-    total_y = 0.0
-    total_z = 0.0
-
-    for vector in vectors:
-        total_x += vector[0]
-        total_y += vector[1]
-        total_z += vector[2]
-
-    count = float(
-        len(vectors)
-    )
-
-    return [
-        total_x / count,
-        total_y / count,
-        total_z / count,
-    ]
-
-
-# =============================================================================
 # Snap
 # =============================================================================
 
@@ -214,7 +183,7 @@ def snap_to_average(
                 position
             )
 
-    average_position = average_vectors(
+    average_position = math_utils.average_point3(
         positions
     )
 
@@ -252,7 +221,7 @@ def snap_to_average(
                 rotation
             )
 
-    average_rotation = average_vectors(
+    average_rotation = math_utils.average_point3(
         rotations
     )
 
