@@ -14,21 +14,21 @@ Rig Tool
 架构边界：
     - Animation 清理统一调用 core.animation_utils；
     - Constraint 创建统一调用 core.constraint_utils；
-    - DAG Parent / Parent Group 统一调用 core.hierarchy_utils；
-    - Joint 类型检查统一调用 core.joint_utils；
+    - DAG Parent / Descendant / Parent Group 统一调用 core.hierarchy_utils；
+    - 单 Joint 能力统一调用 core.joint_utils；
+    - Joint Chain 查询统一调用 core.joint_chain_utils；
+    - Point / Vector Math 统一调用 core.math_utils；
     - DAG Short / Long Name 统一调用 core.rename_utils / scene_utils；
     - Selection / Node 创建 / Undo 统一调用 core.scene_utils；
     - World Position 统一调用 core.transform_utils；
-    - Rig Identity / Naming 统一调用 systems.rig_base.RigBase；
+    - Rig Naming 统一调用 systems.rig_base.RigBase；
     - Controller 创建统一调用 systems.ctrl_base；
     - Snap 算法统一调用 core.snap_utils；
     - 子窗口统一交给 app.window_manager；
-    - 本文件只保留 Rig Tool UI、RP IK / Pole Vector 业务和少量工作流组装。
+    - 本文件只保留 Rig Tool UI、RP IK / Pole Vector 业务和工作流组装。
 """
 
 from __future__ import print_function
-
-import math
 
 import maya.cmds as cmds
 
@@ -49,9 +49,12 @@ except ImportError:
 
 from ...app import window_manager
 from ...core import animation_utils
+from ...core import attr_utils
 from ...core import constraint_utils
 from ...core import hierarchy_utils
+from ...core import joint_chain_utils
 from ...core import joint_utils
+from ...core import math_utils
 from ...core import rename_utils
 from ...core import scene_utils
 from ...core import snap_utils
@@ -68,229 +71,15 @@ from . import skirt_ctrl_tool
 
 
 # =============================================================================
-# IK Math
-# =============================================================================
-
-def vector_subtract(vector_a, vector_b):
-    u"""
-    三维向量相减。
-
-    Args:
-        vector_a (list[float] | tuple[float, float, float]):
-            第一个 XYZ Vector。
-        vector_b (list[float] | tuple[float, float, float]):
-            第二个 XYZ Vector。
-
-    Returns:
-        list[float]:
-            vector_a - vector_b。
-    """
-    return [
-        vector_a[0] - vector_b[0],
-        vector_a[1] - vector_b[1],
-        vector_a[2] - vector_b[2],
-    ]
-
-
-def vector_add(vector_a, vector_b):
-    u"""
-    三维向量相加。
-
-    Args:
-        vector_a (list[float] | tuple[float, float, float]):
-            第一个 XYZ Vector。
-        vector_b (list[float] | tuple[float, float, float]):
-            第二个 XYZ Vector。
-
-    Returns:
-        list[float]:
-            vector_a + vector_b。
-    """
-    return [
-        vector_a[0] + vector_b[0],
-        vector_a[1] + vector_b[1],
-        vector_a[2] + vector_b[2],
-    ]
-
-
-def vector_multiply(vector, value):
-    u"""
-    三维向量乘标量。
-
-    Args:
-        vector (list[float] | tuple[float, float, float]):
-            XYZ Vector。
-        value (float):
-            标量。
-
-    Returns:
-        list[float]:
-            缩放后的 Vector。
-    """
-    return [
-        vector[0] * value,
-        vector[1] * value,
-        vector[2] * value,
-    ]
-
-
-def vector_length(vector):
-    u"""
-    返回三维向量长度。
-
-    Args:
-        vector (list[float] | tuple[float, float, float]):
-            XYZ Vector。
-
-    Returns:
-        float:
-            欧氏长度。
-    """
-    return math.sqrt(
-        vector[0] * vector[0]
-        + vector[1] * vector[1]
-        + vector[2] * vector[2]
-    )
-
-
-def vector_normalize(vector):
-    u"""
-    返回单位向量。
-
-    Args:
-        vector (list[float] | tuple[float, float, float]):
-            XYZ Vector。
-
-    Returns:
-        list[float]:
-            单位向量；零长度时返回 [0, 0, 0]。
-    """
-    length = vector_length(
-        vector
-    )
-
-    if length <= 0.000001:
-        return [0.0, 0.0, 0.0]
-
-    return [
-        vector[0] / length,
-        vector[1] / length,
-        vector[2] / length,
-    ]
-
-
-def dot_product(vector_a, vector_b):
-    u"""
-    返回三维向量点积。
-
-    Args:
-        vector_a (list[float] | tuple[float, float, float]):
-            第一个 XYZ Vector。
-        vector_b (list[float] | tuple[float, float, float]):
-            第二个 XYZ Vector。
-
-    Returns:
-        float:
-            Dot Product。
-    """
-    return (
-        vector_a[0] * vector_b[0]
-        + vector_a[1] * vector_b[1]
-        + vector_a[2] * vector_b[2]
-    )
-
-
-# =============================================================================
 # IK Workflow
 # =============================================================================
-
-def get_joint_path(start_joint, end_joint):
-    u"""
-    返回 start_joint 到 end_joint 的 Joint 路径。
-
-    Args:
-        start_joint (str):
-            起始 Joint。
-        end_joint (str):
-            末端 Joint。
-
-    Returns:
-        list[str] | None:
-            从 Start 到 End 的 Joint Path；不存在时返回 None。
-    """
-    try:
-        start_joint = scene_utils.get_long_name(
-            start_joint
-        )
-        end_joint = scene_utils.get_long_name(
-            end_joint
-        )
-    except RuntimeError:
-        return None
-
-    if start_joint == end_joint:
-        return [
-            start_joint
-        ]
-
-    def walk(current_joint, current_path):
-        children = hierarchy_utils.get_children(
-            current_joint,
-            node_type="joint",
-            full_path=True
-        )
-
-        for child_joint in children:
-            child_path = []
-
-            for path_joint in current_path:
-                child_path.append(
-                    path_joint
-                )
-
-            child_path.append(
-                child_joint
-            )
-
-            if child_joint == end_joint:
-                return child_path
-
-            result = walk(
-                child_joint,
-                child_path
-            )
-
-            if result:
-                return result
-
-        return None
-
-    return walk(
-        start_joint,
-        [start_joint]
-    )
-
 
 def get_pole_vector_position(
         start_joint,
         middle_joint,
         end_joint
 ):
-    u"""
-    计算三关节链 Pole Vector 推荐位置。
-
-    Args:
-        start_joint (str):
-            起始 Joint。
-        middle_joint (str):
-            中间 Joint。
-        end_joint (str):
-            末端 Joint。
-
-    Returns:
-        list[float]:
-            推荐 Pole Vector 世界位置。
-    """
+    u"""计算三关节链 Pole Vector 推荐世界位置。"""
     start_position = transform_utils.get_world_translation(
         start_joint
     )
@@ -301,66 +90,65 @@ def get_pole_vector_position(
         end_joint
     )
 
-    start_to_end = vector_subtract(
+    start_to_end = math_utils.subtract_vector3(
         end_position,
         start_position
     )
-    start_to_middle = vector_subtract(
+    start_to_middle = math_utils.subtract_vector3(
         middle_position,
         start_position
     )
 
-    line_length = vector_length(
+    line_length = math_utils.length_vector3(
         start_to_end
     )
 
     if line_length <= 0.000001:
         return middle_position
 
-    line_direction = vector_normalize(
+    line_direction = math_utils.normalize_vector3(
         start_to_end
     )
-    projection_length = dot_product(
+    projection_length = math_utils.dot_vector3(
         start_to_middle,
         line_direction
     )
-    projection = vector_add(
+    projection = math_utils.add_vector3(
         start_position,
-        vector_multiply(
+        math_utils.multiply_vector3(
             line_direction,
             projection_length
         )
     )
 
-    pole_direction = vector_subtract(
+    pole_direction = math_utils.subtract_vector3(
         middle_position,
         projection
     )
-    pole_direction = vector_normalize(
+    pole_direction = math_utils.normalize_vector3(
         pole_direction
     )
 
-    if vector_length(pole_direction) <= 0.000001:
-        pole_direction = [0.0, 0.0, 1.0]
+    if math_utils.length_vector3(pole_direction) <= 0.000001:
+        pole_direction = [
+            0.0,
+            0.0,
+            1.0,
+        ]
 
-    chain_length = (
-        vector_length(
-            vector_subtract(
-                middle_position,
-                start_position
-            )
-        )
-        + vector_length(
-            vector_subtract(
-                end_position,
-                middle_position
-            )
-        )
+    start_segment_length = math_utils.distance_between_points(
+        start_position,
+        middle_position
     )
-
-    return vector_add(
+    end_segment_length = math_utils.distance_between_points(
         middle_position,
-        vector_multiply(
+        end_position
+    )
+    chain_length = start_segment_length + end_segment_length
+
+    return math_utils.add_vector3(
+        middle_position,
+        math_utils.multiply_vector3(
             pole_direction,
             chain_length * 0.75
         )
@@ -369,23 +157,7 @@ def get_pole_vector_position(
 
 @scene_utils.undo_chunk
 def create_ik_rig(start_joint, end_joint):
-    u"""
-    创建基础 RP IK、End Controller 和 Pole Vector Controller。
-
-    Args:
-        start_joint (str):
-            IK Chain 起始 Joint。
-        end_joint (str):
-            IK Chain 末端 Joint。
-
-    Returns:
-        dict:
-            Rig Group、IK Handle、Effector、End Controller 和 Pole Controller。
-
-    Raises:
-        RuntimeError:
-            输入 Joint 无效、Chain 不连续或 Rig 已存在时抛出。
-    """
+    u"""创建基础 RP IK、End Controller 和 Pole Vector Controller。"""
     joint_utils.Joint(
         start_joint
     )
@@ -400,7 +172,7 @@ def create_ik_rig(start_joint, end_joint):
         end_joint
     )
 
-    joint_path = get_joint_path(
+    joint_path = joint_chain_utils.get_joint_path(
         start_joint,
         end_joint
     )
@@ -418,32 +190,25 @@ def create_ik_rig(start_joint, end_joint):
     start_joint_short_name = rename_utils.get_short_name(
         start_joint
     )
+    rig_side = "md"
+    rig_part_source = start_joint_short_name
 
-    if RigBase.validate_name(
-            start_joint_short_name
-    ):
-        name_fields = RigBase.parse_name(
-            start_joint_short_name
+    try:
+        start_joint_name = RigBase(
+            name=start_joint_short_name
         )
-        rig_side = name_fields["side"]
-        rig_part = name_fields["part"]
-    else:
-        rig_side = "md"
-        rig_part = start_joint_short_name
 
-        if rig_part.startswith("jnt_"):
-            rig_part = rig_part[4:]
+        if start_joint_name.part:
+            rig_side = start_joint_name.side
+            rig_part_source = start_joint_name.part
+    except (IndexError, TypeError, ValueError):
+        if rig_part_source.startswith("jnt_"):
+            rig_part_source = rig_part_source[4:]
 
-        rig_part = rig_part.replace(" ", "_")
-        rig_part = rig_part.replace("-", "_")
-
-        while "__" in rig_part:
-            rig_part = rig_part.replace("__", "_")
-
-        rig_part = rig_part.strip("_").lower()
-
-        if not rig_part:
-            rig_part = "ik"
+    rig_part = rename_utils.get_name_token(
+        rig_part_source,
+        fallback="ik"
+    )
 
     rig_identity = RigBase(
         side=rig_side,
@@ -452,43 +217,45 @@ def create_ik_rig(start_joint, end_joint):
     )
 
     rig_group_name = rig_identity.create_name(
-        node_type="grp",
+        type="grp",
         function="ik"
     )
     ik_handle_name = rig_identity.create_name(
-        node_type="ikh",
+        type="ikh",
         function="ik"
     )
     end_control_name = rig_identity.create_name(
-        node_type="ctrl",
+        type="ctrl",
         function="ik"
     )
     pole_control_name = rig_identity.create_name(
-        node_type="ctrl",
+        type="ctrl",
         function="pv"
     )
 
-    if cmds.objExists(rig_group_name):
-        raise RuntimeError(
-            u"IK Rig 已存在：{}".format(
-                rig_group_name
-            )
-        )
+    scene_utils.ensure_nodes_available(
+        [
+            rig_group_name,
+            ik_handle_name,
+        ],
+        label=u"IK Rig 节点"
+    )
 
     rig_group = scene_utils.create_node(
         "transform",
         rig_group_name
     )
 
-    cmds.addAttr(
-        rig_group,
-        longName="muziRigType",
-        dataType="string"
+    rig_group_attrs = attr_utils.Attr(
+        rig_group
     )
-    cmds.setAttr(
-        rig_group + ".muziRigType",
+    rig_group_attrs.set_value(
+        "muziRigType",
         "ik",
-        type="string"
+        attr_type="string",
+        lock=False,
+        keyable=False,
+        channel_box=False
     )
 
     ik_handle_result = cmds.ikHandle(
@@ -511,12 +278,9 @@ def create_ik_rig(start_joint, end_joint):
     end_position = transform_utils.get_world_translation(
         end_joint
     )
-
-    chain_size = vector_length(
-        vector_subtract(
-            end_position,
-            start_position
-        )
+    chain_size = math_utils.distance_between_points(
+        start_position,
+        end_position
     )
     control_radius = max(
         chain_size * 0.15,
@@ -543,7 +307,6 @@ def create_ik_rig(start_joint, end_joint):
         constraint_type="pointConstraint",
         maintain_offset=False
     )
-
     constraint_utils.create_constraint(
         driver_objects=end_control,
         driven_object=end_joint,
@@ -558,7 +321,6 @@ def create_ik_rig(start_joint, end_joint):
             len(joint_path) / 2
         )
         middle_joint = joint_path[middle_index]
-
         pole_position = get_pole_vector_position(
             start_joint,
             middle_joint,
@@ -587,7 +349,6 @@ def create_ik_rig(start_joint, end_joint):
             pole_top_group,
             pole_position
         )
-
         constraint_utils.create_pole_vector_constraint(
             pole_control,
             ik_handle
@@ -612,17 +373,7 @@ def create_ik_rig(start_joint, end_joint):
 # =============================================================================
 
 def find_rig_root(node):
-    u"""
-    沿父层级查找带 muziRigType 的 Rig Module Root。
-
-    Args:
-        node (str):
-            Rig Module 内任意 DAG 节点。
-
-    Returns:
-        str | None:
-            Rig Module Root；找不到时返回 None。
-    """
+    u"""沿父层级查找带 muziRigType 的 Rig Module Root。"""
     try:
         current_node = scene_utils.get_long_name(
             node
@@ -631,10 +382,12 @@ def find_rig_root(node):
         return None
 
     while current_node:
-        if cmds.attributeQuery(
-                "muziRigType",
-                node=current_node,
-                exists=True
+        node_attrs = attr_utils.Attr(
+            current_node
+        )
+
+        if node_attrs.attr_exists(
+                "muziRigType"
         ):
             return current_node
 
@@ -647,13 +400,7 @@ def find_rig_root(node):
 
 
 def get_duplicate_map():
-    u"""
-    按短名称收集场景重名 DAG 节点。
-
-    Returns:
-        dict:
-            short_name -> Long Path List，仅包含重名项。
-    """
+    u"""按短名称收集场景重名 DAG 节点。"""
     nodes = cmds.ls(
         long=True,
         dagObjects=True
@@ -692,13 +439,6 @@ class RigTool(QWidget):
     u"""通用 Rig 主工具面板。"""
 
     def __init__(self, parent=None):
-        u"""
-        创建 Rig Tool 窗口。
-
-        Args:
-            parent (QWidget | None):
-                Qt 父窗口。
-        """
         super(RigTool, self).__init__(parent)
 
         self.create_widgets()
@@ -710,11 +450,16 @@ class RigTool(QWidget):
             title=u"Rig 工具",
             minimum_width=600
         )
-        self.resize(640, 760)
+        self.resize(
+            640,
+            760
+        )
 
     def create_widgets(self):
         u"""创建界面控件。"""
-        self.title_label = theme.make_title(u"Rig 工具")
+        self.title_label = theme.make_title(
+            u"Rig 工具"
+        )
         self.subtitle_label = theme.make_subtitle(
             u"集中处理 Controller、FK、基础 IK、Rig Module 和常用绑定操作。"
         )
@@ -736,10 +481,14 @@ class RigTool(QWidget):
         )
 
         self.create_ik_button = QPushButton(u"创建 RP IK Rig")
-        theme.style_primary(self.create_ik_button)
+        theme.style_primary(
+            self.create_ik_button
+        )
 
         self.delete_rig_button = QPushButton(u"删除选择 Rig Module")
-        theme.style_danger(self.delete_rig_button)
+        theme.style_danger(
+            self.delete_rig_button
+        )
 
         self.clear_keys_button = QPushButton(u"删除关键帧")
         self.reset_attrs_button = QPushButton(u"重置可动画属性")
@@ -753,7 +502,9 @@ class RigTool(QWidget):
 
     def create_layouts(self):
         u"""创建 Card 布局。"""
-        root_layout = QVBoxLayout(self)
+        root_layout = QVBoxLayout(
+            self
+        )
         root_layout.setContentsMargins(16, 16, 16, 16)
         root_layout.setSpacing(12)
 
@@ -828,7 +579,9 @@ class RigTool(QWidget):
             )
             button_index += 1
 
-        utility_layout.addLayout(utility_grid)
+        utility_layout.addLayout(
+            utility_grid
+        )
 
         content_layout.addWidget(launch_card)
         content_layout.addWidget(ik_card)
@@ -840,67 +593,25 @@ class RigTool(QWidget):
 
     def create_connections(self):
         u"""连接界面信号。"""
-        self.create_fk_button.clicked.connect(
-            self.open_fk_tool
-        )
-        self.open_control_creator_button.clicked.connect(
-            self.open_control_creator
-        )
-        self.open_joint_tool_button.clicked.connect(
-            self.open_joint_tool
-        )
-        self.open_skirt_tool_button.clicked.connect(
-            self.open_skirt_tool
-        )
-        self.create_ik_button.clicked.connect(
-            self.create_ik
-        )
-        self.delete_rig_button.clicked.connect(
-            self.delete_selected_rig
-        )
-        self.clear_keys_button.clicked.connect(
-            self.clear_keys
-        )
-        self.reset_attrs_button.clicked.connect(
-            self.reset_attributes
-        )
-        self.batch_constraint_button.clicked.connect(
-            self.batch_parent_constraint
-        )
-        self.create_default_groups_button.clicked.connect(
-            self.create_default_groups
-        )
-        self.add_zero_group_button.clicked.connect(
-            self.add_zero_groups
-        )
-        self.select_children_button.clicked.connect(
-            self.select_children
-        )
-        self.snap_button.clicked.connect(
-            self.snap_last_to_center
-        )
-        self.print_duplicates_button.clicked.connect(
-            self.print_duplicate_nodes
-        )
-        self.rename_duplicates_button.clicked.connect(
-            self.rename_duplicate_nodes
-        )
+        self.create_fk_button.clicked.connect(self.open_fk_tool)
+        self.open_control_creator_button.clicked.connect(self.open_control_creator)
+        self.open_joint_tool_button.clicked.connect(self.open_joint_tool)
+        self.open_skirt_tool_button.clicked.connect(self.open_skirt_tool)
+        self.create_ik_button.clicked.connect(self.create_ik)
+        self.delete_rig_button.clicked.connect(self.delete_selected_rig)
+        self.clear_keys_button.clicked.connect(self.clear_keys)
+        self.reset_attrs_button.clicked.connect(self.reset_attributes)
+        self.batch_constraint_button.clicked.connect(self.batch_parent_constraint)
+        self.create_default_groups_button.clicked.connect(self.create_default_groups)
+        self.add_zero_group_button.clicked.connect(self.add_zero_groups)
+        self.select_children_button.clicked.connect(self.select_children)
+        self.snap_button.clicked.connect(self.snap_last_to_center)
+        self.print_duplicates_button.clicked.connect(self.print_duplicate_nodes)
+        self.rename_duplicates_button.clicked.connect(self.rename_duplicate_nodes)
 
     @staticmethod
     def open_tool(tool_key, tool_module):
-        u"""
-        通过统一 Window Manager 执行或打开专项工具。
-
-        Args:
-            tool_key (str):
-                Window Manager 唯一 Key。
-            tool_module (module):
-                已加载 Tool Module。
-
-        Returns:
-            object:
-                Tool main() 返回值。
-        """
+        u"""通过统一 Window Manager 执行或打开专项工具。"""
         return window_manager.show_tool(
             "rig/{}".format(tool_key),
             tool_module.main
@@ -950,7 +661,6 @@ class RigTool(QWidget):
                 start_joint,
                 end_joint
             )
-
             cmds.select(
                 result["group"],
                 replace=True
@@ -967,7 +677,6 @@ class RigTool(QWidget):
             long=True,
             flatten=True
         )
-
         rig_roots = []
 
         for node in selections:
@@ -1002,7 +711,6 @@ class RigTool(QWidget):
             long=True,
             flatten=True
         )
-
         target_nodes = selections
 
         if not target_nodes:
@@ -1141,7 +849,6 @@ class RigTool(QWidget):
 
         for child_name in child_names:
             child_group = created_groups[child_name]
-
             parent_node = hierarchy_utils.get_parent(
                 child_group,
                 full_path=True
@@ -1186,16 +893,26 @@ class RigTool(QWidget):
             short_name = rename_utils.get_short_name(
                 node
             )
+            zero_name = None
 
-            if short_name.startswith("ctrl_"):
-                zero_name = short_name.replace(
-                    "ctrl_",
-                    "zero_",
-                    1
+            try:
+                rig_name = RigBase(
+                    name=short_name
                 )
-            else:
+
+                if rig_name.name:
+                    zero_name = rig_name.create_name(
+                        type="zero"
+                    )
+            except (IndexError, TypeError, ValueError):
+                pass
+
+            if not zero_name:
                 zero_name = "zero_{}".format(
-                    short_name
+                    rename_utils.get_name_token(
+                        short_name,
+                        fallback="node"
+                    )
                 )
 
             if cmds.objExists(zero_name):
@@ -1211,7 +928,6 @@ class RigTool(QWidget):
                 group_name=zero_name,
                 match_rotation=True
             )
-
             created_groups.append(
                 zero_group
             )
@@ -1239,11 +955,10 @@ class RigTool(QWidget):
         result = []
 
         for node in selections:
-            descendants = cmds.listRelatives(
+            descendants = hierarchy_utils.get_descendants(
                 node,
-                allDescendents=True,
-                fullPath=True
-            ) or []
+                full_path=True
+            )
 
             for descendant in descendants:
                 if descendant in result:
@@ -1365,27 +1080,15 @@ class RigTool(QWidget):
                         suffix_index
                     )
 
-                try:
-                    cmds.rename(
-                        node,
-                        new_name
-                    )
-                except Exception as error:
-                    cmds.warning(
-                        str(error)
-                    )
-
+                rename_utils.rename_node(
+                    node,
+                    new_name
+                )
                 match_index += 1
 
 
 def main():
-    u"""
-    显示并返回 Rig Tool。
-
-    Returns:
-        QWidget:
-            Rig Tool 窗口。
-    """
+    u"""显示并返回 Rig Tool。"""
     return window_utils.show_window(
         "tools.rig.rig_tool",
         RigTool
@@ -1395,7 +1098,7 @@ def main():
 __all__ = [
     "RigTool",
     "create_ik_rig",
+    "get_pole_vector_position",
     "find_rig_root",
-    "get_joint_path",
     "main",
 ]
