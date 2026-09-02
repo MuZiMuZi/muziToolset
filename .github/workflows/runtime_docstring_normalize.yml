@@ -72,19 +72,25 @@ jobs:
         run: python -m compileall -q app core systems tools ui __init__.py config.py
 
       # -----------------------------------------------------------------------
-      # Step 05：严格检查所有公开 Runtime API 的中文 Docstring 结构
+      # Step 05：复杂函数必须保留步骤式中文注释
+      # -----------------------------------------------------------------------
+      - name: Validate runtime step comment coverage
+        run: python scripts/annotate_runtime_steps.py --check
+
+      # -----------------------------------------------------------------------
+      # Step 06：严格检查所有公开 Runtime API 的中文 Docstring 结构
       # -----------------------------------------------------------------------
       - name: Validate public runtime docstrings
         run: python scripts/normalize_runtime_docstrings.py --check
 
       # -----------------------------------------------------------------------
-      # Step 06：检查 Maya / Rigging 参数语义质量
+      # Step 07：检查 Maya / Rigging 参数语义质量
       # -----------------------------------------------------------------------
       - name: Validate rigging terminology quality
         run: python scripts/refine_runtime_docstring_semantics.py --check
 
       # -----------------------------------------------------------------------
-      # Step 07：检查源码空白格式
+      # Step 08：检查源码空白格式
       # -----------------------------------------------------------------------
       - name: Check whitespace errors
         run: git diff --check
