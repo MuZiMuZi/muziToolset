@@ -20,7 +20,7 @@ Face Joint -> Drive / Aim Curve 组合系统。
     - Group 创建由 core.scene_utils 负责；
     - Parent 由 core.hierarchy_utils 负责；
     - Constraint 由 core.constraint_utils 负责；
-    - Rig Naming 统一使用实例化的 systems.rig_base.RigBase；
+    - Rig Naming 统一使用 systems.rig_base.RigBase；
     - Undo Chunk 由 core.scene_utils 负责；
     - 本模块只负责 Face Curve Attachment 的组合关系。
 """
@@ -39,7 +39,7 @@ from ...rig_base import RigBase
 
 
 # =============================================================================
-# Validate / Naming
+# Scene Validate / Naming
 # =============================================================================
 
 def validate_joint(joint):
@@ -58,62 +58,15 @@ def validate_joint(joint):
     return True
 
 
-def normalize_name_part(value, label):
-    u"""清理用于 Face Curve Rig Naming part 的字段。"""
-    if value is None:
-        raise ValueError(
-            u"{}不能为空。".format(label)
-        )
-
-    value = str(value).strip().lower()
-    value = value.replace(" ", "_")
-    value = value.replace("-", "_")
-
-    while "__" in value:
-        value = value.replace("__", "_")
-
-    value = value.strip("_")
-
-    if not value:
-        raise ValueError(
-            u"{}不能为空。".format(label)
-        )
-
-    return value
-
-
 def create_rig_name(
-        node_type,
+        type,
         side,
         region,
         feature,
         role,
         index=1
 ):
-    u"""
-    创建 Face Curve Rig 标准名称。
-
-    Builder 本身不是 Module，因此为当前节点创建一个短生命周期 Rig Identity。
-
-    为保持历史生成的节点字符串不变，region / feature / role 前缀全部并入 part，
-    role 的最后一个 Token 作为单一 function。
-    """
-    side = RigBase.normalize_side(
-        side
-    )
-    region = normalize_name_part(
-        region,
-        "region"
-    )
-    feature = normalize_name_part(
-        feature,
-        "feature"
-    )
-    role = normalize_name_part(
-        role,
-        "role"
-    )
-
+    u"""根据项目内部固定字段创建 Face Curve Rig 标准名称。"""
     role_parts = role.split("_")
     function = role_parts[-1]
 
@@ -134,16 +87,15 @@ def create_rig_name(
         part_tokens
     )
 
-    rig_object = RigBase(
+    rig_name = RigBase(
+        type=type,
         side=side,
         part=part,
+        function=function,
         index=index
     )
 
-    return rig_object.create_name(
-        node_type=node_type,
-        function=function
-    )
+    return rig_name.name
 
 
 # =============================================================================
@@ -252,18 +204,6 @@ def attach_joints_to_curves(
         transform_utils.validate_transform(
             parent_group
         )
-
-    side = RigBase.normalize_side(
-        side
-    )
-    region = normalize_name_part(
-        region,
-        "region"
-    )
-    feature = normalize_name_part(
-        feature,
-        "feature"
-    )
 
     nodes_group_name = create_rig_name(
         "grp",
