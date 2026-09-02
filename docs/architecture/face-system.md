@@ -96,6 +96,7 @@ Core
 负责：
 
 - 继承 `RigModuleBase`；
+- 继承 `RigBase` 的 Rig Object Identity / Naming；
 - Face Hierarchy；
 - Face Config；
 - Setup 公共数据；
@@ -116,7 +117,20 @@ RigModuleBase
 FaceBase
 ```
 
+`FaceBase` 默认 Rig Identity：
+
+```text
+md / face / 001
+```
+
 具体 Guide / Teeth / Jaw 等业务不塞回 `FaceBase`。
+
+具体 Rig Module 应在初始化时设置自己的 Identity，例如：
+
+```text
+TeethModule
+    md / teeth / 001
+```
 
 ---
 
@@ -133,20 +147,31 @@ FaceBase
 - Step Visibility Rule；
 - Step Model Display Rule。
 
-Rig Name 使用：
+静态配置如果需要标准 Rig Name，会创建明确的 `RigBase` 实例：
 
 ```python
 from muziToolset.systems.rig_base import RigBase
 
-RigBase.create_name(...)
+face_rig = RigBase(
+    side="md",
+    part="face",
+    index=1
+)
+
+face_master_grp = face_rig.create_name(
+    node_type="grp",
+    function="master"
+)
 ```
 
-Face Module 内部通常直接使用继承来的：
+Face Module 内部通常直接使用继承来的实例方法：
 
 ```python
 self.create_name(...)
 self.mirror_name(...)
 ```
+
+正式 Naming Keyword 使用 `node_type=`；旧 `type=` 已退休。
 
 `core/name_utils.py` 已删除。
 
@@ -193,7 +218,7 @@ guide.get_part_guides(
 
 ```python
 guide_name = guide.create_name(
-    type="loc",
+    node_type="loc",
     side="md",
     part="upper_teeth",
     function="guide",
@@ -206,7 +231,7 @@ guide_node = guide.get_guide_node(
 )
 ```
 
-左右 Mirror 名称直接使用：
+左右 Mirror 名称直接使用实例能力：
 
 ```python
 mirror_name = guide.mirror_name(
@@ -318,6 +343,8 @@ lip/
 这些文件是 Builder / Algorithm，不是完整业务 Module。
 
 例如未来 `EyelidModule` 可以组合 Eyelid Builder，`LipModule` 可以组合 Zip Lip Builder。
+
+Builder 自身不是 Module；如果需要标准 Naming，应创建短生命周期 `RigBase` Identity 实例。
 
 ---
 
