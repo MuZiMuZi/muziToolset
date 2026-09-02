@@ -2,8 +2,11 @@
 
 > 原作者：Xiong Lin（林雄）  
 > 原文标题：Rig Build Description  
-> 文档用途：MuziTools Component Based Procedural Rig 架构研究参考  
-> 翻译说明：正文部分按原 PDF 内容翻译；最后的“MuziTools 架构参考”是项目自身的研究结论，不属于原文。
+> 文档用途：MuziTools Module Based Procedural Rig 架构研究参考  
+> 翻译说明：第一部分按原 PDF 内容翻译；第二部分开始是 MuziTools 自身的架构结论，不属于原文。
+
+!!! note "术语说明"
+    外部资料和视频原名中的 **Component Based** 保留原始标题，不做改写。MuziTools 0.4 正式代码和项目架构统一使用 **Module**，不再使用 Component 表示完整 Rig 业务单元。
 
 ---
 
@@ -15,7 +18,7 @@
 - Bilibili：Maya绑定和动画工具展示  
   https://www.bilibili.com/video/BV1fK4y1T7uw/
 
-这两段视频和 PDF 后续统一作为 MuziTools 绑定系统的架构参考资料。
+这两段视频和 PDF 作为 MuziTools 程序化绑定系统的架构参考资料。
 
 ---
 
@@ -37,19 +40,13 @@
 
 同时，它也具备 **Asset Manager（资产管理器）** 的功能。
 
----
-
 ### 为什么叫 Jigsaw
 
-因为整个系统是基于模块构建的，所以我把这套 Auto Rig 称为：
+因为整个系统是基于模块构建的，所以我把这套 Auto Rig 称为 **Jigsaw**。
 
-**Jigsaw**
+它有点像拼图。不同的 Rig Module 可以组合成不同类型的生物角色。
 
-它有点像拼图。
-
-我可以把不同的 Rig Module 组合在一起，从而构建各种不同类型的生物角色。
-
-例如，一个基础的人类角色可以由下面这些模块组成：
+例如，一个基础人类角色可以由：
 
 - 2 个 Arm Rig
 - 2 个 Leg Rig
@@ -57,13 +54,9 @@
 - 1 个 Torso Rig
 - 1 个 Neck Rig
 
-如果再加入：
+组成；再加入 2 个 Wing Rig，就可以构建 Angel Character。
 
-- 2 个 Wing Rig
-
-就可以构建一个 Angel Character（天使角色）。
-
-系统中预先准备了一些 Rig Module 的组合模板，包括：
+系统预先准备了不同 Rig Module 组合模板，例如：
 
 - Angel
 - Bat
@@ -73,51 +66,23 @@
 - Dragon
 - Tiger Hawk
 
----
-
 ### UI 中展示的主要区域
 
-原图中的界面包含以下概念：
+原图中的界面包含：
 
-**Rig Module Library**
-
-Rig 模块库。
-
-用于浏览当前系统中已经存在的各种 Rig Module。
-
-**Building Workflow**
-
-绑定构建工作流。
-
-用于按照制作流程逐步完成 Rig。
-
-**Rig Module Setting**
-
-当前 Rig Module 的设置区域。
-
-**Rig Module Current In Use**
-
-当前角色正在使用的 Rig Module。
-
-**Rig Module Preset**
-
-Rig Module 的预设组合。
-
-**Version Control**
-
-版本控制。
-
-**Asset Management**
-
-资产管理。
+- **Rig Module Library**：Rig 模块库；
+- **Building Workflow**：绑定构建工作流；
+- **Rig Module Setting**：当前 Module 设置；
+- **Rig Module Current In Use**：当前角色正在使用的 Module；
+- **Rig Module Preset**：Module 预设组合；
+- **Version Control**：版本控制；
+- **Asset Management**：资产管理。
 
 ---
 
 ## 第 2 页 - Rig Module Preset
 
-这一页主要展示系统中已经预设好的不同角色模板。
-
-包括：
+这一页展示系统预设的角色模板，包括：
 
 - Human Template
 - Angel Template
@@ -127,11 +92,7 @@ Rig Module 的预设组合。
 - Quad Dragon Template
 - Face Template
 
-这些模板本质上并不是完全独立的 Rig 系统。
-
-它们是由不同 Rig Module 组合出来的预设方案。
-
-因此，同一个 Rig Module 可以被多个角色 Template 重复使用。
+这些模板不是彼此完全独立的 Rig 系统，而是不同 Rig Module 的组合方案，因此同一个 Rig Module 可以被多个角色 Template 重复使用。
 
 ---
 
@@ -139,33 +100,16 @@ Rig Module 的预设组合。
 
 整个系统一共有 **21 个可以用于实际制作的 Rig Module**。
 
-所有模块使用：
+所有模块使用 Python 和 Object-Oriented Programming 开发。
 
-- Python
-- Object-Oriented Programming（面向对象编程）
+作者首先创建基础 Rig Class：**Base Rig**。
 
-进行开发。
+Base Rig 保存所有 Rig Module 都需要的公共信息和功能，例如：
 
----
+- Naming Convention
+- Connection Method
 
-### Base Rig
-
-首先，我创建了一个基础 Rig Class：
-
-**Base Rig**
-
-Base Rig 只包含一些最基础、所有 Rig Module 都需要的信息和功能，例如：
-
-- Naming Convention（命名规范）
-- Connection Method（连接方式）
-
-之后，其余的 Rig Module 都从 Base Rig 继承。
-
-然后在 Base Rig 的基础上继续扩展，逐渐形成更加复杂的 Rig Module。
-
-原文中的图展示了各个 Rig Module 之间的继承关系。
-
-这意味着：
+之后其它 Rig Module 从 Base Rig 继承，并逐渐扩展为更复杂的生产模块。
 
 ```text
 Base Rig
@@ -177,176 +121,70 @@ More Specialized Rig Module
 Final Production Rig Module
 ```
 
-公共逻辑由基础层提供。
-
-具体角色模块只增加自己真正需要的绑定功能。
-
----
+公共逻辑只实现一次，具体角色 Module 只增加自己真正需要的绑定能力。
 
 ### Limb Rig 已开发功能
 
 作者列出的 Limb Rig 功能包括：
 
-1. IK / FK Switch  
-   IK / FK 切换。
+1. IK / FK Switch；
+2. IK Control Auto Stretch；
+3. Soft IK；
+4. Elbow Offset / Lock；
+5. Limb Squeeze and Squash；
+6. Local Scale；
+7. IK Control Space Switch；
+8. FK Control Rotation Space Switch；
+9. FK / IK 两种模式下的 Limb Length Adjust；
+10. Bendy Control。
 
-2. IK Control Auto Stretch  
-   IK 控制器自动拉伸。
-
-3. Soft IK  
-   Soft IK。
-
-4. Elbow Offset / Lock  
-   手肘偏移 / 锁定。
-
-5. Limb Squeeze and Squash  
-   肢体挤压与拉伸变形。
-
-6. Local Scale  
-   局部缩放。
-
-7. IK Control Space Switch  
-   IK 控制器空间切换。
-
-8. FK Control Rotation Space Switch  
-   FK 控制器旋转空间切换。
-
-9. Limb Length Adjust in Both FK and IK Mode  
-   FK / IK 两种模式下都可以调整肢体长度。
-
-10. Bendy Control  
-    Bendy 控制。
-
-这些功能会继续被继承到：
-
-- Arm Rig
-- Bird Wing Rig
-- Bat Wing Rig
-- Leg Rig
-- Hind Leg Rig
-- Fore Leg Rig
-
-也就是说，通用 Limb 能力只开发一次，再由更具体的角色模块继承使用。
+这些能力继续被 Arm、Bird Wing、Bat Wing、Leg、Hind Leg、Fore Leg 等具体 Module 继承。
 
 ---
 
 ## 第 4 页 - Procedure Workflow 与 Skin Weight
 
-作者的 Auto Rig 使用的是：
+作者的 Auto Rig 使用 **Procedure Workflow（程序化制作流程）**。
 
-**Procedure Workflow（程序化制作流程）**
+系统保存的不只是最终 Rig 文件，还保存 **Rig Building Progress**。
 
-这意味着系统保存的不只是最终完成的 Rig 文件。
-
-同时还会保存：
-
-**Rig Building Progress（绑定制作过程中的数据）**
-
-在作者的工作流中，主要保存两类重要制作数据：
+主要保存的制作数据包括：
 
 - Skin Weights
 - Pose Space Deformer（PSD）
 
----
-
 ### Skin Weight Tool
 
-原图展示的是 Skin Weight Tool 的 UI。
+Skin Weight Tool 可以导出和导入权重数据，并在 Auto Rig 重建时自动恢复。
 
-这个工具可以把 Skin Weight 数据导出。
+主要能力包括：
 
-工具使用：
-
-- Python
-- PySide
-
-开发。
-
-Auto Rig 在重新构建 Rig 时，会自动读取这些已经保存的 Skin Data。
-
----
-
-### Skin Weight Tool 功能
-
-作者列出的功能：
-
-1. High Speed Data Transfer  
-   高速数据传输。
-
-2. Export / Import Each Skin Weight in Separate File  
-   每一个 Skin Weight 可以单独导出 / 导入文件。
-
-3. Export / Import Skin Weights in One Single File  
-   也可以把 Skin Weight 统一导出 / 导入到一个文件中。
-
-4. Works for Polygon, NURBS and Curves  
-   支持 Polygon、NURBS 和 Curve。
-
-UI 中还会显示：
-
-- 当前场景中的 Skin Cluster
-- 当前场景中的 Polygon / NURBS / Curve
+1. High Speed Data Transfer；
+2. 每个 Skin Weight 独立导出 / 导入；
+3. 多个 Skin Weight 合并到单一文件；
+4. 支持 Polygon、NURBS 和 Curve。
 
 ---
 
 ## 第 5 页 - Pose Space Deformer
 
-这一页展示的是 Pose Space Deformer Tool。
+作者使用 Pose Space Deformer Tool：
 
-作者使用这个工具：
+1. 在角色 Pose 状态下 Sculpt；
+2. 导出 Sculpt Data；
+3. Auto Rig 重建时恢复 PSD Data。
 
-1. 在角色 Pose 状态下以更符合艺术制作的方式进行 Sculpt；
-2. 导出已经完成的 Sculpt Data；
-3. 在 Auto Rig 重新构建时自动读取这些 PSD Data。
+工具使用 Python、PySide 和 Maya API 开发。
 
-工具使用：
+主要能力包括：
 
-- Python
-- PySide
-- Maya API
-
-开发。
-
----
-
-### PSD Tool 功能
-
-1. Create Pose Reader and Connect with Corrective BlendShape  
-   创建 Pose Reader，并连接 Corrective BlendShape。
-
-2. Direct Sculpt on Posed Mesh and Bake Difference  
-   直接在 Pose 状态的 Mesh 上 Sculpt，然后 Bake Difference。
-
-3. Mirror Pose Space Deformer from One Side to Another  
-   把一侧 PSD 镜像到另一侧。
-
-4. Pose Management  
-   Pose 管理，包括：
-
-   - 快速访问任意 Pose
-   - PSD 创建以后继续调整 Pose
-   - 调整 PSD Influence Range
-   - Rename PSD
-   - 根据关键字过滤 PSD
-   - Delete PSD
-
-5. Copy PSD Influence from One Mesh to Another  
-   把 PSD Influence 从一个 Mesh 复制到另一个 Mesh。
-
-6. Restore Corrective BlendShape after Target BlendShape is Deleted  
-   即使 Target BlendShape 被删除，也可以恢复 Corrective BlendShape。
-
-7. Export and Import PSD Setup  
-   导出 / 导入整个 PSD Setup。
-
----
-
-### UI 中展示的信息
-
-- 当前场景中已经创建的所有 Pose Sculpt
-- Keyword Search
-- Pose Information and Setting
-- Pose Geometry Information and Tool Set
+- Pose Reader + Corrective BlendShape；
+- Pose Mesh 直接 Sculpt + Bake Difference；
+- PSD Mirror；
+- Pose Management；
+- PSD Influence Copy；
+- Corrective 恢复；
+- PSD Setup Export / Import。
 
 ---
 
@@ -354,49 +192,19 @@ UI 中还会显示：
 
 作者认为 Procedure Method 最大的优势是：
 
-**可以返回到之前的 Rig Building Stage，对 Rig 进行修改或修复，同时不会丢失之前已经完成的工作。**
+**可以返回之前的 Rig Building Stage 修改或修复，同时不丢失已经完成的制作数据。**
 
-例如：
+例如重新调整 Joint 位置后，可以重新 Build Rig，而 Skin Weight、PSD 等艺术数据会被恢复。
 
-可以重新调整 Joint 的位置，然后只需要一次点击，就重新构建整个 Rig。
-
-因为 Skin Weight、PSD 等制作数据已经被保存，所以重新构建 Rig 并不意味着重新做一遍所有艺术数据。
+相似角色之间还可以共享 Skin Weight 等 Character Data，从而节省大量制作时间。
 
 ---
 
-### Character Data Sharing
+# 二、MuziTools 从资料中提炼的架构原则
 
-如果两个角色比较相似，还可以在两个角色之间共享数据。
+以下内容是 MuziTools 自身结论，不属于原文。
 
-例如：
-
-可以让两个相似角色使用相同的 Skin Weight。
-
-这会节省大量制作时间。
-
-原文最后展示了完整的 Rig Building Workflow。
-
-作者最后再次感谢读者查看他的工作。
-
----
-
-# 二、从 PDF 中提炼出的核心架构思想
-
-下面开始不再是原文翻译，而是 MuziTools 对资料的架构分析。
-
-## 1. Rig 不应该只保存最终结果
-
-传统思路：
-
-```text
-Guide
-    ↓
-Build
-    ↓
-Final Rig.ma
-```
-
-Procedure Rig 更接近：
+## 1. Rig Result 是可重建结果，制作数据才是长期资产
 
 ```text
 Input
@@ -412,49 +220,49 @@ PSD Data
 Final Rig
 ```
 
-这里真正重要的是：
+需要长期保存的是：
 
-**制作过程中的数据也是资产。**
+- Guide；
+- Config；
+- Skin Weight；
+- PSD / Corrective；
+- Artist Custom Data；
+- Module 之间的关系。
 
-因此 MuziTools 后续不应该把 Skin Weight、Corrective Data、Guide、Controller Custom Data 当成一次 Build 的临时副产品。
+最终 Maya Rig Nodes 应尽量做到可以删除并重建。
 
 ---
 
-## 2. Template 应该是 Component 的组合
-
-Human / Angel / Bird / Dog 不应该分别复制一套完整代码。
-
-更合理的是：
+## 2. Template 应该是 Module 的组合
 
 ```text
 Human
-├── Spine
-├── Neck
-├── Arm L
-├── Arm R
-├── Leg L
-├── Leg R
-└── ...
+├── SpineModule
+├── NeckModule
+├── ArmModule L
+├── ArmModule R
+├── LegModule L
+└── LegModule R
 
 Angel
-├── Human Components
-├── Wing L
-└── Wing R
+├── Human Modules
+├── WingModule L
+└── WingModule R
 ```
 
 因此：
 
-**Template = Component Combination**
+```text
+Template = Module Combination
+```
 
-而不是：
-
-**Template = 一套独立 Rig Code**
+而不是每一种角色复制一套独立 Rig Code。
 
 ---
 
-## 3. Step 与 Component 不是同一个概念
+## 3. Step 与 Module 不是同一个概念
 
-MuziTools 当前 Face Workflow：
+MuziTools Face Workflow：
 
 ```text
 Step 01 Setup
@@ -463,143 +271,115 @@ Step 03 Build
 Step 04 Finalize
 ```
 
-这个结构可以继续保留。
-
-但是 Step 03 内部应该由 Component 组成：
+Step 03 内部由完整 Rig Module 组成：
 
 ```text
 Step 03 Build
-├── Jaw Component
-├── Teeth Component
-├── Tongue Component
-├── Lip Component
-├── Eye Component
-├── Eyelid Component
-└── Brow Component
+├── JawModule
+├── TeethModule
+├── TongueModule
+├── LipModule
+├── EyeModule
+├── EyelidModule
+└── BrowModule
 ```
 
-因此：
+定义：
 
 ```text
 Step
-    = 用户制作流程
+    用户制作流程阶段
 
-Component
-    = 独立绑定模块
+Module
+    可独立构建、验证和重新构建的完整 Rig 业务单元
 ```
 
 ---
 
-## 4. Component 必须支持 Non-destructive Rebuild
+## 4. Module Lifecycle
 
-以后每一个正式 Component 都应该围绕：
-
-```text
-Collect Input
-    ↓
-Prepare Data
-    ↓
-Save Rebuild Data
-    ↓
-Delete Previous Build Result
-    ↓
-Build
-    ↓
-Restore Data
-    ↓
-Validate
-```
-
-设计。
-
-Rebuild 时：
-
-### 保留
+MuziTools 0.4 使用：
 
 ```text
-config_node
-Guide
-Model Input
-Skin Weight
-PSD / Corrective Data
-Artist Custom Attribute
-External Connection
+systems/module_base.py
 ```
 
-### 可以删除
+标准生命周期：
 
 ```text
-Component Ctrl
-Component Jnt
-Component Rig Helper
-Matrix / Constraint / Utility DG Node
-Component SkinCluster（保存权重成功以后）
+collect_inputs()
+      ↓
+prepare_data()
+      ↓
+process_data()
+      ↓
+finalize_step()
 ```
+
+真正的 Rig Module 使用 `RigModuleBase`：
+
+```text
+create_joint()
+      ↓
+create_controller()
+      ↓
+create_connection()
+```
+
+未来 Non-destructive Rebuild 可以继续在这个生命周期上增加 Build Manifest、Data Cache 和 Restore 机制，而不是重新创造第二套 Module Protocol。
 
 ---
 
-## 5. 每个 Component 应该有明确 Build Ownership
+## 5. 每个 Module 应该有明确 Build Ownership
 
-例如 Teeth：
+Module 创建的 DAG / DG Node 应可被明确识别和清理。
 
-```text
-grp_md_teeth_ctrl_001
-grp_md_teeth_jnt_001
-grp_md_teeth_rig_001
-```
-
-Jaw：
-
-```text
-grp_md_jaw_ctrl_001
-grp_md_jaw_jnt_001
-grp_md_jaw_rig_001
-```
-
-DAG Build Result 可以通过 Component Group 一次清理。
-
-不能 Parent 到 Group 的 DG Node，则使用 Build Manifest / Message Ownership 管理。
-
-因此删除 Rig 时不应该再使用：
+不要使用：
 
 ```python
 cmds.ls("*teeth*")
 ```
 
-去猜哪些节点属于 Teeth。
+猜测节点归属。
+
+更合理的是：
+
+```text
+Module Public Result
++
+Config Message
++
+Build Manifest / Ownership
+```
+
+后续用它支持安全 Rebuild。
 
 ---
 
-## 6. Component 之间通过 Input / Output 连接
-
-模块化不能只是“文件拆开”。
-
-真正的模块化应该做到：
+## 6. Module 之间通过 Public Input / Output 协作
 
 ```text
-Jaw Component
+JawModule
     ↓
 Published Output
     ↓
-jaw_ctrl_node
-    ↓
-Teeth Component Input
+TeethModule Input
 ```
 
-Teeth 不需要知道 Jaw 内部到底用了：
+TeethModule 不需要知道 JawModule 内部用了：
 
-- parentConstraint
-- multMatrix
-- blendMatrix
-- offsetParentMatrix
+- parentConstraint；
+- multMatrix；
+- blendMatrix；
+- offsetParentMatrix。
 
-它只需要消费 Jaw 发布的 Output。
+它只消费 JawModule 发布的稳定 Output。
 
-因此后续 Component 设计应该逐渐形成：
+因此模块化的重点不是“多几个 Python 文件”，而是清晰的：
 
 ```text
 Input
-Component
+Module
 Output
 ```
 
@@ -607,34 +387,45 @@ Output
 
 ---
 
-## 7. Ctrl Base 对应 Base Rig 中的公共 Controller 能力
+## 7. RigBase / ModuleBase / CtrlBase 对应公共 Rig 基础层
 
-当前 MuziTools 的 `systems/ctrl_base.py` 可以被理解为控制器领域的基础层：
-
-```text
-Ctrl Creation
-Follow
-Space Switch
-Rebuild Cache
-```
-
-而具体 Component：
+MuziTools 0.4 当前基础结构：
 
 ```text
-Jaw
-Teeth
-Lip
-Arm
-Leg
+systems/
+├── rig_base.py
+├── module_base.py
+└── ctrl_base.py
 ```
 
-只负责调用这些基础能力。
+职责：
 
-这符合“公共能力只实现一次，具体模块组合使用”的方向。
+```text
+RigBase
+    Rig Naming
+
+ModuleBase / RigModuleBase
+    Module Lifecycle
+
+CtrlBase
+    Controller Creation / FK / Follow / Space
+```
+
+具体 Module：
+
+```text
+JawModule
+TeethModule
+LipModule
+ArmModule
+LegModule
+```
+
+只组合这些基础能力，不重复实现公共规则。
 
 ---
 
-# 三、MuziTools 当前建议目标
+# 三、MuziTools 当前目标结构
 
 ```text
 MuziTools
@@ -649,24 +440,25 @@ MuziTools
 │   └── ...
 │
 ├── System Base
-│   ├── Component Base
-│   └── Ctrl Base
+│   ├── RigBase
+│   ├── ModuleBase / RigModuleBase
+│   └── CtrlBase
 │
-├── Body Components
-│   ├── Spine
-│   ├── Neck
-│   ├── Arm
-│   ├── Leg
+├── Body Modules
+│   ├── SpineModule
+│   ├── NeckModule
+│   ├── ArmModule
+│   ├── LegModule
 │   └── ...
 │
-├── Face Components
-│   ├── Jaw
-│   ├── Teeth
-│   ├── Tongue
-│   ├── Lip
-│   ├── Eye
-│   ├── Eyelid
-│   └── Brow
+├── Face Modules
+│   ├── JawModule
+│   ├── TeethModule
+│   ├── TongueModule
+│   ├── LipModule
+│   ├── EyeModule
+│   ├── EyelidModule
+│   └── BrowModule
 │
 └── Character Template
     ├── Human
@@ -675,18 +467,14 @@ MuziTools
     └── ...
 ```
 
-最终目标不是“把很多 Maya 小工具放到一个 Toolbox 中”。
-
-而是建立：
-
-**Component Based Procedural Rigging System**
+最终目标不是“把很多 Maya 小工具放到一个 Toolbox 中”，而是建立可维护的 **Module Based Procedural Rigging System**。
 
 核心关键词：
 
 ```text
 Module Based
 +
-Procedure Build
+Procedural Build
 +
 Editable Guide
 +
@@ -696,29 +484,27 @@ Data Persistence
 +
 Non-destructive Rebuild
 +
-Reusable Component
+Reusable Module
 +
 Template Composition
 ```
 
 ---
 
-## 结论
+# 结论
 
-林雄这份资料最值得 MuziTools 学习的并不是某个具体 IK、Constraint 或 UI 实现。
+这份资料最值得 MuziTools 学习的不是某个具体 IK、Constraint 或 UI 实现，而是：
 
-真正重要的是：
+> Rig 的最终节点只是可重新生成的结果；真正需要长期保存的是制作过程数据、Module 定义以及 Module 之间的关系。
 
-> Rig 的最终节点只是可重新生成的结果；真正需要长期保存的是制作过程中的数据、模块定义以及模块之间的关系。
-
-因此 MuziTools 后续的设计目标应该是：
+因此后续设计目标是：
 
 ```text
 Rig Result 可以删除重建
 制作数据不能丢
-Component 可以独立重建
-Component 可以重新组合
+Module 可以独立重建
+Module 可以重新组合
 角色可以共享制作数据
 ```
 
-这份原则后续作为 Face Rig、Body Rig、Component Rebuild、Weight System 和 Controller System 的长期架构参考。
+这套原则作为 Face Rig、Body Rig、Module Rebuild、Weight System 和 Controller System 的长期架构参考。
