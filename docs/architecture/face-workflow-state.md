@@ -18,13 +18,11 @@ Restore UI
 Apply Scene Visibility
 ```
 
-`network_md_face_config_001` 是可恢复 UI 参数的唯一持久化来源。
+`network_md_face_config_001` 是可恢复 UI 参数的主要持久化来源。
 
 UI Widget 自身不承担长期数据保存。
 
-## Workflow Progress 与当前查看页面
-
-这两个概念必须区分：
+## Workflow Progress 与 Current View
 
 ```text
 Workflow Progress
@@ -36,13 +34,13 @@ Current View Step
     可以临时回退查看旧 Step
 ```
 
-例如已经制作到 Step 03 时，可以返回 Step 01 查看 Setup 数据，但不会因此把 `face_current_step` 改回 Step 01。
+回看旧页面不会自动降低 Workflow Progress；只有旧 Step 数据被真正修改并失效时才回退正式进度。
 
-如果旧 Step 被真正修改并失效，例如 Step 02 修改 Controller Settings、Mirror 或 Reimport Guide，则 Workflow Progress 会退回 Step 02。
+---
 
-## Step 01 UI Restore
+# Step 01 UI Restore
 
-返回 Step 01 时，从 Config Message / Value 恢复：
+从 Config Message / Value 恢复：
 
 ```text
 Face Head Model
@@ -55,11 +53,13 @@ Gum Model
 Mouth Joint Number
 ```
 
-模型节点使用 Message Connection 保存，因此 Maya Rename 后仍可以恢复到 UI。
+模型节点使用 Message Connection 保存，因此 Maya Rename 后仍可以恢复。
 
-## Step 02 UI Restore
+---
 
-返回 Step 02 时，从 Config 恢复：
+# Step 02 UI Restore
+
+从 Config 恢复：
 
 ```text
 Global Scale
@@ -73,47 +73,45 @@ Nose Size
 Cheek Size
 Lip Size
 Jaw Size
+Teeth Size
+Tongue Size
 ```
 
-Controller Settings 修改后立即写回 Scene Config。
+Controller Settings 使用 `systems/face/config.py` 中的正式 Attribute Schema。
+
+修改 Controller Setting：
 
 ```text
-修改 Controller Setting
-        ↓
+修改 UI
+    ↓
 立即保存 Config
-        ↓
+    ↓
 Step 02 = Dirty
-        ↓
+    ↓
+Step 03 / 04 Invalid
+    ↓
 face_current_step = Step 02
-        ↓
-点击“下一步”时再执行 Validation / Completed
 ```
 
-Guide Locator 的位置已经存在于 Maya Scene Transform 中，因此不重复序列化到 UI Config。
+Guide Locator 的 Transform 已存在 Maya Scene，不重复序列化到 UI Config。
 
-## Scene Visibility 的实现位置
+---
 
-不再单独维护：
+# Scene Visibility
 
-```text
-systems/face/workflow.py
-```
-
-现在分成两个简单职责：
+静态规则：
 
 ```text
 systems/face/config.py
-    定义每个 Step 应该显示哪些 Face Group
-
-systems/face/ui/workflow_controller.py
-    Step 切换时直接执行 visibility
 ```
 
-也就是说：
+执行位置：
 
-> Config 只定义规则，UI Workflow Controller 直接执行，不再经过第三层管理模块。
+```text
+systems/face/ui/workflow_controller.py
+```
 
-## 顶层显示规则
+顶层显示规则：
 
 | Step | Model Group | Guide | Ctrl | Joint | Internal Rig Nodes |
 | --- | --- | --- | --- | --- | --- |
@@ -122,93 +120,61 @@ systems/face/ui/workflow_controller.py
 | 03 Build | Show | Hide | Show | Show | Hide |
 | 04 Finalize | Show | Hide | Show | Hide | Hide |
 
-对应静态配置位于：
+对应：
 
 ```python
 config.face_step_visibility_rules
 ```
 
-## Step 01 / Step 02 Model Display Rule
+Step 01 / 02 使用 `setup_sources` 模型显示策略，只显示 Setup Config 保存的原始输入模型。
 
-Step 01 和 Step 02 使用：
-
-```text
-setup_sources
-```
-
-对应：
-
-```python
-config.face_step_model_display_rules
-```
-
-Workflow Controller 会读取 Step 01 Config 中保存的模型引用：
-
-```text
-Head
-LF Eye
-RT Eye
-Upper Teeth
-Lower Teeth
-Tongue
-Gum
-```
-
-然后扫描：
-
-```text
-grp_md_face_model_001
-```
-
-只显示包含这些输入模型的第一层分支，其它分支隐藏。
-
-例如：
-
-```text
-grp_md_face_model_001
-├── grp_md_face_tweak_001       Hide
-├── grp_md_face_stretch_001     Hide
-├── grp_md_face_deform_001      Hide
-├── model_md_head_001           Show
-├── model_lf_eyeball_001        Show
-├── model_rt_eyeball_001        Show
-├── model_md_upper_teeth_001    Show
-├── model_md_lower_teeth_001    Show
-├── model_md_tongue_001         Show
-└── model_md_lower_gum_001      Show
-```
-
-所以 Step 02 的视图保持为：
-
-```text
-Setup 输入模型
-+
-Face Guide
-```
-
-便于选择 Locator。
-
-如果旧场景完全没有可恢复的 Setup Model 信息，则不主动把全部模型隐藏。
-
-## Step 03 / Step 04 Model Display
-
-目前 Step 03 / Step 04 的 Component / Finalize 内容还在继续实现，因此模型内部规则暂时为：
+Step 03 / 04 当前模型内部规则为：
 
 ```text
 preserve
 ```
 
-以后明确需要 Deform Model、Final Model 等显示方案时，直接修改：
+后续需要 Deform / Final Model 专用显示规则时，直接扩展 `config.face_step_model_display_rules`。
 
-```python
-config.face_step_model_display_rules
+---
+
+# Step 03 Module Build State
+
+Step 03 的完整业务单元统一称为 **Module**。
+
+当前已经接入：
+
+```text
+TeethModule
 ```
 
-不需要再增加新的 Workflow 文件。
+UI 入口：
 
-## Guide Visibility
+```text
+ui/build_controller.py
+```
 
-核心规则：
+当前 Teeth Button 的“构建完成”状态主要反映当前 UI Session 的构建结果；Rig 节点本身会真实存在于 Maya Scene。
+
+在 Step 03 完整产品化之前，Module 完成状态应继续迁移到以下两种方案之一：
+
+```text
+Scene Config 持久化 Module Completed State
+```
+
+或：
+
+```text
+从确定性的 Maya Rig Nodes 推导 Module Build State
+```
+
+不能长期只依赖 QWidget 内存状态。
+
+TeethModule 完成也**不会**直接把整个 Step 03 标记 Completed，因为 Jaw / Tongue / Lip / Eye / Brow 等 Module 尚未全部接入。
+
+---
+
+# Guide Visibility
 
 ```text
 进入 Step 02
@@ -218,41 +184,54 @@ config.face_step_model_display_rules
     → grp_md_face_guide_001 隐藏
 ```
 
-这个行为由 `workflow_controller.py` 在页面切换时直接执行。
+由 `workflow_controller.py` 在页面切换时直接执行。
 
-## 正式 UI 入口
+---
+
+# 正式 UI 入口
+
+当前真实调用链：
 
 ```text
 systems.face.show()
     ↓
 systems.face.ui.show()
     ↓
+ui/build_controller.py
+    ↓
 ui/workflow_controller.py
     ↓
 ui/face_rig_ui.py
 ```
 
-其中：
+职责：
 
 ```text
 face_rig_ui.py
-    Widget / Layout / 用户交互视图
+    基础 Widget / Layout / Step 01-02 视图
 
 workflow_controller.py
     Config -> UI Restore
     Step Scene Visibility
-    Controller Settings 实时持久化
+    Workflow Progress
+
+build_controller.py
+    当前正式 UI 扩展层
+    Controller Schema 补全
+    Step 03 Module Build 页面
 ```
 
-## 后续 Step 接入规范
+---
+
+# 后续 Step 接入规范
 
 Step 03 / 04 新增可编辑参数时：
 
 1. 先定义正式 Config Attribute；
-2. Step / Component 保存方法负责持久化；
-3. Workflow UI 增加对应 Loader；
+2. Module / Step 保存方法负责持久化；
+3. Workflow UI 增加 Loader；
 4. 进入或回退 Step 自动恢复；
-5. 顶层显示规则补到 `config.face_step_visibility_rules`；
-6. 模型内部规则补到 `config.face_step_model_display_rules`；
-7. 不为简单规则再增加额外管理文件；
+5. 显示规则补到 `config.face_step_visibility_rules`；
+6. 模型规则补到 `config.face_step_model_display_rules`；
+7. 不为简单规则额外增加管理文件；
 8. 不使用仅存在于 QWidget 内存里的状态作为唯一数据源。
