@@ -8,9 +8,9 @@ muziToolset/
 ├─ ui/          # Theme 与通用 UI Widget
 ├─ core/        # Maya 通用底层能力
 ├─ tools/       # 用户直接使用的小工具
-├─ systems/     # 可复用 Rig Builder / Workflow
+├─ systems/     # RigBase / ModuleBase / CtrlBase / Rig System
 ├─ resources/   # Guide Template、Controller Shape 等静态资源
-└─ tests/       # Maya Smoke / Functional Smoke
+└─ tests/       # Static Gate + Maya Smoke
 ```
 
 ## 依赖方向
@@ -25,26 +25,50 @@ app / ui / tools
 
 `core` 不能反向依赖 `tools / systems / app / ui`。
 
-## UI / App
-
-`ui` 维护整个项目的统一视觉和复合 Widget：
+## Systems 0.4 基础
 
 ```text
-ui/
-├── theme.py
-├── window_utils.py
-└── widgets/
+systems/
+├── rig_base.py
+├── module_base.py
+├── ctrl_base.py
+├── face/
+├── body/
+└── rig/
 ```
 
-当前正式视觉方向采用 Arc-inspired 的 clean / calm / sidebar-first 信息组织，所有业务窗口优先复用 Theme Token 和 Role，不在 Tool 中维护第二套完整 QSS。
+三个基础职责：
 
-详见：[UI Design System](../development/ui-design.md)。
+```text
+RigBase
+    Rig Naming
 
-`app` 负责主工具箱、分类 Sidebar、Tool Discovery、Window Manager 和应用生命周期。
+ModuleBase / RigModuleBase
+    Module Lifecycle
 
-## Systems
+CtrlBase
+    Controller Workflow
+```
 
-`systems` 实现完整且可复用的 Rig Workflow / Component / Builder。
+完整业务单元统一称为 **Module**，不再使用 Component。
+
+## Step / Module / Builder / Core
+
+```text
+Step
+    用户工作流阶段
+
+Module
+    Teeth / Jaw / Tongue / Lip / Eye / Eyelid / Brow 等完整业务单元
+
+Builder
+    Curve Attachment / Zip / Radial Joint 等可组合算法
+
+Core
+    Matrix / Curve / Joint / DAG / Attribute 等通用 Maya 能力
+```
+
+## Face System
 
 Face System 按四步 Workflow 分包：
 
@@ -54,6 +78,7 @@ systems/face/
 ├── config.py
 ├── setup/
 ├── guide/
+├── modules/
 ├── build/
 ├── finalize/
 ├── data/
@@ -63,74 +88,56 @@ systems/face/
 其中：
 
 ```text
-config      Face 静态名称、默认参数和 Step 显示规则
-
+config      Face 静态配置和 Step 显示规则
 setup       Step 01 输入和基础场景
-
 guide       Step 02 Template / Query / Mirror / Repair / Validation
-
-build       Step 03 Component / Builder
-
+modules     Step 03 完整 Rig Module
+build       可复用 Face Build Algorithm
 finalize    Step 04 Final Check / Cleanup / Publish
-
 data        跨 Step 的 Face 公共数据
-
-ui          Face Wizard View / Config Restore / Step Visibility
+ui          Face Wizard / Config Restore / Step Visibility / Build UI
 ```
 
-Guide 当前保持单文件实现：
+当前正式 Step 03 Module：
 
 ```text
-systems/face/guide/
-└── face_guide.py
+systems/face/modules/teeth.py
+    TeethModule
 ```
 
-不再为了 Guide Data、Template、Mirror 或 Workflow Visibility 单独增加中间管理文件。
+完整说明见：[Face System Architecture](face-system.md)。
 
-详见：[Face System Architecture](face-system.md)。
+Face Config 恢复和 UI 状态见：[Face Workflow State](face-workflow-state.md)。
 
-Face Rig 的 Config 恢复、UI 回填、Current Step 和 Scene Visibility 规则详见：[Face Workflow State](face-workflow-state.md)。
+## Core Naming 边界
 
-## Step 与 Component
-
-不要把 Step 和 Component 当成同一个概念。
+Rig Naming 已从 Core 移到：
 
 ```text
-Step
-    用户工作流阶段
-
-Component
-    Teeth / Tongue / Jaw / Lip / Eyelid / Brow 等面部绑定模块
-
-Builder
-    Curve Attachment / Zip / Radial Joint 等可组合算法
-
-Core
-    Matrix / Curve / Joint / DAG / Attribute / Naming 等通用 Maya 能力
+systems/rig_base.py
 ```
 
-所有可重新提交的 Step 统一使用：
+`core/rename_utils.py` 只处理 Maya Short Name 和 Rename 等通用节点操作。
+
+旧 `core/name_utils.py` 已删除。
+
+## Controller 边界
+
+Controller 的唯一正式业务入口：
 
 ```text
-collect_inputs()
-      ↓
-prepare_data()
-      ↓
-process_data()
-      ↓
-finalize_step()
+systems/ctrl_base.py
 ```
 
-简单 Component 也可以复用这套四阶段构建思路，但 Component 本身不等于整个 Workflow Step。
+旧 `systems/controller/` 已删除。
+
+Tool 和 Module 都直接调用 `ctrl_base`，不再维护第二套 Controller Builder。
 
 ## 为什么不再使用万能 Utils，也不做无意义拆分
 
-早期项目存在 `pipelineUtils.py` 一类综合模块，把动画、Curve、Surface、Constraint、Face、Controller、文件 IO 等内容放在同一个类中。
-
-现在 Core 改成“一个 Maya 领域一个模块”：
+Core 继续采用“一个 Maya 领域一个模块”：
 
 ```text
-animation_utils.py
 scene_utils.py
 transform_utils.py
 matrix_utils.py
@@ -142,24 +149,26 @@ skin_utils.py
 ...
 ```
 
-但是 System 层不为了形式继续拆小文件。
+System 层则按业务语义组织：
 
-如果一个文件只是：
-
-- 转发固定参数；
-- 保存已经可以通过 Naming API 动态生成的完整名称；
-- 把一个很短的业务流程再包装一层；
-
-则优先合回所属 Step / Component。
+```text
+RigBase
+ModuleBase
+CtrlBase
+Face Module
+Body Module
+```
 
 目标是：
 
 ```text
 职责清楚
 +
+单一事实来源
++
 调用路径短
 +
-容易查询
+容易测试
 +
-容易重建
+容易继续扩展
 ```
