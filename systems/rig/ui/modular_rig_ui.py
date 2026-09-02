@@ -12,7 +12,8 @@ MuziTools 模块化绑定系统的主界面。
     4. 右侧只显示当前 Module 的参数，不把所有绑定参数一次堆在界面上；
     5. Jnt Size / Jnt Axis 放在当前 Module 下方的高频显示设置区域；
     6. Block / Mesh / Skeleton / Control 作为构建阶段显示入口；
-    7. Build 区域只负责触发 Module Build，不在 UI 内实现绑定算法。
+    7. Build 区域只负责触发 Module Build，不在 UI 内实现绑定算法；
+    8. Scene / Joint Display 查询统一复用 Core，不在 UI 维护第二套 Maya 底层逻辑。
 
 当前版本先完成正式 UI Shell 和 Maya Joint Display 联动。
 各 Module 的真正 Build / Rebuild API 会随着 Module 系统重构逐步接入。
@@ -21,6 +22,9 @@ MuziTools 模块化绑定系统的主界面。
 from __future__ import print_function
 
 import maya.cmds as cmds
+
+from ....core import joint_utils
+from ....core import scene_utils
 
 try:
     from PySide2.QtCore import Qt
@@ -471,9 +475,6 @@ class ModularRigWindow(QWidget):
 
     def create_layouts(self):
         u"""按照三栏模块化绑定设计创建主布局。"""
-        # ---------------------------------------------------------------------
-        # Step 01：Header
-        # ---------------------------------------------------------------------
         header_layout = QHBoxLayout(self.header_frame)
         header_layout.setContentsMargins(12, 6, 12, 6)
         header_layout.setSpacing(6)
@@ -491,9 +492,6 @@ class ModularRigWindow(QWidget):
         header_layout.addWidget(self.help_button)
         header_layout.addWidget(self.preference_button)
 
-        # ---------------------------------------------------------------------
-        # Step 02：Module / Template Library
-        # ---------------------------------------------------------------------
         left_layout = QVBoxLayout(self.left_panel)
         left_layout.setContentsMargins(10, 10, 10, 10)
         left_layout.setSpacing(7)
@@ -517,9 +515,6 @@ class ModularRigWindow(QWidget):
         left_layout.addWidget(self.template_list, 1)
         left_layout.addWidget(self.library_count_label)
 
-        # ---------------------------------------------------------------------
-        # Step 03：Settings Tree
-        # ---------------------------------------------------------------------
         center_layout = QVBoxLayout(self.center_panel)
         center_layout.setContentsMargins(10, 10, 10, 10)
         center_layout.setSpacing(7)
@@ -536,9 +531,6 @@ class ModularRigWindow(QWidget):
         center_layout.addLayout(settings_toolbar_layout)
         center_layout.addWidget(self.module_tree, 1)
 
-        # ---------------------------------------------------------------------
-        # Step 04：Name / Jnt Size / Jnt Axis
-        # ---------------------------------------------------------------------
         quick_setting_layout = QVBoxLayout(self.quick_setting_frame)
         quick_setting_layout.setContentsMargins(10, 8, 10, 8)
         quick_setting_layout.setSpacing(6)
@@ -565,9 +557,6 @@ class ModularRigWindow(QWidget):
         quick_setting_layout.addLayout(jnt_axis_layout)
         center_layout.addWidget(self.quick_setting_frame)
 
-        # ---------------------------------------------------------------------
-        # Step 05：Block / Mesh / Skeleton / Control
-        # ---------------------------------------------------------------------
         stage_layout = QVBoxLayout(self.stage_frame)
         stage_layout.setContentsMargins(8, 7, 8, 7)
         stage_layout.setSpacing(4)
@@ -577,9 +566,6 @@ class ModularRigWindow(QWidget):
 
         center_layout.addWidget(self.stage_frame)
 
-        # ---------------------------------------------------------------------
-        # Step 06：右侧 Module Property
-        # ---------------------------------------------------------------------
         right_layout = QVBoxLayout(self.right_panel)
         right_layout.setContentsMargins(12, 10, 12, 10)
         right_layout.setSpacing(8)
@@ -600,9 +586,6 @@ class ModularRigWindow(QWidget):
         right_layout.addWidget(self.attributes_section_button)
         right_layout.addStretch(1)
 
-        # ---------------------------------------------------------------------
-        # Step 07：Build Action
-        # ---------------------------------------------------------------------
         build_layout = QVBoxLayout(self.build_frame)
         build_layout.setContentsMargins(8, 8, 8, 8)
         build_layout.setSpacing(7)
@@ -617,9 +600,6 @@ class ModularRigWindow(QWidget):
         build_layout.addWidget(self.build_button, 1)
         right_layout.addWidget(self.build_frame)
 
-        # ---------------------------------------------------------------------
-        # Step 08：三栏主工作区
-        # ---------------------------------------------------------------------
         self.main_splitter = QSplitter(Qt.Horizontal)
         self.main_splitter.setChildrenCollapsible(False)
         self.main_splitter.addWidget(self.left_panel)
@@ -980,8 +960,6 @@ class ModularRigWindow(QWidget):
         if not template_name:
             return
 
-        # 当前 Module 后端尚未正式迁移完成。
-        # Template 先使用同一套默认组合验证 UI 与编辑流程。
         self.populate_default_module_tree()
         QMessageBox.information(
             self,
@@ -1001,23 +979,33 @@ class ModularRigWindow(QWidget):
         joint_size = 1.0
 
         try:
-            joint_size = float(cmds.jointDisplayScale(query=True))
+            joint_size = joint_utils.get_display_scale()
         except Exception:
             joint_size = 1.0
 
-        joint_size = max(0.10, min(5.00, joint_size))
-        self.jnt_size_spin.setValue(joint_size)
-        self.jnt_size_slider.setValue(int(round(joint_size * 100.0)))
+        joint_size = max(
+            0.10,
+            min(5.00, joint_size)
+        )
+        self.jnt_size_spin.setValue(
+            joint_size
+        )
+        self.jnt_size_slider.setValue(
+            int(round(joint_size * 100.0))
+        )
 
         show_axis = False
-        jnt_list = cmds.ls(type="joint", long=True)
+        joint_list = scene_utils.get_nodes_by_type(
+            "joint",
+            long=True
+        )
 
-        if jnt_list is None:
-            jnt_list = []
-
-        for jnt_node in jnt_list:
+        for joint_node in joint_list:
             try:
-                display_axis = cmds.getAttr(jnt_node + ".displayLocalAxis")
+                joint_object = joint_utils.Joint(
+                    joint_node
+                )
+                display_axis = joint_object.is_axis_visible()
             except Exception:
                 display_axis = False
 
@@ -1025,7 +1013,9 @@ class ModularRigWindow(QWidget):
                 show_axis = True
                 break
 
-        self.jnt_axis_switch.setChecked(show_axis)
+        self.jnt_axis_switch.setChecked(
+            show_axis
+        )
         self.loading_joint_display = False
 
     def jnt_size_slider_changed(self, slider_value):
@@ -1045,37 +1035,52 @@ class ModularRigWindow(QWidget):
             return
 
         self.loading_joint_display = True
-        self.jnt_size_slider.setValue(int(round(float(joint_size) * 100.0)))
+        self.jnt_size_slider.setValue(
+            int(round(float(joint_size) * 100.0))
+        )
         self.loading_joint_display = False
         self.set_maya_joint_size(joint_size)
 
     def set_maya_joint_size(self, joint_size):
         u"""设置 Maya 全局 Joint Display Scale。"""
         try:
-            cmds.jointDisplayScale(float(joint_size))
+            joint_utils.set_display_scale(
+                joint_size
+            )
         except Exception as error:
-            cmds.warning(u"设置 Joint Display Scale 失败：{}".format(error))
+            cmds.warning(
+                u"设置 Joint Display Scale 失败：{}".format(
+                    error
+                )
+            )
 
     def jnt_axis_changed(self, checked):
         u"""显示或隐藏场景全部 Joint 的 Local Axis。"""
         if self.loading_joint_display:
             return
 
-        jnt_list = cmds.ls(type="joint", long=True)
+        joint_list = scene_utils.get_nodes_by_type(
+            "joint",
+            long=True
+        )
 
-        if jnt_list is None:
-            jnt_list = []
-
-        for jnt_node in jnt_list:
-            axis_plug = jnt_node + ".displayLocalAxis"
-
-            if not cmds.objExists(axis_plug):
-                continue
-
+        for joint_node in joint_list:
             try:
-                cmds.setAttr(axis_plug, bool(checked))
+                joint_object = joint_utils.Joint(
+                    joint_node
+                )
+
+                if checked:
+                    joint_object.show_axis()
+                else:
+                    joint_object.hide_axis()
             except Exception as error:
-                cmds.warning(u"设置 Joint Axis 失败：{} | {}".format(jnt_node, error))
+                cmds.warning(
+                    u"设置 Joint Axis 失败：{} | {}".format(
+                        joint_node,
+                        error
+                    )
+                )
 
     # =========================================================================
     # Build / Maya Action
@@ -1086,7 +1091,11 @@ class ModularRigWindow(QWidget):
         current_item = self.module_tree.currentItem()
 
         if current_item is None:
-            QMessageBox.warning(self, u"Build", u"请先选择一个 Module。")
+            QMessageBox.warning(
+                self,
+                u"Build",
+                u"请先选择一个 Module。"
+            )
             return
 
         module_name = current_item.data(0, Qt.UserRole)
@@ -1094,7 +1103,9 @@ class ModularRigWindow(QWidget):
         if not module_name:
             module_name = current_item.text(0)
 
-        self.build_requested.emit(str(module_name))
+        self.build_requested.emit(
+            str(module_name)
+        )
         QMessageBox.information(
             self,
             u"Module Build",
