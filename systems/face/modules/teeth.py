@@ -38,6 +38,7 @@ from ....core import matrix_utils
 from ....core import scene_utils
 from ....core import skin_utils
 from ... import ctrl_base
+from ...rig_base import RigBase
 from .. import config
 from ..face_base import FaceBase
 from ..guide import FaceGuide
@@ -101,12 +102,12 @@ class TeethModule(FaceBase):
         )
 
         self.upper_teeth_guide_name = self.create_name(
-            node_type="loc",
+            type="loc",
             part="upper_teeth",
             function="guide"
         )
         self.lower_teeth_guide_name = self.create_name(
-            node_type="loc",
+            type="loc",
             part="lower_teeth",
             function="guide"
         )
@@ -201,59 +202,63 @@ class TeethModule(FaceBase):
         return True
 
     # =========================================================================
-    # Naming / Validation
+    # Naming / Scene State
     # =========================================================================
 
     def _prepare_names(self):
         u"""根据 TeethModule Identity 准备全部标准名称。"""
         self.upper_teeth_jnt_name = self.create_name(
-            node_type="jnt",
+            type="jnt",
             part="upper_teeth",
             function="bind"
         )
         self.lower_teeth_jnt_name = self.create_name(
-            node_type="jnt",
+            type="jnt",
             part="lower_teeth",
             function="bind"
         )
 
         self.upper_teeth_ctrl_name = self.create_name(
-            node_type="ctrl",
+            type="ctrl",
             part="upper_teeth",
             function="bind"
         )
         self.lower_teeth_ctrl_name = self.create_name(
-            node_type="ctrl",
+            type="ctrl",
             part="lower_teeth",
             function="bind"
         )
 
         self.upper_teeth_matrix_name = self.create_name(
-            node_type="mult",
+            type="mult",
             part="upper_teeth",
             function="parent"
         )
         self.lower_teeth_matrix_name = self.create_name(
-            node_type="mult",
+            type="mult",
             part="lower_teeth",
             function="parent"
         )
 
         self.upper_teeth_skin_name = self.create_name(
-            node_type="skin",
+            type="skin",
             part="upper_teeth",
             function="bind"
         )
         self.lower_teeth_skin_name = self.create_name(
-            node_type="skin",
+            type="skin",
             part="lower_teeth",
             function="bind"
         )
         return True
 
-    def _get_ctrl_hierarchy_names(self, ctrl_name):
+    @staticmethod
+    def _get_ctrl_hierarchy_names(ctrl_name):
         u"""返回 ctrl_base.create_ctrl() 会创建的确定性层级名称。"""
-        prefix_list = [
+        ctrl_rig = RigBase(
+            name=ctrl_name
+        )
+        type_list = [
             "ctrl",
             "zero",
             "driven",
@@ -264,16 +269,10 @@ class TeethModule(FaceBase):
         ]
         node_name_list = []
 
-        for prefix in prefix_list:
-            if prefix == "ctrl":
-                node_name = ctrl_name
-            else:
-                node_name = ctrl_name.replace(
-                    "ctrl_",
-                    prefix + "_",
-                    1
-                )
-
+        for type_name in type_list:
+            node_name = ctrl_rig.create_name(
+                type=type_name
+            )
             node_name_list.append(
                 node_name
             )
@@ -311,7 +310,7 @@ class TeethModule(FaceBase):
         return True
 
     def _validate_build_nodes_available(self):
-        u"""构建前检查全部确定性节点名称是否可用。"""
+        u"""构建前检查上一次 Build 的确定性节点是否已经存在。"""
         expected_nodes = [
             self.upper_teeth_jnt_name,
             self.lower_teeth_jnt_name,
