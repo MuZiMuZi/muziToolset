@@ -27,7 +27,13 @@ TOOL_MODE = "action"
 
 
 def main():
-    u"""按当前 Maya 选择执行一次快速吸附。"""
+    u"""
+    按当前 Maya 选择执行一次快速吸附。
+
+    Returns:
+        bool:
+            吸附成功返回 True；选择不足或吸附失败返回 False。
+    """
     selected_items = scene_utils.get_selected_nodes(
         long=True,
         flatten=True
