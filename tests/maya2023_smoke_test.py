@@ -5,12 +5,11 @@ Maya 2023 Runtime Smoke Test
 
 在真正 Autodesk Maya 2023 / mayapy 进程中运行的总 Smoke Runner。
 
-推荐运行：
-
-    import muziToolset.tests.maya2023_smoke_test as smoke
-    result = smoke.run()
-
-测试使用临时 Namespace，不保存 Scene。建议在空场景或 mayapy 中运行。
+验证：
+    - Core 正式 API；
+    - CtrlBase 标准控制器；
+    - Face Setup / Guide Module 生命周期；
+    - Face Build Algorithm Smoke Test。
 """
 
 from __future__ import print_function
@@ -24,26 +23,38 @@ from ..core import hierarchy_utils
 from ..core import rename_utils
 from ..core import scene_utils
 from ..core import transform_utils
-from ..systems import controller as controller_system
+from ..systems import ctrl_base
 from ..systems import face as face_system
-from . import face_component_smoke_test
+from . import face_build_smoke_test
 
 
 def create_namespace():
+    u"""创建独立 Maya 2023 Smoke Namespace。"""
     token = uuid.uuid4().hex[:8]
-    namespace = "muziMaya2023Smoke_{}".format(token)
-    cmds.namespace(add=namespace)
-    cmds.namespace(set=namespace)
+    namespace = "muziMaya2023Smoke_{}".format(
+        token
+    )
+    cmds.namespace(
+        add=namespace
+    )
+    cmds.namespace(
+        set=namespace
+    )
     return namespace
 
 
 def remove_namespace(namespace):
+    u"""删除 Smoke Namespace。"""
     try:
-        cmds.namespace(set=":")
+        cmds.namespace(
+            set=":"
+        )
     except Exception:
         pass
 
-    if not cmds.namespace(exists=namespace):
+    if not cmds.namespace(
+            exists=namespace
+    ):
         return
 
     try:
@@ -61,7 +72,12 @@ def remove_namespace(namespace):
 
 
 def require_maya_2023():
-    version = str(cmds.about(version=True))
+    u"""确认当前运行环境为 Maya 2023。"""
+    version = str(
+        cmds.about(
+            version=True
+        )
+    )
 
     if not version.startswith("2023"):
         raise RuntimeError(
@@ -74,6 +90,7 @@ def require_maya_2023():
 
 
 def test_core_contract(root_group):
+    u"""验证 Scene / Hierarchy / Transform / Rename Core。"""
     parent_node = cmds.createNode(
         "transform",
         name="grp_md_core_parent_smoke_001",
@@ -89,18 +106,24 @@ def test_core_contract(root_group):
         label=u"Smoke Parent"
     )
 
-    hierarchy_utils.Hierarchy.parent(
+    child_node = hierarchy_utils.parent(
         child_node,
         parent_node
     )
 
-    queried_parent = hierarchy_utils.Hierarchy.get_parent(
+    queried_parent = hierarchy_utils.get_parent(
         child_node,
         full_path=True
     )
 
-    if rename_utils.get_short_name(queried_parent) != rename_utils.get_short_name(parent_node):
-        raise RuntimeError(u"Hierarchy Core Parent 查询结果错误。")
+    if rename_utils.get_short_name(
+            queried_parent
+    ) != rename_utils.get_short_name(
+            parent_node
+    ):
+        raise RuntimeError(
+            u"Hierarchy Core Parent 查询结果错误。"
+        )
 
     transform_utils.set_world_translation(
         child_node,
@@ -111,56 +134,84 @@ def test_core_contract(root_group):
     )
 
     if len(position) != 3:
-        raise RuntimeError(u"Transform Core World Translation 返回格式错误。")
+        raise RuntimeError(
+            u"Transform Core World Translation 返回格式错误。"
+        )
 
     return u"Scene / Hierarchy / Transform / Rename Core 正常"
 
 
 def test_controller_contract(root_group):
+    u"""验证 CtrlBase 标准控制器层级。"""
     target = cmds.createNode(
         "transform",
         name="jnt_lf_controller_target_smoke_001",
         parent=root_group
     )
 
-    result = controller_system.create_controller(
+    result = ctrl_base.create_ctrl(
         name="ctrl_lf_controller_smoke_001",
         shape="circle",
         radius=0.5,
         axis="Y+",
-        target=target,
+        target_node=target,
         color=6,
-        create_sub_control=False,
-        create_extra_groups=True,
+        create_sub_ctrl=False,
         add_to_set=True
     )
 
     required_keys = [
-        "control",
-        "output",
-        "top_group",
-        "groups",
+        "ctrl_node",
+        "output_node",
+        "top_grp",
+        "grp_dict",
+        "build_node_list",
     ]
 
     for key in required_keys:
         if key not in result:
             raise RuntimeError(
-                u"Controller Result 缺少 Key：{}".format(key)
+                u"CtrlBase Result 缺少 Key：{}".format(
+                    key
+                )
             )
 
-    scene_utils.validate_node(result["control"])
-    scene_utils.validate_node(result["output"])
-    scene_utils.validate_node(result["top_group"])
+    scene_utils.validate_node(
+        result["ctrl_node"]
+    )
+    scene_utils.validate_node(
+        result["output_node"]
+    )
+    scene_utils.validate_node(
+        result["top_grp"]
+    )
 
-    return u"Controller System 标准层级创建正常"
+    expected_groups = [
+        "zero",
+        "driven",
+        "space",
+        "connect",
+        "offset",
+    ]
+
+    for group_name in expected_groups:
+        if group_name not in result["grp_dict"]:
+            raise RuntimeError(
+                u"CtrlBase 标准层级缺少：{}".format(
+                    group_name
+                )
+            )
+
+    return u"CtrlBase 标准层级创建正常"
 
 
 def test_face_step_contract(root_group):
+    u"""验证 Face Step 01 / 02 的 Module 生命周期入口。"""
     head_model = cmds.polySphere(
         name="model_md_head_smoke_001",
         radius=2.0
     )[0]
-    head_model = hierarchy_utils.Hierarchy.parent(
+    head_model = hierarchy_utils.parent(
         head_model,
         root_group
     )
@@ -171,29 +222,55 @@ def test_face_step_contract(root_group):
     )
     face_setup.run_step()
 
-    if not face_setup.is_step_completed(step_value=1):
-        raise RuntimeError(u"FaceSetup.run_step() 没有完成 Step 01。")
+    if not face_setup.is_step_completed(
+            step_value=1
+    ):
+        raise RuntimeError(
+            u"FaceSetup.run_step() 没有完成 Step 01。"
+        )
+
+    if not callable(
+            getattr(face_setup, "create_name", None)
+    ):
+        raise RuntimeError(
+            u"FaceSetup 没有继承 RigBase Naming API。"
+        )
 
     face_guide = face_system.FaceGuide()
 
-    if not callable(getattr(face_guide, "run_step", None)):
-        raise RuntimeError(u"FaceGuide 缺少统一 run_step()。")
+    if not callable(
+            getattr(face_guide, "run_step", None)
+    ):
+        raise RuntimeError(
+            u"FaceGuide 缺少统一 run_step()。"
+        )
 
-    if not callable(getattr(face_guide, "build_guide", None)):
-        raise RuntimeError(u"FaceGuide 缺少 Guide 编辑入口 build_guide()。")
+    if not callable(
+            getattr(face_guide, "build_guide", None)
+    ):
+        raise RuntimeError(
+            u"FaceGuide 缺少 Guide 编辑入口 build_guide()。"
+        )
 
     if hasattr(face_setup, "build"):
-        raise RuntimeError(u"FaceSetup 仍残留 build() Compatibility Wrapper。")
+        raise RuntimeError(
+            u"FaceSetup 仍残留 build() Compatibility Wrapper。"
+        )
 
     if hasattr(face_guide, "build") or hasattr(face_guide, "finalize"):
-        raise RuntimeError(u"FaceGuide 仍残留 build/finalize Compatibility Wrapper。")
+        raise RuntimeError(
+            u"FaceGuide 仍残留 build/finalize Compatibility Wrapper。"
+        )
 
-    return u"Face Step 01 run_step 与 Step 02 API Contract 正常"
+    return u"Face Module Lifecycle 与 RigBase Naming API 正常"
 
 
 def run_case(results, name, test_function, root_group):
+    u"""执行一个 Maya Smoke Case。"""
     try:
-        message = test_function(root_group)
+        message = test_function(
+            root_group
+        )
         results.append({
             "name": name,
             "passed": True,
@@ -210,6 +287,7 @@ def run_case(results, name, test_function, root_group):
 
 
 def run():
+    u"""运行 Maya 2023 Runtime Smoke Test。"""
     maya_version = require_maya_2023()
     namespace = create_namespace()
     results = []
@@ -234,7 +312,7 @@ def run():
         )
         run_case(
             results,
-            "Controller Contract",
+            "CtrlBase Contract",
             test_controller_contract,
             root_group
         )
@@ -245,9 +323,11 @@ def run():
             root_group
         )
     finally:
-        remove_namespace(namespace)
+        remove_namespace(
+            namespace
+        )
 
-    component_result = face_component_smoke_test.run()
+    face_build_result = face_build_smoke_test.run()
 
     passed_count = 0
     failed_count = 0
@@ -269,10 +349,12 @@ def run():
                     result["message"]
                 )
             )
-            print(result["traceback"])
+            print(
+                result["traceback"]
+            )
 
-    failed_count += component_result["failed"]
-    passed_count += component_result["passed"]
+    failed_count += face_build_result["failed"]
+    passed_count += face_build_result["passed"]
 
     print("-" * 78)
     print(
@@ -286,7 +368,7 @@ def run():
     return {
         "maya_version": maya_version,
         "results": results,
-        "face_components": component_result,
+        "face_build": face_build_result,
         "passed": passed_count,
         "failed": failed_count,
     }
