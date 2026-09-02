@@ -3,38 +3,33 @@ u"""
 Joint Utils
 ===========
 
-Maya 单个 Joint 节点的专属底层能力模块。
+Maya Joint 领域的专属底层能力模块。
 
 设计原则
 --------
-Joint 类只负责“Joint 节点自己特有的能力”：
+Joint 类只负责“单个 Joint 节点自己特有的能力”：
 
     - 创建 Joint；
     - Joint Orient；
     - Radius / Local Rotation Axis；
     - Segment Scale Compensate；
-    - 单 Joint Orient；
     - Maya Joint Label。
 
-通用能力不在本类重复包装：
+模块级 API 只保留 Maya 全局 Joint Display Setting：
+
+    - get_display_scale()
+    - set_display_scale()
+
+通用能力不在本模块重复包装：
 
     - 名称 / Rename        -> rename_utils
     - World Transform      -> transform_utils
     - DAG Parent / Child   -> hierarchy_utils
+    - 全场景 Node 查询     -> scene_utils
 
 Joint 实例在 __init__() 时只验证一次节点存在性和节点类型。
 初始化成功后，普通方法默认 self.joint 仍然是有效 Joint，
 不为每一次操作重复执行存在性和类型检查。
-
-本模块明确不负责：
-
-    - Selection / 全场景批处理；
-    - Vertex / Edge / CV 创建 Joint；
-    - Curve -> Joint；
-    - Joint Chain；
-    - Duplicate Chain / Orient Chain；
-    - FK / IK；
-    - Face / Body 等具体 Rig Component。
 """
 
 from __future__ import print_function
@@ -44,6 +39,41 @@ import maya.cmds as cmds
 from . import hierarchy_utils
 from . import rename_utils
 from . import transform_utils
+
+
+# =============================================================================
+# Global Joint Display
+# =============================================================================
+
+def get_display_scale():
+    u"""返回 Maya 当前全局 Joint Display Scale。"""
+    return float(
+        cmds.jointDisplayScale(
+            query=True
+        )
+    )
+
+
+def set_display_scale(scale):
+    u"""设置 Maya 全局 Joint Display Scale，并返回最终数值。"""
+    try:
+        scale = float(
+            scale
+        )
+    except (TypeError, ValueError):
+        raise ValueError(
+            u"Joint Display Scale 必须是数值。"
+        )
+
+    if scale <= 0.0:
+        raise ValueError(
+            u"Joint Display Scale 必须大于 0。"
+        )
+
+    cmds.jointDisplayScale(
+        scale
+    )
+    return scale
 
 
 class Joint(object):
@@ -477,5 +507,7 @@ class Joint(object):
 
 
 __all__ = [
+    "get_display_scale",
+    "set_display_scale",
     "Joint",
 ]
