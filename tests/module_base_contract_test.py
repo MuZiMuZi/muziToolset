@@ -3,7 +3,7 @@ u"""
 ModuleBase Contract Test
 ========================
 
-验证 ModuleBase / RigModuleBase 的统一生命周期顺序。
+验证 ModuleBase / RigModuleBase 的统一生命周期与 Rig Identity 继承。
 本测试不依赖 Maya。
 
 支持：
@@ -45,6 +45,11 @@ class TestModule(ModuleBase):
     u"""记录 ModuleBase 生命周期调用顺序。"""
 
     def __init__(self):
+        super(TestModule, self).__init__(
+            side="lf",
+            part="test_module",
+            index=2
+        )
         self.calls = []
 
     def collect_inputs(self):
@@ -76,6 +81,11 @@ class TestRigModule(RigModuleBase):
     u"""记录 RigModuleBase 的 Rig Build 调用顺序。"""
 
     def __init__(self):
+        super(TestRigModule, self).__init__(
+            side="rt",
+            part="test_rig",
+            index=4
+        )
         self.calls = []
 
     def collect_inputs(self):
@@ -116,8 +126,34 @@ class TestRigModule(RigModuleBase):
 
 
 def run():
-    u"""运行 Module 生命周期契约检查。"""
+    u"""运行 Module 生命周期和 Rig Identity 契约检查。"""
     module = TestModule()
+
+    if module.identity != {
+            "side": "lf",
+            "part": "test_module",
+            "index": 2,
+    }:
+        print(
+            "[FAIL] ModuleBase Identity: {}".format(
+                module.identity
+            )
+        )
+        return False
+
+    module_name = module.create_name(
+        node_type="grp",
+        function="main"
+    )
+
+    if module_name != "grp_lf_test_module_main_002":
+        print(
+            "[FAIL] ModuleBase Identity Naming: {}".format(
+                module_name
+            )
+        )
+        return False
+
     module.run_step()
 
     expected_module_calls = [
@@ -136,6 +172,19 @@ def run():
         return False
 
     rig_module = TestRigModule()
+
+    if rig_module.identity != {
+            "side": "rt",
+            "part": "test_rig",
+            "index": 4,
+    }:
+        print(
+            "[FAIL] RigModuleBase Identity: {}".format(
+                rig_module.identity
+            )
+        )
+        return False
+
     rig_module.run_step()
 
     expected_rig_calls = [
@@ -155,13 +204,7 @@ def run():
         )
         return False
 
-    if not callable(
-            getattr(rig_module, "create_name", None)
-    ):
-        print("[FAIL] RigModuleBase 没有继承 RigBase Naming API。")
-        return False
-
-    print("[PASS] ModuleBase / RigModuleBase Lifecycle Contract 正常。")
+    print("[PASS] ModuleBase / RigModuleBase Identity + Lifecycle Contract 正常。")
     return True
 
 
