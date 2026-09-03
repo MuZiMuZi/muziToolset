@@ -1,8 +1,13 @@
 ==============================================================================
 Runtime Docstring Standard
 ==============================================================================
-Runtime files:  97
+Runtime files:  98
 Changed files:  0
-Errors:         0
-Status:         PASS
+Errors:         5
+Validation errors:
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_module_base.py:201 deform 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_module_base.py:163 finalize_step 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_module_base.py:139 process_data 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_module_base.py:135 prepare_data 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_module_base.py:131 collect_inputs 缺少 Returns 说明
 ==============================================================================
