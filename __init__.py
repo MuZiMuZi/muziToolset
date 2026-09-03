@@ -127,6 +127,23 @@ def face_build_step_maya2023_smoke_test():
     return face_build_step_maya2023_smoke_test.run()
 
 
+def face_controller_appearance_maya2023_smoke_test():
+    u"""
+    运行 Step 03 Controller Appearance 的 Maya 2023 Runtime Smoke Test。
+
+    测试会先完成完整 FaceBuild，然后实时修改 Global / Module Size 与 Side Color，
+    验证 Controller World Matrix、Transform Scale、Output 和 Joint 都保持不变，
+    只有 Controller Shape CV 尺寸、颜色以及 Config Settings 发生预期变化。
+
+    Returns:
+        dict:
+        Maya 版本、Controller Appearance 通过状态、不可变契约与外观更新摘要。
+    """
+    from .tests import face_controller_appearance_maya2023_smoke_test
+
+    return face_controller_appearance_maya2023_smoke_test.run()
+
+
 def face_finalize_step_maya2023_smoke_test():
     u"""
     运行完整 Face Workflow Step 04 的 Maya 2023 Runtime Smoke Test。
@@ -295,6 +312,7 @@ __all__ = [
     "maya2023_smoke_test",
     "face_modules_maya2023_smoke_test",
     "face_build_step_maya2023_smoke_test",
+    "face_controller_appearance_maya2023_smoke_test",
     "face_finalize_step_maya2023_smoke_test",
     "pipeline_smoke_test",
     "extended_core_smoke_test",
