@@ -113,6 +113,116 @@ MODULE_CASES = [
 ]
 
 
+DEFAULT_SHADING_GROUP = ":initialShadingGroup"
+
+
+def prepare_default_shading_group():
+    u"""
+    临时解除默认 Shading Group 的写入锁，避免 Smoke 创建几何体时受用户场景状态影响。
+
+    Returns:
+        dict:
+            默认 Shading Group 原始 Node Lock 与 dagSetMembers Lock 状态。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：记录当前默认 Shading Group 的原始状态
+    # -------------------------------------------------------------------------
+    state = {
+        "exists": False,
+        "node_locked": False,
+        "dag_set_members_locked": False,
+    }
+
+    if not cmds.objExists(DEFAULT_SHADING_GROUP):
+        return state
+
+    state["exists"] = True
+
+    node_lock_state = cmds.lockNode(
+        DEFAULT_SHADING_GROUP,
+        query=True,
+        lock=True
+    )
+
+    if node_lock_state:
+        state["node_locked"] = bool(
+            node_lock_state[0]
+        )
+
+    dag_members_plug = DEFAULT_SHADING_GROUP + ".dagSetMembers"
+
+    try:
+        state["dag_set_members_locked"] = bool(
+            cmds.getAttr(
+                dag_members_plug,
+                lock=True
+            )
+        )
+    except Exception:
+        state["dag_set_members_locked"] = False
+
+    # -------------------------------------------------------------------------
+    # Step 02：只在测试期间解除阻止 Geometry / Surface 加入材质集的锁
+    # -------------------------------------------------------------------------
+    if state["node_locked"]:
+        cmds.lockNode(
+            DEFAULT_SHADING_GROUP,
+            lock=False
+        )
+
+    if state["dag_set_members_locked"]:
+        cmds.setAttr(
+            dag_members_plug,
+            lock=False
+        )
+
+    return state
+
+
+def restore_default_shading_group(state):
+    u"""
+    恢复 Runtime Smoke 运行前的默认 Shading Group 锁定状态。
+
+    Args:
+        state (dict):
+            prepare_default_shading_group() 保存的原始状态。
+
+    Returns:
+        bool:
+            成功恢复或无需恢复时返回 True。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：确认测试前确实存在默认 Shading Group
+    # -------------------------------------------------------------------------
+    if not state:
+        return True
+
+    if not state.get("exists"):
+        return True
+
+    if not cmds.objExists(DEFAULT_SHADING_GROUP):
+        return True
+
+    dag_members_plug = DEFAULT_SHADING_GROUP + ".dagSetMembers"
+
+    # -------------------------------------------------------------------------
+    # Step 02：先恢复 Attribute Lock，再恢复 Node Lock
+    # -------------------------------------------------------------------------
+    if state.get("dag_set_members_locked"):
+        cmds.setAttr(
+            dag_members_plug,
+            lock=True
+        )
+
+    if state.get("node_locked"):
+        cmds.lockNode(
+            DEFAULT_SHADING_GROUP,
+            lock=True
+        )
+
+    return True
+
+
 def create_fixture_models():
     u"""
     创建 Face Setup Runtime Smoke 使用的简单测试模型。
@@ -458,6 +568,7 @@ def run():
     # -------------------------------------------------------------------------
     maya_version = require_maya_2023()
     namespace = create_namespace()
+    shading_group_state = prepare_default_shading_group()
     fixture_dict = None
     module_results = []
     module_state_dict = {}
@@ -518,6 +629,9 @@ def run():
         # ---------------------------------------------------------------------
         remove_namespace(
             namespace
+        )
+        restore_default_shading_group(
+            shading_group_state
         )
 
     # -------------------------------------------------------------------------

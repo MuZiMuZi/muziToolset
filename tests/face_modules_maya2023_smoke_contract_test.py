@@ -31,6 +31,8 @@ SMOKE_PATH = os.path.join(
 )
 
 REQUIRED_FUNCTIONS = {
+    "prepare_default_shading_group",
+    "restore_default_shading_group",
     "create_fixture_models",
     "create_face_fixture",
     "create_dependency_skip_result",
@@ -217,6 +219,9 @@ def main():
         "face_guide.run_step()",
         "face_module.create_build()",
         "mouth_jnt_number=32",
+        "DEFAULT_SHADING_GROUP = \":initialShadingGroup\"",
+        "prepare_default_shading_group()",
+        "restore_default_shading_group(",
     ]
 
     for required_text in required_text_list:
