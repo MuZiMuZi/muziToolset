@@ -39,7 +39,7 @@ from ..systems.face import controller_appearance
 from ..systems.face.guide.face_guide import FaceGuide
 from .face_build_step_maya2023_smoke_test import _resolve_unique_node
 from .face_build_step_maya2023_smoke_test import validate_guide_ctrl_alignment
-from .face_modules_maya2023_smoke_test import create_face_fixture
+from .face_modules_maya2023_smoke_test import create_fixture_models
 from .face_modules_maya2023_smoke_test import prepare_default_shading_group
 from .face_modules_maya2023_smoke_test import restore_default_shading_group
 from .maya2023_smoke_test import create_namespace
@@ -82,6 +82,150 @@ MODULE_SCALE_MULTIPLIERS = {
 GLOBAL_SCALE_MULTIPLIER = 1.20
 MATRIX_TOLERANCE = 0.000001
 RADIUS_TOLERANCE = 0.0001
+
+
+def _set_smoke_namespace(namespace):
+    u"""把 Maya 当前 Namespace 恢复为本次 Smoke 隔离空间。"""
+    if not cmds.namespace(
+            exists=namespace
+    ):
+        raise RuntimeError(
+            u"Smoke Namespace 不存在：{}".format(
+                namespace
+            )
+        )
+
+    cmds.namespace(
+        set=namespace
+    )
+    return cmds.namespaceInfo(
+        currentNamespace=True,
+        absoluteName=True
+    )
+
+
+def _bind_face_config(face_object, config_node):
+    u"""把新的 Face Workflow 对象绑定到 Step 01 实际创建的 Config 节点。"""
+    if not config_node:
+        raise RuntimeError(
+            u"Face Config 节点不能为空。"
+        )
+
+    if not cmds.objExists(
+            config_node
+    ):
+        raise RuntimeError(
+            u"Face Config 节点不存在：{}".format(
+                config_node
+            )
+        )
+
+    face_object.config_node = config_node
+    face_object.config_data.node = config_node
+    return config_node
+
+
+def _create_namespace_safe_face_fixture(namespace):
+    u"""
+    创建独立 Namespace 下的完整 Step 01 + Step 02 Face Fixture。
+
+    Face Setup / Guide 的正式业务代码仍保持不变。这里唯一额外做的事情是：
+    每个 Workflow 对象都继续使用 Step 01 实际创建出来的 Config 节点，避免
+    Maya 在某些命令执行后把 Current Namespace 切回 Root 时丢失 face_config。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：创建测试模型并完成正式 Face Setup
+    # -------------------------------------------------------------------------
+    _set_smoke_namespace(
+        namespace
+    )
+    model_dict = create_fixture_models()
+
+    face_setup = face_system.FaceSetup(
+        face_head_model=model_dict["head_model"],
+        face_lf_eye_model=model_dict["lf_eye_model"],
+        face_rt_eye_model=model_dict["rt_eye_model"],
+        upper_teech_model=model_dict["upper_teeth_model"],
+        lower_teech_model=model_dict["lower_teeth_model"],
+        face_tongue_model=model_dict["tongue_model"],
+        face_gum_model=None,
+        mouth_jnt_number=32
+    )
+    face_setup.run_step()
+
+    if not face_setup.is_step_completed(
+            step_value=1
+    ):
+        raise RuntimeError(
+            u"Controller Appearance Fixture 的 Step 01 没有完成。"
+        )
+
+    actual_config_node = face_setup.config_node
+
+    if not actual_config_node:
+        raise RuntimeError(
+            u"Face Setup 完成后没有返回实际 Config Node。"
+        )
+
+    if not cmds.objExists(
+            actual_config_node
+    ):
+        raise RuntimeError(
+            u"Face Setup 创建的 Config Node 不存在：{}".format(
+                actual_config_node
+            )
+        )
+
+    # -------------------------------------------------------------------------
+    # Step 02：恢复 Smoke Namespace，并让 FaceGuide 继承同一个 Config 引用
+    # -------------------------------------------------------------------------
+    _set_smoke_namespace(
+        namespace
+    )
+    face_guide = face_system.FaceGuide()
+    _bind_face_config(
+        face_guide,
+        actual_config_node
+    )
+    guide_build_dict = face_guide.build_guide()
+
+    # Guide Template Import 之后再次恢复 Current Namespace，避免后续短名解析漂移。
+    _set_smoke_namespace(
+        namespace
+    )
+    _bind_face_config(
+        face_guide,
+        actual_config_node
+    )
+    face_guide.run_step()
+
+    if not face_guide.is_step_completed(
+            step_value=2
+    ):
+        raise RuntimeError(
+            u"Controller Appearance Fixture 的 Step 02 没有完成。"
+        )
+
+    guide_locators = face_guide.get_guide_locators()
+
+    if not guide_locators:
+        raise RuntimeError(
+            u"Controller Appearance Fixture 没有读取到任何 Guide Locator。"
+        )
+
+    # 返回前把当前 Namespace 固定回本次 Smoke，供后续 FaceBuild / Module 使用。
+    _set_smoke_namespace(
+        namespace
+    )
+
+    return {
+        "model_dict": model_dict,
+        "face_setup": face_setup,
+        "face_guide": face_guide,
+        "config_node": actual_config_node,
+        "guide_build_dict": guide_build_dict,
+        "guide_locators": guide_locators,
+    }
 
 
 def _get_canonical_short_name(node):
@@ -640,11 +784,31 @@ def run():
 
     try:
         # ---------------------------------------------------------------------
-        # Step 01：创建完整 Face Fixture 并完成正式 Step 03 Build
+        # Step 01：创建完整 Face Fixture，并继承 Step 01 实际 Config Node
         # ---------------------------------------------------------------------
-        create_face_fixture()
+        fixture_dict = _create_namespace_safe_face_fixture(
+            namespace
+        )
+        actual_config_node = fixture_dict["config_node"]
+
+        _set_smoke_namespace(
+            namespace
+        )
         face_build = face_system.FaceBuild()
+        _bind_face_config(
+            face_build,
+            actual_config_node
+        )
+        _bind_face_config(
+            face_build.face_guide,
+            actual_config_node
+        )
         face_build.run_step()
+
+        # FaceBuild 中的 Module 都依赖短名解析，构建完成后再次固定回测试 Namespace。
+        _set_smoke_namespace(
+            namespace
+        )
 
         ctrl_nodes = controller_appearance._get_face_ctrl_nodes()
 
@@ -654,6 +818,9 @@ def run():
             )
 
         print(
+            u"[PASS] Face Fixture | Step01 + Step02 Config / Namespace 准备成功"
+        )
+        print(
             u"[PASS] FaceBuild | Step 03 Controller 已创建"
         )
 
@@ -661,6 +828,10 @@ def run():
         # Step 02：记录 Appearance 更新前的不可变状态和 Shape 状态
         # ---------------------------------------------------------------------
         face_guide = FaceGuide()
+        _bind_face_config(
+            face_guide,
+            actual_config_node
+        )
         previous_settings = face_guide.load_controller_settings()
         new_settings = _create_new_settings(
             previous_settings
@@ -738,7 +909,7 @@ def run():
             "-" * 78
         )
         print(
-            u"Passed: 6 | Failed: 0"
+            u"Passed: 7 | Failed: 0"
         )
         print(
             "=" * 78
@@ -749,6 +920,7 @@ def run():
             "passed": True,
             "failed": 0,
             "summary": {
+                "config_node": actual_config_node,
                 "controller_count": len(ctrl_nodes),
                 "joint_count": len(joint_matrices),
                 "scaled_ctrl_count": apply_result["scaled_ctrl_count"],
