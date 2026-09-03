@@ -54,6 +54,9 @@ jobs:
       - name: Test ModuleBase contract
         run: python tests/module_base_contract_test.py
 
+      - name: Test Face module lifecycle contract
+        run: python tests/face_module_lifecycle_contract_test.py
+
       - name: Test System Core reuse gate
         run: python tests/system_core_reuse_gate_test.py
 
