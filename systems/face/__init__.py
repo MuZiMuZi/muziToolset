@@ -6,11 +6,12 @@ Muzi Face Rig System
 Face Rig 的正式系统包。
 
 公共结构：
-    - FaceSetup / FaceGuide / FaceBuild：Setup / Guide / Build 工作流 Step；
+    - FaceSetup / FaceGuide / FaceBuild / FaceFinalizer：四步 Face Workflow；
     - FaceModuleBase：所有正式 Face Rig Module 的统一生命周期；
     - FaceRig：按依赖顺序组装完整 Face Rig；
     - Brow / Cheek / Ear / Eye / Eyelid / Jaw / Lip / Mouth / Nose / Teeth / Tongue：独立绑定模块；
-    - build 包：Step 03 Workflow 与 Curve Attachment / Eyelid / Zip Lip 等可复用底层算法。
+    - build 包：Step 03 Workflow 与 Curve Attachment / Eyelid / Zip Lip 等可复用底层算法；
+    - finalize 包：Step 04 最终验收、Controller Set 和显示管理。
 """
 
 from __future__ import print_function
@@ -20,7 +21,11 @@ from .build import build_eye_bag_joints
 from .build import build_eyelid_joints
 from .build import build_radial_curve_joints
 from .build import build_zip_lip
+from .build.face_build import FaceBuild
+from .build.face_build import build_face_step
 from .face_base import FaceBase
+from .finalize import FaceFinalizer
+from .finalize import finalize_face
 from .guide import FaceGuide
 from .modules import BrowModule
 from .modules import CheekModule
@@ -47,8 +52,6 @@ from .modules import build_mouth
 from .modules import build_nose
 from .modules import build_teeth
 from .modules import build_tongue
-from .build.face_build import FaceBuild
-from .build.face_build import build_face_step
 from .setup import FaceSetup
 
 
@@ -71,6 +74,7 @@ __all__ = [
     "FaceGuide",
     "FaceSetup",
     "FaceBuild",
+    "FaceFinalizer",
     "FaceRig",
     "BrowModule",
     "CheekModule",
@@ -89,6 +93,7 @@ __all__ = [
     "build_eye_bag_joints",
     "build_zip_lip",
     "build_face_step",
+    "finalize_face",
     "build_face",
     "build_brow",
     "build_cheek",
