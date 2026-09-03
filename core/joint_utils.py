@@ -24,6 +24,7 @@ Joint 类只负责“单个 Joint 节点自己特有的能力”：
 
     - 名称 / Rename        -> rename_utils
     - World Transform      -> transform_utils
+    - Object / Locator Snap -> snap_utils
     - DAG Parent / Child   -> hierarchy_utils
     - 全场景 Node 查询     -> scene_utils
 
@@ -38,6 +39,7 @@ import maya.cmds as cmds
 
 from . import hierarchy_utils
 from . import rename_utils
+from . import snap_utils
 from . import transform_utils
 
 
@@ -307,7 +309,7 @@ class Joint(object):
         # -------------------------------------------------------------------------
         # Step 02：查询并整理当前阶段需要的 Maya 场景数据
         # -------------------------------------------------------------------------
-        position = transform_utils.get_world_translation(
+        position = snap_utils.get_item_world_position(
             obj
         )
         # -------------------------------------------------------------------------

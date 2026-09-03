@@ -19,6 +19,7 @@ Mouth Module
 from __future__ import print_function
 
 from ....core import scene_utils
+from ....core import snap_utils
 from ....core import transform_utils
 from ... import ctrl_base
 from .. import config
@@ -284,10 +285,10 @@ class MouthModule(FaceModuleBase):
         # -------------------------------------------------------------------------
         # Step 03：查询并整理当前阶段需要的 Maya 场景数据
         # -------------------------------------------------------------------------
-        upper_position = transform_utils.get_world_translation(
+        upper_position = snap_utils.get_item_world_position(
             upper_center_guide
         )
-        lower_position = transform_utils.get_world_translation(
+        lower_position = snap_utils.get_item_world_position(
             lower_center_guide
         )
         mouth_position = []

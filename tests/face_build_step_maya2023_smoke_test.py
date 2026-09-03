@@ -23,6 +23,9 @@ from __future__ import print_function
 
 import traceback
 
+import maya.cmds as cmds
+
+from ..core import snap_utils
 from ..systems import face as face_system
 from .face_modules_maya2023_smoke_test import create_face_fixture
 from .face_modules_maya2023_smoke_test import prepare_default_shading_group
@@ -45,6 +48,96 @@ EXPECTED_MODULE_PARTS = [
     "lip",
     "mouth",
 ]
+
+
+GUIDE_CTRL_ALIGNMENT_PAIRS = [
+    ("loc_lf_eye_ball_guide_001", "ctrl_lf_eye_main_001"),
+    ("loc_rt_eye_ball_guide_001", "ctrl_rt_eye_main_001"),
+    ("loc_md_muzzle_guide_001", "ctrl_md_muzzle_bind_001"),
+    ("loc_md_nose_guide_001", "ctrl_md_nose_bind_001"),
+    ("loc_md_nose_center_guide_001", "ctrl_md_nose_center_bind_001"),
+    ("loc_md_nose_front_guide_001", "ctrl_md_nose_front_bind_001"),
+    ("loc_lf_ear_guide_001", "ctrl_lf_ear_fk_001"),
+    ("loc_lf_ear_guide_002", "ctrl_lf_ear_fk_002"),
+    ("loc_lf_ear_guide_003", "ctrl_lf_ear_fk_003"),
+    ("loc_rt_ear_guide_001", "ctrl_rt_ear_fk_001"),
+    ("loc_rt_ear_guide_002", "ctrl_rt_ear_fk_002"),
+    ("loc_rt_ear_guide_003", "ctrl_rt_ear_fk_003"),
+    ("loc_md_jaw_start_guide_001", "ctrl_md_jaw_bind_001"),
+    ("loc_lf_cheekbone_guide_002", "ctrl_lf_cheekbone_bind_002"),
+    ("loc_rt_cheekbone_guide_002", "ctrl_rt_cheekbone_bind_002"),
+]
+
+
+def _resolve_unique_node(short_name):
+    u"""在当前 Runtime Namespace 中解析唯一节点。"""
+    matches = cmds.ls(
+        short_name,
+        long=True
+    ) or []
+
+    if not matches:
+        matches = cmds.ls(
+            "*:{}".format(short_name),
+            long=True
+        ) or []
+
+    if len(matches) != 1:
+        raise RuntimeError(
+            u"节点无法唯一解析：{} | matches={}".format(
+                short_name,
+                matches
+            )
+        )
+
+    return matches[0]
+
+
+def validate_guide_ctrl_alignment(tolerance=0.0001):
+    u"""确认 Step 03 控制器落在 Locator Shape 的真实可视世界位置。"""
+    checked_pairs = []
+
+    for guide_name, ctrl_name in GUIDE_CTRL_ALIGNMENT_PAIRS:
+        guide = _resolve_unique_node(
+            guide_name
+        )
+        ctrl = _resolve_unique_node(
+            ctrl_name
+        )
+        guide_position = snap_utils.get_item_world_position(
+            guide
+        )
+        ctrl_position = cmds.xform(
+            ctrl,
+            query=True,
+            worldSpace=True,
+            translation=True
+        )
+
+        axis_index = 0
+
+        while axis_index < 3:
+            delta = abs(
+                ctrl_position[axis_index] - guide_position[axis_index]
+            )
+
+            if delta > tolerance:
+                raise RuntimeError(
+                    u"Ctrl / Guide 对齐失败：{} -> {} | guide={} | ctrl={}".format(
+                        guide_name,
+                        ctrl_name,
+                        guide_position,
+                        ctrl_position
+                    )
+                )
+
+            axis_index += 1
+
+        checked_pairs.append(
+            (guide_name, ctrl_name)
+        )
+
+    return checked_pairs
 
 
 def validate_face_build_result(face_build):
@@ -194,6 +287,10 @@ def run():
         summary = validate_face_build_result(
             face_build
         )
+        alignment_pairs = validate_guide_ctrl_alignment()
+        summary["guide_ctrl_alignment_count"] = len(
+            alignment_pairs
+        )
 
         print(
             u"[PASS] FaceBuild | 11 Module 完整构建成功"
@@ -202,10 +299,15 @@ def run():
             u"[PASS] Workflow | Step03=True → Current Step=04"
         )
         print(
+            u"[PASS] Alignment | {} 个 Guide / Ctrl Pair".format(
+                len(alignment_pairs)
+            )
+        )
+        print(
             "-" * 78
         )
         print(
-            u"Passed: 3 | Failed: 0"
+            u"Passed: 4 | Failed: 0"
         )
         print(
             "=" * 78

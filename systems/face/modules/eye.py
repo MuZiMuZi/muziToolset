@@ -23,6 +23,7 @@ from ....core import constraint_utils
 from ....core import joint_utils
 from ....core import matrix_utils
 from ....core import scene_utils
+from ....core import snap_utils
 from ....core import transform_utils
 from ... import ctrl_base
 from .. import config
@@ -254,10 +255,10 @@ class EyeModule(FaceModuleBase):
                 ctrl_set=config.face_ctrl_set
             )
 
-            eye_position = transform_utils.get_world_translation(
+            eye_position = snap_utils.get_item_world_position(
                 eye_dict["eye_ball_guide"]
             )
-            iris_position = transform_utils.get_world_translation(
+            iris_position = snap_utils.get_item_world_position(
                 eye_dict["eye_iris_guide"]
             )
 
