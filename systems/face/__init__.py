@@ -5,11 +5,12 @@ Muzi Face Rig System
 
 Face Rig 的正式系统包。
 
-公共入口：
-    - FaceSetup / FaceGuide：工作流 Step；
+公共结构：
+    - FaceSetup / FaceGuide：Setup / Guide 工作流 Step；
     - FaceModuleBase：所有正式 Face Rig Module 的统一生命周期；
-    - JawModule / TeethModule：当前已经迁移到新模块架构的绑定模块；
-    - build 包：Curve / Eyelid / Zip Lip 等底层算法。
+    - FaceRig：按依赖顺序组装完整 Face Rig；
+    - Brow / Cheek / Ear / Eye / Eyelid / Jaw / Lip / Mouth / Nose / Teeth / Tongue：独立绑定模块；
+    - build 包：Curve Attachment / Eyelid / Zip Lip 等可复用底层绑定算法。
 """
 
 from __future__ import print_function
@@ -21,11 +22,31 @@ from .build import build_radial_curve_joints
 from .build import build_zip_lip
 from .face_base import FaceBase
 from .guide import FaceGuide
+from .modules import BrowModule
+from .modules import CheekModule
+from .modules import EarModule
+from .modules import EyeModule
+from .modules import EyelidModule
 from .modules import FaceModuleBase
+from .modules import FaceRig
 from .modules import JawModule
+from .modules import LipModule
+from .modules import MouthModule
+from .modules import NoseModule
 from .modules import TeethModule
+from .modules import TongueModule
+from .modules import build_brow
+from .modules import build_cheek
+from .modules import build_ear
+from .modules import build_eye
+from .modules import build_eyelid
+from .modules import build_face
 from .modules import build_jaw
+from .modules import build_lip
+from .modules import build_mouth
+from .modules import build_nose
 from .modules import build_teeth
+from .modules import build_tongue
 from .setup import FaceSetup
 
 
@@ -47,14 +68,34 @@ __all__ = [
     "FaceModuleBase",
     "FaceGuide",
     "FaceSetup",
+    "FaceRig",
+    "BrowModule",
+    "CheekModule",
+    "EarModule",
+    "EyeModule",
+    "EyelidModule",
     "JawModule",
+    "LipModule",
+    "MouthModule",
+    "NoseModule",
     "TeethModule",
+    "TongueModule",
     "attach_joints_to_curves",
     "build_radial_curve_joints",
     "build_eyelid_joints",
     "build_eye_bag_joints",
     "build_zip_lip",
+    "build_face",
+    "build_brow",
+    "build_cheek",
+    "build_ear",
+    "build_eye",
+    "build_eyelid",
     "build_jaw",
+    "build_lip",
+    "build_mouth",
+    "build_nose",
     "build_teeth",
+    "build_tongue",
     "show",
 ]
