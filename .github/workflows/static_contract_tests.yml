@@ -57,6 +57,9 @@ jobs:
       - name: Test Face module lifecycle contract
         run: python tests/face_module_lifecycle_contract_test.py
 
+      - name: Test Face legacy removal gate
+        run: python tests/face_module_legacy_gate_test.py
+
       - name: Test System Core reuse gate
         run: python tests/system_core_reuse_gate_test.py
 
