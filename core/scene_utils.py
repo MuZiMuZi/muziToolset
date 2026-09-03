@@ -51,7 +51,6 @@ import maya.cmds as cmds
 import maya.mel as mel
 
 from . import file_utils
-from . import rename_utils
 
 
 # =============================================================================
@@ -1121,7 +1120,8 @@ def is_default_camera(node):
             当前 API 完成处理后返回的结果。
 
     """
-    return rename_utils.get_short_name(node) in default_cameras
+    short_name = str(node).rsplit("|", 1)[-1]
+    return short_name in default_cameras
 
 
 def is_referenced(node):
