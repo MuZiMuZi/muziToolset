@@ -87,7 +87,11 @@ def is_component(item):
 
 def get_item_world_position(item):
     u"""
-    返回对象或组件的世界空间位置。
+    返回对象、Locator 可视点或组件的世界空间位置。
+
+    Locator Transform 允许 Shape.localPosition 不为零；此时可视十字中心并不等于
+    Transform 原点，所以优先读取 Locator Shape.worldPosition[0]。普通 Transform、
+    Joint 和 Component 仍使用 ``cmds.xform(..., worldSpace=True)``。
 
     Args:
         item (str):
@@ -97,15 +101,61 @@ def get_item_world_position(item):
         list | None:
         有效时返回 [x, y, z]；无法查询位置时返回 None。
     """
-    try:
-        position = cmds.xform(
-            item,
-            query=True,
-            worldSpace=True,
-            translation=True
-        )
-    except Exception:
-        position = None
+    position = None
+
+    # -------------------------------------------------------------------------
+    # Step 01：Locator 的可视定位点来自 Shape.worldPosition
+    # -------------------------------------------------------------------------
+    if not is_component(item):
+        locator_shapes = []
+
+        try:
+            node_type = cmds.nodeType(
+                item
+            )
+        except Exception:
+            node_type = None
+
+        if node_type == "locator":
+            locator_shapes = [
+                item
+            ]
+        elif node_type in [
+                "transform",
+                "joint",
+        ]:
+            locator_shapes = cmds.listRelatives(
+                item,
+                shapes=True,
+                noIntermediate=True,
+                fullPath=True,
+                type="locator"
+            ) or []
+
+        if locator_shapes:
+            try:
+                world_position = cmds.getAttr(
+                    locator_shapes[0] + ".worldPosition[0]"
+                )
+            except Exception:
+                world_position = None
+
+            if world_position:
+                position = world_position[0]
+
+    # -------------------------------------------------------------------------
+    # Step 02：普通 Transform / Joint / Component 继续读取世界平移
+    # -------------------------------------------------------------------------
+    if position is None:
+        try:
+            position = cmds.xform(
+                item,
+                query=True,
+                worldSpace=True,
+                translation=True
+            )
+        except Exception:
+            position = None
 
     if not position:
         return None

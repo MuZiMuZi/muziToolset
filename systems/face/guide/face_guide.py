@@ -35,6 +35,7 @@ from ....core import connection_utils
 from ....core import hierarchy_utils
 from ....core import rename_utils
 from ....core import scene_utils
+from ....core import snap_utils
 from ....core import transform_utils
 from .. import config
 from .. import face_base
@@ -1272,7 +1273,7 @@ class FaceGuide(face_base.FaceBase):
 
         for guide in guides:
             positions.append(
-                transform_utils.get_world_translation(
+                snap_utils.get_item_world_position(
                     guide
                 )
             )
@@ -1369,16 +1370,16 @@ class FaceGuide(face_base.FaceBase):
             required=True
         )
 
-        eye_position = transform_utils.get_world_translation(
+        eye_position = snap_utils.get_item_world_position(
             eye_ball
         )
-        outer_lid_position = transform_utils.get_world_translation(
+        outer_lid_position = snap_utils.get_item_world_position(
             outer_lid
         )
-        nose_position = transform_utils.get_world_translation(
+        nose_position = snap_utils.get_item_world_position(
             nose_side
         )
-        mouth_position = transform_utils.get_world_translation(
+        mouth_position = snap_utils.get_item_world_position(
             mouth_corner
         )
 

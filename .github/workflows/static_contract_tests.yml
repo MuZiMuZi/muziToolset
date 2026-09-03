@@ -45,6 +45,9 @@ jobs:
       - name: Test Core single source gate
         run: python tests/core_single_source_gate_test.py
 
+      - name: Test Locator visual position contract
+        run: python tests/locator_visual_position_contract_test.py
+
       # -----------------------------------------------------------------------
       # Step 03：Rig / Module / Face Workflow 架构契约
       # -----------------------------------------------------------------------

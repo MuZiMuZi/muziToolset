@@ -14,6 +14,8 @@ import uuid
 
 import maya.cmds as cmds
 
+from ..core import joint_utils
+from ..core import snap_utils
 from ..systems import ctrl_base
 
 
@@ -69,6 +71,28 @@ def delete_test_nodes(token):
 def almost_equal(value_a, value_b, tolerance=0.0001):
     u"""浮点比较。"""
     return abs(value_a - value_b) <= tolerance
+
+
+def assert_point_equal(actual, expected, label):
+    u"""确认两个三维点在测试容差内一致。"""
+    axis_index = 0
+
+    while axis_index < 3:
+        if not almost_equal(
+                actual[axis_index],
+                expected[axis_index]
+        ):
+            raise RuntimeError(
+                u"{} 不一致：actual={} | expected={}".format(
+                    label,
+                    actual,
+                    expected
+                )
+            )
+
+        axis_index += 1
+
+    return True
 
 
 # =============================================================================
@@ -178,6 +202,112 @@ def test_follow(token):
     return u"CtrlBase Create + Follow 0/1 成功"
 
 
+def test_locator_visual_position(token):
+    u"""验证非零 localPosition 的 Locator 可正确定位 Ctrl 与 Joint。"""
+    guide_parent = cmds.createNode(
+        "transform",
+        name="grp_md_{}_guide_parent_001".format(token)
+    )
+    cmds.xform(
+        guide_parent,
+        worldSpace=True,
+        translation=[7.0, -2.0, 5.0],
+        rotation=[12.0, 25.0, -8.0]
+    )
+
+    guide = cmds.createNode(
+        "transform",
+        name="loc_md_{}_guide_001".format(token),
+        parent=guide_parent
+    )
+    cmds.setAttr(
+        guide + ".translate",
+        1.5,
+        2.0,
+        -3.0,
+        type="double3"
+    )
+    guide_shape = cmds.createNode(
+        "locator",
+        name="loc_md_{}_guide_001Shape".format(token),
+        parent=guide
+    )
+    cmds.setAttr(
+        guide_shape + ".localPosition",
+        2.0,
+        3.5,
+        -1.0,
+        type="double3"
+    )
+
+    expected_position = cmds.getAttr(
+        guide_shape + ".worldPosition[0]"
+    )[0]
+    snap_position = snap_utils.get_item_world_position(
+        guide
+    )
+    assert_point_equal(
+        snap_position,
+        expected_position,
+        u"Locator Snap Position"
+    )
+
+    ctrl_parent = cmds.createNode(
+        "transform",
+        name="grp_md_{}_ctrl_parent_001".format(token)
+    )
+    cmds.xform(
+        ctrl_parent,
+        worldSpace=True,
+        translation=[-4.0, 6.0, 2.0],
+        rotation=[-5.0, 18.0, 11.0]
+    )
+
+    ctrl_result = ctrl_base.create_ctrl(
+        name="ctrl_md_{}_locator_001".format(token),
+        shape="circle",
+        radius=1.0,
+        axis="Y+",
+        target_node=guide,
+        parent_node=ctrl_parent,
+        color=17,
+        create_sub_ctrl=False,
+        add_to_set=False
+    )
+    ctrl_position = cmds.xform(
+        ctrl_result["ctrl_node"],
+        query=True,
+        worldSpace=True,
+        translation=True
+    )
+    assert_point_equal(
+        ctrl_position,
+        expected_position,
+        u"Locator Ctrl Position"
+    )
+
+    joint = joint_utils.Joint.create_at_object(
+        obj=guide,
+        name="jnt_md_{}_locator_001".format(token),
+        parent=ctrl_parent,
+        match_rotation=True,
+        radius=0.25
+    )
+    joint_position = cmds.xform(
+        joint,
+        query=True,
+        worldSpace=True,
+        translation=True
+    )
+    assert_point_equal(
+        joint_position,
+        expected_position,
+        u"Locator Joint Position"
+    )
+
+    return u"Locator worldPosition 正确定位 Ctrl + Joint"
+
+
 # =============================================================================
 # Runner
 # =============================================================================
@@ -187,44 +317,61 @@ def run():
     token = create_token()
     passed_count = 0
     failed_count = 0
-    error_text = ""
+    error_text_list = []
 
     print("")
     print("=" * 78)
     print("Muzi Toolset - CtrlBase Smoke Test")
     print("=" * 78)
 
-    try:
-        message = test_follow(
-            token
-        )
-        passed_count = 1
+    test_cases = [
+        {
+            "label": "Follow",
+            "function": test_follow,
+        },
+        {
+            "label": "Locator Visual Position",
+            "function": test_locator_visual_position,
+        },
+    ]
 
-        print(
-            u"[PASS] CtrlBase | Follow | {}".format(
-                message
+    for test_case in test_cases:
+        try:
+            message = test_case["function"](
+                token
             )
-        )
-    except Exception as error:
-        failed_count = 1
-        error_text = traceback.format_exc()
+            passed_count += 1
 
-        print(
-            u"[FAIL] CtrlBase | Follow | {}".format(
-                error
+            print(
+                u"[PASS] CtrlBase | {} | {}".format(
+                    test_case["label"],
+                    message
+                )
             )
-        )
-        print(
-            error_text
-        )
-    finally:
-        delete_test_nodes(
-            token
-        )
+        except Exception as error:
+            failed_count += 1
+            error_text = traceback.format_exc()
+            error_text_list.append(
+                error_text
+            )
+
+            print(
+                u"[FAIL] CtrlBase | {} | {}".format(
+                    test_case["label"],
+                    error
+                )
+            )
+            print(
+                error_text
+            )
+    delete_test_nodes(
+        token
+    )
 
     print("-" * 78)
     print(
-        "Total: 1 | Passed: {} | Failed: {}".format(
+        "Total: {} | Passed: {} | Failed: {}".format(
+            len(test_cases),
             passed_count,
             failed_count
         )
@@ -234,7 +381,7 @@ def run():
     return {
         "passed": passed_count,
         "failed": failed_count,
-        "traceback": error_text,
+        "traceback": "\n".join(error_text_list),
     }
 
 
