@@ -53,15 +53,15 @@ Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_module_base.py:173 create_deform 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_rig.py:78 build_face 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_rig.py:51 __init__ 缺少功能摘要
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:415 build_lip 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:384 create_finalize 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:336 create_deform 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:311 create_connect 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:274 create_ctrl 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:116 create_jnt 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:97 load_guide 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:58 load_setup 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:41 __init__ 缺少功能摘要
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:460 build_lip 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:420 create_finalize 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:366 create_deform 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:338 create_connect 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:298 create_ctrl 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:124 create_jnt 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:105 load_guide 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:57 load_setup 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:40 __init__ 缺少功能摘要
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:319 build_mouth 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:289 create_finalize 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:275 create_deform 缺少 Returns 说明
