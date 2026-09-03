@@ -2,9 +2,9 @@
 
 > 本文件由 `scripts/audit_runtime_step_comments.py` 自动生成。
 
-扫描 Runtime Python 文件：**101**
+扫描 Runtime Python 文件：**102**
 
-需要补充步骤注释的复杂函数：**10**
+需要补充步骤注释的复杂函数：**13**
 
 ## `systems/face/modules/brow.py`
 
@@ -18,6 +18,11 @@
 ## `systems/face/modules/eye.py`
 
 - `EyeModule.create_ctrl` — L147，86 行，控制流 3，Call 10
+## `systems/face/modules/eyelid.py`
+
+- `EyelidModule.load_setup` — L58，83 行，控制流 2，Call 15
+- `EyelidModule.create_jnt` — L164，114 行，控制流 3，Call 22
+- `EyelidModule.create_deform` — L357，201 行，控制流 5，Call 29
 ## `systems/face/modules/jaw.py`
 
 - `JawModule.__init__` — L63，54 行，控制流 0，Call 3
