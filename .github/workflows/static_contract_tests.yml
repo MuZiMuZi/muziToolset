@@ -1,0 +1,71 @@
+name: Static Contract Tests
+
+on:
+  push:
+    branches:
+      - refactor/full-code-cn-comments
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-contracts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: refactor/full-code-cn-comments
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # -----------------------------------------------------------------------
+      # Step 01：先做纯语法编译，排除注释整理造成的 SyntaxError
+      # -----------------------------------------------------------------------
+      - name: Compile runtime and tests
+        run: python -m compileall -q app core systems tools ui tests __init__.py config.py
+
+      # -----------------------------------------------------------------------
+      # Step 02：Core 分层与公开 API 契约
+      # -----------------------------------------------------------------------
+      - name: Test Core import style
+        run: python tests/core_import_style_test.py
+
+      - name: Test Core public API gate
+        run: python tests/core_public_api_gate_test.py
+
+      - name: Test Core single source gate
+        run: python tests/core_single_source_gate_test.py
+
+      # -----------------------------------------------------------------------
+      # Step 03：Rig / Module 架构契约
+      # -----------------------------------------------------------------------
+      - name: Test Rig architecture gate
+        run: python tests/rig_architecture_gate_test.py
+
+      - name: Test RigBase contract
+        run: python tests/rig_base_contract_test.py
+
+      - name: Test ModuleBase contract
+        run: python tests/module_base_contract_test.py
+
+      - name: Test System Core reuse gate
+        run: python tests/system_core_reuse_gate_test.py
+
+      # -----------------------------------------------------------------------
+      # Step 04：Maya 2023 Runner 本身只做 AST / 文本静态契约检查
+      # 不启动 Maya，也不把这一项视为 Maya Runtime Smoke。
+      # -----------------------------------------------------------------------
+      - name: Test Maya 2023 smoke runner contract
+        run: python tests/maya2023_smoke_contract_test.py
+
+      # -----------------------------------------------------------------------
+      # Step 05：最终检查源码空白格式
+      # -----------------------------------------------------------------------
+      - name: Check whitespace errors
+        run: git diff --check
