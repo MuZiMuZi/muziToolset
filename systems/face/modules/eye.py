@@ -146,6 +146,9 @@ class EyeModule(FaceModuleBase):
 
     def create_ctrl(self):
         u"""创建 Eye Main Ctrl 与 Aim Ctrl，并把 Aim 放到 Iris 朝向前方。"""
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for side in self.sides:
             eye_dict = self.eye_side_dict[side]
             eye_ctrl_name = self.create_name(
@@ -229,6 +232,9 @@ class EyeModule(FaceModuleBase):
             eye_dict["eye_ctrl_dict"] = eye_ctrl_dict
             eye_dict["aim_ctrl_dict"] = aim_ctrl_dict
 
+        # -------------------------------------------------------------------------
+        # Step 02：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.eye_side_dict
 
     def create_connect(self):

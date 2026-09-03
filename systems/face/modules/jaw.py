@@ -7,19 +7,21 @@ Jaw Module
 
 新架构流程：
 
-    setup
+    load_setup()
         ↓
-    guide
+    load_guide()
         ↓
-    joint
+    create_jnt()
         ↓
-    control
+    create_ctrl()
         ↓
-    connect
+    create_connect()
         ↓
-    deform
+    create_deform()
         ↓
-    finalize
+    create_finalize()
+        ↓
+    create_build()
 
 本模块参考旧 ``legacy_reference/bind/subject/face_subject/jaw.py`` 的绑定思路，
 但不再导入旧 bpjnt 文件，也不再使用字符串 replace() 推导节点名称。
@@ -62,6 +64,9 @@ class JawModule(FaceModuleBase):
 
     def __init__(self):
         u"""初始化 Jaw Module 的输入、名称、设置和构建结果。"""
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         super(JawModule, self).__init__(
             side="md",
             part="jaw",
@@ -80,6 +85,9 @@ class JawModule(FaceModuleBase):
         self.controller_global_scale = 1.0
         self.controller_color = 17
         self.controller_size = 1.0
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.controller_radius = 1.0
 
         # Naming
@@ -92,6 +100,9 @@ class JawModule(FaceModuleBase):
         self.jaw_offset_driver_name = None
         self.jaw_ctrl_driver_name = None
         self.jaw_sub_driver_name = None
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.jaw_open_reader_zero_name = None
         self.jaw_open_reader_name = None
         self.jaw_open_constraint_name = None
@@ -103,6 +114,9 @@ class JawModule(FaceModuleBase):
         self.jaw_ctrl_dict = None
         self.jaw_ctrl = None
         self.jaw_sub_ctrl = None
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.jaw_output = None
         self.jaw_matrix_node = None
 
@@ -113,10 +127,13 @@ class JawModule(FaceModuleBase):
         self.jaw_open_reader_zero = None
         self.jaw_open_reader = None
         self.jaw_open_constraint = None
+        # -------------------------------------------------------------------------
+        # Step 05：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.jaw_open_multiply = None
 
     # =========================================================================
-    # 01. Setup
+    # 01. Load Setup
     # =========================================================================
 
     def load_setup(self):
@@ -175,7 +192,7 @@ class JawModule(FaceModuleBase):
         return True
 
     # =========================================================================
-    # 02. Guide
+    # 02. Load Guide
     # =========================================================================
 
     def load_guide(self):
@@ -218,7 +235,7 @@ class JawModule(FaceModuleBase):
         ]
 
     # =========================================================================
-    # 03. Joint
+    # 03. Create Jnt
     # =========================================================================
 
     def create_jnt(self):
@@ -262,7 +279,7 @@ class JawModule(FaceModuleBase):
         ]
 
     # =========================================================================
-    # 04. Control
+    # 04. Create Ctrl
     # =========================================================================
 
     def create_ctrl(self):
@@ -304,7 +321,7 @@ class JawModule(FaceModuleBase):
         return self.jaw_ctrl_dict
 
     # =========================================================================
-    # 05. Connect
+    # 05. Create Connect
     # =========================================================================
 
     def create_connect(self):
@@ -329,7 +346,7 @@ class JawModule(FaceModuleBase):
         return self.jaw_matrix_node
 
     # =========================================================================
-    # 06. Deform / Special Effect
+    # 06. Create Deform / Special Effect
     # =========================================================================
 
     def create_deform(self):
@@ -520,7 +537,7 @@ class JawModule(FaceModuleBase):
         return jaw_open_dict
 
     # =========================================================================
-    # 07. Finalize
+    # 07. Create Finalize
     # =========================================================================
 
     def create_finalize(self):

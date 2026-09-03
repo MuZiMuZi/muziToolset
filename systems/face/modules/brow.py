@@ -63,11 +63,17 @@ class BrowModule(FaceModuleBase):
 
     def load_setup(self):
         u"""读取 Face Setup / Controller Settings，并准备 Brow 构建状态。"""
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.validate_setup_config(
             require_mouth_jnt_number=False
         )
         self.ensure_hierarchy()
 
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         controller_settings = self.face_guide.load_controller_settings()
         self.controller_global_scale = controller_settings.get(
             config.face_controller_global_scale_attr,
@@ -77,6 +83,9 @@ class BrowModule(FaceModuleBase):
             config.face_controller_size_attr_names["brow"],
             1.0
         )
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.controller_radius = (
             float(self.controller_global_scale) *
             float(self.controller_size)
@@ -87,6 +96,9 @@ class BrowModule(FaceModuleBase):
                 u"Brow Controller Radius 必须大于 0。"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.brow_side_dict = {}
 
         for side in self.sides:
@@ -111,6 +123,9 @@ class BrowModule(FaceModuleBase):
                 "follicle_dict_list": [],
             }
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     # =========================================================================
@@ -190,6 +205,9 @@ class BrowModule(FaceModuleBase):
 
     def create_ctrl(self):
         u"""创建每侧 Brow Main Ctrl 和与 Guide 一一对应的 Detail Ctrl。"""
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for side in self.sides:
             brow_dict = self.brow_side_dict[side]
 
@@ -266,6 +284,9 @@ class BrowModule(FaceModuleBase):
 
             brow_dict["detail_ctrl_dict_list"] = detail_ctrl_dict_list
 
+        # -------------------------------------------------------------------------
+        # Step 02：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.brow_side_dict
 
     # =========================================================================
@@ -274,6 +295,9 @@ class BrowModule(FaceModuleBase):
 
     def create_connect(self):
         u"""建立 Detail Ctrl -> Driver Jnt，并给 Detail Ctrl 添加 Main Follow。"""
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for side in self.sides:
             brow_dict = self.brow_side_dict[side]
             detail_ctrl_dict_list = brow_dict["detail_ctrl_dict_list"]
@@ -325,6 +349,9 @@ class BrowModule(FaceModuleBase):
             brow_dict["matrix_nodes"] = matrix_nodes
             brow_dict["follow_dict_list"] = follow_dict_list
 
+        # -------------------------------------------------------------------------
+        # Step 02：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.brow_side_dict
 
     # =========================================================================
@@ -339,6 +366,9 @@ class BrowModule(FaceModuleBase):
         Follicle 下的 Deform Joint。这样保留旧 Brow Surface/Follicle 设计，但把
         Surface 与 Joint/Controller 的职责拆回当前 Core / System 边界。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for side in self.sides:
             brow_dict = self.brow_side_dict[side]
             point_guides = brow_dict["point_guides"]
@@ -482,6 +512,9 @@ class BrowModule(FaceModuleBase):
             brow_dict["follicle_dict_list"] = follicle_dict_list
             brow_dict["deform_jnts"] = deform_jnts
 
+        # -------------------------------------------------------------------------
+        # Step 02：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.brow_side_dict
 
     # =========================================================================

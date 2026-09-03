@@ -7,19 +7,21 @@ Upper / Lower Teeth 刚体绑定模块。
 
 统一 Face Module 生命周期：
 
-    setup
+    load_setup()
         ↓
-    guide
+    load_guide()
         ↓
-    joint
+    create_jnt()
         ↓
-    control
+    create_ctrl()
         ↓
-    connect
+    create_connect()
         ↓
-    deform
+    create_deform()
         ↓
-    finalize
+    create_finalize()
+        ↓
+    create_build()
 
 Rig 关系：
 
@@ -59,6 +61,9 @@ class TeethModule(FaceModuleBase):
 
     def __init__(self):
         u"""初始化 Teeth Module 输入、设置、名称和构建结果。"""
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         super(TeethModule, self).__init__(
             side="md",
             part="teeth",
@@ -76,6 +81,9 @@ class TeethModule(FaceModuleBase):
         # Naming
         self.upper_teeth_joint_name = None
         self.lower_teeth_joint_name = None
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.upper_teeth_ctrl_name = None
         self.lower_teeth_ctrl_name = None
         self.upper_teeth_matrix_name = None
@@ -86,6 +94,9 @@ class TeethModule(FaceModuleBase):
         # Controller Settings
         self.controller_global_scale = 1.0
         self.controller_color = 17
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.controller_size = 1.0
         self.controller_radius = 1.0
 
@@ -97,6 +108,9 @@ class TeethModule(FaceModuleBase):
         self.lower_teeth_ctrl_dict = None
         self.upper_teeth_ctrl = None
         self.lower_teeth_ctrl = None
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.upper_teeth_output = None
         self.lower_teeth_output = None
         self.upper_teeth_top_group = None
@@ -105,10 +119,13 @@ class TeethModule(FaceModuleBase):
         self.upper_teeth_matrix_node = None
         self.lower_teeth_matrix_node = None
         self.upper_teeth_skin_cluster = None
+        # -------------------------------------------------------------------------
+        # Step 05：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.lower_teeth_skin_cluster = None
 
     # =========================================================================
-    # 01. Setup
+    # 01. Load Setup
     # =========================================================================
 
     def load_setup(self):
@@ -176,7 +193,7 @@ class TeethModule(FaceModuleBase):
         return True
 
     # =========================================================================
-    # 02. Guide
+    # 02. Load Guide
     # =========================================================================
 
     def load_guide(self):
@@ -219,7 +236,7 @@ class TeethModule(FaceModuleBase):
         ]
 
     # =========================================================================
-    # 03. Joint
+    # 03. Create Jnt
     # =========================================================================
 
     def create_jnt(self):
@@ -263,7 +280,7 @@ class TeethModule(FaceModuleBase):
         ]
 
     # =========================================================================
-    # 04. Control
+    # 04. Create Ctrl
     # =========================================================================
 
     def create_ctrl(self):
@@ -329,7 +346,7 @@ class TeethModule(FaceModuleBase):
         ]
 
     # =========================================================================
-    # 05. Connect
+    # 05. Create Connect
     # =========================================================================
 
     def create_connect(self):
@@ -369,7 +386,7 @@ class TeethModule(FaceModuleBase):
         ]
 
     # =========================================================================
-    # 06. Deform
+    # 06. Create Deform
     # =========================================================================
 
     def create_deform(self):
@@ -407,7 +424,7 @@ class TeethModule(FaceModuleBase):
         ]
 
     # =========================================================================
-    # 07. Finalize
+    # 07. Create Finalize
     # =========================================================================
 
     def create_finalize(self):
@@ -551,6 +568,9 @@ class TeethModule(FaceModuleBase):
 
     def _validate_build_nodes_available(self):
         u"""构建前检查上一次 Teeth Build 的确定性节点是否已经存在。"""
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         expected_nodes = [
             self.upper_teeth_joint_name,
             self.lower_teeth_joint_name,
@@ -558,6 +578,9 @@ class TeethModule(FaceModuleBase):
             self.lower_teeth_matrix_name,
         ]
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.upper_teech_model:
             expected_nodes.append(
                 self.upper_teeth_skin_name
@@ -568,6 +591,9 @@ class TeethModule(FaceModuleBase):
                 self.lower_teeth_skin_name
             )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         teeth_ctrl_name_list = [
             self.upper_teeth_ctrl_name,
             self.lower_teeth_ctrl_name,
@@ -588,10 +614,16 @@ class TeethModule(FaceModuleBase):
                     hierarchy_name
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         scene_utils.ensure_nodes_available(
             expected_nodes,
             label=u"Teeth Module Build Node"
         )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     @staticmethod
@@ -635,9 +667,15 @@ class TeethModule(FaceModuleBase):
             str | None:
                 SkinCluster；没有模型输入时返回 None。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not model:
             return None
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         existing_skin_cluster = skin_utils.find_skin_cluster(
             model
         )
@@ -649,6 +687,9 @@ class TeethModule(FaceModuleBase):
                 )
             )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         skin_result = cmds.skinCluster(
             joint,
             model,
@@ -661,6 +702,9 @@ class TeethModule(FaceModuleBase):
             obeyMaxInfluences=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not skin_result:
             raise RuntimeError(
                 u"创建 Teeth SkinCluster 失败：{}".format(
@@ -668,6 +712,9 @@ class TeethModule(FaceModuleBase):
                 )
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return skin_result[0]
 
     @staticmethod

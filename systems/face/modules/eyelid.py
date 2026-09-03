@@ -57,11 +57,17 @@ class EyelidModule(FaceModuleBase):
 
     def load_setup(self):
         u"""读取 Eyelid 设置，并确认 EyeModule 的 Eye Joint / Aim Ctrl 已存在。"""
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.validate_setup_config(
             require_mouth_jnt_number=False
         )
         self.ensure_hierarchy()
 
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         controller_settings = self.face_guide.load_controller_settings()
         self.controller_global_scale = controller_settings.get(
             config.face_controller_global_scale_attr,
@@ -71,6 +77,9 @@ class EyelidModule(FaceModuleBase):
             config.face_controller_size_attr_names["eyelid"],
             1.0
         )
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.controller_radius = (
             float(self.controller_global_scale) *
             float(self.controller_size)
@@ -79,6 +88,9 @@ class EyelidModule(FaceModuleBase):
         if self.controller_radius <= 0.0:
             raise ValueError(u"Eyelid Controller Radius 必须大于 0。")
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.eyelid_side_dict = {}
 
         for side in self.sides:
@@ -137,6 +149,9 @@ class EyelidModule(FaceModuleBase):
                 "blink_dict": None,
             }
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def load_guide(self):
@@ -163,6 +178,9 @@ class EyelidModule(FaceModuleBase):
 
     def create_jnt(self):
         u"""创建 Curve Driver Jnt、Control/Skin Curve、Up Object 和 Radial Bind Jnt。"""
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for side in self.sides:
             eyelid_dict = self.eyelid_side_dict[side]
             unique_guides = self._get_unique_guides(side)
@@ -274,6 +292,9 @@ class EyelidModule(FaceModuleBase):
                 eyelid_dict["skin_curve_dict"][region] = skin_curve
                 eyelid_dict["radial_dict"][region] = radial_dict
 
+        # -------------------------------------------------------------------------
+        # Step 02：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.eyelid_side_dict
 
     def create_ctrl(self):
@@ -356,6 +377,9 @@ class EyelidModule(FaceModuleBase):
 
     def create_deform(self):
         u"""Skin Control Curve，并建立 Blink Height / Blink 的无循环 BlendShape 网络。"""
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for side in self.sides:
             eyelid_dict = self.eyelid_side_dict[side]
 
@@ -554,6 +578,9 @@ class EyelidModule(FaceModuleBase):
                 "blink_height_plug": blink_height_plug,
             }
 
+        # -------------------------------------------------------------------------
+        # Step 02：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.eyelid_side_dict
 
     def create_finalize(self):

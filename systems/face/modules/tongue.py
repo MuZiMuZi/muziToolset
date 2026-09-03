@@ -198,10 +198,16 @@ class TongueModule(FaceModuleBase):
 
     def create_deform(self):
         u"""创建 Tongue Curl，并对可选 Tongue Model 建立 SkinCluster。"""
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self.tongue_ctrl_dict_list:
             raise RuntimeError(u"Tongue Controller 尚未创建。")
 
         root_ctrl = self.tongue_ctrl_dict_list[0]["ctrl_node"]
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         root_ctrl_attr = attr_utils.Attr(
             root_ctrl
         )
@@ -217,9 +223,15 @@ class TongueModule(FaceModuleBase):
             channel_box=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.tongue_curl_nodes = []
         index = 1
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         while index < len(self.tongue_ctrl_dict_list):
             if index == len(self.tongue_ctrl_dict_list) - 1:
                 break
@@ -272,6 +284,9 @@ class TongueModule(FaceModuleBase):
             )
             self.tongue_skin_cluster = skin_result[0]
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return {
             "curl_nodes": self.tongue_curl_nodes,
             "skin_cluster": self.tongue_skin_cluster,

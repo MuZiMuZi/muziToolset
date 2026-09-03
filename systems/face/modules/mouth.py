@@ -56,12 +56,18 @@ class MouthModule(FaceModuleBase):
 
     def load_setup(self):
         u"""读取 Mouth 设置，并确认 JawModule / LipModule 的关键节点已存在。"""
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.validate_setup_config(
             require_mouth_jnt_number=True
         )
         self.ensure_hierarchy()
 
         controller_settings = self.face_guide.load_controller_settings()
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.controller_global_scale = controller_settings.get(
             config.face_controller_global_scale_attr,
             1.0
@@ -74,6 +80,9 @@ class MouthModule(FaceModuleBase):
             float(self.controller_global_scale) *
             float(self.controller_size)
         )
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.lip_jnt_count = max(
             5,
             int(round(float(self.mouth_jnt_number) / 2.0))
@@ -90,6 +99,9 @@ class MouthModule(FaceModuleBase):
             self.jaw_ctrl,
             create_sub_ctrl=True
         )["output"]
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.left_corner_ctrl = self.create_name(
             type="ctrl",
             side="lf",
@@ -116,6 +128,9 @@ class MouthModule(FaceModuleBase):
                 label=u"Mouth Dependency"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def load_guide(self):
@@ -166,9 +181,15 @@ class MouthModule(FaceModuleBase):
 
     def create_ctrl(self):
         u"""在嘴部中心创建 Mouth Main Controller。"""
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         upper_guides = self.lip_guide_dict["upper"]
         lower_guides = self.lip_guide_dict["lower"]
         upper_center_guide = upper_guides[int(len(upper_guides) / 2)]
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         lower_center_guide = lower_guides[int(len(lower_guides) / 2)]
 
         mouth_main_ctrl_name = self.create_name(
@@ -191,6 +212,9 @@ class MouthModule(FaceModuleBase):
             ctrl_set=config.face_ctrl_set
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         upper_position = transform_utils.get_world_translation(
             upper_center_guide
         )
@@ -198,6 +222,9 @@ class MouthModule(FaceModuleBase):
             lower_center_guide
         )
         mouth_position = []
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         axis_index = 0
 
         while axis_index < 3:
@@ -210,6 +237,9 @@ class MouthModule(FaceModuleBase):
             self.mouth_main_ctrl_dict["top_grp"],
             mouth_position
         )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.mouth_main_ctrl_dict
 
     @staticmethod
