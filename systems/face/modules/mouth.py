@@ -102,28 +102,32 @@ class MouthModule(FaceModuleBase):
             int(round(float(self.mouth_jnt_number) / 2.0))
         )
 
-        self.jaw_ctrl = self.create_name(
+        jaw_ctrl_name = self.create_name(
             type="ctrl",
             side="md",
             part="jaw",
             function="bind",
             index=1
         )
-        self.jaw_output = ctrl_base.get_ctrl_hierarchy_names(
-            self.jaw_ctrl,
-            create_sub_ctrl=True
-        )["output"]
+        jaw_output_name = self.create_name(
+            type="output",
+            side="md",
+            part="jaw",
+            function="bind",
+            index=1
+        )
+
         # -------------------------------------------------------------------------
-        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # Step 04：解析 Jaw / Lip Module 已创建的真实 Namespace / DAG 节点
         # -------------------------------------------------------------------------
-        self.left_corner_ctrl = self.create_name(
+        left_corner_ctrl_name = self.create_name(
             type="ctrl",
             side="lf",
             part="mouth_corner",
             function="bind",
             index=1
         )
-        self.right_corner_ctrl = self.create_name(
+        right_corner_ctrl_name = self.create_name(
             type="ctrl",
             side="rt",
             part="mouth_corner",
@@ -131,16 +135,26 @@ class MouthModule(FaceModuleBase):
             index=1
         )
 
-        for node in [
-                self.jaw_ctrl,
-                self.jaw_output,
-                self.left_corner_ctrl,
-                self.right_corner_ctrl
-        ]:
-            scene_utils.validate_node(
-                node,
-                label=u"Mouth Dependency"
-            )
+        self.jaw_ctrl = self._resolve_scene_node(
+            jaw_ctrl_name,
+            label=u"Mouth Jaw Ctrl Dependency",
+            node_type="transform"
+        )
+        self.jaw_output = self._resolve_scene_node(
+            jaw_output_name,
+            label=u"Mouth Jaw Output Dependency",
+            node_type="transform"
+        )
+        self.left_corner_ctrl = self._resolve_scene_node(
+            left_corner_ctrl_name,
+            label=u"Mouth Left Corner Ctrl Dependency",
+            node_type="transform"
+        )
+        self.right_corner_ctrl = self._resolve_scene_node(
+            right_corner_ctrl_name,
+            label=u"Mouth Right Corner Ctrl Dependency",
+            node_type="transform"
+        )
 
         # -------------------------------------------------------------------------
         # Step 05：整理并返回当前函数的最终结果
@@ -204,13 +218,15 @@ class MouthModule(FaceModuleBase):
                 function="bind",
                 index=item_index
             )
-            scene_utils.validate_node(
+            upper_lip_jnt = self._resolve_scene_node(
                 upper_lip_jnt,
-                label=u"Upper Lip Deform Joint"
+                label=u"Upper Lip Deform Joint",
+                node_type="joint"
             )
-            scene_utils.validate_node(
+            lower_lip_jnt = self._resolve_scene_node(
                 lower_lip_jnt,
-                label=u"Lower Lip Deform Joint"
+                label=u"Lower Lip Deform Joint",
+                node_type="joint"
             )
             self.upper_lip_jnts.append(upper_lip_jnt)
             self.lower_lip_jnts.append(lower_lip_jnt)
@@ -295,20 +311,27 @@ class MouthModule(FaceModuleBase):
         # -------------------------------------------------------------------------
         return self.mouth_main_ctrl_dict
 
-    @staticmethod
-    def _get_existing_ctrl_dict(ctrl_name):
+    def _get_existing_ctrl_dict(self, ctrl_name):
         u"""根据 CtrlBase 确定性层级恢复 create_follow() 所需的最小 Ctrl Dict。"""
+        ctrl_leaf_name = str(ctrl_name).rsplit("|", 1)[-1]
+        ctrl_canonical_name = ctrl_leaf_name.rsplit(":", 1)[-1]
         hierarchy_names = ctrl_base.get_ctrl_hierarchy_names(
-            ctrl_name
+            ctrl_canonical_name
         )
-        ctrl_node = scene_utils.get_long_name(
-            ctrl_name
+        ctrl_node = self._resolve_scene_node(
+            ctrl_name,
+            label=u"Mouth Existing Ctrl",
+            node_type="transform"
         )
-        zero_grp = scene_utils.get_long_name(
-            hierarchy_names["zero"]
+        zero_grp = self._resolve_scene_node(
+            hierarchy_names["zero"],
+            label=u"Mouth Existing Ctrl Zero",
+            node_type="transform"
         )
-        driven_grp = scene_utils.get_long_name(
-            hierarchy_names["driven"]
+        driven_grp = self._resolve_scene_node(
+            hierarchy_names["driven"],
+            label=u"Mouth Existing Ctrl Driven",
+            node_type="transform"
         )
 
         return {

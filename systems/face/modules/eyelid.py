@@ -488,10 +488,25 @@ class EyelidModule(FaceModuleBase):
                 eyelid_dict["skin_curve_dict"]["upper"],
                 name=blink_curve_name
             )[0]
-            blink_curve = cmds.parent(
+
+            blink_curve_parent = cmds.listRelatives(
                 blink_curve,
-                self.face_rig_nodes_grp
-            )[0]
+                parent=True,
+                fullPath=True
+            )
+
+            if blink_curve_parent is None:
+                blink_curve_parent = []
+
+            if not blink_curve_parent or blink_curve_parent[0] != self.face_rig_nodes_grp:
+                blink_curve = cmds.parent(
+                    blink_curve,
+                    self.face_rig_nodes_grp
+                )[0]
+            else:
+                blink_curve = scene_utils.get_long_name(
+                    blink_curve
+                )
 
             blink_mix_name = self.create_name(
                 type="bs",
