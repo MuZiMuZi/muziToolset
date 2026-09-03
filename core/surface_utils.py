@@ -85,18 +85,19 @@ Follicle：
 --------
 1. Loft 时绝不修改或删除用户传入的原始 Curve；
 2. 临时 Duplicate 无论成功或失败都通过 finally 清理；
-3. Follicle Core 只返回 Transform / Shape，不擅自创建 Joint / Controller；
-4. 批量 Follicle 使用稳定的 001 / 002 / 003 编号；
-5. 保留普通 while / for 流程，方便在 Maya 中逐步调试。
+3. Loft 只在 Maya 自动材质分配所需的短时间内临时解锁默认 Shading Group，并恢复原状态；
+4. Follicle Core 只返回 Transform / Shape，不擅自创建 Joint / Controller；
+5. 批量 Follicle 使用稳定的 001 / 002 / 003 编号；
+6. 保留普通 while / for 流程，方便在 Maya 中逐步调试。
 """
 
 from __future__ import print_function
 
 import maya.cmds as cmds
 
-from . import scene_utils
-
 from . import curve_utils
+from . import scene_utils
+from . import shading_utils
 
 
 # =============================================================================
@@ -234,7 +235,7 @@ def move_curve_copy(
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+        当前 API 完成处理后的结果。
 
     Raises:
         ValueError:
@@ -304,7 +305,8 @@ def create_surface_from_curve(
         - 不移动原 Curve；
         - 不删除原 Curve；
         - 只操作两个临时 Duplicate；
-        - Loft 完成后自动删除临时 Duplicate。
+        - Loft 完成后自动删除临时 Duplicate；
+        - Maya 默认 Shading Group 被锁定时，只在 Loft 期间临时解锁并恢复。
 
     Args:
         curve (str):
@@ -377,19 +379,31 @@ def create_surface_from_curve(
 
         # ---------------------------------------------------------------------
         # 步骤 4：使用两个临时 Curve Loft。
-        # constructionHistory=False，避免 Core 默认留下不必要历史节点。
+        #
+        # Maya 创建 NURBS Surface Shape 时会自动把 Shape 加入
+        # initialShadingGroup。如果默认 Shading Group 或其 Container 被锁定，
+        # cmds.loft() 会因为无法写入 dagSetMembers 而整体失败。
+        #
+        # 这里只在 Loft 的最小作用域内临时解锁，并在 finally 中严格恢复原状态。
         # ---------------------------------------------------------------------
-        result = cmds.loft(
-            positive_copy,
-            negative_copy,
-            constructionHistory=False,
-            uniform=True,
-            degree=degree,
-            sectionSpans=1,
-            range=False,
-            polygon=0,
-            name=name
-        )
+        shading_group_state = shading_utils.unlock_default_shading_group()
+
+        try:
+            result = cmds.loft(
+                positive_copy,
+                negative_copy,
+                constructionHistory=False,
+                uniform=True,
+                degree=degree,
+                sectionSpans=1,
+                range=False,
+                polygon=0,
+                name=name
+            )
+        finally:
+            shading_utils.restore_default_shading_group(
+                shading_group_state
+            )
 
         if not result:
             raise RuntimeError(u"Curve Loft Surface 创建失败。")
@@ -576,7 +590,7 @@ def create_even_follicles(
         parent=None
 ):
     u"""
-    沿 Surface 的 U 或 V 方向均匀创建 Follicle。
+    沿 Surface 的 U 或 V 方向均匀创建多个 Follicle。
 
     Args:
         surface (str):
