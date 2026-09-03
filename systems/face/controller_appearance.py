@@ -10,7 +10,8 @@ Face Controller Appearance
     2. 不修改 Controller Transform、Zero Group 或 Guide 对齐结果；
     3. 尺寸更新使用“新有效尺寸 / 旧有效尺寸”的比例，因此不会重复累积误差；
     4. Controller Settings 仍以 systems.face.config 中的正式 Config Schema 为唯一数据源；
-    5. 场景中还没有 Controller 时允许安全返回，供 Step 03 构建前保存参数使用。
+    5. 场景中还没有 Controller 时允许安全返回，供 Step 03 构建前保存参数使用；
+    6. Controller 名称解析忽略 Maya Namespace，兼容 Namespaced Face Rig。
 """
 
 from __future__ import print_function
@@ -20,6 +21,17 @@ import maya.cmds as cmds
 from ...core import control_shape_utils
 from ...core import rename_utils
 from . import config
+
+
+def _get_canonical_short_name(node):
+    u"""返回去掉 DAG Path 和 Maya Namespace 的标准短名称。"""
+    short_name = rename_utils.get_short_name(
+        node
+    )
+    return short_name.rsplit(
+        ":",
+        1
+    )[-1]
 
 
 def _get_face_ctrl_nodes():
@@ -51,7 +63,7 @@ def _get_face_ctrl_nodes():
             transforms = []
 
         for transform in transforms:
-            short_name = rename_utils.get_short_name(
+            short_name = _get_canonical_short_name(
                 transform
             )
 
@@ -76,7 +88,7 @@ def _get_face_ctrl_nodes():
                 descendants = []
 
             for descendant in descendants:
-                descendant_short_name = rename_utils.get_short_name(
+                descendant_short_name = _get_canonical_short_name(
                     descendant
                 )
 
@@ -95,7 +107,7 @@ def _get_face_ctrl_nodes():
 
 def _get_ctrl_side(ctrl_node):
     u"""从标准 Controller 名称读取 lf / rt / md。"""
-    short_name = rename_utils.get_short_name(
+    short_name = _get_canonical_short_name(
         ctrl_node
     )
     tokens = short_name.split("_")
@@ -113,7 +125,7 @@ def _get_ctrl_side(ctrl_node):
 
 def _get_ctrl_module(ctrl_node):
     u"""根据标准 Face Controller Part 判断所属可调尺寸 Module。"""
-    short_name = rename_utils.get_short_name(
+    short_name = _get_canonical_short_name(
         ctrl_node
     )
     tokens = short_name.split("_")
@@ -127,12 +139,6 @@ def _get_ctrl_module(ctrl_node):
     for module_name in config.face_controller_module_order:
         if module_name in part_tokens:
             return module_name
-
-        if module_name == "teeth":
-            if "upper" in part_tokens and "teeth" in part_tokens:
-                return module_name
-            if "lower" in part_tokens and "teeth" in part_tokens:
-                return module_name
 
     return None
 
