@@ -36,6 +36,9 @@ jobs:
       - name: Refine Maya rigging terminology
         run: python scripts/refine_runtime_docstring_semantics.py --write
 
+      - name: Refresh runtime Chinese step comments
+        run: python scripts/annotate_runtime_steps.py --write
+
       - name: Validate Python compile
         run: python -m compileall -q app core systems tools ui tests __init__.py config.py
 
