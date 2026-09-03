@@ -2,8 +2,10 @@
 
 > 本文件由 `scripts/audit_runtime_step_comments.py` 自动生成。
 
-扫描 Runtime Python 文件：**96**
+扫描 Runtime Python 文件：**97**
 
-需要补充步骤注释的复杂函数：**0**
+需要补充步骤注释的复杂函数：**1**
 
-✅ 当前复杂 Runtime 函数都已经包含步骤式中文注释。
+## `systems/face/modules/jaw.py`
+
+- `JawModule.__init__` — L63，54 行，控制流 0，Call 3
