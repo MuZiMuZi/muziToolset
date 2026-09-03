@@ -11,7 +11,8 @@ Face Controller Appearance
     3. 尺寸更新使用“新有效尺寸 / 旧有效尺寸”的比例，因此不会重复累积误差；
     4. Controller Settings 仍以 systems.face.config 中的正式 Config Schema 为唯一数据源；
     5. 场景中还没有 Controller 时允许安全返回，供 Step 03 构建前保存参数使用；
-    6. Controller 和 Controller Set 的名称解析都忽略 Maya Namespace。
+    6. Controller 和 Controller Set 的名称解析都忽略 Maya Namespace；
+    7. Module Size 使用明确的 Part Alias 映射，兼容 cheekbone / nasolabial 等业务命名。
 """
 
 from __future__ import print_function
@@ -21,6 +22,46 @@ import maya.cmds as cmds
 from ...core import control_shape_utils
 from ...core import rename_utils
 from . import config
+
+
+# =============================================================================
+# Controller Part -> Appearance Module
+# =============================================================================
+
+# Controller 的 part 不一定和 UI 中的 Module 名完全相同。
+# 例如 CheekModule 会创建 cheekbone / nasolabial / cheek 三类 Controller，
+# 但 UI 只暴露一个 Cheek Size。因此这里统一把这些 Part 映射回 cheek。
+CONTROLLER_MODULE_PART_ALIASES = {
+    "brow": [
+        "brow",
+    ],
+    "eye": [
+        "eye",
+    ],
+    "eyelid": [
+        "eyelid",
+    ],
+    "nose": [
+        "nose",
+    ],
+    "cheek": [
+        "cheek",
+        "cheekbone",
+        "nasolabial",
+    ],
+    "lip": [
+        "lip",
+    ],
+    "jaw": [
+        "jaw",
+    ],
+    "teeth": [
+        "teeth",
+    ],
+    "tongue": [
+        "tongue",
+    ],
+}
 
 
 def _get_canonical_short_name(node):
@@ -168,12 +209,25 @@ def _get_ctrl_module(ctrl_node):
     if len(tokens) < 4:
         return None
 
-    # 去掉 ctrl / side 和最后 function + index，剩余部分中只需要识别业务 Module。
+    # 去掉 ctrl / side 和最后 function + index，剩余部分只保留业务 Part Token。
+    # 例如：
+    #   ctrl_rt_cheekbone_bind_002 -> ["cheekbone"]
+    #   ctrl_md_upper_teeth_bind_001 -> ["upper", "teeth"]
     part_tokens = tokens[2:-2]
 
     for module_name in config.face_controller_module_order:
-        if module_name in part_tokens:
-            return module_name
+        module_aliases = CONTROLLER_MODULE_PART_ALIASES.get(
+            module_name
+        )
+
+        if module_aliases is None:
+            module_aliases = [
+                module_name,
+            ]
+
+        for module_alias in module_aliases:
+            if module_alias in part_tokens:
+                return module_name
 
     return None
 
