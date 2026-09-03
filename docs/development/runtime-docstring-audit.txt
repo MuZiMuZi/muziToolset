@@ -1,9 +1,9 @@
 ==============================================================================
 Runtime Docstring Standard
 ==============================================================================
-Runtime files:  107
+Runtime files:  108
 Changed files:  0
-Errors:         73
+Errors:         82
 Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:530 build_brow 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:491 create_finalize 缺少 Returns 说明
@@ -78,4 +78,13 @@ Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:88 load_guide 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:56 load_setup 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:28 __init__ 缺少功能摘要
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:315 build_tongue 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:280 create_finalize 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:199 create_deform 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:174 create_connect 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:141 create_ctrl 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:109 create_jnt 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:96 load_guide 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:53 load_setup 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:34 __init__ 缺少功能摘要
 ==============================================================================
