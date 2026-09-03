@@ -11,7 +11,7 @@ Face Controller Appearance
     3. 尺寸更新使用“新有效尺寸 / 旧有效尺寸”的比例，因此不会重复累积误差；
     4. Controller Settings 仍以 systems.face.config 中的正式 Config Schema 为唯一数据源；
     5. 场景中还没有 Controller 时允许安全返回，供 Step 03 构建前保存参数使用；
-    6. Controller 名称解析忽略 Maya Namespace，兼容 Namespaced Face Rig。
+    6. Controller 和 Controller Set 的名称解析都忽略 Maya Namespace。
 """
 
 from __future__ import print_function
@@ -34,13 +34,48 @@ def _get_canonical_short_name(node):
     )[-1]
 
 
+def _resolve_face_ctrl_set():
+    u"""解析当前场景唯一的 Face Controller Set，兼容 Maya Namespace。"""
+    if cmds.objExists(config.face_ctrl_set):
+        return config.face_ctrl_set
+
+    object_sets = cmds.ls(
+        type="objectSet",
+        long=True
+    )
+
+    if object_sets is None:
+        object_sets = []
+
+    candidates = []
+
+    for object_set in object_sets:
+        canonical_name = _get_canonical_short_name(
+            object_set
+        )
+
+        if canonical_name != config.face_ctrl_set:
+            continue
+
+        candidates.append(
+            object_set
+        )
+
+    if len(candidates) == 1:
+        return candidates[0]
+
+    return None
+
+
 def _get_face_ctrl_nodes():
     u"""返回 Face Controller Set 中全部有效 Controller Transform。"""
-    if not cmds.objExists(config.face_ctrl_set):
+    face_ctrl_set = _resolve_face_ctrl_set()
+
+    if face_ctrl_set is None:
         return []
 
     members = cmds.sets(
-        config.face_ctrl_set,
+        face_ctrl_set,
         query=True
     )
 
