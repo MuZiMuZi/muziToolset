@@ -1,0 +1,65 @@
+name: Fix Scene Rename Import Cycle
+
+on:
+  push:
+    branches:
+      - refactor/full-code-cn-comments
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: refactor/full-code-cn-comments
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Apply cycle fix when patch script exists
+        shell: bash
+        run: |
+          if [ -f scripts/fix_scene_rename_cycle.py ]; then
+            python scripts/fix_scene_rename_cycle.py
+          else
+            echo "Patch script not present yet; nothing to do."
+          fi
+
+      - name: Compile runtime and tests
+        run: python -m compileall -q app core systems tools ui tests __init__.py config.py
+
+      - name: Run static contracts
+        shell: bash
+        run: |
+          python tests/core_import_style_test.py
+          python tests/core_public_api_gate_test.py
+          python tests/core_single_source_gate_test.py
+          python tests/rig_architecture_gate_test.py
+          python tests/rig_base_contract_test.py
+          python tests/module_base_contract_test.py
+          python tests/system_core_reuse_gate_test.py
+
+      - name: Check whitespace
+        run: git diff --check
+
+      - name: Commit source fix
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No source changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add core/scene_utils.py
+          git commit -m "fix: break scene rename import cycle"
+          git push origin HEAD:refactor/full-code-cn-comments
