@@ -1,9 +1,9 @@
 ==============================================================================
 Runtime Docstring Standard
 ==============================================================================
-Runtime files:  104
+Runtime files:  105
 Changed files:  0
-Errors:         46
+Errors:         55
 Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:530 build_brow 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:491 create_finalize 缺少 Returns 说明
@@ -51,4 +51,13 @@ Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:58 load_setup 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:46 __init__ 缺少功能摘要
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_module_base.py:173 create_deform 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:322 build_nose 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:296 create_finalize 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:292 create_deform 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:262 create_connect 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:192 create_ctrl 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:124 create_jnt 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:88 load_guide 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:56 load_setup 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:28 __init__ 缺少功能摘要
 ==============================================================================
