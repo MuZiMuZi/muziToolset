@@ -4,7 +4,7 @@
 
 扫描 Runtime Python 文件：**107**
 
-需要补充步骤注释的复杂函数：**19**
+需要补充步骤注释的复杂函数：**16**
 
 ## `systems/face/modules/brow.py`
 
@@ -30,11 +30,6 @@
 
 - `MouthModule.load_setup` — L57，63 行，控制流 1，Call 16
 - `MouthModule.create_ctrl` — L167，47 行，控制流 1，Call 10
-## `systems/face/modules/nose.py`
-
-- `NoseModule.load_guide` — L88，35 行，控制流 6，Call 8
-- `NoseModule.create_jnt` — L124，67 行，控制流 4，Call 13
-- `NoseModule.create_ctrl` — L192，69 行，控制流 4，Call 11
 ## `systems/face/modules/teeth.py`
 
 - `TeethModule.__init__` — L60，49 行，控制流 0，Call 3

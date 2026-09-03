@@ -71,15 +71,15 @@ Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:121 load_guide 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:57 load_setup 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:33 __init__ 缺少功能摘要
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:322 build_nose 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:296 create_finalize 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:292 create_deform 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:262 create_connect 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:192 create_ctrl 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:124 create_jnt 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:88 load_guide 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:56 load_setup 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:28 __init__ 缺少功能摘要
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:402 build_nose 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:350 create_finalize 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:346 create_deform 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:295 create_connect 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:227 create_ctrl 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:160 create_jnt 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:117 load_guide 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:69 load_setup 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:48 __init__ 缺少功能摘要
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:315 build_tongue 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:280 create_finalize 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:199 create_deform 缺少 Returns 说明
