@@ -127,6 +127,22 @@ def face_build_step_maya2023_smoke_test():
     return face_build_step_maya2023_smoke_test.run()
 
 
+def face_finalize_step_maya2023_smoke_test():
+    u"""
+    运行完整 Face Workflow Step 04 的 Maya 2023 Runtime Smoke Test。
+
+    测试先通过 FaceBuild.run_step() 完成 11 Module，然后执行 FaceFinalizer，
+    验证 Controller Set、最终 Visibility、Step04 状态以及重复 Finalize 的幂等性。
+
+    Returns:
+        dict:
+        Maya 版本、Finalize 通过状态、Controller / Visibility 摘要和失败 Traceback。
+    """
+    from .tests import face_finalize_step_maya2023_smoke_test
+
+    return face_finalize_step_maya2023_smoke_test.run()
+
+
 def pipeline_smoke_test():
     u"""
     运行基础 Core / Legacy Pipeline 拆分后的功能 Smoke Test。
@@ -279,6 +295,7 @@ __all__ = [
     "maya2023_smoke_test",
     "face_modules_maya2023_smoke_test",
     "face_build_step_maya2023_smoke_test",
+    "face_finalize_step_maya2023_smoke_test",
     "pipeline_smoke_test",
     "extended_core_smoke_test",
     "core_import_style_test",
