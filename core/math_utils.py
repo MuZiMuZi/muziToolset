@@ -124,11 +124,11 @@ def add_vector3(vector_a, vector_b):
 
     Returns:
         list[float]:
-            ``vector_a + vector_b`` 的 XYZ 结果。
+        ``vector_a + vector_b`` 的 XYZ 结果。
 
     Raises:
         ValueError:
-            任意 Vector 不是有效三维数值数据时抛出。
+        任意 Vector 不是有效三维数值数据时抛出。
     """
     vector_a = _validate_point3(
         vector_a,
@@ -158,11 +158,11 @@ def subtract_vector3(vector_a, vector_b):
 
     Returns:
         list[float]:
-            ``vector_a - vector_b`` 的 XYZ 结果。
+        ``vector_a - vector_b`` 的 XYZ 结果。
 
     Raises:
         ValueError:
-            任意 Vector 不是有效三维数值数据时抛出。
+        任意 Vector 不是有效三维数值数据时抛出。
     """
     vector_a = _validate_point3(
         vector_a,
@@ -192,11 +192,11 @@ def multiply_vector3(vector, value):
 
     Returns:
         list[float]:
-            标量乘法后的 XYZ Vector。
+        标量乘法后的 XYZ Vector。
 
     Raises:
         ValueError:
-            Vector 无效或 ``value`` 不能转换成 float 时抛出。
+        Vector 无效或 ``value`` 不能转换成 float 时抛出。
     """
     vector = _validate_point3(
         vector,
@@ -223,11 +223,11 @@ def length_vector3(vector):
 
     Returns:
         float:
-            ``sqrt(x² + y² + z²)`` 计算得到的 Vector 长度。
+        ``sqrt(x² + y² + z²)`` 计算得到的 Vector 长度。
 
     Raises:
         ValueError:
-            Vector 不是有效三维数值数据时抛出。
+        Vector 不是有效三维数值数据时抛出。
     """
     vector = _validate_point3(
         vector,
@@ -253,11 +253,11 @@ def normalize_vector3(vector, epsilon=0.000001):
 
     Returns:
         list[float]:
-            单位 Vector；长度小于等于 ``epsilon`` 时返回 ``[0, 0, 0]``。
+        单位 Vector；长度小于等于 ``epsilon`` 时返回 ``[0, 0, 0]``。
 
     Raises:
         ValueError:
-            Vector 或 ``epsilon`` 不是有效数值时抛出。
+        Vector 或 ``epsilon`` 不是有效数值时抛出。
     """
     vector = _validate_point3(
         vector,
@@ -296,11 +296,11 @@ def dot_vector3(vector_a, vector_b):
 
     Returns:
         float:
-            ``ax*bx + ay*by + az*bz`` 的点积结果。
+        ``ax*bx + ay*by + az*bz`` 的点积结果。
 
     Raises:
         ValueError:
-            任意 Vector 不是有效三维数值数据时抛出。
+        任意 Vector 不是有效三维数值数据时抛出。
     """
     vector_a = _validate_point3(
         vector_a,
@@ -334,11 +334,11 @@ def distance_between_points(point_a, point_b):
 
     Returns:
         float:
-            两个 Point 之间的直线距离。
+        两个 Point 之间的直线距离。
 
     Raises:
         ValueError:
-            任意 Point 不是有效三维数值数据时抛出。
+        任意 Point 不是有效三维数值数据时抛出。
     """
     delta = subtract_vector3(
         point_b,
@@ -370,11 +370,11 @@ def lerp_point3(
 
     Returns:
         list[float]:
-            插值后的 XYZ Point / Vector。
+        插值后的 XYZ Point / Vector。
 
     Raises:
         ValueError:
-            Point 无效或 ``ratio`` 不能转换成 float 时抛出。
+        Point 无效或 ``ratio`` 不能转换成 float 时抛出。
     """
     # -------------------------------------------------------------------------
     # Step 01：统一验证起点、终点并把 ratio 转为 float
@@ -419,11 +419,11 @@ def average_point3(points):
 
     Returns:
         list[float] | None:
-            平均 XYZ 值；输入为空时返回 None。
+        平均 XYZ 值；输入为空时返回 None。
 
     Raises:
         ValueError:
-            集合中的任意 Point / Vector 不是有效三维数值数据时抛出。
+        集合中的任意 Point / Vector 不是有效三维数值数据时抛出。
     """
     if not points:
         return None

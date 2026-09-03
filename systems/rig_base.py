@@ -82,13 +82,11 @@ class RigBase(object):
     @property
     def name(self):
         u"""
+        根据当前五段属性返回标准 Rig Name。
 
-                根据当前五段属性返回标准 Rig Name。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         return self.compose()
 
@@ -101,25 +99,23 @@ class RigBase(object):
             index=None
     ):
         u"""
+        组合标准 Rig Name。
 
-                组合标准 Rig Name。
+        Args:
+            type (object):
+                当前方法执行 Maya / Rig 操作时使用的 `type` 数据。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            part (str):
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+            function (str | callable):
+                当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
+            index (int):
+                目标元素或节点的序号。
 
-                Args:
-                    type (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `type` 数据。
-                    side (str):
-                        方向标记，常用值为 lf、rt 或 md。
-                    part (str):
-                        Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
-                    function (str | callable):
-                        当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
-                    index (int):
-                        目标元素或节点的序号。
-
-                Returns:
-                    object | None:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object | None:
+            当前 API 完成处理后返回的结果。
         """
         # -------------------------------------------------------------------------
         # Step 01：检查当前条件与边界情况，并进入对应处理分支
@@ -171,25 +167,23 @@ class RigBase(object):
             index=None
     ):
         u"""
+        按当前属性或临时覆盖值创建标准 Rig Name。
 
-                按当前属性或临时覆盖值创建标准 Rig Name。
+        Args:
+            type (object):
+                当前方法执行 Maya / Rig 操作时使用的 `type` 数据。
+            function (str | callable):
+                当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            part (str):
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+            index (int):
+                目标元素或节点的序号。
 
-                Args:
-                    type (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `type` 数据。
-                    function (str | callable):
-                        当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
-                    side (str):
-                        方向标记，常用值为 lf、rt 或 md。
-                    part (str):
-                        Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
-                    index (int):
-                        目标元素或节点的序号。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
         return self.compose(
             type=type,
@@ -202,17 +196,15 @@ class RigBase(object):
     @classmethod
     def parse_name(cls, name):
         u"""
+        把标准 Rig Name 拆分成五段字段。
 
-                把标准 Rig Name 拆分成五段字段。
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
 
-                Args:
-                    name (str):
-                        创建或查询时使用的节点名称。
-
-                Returns:
-                    dict:
-                        包含本次构建、查询或处理结果的结构化字典。
-
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
         """
         short_name = name.split("|")[-1]
         short_name = short_name.split(":")[-1]
@@ -228,17 +220,15 @@ class RigBase(object):
 
     def decompose(self, name):
         u"""
+        拆分已有名称，并写入当前 RigBase 的五段属性。
 
-                拆分已有名称，并写入当前 RigBase 的五段属性。
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
 
-                Args:
-                    name (str):
-                        创建或查询时使用的节点名称。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         name_data = self.parse_name(name)
 
@@ -252,17 +242,15 @@ class RigBase(object):
 
     def mirror_name(self, name=None):
         u"""
+        返回当前名称或指定名称的左右镜像名称。
 
-                返回当前名称或指定名称的左右镜像名称。
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
 
-                Args:
-                    name (str):
-                        创建或查询时使用的节点名称。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         if name is None:
             name = self.name
@@ -292,30 +280,28 @@ class RigBase(object):
             part=None
     ):
         u"""
+        返回 Maya 场景中同一 Naming Base 的下一个序号。
 
-                返回 Maya 场景中同一 Naming Base 的下一个序号。
+        这里查询的是已有 Scene State，因此同前缀但不符合数字后缀的外部节点会被跳过，
+        不让异常场景名称破坏正常 Rig Build。
 
-                这里查询的是已有 Scene State，因此同前缀但不符合数字后缀的外部节点会被跳过，
-                不让异常场景名称破坏正常 Rig Build。
+        Args:
+            type (object):
+                当前方法执行 Maya / Rig 操作时使用的 `type` 数据。
+            function (str | callable):
+                当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            part (str):
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
 
-                Args:
-                    type (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `type` 数据。
-                    function (str | callable):
-                        当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
-                    side (str):
-                        方向标记，常用值为 lf、rt 或 md。
-                    part (str):
-                        Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
-                Raises:
-                    RuntimeError:
-                        输入数据、场景状态或操作条件不满足要求时抛出。
-
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # -------------------------------------------------------------------------
         # Step 01：检查当前条件与边界情况，并进入对应处理分支
@@ -385,23 +371,21 @@ class RigBase(object):
             part=None
     ):
         u"""
+        创建 Maya 场景中下一个可用的标准 Rig Name。
 
-                创建 Maya 场景中下一个可用的标准 Rig Name。
+        Args:
+            type (object):
+                当前方法执行 Maya / Rig 操作时使用的 `type` 数据。
+            function (str | callable):
+                当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            part (str):
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
 
-                Args:
-                    type (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `type` 数据。
-                    function (str | callable):
-                        当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
-                    side (str):
-                        方向标记，常用值为 lf、rt 或 md。
-                    part (str):
-                        Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
         next_index = self.get_next_index(
             type=type,
@@ -424,17 +408,15 @@ class RigBase(object):
 
     def get_opposite_side(self, side=None):
         u"""
+        返回相反 Side；md 保持 md。
 
-                返回相反 Side；md 保持 md。
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
 
-                Args:
-                    side (str):
-                        方向标记，常用值为 lf、rt 或 md。
-
-                Returns:
-                    str:
-                        当前 API 查询或处理后得到的字符串结果。
-
+        Returns:
+            str:
+            当前 API 查询或处理后得到的字符串结果。
         """
         if side is None:
             side = self.side

@@ -80,17 +80,15 @@ class SkirtRigBuilder(object):
 
     def validate_parameters(self):
         u"""
+        检查 Builder 参数。
 
-                检查 Builder 参数。
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
 
-                Returns:
-                    bool:
-                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
-
-                Raises:
-                    ValueError:
-                        输入数据、场景状态或操作条件不满足要求时抛出。
-
+        Raises:
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if self.horizontal_count < 3:
             raise ValueError(
@@ -106,13 +104,11 @@ class SkirtRigBuilder(object):
 
     def get_names(self):
         u"""
+        返回系统内所有固定节点名称。
 
-                返回系统内所有固定节点名称。
-
-                Returns:
-                    dict:
-                        包含本次构建、查询或处理结果的结构化字典。
-
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
         """
         return {
             "name": self.name,
@@ -133,13 +129,11 @@ class SkirtRigBuilder(object):
 
     def ensure_root_groups(self):
         u"""
+        确保裙子系统基础层级存在。
 
-                确保裙子系统基础层级存在。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         names = self.get_names()
         root = hierarchy_utils.ensure_group(
@@ -333,13 +327,11 @@ class SkirtRigBuilder(object):
     @scene_utils.undo_chunk
     def create_setup(self):
         u"""
+        创建或重建裙子定位系统。
 
-                创建或重建裙子定位系统。
-
-                Returns:
-                    dict:
-                        包含本次构建、查询或处理结果的结构化字典。
-
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
         """
         # -------------------------------------------------------------------------
         # Step 01：验证并规范化当前阶段需要的输入数据
@@ -399,13 +391,11 @@ class SkirtRigBuilder(object):
 
     def select_setup_curves(self):
         u"""
+        选择当前裙子系统的两条定位曲线。
 
-                选择当前裙子系统的两条定位曲线。
-
-                Returns:
-                    object | list:
-                        按当前 API 约定顺序返回的结果列表。
-
+        Returns:
+            object | list:
+            按当前 API 约定顺序返回的结果列表。
         """
         names = self.get_names()
         curves = []
@@ -505,13 +495,11 @@ class SkirtRigBuilder(object):
     @scene_utils.undo_chunk
     def build(self):
         u"""
+        根据当前 Blueprint 创建完整裙子 FK 绑定。
 
-                根据当前 Blueprint 创建完整裙子 FK 绑定。
-
-                Returns:
-                    dict:
-                        包含本次构建、查询或处理结果的结构化字典。
-
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
         """
         # -------------------------------------------------------------------------
         # Step 01：验证并规范化当前阶段需要的输入数据

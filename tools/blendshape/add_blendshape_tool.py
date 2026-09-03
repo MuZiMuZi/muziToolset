@@ -45,13 +45,11 @@ class BlendShapeTargetTool(QWidget):
 
     def __init__(self, parent=None):
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    parent (str):
-                        父级 Maya 节点名称。
-
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
         """
 
         super(BlendShapeTargetTool, self).__init__(parent)
@@ -202,13 +200,11 @@ class BlendShapeTargetTool(QWidget):
 
     def get_blendshape_node(self):
         u"""
+        返回当前输入的 BlendShape 节点。
 
-                返回当前输入的 BlendShape 节点。
-
-                Returns:
-                    object:
-                    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         return self.blendshape_line.text().strip()
 
@@ -362,13 +358,11 @@ class BlendShapeTargetTool(QWidget):
 
 def main():
     u"""
+    显示并返回 BlendShape Target Tool。
 
-        显示并返回 BlendShape Target Tool。
-
-        Returns:
-            object:
-            当前工具入口创建并显示的窗口或执行结果。
-
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
         "tools.blendshape.add_blendshape_tool",

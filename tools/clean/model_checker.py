@@ -52,13 +52,11 @@ class ModelChecker(QDialog):
 
     def __init__(self, parent=None):
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    parent (str):
-                        父级 Maya 节点名称。
-
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
         """
 
         super(ModelChecker, self).__init__(parent)
@@ -247,13 +245,11 @@ class ModelChecker(QDialog):
 
     def get_scope_nodes(self):
         u"""
+        返回当前检查范围。
 
-                返回当前检查范围。
-
-                Returns:
-                    object | None:
-                    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object | None:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         if not self.selected_only_checkbox.isChecked():
             return None
@@ -270,13 +266,11 @@ class ModelChecker(QDialog):
 
     def get_selected_issue_rows(self):
         u"""
+        返回表格当前选中的唯一行号。
 
-                返回表格当前选中的唯一行号。
-
-                Returns:
-                    object:
-                    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         selected_items = self.result_table.selectedItems()
         rows = []
@@ -292,13 +286,11 @@ class ModelChecker(QDialog):
 
     def get_selected_issues(self):
         u"""
+        返回表格当前选中的 Issue。
 
-                返回表格当前选中的 Issue。
-
-                Returns:
-                    object:
-                    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         issues = []
         rows = self.get_selected_issue_rows()
@@ -524,13 +516,11 @@ class ModelChecker(QDialog):
 
 def main():
     u"""
+    显示并返回 Model Checker。
 
-        显示并返回 Model Checker。
-
-        Returns:
-            object:
-            当前工具入口创建并显示的窗口或执行结果。
-
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
         "tools.clean.model_checker",

@@ -38,27 +38,25 @@ from . import scene_utils
 
 def get_matrix(matrix_plug):
     u"""
+    读取 Maya Matrix Plug，并返回 maya.api.OpenMaya.MMatrix。
 
-        读取 Maya Matrix Plug，并返回 maya.api.OpenMaya.MMatrix。
+    例如：
+        node.worldMatrix[0]
+        multMatrix1.matrixSum
 
-        例如：
-            node.worldMatrix[0]
-            multMatrix1.matrixSum
+    Args:
+        matrix_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
 
-        Args:
-            matrix_plug (str):
-                完整 Maya Plug，例如 `node.translateX`。
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
-        Returns:
-            object:
-                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
-        Raises:
-            ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
-            RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
-
+    Raises:
+        ValueError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支
@@ -105,17 +103,15 @@ def get_matrix(matrix_plug):
 
 def matrix_to_list(matrix):
     u"""
+    将 MMatrix 转换为 16 个数值的普通 list。
 
-        将 MMatrix 转换为 16 个数值的普通 list。
+    Args:
+        matrix (list[float] | maya.api.OpenMaya.MMatrix):
+            用于 Transform、Constraint 或空间计算的 4x4 Matrix 数据。
 
-        Args:
-            matrix (list[float] | maya.api.OpenMaya.MMatrix):
-                用于 Transform、Constraint 或空间计算的 4x4 Matrix 数据。
-
-        Returns:
-            object:
-                当前 API 完成处理后返回的结果。
-
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
     """
     matrix_values = []
 
@@ -133,22 +129,20 @@ def matrix_to_list(matrix):
 
 def calculate_parent_offset_matrix(driver, driven):
     u"""
+    计算 Driven 当前相对 Driver 的 World Offset Matrix。
 
-        计算 Driven 当前相对 Driver 的 World Offset Matrix。
+    计算：
+        drivenWorld * inverse(driverWorld)
 
-        计算：
-            drivenWorld * inverse(driverWorld)
+    Args:
+        driver (str):
+            作为驱动端的 Maya 节点名称。
+        driven (str):
+            作为被驱动端的 Maya 节点名称。
 
-        Args:
-            driver (str):
-                作为驱动端的 Maya 节点名称。
-            driven (str):
-                作为被驱动端的 Maya 节点名称。
-
-        Returns:
-            object:
-                当前 API 完成处理后返回的结果。
-
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
     """
     scene_utils.validate_node(
         driver
@@ -183,27 +177,25 @@ def create_parent_matrix_constraint(
         name=None
 ):
     u"""
+    使用 multMatrix + offsetParentMatrix 创建通用 Parent Matrix Network。
 
-        使用 multMatrix + offsetParentMatrix 创建通用 Parent Matrix Network。
+    Args:
+        driver (str):
+            作为驱动端的 Maya 节点名称。
+        driven (str):
+            作为被驱动端的 Maya 节点名称。
+        maintain_offset (bool):
+            是否在建立约束或矩阵关系时保持当前偏移。
+        name (str):
+            创建或查询时使用的节点名称。
 
-        Args:
-            driver (str):
-                作为驱动端的 Maya 节点名称。
-            driven (str):
-                作为被驱动端的 Maya 节点名称。
-            maintain_offset (bool):
-                是否在建立约束或矩阵关系时保持当前偏移。
-            name (str):
-                创建或查询时使用的节点名称。
+    Returns:
+        object:
+        创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
-        Returns:
-            object:
-                创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
-        Raises:
-            RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
-
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # Step 01：验证并规范化当前阶段需要的输入数据
@@ -328,22 +320,20 @@ def remove_parent_matrix_constraint(
         delete_node=False
 ):
     u"""
+    断开 Driven 的 offsetParentMatrix 输入。
 
-        断开 Driven 的 offsetParentMatrix 输入。
+    默认只断开连接，不删除来源节点。只有调用者明确确认来源节点属于当前
+    Matrix Network 时，才应传入 ``delete_node=True``。
 
-        默认只断开连接，不删除来源节点。只有调用者明确确认来源节点属于当前
-        Matrix Network 时，才应传入 ``delete_node=True``。
+    Args:
+        driven (str):
+            作为被驱动端的 Maya 节点名称。
+        delete_node (bool):
+            当前清理 / 重建流程是否执行 `delete_node` 对应的删除步骤。
 
-        Args:
-            driven (str):
-                作为被驱动端的 Maya 节点名称。
-            delete_node (bool):
-                当前清理 / 重建流程是否执行 `delete_node` 对应的删除步骤。
-
-        Returns:
-            bool:
-                当前操作成功或目标状态满足要求时返回 True，否则返回 False。
-
+    Returns:
+        bool:
+        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
     """
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支

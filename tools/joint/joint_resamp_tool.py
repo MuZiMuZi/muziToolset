@@ -196,19 +196,17 @@ class JointResamplingTool(QWidget):
 
 def validate_joint(joint, label):
     u"""
+    使用 Joint Core 校验，并把异常转换成 Tool Warning。
 
-        使用 Joint Core 校验，并把异常转换成 Tool Warning。
+    Args:
+        joint (str):
+            需要处理的 Maya Joint 节点名称。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
 
-        Args:
-            joint (str):
-                需要处理的 Maya Joint 节点名称。
-            label (str):
-                UI、Rig Node 或日志中展示的简短 Label。
-
-        Returns:
-            bool:
-                当前操作成功或目标状态满足要求时返回 True，否则返回 False。
-
+    Returns:
+        bool:
+        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
     """
     if not joint:
         cmds.warning(
@@ -234,19 +232,17 @@ def validate_joint(joint, label):
 
 def is_direct_child_joint(start_joint, end_joint):
     u"""
+    检查 end_joint 是否是 start_joint 的直接子 Joint。
 
-        检查 end_joint 是否是 start_joint 的直接子 Joint。
+    Args:
+        start_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        end_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
 
-        Args:
-            start_joint (str):
-                当前 Rig 计算或构建使用的 Maya Joint 节点。
-            end_joint (str):
-                当前 Rig 计算或构建使用的 Maya Joint 节点。
-
-        Returns:
-            object | bool:
-                条件成立时返回 True，否则返回 False。
-
+    Returns:
+        object | bool:
+        条件成立时返回 True，否则返回 False。
     """
     try:
         start_long_name = scene_utils.get_long_name(
@@ -269,21 +265,19 @@ def is_direct_child_joint(start_joint, end_joint):
 @scene_utils.undo_chunk
 def resample_joint(start_joint, end_joint, joint_number):
     u"""
+    在直接父子 Joint 之间插入指定数量的新 Joint。
 
-        在直接父子 Joint 之间插入指定数量的新 Joint。
+    Args:
+        start_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        end_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        joint_number (int):
+            当前构建、采样或查询过程使用的元素数量。
 
-        Args:
-            start_joint (str):
-                当前 Rig 计算或构建使用的 Maya Joint 节点。
-            end_joint (str):
-                当前 Rig 计算或构建使用的 Maya Joint 节点。
-            joint_number (int):
-                当前构建、采样或查询过程使用的元素数量。
-
-        Returns:
-            object | list:
-                按当前 API 约定顺序返回的结果列表。
-
+    Returns:
+        object | list:
+        按当前 API 约定顺序返回的结果列表。
     """
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支
@@ -438,13 +432,11 @@ def resample_joint(start_joint, end_joint, joint_number):
 
 def main():
     u"""
+    创建或恢复 Joint Resample Tool，立即显示并返回 QWidget。
 
-        创建或恢复 Joint Resample Tool，立即显示并返回 QWidget。
-
-        Returns:
-            object:
-                当前工具入口创建并显示的窗口或执行结果。
-
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
         "tools.joint.joint_resamp_tool",

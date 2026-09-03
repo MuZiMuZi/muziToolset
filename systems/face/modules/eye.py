@@ -36,6 +36,12 @@ class EyeModule(FaceModuleBase):
     sides = ["lf", "rt"]
 
     def __init__(self):
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+        """
+
         super(EyeModule, self).__init__(
             side="md",
             part="eye",
@@ -48,12 +54,30 @@ class EyeModule(FaceModuleBase):
         self.eye_side_dict = {}
 
     def load_setup(self):
-        u"""读取 Face Setup 与 Eye Controller Settings。"""
+        u"""
+
+                读取 Face Setup 与 Eye Controller Settings。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+                Raises:
+                    ValueError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.validate_setup_config(
             require_mouth_jnt_number=False
         )
         self.ensure_hierarchy()
 
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         controller_settings = self.face_guide.load_controller_settings()
         self.controller_global_scale = controller_settings.get(
             config.face_controller_global_scale_attr,
@@ -63,6 +87,9 @@ class EyeModule(FaceModuleBase):
             config.face_controller_size_attr_names["eye"],
             1.0
         )
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.controller_radius = (
             float(self.controller_global_scale) *
             float(self.controller_size)
@@ -71,6 +98,9 @@ class EyeModule(FaceModuleBase):
         if self.controller_radius <= 0.0:
             raise ValueError(u"Eye Controller Radius 必须大于 0。")
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.eye_side_dict = {}
         for side in self.sides:
             self.eye_side_dict[side] = {
@@ -88,10 +118,21 @@ class EyeModule(FaceModuleBase):
                 "aim_constraint": None,
                 "iris_scale_plug": None,
             }
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def load_guide(self):
-        u"""读取左右 Eye Ball / Iris Guide。"""
+        u"""
+
+                读取左右 Eye Ball / Iris Guide。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         for side in self.sides:
             eye_guide_dict = self.face_guide.get_eye_guides(
                 side=side,
@@ -102,7 +143,18 @@ class EyeModule(FaceModuleBase):
         return self.eye_side_dict
 
     def create_jnt(self):
-        u"""创建 Eye Center Joint 和 Iris Joint。"""
+        u"""
+
+                创建 Eye Center Joint 和 Iris Joint。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for side in self.sides:
             eye_dict = self.eye_side_dict[side]
             eye_jnt_name = self.create_name(
@@ -142,10 +194,21 @@ class EyeModule(FaceModuleBase):
 
             eye_dict["eye_jnt"] = eye_jnt
             eye_dict["iris_jnt"] = iris_jnt
+        # -------------------------------------------------------------------------
+        # Step 02：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.eye_side_dict
 
     def create_ctrl(self):
-        u"""创建 Eye Main Ctrl 与 Aim Ctrl，并把 Aim 放到 Iris 朝向前方。"""
+        u"""
+
+                创建 Eye Main Ctrl 与 Aim Ctrl，并把 Aim 放到 Iris 朝向前方。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：遍历当前数据集合，并逐项执行核心处理
         # -------------------------------------------------------------------------
@@ -238,7 +301,22 @@ class EyeModule(FaceModuleBase):
         return self.eye_side_dict
 
     def create_connect(self):
-        u"""Main Ctrl 驱动 Eye Joint；Aim Ctrl 驱动 Main Ctrl 的 Driven Group 朝向。"""
+        u"""
+
+                Main Ctrl 驱动 Eye Joint；Aim Ctrl 驱动 Main Ctrl 的 Driven Group 朝向。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for side in self.sides:
             eye_dict = self.eye_side_dict[side]
             eye_matrix_name = self.create_name(
@@ -280,10 +358,21 @@ class EyeModule(FaceModuleBase):
             eye_dict["eye_matrix"] = eye_matrix
             eye_dict["aim_constraint"] = aim_constraint_list[0]
 
+        # -------------------------------------------------------------------------
+        # Step 02：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.eye_side_dict
 
     def create_deform(self):
-        u"""在 Eye Main Ctrl 上创建 Iris Scale，并驱动 Iris Joint 的 Y/Z Scale。"""
+        u"""
+
+                在 Eye Main Ctrl 上创建 Iris Scale，并驱动 Iris Joint 的 Y/Z Scale。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         for side in self.sides:
             eye_dict = self.eye_side_dict[side]
             eye_ctrl = eye_dict["eye_ctrl_dict"]["ctrl_node"]
@@ -316,7 +405,15 @@ class EyeModule(FaceModuleBase):
         return self.eye_side_dict
 
     def create_finalize(self):
-        u"""验证 Eye Main / Aim / Iris 的关键构建结果。"""
+        u"""
+
+                验证 Eye Main / Aim / Iris 的关键构建结果。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        """
         for side in self.sides:
             eye_dict = self.eye_side_dict[side]
             required_nodes = [
@@ -340,7 +437,15 @@ class EyeModule(FaceModuleBase):
 
 
 def build_eye():
-    u"""构建 Eye Module 并返回统一 Module Dict。"""
+    u"""
+
+        构建 Eye Module 并返回统一 Module Dict。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+    """
     eye_module = EyeModule()
     eye_module_dict = eye_module.create_build()
     return eye_module_dict

@@ -32,6 +32,12 @@ class TongueModule(FaceModuleBase):
     u"""构建 Tongue FK Chain、Curl Driver 和可选 SkinCluster。"""
 
     def __init__(self):
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+        """
+
         super(TongueModule, self).__init__(
             side="md",
             part="tongue",
@@ -51,12 +57,32 @@ class TongueModule(FaceModuleBase):
         self.tongue_skin_cluster = None
 
     def load_setup(self):
-        u"""读取 Tongue Controller Settings 与 Tongue Model。"""
+        u"""
+
+                读取 Tongue Controller Settings 与 Tongue Model。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+                Raises:
+                    ValueError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.validate_setup_config(
             require_mouth_jnt_number=False
         )
         self.ensure_hierarchy()
 
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         controller_settings = self.face_guide.load_controller_settings()
         self.controller_global_scale = controller_settings.get(
             config.face_controller_global_scale_attr,
@@ -66,6 +92,9 @@ class TongueModule(FaceModuleBase):
             config.face_controller_size_attr_names["tongue"],
             1.0
         )
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.controller_color = controller_settings.get(
             config.face_controller_color_attr_names["md"],
             17
@@ -75,6 +104,9 @@ class TongueModule(FaceModuleBase):
             float(self.controller_size)
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.controller_radius <= 0.0:
             raise ValueError(u"Tongue Controller Radius 必须大于 0。")
 
@@ -91,10 +123,25 @@ class TongueModule(FaceModuleBase):
                     u"Tongue Model 已存在 SkinCluster：{}".format(existing_skin)
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def load_guide(self):
-        u"""读取中线 Tongue Guide。"""
+        u"""
+
+                读取中线 Tongue Guide。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
         self.tongue_guides = self.face_guide.get_part_guides(
             part="tongue",
             side="md",
@@ -107,7 +154,15 @@ class TongueModule(FaceModuleBase):
         return self.tongue_guides
 
     def create_jnt(self):
-        u"""按 Tongue Guide 顺序创建 FK Joint Chain。"""
+        u"""
+
+                按 Tongue Guide 顺序创建 FK Joint Chain。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         self.tongue_jnts = []
         jnt_parent = self.face_jnt_grp
         index = 0
@@ -139,7 +194,15 @@ class TongueModule(FaceModuleBase):
         return self.tongue_jnts
 
     def create_ctrl(self):
-        u"""创建与 Tongue Joint 一一对应的 FK Controller Chain。"""
+        u"""
+
+                创建与 Tongue Joint 一一对应的 FK Controller Chain。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         self.tongue_ctrl_dict_list = []
         ctrl_parent = self.face_ctrl_grp
         index = 0
@@ -172,7 +235,15 @@ class TongueModule(FaceModuleBase):
         return self.tongue_ctrl_dict_list
 
     def create_connect(self):
-        u"""Tongue FK Ctrl Output 一一驱动对应 Joint。"""
+        u"""
+
+                Tongue FK Ctrl Output 一一驱动对应 Joint。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         self.tongue_matrix_nodes = []
         index = 0
 
@@ -197,7 +268,19 @@ class TongueModule(FaceModuleBase):
         return self.tongue_matrix_nodes
 
     def create_deform(self):
-        u"""创建 Tongue Curl，并对可选 Tongue Model 建立 SkinCluster。"""
+        u"""
+
+                创建 Tongue Curl，并对可选 Tongue Model 建立 SkinCluster。
+
+                Returns:
+                    dict:
+                        包含本次构建、查询或处理结果的结构化字典。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：检查当前条件与边界情况，并进入对应处理分支
         # -------------------------------------------------------------------------
@@ -293,7 +376,15 @@ class TongueModule(FaceModuleBase):
         }
 
     def create_finalize(self):
-        u"""验证 Tongue FK Rig、Curl 与可选 SkinCluster。"""
+        u"""
+
+                验证 Tongue FK Rig、Curl 与可选 SkinCluster。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        """
         for tongue_jnt in self.tongue_jnts:
             scene_utils.validate_node(
                 tongue_jnt,
@@ -328,7 +419,15 @@ class TongueModule(FaceModuleBase):
 
 
 def build_tongue():
-    u"""构建 Tongue Module 并返回统一 Module Dict。"""
+    u"""
+
+        构建 Tongue Module 并返回统一 Module Dict。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+    """
     tongue_module = TongueModule()
     tongue_module_dict = tongue_module.create_build()
     return tongue_module_dict

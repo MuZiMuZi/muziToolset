@@ -31,6 +31,12 @@ class MouthModule(FaceModuleBase):
     u"""组织 Jaw / Lip / Mouth Corner 的关系并创建 Zip Lip。"""
 
     def __init__(self):
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+        """
+
         super(MouthModule, self).__init__(
             side="md",
             part="mouth",
@@ -55,7 +61,15 @@ class MouthModule(FaceModuleBase):
         self.zip_lip_dict = None
 
     def load_setup(self):
-        u"""读取 Mouth 设置，并确认 JawModule / LipModule 的关键节点已存在。"""
+        u"""
+
+                读取 Mouth 设置，并确认 JawModule / LipModule 的关键节点已存在。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：验证并规范化当前阶段需要的输入数据
         # -------------------------------------------------------------------------
@@ -134,18 +148,46 @@ class MouthModule(FaceModuleBase):
         return True
 
     def load_guide(self):
-        u"""读取 Mouth Corner 与 Upper / Lower Lip Guide。"""
+        u"""
+
+                读取 Mouth Corner 与 Upper / Lower Lip Guide。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         self.lip_guide_dict = self.face_guide.get_lip_guides(
             required=True
         )
         return self.lip_guide_dict
 
     def create_jnt(self):
-        u"""解析并注册 LipModule 已创建的 Upper / Lower Deform Joint。"""
+        u"""
+
+                解析并注册 LipModule 已创建的 Upper / Lower Deform Joint。
+
+                Returns:
+                    list:
+                        按当前 API 约定顺序返回的结果列表。
+
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.upper_lip_jnts = []
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.lower_lip_jnts = []
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         index = 0
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         while index < self.lip_jnt_count:
             item_index = index + 1
             upper_lip_jnt = self.create_name(
@@ -174,13 +216,24 @@ class MouthModule(FaceModuleBase):
             self.lower_lip_jnts.append(lower_lip_jnt)
             index += 1
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return [
             self.upper_lip_jnts,
             self.lower_lip_jnts,
         ]
 
     def create_ctrl(self):
-        u"""在嘴部中心创建 Mouth Main Controller。"""
+        u"""
+
+                在嘴部中心创建 Mouth Main Controller。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
@@ -267,7 +320,15 @@ class MouthModule(FaceModuleBase):
         }
 
     def create_connect(self):
-        u"""创建 Jaw -> Mouth Main 与 Mouth Main -> Corner 的 Follow。"""
+        u"""
+
+                创建 Jaw -> Mouth Main 与 Mouth Main -> Corner 的 Follow。
+
+                Returns:
+                    dict:
+                        包含本次构建、查询或处理结果的结构化字典。
+
+        """
         self.mouth_follow_dict = ctrl_base.create_follow(
             driver_node=self.jaw_output,
             ctrl_dict=self.mouth_main_ctrl_dict,
@@ -303,7 +364,15 @@ class MouthModule(FaceModuleBase):
         }
 
     def create_deform(self):
-        u"""调用正式 Matrix Zip Lip Builder 创建上下嘴唇闭合系统。"""
+        u"""
+
+                调用正式 Matrix Zip Lip Builder 创建上下嘴唇闭合系统。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         self.zip_lip_dict = build_zip_lip(
             upper_joints=self.upper_lip_jnts,
             lower_joints=self.lower_lip_jnts,
@@ -317,7 +386,19 @@ class MouthModule(FaceModuleBase):
         return self.zip_lip_dict
 
     def create_finalize(self):
-        u"""验证 Mouth Main / Zip Lip 关键输出。"""
+        u"""
+
+                验证 Mouth Main / Zip Lip 关键输出。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
         scene_utils.validate_node(
             self.mouth_main_ctrl_dict["ctrl_node"],
             label=u"Mouth Main Ctrl"
@@ -347,7 +428,15 @@ class MouthModule(FaceModuleBase):
 
 
 def build_mouth():
-    u"""构建 Mouth Module 并返回统一 Module Dict。"""
+    u"""
+
+        构建 Mouth Module 并返回统一 Module Dict。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+    """
     mouth_module = MouthModule()
     mouth_module_dict = mouth_module.create_build()
     return mouth_module_dict

@@ -120,23 +120,21 @@ import maya.api.OpenMaya as om
 
 def get_curve_shape(curve):
     u"""
+    返回 NURBS Curve Shape 的完整 DAG Path。
 
-        返回 NURBS Curve Shape 的完整 DAG Path。
+    ``curve`` 可以直接传 Transform，也可以直接传 nurbsCurve Shape。
 
-        ``curve`` 可以直接传 Transform，也可以直接传 nurbsCurve Shape。
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
 
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # -------------------------------------------------------------------------
     # 步骤 1：确认输入节点存在。
@@ -197,21 +195,19 @@ def get_curve_shape(curve):
 
 def get_curve_transform(curve):
     u"""
+    返回 NURBS Curve Transform 的完整 DAG Path。
 
-        返回 NURBS Curve Transform 的完整 DAG Path。
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
 
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：先统一取得 Curve Shape。
     curve_shape = get_curve_shape(curve)
@@ -238,17 +234,15 @@ def get_curve_transform(curve):
 
 def get_curve_cvs(curve):
     u"""
+    返回 Curve 全部 CV Component 名称。
 
-        返回 Curve 全部 CV Component 名称。
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
 
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
-
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     # 步骤 1：取得唯一 Shape Path。
     curve_shape = get_curve_shape(curve)
@@ -267,17 +261,15 @@ def get_curve_cvs(curve):
 
 def get_curve_cv_count(curve):
     u"""
+    返回 Curve CV 数量。
 
-        返回 Curve CV 数量。
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
 
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
-
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     curve_cvs = get_curve_cvs(curve)
     return len(curve_cvs)
@@ -288,19 +280,17 @@ def get_curve_cv_positions(
         world_space=True
 ):
     u"""
+    返回 Curve 全部 CV 坐标。
 
-        返回 Curve 全部 CV 坐标。
+    Args:
+        curve (str):
+            Curve Transform 或 Shape。
+        world_space (bool):
+            True 返回世界坐标；False 返回局部坐标。
 
-        Args:
-            curve (str):
-                Curve Transform 或 Shape。
-            world_space (bool):
-                True 返回世界坐标；False 返回局部坐标。
-
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     curve_cvs = get_curve_cvs(curve)
     positions = []
@@ -326,17 +316,15 @@ def get_curve_cv_positions(
 
 def get_dag_path(node):
     u"""
+    返回 Maya API 2.0 ``MDagPath``。
 
-        返回 Maya API 2.0 ``MDagPath``。
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
 
-        Args:
-            node (str):
-                需要查询或处理的 Maya 节点名称。
-
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     # 步骤 1：确认节点存在。
     scene_utils.validate_node(node)
@@ -350,17 +338,15 @@ def get_dag_path(node):
 
 def get_curve_function(curve):
     u"""
+    返回 Maya API 2.0 ``MFnNurbsCurve``。
 
-        返回 Maya API 2.0 ``MFnNurbsCurve``。
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
 
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
-
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     # 步骤 1：取得 Curve Shape。
     curve_shape = get_curve_shape(curve)
@@ -376,25 +362,23 @@ def get_curve_function(curve):
 
 def get_even_percentages(sample_count):
     u"""
+    返回包含头尾的 0~1 等间距百分比。
 
-        返回包含头尾的 0~1 等间距百分比。
+    Args:
+        sample_count (int):
+            当前构建、采样或查询过程使用的元素数量。
 
-        Args:
-            sample_count (int):
-                当前构建、采样或查询过程使用的元素数量。
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    Raises:
+        ValueError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
 
-        Raises:
-            ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-
-        Example:
-            get_even_percentages(5)
+    Example:
+        get_even_percentages(5)
                                                                             -> [0.0, 0.25, 0.5, 0.75, 1.0]
-
     """
     # 步骤 1：至少需要首尾两个采样点。
     if sample_count < 2:
@@ -526,27 +510,25 @@ def get_closest_parameter(
         world_position
 ):
     u"""
+    返回世界坐标在 Curve 上最近点对应的原始 Parameter。
 
-        返回世界坐标在 Curve 上最近点对应的原始 Parameter。
+    这里使用临时 ``nearestPointOnCurve`` 节点。
+    原因是后续 ``pointOnCurveInfo.parameter`` 需要 Maya Curve 的原始 Parameter，
+    而不是简单的 0~1 百分比。
 
-        这里使用临时 ``nearestPointOnCurve`` 节点。
-        原因是后续 ``pointOnCurveInfo.parameter`` 需要 Maya Curve 的原始 Parameter，
-        而不是简单的 0~1 百分比。
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+        world_position (list[float] | tuple[float, float, float]):
+            用于 Curve 最近点、参数查询或节点放置的 World Space Position。
 
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
-            world_position (list[float] | tuple[float, float, float]):
-                用于 Curve 最近点、参数查询或节点放置的 World Space Position。
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
-        Raises:
-            ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-
+    Raises:
+        ValueError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证世界坐标格式。
     # -------------------------------------------------------------------------
@@ -610,23 +592,21 @@ def parameter_to_length_percentage(
         parameter
 ):
     u"""
+    将 Curve 原始 Parameter 转换成 0~1 弧长百分比。
 
-        将 Curve 原始 Parameter 转换成 0~1 弧长百分比。
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+        parameter (float):
+            NURBS Curve / Surface 参数空间中的 Parameter 值。
 
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
-            parameter (float):
-                NURBS Curve / Surface 参数空间中的 Parameter 值。
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
 
-        Returns:
-            object:
-            当前 API 完成处理后返回的结果。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：取得 API Function 和总弧长。
     # -------------------------------------------------------------------------
@@ -677,23 +657,21 @@ def length_percentage_to_parameter(
         percentage
 ):
     u"""
+    将 0~1 弧长百分比转换成 Curve 原始 Parameter。
 
-        将 0~1 弧长百分比转换成 Curve 原始 Parameter。
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+        percentage (float):
+            沿 Curve 或数据范围的归一化百分比，通常为 0.0～1.0。
 
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
-            percentage (float):
-                沿 Curve 或数据范围的归一化百分比，通常为 0.0～1.0。
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
 
-        Returns:
-            object:
-            当前 API 完成处理后返回的结果。
-
-        Raises:
-            ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-
+    Raises:
+        ValueError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：统一成 float，并验证范围。
     percentage = float(percentage)
@@ -882,23 +860,21 @@ def create_closest_point_attachment(
         parent=None
 ):
     u"""
+    在 Curve 上距离 world_position 最近的位置创建 Attachment。
 
-        在 Curve 上距离 world_position 最近的位置创建 Attachment。
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+        world_position (list[float] | tuple[float, float, float]):
+            用于 Curve 最近点、参数查询或节点放置的 World Space Position。
+        name (str):
+            创建或查询时使用的节点名称。
+        parent (str):
+            父级 Maya 节点名称。
 
-        Args:
-            curve (str):
-                需要处理的 Maya Curve Transform 或 Shape 名称。
-            world_position (list[float] | tuple[float, float, float]):
-                用于 Curve 最近点、参数查询或节点放置的 World Space Position。
-            name (str):
-                创建或查询时使用的节点名称。
-            parent (str):
-                父级 Maya 节点名称。
-
-        Returns:
-            object:
-            创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+    Returns:
+        object:
+        创建或构建完成后的 Maya / Rig 对象或 Build Result。
     """
     # 步骤 1：先得到最近位置的原始 Parameter。
     parameter = get_closest_parameter(
@@ -1007,27 +983,25 @@ def create_curve_from_selected_edges(
         form=2
 ):
     u"""
+    根据当前选择的 Polygon Edge 创建 NURBS Curve。
 
-        根据当前选择的 Polygon Edge 创建 NURBS Curve。
+    这是本模块少数明确读取 Selection 的函数，因为函数名已经写明 selected_edges。
 
-        这是本模块少数明确读取 Selection 的函数，因为函数名已经写明 selected_edges。
+    Args:
+        name (str):
+            创建或查询时使用的节点名称。
+        degree (int):
+            创建或重建 NURBS Curve 使用的 Degree。
+        form (int):
+            NURBS Curve Form 枚举值，用于区分 Open、Closed 或 Periodic Curve。
 
-        Args:
-            name (str):
-                创建或查询时使用的节点名称。
-            degree (int):
-                创建或重建 NURBS Curve 使用的 Degree。
-            form (int):
-                NURBS Curve Form 枚举值，用于区分 Open、Closed 或 Periodic Curve。
+    Returns:
+        object:
+        创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
-        Returns:
-            object:
-            创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：只展开 Polygon Edge Selection。
     # -------------------------------------------------------------------------

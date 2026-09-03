@@ -143,16 +143,14 @@ class MayaObjectPicker(QWidget):
 
     def get_value(self):
         u"""
+        返回当前输入的 Maya DAG Short Name。
 
-                返回当前输入的 Maya DAG Short Name。
+        即使用户手动粘贴 Long DAG Path，也统一通过
+        core.rename_utils.get_short_name() 规范化。
 
-                即使用户手动粘贴 Long DAG Path，也统一通过
-                core.rename_utils.get_short_name() 规范化。
-
-                Returns:
-                    object:
-                    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         value = self.line_edit.text().strip()
 
@@ -228,16 +226,14 @@ class MayaObjectPicker(QWidget):
 
     def pick_from_selection(self):
         u"""
+        读取 Maya 当前选择中的最后一个对象。
 
-                读取 Maya 当前选择中的最后一个对象。
+        查询阶段使用 Long DAG Path 精确获取用户选择；
+        写入 UI 前统一转换为 Short Name。
 
-                查询阶段使用 Long DAG Path 精确获取用户选择；
-                写入 UI 前统一转换为 Short Name。
-
-                Returns:
-                    object | None:
-                    当前 API 完成处理后返回的结果。
-
+        Returns:
+            object | None:
+            当前 API 完成处理后返回的结果。
         """
         # -------------------------------------------------------------------------
         # Step 01：准备当前阶段计算和后续处理需要的数据

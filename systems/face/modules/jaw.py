@@ -63,7 +63,9 @@ class JawModule(FaceModuleBase):
     u"""根据 Jaw Guide 创建 Joint、Controller 和 Jaw Open 自动位移效果。"""
 
     def __init__(self):
-        u"""初始化 Jaw Module 的输入、名称、设置和构建结果。"""
+        u"""
+        初始化 Jaw Module 的输入、名称、设置和构建结果。
+        """
         # -------------------------------------------------------------------------
         # Step 01：执行当前阶段的核心处理
         # -------------------------------------------------------------------------
@@ -142,7 +144,11 @@ class JawModule(FaceModuleBase):
 
         Returns:
             bool:
-                参数准备和 Scene Preflight 完成后返回 True。
+            参数准备和 Scene Preflight 完成后返回 True。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # -------------------------------------------------------------------------
         # Step 01：确认 Face Setup 已经完成，并确保正式 Face 层级存在
@@ -201,7 +207,7 @@ class JawModule(FaceModuleBase):
 
         Returns:
             list[str]:
-                按 Start、End 顺序返回两个 Jaw Guide。
+            按 Start、End 顺序返回两个 Jaw Guide。
         """
         # -------------------------------------------------------------------------
         # Step 01：根据当前正式 Naming 生成 Jaw Guide 名称
@@ -244,7 +250,7 @@ class JawModule(FaceModuleBase):
 
         Returns:
             list[str]:
-                Jaw Start Joint 与 Jaw End Joint。
+            Jaw Start Joint 与 Jaw End Joint。
         """
         joint_radius = self.controller_radius * 0.25
 
@@ -288,7 +294,7 @@ class JawModule(FaceModuleBase):
 
         Returns:
             dict:
-                ctrl_base.create_ctrl() 返回的完整 Jaw Controller Dict。
+            ctrl_base.create_ctrl() 返回的完整 Jaw Controller Dict。
         """
         # -------------------------------------------------------------------------
         # Step 01：使用统一 CtrlBase 创建完整标准 Controller 层级
@@ -330,7 +336,7 @@ class JawModule(FaceModuleBase):
 
         Returns:
             str:
-                创建出的 Parent Matrix Constraint 节点。
+            创建出的 Parent Matrix Constraint 节点。
         """
         # -------------------------------------------------------------------------
         # Step 01：Controller 最终 Output 作为唯一 Rig Driver
@@ -356,14 +362,17 @@ class JawModule(FaceModuleBase):
         旧 Bind 的核心思路被保留：
         不能直接把 Jaw Ctrl 的 rotateY 回接到它自己的祖先 Connect Group，
         否则容易产生 Maya Evaluation Cycle。
-
         新实现创建一套独立 Rotation Driver Chain，复制 Offset / Ctrl / SubCtrl
         的局部旋转，再通过 Orient Constraint 读取累计旋转，最后把 rotateY
         乘以 Animator 可调属性，输出到 Jaw Connect Group 的 translateX / Z。
 
         Returns:
             dict:
-                Jaw Open Driver Network 的主要节点。
+            Jaw Open Driver Network 的主要节点。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
         jaw_grp_dict = self.jaw_ctrl_dict["grp_dict"]
         jaw_offset_grp = jaw_grp_dict["offset"]
@@ -546,7 +555,11 @@ class JawModule(FaceModuleBase):
 
         Returns:
             bool:
-                所有关键 Build Node 存在时返回 True。
+            所有关键 Build Node 存在时返回 True。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
         required_nodes = [
             self.jaw_start_joint,
@@ -733,7 +746,7 @@ def build_jaw():
 
     Returns:
         dict:
-            JawModule.create_build() 的完整公开结果。
+        JawModule.create_build() 的完整公开结果。
     """
     jaw_module = JawModule()
     jaw_module_dict = jaw_module.create_build()

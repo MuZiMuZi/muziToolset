@@ -45,6 +45,12 @@ class BrowModule(FaceModuleBase):
     ]
 
     def __init__(self):
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+        """
+
         super(BrowModule, self).__init__(
             side="md",
             part="brow",
@@ -62,7 +68,19 @@ class BrowModule(FaceModuleBase):
     # =========================================================================
 
     def load_setup(self):
-        u"""读取 Face Setup / Controller Settings，并准备 Brow 构建状态。"""
+        u"""
+
+                读取 Face Setup / Controller Settings，并准备 Brow 构建状态。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+                Raises:
+                    ValueError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：验证并规范化当前阶段需要的输入数据
         # -------------------------------------------------------------------------
@@ -133,7 +151,19 @@ class BrowModule(FaceModuleBase):
     # =========================================================================
 
     def load_guide(self):
-        u"""读取左右 Brow Main Guide 和有序 Point Guide。"""
+        u"""
+
+                读取左右 Brow Main Guide 和有序 Point Guide。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
         for side in self.sides:
             brow_guide_dict = self.face_guide.get_brow_guides(
                 side
@@ -161,7 +191,18 @@ class BrowModule(FaceModuleBase):
     # =========================================================================
 
     def create_jnt(self):
-        u"""按 Brow Point Guide 创建独立 Driver Joint。"""
+        u"""
+
+                按 Brow Point Guide 创建独立 Driver Joint。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for side in self.sides:
             brow_dict = self.brow_side_dict[side]
             point_guides = brow_dict["point_guides"]
@@ -197,6 +238,9 @@ class BrowModule(FaceModuleBase):
 
             brow_dict["driver_jnts"] = driver_jnts
 
+        # -------------------------------------------------------------------------
+        # Step 02：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.brow_side_dict
 
     # =========================================================================
@@ -204,7 +248,15 @@ class BrowModule(FaceModuleBase):
     # =========================================================================
 
     def create_ctrl(self):
-        u"""创建每侧 Brow Main Ctrl 和与 Guide 一一对应的 Detail Ctrl。"""
+        u"""
+
+                创建每侧 Brow Main Ctrl 和与 Guide 一一对应的 Detail Ctrl。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：遍历当前数据集合，并逐项执行核心处理
         # -------------------------------------------------------------------------
@@ -294,7 +346,15 @@ class BrowModule(FaceModuleBase):
     # =========================================================================
 
     def create_connect(self):
-        u"""建立 Detail Ctrl -> Driver Jnt，并给 Detail Ctrl 添加 Main Follow。"""
+        u"""
+
+                建立 Detail Ctrl -> Driver Jnt，并给 Detail Ctrl 添加 Main Follow。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：遍历当前数据集合，并逐项执行核心处理
         # -------------------------------------------------------------------------
@@ -360,11 +420,17 @@ class BrowModule(FaceModuleBase):
 
     def create_deform(self):
         u"""
-        创建 Brow Driver Curve / Skin Surface / Follicle Deform Joints。
 
-        Driver Joint 只负责控制 Surface；真正用于后续 Face Skin 的输出是附着在
-        Follicle 下的 Deform Joint。这样保留旧 Brow Surface/Follicle 设计，但把
-        Surface 与 Joint/Controller 的职责拆回当前 Core / System 边界。
+                创建 Brow Driver Curve / Skin Surface / Follicle Deform Joints。
+
+                Driver Joint 只负责控制 Surface；真正用于后续 Face Skin 的输出是附着在
+                Follicle 下的 Deform Joint。这样保留旧 Brow Surface/Follicle 设计，但把
+                Surface 与 Joint/Controller 的职责拆回当前 Core / System 边界。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
         """
         # -------------------------------------------------------------------------
         # Step 01：遍历当前数据集合，并逐项执行核心处理
@@ -522,7 +588,18 @@ class BrowModule(FaceModuleBase):
     # =========================================================================
 
     def create_finalize(self):
-        u"""验证左右 Brow 模块关键输出，并整理公开 Module Dict。"""
+        u"""
+
+                验证左右 Brow 模块关键输出，并整理公开 Module Dict。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for side in self.sides:
             brow_dict = self.brow_side_dict[side]
             required_nodes = []
@@ -555,13 +632,30 @@ class BrowModule(FaceModuleBase):
                     label=u"Brow Module Build Node"
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.module_dict["sides"] = self.brow_side_dict
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.module_dict["built"] = True
+        # -------------------------------------------------------------------------
+        # Step 04：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
 
 def build_brow():
-    u"""构建 Brow Module 并返回统一 Module Dict。"""
+    u"""
+
+        构建 Brow Module 并返回统一 Module Dict。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+    """
     brow_module = BrowModule()
     brow_module_dict = brow_module.create_build()
     return brow_module_dict

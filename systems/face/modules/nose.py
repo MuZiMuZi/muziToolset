@@ -46,6 +46,12 @@ class NoseModule(FaceModuleBase):
     ]
 
     def __init__(self):
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+        """
+
         super(NoseModule, self).__init__(
             side="md",
             part="nose",
@@ -67,7 +73,19 @@ class NoseModule(FaceModuleBase):
         self.nose_matrix_nodes = []
 
     def load_setup(self):
-        u"""读取 Nose Controller Settings，并准备当前 Build 缓存。"""
+        u"""
+
+                读取 Nose Controller Settings，并准备当前 Build 缓存。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+                Raises:
+                    ValueError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：确认 Face Setup 已完成，并确保公共层级存在
         # -------------------------------------------------------------------------
@@ -115,7 +133,15 @@ class NoseModule(FaceModuleBase):
         return True
 
     def load_guide(self):
-        u"""按模板语义读取 Nose 中轴和局部分支 Guide。"""
+        u"""
+
+                按模板语义读取 Nose 中轴和局部分支 Guide。
+
+                Returns:
+                    dict:
+                        包含本次构建、查询或处理结果的结构化字典。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：按明确顺序读取 Muzzle -> Nose -> Nose Center 中轴定位
         # -------------------------------------------------------------------------
@@ -158,7 +184,15 @@ class NoseModule(FaceModuleBase):
         }
 
     def create_jnt(self):
-        u"""创建 Nose 中轴 Joint Chain 和 Center 下的局部 Joint。"""
+        u"""
+
+                创建 Nose 中轴 Joint Chain 和 Center 下的局部 Joint。
+
+                Returns:
+                    dict:
+                        包含本次构建、查询或处理结果的结构化字典。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：按 Muzzle -> Nose -> Nose Center 顺序创建 FK Joint Chain
         # -------------------------------------------------------------------------
@@ -225,7 +259,15 @@ class NoseModule(FaceModuleBase):
         }
 
     def create_ctrl(self):
-        u"""创建 Nose 中轴 FK Ctrl Chain 和局部 Ctrl。"""
+        u"""
+
+                创建 Nose 中轴 FK Ctrl Chain 和局部 Ctrl。
+
+                Returns:
+                    dict:
+                        包含本次构建、查询或处理结果的结构化字典。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：中轴 Ctrl 按 Muzzle -> Nose -> Nose Center 创建 FK 层级
         # -------------------------------------------------------------------------
@@ -293,7 +335,15 @@ class NoseModule(FaceModuleBase):
         }
 
     def create_connect(self):
-        u"""使用所有 Nose Ctrl Output 一一驱动对应 Joint。"""
+        u"""
+
+                使用所有 Nose Ctrl Output 一一驱动对应 Joint。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         self.nose_matrix_nodes = []
 
         # -------------------------------------------------------------------------
@@ -344,11 +394,27 @@ class NoseModule(FaceModuleBase):
         return self.nose_matrix_nodes
 
     def create_deform(self):
-        u"""Nose 输出 Joint 直接作为后续 Face Skin Influence。"""
+        u"""
+
+                Nose 输出 Joint 直接作为后续 Face Skin Influence。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        """
         return True
 
     def create_finalize(self):
-        u"""验证 Nose 中轴和局部分支的 Joint / Ctrl / Matrix。"""
+        u"""
+
+                验证 Nose 中轴和局部分支的 Joint / Ctrl / Matrix。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：验证全部中轴 Joint / Controller
         # -------------------------------------------------------------------------
@@ -400,7 +466,15 @@ class NoseModule(FaceModuleBase):
 
 
 def build_nose():
-    u"""构建 Nose Module 并返回统一 Module Dict。"""
+    u"""
+
+        构建 Nose Module 并返回统一 Module Dict。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+    """
     nose_module = NoseModule()
     nose_module_dict = nose_module.create_build()
     return nose_module_dict

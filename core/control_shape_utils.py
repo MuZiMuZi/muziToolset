@@ -130,13 +130,11 @@ from . import file_utils
 
 def get_library_dir():
     u"""
+    返回正式 Controller Shape 资源目录。
 
-        返回正式 Controller Shape 资源目录。
-
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     return controller_shapes_dir
 
@@ -147,19 +145,17 @@ def get_library_dir():
 
 def get_curve_shapes(transform):
     u"""
+    返回 Transform 下全部有效 NURBS Curve Shape。
 
-        返回 Transform 下全部有效 NURBS Curve Shape。
+    Intermediate Shape 会被过滤。
 
-        Intermediate Shape 会被过滤。
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
 
-        Args:
-            transform (str):
-                需要处理的 Maya Transform 节点名称。
-
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     # 步骤 1：直接按 nurbsCurve 类型查询 Shape。
     shapes = cmds.listRelatives(
@@ -178,17 +174,15 @@ def get_curve_shapes(transform):
 
 def get_shape_cvs(transform):
     u"""
+    返回一个 Controller Transform 下所有 Curve Shape 的全部 CV。
 
-        返回一个 Controller Transform 下所有 Curve Shape 的全部 CV。
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
 
-        Args:
-            transform (str):
-                需要处理的 Maya Transform 节点名称。
-
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     cvs = []
     shapes = get_curve_shapes(transform)
@@ -212,15 +206,13 @@ def get_shape_cvs(transform):
 
 def get_selected_curve_transforms():
     u"""
+    返回当前 Selection 中有效的 Curve Transform。
 
-        返回当前 Selection 中有效的 Curve Transform。
+    Shape Selection 会自动转换到 Parent Transform，重复节点会去重。
 
-        Shape Selection 会自动转换到 Parent Transform，重复节点会去重。
-
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     # 步骤 1：读取当前 Selection。
     # -------------------------------------------------------------------------
@@ -379,21 +371,19 @@ def get_shape_data(transform):
 
 def get_shape_color(transform, default=None):
     u"""
+    返回第一个 Curve Shape 的 Maya Index Color。
 
-        返回第一个 Curve Shape 的 Maya Index Color。
+    如果没有启用 Override，或者当前使用 RGB Override，则返回 default。
 
-        如果没有启用 Override，或者当前使用 RGB Override，则返回 default。
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+        default (object):
+            当前查询、配置或 UI 逻辑在没有显式值时使用的默认值。
 
-        Args:
-            transform (str):
-                需要处理的 Maya Transform 节点名称。
-            default (object):
-                当前查询、配置或 UI 逻辑在没有显式值时使用的默认值。
-
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     # 步骤 1：取得第一个 Shape。
     # -------------------------------------------------------------------------
@@ -441,19 +431,17 @@ def get_shape_color(transform, default=None):
 
 def get_shape_radius(transform):
     u"""
+    返回 Controller Shape CV 到局部原点的最大距离。
 
-        返回 Controller Shape CV 到局部原点的最大距离。
+    这个值作为 Shape 的近似“半径”，用于统一调整控制器尺寸。
 
-        这个值作为 Shape 的近似“半径”，用于统一调整控制器尺寸。
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
 
-        Args:
-            transform (str):
-                需要处理的 Maya Transform 节点名称。
-
-        Returns:
-            object | float:
-            当前数学、权重或空间计算得到的浮点结果。
-
+    Returns:
+        object | float:
+        当前数学、权重或空间计算得到的浮点结果。
     """
     cvs = get_shape_cvs(transform)
 
@@ -562,26 +550,24 @@ def _create_temp_curve(shape_data):
 
 def apply_shape_data(transform, shape_data_list):
     u"""
+    使用 Shape 数据替换 Transform 下已有 Curve Shape。
 
-        使用 Shape 数据替换 Transform 下已有 Curve Shape。
+    注意：
+        只替换 Shape，不删除或重建 Controller Transform。
 
-        注意：
-            只替换 Shape，不删除或重建 Controller Transform。
+    Args:
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+        shape_data_list (list):
+            Controller Shape 的 CV、Degree、Form 等序列化数据列表。
 
-        Args:
-            transform (str):
-                需要处理的 Maya Transform 节点名称。
-            shape_data_list (list):
-                Controller Shape 的 CV、Degree、Form 等序列化数据列表。
+    Returns:
+        object:
+        完成设置或应用后的目标对象 / 状态结果。
 
-        Returns:
-            object:
-            完成设置或应用后的目标对象 / 状态结果。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：确认目标 Controller 存在。
     # -------------------------------------------------------------------------
@@ -673,17 +659,15 @@ def apply_shape_data(transform, shape_data_list):
 
 def load_shape_data(shape_name):
     u"""
+    从正式 Controller Shape 资源目录读取一个 Shape JSON。
 
-        从正式 Controller Shape 资源目录读取一个 Shape JSON。
+    Args:
+        shape_name (str):
+            `shape_name` 对应的 Maya 节点或资源名称。
 
-        Args:
-            shape_name (str):
-                `shape_name` 对应的 Maya 节点或资源名称。
-
-        Returns:
-            object:
-            当前 API 完成处理后返回的结果。
-
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
     """
     # 步骤 1：构建资源路径。
     file_path = os.path.join(

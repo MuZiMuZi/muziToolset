@@ -405,13 +405,11 @@ class JointTool(QWidget):
     @staticmethod
     def get_selected_joints():
         u"""
+        返回当前选择 Joint；空选择时显示 Tool Warning。
 
-                返回当前选择 Joint；空选择时显示 Tool Warning。
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         joints = scene_utils.get_selected_nodes(
             node_type="joint",
@@ -452,54 +450,42 @@ class JointTool(QWidget):
 
     def show_axis_selected(self):
         u"""
-
-                执行当前 API 的主要处理流程。
-
+        执行当前 API 的主要处理流程。
         """
 
         self.set_axis_visibility(True, False, False)
 
     def hide_axis_selected(self):
         u"""
-
-                执行当前 API 的主要处理流程。
-
+        执行当前 API 的主要处理流程。
         """
 
         self.set_axis_visibility(False, False, False)
 
     def show_axis_hierarchy(self):
         u"""
-
-                执行当前 API 的主要处理流程。
-
+        执行当前 API 的主要处理流程。
         """
 
         self.set_axis_visibility(True, True, False)
 
     def hide_axis_hierarchy(self):
         u"""
-
-                执行当前 API 的主要处理流程。
-
+        执行当前 API 的主要处理流程。
         """
 
         self.set_axis_visibility(False, True, False)
 
     def show_axis_all(self):
         u"""
-
-                执行当前 API 的主要处理流程。
-
+        执行当前 API 的主要处理流程。
         """
 
         self.set_axis_visibility(True, False, True)
 
     def hide_axis_all(self):
         u"""
-
-                执行当前 API 的主要处理流程。
-
+        执行当前 API 的主要处理流程。
         """
 
         self.set_axis_visibility(False, False, True)
@@ -691,13 +677,11 @@ class JointTool(QWidget):
     @staticmethod
     def open_resample_tool():
         u"""
+        通过统一 Window Manager 打开 Joint Resample。
 
-                通过统一 Window Manager 打开 Joint Resample。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         return window_manager.show_tool(
             "joint/joint_resample",
@@ -832,18 +816,14 @@ class JointTool(QWidget):
 
     def enable_scale_compensate(self):
         u"""
-
-                执行当前 API 的主要处理流程。
-
+        执行当前 API 的主要处理流程。
         """
 
         self.set_scale_compensate(True)
 
     def disable_scale_compensate(self):
         u"""
-
-                执行当前 API 的主要处理流程。
-
+        执行当前 API 的主要处理流程。
         """
 
         self.set_scale_compensate(False)
@@ -877,18 +857,14 @@ class JointTool(QWidget):
 
     def show_orient(self):
         u"""
-
-                执行当前 API 的主要处理流程。
-
+        执行当前 API 的主要处理流程。
         """
 
         self.set_orient_visibility(True)
 
     def hide_orient(self):
         u"""
-
-                执行当前 API 的主要处理流程。
-
+        执行当前 API 的主要处理流程。
         """
 
         self.set_orient_visibility(False)
@@ -1058,13 +1034,11 @@ class JointTool(QWidget):
 
 def main():
     u"""
+    创建或恢复 Joint Tool，立即显示并返回 QWidget。
 
-        创建或恢复 Joint Tool，立即显示并返回 QWidget。
-
-        Returns:
-            object:
-                当前工具入口创建并显示的窗口或执行结果。
-
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
         "tools.joint.joint_tool",

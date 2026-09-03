@@ -184,7 +184,9 @@ class MayaIndexColorSlider(QWidget):
     # =========================================================================
 
     def style_widgets(self):
-        u"""应用高可见度 Slider、Index Label 和 Preview 样式。"""
+        u"""
+        应用高可见度 Slider、Index Label 和 Preview 样式。
+        """
         # -------------------------------------------------------------------------
         # Step 01：使用 Theme Accent 配置 Slider Groove / Handle 状态
         # -------------------------------------------------------------------------
@@ -263,7 +265,7 @@ class MayaIndexColorSlider(QWidget):
 
         Returns:
             int:
-                Slider 当前 0～31 的颜色索引。
+            Slider 当前 0～31 的颜色索引。
         """
         return int(
             self.color_slider.value()

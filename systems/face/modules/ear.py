@@ -26,6 +26,12 @@ class EarModule(FaceModuleBase):
     sides = ["lf", "rt"]
 
     def __init__(self):
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+        """
+
         super(EarModule, self).__init__(
             side="md",
             part="ear",
@@ -37,7 +43,19 @@ class EarModule(FaceModuleBase):
         self.ear_side_dict = {}
 
     def load_setup(self):
-        u"""读取 Face Setup、全局控制器比例和左右颜色。"""
+        u"""
+
+                读取 Face Setup、全局控制器比例和左右颜色。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+                Raises:
+                    ValueError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
         self.validate_setup_config(
             require_mouth_jnt_number=False
         )
@@ -68,7 +86,15 @@ class EarModule(FaceModuleBase):
         return True
 
     def load_guide(self):
-        u"""读取左右 Ear Guide，并保持 FaceGuide 返回顺序。"""
+        u"""
+
+                读取左右 Ear Guide，并保持 FaceGuide 返回顺序。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         for side in self.sides:
             ear_guides = self.face_guide.get_part_guides(
                 part="ear",
@@ -79,7 +105,15 @@ class EarModule(FaceModuleBase):
         return self.ear_side_dict
 
     def create_jnt(self):
-        u"""按 Guide 顺序创建 Ear Joint Chain。"""
+        u"""
+
+                按 Guide 顺序创建 Ear Joint Chain。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         for side in self.sides:
             ear_dict = self.ear_side_dict[side]
             ear_jnts = []
@@ -114,7 +148,15 @@ class EarModule(FaceModuleBase):
         return self.ear_side_dict
 
     def create_ctrl(self):
-        u"""按 Joint 顺序创建 Ear FK Controller Chain。"""
+        u"""
+
+                按 Joint 顺序创建 Ear FK Controller Chain。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         for side in self.sides:
             ear_dict = self.ear_side_dict[side]
             ctrl_dict_list = []
@@ -150,7 +192,15 @@ class EarModule(FaceModuleBase):
         return self.ear_side_dict
 
     def create_connect(self):
-        u"""Ear FK Ctrl Output 一一驱动对应 Joint。"""
+        u"""
+
+                Ear FK Ctrl Output 一一驱动对应 Joint。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         for side in self.sides:
             ear_dict = self.ear_side_dict[side]
             matrix_nodes = []
@@ -178,11 +228,27 @@ class EarModule(FaceModuleBase):
         return self.ear_side_dict
 
     def create_deform(self):
-        u"""Ear 不额外创建 Deformer；输出 Joint 直接作为 Skin Influence。"""
+        u"""
+
+                Ear 不额外创建 Deformer；输出 Joint 直接作为 Skin Influence。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        """
         return True
 
     def create_finalize(self):
-        u"""验证 Ear Joint / Controller / Matrix 输出。"""
+        u"""
+
+                验证 Ear Joint / Controller / Matrix 输出。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        """
         for side in self.sides:
             ear_dict = self.ear_side_dict[side]
 
@@ -207,7 +273,15 @@ class EarModule(FaceModuleBase):
 
 
 def build_ear():
-    u"""构建 Ear Module 并返回统一 Module Dict。"""
+    u"""
+
+        构建 Ear Module 并返回统一 Module Dict。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+    """
     ear_module = EarModule()
     ear_module_dict = ear_module.create_build()
     return ear_module_dict

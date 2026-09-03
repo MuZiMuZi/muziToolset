@@ -97,7 +97,7 @@ class FaceModuleBase(FaceBase):
 
         Returns:
             dict:
-                当前模块公开构建结果。具体节点由子类在各阶段写入 module_dict。
+            当前模块公开构建结果。具体节点由子类在各阶段写入 module_dict。
         """
         # -------------------------------------------------------------------------
         # Step 01：加载模块参数、公共层级、确定性名称与 Rebuild Scene State
@@ -141,41 +141,85 @@ class FaceModuleBase(FaceBase):
     # =========================================================================
 
     def load_setup(self):
-        u"""加载模块参数、名称、公共层级与 Rebuild Scene State。"""
+        u"""
+        加载模块参数、名称、公共层级与 Rebuild Scene State。
+
+        Raises:
+            NotImplementedError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         raise NotImplementedError(
             u"Face Module 子类必须实现 load_setup()。"
         )
 
     def load_guide(self):
-        u"""读取并整理当前模块需要的 Guide 定位数据。"""
+        u"""
+        读取并整理当前模块需要的 Guide 定位数据。
+
+        Raises:
+            NotImplementedError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         raise NotImplementedError(
             u"Face Module 子类必须实现 load_guide()。"
         )
 
     def create_jnt(self):
-        u"""根据 Guide 创建当前模块 Joint。"""
+        u"""
+        根据 Guide 创建当前模块 Joint。
+
+        Raises:
+            NotImplementedError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         raise NotImplementedError(
             u"Face Module 子类必须实现 create_jnt()。"
         )
 
     def create_ctrl(self):
-        u"""创建当前模块 Animator Controller。"""
+        u"""
+        创建当前模块 Animator Controller。
+
+        Raises:
+            NotImplementedError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         raise NotImplementedError(
             u"Face Module 子类必须实现 create_ctrl()。"
         )
 
     def create_connect(self):
-        u"""建立 Controller / Output 到 Joint 的基础驱动关系。"""
+        u"""
+        建立 Controller / Output 到 Joint 的基础驱动关系。
+
+        Raises:
+            NotImplementedError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         raise NotImplementedError(
             u"Face Module 子类必须实现 create_connect()。"
         )
 
     def create_deform(self):
-        u"""创建当前模块独有的高级绑定效果；没有特殊效果时允许保持为空。"""
+        u"""
+
+                创建当前模块独有的高级绑定效果；没有特殊效果时允许保持为空。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        """
         return True
 
     def create_finalize(self):
-        u"""验证最终 Scene State，并整理当前 Module 的公开结果。"""
+        u"""
+        验证最终 Scene State，并整理当前 Module 的公开结果。
+
+        Raises:
+            NotImplementedError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         raise NotImplementedError(
             u"Face Module 子类必须实现 create_finalize()。"
         )

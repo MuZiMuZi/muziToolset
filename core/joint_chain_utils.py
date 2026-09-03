@@ -60,11 +60,11 @@ def validate_joint_list(joints):
 
     Returns:
         list[str]:
-            保持调用方原有顺序的独立 Joint 列表。
+        保持调用方原有顺序的独立 Joint 列表。
 
     Raises:
         RuntimeError:
-            输入为空，或任意节点不存在 / 不是 Maya Joint 时抛出。
+        输入为空，或任意节点不存在 / 不是 Maya Joint 时抛出。
     """
     if joints is None:
         joints = []
@@ -111,11 +111,11 @@ def get_joint_path(start_joint, end_joint):
 
     Returns:
         list[str] | None:
-            从 Start 到 End 的 Long DAG Path 列表；不连通时返回 None。
+        从 Start 到 End 的 Long DAG Path 列表；不连通时返回 None。
 
     Raises:
         RuntimeError:
-            Start / End 节点不存在或不是 Maya Joint 时抛出。
+        Start / End 节点不存在或不是 Maya Joint 时抛出。
     """
     # -------------------------------------------------------------------------
     # Step 01：验证 Start / End 都是真实 Maya Joint，尽早阻止无效节点进入递归
@@ -202,11 +202,11 @@ def parent_joints_as_chain(joints):
 
     Returns:
         list[str]:
-            验证后的原顺序 Joint 列表。
+        验证后的原顺序 Joint 列表。
 
     Raises:
         RuntimeError:
-            任意节点不存在或不是 Maya Joint 时抛出。
+        任意节点不存在或不是 Maya Joint 时抛出。
     """
     joints = validate_joint_list(
         joints
@@ -251,11 +251,11 @@ def create_joints_at_items(
 
     Returns:
         list[str]:
-            按创建顺序返回的新 Joint 列表。
+        按创建顺序返回的新 Joint 列表。
 
     Raises:
         RuntimeError:
-            输入为空、Component 无法取得位置或 Transform 无效时抛出。
+        输入为空、Component 无法取得位置或 Transform 无效时抛出。
     """
     # -------------------------------------------------------------------------
     # Step 01：把单个 Item 统一转换成列表，并拒绝空输入
@@ -365,11 +365,11 @@ def get_curve_joint_base_name(curve):
 
     Returns:
         str:
-            去掉末尾三位序号后的默认 Joint Base Name。
+        去掉末尾三位序号后的默认 Joint Base Name。
 
     Raises:
         RuntimeError:
-            输入不是有效 Curve 时由 ``curve_utils`` 抛出。
+        输入不是有效 Curve 时由 ``curve_utils`` 抛出。
     """
     curve_transform = curve_utils.get_curve_transform(
         curve
@@ -427,11 +427,11 @@ def create_joints_on_curve_cvs(
 
     Returns:
         dict:
-            包含 ``curve``、``jnt_list``、``jnt_grp`` 的 Build Result。
+        包含 ``curve``、``jnt_list``、``jnt_grp`` 的 Build Result。
 
     Raises:
         RuntimeError:
-            Curve 无效、没有 CV、Group 名称被占用或 Joint 创建失败时抛出。
+        Curve 无效、没有 CV、Group 名称被占用或 Joint 创建失败时抛出。
     """
     # -------------------------------------------------------------------------
     # Step 01：解析 Curve Transform，并一次取得全部 CV 世界位置

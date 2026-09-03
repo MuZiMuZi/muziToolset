@@ -38,6 +38,12 @@ class LipModule(FaceModuleBase):
     regions = ["upper", "lower"]
 
     def __init__(self):
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+        """
+
         super(LipModule, self).__init__(
             side="md",
             part="lip",
@@ -55,7 +61,19 @@ class LipModule(FaceModuleBase):
         self.matrix_nodes = []
 
     def load_setup(self):
-        u"""读取 Lip Controller 设置与 Mouth Joint 数量。"""
+        u"""
+
+                读取 Lip Controller 设置与 Mouth Joint 数量。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+                Raises:
+                    ValueError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：确认 Face Setup 已完成，并读取统一 Controller Settings
         # -------------------------------------------------------------------------
@@ -103,7 +121,15 @@ class LipModule(FaceModuleBase):
         return True
 
     def load_guide(self):
-        u"""读取固定顺序 Upper / Lower Lip 与共享 Mouth Corner Guide。"""
+        u"""
+
+                读取固定顺序 Upper / Lower Lip 与共享 Mouth Corner Guide。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         self.lip_guide_dict = self.face_guide.get_lip_guides(
             required=True
         )
@@ -122,7 +148,15 @@ class LipModule(FaceModuleBase):
         return unique_guides
 
     def create_jnt(self):
-        u"""创建 Curve Driver Jnt、四条曲线和最终 Deform Jnt Attachment。"""
+        u"""
+
+                创建 Curve Driver Jnt、四条曲线和最终 Deform Jnt Attachment。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         unique_guides = self._get_unique_guides()
 
         # -------------------------------------------------------------------------
@@ -296,7 +330,15 @@ class LipModule(FaceModuleBase):
         return self.lip_region_dict
 
     def create_ctrl(self):
-        u"""每个唯一 Lip / Mouth Corner Guide 创建一个 Detail Controller。"""
+        u"""
+
+                每个唯一 Lip / Mouth Corner Guide 创建一个 Detail Controller。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         controller_settings = self.face_guide.load_controller_settings()
         unique_guides = self._get_unique_guides()
 
@@ -336,7 +378,15 @@ class LipModule(FaceModuleBase):
         return self.lip_ctrl_dict
 
     def create_connect(self):
-        u"""Lip Detail Ctrl Output 一一驱动 Curve Driver Joint。"""
+        u"""
+
+                Lip Detail Ctrl Output 一一驱动 Curve Driver Joint。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         self.matrix_nodes = []
 
         # -------------------------------------------------------------------------
@@ -364,7 +414,15 @@ class LipModule(FaceModuleBase):
         return self.matrix_nodes
 
     def create_deform(self):
-        u"""用 Guide Driver Joint 同步驱动 Control / Skin / Aim / Up 四条曲线。"""
+        u"""
+
+                用 Guide Driver Joint 同步驱动 Control / Skin / Aim / Up 四条曲线。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：按 Upper / Lower 收集对应 Guide Driver Joint
         # -------------------------------------------------------------------------
@@ -418,7 +476,15 @@ class LipModule(FaceModuleBase):
         return self.lip_region_dict
 
     def create_finalize(self):
-        u"""验证 Lip Ctrl、Curve、Attachment 和 Deform Joint。"""
+        u"""
+
+                验证 Lip Ctrl、Curve、Attachment 和 Deform Joint。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：验证全部 Detail Controller
         # -------------------------------------------------------------------------
@@ -458,7 +524,15 @@ class LipModule(FaceModuleBase):
 
 
 def build_lip():
-    u"""构建 Lip Module 并返回统一 Module Dict。"""
+    u"""
+
+        构建 Lip Module 并返回统一 Module Dict。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+    """
     lip_module = LipModule()
     lip_module_dict = lip_module.create_build()
     return lip_module_dict

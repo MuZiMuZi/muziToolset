@@ -55,19 +55,17 @@ from ...ui import window_utils
 
 def move_selected_channel_box_attr(up=True, down=False):
     u"""
+    调整 Channel Box 当前 User Defined Attribute 的顺序。
 
-        调整 Channel Box 当前 User Defined Attribute 的顺序。
+    Args:
+        up (bool):
+            是否把目标 Attribute 在 Channel Box 中上移。
+        down (bool):
+            是否把目标 Attribute 在 Channel Box 中下移。
 
-        Args:
-            up (bool):
-                是否把目标 Attribute 在 Channel Box 中上移。
-            down (bool):
-                是否把目标 Attribute 在 Channel Box 中下移。
-
-        Returns:
-            bool:
-                当前操作成功或目标状态满足要求时返回 True，否则返回 False。
-
+    Returns:
+        bool:
+        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
     """
     # -------------------------------------------------------------------------
     # Step 01：查询并整理当前阶段需要的 Maya 场景数据
@@ -184,13 +182,11 @@ class AttrTool(QWidget):
 
     def __init__(self, parent=None):
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    parent (str):
-                        父级 Maya 节点名称。
-
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
         """
 
         super(AttrTool, self).__init__(parent)
@@ -409,9 +405,7 @@ class AttrTool(QWidget):
     @staticmethod
     def open_add_attr_window():
         u"""
-
-                打开当前 add attr window。
-
+        打开当前 add attr window。
         """
 
         mel.eval("dynAddAttrWin({})")
@@ -419,9 +413,7 @@ class AttrTool(QWidget):
     @staticmethod
     def open_edit_attr_window():
         u"""
-
-                打开当前 edit attr window。
-
+        打开当前 edit attr window。
         """
 
         mel.eval("dynRenameAttrWin({})")
@@ -429,9 +421,7 @@ class AttrTool(QWidget):
     @staticmethod
     def open_connection_editor():
         u"""
-
-                打开当前 connection editor。
-
+        打开当前 connection editor。
         """
 
         cmds.ConnectionEditor()
@@ -439,9 +429,7 @@ class AttrTool(QWidget):
     @staticmethod
     def open_channel_control():
         u"""
-
-                打开当前 channel control。
-
+        打开当前 channel control。
         """
 
         cmds.ChannelControlEditor()
@@ -449,9 +437,7 @@ class AttrTool(QWidget):
     @staticmethod
     def delete_selected_attr():
         u"""
-
-                删除当前 selected attr。
-
+        删除当前 selected attr。
         """
 
         mel.eval("dynDeleteAttrWin({})")
@@ -459,13 +445,11 @@ class AttrTool(QWidget):
     @staticmethod
     def move_attr_up():
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         return move_selected_channel_box_attr(
@@ -476,13 +460,11 @@ class AttrTool(QWidget):
     @staticmethod
     def move_attr_down():
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         return move_selected_channel_box_attr(
@@ -578,13 +560,11 @@ class AttrTool(QWidget):
 
 def main():
     u"""
+    创建或恢复 Attr Tool，立即显示并返回 QWidget。
 
-        创建或恢复 Attr Tool，立即显示并返回 QWidget。
-
-        Returns:
-            object:
-                当前工具入口创建并显示的窗口或执行结果。
-
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
         "tools.basic.attr_tool",

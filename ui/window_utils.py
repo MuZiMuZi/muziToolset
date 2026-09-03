@@ -86,13 +86,11 @@ def _is_valid_widget(window):
 
 def clear_invalid_windows():
     u"""
+    清理缓存里已经被 Qt / Maya 销毁的 QWidget。
 
-        清理缓存里已经被 Qt / Maya 销毁的 QWidget。
-
-        Returns:
-            object:
-            当前 API 完成处理后返回的结果。
-
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
     """
     invalid_keys = []
 
@@ -110,17 +108,15 @@ def clear_invalid_windows():
 
 def get_window(window_key):
     u"""
+    返回当前有效窗口；不存在时返回 None。
 
-        返回当前有效窗口；不存在时返回 None。
+    Args:
+        window_key (object):
+            当前方法执行 Maya / Rig 操作时使用的 `window_key` 数据。
 
-        Args:
-            window_key (object):
-                当前方法执行 Maya / Rig 操作时使用的 `window_key` 数据。
-
-        Returns:
-            object | None:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object | None:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     window = _windows.get(window_key)
 
@@ -219,10 +215,10 @@ def show_window(window_key, window_factory):
 
     Example:
         def main():
-                                                                        return window_utils.show_window(
-                                                                            "tools.basic.rename_tool",
-                                                                            RenameTool
-                                                                        )
+                                                                            return window_utils.show_window(
+                                                                                "tools.basic.rename_tool",
+                                                                                RenameTool
+                                                                            )
     """
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支
@@ -285,17 +281,15 @@ def show_window(window_key, window_factory):
 
 def close_window(window_key):
     u"""
+    关闭并释放指定独立 Tool 窗口。
 
-        关闭并释放指定独立 Tool 窗口。
+    Args:
+        window_key (object):
+            当前方法执行 Maya / Rig 操作时使用的 `window_key` 数据。
 
-        Args:
-            window_key (object):
-                当前方法执行 Maya / Rig 操作时使用的 `window_key` 数据。
-
-        Returns:
-            bool:
-            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
-
+    Returns:
+        bool:
+        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
     """
     window = _windows.pop(window_key, None)
 

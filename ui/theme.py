@@ -230,7 +230,7 @@ def set_role(widget, role, enabled=True):
 
     Returns:
         QtWidgets.QWidget | None:
-            处理后的原 Widget；输入 None 时返回 None。
+        处理后的原 Widget；输入 None 时返回 None。
     """
     # -------------------------------------------------------------------------
     # Step 01：空 Widget 不执行任何 Qt 操作
@@ -296,7 +296,7 @@ def apply_theme(widget):
 
     Returns:
         QtWidgets.QWidget | None:
-            应用主题后的原 Widget；输入 None 时返回 None。
+        应用主题后的原 Widget；输入 None 时返回 None。
     """
     if widget is None:
         return None
@@ -323,7 +323,7 @@ def make_title(text_value, parent=None):
 
     Returns:
         QtWidgets.QLabel:
-            已设置 ``title`` 角色的 QLabel。
+        已设置 ``title`` 角色的 QLabel。
     """
     label = QLabel(
         text_value,
@@ -348,7 +348,7 @@ def make_subtitle(text_value, parent=None):
 
     Returns:
         QtWidgets.QLabel:
-            已设置 ``subtitle`` 角色并开启 Word Wrap 的 QLabel。
+        已设置 ``subtitle`` 角色并开启 Word Wrap 的 QLabel。
     """
     label = QLabel(
         text_value,
@@ -376,7 +376,7 @@ def make_section_title(text_value, parent=None):
 
     Returns:
         QtWidgets.QLabel:
-            已设置 ``section_title`` 角色的 QLabel。
+        已设置 ``section_title`` 角色的 QLabel。
     """
     label = QLabel(
         text_value,
@@ -407,7 +407,7 @@ def make_card(
 
     Returns:
         tuple[QtWidgets.QFrame, QtWidgets.QVBoxLayout]:
-            Card QFrame 和对应的 QVBoxLayout。
+        Card QFrame 和对应的 QVBoxLayout。
     """
     card = QFrame(
         parent
@@ -450,7 +450,7 @@ def make_sub_card(
 
     Returns:
         tuple[QtWidgets.QFrame, QtWidgets.QVBoxLayout]:
-            Sub Card QFrame 和对应的 QVBoxLayout。
+        Sub Card QFrame 和对应的 QVBoxLayout。
     """
     card = QFrame(
         parent
@@ -489,7 +489,7 @@ def style_primary(button):
 
     Returns:
         QtWidgets.QWidget | None:
-            处理后的原按钮。
+        处理后的原按钮。
     """
     return set_role(
         button,
@@ -507,7 +507,7 @@ def style_secondary(button):
 
     Returns:
         QtWidgets.QWidget | None:
-            处理后的原按钮。
+        处理后的原按钮。
     """
     return set_role(
         button,
@@ -525,7 +525,7 @@ def style_danger(button):
 
     Returns:
         QtWidgets.QWidget | None:
-            处理后的原按钮。
+        处理后的原按钮。
     """
     return set_role(
         button,
@@ -543,7 +543,7 @@ def style_ghost(button):
 
     Returns:
         QtWidgets.QWidget | None:
-            处理后的原按钮。
+        处理后的原按钮。
     """
     return set_role(
         button,
@@ -563,7 +563,7 @@ def style_navigation(button, active=False):
 
     Returns:
         QtWidgets.QPushButton | None:
-            处理后的原按钮。
+        处理后的原按钮。
     """
     set_role(
         button,
@@ -587,7 +587,7 @@ def style_search(line_edit):
 
     Returns:
         QtWidgets.QWidget | None:
-            处理后的原输入框。
+        处理后的原输入框。
     """
     return set_role(
         line_edit,
@@ -617,7 +617,7 @@ def style_window(
 
     Returns:
         QtWidgets.QWidget | None:
-            处理后的原 Widget；输入 None 时返回 None。
+        处理后的原 Widget；输入 None 时返回 None。
     """
     # -------------------------------------------------------------------------
     # Step 01：保护空窗口输入

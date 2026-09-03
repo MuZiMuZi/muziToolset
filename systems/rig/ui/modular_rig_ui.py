@@ -643,19 +643,17 @@ class ModularRigWindow(QWidget):
 
     def create_property_row(self, label, widget):
         u"""
+        创建右侧属性的一行 Label + Widget。
 
-                创建右侧属性的一行 Label + Widget。
+        Args:
+            label (str):
+                UI、Rig Node 或日志中展示的简短 Label。
+            widget (QtWidgets.QWidget):
+                需要应用 MuziTools Theme / UI 状态的 Qt Widget。
 
-                Args:
-                    label (str):
-                        UI、Rig Node 或日志中展示的简短 Label。
-                    widget (QtWidgets.QWidget):
-                        需要应用 MuziTools Theme / UI 状态的 Qt Widget。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
         row_layout = QHBoxLayout()
         row_layout.setContentsMargins(0, 0, 0, 0)
@@ -820,19 +818,17 @@ class ModularRigWindow(QWidget):
 
     def create_module_tree_item(self, module_data, parent_item=None):
         u"""
+        根据 Module Data 创建一个 Settings Tree Item。
 
-                根据 Module Data 创建一个 Settings Tree Item。
+        Args:
+            module_data (dict):
+                当前方法使用的 `module_data` 配置 / 映射数据。
+            parent_item (object):
+                当前方法执行 Maya / Rig 操作时使用的 `parent_item` 数据。
 
-                Args:
-                    module_data (dict):
-                        当前方法使用的 `module_data` 配置 / 映射数据。
-                    parent_item (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `parent_item` 数据。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
         module_name = module_data.get("name", "module")
         side = module_data.get("side", "")
@@ -856,17 +852,15 @@ class ModularRigWindow(QWidget):
 
     def find_first_module_item(self, module_name):
         u"""
+        在 Settings Tree 中查找第一个同名 Module。
 
-                在 Settings Tree 中查找第一个同名 Module。
+        Args:
+            module_name (str):
+                `module_name` 对应的 Maya 节点或资源名称。
 
-                Args:
-                    module_name (str):
-                        `module_name` 对应的 Maya 节点或资源名称。
-
-                Returns:
-                    None | object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            None | object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         top_index = 0
 
@@ -883,19 +877,17 @@ class ModularRigWindow(QWidget):
 
     def find_module_item_recursive(self, item, module_name):
         u"""
+        递归查找 Module Tree Item。
 
-                递归查找 Module Tree Item。
+        Args:
+            item (str | object):
+                当前查询、吸附或 UI 操作使用的 Maya Item / 数据项。
+            module_name (str):
+                `module_name` 对应的 Maya 节点或资源名称。
 
-                Args:
-                    item (str | object):
-                        当前查询、吸附或 UI 操作使用的 Maya Item / 数据项。
-                    module_name (str):
-                        `module_name` 对应的 Maya 节点或资源名称。
-
-                Returns:
-                    None | object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            None | object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         if item is None:
             return None

@@ -73,13 +73,11 @@ class RenameTool(QWidget):
 
     def __init__(self, parent=None):
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    parent (str):
-                        父级 Maya 节点名称。
-
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
         """
 
         super(RenameTool, self).__init__(parent)
@@ -367,13 +365,11 @@ class RenameTool(QWidget):
 
 def main():
     u"""
+    创建或恢复 Rename Tool，立即显示并返回 QWidget。
 
-        创建或恢复 Rename Tool，立即显示并返回 QWidget。
-
-        Returns:
-            object:
-            当前工具入口创建并显示的窗口或执行结果。
-
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
         "tools.basic.rename_tool",

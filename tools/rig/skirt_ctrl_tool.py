@@ -46,13 +46,11 @@ class SkirtRigDialog(QDialog):
 
     def __init__(self, parent=None):
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    parent (str):
-                        父级 Maya 节点名称。
-
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
         """
 
         super(SkirtRigDialog, self).__init__(parent)
@@ -214,13 +212,11 @@ class SkirtRigDialog(QDialog):
 
     def create_builder(self):
         u"""
+        根据当前 UI 参数创建 Skirt Builder。
 
-                根据当前 UI 参数创建 Skirt Builder。
-
-                Returns:
-                    object:
-                    创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
         return SkirtRigBuilder(
             name=self.name_line.text(),
@@ -279,13 +275,11 @@ class SkirtRigDialog(QDialog):
 
 def main():
     u"""
+    显示并返回 Skirt Rig 窗口。
 
-        显示并返回 Skirt Rig 窗口。
-
-        Returns:
-            object:
-            当前工具入口创建并显示的窗口或执行结果。
-
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
         "tools.rig.skirt_ctrl_tool",

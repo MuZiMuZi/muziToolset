@@ -60,7 +60,9 @@ class TeethModule(FaceModuleBase):
     u"""构建 Upper / Lower Teeth 刚体 Rig。"""
 
     def __init__(self):
-        u"""初始化 Teeth Module 输入、设置、名称和构建结果。"""
+        u"""
+        初始化 Teeth Module 输入、设置、名称和构建结果。
+        """
         # -------------------------------------------------------------------------
         # Step 01：执行当前阶段的核心处理
         # -------------------------------------------------------------------------
@@ -134,7 +136,11 @@ class TeethModule(FaceModuleBase):
 
         Returns:
             bool:
-                Setup 阶段完成后返回 True。
+            Setup 阶段完成后返回 True。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
         # -------------------------------------------------------------------------
         # Step 01：确认 Face Setup 数据可用，并确保公共层级存在
@@ -202,7 +208,7 @@ class TeethModule(FaceModuleBase):
 
         Returns:
             list[str]:
-                Upper Guide 与 Lower Guide。
+            Upper Guide 与 Lower Guide。
         """
         # -------------------------------------------------------------------------
         # Step 01：生成当前模板中的标准 Guide 名称
@@ -245,7 +251,7 @@ class TeethModule(FaceModuleBase):
 
         Returns:
             list[str]:
-                Upper / Lower Teeth Joint。
+            Upper / Lower Teeth Joint。
         """
         joint_radius = self.controller_radius * 0.25
 
@@ -289,7 +295,7 @@ class TeethModule(FaceModuleBase):
 
         Returns:
             list[dict]:
-                Upper / Lower Controller Dict。
+            Upper / Lower Controller Dict。
         """
         # -------------------------------------------------------------------------
         # Step 01：Upper Teeth Controller
@@ -355,7 +361,7 @@ class TeethModule(FaceModuleBase):
 
         Returns:
             list[str]:
-                Upper / Lower Matrix 节点。
+            Upper / Lower Matrix 节点。
         """
         # -------------------------------------------------------------------------
         # Step 01：Upper Teeth Matrix
@@ -395,7 +401,7 @@ class TeethModule(FaceModuleBase):
 
         Returns:
             list[str | None]:
-                Upper / Lower Teeth SkinCluster；没有对应模型时为 None。
+            Upper / Lower Teeth SkinCluster；没有对应模型时为 None。
         """
         # -------------------------------------------------------------------------
         # Step 01：Upper Teeth Rigid Skin
@@ -433,7 +439,11 @@ class TeethModule(FaceModuleBase):
 
         Returns:
             bool:
-                构建结果完整时返回 True。
+            构建结果完整时返回 True。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
         required_nodes = [
             self.upper_teeth_joint,
@@ -747,7 +757,7 @@ def build_teeth():
 
     Returns:
         dict:
-            TeethModule.create_build() 的完整公开结果。
+        TeethModule.create_build() 的完整公开结果。
     """
     teeth_module = TeethModule()
     teeth_module_dict = teeth_module.create_build()

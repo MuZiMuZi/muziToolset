@@ -48,13 +48,11 @@ class SkinTool(QWidget):
 
     def __init__(self, parent=None):
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    parent (str):
-                        父级 Maya 节点名称。
-
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
         """
 
         super(SkinTool, self).__init__(parent)
@@ -234,49 +232,39 @@ class SkinTool(QWidget):
 
     def open_smooth_bind_options(self):
         u"""
-
-                打开当前 smooth bind options。
-
+        打开当前 smooth bind options。
         """
 
         mel.eval("SmoothBindSkinOptions;")
 
     def open_detach_skin_options(self):
         u"""
-
-                打开当前 detach skin options。
-
+        打开当前 detach skin options。
         """
 
         mel.eval("DetachSkinOptions;")
 
     def open_paint_skin_weights(self):
         u"""
-
-                打开当前 paint skin weights。
-
+        打开当前 paint skin weights。
         """
 
         mel.eval("ArtPaintSkinWeightsToolOptions;")
 
     def open_mirror_skin_weights_options(self):
         u"""
-
-                打开当前 mirror skin weights options。
-
+        打开当前 mirror skin weights options。
         """
 
         mel.eval("MirrorSkinWeightsOptions;")
 
     def get_selected_geometries(self):
         u"""
+        返回当前选择。
 
-                返回当前选择。
-
-                Returns:
-                    object:
-                    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         geometries = cmds.ls(
             selection=True,
@@ -314,17 +302,15 @@ class SkinTool(QWidget):
 
     def choose_directory(self, title):
         u"""
+        选择权重目录。
 
-                选择权重目录。
+        Args:
+            title (str):
+                窗口、Section、Dialog 或报告使用的标题文本。
 
-                Args:
-                    title (str):
-                        窗口、Section、Dialog 或报告使用的标题文本。
-
-                Returns:
-                    object:
-                    当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         scene_path = cmds.file(
             query=True,
@@ -462,13 +448,11 @@ class SkinTool(QWidget):
 
 def main():
     u"""
+    显示并返回 Skin Tool。
 
-        显示并返回 Skin Tool。
-
-        Returns:
-            object:
-            当前工具入口创建并显示的窗口或执行结果。
-
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
         "tools.skin.skin_tool",

@@ -44,6 +44,12 @@ class EyelidModule(FaceModuleBase):
     regions = ["upper", "lower"]
 
     def __init__(self):
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+        """
+
         super(EyelidModule, self).__init__(
             side="md",
             part="eyelid",
@@ -56,7 +62,19 @@ class EyelidModule(FaceModuleBase):
         self.eyelid_side_dict = {}
 
     def load_setup(self):
-        u"""读取 Eyelid 设置，并确认 EyeModule 的 Eye Joint / Aim Ctrl 已存在。"""
+        u"""
+
+                读取 Eyelid 设置，并确认 EyeModule 的 Eye Joint / Aim Ctrl 已存在。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+                Raises:
+                    ValueError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：验证并规范化当前阶段需要的输入数据
         # -------------------------------------------------------------------------
@@ -155,7 +173,15 @@ class EyelidModule(FaceModuleBase):
         return True
 
     def load_guide(self):
-        u"""读取左右 Upper / Lower Eyelid 固定有序 Guide。"""
+        u"""
+
+                读取左右 Upper / Lower Eyelid 固定有序 Guide。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         for side in self.sides:
             self.eyelid_side_dict[side]["guide_dict"] = self.face_guide.get_eyelid_guides(
                 side=side,
@@ -177,7 +203,15 @@ class EyelidModule(FaceModuleBase):
         return unique_guides
 
     def create_jnt(self):
-        u"""创建 Curve Driver Jnt、Control/Skin Curve、Up Object 和 Radial Bind Jnt。"""
+        u"""
+
+                创建 Curve Driver Jnt、Control/Skin Curve、Up Object 和 Radial Bind Jnt。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：遍历当前数据集合，并逐项执行核心处理
         # -------------------------------------------------------------------------
@@ -298,7 +332,15 @@ class EyelidModule(FaceModuleBase):
         return self.eyelid_side_dict
 
     def create_ctrl(self):
-        u"""每个唯一 Eyelid Guide 创建一个 Detail Controller。"""
+        u"""
+
+                每个唯一 Eyelid Guide 创建一个 Detail Controller。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         for side in self.sides:
             eyelid_dict = self.eyelid_side_dict[side]
             unique_guides = self._get_unique_guides(side)
@@ -334,7 +376,18 @@ class EyelidModule(FaceModuleBase):
         return self.eyelid_side_dict
 
     def create_connect(self):
-        u"""Detail Ctrl 驱动 Curve Driver Jnt，并让中间眼皮控制器跟随 Eye Rotation。"""
+        u"""
+
+                Detail Ctrl 驱动 Curve Driver Jnt，并让中间眼皮控制器跟随 Eye Rotation。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for side in self.sides:
             eyelid_dict = self.eyelid_side_dict[side]
             unique_guides = self._get_unique_guides(side)
@@ -373,10 +426,21 @@ class EyelidModule(FaceModuleBase):
                     maintain_offset=True
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 02：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.eyelid_side_dict
 
     def create_deform(self):
-        u"""Skin Control Curve，并建立 Blink Height / Blink 的无循环 BlendShape 网络。"""
+        u"""
+
+                Skin Control Curve，并建立 Blink Height / Blink 的无循环 BlendShape 网络。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：遍历当前数据集合，并逐项执行核心处理
         # -------------------------------------------------------------------------
@@ -584,7 +648,15 @@ class EyelidModule(FaceModuleBase):
         return self.eyelid_side_dict
 
     def create_finalize(self):
-        u"""验证 Eyelid Curve、Ctrl、Radial Joint 与 Blink Network。"""
+        u"""
+
+                验证 Eyelid Curve、Ctrl、Radial Joint 与 Blink Network。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        """
         for side in self.sides:
             eyelid_dict = self.eyelid_side_dict[side]
 
@@ -621,7 +693,15 @@ class EyelidModule(FaceModuleBase):
 
 
 def build_eyelid():
-    u"""构建 Eyelid Module 并返回统一 Module Dict。"""
+    u"""
+
+        构建 Eyelid Module 并返回统一 Module Dict。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+    """
     eyelid_module = EyelidModule()
     eyelid_module_dict = eyelid_module.create_build()
     return eyelid_module_dict

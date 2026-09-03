@@ -49,6 +49,12 @@ class FaceRig(object):
     ]
 
     def __init__(self):
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+        """
+
         self.module_list = []
         self.module_dict = {}
 
@@ -58,7 +64,7 @@ class FaceRig(object):
 
         Returns:
             dict:
-                Key 为模块 part，Value 为对应模块 create_build() 的公开结果字典。
+            Key 为模块 part，Value 为对应模块 create_build() 的公开结果字典。
         """
         self.module_list = []
         self.module_dict = {}
@@ -76,7 +82,15 @@ class FaceRig(object):
 
 
 def build_face():
-    u"""构建完整 Face Rig，并返回全部模块结果。"""
+    u"""
+
+        构建完整 Face Rig，并返回全部模块结果。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+    """
     face_rig = FaceRig()
     face_rig_dict = face_rig.create_build()
     return face_rig_dict

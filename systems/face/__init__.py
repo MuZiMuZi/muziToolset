@@ -56,7 +56,7 @@ def show():
 
     Returns:
         object:
-            当前工具入口创建并显示的窗口或执行结果。
+        当前工具入口创建并显示的窗口或执行结果。
     """
     from . import ui
 

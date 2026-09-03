@@ -121,13 +121,11 @@ class ControlCreatorDialog(QDialog):
 
     def __init__(self, parent=None):
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    parent (str):
-                        父级 Maya 节点名称。
-
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
         """
 
         super(ControlCreatorDialog, self).__init__(parent)
@@ -549,13 +547,11 @@ class ControlCreatorDialog(QDialog):
 
     def selected_shape_name(self):
         u"""
+        返回当前选中的 Shape 名称。
 
-                返回当前选中的 Shape 名称。
-
-                Returns:
-                    object | None:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object | None:
+            当前 API 完成处理后返回的结果。
         """
         selected_items = self.shape_list.selectedItems()
 
@@ -598,13 +594,11 @@ class ControlCreatorDialog(QDialog):
 
     def get_create_targets(self):
         u"""
+        根据当前创建模式返回 Target List。
 
-                根据当前创建模式返回 Target List。
-
-                Returns:
-                    object | list:
-                        按当前 API 约定顺序返回的结果列表。
-
+        Returns:
+            object | list:
+            按当前 API 约定顺序返回的结果列表。
         """
         # -------------------------------------------------------------------------
         # Step 01：准备当前阶段计算和后续处理需要的数据
@@ -691,21 +685,19 @@ class ControlCreatorDialog(QDialog):
 
     def get_control_name(self, target, target_index, target_count):
         u"""
+        生成当前 Controller 的正式名称。
 
-                生成当前 Controller 的正式名称。
+        Args:
+            target (str):
+                接收结果或被处理的目标 Maya 节点名称。
+            target_index (int):
+                BlendShape Target 在 Weight / Target Group 中使用的逻辑索引。
+            target_count (int):
+                当前构建、采样或查询过程使用的元素数量。
 
-                Args:
-                    target (str):
-                        接收结果或被处理的目标 Maya 节点名称。
-                    target_index (int):
-                        BlendShape Target 在 Weight / Target Group 中使用的逻辑索引。
-                    target_count (int):
-                        当前构建、采样或查询过程使用的元素数量。
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         # -------------------------------------------------------------------------
         # Step 01：准备当前阶段计算和后续处理需要的数据
@@ -888,13 +880,11 @@ class ControlCreatorDialog(QDialog):
 
 def main():
     u"""
+    显示并返回 Control Creator 窗口。
 
-        显示并返回 Control Creator 窗口。
-
-        Returns:
-            object:
-                当前工具入口创建并显示的窗口或执行结果。
-
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
         "tools.controller.create_ctrl_tool",

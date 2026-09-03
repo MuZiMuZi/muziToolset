@@ -31,6 +31,12 @@ class CheekModule(FaceModuleBase):
     regions = ["cheekbone", "nasolabial", "cheek"]
 
     def __init__(self):
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+        """
+
         super(CheekModule, self).__init__(
             side="md",
             part="cheek",
@@ -45,7 +51,19 @@ class CheekModule(FaceModuleBase):
         self.skip_reason = None
 
     def load_setup(self):
-        u"""读取 Face Setup 与 Cheek Controller Settings。"""
+        u"""
+
+                读取 Face Setup 与 Cheek Controller Settings。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+                Raises:
+                    ValueError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：验证 Face Setup，并确保正式 Face Rig 公共层级已经存在
         # -------------------------------------------------------------------------
@@ -93,7 +111,15 @@ class CheekModule(FaceModuleBase):
         return True
 
     def load_guide(self):
-        u"""按 CheekBone / Nasolabial / Cheek 分类读取左右 Guide。"""
+        u"""
+
+                按 CheekBone / Nasolabial / Cheek 分类读取左右 Guide。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：逐侧、逐区域收集 Guide，并建立后续 Jnt/Ctrl/Matrix 的统一数据容器
         # -------------------------------------------------------------------------
@@ -130,10 +156,24 @@ class CheekModule(FaceModuleBase):
         return self.cheek_side_dict
 
     def create_jnt(self):
-        u"""每个有效 Cheek Guide 创建一个独立 Bind Joint。"""
+        u"""
+
+                每个有效 Cheek Guide 创建一个独立 Bind Joint。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.skipped:
             return self.cheek_side_dict
 
+        # -------------------------------------------------------------------------
+        # Step 02：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for side in self.sides:
             region_dict = self.cheek_side_dict[side]["region_dict"]
 
@@ -167,13 +207,30 @@ class CheekModule(FaceModuleBase):
 
                 region_data["jnts"] = region_jnts
 
+        # -------------------------------------------------------------------------
+        # Step 03：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.cheek_side_dict
 
     def create_ctrl(self):
-        u"""为每个 Cheek Joint 创建独立 Animator Controller。"""
+        u"""
+
+                为每个 Cheek Joint 创建独立 Animator Controller。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.skipped:
             return self.cheek_side_dict
 
+        # -------------------------------------------------------------------------
+        # Step 02：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for side in self.sides:
             side_data = self.cheek_side_dict[side]
             region_dict = side_data["region_dict"]
@@ -209,10 +266,21 @@ class CheekModule(FaceModuleBase):
 
                 region_data["ctrl_dict_list"] = ctrl_dict_list
 
+        # -------------------------------------------------------------------------
+        # Step 03：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.cheek_side_dict
 
     def create_connect(self):
-        u"""使用每个 Controller Output 驱动对应 Cheek Joint。"""
+        u"""
+
+                使用每个 Controller Output 驱动对应 Cheek Joint。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         if self.skipped:
             return self.cheek_side_dict
 
@@ -247,14 +315,30 @@ class CheekModule(FaceModuleBase):
         return self.cheek_side_dict
 
     def create_deform(self):
-        u"""Cheek 的输出 Joint 本身作为后续 Face Skin Influence。"""
+        u"""
+
+                Cheek 的输出 Joint 本身作为后续 Face Skin Influence。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        """
         if self.skipped:
             return True
 
         return True
 
     def create_finalize(self):
-        u"""验证 Cheek Jnt / Ctrl / Matrix，并整理模块公开结果。"""
+        u"""
+
+                验证 Cheek Jnt / Ctrl / Matrix，并整理模块公开结果。
+
+                Returns:
+                    bool:
+                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        """
         # -------------------------------------------------------------------------
         # Step 01：可选模块没有 Guide 时，把跳过状态作为正式结果返回
         # -------------------------------------------------------------------------
@@ -303,7 +387,15 @@ class CheekModule(FaceModuleBase):
 
 
 def build_cheek():
-    u"""构建 Cheek Module 并返回统一 Module Dict。"""
+    u"""
+
+        构建 Cheek Module 并返回统一 Module Dict。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+    """
     cheek_module = CheekModule()
     cheek_module_dict = cheek_module.create_build()
     return cheek_module_dict

@@ -106,23 +106,21 @@ from . import curve_utils
 
 def get_surface_shape(surface):
     u"""
+    返回 NURBS Surface Shape 的完整 DAG Path。
 
-        返回 NURBS Surface Shape 的完整 DAG Path。
+    ``surface`` 可以是 Transform，也可以直接是 nurbsSurface Shape。
 
-        ``surface`` 可以是 Transform，也可以直接是 nurbsSurface Shape。
+    Args:
+        surface (str):
+            需要处理的 Maya Surface 节点名称。
 
-        Args:
-            surface (str):
-                需要处理的 Maya Surface 节点名称。
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：校验输入节点。
     # -------------------------------------------------------------------------
@@ -177,21 +175,19 @@ def get_surface_shape(surface):
 
 def get_surface_transform(surface):
     u"""
+    返回 NURBS Surface Transform 的完整 DAG Path。
 
-        返回 NURBS Surface Transform 的完整 DAG Path。
+    Args:
+        surface (str):
+            需要处理的 Maya Surface 节点名称。
 
-        Args:
-            surface (str):
-                需要处理的 Maya Surface 节点名称。
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：先统一取得 Surface Shape。
     surface_shape = get_surface_shape(surface)
@@ -226,25 +222,23 @@ def move_curve_copy(
         distance
 ):
     u"""
+    沿 Curve 自身 Object Space 指定轴移动 Curve 副本。
 
-        沿 Curve 自身 Object Space 指定轴移动 Curve 副本。
+    Args:
+        curve (str):
+            通常是 create_surface_from_curve() 创建的临时 Duplicate。
+        axis (str):
+            X / Y / Z。
+        distance (float):
+            移动距离，可以为负数。
 
-        Args:
-            curve (str):
-                通常是 create_surface_from_curve() 创建的临时 Duplicate。
-            axis (str):
-                X / Y / Z。
-            distance (float):
-                移动距离，可以为负数。
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
 
-        Returns:
-            object:
-            当前 API 完成处理后返回的结果。
-
-        Raises:
-            ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-
+    Raises:
+        ValueError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：把轴向统一成大写。
     # -------------------------------------------------------------------------
@@ -582,31 +576,29 @@ def create_even_follicles(
         parent=None
 ):
     u"""
+    沿 Surface 的 U 或 V 方向均匀创建 Follicle。
 
-        沿 Surface 的 U 或 V 方向均匀创建 Follicle。
+    Args:
+        surface (str):
+            NURBS Surface。
+        count (int):
+            Follicle 数量。
+        name_prefix (str):
+            名称前缀。
+        direction (str):
+            U 或 V。
+        fixed_parameter (float):
+            未被分布的另一个方向固定值。
+        parent (str/None):
+            可选父节点。 规则： count=1：放在 0.5； count>=2：覆盖 0~1。
 
-        Args:
-            surface (str):
-                NURBS Surface。
-            count (int):
-                Follicle 数量。
-            name_prefix (str):
-                名称前缀。
-            direction (str):
-                U 或 V。
-            fixed_parameter (float):
-                未被分布的另一个方向固定值。
-            parent (str/None):
-                可选父节点。 规则： count=1：放在 0.5； count>=2：覆盖 0~1。
+    Returns:
+        object:
+        创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
-        Returns:
-            object:
-            创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
-        Raises:
-            ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-
+    Raises:
+        ValueError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：验证数量和方向。
     # -------------------------------------------------------------------------

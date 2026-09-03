@@ -63,13 +63,11 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
     def create_step2_page(self):
         u"""
+        创建原有 Step 02 页面，并补充 Teeth / Tongue Controller Size。
 
-                创建原有 Step 02 页面，并补充 Teeth / Tongue Controller Size。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
         # -------------------------------------------------------------------------
         # Step 01：创建并配置当前阶段需要的 Maya / Rig 对象
@@ -175,17 +173,15 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
     def get_step2_controller_settings(self):
         u"""
+        使用当前 config.py 正式 Attribute 名称收集完整 Controller Settings。
 
-                使用当前 config.py 正式 Attribute 名称收集完整 Controller Settings。
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
-                Raises:
-                    RuntimeError:
-                        输入数据、场景状态或操作条件不满足要求时抛出。
-
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         settings = {}
 
@@ -220,13 +216,11 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
     def load_step2_controller_settings(self):
         u"""
+        使用当前正式 Config Schema 回填全部 Controller Settings。
 
-                使用当前正式 Config Schema 回填全部 Controller Settings。
-
-                Returns:
-                    bool:
-                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
-
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
         """
         # -------------------------------------------------------------------------
         # Step 01：查询并整理当前阶段需要的 Maya 场景数据
@@ -328,13 +322,11 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
     def create_step3_page(self):
         u"""
+        创建 Step 03 Module Build 页面。
 
-                创建 Step 03 Module Build 页面。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
         # -------------------------------------------------------------------------
         # Step 01：查询并整理当前阶段需要的 Maya 场景数据
@@ -509,13 +501,11 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
     def clicked_build_teeth(self):
         u"""
+        通过 Face System 公共 API 构建 Teeth Module。
 
-                通过 Face System 公共 API 构建 Teeth Module。
-
-                Returns:
-                    bool:
-                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
-
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
         """
         # -------------------------------------------------------------------------
         # Step 01：应用并更新当前阶段需要的属性或状态
@@ -587,13 +577,11 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
 def main():
     u"""
+    创建带 Step 03 Module Build 页面的正式 Face Rig UI。
 
-        创建带 Step 03 Module Build 页面的正式 Face Rig UI。
-
-        Returns:
-            object:
-                当前工具入口创建并显示的窗口或执行结果。
-
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return FaceRigWizard()
 

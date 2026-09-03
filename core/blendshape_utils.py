@@ -163,17 +163,15 @@ def get_mesh_shape(node):
 
 def get_transform(node):
     u"""
+    返回节点对应的 Transform；找不到时返回 None。
 
-        返回节点对应的 Transform；找不到时返回 None。
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
 
-        Args:
-            node (str):
-                需要查询或处理的 Maya 节点名称。
-
-        Returns:
-            None | object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        None | object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     # 步骤 1：过滤无效节点。
     # -------------------------------------------------------------------------
@@ -280,17 +278,15 @@ def find_blendshape(node):
 
 def get_base_transform(blendshape_node):
     u"""
+    返回 BlendShape 第一个 Base Geometry Transform。
 
-        返回 BlendShape 第一个 Base Geometry Transform。
+    Args:
+        blendshape_node (str):
+            需要查询或编辑的 Maya blendShape Deformer 节点。
 
-        Args:
-            blendshape_node (str):
-                需要查询或编辑的 Maya blendShape Deformer 节点。
-
-        Returns:
-            object | None:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object | None:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     # 步骤 1：向 BlendShape 查询 Base Geometry。
     geometries = cmds.blendShape(
@@ -317,19 +313,17 @@ def get_base_transform(blendshape_node):
 
 def sort_targets_by_index(targets):
     u"""
+    按真实 ``weight[index]`` 升序排序 Target 数据。
 
-        按真实 ``weight[index]`` 升序排序 Target 数据。
+    这里故意保留展开的普通循环，避免把 Scene 数据排序逻辑压缩得过于简略。
 
-        这里故意保留展开的普通循环，避免把 Scene 数据排序逻辑压缩得过于简略。
+    Args:
+        targets (str | list[str]):
+            需要批量处理的 Target 节点；在 Constraint / BlendShape / Controller API 中保持输入顺序。
 
-        Args:
-            targets (str | list[str]):
-                需要批量处理的 Target 节点；在 Constraint / BlendShape / Controller API 中保持输入顺序。
-
-        Returns:
-            object:
-            当前 API 完成处理后返回的结果。
-
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
     """
     item_count = len(targets)
     outer_index = 0
@@ -437,17 +431,15 @@ def get_targets(blendshape_node):
 
 def get_next_target_index(blendshape_node):
     u"""
+    返回下一个可使用的 BlendShape Weight Index。
 
-        返回下一个可使用的 BlendShape Weight Index。
+    Args:
+        blendshape_node (str):
+            需要查询或编辑的 Maya blendShape Deformer 节点。
 
-        Args:
-            blendshape_node (str):
-                需要查询或编辑的 Maya blendShape Deformer 节点。
-
-        Returns:
-            object | int:
-            当前查询得到的整数值。
-
+    Returns:
+        object | int:
+        当前查询得到的整数值。
     """
     # 步骤 1：读取当前 weight Multi Attribute 已存在的 Index。
     indices = cmds.getAttr(
@@ -699,23 +691,21 @@ def add_or_replace_target(blendshape_node, target_transform):
 
 def duplicate_all_targets(blendshape_node):
     u"""
+    逐个激活 BlendShape Target，并从 Base Mesh 烘焙出独立 Target Mesh。
 
-        逐个激活 BlendShape Target，并从 Base Mesh 烘焙出独立 Target Mesh。
+    处理期间会临时修改 Weight，finally 中会恢复所有原始值。
 
-        处理期间会临时修改 Weight，finally 中会恢复所有原始值。
+    Args:
+        blendshape_node (str):
+            需要查询或编辑的 Maya blendShape Deformer 节点。
 
-        Args:
-            blendshape_node (str):
-                需要查询或编辑的 Maya blendShape Deformer 节点。
+    Returns:
+        object | list:
+        按当前 API 约定顺序返回的结果列表。
 
-        Returns:
-            object | list:
-            按当前 API 约定顺序返回的结果列表。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
     # 步骤 1：取得 Base Geometry 和 Target 列表。
     # -------------------------------------------------------------------------
@@ -832,17 +822,15 @@ def duplicate_all_targets(blendshape_node):
 
 def get_vertex_count(node):
     u"""
+    返回 Mesh 顶点数量；非 Mesh 返回 None。
 
-        返回 Mesh 顶点数量；非 Mesh 返回 None。
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
 
-        Args:
-            node (str):
-                需要查询或处理的 Maya 节点名称。
-
-        Returns:
-            object | None:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object | None:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     shape = get_mesh_shape(node)
 

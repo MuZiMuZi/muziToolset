@@ -19,13 +19,11 @@ from ...ui import window_utils
 
 def main():
     u"""
+    显示并返回 Face Rig Wizard。
 
-        显示并返回 Face Rig Wizard。
-
-        Returns:
-            object:
-            当前工具入口创建并显示的窗口或执行结果。
-
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
         "tools.face.face_rig_tool",
