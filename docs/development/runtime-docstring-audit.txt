@@ -5,13 +5,13 @@ Runtime files:  109
 Changed files:  0
 Errors:         84
 Validation errors:
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:530 build_brow 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:491 create_finalize 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:334 create_deform 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:275 create_connect 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:191 create_ctrl 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:148 create_jnt 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:120 load_guide 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:563 build_brow 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:524 create_finalize 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:361 create_deform 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:296 create_connect 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:206 create_ctrl 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:163 create_jnt 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:135 load_guide 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:64 load_setup 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:47 __init__ 缺少功能摘要
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:305 build_cheek 缺少 Returns 说明
@@ -32,22 +32,22 @@ Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/ear.py:70 load_guide 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/ear.py:39 load_setup 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/ear.py:28 __init__ 缺少功能摘要
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:336 build_eye 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:312 create_finalize 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:279 create_deform 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:234 create_connect 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:342 build_eye 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:318 create_finalize 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:285 create_deform 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:240 create_connect 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:147 create_ctrl 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:104 create_jnt 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:93 load_guide 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:50 load_setup 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:38 __init__ 缺少功能摘要
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:596 build_eyelid 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:559 create_finalize 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:357 create_deform 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:315 create_connect 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:279 create_ctrl 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:164 create_jnt 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:142 load_guide 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:623 build_eyelid 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:586 create_finalize 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:378 create_deform 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:336 create_connect 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:300 create_ctrl 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:179 create_jnt 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:157 load_guide 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:58 load_setup 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:46 __init__ 缺少功能摘要
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_module_base.py:173 create_deform 缺少 Returns 说明
@@ -62,13 +62,13 @@ Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:105 load_guide 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:57 load_setup 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:40 __init__ 缺少功能摘要
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:319 build_mouth 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:289 create_finalize 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:275 create_deform 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:239 create_connect 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:167 create_ctrl 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:128 create_jnt 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:121 load_guide 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:349 build_mouth 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:319 create_finalize 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:305 create_deform 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:269 create_connect 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:182 create_ctrl 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:143 create_jnt 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:136 load_guide 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:57 load_setup 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/mouth.py:33 __init__ 缺少功能摘要
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:402 build_nose 缺少 Returns 说明
@@ -80,8 +80,8 @@ Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:117 load_guide 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:69 load_setup 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/nose.py:48 __init__ 缺少功能摘要
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:315 build_tongue 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:280 create_finalize 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:330 build_tongue 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:295 create_finalize 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:199 create_deform 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:174 create_connect 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/tongue.py:141 create_ctrl 缺少 Returns 说明
