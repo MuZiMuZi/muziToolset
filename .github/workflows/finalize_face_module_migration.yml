@@ -63,10 +63,8 @@ jobs:
       - name: Check whitespace errors
         run: git diff --check
 
-      - name: Remove one-time migration files
-        run: |
-          git rm scripts/finalize_face_module_migration.py
-          git rm .github/workflows/finalize_face_module_migration.yml
+      - name: Remove one-time migration script
+        run: git rm scripts/finalize_face_module_migration.py
 
       - name: Commit validated Face migration
         shell: bash
