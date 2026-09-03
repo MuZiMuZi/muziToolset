@@ -629,13 +629,39 @@ def apply_shape_data(transform, shape_data_list):
         # 步骤 4：生成稳定 Shape 名。
         # 第一个为 ctrlShape，后续为 ctrlShape2 / ctrlShape3 ...。
         # ---------------------------------------------------------------------
-        short_name = transform.split("|")[-1]
-        new_shape_name = "{}Shape".format(short_name)
+        short_name = transform.rsplit("|", 1)[-1]
+
+        # Maya rename() 的新名称默认相对当前 Namespace。
+        # Controller 位于 Namespace 时，如果再次传入相对的 ns:ctrlShape，
+        # Maya 会把 Namespace 部分视为无效并产生“新名称包含无效字符”警告。
+        # 因此这里始终构造以 ':' 开头的绝对 Namespace 名称。
+        namespace_name = ""
+        transform_name = short_name
+
+        if ":" in short_name:
+            namespace_name, transform_name = short_name.rsplit(
+                ":",
+                1
+            )
+
+        shape_name = "{}Shape".format(
+            transform_name
+        )
 
         if shape_index > 0:
-            new_shape_name = "{}Shape{}".format(
-                short_name,
+            shape_name = "{}Shape{}".format(
+                transform_name,
                 shape_index + 1
+            )
+
+        if namespace_name:
+            new_shape_name = ":{}:{}".format(
+                namespace_name,
+                shape_name
+            )
+        else:
+            new_shape_name = ":{}".format(
+                shape_name
             )
 
         cmds.rename(
