@@ -2,7 +2,7 @@
 
 > 本文件由 `scripts/audit_runtime_step_comments.py` 自动生成。
 
-扫描 Runtime Python 文件：**97**
+扫描 Runtime Python 文件：**95**
 
 需要补充步骤注释的复杂函数：**0**
 
