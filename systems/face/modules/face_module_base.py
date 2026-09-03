@@ -11,33 +11,33 @@ Face Workflow Step 与 Face Rig Module 是两种不同职责：
         -> 负责 Setup / Guide 工作流。
 
     JawModule / BrowModule / EyeModule / TeethModule / ...
-        -> 使用 FaceModuleBase.build() 构建独立绑定模块。
+        -> 使用 FaceModuleBase.create_build() 构建独立绑定模块。
 
 所有正式 Face Rig Module 统一遵循：
 
-    setup()
+    load_setup()
         ↓
-    guide()
+    load_guide()
         ↓
     create_jnt()
         ↓
     create_ctrl()
         ↓
-    connect()
+    create_connect()
         ↓
-    deform()
+    create_deform()
         ↓
-    finalize()
+    create_finalize()
 
-统一公开入口：
+统一公开构建入口：
 
-    build()
+    create_build()
 
 命名规范：
     - Class 使用 PascalCase；
     - 方法、函数、成员变量使用 snake_case；
-    - Joint 在业务 API / 变量中统一缩写为 jnt；
-    - Controller 在业务 API / 变量中统一缩写为 ctrl；
+    - Joint 在模块生命周期 API 中统一缩写为 jnt；
+    - Controller 在模块生命周期 API 中统一缩写为 ctrl；
     - 常量使用 UPPER_SNAKE_CASE。
 
 设计原则：
@@ -45,8 +45,8 @@ Face Workflow Step 与 Face Rig Module 是两种不同职责：
     2. Face 公共 Config / Hierarchy / Naming 继续复用 FaceBase；
     3. Joint / Controller / Matrix / Attribute 等底层能力继续复用 Core；
     4. 具体模块只实现自己的业务阶段，不重新创建第二套通用 Helper；
-    5. Scene Rebuild / Existing Node 检查由具体模块在 setup() 中处理；
-    6. deform() 表示模块独有的高级绑定效果，不局限于 Maya Deformer Node；
+    5. Scene Rebuild / Existing Node 检查由具体模块在 load_setup() 中处理；
+    6. create_deform() 表示模块独有的高级绑定效果，不局限于 Maya Deformer Node；
     7. 不维护旧 Face Module Lifecycle Adapter，新模块只认本文件定义的正式 API。
 """
 
@@ -91,7 +91,7 @@ class FaceModuleBase(FaceBase):
     # =========================================================================
 
     @scene_utils.undo_chunk
-    def build(self):
+    def create_build(self):
         u"""
         按统一七阶段生命周期完整构建 Face Module。
 
@@ -100,14 +100,14 @@ class FaceModuleBase(FaceBase):
                 当前模块公开构建结果。具体节点由子类在各阶段写入 module_dict。
         """
         # -------------------------------------------------------------------------
-        # Step 01：准备模块参数、公共层级、确定性名称与 Rebuild Scene State
+        # Step 01：加载模块参数、公共层级、确定性名称与 Rebuild Scene State
         # -------------------------------------------------------------------------
-        self.setup()
+        self.load_setup()
 
         # -------------------------------------------------------------------------
         # Step 02：读取当前 Face Guide，并整理后续 Joint / Controller 定位数据
         # -------------------------------------------------------------------------
-        self.guide()
+        self.load_guide()
 
         # -------------------------------------------------------------------------
         # Step 03：根据 Guide 创建当前模块需要的 Bind / Driver Joint
@@ -122,17 +122,17 @@ class FaceModuleBase(FaceBase):
         # -------------------------------------------------------------------------
         # Step 05：建立 Controller、Output、Joint 与模块内部基础驱动关系
         # -------------------------------------------------------------------------
-        self.connect()
+        self.create_connect()
 
         # -------------------------------------------------------------------------
         # Step 06：创建当前模块独有的高级效果、Deformer 或辅助 Driver Network
         # -------------------------------------------------------------------------
-        self.deform()
+        self.create_deform()
 
         # -------------------------------------------------------------------------
         # Step 07：验证最终 Scene State，并整理模块公开输出
         # -------------------------------------------------------------------------
-        self.finalize()
+        self.create_finalize()
 
         return self.module_dict
 
@@ -140,16 +140,16 @@ class FaceModuleBase(FaceBase):
     # Standard Face Module Lifecycle
     # =========================================================================
 
-    def setup(self):
-        u"""准备模块参数、名称、公共层级与 Rebuild Scene State。"""
+    def load_setup(self):
+        u"""加载模块参数、名称、公共层级与 Rebuild Scene State。"""
         raise NotImplementedError(
-            u"Face Module 子类必须实现 setup()。"
+            u"Face Module 子类必须实现 load_setup()。"
         )
 
-    def guide(self):
+    def load_guide(self):
         u"""读取并整理当前模块需要的 Guide 定位数据。"""
         raise NotImplementedError(
-            u"Face Module 子类必须实现 guide()。"
+            u"Face Module 子类必须实现 load_guide()。"
         )
 
     def create_jnt(self):
@@ -164,20 +164,20 @@ class FaceModuleBase(FaceBase):
             u"Face Module 子类必须实现 create_ctrl()。"
         )
 
-    def connect(self):
+    def create_connect(self):
         u"""建立 Controller / Output 到 Joint 的基础驱动关系。"""
         raise NotImplementedError(
-            u"Face Module 子类必须实现 connect()。"
+            u"Face Module 子类必须实现 create_connect()。"
         )
 
-    def deform(self):
+    def create_deform(self):
         u"""创建当前模块独有的高级绑定效果；没有特殊效果时允许保持为空。"""
         return True
 
-    def finalize(self):
+    def create_finalize(self):
         u"""验证最终 Scene State，并整理当前 Module 的公开结果。"""
         raise NotImplementedError(
-            u"Face Module 子类必须实现 finalize()。"
+            u"Face Module 子类必须实现 create_finalize()。"
         )
 
 
