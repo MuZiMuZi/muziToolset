@@ -1,0 +1,84 @@
+name: Finalize Face Module Migration
+
+on:
+  push:
+    branches:
+      - refactor/full-code-cn-comments
+    paths:
+      - scripts/finalize_face_module_migration.py
+      - .github/workflows/finalize_face_module_migration.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout refactor branch
+        uses: actions/checkout@v4
+        with:
+          ref: refactor/full-code-cn-comments
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Finalize Face module source migration
+        run: python scripts/finalize_face_module_migration.py
+
+      - name: Add runtime Chinese step comments
+        run: python scripts/annotate_runtime_steps.py --write
+
+      - name: Refresh step comment audit
+        run: python scripts/audit_runtime_step_comments.py --write-report
+
+      - name: Compile runtime and tests
+        run: python -m compileall -q app core systems tools ui tests __init__.py config.py
+
+      - name: Validate Face module lifecycle
+        run: python tests/face_module_lifecycle_contract_test.py
+
+      - name: Validate legacy Face removal
+        run: python tests/face_module_legacy_gate_test.py
+
+      - name: Validate Core and Rig contracts
+        run: |
+          python tests/core_import_style_test.py
+          python tests/core_public_api_gate_test.py
+          python tests/core_single_source_gate_test.py
+          python tests/rig_architecture_gate_test.py
+          python tests/rig_base_contract_test.py
+          python tests/module_base_contract_test.py
+          python tests/system_core_reuse_gate_test.py
+          python tests/maya2023_smoke_contract_test.py
+
+      - name: Validate step comment coverage
+        run: python scripts/annotate_runtime_steps.py --check
+
+      - name: Check whitespace errors
+        run: git diff --check
+
+      - name: Remove one-time migration files
+        run: |
+          git rm scripts/finalize_face_module_migration.py
+          git rm .github/workflows/finalize_face_module_migration.yml
+
+      - name: Commit validated Face migration
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No Face migration changes required."
+            exit 0
+          fi
+
+          git commit -m "refactor: finalize modular face rig migration"
+          git push origin HEAD:refactor/full-code-cn-comments
