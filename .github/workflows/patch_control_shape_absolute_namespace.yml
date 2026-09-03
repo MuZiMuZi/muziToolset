@@ -1,0 +1,71 @@
+name: Patch Control Shape Absolute Namespace
+
+on:
+  push:
+    branches:
+      - refactor/full-code-cn-comments
+    paths:
+      - scripts/patch_control_shape_absolute_namespace.py
+      - .github/workflows/patch_control_shape_absolute_namespace.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout refactor branch
+        uses: actions/checkout@v4
+        with:
+          ref: refactor/full-code-cn-comments
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Apply control shape namespace patch
+        run: python scripts/patch_control_shape_absolute_namespace.py
+
+      - name: Compile runtime and tests
+        run: python -m compileall -q core systems tests
+
+      - name: Validate Core contracts
+        run: |
+          python tests/core_public_api_gate_test.py
+          python tests/core_single_source_gate_test.py
+          python tests/system_core_reuse_gate_test.py
+
+      - name: Validate Face Maya smoke contract
+        run: python tests/face_modules_maya2023_smoke_contract_test.py
+
+      - name: Validate runtime step comments
+        run: python scripts/annotate_runtime_steps.py --check
+
+      - name: Validate public runtime docstrings
+        run: python scripts/normalize_runtime_docstrings.py --check
+
+      - name: Check whitespace errors
+        run: git diff --check
+
+      - name: Remove one-time patch script
+        run: git rm scripts/patch_control_shape_absolute_namespace.py
+
+      - name: Commit validated patch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add core scripts
+
+          if git diff --cached --quiet; then
+            echo "No control shape namespace changes required."
+            exit 0
+          fi
+
+          git commit -m "fix: use absolute namespace for control shapes"
+          git push origin HEAD:refactor/full-code-cn-comments
