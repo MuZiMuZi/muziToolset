@@ -1,0 +1,117 @@
+name: Integrate Face Build Step UI V3
+
+on:
+  push:
+    branches:
+      - refactor/full-code-cn-comments
+    paths:
+      - .github/workflows/integrate_face_build_step_ui_v3.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout refactor branch
+        uses: actions/checkout@v4
+        with:
+          ref: refactor/full-code-cn-comments
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Integrate complete FaceBuild UI
+        run: python scripts/integrate_face_build_step_ui.py
+
+      - name: Complete Step03 UI docstrings
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path("systems/face/ui/build_controller.py")
+          text = path.read_text(encoding="utf-8")
+
+          old_load = '''    def load_step3_build_state(self):
+                  u"""从 Face Config 恢复 Step 03 完成状态和按钮状态。"""
+          '''
+          new_load = '''    def load_step3_build_state(self):
+                  u"""
+                  从 Face Config 恢复 Step 03 完成状态和按钮状态。
+
+                  Returns:
+                      bool:
+                          Step 03 已完成时返回 True，否则返回 False。
+                  """
+          '''
+
+          old_next = '''    def clicked_next_button(self):
+                  u"""提交原有 Step；Step 03 完成后进入 Step 04 Finalize。"""
+          '''
+          new_next = '''    def clicked_next_button(self):
+                  u"""
+                  提交原有 Step；Step 03 完成后进入 Step 04 Finalize。
+
+                  Returns:
+                      object | None:
+                          原 Step 返回结果；Step 03 成功切换页面时返回 None。
+                  """
+          '''
+
+          if old_load not in text:
+              raise RuntimeError("load_step3_build_state docstring marker not found")
+
+          if old_next not in text:
+              raise RuntimeError("clicked_next_button docstring marker not found")
+
+          text = text.replace(old_load, new_load)
+          text = text.replace(old_next, new_next)
+          path.write_text(text, encoding="utf-8", newline="\n")
+
+      - name: Add missing runtime Step comments
+        run: python scripts/annotate_runtime_steps.py --write
+
+      - name: Compile runtime and tests
+        run: python -m compileall -q systems tests
+
+      - name: Validate Face Build Step contract
+        run: python tests/face_build_step_contract_test.py
+
+      - name: Validate Face lifecycle contract
+        run: python tests/face_module_lifecycle_contract_test.py
+
+      - name: Validate Face Maya smoke contract
+        run: python tests/face_modules_maya2023_smoke_contract_test.py
+
+      - name: Validate runtime Step comments
+        run: python scripts/annotate_runtime_steps.py --check
+
+      - name: Validate public runtime docstrings
+        run: python scripts/normalize_runtime_docstrings.py --check
+
+      - name: Check whitespace errors
+        run: git diff --check
+
+      - name: Remove one-time migration script
+        run: git rm scripts/integrate_face_build_step_ui.py
+
+      - name: Commit validated FaceBuild UI integration
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add systems tests scripts
+
+          if git diff --cached --quiet; then
+            echo "No FaceBuild UI integration changes required."
+            exit 0
+          fi
+
+          git commit -m "feat: integrate complete face build step"
+          git push origin HEAD:refactor/full-code-cn-comments
