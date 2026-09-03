@@ -14,15 +14,15 @@ Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:120 load_guide 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:64 load_setup 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:47 __init__ 缺少功能摘要
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:251 build_cheek 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:220 create_finalize 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:216 create_deform 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:184 create_connect 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:145 create_ctrl 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:108 create_jnt 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:78 load_guide 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:41 load_setup 缺少 Returns 说明
-  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:29 __init__ 缺少功能摘要
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:305 build_cheek 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:256 create_finalize 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:249 create_deform 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:214 create_connect 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:172 create_ctrl 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:132 create_jnt 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:95 load_guide 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:47 load_setup 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:33 __init__ 缺少功能摘要
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/ear.py:209 build_ear 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/ear.py:184 create_finalize 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/ear.py:180 create_deform 缺少 Returns 说明
