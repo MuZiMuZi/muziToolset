@@ -8,9 +8,8 @@ Cheek Module
 旧 Cheek 的 CheekBone / Nasolabial / Cheek 三组定位思想保留；
 新版本直接读取 Face Guide，不再导入 cheek_bpjnt.ma，也不再依赖右侧负 Scale 镜像。
 
-当前正式 Face Guide 模板尚未包含 Cheek / CheekBone / Nasolabial 定位时，
-本模块不会阻塞完整 FaceRig，而是明确返回 skipped 状态。Guide 一旦补齐，
-同一套 Module 会自动进入正常创建流程。
+正式 Face Guide 由 FaceGuide 统一维护 CheekBone / Nasolabial / Cheek 定位；
+本模块只消费结构化 Guide 数据，不再维护独立 bpjnt 或额外定位资产。
 """
 
 from __future__ import print_function
@@ -121,19 +120,18 @@ class CheekModule(FaceModuleBase):
 
         """
         # -------------------------------------------------------------------------
-        # Step 01：逐侧、逐区域收集 Guide，并建立后续 Jnt/Ctrl/Matrix 的统一数据容器
+        # Step 01：通过 FaceGuide 的固定 Schema 一次性读取左右 Cheek Guide
         # -------------------------------------------------------------------------
+        cheek_guide_dict = self.face_guide.get_cheek_guides(
+            required=True
+        )
         total_guide_count = 0
 
         for side in self.sides:
             region_dict = {}
 
             for region in self.regions:
-                region_guides = self.face_guide.get_part_guides(
-                    part=region,
-                    side=side,
-                    required=False
-                )
+                region_guides = cheek_guide_dict[side][region]
                 region_dict[region] = {
                     "guides": list(region_guides),
                     "jnts": [],

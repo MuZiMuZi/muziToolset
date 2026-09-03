@@ -58,6 +58,18 @@ class FaceGuide(face_base.FaceBase):
         "rt",
     ]
 
+    cheek_regions = [
+        "cheekbone",
+        "nasolabial",
+        "cheek",
+    ]
+
+    cheek_region_counts = {
+        "cheekbone": 3,
+        "nasolabial": 3,
+        "cheek": 2,
+    }
+
     zero_attributes = [
         "translateX",
         "translateY",
@@ -134,6 +146,11 @@ class FaceGuide(face_base.FaceBase):
             raise RuntimeError(
                 u"Face Guide 尚未完整加载，请重新导入模板后再继续。"
             )
+
+        # -------------------------------------------------------------------------
+        # Step 02：升级旧 Guide 场景时补齐正式 Cheek Guide Schema
+        # -------------------------------------------------------------------------
+        self.ensure_cheek_guides()
 
         return True
 
@@ -295,7 +312,20 @@ class FaceGuide(face_base.FaceBase):
             )
 
         # -------------------------------------------------------------------------
-        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # Step 04：把代码生成的 Cheek Locator 作为正式 Template Schema 的一部分
+        # -------------------------------------------------------------------------
+        generated_locator_names = self.get_generated_template_locator_names()
+
+        for locator_name in generated_locator_names:
+            if locator_name in locator_names:
+                continue
+
+            locator_names.append(
+                locator_name
+            )
+
+        # -------------------------------------------------------------------------
+        # Step 05：检查当前条件与边界情况，并进入对应处理分支
         # -------------------------------------------------------------------------
         if not locator_names:
             raise RuntimeError(
@@ -466,11 +496,25 @@ class FaceGuide(face_base.FaceBase):
         self.ensure_config_node()
 
         if self.guide_exists():
+            cheek_guide_result = self.ensure_cheek_guides()
+
+            if cheek_guide_result["created_count"] > 0:
+                self.apply_mirror(
+                    source_side="lf",
+                    target_side="rt"
+                )
+                self.save_guide_config()
+                self.set_step_completed(
+                    completed=False
+                )
+                self.invalidate_later_steps()
+
             return {
                 "imported": False,
                 "guide_root": self.guide_root,
                 "guide_move_ctrl": self.guide_move_ctrl,
                 "new_nodes": [],
+                "cheek_guide": cheek_guide_result,
             }
 
         # -------------------------------------------------------------------------
@@ -551,8 +595,10 @@ class FaceGuide(face_base.FaceBase):
             )
 
         # -------------------------------------------------------------------------
-        # Step 04：应用并更新当前阶段需要的属性或状态
+        # Step 04：在正式模板上补齐程序化 Cheek Guide，再统一执行左右 Mirror
         # -------------------------------------------------------------------------
+        cheek_guide_result = self.ensure_cheek_guides()
+
         self.apply_mirror(
             source_side="lf",
             target_side="rt"
@@ -572,6 +618,7 @@ class FaceGuide(face_base.FaceBase):
             "guide_root": self.guide_root,
             "guide_move_ctrl": self.guide_move_ctrl,
             "new_nodes": imported_nodes,
+            "cheek_guide": cheek_guide_result,
         }
 
     def capture_guide_state(self):
@@ -1250,6 +1297,442 @@ class FaceGuide(face_base.FaceBase):
             function="guide",
             index=index
         )
+
+
+    def get_generated_template_locator_names(self):
+        u"""
+        返回由 FaceGuide 代码生成、但属于正式 Template Schema 的 Locator 名称。
+
+        当前只包含 Cheek：每侧 3 个 CheekBone、3 个 Nasolabial、2 个 Cheek。
+
+        Returns:
+            list[str]:
+                固定顺序的程序化 Face Guide Locator 名称。
+        """
+        locator_names = []
+
+        # -------------------------------------------------------------------------
+        # Step 01：按 Side / Region / Index 创建稳定的正式 Guide 名称
+        # -------------------------------------------------------------------------
+        for side in self.mirror_sides:
+            for region in self.cheek_regions:
+                region_count = self.cheek_region_counts[region]
+                index = 1
+
+                while index <= region_count:
+                    locator_names.append(
+                        self._create_guide_name(
+                            side,
+                            region,
+                            index
+                        )
+                    )
+                    index += 1
+
+        return locator_names
+
+    @staticmethod
+    def _blend_position(
+            start_position,
+            end_position,
+            weight
+    ):
+        u"""按线性权重在两个世界坐标之间插值。"""
+        weight = float(weight)
+        inverse_weight = 1.0 - weight
+
+        return [
+            start_position[0] * inverse_weight + end_position[0] * weight,
+            start_position[1] * inverse_weight + end_position[1] * weight,
+            start_position[2] * inverse_weight + end_position[2] * weight,
+        ]
+
+    def _get_cheek_initial_positions(self):
+        u"""根据当前 Eye / Lid / Nose / Mouth Landmark 计算 LF Cheek 初始位置。"""
+        # -------------------------------------------------------------------------
+        # Step 01：读取当前模板已有的左侧 Landmark
+        # -------------------------------------------------------------------------
+        eye_ball = self.get_guide_node(
+            self._create_guide_name("lf", "eye_ball", 1),
+            required=True
+        )
+        outer_lid = self.get_guide_node(
+            self._create_guide_name("lf", "outer_lid", 1),
+            required=True
+        )
+        nose_side = self.get_guide_node(
+            self._create_guide_name("lf", "nose_side", 1),
+            required=True
+        )
+        mouth_corner = self.get_guide_node(
+            self._create_guide_name("lf", "mouth_corner", 1),
+            required=True
+        )
+
+        eye_position = transform_utils.get_world_translation(
+            eye_ball
+        )
+        outer_lid_position = transform_utils.get_world_translation(
+            outer_lid
+        )
+        nose_position = transform_utils.get_world_translation(
+            nose_side
+        )
+        mouth_position = transform_utils.get_world_translation(
+            mouth_corner
+        )
+
+        # -------------------------------------------------------------------------
+        # Step 02：沿眼下 / 颧骨区域生成三个 CheekBone 初始位置
+        # -------------------------------------------------------------------------
+        cheekbone_positions = [
+            self._blend_position(
+                nose_position,
+                outer_lid_position,
+                0.55
+            ),
+            self._blend_position(
+                eye_position,
+                mouth_position,
+                0.32
+            ),
+            self._blend_position(
+                outer_lid_position,
+                mouth_position,
+                0.48
+            ),
+        ]
+
+        # -------------------------------------------------------------------------
+        # Step 03：沿 Nose Side 到 Mouth Corner 生成三段 Nasolabial 初始位置
+        # -------------------------------------------------------------------------
+        nasolabial_positions = [
+            self._blend_position(
+                nose_position,
+                mouth_position,
+                0.25
+            ),
+            self._blend_position(
+                nose_position,
+                mouth_position,
+                0.50
+            ),
+            self._blend_position(
+                nose_position,
+                mouth_position,
+                0.75
+            ),
+        ]
+
+        # -------------------------------------------------------------------------
+        # Step 04：在 CheekBone 与 Nasolabial 之间生成两个主 Cheek 初始位置
+        # -------------------------------------------------------------------------
+        cheek_positions = [
+            self._blend_position(
+                cheekbone_positions[1],
+                nasolabial_positions[1],
+                0.50
+            ),
+            self._blend_position(
+                cheekbone_positions[2],
+                nasolabial_positions[2],
+                0.50
+            ),
+        ]
+
+        return {
+            "cheekbone": cheekbone_positions,
+            "nasolabial": nasolabial_positions,
+            "cheek": cheek_positions,
+        }
+
+    def _ensure_cheek_guide_group(self):
+        u"""创建或返回正式 Cheek Guide Group。"""
+        group_name = self.create_name(
+            type="grp",
+            side="md",
+            part="cheek",
+            function="guide",
+            index=1
+        )
+        group_node = self.get_guide_node(
+            group_name,
+            required=False
+        )
+
+        if group_node:
+            return group_node
+
+        self.refresh_guide_handles()
+
+        if not self.guide_move_ctrl:
+            raise RuntimeError(
+                u"创建 Cheek Guide 前必须存在 Face Guide Move Ctrl。"
+            )
+
+        return scene_utils.create_node(
+            "transform",
+            ":{}".format(group_name),
+            parent=self.guide_move_ctrl
+        )
+
+    def _ensure_cheek_locator(
+            self,
+            side,
+            region,
+            index,
+            parent_group,
+            world_position=None
+    ):
+        u"""创建或返回一个 Cheek Zero + Locator + LocatorShape。"""
+        zero_name = self.create_name(
+            type="zero",
+            side=side,
+            part=region,
+            function="guide",
+            index=index
+        )
+        locator_name = self._create_guide_name(
+            side,
+            region,
+            index
+        )
+
+        zero_node = self.get_guide_node(
+            zero_name,
+            required=False
+        )
+        locator_node = self.get_guide_node(
+            locator_name,
+            required=False
+        )
+        created_zero = False
+        created_locator = False
+
+        # -------------------------------------------------------------------------
+        # Step 01：只创建缺失 Zero，并在首次创建时写入初始化世界位置
+        # -------------------------------------------------------------------------
+        if not zero_node:
+            zero_node = scene_utils.create_node(
+                "transform",
+                ":{}".format(zero_name),
+                parent=parent_group
+            )
+            created_zero = True
+
+            if world_position is not None:
+                transform_utils.set_world_translation(
+                    zero_node,
+                    world_position
+                )
+
+        # -------------------------------------------------------------------------
+        # Step 02：创建可编辑 Locator Transform 和 Locator Shape
+        # -------------------------------------------------------------------------
+        if not locator_node:
+            locator_node = scene_utils.create_node(
+                "transform",
+                ":{}".format(locator_name),
+                parent=zero_node
+            )
+            locator_shape = cmds.createNode(
+                "locator",
+                name=":{}Shape".format(locator_name),
+                parent=locator_node
+            )
+            cmds.setAttr(
+                locator_shape + ".overrideEnabled",
+                1
+            )
+            cmds.setAttr(
+                locator_shape + ".overrideColor",
+                18
+            )
+            cmds.setAttr(
+                locator_shape + ".localScaleX",
+                2.0
+            )
+            cmds.setAttr(
+                locator_shape + ".localScaleY",
+                2.0
+            )
+            cmds.setAttr(
+                locator_shape + ".localScaleZ",
+                2.0
+            )
+            created_locator = True
+
+        # -------------------------------------------------------------------------
+        # Step 03：Zero 只保存初始化空间，Animator / Rigger 只编辑 Locator
+        # -------------------------------------------------------------------------
+        for attribute in self.zero_attributes:
+            plug = "{}.{}".format(
+                zero_node,
+                attribute
+            )
+
+            if not cmds.objExists(plug):
+                continue
+
+            cmds.setAttr(
+                plug,
+                lock=True
+            )
+
+        return {
+            "zero": zero_node,
+            "locator": locator_node,
+            "created_zero": created_zero,
+            "created_locator": created_locator,
+        }
+
+    def _initialize_mirrored_cheek_zero(
+            self,
+            source_zero,
+            target_zero
+    ):
+        u"""按当前 Face Mirror 规则初始化一个新建的 RT Cheek Zero。"""
+        # -------------------------------------------------------------------------
+        # Step 01：根级 Cheek Zero 在共同 Parent 下沿 X 轴镜像
+        # -------------------------------------------------------------------------
+        self.set_attr_preserve_lock(
+            target_zero,
+            "translateX",
+            -cmds.getAttr(source_zero + ".translateX")
+        )
+        self.set_attr_preserve_lock(
+            target_zero,
+            "translateY",
+            cmds.getAttr(source_zero + ".translateY")
+        )
+        self.set_attr_preserve_lock(
+            target_zero,
+            "translateZ",
+            cmds.getAttr(source_zero + ".translateZ")
+        )
+        self.set_attr_preserve_lock(
+            target_zero,
+            "scaleX",
+            -cmds.getAttr(source_zero + ".scaleX")
+        )
+        return True
+
+    def ensure_cheek_guides(self):
+        u"""
+        确保正式 Face Guide 中存在完整 Cheek Guide Schema。
+
+        Cheek 初始位置由当前 Eye / Outer Lid / Nose Side / Mouth Corner 自动推导，
+        因此不会依赖固定世界坐标。已经存在的 Cheek Guide 不会被覆盖。
+
+        Returns:
+            dict:
+                Cheek Guide Group、创建数量和固定 Region Count。
+
+        Raises:
+            RuntimeError:
+                Face Guide 或初始化 Landmark 不完整时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：确认 Guide 已加载，并准备 Cheek Group / 初始位置
+        # -------------------------------------------------------------------------
+        if not self.guide_exists():
+            raise RuntimeError(
+                u"创建 Cheek Guide 前必须先加载 Face Guide。"
+            )
+
+        cheek_group = self._ensure_cheek_guide_group()
+        initial_positions = self._get_cheek_initial_positions()
+        created_count = 0
+
+        # -------------------------------------------------------------------------
+        # Step 02：逐 Region 创建 LF Source，再创建同名 RT Mirror Pair
+        # -------------------------------------------------------------------------
+        for region in self.cheek_regions:
+            region_count = self.cheek_region_counts[region]
+            index = 1
+
+            while index <= region_count:
+                lf_result = self._ensure_cheek_locator(
+                    side="lf",
+                    region=region,
+                    index=index,
+                    parent_group=cheek_group,
+                    world_position=initial_positions[region][index - 1]
+                )
+                rt_result = self._ensure_cheek_locator(
+                    side="rt",
+                    region=region,
+                    index=index,
+                    parent_group=cheek_group,
+                    world_position=None
+                )
+
+                if lf_result["created_locator"]:
+                    created_count += 1
+
+                if rt_result["created_locator"]:
+                    created_count += 1
+
+                if rt_result["created_zero"]:
+                    self._initialize_mirrored_cheek_zero(
+                        lf_result["zero"],
+                        rt_result["zero"]
+                    )
+
+                index += 1
+
+        # -------------------------------------------------------------------------
+        # Step 03：返回稳定 Schema，供 Build / Reimport / Runtime Test 复用
+        # -------------------------------------------------------------------------
+        return {
+            "group": cheek_group,
+            "created_count": created_count,
+            "region_counts": dict(self.cheek_region_counts),
+        }
+
+    def get_cheek_guides(self, required=True):
+        u"""
+        返回左右 CheekBone / Nasolabial / Cheek 的固定有序 Guide。
+
+        Args:
+            required (bool):
+                缺少任意正式 Cheek Guide 时是否直接抛出异常。
+
+        Returns:
+            dict:
+                ``{side: {region: [guide, ...]}}`` 固定结构。
+        """
+        result = {}
+
+        # -------------------------------------------------------------------------
+        # Step 01：按正式 Schema 顺序解析每侧每个 Region 的 Guide
+        # -------------------------------------------------------------------------
+        for side in self.mirror_sides:
+            region_dict = {}
+
+            for region in self.cheek_regions:
+                guide_names = []
+                region_count = self.cheek_region_counts[region]
+                index = 1
+
+                while index <= region_count:
+                    guide_names.append(
+                        self._create_guide_name(
+                            side,
+                            region,
+                            index
+                        )
+                    )
+                    index += 1
+
+                region_dict[region] = self.get_guides_from_names(
+                    guide_names,
+                    required=required
+                )
+
+            result[side] = region_dict
+
+        return result
 
     def get_lip_guides(self, required=True):
         u"""

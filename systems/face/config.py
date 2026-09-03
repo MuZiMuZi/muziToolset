@@ -183,7 +183,7 @@ face_guide_move_ctrl = face_rig.create_name(
     function="move"
 )
 
-face_guide_version = "1.0"
+face_guide_version = "1.1"
 
 
 # ============================================================

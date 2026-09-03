@@ -30,6 +30,26 @@ SMOKE_PATH = os.path.join(
     "face_modules_maya2023_smoke_test.py"
 )
 
+PACKAGE_ROOT = os.path.dirname(
+    TESTS_DIR
+)
+
+FACE_GUIDE_PATH = os.path.join(
+    PACKAGE_ROOT,
+    "systems",
+    "face",
+    "guide",
+    "face_guide.py"
+)
+
+CHEEK_MODULE_PATH = os.path.join(
+    PACKAGE_ROOT,
+    "systems",
+    "face",
+    "modules",
+    "cheek.py"
+)
+
 REQUIRED_FUNCTIONS = {
     "prepare_default_shading_group",
     "restore_default_shading_group",
@@ -144,6 +164,12 @@ def main():
     with open(SMOKE_PATH, "r", encoding="utf-8") as file_object:
         source = file_object.read()
 
+    with open(FACE_GUIDE_PATH, "r", encoding="utf-8") as file_object:
+        face_guide_source = file_object.read()
+
+    with open(CHEEK_MODULE_PATH, "r", encoding="utf-8") as file_object:
+        cheek_module_source = file_object.read()
+
     module_tree = ast.parse(
         source,
         filename=SMOKE_PATH
@@ -251,6 +277,31 @@ def main():
             u"Face Module Smoke Runner 重新使用退休入口：{}".format(
                 retired_text
             )
+        )
+
+    # -------------------------------------------------------------------------
+    # Step 06：Cheek 必须使用 FaceGuide 正式生成 Schema，而不是再次退回可选空模块
+    # -------------------------------------------------------------------------
+    cheek_contract_text_list = [
+        "cheek_region_counts",
+        "def get_generated_template_locator_names",
+        "def ensure_cheek_guides",
+        "def get_cheek_guides",
+    ]
+
+    for required_text in cheek_contract_text_list:
+        if required_text in face_guide_source:
+            continue
+
+        raise AssertionError(
+            u"FaceGuide 缺少 Cheek Guide 契约：{}".format(
+                required_text
+            )
+        )
+
+    if "self.face_guide.get_cheek_guides(" not in cheek_module_source:
+        raise AssertionError(
+            u"CheekModule 必须通过 FaceGuide.get_cheek_guides() 读取正式定位。"
         )
 
     print(
