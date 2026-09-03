@@ -27,6 +27,7 @@ jobs:
         with:
           python-version: "3.11"
 
+      # 触发后只修改 FaceBase.ensure_hierarchy()，不会改其它业务逻辑。
       - name: Apply Face hierarchy path fix
         shell: python
         run: |
