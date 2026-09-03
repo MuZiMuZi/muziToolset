@@ -60,6 +60,9 @@ jobs:
       - name: Test Face Build Step contract
         run: python tests/face_build_step_contract_test.py
 
+      - name: Test Face Finalize Step contract
+        run: python tests/face_finalize_step_contract_test.py
+
       - name: Test Face legacy removal gate
         run: python tests/face_module_legacy_gate_test.py
 
