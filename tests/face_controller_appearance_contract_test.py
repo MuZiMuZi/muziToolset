@@ -50,7 +50,7 @@ def require_text(relative_path, required_texts):
 
 
 def run():
-    u"""验证 Step 03 UI、Shape-only 更新、Config 单数据源和 Namespace 兼容。"""
+    u"""验证 Step 03 UI、Shape-only 更新、Config 单数据源和 Maya Runner 契约。"""
     require_text(
         "systems/face/ui/build_controller.py",
         [
@@ -75,6 +75,27 @@ def run():
             "control_shape_utils.scale_shape(",
             "control_shape_utils.set_shape_color(",
             "scale_ratio = new_effective_size / old_effective_size",
+        ]
+    )
+
+    require_text(
+        "tests/face_controller_appearance_maya2023_smoke_test.py",
+        [
+            '"ctrl_rt_cheekbone_bind_002"',
+            '"module": "cheek"',
+            "_validate_controller_transform_invariants(",
+            "_validate_joint_invariants(",
+            "_validate_representative_appearance(",
+            "validate_guide_ctrl_alignment()",
+            '"transform_scale_invariant": [1.0, 1.0, 1.0]',
+        ]
+    )
+
+    require_text(
+        "__init__.py",
+        [
+            "def face_controller_appearance_maya2023_smoke_test():",
+            '"face_controller_appearance_maya2023_smoke_test",',
         ]
     )
 
