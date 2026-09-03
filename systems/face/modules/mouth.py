@@ -430,6 +430,39 @@ class MouthModule(FaceModuleBase):
         if not self.zip_lip_dict:
             raise RuntimeError(u"Mouth Zip Lip 没有完成构建。")
 
+        # -------------------------------------------------------------------------
+        # Step 01：Zip Lip Builder 可能重新组织 Joint DAG，先刷新真实 Long Path
+        # -------------------------------------------------------------------------
+        resolved_upper_lip_jnts = []
+
+        for upper_lip_jnt in self.upper_lip_jnts:
+            resolved_upper_lip_jnt = self._resolve_scene_node(
+                upper_lip_jnt,
+                label=u"Upper Lip Joint",
+                node_type="joint"
+            )
+            resolved_upper_lip_jnts.append(
+                resolved_upper_lip_jnt
+            )
+
+        resolved_lower_lip_jnts = []
+
+        for lower_lip_jnt in self.lower_lip_jnts:
+            resolved_lower_lip_jnt = self._resolve_scene_node(
+                lower_lip_jnt,
+                label=u"Lower Lip Joint",
+                node_type="joint"
+            )
+            resolved_lower_lip_jnts.append(
+                resolved_lower_lip_jnt
+            )
+
+        self.upper_lip_jnts = resolved_upper_lip_jnts
+        self.lower_lip_jnts = resolved_lower_lip_jnts
+
+        # -------------------------------------------------------------------------
+        # Step 02：使用刷新后的 Scene Node 验证最终 Mouth / Zip Lip 输出
+        # -------------------------------------------------------------------------
         for upper_lip_jnt in self.upper_lip_jnts:
             scene_utils.validate_node(
                 upper_lip_jnt,
