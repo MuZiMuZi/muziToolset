@@ -8,20 +8,20 @@ Face Module Base
 Face Workflow Step 与 Face Rig Module 是两种不同职责：
 
     FaceSetup / FaceGuide
-        -> 使用 ModuleBase.run_step() 管理工作流 Step。
+        -> 负责 Setup / Guide 工作流。
 
     JawModule / BrowModule / EyeModule / TeethModule / ...
         -> 使用 FaceModuleBase.build() 构建独立绑定模块。
 
-所有 Face Rig Module 统一遵循：
+所有正式 Face Rig Module 统一遵循：
 
     setup()
         ↓
     guide()
         ↓
-    joint()
+    create_jnt()
         ↓
-    control()
+    create_ctrl()
         ↓
     connect()
         ↓
@@ -29,13 +29,25 @@ Face Workflow Step 与 Face Rig Module 是两种不同职责：
         ↓
     finalize()
 
+统一公开入口：
+
+    build()
+
+命名规范：
+    - Class 使用 PascalCase；
+    - 方法、函数、成员变量使用 snake_case；
+    - Joint 在业务 API / 变量中统一缩写为 jnt；
+    - Controller 在业务 API / 变量中统一缩写为 ctrl；
+    - 常量使用 UPPER_SNAKE_CASE。
+
 设计原则：
     1. FaceModuleBase 只规定执行顺序，不实现具体部位绑定算法；
     2. Face 公共 Config / Hierarchy / Naming 继续复用 FaceBase；
     3. Joint / Controller / Matrix / Attribute 等底层能力继续复用 Core；
     4. 具体模块只实现自己的业务阶段，不重新创建第二套通用 Helper；
     5. Scene Rebuild / Existing Node 检查由具体模块在 setup() 中处理；
-    6. deform() 表示模块独有的高级绑定效果，不局限于 Maya Deformer Node。
+    6. deform() 表示模块独有的高级绑定效果，不局限于 Maya Deformer Node；
+    7. 不维护旧 Face Module Lifecycle Adapter，新模块只认本文件定义的正式 API。
 """
 
 from __future__ import print_function
@@ -100,12 +112,12 @@ class FaceModuleBase(FaceBase):
         # -------------------------------------------------------------------------
         # Step 03：根据 Guide 创建当前模块需要的 Bind / Driver Joint
         # -------------------------------------------------------------------------
-        self.joint()
+        self.create_jnt()
 
         # -------------------------------------------------------------------------
         # Step 04：创建 Animator Controller，并保存完整 Controller Dict
         # -------------------------------------------------------------------------
-        self.control()
+        self.create_ctrl()
 
         # -------------------------------------------------------------------------
         # Step 05：建立 Controller、Output、Joint 与模块内部基础驱动关系
@@ -125,46 +137,6 @@ class FaceModuleBase(FaceBase):
         return self.module_dict
 
     # =========================================================================
-    # ModuleBase Adapter
-    # =========================================================================
-
-    def collect_inputs(self):
-        u"""把旧 ModuleBase 输入阶段映射到 Face Module setup()。"""
-        return self.setup()
-
-    def prepare_data(self):
-        u"""把旧 ModuleBase 准备阶段映射到 Face Module guide()。"""
-        return self.guide()
-
-    def process_data(self):
-        u"""按 Face Module 标准顺序执行 Joint、Control、Connect、Deform。"""
-        # -------------------------------------------------------------------------
-        # Step 01：创建 Joint
-        # -------------------------------------------------------------------------
-        self.joint()
-
-        # -------------------------------------------------------------------------
-        # Step 02：创建 Controller
-        # -------------------------------------------------------------------------
-        self.control()
-
-        # -------------------------------------------------------------------------
-        # Step 03：建立基础驱动连接
-        # -------------------------------------------------------------------------
-        self.connect()
-
-        # -------------------------------------------------------------------------
-        # Step 04：创建模块独有高级效果
-        # -------------------------------------------------------------------------
-        self.deform()
-
-        return True
-
-    def finalize_step(self):
-        u"""把旧 ModuleBase 完成阶段映射到 Face Module finalize()。"""
-        return self.finalize()
-
-    # =========================================================================
     # Standard Face Module Lifecycle
     # =========================================================================
 
@@ -180,16 +152,16 @@ class FaceModuleBase(FaceBase):
             u"Face Module 子类必须实现 guide()。"
         )
 
-    def joint(self):
+    def create_jnt(self):
         u"""根据 Guide 创建当前模块 Joint。"""
         raise NotImplementedError(
-            u"Face Module 子类必须实现 joint()。"
+            u"Face Module 子类必须实现 create_jnt()。"
         )
 
-    def control(self):
+    def create_ctrl(self):
         u"""创建当前模块 Animator Controller。"""
         raise NotImplementedError(
-            u"Face Module 子类必须实现 control()。"
+            u"Face Module 子类必须实现 create_ctrl()。"
         )
 
     def connect(self):
