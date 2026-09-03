@@ -505,11 +505,19 @@ class LipModule(FaceModuleBase):
                     label=u"Lip Curve"
                 )
 
+            resolved_deform_jnts = []
+
             for lip_deform_jnt in region_data["deform_jnts"]:
-                scene_utils.validate_node(
+                resolved_deform_jnt = self._resolve_scene_node(
                     lip_deform_jnt,
-                    label=u"Lip Deform Joint"
+                    label=u"Lip Deform Joint",
+                    node_type="joint"
                 )
+                resolved_deform_jnts.append(
+                    resolved_deform_jnt
+                )
+
+            region_data["deform_jnts"] = resolved_deform_jnts
 
         # -------------------------------------------------------------------------
         # Step 03：整理统一 Module 输出

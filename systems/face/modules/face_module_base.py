@@ -52,6 +52,8 @@ Face Workflow Step 与 Face Rig Module 是两种不同职责：
 
 from __future__ import print_function
 
+import maya.cmds as cmds
+
 from ....core import scene_utils
 from ..face_base import FaceBase
 
@@ -85,6 +87,123 @@ class FaceModuleBase(FaceBase):
         self.module_dict = {
             "module": self,
         }
+
+    def _resolve_scene_node(
+            self,
+            node,
+            label=u"Maya 节点",
+            node_type=None
+    ):
+        u"""
+        解析当前 Scene 中真实存在的节点，并返回稳定的 Long Name。
+
+        该 Helper 专门处理 Face Module 跨阶段常见的两种名称变化：
+            1. 当前 Maya Namespace 自动附加到新建节点；
+            2. DAG Reparent 后旧 Long Path 失效。
+
+        Args:
+            node (str):
+                原始节点名、带 Namespace 的节点名，或可能已经过期的 DAG Long Path。
+            label (str):
+                节点不存在或不唯一时用于错误提示的业务标签。
+            node_type (str | None):
+                可选 Maya Node Type，用于进一步限制候选结果。
+
+        Returns:
+            str:
+                当前 Scene 中唯一匹配节点的 Long Name。
+
+        Raises:
+            RuntimeError:
+                节点不存在，或忽略 Namespace 后出现多个同名候选时抛出。
+        """
+        # ---------------------------------------------------------------------
+        # Step 01：优先接受仍然有效的原始节点名或 Long Path
+        # ---------------------------------------------------------------------
+        if node is None:
+            raise RuntimeError(
+                u"{}名称不能为空。".format(label)
+            )
+
+        node = str(node).strip()
+
+        if not node:
+            raise RuntimeError(
+                u"{}名称不能为空。".format(label)
+            )
+
+        if cmds.objExists(node):
+            if node_type is not None and cmds.nodeType(node) != node_type:
+                raise RuntimeError(
+                    u"{}类型错误：{}，期望 {}。".format(
+                        label,
+                        cmds.nodeType(node),
+                        node_type
+                    )
+                )
+
+            return scene_utils.get_long_name(node)
+
+        # ---------------------------------------------------------------------
+        # Step 02：提取 DAG Leaf，并忽略 Namespace 比较标准 Rig 名称
+        # ---------------------------------------------------------------------
+        leaf_name = node.rsplit("|", 1)[-1]
+        canonical_name = leaf_name.rsplit(":", 1)[-1]
+
+        search_pattern = "*{}".format(canonical_name)
+        search_kwargs = {
+            "long": True,
+        }
+
+        if node_type is not None:
+            search_kwargs["type"] = node_type
+
+        scene_matches = cmds.ls(
+            search_pattern,
+            **search_kwargs
+        )
+
+        if scene_matches is None:
+            scene_matches = []
+
+        # ---------------------------------------------------------------------
+        # Step 03：只保留 Leaf 去掉 Namespace 后完全相同的候选节点
+        # ---------------------------------------------------------------------
+        resolved_matches = []
+
+        for scene_match in scene_matches:
+            scene_leaf_name = scene_match.rsplit("|", 1)[-1]
+            scene_canonical_name = scene_leaf_name.rsplit(":", 1)[-1]
+
+            if scene_canonical_name != canonical_name:
+                continue
+
+            if scene_match in resolved_matches:
+                continue
+
+            resolved_matches.append(scene_match)
+
+        # ---------------------------------------------------------------------
+        # Step 04：要求结果唯一，绝不在同名节点中偷偷选择第一个
+        # ---------------------------------------------------------------------
+        if not resolved_matches:
+            raise RuntimeError(
+                u"{}不存在：{}".format(
+                    label,
+                    node
+                )
+            )
+
+        if len(resolved_matches) > 1:
+            raise RuntimeError(
+                u"{}名称不唯一：{} -> {}".format(
+                    label,
+                    node,
+                    ", ".join(resolved_matches)
+                )
+            )
+
+        return resolved_matches[0]
 
     # =========================================================================
     # Public Build Entry

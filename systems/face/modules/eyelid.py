@@ -134,17 +134,20 @@ class EyelidModule(FaceModuleBase):
                 index=1
             )
 
-            scene_utils.validate_node(
+            eye_jnt = self._resolve_scene_node(
                 eye_jnt_name,
-                label=u"EyeModule Eye Joint"
+                label=u"EyeModule Eye Joint",
+                node_type="joint"
             )
-            scene_utils.validate_node(
+            eye_aim_ctrl = self._resolve_scene_node(
                 eye_aim_ctrl_name,
-                label=u"EyeModule Aim Ctrl"
+                label=u"EyeModule Aim Ctrl",
+                node_type="transform"
             )
-            scene_utils.validate_node(
+            eye_output = self._resolve_scene_node(
                 eye_output_name,
-                label=u"EyeModule Output"
+                label=u"EyeModule Output",
+                node_type="transform"
             )
 
             self.eyelid_side_dict[side] = {
@@ -152,9 +155,9 @@ class EyelidModule(FaceModuleBase):
                     config.face_controller_color_attr_names[side],
                     6 if side == "lf" else 13
                 ),
-                "eye_jnt": eye_jnt_name,
-                "eye_aim_ctrl": eye_aim_ctrl_name,
-                "eye_output": eye_output_name,
+                "eye_jnt": eye_jnt,
+                "eye_aim_ctrl": eye_aim_ctrl,
+                "eye_output": eye_output,
                 "guide_dict": None,
                 "guide_jnt_dict": {},
                 "ctrl_dict": {},
