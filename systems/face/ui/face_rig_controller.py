@@ -48,7 +48,13 @@ class FaceRigWizard(finalize_controller.FaceRigWizard):
 
 
 def main():
-    u"""创建包含 Setup / Guide / Build / Finalize 的正式 Face Rig UI。"""
+    u"""
+    创建包含 Setup / Guide / Build / Finalize 的正式 Face Rig UI。
+
+    Returns:
+        FaceRigWizard:
+            创建完成的最终 Face Rig Wizard。
+    """
     return FaceRigWizard()
 
 

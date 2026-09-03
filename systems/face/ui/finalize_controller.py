@@ -39,7 +39,13 @@ class FaceRigWizard(build_controller.FaceRigWizard):
     u"""增加正式 Step 04 Finalize 页面的 Face Rig Wizard。"""
 
     def __init__(self, parent=None):
-        u"""初始化 Step 04 Finalize UI。"""
+        u"""
+        初始化 Step 04 Finalize UI。
+
+        Args:
+            parent (QWidget | None):
+                可选的 Qt 父窗口。
+        """
         self.face_finalize_result = None
 
         super(FaceRigWizard, self).__init__(
@@ -254,7 +260,17 @@ class FaceRigWizard(build_controller.FaceRigWizard):
     # =========================================================================
 
     def load_step_config_to_ui(self, step_index):
-        u"""恢复原 Workflow Config，并在 Step 04 回填 Finalize 状态。"""
+        u"""
+        恢复原 Workflow Config，并在 Step 04 回填 Finalize 状态。
+
+        Args:
+            step_index (int):
+                当前 UI Step 的零起始索引。
+
+        Returns:
+            object:
+                父级 Workflow Config 恢复结果。
+        """
         result = super(FaceRigWizard, self).load_step_config_to_ui(
             step_index
         )
@@ -443,7 +459,13 @@ class FaceRigWizard(build_controller.FaceRigWizard):
 
 
 def main():
-    u"""创建带 Step 04 Finalize 页面的正式 Face Rig UI。"""
+    u"""
+    创建带 Step 04 Finalize 页面的正式 Face Rig UI。
+
+    Returns:
+        FaceRigWizard:
+            创建完成的 Step 04 Face Rig Wizard。
+    """
     return FaceRigWizard()
 
 

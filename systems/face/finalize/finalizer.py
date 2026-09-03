@@ -252,7 +252,17 @@ class FaceFinalizer(FaceBase):
 
     @staticmethod
     def get_node_base_name(node):
-        u"""返回去掉 DAG Path 和 Maya Namespace 的节点基础名称。"""
+        u"""
+        返回去掉 DAG Path 和 Maya Namespace 的节点基础名称。
+
+        Args:
+            node (str):
+                Maya 节点名称或 Long Path。
+
+        Returns:
+            str:
+                不包含 DAG Path 和 Namespace 的节点基础名称。
+        """
         short_name = str(node).rsplit(
             "|",
             1
@@ -322,7 +332,13 @@ class FaceFinalizer(FaceBase):
     # =========================================================================
 
     def get_visibility_group_map(self):
-        u"""返回 Config Visibility Key 到当前真实 Group Path 的映射。"""
+        u"""
+        返回 Config Visibility Key 到当前真实 Group Path 的映射。
+
+        Returns:
+            dict:
+                Visibility 配置键与当前 Face Group Path 的映射。
+        """
         return {
             "face_model_grp": self.face_model_grp,
             "face_guide_grp": self.face_guide_grp,
@@ -385,7 +401,13 @@ class FaceFinalizer(FaceBase):
     # =========================================================================
 
     def validate_controller_set(self):
-        u"""验证 Face Controller Set 存在且包含全部 Controller。"""
+        u"""
+        验证 Face Controller Set 存在且包含全部 Controller。
+
+        Returns:
+            bool:
+                Controller Set 类型和成员全部正确时返回 True。
+        """
         scene_utils.validate_node(
             self.controller_set,
             label=u"Face Controller Set"
