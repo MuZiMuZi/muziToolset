@@ -150,7 +150,6 @@ class FaceModuleBase(FaceBase):
         leaf_name = node.rsplit("|", 1)[-1]
         canonical_name = leaf_name.rsplit(":", 1)[-1]
 
-        search_pattern = "*{}".format(canonical_name)
         search_kwargs = {
             "long": True,
         }
@@ -158,8 +157,9 @@ class FaceModuleBase(FaceBase):
         if node_type is not None:
             search_kwargs["type"] = node_type
 
+        # 不依赖 Maya Namespace 通配符匹配。直接枚举候选类型节点，
+        # 再在 Python 层严格比较去 Namespace 后的 DAG Leaf。
         scene_matches = cmds.ls(
-            search_pattern,
             **search_kwargs
         )
 
