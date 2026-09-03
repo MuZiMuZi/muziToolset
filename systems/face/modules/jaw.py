@@ -119,7 +119,7 @@ class JawModule(FaceModuleBase):
     # 01. Setup
     # =========================================================================
 
-    def setup(self):
+    def load_setup(self):
         u"""
         准备 Jaw 参数、标准名称、Face 公共层级和 Build 前 Scene State。
 
@@ -178,7 +178,7 @@ class JawModule(FaceModuleBase):
     # 02. Guide
     # =========================================================================
 
-    def guide(self):
+    def load_guide(self):
         u"""
         从当前 Face Guide Template 读取 Jaw Start / End Guide。
 
@@ -221,7 +221,7 @@ class JawModule(FaceModuleBase):
     # 03. Joint
     # =========================================================================
 
-    def joint(self):
+    def create_jnt(self):
         u"""
         根据 Jaw Start / End Guide 创建两节 Jaw Bind Joint Chain。
 
@@ -265,7 +265,7 @@ class JawModule(FaceModuleBase):
     # 04. Control
     # =========================================================================
 
-    def control(self):
+    def create_ctrl(self):
         u"""
         创建 Jaw Main Controller 与 Sub Controller。
 
@@ -307,7 +307,7 @@ class JawModule(FaceModuleBase):
     # 05. Connect
     # =========================================================================
 
-    def connect(self):
+    def create_connect(self):
         u"""
         使用 Jaw Controller Output 驱动 Jaw Start Joint。
 
@@ -332,7 +332,7 @@ class JawModule(FaceModuleBase):
     # 06. Deform / Special Effect
     # =========================================================================
 
-    def deform(self):
+    def create_deform(self):
         u"""
         创建 Jaw Open 自动位移效果。
 
@@ -523,7 +523,7 @@ class JawModule(FaceModuleBase):
     # 07. Finalize
     # =========================================================================
 
-    def finalize(self):
+    def create_finalize(self):
         u"""
         验证 Jaw Module 最终节点，并返回统一 Module Dict。
 
@@ -716,10 +716,10 @@ def build_jaw():
 
     Returns:
         dict:
-            JawModule.build() 的完整公开结果。
+            JawModule.create_build() 的完整公开结果。
     """
     jaw_module = JawModule()
-    jaw_module_dict = jaw_module.build()
+    jaw_module_dict = jaw_module.create_build()
     return jaw_module_dict
 
 

@@ -7,10 +7,10 @@ Face Module Lifecycle Contract Test
 
 验证：
     1. FaceModuleBase 公开统一七阶段生命周期；
-    2. build() 的执行顺序固定；
+    2. create_build() 的执行顺序固定；
     3. 当前正式 Face Module 继承 FaceModuleBase；
     4. 具体 Module 不重新实现旧四阶段 / create_xxx 生命周期；
-    5. build_xxx() 公共入口统一调用 module.build()。
+    5. build_xxx() 公共入口统一调用 module.create_build()。
 """
 
 from __future__ import print_function
@@ -33,13 +33,13 @@ MODULE_DIR = os.path.join(
 )
 
 FACE_MODULE_METHODS = [
-    "setup",
-    "guide",
-    "joint",
-    "control",
-    "connect",
-    "deform",
-    "finalize",
+    "load_setup",
+    "load_guide",
+    "create_jnt",
+    "create_ctrl",
+    "create_connect",
+    "create_deform",
+    "create_finalize",
 ]
 
 RETIRED_CONCRETE_METHODS = {
@@ -50,6 +50,14 @@ RETIRED_CONCRETE_METHODS = {
     "create_joint",
     "create_controller",
     "create_connection",
+    "setup",
+    "guide",
+    "joint",
+    "control",
+    "connect",
+    "deform",
+    "finalize",
+    "build",
 }
 
 CONCRETE_MODULE_FILES = {
@@ -147,7 +155,7 @@ def get_self_call_order(method_node):
 
 
 def test_face_module_base():
-    u"""验证 FaceModuleBase 的生命周期方法和 build() 顺序。"""
+    u"""验证 FaceModuleBase 的生命周期方法和 create_build() 顺序。"""
     tree = read_tree(
         "face_module_base.py"
     )
@@ -161,7 +169,7 @@ def test_face_module_base():
 
     required_methods = list(FACE_MODULE_METHODS)
     required_methods.append(
-        "build"
+        "create_build"
     )
 
     for method_name in required_methods:
@@ -178,13 +186,13 @@ def test_face_module_base():
         if not isinstance(node, ast.FunctionDef):
             continue
 
-        if node.name == "build":
+        if node.name == "create_build":
             build_method = node
             break
 
     if build_method is None:
         raise AssertionError(
-            u"FaceModuleBase 缺少 build()。"
+            u"FaceModuleBase 缺少 create_build()。"
         )
 
     call_order = get_self_call_order(
@@ -193,7 +201,7 @@ def test_face_module_base():
 
     if call_order != FACE_MODULE_METHODS:
         raise AssertionError(
-            u"FaceModuleBase.build() 生命周期顺序错误：{}".format(
+            u"FaceModuleBase.create_build() 生命周期顺序错误：{}".format(
                 call_order
             )
         )

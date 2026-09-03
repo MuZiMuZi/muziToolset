@@ -111,7 +111,7 @@ class TeethModule(FaceModuleBase):
     # 01. Setup
     # =========================================================================
 
-    def setup(self):
+    def load_setup(self):
         u"""
         准备 Teeth 参数、确定性名称、公共层级和 Rebuild Scene State。
 
@@ -179,7 +179,7 @@ class TeethModule(FaceModuleBase):
     # 02. Guide
     # =========================================================================
 
-    def guide(self):
+    def load_guide(self):
         u"""
         读取 Upper / Lower Teeth Guide。
 
@@ -222,7 +222,7 @@ class TeethModule(FaceModuleBase):
     # 03. Joint
     # =========================================================================
 
-    def joint(self):
+    def create_jnt(self):
         u"""
         根据 Teeth Guide 创建 Upper / Lower Bind Joint。
 
@@ -266,7 +266,7 @@ class TeethModule(FaceModuleBase):
     # 04. Control
     # =========================================================================
 
-    def control(self):
+    def create_ctrl(self):
         u"""
         使用 CtrlBase 创建 Upper / Lower Teeth Controller。
 
@@ -332,7 +332,7 @@ class TeethModule(FaceModuleBase):
     # 05. Connect
     # =========================================================================
 
-    def connect(self):
+    def create_connect(self):
         u"""
         创建 Controller Output -> Teeth Joint 的 Matrix 驱动关系。
 
@@ -372,7 +372,7 @@ class TeethModule(FaceModuleBase):
     # 06. Deform
     # =========================================================================
 
-    def deform(self):
+    def create_deform(self):
         u"""
         使用单 Joint SkinCluster 把 Upper / Lower Teeth 刚性绑定到对应 Joint。
 
@@ -410,7 +410,7 @@ class TeethModule(FaceModuleBase):
     # 07. Finalize
     # =========================================================================
 
-    def finalize(self):
+    def create_finalize(self):
         u"""
         验证 Teeth Module 最终 Scene State，并完成模块输出。
 
@@ -700,10 +700,10 @@ def build_teeth():
 
     Returns:
         dict:
-            TeethModule.build() 的完整公开结果。
+            TeethModule.create_build() 的完整公开结果。
     """
     teeth_module = TeethModule()
-    teeth_module_dict = teeth_module.build()
+    teeth_module_dict = teeth_module.create_build()
     return teeth_module_dict
 
 
