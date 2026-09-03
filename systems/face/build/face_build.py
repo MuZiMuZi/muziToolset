@@ -10,7 +10,8 @@ Face Workflow 的 Step 03 正式入口。
     2. 验证当前正式 Face Guide 完整；
     3. 通过 FaceRig Orchestrator 按依赖顺序构建全部 Face Module；
     4. 校验每个 Module 的统一 create_build() 结果；
-    5. 成功后把 Step 03 标记完成，并把 Workflow 推进到 Step 04。
+    5. 成功后把 Step 03 标记完成，并把 Workflow 推进到 Step 04；
+    6. 任意 Module 构建失败时自动回滚整个 Step 03 Undo Chunk。
 
 设计边界：
     - FaceBuild 是 Workflow Step，因此使用 run_step()；
@@ -21,6 +22,9 @@ Face Workflow 的 Step 03 正式入口。
 
 from __future__ import print_function
 
+import maya.cmds as cmds
+
+from ....core import scene_utils
 from ..face_base import FaceBase
 from ..guide import FaceGuide
 from ..modules.face_rig import FaceRig
@@ -236,6 +240,53 @@ class FaceBuild(FaceBase):
             4
         )
         self.organize_config_attributes()
+        return True
+
+    def run_step(self):
+        u"""
+        在单个 Maya Undo Chunk 中执行完整 Step 03，失败时自动回滚。
+
+        Returns:
+            bool:
+                全部 Module 构建并完成 Step 03 状态写入后返回 True。
+
+        Raises:
+            Exception:
+                任意 Step 03 阶段失败时，回滚场景后继续向上抛出原异常。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：把完整 FaceBuild 放入同一个 Undo Chunk，保证失败可整体撤销
+        # -------------------------------------------------------------------------
+        scene_utils.open_undo_chunk(
+            chunk_name="FaceBuildStep03"
+        )
+
+        try:
+            # ---------------------------------------------------------------------
+            # Step 02：执行标准 Workflow 生命周期
+            # ---------------------------------------------------------------------
+            self.collect_inputs()
+            self.prepare_data()
+            self.process_data()
+            self.finalize_step()
+        except Exception:
+            # ---------------------------------------------------------------------
+            # Step 03：先关闭 Chunk，再撤销本次 Step 03 已产生的全部场景修改
+            # ---------------------------------------------------------------------
+            scene_utils.close_undo_chunk()
+
+            try:
+                cmds.undo()
+            except Exception:
+                pass
+
+            self.build_result = None
+            raise
+
+        # -------------------------------------------------------------------------
+        # Step 04：成功时只关闭 Chunk，不执行 Undo；整次 Build 作为一个撤销单元
+        # -------------------------------------------------------------------------
+        scene_utils.close_undo_chunk()
         return True
 
 
