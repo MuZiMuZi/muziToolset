@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-      - refactor/full-code-cn-comments
-      - feature/face-step04-finalize-current
   pull_request:
     branches:
       - main
@@ -65,6 +63,9 @@ jobs:
 
       - name: Test Face Build Step contract
         run: python tests/face_build_step_contract_test.py
+
+      - name: Test Face Controller Appearance contract
+        run: python tests/face_controller_appearance_contract_test.py
 
       - name: Test Face Finalize Step contract
         run: python tests/face_finalize_step_contract_test.py
