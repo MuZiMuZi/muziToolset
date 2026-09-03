@@ -70,6 +70,9 @@ jobs:
       - name: Test Maya 2023 smoke runner contract
         run: python tests/maya2023_smoke_contract_test.py
 
+      - name: Test Face modules Maya 2023 smoke contract
+        run: python tests/face_modules_maya2023_smoke_contract_test.py
+
       # -----------------------------------------------------------------------
       # Step 05：最终检查源码空白格式
       # -----------------------------------------------------------------------
