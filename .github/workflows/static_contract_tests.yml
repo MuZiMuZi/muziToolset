@@ -3,7 +3,12 @@ name: Static Contract Tests
 on:
   push:
     branches:
+      - main
       - refactor/full-code-cn-comments
+      - feature/face-step04-finalize-current
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -16,8 +21,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: refactor/full-code-cn-comments
 
       - name: Setup Python
         uses: actions/setup-python@v5

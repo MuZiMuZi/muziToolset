@@ -44,6 +44,14 @@ FACE_UI_INIT_PATH = os.path.join(
     "__init__.py"
 )
 
+FACE_UI_CONTROLLER_PATH = os.path.join(
+    PACKAGE_DIR,
+    "systems",
+    "face",
+    "ui",
+    "face_rig_controller.py"
+)
+
 REQUIRED_METHODS = [
     "__init__",
     "collect_inputs",
@@ -174,14 +182,32 @@ def main():
     with open(FACE_UI_INIT_PATH, "r", encoding="utf-8") as file_object:
         ui_source = file_object.read()
 
-    if "from . import finalize_controller" not in ui_source:
+    if "from . import face_rig_controller" not in ui_source:
         raise AssertionError(
-            u"Face UI 尚未路由到 finalize_controller。"
+            u"Face UI 尚未路由到最终 face_rig_controller。"
         )
 
-    if "return finalize_controller.main()" not in ui_source:
+    if "return face_rig_controller.main()" not in ui_source:
         raise AssertionError(
-            u"Face UI show() 没有返回 Finalize Controller。"
+            u"Face UI show() 没有返回最终 Face Rig Controller。"
+        )
+
+    if not os.path.isfile(FACE_UI_CONTROLLER_PATH):
+        raise AssertionError(
+            u"缺少 systems/face/ui/face_rig_controller.py。"
+        )
+
+    with open(FACE_UI_CONTROLLER_PATH, "r", encoding="utf-8") as file_object:
+        controller_source = file_object.read()
+
+    if "from . import finalize_controller" not in controller_source:
+        raise AssertionError(
+            u"最终 Face Rig Controller 尚未路由到 finalize_controller。"
+        )
+
+    if "class FaceRigWizard(finalize_controller.FaceRigWizard):" not in controller_source:
+        raise AssertionError(
+            u"最终 Face Rig Wizard 没有继承 Step 04 Finalize Controller。"
         )
 
     # -------------------------------------------------------------------------
