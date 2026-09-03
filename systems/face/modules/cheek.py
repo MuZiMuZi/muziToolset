@@ -7,6 +7,10 @@ Cheek Module
 
 旧 Cheek 的 CheekBone / Nasolabial / Cheek 三组定位思想保留；
 新版本直接读取 Face Guide，不再导入 cheek_bpjnt.ma，也不再依赖右侧负 Scale 镜像。
+
+当前正式 Face Guide 模板尚未包含 Cheek / CheekBone / Nasolabial 定位时，
+本模块不会阻塞完整 FaceRig，而是明确返回 skipped 状态。Guide 一旦补齐，
+同一套 Module 会自动进入正常创建流程。
 """
 
 from __future__ import print_function
@@ -37,14 +41,22 @@ class CheekModule(FaceModuleBase):
         self.controller_size = 1.0
         self.controller_radius = 1.0
         self.cheek_side_dict = {}
+        self.skipped = False
+        self.skip_reason = None
 
     def load_setup(self):
         u"""读取 Face Setup 与 Cheek Controller Settings。"""
+        # -------------------------------------------------------------------------
+        # Step 01：验证 Face Setup，并确保正式 Face Rig 公共层级已经存在
+        # -------------------------------------------------------------------------
         self.validate_setup_config(
             require_mouth_jnt_number=False
         )
         self.ensure_hierarchy()
 
+        # -------------------------------------------------------------------------
+        # Step 02：读取 Cheek Controller 的全局缩放、部位尺寸和左右颜色
+        # -------------------------------------------------------------------------
         controller_settings = self.face_guide.load_controller_settings()
         self.controller_global_scale = controller_settings.get(
             config.face_controller_global_scale_attr,
@@ -62,6 +74,11 @@ class CheekModule(FaceModuleBase):
         if self.controller_radius <= 0.0:
             raise ValueError(u"Cheek Controller Radius 必须大于 0。")
 
+        # -------------------------------------------------------------------------
+        # Step 03：重置本次构建状态，避免重复使用实例时残留上一次结果
+        # -------------------------------------------------------------------------
+        self.skipped = False
+        self.skip_reason = None
         self.cheek_side_dict = {}
 
         for side in self.sides:
@@ -77,6 +94,9 @@ class CheekModule(FaceModuleBase):
 
     def load_guide(self):
         u"""按 CheekBone / Nasolabial / Cheek 分类读取左右 Guide。"""
+        # -------------------------------------------------------------------------
+        # Step 01：逐侧、逐区域收集 Guide，并建立后续 Jnt/Ctrl/Matrix 的统一数据容器
+        # -------------------------------------------------------------------------
         total_guide_count = 0
 
         for side in self.sides:
@@ -98,15 +118,22 @@ class CheekModule(FaceModuleBase):
 
             self.cheek_side_dict[side]["region_dict"] = region_dict
 
+        # -------------------------------------------------------------------------
+        # Step 02：当前模板没有 Cheek Guide 时记录可选模块跳过状态，而不是终止 FaceRig
+        # -------------------------------------------------------------------------
         if total_guide_count == 0:
-            raise RuntimeError(
-                u"Face Guide 中没有找到 Cheek / CheekBone / Nasolabial 定位。"
+            self.skipped = True
+            self.skip_reason = (
+                u"当前 Face Guide 模板没有 Cheek / CheekBone / Nasolabial 定位。"
             )
 
         return self.cheek_side_dict
 
     def create_jnt(self):
         u"""每个有效 Cheek Guide 创建一个独立 Bind Joint。"""
+        if self.skipped:
+            return self.cheek_side_dict
+
         for side in self.sides:
             region_dict = self.cheek_side_dict[side]["region_dict"]
 
@@ -144,6 +171,9 @@ class CheekModule(FaceModuleBase):
 
     def create_ctrl(self):
         u"""为每个 Cheek Joint 创建独立 Animator Controller。"""
+        if self.skipped:
+            return self.cheek_side_dict
+
         for side in self.sides:
             side_data = self.cheek_side_dict[side]
             region_dict = side_data["region_dict"]
@@ -183,6 +213,9 @@ class CheekModule(FaceModuleBase):
 
     def create_connect(self):
         u"""使用每个 Controller Output 驱动对应 Cheek Joint。"""
+        if self.skipped:
+            return self.cheek_side_dict
+
         for side in self.sides:
             region_dict = self.cheek_side_dict[side]["region_dict"]
 
@@ -215,10 +248,26 @@ class CheekModule(FaceModuleBase):
 
     def create_deform(self):
         u"""Cheek 的输出 Joint 本身作为后续 Face Skin Influence。"""
+        if self.skipped:
+            return True
+
         return True
 
     def create_finalize(self):
         u"""验证 Cheek Jnt / Ctrl / Matrix，并整理模块公开结果。"""
+        # -------------------------------------------------------------------------
+        # Step 01：可选模块没有 Guide 时，把跳过状态作为正式结果返回
+        # -------------------------------------------------------------------------
+        if self.skipped:
+            self.module_dict["sides"] = self.cheek_side_dict
+            self.module_dict["built"] = False
+            self.module_dict["skipped"] = True
+            self.module_dict["reason"] = self.skip_reason
+            return True
+
+        # -------------------------------------------------------------------------
+        # Step 02：逐侧验证所有已经创建的 Joint、Controller 与 Matrix Network
+        # -------------------------------------------------------------------------
         for side in self.sides:
             region_dict = self.cheek_side_dict[side]["region_dict"]
 
@@ -243,8 +292,13 @@ class CheekModule(FaceModuleBase):
                         label=u"Cheek Matrix"
                     )
 
+        # -------------------------------------------------------------------------
+        # Step 03：整理稳定的公开结果，供 FaceRig 和后续 Deformer 阶段继续复用
+        # -------------------------------------------------------------------------
         self.module_dict["sides"] = self.cheek_side_dict
         self.module_dict["built"] = True
+        self.module_dict["skipped"] = False
+        self.module_dict["reason"] = None
         return True
 
 
