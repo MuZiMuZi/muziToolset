@@ -39,6 +39,12 @@ jobs:
       - name: Refresh runtime Chinese step comments
         run: python scripts/annotate_runtime_steps.py --write
 
+      - name: Normalize runtime trailing whitespace
+        shell: bash
+        run: |
+          find app core systems tools ui -type f -name '*.py' -print0 | xargs -0 sed -i 's/[[:space:]]\+$//'
+          sed -i 's/[[:space:]]\+$//' __init__.py config.py
+
       - name: Validate Python compile
         run: python -m compileall -q app core systems tools ui tests __init__.py config.py
 
