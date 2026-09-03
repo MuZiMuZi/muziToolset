@@ -105,6 +105,22 @@ def maya2023_smoke_test():
     return maya2023_smoke_test.run()
 
 
+def face_modules_maya2023_smoke_test():
+    u"""
+    逐模块运行新 Face Rig 架构的 Maya 2023 Runtime Smoke Test。
+
+    测试会使用正式 FaceSetup、FaceGuide 和 face_guide.ma，然后按依赖顺序执行
+    Brow / Eye / Eyelid / Nose / Cheek / Ear / Jaw / Teeth / Tongue / Lip / Mouth。
+
+    Returns:
+        dict:
+            Maya 版本、逐模块 PASS / FAIL / SKIP 结果和统计数量。
+    """
+    from .tests import face_modules_maya2023_smoke_test
+
+    return face_modules_maya2023_smoke_test.run()
+
+
 def pipeline_smoke_test():
     u"""
 
@@ -275,6 +291,7 @@ __all__ = [
     "smoke_test",
     "functional_smoke_test",
     "maya2023_smoke_test",
+    "face_modules_maya2023_smoke_test",
     "pipeline_smoke_test",
     "extended_core_smoke_test",
     "core_import_style_test",
