@@ -1,9 +1,9 @@
 ==============================================================================
 Runtime Docstring Standard
 ==============================================================================
-Runtime files:  100
+Runtime files:  101
 Changed files:  0
-Errors:         10
+Errors:         19
 Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:530 build_brow 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:491 create_finalize 缺少 Returns 说明
@@ -14,5 +14,14 @@ Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:120 load_guide 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:64 load_setup 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:47 __init__ 缺少功能摘要
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:251 build_cheek 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:220 create_finalize 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:216 create_deform 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:184 create_connect 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:145 create_ctrl 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:108 create_jnt 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:78 load_guide 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:41 load_setup 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/cheek.py:29 __init__ 缺少功能摘要
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_module_base.py:173 create_deform 缺少 Returns 说明
 ==============================================================================
