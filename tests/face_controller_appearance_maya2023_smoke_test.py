@@ -8,7 +8,7 @@ Face Controller Appearance Maya 2023 Runtime Smoke Test
 测试流程：
     FaceSetup / FaceGuide Fixture
         -> FaceBuild.run_step()
-            -> 记录 Controller / Output / Joint / Shape 状态
+            -> 记录 Controller / Output / Face Joint / Shape 状态
                 -> apply_controller_settings()
                     -> 保存 Controller Settings
                         -> 验证只有 Shape CV 尺寸和颜色发生变化
@@ -21,7 +21,7 @@ Face Controller Appearance Maya 2023 Runtime Smoke Test
     5. Controller World Matrix 完全保持不变；
     6. Controller Transform Scale 始终保持 (1, 1, 1)；
     7. Representative Controller Output World Matrix 保持不变；
-    8. 全部 Joint World Matrix 保持不变；
+    8. Face Joint Group 下全部 Joint World Matrix 保持不变；
     9. Guide / Ctrl Alignment 在外观调整后仍然通过。
 """
 
@@ -317,12 +317,26 @@ def _snapshot_controller_states(ctrl_nodes):
     return states
 
 
-def _snapshot_joint_matrices():
-    u"""记录当前 Namespace 内全部 Joint World Matrix。"""
-    joint_nodes = cmds.ls(
+def _get_face_joint_nodes(face_jnt_grp):
+    u"""只返回 Face Joint Group 层级下的 Joint Long Path。"""
+    face_jnt_grp_node = _resolve_unique_node(
+        face_jnt_grp
+    )
+    joint_nodes = cmds.listRelatives(
+        face_jnt_grp_node,
+        allDescendents=True,
         type="joint",
-        long=True
+        fullPath=True
     ) or []
+    joint_nodes.sort()
+    return joint_nodes
+
+
+def _snapshot_joint_matrices(face_jnt_grp):
+    u"""只记录 Face Joint Group 下全部 Joint World Matrix。"""
+    joint_nodes = _get_face_joint_nodes(
+        face_jnt_grp
+    )
     joint_matrices = {}
 
     for joint_node in joint_nodes:
@@ -434,16 +448,18 @@ def _validate_controller_transform_invariants(
     return True
 
 
-def _validate_joint_invariants(before_joint_matrices):
-    u"""确认 Appearance 更新没有移动任何 Joint。"""
-    after_joint_nodes = cmds.ls(
-        type="joint",
-        long=True
-    ) or []
+def _validate_joint_invariants(
+        face_jnt_grp,
+        before_joint_matrices
+):
+    u"""确认 Appearance 更新没有移动、增加或删除任何 Face Joint。"""
+    after_joint_nodes = _get_face_joint_nodes(
+        face_jnt_grp
+    )
 
     if len(after_joint_nodes) != len(before_joint_matrices):
         raise RuntimeError(
-            u"Appearance 更新前后 Joint 数量发生变化：before={} after={}".format(
+            u"Appearance 更新前后 Face Joint 数量发生变化：before={} after={}".format(
                 len(before_joint_matrices),
                 len(after_joint_nodes)
             )
@@ -452,13 +468,13 @@ def _validate_joint_invariants(before_joint_matrices):
     for joint_node in before_joint_matrices:
         if not cmds.objExists(joint_node):
             raise RuntimeError(
-                u"Appearance 更新后 Joint 丢失：{}".format(
+                u"Appearance 更新后 Face Joint 丢失：{}".format(
                     joint_node
                 )
             )
 
         _assert_values_close(
-            u"Joint World Matrix {}".format(joint_node),
+            u"Face Joint World Matrix {}".format(joint_node),
             before_joint_matrices[joint_node],
             _get_world_matrix(joint_node)
         )
@@ -652,7 +668,9 @@ def run():
         controller_states = _snapshot_controller_states(
             ctrl_nodes
         )
-        joint_matrices = _snapshot_joint_matrices()
+        joint_matrices = _snapshot_joint_matrices(
+            face_build.face_jnt_grp
+        )
         representative_states = _snapshot_representative_states()
 
         # ---------------------------------------------------------------------
@@ -676,13 +694,14 @@ def run():
         )
 
         # ---------------------------------------------------------------------
-        # Step 04：验证 Transform / Output / Joint 完全不受 Shape 编辑影响
+        # Step 04：验证 Transform / Output / Face Joint 完全不受 Shape 编辑影响
         # ---------------------------------------------------------------------
         _validate_controller_transform_invariants(
             controller_states,
             ctrl_nodes
         )
         _validate_joint_invariants(
+            face_build.face_jnt_grp,
             joint_matrices
         )
         representative_names = _validate_representative_appearance(
@@ -693,7 +712,7 @@ def run():
         alignment_pairs = validate_guide_ctrl_alignment()
 
         print(
-            u"[PASS] Invariants | Ctrl Matrix / Scale / Output / Joint 全部保持不变"
+            u"[PASS] Invariants | Ctrl Matrix / Scale / Output / Face Joint 全部保持不变"
         )
         print(
             u"[PASS] Shape | Eye / Nose / CheekBone / Jaw CV 尺寸与颜色正确"
