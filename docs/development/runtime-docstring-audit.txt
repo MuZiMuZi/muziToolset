@@ -1,9 +1,9 @@
 ==============================================================================
 Runtime Docstring Standard
 ==============================================================================
-Runtime files:  102
+Runtime files:  103
 Changed files:  0
-Errors:         28
+Errors:         37
 Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:530 build_brow 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:491 create_finalize 缺少 Returns 说明
@@ -32,5 +32,14 @@ Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/ear.py:70 load_guide 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/ear.py:39 load_setup 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/ear.py:28 __init__ 缺少功能摘要
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:336 build_eye 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:312 create_finalize 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:279 create_deform 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:234 create_connect 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:147 create_ctrl 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:104 create_jnt 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:93 load_guide 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:50 load_setup 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eye.py:38 __init__ 缺少功能摘要
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_module_base.py:173 create_deform 缺少 Returns 说明
 ==============================================================================
