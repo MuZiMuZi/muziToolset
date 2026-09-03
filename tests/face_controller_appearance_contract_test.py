@@ -140,7 +140,7 @@ def run():
         controller_changed_start:state_section_start
     ]
 
-    if "mark_step2_dirty(" in controller_changed_source:
+    if "self.mark_step2_dirty(" in controller_changed_source:
         raise RuntimeError(
             u"Controller Appearance 调整不应把 Step 02 Guide 标记 Dirty。"
         )
