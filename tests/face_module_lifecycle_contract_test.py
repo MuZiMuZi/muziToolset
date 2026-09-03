@@ -8,9 +8,9 @@ Face Module Lifecycle Contract Test
 验证：
     1. FaceModuleBase 公开统一七阶段生命周期；
     2. create_build() 的执行顺序固定；
-    3. 当前正式 Face Module 继承 FaceModuleBase；
-    4. 具体 Module 不重新实现旧四阶段 / create_xxx 生命周期；
-    5. build_xxx() 公共入口统一调用 module.create_build()。
+    3. 所有正式 Face Module 继承 FaceModuleBase；
+    4. 具体 Module 不重新实现废弃生命周期；
+    5. FaceRig 只负责编排 Module，并统一调用 create_build()。
 """
 
 from __future__ import print_function
@@ -61,9 +61,32 @@ RETIRED_CONCRETE_METHODS = {
 }
 
 CONCRETE_MODULE_FILES = {
+    "brow.py": "BrowModule",
+    "cheek.py": "CheekModule",
+    "ear.py": "EarModule",
+    "eye.py": "EyeModule",
+    "eyelid.py": "EyelidModule",
     "jaw.py": "JawModule",
+    "lip.py": "LipModule",
+    "mouth.py": "MouthModule",
+    "nose.py": "NoseModule",
     "teeth.py": "TeethModule",
+    "tongue.py": "TongueModule",
 }
+
+EXPECTED_FACE_RIG_MODULES = [
+    "BrowModule",
+    "EyeModule",
+    "EyelidModule",
+    "NoseModule",
+    "CheekModule",
+    "EarModule",
+    "JawModule",
+    "TeethModule",
+    "TongueModule",
+    "LipModule",
+    "MouthModule",
+]
 
 
 def read_tree(file_name):
@@ -114,7 +137,7 @@ def get_method_names(class_node):
 
 
 def get_self_call_order(method_node):
-    u"""按源码出现顺序返回 self.xxx() 调用名称。"""
+    u"""按源码出现顺序返回 self.xxx() 生命周期调用名称。"""
     call_items = []
 
     for node in ast.walk(method_node):
@@ -208,7 +231,7 @@ def test_face_module_base():
 
 
 def test_concrete_modules():
-    u"""验证当前正式 Face Module 使用新生命周期。"""
+    u"""验证全部正式 Face Module 使用唯一生命周期 API。"""
     for file_name in CONCRETE_MODULE_FILES:
         class_name = CONCRETE_MODULE_FILES[file_name]
         tree = read_tree(
@@ -257,17 +280,75 @@ def test_concrete_modules():
 
         if retired_methods:
             raise AssertionError(
-                u"{} 仍定义旧生命周期方法：{}".format(
+                u"{} 仍定义废弃生命周期方法：{}".format(
                     class_name,
                     sorted(retired_methods)
                 )
             )
 
 
+def test_face_rig_orchestrator():
+    u"""验证 FaceRig 模块列表和统一 create_build() 调用。"""
+    tree = read_tree(
+        "face_rig.py"
+    )
+    class_node = find_class(
+        tree,
+        "FaceRig"
+    )
+
+    module_class_names = []
+
+    for node in class_node.body:
+        if not isinstance(node, ast.Assign):
+            continue
+
+        has_module_classes_target = False
+
+        for target_node in node.targets:
+            if isinstance(target_node, ast.Name):
+                if target_node.id == "module_classes":
+                    has_module_classes_target = True
+
+        if not has_module_classes_target:
+            continue
+
+        if not isinstance(node.value, ast.List):
+            raise AssertionError(u"FaceRig.module_classes 必须是明确 List。")
+
+        for item_node in node.value.elts:
+            if not isinstance(item_node, ast.Name):
+                raise AssertionError(u"FaceRig.module_classes 只能包含 Module Class。")
+
+            module_class_names.append(
+                item_node.id
+            )
+
+    if module_class_names != EXPECTED_FACE_RIG_MODULES:
+        raise AssertionError(
+            u"FaceRig Module 顺序错误：{}".format(
+                module_class_names
+            )
+        )
+
+    source_path = os.path.join(
+        MODULE_DIR,
+        "face_rig.py"
+    )
+    with open(source_path, "r", encoding="utf-8") as file_object:
+        source = file_object.read()
+
+    if "face_module.create_build()" not in source:
+        raise AssertionError(
+            u"FaceRig 必须统一调用 face_module.create_build()。"
+        )
+
+
 def main():
     u"""执行 Face Module Lifecycle 静态契约。"""
     test_face_module_base()
     test_concrete_modules()
+    test_face_rig_orchestrator()
     print(
         u"Face Module Lifecycle Contract: PASS"
     )
