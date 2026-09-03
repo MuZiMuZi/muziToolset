@@ -3,16 +3,17 @@ u"""
 Face Rig Step 03 Build UI Controller
 ====================================
 
-在现有 Workflow Controller 之上补充 Step 03 Module Build 页面，
-同时把完整 FaceRig Orchestrator 接入正式 Step 03。
+Step 03 负责两件事情：
+    1. 通过 FaceBuild 一次构建完整 Face Rig；
+    2. 在 Controller 创建后继续实时调整 Controller Shape 的尺寸和颜色。
 
 设计边界：
-    1. Step 01 / Step 02 的稳定基础 UI 和 Workflow 逻辑保持不变；
-    2. 本层补充 Teeth / Tongue Controller Size，并使用正式 Config Attribute；
-    3. 本层负责 Step 03 完整 FaceBuild 触发和状态反馈；
-    4. Step 03 只调用 FaceBuild.run_step()，不直接调用具体 Face Module；
-    5. 完整 Build 成功后允许进入 Step 04 Finalize；
-    6. Build 失败由 FaceBuild 统一 Undo 回滚，UI 可以安全重试。
+    - Step 02 只负责 Guide 编辑、镜像、修复与完整性提交；
+    - Controller Settings 的正式 UI 只显示在 Step 03；
+    - Settings 继续保存到现有 Face Config Schema，避免产生第二套数据源；
+    - 已构建 Controller 的实时调整只修改 Shape，不修改 Transform / Zero / Guide；
+    - Global Scale / Module Size 使用比例更新，不重复累积尺寸误差；
+    - Build 失败仍由 FaceBuild 统一 Undo 回滚。
 """
 
 from __future__ import print_function
@@ -35,22 +36,18 @@ except ImportError:
     from PySide6.QtWidgets import QWidget
 
 from ....ui import theme
+from ....ui.widgets import MayaIndexColorSlider
 from .. import config
+from .. import controller_appearance
 from ..build.face_build import FaceBuild
 from . import workflow_controller
 
 
 class FaceRigWizard(workflow_controller.FaceRigWizard):
-    u"""增加正式 Controller Schema 和 Step 03 Module Build 页面的 Face Rig Wizard。"""
+    u"""Step 03 Build + Controller Appearance 的正式 Face Rig Wizard。"""
 
     def __init__(self, parent=None):
-        u"""
-        初始化 Step 03 Build UI。
-
-        Args:
-            parent (str):
-                父级 Maya 节点名称。
-        """
+        u"""初始化 Step 03 Build UI。"""
         self.face_build_result = None
 
         super(FaceRigWizard, self).__init__(
@@ -58,131 +55,40 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         )
 
     # =========================================================================
-    # Step 02 Controller Settings Extension
+    # Step 02 UI
     # =========================================================================
 
     def create_step2_page(self):
         u"""
-        创建原有 Step 02 页面，并补充 Teeth / Tongue Controller Size。
+        创建 Guide 页面，并隐藏旧 Controller Settings Card。
 
-        Returns:
-            object:
-            创建或构建完成后的 Maya / Rig 对象或 Build Result。
+        Workflow Controller 仍负责创建这些旧控件，是为了保持当前继承链和 Config
+        恢复逻辑兼容；正式显示与交互控件会在 Step 03 重新创建并替换引用。
         """
-        # -------------------------------------------------------------------------
-        # Step 01：创建并配置当前阶段需要的 Maya / Rig 对象
-        # -------------------------------------------------------------------------
         page = super(FaceRigWizard, self).create_step2_page()
-        main_layout = page.layout()
 
-        extra_card, extra_layout = theme.make_card(
-            page
-        )
-        extra_layout.addWidget(
-            theme.make_section_title(
-                u"Oral Controller Size"
-            )
+        old_global_scale_spin = getattr(
+            self,
+            "face_ctrl_global_scale_spin",
+            None
         )
 
-        description = QLabel(
-            u"Teeth 和 Tongue 使用独立尺寸参数；最终尺寸仍会乘以 Face Global Scale。"
-        )
-        description.setWordWrap(
-            True
-        )
-        # -------------------------------------------------------------------------
-        # Step 02：应用并更新当前阶段需要的属性或状态
-        # -------------------------------------------------------------------------
-        theme.set_role(
-            description,
-            "muted"
-        )
-        extra_layout.addWidget(
-            description
-        )
+        if old_global_scale_spin is not None:
+            controller_card = old_global_scale_spin.parentWidget()
 
-        settings_grid = QGridLayout()
-        settings_grid.setContentsMargins(
-            0,
-            4,
-            0,
-            0
-        )
-        settings_grid.setHorizontalSpacing(
-            16
-        )
-        settings_grid.setVerticalSpacing(
-            10
-        )
+            if controller_card is not None:
+                controller_card.setVisible(
+                    False
+                )
 
-        # -------------------------------------------------------------------------
-        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
-        # -------------------------------------------------------------------------
-        self.controller_size_widgets["teeth"] = self.create_size_spin_box(
-            value=1.0
-        )
-        self.controller_size_widgets["tongue"] = self.create_size_spin_box(
-            value=1.0
-        )
-
-        settings_grid.addWidget(
-            QLabel(u"Teeth"),
-            0,
-            0
-        )
-        settings_grid.addWidget(
-            self.controller_size_widgets["teeth"],
-            0,
-            1
-        )
-        settings_grid.addWidget(
-            QLabel(u"Tongue"),
-            1,
-            0
-        )
-        settings_grid.addWidget(
-            self.controller_size_widgets["tongue"],
-            1,
-            1
-        )
-        # -------------------------------------------------------------------------
-        # Step 04：应用并更新当前阶段需要的属性或状态
-        # -------------------------------------------------------------------------
-        settings_grid.setColumnStretch(
-            1,
-            1
-        )
-
-        extra_layout.addLayout(
-            settings_grid
-        )
-
-        insert_index = main_layout.count() - 1
-
-        if insert_index < 0:
-            insert_index = 0
-
-        main_layout.insertWidget(
-            insert_index,
-            extra_card
-        )
-        # -------------------------------------------------------------------------
-        # Step 05：整理并返回当前函数的最终结果
-        # -------------------------------------------------------------------------
         return page
 
+    # =========================================================================
+    # Controller Settings Data
+    # =========================================================================
+
     def get_step2_controller_settings(self):
-        u"""
-        使用当前 config.py 正式 Attribute 名称收集完整 Controller Settings。
-
-        Returns:
-            object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
-        Raises:
-            RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
-        """
+        u"""从当前 Step 03 UI 收集正式 Controller Settings。"""
         settings = {}
 
         settings[config.face_controller_global_scale_attr] = (
@@ -215,30 +121,12 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         return settings
 
     def load_step2_controller_settings(self):
-        u"""
-        使用当前正式 Config Schema 回填全部 Controller Settings。
+        u"""使用正式 Config Schema 回填 Step 03 Controller Settings。"""
+        face_context = self.get_face_guide()
+        settings = face_context.load_controller_settings()
 
-        Returns:
-            bool:
-            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
-        """
-        # -------------------------------------------------------------------------
-        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
-        # -------------------------------------------------------------------------
-        face_guide = self.get_face_guide()
-        # -------------------------------------------------------------------------
-        # Step 02：应用并更新当前阶段需要的属性或状态
-        # -------------------------------------------------------------------------
-        settings = face_guide.load_controller_settings()
-
-        # -------------------------------------------------------------------------
-        # Step 03：准备当前阶段计算和后续处理需要的数据
-        # -------------------------------------------------------------------------
         self.loading_controller_settings = True
 
-        # -------------------------------------------------------------------------
-        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
-        # -------------------------------------------------------------------------
         try:
             self.face_ctrl_global_scale_spin.setValue(
                 float(
@@ -292,9 +180,6 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         finally:
             self.loading_controller_settings = False
 
-        # -------------------------------------------------------------------------
-        # Step 05：整理并返回当前函数的最终结果
-        # -------------------------------------------------------------------------
         return True
 
     # =========================================================================
@@ -302,9 +187,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
     # =========================================================================
 
     def create_pages(self):
-        u"""
-        创建原有页面，并把 Step 03 占位页替换成正式 Module Build 页面。
-        """
+        u"""创建原有页面，并把 Step 03 占位页替换成正式 Build 页面。"""
         super(FaceRigWizard, self).create_pages()
 
         old_step3_page = self.step3_page
@@ -321,16 +204,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         )
 
     def create_step3_page(self):
-        u"""
-        创建 Step 03 完整 Face Rig Build 页面。
-
-        Returns:
-            QWidget:
-                完整 FaceBuild 操作页面。
-        """
-        # -------------------------------------------------------------------------
-        # Step 01：创建 Step 03 页面和完整 Build 说明
-        # -------------------------------------------------------------------------
+        u"""创建 Step 03 完整 Face Rig Build + Controller Settings 页面。"""
         page = QWidget()
         main_layout = QVBoxLayout(
             page
@@ -345,6 +219,9 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             12
         )
 
+        # ---------------------------------------------------------------------
+        # Build Overview
+        # ---------------------------------------------------------------------
         intro_card, intro_layout = theme.make_card(
             page
         )
@@ -355,7 +232,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         )
 
         intro_description = QLabel(
-            u"Step 03 现在通过 FaceBuild → FaceRig 一次构建全部正式 Face Module。UI 不再直接管理单个 Module。"
+            u"先构建完整 Face Rig；构建完成后可直接在本页实时调整 Controller Size 和 Color，不需要重新 Build。"
         )
         intro_description.setWordWrap(
             True
@@ -368,18 +245,6 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             intro_description
         )
 
-        # -------------------------------------------------------------------------
-        # Step 02：显示正式 Module 依赖顺序，方便检查完整构建范围
-        # -------------------------------------------------------------------------
-        module_card, module_layout = theme.make_card(
-            page
-        )
-        module_layout.addWidget(
-            theme.make_section_title(
-                u"Face Modules"
-            )
-        )
-
         module_description = QLabel(
             u"Brow → Eye → Eyelid → Nose → Cheek → Ear → Jaw → Teeth → Tongue → Lip → Mouth"
         )
@@ -390,27 +255,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             module_description,
             "muted"
         )
-        module_layout.addWidget(
+        intro_layout.addWidget(
             module_description
         )
 
-        dependency_description = QLabel(
-            u"显式依赖：Eye → Eyelid，Jaw + Lip → Mouth。其它 Module 保持固定顺序以获得稳定场景结果。"
-        )
-        dependency_description.setWordWrap(
-            True
-        )
-        theme.set_role(
-            dependency_description,
-            "muted"
-        )
-        module_layout.addWidget(
-            dependency_description
-        )
-
-        # -------------------------------------------------------------------------
-        # Step 03：创建完整 Build 状态和唯一正式构建按钮
-        # -------------------------------------------------------------------------
+        # ---------------------------------------------------------------------
+        # Complete Build
+        # ---------------------------------------------------------------------
         build_card, build_layout = theme.make_card(
             page
         )
@@ -421,7 +272,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         )
 
         build_hint = QLabel(
-            u"构建失败时整个 Step 03 会自动 Undo 回滚；成功后 Step 03 标记完成并进入 Finalize 流程。"
+            u"构建失败时整个 Step 03 会自动 Undo 回滚。Controller Settings 会在构建前保存，并作为创建时的初始外观参数。"
         )
         build_hint.setWordWrap(
             True
@@ -473,75 +324,328 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             action_layout
         )
 
-        # -------------------------------------------------------------------------
-        # Step 04：组合页面并保留底部弹性空间
-        # -------------------------------------------------------------------------
+        # ---------------------------------------------------------------------
+        # Controller Appearance
+        # ---------------------------------------------------------------------
+        controller_card, controller_layout = theme.make_card(
+            page
+        )
+        controller_layout.addWidget(
+            theme.make_section_title(
+                u"Controller Appearance"
+            )
+        )
+
+        controller_description = QLabel(
+            u"Global Scale 影响整套 Face Controller；Module Size 只影响对应部位；Side Color 按 LF / RT / MD 实时更新。这里只修改 Shape，不会改变 Guide 对齐位置。"
+        )
+        controller_description.setWordWrap(
+            True
+        )
+        theme.set_role(
+            controller_description,
+            "muted"
+        )
+        controller_layout.addWidget(
+            controller_description
+        )
+
+        # Step 03 的控件成为唯一正式引用。这样 create_connections() 只会连接这里。
+        self.controller_size_widgets = {}
+        self.controller_color_widgets = {}
+
+        settings_grid = QGridLayout()
+        settings_grid.setContentsMargins(
+            0,
+            4,
+            0,
+            0
+        )
+        settings_grid.setHorizontalSpacing(
+            16
+        )
+        settings_grid.setVerticalSpacing(
+            10
+        )
+
+        settings_grid.addWidget(
+            QLabel(u"Global Scale"),
+            0,
+            0
+        )
+        self.face_ctrl_global_scale_spin = self.create_size_spin_box(
+            value=1.0
+        )
+        settings_grid.addWidget(
+            self.face_ctrl_global_scale_spin,
+            0,
+            1
+        )
+
+        side_title = QLabel(
+            u"Side Color"
+        )
+        theme.set_role(
+            side_title,
+            "muted"
+        )
+        settings_grid.addWidget(
+            side_title,
+            1,
+            0,
+            1,
+            2
+        )
+
+        side_items = [
+            ("lf", u"LF", 6),
+            ("rt", u"RT", 13),
+            ("md", u"MD", 17),
+        ]
+
+        row = 2
+
+        for side_item in side_items:
+            side = side_item[0]
+            label_text = side_item[1]
+            default_color = side_item[2]
+
+            color_widget = MayaIndexColorSlider(
+                value=default_color
+            )
+            self.controller_color_widgets[side] = color_widget
+
+            settings_grid.addWidget(
+                QLabel(label_text),
+                row,
+                0
+            )
+            settings_grid.addWidget(
+                color_widget,
+                row,
+                1
+            )
+            row += 1
+
+        module_title = QLabel(
+            u"Module Size"
+        )
+        theme.set_role(
+            module_title,
+            "muted"
+        )
+        settings_grid.addWidget(
+            module_title,
+            1,
+            2,
+            1,
+            2
+        )
+
+        module_labels = {
+            "brow": u"Brow",
+            "eye": u"Eye",
+            "eyelid": u"Eyelid",
+            "nose": u"Nose",
+            "cheek": u"Cheek",
+            "lip": u"Lip",
+            "jaw": u"Jaw",
+            "teeth": u"Teeth",
+            "tongue": u"Tongue",
+        }
+
+        row = 2
+
+        for module_name in config.face_controller_module_order:
+            size_spin = self.create_size_spin_box(
+                value=1.0
+            )
+            self.controller_size_widgets[module_name] = size_spin
+
+            settings_grid.addWidget(
+                QLabel(
+                    module_labels.get(
+                        module_name,
+                        module_name.title()
+                    )
+                ),
+                row,
+                2
+            )
+            settings_grid.addWidget(
+                size_spin,
+                row,
+                3
+            )
+            row += 1
+
+        settings_grid.setColumnStretch(
+            1,
+            1
+        )
+        settings_grid.setColumnStretch(
+            3,
+            1
+        )
+        controller_layout.addLayout(
+            settings_grid
+        )
+
+        live_hint = QLabel(
+            u"未构建时：修改参数只保存到 Scene Config；构建完成后：修改参数会同时保存并立即更新当前 Controller Shape。"
+        )
+        live_hint.setWordWrap(
+            True
+        )
+        theme.set_role(
+            live_hint,
+            "muted"
+        )
+        controller_layout.addWidget(
+            live_hint
+        )
+
         main_layout.addWidget(
             intro_card
         )
         main_layout.addWidget(
-            module_card
+            build_card
         )
         main_layout.addWidget(
-            build_card
+            controller_card
         )
         main_layout.addStretch(
             1
         )
+
         return page
 
     # =========================================================================
-    # Connections
+    # Connections / Channel Box
     # =========================================================================
 
     def create_connections(self):
-        u"""连接原有 Signal 和完整 FaceBuild 按钮信号。"""
+        u"""连接 Workflow Signal、Step 03 Settings 和完整 FaceBuild 按钮。"""
         super(FaceRigWizard, self).create_connections()
 
         self.build_face_button.clicked.connect(
             self.clicked_build_face
         )
 
+    @staticmethod
+    def get_channel_box_step_attributes(
+            face_context,
+            step_value
+    ):
+        u"""把 Controller Settings 的 Channel Box 展示职责迁移到 Step 03。"""
+        if step_value == 1:
+            return list(
+                face_context.setup_value_attr_names
+            )
+
+        if step_value == 3:
+            attr_names = []
+
+            for attr_name in config.face_controller_default_settings:
+                attr_names.append(
+                    attr_name
+                )
+
+            return attr_names
+
+        return []
+
+    # =========================================================================
+    # Step 03 Settings Live Update
+    # =========================================================================
+
+    def controller_settings_changed(
+            self,
+            value=None
+    ):
+        u"""
+        保存 Step 03 Controller Settings；Rig 已构建时立即更新 Controller Shape。
+
+        这里不再调用 mark_step2_dirty()。Controller 外观属于 Step 03 的可编辑结果，
+        调整尺寸或颜色不会使已经完成的 Guide / Build 结构失效。
+        """
+        if self.loading_controller_settings:
+            return
+
+        face_context = self.get_face_guide()
+
+        if not face_context.config_node_exists():
+            return
+
+        previous_settings = face_context.load_controller_settings()
+        new_settings = self.get_step2_controller_settings()
+
+        build_completed = face_context.is_step_completed(
+            step_value=3
+        )
+
+        apply_result = {
+            "changed_ctrl_count": 0,
+            "scaled_ctrl_count": 0,
+            "colored_ctrl_count": 0,
+        }
+
+        try:
+            if build_completed:
+                apply_result = controller_appearance.apply_controller_settings(
+                    previous_settings,
+                    new_settings
+                )
+
+            face_context.save_controller_settings(
+                new_settings
+            )
+            face_context.ensure_config_layout()
+            face_context.organize_config_attributes()
+            self.apply_config_channel_box_display(
+                face_context
+            )
+        except Exception as error:
+            self.status_label.setText(
+                u"Controller Appearance 更新失败：{}".format(
+                    error
+                )
+            )
+            return
+
+        if build_completed:
+            self.status_label.setText(
+                u"Controller Appearance 已实时更新 · {} Ctrl".format(
+                    apply_result.get(
+                        "changed_ctrl_count",
+                        0
+                    )
+                )
+            )
+        else:
+            self.status_label.setText(
+                u"Controller Settings 已保存 · 构建时将使用当前参数"
+            )
+
     # =========================================================================
     # Step 03 State / Navigation
     # =========================================================================
 
     def load_step_config_to_ui(self, step_index):
-        u"""
-        恢复原 Workflow Config，并在 Step 03 回填完整 FaceBuild 状态。
-
-        Args:
-            step_index (int):
-                当前 UI Step 索引。
-
-        Returns:
-            bool | object:
-                Config 回填结果。
-        """
+        u"""恢复 Workflow Config，并在 Step 03 回填 Settings 和 Build 状态。"""
         result = super(FaceRigWizard, self).load_step_config_to_ui(
             step_index
         )
 
         if step_index == 2:
+            self.load_step2_controller_settings()
             self.load_step3_build_state()
 
         return result
 
     def load_step3_build_state(self):
-        u"""
-        从 Face Config 恢复 Step 03 完成状态和按钮状态。
-
-        Returns:
-            bool:
-                Step 03 已完成时返回 True，否则返回 False。
-        """
-        # -------------------------------------------------------------------------
-        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
-        # -------------------------------------------------------------------------
+        u"""从 Face Config 恢复 Step 03 完成状态和按钮状态。"""
         face_context = self.get_face_guide()
-        # -------------------------------------------------------------------------
-        # Step 02：准备当前阶段计算和后续处理需要的数据
-        # -------------------------------------------------------------------------
         completed = False
 
         if face_context.config_node_exists():
@@ -549,15 +653,12 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
                 step_value=3
             )
 
-        # -------------------------------------------------------------------------
-        # Step 03：检查当前条件与边界情况，并进入对应处理分支
-        # -------------------------------------------------------------------------
         if completed:
             self.completed_step_indexes.add(
                 2
             )
             self.face_build_status_label.setText(
-                u"构建完成"
+                u"构建完成 · 可实时调整外观"
             )
             theme.set_role(
                 self.face_build_status_label,
@@ -581,13 +682,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
                 True
             )
 
-        # -------------------------------------------------------------------------
-        # Step 04：应用并更新当前阶段需要的属性或状态
-        # -------------------------------------------------------------------------
         self.update_navigation_buttons()
-        # -------------------------------------------------------------------------
-        # Step 05：整理并返回当前函数的最终结果
-        # -------------------------------------------------------------------------
         return completed
 
     def update_navigation_buttons(self):
@@ -617,13 +712,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             )
 
     def clicked_next_button(self):
-        u"""
-        提交原有 Step；Step 03 完成后进入 Step 04 Finalize。
-
-        Returns:
-            object | None:
-                原 Step 返回结果；Step 03 成功切换页面时返回 None。
-        """
+        u"""提交原有 Step；Step 03 完成后进入 Step 04 Finalize。"""
         if self.current_step_index != 2:
             return super(FaceRigWizard, self).clicked_next_button()
 
@@ -649,16 +738,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
     # =========================================================================
 
     def clicked_build_face(self):
-        u"""
-        通过 FaceBuild.run_step() 一次构建完整 Face Rig。
-
-        Returns:
-            bool:
-                Step 03 完整构建成功时返回 True，否则返回 False。
-        """
-        # -------------------------------------------------------------------------
-        # Step 01：进入构建状态并阻止重复点击
-        # -------------------------------------------------------------------------
+        u"""通过 FaceBuild.run_step() 一次构建完整 Face Rig。"""
         self.build_face_button.setEnabled(
             False
         )
@@ -673,9 +753,27 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             u"正在构建完整 Face Rig"
         )
 
-        # -------------------------------------------------------------------------
-        # Step 02：只调用正式 Workflow Step；失败时 FaceBuild 会自动整体 Undo
-        # -------------------------------------------------------------------------
+        face_context = self.get_face_guide()
+
+        try:
+            # 确保 Build 使用当前 Step 03 UI 中刚刚设置的参数。
+            face_context.save_controller_settings(
+                self.get_step2_controller_settings()
+            )
+        except Exception as error:
+            self.face_build_status_label.setText(
+                u"参数保存失败"
+            )
+            self.build_face_button.setEnabled(
+                True
+            )
+            QMessageBox.critical(
+                self,
+                u"Controller Settings 保存失败",
+                u"{}".format(error)
+            )
+            return False
+
         face_build = FaceBuild()
 
         try:
@@ -704,9 +802,6 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             self.update_navigation_buttons()
             return False
 
-        # -------------------------------------------------------------------------
-        # Step 03：保存公开结果并同步 Step 03 UI 完成状态
-        # -------------------------------------------------------------------------
         self.face_build_result = face_build.build_result
         self.completed_step_indexes.add(
             2
@@ -716,7 +811,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         )
 
         self.face_build_status_label.setText(
-            u"构建完成"
+            u"构建完成 · 可实时调整外观"
         )
         theme.set_role(
             self.face_build_status_label,
@@ -726,14 +821,11 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             False
         )
 
-        # -------------------------------------------------------------------------
-        # Step 04：刷新 Workflow / Channel Box，并允许进入 Finalize
-        # -------------------------------------------------------------------------
         module_count = len(
             self.face_build_result
         )
         self.status_label.setText(
-            u"完整 Face Rig 构建完成 · {} Modules".format(
+            u"完整 Face Rig 构建完成 · {} Modules · Controller Appearance 已开启实时调整".format(
                 module_count
             )
         )
@@ -744,13 +836,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
 
 def main():
-    u"""
-    创建带 Step 03 Module Build 页面的正式 Face Rig UI。
-
-    Returns:
-        object:
-        当前工具入口创建并显示的窗口或执行结果。
-    """
+    u"""创建带 Step 03 Build / Live Controller Settings 的正式 Face Rig UI。"""
     return FaceRigWizard()
 
 
