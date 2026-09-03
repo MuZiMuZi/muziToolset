@@ -47,7 +47,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
     u"""Step 03 Build + Controller Appearance 的正式 Face Rig Wizard。"""
 
     def __init__(self, parent=None):
-        u"""初始化 Step 03 Build UI。"""
+        u"""
+        初始化 Step 03 Build UI。
+
+        Args:
+            parent (QWidget | None):
+                当前窗口使用的 Qt Parent；未提供时使用 None。
+        """
         self.face_build_result = None
 
         super(FaceRigWizard, self).__init__(
@@ -64,6 +70,10 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
         Workflow Controller 仍负责创建这些旧控件，是为了保持当前继承链和 Config
         恢复逻辑兼容；正式显示与交互控件会在 Step 03 重新创建并替换引用。
+
+        Returns:
+            QWidget:
+                已创建并隐藏旧 Controller Settings Card 的 Step 02 页面。
         """
         page = super(FaceRigWizard, self).create_step2_page()
 
@@ -88,7 +98,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
     # =========================================================================
 
     def get_step2_controller_settings(self):
-        u"""从当前 Step 03 UI 收集正式 Controller Settings。"""
+        u"""
+        从当前 Step 03 UI 收集正式 Controller Settings。
+
+        Returns:
+            dict:
+                当前 Global Scale、Side Color 与各 Module Size 的设置字典。
+        """
         settings = {}
 
         settings[config.face_controller_global_scale_attr] = (
@@ -121,7 +137,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         return settings
 
     def load_step2_controller_settings(self):
-        u"""使用正式 Config Schema 回填 Step 03 Controller Settings。"""
+        u"""
+        使用正式 Config Schema 回填 Step 03 Controller Settings。
+
+        Returns:
+            bool:
+                Controller Settings 成功回填到 Step 03 UI 时返回 True。
+        """
         face_context = self.get_face_guide()
         settings = face_context.load_controller_settings()
 
@@ -204,7 +226,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         )
 
     def create_step3_page(self):
-        u"""创建 Step 03 完整 Face Rig Build + Controller Settings 页面。"""
+        u"""
+        创建 Step 03 完整 Face Rig Build + Controller Settings 页面。
+
+        Returns:
+            QWidget:
+                包含 Build 与 Controller Appearance 控件的 Step 03 页面。
+        """
         page = QWidget()
         main_layout = QVBoxLayout(
             page
@@ -537,7 +565,19 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             face_context,
             step_value
     ):
-        u"""把 Controller Settings 的 Channel Box 展示职责迁移到 Step 03。"""
+        u"""
+        把 Controller Settings 的 Channel Box 展示职责迁移到 Step 03。
+
+        Args:
+            face_context (FaceGuide):
+                当前 Face Workflow 的 Config / Guide 上下文。
+            step_value (int):
+                需要查询 Channel Box 属性的 Workflow Step 值。
+
+        Returns:
+            list[str]:
+                当前 Step 应在 Channel Box 中展示的 Config 属性名称。
+        """
         if step_value == 1:
             return list(
                 face_context.setup_value_attr_names
@@ -568,6 +608,14 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
         这里不再调用 mark_step2_dirty()。Controller 外观属于 Step 03 的可编辑结果，
         调整尺寸或颜色不会使已经完成的 Guide / Build 结构失效。
+
+        Args:
+            value (object):
+                Qt Value Changed Signal 传入的新值；业务逻辑统一从 UI 重新读取完整设置。
+
+        Returns:
+            None:
+                本方法直接更新 Scene Config、Controller Shape 与 UI 状态。
         """
         if self.loading_controller_settings:
             return
@@ -632,7 +680,17 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
     # =========================================================================
 
     def load_step_config_to_ui(self, step_index):
-        u"""恢复 Workflow Config，并在 Step 03 回填 Settings 和 Build 状态。"""
+        u"""
+        恢复 Workflow Config，并在 Step 03 回填 Settings 和 Build 状态。
+
+        Args:
+            step_index (int):
+                当前需要恢复配置的零基 Workflow 页面索引。
+
+        Returns:
+            object:
+                父级 Workflow Controller 恢复对应 Step 配置后的结果。
+        """
         result = super(FaceRigWizard, self).load_step_config_to_ui(
             step_index
         )
@@ -644,7 +702,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         return result
 
     def load_step3_build_state(self):
-        u"""从 Face Config 恢复 Step 03 完成状态和按钮状态。"""
+        u"""
+        从 Face Config 恢复 Step 03 完成状态和按钮状态。
+
+        Returns:
+            bool:
+                Face Config 已标记 Step 03 完成时返回 True，否则返回 False。
+        """
         face_context = self.get_face_guide()
         completed = False
 
@@ -712,7 +776,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             )
 
     def clicked_next_button(self):
-        u"""提交原有 Step；Step 03 完成后进入 Step 04 Finalize。"""
+        u"""
+        提交原有 Step；Step 03 完成后进入 Step 04 Finalize。
+
+        Returns:
+            object:
+                非 Step 03 时返回父级导航结果；Step 03 内部导航完成时返回 None。
+        """
         if self.current_step_index != 2:
             return super(FaceRigWizard, self).clicked_next_button()
 
@@ -738,7 +808,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
     # =========================================================================
 
     def clicked_build_face(self):
-        u"""通过 FaceBuild.run_step() 一次构建完整 Face Rig。"""
+        u"""
+        通过 FaceBuild.run_step() 一次构建完整 Face Rig。
+
+        Returns:
+            bool:
+                Face Rig 构建成功时返回 True；参数保存或 Build 失败时返回 False。
+        """
         self.build_face_button.setEnabled(
             False
         )
@@ -836,7 +912,13 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
 
 def main():
-    u"""创建带 Step 03 Build / Live Controller Settings 的正式 Face Rig UI。"""
+    u"""
+    创建带 Step 03 Build / Live Controller Settings 的正式 Face Rig UI。
+
+    Returns:
+        FaceRigWizard:
+            新创建的 Step 03 Face Rig Wizard 实例。
+    """
     return FaceRigWizard()
 
 
