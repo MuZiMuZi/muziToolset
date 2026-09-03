@@ -6,11 +6,11 @@ Muzi Face Rig System
 Face Rig 的正式系统包。
 
 公共结构：
-    - FaceSetup / FaceGuide：Setup / Guide 工作流 Step；
+    - FaceSetup / FaceGuide / FaceBuild：Setup / Guide / Build 工作流 Step；
     - FaceModuleBase：所有正式 Face Rig Module 的统一生命周期；
     - FaceRig：按依赖顺序组装完整 Face Rig；
     - Brow / Cheek / Ear / Eye / Eyelid / Jaw / Lip / Mouth / Nose / Teeth / Tongue：独立绑定模块；
-    - build 包：Curve Attachment / Eyelid / Zip Lip 等可复用底层绑定算法。
+    - build 包：Step 03 Workflow 与 Curve Attachment / Eyelid / Zip Lip 等可复用底层算法。
 """
 
 from __future__ import print_function
@@ -47,6 +47,8 @@ from .modules import build_mouth
 from .modules import build_nose
 from .modules import build_teeth
 from .modules import build_tongue
+from .build.face_build import FaceBuild
+from .build.face_build import build_face_step
 from .setup import FaceSetup
 
 
@@ -68,6 +70,7 @@ __all__ = [
     "FaceModuleBase",
     "FaceGuide",
     "FaceSetup",
+    "FaceBuild",
     "FaceRig",
     "BrowModule",
     "CheekModule",
@@ -85,6 +88,7 @@ __all__ = [
     "build_eyelid_joints",
     "build_eye_bag_joints",
     "build_zip_lip",
+    "build_face_step",
     "build_face",
     "build_brow",
     "build_cheek",
