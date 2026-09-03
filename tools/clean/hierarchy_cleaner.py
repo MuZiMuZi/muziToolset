@@ -6,7 +6,7 @@ Hierarchy Cleaner
 场景安全清理 UI。
 
 实际清理逻辑统一维护在：
-    muziToolset.core.scene_clean_utils
+    muziToolset.core.scene_utils
 
 窗口生命周期：
     用户直接调用 main() 时，由 ui.window_utils 负责保存强引用并显示窗口；
@@ -32,10 +32,9 @@ except ImportError:
     from PySide6.QtWidgets import QPushButton
     from PySide6.QtWidgets import QVBoxLayout
 
-from ...core import scene_clean_utils
+from ...core import scene_utils
 from ...ui import theme
 from ...ui import window_utils
-from ...core import scene_utils
 
 
 class HierarchyCleaner(QDialog):
@@ -43,7 +42,7 @@ class HierarchyCleaner(QDialog):
 
     def __init__(self, parent=None):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
+        初始化当前对象，并准备运行时需要的状态和成员。
 
         Args:
             parent (str):
@@ -67,6 +66,9 @@ class HierarchyCleaner(QDialog):
         u"""
         创建界面控件。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.title_label = theme.make_title(u"层级清理")
         self.subtitle_label = theme.make_subtitle(
             u"默认只处理当前选择；高风险操作会主动跳过动画、约束和 Rig Deformer。"
@@ -80,6 +82,9 @@ class HierarchyCleaner(QDialog):
         )
         self.delete_history_checkbox.setChecked(False)
 
+        # -------------------------------------------------------------------------
+        # Step 02：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.freeze_checkbox = QCheckBox(
             u"冻结安全范围内 Transform"
         )
@@ -93,6 +98,9 @@ class HierarchyCleaner(QDialog):
         self.center_pivot_checkbox = QCheckBox(u"几何体 Pivot 居中")
         self.center_pivot_checkbox.setChecked(False)
 
+        # -------------------------------------------------------------------------
+        # Step 03：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.delete_unknown_checkbox = QCheckBox(u"删除 Unknown 节点")
         self.delete_unknown_checkbox.setChecked(True)
 
@@ -104,6 +112,9 @@ class HierarchyCleaner(QDialog):
             u"但仍建议先保存 Maya 场景。"
         )
         self.safety_label.setWordWrap(True)
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.set_role(self.safety_label, "muted")
 
         self.execute_button = QPushButton(u"执行清理")
@@ -111,12 +122,18 @@ class HierarchyCleaner(QDialog):
 
         self.result_label = QLabel(u"尚未执行")
         self.result_label.setWordWrap(True)
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.set_role(self.result_label, "muted")
 
     def create_layouts(self):
         u"""
         创建 Card 布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -125,6 +142,9 @@ class HierarchyCleaner(QDialog):
         main_layout.addWidget(self.subtitle_label)
 
         option_card, option_layout = theme.make_card(self)
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         option_layout.addWidget(
             theme.make_section_title(u"清理选项")
         )
@@ -133,6 +153,9 @@ class HierarchyCleaner(QDialog):
         option_layout.addWidget(self.freeze_checkbox)
         option_layout.addWidget(self.unlock_checkbox)
         option_layout.addWidget(self.center_pivot_checkbox)
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         option_layout.addWidget(self.delete_unknown_checkbox)
 
         scope_card, scope_layout = theme.make_card(self)
@@ -143,6 +166,9 @@ class HierarchyCleaner(QDialog):
         scope_layout.addWidget(self.safety_label)
 
         result_card, result_layout = theme.make_card(self)
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         result_layout.addWidget(
             theme.make_section_title(u"执行结果")
         )
@@ -152,6 +178,9 @@ class HierarchyCleaner(QDialog):
         main_layout.addWidget(scope_card)
         main_layout.addWidget(self.execute_button)
         main_layout.addWidget(result_card)
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addStretch(1)
 
     def create_connections(self):
@@ -168,7 +197,7 @@ class HierarchyCleaner(QDialog):
 
         Returns:
             object | bool:
-            方法执行后的结果数据。
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
         """
         if self.selected_only_checkbox.isChecked():
             return True
@@ -191,7 +220,7 @@ class HierarchyCleaner(QDialog):
 
         Returns:
             object:
-            方法执行后的结果数据。
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         if self.selected_only_checkbox.isChecked():
             nodes = cmds.ls(
@@ -204,7 +233,7 @@ class HierarchyCleaner(QDialog):
 
             return nodes
 
-        return scene_clean_utils.all_transform_nodes()
+        return scene_utils.all_transform_nodes()
 
     def format_result(self, result):
         u"""
@@ -216,8 +245,11 @@ class HierarchyCleaner(QDialog):
 
         Returns:
             object:
-            方法执行后的结果数据。
+            当前 API 完成处理后返回的结果。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         lines = []
 
         if "empty_groups" in result:
@@ -227,6 +259,9 @@ class HierarchyCleaner(QDialog):
                 )
             )
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if "history" in result:
             history_result = result["history"]
             lines.append(
@@ -245,6 +280,9 @@ class HierarchyCleaner(QDialog):
                 )
             )
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if "attributes" in result:
             lines.append(
                 u"属性：修改 {} 项".format(
@@ -259,6 +297,9 @@ class HierarchyCleaner(QDialog):
                 )
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if "unknown" in result:
             lines.append(
                 u"Unknown：删除 {}".format(
@@ -269,26 +310,41 @@ class HierarchyCleaner(QDialog):
         if not lines:
             lines.append(u"没有启用任何清理选项。")
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return u"\n".join(lines)
 
     def execute_cleanup(self):
         u"""
         执行当前配置的场景清理。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self.confirm_whole_scene():
             return
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         nodes = self.get_scope_nodes()
         selected_only = self.selected_only_checkbox.isChecked()
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if selected_only and not nodes:
             self.result_label.setText(u"请先选择需要清理的对象。")
             return
 
         scene_utils.open_undo_chunk("MuziHierarchyCleaner")
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
-            result = scene_clean_utils.run_cleanup(
+            result = scene_utils.run_cleanup(
                 nodes=nodes,
                 selected_only=selected_only,
                 delete_empty=self.delete_empty_checkbox.isChecked(),
@@ -307,6 +363,9 @@ class HierarchyCleaner(QDialog):
         finally:
             scene_utils.close_undo_chunk()
 
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.result_label.setText(
             self.format_result(result)
         )
@@ -318,7 +377,7 @@ def main():
 
     Returns:
         object:
-        方法执行后的结果数据。
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
         "tools.clean.hierarchy_cleaner",

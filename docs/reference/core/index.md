@@ -41,7 +41,7 @@ Geometry / Deformer
 
 Scene Quality
 ├─ model_check_utils.py
-└─ scene_clean_utils.py
+└─ scene_utils.py
 ```
 
 ## 已完成模块收口

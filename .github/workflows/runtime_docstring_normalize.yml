@@ -1,22 +1,27 @@
-name: Normalize Runtime Docstrings
+name: Validate Runtime Chinese Documentation
 
 on:
   push:
     branches:
-      - refactor/runtime-docstring-standard
+      - refactor/full-code-cn-comments
+    paths-ignore:
+      - docs/development/runtime-step-comment-audit.md
+      - docs/development/runtime-compile-audit.txt
+      - docs/development/runtime-docstring-audit.txt
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  normalize:
+  validate:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: refactor/runtime-docstring-standard
+          ref: refactor/full-code-cn-comments
           fetch-depth: 0
 
       - name: Setup Python
@@ -24,42 +29,74 @@ jobs:
         with:
           python-version: "3.11"
 
-      # 第一轮结构化 Docstring 已经写入分支。
-      # 这里不再重复 --write，避免已有 Example / Notes 产生无意义缩进变化。
+      # -----------------------------------------------------------------------
+      # Step 01：生成复杂 Runtime 函数的中文步骤注释审计清单
+      # -----------------------------------------------------------------------
+      - name: Generate runtime step comment audit
+        run: python scripts/audit_runtime_step_comments.py --write-report
+
+      # -----------------------------------------------------------------------
+      # Step 02：记录完整 Docstring 检查输出，便于逐条人工修复
+      # -----------------------------------------------------------------------
+      - name: Capture runtime docstring audit
+        shell: bash
+        run: |
+          mkdir -p docs/development
+          python scripts/normalize_runtime_docstrings.py --check \
+            > docs/development/runtime-docstring-audit.txt 2>&1 || true
+
+      # -----------------------------------------------------------------------
+      # Step 03：保存两份审计清单；只改报告文件时不会再次触发本 Workflow
+      # -----------------------------------------------------------------------
+      - name: Commit runtime documentation audits
+        shell: bash
+        run: |
+          if git diff --quiet -- \
+            docs/development/runtime-step-comment-audit.md \
+            docs/development/runtime-docstring-audit.txt; then
+            echo "Runtime documentation audits are already current."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add \
+              docs/development/runtime-step-comment-audit.md \
+              docs/development/runtime-docstring-audit.txt
+            git commit -m "docs: update runtime documentation audits"
+            git push origin HEAD:refactor/full-code-cn-comments
+          fi
+
+      # -----------------------------------------------------------------------
+      # Step 04：静态编译全部 Runtime Python，确保注释整理没有破坏语法
+      # -----------------------------------------------------------------------
+      - name: Validate runtime compile
+        run: python -m compileall -q app core systems tools ui __init__.py config.py
+
+      # -----------------------------------------------------------------------
+      # Step 05：复杂函数必须保留步骤式中文注释
+      # -----------------------------------------------------------------------
+      - name: Validate runtime step comment coverage
+        run: python scripts/annotate_runtime_steps.py --check
+
+      # -----------------------------------------------------------------------
+      # Step 06：严格检查所有公开 Runtime API 的中文 Docstring 结构
+      # -----------------------------------------------------------------------
       - name: Validate public runtime docstrings
         run: python scripts/normalize_runtime_docstrings.py --check
 
-      - name: Refine Maya and rigging parameter semantics
-        run: python scripts/refine_runtime_docstring_semantics.py --write
+      # -----------------------------------------------------------------------
+      # Step 07：禁止重新出现自动生成的空泛 Summary / Returns 占位说明
+      # -----------------------------------------------------------------------
+      - name: Validate runtime documentation specificity
+        run: python scripts/refine_runtime_generic_docs.py --check
 
-      - name: Normalize runtime whitespace
-        shell: bash
-        run: |
-          find app core systems tools ui -type f -name '*.py' -print0 | xargs -0 sed -i 's/[[:space:]]\+$//'
-          sed -i 's/[[:space:]]\+$//' __init__.py config.py
-
+      # -----------------------------------------------------------------------
+      # Step 08：检查 Maya / Rigging 参数语义质量
+      # -----------------------------------------------------------------------
       - name: Validate rigging terminology quality
         run: python scripts/refine_runtime_docstring_semantics.py --check
 
-      - name: Compile runtime source
-        shell: bash
-        run: |
-          python -m compileall -q app core systems tools ui __init__.py config.py
-
+      # -----------------------------------------------------------------------
+      # Step 09：检查源码空白格式
+      # -----------------------------------------------------------------------
       - name: Check whitespace errors
         run: git diff --check
-
-      - name: Commit refined runtime documentation
-        shell: bash
-        run: |
-          if git diff --quiet; then
-            echo "Runtime docstrings already satisfy the semantic standard."
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add __init__.py config.py app core systems tools ui
-          git commit -m "docs: refine maya rigging api semantics"
-          git push origin HEAD:refactor/runtime-docstring-standard

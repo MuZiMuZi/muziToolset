@@ -92,11 +92,27 @@ def get_ctrl_hierarchy_names(
 
     其它 Module 如果需要在 Build 前检查 Controller 层级残留，应调用本方法，
     不要再次手写 ctrl_ -> zero_ / driven_ / space_ 等字符串替换。
+
+    Args:
+        name (str):
+            创建或查询时使用的节点名称。
+        create_sub_ctrl (bool):
+            当前 Rig 操作或驱动使用的动画 Controller Transform。
+
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     ctrl_rig = _get_rig_name(
         name
     )
 
+    # -------------------------------------------------------------------------
+    # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+    # -------------------------------------------------------------------------
     names = {
         "zero": ctrl_rig.create_name(type="zero"),
         "driven": ctrl_rig.create_name(type="driven"),
@@ -108,6 +124,9 @@ def get_ctrl_hierarchy_names(
         "sub_ctrl": None,
     }
 
+    # -------------------------------------------------------------------------
+    # Step 03：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if create_sub_ctrl:
         names["sub_ctrl"] = ctrl_rig.create_name(
             type="ctrl",
@@ -115,6 +134,9 @@ def get_ctrl_hierarchy_names(
             function="sub"
         )
 
+    # -------------------------------------------------------------------------
+    # Step 04：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return names
 
 
@@ -153,7 +175,45 @@ def create_ctrl(
         add_to_set=True,
         ctrl_set="ctrl_set"
 ):
-    u"""创建 MuziTools 标准 Controller。"""
+    u"""
+    创建 MuziTools 标准 Controller。
+
+    Args:
+        name (str):
+            创建或查询时使用的节点名称。
+        shape (str):
+            Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
+        radius (float):
+            创建节点或控制器使用的半径值。
+        color (int):
+            Viewport Override 使用的 Index Color 或 RGB Color。
+        axis (str):
+            操作使用的轴向标记。
+        target_node (str):
+            接收数据、匹配结果或操作结果的 Target Maya 节点。
+        parent_node (str):
+            Child 最终需要挂接到的 Parent DAG 节点名称。
+        rotate_x (float):
+            Controller Shape / Transform 绕 X 轴应用的旋转角度。
+        create_sub_ctrl (bool):
+            当前 Rig 操作或驱动使用的动画 Controller Transform。
+        sub_color (object):
+            当前方法执行 Maya / Rig 操作时使用的 `sub_color` 数据。
+        lock_attr_list (list):
+            当前方法需要保持顺序批量处理的数据列表。
+        add_to_set (bool):
+            是否把创建后的 Controller 加入指定 Controller Set。
+        ctrl_set (str):
+            当前 Maya / Rig 操作使用的 `ctrl_set` 名称或标记。
+
+    Returns:
+        dict:
+        包含本次构建、查询或处理结果的结构化字典。
+
+    Raises:
+        ValueError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     # -------------------------------------------------------------------------
     # Step 01：检查创建参数与 Scene 输入
     # -------------------------------------------------------------------------
@@ -437,7 +497,42 @@ def create_fk_ctrl(
         add_to_set=True,
         ctrl_set="ctrl_set"
 ):
-    u"""根据 Target List 和明确的 Ctrl Name List 创建 FK Controller Chain。"""
+    u"""
+    根据 Target List 和明确的 Ctrl Name List 创建 FK Controller Chain。
+
+    Args:
+        target_list (list):
+            当前方法需要保持顺序批量处理的数据列表。
+        ctrl_name_list (list):
+            当前方法需要保持顺序批量处理的数据列表。
+        shape (str):
+            Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
+        radius (float):
+            创建节点或控制器使用的半径值。
+        color (int):
+            Viewport Override 使用的 Index Color 或 RGB Color。
+        axis (str):
+            操作使用的轴向标记。
+        parent_node (str):
+            Child 最终需要挂接到的 Parent DAG 节点名称。
+        constrain (bool):
+            创建 Controller 后是否建立 Controller / Output 到 Target 的约束关系。
+        add_to_set (bool):
+            是否把创建后的 Controller 加入指定 Controller Set。
+        ctrl_set (str):
+            当前 Maya / Rig 操作使用的 `ctrl_set` 名称或标记。
+
+    Returns:
+        object | list:
+        按当前 API 约定顺序返回的结果列表。
+
+    Raises:
+        ValueError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not target_list:
         return []
 
@@ -446,6 +541,9 @@ def create_fk_ctrl(
             u"FK Ctrl Name List 不能为空。"
         )
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if len(target_list) != len(ctrl_name_list):
         raise ValueError(
             u"FK Target List 和 Ctrl Name List 数量必须一致。"
@@ -453,6 +551,9 @@ def create_fk_ctrl(
 
     ctrl_dict_list = []
     previous_ctrl_node = None
+    # -------------------------------------------------------------------------
+    # Step 03：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     target_index = 0
 
     while target_index < len(target_list):
@@ -500,6 +601,9 @@ def create_fk_ctrl(
 
     ctrl_list = []
 
+    # -------------------------------------------------------------------------
+    # Step 04：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for ctrl_dict in ctrl_dict_list:
         ctrl_list.append(
             ctrl_dict["ctrl_node"]
@@ -511,6 +615,9 @@ def create_fk_ctrl(
             replace=True
         )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return ctrl_dict_list
 
 
@@ -525,7 +632,32 @@ def create_follow(
         attr_name="follow",
         maintain_offset=True
 ):
-    u"""给标准 Controller 创建 0 - 1 Follow。"""
+    u"""
+    给标准 Controller 创建 0 - 1 Follow。
+
+    Args:
+        driver_node (object):
+            当前方法执行 Maya / Rig 操作时使用的 `driver_node` 数据。
+        ctrl_dict (dict):
+            当前方法使用的结构化配置 / 映射数据。
+        weight (float):
+            当前计算、混合或变形使用的权重值。
+        attr_name (str):
+            `attr_name` 对应的 Maya 节点或资源名称。
+        maintain_offset (bool):
+            是否在建立约束或矩阵关系时保持当前偏移。
+
+    Returns:
+        dict:
+        包含本次构建、查询或处理结果的结构化字典。
+
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：验证并规范化当前阶段需要的输入数据
+    # -------------------------------------------------------------------------
     scene_utils.validate_node(
         driver_node,
         u"Follow Driver"
@@ -544,6 +676,9 @@ def create_follow(
         zero_grp,
         u"Zero Group"
     )
+    # -------------------------------------------------------------------------
+    # Step 02：验证并规范化当前阶段需要的输入数据
+    # -------------------------------------------------------------------------
     scene_utils.validate_node(
         driven_grp,
         u"Driven Group"
@@ -579,6 +714,9 @@ def create_follow(
         part=related_part,
         function=attr_name
     )
+    # -------------------------------------------------------------------------
+    # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+    # -------------------------------------------------------------------------
     reverse_name = ctrl_rig.create_name(
         type="reverse",
         part=related_part,
@@ -618,6 +756,9 @@ def create_follow(
     if weight_alias_list is None:
         weight_alias_list = []
 
+    # -------------------------------------------------------------------------
+    # Step 04：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if len(weight_alias_list) != 2:
         cmds.delete(
             constraint_node
@@ -658,6 +799,9 @@ def create_follow(
         force=True
     )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return {
         "driver_node": driver_node,
         "ctrl_node": ctrl_node,
@@ -684,7 +828,34 @@ def create_space_switch(
         default_index=0,
         maintain_offset=True
 ):
-    u"""给标准 Controller 创建 Enum Space Switch。"""
+    u"""
+    给标准 Controller 创建 Enum Space Switch。
+
+    Args:
+        ctrl_dict (dict):
+            当前方法使用的结构化配置 / 映射数据。
+        space_target_dict (dict):
+            当前方法使用的结构化配置 / 映射数据。
+        attr_name (str):
+            `attr_name` 对应的 Maya 节点或资源名称。
+        default_index (int):
+            对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
+        maintain_offset (bool):
+            是否在建立约束或矩阵关系时保持当前偏移。
+
+    Returns:
+        dict:
+        包含本次构建、查询或处理结果的结构化字典。
+
+    Raises:
+        ValueError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not space_target_dict:
         raise ValueError(
             u"Space Target Dict 不能为空。"
@@ -708,6 +879,9 @@ def create_space_switch(
     )
 
     space_label_list = []
+    # -------------------------------------------------------------------------
+    # Step 02：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     space_target_list = []
 
     for space_label, target_node in space_target_dict.items():
@@ -761,6 +935,9 @@ def create_space_switch(
     ctrl_rig = _get_rig_name(
         ctrl_node
     )
+    # -------------------------------------------------------------------------
+    # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     related_part = _get_ctrl_part(
         ctrl_rig
     )
@@ -797,6 +974,9 @@ def create_space_switch(
         weightAliasList=True
     )
 
+    # -------------------------------------------------------------------------
+    # Step 04：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if weight_alias_list is None:
         weight_alias_list = []
 
@@ -881,6 +1061,9 @@ def create_space_switch(
             condition_node
         )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return {
         "ctrl_node": ctrl_node,
         "space_grp": space_grp,
@@ -899,6 +1082,9 @@ def create_space_switch(
 
 def _get_attr_definition(ctrl_node, attr_name):
     u"""读取一个 User Defined Attribute 的定义和值。"""
+    # -------------------------------------------------------------------------
+    # Step 01：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     attr_plug = "{}.{}".format(
         ctrl_node,
         attr_name
@@ -908,6 +1094,9 @@ def _get_attr_definition(ctrl_node, attr_name):
         type=True
     )
 
+    # -------------------------------------------------------------------------
+    # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     attr_data = {
         "name": attr_name,
         "type": attr_type,
@@ -951,6 +1140,9 @@ def _get_attr_definition(ctrl_node, attr_name):
         if max_value_list:
             attr_data["max"] = max_value_list[0]
 
+    # -------------------------------------------------------------------------
+    # Step 03：执行可能失败的操作，并统一处理异常或清理状态
+    # -------------------------------------------------------------------------
     try:
         default_value_list = cmds.attributeQuery(
             attr_name,
@@ -963,6 +1155,9 @@ def _get_attr_definition(ctrl_node, attr_name):
     if default_value_list:
         attr_data["default"] = default_value_list[0]
 
+    # -------------------------------------------------------------------------
+    # Step 04：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if attr_type == "enum":
         enum_name_list = cmds.attributeQuery(
             attr_name,
@@ -981,6 +1176,9 @@ def _get_attr_definition(ctrl_node, attr_name):
         except Exception:
             attr_data["value"] = None
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return attr_data
 
 
@@ -1066,7 +1264,24 @@ def save_rebuild_cache(
         cache_name=None,
         owned_node_list=None
 ):
-    u"""把 Ctrl 自定义属性和外部连接保存到 Maya Network Node。"""
+    u"""
+    把 Ctrl 自定义属性和外部连接保存到 Maya Network Node。
+
+    Args:
+        ctrl_node (object):
+            当前方法执行 Maya / Rig 操作时使用的 `ctrl_node` 数据。
+        cache_name (str):
+            `cache_name` 对应的 Maya 节点或资源名称。
+        owned_node_list (list):
+            当前方法需要保持顺序批量处理的数据列表。
+
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：验证并规范化当前阶段需要的输入数据
+    # -------------------------------------------------------------------------
     scene_utils.validate_node(
         ctrl_node,
         u"Ctrl Node"
@@ -1093,6 +1308,9 @@ def save_rebuild_cache(
 
     owned_node_set = set()
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if owned_node_list:
         for owned_node in owned_node_list:
             if not owned_node:
@@ -1124,6 +1342,9 @@ def save_rebuild_cache(
     if user_attr_list is None:
         user_attr_list = []
 
+    # -------------------------------------------------------------------------
+    # Step 03：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     attr_data_list = []
 
     for attr_name in user_attr_list:
@@ -1148,6 +1369,9 @@ def save_rebuild_cache(
     cache_attr = attr_utils.Attr(
         cache_node
     )
+    # -------------------------------------------------------------------------
+    # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     cache_attr.set_value(
         "sourceCtrlName",
         rename_utils.get_short_name(ctrl_node),
@@ -1175,6 +1399,9 @@ def save_rebuild_cache(
         channel_box=False
     )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return cache_node
 
 
@@ -1184,8 +1411,14 @@ def save_rebuild_cache(
 
 def _create_cached_attr(ctrl_node, attr_data):
     u"""根据 Cache Data 重新创建一个自定义 Attribute。"""
+    # -------------------------------------------------------------------------
+    # Step 01：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     attr_name = attr_data["name"]
     attr_type = attr_data["type"]
+    # -------------------------------------------------------------------------
+    # Step 02：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     supported_types = [
         "double",
         "float",
@@ -1208,14 +1441,23 @@ def _create_cached_attr(ctrl_node, attr_data):
         )
         return None
 
+    # -------------------------------------------------------------------------
+    # Step 03：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     enum_name = attr_data["enum_name"]
 
     if attr_type == "enum" and not enum_name:
         enum_name = "Item"
 
+    # -------------------------------------------------------------------------
+    # Step 04：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     ctrl_attr = attr_utils.Attr(
         ctrl_node
     )
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return ctrl_attr.add_attr(
         attr_name,
         attr_type=attr_type,
@@ -1265,14 +1507,23 @@ def _restore_cached_attr_value(ctrl_node, attr_data):
 
 def _restore_cached_connections(ctrl_node, attr_data):
     u"""恢复一个自定义 Attribute 的外部 Input / Output Connection。"""
+    # -------------------------------------------------------------------------
+    # Step 01：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     attr_plug = "{}.{}".format(
         ctrl_node,
         attr_data["name"]
     )
 
+    # -------------------------------------------------------------------------
+    # Step 02：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     restored_connection_list = []
     skipped_connection_list = []
 
+    # -------------------------------------------------------------------------
+    # Step 03：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for source_plug in attr_data["input_plug_list"]:
         connection_text = "{} -> {}".format(
             source_plug,
@@ -1298,6 +1549,9 @@ def _restore_cached_connections(ctrl_node, attr_data):
                 connection_text
             )
 
+    # -------------------------------------------------------------------------
+    # Step 04：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for destination_plug in attr_data["output_plug_list"]:
         connection_text = "{} -> {}".format(
             attr_plug,
@@ -1323,6 +1577,9 @@ def _restore_cached_connections(ctrl_node, attr_data):
                 connection_text
             )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return {
         "restored_connection_list": restored_connection_list,
         "skipped_connection_list": skipped_connection_list,
@@ -1334,7 +1591,28 @@ def restore_rebuild_cache(
         ctrl_node,
         delete_cache=True
 ):
-    u"""把 Rebuild Cache 恢复到新 Ctrl。"""
+    u"""
+    把 Rebuild Cache 恢复到新 Ctrl。
+
+    Args:
+        cache_node (object):
+            当前方法执行 Maya / Rig 操作时使用的 `cache_node` 数据。
+        ctrl_node (object):
+            当前方法执行 Maya / Rig 操作时使用的 `ctrl_node` 数据。
+        delete_cache (bool):
+            当前清理 / 重建流程是否执行 `delete_cache` 对应的删除步骤。
+
+    Returns:
+        dict:
+        包含本次构建、查询或处理结果的结构化字典。
+
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：验证并规范化当前阶段需要的输入数据
+    # -------------------------------------------------------------------------
     scene_utils.validate_node(
         cache_node,
         u"Rebuild Cache"
@@ -1357,6 +1635,9 @@ def restore_rebuild_cache(
             )
         )
 
+    # -------------------------------------------------------------------------
+    # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     cache_text = cache_attr.get_value(
         "ctrlData"
     )
@@ -1376,6 +1657,9 @@ def restore_rebuild_cache(
         []
     )
 
+    # -------------------------------------------------------------------------
+    # Step 03：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     restored_attr_list = []
     restored_connection_list = []
     skipped_connection_list = []
@@ -1397,6 +1681,9 @@ def restore_rebuild_cache(
             attr_plug
         )
 
+    # -------------------------------------------------------------------------
+    # Step 04：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for attr_data in attr_data_list:
         ctrl_attr = attr_utils.Attr(
             ctrl_node
@@ -1448,6 +1735,9 @@ def restore_rebuild_cache(
             cache_node
         )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return {
         "ctrl_node": ctrl_node,
         "restored_attr_list": restored_attr_list,
@@ -1457,7 +1747,17 @@ def restore_rebuild_cache(
 
 
 def delete_rebuild_cache(cache_node):
-    u"""手动删除 Controller Rebuild Cache。"""
+    u"""
+    手动删除 Controller Rebuild Cache。
+
+    Args:
+        cache_node (object):
+            当前方法执行 Maya / Rig 操作时使用的 `cache_node` 数据。
+
+    Returns:
+        bool:
+        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+    """
     if not cache_node:
         return False
 

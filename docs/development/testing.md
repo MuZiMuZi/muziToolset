@@ -217,7 +217,7 @@ joint_chain_utils
 math_utils
 RigBase + rename_utils
 model_check_utils
-scene_clean_utils
+scene_utils
 ```
 
 职责保持分离：

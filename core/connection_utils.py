@@ -89,7 +89,17 @@ def _normalize_connection_pairs(connection_pairs):
 
 
 def get_input_connections(destination_plug):
-    u"""返回 Destination Plug 的全部 Source Plug；无输入时返回空列表。"""
+    u"""
+    返回 Destination Plug 的全部 Source Plug；无输入时返回空列表。
+
+    Args:
+        destination_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+
+    Returns:
+        object | list:
+        按当前 API 约定顺序返回的结果列表。
+    """
     destination_plug = _validate_plug(
         destination_plug,
         u"Destination Plug"
@@ -108,7 +118,17 @@ def get_input_connections(destination_plug):
 
 
 def get_output_connections(source_plug):
-    u"""返回 Source Plug 的全部 Destination Plug；无输出时返回空列表。"""
+    u"""
+    返回 Source Plug 的全部 Destination Plug；无输出时返回空列表。
+
+    Args:
+        source_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+
+    Returns:
+        object | list:
+        按当前 API 约定顺序返回的结果列表。
+    """
     source_plug = _validate_plug(
         source_plug,
         u"Source Plug"
@@ -130,22 +150,46 @@ def connect_plugs(source_plug, destination_plug, force=False):
     u"""
     安全连接两个完整 Plug。
 
+    Args:
+        source_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+        destination_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+        force (bool):
+            是否强制覆盖已有连接、状态或结果。
+
     Returns:
         bool:
-            同一条连接已存在或成功建立时 True；
-            Destination 已有其它输入且 force=False 时 False。
+        同一条连接已存在或成功建立时 True；
+        Destination 已有其它输入且 force=False 时 False。
+
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：验证并规范化当前阶段需要的输入数据
+    # -------------------------------------------------------------------------
     source_plug = _validate_plug(source_plug, u"Source Plug")
+    # -------------------------------------------------------------------------
+    # Step 02：验证并规范化当前阶段需要的输入数据
+    # -------------------------------------------------------------------------
     destination_plug = _validate_plug(destination_plug, u"Destination Plug")
 
     if cmds.isConnected(source_plug, destination_plug):
         return True
 
+    # -------------------------------------------------------------------------
+    # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     existing_inputs = get_input_connections(destination_plug)
 
     if existing_inputs and not force:
         return False
 
+    # -------------------------------------------------------------------------
+    # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+    # -------------------------------------------------------------------------
     try:
         cmds.connectAttr(
             source_plug,
@@ -161,11 +205,30 @@ def connect_plugs(source_plug, destination_plug, force=False):
             )
         )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return True
 
 
 def disconnect_plugs(source_plug, destination_plug):
-    u"""断开一条明确 Plug 连接；本来不存在时返回 False。"""
+    u"""
+    断开一条明确 Plug 连接；本来不存在时返回 False。
+
+    Args:
+        source_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+        destination_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+
+    Returns:
+        bool:
+        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     source_plug = _validate_plug(source_plug, u"Source Plug")
     destination_plug = _validate_plug(destination_plug, u"Destination Plug")
 
@@ -187,7 +250,17 @@ def disconnect_plugs(source_plug, destination_plug):
 
 
 def disconnect_input(destination_plug):
-    u"""断开 Destination Plug 的全部输入，并返回实际断开数量。"""
+    u"""
+    断开 Destination Plug 的全部输入，并返回实际断开数量。
+
+    Args:
+        destination_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
+    """
     destination_plug = _validate_plug(destination_plug, u"Destination Plug")
     input_connections = get_input_connections(destination_plug)
     disconnected_count = 0
@@ -200,7 +273,19 @@ def disconnect_input(destination_plug):
 
 
 def connect_plug_pairs(connection_pairs, force=False):
-    u"""批量建立显式 Plug Pair，并返回成功 / 已存在的 Pair 数量。"""
+    u"""
+    批量建立显式 Plug Pair，并返回成功 / 已存在的 Pair 数量。
+
+    Args:
+        connection_pairs (object):
+            当前方法执行 Maya / Rig 操作时使用的 `connection_pairs` 数据。
+        force (bool):
+            是否强制覆盖已有连接、状态或结果。
+
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
+    """
     connection_pairs = _normalize_connection_pairs(connection_pairs)
     connected_count = 0
 
@@ -212,7 +297,17 @@ def connect_plug_pairs(connection_pairs, force=False):
 
 
 def disconnect_plug_pairs(connection_pairs):
-    u"""批量断开显式 Plug Pair，并返回实际断开数量。"""
+    u"""
+    批量断开显式 Plug Pair，并返回实际断开数量。
+
+    Args:
+        connection_pairs (object):
+            当前方法执行 Maya / Rig 操作时使用的 `connection_pairs` 数据。
+
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
+    """
     connection_pairs = _normalize_connection_pairs(connection_pairs)
     disconnected_count = 0
 

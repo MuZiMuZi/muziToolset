@@ -96,16 +96,30 @@ class Attr(object):
                 Maya Node 名称。
             attr (str | None):
                 可选默认 Attribute 名称。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
+
+        Raises:
+            TypeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
 
         Notes:
             旧代码如果仍使用 ``Attr(object=node)``，这里暂时接受该关键字；
-            正式新代码统一使用 ``node``。
+                    正式新代码统一使用 ``node``。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         legacy_object = kwargs.pop(
             "object",
             None
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if kwargs:
             unknown_keys = []
 
@@ -127,15 +141,27 @@ class Attr(object):
                 u"node 与旧 object 参数不能指向不同节点。"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.node = scene_utils.get_long_name(
             node
         )
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.attr = attr
 
+        # -------------------------------------------------------------------------
+        # Step 05：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.object = self.node
 
     def _get_plug(self, attr=None):
         u"""把短 Attribute 名称整理为当前节点的完整 Plug。"""
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if attr is None:
             attr = self.attr
 
@@ -144,6 +170,9 @@ class Attr(object):
                 u"没有指定需要操作的 Attribute。"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         attr = str(attr).strip()
 
         if not attr:
@@ -151,6 +180,9 @@ class Attr(object):
                 u"没有指定需要操作的 Attribute。"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if "." not in attr:
             return "{}.{}".format(
                 self.node,
@@ -161,6 +193,9 @@ class Attr(object):
             ".",
             1
         )[0]
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         plug_node = scene_utils.get_long_name(
             plug_node
         )
@@ -173,6 +208,9 @@ class Attr(object):
                 )
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return attr
 
     def _get_attr_name(self, attr=None):
@@ -186,7 +224,17 @@ class Attr(object):
         )[1]
 
     def attr_exists(self, attr=None):
-        u"""检查当前节点的 Attribute Plug 是否存在。"""
+        u"""
+        检查当前节点的 Attribute Plug 是否存在。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+
+        Returns:
+            object | bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
         try:
             plug = self._get_plug(
                 attr
@@ -207,11 +255,33 @@ class Attr(object):
             keyable=None,
             channel_box=None
     ):
-        u"""明确修改一个 Attribute 的状态；None 表示不修改对应状态。"""
+        u"""
+        明确修改一个 Attribute 的状态；None 表示不修改对应状态。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            lock (bool):
+                是否 Lock 对应 Maya Channel / Attribute。
+            keyable (bool):
+                对应 Maya Attribute 是否允许 Animator Keyframe。
+            channel_box (object):
+                当前方法执行 Maya / Rig 操作时使用的 `channel_box` 数据。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         plug = self._get_plug(
             attr
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not cmds.objExists(plug):
             cmds.warning(
                 u"【Attr】Attribute 不存在：{}".format(
@@ -226,18 +296,27 @@ class Attr(object):
                 lock=bool(lock)
             )
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if keyable is not None:
             cmds.setAttr(
                 plug,
                 keyable=bool(keyable)
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if channel_box is not None:
             cmds.setAttr(
                 plug,
                 channelBox=bool(channel_box)
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def set_attrs_state(
@@ -247,7 +326,23 @@ class Attr(object):
             keyable=None,
             channel_box=None
     ):
-        u"""批量修改多个 Attribute 的状态。"""
+        u"""
+        批量修改多个 Attribute 的状态。
+
+        Args:
+            attrs (str | list[str]):
+                当前方法按顺序处理的 `attrs` 数据集合。
+            lock (bool):
+                是否 Lock 对应 Maya Channel / Attribute。
+            keyable (bool):
+                对应 Maya Attribute 是否允许 Animator Keyframe。
+            channel_box (object):
+                当前方法执行 Maya / Rig 操作时使用的 `channel_box` 数据。
+
+        Returns:
+            object:
+            完成设置或应用后的目标对象 / 状态结果。
+        """
         result = []
 
         if not attrs:
@@ -278,6 +373,9 @@ class Attr(object):
             extra_kwargs=None
     ):
         u"""组织 maya.cmds.addAttr 所需参数。"""
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         add_kwargs = {
             "longName": attr,
             "multi": bool(multi),
@@ -288,12 +386,18 @@ class Attr(object):
         else:
             add_kwargs["attributeType"] = attr_type
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if default_value is not None and attr_type != "string":
             add_kwargs["defaultValue"] = default_value
 
         if min_value is not None:
             add_kwargs["minValue"] = min_value
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if max_value is not None:
             add_kwargs["maxValue"] = max_value
 
@@ -302,10 +406,16 @@ class Attr(object):
                 enum_name = "off:on"
             add_kwargs["enumName"] = enum_name
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if extra_kwargs:
             for key in extra_kwargs:
                 add_kwargs[key] = extra_kwargs[key]
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return add_kwargs
 
     def _create_attr(
@@ -364,7 +474,46 @@ class Attr(object):
             channel_box=None,
             **kwargs
     ):
-        u"""创建自定义 Attribute；已存在时只返回 Plug，不静默修改原状态。"""
+        u"""
+        创建自定义 Attribute；已存在时只返回 Plug，不静默修改原状态。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            attr_type (str):
+                创建 Maya Attribute 使用的数据类型，例如 double、long、bool、string 或 message。
+            lock (bool):
+                是否 Lock 对应 Maya Channel / Attribute。
+            hide (bool):
+                是否从 Channel Box 隐藏对应 Maya Attribute。
+            default_value (object):
+                新建 Attribute、UI 控件或 Rig 参数使用的默认值。
+            min_value (float | int | None):
+                Attribute / UI 数值允许的最小值；None 表示不设置下限。
+            max_value (float | int | None):
+                Attribute / UI 数值允许的最大值；None 表示不设置上限。
+            enum_name (str):
+                `enum_name` 对应的 Maya 节点或资源名称。
+            multi (bool):
+                创建 Maya Attribute 时是否使用 Multi / Array Attribute。
+            keyable (bool):
+                对应 Maya Attribute 是否允许 Animator Keyframe。
+            channel_box (object):
+                当前方法执行 Maya / Rig 操作时使用的 `channel_box` 数据。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         legacy_type = kwargs.pop(
             "type",
             None
@@ -373,6 +522,9 @@ class Attr(object):
         if legacy_type is not None:
             attr_type = legacy_type
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         attr_name = self._get_attr_name(
             attr
         )
@@ -397,6 +549,9 @@ class Attr(object):
 
             return plug
 
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         plug = self._create_attr(
             attr=attr_name,
             attr_type=attr_type,
@@ -411,6 +566,9 @@ class Attr(object):
         if keyable is None:
             keyable = not bool(hide)
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if channel_box is None:
             channel_box = not bool(hide)
 
@@ -421,6 +579,9 @@ class Attr(object):
             channel_box=channel_box
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return plug
 
     @staticmethod
@@ -469,13 +630,49 @@ class Attr(object):
             keyable=None,
             channel_box=None
     ):
-        u"""创建或写入普通 Attribute Value，并保留未显式要求修改的原状态。"""
+        u"""
+        创建或写入普通 Attribute Value，并保留未显式要求修改的原状态。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            value (float):
+                需要读取、写入或参与计算的数值。
+            attr_type (str):
+                创建 Maya Attribute 使用的数据类型，例如 double、long、bool、string 或 message。
+            min_value (float | int | None):
+                Attribute / UI 数值允许的最小值；None 表示不设置下限。
+            max_value (float | int | None):
+                Attribute / UI 数值允许的最大值；None 表示不设置上限。
+            enum_name (str):
+                `enum_name` 对应的 Maya 节点或资源名称。
+            lock (bool):
+                是否 Lock 对应 Maya Channel / Attribute。
+            keyable (bool):
+                对应 Maya Attribute 是否允许 Animator Keyframe。
+            channel_box (object):
+                当前方法执行 Maya / Rig 操作时使用的 `channel_box` 数据。
+
+        Returns:
+            object | None:
+            完成设置或应用后的目标对象 / 状态结果。
+
+        Raises:
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if value is None:
             return None
 
         attr_name = self._get_attr_name(
             attr
         )
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         plug = self._get_plug(
             attr_name
         )
@@ -509,6 +706,9 @@ class Attr(object):
                 enum_name=enum_name
             )
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if attr_type == "message":
             raise ValueError(
                 u"Message Attribute 不能通过 set_value() 写值，请使用 connect_message()。"
@@ -527,6 +727,9 @@ class Attr(object):
                 lock=False
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             self._set_plug_value(
                 plug,
@@ -547,10 +750,23 @@ class Attr(object):
             channel_box=channel_box
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return plug
 
     def get_value(self, attr=None):
-        u"""读取当前节点 Attribute Value；属性不存在时返回 None。"""
+        u"""
+        读取当前节点 Attribute Value；属性不存在时返回 None。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+
+        Returns:
+            object | None:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+        """
         plug = self._get_plug(
             attr
         )
@@ -568,13 +784,43 @@ class Attr(object):
             keyable=None,
             channel_box=None
     ):
-        u"""批量创建或写入普通 Attribute Value。"""
+        u"""
+        批量创建或写入普通 Attribute Value。
+
+        Args:
+            attrs_dict (dict):
+                Attribute 名称到 Value / Config 数据的批量映射。
+            attr_types (dict | None):
+                Attribute 名称到 Maya Attribute Type 的映射；未指定的属性由调用方默认规则处理。
+            lock (bool):
+                是否 Lock 对应 Maya Channel / Attribute。
+            keyable (bool):
+                对应 Maya Attribute 是否允许 Animator Keyframe。
+            channel_box (object):
+                当前方法执行 Maya / Rig 操作时使用的 `channel_box` 数据。
+
+        Returns:
+            object:
+            完成设置或应用后的目标对象 / 状态结果。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         result = {}
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not attrs_dict:
             return result
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if attr_types is None:
             attr_types = {}
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for attr in attrs_dict:
             result[attr] = self.set_value(
                 attr=attr,
@@ -585,17 +831,45 @@ class Attr(object):
                 channel_box=channel_box
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return result
 
     def add_message_attr(self, attr, multi=False):
-        u"""创建 Message Attribute；已存在时验证类型并直接返回。"""
+        u"""
+        创建 Message Attribute；已存在时验证类型并直接返回。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            multi (bool):
+                创建 Maya Attribute 时是否使用 Multi / Array Attribute。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         attr_name = self._get_attr_name(
             attr
         )
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         plug = self._get_plug(
             attr_name
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if cmds.objExists(plug):
             existing_type = cmds.getAttr(
                 plug,
@@ -610,6 +884,9 @@ class Attr(object):
                 )
             return plug
 
+        # -------------------------------------------------------------------------
+        # Step 04：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.add_attr(
             attr_name,
             attr_type="message",
@@ -625,10 +902,32 @@ class Attr(object):
             force=True,
             clear_empty=False
     ):
-        u"""把 source_node.message 保存到当前节点的 Message Attribute。"""
+        u"""
+        把 source_node.message 保存到当前节点的 Message Attribute。
+
+        Args:
+            source_node (str):
+                作为数据来源、复制来源或驱动来源的 Maya 节点。
+            attr (str):
+                Maya Attribute 名称。
+            force (bool):
+                是否强制覆盖已有连接、状态或结果。
+            clear_empty (bool):
+                批量保存 Message / Config 时，空值是否主动断开旧连接。
+
+        Returns:
+            object | bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         attr_name = self._get_attr_name(
             attr
         )
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         destination_plug = self._get_plug(
             attr_name
         )
@@ -647,6 +946,9 @@ class Attr(object):
             )
             return True
 
+        # -------------------------------------------------------------------------
+        # Step 03：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             source_node = scene_utils.get_long_name(
                 source_node
@@ -662,10 +964,16 @@ class Attr(object):
                 attr_name
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         source_plug = "{}.message".format(
             source_node
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return connection_utils.connect_plugs(
             source_plug,
             destination_plug,
@@ -678,7 +986,21 @@ class Attr(object):
             force=True,
             clear_empty=False
     ):
-        u"""批量保存多个 Maya Node Message 引用。"""
+        u"""
+        批量保存多个 Maya Node Message 引用。
+
+        Args:
+            attrs_dict (dict):
+                Attribute 名称到 Value / Config 数据的批量映射。
+            force (bool):
+                是否强制覆盖已有连接、状态或结果。
+            clear_empty (bool):
+                批量保存 Message / Config 时，空值是否主动断开旧连接。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         result = {}
         if not attrs_dict:
             return result
@@ -694,7 +1016,19 @@ class Attr(object):
         return result
 
     def get_message(self, attr=None, plugs=False):
-        u"""读取 Message Attribute 的第一个来源 Node 或来源 Plug。"""
+        u"""
+        读取 Message Attribute 的第一个来源 Node 或来源 Plug。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            plugs (bool):
+                查询连接时是否返回完整 Plug；False 时通常只返回节点名称。
+
+        Returns:
+            object | None:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+        """
         destination_plug = self._get_plug(
             attr
         )
@@ -736,11 +1070,30 @@ class Attr(object):
             )
 
     def set_attrs_limits(self, attrs_dict):
-        u"""批量设置 Transform Limits。"""
+        u"""
+        批量设置 Transform Limits。
+
+        Args:
+            attrs_dict (dict):
+                Attribute 名称到 Value / Config 数据的批量映射。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self._validate_transform_limits_node()
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not attrs_dict:
             return True
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for attr in attrs_dict:
             attr_name = self._get_limit_attr_name(
                 attr
@@ -788,13 +1141,35 @@ class Attr(object):
                 }
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def get_attrs_limits(self, attrs_list=None):
-        u"""读取 Transform Limits，并返回 OrderedDict。"""
+        u"""
+        读取 Transform Limits，并返回 OrderedDict。
+
+        Args:
+            attrs_list (list):
+                需要批量查询、Lock、Hide 或处理的 Attribute 名称列表。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self._validate_transform_limits_node()
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         result = OrderedDict()
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if attrs_list is None:
             attrs_list = []
             for attr in self.transform_attrs:
@@ -802,6 +1177,9 @@ class Attr(object):
                     attr
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for attr in attrs_list:
             attr_name = self._get_limit_attr_name(
                 attr
@@ -832,11 +1210,28 @@ class Attr(object):
                 ),
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return result
 
     # Legacy Compatibility -----------------------------------------------------
     def lock_and_hide_attr(self, attr, lock=True, hide=True):
-        u"""旧 API：请新代码改用 set_attr_state()。"""
+        u"""
+        旧 API：请新代码改用 set_attr_state()。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            lock (bool):
+                是否 Lock 对应 Maya Channel / Attribute。
+            hide (bool):
+                是否从 Channel Box 隐藏对应 Maya Attribute。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         return self.set_attr_state(
             attr,
             lock=lock,
@@ -845,7 +1240,21 @@ class Attr(object):
         )
 
     def lock_and_hide_attrs(self, attrs_list, lock=True, hide=True):
-        u"""旧 API：请新代码改用 set_attrs_state()。"""
+        u"""
+        旧 API：请新代码改用 set_attrs_state()。
+
+        Args:
+            attrs_list (list):
+                需要批量查询、Lock、Hide 或处理的 Attribute 名称列表。
+            lock (bool):
+                是否 Lock 对应 Maya Channel / Attribute。
+            hide (bool):
+                是否从 Channel Box 隐藏对应 Maya Attribute。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         return self.set_attrs_state(
             attrs_list,
             lock=lock,
@@ -864,7 +1273,34 @@ class Attr(object):
             max_value=None,
             enum_name=None
     ):
-        u"""旧 API：请新代码改用 set_value()。"""
+        u"""
+        旧 API：请新代码改用 set_value()。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            value (float):
+                需要读取、写入或参与计算的数值。
+            attr_type (str):
+                创建 Maya Attribute 使用的数据类型，例如 double、long、bool、string 或 message。
+            lock (bool):
+                是否 Lock 对应 Maya Channel / Attribute。
+            hide (bool):
+                是否从 Channel Box 隐藏对应 Maya Attribute。
+            min_value (float | int | None):
+                Attribute / UI 数值允许的最小值；None 表示不设置下限。
+            max_value (float | int | None):
+                Attribute / UI 数值允许的最大值；None 表示不设置上限。
+            enum_name (str):
+                `enum_name` 对应的 Maya 节点或资源名称。
+
+        Returns:
+            object:
+            完成设置或应用后的目标对象 / 状态结果。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.set_value(
             attr=attr,
             value=value,
@@ -878,7 +1314,17 @@ class Attr(object):
         )
 
     def get_attr_value(self, attr=None):
-        u"""旧 API：请新代码改用 get_value()。"""
+        u"""
+        旧 API：请新代码改用 get_value()。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+        """
         return self.get_value(
             attr
         )
@@ -890,7 +1336,23 @@ class Attr(object):
             lock=False,
             hide=False
     ):
-        u"""旧 API：请新代码改用 set_values()。"""
+        u"""
+        旧 API：请新代码改用 set_values()。
+
+        Args:
+            attrs_dict (dict):
+                Attribute 名称到 Value / Config 数据的批量映射。
+            attr_types (dict | None):
+                Attribute 名称到 Maya Attribute Type 的映射；未指定的属性由调用方默认规则处理。
+            lock (bool):
+                是否 Lock 对应 Maya Channel / Attribute。
+            hide (bool):
+                是否从 Channel Box 隐藏对应 Maya Attribute。
+
+        Returns:
+            object:
+            完成设置或应用后的目标对象 / 状态结果。
+        """
         return self.set_values(
             attrs_dict=attrs_dict,
             attr_types=attr_types,
@@ -906,7 +1368,23 @@ class Attr(object):
             lock=True,
             hide=True
     ):
-        u"""旧结构化 String API；新写入增加类型前缀，避免字符串被误解析成其它 Python 类型。"""
+        u"""
+        旧结构化 String API；新写入增加类型前缀，避免字符串被误解析成其它 Python 类型。
+
+        Args:
+            information (dict | list | object):
+                需要写入、恢复或应用到 Maya Attribute 的结构化信息。
+            attr (str):
+                Maya Attribute 名称。
+            lock (bool):
+                是否 Lock 对应 Maya Channel / Attribute。
+            hide (bool):
+                是否从 Channel Box 隐藏对应 Maya Attribute。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         if isinstance(information, str):
             serialized_value = self._legacy_string_prefix + information
         else:
@@ -924,18 +1402,40 @@ class Attr(object):
         )
 
     def get_string_info(self, attr=None):
-        u"""旧结构化 String API；新代码应使用普通 Value 或 Config 语义。"""
+        u"""
+        旧结构化 String API；新代码应使用普通 Value 或 Config 语义。
+
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+
+        Returns:
+            None | object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         string_information = self.get_value(
             attr
         )
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if string_information is None or string_information == "":
             return None
         if not isinstance(string_information, str):
             return string_information
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if string_information.startswith(self._legacy_string_prefix):
             return string_information[len(self._legacy_string_prefix):]
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if string_information.startswith(self._legacy_repr_prefix):
             serialized_value = string_information[len(self._legacy_repr_prefix):]
             try:
@@ -945,6 +1445,9 @@ class Attr(object):
             except (ValueError, SyntaxError, TypeError):
                 return serialized_value
 
+        # -------------------------------------------------------------------------
+        # Step 05：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             return literal_eval(
                 string_information

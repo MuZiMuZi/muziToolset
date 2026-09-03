@@ -345,7 +345,7 @@ def cleanup_second_layer_core_duplicates():
         sanitized=True
     )
     cleanup_short_name_wrapper(
-        "core/scene_clean_utils.py",
+        "core/scene_utils.py",
         sanitized=False
     )
     cleanup_short_name_wrapper(

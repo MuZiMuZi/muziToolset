@@ -58,6 +58,18 @@ class FaceGuide(face_base.FaceBase):
         "rt",
     ]
 
+    cheek_regions = [
+        "cheekbone",
+        "nasolabial",
+        "cheek",
+    ]
+
+    cheek_region_counts = {
+        "cheekbone": 3,
+        "nasolabial": 3,
+        "cheek": 2,
+    }
+
     zero_attributes = [
         "translateX",
         "translateY",
@@ -95,7 +107,9 @@ class FaceGuide(face_base.FaceBase):
     ]
 
     def __init__(self):
-        u"""初始化 Face Guide Step。"""
+        u"""
+        初始化 Face Guide Step。
+        """
         super(FaceGuide, self).__init__()
 
         self.step_value = 2
@@ -114,7 +128,17 @@ class FaceGuide(face_base.FaceBase):
     # =========================================================================
 
     def collect_inputs(self):
-        u"""检查 Step 01 和当前 Guide 是否可以正式提交。"""
+        u"""
+        检查 Step 01 和当前 Guide 是否可以正式提交。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         self.validate_setup()
         self.refresh_guide_handles()
 
@@ -123,10 +147,21 @@ class FaceGuide(face_base.FaceBase):
                 u"Face Guide 尚未完整加载，请重新导入模板后再继续。"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 02：升级旧 Guide 场景时补齐正式 Cheek Guide Schema
+        # -------------------------------------------------------------------------
+        self.ensure_cheek_guides()
+
         return True
 
     def prepare_data(self):
-        u"""确保 Face Hierarchy 和 Config 可以保存 Step 02。"""
+        u"""
+        确保 Face Hierarchy 和 Config 可以保存 Step 02。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
         self.ensure_hierarchy()
 
         self.step_config_attr_names[2] = list(
@@ -137,7 +172,17 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def process_data(self):
-        u"""执行完整 Guide Validation。"""
+        u"""
+        执行完整 Guide Validation。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         self.validation_result = self.validate_guides()
 
         if self.validation_result["valid"]:
@@ -155,7 +200,13 @@ class FaceGuide(face_base.FaceBase):
         )
 
     def finalize_step(self):
-        u"""保存 Guide，并把 Step 02 正式标记为完成。"""
+        u"""
+        保存 Guide，并把 Step 02 正式标记为完成。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
         self.save_guide_config()
 
         self.set_step_completed(
@@ -173,25 +224,60 @@ class FaceGuide(face_base.FaceBase):
     # =========================================================================
 
     def validate_setup(self):
-        u"""检查 Step 02 所依赖的 Step 01 数据。"""
+        u"""
+        检查 Step 02 所依赖的 Step 01 数据。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         return self.validate_setup_config(
             require_mouth_jnt_number=True
         )
 
     def get_guide_template_path(self):
-        u"""返回 Face Guide Template 路径。"""
+        u"""
+        返回 Face Guide Template 路径。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+        """
         return os.path.normpath(
             self.guide_template_path
         )
 
     def validate_guide_template_file(self):
-        u"""检查 Face Guide Template 文件是否存在。"""
+        u"""
+        检查 Face Guide Template 文件是否存在。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         return scene_utils.validate_scene_file(
             self.get_guide_template_path()
         )
 
     def get_template_locator_names(self, refresh=False):
-        u"""从 face_guide.ma 读取全部标准 Locator 名称。"""
+        u"""
+        从 face_guide.ma 读取全部标准 Locator 名称。
+
+        Args:
+            refresh (bool):
+                读取数据前是否先从 Maya Scene / Config 重新刷新缓存。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.template_locator_names is not None:
             if not refresh:
                 return list(
@@ -200,6 +286,9 @@ class FaceGuide(face_base.FaceBase):
 
         template_path = self.validate_guide_template_file()
 
+        # -------------------------------------------------------------------------
+        # Step 02：在受控上下文中执行当前阶段操作
+        # -------------------------------------------------------------------------
         with open(template_path, "rb") as file_object:
             file_data = file_object.read()
 
@@ -209,6 +298,9 @@ class FaceGuide(face_base.FaceBase):
         matches = guide_locator_pattern.findall(
             template_text
         )
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         locator_names = []
 
         for locator_name in matches:
@@ -219,6 +311,22 @@ class FaceGuide(face_base.FaceBase):
                 locator_name
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：把代码生成的 Cheek Locator 作为正式 Template Schema 的一部分
+        # -------------------------------------------------------------------------
+        generated_locator_names = self.get_generated_template_locator_names()
+
+        for locator_name in generated_locator_names:
+            if locator_name in locator_names:
+                continue
+
+            locator_names.append(
+                locator_name
+            )
+
+        # -------------------------------------------------------------------------
+        # Step 05：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not locator_names:
             raise RuntimeError(
                 u"Face Guide 模板中没有读取到标准 Locator: {}".format(
@@ -227,12 +335,21 @@ class FaceGuide(face_base.FaceBase):
             )
 
         self.template_locator_names = locator_names
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return list(
             locator_names
         )
 
     def get_temporary_guide_name(self):
-        u"""返回一个未被占用的临时 Guide Container 名称。"""
+        u"""
+        返回一个未被占用的临时 Guide Container 名称。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+        """
         return self.create_unique_name(
             type="grp",
             side="md",
@@ -241,18 +358,41 @@ class FaceGuide(face_base.FaceBase):
         )
 
     def get_imported_template_root(self, imported_nodes):
-        u"""从本次导入的新节点中找到唯一 Face Guide Root。"""
+        u"""
+        从本次导入的新节点中找到唯一 Face Guide Root。
+
+        Args:
+            imported_nodes (list[str]):
+                本次导入 face_guide.ma 后 Maya 返回的新节点列表。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         imported_transforms = cmds.ls(
             imported_nodes,
             type="transform",
             long=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if imported_transforms is None:
             imported_transforms = []
 
         candidates = []
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for node in imported_transforms:
             parent = hierarchy_utils.get_parent(
                 node
@@ -272,6 +412,9 @@ class FaceGuide(face_base.FaceBase):
                 node
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if len(candidates) != 1:
             raise RuntimeError(
                 u"无法唯一识别 Face Guide Template Root，候选数量: {}".format(
@@ -279,10 +422,19 @@ class FaceGuide(face_base.FaceBase):
                 )
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return candidates[0]
 
     def clear_guide_config(self):
-        u"""清除 Config 中保存的 Guide Message。"""
+        u"""
+        清除 Config 中保存的 Guide Message。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
         if not self.config_node_exists():
             return False
 
@@ -297,7 +449,13 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def remove_guide_content(self):
-        u"""删除 Face Guide Root 下的模板内容，但保留 Root Container。"""
+        u"""
+        删除 Face Guide Root 下的模板内容，但保留 Root Container。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
         if not cmds.objExists(self.face_guide_grp):
             self.ensure_hierarchy()
 
@@ -319,19 +477,49 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def build_guide(self):
-        u"""导入或复用可编辑的 Face Guide Template。"""
+        u"""
+        导入或复用可编辑的 Face Guide Template。
+
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
+
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.validate_setup()
         self.ensure_hierarchy()
         self.ensure_config_node()
 
         if self.guide_exists():
+            cheek_guide_result = self.ensure_cheek_guides()
+
+            if cheek_guide_result["created_count"] > 0:
+                self.apply_mirror(
+                    source_side="lf",
+                    target_side="rt"
+                )
+                self.save_guide_config()
+                self.set_step_completed(
+                    completed=False
+                )
+                self.invalidate_later_steps()
+
             return {
                 "imported": False,
                 "guide_root": self.guide_root,
                 "guide_move_ctrl": self.guide_move_ctrl,
                 "new_nodes": [],
+                "cheek_guide": cheek_guide_result,
             }
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         guide_container = scene_utils.get_long_name(
             self.face_guide_grp
         )
@@ -349,6 +537,9 @@ class FaceGuide(face_base.FaceBase):
 
         template_path = self.validate_guide_template_file()
         temporary_name = self.get_temporary_guide_name()
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         temporary_container = rename_utils.rename_node(
             guide_container,
             temporary_name
@@ -403,6 +594,11 @@ class FaceGuide(face_base.FaceBase):
                 )
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：在正式模板上补齐程序化 Cheek Guide，再统一执行左右 Mirror
+        # -------------------------------------------------------------------------
+        cheek_guide_result = self.ensure_cheek_guides()
+
         self.apply_mirror(
             source_side="lf",
             target_side="rt"
@@ -414,15 +610,25 @@ class FaceGuide(face_base.FaceBase):
         )
         self.invalidate_later_steps()
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return {
             "imported": True,
             "guide_root": self.guide_root,
             "guide_move_ctrl": self.guide_move_ctrl,
             "new_nodes": imported_nodes,
+            "cheek_guide": cheek_guide_result,
         }
 
     def capture_guide_state(self):
-        u"""记录当前仍存在的 Move Ctrl 和 Locator 世界矩阵。"""
+        u"""
+        记录当前仍存在的 Move Ctrl 和 Locator 世界矩阵。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         state = {
             "move_ctrl_matrix": None,
             "locators": {},
@@ -453,7 +659,22 @@ class FaceGuide(face_base.FaceBase):
             node,
             matrix_values
     ):
-        u"""临时解锁 Transform Channel，写入 World Matrix 后恢复 Lock。"""
+        u"""
+        临时解锁 Transform Channel，写入 World Matrix 后恢复 Lock。
+
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            matrix_values (object):
+                当前方法执行 Maya / Rig 操作时使用的 `matrix_values` 数据。
+
+        Returns:
+            object:
+            完成设置或应用后的目标对象 / 状态结果。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         transform_attributes = [
             "translateX",
             "translateY",
@@ -465,8 +686,14 @@ class FaceGuide(face_base.FaceBase):
             "scaleY",
             "scaleZ",
         ]
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         lock_states = {}
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for attribute in transform_attributes:
             plug = "{}.{}".format(
                 node,
@@ -489,6 +716,9 @@ class FaceGuide(face_base.FaceBase):
                     lock=False
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             transform_utils.set_world_matrix(
                 node,
@@ -501,17 +731,39 @@ class FaceGuide(face_base.FaceBase):
                     lock=lock_states[attribute]
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return node
 
     def restore_guide_state(self, state):
-        u"""恢复重新导入前仍存在的 Locator 位置。"""
+        u"""
+        恢复重新导入前仍存在的 Locator 位置。
+
+        Args:
+            state (object):
+                当前方法执行 Maya / Rig 操作时使用的 `state` 数据。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         restored_locators = []
+        # -------------------------------------------------------------------------
+        # Step 02：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self.refresh_guide_handles()
 
         move_ctrl_matrix = state.get(
             "move_ctrl_matrix"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if move_ctrl_matrix:
             if self.guide_move_ctrl:
                 self.set_world_matrix_preserve_lock(
@@ -524,6 +776,9 @@ class FaceGuide(face_base.FaceBase):
             {}
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for short_name in locator_states:
             locator = self.get_guide_node(
                 short_name,
@@ -541,11 +796,20 @@ class FaceGuide(face_base.FaceBase):
                 locator
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return restored_locators
 
     @scene_utils.undo_chunk
     def reimport_guide(self):
-        u"""重新导入完整模板，同时保留当前仍存在 Locator 的位置。"""
+        u"""
+        重新导入完整模板，同时保留当前仍存在 Locator 的位置。
+
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
+        """
         self.validate_setup()
 
         state = self.capture_guide_state()
@@ -574,7 +838,17 @@ class FaceGuide(face_base.FaceBase):
 
     @staticmethod
     def get_locator_shapes(locator):
-        u"""获取 Locator Transform 下全部有效 Locator Shape。"""
+        u"""
+        获取 Locator Transform 下全部有效 Locator Shape。
+
+        Args:
+            locator (str):
+                Face Guide 系统中的 Locator Transform。
+
+        Returns:
+            object | list:
+            按当前 API 约定顺序返回的结果列表。
+        """
         if not locator:
             return []
 
@@ -600,12 +874,32 @@ class FaceGuide(face_base.FaceBase):
             attribute,
             value
     ):
-        u"""设置 Attribute，并恢复原来的 Lock 状态。"""
+        u"""
+        设置 Attribute，并恢复原来的 Lock 状态。
+
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            attribute (str):
+                Maya Attribute 或完整 Plug 名称。
+            value (float):
+                需要读取、写入或参与计算的数值。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         plug = "{}.{}".format(
             node,
             attribute
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not cmds.objExists(plug):
             return False
 
@@ -614,12 +908,18 @@ class FaceGuide(face_base.FaceBase):
             lock=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if was_locked:
             cmds.setAttr(
                 plug,
                 lock=False
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             cmds.setAttr(
                 plug,
@@ -632,10 +932,19 @@ class FaceGuide(face_base.FaceBase):
                     lock=True
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def refresh_guide_handles(self):
-        u"""刷新当前场景中的 Guide Root 和 Face Move Ctrl。"""
+        u"""
+        刷新当前场景中的 Guide Root 和 Face Move Ctrl。
+
+        Returns:
+            object | bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
         self.guide_root = None
         self.guide_move_ctrl = None
 
@@ -653,7 +962,13 @@ class FaceGuide(face_base.FaceBase):
         )
 
     def guide_exists(self):
-        u"""检查正式 Guide 内容是否已经加载。"""
+        u"""
+        检查正式 Guide 内容是否已经加载。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
         self.refresh_guide_handles()
 
         if not self.guide_root:
@@ -669,7 +984,26 @@ class FaceGuide(face_base.FaceBase):
             short_name,
             required=False
     ):
-        u"""在正式 Face Guide 层级中按 Short Name 查找 Transform。"""
+        u"""
+        在正式 Face Guide 层级中按 Short Name 查找 Transform。
+
+        Args:
+            short_name (str):
+                `short_name` 对应的 Maya 节点或资源名称。
+            required (bool):
+                目标不存在或数据缺失时是否直接抛出异常。
+
+        Returns:
+            None | object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not short_name:
             if required:
                 raise RuntimeError(
@@ -686,6 +1020,9 @@ class FaceGuide(face_base.FaceBase):
                 )
             return None
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         candidates = []
         root_short_name = rename_utils.get_short_name(
             self.face_guide_grp
@@ -696,6 +1033,9 @@ class FaceGuide(face_base.FaceBase):
                 self.face_guide_grp
             )
 
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         descendants = hierarchy_utils.get_descendants(
             self.face_guide_grp,
             node_type="transform",
@@ -715,6 +1055,9 @@ class FaceGuide(face_base.FaceBase):
         if len(candidates) == 1:
             return candidates[0]
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if len(candidates) > 1:
             raise RuntimeError(
                 u"Face Guide 中存在多个同名节点: {}".format(
@@ -729,13 +1072,28 @@ class FaceGuide(face_base.FaceBase):
                 )
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return None
 
     def get_guide_locators(self):
-        u"""获取正式 Guide 层级中的全部 Locator Transform。"""
+        u"""
+        获取正式 Guide 层级中的全部 Locator Transform。
+
+        Returns:
+            object | list:
+            按当前 API 约定顺序返回的结果列表。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not cmds.objExists(self.face_guide_grp):
             return []
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         descendants = hierarchy_utils.get_descendants(
             self.face_guide_grp,
             node_type="transform",
@@ -743,6 +1101,9 @@ class FaceGuide(face_base.FaceBase):
         )
         locators = []
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for node in descendants:
             short_name = rename_utils.get_short_name(
                 node
@@ -761,9 +1122,15 @@ class FaceGuide(face_base.FaceBase):
                 node
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         locators.sort(
             key=rename_utils.get_short_name
         )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return locators
 
     def get_guides_from_names(
@@ -771,7 +1138,19 @@ class FaceGuide(face_base.FaceBase):
             guide_names,
             required=True
     ):
-        u"""按输入名称顺序解析 Guide Transform。"""
+        u"""
+        按输入名称顺序解析 Guide Transform。
+
+        Args:
+            guide_names (object):
+                当前方法执行 Maya / Rig 操作时使用的 `guide_names` 数据。
+            required (bool):
+                目标不存在或数据缺失时是否直接抛出异常。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+        """
         guides = []
 
         for guide_name in guide_names:
@@ -793,7 +1172,30 @@ class FaceGuide(face_base.FaceBase):
             side=None,
             required=False
     ):
-        u"""按标准名称中的 Token 获取某个 Face 部位 Guide。"""
+        u"""
+        按标准名称中的 Token 获取某个 Face 部位 Guide。
+
+        Args:
+            part (str):
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            required (bool):
+                目标不存在或数据缺失时是否直接抛出异常。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+        Raises:
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not part:
             raise ValueError(
                 u"part 不能为空。"
@@ -802,6 +1204,9 @@ class FaceGuide(face_base.FaceBase):
         part_token = "_{}_".format(
             part
         )
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         side_token = None
 
         if side is not None:
@@ -810,6 +1215,9 @@ class FaceGuide(face_base.FaceBase):
             )
 
         guides = []
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         locators = self.get_guide_locators()
 
         for locator in locators:
@@ -828,6 +1236,9 @@ class FaceGuide(face_base.FaceBase):
                 locator
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         guides.sort(
             key=rename_utils.get_short_name
         )
@@ -840,10 +1251,23 @@ class FaceGuide(face_base.FaceBase):
                     )
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return guides
 
     def get_guide_positions(self, guides):
-        u"""按输入顺序返回多个 Guide 的世界坐标。"""
+        u"""
+        按输入顺序返回多个 Guide 的世界坐标。
+
+        Args:
+            guides (str | list[str]):
+                需要按顺序查询或传递给 Builder 的 Guide Transform / Locator 列表。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+        """
         positions = []
 
         for guide in guides:
@@ -874,8 +1298,457 @@ class FaceGuide(face_base.FaceBase):
             index=index
         )
 
+
+    def get_generated_template_locator_names(self):
+        u"""
+        返回由 FaceGuide 代码生成、但属于正式 Template Schema 的 Locator 名称。
+
+        当前只包含 Cheek：每侧 3 个 CheekBone、3 个 Nasolabial、2 个 Cheek。
+
+        Returns:
+            list[str]:
+                固定顺序的程序化 Face Guide Locator 名称。
+        """
+        locator_names = []
+
+        # -------------------------------------------------------------------------
+        # Step 01：按 Side / Region / Index 创建稳定的正式 Guide 名称
+        # -------------------------------------------------------------------------
+        for side in self.mirror_sides:
+            for region in self.cheek_regions:
+                region_count = self.cheek_region_counts[region]
+                index = 1
+
+                while index <= region_count:
+                    locator_names.append(
+                        self._create_guide_name(
+                            side,
+                            region,
+                            index
+                        )
+                    )
+                    index += 1
+
+        return locator_names
+
+    @staticmethod
+    def _blend_position(
+            start_position,
+            end_position,
+            weight
+    ):
+        u"""按线性权重在两个世界坐标之间插值。"""
+        weight = float(weight)
+        inverse_weight = 1.0 - weight
+
+        return [
+            start_position[0] * inverse_weight + end_position[0] * weight,
+            start_position[1] * inverse_weight + end_position[1] * weight,
+            start_position[2] * inverse_weight + end_position[2] * weight,
+        ]
+
+    def _get_cheek_initial_positions(self):
+        u"""根据当前 Eye / Lid / Nose / Mouth Landmark 计算 LF Cheek 初始位置。"""
+        # -------------------------------------------------------------------------
+        # Step 01：读取当前模板已有的左侧 Landmark
+        # -------------------------------------------------------------------------
+        eye_ball = self.get_guide_node(
+            self._create_guide_name("lf", "eye_ball", 1),
+            required=True
+        )
+        outer_lid = self.get_guide_node(
+            self._create_guide_name("lf", "outer_lid", 1),
+            required=True
+        )
+        nose_side = self.get_guide_node(
+            self._create_guide_name("lf", "nose_side", 1),
+            required=True
+        )
+        mouth_corner = self.get_guide_node(
+            self._create_guide_name("lf", "mouth_corner", 1),
+            required=True
+        )
+
+        eye_position = transform_utils.get_world_translation(
+            eye_ball
+        )
+        outer_lid_position = transform_utils.get_world_translation(
+            outer_lid
+        )
+        nose_position = transform_utils.get_world_translation(
+            nose_side
+        )
+        mouth_position = transform_utils.get_world_translation(
+            mouth_corner
+        )
+
+        # -------------------------------------------------------------------------
+        # Step 02：沿眼下 / 颧骨区域生成三个 CheekBone 初始位置
+        # -------------------------------------------------------------------------
+        cheekbone_positions = [
+            self._blend_position(
+                nose_position,
+                outer_lid_position,
+                0.55
+            ),
+            self._blend_position(
+                eye_position,
+                mouth_position,
+                0.32
+            ),
+            self._blend_position(
+                outer_lid_position,
+                mouth_position,
+                0.48
+            ),
+        ]
+
+        # -------------------------------------------------------------------------
+        # Step 03：沿 Nose Side 到 Mouth Corner 生成三段 Nasolabial 初始位置
+        # -------------------------------------------------------------------------
+        nasolabial_positions = [
+            self._blend_position(
+                nose_position,
+                mouth_position,
+                0.25
+            ),
+            self._blend_position(
+                nose_position,
+                mouth_position,
+                0.50
+            ),
+            self._blend_position(
+                nose_position,
+                mouth_position,
+                0.75
+            ),
+        ]
+
+        # -------------------------------------------------------------------------
+        # Step 04：在 CheekBone 与 Nasolabial 之间生成两个主 Cheek 初始位置
+        # -------------------------------------------------------------------------
+        cheek_positions = [
+            self._blend_position(
+                cheekbone_positions[1],
+                nasolabial_positions[1],
+                0.50
+            ),
+            self._blend_position(
+                cheekbone_positions[2],
+                nasolabial_positions[2],
+                0.50
+            ),
+        ]
+
+        return {
+            "cheekbone": cheekbone_positions,
+            "nasolabial": nasolabial_positions,
+            "cheek": cheek_positions,
+        }
+
+    def _ensure_cheek_guide_group(self):
+        u"""创建或返回正式 Cheek Guide Group。"""
+        group_name = self.create_name(
+            type="grp",
+            side="md",
+            part="cheek",
+            function="guide",
+            index=1
+        )
+        group_node = self.get_guide_node(
+            group_name,
+            required=False
+        )
+
+        if group_node:
+            return group_node
+
+        self.refresh_guide_handles()
+
+        if not self.guide_move_ctrl:
+            raise RuntimeError(
+                u"创建 Cheek Guide 前必须存在 Face Guide Move Ctrl。"
+            )
+
+        return scene_utils.create_node(
+            "transform",
+            ":{}".format(group_name),
+            parent=self.guide_move_ctrl
+        )
+
+    def _ensure_cheek_locator(
+            self,
+            side,
+            region,
+            index,
+            parent_group,
+            world_position=None
+    ):
+        u"""创建或返回一个 Cheek Zero + Locator + LocatorShape。"""
+        zero_name = self.create_name(
+            type="zero",
+            side=side,
+            part=region,
+            function="guide",
+            index=index
+        )
+        locator_name = self._create_guide_name(
+            side,
+            region,
+            index
+        )
+
+        zero_node = self.get_guide_node(
+            zero_name,
+            required=False
+        )
+        locator_node = self.get_guide_node(
+            locator_name,
+            required=False
+        )
+        created_zero = False
+        created_locator = False
+
+        # -------------------------------------------------------------------------
+        # Step 01：只创建缺失 Zero，并在首次创建时写入初始化世界位置
+        # -------------------------------------------------------------------------
+        if not zero_node:
+            zero_node = scene_utils.create_node(
+                "transform",
+                ":{}".format(zero_name),
+                parent=parent_group
+            )
+            created_zero = True
+
+            if world_position is not None:
+                transform_utils.set_world_translation(
+                    zero_node,
+                    world_position
+                )
+
+        # -------------------------------------------------------------------------
+        # Step 02：创建可编辑 Locator Transform 和 Locator Shape
+        # -------------------------------------------------------------------------
+        if not locator_node:
+            locator_node = scene_utils.create_node(
+                "transform",
+                ":{}".format(locator_name),
+                parent=zero_node
+            )
+            locator_shape = cmds.createNode(
+                "locator",
+                name=":{}Shape".format(locator_name),
+                parent=locator_node
+            )
+            cmds.setAttr(
+                locator_shape + ".overrideEnabled",
+                1
+            )
+            cmds.setAttr(
+                locator_shape + ".overrideColor",
+                18
+            )
+            cmds.setAttr(
+                locator_shape + ".localScaleX",
+                2.0
+            )
+            cmds.setAttr(
+                locator_shape + ".localScaleY",
+                2.0
+            )
+            cmds.setAttr(
+                locator_shape + ".localScaleZ",
+                2.0
+            )
+            created_locator = True
+
+        # -------------------------------------------------------------------------
+        # Step 03：Zero 只保存初始化空间，Animator / Rigger 只编辑 Locator
+        # -------------------------------------------------------------------------
+        for attribute in self.zero_attributes:
+            plug = "{}.{}".format(
+                zero_node,
+                attribute
+            )
+
+            if not cmds.objExists(plug):
+                continue
+
+            cmds.setAttr(
+                plug,
+                lock=True
+            )
+
+        return {
+            "zero": zero_node,
+            "locator": locator_node,
+            "created_zero": created_zero,
+            "created_locator": created_locator,
+        }
+
+    def _initialize_mirrored_cheek_zero(
+            self,
+            source_zero,
+            target_zero
+    ):
+        u"""按当前 Face Mirror 规则初始化一个新建的 RT Cheek Zero。"""
+        # -------------------------------------------------------------------------
+        # Step 01：根级 Cheek Zero 在共同 Parent 下沿 X 轴镜像
+        # -------------------------------------------------------------------------
+        self.set_attr_preserve_lock(
+            target_zero,
+            "translateX",
+            -cmds.getAttr(source_zero + ".translateX")
+        )
+        self.set_attr_preserve_lock(
+            target_zero,
+            "translateY",
+            cmds.getAttr(source_zero + ".translateY")
+        )
+        self.set_attr_preserve_lock(
+            target_zero,
+            "translateZ",
+            cmds.getAttr(source_zero + ".translateZ")
+        )
+        self.set_attr_preserve_lock(
+            target_zero,
+            "scaleX",
+            -cmds.getAttr(source_zero + ".scaleX")
+        )
+        return True
+
+    def ensure_cheek_guides(self):
+        u"""
+        确保正式 Face Guide 中存在完整 Cheek Guide Schema。
+
+        Cheek 初始位置由当前 Eye / Outer Lid / Nose Side / Mouth Corner 自动推导，
+        因此不会依赖固定世界坐标。已经存在的 Cheek Guide 不会被覆盖。
+
+        Returns:
+            dict:
+                Cheek Guide Group、创建数量和固定 Region Count。
+
+        Raises:
+            RuntimeError:
+                Face Guide 或初始化 Landmark 不完整时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：确认 Guide 已加载，并准备 Cheek Group / 初始位置
+        # -------------------------------------------------------------------------
+        if not self.guide_exists():
+            raise RuntimeError(
+                u"创建 Cheek Guide 前必须先加载 Face Guide。"
+            )
+
+        cheek_group = self._ensure_cheek_guide_group()
+        initial_positions = self._get_cheek_initial_positions()
+        created_count = 0
+
+        # -------------------------------------------------------------------------
+        # Step 02：逐 Region 创建 LF Source，再创建同名 RT Mirror Pair
+        # -------------------------------------------------------------------------
+        for region in self.cheek_regions:
+            region_count = self.cheek_region_counts[region]
+            index = 1
+
+            while index <= region_count:
+                lf_result = self._ensure_cheek_locator(
+                    side="lf",
+                    region=region,
+                    index=index,
+                    parent_group=cheek_group,
+                    world_position=initial_positions[region][index - 1]
+                )
+                rt_result = self._ensure_cheek_locator(
+                    side="rt",
+                    region=region,
+                    index=index,
+                    parent_group=cheek_group,
+                    world_position=None
+                )
+
+                if lf_result["created_locator"]:
+                    created_count += 1
+
+                if rt_result["created_locator"]:
+                    created_count += 1
+
+                if rt_result["created_zero"]:
+                    self._initialize_mirrored_cheek_zero(
+                        lf_result["zero"],
+                        rt_result["zero"]
+                    )
+
+                index += 1
+
+        # -------------------------------------------------------------------------
+        # Step 03：返回稳定 Schema，供 Build / Reimport / Runtime Test 复用
+        # -------------------------------------------------------------------------
+        return {
+            "group": cheek_group,
+            "created_count": created_count,
+            "region_counts": dict(self.cheek_region_counts),
+        }
+
+    def get_cheek_guides(self, required=True):
+        u"""
+        返回左右 CheekBone / Nasolabial / Cheek 的固定有序 Guide。
+
+        Args:
+            required (bool):
+                缺少任意正式 Cheek Guide 时是否直接抛出异常。
+
+        Returns:
+            dict:
+                ``{side: {region: [guide, ...]}}`` 固定结构。
+        """
+        result = {}
+
+        # -------------------------------------------------------------------------
+        # Step 01：按正式 Schema 顺序解析每侧每个 Region 的 Guide
+        # -------------------------------------------------------------------------
+        for side in self.mirror_sides:
+            region_dict = {}
+
+            for region in self.cheek_regions:
+                guide_names = []
+                region_count = self.cheek_region_counts[region]
+                index = 1
+
+                while index <= region_count:
+                    guide_names.append(
+                        self._create_guide_name(
+                            side,
+                            region,
+                            index
+                        )
+                    )
+                    index += 1
+
+                region_dict[region] = self.get_guides_from_names(
+                    guide_names,
+                    required=required
+                )
+
+            result[side] = region_dict
+
+        return result
+
     def get_lip_guides(self, required=True):
-        u"""返回上下嘴唇和嘴角的固定有序 Guide。"""
+        u"""
+        返回上下嘴唇和嘴角的固定有序 Guide。
+
+        Args:
+            required (bool):
+                目标不存在或数据缺失时是否直接抛出异常。
+
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         upper_names = [
             self._create_guide_name("rt", "mouth_corner", 1),
             self._create_guide_name("rt", "upper_lip", 2),
@@ -885,6 +1758,9 @@ class FaceGuide(face_base.FaceBase):
             self._create_guide_name("lf", "upper_lip", 2),
             self._create_guide_name("lf", "mouth_corner", 1),
         ]
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         lower_names = [
             self._create_guide_name("rt", "mouth_corner", 1),
             self._create_guide_name("rt", "lower_lip", 2),
@@ -894,11 +1770,17 @@ class FaceGuide(face_base.FaceBase):
             self._create_guide_name("lf", "lower_lip", 2),
             self._create_guide_name("lf", "mouth_corner", 1),
         ]
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         corner_names = [
             self._create_guide_name("rt", "mouth_corner", 1),
             self._create_guide_name("lf", "mouth_corner", 1),
         ]
 
+        # -------------------------------------------------------------------------
+        # Step 04：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return {
             "upper": self.get_guides_from_names(
                 upper_names,
@@ -919,12 +1801,34 @@ class FaceGuide(face_base.FaceBase):
             side,
             required=True
     ):
-        u"""返回某一侧 Upper / Lower Eyelid 的固定有序 Guide。"""
+        u"""
+        返回某一侧 Upper / Lower Eyelid 的固定有序 Guide。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            required (bool):
+                目标不存在或数据缺失时是否直接抛出异常。
+
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
+
+        Raises:
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if side not in self.mirror_sides:
             raise ValueError(
                 u"Eyelid side 必须是 lf 或 rt。"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         inner_name = self._create_guide_name(
             side,
             "inner_lid",
@@ -935,6 +1839,9 @@ class FaceGuide(face_base.FaceBase):
             "outer_lid",
             1
         )
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         upper_names = [
             inner_name,
             self._create_guide_name(side, "upper_lid", 1),
@@ -942,6 +1849,9 @@ class FaceGuide(face_base.FaceBase):
             self._create_guide_name(side, "upper_lid", 3),
             outer_name,
         ]
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         lower_names = [
             inner_name,
             self._create_guide_name(side, "lower_lid", 1),
@@ -950,6 +1860,9 @@ class FaceGuide(face_base.FaceBase):
             outer_name,
         ]
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return {
             "upper": self.get_guides_from_names(
                 upper_names,
@@ -962,7 +1875,17 @@ class FaceGuide(face_base.FaceBase):
         }
 
     def get_brow_guides(self, side):
-        u"""返回某一侧 Brow Main 和 Brow Point Guide。"""
+        u"""
+        返回某一侧 Brow Main 和 Brow Point Guide。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
+        """
         all_guides = self.get_part_guides(
             part="brow",
             side=side
@@ -994,23 +1917,51 @@ class FaceGuide(face_base.FaceBase):
             side,
             required=False
     ):
-        u"""返回某一侧 Eye Ball / Iris Guide。"""
+        u"""
+        返回某一侧 Eye Ball / Iris Guide。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            required (bool):
+                目标不存在或数据缺失时是否直接抛出异常。
+
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
+
+        Raises:
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if side not in self.mirror_sides:
             raise ValueError(
                 u"Eye side 必须是 lf 或 rt。"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         eye_ball_name = self._create_guide_name(
             side,
             "eye_ball",
             1
         )
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         eye_iris_name = self._create_guide_name(
             side,
             "eye_iris",
             1
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return {
             "eye_ball": self.get_guide_node(
                 eye_ball_name,
@@ -1031,7 +1982,23 @@ class FaceGuide(face_base.FaceBase):
             source_side,
             target_side
     ):
-        u"""检查 Mirror Source / Target Side。"""
+        u"""
+        检查 Mirror Source / Target Side。
+
+        Args:
+            source_side (str):
+                当前 Maya / Rig 操作使用的 `source_side` 名称或标记。
+            target_side (str):
+                当前 Maya / Rig 操作使用的 `target_side` 名称或标记。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        Raises:
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if source_side not in self.mirror_sides:
             raise ValueError(
                 u"source_side 必须是 lf 或 rt。"
@@ -1050,7 +2017,17 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def get_side_zero_groups(self, side):
-        u"""返回指定 Side 下全部 Guide Zero Group。"""
+        u"""
+        返回指定 Side 下全部 Guide Zero Group。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+        """
         prefix = "zero_{}_".format(
             side
         )
@@ -1081,7 +2058,19 @@ class FaceGuide(face_base.FaceBase):
             zero_group,
             side
     ):
-        u"""返回一个 Guide Zero Group 下对应 Side 的 Locator。"""
+        u"""
+        返回一个 Guide Zero Group 下对应 Side 的 Locator。
+
+        Args:
+            zero_group (str):
+                当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+
+        Returns:
+            None | object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+        """
         prefix = "loc_{}_".format(
             side
         )
@@ -1106,7 +2095,19 @@ class FaceGuide(face_base.FaceBase):
             node,
             attributes
     ):
-        u"""记录节点指定 Attribute 的当前值。"""
+        u"""
+        记录节点指定 Attribute 的当前值。
+
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            attributes (str | list[str]):
+                当前方法按顺序处理的 `attributes` 数据集合。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         values = {}
 
         if not node:
@@ -1136,11 +2137,31 @@ class FaceGuide(face_base.FaceBase):
             target_node,
             attribute
     ):
-        u"""复制一个 Attribute，并断开 Target 原输入。"""
+        u"""
+        复制一个 Attribute，并断开 Target 原输入。
+
+        Args:
+            source_node (str):
+                作为数据来源、复制来源或驱动来源的 Maya 节点。
+            target_node (str):
+                接收数据、匹配结果或操作结果的 Target Maya 节点。
+            attribute (str):
+                Maya Attribute 或完整 Plug 名称。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         source_plug = "{}.{}".format(
             source_node,
             attribute
         )
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         target_plug = "{}.{}".format(
             target_node,
             attribute
@@ -1149,29 +2170,57 @@ class FaceGuide(face_base.FaceBase):
         if not cmds.objExists(source_plug):
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not cmds.objExists(target_plug):
             return False
 
         connection_utils.disconnect_input(
             target_plug
         )
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.set_attr_preserve_lock(
             target_node,
             attribute,
             cmds.getAttr(source_plug)
         )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def capture_side_state(self, side):
-        u"""记录 Target Side 在 Mirror 前的状态。"""
+        u"""
+        记录 Target Side 在 Mirror 前的状态。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         snapshot = {
             "side": side,
             "items": [],
         }
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         zero_groups = self.get_side_zero_groups(
             side
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for zero_group in zero_groups:
             locator = self.get_side_locator(
                 zero_group,
@@ -1210,6 +2259,9 @@ class FaceGuide(face_base.FaceBase):
                 item
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return snapshot
 
     def restore_attributes(
@@ -1217,7 +2269,19 @@ class FaceGuide(face_base.FaceBase):
             node,
             values
     ):
-        u"""恢复 Snapshot 中保存的 Attribute。"""
+        u"""
+        恢复 Snapshot 中保存的 Attribute。
+
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
+            values (object):
+                当前方法执行 Maya / Rig 操作时使用的 `values` 数据。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
         for attribute in values:
             plug = "{}.{}".format(
                 node,
@@ -1239,18 +2303,41 @@ class FaceGuide(face_base.FaceBase):
         return True
 
     def restore_mirror_snapshot(self, snapshot):
-        u"""恢复最近一次 Mirror 前的 Target Side 状态。"""
+        u"""
+        恢复最近一次 Mirror 前的 Target Side 状态。
+
+        Args:
+            snapshot (object):
+                当前方法执行 Maya / Rig 操作时使用的 `snapshot` 数据。
+
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
+
+        Raises:
+            TypeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not isinstance(snapshot, dict):
             raise TypeError(
                 u"Mirror Snapshot 必须是 dict。"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         restored_count = 0
         items = snapshot.get(
             "items",
             []
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for item in items:
             zero_group = self.get_guide_node(
                 item.get("zero_name"),
@@ -1295,8 +2382,14 @@ class FaceGuide(face_base.FaceBase):
         self.set_step_completed(
             completed=False
         )
+        # -------------------------------------------------------------------------
+        # Step 04：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.invalidate_later_steps()
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return {
             "restored_count": restored_count,
         }
@@ -1307,12 +2400,35 @@ class FaceGuide(face_base.FaceBase):
             target_zero,
             source_side
     ):
-        u"""把一个 Source Guide Zero 的当前状态复制到 Target。"""
+        u"""
+        把一个 Source Guide Zero 的当前状态复制到 Target。
+
+        Args:
+            source_zero (object):
+                当前方法执行 Maya / Rig 操作时使用的 `source_zero` 数据。
+            target_zero (object):
+                当前方法执行 Maya / Rig 操作时使用的 `target_zero` 数据。
+            source_side (str):
+                当前 Maya / Rig 操作使用的 `source_side` 名称或标记。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         source_parent = hierarchy_utils.get_parent(
             source_zero
         )
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         is_mirror_root = True
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if source_parent:
             source_parent_name = rename_utils.get_short_name(
                 source_parent
@@ -1324,6 +2440,9 @@ class FaceGuide(face_base.FaceBase):
             if source_token in source_parent_name:
                 is_mirror_root = False
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if is_mirror_root:
             self.set_attr_preserve_lock(
                 target_zero,
@@ -1360,6 +2479,9 @@ class FaceGuide(face_base.FaceBase):
                     attribute
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def mirror_locator(
@@ -1367,7 +2489,19 @@ class FaceGuide(face_base.FaceBase):
             source_locator,
             target_locator
     ):
-        u"""复制 Locator Transform 和 Shape 参数。"""
+        u"""
+        复制 Locator Transform 和 Shape 参数。
+
+        Args:
+            source_locator (str):
+                当前 Rig 定位流程使用的 Guide / Locator Transform。
+            target_locator (str):
+                当前 Rig 定位流程使用的 Guide / Locator Transform。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
         for attribute in self.locator_attributes:
             self.copy_attribute(
                 source_locator,
@@ -1397,7 +2531,26 @@ class FaceGuide(face_base.FaceBase):
             source_side,
             target_side
     ):
-        u"""执行 Guide Mirror，不创建 Snapshot。"""
+        u"""
+        执行 Guide Mirror，不创建 Snapshot。
+
+        Args:
+            source_side (str):
+                当前 Maya / Rig 操作使用的 `source_side` 名称或标记。
+            target_side (str):
+                当前 Maya / Rig 操作使用的 `target_side` 名称或标记。
+
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
+
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.validate_mirror_sides(
             source_side,
             target_side
@@ -1408,11 +2561,17 @@ class FaceGuide(face_base.FaceBase):
                 u"Face Guide 尚未加载。"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         source_zero_groups = self.get_side_zero_groups(
             source_side
         )
         mirrored_count = 0
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for source_zero in source_zero_groups:
             source_zero_name = rename_utils.get_short_name(
                 source_zero
@@ -1458,8 +2617,14 @@ class FaceGuide(face_base.FaceBase):
         self.set_step_completed(
             completed=False
         )
+        # -------------------------------------------------------------------------
+        # Step 04：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.invalidate_later_steps()
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return {
             "source_side": source_side,
             "target_side": target_side,
@@ -1472,7 +2637,19 @@ class FaceGuide(face_base.FaceBase):
             source_side,
             target_side
     ):
-        u"""记录 Target Snapshot，并执行一次可撤销 Guide Mirror。"""
+        u"""
+        记录 Target Snapshot，并执行一次可撤销 Guide Mirror。
+
+        Args:
+            source_side (str):
+                当前 Maya / Rig 操作使用的 `source_side` 名称或标记。
+            target_side (str):
+                当前 Maya / Rig 操作使用的 `target_side` 名称或标记。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         snapshot = self.capture_side_state(
             target_side
         )
@@ -1485,7 +2662,17 @@ class FaceGuide(face_base.FaceBase):
 
     @scene_utils.undo_chunk
     def undo_mirror(self, snapshot):
-        u"""恢复 UI 保存的最近一次 Mirror Snapshot。"""
+        u"""
+        恢复 UI 保存的最近一次 Mirror Snapshot。
+
+        Args:
+            snapshot (object):
+                当前方法执行 Maya / Rig 操作时使用的 `snapshot` 数据。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         return self.restore_mirror_snapshot(
             snapshot
         )
@@ -1495,7 +2682,16 @@ class FaceGuide(face_base.FaceBase):
     # =========================================================================
 
     def validate_guides(self):
-        u"""检查模板中的每一个 Locator 是否仍然存在。"""
+        u"""
+        检查模板中的每一个 Locator 是否仍然存在。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         result = {
             "valid": True,
             "errors": [],
@@ -1516,11 +2712,17 @@ class FaceGuide(face_base.FaceBase):
             return result
 
         locators = self.get_guide_locators()
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         expected_names = self.get_template_locator_names()
         current_names = []
         name_counts = {}
 
         result["guide_count"] = len(locators)
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         result["template_guide_count"] = len(expected_names)
 
         for locator in locators:
@@ -1560,6 +2762,9 @@ class FaceGuide(face_base.FaceBase):
                 )
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for current_name in current_names:
             if current_name not in expected_names:
                 result["unexpected_guide_names"].append(
@@ -1574,6 +2779,9 @@ class FaceGuide(face_base.FaceBase):
         if result["errors"]:
             result["valid"] = False
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return result
 
     # =========================================================================
@@ -1581,9 +2789,25 @@ class FaceGuide(face_base.FaceBase):
     # =========================================================================
 
     def save_guide_config(self):
-        u"""保存 Step 02 Guide Root、Move Ctrl 和 Guide Version。"""
+        u"""
+        保存 Step 02 Guide Root、Move Ctrl 和 Guide Version。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self.refresh_guide_handles()
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self.guide_root:
             raise RuntimeError(
                 u"没有可保存的 Face Guide Root。"
@@ -1594,6 +2818,9 @@ class FaceGuide(face_base.FaceBase):
                 u"没有可保存的 Face Guide Move Ctrl。"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.set_config_messages(
             attrs_dict={
                 "face_guide_root": self.guide_root,
@@ -1602,6 +2829,9 @@ class FaceGuide(face_base.FaceBase):
             force=True,
             clear_empty=True
         )
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.set_config_values(
             attrs_dict={
                 "face_guide_version": self.guide_version,
@@ -1612,11 +2842,20 @@ class FaceGuide(face_base.FaceBase):
             lock=False,
             hide=True
         )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     @staticmethod
     def get_default_controller_settings():
-        u"""返回一份独立的 Face Controller 默认设置。"""
+        u"""
+        返回一份独立的 Face Controller 默认设置。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+        """
         settings = {}
 
         for attr_name in config.face_controller_default_settings:
@@ -1628,12 +2867,34 @@ class FaceGuide(face_base.FaceBase):
 
     @staticmethod
     def validate_controller_settings(settings):
-        u"""检查当前正式 Schema 的 Step 02 Controller Settings。"""
+        u"""
+        检查当前正式 Schema 的 Step 02 Controller Settings。
+
+        Args:
+            settings (object):
+                当前方法执行 Maya / Rig 操作时使用的 `settings` 数据。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        Raises:
+            TypeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not isinstance(settings, dict):
             raise TypeError(
                 u"Controller Settings 必须是 dict。"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         global_scale = settings.get(
             config.face_controller_global_scale_attr
         )
@@ -1643,6 +2904,9 @@ class FaceGuide(face_base.FaceBase):
                 u"缺少 Face Controller Global Scale。"
             )
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if float(global_scale) <= 0.0:
             raise ValueError(
                 u"Face Controller Global Scale 必须大于 0。"
@@ -1670,6 +2934,9 @@ class FaceGuide(face_base.FaceBase):
                     )
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for side in config.face_controller_color_attr_names:
             attr_name = config.face_controller_color_attr_names.get(
                 side
@@ -1696,10 +2963,19 @@ class FaceGuide(face_base.FaceBase):
                     )
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def load_controller_settings(self):
-        u"""从 Face Config 读取当前正式 Controller Settings。"""
+        u"""
+        从 Face Config 读取当前正式 Controller Settings。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         settings = self.get_default_controller_settings()
 
         if not self.config_node_exists():
@@ -1727,7 +3003,17 @@ class FaceGuide(face_base.FaceBase):
         return settings
 
     def save_controller_settings(self, settings):
-        u"""把当前正式 Controller Settings 保存到 Face Config。"""
+        u"""
+        把当前正式 Controller Settings 保存到 Face Config。
+
+        Args:
+            settings (object):
+                当前方法执行 Maya / Rig 操作时使用的 `settings` 数据。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         self.validate_controller_settings(
             settings
         )

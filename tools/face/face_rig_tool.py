@@ -23,7 +23,7 @@ def main():
 
     Returns:
         object:
-        方法执行后的结果数据。
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
         "tools.face.face_rig_tool",

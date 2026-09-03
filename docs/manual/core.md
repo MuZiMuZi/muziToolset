@@ -21,10 +21,9 @@
 | Matrix / OPM | [matrix_utils.py](../reference/core/matrix_utils.md) |
 | Mesh | [mesh_utils.py](../reference/core/mesh_utils.md) |
 | 模型检查 | [model_check_utils.py](../reference/core/model_check_utils.md) |
-| Rig 命名 | [name_utils.py](../reference/core/name_utils.md) |
-| 批量 Rename | [rename_utils.py](../reference/core/rename_utils.md) |
+| Rig 命名 / 批量 Rename | [rename_utils.py](../reference/core/rename_utils.md) |
 | Scene / Selection / Set | [scene_utils.py](../reference/core/scene_utils.md) |
-| 场景清理 | [scene_clean_utils.py](../reference/core/scene_clean_utils.md) |
+| 场景清理 | [scene_utils.py](../reference/core/scene_utils.md) |
 | Skin / Weight | [skin_utils.py](../reference/core/skin_utils.md) |
 | Snap | [snap_utils.py](../reference/core/snap_utils.md) |
 | Surface / Follicle | [surface_utils.py](../reference/core/surface_utils.md) |

@@ -42,7 +42,21 @@ from . import scene_utils
 # =============================================================================
 
 def validate_transform(node):
-    u"""检查节点存在，并确认它是 Maya Transform / Joint。"""
+    u"""
+    检查节点存在，并确认它是 Maya Transform / Joint。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        bool:
+        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+    """
     scene_utils.validate_node(
         node
     )
@@ -97,7 +111,17 @@ def _validate_vector3(value, label):
 # =============================================================================
 
 def get_world_translation(node):
-    u"""返回 Transform / Joint 的 World Translation。"""
+    u"""
+    返回 Transform / Joint 的 World Translation。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    """
     validate_transform(
         node
     )
@@ -111,7 +135,19 @@ def get_world_translation(node):
 
 
 def set_world_translation(node, translation):
-    u"""设置 Transform / Joint 的 World Translation。"""
+    u"""
+    设置 Transform / Joint 的 World Translation。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+        translation (object):
+            当前方法执行 Maya / Rig 操作时使用的 `translation` 数据。
+
+    Returns:
+        object:
+        完成设置或应用后的目标对象 / 状态结果。
+    """
     validate_transform(
         node
     )
@@ -134,7 +170,17 @@ def set_world_translation(node, translation):
 # =============================================================================
 
 def get_world_rotation(node):
-    u"""返回 Transform / Joint 的 World Rotation。"""
+    u"""
+    返回 Transform / Joint 的 World Rotation。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    """
     validate_transform(
         node
     )
@@ -148,7 +194,19 @@ def get_world_rotation(node):
 
 
 def set_world_rotation(node, rotation):
-    u"""设置 Transform / Joint 的 World Rotation。"""
+    u"""
+    设置 Transform / Joint 的 World Rotation。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+        rotation (list[float] | tuple[float, float, float]):
+            Joint / Transform 使用的 XYZ Rotation。
+
+    Returns:
+        object:
+        完成设置或应用后的目标对象 / 状态结果。
+    """
     validate_transform(
         node
     )
@@ -171,7 +229,17 @@ def set_world_rotation(node, rotation):
 # =============================================================================
 
 def get_world_matrix(node):
-    u"""返回 Transform / Joint 的完整 4x4 World Matrix 普通 list。"""
+    u"""
+    返回 Transform / Joint 的完整 4x4 World Matrix 普通 list。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    """
     validate_transform(
         node
     )
@@ -185,11 +253,33 @@ def get_world_matrix(node):
 
 
 def set_world_matrix(node, matrix_values):
-    u"""设置 Transform / Joint 的完整 4x4 World Matrix。"""
+    u"""
+    设置 Transform / Joint 的完整 4x4 World Matrix。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+        matrix_values (object):
+            当前方法执行 Maya / Rig 操作时使用的 `matrix_values` 数据。
+
+    Returns:
+        object:
+        完成设置或应用后的目标对象 / 状态结果。
+
+    Raises:
+        ValueError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：验证并规范化当前阶段需要的输入数据
+    # -------------------------------------------------------------------------
     validate_transform(
         node
     )
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if matrix_values is None:
         raise ValueError(
             u"matrix_values 必须包含 16 个矩阵数值。"
@@ -204,17 +294,26 @@ def set_world_matrix(node, matrix_values):
             u"matrix_values 必须包含 16 个矩阵数值。"
         )
 
+    # -------------------------------------------------------------------------
+    # Step 03：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if value_count != 16:
         raise ValueError(
             u"matrix_values 必须包含 16 个矩阵数值。"
         )
 
+    # -------------------------------------------------------------------------
+    # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     cmds.xform(
         node,
         worldSpace=True,
         matrix=matrix_values
     )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return node
 
 
@@ -240,7 +339,18 @@ def move_relative(
             ``world`` 或 ``object``。
         object_space (bool | None):
             旧调用兼容参数；新代码请使用 space。
+
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
+
+    Raises:
+        ValueError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：验证并规范化当前阶段需要的输入数据
+    # -------------------------------------------------------------------------
     validate_transform(
         node
     )
@@ -249,6 +359,9 @@ def move_relative(
         "offset"
     )
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if object_space is not None:
         if object_space:
             space = "object"
@@ -263,6 +376,9 @@ def move_relative(
 
     space = str(space).strip().lower()
 
+    # -------------------------------------------------------------------------
+    # Step 03：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if space not in ["world", "object"]:
         raise ValueError(
             u"space 只能是 'world' 或 'object'。"
@@ -272,6 +388,9 @@ def move_relative(
         "relative": True,
     }
 
+    # -------------------------------------------------------------------------
+    # Step 04：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if space == "object":
         kwargs["objectSpace"] = True
         kwargs["worldSpaceDistance"] = True
@@ -286,6 +405,9 @@ def move_relative(
         **kwargs
     )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return node
 
 
@@ -299,6 +421,16 @@ def distance_between(node_a, node_b):
 
     新代码应读取 World Translation 后调用
     math_utils.distance_between_points()。
+
+    Args:
+        node_a (object):
+            当前方法执行 Maya / Rig 操作时使用的 `node_a` 数据。
+        node_b (object):
+            当前方法执行 Maya / Rig 操作时使用的 `node_b` 数据。
+
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
     """
     position_a = get_world_translation(
         node_a

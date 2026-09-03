@@ -1,0 +1,96 @@
+name: Apply Runtime Chinese Step Comments
+
+on:
+  push:
+    branches:
+      - refactor/full-code-cn-comments
+    paths:
+      - scripts/annotate_runtime_steps.py
+      - scripts/apply_face_namespace_fix.py
+      - scripts/merge_scene_domain.py
+      - .github/workflows/apply_runtime_step_comments.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout refactor branch
+        uses: actions/checkout@v4
+        with:
+          ref: refactor/full-code-cn-comments
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # -----------------------------------------------------------------------
+      # Step 01：修复 Face 基础层级，保存 Maya 返回的真实 DAG Long Path
+      # -----------------------------------------------------------------------
+      - name: Apply Face namespace hierarchy fix
+        run: python scripts/apply_face_namespace_fix.py
+
+      # -----------------------------------------------------------------------
+      # Step 02：把 Scene Clean / Export 能力统一合并到 scene_utils
+      # 并迁移仓库内全部旧模块引用。
+      # -----------------------------------------------------------------------
+      - name: Merge scene domain modules
+        run: python scripts/merge_scene_domain.py
+
+      # -----------------------------------------------------------------------
+      # Step 03：给迁移后新增或变化的复杂函数补齐中文步骤注释
+      # -----------------------------------------------------------------------
+      - name: Apply runtime step comments
+        run: python scripts/annotate_runtime_steps.py --write
+
+      # -----------------------------------------------------------------------
+      # Step 04：严格编译 Runtime 与 Tests，任何语法问题都禁止提交
+      # -----------------------------------------------------------------------
+      - name: Validate Python compile
+        run: python -m compileall -q app core systems tools ui tests __init__.py config.py
+
+      # -----------------------------------------------------------------------
+      # Step 05：执行当前正式架构与复用 Contract
+      # -----------------------------------------------------------------------
+      - name: Run static contracts
+        run: |
+          python tests/core_import_style_test.py
+          python tests/core_public_api_gate_test.py
+          python tests/core_single_source_gate_test.py
+          python tests/rig_architecture_gate_test.py
+          python tests/rig_base_contract_test.py
+          python tests/module_base_contract_test.py
+          python tests/system_core_reuse_gate_test.py
+          python tests/maya2023_smoke_contract_test.py
+
+      # -----------------------------------------------------------------------
+      # Step 06：确认全部复杂 Runtime 函数仍有中文 Step 流程注释
+      # -----------------------------------------------------------------------
+      - name: Validate step comment coverage
+        run: python scripts/annotate_runtime_steps.py --check
+
+      - name: Check whitespace errors
+        run: git diff --check
+
+      # -----------------------------------------------------------------------
+      # Step 07：只有所有检查通过后才提交真正的 Runtime 迁移
+      # -----------------------------------------------------------------------
+      - name: Commit validated migration
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No runtime migration changes required."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor: unify scene domain and fix face hierarchy paths"
+          git push origin HEAD:refactor/full-code-cn-comments

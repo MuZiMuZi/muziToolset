@@ -56,7 +56,7 @@ def is_component(item):
 
     Returns:
         bool:
-            输入是 Vertex、Edge、Face、CV 等常见组件时返回 True。
+        输入是 Vertex、Edge、Face、CV 等常见组件时返回 True。
     """
     if not item:
         return False
@@ -95,7 +95,7 @@ def get_item_world_position(item):
 
     Returns:
         list | None:
-            有效时返回 [x, y, z]；无法查询位置时返回 None。
+        有效时返回 [x, y, z]；无法查询位置时返回 None。
     """
     try:
         position = cmds.xform(
@@ -130,11 +130,17 @@ def get_item_world_rotation(item):
 
     Returns:
         list | None:
-            有效时返回 [rotateX, rotateY, rotateZ]；组件或无法查询时返回 None。
+        有效时返回 [rotateX, rotateY, rotateZ]；组件或无法查询时返回 None。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if is_component(item):
         return None
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not cmds.objExists(item):
         return None
 
@@ -145,6 +151,9 @@ def get_item_world_rotation(item):
     except Exception:
         return None
 
+    # -------------------------------------------------------------------------
+    # Step 03：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if node_type not in [
         "transform",
         "joint",
@@ -160,6 +169,9 @@ def get_item_world_rotation(item):
         if not item:
             return None
 
+    # -------------------------------------------------------------------------
+    # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+    # -------------------------------------------------------------------------
     try:
         rotation = transform_utils.get_world_rotation(
             item
@@ -167,6 +179,9 @@ def get_item_world_rotation(item):
     except Exception:
         return None
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return [
         float(rotation[0]),
         float(rotation[1]),
@@ -196,12 +211,15 @@ def snap_to_average(
 
     Returns:
         dict:
-            返回 position 和 rotation；没有有效平均旋转时 rotation 为 None。
+        返回 position 和 rotation；没有有效平均旋转时 rotation 为 None。
 
     Raises:
         RuntimeError:
-            没有参考项、目标为空或无法取得任何有效参考位置时抛出。
+        没有参考项、目标为空或无法取得任何有效参考位置时抛出。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not reference_items:
         raise RuntimeError(
             u"参考对象不能为空。"
@@ -224,6 +242,9 @@ def snap_to_average(
                 position
             )
 
+    # -------------------------------------------------------------------------
+    # Step 02：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     average_position = math_utils.average_point3(
         positions
     )
@@ -244,6 +265,9 @@ def snap_to_average(
         "rotation": None,
     }
 
+    # -------------------------------------------------------------------------
+    # Step 03：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not include_rotation:
         return result
 
@@ -262,6 +286,9 @@ def snap_to_average(
                 rotation
             )
 
+    # -------------------------------------------------------------------------
+    # Step 04：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     average_rotation = math_utils.average_point3(
         rotations
     )
@@ -279,6 +306,9 @@ def snap_to_average(
     except Exception:
         pass
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return result
 
 

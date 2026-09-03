@@ -43,12 +43,32 @@ def get_matrix(matrix_plug):
     例如：
         node.worldMatrix[0]
         multMatrix1.matrixSum
+
+    Args:
+        matrix_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+    Raises:
+        ValueError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not matrix_plug:
         raise ValueError(
             u"matrix_plug 不能为空。"
         )
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not cmds.objExists(matrix_plug):
         raise RuntimeError(
             u"Matrix 属性不存在：{}".format(
@@ -56,10 +76,16 @@ def get_matrix(matrix_plug):
             )
         )
 
+    # -------------------------------------------------------------------------
+    # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     matrix_value = cmds.getAttr(
         matrix_plug
     )
 
+    # -------------------------------------------------------------------------
+    # Step 04：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if isinstance(matrix_value, (list, tuple)):
         if len(matrix_value) == 1:
             first_value = matrix_value[0]
@@ -67,13 +93,26 @@ def get_matrix(matrix_plug):
             if isinstance(first_value, (list, tuple)):
                 matrix_value = first_value
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return om.MMatrix(
         matrix_value
     )
 
 
 def matrix_to_list(matrix):
-    u"""将 MMatrix 转换为 16 个数值的普通 list。"""
+    u"""
+    将 MMatrix 转换为 16 个数值的普通 list。
+
+    Args:
+        matrix (list[float] | maya.api.OpenMaya.MMatrix):
+            用于 Transform、Constraint 或空间计算的 4x4 Matrix 数据。
+
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
+    """
     matrix_values = []
 
     for index in range(16):
@@ -94,6 +133,16 @@ def calculate_parent_offset_matrix(driver, driven):
 
     计算：
         drivenWorld * inverse(driverWorld)
+
+    Args:
+        driver (str):
+            作为驱动端的 Maya 节点名称。
+        driven (str):
+            作为被驱动端的 Maya 节点名称。
+
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
     """
     scene_utils.validate_node(
         driver
@@ -127,7 +176,30 @@ def create_parent_matrix_constraint(
         maintain_offset=True,
         name=None
 ):
-    u"""使用 multMatrix + offsetParentMatrix 创建通用 Parent Matrix Network。"""
+    u"""
+    使用 multMatrix + offsetParentMatrix 创建通用 Parent Matrix Network。
+
+    Args:
+        driver (str):
+            作为驱动端的 Maya 节点名称。
+        driven (str):
+            作为被驱动端的 Maya 节点名称。
+        maintain_offset (bool):
+            是否在建立约束或矩阵关系时保持当前偏移。
+        name (str):
+            创建或查询时使用的节点名称。
+
+    Returns:
+        object:
+        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：验证并规范化当前阶段需要的输入数据
+    # -------------------------------------------------------------------------
     scene_utils.validate_node(
         driver
     )
@@ -150,6 +222,9 @@ def create_parent_matrix_constraint(
         offset_parent_matrix_plug
     )
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if existing_inputs:
         raise RuntimeError(
             u"offsetParentMatrix 已经存在输入连接：{} <- {}".format(
@@ -181,6 +256,9 @@ def create_parent_matrix_constraint(
         )
         name = driven_short_name + "_parent_mm"
 
+    # -------------------------------------------------------------------------
+    # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+    # -------------------------------------------------------------------------
     mult_matrix = cmds.createNode(
         "multMatrix",
         name=name
@@ -204,6 +282,9 @@ def create_parent_matrix_constraint(
         type="matrix"
     )
 
+    # -------------------------------------------------------------------------
+    # Step 04：建立当前阶段需要的层级、连接或驱动关系
+    # -------------------------------------------------------------------------
     connection_utils.connect_plugs(
         driver + ".worldMatrix[0]",
         mult_matrix + ".matrixIn[2]",
@@ -228,6 +309,9 @@ def create_parent_matrix_constraint(
         force=True
     )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return mult_matrix
 
 
@@ -240,7 +324,20 @@ def remove_parent_matrix_constraint(
 
     默认只断开连接，不删除来源节点。只有调用者明确确认来源节点属于当前
     Matrix Network 时，才应传入 ``delete_node=True``。
+
+    Args:
+        driven (str):
+            作为被驱动端的 Maya 节点名称。
+        delete_node (bool):
+            当前清理 / 重建流程是否执行 `delete_node` 对应的删除步骤。
+
+    Returns:
+        bool:
+        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not driven:
         return False
 
@@ -251,6 +348,9 @@ def remove_parent_matrix_constraint(
         driven + ".offsetParentMatrix"
     )
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not cmds.objExists(offset_parent_matrix_plug):
         return False
 
@@ -261,6 +361,9 @@ def remove_parent_matrix_constraint(
     if not input_plugs:
         return False
 
+    # -------------------------------------------------------------------------
+    # Step 03：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     source_plug = input_plugs[0]
     source_node = source_plug.split(".")[0]
 
@@ -269,6 +372,9 @@ def remove_parent_matrix_constraint(
         offset_parent_matrix_plug
     )
 
+    # -------------------------------------------------------------------------
+    # Step 04：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not disconnected:
         return False
 
@@ -279,6 +385,9 @@ def remove_parent_matrix_constraint(
                     source_node
                 )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return True
 
 

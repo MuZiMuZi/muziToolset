@@ -58,7 +58,13 @@ class JointResamplingTool(QWidget):
     """Joint Resample 窗口。"""
 
     def __init__(self, parent=None):
-        u"""创建 Joint Resample 窗口。"""
+        u"""
+        创建 Joint Resample 窗口。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
         super(JointResamplingTool, self).__init__(parent)
 
         self.create_widgets()
@@ -73,7 +79,9 @@ class JointResamplingTool(QWidget):
         self.resize(540, 360)
 
     def create_widgets(self):
-        u"""创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
         self.title_label = theme.make_title(u"关节重采样")
         self.subtitle_label = theme.make_subtitle(
             u"在一对直接父子 Joint 之间均匀插入新的中间 Joint。"
@@ -106,7 +114,12 @@ class JointResamplingTool(QWidget):
         theme.style_primary(self.resample_button)
 
     def create_layouts(self):
-        u"""创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -114,6 +127,9 @@ class JointResamplingTool(QWidget):
         main_layout.addWidget(self.title_label)
         main_layout.addWidget(self.subtitle_label)
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         range_card, range_layout = theme.make_card(self)
         range_layout.addWidget(
             theme.make_section_title(u"Joint 范围")
@@ -126,28 +142,41 @@ class JointResamplingTool(QWidget):
             theme.make_section_title(u"插入参数")
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         number_layout = QHBoxLayout()
         number_layout.setContentsMargins(0, 0, 0, 0)
         number_layout.addWidget(QLabel(u"插入数量"))
         number_layout.addWidget(self.joint_number_spinbox)
         number_layout.addStretch(1)
 
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         parameter_layout.addLayout(number_layout)
         parameter_layout.addWidget(self.safety_label)
         parameter_layout.addWidget(self.resample_button)
 
         main_layout.addWidget(range_card)
         main_layout.addWidget(parameter_card)
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addStretch(1)
 
     def create_connections(self):
-        u"""连接界面信号。"""
+        u"""
+        连接界面信号。
+        """
         self.resample_button.clicked.connect(
             self.resample
         )
 
     def resample(self):
-        u"""读取当前 UI 参数并执行 Joint Resample。"""
+        u"""
+        读取当前 UI 参数并执行 Joint Resample。
+        """
         start_joint = self.start_joint_picker.get_value()
         end_joint = self.end_joint_picker.get_value()
         joint_number = self.joint_number_spinbox.value()
@@ -166,7 +195,19 @@ class JointResamplingTool(QWidget):
 
 
 def validate_joint(joint, label):
-    u"""使用 Joint Core 校验，并把异常转换成 Tool Warning。"""
+    u"""
+    使用 Joint Core 校验，并把异常转换成 Tool Warning。
+
+    Args:
+        joint (str):
+            需要处理的 Maya Joint 节点名称。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
+
+    Returns:
+        bool:
+        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+    """
     if not joint:
         cmds.warning(
             u"{}不能为空。".format(label)
@@ -190,7 +231,19 @@ def validate_joint(joint, label):
 
 
 def is_direct_child_joint(start_joint, end_joint):
-    u"""检查 end_joint 是否是 start_joint 的直接子 Joint。"""
+    u"""
+    检查 end_joint 是否是 start_joint 的直接子 Joint。
+
+    Args:
+        start_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        end_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+
+    Returns:
+        object | bool:
+        条件成立时返回 True，否则返回 False。
+    """
     try:
         start_long_name = scene_utils.get_long_name(
             start_joint
@@ -211,7 +264,24 @@ def is_direct_child_joint(start_joint, end_joint):
 
 @scene_utils.undo_chunk
 def resample_joint(start_joint, end_joint, joint_number):
-    u"""在直接父子 Joint 之间插入指定数量的新 Joint。"""
+    u"""
+    在直接父子 Joint 之间插入指定数量的新 Joint。
+
+    Args:
+        start_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        end_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        joint_number (int):
+            当前构建、采样或查询过程使用的元素数量。
+
+    Returns:
+        object | list:
+        按当前 API 约定顺序返回的结果列表。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not validate_joint(
             start_joint,
             u"起始 Joint"
@@ -230,6 +300,9 @@ def resample_joint(start_joint, end_joint, joint_number):
         )
         return []
 
+    # -------------------------------------------------------------------------
+    # Step 02：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     joint_number = int(
         joint_number
     )
@@ -252,6 +325,9 @@ def resample_joint(start_joint, end_joint, joint_number):
     start_position = transform_utils.get_world_translation(
         start_joint
     )
+    # -------------------------------------------------------------------------
+    # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     end_position = transform_utils.get_world_translation(
         end_joint
     )
@@ -261,6 +337,9 @@ def resample_joint(start_joint, end_joint, joint_number):
 
     created_joints = []
     previous_joint = start_joint
+    # -------------------------------------------------------------------------
+    # Step 04：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     success = False
 
     try:
@@ -345,11 +424,20 @@ def resample_joint(start_joint, end_joint, joint_number):
     if not success:
         return []
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return created_joints
 
 
 def main():
-    u"""创建或恢复 Joint Resample Tool，立即显示并返回 QWidget。"""
+    u"""
+    创建或恢复 Joint Resample Tool，立即显示并返回 QWidget。
+
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
+    """
     return window_utils.show_window(
         "tools.joint.joint_resamp_tool",
         JointResamplingTool

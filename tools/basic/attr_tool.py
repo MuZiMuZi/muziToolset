@@ -54,7 +54,22 @@ from ...ui import window_utils
 
 
 def move_selected_channel_box_attr(up=True, down=False):
-    u"""调整 Channel Box 当前 User Defined Attribute 的顺序。"""
+    u"""
+    调整 Channel Box 当前 User Defined Attribute 的顺序。
+
+    Args:
+        up (bool):
+            是否把目标 Attribute 在 Channel Box 中上移。
+        down (bool):
+            是否把目标 Attribute 在 Channel Box 中下移。
+
+    Returns:
+        bool:
+        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     selections = scene_utils.get_selected_nodes(
         long=True,
         flatten=True
@@ -70,6 +85,9 @@ def move_selected_channel_box_attr(up=True, down=False):
         selectedMainAttributes=True
     ) or []
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not selected_attrs:
         cmds.warning(u"请在 Channel Box 中选择一个自定义属性。")
         return False
@@ -81,6 +99,9 @@ def move_selected_channel_box_attr(up=True, down=False):
         selected_attr
     )
 
+    # -------------------------------------------------------------------------
+    # Step 03：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not cmds.objExists(selected_plug):
         return False
 
@@ -100,6 +121,9 @@ def move_selected_channel_box_attr(up=True, down=False):
     if selected_attr not in attr_list:
         return False
 
+    # -------------------------------------------------------------------------
+    # Step 04：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     selected_index = attr_list.index(
         selected_attr
     )
@@ -147,6 +171,9 @@ def move_selected_channel_box_attr(up=True, down=False):
     finally:
         scene_utils.close_undo_chunk()
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return True
 
 
@@ -154,6 +181,14 @@ class AttrTool(QWidget):
     u"""Attribute 工具窗口。"""
 
     def __init__(self, parent=None):
+        u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+
         super(AttrTool, self).__init__(parent)
 
         self.window_title = u"属性工具"
@@ -170,7 +205,12 @@ class AttrTool(QWidget):
         self.resize(560, 520)
 
     def create_widgets(self):
-        u"""创建界面部件。"""
+        u"""
+        创建界面部件。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.title_label = ui_theme.make_title(u"属性工具")
         self.subtitle_label = ui_theme.make_subtitle(
             u"管理 Maya 属性窗口、Channel Box 顺序以及常用 Transform Attribute 状态。"
@@ -198,6 +238,9 @@ class AttrTool(QWidget):
         )
         ui_theme.style_danger(self.delete_attr_window_button)
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.attr_move_info_label = QLabel(
             u"先在 Channel Box 中选中一个自定义属性，再调整顺序。"
         )
@@ -217,6 +260,9 @@ class AttrTool(QWidget):
         self.scale_set_label = QLabel("Scale")
         self.visibility_set_label = QLabel("Visibility")
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.lock_header_label = QLabel(u"锁定")
         self.hide_header_label = QLabel(u"隐藏")
         ui_theme.set_role(self.lock_header_label, "muted")
@@ -226,6 +272,9 @@ class AttrTool(QWidget):
         self.translation_hidden_checkbox = QCheckBox()
         self.rotate_locked_checkbox = QCheckBox()
         self.rotate_hidden_checkbox = QCheckBox()
+        # -------------------------------------------------------------------------
+        # Step 04：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.scale_locked_checkbox = QCheckBox()
         self.scale_hidden_checkbox = QCheckBox()
         self.visibility_locked_checkbox = QCheckBox()
@@ -243,6 +292,9 @@ class AttrTool(QWidget):
         )
         ui_theme.style_ghost(self.attr_reset_button)
 
+        # -------------------------------------------------------------------------
+        # Step 05：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.attr_checkboxes = [
             self.translation_locked_checkbox,
             self.translation_hidden_checkbox,
@@ -255,7 +307,12 @@ class AttrTool(QWidget):
         ]
 
     def create_layouts(self):
-        u"""创建窗口布局。"""
+        u"""
+        创建窗口布局。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -272,6 +329,9 @@ class AttrTool(QWidget):
         editor_grid.addWidget(self.add_attr_window_button, 0, 0)
         editor_grid.addWidget(self.edit_attr_window_button, 0, 1)
         editor_grid.addWidget(self.connect_attr_window_button, 0, 2)
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         editor_grid.addWidget(self.channel_control_window_button, 1, 0)
         editor_grid.addWidget(self.delete_attr_window_button, 1, 1)
         editor_layout.addLayout(editor_grid)
@@ -289,6 +349,9 @@ class AttrTool(QWidget):
         state_layout.addWidget(ui_theme.make_section_title(u"属性状态"))
 
         state_grid = QGridLayout()
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         state_grid.setHorizontalSpacing(18)
         state_grid.setVerticalSpacing(10)
         state_grid.addWidget(self.lock_header_label, 0, 1, Qt.AlignCenter)
@@ -302,6 +365,9 @@ class AttrTool(QWidget):
         state_grid.addWidget(self.scale_set_label, 3, 0)
         state_grid.addWidget(self.scale_locked_checkbox, 3, 1, Qt.AlignCenter)
         state_grid.addWidget(self.scale_hidden_checkbox, 3, 2, Qt.AlignCenter)
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         state_grid.addWidget(self.visibility_set_label, 4, 0)
         state_grid.addWidget(self.visibility_locked_checkbox, 4, 1, Qt.AlignCenter)
         state_grid.addWidget(self.visibility_hidden_checkbox, 4, 2, Qt.AlignCenter)
@@ -317,10 +383,15 @@ class AttrTool(QWidget):
         main_layout.addWidget(editor_card)
         main_layout.addWidget(order_card)
         main_layout.addWidget(state_card)
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addStretch(1)
 
     def create_connections(self):
-        u"""连接界面信号。"""
+        u"""
+        连接界面信号。
+        """
         self.add_attr_window_button.clicked.connect(self.open_add_attr_window)
         self.edit_attr_window_button.clicked.connect(self.open_edit_attr_window)
         self.connect_attr_window_button.clicked.connect(self.open_connection_editor)
@@ -333,26 +404,54 @@ class AttrTool(QWidget):
 
     @staticmethod
     def open_add_attr_window():
+        u"""
+        打开当前 add attr window。
+        """
+
         mel.eval("dynAddAttrWin({})")
 
     @staticmethod
     def open_edit_attr_window():
+        u"""
+        打开当前 edit attr window。
+        """
+
         mel.eval("dynRenameAttrWin({})")
 
     @staticmethod
     def open_connection_editor():
+        u"""
+        打开当前 connection editor。
+        """
+
         cmds.ConnectionEditor()
 
     @staticmethod
     def open_channel_control():
+        u"""
+        打开当前 channel control。
+        """
+
         cmds.ChannelControlEditor()
 
     @staticmethod
     def delete_selected_attr():
+        u"""
+        删除当前 selected attr。
+        """
+
         mel.eval("dynDeleteAttrWin({})")
 
     @staticmethod
     def move_attr_up():
+        u"""
+        执行当前 API 的主要处理流程。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
+
         return move_selected_channel_box_attr(
             up=True,
             down=False
@@ -360,13 +459,26 @@ class AttrTool(QWidget):
 
     @staticmethod
     def move_attr_down():
+        u"""
+        执行当前 API 的主要处理流程。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
+
         return move_selected_channel_box_attr(
             up=False,
             down=True
         )
 
     def clicked_attr_set_button(self):
-        u"""把界面状态应用到当前选择对象的 Transform Channels。"""
+        u"""
+        把界面状态应用到当前选择对象的 Transform Channels。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         selected_objects = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
@@ -377,18 +489,30 @@ class AttrTool(QWidget):
             return
 
         translation_lock = self.translation_locked_checkbox.isChecked()
+        # -------------------------------------------------------------------------
+        # Step 02：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         translation_hide = self.translation_hidden_checkbox.isChecked()
         rotate_lock = self.rotate_locked_checkbox.isChecked()
         rotate_hide = self.rotate_hidden_checkbox.isChecked()
+        # -------------------------------------------------------------------------
+        # Step 03：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         scale_lock = self.scale_locked_checkbox.isChecked()
         scale_hide = self.scale_hidden_checkbox.isChecked()
         visibility_lock = self.visibility_locked_checkbox.isChecked()
+        # -------------------------------------------------------------------------
+        # Step 04：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         visibility_hide = self.visibility_hidden_checkbox.isChecked()
 
         axis_list = ["X", "Y", "Z"]
 
         scene_utils.open_undo_chunk("MuziAttrToolSetState")
 
+        # -------------------------------------------------------------------------
+        # Step 05：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             for selected_object in selected_objects:
                 attr_handler = attr_utils.Attr(selected_object)
@@ -427,13 +551,21 @@ class AttrTool(QWidget):
             scene_utils.close_undo_chunk()
 
     def clicked_attr_reset_button(self):
-        u"""清空界面中的 Lock / Hidden 选项。"""
+        u"""
+        清空界面中的 Lock / Hidden 选项。
+        """
         for checkbox in self.attr_checkboxes:
             checkbox.setChecked(False)
 
 
 def main():
-    u"""创建或恢复 Attr Tool，立即显示并返回 QWidget。"""
+    u"""
+    创建或恢复 Attr Tool，立即显示并返回 QWidget。
+
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
+    """
     return window_utils.show_window(
         "tools.basic.attr_tool",
         AttrTool

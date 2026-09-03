@@ -55,7 +55,17 @@ class SkirtRigBuilder(object):
             horizontal_count=8,
             vertical_count=4
     ):
-        u"""初始化裙子绑定系统参数。"""
+        u"""
+        初始化裙子绑定系统参数。
+
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
+            horizontal_count (int):
+                当前构建、采样或查询过程使用的元素数量。
+            vertical_count (int):
+                当前构建、采样或查询过程使用的元素数量。
+        """
         self.name = rename_utils.get_name_token(
             name,
             fallback="skirt"
@@ -69,7 +79,17 @@ class SkirtRigBuilder(object):
     # -------------------------------------------------------------------------
 
     def validate_parameters(self):
-        u"""检查 Builder 参数。"""
+        u"""
+        检查 Builder 参数。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+        Raises:
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if self.horizontal_count < 3:
             raise ValueError(
                 u"裙子横向链数量不能小于 3。"
@@ -83,7 +103,13 @@ class SkirtRigBuilder(object):
         return True
 
     def get_names(self):
-        u"""返回系统内所有固定节点名称。"""
+        u"""
+        返回系统内所有固定节点名称。
+
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
+        """
         return {
             "name": self.name,
             "root": "grp_m_{}_001".format(self.name),
@@ -102,7 +128,13 @@ class SkirtRigBuilder(object):
     # -------------------------------------------------------------------------
 
     def ensure_root_groups(self):
-        u"""确保裙子系统基础层级存在。"""
+        u"""
+        确保裙子系统基础层级存在。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         names = self.get_names()
         root = hierarchy_utils.ensure_group(
             names["root"]
@@ -130,8 +162,14 @@ class SkirtRigBuilder(object):
 
     def _delete_setup_nodes(self, names):
         """删除旧定位和 Blueprint 节点。"""
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         delete_nodes = []
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         group_keys = [
             "setup",
             "blueprint",
@@ -154,6 +192,9 @@ class SkirtRigBuilder(object):
                         child
                     )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         poci_nodes = cmds.ls(
             "poci_m_{}_*".format(self.name),
             type="pointOnCurveInfo"
@@ -162,12 +203,18 @@ class SkirtRigBuilder(object):
         if poci_nodes is None:
             poci_nodes = []
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for node in poci_nodes:
             if node not in delete_nodes:
                 delete_nodes.append(
                     node
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 05：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if delete_nodes:
             cmds.delete(
                 delete_nodes
@@ -205,11 +252,20 @@ class SkirtRigBuilder(object):
             names
     ):
         """在定位曲线上创建实时 Blueprint Joint。"""
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         curve_shape = curve_utils.get_curve_shape(
             curve
         )
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         index = 0
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         while index < self.horizontal_count:
             point_group_name = "grp_m_{}{}Point_{:03d}".format(
                 self.name,
@@ -270,9 +326,21 @@ class SkirtRigBuilder(object):
 
     @scene_utils.undo_chunk
     def create_setup(self):
-        u"""创建或重建裙子定位系统。"""
+        u"""
+        创建或重建裙子定位系统。
+
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.validate_parameters()
         names = self.ensure_root_groups()
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self._delete_setup_nodes(
             names
         )
@@ -283,6 +351,9 @@ class SkirtRigBuilder(object):
             radius=2.0,
             parent=names["setup"]
         )
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         down_curve = self._create_setup_curve(
             names["down_curve"],
             y_value=0.0,
@@ -295,6 +366,9 @@ class SkirtRigBuilder(object):
             "Up",
             names
         )
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self._create_curve_blueprints(
             down_curve,
             "Down",
@@ -306,6 +380,9 @@ class SkirtRigBuilder(object):
             replace=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return {
             "up_curve": up_curve,
             "down_curve": down_curve,
@@ -313,7 +390,13 @@ class SkirtRigBuilder(object):
         }
 
     def select_setup_curves(self):
-        u"""选择当前裙子系统的两条定位曲线。"""
+        u"""
+        选择当前裙子系统的两条定位曲线。
+
+        Returns:
+            object | list:
+            按当前 API 约定顺序返回的结果列表。
+        """
         names = self.get_names()
         curves = []
 
@@ -411,12 +494,24 @@ class SkirtRigBuilder(object):
 
     @scene_utils.undo_chunk
     def build(self):
-        u"""根据当前 Blueprint 创建完整裙子 FK 绑定。"""
+        u"""
+        根据当前 Blueprint 创建完整裙子 FK 绑定。
+
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.validate_parameters()
         names = self.ensure_root_groups()
         self._validate_blueprints(
             names
         )
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self._delete_previous_build(
             names
         )
@@ -429,6 +524,9 @@ class SkirtRigBuilder(object):
 
         created_controls = []
         created_joints = []
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         horizontal_index = 0
 
         while horizontal_index < self.horizontal_count:
@@ -527,6 +625,9 @@ class SkirtRigBuilder(object):
         build_attr = attr_utils.Attr(
             build_group
         )
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         build_attr.add_attr(
             "horizontalCount",
             attr_type="long",
@@ -548,6 +649,9 @@ class SkirtRigBuilder(object):
                 replace=True
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return {
             "group": build_group,
             "controls": created_controls,

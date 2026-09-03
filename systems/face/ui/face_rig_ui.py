@@ -58,7 +58,16 @@ class FaceRigWizard(QWidget):
     u"""Face Rig 四步构建窗口。"""
 
     def __init__(self, parent=None):
-        u"""初始化 Face Rig UI。"""
+        u"""
+        初始化 Face Rig UI。
+
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         super(FaceRigWizard, self).__init__(parent)
 
         self.current_step_index = 0
@@ -66,6 +75,9 @@ class FaceRigWizard(QWidget):
         self.step_buttons = []
 
         self.face_setup = None
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.face_guide = None
         self.last_mirror_snapshot = None
 
@@ -74,6 +86,9 @@ class FaceRigWizard(QWidget):
         self.mouth_joint_step = 4
         self.mouth_joint_minimum = 4
         self.mouth_joint_maximum = 128
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.mouth_joint_default = 40
 
         self.controller_size_widgets = {}
@@ -90,6 +105,9 @@ class FaceRigWizard(QWidget):
             760
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.create_widgets()
         self.create_pages()
         self.create_layouts()
@@ -99,6 +117,9 @@ class FaceRigWizard(QWidget):
             self
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self.restore_step_state()
 
     # =========================================================================
@@ -106,7 +127,12 @@ class FaceRigWizard(QWidget):
     # =========================================================================
 
     def create_widgets(self):
-        u"""创建公共控件。"""
+        u"""
+        创建公共控件。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.title_label = theme.make_title(
             u"Face Rig"
         )
@@ -114,6 +140,9 @@ class FaceRigWizard(QWidget):
             u"Setup → Guide → Build → Finalize。每一步只展示当前真正需要处理的内容。"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         step_names = [
             u"01  Setup",
             u"02  Guide",
@@ -141,6 +170,9 @@ class FaceRigWizard(QWidget):
 
         self.page_stack = QStackedWidget()
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.status_label = QLabel(
             u"准备就绪"
         )
@@ -149,18 +181,26 @@ class FaceRigWizard(QWidget):
             "muted"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.next_button = QPushButton(
             u"下一步"
         )
         self.next_button.setMinimumWidth(
             88
         )
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.style_primary(
             self.next_button
         )
 
     def create_pages(self):
-        u"""创建四个 Step 页面。"""
+        u"""
+        创建四个 Step 页面。
+        """
         self.step1_page = self.create_step1_page()
         self.step2_page = self.create_step2_page()
         self.step3_page = self.create_placeholder_page(
@@ -186,7 +226,12 @@ class FaceRigWizard(QWidget):
         )
 
     def create_layouts(self):
-        u"""创建主布局。"""
+        u"""
+        创建主布局。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(
             self
         )
@@ -203,6 +248,9 @@ class FaceRigWizard(QWidget):
         main_layout.addWidget(
             self.title_label
         )
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         main_layout.addWidget(
             self.subtitle_label
         )
@@ -222,6 +270,9 @@ class FaceRigWizard(QWidget):
             7,
             7
         )
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         step_layout.setSpacing(
             5
         )
@@ -241,6 +292,9 @@ class FaceRigWizard(QWidget):
         )
 
         bottom_layout = QHBoxLayout()
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         bottom_layout.setContentsMargins(
             0,
             0,
@@ -258,12 +312,20 @@ class FaceRigWizard(QWidget):
             self.next_button
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addLayout(
             bottom_layout
         )
 
     def create_connections(self):
-        u"""连接 UI Signal。"""
+        u"""
+        连接 UI Signal。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for step_button in self.step_buttons:
             step_button.clicked.connect(
                 self.clicked_step_button
@@ -272,6 +334,9 @@ class FaceRigWizard(QWidget):
         self.next_button.clicked.connect(
             self.clicked_next_button
         )
+        # -------------------------------------------------------------------------
+        # Step 02：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.mouth_joint_slider.valueChanged.connect(
             self.update_mouth_joint_value
         )
@@ -282,6 +347,9 @@ class FaceRigWizard(QWidget):
         self.mirror_lf_to_rt_button.clicked.connect(
             self.mirror_lf_to_rt
         )
+        # -------------------------------------------------------------------------
+        # Step 03：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.mirror_rt_to_lf_button.clicked.connect(
             self.mirror_rt_to_lf
         )
@@ -289,6 +357,9 @@ class FaceRigWizard(QWidget):
             self.undo_last_mirror
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.face_ctrl_global_scale_spin.valueChanged.connect(
             self.controller_settings_changed
         )
@@ -301,6 +372,9 @@ class FaceRigWizard(QWidget):
                 self.controller_settings_changed
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for module_name in self.controller_size_widgets:
             size_spin = self.controller_size_widgets.get(
                 module_name
@@ -314,7 +388,16 @@ class FaceRigWizard(QWidget):
     # =========================================================================
 
     def create_step1_page(self):
-        u"""创建 Face Setup 页面。"""
+        u"""
+        创建 Face Setup 页面。
+
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         page = QWidget()
         main_layout = QVBoxLayout(
             page
@@ -352,6 +435,9 @@ class FaceRigWizard(QWidget):
             model_description
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.face_head_picker = MayaObjectPicker(
             label_text=u"Head *",
             placeholder=u"头部主模型",
@@ -412,6 +498,9 @@ class FaceRigWizard(QWidget):
             )
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         mouth_layout = QHBoxLayout()
         mouth_layout.setContentsMargins(
             0,
@@ -448,6 +537,9 @@ class FaceRigWizard(QWidget):
         self.mouth_joint_slider.setValue(
             int(self.mouth_joint_default / self.mouth_joint_step)
         )
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.mouth_joint_slider.setMinimumWidth(
             300
         )
@@ -485,6 +577,9 @@ class FaceRigWizard(QWidget):
             1
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return page
 
     # =========================================================================
@@ -492,7 +587,16 @@ class FaceRigWizard(QWidget):
     # =========================================================================
 
     def create_step2_page(self):
-        u"""创建 Face Guide 编辑页面。"""
+        u"""
+        创建 Face Guide 编辑页面。
+
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         page = QWidget()
         main_layout = QVBoxLayout(
             page
@@ -563,6 +667,9 @@ class FaceRigWizard(QWidget):
             self.reimport_guide_button
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         guide_layout.addWidget(
             guide_description
         )
@@ -633,6 +740,9 @@ class FaceRigWizard(QWidget):
         mirror_button_layout.addWidget(
             self.undo_mirror_button
         )
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         mirror_button_layout.addStretch(
             1
         )
@@ -716,6 +826,9 @@ class FaceRigWizard(QWidget):
             ("md", u"MD", 17),
         ]
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         row = 2
 
         for side_item in side_items:
@@ -828,13 +941,26 @@ class FaceRigWizard(QWidget):
             1
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return page
 
     def create_size_spin_box(
             self,
             value=1.0
     ):
-        u"""创建只保留 1 位小数的 Controller Size QDoubleSpinBox。"""
+        u"""
+        创建只保留 1 位小数的 Controller Size QDoubleSpinBox。
+
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
+
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
+        """
         spin_box = QDoubleSpinBox()
         spin_box.setDecimals(
             1
@@ -859,7 +985,22 @@ class FaceRigWizard(QWidget):
             title,
             description
     ):
-        u"""创建尚未完成的步骤页面。"""
+        u"""
+        创建尚未完成的步骤页面。
+
+        Args:
+            title (str):
+                窗口、Section、Dialog 或报告使用的标题文本。
+            description (str):
+                UI Step / Section 中展示的功能说明文本。
+
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         page = QWidget()
         layout = QVBoxLayout(
             page
@@ -871,6 +1012,9 @@ class FaceRigWizard(QWidget):
             0
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         card, card_layout = theme.make_card(
             page
         )
@@ -886,6 +1030,9 @@ class FaceRigWizard(QWidget):
         description_label.setWordWrap(
             True
         )
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.set_role(
             description_label,
             "muted"
@@ -901,6 +1048,9 @@ class FaceRigWizard(QWidget):
             state_label,
             "pill"
         )
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         card_layout.addWidget(
             state_label,
             0,
@@ -913,6 +1063,9 @@ class FaceRigWizard(QWidget):
         layout.addStretch(
             1
         )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return page
 
     # =========================================================================
@@ -923,7 +1076,17 @@ class FaceRigWizard(QWidget):
             self,
             refresh=False
     ):
-        u"""返回当前 UI 使用的 FaceGuide 实例。"""
+        u"""
+        返回当前 UI 使用的 FaceGuide 实例。
+
+        Args:
+            refresh (bool):
+                读取数据前是否先从 Maya Scene / Config 重新刷新缓存。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+        """
         if refresh:
             self.face_guide = None
 
@@ -938,11 +1101,17 @@ class FaceRigWizard(QWidget):
 
         旧场景没有 face_current_step 时，FaceBase 会根据 Step Completed 状态自动推导并迁移。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：清理当前阶段不再需要的数据或场景状态
+        # -------------------------------------------------------------------------
         self.completed_step_indexes.clear()
         face_guide = self.get_face_guide(
             refresh=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not face_guide.config_node_exists():
             self.set_current_step(
                 0
@@ -962,6 +1131,9 @@ class FaceRigWizard(QWidget):
 
         step_value = 1
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         while step_value <= 4:
             completed = bool(
                 step_status.get(
@@ -979,6 +1151,9 @@ class FaceRigWizard(QWidget):
 
         current_step_index = current_step_value - 1
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if current_step_index < 0 or current_step_index >= self.page_stack.count():
             current_step_index = 0
 
@@ -986,6 +1161,9 @@ class FaceRigWizard(QWidget):
             current_step_index
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.status_label.setText(
             u"已恢复到 Step {:02d}".format(
                 current_step_value
@@ -996,7 +1174,13 @@ class FaceRigWizard(QWidget):
             self,
             step_index
     ):
-        u"""清除指定 Step 后面的 UI 完成状态。"""
+        u"""
+        清除指定 Step 后面的 UI 完成状态。
+
+        Args:
+            step_index (int):
+                对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
+        """
         next_step_index = step_index + 1
 
         while next_step_index < len(self.step_buttons):
@@ -1017,6 +1201,10 @@ class FaceRigWizard(QWidget):
 
         这里只改变当前查看页面，不直接修改 Config 的 Workflow Progress。
         正式进度只在 Step 完成或旧 Step 被修改变脏时更新。
+
+        Args:
+            step_index (int):
+                对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
         """
         if step_index < 0:
             return
@@ -1036,7 +1224,9 @@ class FaceRigWizard(QWidget):
         self.update_navigation_buttons()
 
     def update_step_buttons(self):
-        u"""刷新顶部 Step Navigation。"""
+        u"""
+        刷新顶部 Step Navigation。
+        """
         for step_index in range(len(self.step_buttons)):
             step_button = self.step_buttons[step_index]
             current = step_index == self.current_step_index
@@ -1060,7 +1250,9 @@ class FaceRigWizard(QWidget):
                 )
 
     def update_navigation_buttons(self):
-        u"""刷新底部“下一步”状态。"""
+        u"""
+        刷新底部“下一步”状态。
+        """
         self.next_button.setText(
             u"下一步"
         )
@@ -1089,7 +1281,9 @@ class FaceRigWizard(QWidget):
         )
 
     def clicked_step_button(self):
-        u"""通过顶部导航返回已经完成的 Step。"""
+        u"""
+        通过顶部导航返回已经完成的 Step。
+        """
         step_button = self.sender()
 
         if step_button is None:
@@ -1117,7 +1311,9 @@ class FaceRigWizard(QWidget):
         )
 
     def clicked_next_button(self):
-        u"""提交当前 Step，并在成功后进入下一步。"""
+        u"""
+        提交当前 Step，并在成功后进入下一步。
+        """
         if self.current_step_index == 0:
             if not self.build_step1():
                 return
@@ -1143,7 +1339,13 @@ class FaceRigWizard(QWidget):
             self,
             slider_value
     ):
-        u"""更新嘴唇 Joint 数量显示。"""
+        u"""
+        更新嘴唇 Joint 数量显示。
+
+        Args:
+            slider_value (int | float):
+                UI Slider 当前值；回调用于同步对应 Rig / Setup 参数。
+        """
         mouth_joint_number = slider_value * self.mouth_joint_step
         self.mouth_joint_value_label.setText(
             u"{}".format(
@@ -1152,11 +1354,26 @@ class FaceRigWizard(QWidget):
         )
 
     def get_mouth_joint_number(self):
-        u"""返回当前嘴唇 Joint 数量。"""
+        u"""
+        返回当前嘴唇 Joint 数量。
+
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+        """
         return self.mouth_joint_slider.value() * self.mouth_joint_step
 
     def build_step1(self):
-        u"""执行 FaceSetup Step。"""
+        u"""
+        执行 FaceSetup Step。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         face_setup = FaceSetup(
             face_head_model=self.face_head_picker.get_value(),
             face_lf_eye_model=self.face_lf_eye_picker.get_value(),
@@ -1181,19 +1398,31 @@ class FaceRigWizard(QWidget):
             )
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.face_setup = face_setup
         self.completed_step_indexes.add(
             0
         )
+        # -------------------------------------------------------------------------
+        # Step 03：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.invalidate_ui_steps_after(
             0
         )
         self.get_face_guide(
             refresh=True
         )
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.status_label.setText(
             u"Face Setup 完成"
         )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     # =========================================================================
@@ -1201,11 +1430,23 @@ class FaceRigWizard(QWidget):
     # =========================================================================
 
     def enter_step2(self):
-        u"""进入 Step 02，自动导入或复用 Guide。"""
+        u"""
+        进入 Step 02，自动导入或复用 Guide。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         face_guide = self.get_face_guide(
             refresh=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             if not face_guide.guide_exists():
                 result = face_guide.build_guide()
@@ -1239,12 +1480,27 @@ class FaceRigWizard(QWidget):
             )
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 03：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def refresh_step2_summary(self):
-        u"""刷新 Guide 完整性摘要。"""
+        u"""
+        刷新 Guide 完整性摘要。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         face_guide = self.get_face_guide()
 
+        # -------------------------------------------------------------------------
+        # Step 02：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             validation = face_guide.validate_guides()
         except Exception:
@@ -1256,6 +1512,9 @@ class FaceRigWizard(QWidget):
             )
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if validation.get("valid", False):
             self.guide_summary_label.setText(
                 u"Guide 完整 · {}/{} Locator · Version {}".format(
@@ -1272,15 +1531,23 @@ class FaceRigWizard(QWidget):
                 []
             )
         )
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.guide_summary_label.setText(
             u"Guide 不完整 · 缺少 {} 个 Locator".format(
                 missing_count
             )
         )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return False
 
     def mark_step2_dirty(self):
-        u"""把 Step 02 和后续 Step 标记为需要重新提交，并把 Workflow 退回 Step 02。"""
+        u"""
+        把 Step 02 和后续 Step 标记为需要重新提交，并把 Workflow 退回 Step 02。
+        """
         face_guide = self.get_face_guide()
 
         if face_guide.config_node_exists():
@@ -1307,7 +1574,13 @@ class FaceRigWizard(QWidget):
     # =========================================================================
 
     def reimport_step2_guide(self):
-        u"""重新导入完整模板，并保留当前仍存在 Locator 的位置。"""
+        u"""
+        重新导入完整模板，并保留当前仍存在 Locator 的位置。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
         face_guide = self.get_face_guide()
 
         try:
@@ -1342,14 +1615,26 @@ class FaceRigWizard(QWidget):
     # =========================================================================
 
     def mirror_lf_to_rt(self):
-        u"""LF Guide 镜像到 RT。"""
+        u"""
+        LF Guide 镜像到 RT。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         return self.mirror_step2_guides(
             source_side="lf",
             target_side="rt"
         )
 
     def mirror_rt_to_lf(self):
-        u"""RT Guide 镜像到 LF。"""
+        u"""
+        RT Guide 镜像到 LF。
+
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
+        """
         return self.mirror_step2_guides(
             source_side="rt",
             target_side="lf"
@@ -1360,7 +1645,22 @@ class FaceRigWizard(QWidget):
             source_side,
             target_side
     ):
-        u"""执行一次 Guide Mirror，并保存 UI Undo Snapshot。"""
+        u"""
+        执行一次 Guide Mirror，并保存 UI Undo Snapshot。
+
+        Args:
+            source_side (str):
+                当前 Maya / Rig 操作使用的 `source_side` 名称或标记。
+            target_side (str):
+                当前 Maya / Rig 操作使用的 `target_side` 名称或标记。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         face_guide = self.get_face_guide()
 
         try:
@@ -1380,6 +1680,9 @@ class FaceRigWizard(QWidget):
             )
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.last_mirror_snapshot = result.get(
             "snapshot"
         )
@@ -1387,8 +1690,14 @@ class FaceRigWizard(QWidget):
             bool(self.last_mirror_snapshot)
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self.mark_step2_dirty()
         self.refresh_step2_summary()
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.status_label.setText(
             u"Guide Mirror 完成：{} → {} · {} 组".format(
                 source_side,
@@ -1396,10 +1705,19 @@ class FaceRigWizard(QWidget):
                 result.get("count", 0)
             )
         )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def undo_last_mirror(self):
-        u"""恢复最近一次 Mirror 前的 Target Guide 状态。"""
+        u"""
+        恢复最近一次 Mirror 前的 Target Guide 状态。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
         if not self.last_mirror_snapshot:
             return False
 
@@ -1436,7 +1754,13 @@ class FaceRigWizard(QWidget):
     # =========================================================================
 
     def get_step2_controller_settings(self):
-        u"""从 UI 收集完整 Controller Settings。"""
+        u"""
+        从 UI 收集完整 Controller Settings。
+
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
+        """
         return {
             "face_ctrl_global_scale": self.face_ctrl_global_scale_spin.value(),
             "face_ctrl_color_lf": self.controller_color_widgets["lf"].get_value(),
@@ -1452,12 +1776,30 @@ class FaceRigWizard(QWidget):
         }
 
     def load_step2_controller_settings(self):
-        u"""从 Face Config 回填 Controller Settings。"""
+        u"""
+        从 Face Config 回填 Controller Settings。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         face_guide = self.get_face_guide()
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         settings = face_guide.load_controller_settings()
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.loading_controller_settings = True
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             self.face_ctrl_global_scale_spin.setValue(
                 float(settings.get("face_ctrl_global_scale", 1.0))
@@ -1497,13 +1839,22 @@ class FaceRigWizard(QWidget):
         finally:
             self.loading_controller_settings = False
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
     def controller_settings_changed(
             self,
             value=None
     ):
-        u"""Controller Settings 修改后标记 Step 02 Dirty。"""
+        u"""
+        Controller Settings 修改后标记 Step 02 Dirty。
+
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
+        """
         if self.loading_controller_settings:
             return
 
@@ -1517,7 +1868,17 @@ class FaceRigWizard(QWidget):
     # =========================================================================
 
     def get_missing_guide_message(self, validation):
-        u"""把缺失 Locator 列表整理成用户可读错误信息。"""
+        u"""
+        把缺失 Locator 列表整理成用户可读错误信息。
+
+        Args:
+            validation (object):
+                当前方法执行 Maya / Rig 操作时使用的 `validation` 数据。
+
+        Returns:
+            object | str:
+            当前 API 查询或处理后得到的字符串结果。
+        """
         missing_names = validation.get(
             "missing_guide_names",
             []
@@ -1539,7 +1900,16 @@ class FaceRigWizard(QWidget):
         return message
 
     def finalize_step2(self):
-        u"""完整检查 Guide，保存 Settings，并提交 Step 02。"""
+        u"""
+        完整检查 Guide，保存 Settings，并提交 Step 02。
+
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         face_guide = self.get_face_guide()
 
         try:
@@ -1566,6 +1936,9 @@ class FaceRigWizard(QWidget):
             self.refresh_step2_summary()
             return False
 
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         settings = self.get_step2_controller_settings()
 
         try:
@@ -1588,6 +1961,9 @@ class FaceRigWizard(QWidget):
         self.completed_step_indexes.add(
             1
         )
+        # -------------------------------------------------------------------------
+        # Step 03：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.invalidate_ui_steps_after(
             1
         )
@@ -1595,17 +1971,29 @@ class FaceRigWizard(QWidget):
         self.undo_mirror_button.setEnabled(
             False
         )
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self.refresh_step2_summary()
         self.status_label.setText(
             u"Face Guide 完成 · {} 个模板 Locator · Controller Settings 已保存".format(
                 validation.get("template_guide_count", 0)
             )
         )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return True
 
 
 def main():
-    u"""创建 Face Rig UI 并返回 QWidget。"""
+    u"""
+    创建 Face Rig UI 并返回 QWidget。
+
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
+    """
     return FaceRigWizard()
 
 

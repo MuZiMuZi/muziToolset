@@ -79,7 +79,7 @@ core_modules = [
     "core.mesh_utils",
     "core.model_check_utils",
     "core.rename_utils",
-    "core.scene_clean_utils",
+    "core.scene_utils",
     "core.scene_utils",
     "core.skin_utils",
     "core.snap_utils",

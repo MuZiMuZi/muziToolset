@@ -110,7 +110,7 @@ def get_dag_depth(node):
 
     Returns:
         int:
-            节点 Long Path 的 DAG 深度；直接位于 World 下的节点返回 1。
+        节点 Long Path 的 DAG 深度；直接位于 World 下的节点返回 1。
     """
     long_name = _get_dag_long_name(
         node
@@ -136,7 +136,7 @@ def get_parent(
 
     Returns:
         str | None:
-            直接 Parent 名称；节点位于 World 下时返回 None。
+        直接 Parent 名称；节点位于 World 下时返回 None。
     """
     long_name = _get_dag_long_name(
         node
@@ -172,7 +172,7 @@ def get_children(
 
     Returns:
         list[str]:
-            按 Maya DAG 查询结果顺序返回的直接 Child 列表；没有 Child 时返回空列表。
+        按 Maya DAG 查询结果顺序返回的直接 Child 列表；没有 Child 时返回空列表。
     """
     long_name = _get_dag_long_name(
         node
@@ -216,8 +216,11 @@ def get_descendants(
 
     Returns:
         list[str]:
-            由浅到深排列的 Descendant 列表；启用 ``include_root`` 时 Root 位于最前面。
+        由浅到深排列的 Descendant 列表；启用 ``include_root`` 时 Root 位于最前面。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     root_long_name = _get_dag_long_name(
         node
     )
@@ -227,6 +230,9 @@ def get_descendants(
         "fullPath": True,
     }
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if node_type:
         kwargs["type"] = node_type
 
@@ -235,12 +241,18 @@ def get_descendants(
         **kwargs
     ) or []
 
+    # -------------------------------------------------------------------------
+    # Step 03：执行当前阶段的核心处理
+    # -------------------------------------------------------------------------
     descendants.sort(
         key=_get_path_depth
     )
 
     result = []
 
+    # -------------------------------------------------------------------------
+    # Step 04：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if include_root:
         include_current_root = True
 
@@ -270,6 +282,9 @@ def get_descendants(
                 descendant.split("|")[-1]
             )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return result
 
 
@@ -295,12 +310,15 @@ def parent(
 
     Returns:
         str:
-            Parent 操作完成后 Child 最新的唯一 DAG Long Path。
+        Parent 操作完成后 Child 最新的唯一 DAG Long Path。
 
     Raises:
         RuntimeError:
-            Child / Parent 无效、不是 Transform / Joint，或尝试 Parent 到自身时抛出。
+        Child / Parent 无效、不是 Transform / Joint，或尝试 Parent 到自身时抛出。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     child_long_name = _get_transform_long_name(
         child_node,
         label=u"子节点"
@@ -311,6 +329,9 @@ def parent(
         full_path=True
     )
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if parent_node is None:
         if current_parent is None:
             return child_long_name
@@ -335,6 +356,9 @@ def parent(
         label=u"父节点"
     )
 
+    # -------------------------------------------------------------------------
+    # Step 03：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if child_long_name == parent_long_name:
         raise RuntimeError(
             u"节点不能 Parent 到自身：{}".format(
@@ -345,6 +369,9 @@ def parent(
     if current_parent == parent_long_name:
         return child_long_name
 
+    # -------------------------------------------------------------------------
+    # Step 04：建立当前阶段需要的层级、连接或驱动关系
+    # -------------------------------------------------------------------------
     result = cmds.parent(
         child_long_name,
         parent_long_name,
@@ -356,6 +383,9 @@ def parent(
             child_long_name
         )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return scene_utils.get_long_name(
         result[0]
     )
@@ -383,12 +413,15 @@ def ensure_group(
 
     Returns:
         str:
-            已确认存在且 Parent 正确的 Group 唯一 DAG Long Path。
+        已确认存在且 Parent 正确的 Group 唯一 DAG Long Path。
 
     Raises:
         RuntimeError:
-            Group 名称为空、现有名称被非 Transform 节点占用，或 Parent 无效时抛出。
+        Group 名称为空、现有名称被非 Transform 节点占用，或 Parent 无效时抛出。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if name is None:
         raise RuntimeError(
             u"Group 名称不能为空。"
@@ -396,6 +429,9 @@ def ensure_group(
 
     name = str(name).strip()
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not name:
         raise RuntimeError(
             u"Group 名称不能为空。"
@@ -403,6 +439,9 @@ def ensure_group(
 
     parent_long_name = None
 
+    # -------------------------------------------------------------------------
+    # Step 03：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if parent_node is not None:
         parent_long_name = _get_transform_long_name(
             parent_node,
@@ -447,12 +486,18 @@ def ensure_group(
             parent_long_name
         )
 
+    # -------------------------------------------------------------------------
+    # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+    # -------------------------------------------------------------------------
     group = scene_utils.create_node(
         "transform",
         name,
         parent=parent_long_name
     )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return scene_utils.get_long_name(
         group
     )
@@ -480,12 +525,15 @@ def insert_parent_group(
 
     Returns:
         str:
-            新建 Parent Group 的唯一 DAG Long Path。
+        新建 Parent Group 的唯一 DAG Long Path。
 
     Raises:
         RuntimeError:
-            输入节点无效、Group 名称为空，或 Group 名称已经被占用时抛出。
+        输入节点无效、Group 名称为空，或 Group 名称已经被占用时抛出。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     node_long_name = _get_transform_long_name(
         node,
         label=u"插组对象"
@@ -498,6 +546,9 @@ def insert_parent_group(
 
     group_name = str(group_name).strip()
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not group_name:
         raise RuntimeError(
             u"Group 名称不能为空。"
@@ -515,6 +566,9 @@ def insert_parent_group(
     )
     rotation = [0.0, 0.0, 0.0]
 
+    # -------------------------------------------------------------------------
+    # Step 03：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if match_rotation:
         rotation = transform_utils.get_world_rotation(
             node_long_name
@@ -536,6 +590,9 @@ def insert_parent_group(
             original_parent
         )
 
+    # -------------------------------------------------------------------------
+    # Step 04：应用并更新当前阶段需要的属性或状态
+    # -------------------------------------------------------------------------
     transform_utils.set_world_translation(
         object_group,
         translation
@@ -550,6 +607,9 @@ def insert_parent_group(
         object_group
     )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return scene_utils.get_long_name(
         object_group
     )

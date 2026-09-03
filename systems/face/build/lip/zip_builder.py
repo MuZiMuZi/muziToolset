@@ -39,13 +39,33 @@ def insert_zip_offset_group(
         function,
         index
 ):
-    u"""在 Joint 上方插入 Zip Offset Group，并保持当前世界姿态。"""
+    u"""
+    在 Joint 上方插入 Zip Offset Group，并保持当前世界姿态。
+
+    Args:
+        joint (str):
+            需要处理的 Maya Joint 节点名称。
+        function (str | callable):
+            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
+        index (int):
+            目标元素或节点的序号。
+
+    Returns:
+        dict:
+        包含本次构建、查询或处理结果的结构化字典。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     parent = hierarchy_utils.get_parent(
         joint
     )
     world_matrix = transform_utils.get_world_matrix(
         joint
     )
+    # -------------------------------------------------------------------------
+    # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+    # -------------------------------------------------------------------------
     group_name = face_naming.create_role_name(
         type="grp",
         side="md",
@@ -59,6 +79,9 @@ def insert_zip_offset_group(
         group_name
     )
 
+    # -------------------------------------------------------------------------
+    # Step 03：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if parent is not None:
         zip_offset = hierarchy_utils.parent(
             zip_offset,
@@ -69,11 +92,17 @@ def insert_zip_offset_group(
         zip_offset,
         world_matrix
     )
+    # -------------------------------------------------------------------------
+    # Step 04：建立当前阶段需要的层级、连接或驱动关系
+    # -------------------------------------------------------------------------
     joint = hierarchy_utils.parent(
         joint,
         zip_offset
     )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return {
         "joint": joint,
         "zip_offset": zip_offset,
@@ -87,7 +116,26 @@ def create_rest_world_matrix(
         function,
         index
 ):
-    u"""保存 Zip Offset 的 Rest Local Matrix，并实时组合 Parent World Matrix。"""
+    u"""
+    保存 Zip Offset 的 Rest Local Matrix，并实时组合 Parent World Matrix。
+
+    Args:
+        zip_offset (str):
+            Zip Lip 网络中位于 Lip Joint 上方、接收闭合 Matrix 结果的 Offset Transform。
+        parent (str):
+            父级 Maya 节点名称。
+        function (str | callable):
+            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
+        index (int):
+            目标元素或节点的序号。
+
+    Returns:
+        dict:
+        包含本次构建、查询或处理结果的结构化字典。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     local_matrix = cmds.xform(
         zip_offset,
         query=True,
@@ -95,6 +143,9 @@ def create_rest_world_matrix(
         matrix=True
     )
 
+    # -------------------------------------------------------------------------
+    # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+    # -------------------------------------------------------------------------
     hold_matrix = scene_utils.create_node(
         "holdMatrix",
         face_naming.create_role_name(
@@ -112,11 +163,17 @@ def create_rest_world_matrix(
         type="matrix"
     )
 
+    # -------------------------------------------------------------------------
+    # Step 03：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     nodes = [
         hold_matrix,
     ]
     output_plug = hold_matrix + ".outMatrix"
 
+    # -------------------------------------------------------------------------
+    # Step 04：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if parent is not None:
         rest_mult_matrix = scene_utils.create_node(
             "multMatrix",
@@ -144,6 +201,9 @@ def create_rest_world_matrix(
         )
         output_plug = rest_mult_matrix + ".matrixSum"
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return {
         "output": output_plug,
         "nodes": nodes,
@@ -157,10 +217,34 @@ def connect_world_matrix_to_transform(
         function,
         index
 ):
-    u"""把 World Matrix 转换到 Transform Parent Local Space。"""
+    u"""
+    把 World Matrix 转换到 Transform Parent Local Space。
+
+    Args:
+        world_matrix_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+        transform (str):
+            需要处理的 Maya Transform 节点名称。
+        parent (str):
+            父级 Maya 节点名称。
+        function (str | callable):
+            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
+        index (int):
+            目标元素或节点的序号。
+
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     nodes = []
     local_matrix_plug = world_matrix_plug
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if parent is not None:
         local_mult_matrix = scene_utils.create_node(
             "multMatrix",
@@ -198,6 +282,9 @@ def connect_world_matrix_to_transform(
             index=index
         )
     )
+    # -------------------------------------------------------------------------
+    # Step 03：建立当前阶段需要的层级、连接或驱动关系
+    # -------------------------------------------------------------------------
     connection_utils.connect_plugs(
         local_matrix_plug,
         decompose_matrix + ".inputMatrix",
@@ -208,6 +295,9 @@ def connect_world_matrix_to_transform(
         transform + ".translate",
         force=True
     )
+    # -------------------------------------------------------------------------
+    # Step 04：建立当前阶段需要的层级、连接或驱动关系
+    # -------------------------------------------------------------------------
     connection_utils.connect_plugs(
         decompose_matrix + ".outputRotate",
         transform + ".rotate",
@@ -217,6 +307,9 @@ def connect_world_matrix_to_transform(
     nodes.append(
         decompose_matrix
     )
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return nodes
 
 
@@ -229,7 +322,17 @@ def configure_remap(
         start_position,
         end_position
 ):
-    u"""配置 0~1 的线性 Remap。"""
+    u"""
+    配置 0~1 的线性 Remap。
+
+    Args:
+        remap_node (str):
+            Zip / Falloff 计算使用的 remapValue 节点。
+        start_position (list[float] | tuple[float, float, float] | float):
+            插值、Remap 或 Joint 分布的起始位置 / 起始值。
+        end_position (list[float] | tuple[float, float, float] | float):
+            插值、Remap 或 Joint 分布的结束位置 / 结束值。
+    """
     if end_position <= start_position:
         end_position = start_position + 0.0001
 
@@ -265,7 +368,28 @@ def create_zip_influence(
         pair_index,
         falloff
 ):
-    u"""创建一对嘴唇 Joint 的左右 Zip Influence 0~1。"""
+    u"""
+    创建一对嘴唇 Joint 的左右 Zip Influence 0~1。
+
+    Args:
+        left_zip_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+        right_zip_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+        pair_count (int):
+            当前构建、采样或查询过程使用的元素数量。
+        pair_index (int):
+            对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
+        falloff (float):
+            Zip Lip 或局部驱动沿嘴唇分布的衰减范围 / Falloff。
+
+    Returns:
+        dict:
+        包含本次构建、查询或处理结果的结构化字典。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     step = 1.0 / float(pair_count)
     item_number = pair_index + 1
 
@@ -275,6 +399,9 @@ def create_zip_influence(
     if left_start < 0.0:
         left_start = 0.0
 
+    # -------------------------------------------------------------------------
+    # Step 02：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     right_number = pair_count - pair_index
     right_end = step * right_number
     right_start = step * (right_number - falloff)
@@ -303,6 +430,9 @@ def create_zip_influence(
         )
     )
 
+    # -------------------------------------------------------------------------
+    # Step 03：建立当前阶段需要的层级、连接或驱动关系
+    # -------------------------------------------------------------------------
     connection_utils.connect_plugs(
         left_zip_plug,
         left_remap + ".inputValue",
@@ -346,6 +476,9 @@ def create_zip_influence(
         )
     )
 
+    # -------------------------------------------------------------------------
+    # Step 04：建立当前阶段需要的层级、连接或驱动关系
+    # -------------------------------------------------------------------------
     connection_utils.connect_plugs(
         left_remap + ".outValue",
         add_node + ".input1",
@@ -371,6 +504,9 @@ def create_zip_influence(
         1.0
     )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return {
         "output": clamp_node + ".outputR",
         "nodes": [
@@ -396,7 +532,34 @@ def build_zip_pair(
         right_zip_plug,
         falloff
 ):
-    u"""构建一对 Upper / Lower Lip Joint 的 Matrix Zip 网络。"""
+    u"""
+    构建一对 Upper / Lower Lip Joint 的 Matrix Zip 网络。
+
+    Args:
+        upper_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        lower_joint (str):
+            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        pair_index (int):
+            对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
+        pair_count (int):
+            当前构建、采样或查询过程使用的元素数量。
+        zip_height_reverse_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+        left_zip_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+        right_zip_plug (str):
+            完整 Maya Plug，例如 `node.translateX`。
+        falloff (float):
+            Zip Lip 或局部驱动沿嘴唇分布的衰减范围 / Falloff。
+
+    Returns:
+        dict:
+        包含本次构建、查询或处理结果的结构化字典。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     item_number = pair_index + 1
 
     upper_insert = insert_zip_offset_group(
@@ -438,6 +601,9 @@ def build_zip_pair(
         mid_blend + ".inputMatrix",
         force=True
     )
+    # -------------------------------------------------------------------------
+    # Step 02：建立当前阶段需要的层级、连接或驱动关系
+    # -------------------------------------------------------------------------
     connection_utils.connect_plugs(
         lower_rest["output"],
         mid_blend + ".target[0].targetMatrix",
@@ -494,6 +660,9 @@ def build_zip_pair(
         force=True
     )
 
+    # -------------------------------------------------------------------------
+    # Step 03：建立当前阶段需要的层级、连接或驱动关系
+    # -------------------------------------------------------------------------
     connection_utils.connect_plugs(
         lower_rest["output"],
         lower_zip_blend + ".inputMatrix",
@@ -532,6 +701,9 @@ def build_zip_pair(
             node
         )
 
+    # -------------------------------------------------------------------------
+    # Step 04：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for node in lower_rest["nodes"]:
         utility_nodes.append(
             node
@@ -562,6 +734,9 @@ def build_zip_pair(
             node
         )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return {
         "upper_joint": upper_insert["joint"],
         "lower_joint": lower_insert["joint"],
@@ -590,7 +765,40 @@ def build_zip_lip(
         falloff=3,
         utility_parent=None
 ):
-    u"""创建 Matrix Zip Lip。"""
+    u"""
+    创建 Matrix Zip Lip。
+
+    Args:
+        upper_joints (object):
+            当前方法执行 Maya / Rig 操作时使用的 `upper_joints` 数据。
+        lower_joints (object):
+            当前方法执行 Maya / Rig 操作时使用的 `lower_joints` 数据。
+        left_zip_control (str):
+            当前 Rig 操作或驱动使用的动画 Controller Transform。
+        right_zip_control (str):
+            当前 Rig 操作或驱动使用的动画 Controller Transform。
+        jaw_control (str):
+            当前 Rig 操作或驱动使用的动画 Controller Transform。
+        zip_height (float):
+            当前 Maya / Rig 计算使用的 `zip_height` 数值参数。
+        falloff (int):
+            Zip Lip 或局部驱动沿嘴唇分布的衰减范围 / Falloff。
+        utility_parent (object):
+            当前方法执行 Maya / Rig 操作时使用的 `utility_parent` 数据。
+
+    Returns:
+        dict:
+        包含本次构建、查询或处理结果的结构化字典。
+
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+        ValueError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if upper_joints is None:
         upper_joints = []
 
@@ -621,6 +829,9 @@ def build_zip_lip(
         )
         index += 1
 
+    # -------------------------------------------------------------------------
+    # Step 02：验证并规范化当前阶段需要的输入数据
+    # -------------------------------------------------------------------------
     transform_utils.validate_transform(
         left_zip_control
     )
@@ -645,6 +856,9 @@ def build_zip_lip(
             u"zip_height 必须在 0~1 范围内。"
         )
 
+    # -------------------------------------------------------------------------
+    # Step 03：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     falloff = int(
         falloff
     )
@@ -681,6 +895,9 @@ def build_zip_lip(
         channel_box=True
     )
 
+    # -------------------------------------------------------------------------
+    # Step 04：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     right_zip_attr = attr_utils.Attr(
         right_zip_control
     )
@@ -714,6 +931,9 @@ def build_zip_lip(
     created_zip_offsets = []
     node_group = None
 
+    # -------------------------------------------------------------------------
+    # Step 05：执行可能失败的操作，并统一处理异常或清理状态
+    # -------------------------------------------------------------------------
     try:
         node_group = scene_utils.create_node(
             "transform",

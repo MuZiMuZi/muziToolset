@@ -49,7 +49,25 @@ def create_attachment_group(
         feature,
         role
 ):
-    u"""创建 Drive / Aim / Up Attachment Group。"""
+    u"""
+    创建 Drive / Aim / Up Attachment Group。
+
+    Args:
+        nodes_group (str):
+            当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        region (str):
+            Face Component 的区域标记，例如 upper、lower、inner、outer。
+        feature (str):
+            Face Component 的功能部位标记，例如 lid、bag、lip。
+        role (str):
+            当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
+
+    Returns:
+        object:
+        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    """
     group_name = face_naming.create_feature_name(
         "grp",
         side,
@@ -72,7 +90,23 @@ def create_curve_attachment(
         name,
         parent
 ):
-    u"""按弧长百分比在指定 Curve 创建 Attachment。"""
+    u"""
+    按弧长百分比在指定 Curve 创建 Attachment。
+
+    Args:
+        curve (str):
+            需要处理的 Maya Curve Transform 或 Shape 名称。
+        percentage (float):
+            沿 Curve 或数据范围的归一化百分比，通常为 0.0～1.0。
+        name (str):
+            创建或查询时使用的节点名称。
+        parent (str):
+            父级 Maya 节点名称。
+
+    Returns:
+        object:
+        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    """
     parameter = curve_utils.length_percentage_to_parameter(
         curve,
         percentage
@@ -103,7 +137,42 @@ def attach_joints_to_curves(
         parent_group=None,
         preserve_joint_offset=True
 ):
-    u"""把一组 Joint 接入 Drive / Aim Curve 网络。"""
+    u"""
+    把一组 Joint 接入 Drive / Aim Curve 网络。
+
+    Args:
+        joints (str | list[str]):
+            需要批量处理的 Maya Joint 节点或 Joint Chain。
+        drive_curve (str):
+            当前采样、附着或驱动使用的 NURBS Curve。
+        aim_curve (str):
+            当前采样、附着或驱动使用的 NURBS Curve。
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        region (str):
+            Face Component 的区域标记，例如 upper、lower、inner、outer。
+        feature (str):
+            Face Component 的功能部位标记，例如 lid、bag、lip。
+        up_object (str):
+            Eyelid / Radial Joint Aim 系统用于稳定 Orientation 的 Up Object。
+        up_curve (str):
+            当前采样、附着或驱动使用的 NURBS Curve。
+        parent_group (str | None):
+            新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
+        preserve_joint_offset (bool):
+            控制当前方法中的 `preserve_joint_offset` 选项是否启用。
+
+    Returns:
+        dict:
+        包含本次构建、查询或处理结果的结构化字典。
+
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+    """
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if joints is None:
         joints = []
 
@@ -117,6 +186,9 @@ def attach_joints_to_curves(
             joint
         )
 
+    # -------------------------------------------------------------------------
+    # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     curve_utils.get_curve_shape(
         drive_curve
     )
@@ -133,6 +205,9 @@ def attach_joints_to_curves(
             up_object
         )
 
+    # -------------------------------------------------------------------------
+    # Step 03：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if parent_group is not None:
         transform_utils.validate_transform(
             parent_group
@@ -155,6 +230,9 @@ def attach_joints_to_curves(
         1
     )
 
+    # -------------------------------------------------------------------------
+    # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+    # -------------------------------------------------------------------------
     scene_utils.ensure_nodes_available(
         [
             nodes_group_name,
@@ -165,6 +243,9 @@ def attach_joints_to_curves(
 
     nodes_group = None
 
+    # -------------------------------------------------------------------------
+    # Step 05：执行可能失败的操作，并统一处理异常或清理状态
+    # -------------------------------------------------------------------------
     try:
         nodes_group = scene_utils.create_node(
             "transform",

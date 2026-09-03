@@ -70,7 +70,7 @@ window = rename_tool.main()
 
 | 操作 | Core |
 | --- | --- |
-| 命名规则 | [name_utils.py](../reference/core/name_utils.md) / [rename_utils.py](../reference/core/rename_utils.md) |
+| 命名规则 | [rename_utils.py](../reference/core/rename_utils.md) |
 | Attribute | [attr_utils.py](../reference/core/attr_utils.md) |
 | Plug Connection | [connection_utils.py](../reference/core/connection_utils.md) |
 | Constraint | [constraint_utils.py](../reference/core/constraint_utils.md) |

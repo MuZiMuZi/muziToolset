@@ -92,8 +92,11 @@ def get_pole_vector_position(
 
     Returns:
         list:
-            推荐的 Pole Vector 世界坐标 [x, y, z]。
+        推荐的 Pole Vector 世界坐标 [x, y, z]。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     start_position = transform_utils.get_world_translation(
         start_joint
     )
@@ -108,6 +111,9 @@ def get_pole_vector_position(
         end_position,
         start_position
     )
+    # -------------------------------------------------------------------------
+    # Step 02：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     start_to_middle = math_utils.subtract_vector3(
         middle_position,
         start_position
@@ -123,6 +129,9 @@ def get_pole_vector_position(
     line_direction = math_utils.normalize_vector3(
         start_to_end
     )
+    # -------------------------------------------------------------------------
+    # Step 03：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     projection_length = math_utils.dot_vector3(
         start_to_middle,
         line_direction
@@ -143,6 +152,9 @@ def get_pole_vector_position(
         pole_direction
     )
 
+    # -------------------------------------------------------------------------
+    # Step 04：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if math_utils.length_vector3(pole_direction) <= 0.000001:
         pole_direction = [
             0.0,
@@ -160,6 +172,9 @@ def get_pole_vector_position(
     )
     chain_length = start_segment_length + end_segment_length
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return math_utils.add_vector3(
         middle_position,
         math_utils.multiply_vector3(
@@ -182,12 +197,15 @@ def create_ik_rig(start_joint, end_joint):
 
     Returns:
         dict:
-            返回 Rig Group、IK Handle、Effector、End Controller 和可选 Pole Controller。
+        返回 Rig Group、IK Handle、Effector、End Controller 和可选 Pole Controller。
 
     Raises:
         RuntimeError:
-            Joint 输入无效、两端不属于同一子 Joint Chain 或 Chain 长度不足时抛出。
+        Joint 输入无效、两端不属于同一子 Joint Chain 或 Chain 长度不足时抛出。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：执行当前阶段的核心处理
+    # -------------------------------------------------------------------------
     joint_utils.Joint(
         start_joint
     )
@@ -221,6 +239,9 @@ def create_ik_rig(start_joint, end_joint):
         start_joint
     )
     rig_side = "md"
+    # -------------------------------------------------------------------------
+    # Step 02：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     rig_part_source = start_joint_short_name
 
     try:
@@ -271,6 +292,9 @@ def create_ik_rig(start_joint, end_joint):
         label=u"IK Rig 节点"
     )
 
+    # -------------------------------------------------------------------------
+    # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+    # -------------------------------------------------------------------------
     rig_group = scene_utils.create_node(
         "transform",
         rig_group_name
@@ -308,6 +332,9 @@ def create_ik_rig(start_joint, end_joint):
     end_position = transform_utils.get_world_translation(
         end_joint
     )
+    # -------------------------------------------------------------------------
+    # Step 04：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     chain_size = math_utils.distance_between_points(
         start_position,
         end_position
@@ -389,6 +416,9 @@ def create_ik_rig(start_joint, end_joint):
         0
     )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return {
         "group": rig_group,
         "ik_handle": ik_handle,
@@ -412,7 +442,7 @@ def find_rig_root(node):
 
     Returns:
         str | None:
-            找到时返回 Rig Module Root；没有标记节点时返回 None。
+        找到时返回 Rig Module Root；没有标记节点时返回 None。
     """
     try:
         current_node = scene_utils.get_long_name(
@@ -445,7 +475,7 @@ def get_duplicate_map():
 
     Returns:
         dict:
-            Key 为重复 Short Name，Value 为对应的 Long DAG Path 列表。
+        Key 为重复 Short Name，Value 为对应的 Long DAG Path 列表。
     """
     nodes = cmds.ls(
         long=True,
@@ -509,7 +539,12 @@ class RigTool(QWidget):
         )
 
     def create_widgets(self):
-        u"""创建界面控件。"""
+        u"""
+        创建界面控件。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.title_label = theme.make_title(
             u"Rig 工具"
         )
@@ -520,6 +555,9 @@ class RigTool(QWidget):
         self.create_fk_button = QPushButton(u"创建 FK Controller")
         self.open_control_creator_button = QPushButton(u"Controller Creator")
         self.open_joint_tool_button = QPushButton(u"Joint Tool")
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.open_skirt_tool_button = QPushButton(u"Skirt Rig Tool")
 
         self.ik_start_picker = MayaObjectPicker(
@@ -538,6 +576,9 @@ class RigTool(QWidget):
             self.create_ik_button
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.delete_rig_button = QPushButton(u"删除选择 Rig Module")
         theme.style_danger(
             self.delete_rig_button
@@ -546,15 +587,26 @@ class RigTool(QWidget):
         self.clear_keys_button = QPushButton(u"删除关键帧")
         self.reset_attrs_button = QPushButton(u"重置可动画属性")
         self.batch_constraint_button = QPushButton(u"批量 Parent Constraint")
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.create_default_groups_button = QPushButton(u"创建默认 Rig 层级")
         self.add_zero_group_button = QPushButton(u"添加 Zero Group")
         self.select_children_button = QPushButton(u"选择全部子物体")
         self.snap_button = QPushButton(u"最后对象吸附到参考中心")
         self.print_duplicates_button = QPushButton(u"打印重名节点")
+        # -------------------------------------------------------------------------
+        # Step 05：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.rename_duplicates_button = QPushButton(u"重命名重复节点")
 
     def create_layouts(self):
-        u"""创建 Card 布局。"""
+        u"""
+        创建 Card 布局。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         root_layout = QVBoxLayout(
             self
         )
@@ -572,6 +624,9 @@ class RigTool(QWidget):
         content_layout.setContentsMargins(0, 0, 6, 0)
         content_layout.setSpacing(12)
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         launch_card, launch_layout = theme.make_card(content)
         launch_layout.addWidget(
             theme.make_section_title(u"专项工具")
@@ -587,6 +642,9 @@ class RigTool(QWidget):
         launch_layout.addLayout(launch_grid)
 
         ik_card, ik_layout = theme.make_card(content)
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         ik_layout.addWidget(
             theme.make_section_title(u"RP IK")
         )
@@ -605,6 +663,9 @@ class RigTool(QWidget):
 
         utility_grid = QGridLayout()
         utility_grid.setHorizontalSpacing(8)
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         utility_grid.setVerticalSpacing(8)
 
         utility_buttons = [
@@ -642,24 +703,44 @@ class RigTool(QWidget):
         content_layout.addStretch(1)
 
         scroll_area.setWidget(content)
+        # -------------------------------------------------------------------------
+        # Step 05：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         root_layout.addWidget(scroll_area, 1)
 
     def create_connections(self):
-        u"""连接界面信号。"""
+        u"""
+        连接界面信号。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.create_fk_button.clicked.connect(self.open_fk_tool)
         self.open_control_creator_button.clicked.connect(self.open_control_creator)
         self.open_joint_tool_button.clicked.connect(self.open_joint_tool)
+        # -------------------------------------------------------------------------
+        # Step 02：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.open_skirt_tool_button.clicked.connect(self.open_skirt_tool)
         self.create_ik_button.clicked.connect(self.create_ik)
         self.delete_rig_button.clicked.connect(self.delete_selected_rig)
         self.clear_keys_button.clicked.connect(self.clear_keys)
+        # -------------------------------------------------------------------------
+        # Step 03：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.reset_attrs_button.clicked.connect(self.reset_attributes)
         self.batch_constraint_button.clicked.connect(self.batch_parent_constraint)
         self.create_default_groups_button.clicked.connect(self.create_default_groups)
         self.add_zero_group_button.clicked.connect(self.add_zero_groups)
+        # -------------------------------------------------------------------------
+        # Step 04：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.select_children_button.clicked.connect(self.select_children)
         self.snap_button.clicked.connect(self.snap_last_to_center)
         self.print_duplicates_button.clicked.connect(self.print_duplicate_nodes)
+        # -------------------------------------------------------------------------
+        # Step 05：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.rename_duplicates_button.clicked.connect(self.rename_duplicate_nodes)
 
     @staticmethod
@@ -675,7 +756,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                Window Manager 返回的 Tool 执行结果或窗口对象。
+            Window Manager 返回的 Tool 执行结果或窗口对象。
         """
         return window_manager.show_tool(
             "rig/{}".format(tool_key),
@@ -688,7 +769,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                Window Manager 返回的 FK Controller Tool 窗口或执行结果。
+            Window Manager 返回的 FK Controller Tool 窗口或执行结果。
         """
         return self.open_tool(
             "fk_controller",
@@ -701,7 +782,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                Window Manager 返回的 Controller Creator 窗口或执行结果。
+            Window Manager 返回的 Controller Creator 窗口或执行结果。
         """
         return self.open_tool(
             "controller_creator",
@@ -714,7 +795,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                Window Manager 返回的 Joint Tool 窗口或执行结果。
+            Window Manager 返回的 Joint Tool 窗口或执行结果。
         """
         return self.open_tool(
             "joint_tool",
@@ -727,7 +808,7 @@ class RigTool(QWidget):
 
         Returns:
             object:
-                Window Manager 返回的 Skirt Rig Tool 窗口或执行结果。
+            Window Manager 返回的 Skirt Rig Tool 窗口或执行结果。
         """
         return self.open_tool(
             "skirt_rig",
@@ -735,7 +816,9 @@ class RigTool(QWidget):
         )
 
     def create_ik(self):
-        u"""根据当前 Picker 创建基础 RP IK Rig。"""
+        u"""
+        根据当前 Picker 创建基础 RP IK Rig。
+        """
         start_joint = self.ik_start_picker.get_value()
         end_joint = self.ik_end_picker.get_value()
 
@@ -761,7 +844,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def delete_selected_rig():
-        u"""删除选择节点所属的 Muzi Rig Module。"""
+        u"""
+        删除选择节点所属的 Muzi Rig Module。
+        """
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
@@ -795,7 +880,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def clear_keys():
-        u"""删除选择对象关键帧；没有选择时清理场景 AnimCurve。"""
+        u"""
+        删除选择对象关键帧；没有选择时清理场景 AnimCurve。
+        """
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
@@ -812,18 +899,29 @@ class RigTool(QWidget):
     @staticmethod
     @scene_utils.undo_chunk
     def reset_attributes():
-        u"""把选择对象可设置的 Keyable Attribute 恢复 Attribute Default。"""
+        u"""
+        把选择对象可设置的 Keyable Attribute 恢复 Attribute Default。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not selections:
             cmds.warning(
                 u"请先选择需要重置的对象。"
             )
             return
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for node in selections:
             attrs = cmds.listAttr(
                 node,
@@ -872,7 +970,9 @@ class RigTool(QWidget):
     @staticmethod
     @scene_utils.undo_chunk
     def batch_parent_constraint():
-        u"""按 driver/driven 成对顺序批量创建 Parent Constraint。"""
+        u"""
+        按 driver/driven 成对顺序批量创建 Parent Constraint。
+        """
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
@@ -908,7 +1008,12 @@ class RigTool(QWidget):
     @staticmethod
     @scene_utils.undo_chunk
     def create_default_groups():
-        u"""创建基础 Rig 层级。"""
+        u"""
+        创建基础 Rig 层级。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         group_names = [
             "rig_grp",
             "geo_grp",
@@ -916,6 +1021,9 @@ class RigTool(QWidget):
             "controls_grp",
             "noTouch_grp",
         ]
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         created_groups = {}
 
         for group_name in group_names:
@@ -929,6 +1037,9 @@ class RigTool(QWidget):
                 group_name
             )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         child_names = [
             "geo_grp",
             "skeleton_grp",
@@ -952,10 +1063,16 @@ class RigTool(QWidget):
             )
             created_groups[child_name] = child_group
 
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         cmds.setAttr(
             created_groups["noTouch_grp"] + ".visibility",
             0
         )
+        # -------------------------------------------------------------------------
+        # Step 05：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         cmds.select(
             created_groups["rig_grp"],
             replace=True
@@ -964,20 +1081,34 @@ class RigTool(QWidget):
     @staticmethod
     @scene_utils.undo_chunk
     def add_zero_groups():
-        u"""为选择对象创建匹配 Transform 的 Zero Group。"""
+        u"""
+        为选择对象创建匹配 Transform 的 Zero Group。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not selections:
             cmds.warning(
                 u"请先选择需要添加 Zero Group 的对象。"
             )
             return
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         created_groups = []
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for node in selections:
             short_name = rename_utils.get_short_name(
                 node
@@ -1021,6 +1152,9 @@ class RigTool(QWidget):
                 zero_group
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if created_groups:
             cmds.select(
                 created_groups,
@@ -1029,20 +1163,34 @@ class RigTool(QWidget):
 
     @staticmethod
     def select_children():
-        u"""选择当前对象全部后代 DAG 节点。"""
+        u"""
+        选择当前对象全部后代 DAG 节点。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not selections:
             cmds.warning(
                 u"请先选择父对象。"
             )
             return
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         result = []
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for node in selections:
             descendants = hierarchy_utils.get_descendants(
                 node,
@@ -1057,6 +1205,9 @@ class RigTool(QWidget):
                     descendant
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 05：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if result:
             cmds.select(
                 result,
@@ -1065,7 +1216,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def snap_last_to_center():
-        u"""把最后选择对象吸附到前面参考项平均位置和旋转。"""
+        u"""
+        把最后选择对象吸附到前面参考项平均位置和旋转。
+        """
         selections = scene_utils.get_selected_nodes(
             long=True,
             flatten=True
@@ -1093,7 +1246,9 @@ class RigTool(QWidget):
 
     @staticmethod
     def print_duplicate_nodes():
-        u"""打印重名 DAG 节点。"""
+        u"""
+        打印重名 DAG 节点。
+        """
         duplicates = get_duplicate_map()
 
         if not duplicates:
@@ -1132,9 +1287,17 @@ class RigTool(QWidget):
     @staticmethod
     @scene_utils.undo_chunk
     def rename_duplicate_nodes():
-        u"""给重名 DAG 节点追加递增编号。"""
+        u"""
+        给重名 DAG 节点追加递增编号。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         duplicates = get_duplicate_map()
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not duplicates:
             print(
                 u"[Rig Tool] 场景中没有重名 DAG 节点。"
@@ -1143,13 +1306,22 @@ class RigTool(QWidget):
 
         short_names = []
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for short_name in duplicates:
             short_names.append(
                 short_name
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         short_names.sort()
 
+        # -------------------------------------------------------------------------
+        # Step 05：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for short_name in short_names:
             matches = duplicates[short_name]
             match_index = 1
@@ -1182,7 +1354,7 @@ def main():
 
     Returns:
         QWidget:
-            当前显示的 Rig Tool 窗口实例。
+        当前显示的 Rig Tool 窗口实例。
     """
     return window_utils.show_window(
         "tools.rig.rig_tool",

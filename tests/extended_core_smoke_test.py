@@ -9,7 +9,7 @@ Maya 真机验证第二层基础能力：
     - joint_utils / joint_chain_utils
     - systems.rig_base.RigBase + core.rename_utils
     - model_check_utils
-    - scene_clean_utils
+    - scene_utils
 
 架构约定：
     - Rig Naming 统一使用 type / side / part / function / index；
@@ -31,7 +31,7 @@ from ..core import joint_chain_utils
 from ..core import joint_utils
 from ..core import model_check_utils
 from ..core import rename_utils
-from ..core import scene_clean_utils
+from ..core import scene_utils
 from ..systems.rig_base import RigBase
 
 
@@ -557,7 +557,7 @@ def test_model_check_utils(token, test_root):
 # Scene Clean Utils
 # =============================================================================
 
-def test_scene_clean_utils(token, test_root):
+def test_scene_utils(token, test_root):
     u"""验证安全 Freeze 和递归 Empty Group 清理。"""
     cube_result = cmds.polyCube(
         name=create_name(token, "clean_cube"),
@@ -572,7 +572,7 @@ def test_scene_clean_utils(token, test_root):
         3.0
     )
 
-    frozen_count, skipped_count = scene_clean_utils.freeze_transformations(
+    frozen_count, skipped_count = scene_utils.freeze_transformations(
         [cube]
     )
 
@@ -599,7 +599,7 @@ def test_scene_clean_utils(token, test_root):
         parent=empty_parent
     )
 
-    deleted_count = scene_clean_utils.delete_empty_groups(
+    deleted_count = scene_utils.delete_empty_groups(
         [empty_child]
     )
 
@@ -677,7 +677,7 @@ def run():
         ("joint_utils", "Joint / Chain / Label", test_joint_utils),
         ("rig_base", "Rig Naming / Maya Rename", test_naming_utils),
         ("model_check_utils", "Model Quality Check", test_model_check_utils),
-        ("scene_clean_utils", "Safe Scene Clean", test_scene_clean_utils),
+        ("scene_utils", "Safe Scene Clean", test_scene_utils),
     ]
 
     try:

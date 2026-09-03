@@ -6,14 +6,19 @@ Maya Index Color Slider
 可复用的 Maya Index Color 选择控件。
 
 界面结构：
-    Slider -> Index -> Color Preview
+    Slider → Index Label → Color Preview
 
-职责：
+模块职责：
     1. 使用 0～31 Slider 选择 Maya Index Color；
     2. 实时显示当前颜色 Index；
-    3. 使用方块实时预览当前 Maya 颜色；
-    4. 对外提供统一 value_changed Signal 和 get_value / set_value API；
-    5. 视觉统一使用 MuziTools Theme Token。
+    3. 使用方块实时预览当前 Maya Index Color；
+    4. 对外提供统一 ``value_changed`` Signal 和 ``get_value / set_value`` API；
+    5. 视觉样式统一复用 MuziTools Theme Token。
+
+模块边界：
+    - 只处理 Qt 交互和 Maya Index Color 的显示；
+    - 不负责给 Maya Controller / Shape 真正写入 overrideColor；
+    - Controller 颜色写入仍由对应 Core / Tool 负责。
 """
 
 from __future__ import print_function
@@ -73,7 +78,7 @@ maya_index_colors = {
 
 
 class MayaIndexColorSlider(QWidget):
-    u"""Maya Index Color 滑条 + 数值 + 方块预览控件。"""
+    u"""Maya Index Color 滑条、数值标签和颜色预览组合控件。"""
 
     value_changed = Signal(int)
 
@@ -82,8 +87,21 @@ class MayaIndexColorSlider(QWidget):
             value=17,
             parent=None
     ):
-        u"""初始化 Maya Index Color Slider。"""
-        super(MayaIndexColorSlider, self).__init__(parent)
+        u"""
+        初始化 Maya Index Color Slider。
+
+        Args:
+            value (int):
+                初始 Maya Index Color，最终会限制在 0～31。
+            parent (QtWidgets.QWidget | None):
+                可选 Qt 父控件。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：初始化 QWidget，并创建 0～31 的水平颜色索引 Slider
+        # -------------------------------------------------------------------------
+        super(MayaIndexColorSlider, self).__init__(
+            parent
+        )
 
         self.color_slider = QSlider(
             Qt.Horizontal
@@ -102,6 +120,9 @@ class MayaIndexColorSlider(QWidget):
             160
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：创建当前 Index 数值标签和颜色方块预览控件
+        # -------------------------------------------------------------------------
         self.index_label = QLabel()
         self.index_label.setFixedWidth(
             32
@@ -116,6 +137,9 @@ class MayaIndexColorSlider(QWidget):
             28
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：建立横向布局，按 Slider → Index → Preview 顺序组织控件
+        # -------------------------------------------------------------------------
         main_layout = QHBoxLayout(
             self
         )
@@ -139,12 +163,18 @@ class MayaIndexColorSlider(QWidget):
             self.color_preview
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：应用 MuziTools 视觉样式并连接 Slider ValueChanged Signal
+        # -------------------------------------------------------------------------
         self.style_widgets()
 
         self.color_slider.valueChanged.connect(
             self._slider_value_changed
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：写入初始 Index，同时刷新数值标签和颜色预览
+        # -------------------------------------------------------------------------
         self.set_value(
             value
         )
@@ -154,7 +184,12 @@ class MayaIndexColorSlider(QWidget):
     # =========================================================================
 
     def style_widgets(self):
-        u"""应用高可见度 Slider、Index 和 Preview 样式。"""
+        u"""
+        应用高可见度 Slider、Index Label 和 Preview 样式。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：使用 Theme Accent 配置 Slider Groove / Handle 状态
+        # -------------------------------------------------------------------------
         self.color_slider.setStyleSheet(
             u"""
             QSlider {
@@ -200,6 +235,9 @@ class MayaIndexColorSlider(QWidget):
             }
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：配置 Index Label，使数值与颜色预览在视觉上保持清晰分区
+        # -------------------------------------------------------------------------
         self.index_label.setStyleSheet(
             u"""
             QLabel {
@@ -222,13 +260,25 @@ class MayaIndexColorSlider(QWidget):
     # =========================================================================
 
     def get_value(self):
-        u"""返回当前 Maya Index Color。"""
+        u"""
+        返回当前 Maya Index Color。
+
+        Returns:
+            int:
+            Slider 当前 0～31 的颜色索引。
+        """
         return int(
             self.color_slider.value()
         )
 
     def set_value(self, value):
-        u"""设置当前 Maya Index Color，自动限制到 0～31。"""
+        u"""
+        设置当前 Maya Index Color，并自动限制到 0～31。
+
+        Args:
+            value (int):
+                需要写入的 Maya Index Color。
+        """
         color_index = int(
             value
         )
@@ -251,7 +301,7 @@ class MayaIndexColorSlider(QWidget):
     # =========================================================================
 
     def _slider_value_changed(self, value):
-        u"""Slider 改变时同步数值和颜色预览。"""
+        u"""Slider 改变时同步 Preview，并向外发送 ``value_changed`` Signal。"""
         color_index = int(
             value
         )
@@ -264,7 +314,16 @@ class MayaIndexColorSlider(QWidget):
         )
 
     def update_preview(self, color_index=None):
-        u"""更新 Index Label 和方块颜色预览。"""
+        u"""
+        根据 Maya Index Color 更新数值标签和颜色方块预览。
+
+        Args:
+            color_index (int | None):
+                需要显示的 0～31 Maya Index；None 时读取 Slider 当前值。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：确定需要显示的 Index，并取得对应 0～1 RGB 数据
+        # -------------------------------------------------------------------------
         if color_index is None:
             color_index = self.get_value()
 
@@ -276,6 +335,9 @@ class MayaIndexColorSlider(QWidget):
             maya_index_colors[0]
         )
 
+        # -------------------------------------------------------------------------
+        # Step 02：把 Maya 0～1 RGB 转成 Qt Style Sheet 使用的 0～255 RGB
+        # -------------------------------------------------------------------------
         red = int(
             rgb[0] * 255
         )
@@ -286,6 +348,9 @@ class MayaIndexColorSlider(QWidget):
             rgb[2] * 255
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：同步 Index 文本，并使用对应 RGB 刷新 Preview 方块
+        # -------------------------------------------------------------------------
         self.index_label.setText(
             u"{}".format(
                 color_index

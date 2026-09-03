@@ -67,7 +67,7 @@ OWNER_BY_FUNCTION = {
     "create_joints_on_curve_cvs": "core/joint_chain_utils.py",
 
     # Export
-    "ensure_fbx_plugin_loaded": "core/export_utils.py",
+    "ensure_fbx_plugin_loaded": "core/scene_utils.py",
 }
 
 

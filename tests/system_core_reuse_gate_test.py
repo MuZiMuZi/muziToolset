@@ -445,7 +445,7 @@ def run():
             )
 
         print(
-            u"请优先复用 core.scene_utils / transform_utils / rename_utils / hierarchy_utils / export_utils 的正式 API。"
+            u"请优先复用 core.scene_utils / transform_utils / rename_utils / hierarchy_utils / scene_utils 的正式 API。"
         )
         return False
 

@@ -3,11 +3,17 @@ u"""
 Face Rig Step 04 - Finalize
 ===========================
 
-最终清理、验证、Controller Set、显示管理和发布相关逻辑统一放在本包。
-当前 Step 04 尚未正式实现，不在这里提前创建无业务意义的 Builder。
+最终验收、Controller Set 和显示管理统一由 FaceFinalizer 负责。
+文件 Export / Publish 暂不属于当前 Step 04 第一版。
 """
 
 from __future__ import print_function
 
+from .finalizer import FaceFinalizer
+from .finalizer import finalize_face
 
-__all__ = []
+
+__all__ = [
+    "FaceFinalizer",
+    "finalize_face",
+]

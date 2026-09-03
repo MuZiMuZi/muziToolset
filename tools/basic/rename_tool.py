@@ -73,7 +73,7 @@ class RenameTool(QWidget):
 
     def __init__(self, parent=None):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
+        初始化当前对象，并准备运行时需要的状态和成员。
 
         Args:
             parent (str):
@@ -97,6 +97,9 @@ class RenameTool(QWidget):
         u"""
         创建界面控件。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.title_label = theme.make_title(u"批量重命名")
         self.subtitle_label = theme.make_subtitle(
             u"前后缀、查找替换、自动编号和 * 模式命名。"
@@ -112,6 +115,9 @@ class RenameTool(QWidget):
 
         self.search_line = QLineEdit()
         self.search_line.setPlaceholderText(u"查找")
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.replace_line = QLineEdit()
         self.replace_line.setPlaceholderText(u"替换为")
 
@@ -128,6 +134,9 @@ class RenameTool(QWidget):
             u"基础名称；留空时使用对象原名"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.start_number_spin = QSpinBox()
         self.start_number_spin.setRange(0, 999999)
         self.start_number_spin.setValue(1)
@@ -141,6 +150,9 @@ class RenameTool(QWidget):
         self.number_type_combo.addItem(u"大写字母")
         self.number_type_combo.addItem(u"小写字母")
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.auto_number_button = QPushButton(u"自动编号")
         theme.style_primary(self.auto_number_button)
 
@@ -157,12 +169,18 @@ class RenameTool(QWidget):
         theme.set_role(self.pattern_info_label, "muted")
 
         self.status_label = QLabel(u"准备就绪")
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.set_role(self.status_label, "muted")
 
     def create_layouts(self):
         u"""
         创建 Card 布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -184,6 +202,9 @@ class RenameTool(QWidget):
         suffix_row = QHBoxLayout()
         suffix_row.setContentsMargins(0, 0, 0, 0)
         suffix_row.addWidget(self.suffix_line, 1)
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         suffix_row.addWidget(self.add_suffix_button)
         prefix_layout.addLayout(suffix_row)
 
@@ -205,6 +226,9 @@ class RenameTool(QWidget):
         replace_layout.addLayout(replace_grid)
         replace_layout.addWidget(self.search_replace_button)
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         number_card, number_layout = theme.make_card(self)
         number_layout.addWidget(
             theme.make_section_title(u"自动编号")
@@ -223,6 +247,9 @@ class RenameTool(QWidget):
         number_grid.addWidget(self.number_type_combo, 2, 1, 1, 3)
         number_grid.setColumnStretch(1, 1)
         number_grid.setColumnStretch(3, 1)
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         number_layout.addLayout(number_grid)
         number_layout.addWidget(self.auto_number_button)
 
@@ -243,6 +270,9 @@ class RenameTool(QWidget):
         main_layout.addWidget(number_card)
         main_layout.addWidget(pattern_card)
         main_layout.addWidget(self.status_label)
+        # -------------------------------------------------------------------------
+        # Step 05：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         main_layout.addStretch(1)
 
     def create_connections(self):
@@ -339,7 +369,7 @@ def main():
 
     Returns:
         object:
-        方法执行后的结果数据。
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
         "tools.basic.rename_tool",

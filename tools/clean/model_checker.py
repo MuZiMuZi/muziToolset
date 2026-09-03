@@ -52,7 +52,7 @@ class ModelChecker(QDialog):
 
     def __init__(self, parent=None):
         u"""
-        执行 `__init__` 对应的 Maya 工具操作。
+        初始化当前对象，并准备运行时需要的状态和成员。
 
         Args:
             parent (str):
@@ -82,6 +82,9 @@ class ModelChecker(QDialog):
         u"""
         创建界面控件。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.title_label = theme.make_title(u"模型检查")
         self.subtitle_label = theme.make_subtitle(
             u"检查拓扑、命名、建模历史、Transform 和锁定法线。"
@@ -97,6 +100,9 @@ class ModelChecker(QDialog):
         self.duplicate_checkbox = QCheckBox(u"DAG 重名")
         self.duplicate_checkbox.setChecked(True)
 
+        # -------------------------------------------------------------------------
+        # Step 02：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.history_checkbox = QCheckBox(u"遗留建模历史")
         self.history_checkbox.setChecked(True)
 
@@ -109,6 +115,9 @@ class ModelChecker(QDialog):
         self.selected_only_checkbox = QCheckBox(u"仅检查当前选择")
         self.selected_only_checkbox.setChecked(False)
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.check_button = QPushButton(u"开始检查")
         theme.style_primary(self.check_button)
 
@@ -120,6 +129,9 @@ class ModelChecker(QDialog):
 
         self.result_table = QTableWidget()
         self.result_table.setColumnCount(4)
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.result_table.setHorizontalHeaderLabels([
             u"对象",
             u"问题类型",
@@ -139,12 +151,18 @@ class ModelChecker(QDialog):
         self.result_table.horizontalHeader().setStretchLastSection(True)
 
         self.status_label = QLabel(u"准备就绪")
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         theme.set_role(self.status_label, "muted")
 
     def create_layouts(self):
         u"""
         创建 Card 布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
         main_layout.setSpacing(12)
@@ -158,6 +176,9 @@ class ModelChecker(QDialog):
         )
 
         option_grid = QGridLayout()
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         option_grid.setHorizontalSpacing(16)
         option_grid.setVerticalSpacing(8)
         option_grid.addWidget(self.nonmanifold_checkbox, 0, 0)
@@ -168,6 +189,9 @@ class ModelChecker(QDialog):
         option_grid.addWidget(self.normals_checkbox, 2, 1)
         option_layout.addLayout(option_grid)
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         scope_row = QHBoxLayout()
         scope_row.setContentsMargins(0, 0, 0, 0)
         scope_row.addWidget(self.selected_only_checkbox)
@@ -179,6 +203,9 @@ class ModelChecker(QDialog):
 
         result_header = QHBoxLayout()
         result_header.setContentsMargins(0, 0, 0, 0)
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         result_header.addWidget(
             theme.make_section_title(u"检查结果")
         )
@@ -190,6 +217,9 @@ class ModelChecker(QDialog):
 
         main_layout.addWidget(option_card)
         main_layout.addWidget(result_card, 1)
+        # -------------------------------------------------------------------------
+        # Step 05：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         main_layout.addWidget(self.status_label)
 
     def create_connections(self):
@@ -219,7 +249,7 @@ class ModelChecker(QDialog):
 
         Returns:
             object | None:
-            方法执行后的结果数据。
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         if not self.selected_only_checkbox.isChecked():
             return None
@@ -240,7 +270,7 @@ class ModelChecker(QDialog):
 
         Returns:
             object:
-            方法执行后的结果数据。
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         selected_items = self.result_table.selectedItems()
         rows = []
@@ -260,7 +290,7 @@ class ModelChecker(QDialog):
 
         Returns:
             object:
-            方法执行后的结果数据。
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         issues = []
         rows = self.get_selected_issue_rows()
@@ -284,8 +314,14 @@ class ModelChecker(QDialog):
         u"""
         执行当前勾选的检查项。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         nodes = self.get_scope_nodes()
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.selected_only_checkbox.isChecked():
             if not nodes:
                 cmds.warning(u"请先选择需要检查的模型或层级。")
@@ -293,6 +329,9 @@ class ModelChecker(QDialog):
 
         self.status_label.setText(u"正在检查...")
 
+        # -------------------------------------------------------------------------
+        # Step 03：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             self.issues = model_check_utils.run_checks(
                 nodes=nodes,
@@ -308,8 +347,14 @@ class ModelChecker(QDialog):
             self.status_label.setText(u"检查失败")
             return
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self.populate_table()
 
+        # -------------------------------------------------------------------------
+        # Step 05：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.issues:
             self.status_label.setText(
                 u"发现 {} 个问题".format(len(self.issues))
@@ -321,11 +366,20 @@ class ModelChecker(QDialog):
         u"""
         把 Issue 写入结果表格。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.result_table.setRowCount(0)
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.result_table.setRowCount(len(self.issues))
 
         row = 0
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for issue in self.issues:
             node_item = QTableWidgetItem(
                 issue.get("node", "")
@@ -351,7 +405,13 @@ class ModelChecker(QDialog):
             self.result_table.setItem(row, 3, fix_item)
             row += 1
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self.result_table.resizeColumnsToContents()
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.update_action_state()
 
     # -------------------------------------------------------------------------
@@ -381,13 +441,22 @@ class ModelChecker(QDialog):
         u"""
         选择问题对象；有表格选择时只选择选中项。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         issues = self.get_selected_issues()
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not issues:
             issues = self.issues
 
         nodes = []
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for issue in issues:
             node = issue.get("node")
 
@@ -400,10 +469,16 @@ class ModelChecker(QDialog):
             if node not in nodes:
                 nodes.append(node)
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not nodes:
             cmds.warning(u"没有可选择的问题对象。")
             return
 
+        # -------------------------------------------------------------------------
+        # Step 05：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         cmds.select(
             nodes,
             replace=True
@@ -445,7 +520,7 @@ def main():
 
     Returns:
         object:
-        方法执行后的结果数据。
+        当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
         "tools.clean.model_checker",

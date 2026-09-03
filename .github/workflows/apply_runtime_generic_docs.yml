@@ -1,0 +1,86 @@
+name: Apply Runtime Generic Documentation Refinements
+
+on:
+  push:
+    branches:
+      - refactor/full-code-cn-comments
+    paths:
+      - scripts/refine_runtime_generic_docs.py
+      - .github/workflows/apply_runtime_generic_docs.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout refactor branch
+        uses: actions/checkout@v4
+        with:
+          ref: refactor/full-code-cn-comments
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # -----------------------------------------------------------------------
+      # Step 01：只替换自动生成的通用 Summary / Returns 占位说明
+      # -----------------------------------------------------------------------
+      - name: Refine generic runtime documentation
+        run: python scripts/refine_runtime_generic_docs.py --write
+
+      # -----------------------------------------------------------------------
+      # Step 02：统一清理 Runtime 行尾空格
+      # 这一步只删除每行末尾的空白字符，不改变 Python 语句、缩进层级或业务逻辑。
+      # -----------------------------------------------------------------------
+      - name: Normalize runtime trailing whitespace
+        shell: bash
+        run: |
+          find app core systems tools ui -type f -name '*.py' -print0 | xargs -0 sed -i 's/[[:space:]]\+$//'
+          sed -i 's/[[:space:]]\+$//' __init__.py config.py
+
+      # -----------------------------------------------------------------------
+      # Step 03：严格保证文档精修和空白整理没有碰坏 Python Syntax
+      # -----------------------------------------------------------------------
+      - name: Validate Python compile
+        run: python -m compileall -q app core systems tools ui __init__.py config.py
+
+      # -----------------------------------------------------------------------
+      # Step 04：确认所有通用占位句已经被清理
+      # -----------------------------------------------------------------------
+      - name: Validate generic documentation quality
+        run: python scripts/refine_runtime_generic_docs.py --check
+
+      # -----------------------------------------------------------------------
+      # Step 05：继续通过正式 Runtime Docstring Contract
+      # -----------------------------------------------------------------------
+      - name: Validate public runtime docstrings
+        run: python scripts/normalize_runtime_docstrings.py --check
+
+      # -----------------------------------------------------------------------
+      # Step 06：确认整理后的 Diff 不再包含行尾空格等格式错误
+      # -----------------------------------------------------------------------
+      - name: Check whitespace errors
+        run: git diff --check
+
+      # -----------------------------------------------------------------------
+      # Step 07：所有静态检查通过后才提交 Runtime 文档变化
+      # -----------------------------------------------------------------------
+      - name: Commit refined runtime documentation
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "Generic Runtime documentation is already refined."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add __init__.py config.py app core systems tools ui
+          git commit -m "docs: refine runtime chinese summaries and returns"
+          git push origin HEAD:refactor/full-code-cn-comments
