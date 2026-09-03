@@ -4,15 +4,15 @@ Face Rig Step 03 Build UI Controller
 ====================================
 
 在现有 Workflow Controller 之上补充 Step 03 Module Build 页面，
-同时修正 UI 与当前 Face Controller Config Schema 的映射。
+同时把完整 FaceRig Orchestrator 接入正式 Step 03。
 
 设计边界：
     1. Step 01 / Step 02 的稳定基础 UI 和 Workflow 逻辑保持不变；
     2. 本层补充 Teeth / Tongue Controller Size，并使用正式 Config Attribute；
-    3. 本层负责 Step 03 的 Module 触发和状态反馈；
-    4. Teeth Rig 业务逻辑统一位于 systems.face.modules；
-    5. Step 03 暂时不自动标记完成，因为其它 Module 尚未全部接入；
-    6. 后续 Module 继续按照相同 Card + Public Build API 的模式加入。
+    3. 本层负责 Step 03 完整 FaceBuild 触发和状态反馈；
+    4. Step 03 只调用 FaceBuild.run_step()，不直接调用具体 Face Module；
+    5. 完整 Build 成功后允许进入 Step 04 Finalize；
+    6. Build 失败由 FaceBuild 统一 Undo 回滚，UI 可以安全重试。
 """
 
 from __future__ import print_function
@@ -36,7 +36,7 @@ except ImportError:
 
 from ....ui import theme
 from .. import config
-from ..modules import build_teeth
+from ..build.face_build import FaceBuild
 from . import workflow_controller
 
 
@@ -51,7 +51,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             parent (str):
                 父级 Maya 节点名称。
         """
-        self.teeth_build_result = None
+        self.face_build_result = None
 
         super(FaceRigWizard, self).__init__(
             parent
@@ -322,14 +322,14 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
 
     def create_step3_page(self):
         u"""
-        创建 Step 03 Module Build 页面。
+        创建 Step 03 完整 Face Rig Build 页面。
 
         Returns:
-            object:
-            创建或构建完成后的 Maya / Rig 对象或 Build Result。
+            QWidget:
+                完整 FaceBuild 操作页面。
         """
         # -------------------------------------------------------------------------
-        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # Step 01：创建 Step 03 页面和完整 Build 说明
         # -------------------------------------------------------------------------
         page = QWidget()
         main_layout = QVBoxLayout(
@@ -355,7 +355,7 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
         )
 
         intro_description = QLabel(
-            u"Face Module 按模块独立构建。当前先接入 Teeth；后续 Jaw、Lip、Eye、Eyelid、Brow、Nose、Cheek、Tongue 会继续加入同一页面。"
+            u"Step 03 现在通过 FaceBuild → FaceRig 一次构建全部正式 Face Module。UI 不再直接管理单个 Module。"
         )
         intro_description.setWordWrap(
             True
@@ -364,121 +364,130 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
             intro_description,
             "muted"
         )
-        # -------------------------------------------------------------------------
-        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
-        # -------------------------------------------------------------------------
         intro_layout.addWidget(
             intro_description
         )
 
-        teeth_card, teeth_layout = theme.make_card(
+        # -------------------------------------------------------------------------
+        # Step 02：显示正式 Module 依赖顺序，方便检查完整构建范围
+        # -------------------------------------------------------------------------
+        module_card, module_layout = theme.make_card(
             page
         )
-        teeth_layout.addWidget(
+        module_layout.addWidget(
             theme.make_section_title(
-                u"Teeth"
+                u"Face Modules"
             )
         )
 
-        teeth_description = QLabel(
-            u"Upper / Lower Teeth 使用 Guide → Controller → Bind Joint → Rigid Skin。Gum 不在 Teeth Module 中绑定，后续由 Mouth / Jaw Deformation 处理。"
+        module_description = QLabel(
+            u"Brow → Eye → Eyelid → Nose → Cheek → Ear → Jaw → Teeth → Tongue → Lip → Mouth"
         )
-        teeth_description.setWordWrap(
+        module_description.setWordWrap(
             True
         )
         theme.set_role(
-            teeth_description,
+            module_description,
             "muted"
         )
-        teeth_layout.addWidget(
-            teeth_description
+        module_layout.addWidget(
+            module_description
         )
 
-        teeth_action_layout = QHBoxLayout()
-        teeth_action_layout.setContentsMargins(
+        dependency_description = QLabel(
+            u"显式依赖：Eye → Eyelid，Jaw + Lip → Mouth。其它 Module 保持固定顺序以获得稳定场景结果。"
+        )
+        dependency_description.setWordWrap(
+            True
+        )
+        theme.set_role(
+            dependency_description,
+            "muted"
+        )
+        module_layout.addWidget(
+            dependency_description
+        )
+
+        # -------------------------------------------------------------------------
+        # Step 03：创建完整 Build 状态和唯一正式构建按钮
+        # -------------------------------------------------------------------------
+        build_card, build_layout = theme.make_card(
+            page
+        )
+        build_layout.addWidget(
+            theme.make_section_title(
+                u"Complete Face Rig"
+            )
+        )
+
+        build_hint = QLabel(
+            u"构建失败时整个 Step 03 会自动 Undo 回滚；成功后 Step 03 标记完成并进入 Finalize 流程。"
+        )
+        build_hint.setWordWrap(
+            True
+        )
+        theme.set_role(
+            build_hint,
+            "muted"
+        )
+        build_layout.addWidget(
+            build_hint
+        )
+
+        action_layout = QHBoxLayout()
+        action_layout.setContentsMargins(
             0,
             0,
             0,
             0
         )
-        teeth_action_layout.setSpacing(
+        action_layout.setSpacing(
             10
         )
 
-        # -------------------------------------------------------------------------
-        # Step 03：准备当前阶段计算和后续处理需要的数据
-        # -------------------------------------------------------------------------
-        self.teeth_build_status_label = QLabel(
+        self.face_build_status_label = QLabel(
             u"未构建"
         )
         theme.set_role(
-            self.teeth_build_status_label,
+            self.face_build_status_label,
             "pill"
         )
 
-        self.build_teeth_button = QPushButton(
-            u"构建 Teeth"
+        self.build_face_button = QPushButton(
+            u"构建完整 Face Rig"
         )
         theme.style_primary(
-            self.build_teeth_button
+            self.build_face_button
         )
 
-        teeth_action_layout.addWidget(
-            self.teeth_build_status_label
+        action_layout.addWidget(
+            self.face_build_status_label
         )
-        teeth_action_layout.addStretch(
+        action_layout.addStretch(
             1
         )
-        teeth_action_layout.addWidget(
-            self.build_teeth_button
+        action_layout.addWidget(
+            self.build_face_button
+        )
+        build_layout.addLayout(
+            action_layout
         )
 
-        teeth_layout.addLayout(
-            teeth_action_layout
-        )
-
-        future_card, future_layout = theme.make_card(
-            page
-        )
         # -------------------------------------------------------------------------
-        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # Step 04：组合页面并保留底部弹性空间
         # -------------------------------------------------------------------------
-        future_layout.addWidget(
-            theme.make_section_title(
-                u"Next Modules"
-            )
-        )
-
-        future_label = QLabel(
-            u"Jaw → Tongue → Lip → Eye / Eyelid → Brow → Nose / Cheek"
-        )
-        future_label.setWordWrap(
-            True
-        )
-        theme.set_role(
-            future_label,
-            "muted"
-        )
-        future_layout.addWidget(
-            future_label
-        )
-
         main_layout.addWidget(
             intro_card
         )
         main_layout.addWidget(
-            teeth_card
+            module_card
         )
         main_layout.addWidget(
-            future_card
+            build_card
         )
         main_layout.addStretch(
             1
         )
-
-        # -------------------------------------------------------------------------
-        # Step 05：整理并返回当前函数的最终结果
-        # -------------------------------------------------------------------------
         return page
 
     # =========================================================================
@@ -486,92 +495,251 @@ class FaceRigWizard(workflow_controller.FaceRigWizard):
     # =========================================================================
 
     def create_connections(self):
-        u"""
-        连接原有信号和 Step 03 Teeth Build 信号。
-        """
+        u"""连接原有 Signal 和完整 FaceBuild 按钮信号。"""
         super(FaceRigWizard, self).create_connections()
 
-        self.build_teeth_button.clicked.connect(
-            self.clicked_build_teeth
+        self.build_face_button.clicked.connect(
+            self.clicked_build_face
         )
 
     # =========================================================================
-    # Teeth Build
+    # Step 03 State / Navigation
     # =========================================================================
 
-    def clicked_build_teeth(self):
+    def load_step_config_to_ui(self, step_index):
         u"""
-        通过 Face System 公共 API 构建 Teeth Module。
+        恢复原 Workflow Config，并在 Step 03 回填完整 FaceBuild 状态。
+
+        Args:
+            step_index (int):
+                当前 UI Step 索引。
+
+        Returns:
+            bool | object:
+                Config 回填结果。
+        """
+        result = super(FaceRigWizard, self).load_step_config_to_ui(
+            step_index
+        )
+
+        if step_index == 2:
+            self.load_step3_build_state()
+
+        return result
+
+    def load_step3_build_state(self):
+        u"""
+        从 Face Config 恢复 Step 03 完成状态和按钮状态。
 
         Returns:
             bool:
-            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+                Step 03 已完成时返回 True，否则返回 False。
         """
         # -------------------------------------------------------------------------
-        # Step 01：应用并更新当前阶段需要的属性或状态
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
         # -------------------------------------------------------------------------
-        self.build_teeth_button.setEnabled(
-            False
-        )
-        self.teeth_build_status_label.setText(
-            u"构建中"
-        )
+        face_context = self.get_face_guide()
         # -------------------------------------------------------------------------
-        # Step 02：应用并更新当前阶段需要的属性或状态
+        # Step 02：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
-        self.status_label.setText(
-            u"正在构建 Teeth Module"
+        completed = False
+
+        if face_context.config_node_exists():
+            completed = face_context.is_step_completed(
+                step_value=3
+            )
+
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
+        if completed:
+            self.completed_step_indexes.add(
+                2
+            )
+            self.face_build_status_label.setText(
+                u"构建完成"
+            )
+            theme.set_role(
+                self.face_build_status_label,
+                "pill"
+            )
+            self.build_face_button.setEnabled(
+                False
+            )
+        else:
+            self.completed_step_indexes.discard(
+                2
+            )
+            self.face_build_status_label.setText(
+                u"未构建"
+            )
+            theme.set_role(
+                self.face_build_status_label,
+                "pill"
+            )
+            self.build_face_button.setEnabled(
+                True
+            )
+
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
+        self.update_navigation_buttons()
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
+        return completed
+
+    def update_navigation_buttons(self):
+        u"""扩展底部导航：Step 03 完成后允许进入 Finalize。"""
+        super(FaceRigWizard, self).update_navigation_buttons()
+
+        if self.current_step_index != 2:
+            return
+
+        completed = 2 in self.completed_step_indexes
+
+        if not completed:
+            face_context = self.get_face_guide()
+
+            if face_context.config_node_exists():
+                completed = face_context.is_step_completed(
+                    step_value=3
+                )
+
+        self.next_button.setEnabled(
+            bool(completed)
         )
 
+        if completed:
+            self.next_button.setText(
+                u"进入 Finalize"
+            )
+
+    def clicked_next_button(self):
+        u"""
+        提交原有 Step；Step 03 完成后进入 Step 04 Finalize。
+
+        Returns:
+            object | None:
+                原 Step 返回结果；Step 03 成功切换页面时返回 None。
+        """
+        if self.current_step_index != 2:
+            return super(FaceRigWizard, self).clicked_next_button()
+
+        face_context = self.get_face_guide()
+
+        if not face_context.config_node_exists():
+            return
+
+        if not face_context.is_step_completed(
+                step_value=3
+        ):
+            return
+
+        self.completed_step_indexes.add(
+            2
+        )
+        self.set_current_step(
+            3
+        )
+
+    # =========================================================================
+    # Complete Face Build
+    # =========================================================================
+
+    def clicked_build_face(self):
+        u"""
+        通过 FaceBuild.run_step() 一次构建完整 Face Rig。
+
+        Returns:
+            bool:
+                Step 03 完整构建成功时返回 True，否则返回 False。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：进入构建状态并阻止重复点击
+        # -------------------------------------------------------------------------
+        self.build_face_button.setEnabled(
+            False
+        )
+        self.face_build_status_label.setText(
+            u"构建中"
+        )
+        theme.set_role(
+            self.face_build_status_label,
+            "pill"
+        )
+        self.status_label.setText(
+            u"正在构建完整 Face Rig"
+        )
+
+        # -------------------------------------------------------------------------
+        # Step 02：只调用正式 Workflow Step；失败时 FaceBuild 会自动整体 Undo
+        # -------------------------------------------------------------------------
+        face_build = FaceBuild()
+
         try:
-            result = build_teeth()
+            face_build.run_step()
         except Exception as error:
-            self.teeth_build_result = None
-            self.teeth_build_status_label.setText(
+            self.face_build_result = None
+            self.face_build_status_label.setText(
                 u"构建失败"
             )
             theme.set_role(
-                self.teeth_build_status_label,
+                self.face_build_status_label,
                 "danger_text"
             )
             self.status_label.setText(
-                u"Teeth Module 构建失败"
+                u"Face Build 失败 · 场景已尝试回滚"
             )
-            self.build_teeth_button.setEnabled(
+            self.build_face_button.setEnabled(
                 True
             )
 
             QMessageBox.critical(
                 self,
-                u"Teeth Module 构建失败",
+                u"Face Build 失败",
                 u"{}".format(error)
             )
+            self.update_navigation_buttons()
             return False
 
-        self.teeth_build_result = result
         # -------------------------------------------------------------------------
-        # Step 03：应用并更新当前阶段需要的属性或状态
+        # Step 03：保存公开结果并同步 Step 03 UI 完成状态
         # -------------------------------------------------------------------------
-        self.teeth_build_status_label.setText(
+        self.face_build_result = face_build.build_result
+        self.completed_step_indexes.add(
+            2
+        )
+        self.invalidate_ui_steps_after(
+            2
+        )
+
+        self.face_build_status_label.setText(
             u"构建完成"
         )
         theme.set_role(
-            self.teeth_build_status_label,
+            self.face_build_status_label,
             "pill"
         )
-        # -------------------------------------------------------------------------
-        # Step 04：应用并更新当前阶段需要的属性或状态
-        # -------------------------------------------------------------------------
-        self.status_label.setText(
-            u"Teeth Module 构建完成"
-        )
-
-        self.build_teeth_button.setEnabled(
+        self.build_face_button.setEnabled(
             False
         )
+
         # -------------------------------------------------------------------------
-        # Step 05：整理并返回当前函数的最终结果
+        # Step 04：刷新 Workflow / Channel Box，并允许进入 Finalize
         # -------------------------------------------------------------------------
+        module_count = len(
+            self.face_build_result
+        )
+        self.status_label.setText(
+            u"完整 Face Rig 构建完成 · {} Modules".format(
+                module_count
+            )
+        )
+        self.apply_config_channel_box_display()
+        self.update_step_buttons()
+        self.update_navigation_buttons()
         return True
 
 
