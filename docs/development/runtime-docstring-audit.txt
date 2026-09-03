@@ -1,9 +1,9 @@
 ==============================================================================
 Runtime Docstring Standard
 ==============================================================================
-Runtime files:  108
+Runtime files:  109
 Changed files:  0
-Errors:         82
+Errors:         84
 Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:530 build_brow 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/brow.py:491 create_finalize 缺少 Returns 说明
@@ -51,6 +51,8 @@ Validation errors:
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:58 load_setup 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/eyelid.py:46 __init__ 缺少功能摘要
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_module_base.py:173 create_deform 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_rig.py:78 build_face 缺少 Returns 说明
+  - /home/runner/work/muziToolset/muziToolset/systems/face/modules/face_rig.py:51 __init__ 缺少功能摘要
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:415 build_lip 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:384 create_finalize 缺少 Returns 说明
   - /home/runner/work/muziToolset/muziToolset/systems/face/modules/lip.py:336 create_deform 缺少 Returns 说明
