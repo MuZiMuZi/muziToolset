@@ -186,34 +186,86 @@ class FaceBase(RigModuleBase):
 
     def ensure_hierarchy(self):
         u"""
+        确保 Face Rig 基础 Group 存在，并保存 Maya 返回的真实 DAG Long Path。
 
-                确保 Face Rig 基础 Group 存在，并修正到正式 Parent 层级。
+        Config 只负责提供标准节点名称。真正创建或查询 Maya Group 后，必须把
+        ``hierarchy_utils.ensure_group()`` 返回的唯一 Long Path 写回当前实例，
+        这样 Namespace、同名 DAG 和 Rebuild 场景都继续使用真实场景节点。
 
-                Returns:
-                    bool:
-                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
-
+        Returns:
+            bool:
+                Face 基础层级全部存在、Parent 正确，并完成真实路径缓存后返回 True。
         """
-        face_master_group = hierarchy_utils.ensure_group(
+        # -------------------------------------------------------------------------
+        # Step 01：创建 Face Master，并保存 Maya 实际返回的唯一 Long Path
+        # -------------------------------------------------------------------------
+        self.face_master_grp = hierarchy_utils.ensure_group(
             self.face_master_grp
         )
 
-        face_model_group = hierarchy_utils.ensure_group(
+        # -------------------------------------------------------------------------
+        # Step 02：创建 Model 主组，并挂到 Face Master 下
+        # -------------------------------------------------------------------------
+        self.face_model_grp = hierarchy_utils.ensure_group(
             self.face_model_grp,
-            parent_node=face_master_group
+            parent_node=self.face_master_grp
         )
 
-        for group_name in self.type_groups:
-            hierarchy_utils.ensure_group(
-                group_name,
-                parent_node=face_master_group
-            )
+        # -------------------------------------------------------------------------
+        # Step 03：创建 Face 类型层级，并逐项保存真实场景路径
+        # -------------------------------------------------------------------------
+        self.face_guide_grp = hierarchy_utils.ensure_group(
+            self.face_guide_grp,
+            parent_node=self.face_master_grp
+        )
+        self.face_ctrl_grp = hierarchy_utils.ensure_group(
+            self.face_ctrl_grp,
+            parent_node=self.face_master_grp
+        )
+        self.face_jnt_grp = hierarchy_utils.ensure_group(
+            self.face_jnt_grp,
+            parent_node=self.face_master_grp
+        )
+        self.face_rig_nodes_grp = hierarchy_utils.ensure_group(
+            self.face_rig_nodes_grp,
+            parent_node=self.face_master_grp
+        )
+        self.face_pos_driver_grp = hierarchy_utils.ensure_group(
+            self.face_pos_driver_grp,
+            parent_node=self.face_master_grp
+        )
 
-        for group_name in self.model_groups:
-            hierarchy_utils.ensure_group(
-                group_name,
-                parent_node=face_model_group
-            )
+        # -------------------------------------------------------------------------
+        # Step 04：创建 Head Work Model 层级，并保存真实场景路径
+        # -------------------------------------------------------------------------
+        self.face_tweak_grp = hierarchy_utils.ensure_group(
+            self.face_tweak_grp,
+            parent_node=self.face_model_grp
+        )
+        self.face_stretch_grp = hierarchy_utils.ensure_group(
+            self.face_stretch_grp,
+            parent_node=self.face_model_grp
+        )
+        self.face_deform_grp = hierarchy_utils.ensure_group(
+            self.face_deform_grp,
+            parent_node=self.face_model_grp
+        )
+
+        # -------------------------------------------------------------------------
+        # Step 05：刷新公共 Group 列表，后续 Module 统一复用真实 Long Path
+        # -------------------------------------------------------------------------
+        self.type_groups = [
+            self.face_guide_grp,
+            self.face_ctrl_grp,
+            self.face_jnt_grp,
+            self.face_rig_nodes_grp,
+            self.face_pos_driver_grp,
+        ]
+        self.model_groups = [
+            self.face_tweak_grp,
+            self.face_stretch_grp,
+            self.face_deform_grp,
+        ]
 
         return True
 

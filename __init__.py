@@ -131,7 +131,7 @@ def extended_core_smoke_test():
             joint_utils
             RigBase / rename_utils
             model_check_utils
-            scene_clean_utils
+            scene_utils
 
         Returns:
             object:

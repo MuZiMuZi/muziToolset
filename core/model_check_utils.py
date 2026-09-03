@@ -66,7 +66,7 @@ Issue 数据结构
 2. SkinCluster / BlendShape / Wrap 等正常 Rig Deformer 不当作建模历史错误；
 3. 有 Deformer 的 Mesh 不自动 Freeze；
 4. Reference 节点不自动修复；
-5. 检查与清理分离：大范围场景清理属于 scene_clean_utils.py；
+5. 检查与清理分离：大范围场景清理属于 scene_utils.py；
 6. Core 不弹确认窗口，UI 是否允许自动修复由上层 Tool 决定。
 """
 

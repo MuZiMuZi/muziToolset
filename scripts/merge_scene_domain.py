@@ -13,8 +13,8 @@ import re
 
 ROOT = Path(".")
 SCENE_PATH = ROOT / "core" / "scene_utils.py"
-CLEAN_PATH = ROOT / "core" / "scene_clean_utils.py"
-EXPORT_PATH = ROOT / "core" / "export_utils.py"
+CLEAN_PATH = ROOT / "core" / "scene_utils.py"
+EXPORT_PATH = ROOT / "core" / "scene_utils.py"
 
 TEXT_SUFFIXES = {
     ".py",
@@ -280,7 +280,7 @@ def merge_scene_modules():
     CLEAN_PATH.unlink()
     EXPORT_PATH.unlink()
 
-    print("Merged scene_clean_utils.py and export_utils.py into scene_utils.py.")
+    print("Merged scene_utils.py and scene_utils.py into scene_utils.py.")
     return True
 
 
@@ -344,11 +344,11 @@ def migrate_references():
             continue
 
         updated = source.replace(
-            "scene_clean_utils",
+            "scene_utils",
             "scene_utils"
         )
         updated = updated.replace(
-            "export_utils",
+            "scene_utils",
             "scene_utils"
         )
 
@@ -407,7 +407,7 @@ def validate_no_legacy_references():
         except UnicodeDecodeError:
             continue
 
-        if "scene_clean_utils" in source or "export_utils" in source:
+        if "scene_utils" in source or "scene_utils" in source:
             errors.append(
                 str(path)
             )

@@ -27,7 +27,7 @@ Skin            -> skin_utils.py
 BlendShape      -> blendshape_utils.py
 ControllerShape -> control_shape_utils.py
 Model Check     -> model_check_utils.py
-Scene Clean     -> scene_clean_utils.py
+Scene Clean     -> scene_utils.py
 ```
 
 ---

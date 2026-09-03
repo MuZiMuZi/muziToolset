@@ -6,7 +6,7 @@ Hierarchy Cleaner
 场景安全清理 UI。
 
 实际清理逻辑统一维护在：
-    muziToolset.core.scene_clean_utils
+    muziToolset.core.scene_utils
 
 窗口生命周期：
     用户直接调用 main() 时，由 ui.window_utils 负责保存强引用并显示窗口；
@@ -32,10 +32,9 @@ except ImportError:
     from PySide6.QtWidgets import QPushButton
     from PySide6.QtWidgets import QVBoxLayout
 
-from ...core import scene_clean_utils
+from ...core import scene_utils
 from ...ui import theme
 from ...ui import window_utils
-from ...core import scene_utils
 
 
 class HierarchyCleaner(QDialog):
@@ -240,7 +239,7 @@ class HierarchyCleaner(QDialog):
 
             return nodes
 
-        return scene_clean_utils.all_transform_nodes()
+        return scene_utils.all_transform_nodes()
 
     def format_result(self, result):
         u"""
@@ -353,7 +352,7 @@ class HierarchyCleaner(QDialog):
         # Step 04：执行可能失败的操作，并统一处理异常或清理状态
         # -------------------------------------------------------------------------
         try:
-            result = scene_clean_utils.run_cleanup(
+            result = scene_utils.run_cleanup(
                 nodes=nodes,
                 selected_only=selected_only,
                 delete_empty=self.delete_empty_checkbox.isChecked(),

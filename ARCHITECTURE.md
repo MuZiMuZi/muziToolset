@@ -305,7 +305,7 @@ matrix_utils.py
 mesh_utils.py
 model_check_utils.py
 rename_utils.py
-scene_clean_utils.py
+scene_utils.py
 scene_utils.py
 skin_utils.py
 surface_utils.py

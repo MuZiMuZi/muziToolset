@@ -38,7 +38,7 @@ duplicate_model(source_model, new_name, parent=None)
 - SkinCluster 操作放在 skin_utils.py；
 - BlendShape / Corrective 放在 blendshape_utils.py；
 - 模型规范检查放在 model_check_utils.py；
-- 场景整体清理放在 scene_clean_utils.py；
+- 场景整体清理放在 scene_utils.py；
 - 本模块不读取 UI Selection，也不创建任何工具窗口。
 
 依赖
