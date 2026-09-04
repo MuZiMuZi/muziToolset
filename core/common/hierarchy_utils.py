@@ -14,3 +14,13 @@ def parent (child_node , parent_node) :
             cmds.warning (u'{} 已为 {}的子物体'.format (child_node , parent_node))
     else :
         cmds.warning (u'没有给定父物体节点')
+
+def chain_parent (child_nodes , parent_node) :
+    """
+    将链条式的列表按照顺序整理层级结构
+    child_nodes：需要整理层级结构的物体列表
+    parent_node：第一个物体的父物体
+    """
+    for child_node in child_nodes :
+       parent(child_node , parent_node)
+       parent_node = child_node
