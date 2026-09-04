@@ -52,7 +52,7 @@ rig = RigBase(
     index=1
 )
 
-joint_name = rig.create_name(
+jnt_name = rig.create_name(
     node_type="jnt",
     function="bind"
 )
@@ -157,7 +157,7 @@ finalize_step()
 RigModuleBase 的 `process_data()` 统一调用：
 
 ```text
-create_joint()
+create_jnt()
 create_controller()
 create_connection()
 ```
@@ -235,7 +235,7 @@ Module
     Teeth / Jaw / Tongue / Lip / Eye / Brow ...
 
 Builder
-    Curve Attachment / Zip Lip / Radial Joint ...
+    Curve Attachment / Zip Lip / Radial Jnt ...
 ```
 
 `FaceBase` 默认 Rig Identity：

@@ -17,7 +17,7 @@ Face Workflow 的 Step 03 正式入口。
     - FaceBuild 是 Workflow Step，因此使用 run_step()；
     - FaceRig 是 Module Orchestrator，因此使用 create_build()；
     - Brow / Eye / Lip 等具体业务逻辑只存在于 systems.face.modules；
-    - 本 Step 不复制任何具体 Joint / Controller / Deformer 算法。
+    - 本 Step 不复制任何具体 Jnt / Controller / Deformer 算法。
 """
 
 from __future__ import print_function
@@ -60,7 +60,7 @@ class FaceBuild(FaceBase):
                 Setup / Guide 未完成、Guide 不完整或 Step 03 已完成时抛出。
         """
         # -------------------------------------------------------------------------
-        # Step 01：验证 Step 01 保存的模型与 Mouth Joint Number
+        # Step 01：验证 Step 01 保存的模型与 Mouth Jnt Number
         # -------------------------------------------------------------------------
         self.validate_setup_config(
             require_mouth_jnt_number=True

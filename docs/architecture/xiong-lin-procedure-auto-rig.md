@@ -14,9 +14,9 @@
 
 - PDF：Rig Build Description - Xiong Lin
 - Bilibili：Component Based Procedure Auto Rig  
-  https://www.bilibili.com/video/BV1e4411G7Hq/
+  __MUZI_MAYA_JNT_PROTECTED_00000__
 - Bilibili：Maya绑定和动画工具展示  
-  https://www.bilibili.com/video/BV1fK4y1T7uw/
+  __MUZI_MAYA_JNT_PROTECTED_00001__
 
 这两段视频和 PDF 作为 MuziTools 程序化绑定系统的架构参考资料。
 
@@ -194,7 +194,7 @@ Skin Weight Tool 可以导出和导入权重数据，并在 Auto Rig 重建时�
 
 **可以返回之前的 Rig Building Stage 修改或修复，同时不丢失已经完成的制作数据。**
 
-例如重新调整 Joint 位置后，可以重新 Build Rig，而 Skin Weight、PSD 等艺术数据会被恢复。
+例如重新调整 Jnt 位置后，可以重新 Build Rig，而 Skin Weight、PSD 等艺术数据会被恢复。
 
 相似角色之间还可以共享 Skin Weight 等 Character Data，从而节省大量制作时间。
 
@@ -319,7 +319,7 @@ finalize_step()
 真正的 Rig Module 使用 `RigModuleBase`：
 
 ```text
-create_joint()
+create_jnt()
       ↓
 create_controller()
       ↓
@@ -431,7 +431,7 @@ LegModule
 MuziTools
 │
 ├── Core
-│   ├── Joint
+│   ├── Jnt
 │   ├── Matrix
 │   ├── Connection
 │   ├── Constraint

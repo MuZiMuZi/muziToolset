@@ -5,7 +5,7 @@ Core Single Source Gate
 
 检查 core/ 中高确定性的 Generic 能力只有一个正式实现位置。
 
-本测试只扫描模块顶层 Function，不限制 Joint / Attr 等领域类自己的业务 Method。
+本测试只扫描模块顶层 Function，不限制 Jnt / Attr 等领域类自己的业务 Method。
 
 目的：
     - 新增 Helper 前优先复用现有 Core；
@@ -58,13 +58,13 @@ OWNER_BY_FUNCTION = {
     "lerp_point3": "core/math_utils.py",
     "average_point3": "core/math_utils.py",
 
-    # Joint chain
-    "validate_joint_list": "core/jnt_chain_utils.py",
-    "get_joint_path": "core/jnt_chain_utils.py",
-    "parent_joints_as_chain": "core/jnt_chain_utils.py",
-    "create_joints_at_items": "core/jnt_chain_utils.py",
-    "get_curve_joint_base_name": "core/jnt_chain_utils.py",
-    "create_joints_on_curve_cvs": "core/jnt_chain_utils.py",
+    # Jnt chain
+    "validate_jnt_list": "core/jnt_chain_utils.py",
+    "get_jnt_path": "core/jnt_chain_utils.py",
+    "parent_jnts_as_chain": "core/jnt_chain_utils.py",
+    "create_jnts_at_items": "core/jnt_chain_utils.py",
+    "get_curve_jnt_base_name": "core/jnt_chain_utils.py",
+    "create_jnts_on_curve_cvs": "core/jnt_chain_utils.py",
 
     # Export
     "ensure_fbx_plugin_loaded": "core/scene_utils.py",

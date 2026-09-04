@@ -8,7 +8,7 @@ Maya NURBS Curve 领域的通用底层工具。
 模块职责
 --------
 这个模块只处理 NURBS Curve 的“查询、采样、Parameter 换算、附着和基础创建”。
-jnt、Face、Lip、Eyelid 等更高层绑定逻辑继续放在对应 Core / System 中。
+Jnt、Face、Lip、Eyelid 等更高层绑定逻辑继续放在对应 Core / System 中。
 
 当前公开方法
 ------------
@@ -83,7 +83,7 @@ Face Eyelid / Lip / Curve Attachment 会依赖这个规则。
 
 本模块不负责
 ------------
-- jnt 创建和 jnt Orient；
+- Jnt 创建和 Jnt Orient；
 - Face / Eyelid / Lip 的完整绑定；
 - Ribbon / Spline IK Workflow；
 - Curve UI Tool；
@@ -93,7 +93,7 @@ Face Eyelid / Lip / Curve Attachment 会依赖这个规则。
 --------
     Curve 数据 / 采样 / Attachment  -> curve_utils
     NURBS Surface / Follicle         -> surface_utils
-    jnt on Curve                   -> jntUtils / 对应 System
+    Jnt on Curve                   -> jntUtils / 对应 System
     Face Curve Rig                   -> systems.face
 
 设计原则

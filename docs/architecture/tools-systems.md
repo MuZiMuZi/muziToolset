@@ -80,7 +80,7 @@ rig = RigBase(
     index=1
 )
 
-joint_name = rig.create_name(
+jnt_name = rig.create_name(
     node_type="jnt",
     function="bind"
 )
@@ -177,7 +177,7 @@ systems/ctrl_base.py
 
 如果一个流程是：
 
-> 根据 Teeth Guide 创建 Controller、Joint、Matrix、Rigid Skin。
+> 根据 Teeth Guide 创建 Controller、Jnt、Matrix、Rigid Skin。
 
 放：
 

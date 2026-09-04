@@ -103,7 +103,7 @@ Teeth Guide
     ↓
 Controller
     ↓ Matrix
-Bind Joint
+Bind Jnt
     ↓ Rigid Skin
 Teeth Model
 ```
@@ -151,7 +151,7 @@ print(rig.side)
 print(rig.part)
 print(rig.index)
 
-joint_name = rig.create_name(
+jnt_name = rig.create_name(
     node_type="jnt",
     function="bind"
 )
@@ -256,7 +256,7 @@ muziToolset.functional_smoke_test()
 - [常用工具工作流](docs/manual/tools.md)
 - [基础工具](docs/manual/basic-tools.md)
 - [Controller](docs/manual/controller.md)
-- [Joint](docs/manual/joint.md)
+- [Jnt](docs/manual/jnt.md)
 - [Skin](docs/manual/skin.md)
 - [BlendShape](docs/manual/blendshape.md)
 - [场景清理与模型检查](docs/manual/cleanup.md)

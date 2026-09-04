@@ -733,7 +733,7 @@ Core Single Source Gate
 
 检查 core/ 中高确定性的 Generic 能力只有一个正式实现位置。
 
-本测试只扫描模块顶层 Function，不限制 Joint / Hierarchy 等领域类自己的业务 Method。
+本测试只扫描模块顶层 Function，不限制 Jnt / Hierarchy 等领域类自己的业务 Method。
 """
 
 from __future__ import print_function

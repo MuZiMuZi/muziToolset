@@ -203,7 +203,7 @@ def test_follow(token):
 
 
 def test_locator_visual_position(token):
-    u"""验证非零 localPosition 的 Locator 可正确定位 Ctrl 与 Joint。"""
+    u"""验证非零 localPosition 的 Locator 可正确定位 Ctrl 与 Jnt。"""
     guide_parent = cmds.createNode(
         "transform",
         name="grp_md_{}_guide_parent_001".format(token)
@@ -286,26 +286,26 @@ def test_locator_visual_position(token):
         u"Locator Ctrl Position"
     )
 
-    joint = jnt_utils.Joint.create_at_object(
+    jnt = jnt_utils.Jnt.create_at_object(
         obj=guide,
         name="jnt_md_{}_locator_001".format(token),
         parent=ctrl_parent,
         match_rotation=True,
         radius=0.25
     )
-    joint_position = cmds.xform(
-        joint,
+    jnt_position = cmds.xform(
+        jnt,
         query=True,
         worldSpace=True,
         translation=True
     )
     assert_point_equal(
-        joint_position,
+        jnt_position,
         expected_position,
-        u"Locator Joint Position"
+        u"Locator Jnt Position"
     )
 
-    return u"Locator worldPosition 正确定位 Ctrl + Joint"
+    return u"Locator worldPosition 正确定位 Ctrl + Jnt"
 
 
 # =============================================================================

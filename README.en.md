@@ -63,7 +63,7 @@ rig = RigBase(
     index=1
 )
 
-joint_name = rig.create_name(
+jnt_name = rig.create_name(
     node_type="jnt",
     function="bind"
 )
@@ -117,7 +117,7 @@ finalize_step
 `RigModuleBase` specializes `process_data` into:
 
 ```text
-create_joint
+create_jnt
 create_controller
 create_connection
 ```

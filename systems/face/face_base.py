@@ -16,7 +16,7 @@ Face Rig 公共基础类
 重要边界：
     - Rig Object Identity / Naming 由 systems.rig_base.RigBase 负责；
     - Module 四阶段生命周期由 systems.module_base.ModuleBase 负责；
-    - 标准 Rig 的 Joint / Controller / Connection 三阶段构建由 RigModuleBase 负责；
+    - 标准 Rig 的 Jnt / Controller / Connection 三阶段构建由 RigModuleBase 负责；
     - Config Network Node 的创建、Message 引用、Value 读写由 core.config_utils.ConfigNode 负责；
     - Maya Model 有效性由 core.mesh_utils 负责；
     - Maya DAG 层级操作由 core.hierarchy_utils 负责；
@@ -779,7 +779,7 @@ class FaceBase(RigModuleBase):
         if require_mouth_jnt_number:
             if self.mouth_jnt_number is None:
                 raise RuntimeError(
-                    u"没有读取到嘴唇 Joint 数量，请先完成 Face Setup。"
+                    u"没有读取到嘴唇 Jnt 数量，请先完成 Face Setup。"
                 )
 
         # -------------------------------------------------------------------------

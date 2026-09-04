@@ -156,7 +156,7 @@ class CheekModule(FaceModuleBase):
     def create_jnt(self):
         u"""
 
-                每个有效 Cheek Guide 创建一个独立 Bind Joint。
+                每个有效 Cheek Guide 创建一个独立 Bind Jnt。
 
                 Returns:
                     object:
@@ -191,9 +191,9 @@ class CheekModule(FaceModuleBase):
                     )
                     scene_utils.ensure_nodes_available(
                         cheek_jnt_name,
-                        label=u"Cheek Joint"
+                        label=u"Cheek Jnt"
                     )
-                    cheek_jnt = joint_utils.Joint.create_at_object(
+                    cheek_jnt = jnt_utils.Jnt.create_at_object(
                         obj=region_data["guides"][index],
                         name=cheek_jnt_name,
                         parent=self.face_jnt_grp,
@@ -213,7 +213,7 @@ class CheekModule(FaceModuleBase):
     def create_ctrl(self):
         u"""
 
-                为每个 Cheek Joint 创建独立 Animator Controller。
+                为每个 Cheek Jnt 创建独立 Animator Controller。
 
                 Returns:
                     object:
@@ -272,7 +272,7 @@ class CheekModule(FaceModuleBase):
     def create_connect(self):
         u"""
 
-                使用每个 Controller Output 驱动对应 Cheek Joint。
+                使用每个 Controller Output 驱动对应 Cheek Jnt。
 
                 Returns:
                     object:
@@ -315,7 +315,7 @@ class CheekModule(FaceModuleBase):
     def create_deform(self):
         u"""
 
-                Cheek 的输出 Joint 本身作为后续 Face Skin Influence。
+                Cheek 的输出 Jnt 本身作为后续 Face Skin Influence。
 
                 Returns:
                     bool:
@@ -348,7 +348,7 @@ class CheekModule(FaceModuleBase):
             return True
 
         # -------------------------------------------------------------------------
-        # Step 02：逐侧验证所有已经创建的 Joint、Controller 与 Matrix Network
+        # Step 02：逐侧验证所有已经创建的 Jnt、Controller 与 Matrix Network
         # -------------------------------------------------------------------------
         for side in self.sides:
             region_dict = self.cheek_side_dict[side]["region_dict"]
@@ -359,7 +359,7 @@ class CheekModule(FaceModuleBase):
                 for cheek_jnt in region_data["jnts"]:
                     scene_utils.validate_node(
                         cheek_jnt,
-                        label=u"Cheek Joint"
+                        label=u"Cheek Jnt"
                     )
 
                 for cheek_ctrl_dict in region_data["ctrl_dict_list"]:

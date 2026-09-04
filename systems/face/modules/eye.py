@@ -146,7 +146,7 @@ class EyeModule(FaceModuleBase):
     def create_jnt(self):
         u"""
 
-                创建 Eye Center Joint 和 Iris Joint。
+                创建 Eye Center Jnt 和 Iris Jnt。
 
                 Returns:
                     object:
@@ -175,17 +175,17 @@ class EyeModule(FaceModuleBase):
 
             scene_utils.ensure_nodes_available(
                 [eye_jnt_name, iris_jnt_name],
-                label=u"Eye Joint"
+                label=u"Eye Jnt"
             )
 
-            eye_jnt = joint_utils.Joint.create_at_object(
+            eye_jnt = jnt_utils.Jnt.create_at_object(
                 obj=eye_dict["eye_ball_guide"],
                 name=eye_jnt_name,
                 parent=self.face_jnt_grp,
                 match_rotation=True,
                 radius=self.controller_radius * 0.25
             )
-            iris_jnt = joint_utils.Joint.create_at_object(
+            iris_jnt = jnt_utils.Jnt.create_at_object(
                 obj=eye_dict["eye_iris_guide"],
                 name=iris_jnt_name,
                 parent=eye_jnt,
@@ -304,7 +304,7 @@ class EyeModule(FaceModuleBase):
     def create_connect(self):
         u"""
 
-                Main Ctrl 驱动 Eye Joint；Aim Ctrl 驱动 Main Ctrl 的 Driven Group 朝向。
+                Main Ctrl 驱动 Eye Jnt；Aim Ctrl 驱动 Main Ctrl 的 Driven Group 朝向。
 
                 Returns:
                     object:
@@ -367,7 +367,7 @@ class EyeModule(FaceModuleBase):
     def create_deform(self):
         u"""
 
-                在 Eye Main Ctrl 上创建 Iris Scale，并驱动 Iris Joint 的 Y/Z Scale。
+                在 Eye Main Ctrl 上创建 Iris Scale，并驱动 Iris Jnt 的 Y/Z Scale。
 
                 Returns:
                     object:

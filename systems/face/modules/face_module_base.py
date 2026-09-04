@@ -36,14 +36,14 @@ Face Workflow Step 与 Face Rig Module 是两种不同职责：
 命名规范：
     - Class 使用 PascalCase；
     - 方法、函数、成员变量使用 snake_case；
-    - Joint 在模块生命周期 API 中统一缩写为 jnt；
+    - Jnt 在模块生命周期 API 中统一缩写为 jnt；
     - Controller 在模块生命周期 API 中统一缩写为 ctrl；
     - 常量使用 UPPER_SNAKE_CASE。
 
 设计原则：
     1. FaceModuleBase 只规定执行顺序，不实现具体部位绑定算法；
     2. Face 公共 Config / Hierarchy / Naming 继续复用 FaceBase；
-    3. Joint / Controller / Matrix / Attribute 等底层能力继续复用 Core；
+    3. Jnt / Controller / Matrix / Attribute 等底层能力继续复用 Core；
     4. 具体模块只实现自己的业务阶段，不重新创建第二套通用 Helper；
     5. Scene Rebuild / Existing Node 检查由具体模块在 load_setup() 中处理；
     6. create_deform() 表示模块独有的高级绑定效果，不局限于 Maya Deformer Node；
@@ -224,12 +224,12 @@ class FaceModuleBase(FaceBase):
         self.load_setup()
 
         # -------------------------------------------------------------------------
-        # Step 02：读取当前 Face Guide，并整理后续 Joint / Controller 定位数据
+        # Step 02：读取当前 Face Guide，并整理后续 Jnt / Controller 定位数据
         # -------------------------------------------------------------------------
         self.load_guide()
 
         # -------------------------------------------------------------------------
-        # Step 03：根据 Guide 创建当前模块需要的 Bind / Driver Joint
+        # Step 03：根据 Guide 创建当前模块需要的 Bind / Driver Jnt
         # -------------------------------------------------------------------------
         self.create_jnt()
 
@@ -239,7 +239,7 @@ class FaceModuleBase(FaceBase):
         self.create_ctrl()
 
         # -------------------------------------------------------------------------
-        # Step 05：建立 Controller、Output、Joint 与模块内部基础驱动关系
+        # Step 05：建立 Controller、Output、Jnt 与模块内部基础驱动关系
         # -------------------------------------------------------------------------
         self.create_connect()
 
@@ -285,7 +285,7 @@ class FaceModuleBase(FaceBase):
 
     def create_jnt(self):
         u"""
-        根据 Guide 创建当前模块 Joint。
+        根据 Guide 创建当前模块 Jnt。
 
         Raises:
             NotImplementedError:
@@ -309,7 +309,7 @@ class FaceModuleBase(FaceBase):
 
     def create_connect(self):
         u"""
-        建立 Controller / Output 到 Joint 的基础驱动关系。
+        建立 Controller / Output 到 Jnt 的基础驱动关系。
 
         Raises:
             NotImplementedError:

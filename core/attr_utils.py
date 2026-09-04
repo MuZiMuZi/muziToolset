@@ -1061,9 +1061,9 @@ class Attr(object):
         node_type = cmds.nodeType(
             self.node
         )
-        if node_type not in ["transform", "jnt"]:
+        if node_type not in ["transform", __MUZI_MAYA_JNT_PROTECTED_00000__]:
             raise RuntimeError(
-                u"Transform Limits 只支持 Transform / jnt：{} | type={}".format(
+                u"Transform Limits 只支持 Transform / Jnt：{} | type={}".format(
                     self.node,
                     node_type
                 )

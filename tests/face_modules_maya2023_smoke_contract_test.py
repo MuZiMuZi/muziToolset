@@ -265,7 +265,7 @@ def main():
         ".build_rig(",
         ".build_setup(",
         ".create_bpjnt(",
-        ".create_joint(",
+        ".create_jnt(",
         ".add_constraint(",
     ]
 

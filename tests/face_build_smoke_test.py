@@ -4,7 +4,7 @@ Face Build Functional Smoke Test
 ================================
 
 验证 Face Build Package 的底层构建算法：
-    - Eyelid Radial Joint
+    - Eyelid Radial Jnt
     - Multi Curve Attachment
     - Matrix Zip Lip
 
@@ -91,22 +91,22 @@ def create_transform(name, parent=None, position=None):
     return transform
 
 
-def create_joint(name, parent=None, position=None):
-    u"""创建测试 Joint。"""
-    joint = cmds.createNode(
-        "joint",
+def create_jnt(name, parent=None, position=None):
+    u"""创建测试 Jnt。"""
+    jnt = cmds.createNode(
+        __MUZI_MAYA_JNT_PROTECTED_00000__,
         name=name,
         parent=parent
     )
 
     if position is not None:
         cmds.xform(
-            joint,
+            jnt,
             worldSpace=True,
             translation=position
         )
 
-    return joint
+    return jnt
 
 
 def create_curve(name, points):
@@ -144,8 +144,8 @@ def run_case(results, name, test_function, root_group):
 # =============================================================================
 
 def test_eyelid_builder(root_group):
-    u"""真实创建五点 Upper Lid Radial Joint Rig。"""
-    eye_joint = create_joint(
+    u"""真实创建五点 Upper Lid Radial Jnt Rig。"""
+    eye_jnt = create_jnt(
         "jnt_lf_eye_center_smoke_001",
         parent=root_group,
         position=[0.0, 0.0, 0.0]
@@ -171,20 +171,20 @@ def test_eyelid_builder(root_group):
         root_group
     )[0]
 
-    result = face_system.build_eyelid_joints(
+    result = face_system.build_eyelid_jnts(
         curve=curve,
-        eye_joint=eye_joint,
+        eye_jnt=eye_jnt,
         up_object=up_object,
         side="lf",
         region="upper",
         parent_group=root_group,
-        joint_radius=0.15
+        jnt_radius=0.15
     )
 
-    if len(result["joints"]) != 5:
+    if len(result["jnts"]) != 5:
         raise RuntimeError(
-            u"Eyelid Joint 数量错误：{}".format(
-                len(result["joints"])
+            u"Eyelid Jnt 数量错误：{}".format(
+                len(result["jnts"])
             )
         )
 
@@ -195,9 +195,9 @@ def test_eyelid_builder(root_group):
 
     index = 0
 
-    while index < len(result["joints"]):
-        joint_position = cmds.xform(
-            result["joints"][index],
+    while index < len(result["jnts"]):
+        jnt_position = cmds.xform(
+            result["jnts"][index],
             query=True,
             worldSpace=True,
             translation=True
@@ -210,18 +210,18 @@ def test_eyelid_builder(root_group):
         )
 
         if math_utils.distance_between_points(
-                joint_position,
+                jnt_position,
                 attachment_position
         ) > 0.001:
             raise RuntimeError(
-                u"Eyelid Joint 没有落在 Attachment：{}".format(
+                u"Eyelid Jnt 没有落在 Attachment：{}".format(
                     index
                 )
             )
 
         index += 1
 
-    return u"5 Point Eyelid Radial Joint Rig 创建成功"
+    return u"5 Point Eyelid Radial Jnt Rig 创建成功"
 
 
 # =============================================================================
@@ -264,28 +264,28 @@ def test_curve_attachment(root_group):
         position=[0.0, 3.0, 0.0]
     )
 
-    joint_positions = [
+    jnt_positions = [
         [0.25, 0.05, 0.0],
         [1.5, 0.4, 0.0],
         [2.75, 0.05, 0.0],
     ]
-    joints = []
+    jnts = []
     index = 0
 
-    while index < len(joint_positions):
-        joints.append(
-            create_joint(
+    while index < len(jnt_positions):
+        jnts.append(
+            create_jnt(
                 "jnt_lf_brow_smoke_{:03d}".format(
                     index + 1
                 ),
                 parent=root_group,
-                position=joint_positions[index]
+                position=jnt_positions[index]
             )
         )
         index += 1
 
-    result = face_system.attach_joints_to_curves(
-        joints=joints,
+    result = face_system.attach_jnts_to_curves(
+        jnts=jnts,
         drive_curve=drive_curve,
         aim_curve=aim_curve,
         side="lf",
@@ -293,7 +293,7 @@ def test_curve_attachment(root_group):
         feature="smoke",
         up_object=up_object,
         parent_group=root_group,
-        preserve_joint_offset=True
+        preserve_jnt_offset=True
     )
 
     if len(result["percentages"]) != 3:
@@ -341,8 +341,8 @@ def test_zip_lip(root_group):
         parent=root_group
     )
 
-    upper_joints = []
-    lower_joints = []
+    upper_jnts = []
+    lower_jnts = []
     x_positions = [
         -3.0,
         -1.0,
@@ -369,14 +369,14 @@ def test_zip_lip(root_group):
             parent=root_group
         )
 
-        upper_joint = create_joint(
+        upper_jnt = create_jnt(
             "jnt_md_lip_upper_smoke_{:03d}".format(
                 item_number
             ),
             parent=upper_parent,
             position=[x_position, 0.5, 0.0]
         )
-        lower_joint = create_joint(
+        lower_jnt = create_jnt(
             "jnt_md_lip_lower_smoke_{:03d}".format(
                 item_number
             ),
@@ -384,17 +384,17 @@ def test_zip_lip(root_group):
             position=[x_position, -0.5, 0.0]
         )
 
-        upper_joints.append(
-            upper_joint
+        upper_jnts.append(
+            upper_jnt
         )
-        lower_joints.append(
-            lower_joint
+        lower_jnts.append(
+            lower_jnt
         )
         index += 1
 
     result = face_system.build_zip_lip(
-        upper_joints=upper_joints,
-        lower_joints=lower_joints,
+        upper_jnts=upper_jnts,
+        lower_jnts=lower_jnts,
         left_zip_control=left_control,
         right_zip_control=right_control,
         jaw_control=jaw_control,
@@ -431,13 +431,13 @@ def test_zip_lip(root_group):
     while index < len(result["pairs"]):
         pair = result["pairs"][index]
         upper_position = cmds.xform(
-            pair["upper_joint"],
+            pair["upper_jnt"],
             query=True,
             worldSpace=True,
             translation=True
         )
         lower_position = cmds.xform(
-            pair["lower_joint"],
+            pair["lower_jnt"],
             query=True,
             worldSpace=True,
             translation=True
@@ -450,7 +450,7 @@ def test_zip_lip(root_group):
 
         if distance > 0.001:
             raise RuntimeError(
-                u"Zip Lip 完全闭合后上下 Joint 没有重合：index={} distance={}".format(
+                u"Zip Lip 完全闭合后上下 Jnt 没有重合：index={} distance={}".format(
                     index,
                     distance
                 )

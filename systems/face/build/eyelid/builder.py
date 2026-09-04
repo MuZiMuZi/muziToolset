@@ -3,7 +3,7 @@ u"""
 Face Eyelid Builder
 ===================
 
-基于 Curve CV 创建眼皮 / 眼袋放射状 Joint Rig。
+基于 Curve CV 创建眼皮 / 眼袋放射状 Jnt Rig。
 
 设计边界：
     1. Curve 查询和 Attachment 创建交给 core.curve_utils；
@@ -12,7 +12,7 @@ Face Eyelid Builder
     4. Aim Constraint 创建交给 core.constraint_utils；
     5. Maya Undo Chunk 交给 core.scene_utils；
     6. Face Builder Naming 统一复用 systems.face.naming；
-    7. Joint 使用眼球中心作为 Pivot，沿 Local X 放射到 Curve Attachment；
+    7. Jnt 使用眼球中心作为 Pivot，沿 Local X 放射到 Curve Attachment；
     8. 眼皮和眼袋使用同一套构建函数；
     9. 构建失败时自动清理本次创建的 Rig Nodes Group。
 """
@@ -29,22 +29,22 @@ from ... import naming as face_naming
 
 
 @scene_utils.undo_chunk
-def build_radial_curve_joints(
+def build_radial_curve_jnts(
         curve,
-        eye_joint,
+        eye_jnt,
         up_object,
         side,
         region,
         feature="lid",
         parent_group=None,
-        joint_radius=0.2
+        jnt_radius=0.2
 ):
     u"""
-    基于 Curve CV 创建眼区放射状 Joint。
+    基于 Curve CV 创建眼区放射状 Jnt。
 
     Eye Center
         -> Aim Group
-            -> Bind Joint
+            -> Bind Jnt
     Curve
         -> pointOnCurveInfo
             -> Attachment
@@ -53,10 +53,10 @@ def build_radial_curve_joints(
     Args:
         curve (str):
             需要处理的 Maya Curve Transform 或 Shape 名称。
-        eye_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        eye_jnt (str):
+            当前 Rig 计算或构建使用的 Maya Jnt 节点。
         up_object (str):
-            Eyelid / Radial Joint Aim 系统用于稳定 Orientation 的 Up Object。
+            Eyelid / Radial Jnt Aim 系统用于稳定 Orientation 的 Up Object。
         side (str):
             方向标记，常用值为 lf、rt 或 md。
         region (str):
@@ -65,8 +65,8 @@ def build_radial_curve_joints(
             Face Component 的功能部位标记，例如 lid、bag、lip。
         parent_group (str | None):
             新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
-        joint_radius (float):
-            当前 Joint、Controller 或辅助对象使用的半径。
+        jnt_radius (float):
+            当前 Jnt、Controller 或辅助对象使用的半径。
 
     Returns:
         dict:
@@ -83,7 +83,7 @@ def build_radial_curve_joints(
         curve
     )
     transform_utils.validate_transform(
-        eye_joint
+        eye_jnt
     )
     transform_utils.validate_transform(
         up_object
@@ -104,7 +104,7 @@ def build_radial_curve_joints(
 
     if not cv_positions:
         raise RuntimeError(
-            u"Curve 没有可用于创建 Joint 的 CV：{}".format(
+            u"Curve 没有可用于创建 Jnt 的 CV：{}".format(
                 curve
             )
         )
@@ -128,12 +128,12 @@ def build_radial_curve_joints(
         "attaches",
         1
     )
-    joints_group_name = face_naming.create_feature_name(
+    jnts_group_name = face_naming.create_feature_name(
         "grp",
         side,
         region,
         feature,
-        "joints",
+        "jnts",
         1
     )
 
@@ -144,7 +144,7 @@ def build_radial_curve_joints(
         [
             nodes_group_name,
             attachments_group_name,
-            joints_group_name,
+            jnts_group_name,
         ],
         label=u"Eye Area Rig Build Node"
     )
@@ -165,13 +165,13 @@ def build_radial_curve_joints(
             attachments_group_name,
             parent=nodes_group
         )
-        joints_group = scene_utils.create_node(
+        jnts_group = scene_utils.create_node(
             "transform",
-            joints_group_name,
+            jnts_group_name,
             parent=nodes_group
         )
 
-        joints = []
+        jnts = []
         aim_groups = []
         attachments = []
         point_on_curve_nodes = []
@@ -179,7 +179,7 @@ def build_radial_curve_joints(
         aim_constraints = []
 
         eye_position = transform_utils.get_world_translation(
-            eye_joint
+            eye_jnt
         )
 
         index = 0
@@ -227,7 +227,7 @@ def build_radial_curve_joints(
             aim_group = scene_utils.create_node(
                 "transform",
                 aim_group_name,
-                parent=joints_group
+                parent=jnts_group
             )
             transform_utils.set_world_translation(
                 aim_group,
@@ -255,7 +255,7 @@ def build_radial_curve_joints(
 
             aim_constraint = aim_constraint_nodes[0]
 
-            joint_name = face_naming.create_feature_name(
+            jnt_name = face_naming.create_feature_name(
                 "jnt",
                 side,
                 region,
@@ -263,48 +263,48 @@ def build_radial_curve_joints(
                 "bind",
                 item_index
             )
-            joint = scene_utils.create_node(
-                "joint",
-                joint_name,
+            jnt = scene_utils.create_node(
+                __MUZI_MAYA_JNT_PROTECTED_00000__,
+                jnt_name,
                 parent=aim_group
             )
 
-            joint_distance = transform_utils.distance_between(
-                eye_joint,
+            jnt_distance = transform_utils.distance_between(
+                eye_jnt,
                 attachment
             )
 
             cmds.setAttr(
-                joint + ".translateX",
-                joint_distance
+                jnt + ".translateX",
+                jnt_distance
             )
             cmds.setAttr(
-                joint + ".translateY",
+                jnt + ".translateY",
                 0.0
             )
             cmds.setAttr(
-                joint + ".translateZ",
+                jnt + ".translateZ",
                 0.0
             )
             cmds.setAttr(
-                joint + ".rotateX",
+                jnt + ".rotateX",
                 0.0
             )
             cmds.setAttr(
-                joint + ".rotateY",
+                jnt + ".rotateY",
                 0.0
             )
             cmds.setAttr(
-                joint + ".rotateZ",
+                jnt + ".rotateZ",
                 0.0
             )
             cmds.setAttr(
-                joint + ".radius",
-                joint_radius
+                jnt + ".radius",
+                jnt_radius
             )
 
-            joints.append(
-                joint
+            jnts.append(
+                jnt
             )
             aim_groups.append(
                 aim_group
@@ -317,17 +317,17 @@ def build_radial_curve_joints(
 
         return {
             "curve": curve,
-            "eye_joint": eye_joint,
+            "eye_jnt": eye_jnt,
             "up_object": up_object,
             "nodes_group": nodes_group,
             "attachments_group": attachments_group,
-            "joints_group": joints_group,
+            "jnts_group": jnts_group,
             "attachments": attachments,
             "point_on_curve_nodes": point_on_curve_nodes,
             "attachment_matrix_nodes": attachment_matrix_nodes,
             "aim_groups": aim_groups,
             "aim_constraints": aim_constraints,
-            "joints": joints,
+            "jnts": jnts,
             "side": side,
             "region": region,
             "feature": feature,
@@ -343,14 +343,14 @@ def build_radial_curve_joints(
         raise
 
 
-def build_eyelid_joints(
+def build_eyelid_jnts(
         curve,
-        eye_joint,
+        eye_jnt,
         up_object,
         side,
         region,
         parent_group=None,
-        joint_radius=0.2
+        jnt_radius=0.2
 ):
     u"""
     眼皮专用入口。
@@ -358,43 +358,43 @@ def build_eyelid_joints(
     Args:
         curve (str):
             需要处理的 Maya Curve Transform 或 Shape 名称。
-        eye_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        eye_jnt (str):
+            当前 Rig 计算或构建使用的 Maya Jnt 节点。
         up_object (str):
-            Eyelid / Radial Joint Aim 系统用于稳定 Orientation 的 Up Object。
+            Eyelid / Radial Jnt Aim 系统用于稳定 Orientation 的 Up Object。
         side (str):
             方向标记，常用值为 lf、rt 或 md。
         region (str):
             Face Component 的区域标记，例如 upper、lower、inner、outer。
         parent_group (str | None):
             新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
-        joint_radius (float):
-            当前 Joint、Controller 或辅助对象使用的半径。
+        jnt_radius (float):
+            当前 Jnt、Controller 或辅助对象使用的半径。
 
     Returns:
         object:
         创建或构建完成后的 Maya / Rig 对象或 Build Result。
     """
-    return build_radial_curve_joints(
+    return build_radial_curve_jnts(
         curve=curve,
-        eye_joint=eye_joint,
+        eye_jnt=eye_jnt,
         up_object=up_object,
         side=side,
         region=region,
         feature="lid",
         parent_group=parent_group,
-        joint_radius=joint_radius
+        jnt_radius=jnt_radius
     )
 
 
-def build_eye_bag_joints(
+def build_eye_bag_jnts(
         curve,
-        eye_joint,
+        eye_jnt,
         up_object,
         side,
         region,
         parent_group=None,
-        joint_radius=0.2
+        jnt_radius=0.2
 ):
     u"""
     眼袋专用入口。
@@ -402,37 +402,37 @@ def build_eye_bag_joints(
     Args:
         curve (str):
             需要处理的 Maya Curve Transform 或 Shape 名称。
-        eye_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        eye_jnt (str):
+            当前 Rig 计算或构建使用的 Maya Jnt 节点。
         up_object (str):
-            Eyelid / Radial Joint Aim 系统用于稳定 Orientation 的 Up Object。
+            Eyelid / Radial Jnt Aim 系统用于稳定 Orientation 的 Up Object。
         side (str):
             方向标记，常用值为 lf、rt 或 md。
         region (str):
             Face Component 的区域标记，例如 upper、lower、inner、outer。
         parent_group (str | None):
             新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
-        joint_radius (float):
-            当前 Joint、Controller 或辅助对象使用的半径。
+        jnt_radius (float):
+            当前 Jnt、Controller 或辅助对象使用的半径。
 
     Returns:
         object:
         创建或构建完成后的 Maya / Rig 对象或 Build Result。
     """
-    return build_radial_curve_joints(
+    return build_radial_curve_jnts(
         curve=curve,
-        eye_joint=eye_joint,
+        eye_jnt=eye_jnt,
         up_object=up_object,
         side=side,
         region=region,
         feature="eye_bag",
         parent_group=parent_group,
-        joint_radius=joint_radius
+        jnt_radius=jnt_radius
     )
 
 
 __all__ = [
-    "build_radial_curve_joints",
-    "build_eyelid_joints",
-    "build_eye_bag_joints",
+    "build_radial_curve_jnts",
+    "build_eyelid_jnts",
+    "build_eye_bag_jnts",
 ]

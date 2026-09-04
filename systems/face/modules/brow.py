@@ -9,12 +9,12 @@ Brow Module
 
     Brow Main Ctrl
         -> Detail Ctrl Follow
-            -> Driver Joint
+            -> Driver Jnt
                 -> Skin Surface
                     -> Follicle
-                        -> Deform Joint
+                        -> Deform Jnt
 
-新版本不再导入 brow_bpjnt.ma，不再固定 7 个 Joint，也不再使用字符串 replace()
+新版本不再导入 brow_bpjnt.ma，不再固定 7 个 Jnt，也不再使用字符串 replace()
 推导层级名称。Guide 数量直接来自当前 FaceGuide Template。
 """
 
@@ -193,7 +193,7 @@ class BrowModule(FaceModuleBase):
     def create_jnt(self):
         u"""
 
-                按 Brow Point Guide 创建独立 Driver Joint。
+                按 Brow Point Guide 创建独立 Driver Jnt。
 
                 Returns:
                     object:
@@ -221,10 +221,10 @@ class BrowModule(FaceModuleBase):
 
                 scene_utils.ensure_nodes_available(
                     brow_driver_jnt_name,
-                    label=u"Brow Driver Joint"
+                    label=u"Brow Driver Jnt"
                 )
 
-                brow_driver_jnt = jnt_utils.Joint.create_at_object(
+                brow_driver_jnt = jnt_utils.Jnt.create_at_object(
                     obj=point_guides[index],
                     name=brow_driver_jnt_name,
                     parent=self.face_jnt_grp,
@@ -421,11 +421,11 @@ class BrowModule(FaceModuleBase):
     def create_deform(self):
         u"""
 
-                创建 Brow Driver Curve / Skin Surface / Follicle Deform Joints。
+                创建 Brow Driver Curve / Skin Surface / Follicle Deform Jnts。
 
-                Driver Joint 只负责控制 Surface；真正用于后续 Face Skin 的输出是附着在
-                Follicle 下的 Deform Joint。这样保留旧 Brow Surface/Follicle 设计，但把
-                Surface 与 Joint/Controller 的职责拆回当前 Core / System 边界。
+                Driver Jnt 只负责控制 Surface；真正用于后续 Face Skin 的输出是附着在
+                Follicle 下的 Deform Jnt。这样保留旧 Brow Surface/Follicle 设计，但把
+                Surface 与 Jnt/Controller 的职责拆回当前 Core / System 边界。
 
                 Returns:
                     object:
@@ -538,7 +538,7 @@ class BrowModule(FaceModuleBase):
                     index=item_index
                 )
                 brow_deform_jnt = cmds.createNode(
-                    "joint",
+                    __MUZI_MAYA_JNT_PROTECTED_00000__,
                     name=brow_deform_jnt_name,
                     parent=follicle_dict_list[index]["transform"]
                 )

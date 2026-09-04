@@ -79,10 +79,10 @@ Module
     Teeth / Tongue / Jaw / Lip / Eye / Eyelid / Brow 等完整绑定业务单元
 
 Builder
-    Curve Attachment / Zip Lip / Radial Joint 等可组合构建算法
+    Curve Attachment / Zip Lip / Radial Jnt 等可组合构建算法
 
 Core
-    Matrix / Curve / Joint / DAG / Attribute 等通用 Maya 能力
+    Matrix / Curve / Jnt / DAG / Attribute 等通用 Maya 能力
 ```
 
 完整业务单元不再称为 Component。
@@ -185,7 +185,7 @@ self.mirror_name(...)
 - 输入模型验证；
 - Face Hierarchy；
 - Tweak / Stretch / Deform Work Model；
-- Mouth Joint Number；
+- Mouth Jnt Number；
 - Step 01 Config；
 - Step 01 完成后推进到 Step 02。
 
@@ -306,7 +306,7 @@ collect_inputs()
       ↓
 prepare_data()
       ↓
-create_joint()
+create_jnt()
       ↓
 create_controller()
       ↓
@@ -334,7 +334,7 @@ curve_attachment.py
     Curve Attachment
 
 eyelid/
-    Radial Curve Joint
+    Radial Curve Jnt
 
 lip/
     Matrix Zip Lip

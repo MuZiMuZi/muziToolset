@@ -6,7 +6,7 @@ Rig Tool
 大型绑定工具集中的通用 Rig 工具入口。
 
 职责：
-    1. 启动 FK / Controller / Joint / Skirt 专项工具；
+    1. 启动 FK / Controller / Jnt / Skirt 专项工具；
     2. 创建基础 RP IK Rig；
     3. 管理带 muziRigType 标记的 Rig Module；
     4. 提供常用 Rig 场景工具。
@@ -15,8 +15,8 @@ Rig Tool
     - Animation 清理统一调用 core.animation_utils；
     - Constraint 创建统一调用 core.constraint_utils；
     - DAG Parent / Descendant / Parent Group 统一调用 core.hierarchy_utils；
-    - 单 Joint 能力统一调用 core.joint_utils；
-    - Joint Chain 查询统一调用 core.joint_chain_utils；
+    - 单 Jnt 能力统一调用 core.jnt_utils；
+    - Jnt Chain 查询统一调用 core.jnt_chain_utils；
     - Point / Vector Math 统一调用 core.math_utils；
     - DAG Short / Long Name 统一调用 core.rename_utils / scene_utils；
     - Selection / Node 创建 / Undo 统一调用 core.scene_utils；
@@ -66,7 +66,7 @@ from ...ui import window_utils
 from ...ui.widgets import MayaObjectPicker
 from ..controller import create_ctrl_tool
 from ..controller import create_fk_ctrl_tool
-from ..joint import joint_tool
+from ..jnt import jnt_tool
 from . import skirt_ctrl_tool
 
 
@@ -75,20 +75,20 @@ from . import skirt_ctrl_tool
 # =============================================================================
 
 def get_pole_vector_position(
-        start_joint,
-        middle_joint,
-        end_joint
+        start_jnt,
+        middle_jnt,
+        end_jnt
 ):
     u"""
     计算三关节链 Pole Vector 推荐世界位置。
 
     Args:
-        start_joint (str):
-            RP IK Chain 的起始 Joint。
-        middle_joint (str):
-            RP IK Chain 中用于确定弯曲平面的中间 Joint。
-        end_joint (str):
-            RP IK Chain 的末端 Joint。
+        start_jnt (str):
+            RP IK Chain 的起始 Jnt。
+        middle_jnt (str):
+            RP IK Chain 中用于确定弯曲平面的中间 Jnt。
+        end_jnt (str):
+            RP IK Chain 的末端 Jnt。
 
     Returns:
         list:
@@ -98,13 +98,13 @@ def get_pole_vector_position(
     # Step 01：查询并整理当前阶段需要的 Maya 场景数据
     # -------------------------------------------------------------------------
     start_position = transform_utils.get_world_translation(
-        start_joint
+        start_jnt
     )
     middle_position = transform_utils.get_world_translation(
-        middle_joint
+        middle_jnt
     )
     end_position = transform_utils.get_world_translation(
-        end_joint
+        end_jnt
     )
 
     start_to_end = math_utils.subtract_vector3(
@@ -185,15 +185,15 @@ def get_pole_vector_position(
 
 
 @scene_utils.undo_chunk
-def create_ik_rig(start_joint, end_joint):
+def create_ik_rig(start_jnt, end_jnt):
     u"""
     创建基础 RP IK、End Controller 和 Pole Vector Controller。
 
     Args:
-        start_joint (str):
-            RP IK Chain 的起始 Joint。
-        end_joint (str):
-            RP IK Chain 的末端 Joint。
+        start_jnt (str):
+            RP IK Chain 的起始 Jnt。
+        end_jnt (str):
+            RP IK Chain 的末端 Jnt。
 
     Returns:
         dict:
@@ -201,57 +201,57 @@ def create_ik_rig(start_joint, end_joint):
 
     Raises:
         RuntimeError:
-        Joint 输入无效、两端不属于同一子 Joint Chain 或 Chain 长度不足时抛出。
+        Jnt 输入无效、两端不属于同一子 Jnt Chain 或 Chain 长度不足时抛出。
     """
     # -------------------------------------------------------------------------
     # Step 01：执行当前阶段的核心处理
     # -------------------------------------------------------------------------
-    joint_utils.Joint(
-        start_joint
+    jnt_utils.Jnt(
+        start_jnt
     )
-    joint_utils.Joint(
-        end_joint
-    )
-
-    start_joint = scene_utils.get_long_name(
-        start_joint
-    )
-    end_joint = scene_utils.get_long_name(
-        end_joint
+    jnt_utils.Jnt(
+        end_jnt
     )
 
-    joint_path = jnt_chain_utils.get_joint_path(
-        start_joint,
-        end_joint
+    start_jnt = scene_utils.get_long_name(
+        start_jnt
+    )
+    end_jnt = scene_utils.get_long_name(
+        end_jnt
     )
 
-    if not joint_path:
+    jnt_path = jnt_chain_utils.get_jnt_path(
+        start_jnt,
+        end_jnt
+    )
+
+    if not jnt_path:
         raise RuntimeError(
-            u"起始 Joint 和末端 Joint 不在同一条子 Joint Chain 上。"
+            u"起始 Jnt 和末端 Jnt 不在同一条子 Jnt Chain 上。"
         )
 
-    if len(joint_path) < 2:
+    if len(jnt_path) < 2:
         raise RuntimeError(
-            u"RP IK 至少需要两个 Joint。"
+            u"RP IK 至少需要两个 Jnt。"
         )
 
-    start_joint_short_name = rename_utils.get_short_name(
-        start_joint
+    start_jnt_short_name = rename_utils.get_short_name(
+        start_jnt
     )
     rig_side = "md"
     # -------------------------------------------------------------------------
     # Step 02：准备当前阶段计算和后续处理需要的数据
     # -------------------------------------------------------------------------
-    rig_part_source = start_joint_short_name
+    rig_part_source = start_jnt_short_name
 
     try:
-        start_joint_name = RigBase(
-            name=start_joint_short_name
+        start_jnt_name = RigBase(
+            name=start_jnt_short_name
         )
 
-        if start_joint_name.part:
-            rig_side = start_joint_name.side
-            rig_part_source = start_joint_name.part
+        if start_jnt_name.part:
+            rig_side = start_jnt_name.side
+            rig_part_source = start_jnt_name.part
     except (IndexError, TypeError, ValueError):
         if rig_part_source.startswith("jnt_"):
             rig_part_source = rig_part_source[4:]
@@ -313,8 +313,8 @@ def create_ik_rig(start_joint, end_joint):
     )
 
     ik_handle_result = cmds.ikHandle(
-        startJoint=start_joint,
-        endEffector=end_joint,
+        startJnt=start_jnt,
+        endEffector=end_jnt,
         solver="ikRPsolver",
         name=ik_handle_name
     )
@@ -327,10 +327,10 @@ def create_ik_rig(start_joint, end_joint):
     )
 
     start_position = transform_utils.get_world_translation(
-        start_joint
+        start_jnt
     )
     end_position = transform_utils.get_world_translation(
-        end_joint
+        end_jnt
     )
     # -------------------------------------------------------------------------
     # Step 04：准备当前阶段计算和后续处理需要的数据
@@ -349,7 +349,7 @@ def create_ik_rig(start_joint, end_joint):
         shape="circle",
         radius=control_radius,
         axis="Y+",
-        target_node=end_joint,
+        target_node=end_jnt,
         parent_node=rig_group,
         color=17,
         create_sub_ctrl=False,
@@ -366,22 +366,22 @@ def create_ik_rig(start_joint, end_joint):
     )
     constraint_utils.create_constraint(
         driver_objects=end_control,
-        driven_object=end_joint,
+        driven_object=end_jnt,
         constraint_type="orientConstraint",
         maintain_offset=True
     )
 
     pole_control = None
 
-    if len(joint_path) >= 3:
+    if len(jnt_path) >= 3:
         middle_index = int(
-            len(joint_path) / 2
+            len(jnt_path) / 2
         )
-        middle_joint = joint_path[middle_index]
+        middle_jnt = jnt_path[middle_index]
         pole_position = get_pole_vector_position(
-            start_joint,
-            middle_joint,
-            end_joint
+            start_jnt,
+            middle_jnt,
+            end_jnt
         )
 
         pole_result = ctrl_base.create_ctrl(
@@ -392,7 +392,7 @@ def create_ik_rig(start_joint, end_joint):
                 0.3
             ),
             axis="Y+",
-            target_node=middle_joint,
+            target_node=middle_jnt,
             parent_node=rig_group,
             color=17,
             create_sub_ctrl=False,
@@ -554,21 +554,21 @@ class RigTool(QWidget):
 
         self.create_fk_button = QPushButton(u"创建 FK Controller")
         self.open_control_creator_button = QPushButton(u"Controller Creator")
-        self.open_joint_tool_button = QPushButton(u"Joint Tool")
+        self.open_jnt_tool_button = QPushButton(u"Jnt Tool")
         # -------------------------------------------------------------------------
         # Step 02：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
         self.open_skirt_tool_button = QPushButton(u"Skirt Rig Tool")
 
         self.ik_start_picker = MayaObjectPicker(
-            label_text=u"起始 Joint",
-            placeholder=u"IK Chain 起始 Joint",
-            node_types=["joint"]
+            label_text=u"起始 Jnt",
+            placeholder=u"IK Chain 起始 Jnt",
+            node_types=[__MUZI_MAYA_JNT_PROTECTED_00000__]
         )
         self.ik_end_picker = MayaObjectPicker(
-            label_text=u"末端 Joint",
-            placeholder=u"IK Chain 末端 Joint",
-            node_types=["joint"]
+            label_text=u"末端 Jnt",
+            placeholder=u"IK Chain 末端 Jnt",
+            node_types=[__MUZI_MAYA_JNT_PROTECTED_00001__]
         )
 
         self.create_ik_button = QPushButton(u"创建 RP IK Rig")
@@ -637,7 +637,7 @@ class RigTool(QWidget):
         launch_grid.setVerticalSpacing(8)
         launch_grid.addWidget(self.create_fk_button, 0, 0)
         launch_grid.addWidget(self.open_control_creator_button, 0, 1)
-        launch_grid.addWidget(self.open_joint_tool_button, 1, 0)
+        launch_grid.addWidget(self.open_jnt_tool_button, 1, 0)
         launch_grid.addWidget(self.open_skirt_tool_button, 1, 1)
         launch_layout.addLayout(launch_grid)
 
@@ -717,7 +717,7 @@ class RigTool(QWidget):
         # -------------------------------------------------------------------------
         self.create_fk_button.clicked.connect(self.open_fk_tool)
         self.open_control_creator_button.clicked.connect(self.open_control_creator)
-        self.open_joint_tool_button.clicked.connect(self.open_joint_tool)
+        self.open_jnt_tool_button.clicked.connect(self.open_jnt_tool)
         # -------------------------------------------------------------------------
         # Step 02：建立当前阶段需要的层级、连接或驱动关系
         # -------------------------------------------------------------------------
@@ -789,17 +789,17 @@ class RigTool(QWidget):
             create_ctrl_tool
         )
 
-    def open_joint_tool(self):
+    def open_jnt_tool(self):
         u"""
-        打开 Joint Tool。
+        打开 Jnt Tool。
 
         Returns:
             object:
-            Window Manager 返回的 Joint Tool 窗口或执行结果。
+            Window Manager 返回的 Jnt Tool 窗口或执行结果。
         """
         return self.open_tool(
-            "joint_tool",
-            joint_tool
+            "jnt_tool",
+            jnt_tool
         )
 
     def open_skirt_tool(self):
@@ -819,19 +819,19 @@ class RigTool(QWidget):
         u"""
         根据当前 Picker 创建基础 RP IK Rig。
         """
-        start_joint = self.ik_start_picker.get_value()
-        end_joint = self.ik_end_picker.get_value()
+        start_jnt = self.ik_start_picker.get_value()
+        end_jnt = self.ik_end_picker.get_value()
 
-        if not start_joint or not end_joint:
+        if not start_jnt or not end_jnt:
             cmds.warning(
-                u"请先拾取 IK 起始和末端 Joint。"
+                u"请先拾取 IK 起始和末端 Jnt。"
             )
             return
 
         try:
             result = create_ik_rig(
-                start_joint,
-                end_joint
+                start_jnt,
+                end_jnt
             )
             cmds.select(
                 result["group"],

@@ -73,7 +73,7 @@ print(rig.index)
 具体 Maya Node 的 `node_type` 和 `function` 在创建名称时提供：
 
 ```python
-joint_name = rig.create_name(
+jnt_name = rig.create_name(
     node_type="jnt",
     function="bind"
 )
@@ -218,11 +218,11 @@ finalize_step()
 run_step()
 ```
 
-需要 Joint / Controller / Connection 的 Rig Module 使用 `RigModuleBase`：
+需要 Jnt / Controller / Connection 的 Rig Module 使用 `RigModuleBase`：
 
 ```text
 process_data()
-      ├─ create_joint()
+      ├─ create_jnt()
       ├─ create_controller()
       └─ create_connection()
 ```
@@ -300,7 +300,7 @@ control_shape_utils.py
 curve_utils.py
 file_utils.py
 hierarchy_utils.py
-joint_utils.py
+jnt_utils.py
 matrix_utils.py
 mesh_utils.py
 model_check_utils.py
@@ -318,7 +318,7 @@ Core 可以负责：
 - Attribute；
 - Matrix / Constraint / Connection；
 - Curve / Surface / Mesh；
-- Joint；
+- Jnt；
 - Skin / BlendShape；
 - Scene / File / Animation；
 - Model Check / Scene Clean。
@@ -467,7 +467,7 @@ TeethModule
 真正的 Rig Module 使用标准三段构建：
 
 ```text
-create_joint()
+create_jnt()
 create_controller()
 create_connection()
 ```

@@ -132,7 +132,7 @@ def face_controller_appearance_maya2023_smoke_test():
     运行 Step 03 Controller Appearance 的 Maya 2023 Runtime Smoke Test。
 
     测试会先完成完整 FaceBuild，然后实时修改 Global / Module Size 与 Side Color，
-    验证 Controller World Matrix、Transform Scale、Output 和 Joint 都保持不变，
+    验证 Controller World Matrix、Transform Scale、Output 和 Jnt 都保持不变，
     只有 Controller Shape CV 尺寸、颜色以及 Config Settings 发生预期变化。
 
     Returns:
@@ -180,7 +180,7 @@ def extended_core_smoke_test():
     测试范围：
         attr_utils
         hierarchy_utils
-        joint_utils
+        jnt_utils
         RigBase / rename_utils
         model_check_utils
         scene_utils

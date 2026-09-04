@@ -186,7 +186,7 @@ class NoseModule(FaceModuleBase):
     def create_jnt(self):
         u"""
 
-                创建 Nose 中轴 Joint Chain 和 Center 下的局部 Joint。
+                创建 Nose 中轴 Jnt Chain 和 Center 下的局部 Jnt。
 
                 Returns:
                     dict:
@@ -194,7 +194,7 @@ class NoseModule(FaceModuleBase):
 
         """
         # -------------------------------------------------------------------------
-        # Step 01：按 Muzzle -> Nose -> Nose Center 顺序创建 FK Joint Chain
+        # Step 01：按 Muzzle -> Nose -> Nose Center 顺序创建 FK Jnt Chain
         # -------------------------------------------------------------------------
         jnt_parent = self.face_jnt_grp
         self.center_jnts = []
@@ -211,9 +211,9 @@ class NoseModule(FaceModuleBase):
             )
             scene_utils.ensure_nodes_available(
                 nose_jnt_name,
-                label=u"Nose Center Joint"
+                label=u"Nose Center Jnt"
             )
-            nose_jnt = jnt_utils.Joint.create_at_object(
+            nose_jnt = jnt_utils.Jnt.create_at_object(
                 obj=self.center_guides[index],
                 name=nose_jnt_name,
                 parent=jnt_parent,
@@ -227,7 +227,7 @@ class NoseModule(FaceModuleBase):
             index += 1
 
         # -------------------------------------------------------------------------
-        # Step 02：Front / Down / Side Joint 都挂在 Nose Center Joint 下
+        # Step 02：Front / Down / Side Jnt 都挂在 Nose Center Jnt 下
         # -------------------------------------------------------------------------
         local_parent = self.center_jnts[-1]
         self.local_jnt_dict = {}
@@ -242,9 +242,9 @@ class NoseModule(FaceModuleBase):
             )
             scene_utils.ensure_nodes_available(
                 nose_local_jnt_name,
-                label=u"Nose Local Joint"
+                label=u"Nose Local Jnt"
             )
-            nose_local_jnt = jnt_utils.Joint.create_at_object(
+            nose_local_jnt = jnt_utils.Jnt.create_at_object(
                 obj=self.local_guide_dict[(side, part)],
                 name=nose_local_jnt_name,
                 parent=local_parent,
@@ -337,7 +337,7 @@ class NoseModule(FaceModuleBase):
     def create_connect(self):
         u"""
 
-                使用所有 Nose Ctrl Output 一一驱动对应 Joint。
+                使用所有 Nose Ctrl Output 一一驱动对应 Jnt。
 
                 Returns:
                     object:
@@ -347,7 +347,7 @@ class NoseModule(FaceModuleBase):
         self.nose_matrix_nodes = []
 
         # -------------------------------------------------------------------------
-        # Step 01：建立中轴 Ctrl -> Joint Matrix 驱动
+        # Step 01：建立中轴 Ctrl -> Jnt Matrix 驱动
         # -------------------------------------------------------------------------
         index = 0
         while index < len(self.center_jnts):
@@ -371,7 +371,7 @@ class NoseModule(FaceModuleBase):
             index += 1
 
         # -------------------------------------------------------------------------
-        # Step 02：建立 Front / Down / Side Ctrl -> Joint Matrix 驱动
+        # Step 02：建立 Front / Down / Side Ctrl -> Jnt Matrix 驱动
         # -------------------------------------------------------------------------
         for side, part in self.local_parts:
             nose_matrix_name = self.create_name(
@@ -396,7 +396,7 @@ class NoseModule(FaceModuleBase):
     def create_deform(self):
         u"""
 
-                Nose 输出 Joint 直接作为后续 Face Skin Influence。
+                Nose 输出 Jnt 直接作为后续 Face Skin Influence。
 
                 Returns:
                     bool:
@@ -408,7 +408,7 @@ class NoseModule(FaceModuleBase):
     def create_finalize(self):
         u"""
 
-                验证 Nose 中轴和局部分支的 Joint / Ctrl / Matrix。
+                验证 Nose 中轴和局部分支的 Jnt / Ctrl / Matrix。
 
                 Returns:
                     bool:
@@ -416,12 +416,12 @@ class NoseModule(FaceModuleBase):
 
         """
         # -------------------------------------------------------------------------
-        # Step 01：验证全部中轴 Joint / Controller
+        # Step 01：验证全部中轴 Jnt / Controller
         # -------------------------------------------------------------------------
         for nose_jnt in self.center_jnts:
             scene_utils.validate_node(
                 nose_jnt,
-                label=u"Nose Center Joint"
+                label=u"Nose Center Jnt"
             )
 
         for nose_ctrl_dict in self.center_ctrl_dict_list:
@@ -431,12 +431,12 @@ class NoseModule(FaceModuleBase):
             )
 
         # -------------------------------------------------------------------------
-        # Step 02：验证全部局部 Joint / Controller
+        # Step 02：验证全部局部 Jnt / Controller
         # -------------------------------------------------------------------------
         for nose_local_jnt in self.local_jnt_dict.values():
             scene_utils.validate_node(
                 nose_local_jnt,
-                label=u"Nose Local Joint"
+                label=u"Nose Local Jnt"
             )
 
         for nose_local_ctrl_dict in self.local_ctrl_dict.values():

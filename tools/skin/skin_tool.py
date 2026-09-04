@@ -91,7 +91,7 @@ class SkinTool(QWidget):
         self.copy_button = QPushButton(u"复制权重")
         theme.style_primary(self.copy_button)
 
-        self.select_influences_button = QPushButton(u"选择影响 Joint")
+        self.select_influences_button = QPushButton(u"选择影响 Jnt")
         self.normalize_button = QPushButton(u"强制归一化")
 
         # -------------------------------------------------------------------------
@@ -412,7 +412,7 @@ class SkinTool(QWidget):
 
     def select_influences(self):
         u"""
-        选择当前模型的影响 Joint。
+        选择当前模型的影响 Jnt。
         """
         geometries = self.get_selected_geometries()
 
@@ -423,11 +423,11 @@ class SkinTool(QWidget):
         influences = skin_utils.select_influences(geometries)
 
         if not influences:
-            cmds.warning(u"没有找到影响 Joint。")
+            cmds.warning(u"没有找到影响 Jnt。")
             return
 
         self.status_label.setText(
-            u"已选择 {} 个影响 Joint".format(len(influences))
+            u"已选择 {} 个影响 Jnt".format(len(influences))
         )
 
     def normalize_selected(self):

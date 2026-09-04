@@ -26,7 +26,7 @@ Transform / DG
 DAG / Attribute / Naming
 ├─ attr_utils.py
 ├─ hierarchy_utils.py
-├─ joint_utils.py
+├─ jnt_utils.py
 ├─ name_utils.py
 ├─ rename_utils.py
 └─ snap_utils.py
@@ -59,8 +59,8 @@ attrUtils.py
 hierarchyUtils.py
     -> hierarchy_utils.py
 
-jointUtils.py
-    -> joint_utils.py
+jntUtils.py
+    -> jnt_utils.py
 
 nameUtils.py
     -> name_utils.py

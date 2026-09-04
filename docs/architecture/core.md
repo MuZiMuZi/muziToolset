@@ -18,7 +18,7 @@ Connection      -> connection_utils.py
 Constraint      -> constraint_utils.py
 Attribute       -> attr_utils.py
 Hierarchy       -> hierarchy_utils.py
-Joint           -> joint_utils.py
+Jnt           -> jnt_utils.py
 Maya Rename     -> rename_utils.py
 Curve           -> curve_utils.py
 Surface         -> surface_utils.py
@@ -41,7 +41,7 @@ Core 负责可以被多个 Tool / System 复用的底层能力，例如：
 - DAG Parent；
 - Matrix / Constraint / Connection；
 - Curve / Surface / Mesh；
-- Joint；
+- Jnt；
 - Skin / BlendShape；
 - Scene / File / Animation；
 - 模型检查和安全 Scene Cleanup。
@@ -115,19 +115,19 @@ DAG Depth
 
 完整 Controller Hierarchy 不属于这里，统一交给 `systems.ctrl_base`。
 
-## `joint_utils.py`
+## `jnt_utils.py`
 
-负责 Joint 的通用 Maya 能力：
+负责 Jnt 的通用 Maya 能力：
 
 ```text
-Joint Create
+Jnt Create
 Create At Object
-Joint Chain
-Joint Label
-Joint Curve 辅助
+Jnt Chain
+Jnt Label
+Jnt Curve 辅助
 ```
 
-Joint 的正式 Rig 名称由上层 `RigBase` 实例或 Module 生成后传入。
+Jnt 的正式 Rig 名称由上层 `RigBase` 实例或 Module 生成后传入。
 
 ## `rename_utils.py`
 
@@ -265,7 +265,7 @@ Matrix 与 Constraint 保持为两个领域，不合并。
 curve_utils.create_point_on_curve_attachment()
     -> Core
 
-face.build.attach_joints_to_curves()
+face.build.attach_jnts_to_curves()
     -> Face Build Algorithm
 ```
 

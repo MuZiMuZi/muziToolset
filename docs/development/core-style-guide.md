@@ -52,7 +52,7 @@ def some_function(...):
 ```text
 attr_utils.py
 hierarchy_utils.py
-joint_utils.py
+jnt_utils.py
 rename_utils.py
 matrix_utils.py
 curve_utils.py
@@ -63,7 +63,7 @@ curve_utils.py
 ```text
 attrUtils.py
 hierarchyUtils.py
-jointUtils.py
+jntUtils.py
 nameUtils.py
 ```
 
@@ -275,7 +275,7 @@ Transform / Matrix Space    → transform_utils / matrix_utils
 Attribute                   → attr_utils
 Plug Connection             → connection_utils
 Short Name / Maya Rename    → rename_utils
-Joint                       → joint_utils
+Jnt                       → jnt_utils
 Curve                        → curve_utils
 Controller Shape             → control_shape_utils
 ```

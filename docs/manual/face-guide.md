@@ -45,7 +45,7 @@ systems/face/config.py
 
 # 名称生成
 
-Guide / Joint / Controller 等正式 Rig 名称统一使用 `RigBase`。
+Guide / Jnt / Controller 等正式 Rig 名称统一使用 `RigBase`。
 
 ```python
 from muziToolset.systems.rig_base import RigBase
@@ -297,7 +297,7 @@ Setup 原始输入模型
 Face Guide
 ```
 
-隐藏 Tweak / Stretch / Deform Work Model、Controller、Joint 和内部 Rig Nodes。
+隐藏 Tweak / Stretch / Deform Work Model、Controller、Jnt 和内部 Rig Nodes。
 
 ---
 

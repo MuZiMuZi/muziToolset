@@ -50,7 +50,7 @@ def require_text(relative_path, required_texts):
 
 
 def run():
-    u"""验证 Locator Shape、Joint、Face 计算和 Maya 回归覆盖。"""
+    u"""验证 Locator Shape、Jnt、Face 计算和 Maya 回归覆盖。"""
     require_text(
         "resources/face/face_guide.ma",
         [
@@ -90,7 +90,7 @@ def run():
         [
             "test_locator_visual_position",
             'guide_shape + ".localPosition"',
-            "joint_utils.Joint.create_at_object(",
+            "jnt_utils.Jnt.create_at_object(",
         ]
     )
     require_text(

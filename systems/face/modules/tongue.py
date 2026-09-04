@@ -6,10 +6,10 @@ Tongue Module
 舌头 FK Chain 绑定模块。
 
 保留旧 Tongue 的两个核心逻辑：
-    - FK Joint / Controller Chain；
+    - FK Jnt / Controller Chain；
     - 第一根 Controller 上的 tongue_curl 一键弯曲。
 
-新版本直接读取 Face Guide，并可把 Step01 指定的 Tongue Model 绑定到生成的 Joint Chain。
+新版本直接读取 Face Guide，并可把 Step01 指定的 Tongue Model 绑定到生成的 Jnt Chain。
 """
 
 from __future__ import print_function
@@ -156,7 +156,7 @@ class TongueModule(FaceModuleBase):
     def create_jnt(self):
         u"""
 
-                按 Tongue Guide 顺序创建 FK Joint Chain。
+                按 Tongue Guide 顺序创建 FK Jnt Chain。
 
                 Returns:
                     object:
@@ -178,9 +178,9 @@ class TongueModule(FaceModuleBase):
             )
             scene_utils.ensure_nodes_available(
                 tongue_jnt_name,
-                label=u"Tongue Joint"
+                label=u"Tongue Jnt"
             )
-            tongue_jnt = joint_utils.Joint.create_at_object(
+            tongue_jnt = jnt_utils.Jnt.create_at_object(
                 obj=self.tongue_guides[index],
                 name=tongue_jnt_name,
                 parent=jnt_parent,
@@ -196,7 +196,7 @@ class TongueModule(FaceModuleBase):
     def create_ctrl(self):
         u"""
 
-                创建与 Tongue Joint 一一对应的 FK Controller Chain。
+                创建与 Tongue Jnt 一一对应的 FK Controller Chain。
 
                 Returns:
                     object:
@@ -237,7 +237,7 @@ class TongueModule(FaceModuleBase):
     def create_connect(self):
         u"""
 
-                Tongue FK Ctrl Output 一一驱动对应 Joint。
+                Tongue FK Ctrl Output 一一驱动对应 Jnt。
 
                 Returns:
                     object:
@@ -388,7 +388,7 @@ class TongueModule(FaceModuleBase):
         for tongue_jnt in self.tongue_jnts:
             scene_utils.validate_node(
                 tongue_jnt,
-                label=u"Tongue Joint"
+                label=u"Tongue Jnt"
             )
 
         for tongue_ctrl_dict in self.tongue_ctrl_dict_list:

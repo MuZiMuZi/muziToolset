@@ -334,16 +334,16 @@ def test_face_step_contract(root_group):
         label=u"TeethModule"
     )
 
-    teeth_joint_name = teeth_module.create_name(
+    teeth_jnt_name = teeth_module.create_name(
         type="jnt",
         part="upper_teeth",
         function="bind"
     )
 
-    if teeth_joint_name != "jnt_md_upper_teeth_bind_001":
+    if teeth_jnt_name != "jnt_md_upper_teeth_bind_001":
         raise RuntimeError(
             u"TeethModule Attribute Naming 错误：{}".format(
-                teeth_joint_name
+                teeth_jnt_name
             )
         )
 

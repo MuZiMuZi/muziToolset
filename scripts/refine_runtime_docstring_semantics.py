@@ -6,7 +6,7 @@ Runtime Docstring Semantic Refiner
 把第一轮自动补齐的 Runtime Docstring 从“字段完整”继续提升到“绑定师可直接阅读”。
 
 只替换 Normalizer 生成的通用占位说明，不覆盖已经人工编写的参数文档。
-术语优先采用 Maya / Rigging 常用表达，例如 Driver、Driven、Constraint、Joint Orient、
+术语优先采用 Maya / Rigging 常用表达，例如 Driver、Driven、Constraint、Jnt Orient、
 Influence、SkinCluster、BlendShape Target、Guide、Controller、Offset Parent Matrix 等。
 
 使用：
@@ -193,25 +193,25 @@ def get_exact_semantic_rules():
         "parent_inverse_matrix": ("list[float] | maya.api.OpenMaya.MMatrix", u"Driven Parent Space 的 Inverse Matrix，用于把 World Matrix 转换到 Parent Space。"),
 
         # ------------------------------------------------------------------
-        # Joint / Skeleton
+        # Jnt / Skeleton
         # ------------------------------------------------------------------
-        "joint": ("str", u"需要创建、查询、定向或驱动的 Maya Joint 节点。"),
-        "joints": ("str | list[str]", u"需要批量处理的 Maya Joint 节点或 Joint Chain。"),
-        "blueprint_joints": ("str | list[str]", u"作为正式 Skeleton 构建来源的 Blueprint / Guide Joint 列表。"),
-        "joint_parent": ("str | None", u"新建 Joint Chain 的父 Joint / Parent Transform；None 表示保持在世界层级。"),
-        "joint_count": ("int", u"需要生成或重采样的 Joint 数量。"),
-        "mouth_jnt_number": ("int", u"嘴唇分布系统需要创建的 Joint 总数量。"),
-        "position": ("list[float] | tuple[float, float, float]", u"Joint / Transform 使用的 XYZ Position。"),
-        "rotation": ("list[float] | tuple[float, float, float]", u"Joint / Transform 使用的 XYZ Rotation。"),
-        "component": ("str", u"用于创建 Joint 或查询位置的 Maya Component，例如 Vertex、CV 或 Edge。"),
-        "match_rotation": ("bool", u"根据目标 Transform 创建 Joint 时是否同时匹配目标 Rotation。"),
-        "parent_chain": ("bool", u"创建多个 Joint 时是否按输入顺序建立父子 Joint Chain。"),
-        "all_descendents": ("bool", u"Joint 查询时是否包含当前节点以下的全部 Descendant Joint。"),
-        "include_descendents": ("bool", u"Joint 查询或显示操作是否递归包含 Descendant Joint。"),
-        "visible": ("bool", u"Joint / Guide / UI 元素是否保持可见。"),
-        "secondary_axis_orient": ("str", u"Maya Joint Orient 使用的 Secondary Axis World Orientation，例如 `yup`、`zdown`。"),
-        "hide_blueprint": ("bool", u"生成正式 Skeleton 后是否隐藏 Blueprint / Guide Joint。"),
-        "name_prefix": ("str", u"批量创建 Joint 时写入节点名称前部的 Prefix。"),
+        __MUZI_MAYA_JNT_PROTECTED_00000__: ("str", u"需要创建、查询、定向或驱动的 Maya Jnt 节点。"),
+        "jnts": ("str | list[str]", u"需要批量处理的 Maya Jnt 节点或 Jnt Chain。"),
+        "blueprint_jnts": ("str | list[str]", u"作为正式 Skeleton 构建来源的 Blueprint / Guide Jnt 列表。"),
+        "jnt_parent": ("str | None", u"新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。"),
+        "jnt_count": ("int", u"需要生成或重采样的 Jnt 数量。"),
+        "mouth_jnt_number": ("int", u"嘴唇分布系统需要创建的 Jnt 总数量。"),
+        "position": ("list[float] | tuple[float, float, float]", u"Jnt / Transform 使用的 XYZ Position。"),
+        "rotation": ("list[float] | tuple[float, float, float]", u"Jnt / Transform 使用的 XYZ Rotation。"),
+        "component": ("str", u"用于创建 Jnt 或查询位置的 Maya Component，例如 Vertex、CV 或 Edge。"),
+        "match_rotation": ("bool", u"根据目标 Transform 创建 Jnt 时是否同时匹配目标 Rotation。"),
+        "parent_chain": ("bool", u"创建多个 Jnt 时是否按输入顺序建立父子 Jnt Chain。"),
+        "all_descendents": ("bool", u"Jnt 查询时是否包含当前节点以下的全部 Descendant Jnt。"),
+        "include_descendents": ("bool", u"Jnt 查询或显示操作是否递归包含 Descendant Jnt。"),
+        "visible": ("bool", u"Jnt / Guide / UI 元素是否保持可见。"),
+        "secondary_axis_orient": ("str", u"Maya Jnt Orient 使用的 Secondary Axis World Orientation，例如 `yup`、`zdown`。"),
+        "hide_blueprint": ("bool", u"生成正式 Skeleton 后是否隐藏 Blueprint / Guide Jnt。"),
+        "name_prefix": ("str", u"批量创建 Jnt 时写入节点名称前部的 Prefix。"),
 
         # ------------------------------------------------------------------
         # Curve / Surface / Vector
@@ -231,8 +231,8 @@ def get_exact_semantic_rules():
         "vector": ("list[float] | tuple[float, float, float]", u"参与方向、长度或向量计算的 XYZ Vector。"),
         "vector_a": ("list[float] | tuple[float, float, float]", u"向量计算中的第一个 XYZ Vector。"),
         "vector_b": ("list[float] | tuple[float, float, float]", u"向量计算中的第二个 XYZ Vector。"),
-        "start_position": ("list[float] | tuple[float, float, float] | float", u"插值、Remap 或 Joint 分布的起始位置 / 起始值。"),
-        "end_position": ("list[float] | tuple[float, float, float] | float", u"插值、Remap 或 Joint 分布的结束位置 / 结束值。"),
+        "start_position": ("list[float] | tuple[float, float, float] | float", u"插值、Remap 或 Jnt 分布的起始位置 / 起始值。"),
+        "end_position": ("list[float] | tuple[float, float, float] | float", u"插值、Remap 或 Jnt 分布的结束位置 / 结束值。"),
         "ratio": ("float", u"Start 与 End 之间的插值比例，通常为 0.0～1.0。"),
 
         # ------------------------------------------------------------------
@@ -262,8 +262,8 @@ def get_exact_semantic_rules():
         # SkinCluster / Weight
         # ------------------------------------------------------------------
         "skin_cluster": ("str", u"需要查询或编辑的 Maya skinCluster Deformer 节点。"),
-        "influence": ("str", u"影响 SkinCluster 权重的 Influence Transform / Joint。"),
-        "influences": ("str | list[str]", u"影响 SkinCluster 的 Influence Joint / Transform 列表。"),
+        "influence": ("str", u"影响 SkinCluster 权重的 Influence Transform / Jnt。"),
+        "influences": ("str | list[str]", u"影响 SkinCluster 的 Influence Jnt / Transform 列表。"),
         "weight": ("float", u"当前 Influence、Constraint Target 或 BlendShape Target 使用的权重值。"),
         "weights": ("list[float] | dict", u"需要读取、写入或传递的 Skin / Blend / Constraint 权重数据。"),
         "normalize": ("bool", u"写入 Skin Weight 后是否执行权重 Normalize，使 Influence Weight 总和符合 SkinCluster 设置。"),
@@ -291,7 +291,7 @@ def get_exact_semantic_rules():
         "shape": ("str", u"Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。"),
         "shape_data_list": ("list[dict]", u"Controller Shape 的 CV、Degree、Form 等序列化数据列表。"),
         "color": ("int | tuple[float, float, float]", u"Viewport Override 使用的 Index Color 或 RGB Color。"),
-        "radius": ("float", u"Joint、Controller 或可视辅助对象使用的半径 / 尺寸。"),
+        "radius": ("float", u"Jnt、Controller 或可视辅助对象使用的半径 / 尺寸。"),
         "scale_value": ("float | tuple[float, float, float]", u"Controller Shape CV 使用的统一或 XYZ Scale 值。"),
         "rotate_x": ("float", u"Controller Shape / Transform 绕 X 轴应用的旋转角度。"),
         "rotate_y": ("float", u"Controller Shape / Transform 绕 Y 轴应用的旋转角度。"),
@@ -314,12 +314,12 @@ def get_exact_semantic_rules():
         "region": ("str", u"Face Component 的区域标记，例如 upper、lower、inner、outer。"),
         "feature": ("str", u"Face Component 的功能部位标记，例如 lid、bag、lip。"),
         "role": ("str", u"当前 Face Node 在构建网络中的角色标记，例如 bind、aim、attach、driver。"),
-        "up_object": ("str", u"Eyelid / Radial Joint Aim 系统用于稳定 Orientation 的 Up Object。"),
+        "up_object": ("str", u"Eyelid / Radial Jnt Aim 系统用于稳定 Orientation 的 Up Object。"),
         "include_tokens": ("str | list[str] | None", u"Guide 名称必须包含的额外 Token；用于缩小部位查询范围。"),
         "exclude_tokens": ("str | list[str] | None", u"Guide 名称出现这些 Token 时排除该节点。"),
         "check_symmetry": ("bool", u"Guide Validation / Finalize 时是否同时检查 LF → RT 镜像节点、Parent 和连接。"),
         "work_model_name_dict": ("dict", u"Step 01 三个 Head Work Model（tweak / stretch / deform）的名称映射。"),
-        "zip_offset": ("str", u"Zip Lip 网络中位于 Lip Joint 上方、接收闭合 Matrix 结果的 Offset Transform。"),
+        "zip_offset": ("str", u"Zip Lip 网络中位于 Lip Jnt 上方、接收闭合 Matrix 结果的 Offset Transform。"),
         "remap_node": ("str", u"Zip / Falloff 计算使用的 remapValue 节点。"),
         "falloff": ("float", u"Zip Lip 或局部驱动沿嘴唇分布的衰减范围 / Falloff。"),
 
@@ -435,8 +435,8 @@ def get_exact_semantic_rules():
         "kwargs": ("dict", u"继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。"),
         "default": ("object", u"当前查询、配置或 UI 逻辑在没有显式值时使用的默认值。"),
         "result": ("object", u"上一步 Maya / Tool 操作返回的结果数据。"),
-        "hierarchy": ("bool | str", u"Joint Tool 当前是否按 Skeleton Hierarchy 工作，或用于指定层级范围。"),
-        "all_joints": ("str | list[str]", u"当前 Joint Tool 已解析出的完整 Joint 列表。"),
+        "hierarchy": ("bool | str", u"Jnt Tool 当前是否按 Skeleton Hierarchy 工作，或用于指定层级范围。"),
+        "all_jnts": ("str | list[str]", u"当前 Jnt Tool 已解析出的完整 Jnt 列表。"),
     }
 
     return rules
@@ -463,7 +463,7 @@ def infer_semantic_info(parameter_name, current_type):
         return "int", u"当前构建、采样或查询过程使用的元素数量。"
 
     if name.endswith("_radius"):
-        return "float", u"当前 Joint、Controller 或辅助对象使用的半径。"
+        return "float", u"当前 Jnt、Controller 或辅助对象使用的半径。"
 
     if name.endswith("_weight"):
         return "float", u"当前 Driver、Influence、Constraint Target 或 BlendShape Target 使用的权重。"
@@ -480,8 +480,8 @@ def infer_semantic_info(parameter_name, current_type):
     if name.endswith("_group"):
         return "str", u"当前 Rig / Guide / Controller 层级中的 Maya Group Transform。"
 
-    if name.endswith("_joint"):
-        return "str", u"当前 Rig 计算或构建使用的 Maya Joint 节点。"
+    if name.endswith("_jnt"):
+        return "str", u"当前 Rig 计算或构建使用的 Maya Jnt 节点。"
 
     if name.endswith("_curve"):
         return "str", u"当前采样、附着或驱动使用的 NURBS Curve。"

@@ -16,7 +16,7 @@
 
     ---
 
-    基础操作、Controller、Joint、Skin、BlendShape 和清理。
+    基础操作、Controller、Jnt、Skin、BlendShape 和清理。
 
     [:octicons-arrow-right-24: 选择一个任务](tools.md)
 

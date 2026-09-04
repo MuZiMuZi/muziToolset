@@ -83,13 +83,13 @@ class FaceRigWizard(QWidget):
 
         self.loading_controller_settings = False
 
-        self.mouth_joint_step = 4
-        self.mouth_joint_minimum = 4
-        self.mouth_joint_maximum = 128
+        self.mouth_jnt_step = 4
+        self.mouth_jnt_minimum = 4
+        self.mouth_jnt_maximum = 128
         # -------------------------------------------------------------------------
         # Step 03：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
-        self.mouth_joint_default = 40
+        self.mouth_jnt_default = 40
 
         self.controller_size_widgets = {}
         self.controller_color_widgets = {}
@@ -337,8 +337,8 @@ class FaceRigWizard(QWidget):
         # -------------------------------------------------------------------------
         # Step 02：建立当前阶段需要的层级、连接或驱动关系
         # -------------------------------------------------------------------------
-        self.mouth_joint_slider.valueChanged.connect(
-            self.update_mouth_joint_value
+        self.mouth_jnt_slider.valueChanged.connect(
+            self.update_mouth_jnt_value
         )
 
         self.reimport_guide_button.clicked.connect(
@@ -513,42 +513,42 @@ class FaceRigWizard(QWidget):
         )
 
         mouth_label = QLabel(
-            u"嘴唇 Joint 数量"
+            u"嘴唇 Jnt 数量"
         )
         mouth_label.setMinimumWidth(
             120
         )
 
-        self.mouth_joint_slider = QSlider(
+        self.mouth_jnt_slider = QSlider(
             Qt.Horizontal
         )
-        self.mouth_joint_slider.setMinimum(
-            int(self.mouth_joint_minimum / self.mouth_joint_step)
+        self.mouth_jnt_slider.setMinimum(
+            int(self.mouth_jnt_minimum / self.mouth_jnt_step)
         )
-        self.mouth_joint_slider.setMaximum(
-            int(self.mouth_joint_maximum / self.mouth_joint_step)
+        self.mouth_jnt_slider.setMaximum(
+            int(self.mouth_jnt_maximum / self.mouth_jnt_step)
         )
-        self.mouth_joint_slider.setSingleStep(
+        self.mouth_jnt_slider.setSingleStep(
             1
         )
-        self.mouth_joint_slider.setPageStep(
+        self.mouth_jnt_slider.setPageStep(
             2
         )
-        self.mouth_joint_slider.setValue(
-            int(self.mouth_joint_default / self.mouth_joint_step)
+        self.mouth_jnt_slider.setValue(
+            int(self.mouth_jnt_default / self.mouth_jnt_step)
         )
         # -------------------------------------------------------------------------
         # Step 04：应用并更新当前阶段需要的属性或状态
         # -------------------------------------------------------------------------
-        self.mouth_joint_slider.setMinimumWidth(
+        self.mouth_jnt_slider.setMinimumWidth(
             300
         )
 
-        self.mouth_joint_value_label = QLabel(
-            u"{}".format(self.mouth_joint_default)
+        self.mouth_jnt_value_label = QLabel(
+            u"{}".format(self.mouth_jnt_default)
         )
         theme.set_role(
-            self.mouth_joint_value_label,
+            self.mouth_jnt_value_label,
             "pill"
         )
 
@@ -556,11 +556,11 @@ class FaceRigWizard(QWidget):
             mouth_label
         )
         mouth_layout.addWidget(
-            self.mouth_joint_slider,
+            self.mouth_jnt_slider,
             1
         )
         mouth_layout.addWidget(
-            self.mouth_joint_value_label
+            self.mouth_jnt_value_label
         )
 
         parameter_layout.addLayout(
@@ -1335,33 +1335,33 @@ class FaceRigWizard(QWidget):
     # Step 01
     # =========================================================================
 
-    def update_mouth_joint_value(
+    def update_mouth_jnt_value(
             self,
             slider_value
     ):
         u"""
-        更新嘴唇 Joint 数量显示。
+        更新嘴唇 Jnt 数量显示。
 
         Args:
             slider_value (int | float):
                 UI Slider 当前值；回调用于同步对应 Rig / Setup 参数。
         """
-        mouth_joint_number = slider_value * self.mouth_joint_step
-        self.mouth_joint_value_label.setText(
+        mouth_jnt_number = slider_value * self.mouth_jnt_step
+        self.mouth_jnt_value_label.setText(
             u"{}".format(
-                mouth_joint_number
+                mouth_jnt_number
             )
         )
 
-    def get_mouth_joint_number(self):
+    def get_mouth_jnt_number(self):
         u"""
-        返回当前嘴唇 Joint 数量。
+        返回当前嘴唇 Jnt 数量。
 
         Returns:
             object:
             当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
-        return self.mouth_joint_slider.value() * self.mouth_joint_step
+        return self.mouth_jnt_slider.value() * self.mouth_jnt_step
 
     def build_step1(self):
         u"""
@@ -1382,7 +1382,7 @@ class FaceRigWizard(QWidget):
             lower_teech_model=self.lower_teech_picker.get_value(),
             face_tongue_model=self.face_tongue_picker.get_value(),
             face_gum_model=self.face_gum_picker.get_value(),
-            mouth_jnt_number=self.get_mouth_joint_number()
+            mouth_jnt_number=self.get_mouth_jnt_number()
         )
 
         try:

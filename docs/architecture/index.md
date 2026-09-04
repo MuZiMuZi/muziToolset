@@ -87,10 +87,10 @@ Module
     Teeth / Jaw / Tongue / Lip / Eye / Eyelid / Brow 等完整业务单元
 
 Builder
-    Curve Attachment / Zip / Radial Joint 等可组合算法
+    Curve Attachment / Zip / Radial Jnt 等可组合算法
 
 Core
-    Matrix / Curve / Joint / DAG / Attribute 等通用 Maya 能力
+    Matrix / Curve / Jnt / DAG / Attribute 等通用 Maya 能力
 ```
 
 ## Face System

@@ -75,7 +75,7 @@ class SkirtRigDialog(QDialog):
         # -------------------------------------------------------------------------
         self.title_label = theme.make_title(u"裙子绑定")
         self.subtitle_label = theme.make_subtitle(
-            u"先创建上下定位曲线并调整造型，再生成纵向 Joint Chain 和 FK Controller。"
+            u"先创建上下定位曲线并调整造型，再生成纵向 Jnt Chain 和 FK Controller。"
         )
 
         self.name_line = QLineEdit("skirt")
@@ -157,7 +157,7 @@ class SkirtRigDialog(QDialog):
         # Step 03：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
         setup_info = QLabel(
-            u"生成 Up / Down 两条曲线。Blueprint Joint 会实时跟随曲线，"
+            u"生成 Up / Down 两条曲线。Blueprint Jnt 会实时跟随曲线，"
             u"请在 Maya 视图中调整曲线贴合裙子轮廓。"
         )
         setup_info.setWordWrap(True)
@@ -180,7 +180,7 @@ class SkirtRigDialog(QDialog):
         )
 
         build_info = QLabel(
-            u"根据当前定位创建纵向 Bind Joint、标准 Controller 层级和 FK 约束。"
+            u"根据当前定位创建纵向 Bind Jnt、标准 Controller 层级和 FK 约束。"
         )
         build_info.setWordWrap(True)
         theme.set_role(build_info, "muted")

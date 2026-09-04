@@ -29,7 +29,7 @@ docs/migration/
 ```text
 docs/manual/basic-tools.md
 docs/manual/controller.md
-docs/manual/joint.md
+docs/manual/jnt.md
 docs/manual/skin.md
 docs/manual/blendshape.md
 docs/manual/cleanup.md
@@ -187,7 +187,7 @@ Face Rig Step 02 Guide Manager。
     4. 修复镜像关系。
 
 设计边界：
-    - 不创建最终 Joint；
+    - 不创建最终 Jnt；
     - 不创建最终 Controller；
     - 模板视觉属性保存在 face_guide.ma。
 """
@@ -360,7 +360,7 @@ mkdocs-literate-nav
 用户手册
 ├── 基础工具
 ├── Controller
-├── Joint
+├── Jnt
 ├── Skin
 ├── BlendShape
 ├── 场景清理

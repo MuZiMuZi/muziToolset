@@ -32,13 +32,13 @@ from ....core import scene_utils
 from ....core import transform_utils
 from ... import ctrl_base
 from .. import config
-from ..build.eyelid.builder import build_eyelid_joints
+from ..build.eyelid.builder import build_eyelid_jnts
 from ..guide import FaceGuide
 from .face_module_base import FaceModuleBase
 
 
 class EyelidModule(FaceModuleBase):
-    u"""构建左右 Upper / Lower Eyelid Curve、Ctrl、Blink 与 Radial Joint。"""
+    u"""构建左右 Upper / Lower Eyelid Curve、Ctrl、Blink 与 Radial Jnt。"""
 
     sides = ["lf", "rt"]
     regions = ["upper", "lower"]
@@ -64,7 +64,7 @@ class EyelidModule(FaceModuleBase):
     def load_setup(self):
         u"""
 
-                读取 Eyelid 设置，并确认 EyeModule 的 Eye Joint / Aim Ctrl 已存在。
+                读取 Eyelid 设置，并确认 EyeModule 的 Eye Jnt / Aim Ctrl 已存在。
 
                 Returns:
                     bool:
@@ -136,8 +136,8 @@ class EyelidModule(FaceModuleBase):
 
             eye_jnt = self._resolve_scene_node(
                 eye_jnt_name,
-                label=u"EyeModule Eye Joint",
-                node_type="joint"
+                label=u"EyeModule Eye Jnt",
+                node_type=__MUZI_MAYA_JNT_PROTECTED_00000__
             )
             eye_aim_ctrl = self._resolve_scene_node(
                 eye_aim_ctrl_name,
@@ -238,9 +238,9 @@ class EyelidModule(FaceModuleBase):
                 )
                 scene_utils.ensure_nodes_available(
                     eyelid_driver_jnt_name,
-                    label=u"Eyelid Driver Joint"
+                    label=u"Eyelid Driver Jnt"
                 )
-                eyelid_driver_jnt = joint_utils.Joint.create_at_object(
+                eyelid_driver_jnt = jnt_utils.Jnt.create_at_object(
                     obj=guide,
                     name=eyelid_driver_jnt_name,
                     parent=self.face_jnt_grp,
@@ -315,14 +315,14 @@ class EyelidModule(FaceModuleBase):
                     self.face_rig_nodes_grp
                 )[0]
 
-                radial_dict = build_eyelid_joints(
+                radial_dict = build_eyelid_jnts(
                     curve=skin_curve,
-                    eye_joint=eyelid_dict["eye_jnt"],
+                    eye_jnt=eyelid_dict["eye_jnt"],
                     up_object=up_object,
                     side=side,
                     region=region,
                     parent_group=self.face_rig_nodes_grp,
-                    joint_radius=self.controller_radius * 0.12
+                    jnt_radius=self.controller_radius * 0.12
                 )
 
                 eyelid_dict["control_curve_dict"][region] = control_curve
@@ -668,7 +668,7 @@ class EyelidModule(FaceModuleBase):
     def create_finalize(self):
         u"""
 
-                验证 Eyelid Curve、Ctrl、Radial Joint 与 Blink Network。
+                验证 Eyelid Curve、Ctrl、Radial Jnt 与 Blink Network。
 
                 Returns:
                     bool:
@@ -694,10 +694,10 @@ class EyelidModule(FaceModuleBase):
                     label=u"Eyelid Skin Curve"
                 )
 
-                for eyelid_jnt in eyelid_dict["radial_dict"][region]["joints"]:
+                for eyelid_jnt in eyelid_dict["radial_dict"][region]["jnts"]:
                     scene_utils.validate_node(
                         eyelid_jnt,
-                        label=u"Eyelid Radial Joint"
+                        label=u"Eyelid Radial Jnt"
                     )
 
             scene_utils.validate_node(

@@ -376,7 +376,7 @@ def create_fixture_models():
     )
 
     # -------------------------------------------------------------------------
-    # Step 03：创建 Tongue Mesh，实际覆盖 TongueModule 的多 Joint SkinCluster
+    # Step 03：创建 Tongue Mesh，实际覆盖 TongueModule 的多 Jnt SkinCluster
     # -------------------------------------------------------------------------
     tongue_model = cmds.polyCube(
         name="model_md_tongue_face_modules_smoke_001",

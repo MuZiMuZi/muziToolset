@@ -11,7 +11,7 @@ API Generator 负责动态生成源码树导航；本脚本只负责把人工维
 职责：
     1. 读取 docs/SUMMARY.md；
     2. 找到“常用工具工作流”入口；
-    3. 插入基础工具 / Controller / Joint / Skin / BlendShape / Cleanup；
+    3. 插入基础工具 / Controller / Jnt / Skin / BlendShape / Cleanup；
     4. 重复执行时不产生重复导航项。
 
 说明：
@@ -28,7 +28,7 @@ import os
 manual_navigation_lines = [
     "    * [基础工具](manual/basic-tools.md)",
     "    * [Controller](manual/controller.md)",
-    "    * [Joint](manual/joint.md)",
+    "    * [Jnt](manual/jnt.md)",
     "    * [Skin](manual/skin.md)",
     "    * [BlendShape](manual/blendshape.md)",
     "    * [场景清理与模型检查](manual/cleanup.md)",

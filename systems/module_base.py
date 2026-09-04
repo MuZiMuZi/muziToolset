@@ -27,9 +27,9 @@ ModuleBase 不重新定义 Rig Identity。
 
     run_step()
 
-真正涉及 Joint、Controller 和 Connection 的 Rig Module 使用 RigModuleBase：
+真正涉及 Jnt、Controller 和 Connection 的 Rig Module 使用 RigModuleBase：
 
-    create_joint()
+    create_jnt()
     create_controller()
     create_connection()
 """
@@ -129,7 +129,7 @@ class ModuleBase(RigBase):
 
 
 class RigModuleBase(ModuleBase):
-    u"""需要 Joint、Controller 和 Connection 的标准 Rig Module 基类。"""
+    u"""需要 Jnt、Controller 和 Connection 的标准 Rig Module 基类。"""
 
     def process_data(self):
         u"""
@@ -139,21 +139,21 @@ class RigModuleBase(ModuleBase):
             bool:
             当前操作成功或目标状态满足要求时返回 True，否则返回 False。
         """
-        self.create_joint()
+        self.create_jnt()
         self.create_controller()
         self.create_connection()
         return True
 
-    def create_joint(self):
+    def create_jnt(self):
         u"""
-        创建当前 Rig Module 所需的 Joint。
+        创建当前 Rig Module 所需的 Jnt。
 
         Raises:
             NotImplementedError:
             输入数据、场景状态或操作条件不满足要求时抛出。
         """
         raise NotImplementedError(
-            u"子类必须实现 create_joint()。"
+            u"子类必须实现 create_jnt()。"
         )
 
     def create_controller(self):

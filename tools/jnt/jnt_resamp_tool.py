@@ -1,21 +1,21 @@
 # coding=utf-8
 u"""
-Joint Resample Tool
+Jnt Resample Tool
 ===================
 
-在一对直接父子 Joint 之间均匀插入指定数量的新 Joint。
+在一对直接父子 Jnt 之间均匀插入指定数量的新 Jnt。
 
 模块职责
 --------
-1. 提供 Start Joint / End Joint Picker 和插入数量参数；
-2. 校验只处理直接父子 Joint；
-3. 使用 Core 三维插值在两端之间插入新 Joint；
+1. 提供 Start Jnt / End Jnt Picker 和插入数量参数；
+2. 校验只处理直接父子 Jnt；
+3. 使用 Core 三维插值在两端之间插入新 Jnt；
 4. 创建失败时清理本轮新节点并尽量恢复原父子关系；
 5. 提供可在 Maya Script Editor 中直接显示的 ``main()``。
 
 架构边界
 --------
-- Joint 类型校验统一复用 ``core.joint_utils``；
+- Jnt 类型校验统一复用 ``core.jnt_utils``；
 - 三维插值统一复用 ``core.math_utils``；
 - DAG Short Name 统一复用 ``core.rename_utils``；
 - DAG Parent 查询统一复用 ``core.hierarchy_utils``；
@@ -54,18 +54,18 @@ from ...ui import window_utils
 from ...ui.widgets import MayaObjectPicker
 
 
-class JointResamplingTool(QWidget):
-    """Joint Resample 窗口。"""
+class JntResamplingTool(QWidget):
+    """Jnt Resample 窗口。"""
 
     def __init__(self, parent=None):
         u"""
-        创建 Joint Resample 窗口。
+        创建 Jnt Resample 窗口。
 
         Args:
             parent (str):
                 父级 Maya 节点名称。
         """
-        super(JointResamplingTool, self).__init__(parent)
+        super(JntResamplingTool, self).__init__(parent)
 
         self.create_widgets()
         self.create_layouts()
@@ -84,33 +84,33 @@ class JointResamplingTool(QWidget):
         """
         self.title_label = theme.make_title(u"关节重采样")
         self.subtitle_label = theme.make_subtitle(
-            u"在一对直接父子 Joint 之间均匀插入新的中间 Joint。"
+            u"在一对直接父子 Jnt 之间均匀插入新的中间 Jnt。"
         )
 
-        self.start_joint_picker = MayaObjectPicker(
-            label_text=u"起始 Joint",
-            placeholder=u"选择父 Joint 后点击拾取",
-            node_types=["joint"]
+        self.start_jnt_picker = MayaObjectPicker(
+            label_text=u"起始 Jnt",
+            placeholder=u"选择父 Jnt 后点击拾取",
+            node_types=[__MUZI_MAYA_JNT_PROTECTED_00000__]
         )
 
-        self.end_joint_picker = MayaObjectPicker(
-            label_text=u"末端 Joint",
-            placeholder=u"选择直接子 Joint 后点击拾取",
-            node_types=["joint"]
+        self.end_jnt_picker = MayaObjectPicker(
+            label_text=u"末端 Jnt",
+            placeholder=u"选择直接子 Jnt 后点击拾取",
+            node_types=[__MUZI_MAYA_JNT_PROTECTED_00001__]
         )
 
-        self.joint_number_spinbox = QSpinBox()
-        self.joint_number_spinbox.setMinimum(1)
-        self.joint_number_spinbox.setMaximum(100)
-        self.joint_number_spinbox.setValue(2)
+        self.jnt_number_spinbox = QSpinBox()
+        self.jnt_number_spinbox.setMinimum(1)
+        self.jnt_number_spinbox.setMaximum(100)
+        self.jnt_number_spinbox.setValue(2)
 
         self.safety_label = QLabel(
-            u"安全模式：只处理直接父子 Joint，不会跨越已有中间骨骼。"
+            u"安全模式：只处理直接父子 Jnt，不会跨越已有中间骨骼。"
         )
         self.safety_label.setWordWrap(True)
         theme.set_role(self.safety_label, "muted")
 
-        self.resample_button = QPushButton(u"插入 Joint")
+        self.resample_button = QPushButton(u"插入 Jnt")
         theme.style_primary(self.resample_button)
 
     def create_layouts(self):
@@ -132,10 +132,10 @@ class JointResamplingTool(QWidget):
         # -------------------------------------------------------------------------
         range_card, range_layout = theme.make_card(self)
         range_layout.addWidget(
-            theme.make_section_title(u"Joint 范围")
+            theme.make_section_title(u"Jnt 范围")
         )
-        range_layout.addWidget(self.start_joint_picker)
-        range_layout.addWidget(self.end_joint_picker)
+        range_layout.addWidget(self.start_jnt_picker)
+        range_layout.addWidget(self.end_jnt_picker)
 
         parameter_card, parameter_layout = theme.make_card(self)
         parameter_layout.addWidget(
@@ -148,7 +148,7 @@ class JointResamplingTool(QWidget):
         number_layout = QHBoxLayout()
         number_layout.setContentsMargins(0, 0, 0, 0)
         number_layout.addWidget(QLabel(u"插入数量"))
-        number_layout.addWidget(self.joint_number_spinbox)
+        number_layout.addWidget(self.jnt_number_spinbox)
         number_layout.addStretch(1)
 
         # -------------------------------------------------------------------------
@@ -175,32 +175,32 @@ class JointResamplingTool(QWidget):
 
     def resample(self):
         u"""
-        读取当前 UI 参数并执行 Joint Resample。
+        读取当前 UI 参数并执行 Jnt Resample。
         """
-        start_joint = self.start_joint_picker.get_value()
-        end_joint = self.end_joint_picker.get_value()
-        joint_number = self.joint_number_spinbox.value()
+        start_jnt = self.start_jnt_picker.get_value()
+        end_jnt = self.end_jnt_picker.get_value()
+        jnt_number = self.jnt_number_spinbox.value()
 
-        created_joints = resample_joint(
-            start_joint=start_joint,
-            end_joint=end_joint,
-            joint_number=joint_number
+        created_jnts = resample_jnt(
+            start_jnt=start_jnt,
+            end_jnt=end_jnt,
+            jnt_number=jnt_number
         )
 
-        if created_joints:
+        if created_jnts:
             cmds.select(
-                created_joints,
+                created_jnts,
                 replace=True
             )
 
 
-def validate_joint(joint, label):
+def validate_jnt(jnt, label):
     u"""
-    使用 Joint Core 校验，并把异常转换成 Tool Warning。
+    使用 Jnt Core 校验，并把异常转换成 Tool Warning。
 
     Args:
-        joint (str):
-            需要处理的 Maya Joint 节点名称。
+        jnt (str):
+            需要处理的 Maya Jnt 节点名称。
         label (str):
             UI、Rig Node 或日志中展示的简短 Label。
 
@@ -208,15 +208,15 @@ def validate_joint(joint, label):
         bool:
         当前操作成功或目标状态满足要求时返回 True，否则返回 False。
     """
-    if not joint:
+    if not jnt:
         cmds.warning(
             u"{}不能为空。".format(label)
         )
         return False
 
     try:
-        jnt_utils.Joint(
-            joint
+        jnt_utils.Jnt(
+            jnt
         )
     except RuntimeError as error:
         cmds.warning(
@@ -230,15 +230,15 @@ def validate_joint(joint, label):
     return True
 
 
-def is_direct_child_joint(start_joint, end_joint):
+def is_direct_child_jnt(start_jnt, end_jnt):
     u"""
-    检查 end_joint 是否是 start_joint 的直接子 Joint。
+    检查 end_jnt 是否是 start_jnt 的直接子 Jnt。
 
     Args:
-        start_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
-        end_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        start_jnt (str):
+            当前 Rig 计算或构建使用的 Maya Jnt 节点。
+        end_jnt (str):
+            当前 Rig 计算或构建使用的 Maya Jnt 节点。
 
     Returns:
         object | bool:
@@ -246,13 +246,13 @@ def is_direct_child_joint(start_joint, end_joint):
     """
     try:
         start_long_name = scene_utils.get_long_name(
-            start_joint
+            start_jnt
         )
     except RuntimeError:
         return False
 
     parent_node = hierarchy_utils.get_parent(
-        end_joint,
+        end_jnt,
         full_path=True
     )
 
@@ -263,16 +263,16 @@ def is_direct_child_joint(start_joint, end_joint):
 
 
 @scene_utils.undo_chunk
-def resample_joint(start_joint, end_joint, joint_number):
+def resample_jnt(start_jnt, end_jnt, jnt_number):
     u"""
-    在直接父子 Joint 之间插入指定数量的新 Joint。
+    在直接父子 Jnt 之间插入指定数量的新 Jnt。
 
     Args:
-        start_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
-        end_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
-        joint_number (int):
+        start_jnt (str):
+            当前 Rig 计算或构建使用的 Maya Jnt 节点。
+        end_jnt (str):
+            当前 Rig 计算或构建使用的 Maya Jnt 节点。
+        jnt_number (int):
             当前构建、采样或查询过程使用的元素数量。
 
     Returns:
@@ -282,103 +282,103 @@ def resample_joint(start_joint, end_joint, joint_number):
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支
     # -------------------------------------------------------------------------
-    if not validate_joint(
-            start_joint,
-            u"起始 Joint"
+    if not validate_jnt(
+            start_jnt,
+            u"起始 Jnt"
     ):
         return []
 
-    if not validate_joint(
-            end_joint,
-            u"末端 Joint"
+    if not validate_jnt(
+            end_jnt,
+            u"末端 Jnt"
     ):
         return []
 
-    if start_joint == end_joint:
+    if start_jnt == end_jnt:
         cmds.warning(
-            u"起始 Joint 和末端 Joint 不能相同。"
+            u"起始 Jnt 和末端 Jnt 不能相同。"
         )
         return []
 
     # -------------------------------------------------------------------------
     # Step 02：准备当前阶段计算和后续处理需要的数据
     # -------------------------------------------------------------------------
-    joint_number = int(
-        joint_number
+    jnt_number = int(
+        jnt_number
     )
 
-    if joint_number < 1:
+    if jnt_number < 1:
         cmds.warning(
-            u"插入 Joint 数量必须大于等于 1。"
+            u"插入 Jnt 数量必须大于等于 1。"
         )
         return []
 
-    if not is_direct_child_joint(
-            start_joint,
-            end_joint
+    if not is_direct_child_jnt(
+            start_jnt,
+            end_jnt
     ):
         cmds.warning(
-            u"安全模式只允许直接父子 Joint。当前末端 Joint 不是起始 Joint 的直接子级。"
+            u"安全模式只允许直接父子 Jnt。当前末端 Jnt 不是起始 Jnt 的直接子级。"
         )
         return []
 
     start_position = transform_utils.get_world_translation(
-        start_joint
+        start_jnt
     )
     # -------------------------------------------------------------------------
     # Step 03：查询并整理当前阶段需要的 Maya 场景数据
     # -------------------------------------------------------------------------
     end_position = transform_utils.get_world_translation(
-        end_joint
+        end_jnt
     )
     start_short_name = rename_utils.get_short_name(
-        start_joint
+        start_jnt
     )
 
-    created_joints = []
-    previous_joint = start_joint
+    created_jnts = []
+    previous_jnt = start_jnt
     # -------------------------------------------------------------------------
     # Step 04：准备当前阶段计算和后续处理需要的数据
     # -------------------------------------------------------------------------
     success = False
 
     try:
-        end_joint = hierarchy_utils.parent(
-            end_joint,
+        end_jnt = hierarchy_utils.parent(
+            end_jnt,
             None
         )
 
-        joint_index = 0
+        jnt_index = 0
 
-        while joint_index < joint_number:
-            ratio = float(joint_index + 1) / float(
-                joint_number + 1
+        while jnt_index < jnt_number:
+            ratio = float(jnt_index + 1) / float(
+                jnt_number + 1
             )
             position = math_utils.lerp_point3(
                 start_position,
                 end_position,
                 ratio
             )
-            new_joint_name = "{}_resamp_{:03d}".format(
+            new_jnt_name = "{}_resamp_{:03d}".format(
                 start_short_name,
-                joint_index + 1
+                jnt_index + 1
             )
 
-            new_joint = joint_utils.Joint.create(
-                name=new_joint_name,
+            new_jnt = jnt_utils.Jnt.create(
+                name=new_jnt_name,
                 position=position,
-                parent=previous_joint
+                parent=previous_jnt
             )
 
-            created_joints.append(
-                new_joint
+            created_jnts.append(
+                new_jnt
             )
-            previous_joint = new_joint
-            joint_index += 1
+            previous_jnt = new_jnt
+            jnt_index += 1
 
-        end_joint = hierarchy_utils.parent(
-            end_joint,
-            previous_joint
+        end_jnt = hierarchy_utils.parent(
+            end_jnt,
+            previous_jnt
         )
         success = True
 
@@ -389,34 +389,34 @@ def resample_joint(start_joint, end_joint, joint_number):
 
     finally:
         if not success:
-            delete_joints = []
+            delete_jnts = []
 
-            for created_joint in created_joints:
-                if cmds.objExists(created_joint):
-                    delete_joints.append(
-                        created_joint
+            for created_jnt in created_jnts:
+                if cmds.objExists(created_jnt):
+                    delete_jnts.append(
+                        created_jnt
                     )
 
-            if delete_joints:
+            if delete_jnts:
                 try:
                     cmds.delete(
-                        delete_joints
+                        delete_jnts
                     )
                 except Exception:
                     pass
 
-            if cmds.objExists(end_joint):
-                if cmds.objExists(start_joint):
+            if cmds.objExists(end_jnt):
+                if cmds.objExists(start_jnt):
                     try:
                         current_parent = hierarchy_utils.get_parent(
-                            end_joint,
+                            end_jnt,
                             full_path=True
                         )
 
                         if current_parent is None:
-                            end_joint = hierarchy_utils.parent(
-                                end_joint,
-                                start_joint
+                            end_jnt = hierarchy_utils.parent(
+                                end_jnt,
+                                start_jnt
                             )
                     except Exception:
                         pass
@@ -427,20 +427,20 @@ def resample_joint(start_joint, end_joint, joint_number):
     # -------------------------------------------------------------------------
     # Step 05：整理并返回当前函数的最终结果
     # -------------------------------------------------------------------------
-    return created_joints
+    return created_jnts
 
 
 def main():
     u"""
-    创建或恢复 Joint Resample Tool，立即显示并返回 QWidget。
+    创建或恢复 Jnt Resample Tool，立即显示并返回 QWidget。
 
     Returns:
         object:
         当前工具入口创建并显示的窗口或执行结果。
     """
     return window_utils.show_window(
-        "tools.joint.joint_resamp_tool",
-        JointResamplingTool
+        "tools.jnt.jnt_resamp_tool",
+        JntResamplingTool
     )
 
 

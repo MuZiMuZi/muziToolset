@@ -1,9 +1,9 @@
 site_name: MuziTools
 site_description: Maya 2023 Rigging Toolset - 用户手册、开发指南与完整 API Reference
 site_author: MuziTools
-site_url: https://muzimuzi.github.io/muziToolset/
+site_url: __MUZI_MAYA_JNT_PROTECTED_00000__
 repo_name: MuZiMuZi/muziToolset
-repo_url: https://github.com/MuZiMuZi/muziToolset
+repo_url: __MUZI_MAYA_JNT_PROTECTED_00001__
 edit_uri: edit/main/docs/
 
 docs_dir: docs
@@ -104,6 +104,6 @@ extra:
   generator: false
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/MuZiMuZi/muziToolset
+      link: __MUZI_MAYA_JNT_PROTECTED_00002__
 
 copyright: Copyright © MuziTools

@@ -308,7 +308,7 @@ def cleanup_snap_item_queries():
 
     new_rotation_query = (
         "    # -------------------------------------------------------------------------\n"
-        "    # 步骤 3：Transform / Joint 世界旋转统一交给 Transform Core。\n"
+        "    # 步骤 3：Transform / Jnt 世界旋转统一交给 Transform Core。\n"
         "    # -------------------------------------------------------------------------\n"
         "    try:\n"
         "        rotation = transform_utils.get_world_rotation(\n"
@@ -632,9 +632,9 @@ def cleanup_zip_lip_parent_wrapper():
     )
 
 
-def cleanup_joint_tool_constraint():
-    u"""把 Joint Tool 的批量 Parent Constraint 统一交给 Constraint Core。"""
-    path = "tools/joint/joint_tool.py"
+def cleanup_jnt_tool_constraint():
+    u"""把 Jnt Tool 的批量 Parent Constraint 统一交给 Constraint Core。"""
+    path = "tools/jnt/jnt_tool.py"
     source_text = migration.read_text(path)
 
     source_text = ensure_upper_core_import(
@@ -656,7 +656,7 @@ def cleanup_joint_tool_constraint():
         "                    constraint_type=\"parentConstraint\",\n"
         "                    maintain_offset=True\n"
         "                )\n",
-        "joint tool parent constraint"
+        "jnt tool parent constraint"
     )
 
     migration.write_text(
@@ -669,7 +669,7 @@ def cleanup_upper_layer_core_bypass():
     u"""清理 Upper Layer Gate 暴露的 Undo / Parent / Constraint 绕过。"""
     add_scene_undo_lifecycle_api()
     cleanup_zip_lip_parent_wrapper()
-    cleanup_joint_tool_constraint()
+    cleanup_jnt_tool_constraint()
     migrate_upper_undo_calls()
 
 

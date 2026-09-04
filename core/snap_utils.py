@@ -19,7 +19,7 @@ get_item_world_position(item)
     获取对象或组件的世界空间位置。
 
 get_item_world_rotation(item)
-    获取 Transform / jnt 的世界旋转；组件没有稳定的 Transform Rotation，因此返回 None。
+    获取 Transform / Jnt 的世界旋转；组件没有稳定的 Transform Rotation，因此返回 None。
 
 snap_to_average(reference_items, target_item, include_rotation=True)
     把目标对象吸附到多个参考项的平均位置，并在条件允许时应用平均旋转。
@@ -91,11 +91,11 @@ def get_item_world_position(item):
 
     Locator Transform 允许 Shape.localPosition 不为零；此时可视十字中心并不等于
     Transform 原点，所以优先读取 Locator Shape.worldPosition[0]。普通 Transform、
-    jnt 和 Component 仍使用 ``cmds.xform(..., worldSpace=True)``。
+    Jnt 和 Component 仍使用 ``cmds.xform(..., worldSpace=True)``。
 
     Args:
         item (str):
-            需要查询的 Maya Transform、jnt 或 Component。
+            需要查询的 Maya Transform、Jnt 或 Component。
 
     Returns:
         list | None:
@@ -122,7 +122,7 @@ def get_item_world_position(item):
             ]
         elif node_type in [
                 "transform",
-                "jnt",
+                __MUZI_MAYA_JNT_PROTECTED_00000__,
         ]:
             locator_shapes = cmds.listRelatives(
                 item,
@@ -144,7 +144,7 @@ def get_item_world_position(item):
                 position = world_position[0]
 
     # -------------------------------------------------------------------------
-    # Step 02：普通 Transform / jnt / Component 继续读取世界平移
+    # Step 02：普通 Transform / Jnt / Component 继续读取世界平移
     # -------------------------------------------------------------------------
     if position is None:
         try:
@@ -172,11 +172,11 @@ def get_item_world_position(item):
 
 def get_item_world_rotation(item):
     u"""
-    返回 Transform / jnt 世界旋转，组件返回 None。
+    返回 Transform / Jnt 世界旋转，组件返回 None。
 
     Args:
         item (str):
-            需要查询的 Maya Transform、jnt 或 Shape 名称。
+            需要查询的 Maya Transform、Jnt 或 Shape 名称。
 
     Returns:
         list | None:
@@ -206,7 +206,7 @@ def get_item_world_rotation(item):
     # -------------------------------------------------------------------------
     if node_type not in [
         "transform",
-        "jnt",
+        __MUZI_MAYA_JNT_PROTECTED_00001__,
     ]:
         try:
             item = hierarchy_utils.get_parent(
@@ -253,7 +253,7 @@ def snap_to_average(
 
     Args:
         reference_items (list[str]):
-            一个或多个参考 Transform、jnt 或 Component。
+            一个或多个参考 Transform、Jnt 或 Component。
         target_item (str):
             需要被移动的目标 Maya Item。
         include_rotation (bool):

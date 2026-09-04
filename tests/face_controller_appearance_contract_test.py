@@ -84,7 +84,7 @@ def run():
             '"ctrl_rt_cheekbone_bind_002"',
             '"module": "cheek"',
             "_validate_controller_transform_invariants(",
-            "_validate_joint_invariants(",
+            "_validate_jnt_invariants(",
             "_validate_representative_appearance(",
             "validate_guide_ctrl_alignment()",
             '"transform_scale_invariant": [1.0, 1.0, 1.0]',

@@ -18,10 +18,10 @@ Core 只提供与具体 Rig 业务无关的 Maya / Python 通用基础能力。
         DAG Parent / Child / Group 层级操作。
 
     jnt_utils.py
-        单个 Maya jnt 创建、属性和显示操作，以及全局 jnt Display Scale。
+        单个 Maya Jnt 创建、属性和显示操作，以及全局 Jnt Display Scale。
 
     jnt_chain_utils.py
-        多 jnt / jnt Chain、Maya Item -> jnt、Curve CV -> jnt 的参数化通用算法。
+        多 Jnt / Jnt Chain、Maya Item -> Jnt、Curve CV -> Jnt 的参数化通用算法。
         不读取当前 Selection，不包含 Tool Warning / UI 语义。
 
     transform_utils.py

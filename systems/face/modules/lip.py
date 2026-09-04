@@ -13,7 +13,7 @@ Upper / Lower Lip 曲线绑定模块。
                     -> Curve Attachment
                         -> Deform Jnt
 
-Controller 数量由 Guide 决定；最终 Deform Joint 密度由 Step01 的 mouth_jnt_number 决定。
+Controller 数量由 Guide 决定；最终 Deform Jnt 密度由 Step01 的 mouth_jnt_number 决定。
 """
 
 from __future__ import print_function
@@ -27,13 +27,13 @@ from ....core import rename_utils
 from ....core import scene_utils
 from ... import ctrl_base
 from .. import config
-from ..build.curve_attachment import attach_joints_to_curves
+from ..build.curve_attachment import attach_jnts_to_curves
 from ..guide import FaceGuide
 from .face_module_base import FaceModuleBase
 
 
 class LipModule(FaceModuleBase):
-    u"""构建 Upper / Lower Lip Detail Ctrl、曲线和 Deform Joint。"""
+    u"""构建 Upper / Lower Lip Detail Ctrl、曲线和 Deform Jnt。"""
 
     regions = ["upper", "lower"]
 
@@ -63,7 +63,7 @@ class LipModule(FaceModuleBase):
     def load_setup(self):
         u"""
 
-                读取 Lip Controller 设置与 Mouth Joint 数量。
+                读取 Lip Controller 设置与 Mouth Jnt 数量。
 
                 Returns:
                     bool:
@@ -97,7 +97,7 @@ class LipModule(FaceModuleBase):
         )
 
         # -------------------------------------------------------------------------
-        # Step 02：把 Step01 的 Mouth Joint 数量转换成单侧 Upper / Lower 采样密度
+        # Step 02：把 Step01 的 Mouth Jnt 数量转换成单侧 Upper / Lower 采样密度
         # -------------------------------------------------------------------------
         if self.controller_radius <= 0.0:
             raise ValueError(u"Lip Controller Radius 必须大于 0。")
@@ -160,7 +160,7 @@ class LipModule(FaceModuleBase):
         unique_guides = self._get_unique_guides()
 
         # -------------------------------------------------------------------------
-        # Step 01：每个唯一 Lip / Mouth Corner Guide 创建一个 Curve Driver Joint
+        # Step 01：每个唯一 Lip / Mouth Corner Guide 创建一个 Curve Driver Jnt
         # -------------------------------------------------------------------------
         for guide in unique_guides:
             guide_data = self.parse_name(
@@ -175,9 +175,9 @@ class LipModule(FaceModuleBase):
             )
             scene_utils.ensure_nodes_available(
                 lip_driver_jnt_name,
-                label=u"Lip Curve Driver Joint"
+                label=u"Lip Curve Driver Jnt"
             )
-            lip_driver_jnt = jnt_utils.Joint.create_at_object(
+            lip_driver_jnt = jnt_utils.Jnt.create_at_object(
                 obj=guide,
                 name=lip_driver_jnt_name,
                 parent=self.face_jnt_grp,
@@ -273,7 +273,7 @@ class LipModule(FaceModuleBase):
             )[0]
 
             # ---------------------------------------------------------------------
-            # Step 03：按真实弧长均匀采样 Skin Curve，创建最终 Lip Deform Joint
+            # Step 03：按真实弧长均匀采样 Skin Curve，创建最终 Lip Deform Jnt
             # ---------------------------------------------------------------------
             sample_dict = curve_utils.sample_curve_by_length(
                 skin_curve,
@@ -293,7 +293,7 @@ class LipModule(FaceModuleBase):
                     function="bind",
                     index=item_index
                 )
-                lip_deform_jnt = jnt_utils.Joint.create(
+                lip_deform_jnt = jnt_utils.Jnt.create(
                     name=lip_deform_jnt_name,
                     position=sample_points[sample_index],
                     parent=self.face_jnt_grp,
@@ -303,10 +303,10 @@ class LipModule(FaceModuleBase):
                 sample_index += 1
 
             # ---------------------------------------------------------------------
-            # Step 04：把 Deform Joint 接入 Skin / Aim / Up Curve Attachment 网络
+            # Step 04：把 Deform Jnt 接入 Skin / Aim / Up Curve Attachment 网络
             # ---------------------------------------------------------------------
-            attachment_dict = attach_joints_to_curves(
-                joints=deform_jnts,
+            attachment_dict = attach_jnts_to_curves(
+                jnts=deform_jnts,
                 drive_curve=skin_curve,
                 aim_curve=aim_curve,
                 up_curve=up_curve,
@@ -314,7 +314,7 @@ class LipModule(FaceModuleBase):
                 region=region,
                 feature="lip",
                 parent_group=self.face_rig_nodes_grp,
-                preserve_joint_offset=False
+                preserve_jnt_offset=False
             )
 
             self.lip_region_dict[region] = {
@@ -380,7 +380,7 @@ class LipModule(FaceModuleBase):
     def create_connect(self):
         u"""
 
-                Lip Detail Ctrl Output 一一驱动 Curve Driver Joint。
+                Lip Detail Ctrl Output 一一驱动 Curve Driver Jnt。
 
                 Returns:
                     object:
@@ -390,7 +390,7 @@ class LipModule(FaceModuleBase):
         self.matrix_nodes = []
 
         # -------------------------------------------------------------------------
-        # Step 01：Controller Output 与对应 Guide Driver Joint 建立 Matrix 驱动
+        # Step 01：Controller Output 与对应 Guide Driver Jnt 建立 Matrix 驱动
         # -------------------------------------------------------------------------
         for guide in self._get_unique_guides():
             guide_data = self.parse_name(
@@ -416,7 +416,7 @@ class LipModule(FaceModuleBase):
     def create_deform(self):
         u"""
 
-                用 Guide Driver Joint 同步驱动 Control / Skin / Aim / Up 四条曲线。
+                用 Guide Driver Jnt 同步驱动 Control / Skin / Aim / Up 四条曲线。
 
                 Returns:
                     object:
@@ -424,7 +424,7 @@ class LipModule(FaceModuleBase):
 
         """
         # -------------------------------------------------------------------------
-        # Step 01：按 Upper / Lower 收集对应 Guide Driver Joint
+        # Step 01：按 Upper / Lower 收集对应 Guide Driver Jnt
         # -------------------------------------------------------------------------
         for region in self.regions:
             region_data = self.lip_region_dict[region]
@@ -436,7 +436,7 @@ class LipModule(FaceModuleBase):
                 )
 
             # ---------------------------------------------------------------------
-            # Step 02：同一组 Driver Joint 分别 Skin 四条功能曲线，保持同步空间关系
+            # Step 02：同一组 Driver Jnt 分别 Skin 四条功能曲线，保持同步空间关系
             # ---------------------------------------------------------------------
             curve_skin_nodes = []
             curve_roles = [
@@ -478,7 +478,7 @@ class LipModule(FaceModuleBase):
     def create_finalize(self):
         u"""
 
-                验证 Lip Ctrl、Curve、Attachment 和 Deform Joint。
+                验证 Lip Ctrl、Curve、Attachment 和 Deform Jnt。
 
                 Returns:
                     bool:
@@ -495,7 +495,7 @@ class LipModule(FaceModuleBase):
             )
 
         # -------------------------------------------------------------------------
-        # Step 02：验证 Upper / Lower 曲线和最终 Deform Joint
+        # Step 02：验证 Upper / Lower 曲线和最终 Deform Jnt
         # -------------------------------------------------------------------------
         for region in self.regions:
             region_data = self.lip_region_dict[region]
@@ -510,8 +510,8 @@ class LipModule(FaceModuleBase):
             for lip_deform_jnt in region_data["deform_jnts"]:
                 resolved_deform_jnt = self._resolve_scene_node(
                     lip_deform_jnt,
-                    label=u"Lip Deform Joint",
-                    node_type="joint"
+                    label=u"Lip Deform Jnt",
+                    node_type=__MUZI_MAYA_JNT_PROTECTED_00000__
                 )
                 resolved_deform_jnts.append(
                     resolved_deform_jnt

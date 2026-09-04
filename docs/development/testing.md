@@ -38,7 +38,7 @@ Rename / Maya Name Token      -> core.rename_utils
 Transform                     -> core.transform_utils
 Hierarchy                     -> core.hierarchy_utils
 Point / Vector Math           -> core.math_utils
-Joint Chain                   -> core.joint_chain_utils
+Jnt Chain                   -> core.jnt_chain_utils
 ```
 
 新增 Helper 前应先检查现有 Core；已有正式 Owner 时，不允许在第二个 Core 模块重新实现同名能力。
@@ -145,7 +145,7 @@ RigModuleBase
     side / part / index
     collect_inputs
     prepare_data
-    create_joint
+    create_jnt
     create_controller
     create_connection
     finalize_step
@@ -212,8 +212,8 @@ report = muziToolset.extended_core_smoke_test()
 ```text
 attr_utils
 hierarchy_utils
-joint_utils
-joint_chain_utils
+jnt_utils
+jnt_chain_utils
 math_utils
 RigBase + rename_utils
 model_check_utils
@@ -229,11 +229,11 @@ RigBase
 rename_utils
     Maya Short Name / External Name Token / Rename
 
-joint_utils
-    Single Joint
+jnt_utils
+    Single Jnt
 
-joint_chain_utils
-    Multi Joint / Joint Chain
+jnt_chain_utils
+    Multi Jnt / Jnt Chain
 
 math_utils
     Pure Python Point / Vector Math
@@ -269,7 +269,7 @@ report = muziToolset.face_build_smoke_test()
 验证 Face Build Algorithm：
 
 ```text
-Eyelid Radial Joint
+Eyelid Radial Jnt
 Curve Attachment
 Matrix Zip Lip
 ```
@@ -291,7 +291,7 @@ report = muziToolset.rig_integration_test()
 ```text
 RigBase Naming
     ↓
-Joint
+Jnt
     ↓
 CtrlBase
     ↓
@@ -299,7 +299,7 @@ Standard Controller Hierarchy
     ↓
 offsetParentMatrix
     ↓
-Joint Follow
+Jnt Follow
 ```
 
 需要保留测试结果查看时：

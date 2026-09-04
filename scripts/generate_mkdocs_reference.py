@@ -1080,8 +1080,8 @@ def build_usage_scenarios(module_info):
             "创建标准 Controller、FK 控制器或空间切换时。"
         ),
         (
-            "joint",
-            "创建、重采样、整理或查询 Joint 时。"
+            __MUZI_MAYA_JNT_PROTECTED_00000__,
+            "创建、重采样、整理或查询 Jnt 时。"
         ),
         (
             "skin",
@@ -1177,7 +1177,7 @@ def build_parameter_placeholder(parameter):
         "source",
         "parent",
         "child",
-        "joint",
+        __MUZI_MAYA_JNT_PROTECTED_00001__,
         "curve",
         "mesh",
         "model",
@@ -2265,7 +2265,7 @@ def get_navigation_display_name(name):
         "controller": "Controller",
         "blendshape": "BlendShape",
         "skin": "Skin",
-        "joint": "Joint",
+        __MUZI_MAYA_JNT_PROTECTED_00002__: __MUZI_MAYA_JNT_PROTECTED_00003__,
         "basic": "Basic",
         "clean": "Clean",
         "rig": "Rig",

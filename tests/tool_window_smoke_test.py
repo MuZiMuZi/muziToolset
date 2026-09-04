@@ -44,8 +44,8 @@ from ..tools.controller import control_shape_tool
 from ..tools.controller import create_ctrl_tool
 from ..tools.face import face_rig_tool
 from ..tools.face import face_select_key_tool
-from ..tools.joint import joint_resamp_tool
-from ..tools.joint import joint_tool
+from ..tools.jnt import jnt_resamp_tool
+from ..tools.jnt import jnt_tool
 from ..tools.rig import rig_tool
 from ..tools.rig import skirt_ctrl_tool
 from ..tools.skin import skin_tool
@@ -119,14 +119,14 @@ def get_test_cases():
             face_select_key_tool.main,
         ),
         (
-            "joint.joint_resamp_tool",
-            "tools.joint.joint_resamp_tool",
-            joint_resamp_tool.main,
+            "jnt.jnt_resamp_tool",
+            "tools.jnt.jnt_resamp_tool",
+            jnt_resamp_tool.main,
         ),
         (
-            "joint.joint_tool",
-            "tools.joint.joint_tool",
-            joint_tool.main,
+            "jnt.jnt_tool",
+            "tools.jnt.jnt_tool",
+            jnt_tool.main,
         ),
         (
             "rig.rig_tool",

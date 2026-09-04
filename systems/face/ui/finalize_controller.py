@@ -148,7 +148,7 @@ class FaceRigWizard(build_controller.FaceRigWizard):
         )
 
         visibility_description = QLabel(
-            u"完成后：Model / Controller 显示；Guide / Joint / Rig Nodes / Position Driver 隐藏。"
+            u"完成后：Model / Controller 显示；Guide / Jnt / Rig Nodes / Position Driver 隐藏。"
         )
         visibility_description.setWordWrap(
             True

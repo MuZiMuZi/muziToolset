@@ -26,7 +26,7 @@ MuziTools 把使用流程、Rig System 和 UI Design System 分开维护：
 
     ---
 
-    从命名、属性、约束、控制器、Joint、Skin 等日常任务开始。
+    从命名、属性、约束、控制器、Jnt、Skin 等日常任务开始。
 
     [:octicons-arrow-right-24: 浏览常用工具](manual/tools.md)
 

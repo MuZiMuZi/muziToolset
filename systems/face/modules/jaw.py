@@ -32,7 +32,7 @@ Jaw Module
 
 新的实现方式：
     - Guide 使用当前 Face Guide Template；
-    - Joint 使用 core.joint_utils 程序创建；
+    - Jnt 使用 core.jnt_utils 程序创建；
     - Controller 使用 systems.ctrl_base；
     - Plug 连接使用 core.connection_utils；
     - Attribute 使用 core.attr_utils；
@@ -60,7 +60,7 @@ from .face_module_base import FaceModuleBase
 
 
 class JawModule(FaceModuleBase):
-    u"""根据 Jaw Guide 创建 Joint、Controller 和 Jaw Open 自动位移效果。"""
+    u"""根据 Jaw Guide 创建 Jnt、Controller 和 Jaw Open 自动位移效果。"""
 
     def __init__(self):
         u"""
@@ -93,8 +93,8 @@ class JawModule(FaceModuleBase):
         self.controller_radius = 1.0
 
         # Naming
-        self.jaw_start_joint_name = None
-        self.jaw_end_joint_name = None
+        self.jaw_start_jnt_name = None
+        self.jaw_end_jnt_name = None
         self.jaw_ctrl_name = None
         self.jaw_matrix_name = None
 
@@ -111,8 +111,8 @@ class JawModule(FaceModuleBase):
         self.jaw_open_multiply_name = None
 
         # Build Result
-        self.jaw_start_joint = None
-        self.jaw_end_joint = None
+        self.jaw_start_jnt = None
+        self.jaw_end_jnt = None
         self.jaw_ctrl_dict = None
         self.jaw_ctrl = None
         self.jaw_sub_ctrl = None
@@ -246,42 +246,42 @@ class JawModule(FaceModuleBase):
 
     def create_jnt(self):
         u"""
-        根据 Jaw Start / End Guide 创建两节 Jaw Bind Joint Chain。
+        根据 Jaw Start / End Guide 创建两节 Jaw Bind Jnt Chain。
 
         Returns:
             list[str]:
-            Jaw Start Joint 与 Jaw End Joint。
+            Jaw Start Jnt 与 Jaw End Jnt。
         """
-        joint_radius = self.controller_radius * 0.25
+        jnt_radius = self.controller_radius * 0.25
 
         # -------------------------------------------------------------------------
-        # Step 01：在 Jaw Start Guide 创建主 Jaw Joint，并挂到 Face Joint Group
+        # Step 01：在 Jaw Start Guide 创建主 Jaw Jnt，并挂到 Face Jnt Group
         # -------------------------------------------------------------------------
-        self.jaw_start_joint = jnt_utils.Joint.create_at_object(
+        self.jaw_start_jnt = jnt_utils.Jnt.create_at_object(
             obj=self.jaw_start_guide,
-            name=self.jaw_start_joint_name,
+            name=self.jaw_start_jnt_name,
             parent=self.face_jnt_grp,
             match_rotation=True,
-            radius=joint_radius
+            radius=jnt_radius
         )
 
         # -------------------------------------------------------------------------
-        # Step 02：在 Jaw End Guide 创建 End Joint，并建立明确 Joint Chain
+        # Step 02：在 Jaw End Guide 创建 End Jnt，并建立明确 Jnt Chain
         # -------------------------------------------------------------------------
-        self.jaw_end_joint = joint_utils.Joint.create_at_object(
+        self.jaw_end_jnt = jnt_utils.Jnt.create_at_object(
             obj=self.jaw_end_guide,
-            name=self.jaw_end_joint_name,
-            parent=self.jaw_start_joint,
+            name=self.jaw_end_jnt_name,
+            parent=self.jaw_start_jnt,
             match_rotation=True,
-            radius=joint_radius
+            radius=jnt_radius
         )
 
-        self.module_dict["jaw_start_joint"] = self.jaw_start_joint
-        self.module_dict["jaw_end_joint"] = self.jaw_end_joint
+        self.module_dict["jaw_start_jnt"] = self.jaw_start_jnt
+        self.module_dict["jaw_end_jnt"] = self.jaw_end_jnt
 
         return [
-            self.jaw_start_joint,
-            self.jaw_end_joint,
+            self.jaw_start_jnt,
+            self.jaw_end_jnt,
         ]
 
     # =========================================================================
@@ -332,7 +332,7 @@ class JawModule(FaceModuleBase):
 
     def create_connect(self):
         u"""
-        使用 Jaw Controller Output 驱动 Jaw Start Joint。
+        使用 Jaw Controller Output 驱动 Jaw Start Jnt。
 
         Returns:
             str:
@@ -343,7 +343,7 @@ class JawModule(FaceModuleBase):
         # -------------------------------------------------------------------------
         self.jaw_matrix_node = matrix_utils.create_parent_matrix_constraint(
             driver=self.jaw_output,
-            driven=self.jaw_start_joint,
+            driven=self.jaw_start_jnt,
             maintain_offset=False,
             name=self.jaw_matrix_name
         )
@@ -387,7 +387,7 @@ class JawModule(FaceModuleBase):
             parent=self.face_rig_nodes_grp
         )
         self._match_world_transform(
-            self.jaw_start_joint,
+            self.jaw_start_jnt,
             self.jaw_open_driver_zero
         )
 
@@ -438,7 +438,7 @@ class JawModule(FaceModuleBase):
             parent=self.face_rig_nodes_grp
         )
         self._match_world_transform(
-            self.jaw_start_joint,
+            self.jaw_start_jnt,
             self.jaw_open_reader_zero
         )
 
@@ -562,8 +562,8 @@ class JawModule(FaceModuleBase):
                 输入数据、场景状态或操作条件不满足要求时抛出。
         """
         required_nodes = [
-            self.jaw_start_joint,
-            self.jaw_end_joint,
+            self.jaw_start_jnt,
+            self.jaw_end_jnt,
             self.jaw_ctrl,
             self.jaw_output,
             self.jaw_matrix_node,
@@ -597,14 +597,14 @@ class JawModule(FaceModuleBase):
     def _prepare_names(self):
         u"""集中准备 Jaw Module 的全部标准 Rig Name。"""
         # -------------------------------------------------------------------------
-        # Step 01：Joint / Controller / Matrix
+        # Step 01：Jnt / Controller / Matrix
         # -------------------------------------------------------------------------
-        self.jaw_start_joint_name = self.create_name(
+        self.jaw_start_jnt_name = self.create_name(
             type="jnt",
             part="jaw_start",
             function="bind"
         )
-        self.jaw_end_joint_name = self.create_name(
+        self.jaw_end_jnt_name = self.create_name(
             type="jnt",
             part="jaw_end",
             function="bind"
@@ -673,8 +673,8 @@ class JawModule(FaceModuleBase):
     def _validate_build_nodes_available(self):
         u"""检查上一次 Jaw Build 的确定性节点是否仍存在。"""
         expected_nodes = [
-            self.jaw_start_joint_name,
-            self.jaw_end_joint_name,
+            self.jaw_start_jnt_name,
+            self.jaw_end_jnt_name,
             self.jaw_matrix_name,
             self.jaw_open_driver_zero_name,
             self.jaw_offset_driver_name,

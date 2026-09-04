@@ -15,7 +15,7 @@ Face Workflow 的 Step 04 正式入口。
     7. Finalize 修改放在单个 Maya Undo Chunk 中，失败时回滚本次整理。
 
 设计边界：
-    - Finalize 不重新创建 Joint / Controller / Matrix / Deformer；
+    - Finalize 不重新创建 Jnt / Controller / Matrix / Deformer；
     - Finalize 不修改 Skin / BlendShape / Zip Lip 等绑定算法；
     - Finalize 不承担文件 Export / Publish，发布流程后续单独扩展；
     - Finalize 允许重复执行，重复执行只重新验收和整理最终状态；

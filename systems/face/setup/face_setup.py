@@ -11,7 +11,7 @@ Module 生命周期：
 
 职责：
     1. 收集并检查 Head / Eye / Teeth / Tongue / Gum 输入；
-    2. 检查嘴唇 Joint 数量；
+    2. 检查嘴唇 Jnt 数量；
     3. 准备 Face 基础层级和 Work Model 名称；
     4. 整理输入模型并创建 Tweak / Stretch / Deform Head；
     5. 保存 Step 01 Config；
@@ -69,7 +69,7 @@ class FaceSetup(face_base.FaceBase):
             face_gum_model (str):
                 当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
             mouth_jnt_number (int):
-                嘴唇分布系统需要创建的 Joint 总数量。
+                嘴唇分布系统需要创建的 Jnt 总数量。
         """
         # -------------------------------------------------------------------------
         # Step 01：执行当前阶段的核心处理
@@ -255,7 +255,7 @@ class FaceSetup(face_base.FaceBase):
 
     def check_mouth_jnt_number(self):
         u"""
-        检查 Face Lip 系统要求的嘴唇 Joint 数量。
+        检查 Face Lip 系统要求的嘴唇 Jnt 数量。
 
         Returns:
             bool:
@@ -271,22 +271,22 @@ class FaceSetup(face_base.FaceBase):
         """
         if self.mouth_jnt_number is None:
             raise RuntimeError(
-                u"没有设置嘴唇 Joint 数量。"
+                u"没有设置嘴唇 Jnt 数量。"
             )
 
         if not isinstance(self.mouth_jnt_number, int):
             raise TypeError(
-                u"嘴唇 Joint 数量必须是整数。"
+                u"嘴唇 Jnt 数量必须是整数。"
             )
 
         if self.mouth_jnt_number < 4:
             raise ValueError(
-                u"嘴唇 Joint 数量不能小于 4。"
+                u"嘴唇 Jnt 数量不能小于 4。"
             )
 
         if self.mouth_jnt_number % 4 != 0:
             raise ValueError(
-                u"嘴唇 Joint 数量必须是 4 的倍数，当前值为: {}".format(
+                u"嘴唇 Jnt 数量必须是 4 的倍数，当前值为: {}".format(
                     self.mouth_jnt_number
                 )
             )

@@ -107,7 +107,7 @@ class EarModule(FaceModuleBase):
     def create_jnt(self):
         u"""
 
-                按 Guide 顺序创建 Ear Joint Chain。
+                按 Guide 顺序创建 Ear Jnt Chain。
 
                 Returns:
                     object:
@@ -131,9 +131,9 @@ class EarModule(FaceModuleBase):
                 )
                 scene_utils.ensure_nodes_available(
                     ear_jnt_name,
-                    label=u"Ear Joint"
+                    label=u"Ear Jnt"
                 )
-                ear_jnt = joint_utils.Joint.create_at_object(
+                ear_jnt = jnt_utils.Jnt.create_at_object(
                     obj=ear_dict["guides"][index],
                     name=ear_jnt_name,
                     parent=jnt_parent,
@@ -150,7 +150,7 @@ class EarModule(FaceModuleBase):
     def create_ctrl(self):
         u"""
 
-                按 Joint 顺序创建 Ear FK Controller Chain。
+                按 Jnt 顺序创建 Ear FK Controller Chain。
 
                 Returns:
                     object:
@@ -194,7 +194,7 @@ class EarModule(FaceModuleBase):
     def create_connect(self):
         u"""
 
-                Ear FK Ctrl Output 一一驱动对应 Joint。
+                Ear FK Ctrl Output 一一驱动对应 Jnt。
 
                 Returns:
                     object:
@@ -230,7 +230,7 @@ class EarModule(FaceModuleBase):
     def create_deform(self):
         u"""
 
-                Ear 不额外创建 Deformer；输出 Joint 直接作为 Skin Influence。
+                Ear 不额外创建 Deformer；输出 Jnt 直接作为 Skin Influence。
 
                 Returns:
                     bool:
@@ -242,7 +242,7 @@ class EarModule(FaceModuleBase):
     def create_finalize(self):
         u"""
 
-                验证 Ear Joint / Controller / Matrix 输出。
+                验证 Ear Jnt / Controller / Matrix 输出。
 
                 Returns:
                     bool:
@@ -253,7 +253,7 @@ class EarModule(FaceModuleBase):
             ear_dict = self.ear_side_dict[side]
 
             for ear_jnt in ear_dict["jnts"]:
-                scene_utils.validate_node(ear_jnt, label=u"Ear Joint")
+                scene_utils.validate_node(ear_jnt, label=u"Ear Jnt")
 
             for ear_ctrl_dict in ear_dict["ctrl_dict_list"]:
                 scene_utils.validate_node(

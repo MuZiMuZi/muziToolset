@@ -13,9 +13,9 @@ MuziTools 模块化绑定系统的主界面。
     5. Jnt Size / Jnt Axis 放在当前 Module 下方的高频显示设置区域；
     6. Block / Mesh / Skeleton / Control 作为构建阶段显示入口；
     7. Build 区域只负责触发 Module Build，不在 UI 内实现绑定算法；
-    8. Scene / Joint Display 查询统一复用 Core，不在 UI 维护第二套 Maya 底层逻辑。
+    8. Scene / Jnt Display 查询统一复用 Core，不在 UI 维护第二套 Maya 底层逻辑。
 
-当前版本先完成正式 UI Shell 和 Maya Joint Display 联动。
+当前版本先完成正式 UI Shell 和 Maya Jnt Display 联动。
 各 Module 的真正 Build / Rebuild API 会随着 Module 系统重构逐步接入。
 """
 
@@ -176,12 +176,12 @@ QPushButton[uiRole="stageButton"] {
 QPushButton[uiRole="stageButton"]:checked {
     background-color: #DCEEFF; color: #0878EB; border-color: #A9CFF5;
 }
-QCheckBox#JointAxisSwitch { spacing: 0px; }
-QCheckBox#JointAxisSwitch::indicator {
+QCheckBox#JntAxisSwitch { spacing: 0px; }
+QCheckBox#JntAxisSwitch::indicator {
     width: 42px; height: 22px; border-radius: 11px;
     background-color: #D4D7DC; border: 1px solid #C8CCD2;
 }
-QCheckBox#JointAxisSwitch::indicator:checked {
+QCheckBox#JntAxisSwitch::indicator:checked {
     background-color: #0A84FF; border: 1px solid #0A84FF;
 }
 QSlider::groove:horizontal { height: 4px; background-color: #D6DADF; border-radius: 2px; }
@@ -245,7 +245,7 @@ class ModularRigWindow(QWidget):
 
         self.current_module_item = None
         self.loading_module_settings = False
-        self.loading_joint_display = False
+        self.loading_jnt_display = False
 
         self.setObjectName("ModularRigWindow")
         self.setWindowTitle(u"Modular Rig")
@@ -260,7 +260,7 @@ class ModularRigWindow(QWidget):
         self.populate_module_library()
         self.populate_template_library()
         self.populate_default_module_tree()
-        self.restore_joint_display_settings()
+        self.restore_jnt_display_settings()
 
     # =========================================================================
     # Create UI
@@ -373,8 +373,8 @@ class ModularRigWindow(QWidget):
 
         self.jnt_axis_label = QLabel(u"Jnt Axis")
         self.jnt_axis_switch = QCheckBox()
-        self.jnt_axis_switch.setObjectName("JointAxisSwitch")
-        self.jnt_axis_switch.setToolTip(u"显示 / 隐藏场景 Joint Local Axis")
+        self.jnt_axis_switch.setObjectName("JntAxisSwitch")
+        self.jnt_axis_switch.setToolTip(u"显示 / 隐藏场景 Jnt Local Axis")
         self.jnt_axis_switch.setFixedWidth(44)
 
         # ---------------------------------------------------------------------
@@ -428,12 +428,12 @@ class ModularRigWindow(QWidget):
         self.up_axis_combo = QComboBox()
         self.up_axis_combo.addItems([u"Y", u"X", u"Z", u"-X", u"-Y", u"-Z"])
 
-        self.joints_section_button = QPushButton(u"›   Joints")
+        self.jnts_section_button = QPushButton(u"›   Jnts")
         self.controls_section_button = QPushButton(u"›   Controls")
         self.deformation_section_button = QPushButton(u"›   Deformation")
         self.attributes_section_button = QPushButton(u"›   Attributes")
         property_section_button_list = [
-            self.joints_section_button,
+            self.jnts_section_button,
             self.controls_section_button,
             self.deformation_section_button,
             self.attributes_section_button,
@@ -602,7 +602,7 @@ class ModularRigWindow(QWidget):
         # -------------------------------------------------------------------------
         # Step 04：查询并整理当前阶段需要的 Maya 场景数据
         # -------------------------------------------------------------------------
-        right_layout.addWidget(self.joints_section_button)
+        right_layout.addWidget(self.jnts_section_button)
         right_layout.addWidget(self.controls_section_button)
         right_layout.addWidget(self.deformation_section_button)
         right_layout.addWidget(self.attributes_section_button)
@@ -1129,56 +1129,56 @@ class ModularRigWindow(QWidget):
         )
 
     # =========================================================================
-    # Joint Display
+    # Jnt Display
     # =========================================================================
 
-    def restore_joint_display_settings(self):
+    def restore_jnt_display_settings(self):
         u"""
         从 Maya 当前场景恢复 Jnt Size / Jnt Axis 显示状态。
         """
         # -------------------------------------------------------------------------
         # Step 01：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
-        self.loading_joint_display = True
-        joint_size = 1.0
+        self.loading_jnt_display = True
+        jnt_size = 1.0
 
         # -------------------------------------------------------------------------
         # Step 02：执行可能失败的操作，并统一处理异常或清理状态
         # -------------------------------------------------------------------------
         try:
-            joint_size = joint_utils.get_display_scale()
+            jnt_size = jnt_utils.get_display_scale()
         except Exception:
-            joint_size = 1.0
+            jnt_size = 1.0
 
-        joint_size = max(
+        jnt_size = max(
             0.10,
-            min(5.00, joint_size)
+            min(5.00, jnt_size)
         )
         self.jnt_size_spin.setValue(
-            joint_size
+            jnt_size
         )
         # -------------------------------------------------------------------------
         # Step 03：应用并更新当前阶段需要的属性或状态
         # -------------------------------------------------------------------------
         self.jnt_size_slider.setValue(
-            int(round(joint_size * 100.0))
+            int(round(jnt_size * 100.0))
         )
 
         show_axis = False
-        joint_list = scene_utils.get_nodes_by_type(
-            "joint",
+        jnt_list = scene_utils.get_nodes_by_type(
+            __MUZI_MAYA_JNT_PROTECTED_00000__,
             long=True
         )
 
         # -------------------------------------------------------------------------
         # Step 04：遍历当前数据集合，并逐项执行核心处理
         # -------------------------------------------------------------------------
-        for joint_node in joint_list:
+        for jnt_node in jnt_list:
             try:
-                joint_object = joint_utils.Joint(
-                    joint_node
+                jnt_object = jnt_utils.Jnt(
+                    jnt_node
                 )
-                display_axis = joint_object.is_axis_visible()
+                display_axis = jnt_object.is_axis_visible()
             except Exception:
                 display_axis = False
 
@@ -1192,92 +1192,92 @@ class ModularRigWindow(QWidget):
         # -------------------------------------------------------------------------
         # Step 05：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
-        self.loading_joint_display = False
+        self.loading_jnt_display = False
 
     def jnt_size_slider_changed(self, slider_value):
         u"""
-        Slider 改变时同步数值并实时修改 Maya Joint Display Scale。
+        Slider 改变时同步数值并实时修改 Maya Jnt Display Scale。
 
         Args:
             slider_value (int | float):
                 UI Slider 当前值；回调用于同步对应 Rig / Setup 参数。
         """
-        if self.loading_joint_display:
+        if self.loading_jnt_display:
             return
 
-        joint_size = float(slider_value) / 100.0
-        self.loading_joint_display = True
-        self.jnt_size_spin.setValue(joint_size)
-        self.loading_joint_display = False
-        self.set_maya_joint_size(joint_size)
+        jnt_size = float(slider_value) / 100.0
+        self.loading_jnt_display = True
+        self.jnt_size_spin.setValue(jnt_size)
+        self.loading_jnt_display = False
+        self.set_maya_jnt_size(jnt_size)
 
-    def jnt_size_spin_changed(self, joint_size):
+    def jnt_size_spin_changed(self, jnt_size):
         u"""
-        数值框改变时同步 Slider 并修改 Maya Joint Display Scale。
+        数值框改变时同步 Slider 并修改 Maya Jnt Display Scale。
 
         Args:
-            joint_size (float):
-                当前 Maya / Rig 计算使用的 `joint_size` 数值参数。
+            jnt_size (float):
+                当前 Maya / Rig 计算使用的 `jnt_size` 数值参数。
         """
-        if self.loading_joint_display:
+        if self.loading_jnt_display:
             return
 
-        self.loading_joint_display = True
+        self.loading_jnt_display = True
         self.jnt_size_slider.setValue(
-            int(round(float(joint_size) * 100.0))
+            int(round(float(jnt_size) * 100.0))
         )
-        self.loading_joint_display = False
-        self.set_maya_joint_size(joint_size)
+        self.loading_jnt_display = False
+        self.set_maya_jnt_size(jnt_size)
 
-    def set_maya_joint_size(self, joint_size):
+    def set_maya_jnt_size(self, jnt_size):
         u"""
-        设置 Maya 全局 Joint Display Scale。
+        设置 Maya 全局 Jnt Display Scale。
 
         Args:
-            joint_size (float):
-                当前 Maya / Rig 计算使用的 `joint_size` 数值参数。
+            jnt_size (float):
+                当前 Maya / Rig 计算使用的 `jnt_size` 数值参数。
         """
         try:
-            joint_utils.set_display_scale(
-                joint_size
+            jnt_utils.set_display_scale(
+                jnt_size
             )
         except Exception as error:
             cmds.warning(
-                u"设置 Joint Display Scale 失败：{}".format(
+                u"设置 Jnt Display Scale 失败：{}".format(
                     error
                 )
             )
 
     def jnt_axis_changed(self, checked):
         u"""
-        显示或隐藏场景全部 Joint 的 Local Axis。
+        显示或隐藏场景全部 Jnt 的 Local Axis。
 
         Args:
             checked (object):
                 当前方法执行 Maya / Rig 操作时使用的 `checked` 数据。
         """
-        if self.loading_joint_display:
+        if self.loading_jnt_display:
             return
 
-        joint_list = scene_utils.get_nodes_by_type(
-            "joint",
+        jnt_list = scene_utils.get_nodes_by_type(
+            __MUZI_MAYA_JNT_PROTECTED_00001__,
             long=True
         )
 
-        for joint_node in joint_list:
+        for jnt_node in jnt_list:
             try:
-                joint_object = joint_utils.Joint(
-                    joint_node
+                jnt_object = jnt_utils.Jnt(
+                    jnt_node
                 )
 
                 if checked:
-                    joint_object.show_axis()
+                    jnt_object.show_axis()
                 else:
-                    joint_object.hide_axis()
+                    jnt_object.hide_axis()
             except Exception as error:
                 cmds.warning(
-                    u"设置 Joint Axis 失败：{} | {}".format(
-                        joint_node,
+                    u"设置 Jnt Axis 失败：{} | {}".format(
+                        jnt_node,
                         error
                     )
                 )

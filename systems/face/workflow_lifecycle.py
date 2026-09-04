@@ -636,7 +636,7 @@ def cleanup_legacy_step3_content(face_context):
     u"""
     兼容清理没有 Scene Manifest 的旧 Step 03 场景。
 
-    只清空 Face Ctrl / Joint / Rig Nodes / Position Driver 基础 Group 的子节点，
+    只清空 Face Ctrl / Jnt / Rig Nodes / Position Driver 基础 Group 的子节点，
     并删除 Face Controller Set。不会删除模型、Guide、Face Config 或基础 Group。
 
     Args:

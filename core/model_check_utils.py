@@ -209,11 +209,11 @@ def get_mesh_shapes(nodes=None):
 
         if node_type not in [
             "transform",
-            "jnt",
+            __MUZI_MAYA_JNT_PROTECTED_00000__,
         ]:
             continue
 
-        # 步骤 2：Transform / jnt 输入转为可见 Mesh Shape。
+        # 步骤 2：Transform / Jnt 输入转为可见 Mesh Shape。
         shapes = cmds.listRelatives(
             node,
             shapes=True,

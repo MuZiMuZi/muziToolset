@@ -6,15 +6,15 @@ Face Zip Lip Builder
 Matrix 驱动 Zip Lip 系统。
 
 设计目标：
-    1. 上下嘴唇 Joint 数量一致，并按相同顺序成对；
+    1. 上下嘴唇 Jnt 数量一致，并按相同顺序成对；
     2. 左 / 右嘴角控制器分别提供 zip 0~1；
     3. Jaw 控制器提供 zipHeight 0~1；
     4. 每对上下嘴唇使用动态 Rest World Matrix 计算闭合中间矩阵；
-    5. 每个 Joint 上方插入独立 Zip Offset Group；
+    5. 每个 Jnt 上方插入独立 Zip Offset Group；
     6. Zip Offset 使用 blendMatrix 混合 Rest Matrix 和 Mid Matrix；
     7. Face Naming 统一复用 systems.face.naming；
-    8. Joint / Attribute / Scene / Connection 通用操作统一复用 Core；
-    9. 不直接修改 Joint translateY。
+    8. Jnt / Attribute / Scene / Connection 通用操作统一复用 Core；
+    9. 不直接修改 Jnt translateY。
 """
 
 from __future__ import print_function
@@ -35,16 +35,16 @@ from ... import naming as face_naming
 # =============================================================================
 
 def insert_zip_offset_group(
-        joint,
+        jnt,
         function,
         index
 ):
     u"""
-    在 Joint 上方插入 Zip Offset Group，并保持当前世界姿态。
+    在 Jnt 上方插入 Zip Offset Group，并保持当前世界姿态。
 
     Args:
-        joint (str):
-            需要处理的 Maya Joint 节点名称。
+        jnt (str):
+            需要处理的 Maya Jnt 节点名称。
         function (str | callable):
             当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
         index (int):
@@ -58,10 +58,10 @@ def insert_zip_offset_group(
     # Step 01：查询并整理当前阶段需要的 Maya 场景数据
     # -------------------------------------------------------------------------
     parent = hierarchy_utils.get_parent(
-        joint
+        jnt
     )
     world_matrix = transform_utils.get_world_matrix(
-        joint
+        jnt
     )
     # -------------------------------------------------------------------------
     # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
@@ -95,8 +95,8 @@ def insert_zip_offset_group(
     # -------------------------------------------------------------------------
     # Step 04：建立当前阶段需要的层级、连接或驱动关系
     # -------------------------------------------------------------------------
-    joint = hierarchy_utils.parent(
-        joint,
+    jnt = hierarchy_utils.parent(
+        jnt,
         zip_offset
     )
 
@@ -104,7 +104,7 @@ def insert_zip_offset_group(
     # Step 05：整理并返回当前函数的最终结果
     # -------------------------------------------------------------------------
     return {
-        "joint": joint,
+        __MUZI_MAYA_JNT_PROTECTED_00000__: jnt,
         "zip_offset": zip_offset,
         "parent": parent,
     }
@@ -121,7 +121,7 @@ def create_rest_world_matrix(
 
     Args:
         zip_offset (str):
-            Zip Lip 网络中位于 Lip Joint 上方、接收闭合 Matrix 结果的 Offset Transform。
+            Zip Lip 网络中位于 Lip Jnt 上方、接收闭合 Matrix 结果的 Offset Transform。
         parent (str):
             父级 Maya 节点名称。
         function (str | callable):
@@ -329,9 +329,9 @@ def configure_remap(
         remap_node (str):
             Zip / Falloff 计算使用的 remapValue 节点。
         start_position (list[float] | tuple[float, float, float] | float):
-            插值、Remap 或 Joint 分布的起始位置 / 起始值。
+            插值、Remap 或 Jnt 分布的起始位置 / 起始值。
         end_position (list[float] | tuple[float, float, float] | float):
-            插值、Remap 或 Joint 分布的结束位置 / 结束值。
+            插值、Remap 或 Jnt 分布的结束位置 / 结束值。
     """
     if end_position <= start_position:
         end_position = start_position + 0.0001
@@ -369,7 +369,7 @@ def create_zip_influence(
         falloff
 ):
     u"""
-    创建一对嘴唇 Joint 的左右 Zip Influence 0~1。
+    创建一对嘴唇 Jnt 的左右 Zip Influence 0~1。
 
     Args:
         left_zip_plug (str):
@@ -523,8 +523,8 @@ def create_zip_influence(
 # =============================================================================
 
 def build_zip_pair(
-        upper_joint,
-        lower_joint,
+        upper_jnt,
+        lower_jnt,
         pair_index,
         pair_count,
         zip_height_reverse_plug,
@@ -533,13 +533,13 @@ def build_zip_pair(
         falloff
 ):
     u"""
-    构建一对 Upper / Lower Lip Joint 的 Matrix Zip 网络。
+    构建一对 Upper / Lower Lip Jnt 的 Matrix Zip 网络。
 
     Args:
-        upper_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
-        lower_joint (str):
-            当前 Rig 计算或构建使用的 Maya Joint 节点。
+        upper_jnt (str):
+            当前 Rig 计算或构建使用的 Maya Jnt 节点。
+        lower_jnt (str):
+            当前 Rig 计算或构建使用的 Maya Jnt 节点。
         pair_index (int):
             对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
         pair_count (int):
@@ -563,12 +563,12 @@ def build_zip_pair(
     item_number = pair_index + 1
 
     upper_insert = insert_zip_offset_group(
-        upper_joint,
+        upper_jnt,
         "upper_zip_offset",
         item_number
     )
     lower_insert = insert_zip_offset_group(
-        lower_joint,
+        lower_jnt,
         "lower_zip_offset",
         item_number
     )
@@ -738,8 +738,8 @@ def build_zip_pair(
     # Step 05：整理并返回当前函数的最终结果
     # -------------------------------------------------------------------------
     return {
-        "upper_joint": upper_insert["joint"],
-        "lower_joint": lower_insert["joint"],
+        "upper_jnt": upper_insert[__MUZI_MAYA_JNT_PROTECTED_00001__],
+        "lower_jnt": lower_insert[__MUZI_MAYA_JNT_PROTECTED_00002__],
         "upper_zip_offset": upper_insert["zip_offset"],
         "lower_zip_offset": lower_insert["zip_offset"],
         "mid_blend": mid_blend,
@@ -756,8 +756,8 @@ def build_zip_pair(
 
 @scene_utils.undo_chunk
 def build_zip_lip(
-        upper_joints,
-        lower_joints,
+        upper_jnts,
+        lower_jnts,
         left_zip_control,
         right_zip_control,
         jaw_control,
@@ -769,10 +769,10 @@ def build_zip_lip(
     创建 Matrix Zip Lip。
 
     Args:
-        upper_joints (object):
-            当前方法执行 Maya / Rig 操作时使用的 `upper_joints` 数据。
-        lower_joints (object):
-            当前方法执行 Maya / Rig 操作时使用的 `lower_joints` 数据。
+        upper_jnts (object):
+            当前方法执行 Maya / Rig 操作时使用的 `upper_jnts` 数据。
+        lower_jnts (object):
+            当前方法执行 Maya / Rig 操作时使用的 `lower_jnts` 数据。
         left_zip_control (str):
             当前 Rig 操作或驱动使用的动画 Controller Transform。
         right_zip_control (str):
@@ -799,33 +799,33 @@ def build_zip_lip(
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支
     # -------------------------------------------------------------------------
-    if upper_joints is None:
-        upper_joints = []
+    if upper_jnts is None:
+        upper_jnts = []
 
-    if lower_joints is None:
-        lower_joints = []
+    if lower_jnts is None:
+        lower_jnts = []
 
-    if len(upper_joints) != len(lower_joints):
+    if len(upper_jnts) != len(lower_jnts):
         raise RuntimeError(
-            u"Upper / Lower Lip Joint 数量必须一致：{} / {}".format(
-                len(upper_joints),
-                len(lower_joints)
+            u"Upper / Lower Lip Jnt 数量必须一致：{} / {}".format(
+                len(upper_jnts),
+                len(lower_jnts)
             )
         )
 
-    if len(upper_joints) < 2:
+    if len(upper_jnts) < 2:
         raise RuntimeError(
-            u"Zip Lip 至少需要两对 Upper / Lower Joint。"
+            u"Zip Lip 至少需要两对 Upper / Lower Jnt。"
         )
 
     index = 0
 
-    while index < len(upper_joints):
-        jnt_utils.Joint(
-            upper_joints[index]
+    while index < len(upper_jnts):
+        jnt_utils.Jnt(
+            upper_jnts[index]
         )
-        jnt_utils.Joint(
-            lower_joints[index]
+        jnt_utils.Jnt(
+            lower_jnts[index]
         )
         index += 1
 
@@ -968,12 +968,12 @@ def build_zip_lip(
 
         pair_index = 0
 
-        while pair_index < len(upper_joints):
+        while pair_index < len(upper_jnts):
             pair_result = build_zip_pair(
-                upper_joint=upper_joints[pair_index],
-                lower_joint=lower_joints[pair_index],
+                upper_jnt=upper_jnts[pair_index],
+                lower_jnt=lower_jnts[pair_index],
                 pair_index=pair_index,
-                pair_count=len(upper_joints),
+                pair_count=len(upper_jnts),
                 zip_height_reverse_plug=height_reverse + ".outputX",
                 left_zip_plug=left_zip_plug,
                 right_zip_plug=right_zip_plug,
@@ -1038,7 +1038,7 @@ def build_zip_lip(
 
             children = hierarchy_utils.get_children(
                 zip_offset,
-                node_type="joint",
+                node_type=__MUZI_MAYA_JNT_PROTECTED_00003__,
                 full_path=True
             )
             original_parent = hierarchy_utils.get_parent(
@@ -1046,9 +1046,9 @@ def build_zip_lip(
                 full_path=True
             )
 
-            for child_joint in children:
+            for child_jnt in children:
                 hierarchy_utils.parent(
-                    child_joint,
+                    child_jnt,
                     original_parent
                 )
 

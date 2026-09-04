@@ -22,10 +22,10 @@ from .controller_defaults import apply_controller_defaults
 
 apply_controller_defaults()
 
-from .build import attach_joints_to_curves
-from .build import build_eye_bag_joints
-from .build import build_eyelid_joints
-from .build import build_radial_curve_joints
+from .build import attach_jnts_to_curves
+from .build import build_eye_bag_jnts
+from .build import build_eyelid_jnts
+from .build import build_radial_curve_jnts
 from .build import build_zip_lip
 from .build.face_build import FaceBuild
 from .build.face_build import build_face_step
@@ -93,10 +93,10 @@ __all__ = [
     "NoseModule",
     "TeethModule",
     "TongueModule",
-    "attach_joints_to_curves",
-    "build_radial_curve_joints",
-    "build_eyelid_joints",
-    "build_eye_bag_joints",
+    "attach_jnts_to_curves",
+    "build_radial_curve_jnts",
+    "build_eyelid_jnts",
+    "build_eye_bag_jnts",
     "build_zip_lip",
     "build_face_step",
     "finalize_face",

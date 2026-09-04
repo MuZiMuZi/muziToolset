@@ -100,9 +100,9 @@ class TestRigModule(RigModuleBase):
         )
         return True
 
-    def create_joint(self):
+    def create_jnt(self):
         self.calls.append(
-            "create_joint"
+            "create_jnt"
         )
         return True
 
@@ -216,7 +216,7 @@ def run():
     expected_rig_calls = [
         "collect_inputs",
         "prepare_data",
-        "create_joint",
+        "create_jnt",
         "create_controller",
         "create_connection",
         "finalize_step",

@@ -26,7 +26,7 @@ RigBase 支持两种使用方式：
     3. 对已有 Maya 场景进行 Rebuild / Query 时，重点检查真实 Scene State；
     4. part 可以包含下划线；
     5. index 输出固定补齐为三位数字；
-    6. RigBase 不负责 Joint、Controller、Matrix、Hierarchy 或 UI。
+    6. RigBase 不负责 Jnt、Controller、Matrix、Hierarchy 或 UI。
 """
 
 from __future__ import print_function

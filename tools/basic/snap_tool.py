@@ -7,7 +7,7 @@ Quick Snap Tool
     1. 前面的选择作为参考；
     2. 最后一个选择作为目标；
     3. 吸附到参考项平均位置；
-    4. Transform / Joint 同时使用有效参考对象的平均旋转。
+    4. Transform / Jnt 同时使用有效参考对象的平均旋转。
 
 实际吸附算法维护在：
     muziToolset.core.snap_utils

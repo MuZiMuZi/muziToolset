@@ -3,20 +3,20 @@ u"""
 Face Curve Attachment Rig
 =========================
 
-Face Joint -> Drive / Aim Curve 组合系统。
+Face Jnt -> Drive / Aim Curve 组合系统。
 
 职责：
-    - 根据 Joint 当前世界位置查找 Drive Curve 最近位置；
+    - 根据 Jnt 当前世界位置查找 Drive Curve 最近位置；
     - 使用弧长百分比同步 Drive / Aim / Up Curve；
     - 创建 pointOnCurveInfo Attachment；
     - Drive Attachment 朝 Aim Attachment 定向；
     - 使用 Up Curve 或 Up Object 控制 Aim Roll；
-    - 创建 Joint Zero Group，把 Joint 接入 Curve 驱动网络。
+    - 创建 Jnt Zero Group，把 Jnt 接入 Curve 驱动网络。
 
 重要边界：
     - Curve 参数、采样和 Attachment 节点由 core.curve_utils 负责；
     - Transform 输入和世界位置由 core.transform_utils 负责；
-    - Joint 类型检查复用 core.joint_utils.Joint；
+    - Jnt 类型检查复用 core.jnt_utils.Jnt；
     - Group 创建和 Scene Availability 由 core.scene_utils 负责；
     - Parent 由 core.hierarchy_utils 负责；
     - Constraint 由 core.constraint_utils 负责；
@@ -125,8 +125,8 @@ def create_curve_attachment(
 # =============================================================================
 
 @scene_utils.undo_chunk
-def attach_joints_to_curves(
-        joints,
+def attach_jnts_to_curves(
+        jnts,
         drive_curve,
         aim_curve,
         side,
@@ -135,14 +135,14 @@ def attach_joints_to_curves(
         up_object=None,
         up_curve=None,
         parent_group=None,
-        preserve_joint_offset=True
+        preserve_jnt_offset=True
 ):
     u"""
-    把一组 Joint 接入 Drive / Aim Curve 网络。
+    把一组 Jnt 接入 Drive / Aim Curve 网络。
 
     Args:
-        joints (str | list[str]):
-            需要批量处理的 Maya Joint 节点或 Joint Chain。
+        jnts (str | list[str]):
+            需要批量处理的 Maya Jnt 节点或 Jnt Chain。
         drive_curve (str):
             当前采样、附着或驱动使用的 NURBS Curve。
         aim_curve (str):
@@ -154,13 +154,13 @@ def attach_joints_to_curves(
         feature (str):
             Face Component 的功能部位标记，例如 lid、bag、lip。
         up_object (str):
-            Eyelid / Radial Joint Aim 系统用于稳定 Orientation 的 Up Object。
+            Eyelid / Radial Jnt Aim 系统用于稳定 Orientation 的 Up Object。
         up_curve (str):
             当前采样、附着或驱动使用的 NURBS Curve。
         parent_group (str | None):
             新节点或新层级需要挂接的 Parent Group；None 表示不额外指定父级。
-        preserve_joint_offset (bool):
-            控制当前方法中的 `preserve_joint_offset` 选项是否启用。
+        preserve_jnt_offset (bool):
+            控制当前方法中的 `preserve_jnt_offset` 选项是否启用。
 
     Returns:
         dict:
@@ -173,17 +173,17 @@ def attach_joints_to_curves(
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支
     # -------------------------------------------------------------------------
-    if joints is None:
-        joints = []
+    if jnts is None:
+        jnts = []
 
-    if not joints:
+    if not jnts:
         raise RuntimeError(
-            u"没有给定需要附着的 Joint。"
+            u"没有给定需要附着的 Jnt。"
         )
 
-    for joint in joints:
-        joint_utils.Joint(
-            joint
+    for jnt in jnts:
+        jnt_utils.Jnt(
+            jnt
         )
 
     # -------------------------------------------------------------------------
@@ -221,12 +221,12 @@ def attach_joints_to_curves(
         "rig_nodes",
         1
     )
-    joints_group_name = face_naming.create_feature_name(
+    jnts_group_name = face_naming.create_feature_name(
         "grp",
         side,
         region,
         feature,
-        "attach_joints",
+        "attach_jnts",
         1
     )
 
@@ -236,7 +236,7 @@ def attach_joints_to_curves(
     scene_utils.ensure_nodes_available(
         [
             nodes_group_name,
-            joints_group_name,
+            jnts_group_name,
         ],
         label=u"Curve Attachment Build Node"
     )
@@ -252,9 +252,9 @@ def attach_joints_to_curves(
             nodes_group_name,
             parent=parent_group
         )
-        joints_group = scene_utils.create_node(
+        jnts_group = scene_utils.create_node(
             "transform",
-            joints_group_name,
+            jnts_group_name,
             parent=nodes_group
         )
         drive_group = create_attachment_group(
@@ -295,15 +295,15 @@ def attach_joints_to_curves(
 
         index = 0
 
-        while index < len(joints):
-            joint = joints[index]
+        while index < len(jnts):
+            jnt = jnts[index]
             item_index = index + 1
-            joint_position = transform_utils.get_world_translation(
-                joint
+            jnt_position = transform_utils.get_world_translation(
+                jnt
             )
             drive_parameter = curve_utils.get_closest_parameter(
                 drive_curve,
-                joint_position
+                jnt_position
             )
             percentage = curve_utils.parameter_to_length_percentage(
                 drive_curve,
@@ -446,7 +446,7 @@ def attach_joints_to_curves(
             zero_group = scene_utils.create_node(
                 "transform",
                 zero_group_name,
-                parent=joints_group
+                parent=jnts_group
             )
 
             parent_constraint_nodes = constraint_utils.create_constraint(
@@ -471,35 +471,35 @@ def attach_joints_to_curves(
                 zero_group
             )
 
-            joint = hierarchy_utils.parent(
-                joint,
+            jnt = hierarchy_utils.parent(
+                jnt,
                 zero_group
             )
 
             cmds.setAttr(
-                joint + ".rotateX",
+                jnt + ".rotateX",
                 0.0
             )
             cmds.setAttr(
-                joint + ".rotateY",
+                jnt + ".rotateY",
                 0.0
             )
             cmds.setAttr(
-                joint + ".rotateZ",
+                jnt + ".rotateZ",
                 0.0
             )
 
-            if not preserve_joint_offset:
+            if not preserve_jnt_offset:
                 cmds.setAttr(
-                    joint + ".translateX",
+                    jnt + ".translateX",
                     0.0
                 )
                 cmds.setAttr(
-                    joint + ".translateY",
+                    jnt + ".translateY",
                     0.0
                 )
                 cmds.setAttr(
-                    joint + ".translateZ",
+                    jnt + ".translateZ",
                     0.0
                 )
 
@@ -507,11 +507,11 @@ def attach_joints_to_curves(
 
         return {
             "nodes_group": nodes_group,
-            "joints_group": joints_group,
+            "jnts_group": jnts_group,
             "drive_group": drive_group,
             "aim_group": aim_group,
             "up_group": up_group,
-            "joints": joints,
+            "jnts": jnts,
             "zero_groups": zero_groups,
             "drive_attachments": drive_attachments,
             "aim_attachments": aim_attachments,
@@ -534,5 +534,5 @@ def attach_joints_to_curves(
 
 
 __all__ = [
-    "attach_joints_to_curves",
+    "attach_jnts_to_curves",
 ]

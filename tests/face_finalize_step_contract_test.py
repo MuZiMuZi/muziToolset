@@ -10,7 +10,7 @@ Face Finalize Step Contract Test
     2. FaceFinalizer 保持 Workflow 四阶段生命周期；
     3. Finalize 只做最终验收、Controller Set、Visibility 和 Step 状态；
     4. 成功后必须标记 Step 04 完成，并保持 Current Face Step = 04；
-    5. Finalize 不允许重新创建 Joint / Controller / Matrix / Deformer；
+    5. Finalize 不允许重新创建 Jnt / Controller / Matrix / Deformer；
     6. 正式 UI 允许通过 Lifecycle Controller 继续继承 finalize_controller。
 """
 
@@ -164,7 +164,7 @@ def main():
         "FaceRig()",
         "FaceBuild()",
         "build_face_step(",
-        "cmds.joint(",
+        "__MUZI_MAYA_JNT_PROTECTED_00000__(",
         "cmds.skinCluster(",
         "cmds.blendShape(",
     ]

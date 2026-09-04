@@ -17,7 +17,7 @@
 | Curve | [curve_utils.py](../reference/core/curve_utils.md) |
 | JSON / 路径 / 文件 | [file_utils.py](../reference/core/file_utils.md) |
 | DAG 层级 | [hierarchy_utils.py](../reference/core/hierarchy_utils.md) |
-| Joint | [joint_utils.py](../reference/core/joint_utils.md) |
+| Jnt | [jnt_utils.py](../reference/core/jnt_utils.md) |
 | Matrix / OPM | [matrix_utils.py](../reference/core/matrix_utils.md) |
 | Mesh | [mesh_utils.py](../reference/core/mesh_utils.md) |
 | 模型检查 | [model_check_utils.py](../reference/core/model_check_utils.md) |
@@ -34,7 +34,7 @@
 ```python
 from muziToolset.core import attr_utils
 from muziToolset.core import hierarchy_utils
-from muziToolset.core import joint_utils
+from muziToolset.core import jnt_utils
 ```
 
 ## 判断一个功能该不该进 Core
@@ -56,7 +56,7 @@ from muziToolset.core import joint_utils
 ```
 
 !!! warning "Core 不负责完整业务流程"
-    Core 可以创建 Joint、Curve、Matrix Node，但不应该知道“嘴唇 Rig 应该创建几层控制器”这类具体业务规则。
+    Core 可以创建 Jnt、Curve、Matrix Node，但不应该知道“嘴唇 Rig 应该创建几层控制器”这类具体业务规则。
 
 ## 查看详细方法
 

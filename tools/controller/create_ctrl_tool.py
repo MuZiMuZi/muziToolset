@@ -652,7 +652,7 @@ class ControlCreatorDialog(QDialog):
 
                 if maya_node_type not in [
                     "transform",
-                    "joint",
+                    __MUZI_MAYA_JNT_PROTECTED_00000__,
                 ]:
                     continue
 

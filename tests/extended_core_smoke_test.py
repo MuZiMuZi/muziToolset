@@ -6,14 +6,14 @@ Extended Core / RigBase Smoke Test
 Maya 真机验证第二层基础能力：
     - attr_utils
     - hierarchy_utils
-    - joint_utils / joint_chain_utils
+    - jnt_utils / jnt_chain_utils
     - systems.rig_base.RigBase + core.rename_utils
     - model_check_utils
     - scene_utils
 
 架构约定：
     - Rig Naming 统一使用 type / side / part / function / index；
-    - 多 Joint / Joint Chain 统一使用 core.joint_chain_utils；
+    - 多 Jnt / Jnt Chain 统一使用 core.jnt_chain_utils；
     - Core rename_utils 只负责 Maya Rename / Short Name / 外部名称 Token；
     - Smoke Test 不保留退休 API 的兼容调用。
 """
@@ -358,39 +358,39 @@ def test_hierarchy_utils(token, test_root):
 
 
 # =============================================================================
-# Joint Utils / Joint Chain Utils
+# Jnt Utils / Jnt Chain Utils
 # =============================================================================
 
-def test_joint_utils(token, test_root):
-    u"""验证 Joint Create / Chain / Radius / Label。"""
-    root_joint = jnt_utils.Joint.create(
-        name=create_name(token, "joint_root"),
+def test_jnt_utils(token, test_root):
+    u"""验证 Jnt Create / Chain / Radius / Label。"""
+    root_jnt = jnt_utils.Jnt.create(
+        name=create_name(token, "jnt_root"),
         position=[0.0, 5.0, 0.0],
         parent=test_root,
         radius=1.5
     )
-    child_joint = joint_utils.Joint.create(
-        name=create_name(token, "joint_child"),
+    child_jnt = jnt_utils.Jnt.create(
+        name=create_name(token, "jnt_child"),
         position=[3.0, 5.0, 0.0],
         parent=test_root
     )
 
-    chain = joint_chain_utils.parent_joints_as_chain(
+    chain = jnt_chain_utils.parent_jnts_as_chain(
         [
-            root_joint,
-            child_joint,
+            root_jnt,
+            child_jnt,
         ]
     )
 
     if len(chain) != 2:
         raise RuntimeError(
-            u"Joint Chain 返回数量错误。"
+            u"Jnt Chain 返回数量错误。"
         )
 
     assert_close(
-        cmds.getAttr(root_joint + ".radius"),
+        cmds.getAttr(root_jnt + ".radius"),
         1.5,
-        label=u"Joint Radius"
+        label=u"Jnt Radius"
     )
 
     tagged_name = RigBase(
@@ -400,30 +400,30 @@ def test_joint_utils(token, test_root):
         function="bind",
         index=1
     ).name
-    tagged_joint = jnt_utils.Joint.create(
+    tagged_jnt = jnt_utils.Jnt.create(
         name=tagged_name,
         position=[0.0, 0.0, 0.0],
         parent=test_root
     )
-    tag_data = joint_utils.Joint(
-        tagged_joint
+    tag_data = jnt_utils.Jnt(
+        tagged_jnt
     ).tag()
 
     if tag_data["side"] != 1:
         raise RuntimeError(
-            u"Joint Label Side 错误：{}".format(
+            u"Jnt Label Side 错误：{}".format(
                 tag_data
             )
         )
 
     if tag_data["type"] != 18:
         raise RuntimeError(
-            u"Joint Label Type 错误：{}".format(
+            u"Jnt Label Type 错误：{}".format(
                 tag_data
             )
         )
 
-    return u"Create + Joint Chain + Radius + Joint Label 成功"
+    return u"Create + Jnt Chain + Radius + Jnt Label 成功"
 
 
 # =============================================================================
@@ -674,7 +674,7 @@ def run():
     test_cases = [
         ("attr_utils", "Attribute / Config", test_attr_utils),
         ("hierarchy_utils", "DAG / Ensure / Parent", test_hierarchy_utils),
-        ("joint_utils", "Joint / Chain / Label", test_joint_utils),
+        ("jnt_utils", "Jnt / Chain / Label", test_jnt_utils),
         ("rig_base", "Rig Naming / Maya Rename", test_naming_utils),
         ("model_check_utils", "Model Quality Check", test_model_check_utils),
         ("scene_utils", "Safe Scene Clean", test_scene_utils),

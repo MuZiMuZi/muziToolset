@@ -10,7 +10,7 @@ tools/blendshape/
 tools/clean/
 tools/controller/
 tools/face/
-tools/joint/
+tools/jnt/
 tools/rig/
 tools/skin/
 ```

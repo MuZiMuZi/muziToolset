@@ -16,7 +16,7 @@
 
     ---
 
-    根据 Joint Chain 快速生成 FK 控制器。
+    根据 Jnt Chain 快速生成 FK 控制器。
 
     [:octicons-code-24: FK Tool API](../reference/tools/controller/create_fk_ctrl_tool.md)
 
@@ -102,7 +102,7 @@ systems/controller/
 
 ## 推荐步骤
 
-1. 选择目标 Joint / Transform。
+1. 选择目标 Jnt / Transform。
 2. 打开 Controller Tool。
 3. 选择 Shape、方向、大小和颜色。
 4. 创建后检查 Zero / Ctrl / Output 层级。
@@ -113,7 +113,7 @@ systems/controller/
 
 ## 常见问题
 
-**方向不对**：检查 `axis`、目标 Joint Orientation，以及是否把 Shape Rotation 和 Transform Rotation 混用。
+**方向不对**：检查 `axis`、目标 Jnt Orientation，以及是否把 Shape Rotation 和 Transform Rotation 混用。
 
 **改了 Tool 但层级没变化**：标准层级来自 `systems/ctrl_base.py`，UI Tool 只负责收集参数和调用正式 API。
 

@@ -9,7 +9,7 @@ Rig Integration Test
 
     RigBase Naming
         ↓
-    Joint
+    Jnt
         ↓
     CtrlBase
         ↓
@@ -17,12 +17,12 @@ Rig Integration Test
         ↓
     offsetParentMatrix
         ↓
-    Joint Follow
+    Jnt Follow
 
 覆盖：
     systems.rig_base
     systems.ctrl_base
-    core.joint_utils
+    core.jnt_utils
     core.hierarchy_utils
     core.matrix_utils
     core.transform_utils
@@ -196,8 +196,8 @@ def test_rig_integration(token, keep_result=False):
         create_temp_name(token, "controls"),
         parent_node=rig_root
     )
-    joint_group = hierarchy_utils.ensure_group(
-        create_temp_name(token, "joints"),
+    jnt_group = hierarchy_utils.ensure_group(
+        create_temp_name(token, "jnts"),
         parent_node=rig_root
     )
 
@@ -207,19 +207,19 @@ def test_rig_integration(token, keep_result=False):
         index=1
     )
 
-    joint_name = rig_identity.create_name(
+    jnt_name = rig_identity.create_name(
         type="jnt",
         function="bind"
     )
-    joint = joint_utils.Joint.create(
-        name=joint_name,
+    jnt = jnt_utils.Jnt.create(
+        name=jnt_name,
         position=[4.0, 2.0, 1.0],
         radius=0.5,
-        parent=joint_group
+        parent=jnt_group
     )
 
-    initial_joint_position = transform_utils.get_world_translation(
-        joint
+    initial_jnt_position = transform_utils.get_world_translation(
+        jnt
     )
     expected_initial_position = [
         4.0,
@@ -227,9 +227,9 @@ def test_rig_integration(token, keep_result=False):
         1.0,
     ]
     assert_vector_equal(
-        initial_joint_position,
+        initial_jnt_position,
         expected_initial_position,
-        u"Joint 初始位置错误"
+        u"Jnt 初始位置错误"
     )
 
     control_name = rig_identity.create_name(
@@ -241,7 +241,7 @@ def test_rig_integration(token, keep_result=False):
         shape="circle",
         radius=1.0,
         axis="Y+",
-        target_node=joint,
+        target_node=jnt,
         parent_node=control_group,
         color=17,
         create_sub_ctrl=False,
@@ -283,7 +283,7 @@ def test_rig_integration(token, keep_result=False):
     assert_parent(groups["space"], groups["driven"])
     assert_parent(groups["driven"], groups["zero"])
     assert_parent(groups["zero"], control_group)
-    assert_parent(joint, joint_group)
+    assert_parent(jnt, jnt_group)
 
     if top_group != groups["zero"]:
         raise RuntimeError(
@@ -295,8 +295,8 @@ def test_rig_integration(token, keep_result=False):
     )
     assert_vector_equal(
         control_initial_position,
-        initial_joint_position,
-        u"Controller 没有正确吸附 Joint"
+        initial_jnt_position,
+        u"Controller 没有正确吸附 Jnt"
     )
 
     matrix_name = rig_identity.create_name(
@@ -305,7 +305,7 @@ def test_rig_integration(token, keep_result=False):
     )
     matrix_node = matrix_utils.create_parent_matrix_constraint(
         driver=control,
-        driven=joint,
+        driven=jnt,
         maintain_offset=True,
         name=matrix_name
     )
@@ -315,13 +315,13 @@ def test_rig_integration(token, keep_result=False):
             u"Parent Matrix Constraint 创建失败。"
         )
 
-    constrained_joint_position = transform_utils.get_world_translation(
-        joint
+    constrained_jnt_position = transform_utils.get_world_translation(
+        jnt
     )
     assert_vector_equal(
-        constrained_joint_position,
-        initial_joint_position,
-        u"建立 OPM 后 Joint 发生跳变"
+        constrained_jnt_position,
+        initial_jnt_position,
+        u"建立 OPM 后 Jnt 发生跳变"
     )
 
     driver_matrix_source = control + ".worldMatrix[0]"
@@ -336,7 +336,7 @@ def test_rig_integration(token, keep_result=False):
     )
 
     opm_source = matrix_node + ".matrixSum"
-    opm_destination = joint + ".offsetParentMatrix"
+    opm_destination = jnt + ".offsetParentMatrix"
     opm_inputs = connection_utils.get_input_connections(
         opm_destination
     )
@@ -361,18 +361,18 @@ def test_rig_integration(token, keep_result=False):
         target_control_position
     )
 
-    moved_joint_position = transform_utils.get_world_translation(
-        joint
+    moved_jnt_position = transform_utils.get_world_translation(
+        jnt
     )
-    expected_joint_position = [
-        initial_joint_position[0] + move_delta[0],
-        initial_joint_position[1] + move_delta[1],
-        initial_joint_position[2] + move_delta[2],
+    expected_jnt_position = [
+        initial_jnt_position[0] + move_delta[0],
+        initial_jnt_position[1] + move_delta[1],
+        initial_jnt_position[2] + move_delta[2],
     ]
     assert_vector_equal(
-        moved_joint_position,
-        expected_joint_position,
-        u"Joint 没有 1:1 跟随 Controller"
+        moved_jnt_position,
+        expected_jnt_position,
+        u"Jnt 没有 1:1 跟随 Controller"
     )
 
     if keep_result:
@@ -384,14 +384,14 @@ def test_rig_integration(token, keep_result=False):
             "message": u"RigBase + CtrlBase + OPM Integration 成功，测试 Rig 已保留",
             "rig_root": rig_root,
             "control": control,
-            "joint": joint,
+            __MUZI_MAYA_JNT_PROTECTED_00000__: jnt,
             "matrix_node": matrix_node,
             "groups": groups,
             "kept": True,
         }
 
     removed = matrix_utils.remove_parent_matrix_constraint(
-        joint,
+        jnt,
         delete_node=True
     )
 
@@ -415,16 +415,16 @@ def test_rig_integration(token, keep_result=False):
             u"Rig Cleanup 后 Controller 仍存在。"
         )
 
-    if cmds.objExists(joint):
+    if cmds.objExists(jnt):
         raise RuntimeError(
-            u"Rig Cleanup 后 Joint 仍存在。"
+            u"Rig Cleanup 后 Jnt 仍存在。"
         )
 
     return {
         "message": u"RigBase + CtrlBase + OPM + Cleanup 成功",
         "rig_root": None,
         "control": None,
-        "joint": None,
+        __MUZI_MAYA_JNT_PROTECTED_00001__: None,
         "matrix_node": None,
         "groups": {},
         "kept": False,
@@ -464,7 +464,7 @@ def run(keep_result=False):
         passed_count = 1
 
         print(
-            u"[PASS] Rig | RigBase -> CtrlBase -> OPM -> Joint | {}".format(
+            u"[PASS] Rig | RigBase -> CtrlBase -> OPM -> Jnt | {}".format(
                 test_result["message"]
             )
         )
@@ -473,7 +473,7 @@ def run(keep_result=False):
         error_text = traceback.format_exc()
 
         print(
-            u"[FAIL] Rig | RigBase -> CtrlBase -> OPM -> Joint | {}".format(
+            u"[FAIL] Rig | RigBase -> CtrlBase -> OPM -> Jnt | {}".format(
                 error
             )
         )

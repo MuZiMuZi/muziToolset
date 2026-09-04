@@ -7,9 +7,9 @@ Skirt Rig Builder
 
 工作流：
     1. 创建 Up / Down 两条定位曲线；
-    2. 通过 pointOnCurveInfo 驱动 Blueprint Joint；
+    2. 通过 pointOnCurveInfo 驱动 Blueprint Jnt；
     3. 调整定位曲线贴合裙子；
-    4. 根据横向和纵向数量创建 Bind Joint Chain；
+    4. 根据横向和纵向数量创建 Bind Jnt Chain；
     5. 统一调用 systems.ctrl_base 创建 FK Controller。
 
 重要边界：
@@ -18,7 +18,7 @@ Skirt Rig Builder
     - Curve Shape 查询统一复用 core.curve_utils；
     - Group / Child / Parent 统一复用 core.hierarchy_utils；
     - 世界位置查询统一复用 core.transform_utils；
-    - Joint 创建统一复用 core.joint_utils；
+    - Jnt 创建统一复用 core.jnt_utils；
     - Attribute 创建统一复用 core.attr_utils；
     - DG Plug 连接统一复用 core.connection_utils；
     - Constraint 创建统一复用 core.constraint_utils；
@@ -116,7 +116,7 @@ class SkirtRigBuilder(object):
             "setup": "grp_m_{}Setup_001".format(self.name),
             "blueprint": "grp_m_{}Bpjnts_001".format(self.name),
             "controls": "grp_m_{}Ctrls_001".format(self.name),
-            "joints": "grp_m_{}Jnts_001".format(self.name),
+            "jnts": "grp_m_{}Jnts_001".format(self.name),
             "nodes": "grp_m_{}Nodes_001".format(self.name),
             "build": "grp_m_{}RigBuild_001".format(self.name),
             "up_curve": "crv_m_{}Up_001".format(self.name),
@@ -144,7 +144,7 @@ class SkirtRigBuilder(object):
             "setup",
             "blueprint",
             "controls",
-            "joints",
+            "jnts",
             "nodes",
         ]
 
@@ -251,7 +251,7 @@ class SkirtRigBuilder(object):
             place,
             names
     ):
-        """在定位曲线上创建实时 Blueprint Joint。"""
+        """在定位曲线上创建实时 Blueprint Jnt。"""
         # -------------------------------------------------------------------------
         # Step 01：查询并整理当前阶段需要的 Maya 场景数据
         # -------------------------------------------------------------------------
@@ -310,14 +310,14 @@ class SkirtRigBuilder(object):
                 force=True
             )
 
-            joint_name = "bpjnt_m_{}{}_hor{:03d}_001".format(
+            jnt_name = "bpjnt_m_{}{}_hor{:03d}_001".format(
                 self.name,
                 place,
                 index + 1
             )
 
-            joint_utils.Joint.create(
-                name=joint_name,
+            jnt_utils.Jnt.create(
+                name=jnt_name,
                 parent=point_group,
                 radius=0.25
             )
@@ -439,7 +439,7 @@ class SkirtRigBuilder(object):
 
         group_keys = [
             "controls",
-            "joints",
+            "jnts",
         ]
 
         for group_key in group_keys:
@@ -459,28 +459,28 @@ class SkirtRigBuilder(object):
                 )
 
     def _validate_blueprints(self, names):
-        """检查所有上下 Blueprint Joint 是否存在。"""
+        """检查所有上下 Blueprint Jnt 是否存在。"""
         missing = []
         horizontal_index = 0
 
         while horizontal_index < self.horizontal_count:
-            up_joint = "bpjnt_m_{}Up_hor{:03d}_001".format(
+            up_jnt = "bpjnt_m_{}Up_hor{:03d}_001".format(
                 self.name,
                 horizontal_index + 1
             )
-            down_joint = "bpjnt_m_{}Down_hor{:03d}_001".format(
+            down_jnt = "bpjnt_m_{}Down_hor{:03d}_001".format(
                 self.name,
                 horizontal_index + 1
             )
 
-            if not cmds.objExists(up_joint):
+            if not cmds.objExists(up_jnt):
                 missing.append(
-                    up_joint
+                    up_jnt
                 )
 
-            if not cmds.objExists(down_joint):
+            if not cmds.objExists(down_jnt):
                 missing.append(
-                    down_joint
+                    down_jnt
                 )
 
             horizontal_index += 1
@@ -523,30 +523,30 @@ class SkirtRigBuilder(object):
         )
 
         created_controls = []
-        created_joints = []
+        created_jnts = []
         # -------------------------------------------------------------------------
         # Step 03：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
         horizontal_index = 0
 
         while horizontal_index < self.horizontal_count:
-            up_joint = "bpjnt_m_{}Up_hor{:03d}_001".format(
+            up_jnt = "bpjnt_m_{}Up_hor{:03d}_001".format(
                 self.name,
                 horizontal_index + 1
             )
-            down_joint = "bpjnt_m_{}Down_hor{:03d}_001".format(
+            down_jnt = "bpjnt_m_{}Down_hor{:03d}_001".format(
                 self.name,
                 horizontal_index + 1
             )
 
             up_position = transform_utils.get_world_translation(
-                up_joint
+                up_jnt
             )
             down_position = transform_utils.get_world_translation(
-                down_joint
+                down_jnt
             )
 
-            previous_joint = None
+            previous_jnt = None
             previous_control = None
             vertical_index = 0
 
@@ -561,21 +561,21 @@ class SkirtRigBuilder(object):
                     ratio
                 )
 
-                joint_name = "jnt_m_{}_hor{:03d}_ver{:03d}".format(
+                jnt_name = "jnt_m_{}_hor{:03d}_ver{:03d}".format(
                     self.name,
                     horizontal_index + 1,
                     vertical_index + 1
                 )
 
-                joint_parent = names["joints"]
+                jnt_parent = names["jnts"]
 
-                if previous_joint is not None:
-                    joint_parent = previous_joint
+                if previous_jnt is not None:
+                    jnt_parent = previous_jnt
 
-                joint = joint_utils.Joint.create(
-                    name=joint_name,
+                jnt = jnt_utils.Jnt.create(
+                    name=jnt_name,
                     position=position,
-                    parent=joint_parent
+                    parent=jnt_parent
                 )
 
                 control_name = "ctrl_m_{}_hor{:03d}_ver{:03d}".format(
@@ -594,7 +594,7 @@ class SkirtRigBuilder(object):
                     shape="circle",
                     radius=0.6,
                     axis="Y+",
-                    target_node=joint,
+                    target_node=jnt,
                     parent_node=parent_control,
                     color=17,
                     create_sub_ctrl=False,
@@ -605,7 +605,7 @@ class SkirtRigBuilder(object):
 
                 constraint_utils.create_constraint(
                     driver_objects=control,
-                    driven_object=joint,
+                    driven_object=jnt,
                     constraint_type="parentConstraint",
                     maintain_offset=False
                 )
@@ -613,10 +613,10 @@ class SkirtRigBuilder(object):
                 created_controls.append(
                     control
                 )
-                created_joints.append(
-                    joint
+                created_jnts.append(
+                    jnt
                 )
-                previous_joint = joint
+                previous_jnt = jnt
                 previous_control = control
                 vertical_index += 1
 
@@ -655,7 +655,7 @@ class SkirtRigBuilder(object):
         return {
             "group": build_group,
             "controls": created_controls,
-            "joints": created_joints,
+            "jnts": created_jnts,
             "names": names,
         }
 

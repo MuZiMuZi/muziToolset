@@ -1,21 +1,21 @@
 # coding=utf-8
 u"""
-jnt Utils
+Jnt Utils
 ===========
 
-Maya jnt 领域的专属底层能力模块。
+Maya Jnt 领域的专属底层能力模块。
 
 设计原则
 --------
-jnt 类只负责“单个 jnt 节点自己特有的能力”：
+Jnt 类只负责“单个 Jnt 节点自己特有的能力”：
 
-    - 创建 jnt；
-    - jnt Orient；
+    - 创建 Jnt；
+    - Jnt Orient；
     - Radius / Local Rotation Axis；
     - Segment Scale Compensate；
-    - Maya jnt Label。
+    - Maya Jnt Label。
 
-模块级 API 只保留 Maya 全局 jnt Display Setting：
+模块级 API 只保留 Maya 全局 Jnt Display Setting：
 
     - get_display_scale()
     - set_display_scale()
@@ -28,8 +28,8 @@ jnt 类只负责“单个 jnt 节点自己特有的能力”：
     - DAG Parent / Child   -> hierarchy_utils
     - 全场景 Node 查询     -> scene_utils
 
-jnt 实例在 __init__() 时只验证一次节点存在性和节点类型。
-初始化成功后，普通方法默认 self.jnt 仍然是有效 jnt，
+Jnt 实例在 __init__() 时只验证一次节点存在性和节点类型。
+初始化成功后，普通方法默认 self.jnt 仍然是有效 Jnt，
 不为每一次操作重复执行存在性和类型检查。
 """
 
@@ -44,19 +44,19 @@ from . import transform_utils
 
 
 # =============================================================================
-# Global jnt Display
+# Global Jnt Display
 # =============================================================================
 
 def get_display_scale():
     u"""
-    返回 Maya 当前全局 jnt Display Scale。
+    返回 Maya 当前全局 Jnt Display Scale。
 
     Returns:
         object:
         当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     return float(
-        cmds.jntDisplayScale(
+        __MUZI_MAYA_JNT_PROTECTED_00000__(
             query=True
         )
     )
@@ -64,7 +64,7 @@ def get_display_scale():
 
 def set_display_scale(scale):
     u"""
-    设置 Maya 全局 jnt Display Scale，并返回最终数值。
+    设置 Maya 全局 Jnt Display Scale，并返回最终数值。
 
     Args:
         scale (bool):
@@ -84,22 +84,22 @@ def set_display_scale(scale):
         )
     except (TypeError, ValueError):
         raise ValueError(
-            u"jnt Display Scale 必须是数值。"
+            u"Jnt Display Scale 必须是数值。"
         )
 
     if scale <= 0.0:
         raise ValueError(
-            u"jnt Display Scale 必须大于 0。"
+            u"Jnt Display Scale 必须大于 0。"
         )
 
-    cmds.jntDisplayScale(
+    __MUZI_MAYA_JNT_PROTECTED_00001__(
         scale
     )
     return scale
 
 
-class jnt(object):
-    u"""单个 Maya jnt 节点的专属操作对象。"""
+class Jnt(object):
+    u"""单个 Maya Jnt 节点的专属操作对象。"""
 
     def __init__(self, jnt):
         u"""
@@ -107,7 +107,7 @@ class jnt(object):
 
         Args:
             jnt (str):
-                需要处理的 Maya jnt 节点名称。
+                需要处理的 Maya Jnt 节点名称。
 
         Raises:
             RuntimeError:
@@ -119,7 +119,7 @@ class jnt(object):
         # -------------------------------------------------------------------------
         if jnt is None:
             raise RuntimeError(
-                u"jnt 节点不能为空。"
+                u"Jnt 节点不能为空。"
             )
 
         # -------------------------------------------------------------------------
@@ -129,7 +129,7 @@ class jnt(object):
 
         if not jnt:
             raise RuntimeError(
-                u"jnt 节点不能为空。"
+                u"Jnt 节点不能为空。"
             )
 
         # -------------------------------------------------------------------------
@@ -137,7 +137,7 @@ class jnt(object):
         # -------------------------------------------------------------------------
         if not cmds.objExists(jnt):
             raise RuntimeError(
-                u"jnt 节点不存在：{}".format(
+                u"Jnt 节点不存在：{}".format(
                     jnt
                 )
             )
@@ -149,9 +149,9 @@ class jnt(object):
         # -------------------------------------------------------------------------
         # Step 04：检查当前条件与边界情况，并进入对应处理分支
         # -------------------------------------------------------------------------
-        if node_type != "jnt":
+        if node_type != __MUZI_MAYA_JNT_PROTECTED_00016__:
             raise RuntimeError(
-                u"节点不是 jnt：{} | type={}".format(
+                u"节点不是 Jnt：{} | type={}".format(
                     jnt,
                     node_type
                 )
@@ -175,18 +175,18 @@ class jnt(object):
             radius=None
     ):
         u"""
-        创建一个 jnt。
+        创建一个 Jnt。
 
         position / rotation 都表示 World Space。
-        rotation 表示普通 World Rotation，不表示 jntOrient。
+        rotation 表示普通 World Rotation，不表示 __MUZI_MAYA_JNT_PROTECTED_00015__。
 
         Args:
             name (str):
                 创建或查询时使用的节点名称。
             position (list[float] | tuple[float, float, float]):
-                jnt / Transform 使用的 XYZ Position。
+                Jnt / Transform 使用的 XYZ Position。
             rotation (list[float] | tuple[float, float, float]):
-                jnt / Transform 使用的 XYZ Rotation。
+                Jnt / Transform 使用的 XYZ Rotation。
             parent (str):
                 父级 Maya 节点名称。
             radius (float):
@@ -205,7 +205,7 @@ class jnt(object):
         # -------------------------------------------------------------------------
         if name is None:
             raise RuntimeError(
-                u"jnt 名称不能为空。"
+                u"Jnt 名称不能为空。"
             )
 
         name = str(name).strip()
@@ -215,7 +215,7 @@ class jnt(object):
         # -------------------------------------------------------------------------
         if not name:
             raise RuntimeError(
-                u"jnt 名称不能为空。"
+                u"Jnt 名称不能为空。"
             )
 
         if cmds.objExists(name):
@@ -234,7 +234,7 @@ class jnt(object):
         # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
         # -------------------------------------------------------------------------
         jnt = cmds.createNode(
-            "jnt",
+            __MUZI_MAYA_JNT_PROTECTED_00017__,
             name=name
         )
 
@@ -260,7 +260,7 @@ class jnt(object):
             )
 
         if radius is not None:
-            jnt_object = jnt(
+            jnt_object = Jnt(
                 jnt
             )
             jnt_object.set_radius(
@@ -281,7 +281,7 @@ class jnt(object):
             radius=None
     ):
         u"""
-        在指定 Transform / jnt 的世界位置创建 jnt。
+        在指定 Transform / Jnt 的世界位置创建 Jnt。
 
         Args:
             obj (str):
@@ -291,7 +291,7 @@ class jnt(object):
             parent (str):
                 父级 Maya 节点名称。
             match_rotation (bool):
-                根据目标 Transform 创建 jnt 时是否同时匹配目标 Rotation。
+                根据目标 Transform 创建 Jnt 时是否同时匹配目标 Rotation。
             radius (float):
                 创建节点或控制器使用的半径值。
 
@@ -328,7 +328,7 @@ class jnt(object):
         # -------------------------------------------------------------------------
         # Step 05：整理并返回当前函数的最终结果
         # -------------------------------------------------------------------------
-        return jnt.create(
+        return Jnt.create(
             name=name,
             position=position,
             rotation=rotation,
@@ -337,21 +337,21 @@ class jnt(object):
         )
 
     # =========================================================================
-    # jnt Orient
+    # Jnt Orient
     # =========================================================================
 
     def get_jnt_orient(self):
         u"""
-        返回 [jntOrientX, jntOrientY, jntOrientZ]。
+        返回 [__MUZI_MAYA_JNT_PROTECTED_00006__, __MUZI_MAYA_JNT_PROTECTED_00009__, __MUZI_MAYA_JNT_PROTECTED_00012__]。
 
         Returns:
             object:
             当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         attributes = [
-            "jntOrientX",
-            "jntOrientY",
-            "jntOrientZ",
+            "__MUZI_MAYA_JNT_PROTECTED_00007__",
+            "__MUZI_MAYA_JNT_PROTECTED_00010__",
+            "__MUZI_MAYA_JNT_PROTECTED_00013__",
         ]
         jnt_orient = []
 
@@ -413,9 +413,9 @@ class jnt(object):
         # Step 03：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
         attributes = [
-            "jntOrientX",
-            "jntOrientY",
-            "jntOrientZ",
+            "__MUZI_MAYA_JNT_PROTECTED_00008__",
+            "__MUZI_MAYA_JNT_PROTECTED_00011__",
+            "__MUZI_MAYA_JNT_PROTECTED_00014__",
         ]
 
         index = 0
@@ -440,7 +440,7 @@ class jnt(object):
 
     def clear_jnt_orient(self):
         u"""
-        把当前 jnt 的 jntOrientXYZ 清零。
+        把当前 Jnt 的 jntOrientXYZ 清零。
 
         Returns:
             object:
@@ -456,7 +456,7 @@ class jnt(object):
 
     def get_radius(self):
         u"""
-        返回当前 jnt 的 radius。
+        返回当前 Jnt 的 radius。
 
         Returns:
             object:
@@ -468,7 +468,7 @@ class jnt(object):
 
     def set_radius(self, radius):
         u"""
-        设置当前 jnt 的 radius。
+        设置当前 Jnt 的 radius。
 
         Args:
             radius (float):
@@ -488,12 +488,12 @@ class jnt(object):
             )
         except (TypeError, ValueError):
             raise ValueError(
-                u"jnt radius 必须是数值。"
+                u"Jnt radius 必须是数值。"
             )
 
         if radius < 0.0:
             raise ValueError(
-                u"jnt radius 不能小于 0。"
+                u"Jnt radius 不能小于 0。"
             )
 
         cmds.setAttr(
@@ -505,7 +505,7 @@ class jnt(object):
 
     def is_axis_visible(self):
         u"""
-        返回当前 jnt 的 Local Rotation Axis 是否显示。
+        返回当前 Jnt 的 Local Rotation Axis 是否显示。
 
         Returns:
             object:
@@ -519,7 +519,7 @@ class jnt(object):
 
     def show_axis(self):
         u"""
-        显示当前 jnt 的 Local Rotation Axis。
+        显示当前 Jnt 的 Local Rotation Axis。
 
         Returns:
             object:
@@ -534,7 +534,7 @@ class jnt(object):
 
     def hide_axis(self):
         u"""
-        隐藏当前 jnt 的 Local Rotation Axis。
+        隐藏当前 Jnt 的 Local Rotation Axis。
 
         Returns:
             object:
@@ -548,12 +548,12 @@ class jnt(object):
         return self.jnt
 
     # =========================================================================
-    # jnt Property
+    # Jnt Property
     # =========================================================================
 
     def get_scale_compensate(self):
         u"""
-        返回当前 jnt 的 segmentScaleCompensate 状态。
+        返回当前 Jnt 的 segmentScaleCompensate 状态。
 
         Returns:
             object:
@@ -567,7 +567,7 @@ class jnt(object):
 
     def set_scale_compensate(self, enabled=True):
         u"""
-        设置当前 jnt 的 segmentScaleCompensate。
+        设置当前 Jnt 的 segmentScaleCompensate。
 
         Args:
             enabled (bool):
@@ -594,7 +594,7 @@ class jnt(object):
             secondary_axis="xup"
     ):
         u"""
-        根据直接 Child jnt 整理当前 jnt Orient。
+        根据直接 Child Jnt 整理当前 Jnt Orient。
 
         Args:
             primary_axis (str):
@@ -608,23 +608,23 @@ class jnt(object):
         """
         children = hierarchy_utils.get_children(
             self.jnt,
-            node_type="jnt",
+            node_type=__MUZI_MAYA_JNT_PROTECTED_00018__,
             full_path=True
         )
 
         if not children:
-            cmds.jnt(
+            __MUZI_MAYA_JNT_PROTECTED_00002__(
                 self.jnt,
                 edit=True,
-                orientjnt="none"
+                __MUZI_MAYA_JNT_PROTECTED_00004__="none"
             )
             return self.jnt
 
-        cmds.jnt(
+        __MUZI_MAYA_JNT_PROTECTED_00003__(
             self.jnt,
             edit=True,
             zeroScaleOrient=True,
-            orientjnt=primary_axis,
+            __MUZI_MAYA_JNT_PROTECTED_00005__=primary_axis,
             secondaryAxisOrient=secondary_axis
         )
 
@@ -641,7 +641,7 @@ class jnt(object):
             other_type=""
     ):
         u"""
-        设置 Maya jnt Label。
+        设置 Maya Jnt Label。
 
         Args:
             side (int):
@@ -674,7 +674,7 @@ class jnt(object):
         # -------------------------------------------------------------------------
         if side not in [0, 1, 2]:
             raise ValueError(
-                u"jnt Label side 只能是 0 / 1 / 2。"
+                u"Jnt Label side 只能是 0 / 1 / 2。"
             )
 
         if other_type is None:
@@ -708,7 +708,7 @@ class jnt(object):
         # Step 05：整理并返回当前函数的最终结果
         # -------------------------------------------------------------------------
         return {
-            "jnt": self.jnt,
+            __MUZI_MAYA_JNT_PROTECTED_00019__: self.jnt,
             "side": side,
             "type": label_type,
             "otherType": other_type,
@@ -716,7 +716,7 @@ class jnt(object):
 
     def tag(self):
         u"""
-        根据项目标准 jnt 名称生成 Maya jnt Label。
+        根据项目标准 Jnt 名称生成 Maya Jnt Label。
 
         Returns:
             object:
@@ -741,7 +741,7 @@ class jnt(object):
         # -------------------------------------------------------------------------
         if len(name_parts) < 3:
             raise RuntimeError(
-                u"jnt 名称格式不正确：{}".format(
+                u"Jnt 名称格式不正确：{}".format(
                     short_name
                 )
             )
@@ -799,5 +799,5 @@ class jnt(object):
 __all__ = [
     "get_display_scale",
     "set_display_scale",
-    "jnt",
+    __MUZI_MAYA_JNT_PROTECTED_00020__,
 ]

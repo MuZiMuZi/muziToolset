@@ -18,7 +18,7 @@ MANUAL_PAGES = [
     ("常用工具工作流", "docs/manual/tools.md", "manual/tools.md"),
     ("基础工具", "docs/manual/basic-tools.md", "manual/basic-tools.md"),
     ("Controller", "docs/manual/controller.md", "manual/controller.md"),
-    ("Joint", "docs/manual/joint.md", "manual/joint.md"),
+    (__MUZI_MAYA_JNT_PROTECTED_00000__, "docs/manual/jnt.md", "manual/jnt.md"),
     ("Skin", "docs/manual/skin.md", "manual/skin.md"),
     ("BlendShape", "docs/manual/blendshape.md", "manual/blendshape.md"),
     ("场景清理与模型检查", "docs/manual/cleanup.md", "manual/cleanup.md"),

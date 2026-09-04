@@ -22,13 +22,13 @@
 
     [:octicons-arrow-right-24: 打开 Controller 手册](controller.md)
 
--   :material-bone:{ .lg .middle } **Joint**
+-   :material-bone:{ .lg .middle } **Jnt**
 
     ---
 
-    创建 Joint、Joint Chain、重采样和 Orient。
+    创建 Jnt、Jnt Chain、重采样和 Orient。
 
-    [:octicons-arrow-right-24: 打开 Joint 手册](joint.md)
+    [:octicons-arrow-right-24: 打开 Jnt 手册](jnt.md)
 
 -   :material-human-handsup:{ .lg .middle } **Skin**
 

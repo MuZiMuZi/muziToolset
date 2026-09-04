@@ -32,7 +32,7 @@ process_data()
 finalize_step()
 ```
 
-真正涉及 Joint、Controller、Connection 的 Rig Component 统一继承：
+真正涉及 Jnt、Controller、Connection 的 Rig Component 统一继承：
 
 ```python
 from muziToolset.systems import RigComponentBase
@@ -41,7 +41,7 @@ from muziToolset.systems import RigComponentBase
 它会把核心 `process_data()` 固定拆成：
 
 ```text
-create_joint()
+create_jnt()
       ↓
 create_controller()
       ↓

@@ -180,7 +180,7 @@ class MouthModule(FaceModuleBase):
     def create_jnt(self):
         u"""
 
-                解析并注册 LipModule 已创建的 Upper / Lower Deform Joint。
+                解析并注册 LipModule 已创建的 Upper / Lower Deform Jnt。
 
                 Returns:
                     list:
@@ -221,13 +221,13 @@ class MouthModule(FaceModuleBase):
             )
             upper_lip_jnt = self._resolve_scene_node(
                 upper_lip_jnt,
-                label=u"Upper Lip Deform Joint",
-                node_type="joint"
+                label=u"Upper Lip Deform Jnt",
+                node_type=__MUZI_MAYA_JNT_PROTECTED_00000__
             )
             lower_lip_jnt = self._resolve_scene_node(
                 lower_lip_jnt,
-                label=u"Lower Lip Deform Joint",
-                node_type="joint"
+                label=u"Lower Lip Deform Jnt",
+                node_type=__MUZI_MAYA_JNT_PROTECTED_00001__
             )
             self.upper_lip_jnts.append(upper_lip_jnt)
             self.lower_lip_jnts.append(lower_lip_jnt)
@@ -398,8 +398,8 @@ class MouthModule(FaceModuleBase):
 
         """
         self.zip_lip_dict = build_zip_lip(
-            upper_joints=self.upper_lip_jnts,
-            lower_joints=self.lower_lip_jnts,
+            upper_jnts=self.upper_lip_jnts,
+            lower_jnts=self.lower_lip_jnts,
             left_zip_control=self.left_corner_ctrl,
             right_zip_control=self.right_corner_ctrl,
             jaw_control=self.jaw_ctrl,
@@ -432,15 +432,15 @@ class MouthModule(FaceModuleBase):
             raise RuntimeError(u"Mouth Zip Lip 没有完成构建。")
 
         # -------------------------------------------------------------------------
-        # Step 01：Zip Lip Builder 可能重新组织 Joint DAG，先刷新真实 Long Path
+        # Step 01：Zip Lip Builder 可能重新组织 Jnt DAG，先刷新真实 Long Path
         # -------------------------------------------------------------------------
         resolved_upper_lip_jnts = []
 
         for upper_lip_jnt in self.upper_lip_jnts:
             resolved_upper_lip_jnt = self._resolve_scene_node(
                 upper_lip_jnt,
-                label=u"Upper Lip Joint",
-                node_type="joint"
+                label=u"Upper Lip Jnt",
+                node_type=__MUZI_MAYA_JNT_PROTECTED_00002__
             )
             resolved_upper_lip_jnts.append(
                 resolved_upper_lip_jnt
@@ -451,8 +451,8 @@ class MouthModule(FaceModuleBase):
         for lower_lip_jnt in self.lower_lip_jnts:
             resolved_lower_lip_jnt = self._resolve_scene_node(
                 lower_lip_jnt,
-                label=u"Lower Lip Joint",
-                node_type="joint"
+                label=u"Lower Lip Jnt",
+                node_type=__MUZI_MAYA_JNT_PROTECTED_00003__
             )
             resolved_lower_lip_jnts.append(
                 resolved_lower_lip_jnt
@@ -467,13 +467,13 @@ class MouthModule(FaceModuleBase):
         for upper_lip_jnt in self.upper_lip_jnts:
             scene_utils.validate_node(
                 upper_lip_jnt,
-                label=u"Upper Lip Joint"
+                label=u"Upper Lip Jnt"
             )
 
         for lower_lip_jnt in self.lower_lip_jnts:
             scene_utils.validate_node(
                 lower_lip_jnt,
-                label=u"Lower Lip Joint"
+                label=u"Lower Lip Jnt"
             )
 
         self.module_dict["mouth_main_ctrl_dict"] = self.mouth_main_ctrl_dict

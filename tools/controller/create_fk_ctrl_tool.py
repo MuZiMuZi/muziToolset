@@ -148,7 +148,7 @@ def main():
 
     if not selections:
         cmds.warning(
-            u"请选择多个物体或 Joint 后再创建 FK 控制器。"
+            u"请选择多个物体或 Jnt 后再创建 FK 控制器。"
         )
         return []
 

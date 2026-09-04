@@ -141,7 +141,7 @@ class FaceRigWizard(finalize_controller.FaceRigWizard):
         )
 
         controller_description = QLabel(
-            u"Step 02 点击“下一步”后绑定已经自动创建。本页只调整 Controller Shape 的大小和颜色；不会修改 Transform、Guide、Output 或 Joint。"
+            u"Step 02 点击“下一步”后绑定已经自动创建。本页只调整 Controller Shape 的大小和颜色；不会修改 Transform、Guide、Output 或 Jnt。"
         )
         controller_description.setWordWrap(
             True

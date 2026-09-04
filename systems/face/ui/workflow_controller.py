@@ -7,7 +7,7 @@ Face Rig Workflow UI Controller
 
 职责：
     1. 打开 / 激活 UI 时，从 Scene Config 重新读取当前 Step 数据；
-    2. Step 01 恢复模型引用和 Mouth Joint Number；
+    2. Step 01 恢复模型引用和 Mouth Jnt Number；
     3. Step 02 恢复并实时持久化 Controller Settings；
     4. 当前 UI Step 切换时直接应用 config.py 定义的场景显示规则；
     5. 让中间 Step 内容区域可滚动，底部操作栏始终保持可见；
@@ -442,7 +442,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             plug (str):
                 完整 Maya Plug 名称，例如 node.translateX。
             visible (bool):
-                Joint / Guide / UI 元素是否保持可见。
+                Jnt / Guide / UI 元素是否保持可见。
             read_only (bool):
                 控制当前方法中的 `read_only` 选项是否启用。
 
@@ -764,7 +764,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
 
     def load_step1_config_to_ui(self):
         u"""
-        从 Face Config 恢复 Step 01 模型引用和 Mouth Joint Number。
+        从 Face Config 恢复 Step 01 模型引用和 Mouth Jnt Number。
 
         Returns:
             bool:
@@ -822,10 +822,10 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
         if mouth_jnt_number is not None:
             slider_value = int(
                 round(
-                    float(mouth_jnt_number) / self.mouth_joint_step
+                    float(mouth_jnt_number) / self.mouth_jnt_step
                 )
             )
-            self.mouth_joint_slider.setValue(
+            self.mouth_jnt_slider.setValue(
                 slider_value
             )
 
@@ -1088,7 +1088,7 @@ class FaceRigWizard(face_rig_ui.FaceRigWizard):
             node (str):
                 需要查询或处理的 Maya 节点名称。
             visible (bool):
-                Joint / Guide / UI 元素是否保持可见。
+                Jnt / Guide / UI 元素是否保持可见。
 
         Returns:
             bool:

@@ -8,13 +8,13 @@ Core Import Style Test
 正式模块：
     attr_utils
     hierarchy_utils
-    joint_utils
+    jnt_utils
     name_utils
 
 已退休模块：
     attrUtils
     hierarchyUtils
-    jointUtils
+    jntUtils
     nameUtils
 
 检查内容
@@ -77,7 +77,7 @@ def get_retired_module_names():
     return [
         "attr" + "Utils",
         "hierarchy" + "Utils",
-        "joint" + "Utils",
+        __MUZI_MAYA_JNT_PROTECTED_00000__ + "Utils",
         "name" + "Utils",
     ]
 

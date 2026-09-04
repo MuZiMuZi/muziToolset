@@ -50,7 +50,7 @@ Upper Teeth Model
 Lower Teeth Model
 Tongue Model
 Gum Model
-Mouth Joint Number
+Mouth Jnt Number
 ```
 
 模型节点使用 Message Connection 保存，因此 Maya Rename 后仍可以恢复。
@@ -113,7 +113,7 @@ systems/face/ui/workflow_controller.py
 
 顶层显示规则：
 
-| Step | Model Group | Guide | Ctrl | Joint | Internal Rig Nodes |
+| Step | Model Group | Guide | Ctrl | Jnt | Internal Rig Nodes |
 | --- | --- | --- | --- | --- | --- |
 | 01 Setup | Show | Hide | Hide | Hide | Hide |
 | 02 Guide | Show | Show | Hide | Hide | Hide |

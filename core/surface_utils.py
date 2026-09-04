@@ -49,7 +49,7 @@ Follicle：
 
     Surface
     Follicle
-    jnt
+    Jnt
     Controller
     Group
     Set
@@ -62,14 +62,14 @@ Follicle：
         -> Surface / Follicle
 
     System
-        -> jnt / Controller / Rig Hierarchy
+        -> Jnt / Controller / Rig Hierarchy
 
 这样 Face、Ribbon、Skirt 等系统可以复用同一套 Follicle 能力，而不被某一种 Rig
 层级结构绑死。
 
 本模块不负责
 ------------
-- jnt；
+- Jnt；
 - Controller；
 - SkinCluster；
 - Ribbon / Face / Skirt 完整绑定；
@@ -86,7 +86,7 @@ Follicle：
 1. Loft 时绝不修改或删除用户传入的原始 Curve；
 2. 临时 Duplicate 无论成功或失败都通过 finally 清理；
 3. Loft 只在 Maya 自动材质分配所需的短时间内临时解锁默认 Shading Group，并恢复原状态；
-4. Follicle Core 只返回 Transform / Shape，不擅自创建 jnt / Controller；
+4. Follicle Core 只返回 Transform / Shape，不擅自创建 Jnt / Controller；
 5. 批量 Follicle 使用稳定的 001 / 002 / 003 编号；
 6. 保留普通 while / for 流程，方便在 Maya 中逐步调试。
 """

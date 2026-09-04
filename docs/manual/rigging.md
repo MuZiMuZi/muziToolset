@@ -7,7 +7,7 @@
    ↓
 基础整理
    ↓
-Joint
+Jnt
    ↓
 Controller
    ↓
@@ -38,13 +38,13 @@ Face / Body System
 
     [:octicons-arrow-right-24: 基础工具](basic-tools.md)
 
--   :material-bone:{ .lg .middle } **3. Joint**
+-   :material-bone:{ .lg .middle } **3. Jnt**
 
     ---
 
-    创建 Skeleton、Joint Chain 和 Orient。
+    创建 Skeleton、Jnt Chain 和 Orient。
 
-    [:octicons-arrow-right-24: Joint](joint.md)
+    [:octicons-arrow-right-24: Jnt](jnt.md)
 
 -   :material-vector-circle:{ .lg .middle } **4. Controller**
 

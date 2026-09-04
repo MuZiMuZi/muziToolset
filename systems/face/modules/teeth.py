@@ -29,7 +29,7 @@ Rig 关系：
         ↓
     Controller
         ↓ Matrix
-    Bind jnt
+    Bind Jnt
         ↓ Rigid Skin
     Teeth Model
 
@@ -38,7 +38,7 @@ Rig 关系：
     - Gum 属于 Mouth / Jaw Deformation，不在本 Module 中刚性绑定；
     - Naming 统一继承 FaceBase -> RigBase；
     - Controller 统一使用 systems.ctrl_base；
-    - jnt / Matrix / Skin / Scene State 统一复用 Core；
+    - Jnt / Matrix / Skin / Scene State 统一复用 Core；
     - 只在 Build / Rebuild 时检查已有 Scene Node，不重复验证内部 Rig Name。
 """
 
@@ -46,7 +46,6 @@ from __future__ import print_function
 
 import maya.cmds as cmds
 
-from core import hierarchy_utils
 from ....core import jnt_utils
 from ....core import matrix_utils
 from ....core import scene_utils
@@ -178,62 +177,25 @@ class TeethModule(FaceModuleBase):
                 u"Teeth Controller Radius 必须大于 0。"
             )
 
-
-        return True
-
-    def _prepare_names(self):
-
         # -------------------------------------------------------------------------
-        # Step 02：Controller Names
+        # Step 03：准备全部标准名称
         # -------------------------------------------------------------------------
-        self.upper_teeth_ctrl_name = self.create_name(
-            type="ctrl",
-            part="upper_teeth",
-            function="bind"
-        )
-        self.lower_teeth_ctrl_name = self.create_name(
-            type="ctrl",
-            part="lower_teeth",
-            function="bind"
-        )
+        self._prepare_names()
 
         # -------------------------------------------------------------------------
-        # Step 03：Matrix / Skin Names
+        # Step 04：只检查真实 Scene / Rebuild 状态
         # -------------------------------------------------------------------------
-        self.upper_teeth_matrix_name = self.create_name(
-            type="mult",
-            part="upper_teeth",
-            function="parent"
+        self._validate_model_inputs_unique()
+        self._validate_build_nodes_available()
+        self._validate_model_skin_state(
+            self.upper_teech_model,
+            label=u"Upper Teeth Model"
         )
-        self.lower_teeth_matrix_name = self.create_name(
-            type="mult",
-            part="lower_teeth",
-            function="parent"
+        self._validate_model_skin_state(
+            self.lower_teech_model,
+            label=u"Lower Teeth Model"
         )
-        self.upper_teeth_skin_name = self.create_name(
-            type="skin",
-            part="upper_teeth",
-            function="bind"
-        )
-        self.lower_teeth_skin_name = self.create_name(
-            type="skin",
-            part="lower_teeth",
-            function="bind"
-        )
-        
-        #创建
-        self.teeth_ctrl_grp_name = self.create_name(
-            type = "grp" ,
-            part = "teeth" ,
-            function = "ctrl",
-            index = 1
-        )
-        self.teeth_jnt_grp_name =  self.create_name(
-            type = "grp" ,
-            part = "teeth" ,
-            function = "jnt",
-            index = 1
-        )
+
         return True
 
     # =========================================================================
@@ -285,32 +247,18 @@ class TeethModule(FaceModuleBase):
 
     def create_jnt(self):
         u"""
-        根据 Teeth Guide 创建 Upper / Lower Bind jnt。
+        根据 Teeth Guide 创建 Upper / Lower Bind Jnt。
 
         Returns:
             list[str]:
-            Upper / Lower Teeth jnt。
+            Upper / Lower Teeth Jnt。
         """
-        #准备关节的名称
-        self.upper_teeth_jnt_name = self.create_name (
-            type = "jnt" ,
-            part = "upper_teeth" ,
-            function = "bind"
-        )
-        self.lower_teeth_jnt_name = self.create_name (
-            type = "jnt" ,
-            part = "lower_teeth" ,
-            function = "bind"
-        )
-        
-        
-        
         jnt_radius = self.controller_radius * 0.25
 
         # -------------------------------------------------------------------------
-        # Step 01：Upper Teeth jnt
+        # Step 01：Upper Teeth Jnt
         # -------------------------------------------------------------------------
-        self.upper_teeth_jnt = jnt_utils.jnt.create_at_object(
+        self.upper_teeth_jnt = jnt_utils.Jnt.create_at_object(
             obj=self.upper_teeth_guide,
             name=self.upper_teeth_jnt_name,
             parent=self.face_jnt_grp,
@@ -319,9 +267,9 @@ class TeethModule(FaceModuleBase):
         )
 
         # -------------------------------------------------------------------------
-        # Step 02：Lower Teeth jnt
+        # Step 02：Lower Teeth Jnt
         # -------------------------------------------------------------------------
-        self.lower_teeth_jnt = jnt_utils.jnt.create_at_object(
+        self.lower_teeth_jnt = jnt_utils.Jnt.create_at_object(
             obj=self.lower_teeth_guide,
             name=self.lower_teeth_jnt_name,
             parent=self.face_jnt_grp,
@@ -331,8 +279,11 @@ class TeethModule(FaceModuleBase):
 
         self.module_dict["upper_jnt"] = self.upper_teeth_jnt
         self.module_dict["lower_jnt"] = self.lower_teeth_jnt
-        
-        self.teeth_jnt_list = [self.upper_teeth_jnt, self.lower_teeth_jnt ]
+
+        return [
+            self.upper_teeth_jnt,
+            self.lower_teeth_jnt,
+        ]
 
     # =========================================================================
     # 04. Create Ctrl
@@ -349,17 +300,6 @@ class TeethModule(FaceModuleBase):
         # -------------------------------------------------------------------------
         # Step 01：Upper Teeth Controller
         # -------------------------------------------------------------------------
-        #准备控制器的名称
-        self.upper_teeth_ctrl_name = self.create_name (
-            type = "ctrl" ,
-            part = "upper_teeth" ,
-            function = "bind"
-        )
-        self.lower_teeth_ctrl_name = self.create_name (
-            type = "ctrl" ,
-            part = "lower_teeth" ,
-            function = "bind"
-        )
         self.upper_teeth_ctrl_dict = ctrl_base.create_ctrl(
             name=self.upper_teeth_ctrl_name,
             shape="circle",
@@ -406,8 +346,10 @@ class TeethModule(FaceModuleBase):
         self.module_dict["upper_output"] = self.upper_teeth_output
         self.module_dict["lower_output"] = self.lower_teeth_output
 
-        self.teeth_top_group_list = [self.upper_teeth_top_group , self.lower_teeth_top_group]
-
+        return [
+            self.upper_teeth_ctrl_dict,
+            self.lower_teeth_ctrl_dict,
+        ]
 
     # =========================================================================
     # 05. Create Connect
@@ -415,7 +357,7 @@ class TeethModule(FaceModuleBase):
 
     def create_connect(self):
         u"""
-        创建 Controller Output -> Teeth jnt 的 Matrix 驱动关系。
+        创建 Controller Output -> Teeth Jnt 的 Matrix 驱动关系。
 
         Returns:
             list[str]:
@@ -444,13 +386,52 @@ class TeethModule(FaceModuleBase):
         self.module_dict["upper_matrix"] = self.upper_teeth_matrix_node
         self.module_dict["lower_matrix"] = self.lower_teeth_matrix_node
 
+        return [
+            self.upper_teeth_matrix_node,
+            self.lower_teeth_matrix_node,
+        ]
 
     # =========================================================================
     # 06. Create Deform
     # =========================================================================
 
     def create_deform(self):
-        pass
+        u"""
+        使用单 Jnt SkinCluster 把 Upper / Lower Teeth 刚性绑定到对应 Jnt。
+
+        Returns:
+            list[str | None]:
+            Upper / Lower Teeth SkinCluster；没有对应模型时为 None。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：Upper Teeth Rigid Skin
+        # -------------------------------------------------------------------------
+        self.upper_teeth_skin_cluster = self._create_rigid_skin_cluster(
+            model=self.upper_teech_model,
+            jnt=self.upper_teeth_jnt,
+            skin_name=self.upper_teeth_skin_name
+        )
+
+        # -------------------------------------------------------------------------
+        # Step 02：Lower Teeth Rigid Skin
+        # -------------------------------------------------------------------------
+        self.lower_teeth_skin_cluster = self._create_rigid_skin_cluster(
+            model=self.lower_teech_model,
+            jnt=self.lower_teeth_jnt,
+            skin_name=self.lower_teeth_skin_name
+        )
+
+        self.module_dict["upper_skin"] = self.upper_teeth_skin_cluster
+        self.module_dict["lower_skin"] = self.lower_teeth_skin_cluster
+
+        return [
+            self.upper_teeth_skin_cluster,
+            self.lower_teeth_skin_cluster,
+        ]
+
+    # =========================================================================
+    # 07. Create Finalize
+    # =========================================================================
 
     def create_finalize(self):
         u"""
@@ -474,7 +455,7 @@ class TeethModule(FaceModuleBase):
         ]
 
         # -------------------------------------------------------------------------
-        # Step 01：验证必须存在的 jnt / Controller / Matrix
+        # Step 01：验证必须存在的 Jnt / Controller / Matrix
         # -------------------------------------------------------------------------
         for node in required_nodes:
             if not node:
@@ -487,26 +468,287 @@ class TeethModule(FaceModuleBase):
                 label=u"Teeth Module Build Node"
             )
 
-        #整理层级结构，创建模块的对应的控制器组和关节组
-        self.teeth_ctrl_grp = cmds.createNode('transform',name=self.teeth_ctrl_grp_name,parent=self.face_ctrl_grp)
-        self.teeth_jnt_grp = cmds.createNode('transform',name=self.teeth_jnt_grp_name,parent=self.face_jnt_grp)
-        
-        #将对应的控制器和关节都放到对应的组下
-        for jnt in self.teeth_jnt_list:
-            hierarchy_utils.parent (child_node = jnt , parent_node = self.teeth_jnt_grp)
-        for top_grp in self. teeth_top_group_list:
-            hierarchy_utils.parent (child_node = top_grp , parent_node = self. teeth_top_group_list)
+        # -------------------------------------------------------------------------
+        # Step 02：可选模型只有在传入时才要求 SkinCluster 构建完成
+        # -------------------------------------------------------------------------
+        self._validate_skin_result(
+            model=self.upper_teech_model,
+            skin_cluster=self.upper_teeth_skin_cluster,
+            label=u"Upper Teeth"
+        )
+        self._validate_skin_result(
+            model=self.lower_teech_model,
+            skin_cluster=self.lower_teeth_skin_cluster,
+            label=u"Lower Teeth"
+        )
+
         self.module_dict["upper_top_group"] = self.upper_teeth_top_group
         self.module_dict["lower_top_group"] = self.lower_teeth_top_group
         self.module_dict["built"] = True
+        return True
 
     # =========================================================================
     # Naming / Scene State
     # =========================================================================
 
+    def _prepare_names(self):
+        u"""根据 Teeth Module Identity 准备全部标准名称。"""
+        # -------------------------------------------------------------------------
+        # Step 01：Jnt Names
+        # -------------------------------------------------------------------------
+        self.upper_teeth_jnt_name = self.create_name(
+            type="jnt",
+            part="upper_teeth",
+            function="bind"
+        )
+        self.lower_teeth_jnt_name = self.create_name(
+            type="jnt",
+            part="lower_teeth",
+            function="bind"
+        )
 
+        # -------------------------------------------------------------------------
+        # Step 02：Controller Names
+        # -------------------------------------------------------------------------
+        self.upper_teeth_ctrl_name = self.create_name(
+            type="ctrl",
+            part="upper_teeth",
+            function="bind"
+        )
+        self.lower_teeth_ctrl_name = self.create_name(
+            type="ctrl",
+            part="lower_teeth",
+            function="bind"
+        )
 
+        # -------------------------------------------------------------------------
+        # Step 03：Matrix / Skin Names
+        # -------------------------------------------------------------------------
+        self.upper_teeth_matrix_name = self.create_name(
+            type="mult",
+            part="upper_teeth",
+            function="parent"
+        )
+        self.lower_teeth_matrix_name = self.create_name(
+            type="mult",
+            part="lower_teeth",
+            function="parent"
+        )
+        self.upper_teeth_skin_name = self.create_name(
+            type="skin",
+            part="upper_teeth",
+            function="bind"
+        )
+        self.lower_teeth_skin_name = self.create_name(
+            type="skin",
+            part="lower_teeth",
+            function="bind"
+        )
+        return True
 
+    def _validate_model_inputs_unique(self):
+        u"""检查 Upper / Lower Teeth 是否误用了同一个模型。"""
+        model_inputs = [
+            (u"Upper Teeth Model", self.upper_teech_model),
+            (u"Lower Teeth Model", self.lower_teech_model),
+        ]
+        resolved_models = {}
+
+        for label, model in model_inputs:
+            if not model:
+                continue
+
+            long_name = scene_utils.get_long_name(
+                model
+            )
+
+            if long_name in resolved_models:
+                other_label = resolved_models[long_name]
+                raise RuntimeError(
+                    u"{} 与 {} 指向同一个模型：{}。Upper / Lower Teeth 必须是独立输入。".format(
+                        other_label,
+                        label,
+                        long_name
+                    )
+                )
+
+            resolved_models[long_name] = label
+
+        return True
+
+    def _validate_build_nodes_available(self):
+        u"""构建前检查上一次 Teeth Build 的确定性节点是否已经存在。"""
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
+        expected_nodes = [
+            self.upper_teeth_jnt_name,
+            self.lower_teeth_jnt_name,
+            self.upper_teeth_matrix_name,
+            self.lower_teeth_matrix_name,
+        ]
+
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
+        if self.upper_teech_model:
+            expected_nodes.append(
+                self.upper_teeth_skin_name
+            )
+
+        if self.lower_teech_model:
+            expected_nodes.append(
+                self.lower_teeth_skin_name
+            )
+
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
+        teeth_ctrl_name_list = [
+            self.upper_teeth_ctrl_name,
+            self.lower_teeth_ctrl_name,
+        ]
+
+        for teeth_ctrl_name in teeth_ctrl_name_list:
+            teeth_ctrl_hierarchy_names = ctrl_base.get_ctrl_hierarchy_names(
+                teeth_ctrl_name
+            )
+
+            for hierarchy_key in teeth_ctrl_hierarchy_names:
+                hierarchy_name = teeth_ctrl_hierarchy_names[hierarchy_key]
+
+                if hierarchy_name is None:
+                    continue
+
+                expected_nodes.append(
+                    hierarchy_name
+                )
+
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
+        scene_utils.ensure_nodes_available(
+            expected_nodes,
+            label=u"Teeth Module Build Node"
+        )
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
+        return True
+
+    @staticmethod
+    def _validate_model_skin_state(model, label):
+        u"""检查 Teeth Model 是否已经存在 SkinCluster。"""
+        if not model:
+            return True
+
+        skin_cluster = skin_utils.find_skin_cluster(
+            model
+        )
+
+        if not skin_cluster:
+            return True
+
+        raise RuntimeError(
+            u"{} 已经存在 SkinCluster：{}。Teeth Module 不会覆盖已有权重。".format(
+                label,
+                skin_cluster
+            )
+        )
+
+    @staticmethod
+    def _create_rigid_skin_cluster(
+            model,
+            jnt,
+            skin_name
+    ):
+        u"""
+        使用一个 Jnt 创建 Teeth 刚性 SkinCluster。
+
+        Args:
+            model (str | None):
+                需要绑定的 Teeth Model。
+            jnt (str):
+                唯一影响 Teeth Model 的 Bind Jnt。
+            skin_name (str):
+                标准 SkinCluster 名称。
+
+        Returns:
+            str | None:
+                SkinCluster；没有模型输入时返回 None。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
+        if not model:
+            return None
+
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
+        existing_skin_cluster = skin_utils.find_skin_cluster(
+            model
+        )
+
+        if existing_skin_cluster:
+            raise RuntimeError(
+                u"模型已经存在 SkinCluster：{}".format(
+                    existing_skin_cluster
+                )
+            )
+
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
+        skin_result = cmds.skinCluster(
+            jnt,
+            model,
+            name=skin_name,
+            toSelectedBones=True,
+            bindMethod=0,
+            skinMethod=0,
+            normalizeWeights=1,
+            maximumInfluences=1,
+            obeyMaxInfluences=True
+        )
+
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
+        if not skin_result:
+            raise RuntimeError(
+                u"创建 Teeth SkinCluster 失败：{}".format(
+                    model
+                )
+            )
+
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
+        return skin_result[0]
+
+    @staticmethod
+    def _validate_skin_result(
+            model,
+            skin_cluster,
+            label
+    ):
+        u"""检查一个可选 Teeth Model 的 SkinCluster 构建结果。"""
+        if not model:
+            return True
+
+        if not skin_cluster:
+            raise RuntimeError(
+                u"{} Model 没有完成 Skin 绑定。".format(
+                    label
+                )
+            )
+
+        scene_utils.validate_node(
+            skin_cluster,
+            label=u"{} SkinCluster".format(label)
+        )
+        return True
 
 
 def build_teeth():
