@@ -1,9 +1,10 @@
 # coding=utf-8
-u"""修正一次性 Jnt Migration Contract 的自扫描边界并执行迁移。"""
+u"""修正一次性 Jnt Migration 的保护规则 / Contract 边界并执行迁移。"""
 
 from __future__ import print_function
 
 import os
+import re
 import runpy
 
 
@@ -81,9 +82,20 @@ contract_source = contract_source.replace(
 )
 
 # runpy.run_path() 返回的是结果字典；函数真正使用的是自己的 __globals__。
-# 必须写入函数绑定的全局空间，write_contract_test() 才会输出修正后的契约。
+# 必须修改函数绑定的全局空间，main() 内部才会真正使用修正规则。
 main_function = namespace["main"]
 main_globals = main_function.__globals__
 main_globals["JNT_CONTRACT_SOURCE"] = contract_source
+
+# 原始规则在普通引号前使用了 \b：
+#     type="joint"
+#     cmds.createNode("joint")
+# 这类字符串的引号前不是 Word Boundary，因此没有被保护。
+# 修正后：所有精确的 "joint" / 'joint' 字符串都会先保护；
+# 后续只有 Muzi Naming 的 create_name(type="joint") 会被明确改成 jnt。
+main_globals["EXACT_JOINT_STRING_PATTERN"] = re.compile(
+    r"(?P<prefix>(?:\b(?:u|r|ur|ru|b|br|rb|f|fr|rf))?)(?P<quote>['\"])joint(?P=quote)",
+    re.IGNORECASE
+)
 
 main_function()
