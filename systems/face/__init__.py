@@ -16,6 +16,12 @@ Face Rig 的正式系统包。
 
 from __future__ import print_function
 
+# Controller Appearance 的正式默认值必须在 Face Build / Module 被导入前应用，
+# 这样 UI、FaceBuild 和单独 Module Build 始终读取同一份运行时配置。
+from .controller_defaults import apply_controller_defaults
+
+apply_controller_defaults()
+
 from .build import attach_joints_to_curves
 from .build import build_eye_bag_joints
 from .build import build_eyelid_joints
