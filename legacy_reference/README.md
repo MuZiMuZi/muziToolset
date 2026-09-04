@@ -6,7 +6,7 @@
 
 ```text
 legacy_reference/
-├─ bind/           # 早期绑定相关代码
+├─ bind/           # 2026-08-29 旧 Bind 完整历史快照
 ├─ core/           # Core 历史实现 / 迁移记录
 ├─ dev/            # 旧开发辅助脚本
 ├─ integrations/   # AdvancedSkeleton / MetaHuman 历史集成参考
@@ -14,6 +14,44 @@ legacy_reference/
 ├─ res/            # 旧资源与 UI 资源
 └─ rigging/        # 旧 Body / IKFK / Ribbon / Controller Rig 参考实现
 ```
+
+## Bind 历史快照（2026-08-29）
+
+`legacy_reference/bind/` 已恢复为上周使用的旧 Bind 包，来源提交：
+
+```text
+8f52bc20fa7b0d585e3686b4f9b7af87f6f9b7d0
+chore: archive legacy bind package
+2026-08-29
+```
+
+其中保留旧的 Module / Subject / UI 结构，包括：
+
+```text
+legacy_reference/bind/
+├─ module/
+│  ├─ base/
+│  ├─ chain/
+│  └─ limb/
+├─ subject/
+│  ├─ body_subject/
+│  └─ face_subject/
+│     ├─ brow.py
+│     ├─ cheek.py
+│     ├─ ear.py
+│     ├─ eye.py
+│     ├─ eyeLid.py
+│     ├─ face_rig.py
+│     ├─ jaw.py
+│     ├─ mouth.py
+│     ├─ mouthLip.py
+│     ├─ nose.py
+│     └─ tongue.py
+└─ ui/
+```
+
+这份代码只用于参考上周绑定算法和旧架构，不重新接回当前 `systems/face/` Runtime。
+正式 Face 系统仍以 `systems/face/` 为唯一运行实现。
 
 ## Core 历史参考
 
@@ -67,9 +105,15 @@ legacy_reference/rigging/controlUtils.py
 
 这些流程如果重新开发，应进入独立 `systems/`，不允许再次塞回 `core/`。
 
-## Face 已完成迁移
+## Face 正式迁移状态
 
-旧 `legacy_reference/face/` 已完成审计并删除。正式 Face 开发位于 `systems/face/`。
+正式 Face 开发位于：
+
+```text
+systems/face/
+```
+
+旧 Face Bind 代码虽然重新保存在 `legacy_reference/bind/subject/face_subject/`，但它只是历史快照，不属于正式 Face Package，也不能成为当前系统的运行依赖。
 
 ## 使用规则
 
