@@ -11,7 +11,7 @@ Face Finalize Step Contract Test
     3. Finalize 只做最终验收、Controller Set、Visibility 和 Step 状态；
     4. 成功后必须标记 Step 04 完成，并保持 Current Face Step = 04；
     5. Finalize 不允许重新创建 Joint / Controller / Matrix / Deformer；
-    6. 正式 UI 必须通过 finalize_controller 暴露 Step 04。
+    6. 正式 UI 允许通过 Lifecycle Controller 继续继承 finalize_controller。
 """
 
 from __future__ import print_function
@@ -50,6 +50,14 @@ FACE_UI_CONTROLLER_PATH = os.path.join(
     "face",
     "ui",
     "face_rig_controller.py"
+)
+
+LIFECYCLE_CONTROLLER_PATH = os.path.join(
+    PACKAGE_DIR,
+    "systems",
+    "face",
+    "ui",
+    "lifecycle_controller.py"
 )
 
 REQUIRED_METHODS = [
@@ -172,7 +180,7 @@ def main():
         )
 
     # -------------------------------------------------------------------------
-    # Step 05：确认正式 Face UI 已经路由到 Finalize Controller
+    # Step 05：确认最终 UI 通过 Lifecycle Controller 继续继承 Finalize
     # -------------------------------------------------------------------------
     if not os.path.isfile(FACE_UI_INIT_PATH):
         raise AssertionError(
@@ -200,14 +208,32 @@ def main():
     with open(FACE_UI_CONTROLLER_PATH, "r", encoding="utf-8") as file_object:
         controller_source = file_object.read()
 
-    if "from . import finalize_controller" not in controller_source:
+    if "from . import lifecycle_controller" not in controller_source:
         raise AssertionError(
-            u"最终 Face Rig Controller 尚未路由到 finalize_controller。"
+            u"最终 Face Rig Controller 尚未路由到 lifecycle_controller。"
         )
 
-    if "class FaceRigWizard(finalize_controller.FaceRigWizard):" not in controller_source:
+    if "class FaceRigWizard(lifecycle_controller.FaceRigWizard):" not in controller_source:
         raise AssertionError(
-            u"最终 Face Rig Wizard 没有继承 Step 04 Finalize Controller。"
+            u"最终 Face Rig Wizard 没有继承 Workflow Lifecycle Controller。"
+        )
+
+    if not os.path.isfile(LIFECYCLE_CONTROLLER_PATH):
+        raise AssertionError(
+            u"缺少 systems/face/ui/lifecycle_controller.py。"
+        )
+
+    with open(LIFECYCLE_CONTROLLER_PATH, "r", encoding="utf-8") as file_object:
+        lifecycle_source = file_object.read()
+
+    if "from . import finalize_controller" not in lifecycle_source:
+        raise AssertionError(
+            u"Workflow Lifecycle Controller 尚未继承 finalize_controller。"
+        )
+
+    if "class FaceRigWizard(finalize_controller.FaceRigWizard):" not in lifecycle_source:
+        raise AssertionError(
+            u"Workflow Lifecycle Wizard 没有继承 Step 04 Finalize Controller。"
         )
 
     # -------------------------------------------------------------------------
