@@ -25,8 +25,10 @@ ctrl_utils：Maya Controller 基础工具。
         适合调整控制器视觉尺寸，同时保持 Transform Scale 为默认值。
 """
 
-import pymel.core as pm
+import os
+import json
 
+import pymel.core as pm
 
 class Ctrl(object):
 
@@ -170,3 +172,112 @@ class Ctrl(object):
             # 获取 Curve 的全部 CV，并在对象自身空间中进行相对缩放。
             # 这里只修改 Shape CV，因此不会改变控制器 Transform 的 Scale 数值。
             pm.scale(self.ctrl_shape.cv[:], ctrl_size, ctrl_size, ctrl_size, relative=True, objectSpace=True)
+
+
+    def set_ctrl_shape (self , shape_name) :
+        u"""
+        根据 Shape Library 中的 JSON 文件替换当前控制器的 Curve Shape。
+
+        shape_name(str): Controller Shape 名称，例如 "circle"、"cube"、"ball"。
+
+        Returns:
+            list: 新创建的 NurbsCurve Shape 节点列表。
+
+        Maya 使用示例：
+
+        from muziToolset.core.rigging import ctrl_utils
+
+        ctrl_object = ctrl_utils.Ctrl(name="ctrl_lf_eye_main_001")
+        ctrl_object.create_ctrl()
+
+        ctrl_object.set_ctrl_shape("cube")
+        """
+
+        # 获取 muziToolset 项目根目录。
+        rigging_path = os.path.dirname (__file__)
+        core_path = os.path.dirname (rigging_path)
+        project_path = os.path.dirname (core_path)
+
+        # 拼接 Controller Shape JSON 文件路径。
+        shape_file = os.path.join (
+            project_path ,
+            "resources" ,
+            "controller_shapes" ,
+            shape_name + ".json"
+        )
+
+        # 检查 Shape 文件是否存在。
+        if not os.path.exists (shape_file) :
+            pm.warning (u"找不到 Controller Shape 文件：{}".format (shape_file))
+            return []
+
+        # 读取 JSON 数据。
+        with open (shape_file , "r") as file :
+            shape_data = json.load (file)
+
+        # 临时保存通过 JSON 创建出来的 Curve Transform。
+        curve_transforms = []
+
+        # 一个 JSON 文件可能包含多个 Curve Shape。
+        for shape_info in shape_data :
+
+            point_values = shape_info ["points"]
+            degree = shape_info ["degree"]
+            periodic = shape_info ["periodic"]
+            knot = shape_info ["knot"]
+
+            # 将一维 points 数据恢复成 Maya Curve 使用的 XYZ 点。
+            points = []
+
+            for index in range (0 , len (point_values) , 3) :
+                point = (
+                    point_values [index] ,
+                    point_values [index + 1] ,
+                    point_values [index + 2]
+                )
+
+                points.append (point)
+
+            # Periodic Curve 需要重复前 degree 个点。
+            if periodic :
+
+                for index in range (degree) :
+                    points.append (points [index])
+
+            # 根据 JSON 数据创建临时 Curve。
+            curve_transform = pm.curve (
+                point = points ,
+                degree = degree ,
+                knot = knot ,
+                periodic = periodic
+            )
+
+            curve_transforms.append (curve_transform)
+
+        # 获取 Controller 原来的 Shape。
+        old_shapes = self.ctrl.getShapes (noIntermediate = True)
+
+        # 删除旧 Shape。
+        for old_shape in old_shapes :
+            pm.delete (old_shape)
+
+        # 保存最终的新 Shape。
+        new_shapes = []
+
+        # 将临时 Curve 的 Shape 移到 Controller Transform 下面。
+        for curve_transform in curve_transforms :
+            curve_shape = curve_transform.getShape ()
+
+            pm.parent (curve_shape , self.ctrl , shape = True , relative = True)
+
+            new_shapes.append (curve_shape)
+
+            # Shape 已经移动到 Controller 下面，
+            # 所以原来的临时 Transform 可以删除。
+            pm.delete (curve_transform)
+
+        # 保持当前类原来的 self.ctrl_shape 设计。
+        if new_shapes :
+            self.ctrl_shape = new_shapes [0]
+
+        return new_shapes
