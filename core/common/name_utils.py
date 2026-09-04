@@ -14,6 +14,44 @@ name_utils：Maya Rig 基础命名工具。
     1. 拆分名称
     2. 组合名称
     3. 翻转左右方向
+
+Maya 使用示例：
+
+    from muziToolset.core.common import name_utils
+
+    # ------------------------------------------------------------
+    # 1. 组合名称
+    # ------------------------------------------------------------
+    name_object = name_utils.Name(
+        type="ctrl",
+        side="lf",
+        part="eye",
+        function="main",
+        index=1
+    )
+
+    print(name_object.compose_name())
+    # ctrl_lf_eye_main_001
+
+    # ------------------------------------------------------------
+    # 2. 拆分名称
+    # ------------------------------------------------------------
+    name_object = name_utils.Name(
+        name="jnt_rt_brow_bind_003"
+    )
+
+    print(name_object.type)
+    print(name_object.side)
+    print(name_object.part)
+    print(name_object.function)
+    print(name_object.index)
+
+    # ------------------------------------------------------------
+    # 3. 翻转左右方向
+    # ------------------------------------------------------------
+    name_object.flip()
+    print(name_object.side)
+    # lf
 """
 
 
@@ -38,9 +76,9 @@ class Name(object):
         self.index = index
 
         if self.name:
-            self.decompose()
+            self.decompose_name()
 
-    def decompose(self):
+    def decompose_name(self):
         u"""将标准名称拆分到当前对象的数据中。"""
 
         name_parts = self.name.split("_")
