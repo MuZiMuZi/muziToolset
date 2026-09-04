@@ -6,22 +6,20 @@ Face Rig Final UI Controller
 Face Rig UI 的最终组合入口。
 
 当前职责：
-    1. 继承 Step 04 Finalize UI Controller；
+    1. 继承完整 Workflow Lifecycle Controller；
     2. 让整个 UI Workflow 统一使用 guide 包公开的正式 FaceGuide；
-    3. 避免基础 face_rig_ui.py 中历史 Direct Import 固定到旧 FaceGuide Class。
-
-这样 Step 01 -> Step 02 自动加载 Guide 时，也会使用 Long Path / Namespace
-安全的 Template Root 识别逻辑，而不需要把 UI 业务复制到本文件。
+    3. 保持 Guide Long Path / Namespace 安全查询；
+    4. 统一启用“只允许底部下一步向前、回退自动清理、Guide Snapshot 持久化”的正式流程。
 """
 
 from __future__ import print_function
 
 from ..guide import FaceGuide
-from . import finalize_controller
+from . import lifecycle_controller
 
 
-class FaceRigWizard(finalize_controller.FaceRigWizard):
-    u"""使用正式 FaceGuide 的最终 Face Rig Wizard。"""
+class FaceRigWizard(lifecycle_controller.FaceRigWizard):
+    u"""使用正式 FaceGuide 与 Workflow Lifecycle 的最终 Face Rig Wizard。"""
 
     def get_face_guide(
             self,
@@ -49,7 +47,7 @@ class FaceRigWizard(finalize_controller.FaceRigWizard):
 
 def main():
     u"""
-    创建包含 Setup / Guide / Build / Finalize 的正式 Face Rig UI。
+    创建包含 Setup / Guide / Build / Finalize 生命周期管理的正式 Face Rig UI。
 
     Returns:
         FaceRigWizard:
