@@ -32,7 +32,7 @@ import maya.cmds as cmds
 from ....core import constraint_utils
 from ....core import curve_utils
 from ....core import hierarchy_utils
-from ....core import joint_utils
+from ....core import jnt_utils
 from ....core import scene_utils
 from ....core import transform_utils
 from .. import naming as face_naming

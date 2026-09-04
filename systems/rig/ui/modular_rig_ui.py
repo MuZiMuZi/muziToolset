@@ -23,7 +23,7 @@ from __future__ import print_function
 
 import maya.cmds as cmds
 
-from ....core import joint_utils
+from ....core import jnt_utils
 from ....core import scene_utils
 
 try:

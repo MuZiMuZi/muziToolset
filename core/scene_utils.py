@@ -393,7 +393,7 @@ def get_nodes_by_type(
 
     Args:
         node_type (str):
-            需要查询的 Maya Node Type，例如 ``joint`` 或 ``transform``。
+            需要查询的 Maya Node Type，例如 ``jnt`` 或 ``transform``。
         long (bool):
             是否让 Maya 对 DAG Node 返回 Long Path。
 

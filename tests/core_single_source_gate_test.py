@@ -59,12 +59,12 @@ OWNER_BY_FUNCTION = {
     "average_point3": "core/math_utils.py",
 
     # Joint chain
-    "validate_joint_list": "core/joint_chain_utils.py",
-    "get_joint_path": "core/joint_chain_utils.py",
-    "parent_joints_as_chain": "core/joint_chain_utils.py",
-    "create_joints_at_items": "core/joint_chain_utils.py",
-    "get_curve_joint_base_name": "core/joint_chain_utils.py",
-    "create_joints_on_curve_cvs": "core/joint_chain_utils.py",
+    "validate_joint_list": "core/jnt_chain_utils.py",
+    "get_joint_path": "core/jnt_chain_utils.py",
+    "parent_joints_as_chain": "core/jnt_chain_utils.py",
+    "create_joints_at_items": "core/jnt_chain_utils.py",
+    "get_curve_joint_base_name": "core/jnt_chain_utils.py",
+    "create_joints_on_curve_cvs": "core/jnt_chain_utils.py",
 
     # Export
     "ensure_fbx_plugin_loaded": "core/scene_utils.py",

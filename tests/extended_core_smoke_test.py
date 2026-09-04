@@ -27,8 +27,8 @@ import maya.cmds as cmds
 
 from ..core import attr_utils
 from ..core import hierarchy_utils
-from ..core import joint_chain_utils
-from ..core import joint_utils
+from ..core import jnt_chain_utils
+from ..core import jnt_utils
 from ..core import model_check_utils
 from ..core import rename_utils
 from ..core import scene_utils
@@ -363,7 +363,7 @@ def test_hierarchy_utils(token, test_root):
 
 def test_joint_utils(token, test_root):
     u"""验证 Joint Create / Chain / Radius / Label。"""
-    root_joint = joint_utils.Joint.create(
+    root_joint = jnt_utils.Joint.create(
         name=create_name(token, "joint_root"),
         position=[0.0, 5.0, 0.0],
         parent=test_root,
@@ -400,7 +400,7 @@ def test_joint_utils(token, test_root):
         function="bind",
         index=1
     ).name
-    tagged_joint = joint_utils.Joint.create(
+    tagged_joint = jnt_utils.Joint.create(
         name=tagged_name,
         position=[0.0, 0.0, 0.0],
         parent=test_root

@@ -14,7 +14,7 @@ import uuid
 
 import maya.cmds as cmds
 
-from ..core import joint_utils
+from ..core import jnt_utils
 from ..core import snap_utils
 from ..systems import ctrl_base
 
@@ -286,7 +286,7 @@ def test_locator_visual_position(token):
         u"Locator Ctrl Position"
     )
 
-    joint = joint_utils.Joint.create_at_object(
+    joint = jnt_utils.Joint.create_at_object(
         obj=guide,
         name="jnt_md_{}_locator_001".format(token),
         parent=ctrl_parent,

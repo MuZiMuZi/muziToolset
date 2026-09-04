@@ -24,7 +24,7 @@ import maya.cmds as cmds
 from .....core import attr_utils
 from .....core import connection_utils
 from .....core import hierarchy_utils
-from .....core import joint_utils
+from .....core import jnt_utils
 from .....core import scene_utils
 from .....core import transform_utils
 from ... import naming as face_naming
@@ -821,10 +821,10 @@ def build_zip_lip(
     index = 0
 
     while index < len(upper_joints):
-        joint_utils.Joint(
+        jnt_utils.Joint(
             upper_joints[index]
         )
-        joint_utils.Joint(
+        jnt_utils.Joint(
             lower_joints[index]
         )
         index += 1

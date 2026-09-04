@@ -38,7 +38,7 @@ from ....core import connection_utils
 from ....core import constraint_utils
 from ....core import curve_utils
 from ....core import hierarchy_utils
-from ....core import joint_utils
+from ....core import jnt_utils
 from ....core import math_utils
 from ....core import rename_utils
 from ....core import scene_utils

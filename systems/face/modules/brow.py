@@ -26,7 +26,7 @@ from ....core import attr_utils
 from ....core import connection_utils
 from ....core import curve_utils
 from ....core import hierarchy_utils
-from ....core import joint_utils
+from ....core import jnt_utils
 from ....core import matrix_utils
 from ....core import scene_utils
 from ....core import surface_utils
@@ -224,7 +224,7 @@ class BrowModule(FaceModuleBase):
                     label=u"Brow Driver Joint"
                 )
 
-                brow_driver_jnt = joint_utils.Joint.create_at_object(
+                brow_driver_jnt = jnt_utils.Joint.create_at_object(
                     obj=point_guides[index],
                     name=brow_driver_jnt_name,
                     parent=self.face_jnt_grp,

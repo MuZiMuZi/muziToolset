@@ -21,7 +21,7 @@ from __future__ import print_function
 import maya.cmds as cmds
 
 from ....core import curve_utils
-from ....core import joint_utils
+from ....core import jnt_utils
 from ....core import matrix_utils
 from ....core import rename_utils
 from ....core import scene_utils
@@ -177,7 +177,7 @@ class LipModule(FaceModuleBase):
                 lip_driver_jnt_name,
                 label=u"Lip Curve Driver Joint"
             )
-            lip_driver_jnt = joint_utils.Joint.create_at_object(
+            lip_driver_jnt = jnt_utils.Joint.create_at_object(
                 obj=guide,
                 name=lip_driver_jnt_name,
                 parent=self.face_jnt_grp,
@@ -293,7 +293,7 @@ class LipModule(FaceModuleBase):
                     function="bind",
                     index=item_index
                 )
-                lip_deform_jnt = joint_utils.Joint.create(
+                lip_deform_jnt = jnt_utils.Joint.create(
                     name=lip_deform_jnt_name,
                     position=sample_points[sample_index],
                     parent=self.face_jnt_grp,

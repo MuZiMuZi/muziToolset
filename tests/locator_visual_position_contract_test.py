@@ -65,7 +65,7 @@ def run():
         ]
     )
     require_text(
-        "core/joint_utils.py",
+        "core/jnt_utils.py",
         [
             "snap_utils.get_item_world_position(",
         ]

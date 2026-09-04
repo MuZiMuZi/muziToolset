@@ -17,11 +17,11 @@ Core 只提供与具体 Rig 业务无关的 Maya / Python 通用基础能力。
     hierarchy_utils.py
         DAG Parent / Child / Group 层级操作。
 
-    joint_utils.py
-        单个 Maya Joint 创建、属性和显示操作，以及全局 Joint Display Scale。
+    jnt_utils.py
+        单个 Maya jnt 创建、属性和显示操作，以及全局 jnt Display Scale。
 
-    joint_chain_utils.py
-        多 Joint / Joint Chain、Maya Item -> Joint、Curve CV -> Joint 的参数化通用算法。
+    jnt_chain_utils.py
+        多 jnt / jnt Chain、Maya Item -> jnt、Curve CV -> jnt 的参数化通用算法。
         不读取当前 Selection，不包含 Tool Warning / UI 语义。
 
     transform_utils.py

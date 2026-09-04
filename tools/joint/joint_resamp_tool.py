@@ -44,7 +44,7 @@ except ImportError:
     from PySide6.QtWidgets import QWidget
 
 from ...core import hierarchy_utils
-from ...core import joint_utils
+from ...core import jnt_utils
 from ...core import math_utils
 from ...core import rename_utils
 from ...core import scene_utils
@@ -215,7 +215,7 @@ def validate_joint(joint, label):
         return False
 
     try:
-        joint_utils.Joint(
+        jnt_utils.Joint(
             joint
         )
     except RuntimeError as error:

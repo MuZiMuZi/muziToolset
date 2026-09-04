@@ -49,7 +49,7 @@ from ....core import attr_utils
 from ....core import connection_utils
 from ....core import constraint_utils
 from ....core import hierarchy_utils
-from ....core import joint_utils
+from ....core import jnt_utils
 from ....core import matrix_utils
 from ....core import scene_utils
 from ....core import transform_utils
@@ -257,7 +257,7 @@ class JawModule(FaceModuleBase):
         # -------------------------------------------------------------------------
         # Step 01：在 Jaw Start Guide 创建主 Jaw Joint，并挂到 Face Joint Group
         # -------------------------------------------------------------------------
-        self.jaw_start_joint = joint_utils.Joint.create_at_object(
+        self.jaw_start_joint = jnt_utils.Joint.create_at_object(
             obj=self.jaw_start_guide,
             name=self.jaw_start_joint_name,
             parent=self.face_jnt_grp,

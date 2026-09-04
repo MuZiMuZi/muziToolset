@@ -58,8 +58,8 @@ from ...core import attr_utils
 from ...core import constraint_utils
 from ...core import curve_utils
 from ...core import hierarchy_utils
-from ...core import joint_chain_utils
-from ...core import joint_utils
+from ...core import jnt_chain_utils
+from ...core import jnt_utils
 from ...core import rename_utils
 from ...core import scene_utils
 from ...core import skin_utils
@@ -648,7 +648,7 @@ class JointTool(QWidget):
                         child_name
                     )
 
-                joint = joint_utils.Joint.create_at_object(
+                joint = jnt_utils.Joint.create_at_object(
                     obj=selected_object,
                     name=child_name,
                     parent=selected_object,

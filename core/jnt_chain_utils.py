@@ -1,19 +1,19 @@
 # coding=utf-8
 u"""
-Joint Chain Utils
+jnt Chain Utils
 =================
 
-Maya 多 Joint / Joint Chain 的通用底层算法。
+Maya 多 jnt / jnt Chain 的通用底层算法。
 
 模块职责：
-    1. 验证明确传入的一组 Joint；
-    2. 查询 Start Joint 到指定 Descendant Joint 的有序路径；
-    3. 按调用方给定顺序建立 Joint Parent Chain；
-    4. 根据 Maya Object / Component 世界位置批量创建 Joint；
-    5. 根据 Curve CV 世界位置创建 Joint Chain。
+    1. 验证明确传入的一组 jnt；
+    2. 查询 Start jnt 到指定 Descendant jnt 的有序路径；
+    3. 按调用方给定顺序建立 jnt Parent Chain；
+    4. 根据 Maya Object / Component 世界位置批量创建 jnt；
+    5. 根据 Curve CV 世界位置创建 jnt Chain。
 
 模块边界：
-    单个 Joint 属性 / 创建      -> joint_utils
+    单个 jnt 属性 / 创建      -> jnt_utils
     DAG Parent / Group          -> hierarchy_utils
     Curve 查询                  -> curve_utils
     Transform 世界数据          -> transform_utils
@@ -24,9 +24,9 @@ Maya 多 Joint / Joint Chain 的通用底层算法。
 
 设计原则：
     1. 不读取当前 Maya Selection；调用者必须传入明确数据；
-    2. 不维护第二套单 Joint 创建逻辑，统一复用 ``joint_utils.Joint.create()``；
+    2. 不维护第二套单 jnt 创建逻辑，统一复用 ``jnt_utils.jnt.create()``；
     3. 不维护第二套 Curve 查询逻辑，统一复用 ``curve_utils``；
-    4. 不建立额外 JointChain 包装类，使用清晰的模块函数；
+    4. 不建立额外 jntChain 包装类，使用清晰的模块函数；
     5. 场景修改循环保持展开，方便在 Maya Script Editor 中逐步调试。
 """
 
@@ -36,7 +36,7 @@ import re
 
 from . import curve_utils
 from . import hierarchy_utils
-from . import joint_utils
+from . import jnt_utils
 from . import rename_utils
 from . import scene_utils
 from . import snap_utils
@@ -47,46 +47,46 @@ from . import transform_utils
 # Validate
 # =============================================================================
 
-def validate_joint_list(joints):
+def validate_jnt_list(jnts):
     u"""
-    验证输入 Joint，并返回一份独立列表。
+    验证输入 jnt，并返回一份独立列表。
 
-    输入可以是单个 Joint 名称或 Joint 列表。每一个元素都会通过
-    ``joint_utils.Joint`` 做真实 Maya Joint 类型检查。
+    输入可以是单个 jnt 名称或 jnt 列表。每一个元素都会通过
+    ``jnt_utils.jnt`` 做真实 Maya jnt 类型检查。
 
     Args:
-        joints (str | list[str]):
-            需要验证的单个 Joint 或 Joint 列表。
+        jnts (str | list[str]):
+            需要验证的单个 jnt 或 jnt 列表。
 
     Returns:
         list[str]:
-        保持调用方原有顺序的独立 Joint 列表。
+        保持调用方原有顺序的独立 jnt 列表。
 
     Raises:
         RuntimeError:
-        输入为空，或任意节点不存在 / 不是 Maya Joint 时抛出。
+        输入为空，或任意节点不存在 / 不是 Maya jnt 时抛出。
     """
-    if joints is None:
-        joints = []
+    if jnts is None:
+        jnts = []
 
-    if isinstance(joints, str):
-        joints = [
-            joints
+    if isinstance(jnts, str):
+        jnts = [
+            jnts
         ]
 
-    if not joints:
+    if not jnts:
         raise RuntimeError(
-            u"Joint 列表不能为空。"
+            u"jnt 列表不能为空。"
         )
 
     result = []
 
-    for joint in joints:
-        joint_utils.Joint(
-            joint
+    for jnt in jnts:
+        jnt_utils.jnt(
+            jnt
         )
         result.append(
-            joint
+            jnt
         )
 
     return result
@@ -96,18 +96,18 @@ def validate_joint_list(joints):
 # Chain Query / Edit
 # =============================================================================
 
-def get_joint_path(start_joint, end_joint):
+def get_jnt_path(start_jnt, end_jnt):
     u"""
-    查询 Start Joint 到指定 Descendant Joint 的有序 Joint Path。
+    查询 Start jnt 到指定 Descendant jnt 的有序 jnt Path。
 
-    该函数只沿 ``start_joint`` 的 Child Joint 向下查找，因此不会跨到 Parent、
+    该函数只沿 ``start_jnt`` 的 Child jnt 向下查找，因此不会跨到 Parent、
     Sibling 或另一条 Skeleton Branch。Start 与 End 不连通时返回 None。
 
     Args:
-        start_joint (str):
-            路径查询起点 Joint。
-        end_joint (str):
-            必须位于 Start Joint 子层级中的目标 Joint。
+        start_jnt (str):
+            路径查询起点 jnt。
+        end_jnt (str):
+            必须位于 Start jnt 子层级中的目标 jnt。
 
     Returns:
         list[str] | None:
@@ -115,63 +115,63 @@ def get_joint_path(start_joint, end_joint):
 
     Raises:
         RuntimeError:
-        Start / End 节点不存在或不是 Maya Joint 时抛出。
+        Start / End 节点不存在或不是 Maya jnt 时抛出。
     """
     # -------------------------------------------------------------------------
-    # Step 01：验证 Start / End 都是真实 Maya Joint，尽早阻止无效节点进入递归
+    # Step 01：验证 Start / End 都是真实 Maya jnt，尽早阻止无效节点进入递归
     # -------------------------------------------------------------------------
-    joint_utils.Joint(
-        start_joint
+    jnt_utils.jnt(
+        start_jnt
     )
-    joint_utils.Joint(
-        end_joint
-    )
-
-    # -------------------------------------------------------------------------
-    # Step 02：统一转换成唯一 Long DAG Path，避免场景重名 Joint 产生歧义
-    # -------------------------------------------------------------------------
-    start_joint = scene_utils.get_long_name(
-        start_joint
-    )
-    end_joint = scene_utils.get_long_name(
-        end_joint
+    jnt_utils.jnt(
+        end_jnt
     )
 
     # -------------------------------------------------------------------------
-    # Step 03：Start 与 End 相同属于长度为 1 的有效 Joint Path
+    # Step 02：统一转换成唯一 Long DAG Path，避免场景重名 jnt 产生歧义
     # -------------------------------------------------------------------------
-    if start_joint == end_joint:
+    start_jnt = scene_utils.get_long_name(
+        start_jnt
+    )
+    end_jnt = scene_utils.get_long_name(
+        end_jnt
+    )
+
+    # -------------------------------------------------------------------------
+    # Step 03：Start 与 End 相同属于长度为 1 的有效 jnt Path
+    # -------------------------------------------------------------------------
+    if start_jnt == end_jnt:
         return [
-            start_joint
+            start_jnt
         ]
 
     # -------------------------------------------------------------------------
-    # Step 04：从 Start 开始深度优先遍历 Child Joint，并持续复制当前有序路径
+    # Step 04：从 Start 开始深度优先遍历 Child jnt，并持续复制当前有序路径
     # -------------------------------------------------------------------------
-    def walk(current_joint, current_path):
+    def walk(current_jnt, current_path):
         children = hierarchy_utils.get_children(
-            current_joint,
-            node_type="joint",
+            current_jnt,
+            node_type="jnt",
             full_path=True
         )
 
-        for child_joint in children:
+        for child_jnt in children:
             child_path = []
 
-            for path_joint in current_path:
+            for path_jnt in current_path:
                 child_path.append(
-                    path_joint
+                    path_jnt
                 )
 
             child_path.append(
-                child_joint
+                child_jnt
             )
 
-            if child_joint == end_joint:
+            if child_jnt == end_jnt:
                 return child_path
 
             result = walk(
-                child_joint,
+                child_jnt,
                 child_path
             )
 
@@ -181,77 +181,77 @@ def get_joint_path(start_joint, end_joint):
         return None
 
     # -------------------------------------------------------------------------
-    # Step 05：返回第一条命中 End Joint 的路径；所有 Branch 都未命中则返回 None
+    # Step 05：返回第一条命中 End jnt 的路径；所有 Branch 都未命中则返回 None
     # -------------------------------------------------------------------------
     return walk(
-        start_joint,
-        [start_joint]
+        start_jnt,
+        [start_jnt]
     )
 
 
-def parent_joints_as_chain(joints):
+def parent_jnts_as_chain(jnts):
     u"""
-    按输入顺序把多个 Joint 建立为连续父子链。
+    按输入顺序把多个 jnt 建立为连续父子链。
 
     例如 ``[A, B, C]`` 最终建立 ``A → B → C``。函数只处理 Parent 关系，
-    不重新计算 Joint Orient，也不修改世界 Transform。
+    不重新计算 jnt Orient，也不修改世界 Transform。
 
     Args:
-        joints (str | list[str]):
-            按目标父子顺序排列的 Joint。
+        jnts (str | list[str]):
+            按目标父子顺序排列的 jnt。
 
     Returns:
         list[str]:
-        验证后的原顺序 Joint 列表。
+        验证后的原顺序 jnt 列表。
 
     Raises:
         RuntimeError:
-        任意节点不存在或不是 Maya Joint 时抛出。
+        任意节点不存在或不是 Maya jnt 时抛出。
     """
-    joints = validate_joint_list(
-        joints
+    jnts = validate_jnt_list(
+        jnts
     )
 
-    if len(joints) <= 1:
-        return joints
+    if len(jnts) <= 1:
+        return jnts
 
-    joint_index = len(joints) - 1
+    jnt_index = len(jnts) - 1
 
-    while joint_index > 0:
+    while jnt_index > 0:
         hierarchy_utils.parent(
-            joints[joint_index],
-            joints[joint_index - 1]
+            jnts[jnt_index],
+            jnts[jnt_index - 1]
         )
-        joint_index -= 1
+        jnt_index -= 1
 
-    return joints
+    return jnts
 
 
-def create_joints_at_items(
+def create_jnts_at_items(
         items,
         name_prefix="jnt_snap",
         parent_chain=False,
         radius=None
 ):
     u"""
-    在一组明确 Maya Object / Component 的世界位置创建 Joint。
+    在一组明确 Maya Object / Component 的世界位置创建 jnt。
 
-    Component 只提供世界位置；Transform / Joint 同时复制世界 Translation 和
-    Rotation。``parent_chain=True`` 时，新 Joint 会按输入顺序直接串成 Chain。
+    Component 只提供世界位置；Transform / jnt 同时复制世界 Translation 和
+    Rotation。``parent_chain=True`` 时，新 jnt 会按输入顺序直接串成 Chain。
 
     Args:
         items (str | list[str]):
-            需要作为 Joint 位置参考的 Maya Object / Component。
+            需要作为 jnt 位置参考的 Maya Object / Component。
         name_prefix (str):
-            新 Joint 的基础名称，例如 ``jnt_snap``；最终追加三位序号。
+            新 jnt 的基础名称，例如 ``jnt_snap``；最终追加三位序号。
         parent_chain (bool):
-            是否让后一个新 Joint Parent 到前一个新 Joint 下。
+            是否让后一个新 jnt Parent 到前一个新 jnt 下。
         radius (float | None):
-            可选 Joint Radius；None 时使用 ``Joint.create`` 默认值。
+            可选 jnt Radius；None 时使用 ``jnt.create`` 默认值。
 
     Returns:
         list[str]:
-        按创建顺序返回的新 Joint 列表。
+        按创建顺序返回的新 jnt 列表。
 
     Raises:
         RuntimeError:
@@ -270,22 +270,22 @@ def create_joints_at_items(
 
     if not items:
         raise RuntimeError(
-            u"没有给定用于创建 Joint 的 Maya Item。"
+            u"没有给定用于创建 jnt 的 Maya Item。"
         )
 
     # -------------------------------------------------------------------------
-    # Step 02：初始化 Build Result；Chain 模式用 current_parent 记录上一节 Joint
+    # Step 02：初始化 Build Result；Chain 模式用 current_parent 记录上一节 jnt
     # -------------------------------------------------------------------------
-    joints = []
+    jnts = []
     current_parent = None
     item_index = 0
 
     # -------------------------------------------------------------------------
-    # Step 03：按输入顺序逐项取得世界 Transform，并创建对应编号 Joint
+    # Step 03：按输入顺序逐项取得世界 Transform，并创建对应编号 jnt
     # -------------------------------------------------------------------------
     while item_index < len(items):
         item = items[item_index]
-        joint_name = "{}_{:03d}".format(
+        jnt_name = "{}_{:03d}".format(
             name_prefix,
             item_index + 1
         )
@@ -305,14 +305,14 @@ def create_joints_at_items(
                     )
                 )
 
-            joint = joint_utils.Joint.create(
-                name=joint_name,
+            jnt = jnt_utils.jnt.create(
+                name=jnt_name,
                 position=position,
                 parent=current_parent,
                 radius=radius
             )
         else:
-            # 普通 Transform / Joint 同时复制世界位置和世界旋转。
+            # 普通 Transform / jnt 同时复制世界位置和世界旋转。
             transform_utils.validate_transform(
                 item
             )
@@ -322,39 +322,39 @@ def create_joints_at_items(
             rotation = transform_utils.get_world_rotation(
                 item
             )
-            joint = joint_utils.Joint.create(
-                name=joint_name,
+            jnt = jnt_utils.jnt.create(
+                name=jnt_name,
                 position=position,
                 rotation=rotation,
                 parent=current_parent,
                 radius=radius
             )
 
-        joints.append(
-            joint
+        jnts.append(
+            jnt
         )
 
         # ---------------------------------------------------------------------
-        # Step 04：Chain 模式把当前 Joint 保存为下一节 Joint 的 Parent
+        # Step 04：Chain 模式把当前 jnt 保存为下一节 jnt 的 Parent
         # ---------------------------------------------------------------------
         if parent_chain:
-            current_parent = joint
+            current_parent = jnt
 
         item_index += 1
 
     # -------------------------------------------------------------------------
-    # Step 05：返回与输入 Item 顺序一致的新 Joint 列表
+    # Step 05：返回与输入 Item 顺序一致的新 jnt 列表
     # -------------------------------------------------------------------------
-    return joints
+    return jnts
 
 
 # =============================================================================
-# Curve -> Joint
+# Curve -> jnt
 # =============================================================================
 
-def get_curve_joint_base_name(curve):
+def get_curve_jnt_base_name(curve):
     u"""
-    根据 Curve Transform Short Name 生成默认 Joint Base Name。
+    根据 Curve Transform Short Name 生成默认 jnt Base Name。
 
     ``crv_lf_brow_001`` 会得到 ``jnt_lf_brow``；非 ``crv_`` 前缀的 Curve
     则直接在 Short Name 前增加 ``jnt_``。
@@ -365,7 +365,7 @@ def get_curve_joint_base_name(curve):
 
     Returns:
         str:
-        去掉末尾三位序号后的默认 Joint Base Name。
+        去掉末尾三位序号后的默认 jnt Base Name。
 
     Raises:
         RuntimeError:
@@ -396,34 +396,34 @@ def get_curve_joint_base_name(curve):
     )
 
 
-def create_joints_on_curve_cvs(
+def create_jnts_on_curve_cvs(
         curve,
-        joint_base_name=None,
+        jnt_base_name=None,
         parent_chain=True,
         create_group=True,
         group_name=None,
         radius=None
 ):
     u"""
-    根据 Curve 全部 CV 的世界位置创建 Joint。
+    根据 Curve 全部 CV 的世界位置创建 jnt。
 
-    每一个 CV 对应一个 Joint。默认情况下新 Joint 会按 CV 顺序组成 Chain，
-    并放到一个自动创建的 Joint Group 下。该函数只依据 CV Position 建 Joint，
-    不负责 Joint Orient、Skin 或 Controller Build。
+    每一个 CV 对应一个 jnt。默认情况下新 jnt 会按 CV 顺序组成 Chain，
+    并放到一个自动创建的 jnt Group 下。该函数只依据 CV Position 建 jnt，
+    不负责 jnt Orient、Skin 或 Controller Build。
 
     Args:
         curve (str):
             Maya NURBS Curve Transform 或 Shape。
-        joint_base_name (str | None):
-            Joint 基础名称；None 时由 Curve Name 自动生成。
+        jnt_base_name (str | None):
+            jnt 基础名称；None 时由 Curve Name 自动生成。
         parent_chain (bool):
-            是否按 CV 顺序建立连续 Joint Chain。
+            是否按 CV 顺序建立连续 jnt Chain。
         create_group (bool):
-            是否为本次 Joint Build 创建独立 Group。
+            是否为本次 jnt Build 创建独立 Group。
         group_name (str | None):
-            自定义 Joint Group 名称；None 时从 Joint Base Name 推导。
+            自定义 jnt Group 名称；None 时从 jnt Base Name 推导。
         radius (float | None):
-            可选 Joint Radius；None 时使用 ``Joint.create`` 默认值。
+            可选 jnt Radius；None 时使用 ``jnt.create`` 默认值。
 
     Returns:
         dict:
@@ -431,7 +431,7 @@ def create_joints_on_curve_cvs(
 
     Raises:
         RuntimeError:
-        Curve 无效、没有 CV、Group 名称被占用或 Joint 创建失败时抛出。
+        Curve 无效、没有 CV、Group 名称被占用或 jnt 创建失败时抛出。
     """
     # -------------------------------------------------------------------------
     # Step 01：解析 Curve Transform，并一次取得全部 CV 世界位置
@@ -452,18 +452,18 @@ def create_joints_on_curve_cvs(
         )
 
     # -------------------------------------------------------------------------
-    # Step 02：确定 Joint Base Name，并根据参数准备可选的 Joint Group
+    # Step 02：确定 jnt Base Name，并根据参数准备可选的 jnt Group
     # -------------------------------------------------------------------------
-    if joint_base_name is None:
-        joint_base_name = get_curve_joint_base_name(
+    if jnt_base_name is None:
+        jnt_base_name = get_curve_jnt_base_name(
             curve
         )
 
-    joint_group = None
+    jnt_group = None
 
     if create_group:
         if group_name is None:
-            group_base_name = joint_base_name
+            group_base_name = jnt_base_name
 
             if group_base_name.startswith("jnt_"):
                 group_base_name = group_base_name.replace(
@@ -472,7 +472,7 @@ def create_joints_on_curve_cvs(
                     1
                 )
 
-            group_name = "{}_joints".format(
+            group_name = "{}_jnts".format(
                 group_base_name
             )
 
@@ -481,61 +481,61 @@ def create_joints_on_curve_cvs(
         # ---------------------------------------------------------------------
         scene_utils.ensure_nodes_available(
             group_name,
-            label=u"Joint Group"
+            label=u"jnt Group"
         )
-        joint_group = scene_utils.create_node(
+        jnt_group = scene_utils.create_node(
             "transform",
             group_name
         )
 
     # -------------------------------------------------------------------------
-    # Step 04：按 CV 顺序逐个创建 Joint，并根据 parent_chain 更新 Parent
+    # Step 04：按 CV 顺序逐个创建 jnt，并根据 parent_chain 更新 Parent
     # -------------------------------------------------------------------------
-    joints = []
-    current_parent = joint_group
+    jnts = []
+    current_parent = jnt_group
     position_index = 0
 
     while position_index < len(positions):
-        joint_name = "{}_{:03d}".format(
-            joint_base_name,
+        jnt_name = "{}_{:03d}".format(
+            jnt_base_name,
             position_index + 1
         )
 
-        parent_node = joint_group
+        parent_node = jnt_group
 
         if parent_chain:
             parent_node = current_parent
 
-        joint = joint_utils.Joint.create(
-            name=joint_name,
+        jnt = jnt_utils.jnt.create(
+            name=jnt_name,
             position=positions[position_index],
             parent=parent_node,
             radius=radius
         )
-        joints.append(
-            joint
+        jnts.append(
+            jnt
         )
 
         if parent_chain:
-            current_parent = joint
+            current_parent = jnt
 
         position_index += 1
 
     # -------------------------------------------------------------------------
-    # Step 05：返回 Curve、Joint List 和 Joint Group，供上层 Rig System 继续使用
+    # Step 05：返回 Curve、jnt List 和 jnt Group，供上层 Rig System 继续使用
     # -------------------------------------------------------------------------
     return {
         "curve": curve_transform,
-        "jnt_list": joints,
-        "jnt_grp": joint_group,
+        "jnt_list": jnts,
+        "jnt_grp": jnt_group,
     }
 
 
 __all__ = [
-    "validate_joint_list",
-    "get_joint_path",
-    "parent_joints_as_chain",
-    "create_joints_at_items",
-    "get_curve_joint_base_name",
-    "create_joints_on_curve_cvs",
+    "validate_jnt_list",
+    "get_jnt_path",
+    "parent_jnts_as_chain",
+    "create_jnts_at_items",
+    "get_curve_jnt_base_name",
+    "create_jnts_on_curve_cvs",
 ]
