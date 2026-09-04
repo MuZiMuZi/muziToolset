@@ -1061,9 +1061,9 @@ class Attr(object):
         node_type = cmds.nodeType(
             self.node
         )
-        if node_type not in ["transform", "joint"]:
+        if node_type not in ["transform", "jnt"]:
             raise RuntimeError(
-                u"Transform Limits 只支持 Transform / Joint：{} | type={}".format(
+                u"Transform Limits 只支持 Transform / jnt：{} | type={}".format(
                     self.node,
                     node_type
                 )

@@ -10,9 +10,9 @@ Maya DAG 层级通用底层工具。
 - DAG 深度；
 - Direct Parent / Child 查询；
 - Descendant 查询；
-- Transform / Joint Parent 与 Unparent；
+- Transform / jnt Parent 与 Unparent；
 - 确保通用 Transform Group 存在于指定层级；
-- 在 Transform / Joint 上方插入 Parent Group。
+- 在 Transform / jnt 上方插入 Parent Group。
 
 模块边界
 --------
@@ -22,7 +22,7 @@ Controller 项目结构。具体 Rig Hierarchy 由对应 systems 模块组合这
 设计原则
 --------
 1. 无状态 Utils 使用模块函数，不使用只有 staticmethod 的包装类；
-2. Query 接口接受通用 DAG Node，Parent 写操作只接受 Transform / Joint；
+2. Query 接口接受通用 DAG Node，Parent 写操作只接受 Transform / jnt；
 3. 所有 DAG 查询先解析唯一 Long Path，不对重名节点做猜测；
 4. Parent / Child API 不依赖当前 Selection；
 5. Transform 数值读写复用 transform_utils；
@@ -84,7 +84,7 @@ def _get_transform_long_name(
         node,
         label
 ):
-    u"""验证 Transform / Joint，并返回唯一 Long Path。"""
+    u"""验证 Transform / jnt，并返回唯一 Long Path。"""
     long_name = scene_utils.get_long_name(
         node
     )
@@ -166,7 +166,7 @@ def get_children(
         node (str):
             需要查询直接 Child 的 Maya DAG 节点名称或唯一 DAG Path。
         node_type (str | None):
-            可选 Maya Node Type，例如 ``joint`` 或 ``transform``；None 表示不过滤类型。
+            可选 Maya Node Type，例如 ``jnt`` 或 ``transform``；None 表示不过滤类型。
         full_path (bool):
             True 时返回 Child Long Path；False 时返回 Maya Short Name。
 
@@ -297,16 +297,16 @@ def parent(
         parent_node=None
 ):
     u"""
-    设置 Transform / Joint Parent，并保持 Child 当前世界姿态。
+    设置 Transform / jnt Parent，并保持 Child 当前世界姿态。
 
     ``parent_node=None`` 表示 Parent 到 World。
     所有成功路径统一返回 Child 最新的唯一 Long Path。
 
     Args:
         child_node (str):
-            需要重新挂接 Parent 的 Transform 或 Joint 节点名称。
+            需要重新挂接 Parent 的 Transform 或 jnt 节点名称。
         parent_node (str | None):
-            Child 最终需要挂接到的 Transform / Joint；None 表示挂到 World。
+            Child 最终需要挂接到的 Transform / jnt；None 表示挂到 World。
 
     Returns:
         str:
@@ -314,7 +314,7 @@ def parent(
 
     Raises:
         RuntimeError:
-        Child / Parent 无效、不是 Transform / Joint，或尝试 Parent 到自身时抛出。
+        Child / Parent 无效、不是 Transform / jnt，或尝试 Parent 到自身时抛出。
     """
     # -------------------------------------------------------------------------
     # Step 01：查询并整理当前阶段需要的 Maya 场景数据
@@ -409,7 +409,7 @@ def ensure_group(
         name (str):
             需要创建或复用的 Transform Group 名称；必须能唯一解析现有同名 DAG 节点。
         parent_node (str | None):
-            Group 应处于的 Transform / Joint Parent；None 表示 Group 必须位于 World 下。
+            Group 应处于的 Transform / jnt Parent；None 表示 Group 必须位于 World 下。
 
     Returns:
         str:
@@ -509,7 +509,7 @@ def insert_parent_group(
         match_rotation=True
 ):
     u"""
-    在 Transform / Joint 与原 Parent 之间插入一个新 Group。
+    在 Transform / jnt 与原 Parent 之间插入一个新 Group。
 
     新 Group 匹配对象世界位置；``match_rotation=True`` 时同时匹配对象世界旋转，
     否则 Group 使用 World Orientation。函数不复制 Child Local Scale。
@@ -517,7 +517,7 @@ def insert_parent_group(
 
     Args:
         node (str):
-            需要插入 Parent Group 的 Transform 或 Joint 节点名称。
+            需要插入 Parent Group 的 Transform 或 jnt 节点名称。
         group_name (str):
             新建 Parent Group 的名称；该名称在当前场景中必须尚未被占用。
         match_rotation (bool):

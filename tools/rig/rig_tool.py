@@ -52,8 +52,8 @@ from ...core import animation_utils
 from ...core import attr_utils
 from ...core import constraint_utils
 from ...core import hierarchy_utils
-from ...core import joint_chain_utils
-from ...core import joint_utils
+from ...core import jnt_chain_utils
+from ...core import jnt_utils
 from ...core import math_utils
 from ...core import rename_utils
 from ...core import scene_utils
@@ -220,7 +220,7 @@ def create_ik_rig(start_joint, end_joint):
         end_joint
     )
 
-    joint_path = joint_chain_utils.get_joint_path(
+    joint_path = jnt_chain_utils.get_joint_path(
         start_joint,
         end_joint
     )

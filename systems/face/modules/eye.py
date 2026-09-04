@@ -20,7 +20,7 @@ import math
 from ....core import attr_utils
 from ....core import connection_utils
 from ....core import constraint_utils
-from ....core import joint_utils
+from ....core import jnt_utils
 from ....core import matrix_utils
 from ....core import scene_utils
 from ....core import snap_utils

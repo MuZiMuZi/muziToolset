@@ -20,7 +20,7 @@ Maya SkinCluster 领域的通用底层工具。
         查找 Geometry 关联的第一个 SkinCluster。
 
     get_influences(geometry_or_skin_cluster)
-        获取 Geometry 或 SkinCluster 的全部 Influence Joint。
+        获取 Geometry 或 SkinCluster 的全部 Influence jnt。
 
 权重复制：
     copy_skin_weights(source, targets)
@@ -41,7 +41,7 @@ Maya SkinCluster 领域的通用底层工具。
         强制归一化 SkinCluster 权重。
 
     select_influences(geometries)
-        选择多个 Geometry 的全部 Influence Joint。
+        选择多个 Geometry 的全部 Influence jnt。
 
     normalize_geometries(geometries)
         批量归一化多个 Geometry。
@@ -54,18 +54,18 @@ Maya SkinCluster 领域的通用底层工具。
         Maya deformerWeights 数据。
 
     sc_<geometry>.infs.json
-        Influence Joint 名称列表。
+        Influence jnt 名称列表。
 
 为什么 Influence 要单独保存
 ---------------------------
 ``deformerWeights`` 可以保存权重数值，但重新创建 SkinCluster 前仍然需要知道原来的
-Influence Joint。单独保存 Influence JSON，可以先恢复正确的 Joint 列表，再把 XML
+Influence jnt。单独保存 Influence JSON，可以先恢复正确的 jnt 列表，再把 XML
 权重导入新 SkinCluster。
 
 本模块不负责
 ------------
 - Paint Skin Weight UI；
-- 自动生成 Joint；
+- 自动生成 jnt；
 - 自动权重算法；
 - Deformer Rig Workflow；
 - PySide 文件窗口。
@@ -179,7 +179,7 @@ def find_skin_cluster(geometry):
 
 def get_influences(geometry_or_skin_cluster):
     u"""
-    返回 Geometry 或 SkinCluster 的 Influence Joint 列表。
+    返回 Geometry 或 SkinCluster 的 Influence jnt 列表。
 
     Args:
         geometry_or_skin_cluster (str):
@@ -264,7 +264,7 @@ def copy_skin_weights(source, targets):
     influences = get_influences(source_skin)
 
     if not influences:
-        raise RuntimeError(u"源 SkinCluster 没有影响 Joint。")
+        raise RuntimeError(u"源 SkinCluster 没有影响 jnt。")
 
     # -------------------------------------------------------------------------
     # Step 03：准备当前阶段计算和后续处理需要的数据
@@ -315,7 +315,7 @@ def copy_skin_weights(source, targets):
                 influenceAssociation=[
                     "label",
                     "oneToOne",
-                    "closestJoint",
+                    "closestjnt",
                 ]
             )
 
@@ -452,11 +452,11 @@ def export_skin_weights(geometry, directory):
 
 def import_skin_weights(geometry, directory):
     u"""
-    导入 XML 权重和 Influence Joint 列表。
+    导入 XML 权重和 Influence jnt 列表。
 
     流程：
         Influence JSON
-            -> 验证 Joint 全部存在
+            -> 验证 jnt 全部存在
             -> 删除旧 SkinCluster
             -> 创建新 SkinCluster
             -> Import XML
@@ -508,7 +508,7 @@ def import_skin_weights(geometry, directory):
 
     if not os.path.isfile(influence_path):
         raise RuntimeError(
-            u"找不到影响 Joint 文件：{}".format(influence_path)
+            u"找不到影响 jnt 文件：{}".format(influence_path)
         )
 
     # 步骤 3：读取 Influence JSON。
@@ -529,13 +529,13 @@ def import_skin_weights(geometry, directory):
 
     if missing_influences:
         raise RuntimeError(
-            u"场景缺少影响 Joint：{}".format(
+            u"场景缺少影响 jnt：{}".format(
                 ", ".join(missing_influences)
             )
         )
 
     if not valid_influences:
-        raise RuntimeError(u"没有可用于绑定的影响 Joint。")
+        raise RuntimeError(u"没有可用于绑定的影响 jnt。")
 
     # 步骤 5：删除旧 SkinCluster。
     old_skin = find_skin_cluster(geometry)
@@ -611,7 +611,7 @@ def normalize_skin_weights(geometry_or_skin_cluster):
 
 def select_influences(geometries):
     u"""
-    选择多个 Geometry 的全部 Influence Joint。
+    选择多个 Geometry 的全部 Influence jnt。
 
     这是明确带 ``select`` 语义的 Core 辅助函数，因此允许修改 Maya Selection。
 

@@ -20,7 +20,7 @@ md Guide 错误串成一条 Chain，也不再导入旧 nose_bpjnt.ma。
 
 from __future__ import print_function
 
-from ....core import joint_utils
+from ....core import jnt_utils
 from ....core import matrix_utils
 from ....core import scene_utils
 from ... import ctrl_base
@@ -213,7 +213,7 @@ class NoseModule(FaceModuleBase):
                 nose_jnt_name,
                 label=u"Nose Center Joint"
             )
-            nose_jnt = joint_utils.Joint.create_at_object(
+            nose_jnt = jnt_utils.Joint.create_at_object(
                 obj=self.center_guides[index],
                 name=nose_jnt_name,
                 parent=jnt_parent,
@@ -244,7 +244,7 @@ class NoseModule(FaceModuleBase):
                 nose_local_jnt_name,
                 label=u"Nose Local Joint"
             )
-            nose_local_jnt = joint_utils.Joint.create_at_object(
+            nose_local_jnt = jnt_utils.Joint.create_at_object(
                 obj=self.local_guide_dict[(side, part)],
                 name=nose_local_jnt_name,
                 parent=local_parent,

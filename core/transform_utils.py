@@ -3,11 +3,11 @@ u"""
 Transform Utils
 ===============
 
-Maya Transform / Joint 的通用空间数据底层工具。
+Maya Transform / jnt 的通用空间数据底层工具。
 
 模块职责
 --------
-- Transform / Joint 输入校验；
+- Transform / jnt 输入校验；
 - World Translation 读取 / 写入；
 - World Rotation 读取 / 写入；
 - World Matrix 读取 / 写入；
@@ -43,7 +43,7 @@ from . import scene_utils
 
 def validate_transform(node):
     u"""
-    检查节点存在，并确认它是 Maya Transform / Joint。
+    检查节点存在，并确认它是 Maya Transform / jnt。
 
     Args:
         node (str):
@@ -65,9 +65,9 @@ def validate_transform(node):
         node
     )
 
-    if node_type not in ["transform", "joint"]:
+    if node_type not in ["transform", "jnt"]:
         raise RuntimeError(
-            u"节点不是 Transform / Joint：{} | type={}".format(
+            u"节点不是 Transform / jnt：{} | type={}".format(
                 node,
                 node_type
             )
@@ -112,7 +112,7 @@ def _validate_vector3(value, label):
 
 def get_world_translation(node):
     u"""
-    返回 Transform / Joint 的 World Translation。
+    返回 Transform / jnt 的 World Translation。
 
     Args:
         node (str):
@@ -136,7 +136,7 @@ def get_world_translation(node):
 
 def set_world_translation(node, translation):
     u"""
-    设置 Transform / Joint 的 World Translation。
+    设置 Transform / jnt 的 World Translation。
 
     Args:
         node (str):
@@ -171,7 +171,7 @@ def set_world_translation(node, translation):
 
 def get_world_rotation(node):
     u"""
-    返回 Transform / Joint 的 World Rotation。
+    返回 Transform / jnt 的 World Rotation。
 
     Args:
         node (str):
@@ -195,13 +195,13 @@ def get_world_rotation(node):
 
 def set_world_rotation(node, rotation):
     u"""
-    设置 Transform / Joint 的 World Rotation。
+    设置 Transform / jnt 的 World Rotation。
 
     Args:
         node (str):
             需要查询或处理的 Maya 节点名称。
         rotation (list[float] | tuple[float, float, float]):
-            Joint / Transform 使用的 XYZ Rotation。
+            jnt / Transform 使用的 XYZ Rotation。
 
     Returns:
         object:
@@ -230,7 +230,7 @@ def set_world_rotation(node, rotation):
 
 def get_world_matrix(node):
     u"""
-    返回 Transform / Joint 的完整 4x4 World Matrix 普通 list。
+    返回 Transform / jnt 的完整 4x4 World Matrix 普通 list。
 
     Args:
         node (str):
@@ -254,7 +254,7 @@ def get_world_matrix(node):
 
 def set_world_matrix(node, matrix_values):
     u"""
-    设置 Transform / Joint 的完整 4x4 World Matrix。
+    设置 Transform / jnt 的完整 4x4 World Matrix。
 
     Args:
         node (str):
@@ -328,11 +328,11 @@ def move_relative(
         object_space=None
 ):
     u"""
-    相对移动一个 Transform / Joint。
+    相对移动一个 Transform / jnt。
 
     Args:
         node (str):
-            Transform / Joint。
+            Transform / jnt。
         offset (list | tuple):
             [x, y, z] 相对偏移量。
         space (str):

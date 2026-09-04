@@ -1,21 +1,21 @@
 # coding=utf-8
 u"""
-Joint Utils
+jnt Utils
 ===========
 
-Maya Joint 领域的专属底层能力模块。
+Maya jnt 领域的专属底层能力模块。
 
 设计原则
 --------
-Joint 类只负责“单个 Joint 节点自己特有的能力”：
+jnt 类只负责“单个 jnt 节点自己特有的能力”：
 
-    - 创建 Joint；
-    - Joint Orient；
+    - 创建 jnt；
+    - jnt Orient；
     - Radius / Local Rotation Axis；
     - Segment Scale Compensate；
-    - Maya Joint Label。
+    - Maya jnt Label。
 
-模块级 API 只保留 Maya 全局 Joint Display Setting：
+模块级 API 只保留 Maya 全局 jnt Display Setting：
 
     - get_display_scale()
     - set_display_scale()
@@ -28,8 +28,8 @@ Joint 类只负责“单个 Joint 节点自己特有的能力”：
     - DAG Parent / Child   -> hierarchy_utils
     - 全场景 Node 查询     -> scene_utils
 
-Joint 实例在 __init__() 时只验证一次节点存在性和节点类型。
-初始化成功后，普通方法默认 self.joint 仍然是有效 Joint，
+jnt 实例在 __init__() 时只验证一次节点存在性和节点类型。
+初始化成功后，普通方法默认 self.jnt 仍然是有效 jnt，
 不为每一次操作重复执行存在性和类型检查。
 """
 
@@ -44,19 +44,19 @@ from . import transform_utils
 
 
 # =============================================================================
-# Global Joint Display
+# Global jnt Display
 # =============================================================================
 
 def get_display_scale():
     u"""
-    返回 Maya 当前全局 Joint Display Scale。
+    返回 Maya 当前全局 jnt Display Scale。
 
     Returns:
         object:
         当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     return float(
-        cmds.jointDisplayScale(
+        cmds.jntDisplayScale(
             query=True
         )
     )
@@ -64,7 +64,7 @@ def get_display_scale():
 
 def set_display_scale(scale):
     u"""
-    设置 Maya 全局 Joint Display Scale，并返回最终数值。
+    设置 Maya 全局 jnt Display Scale，并返回最终数值。
 
     Args:
         scale (bool):
@@ -84,30 +84,30 @@ def set_display_scale(scale):
         )
     except (TypeError, ValueError):
         raise ValueError(
-            u"Joint Display Scale 必须是数值。"
+            u"jnt Display Scale 必须是数值。"
         )
 
     if scale <= 0.0:
         raise ValueError(
-            u"Joint Display Scale 必须大于 0。"
+            u"jnt Display Scale 必须大于 0。"
         )
 
-    cmds.jointDisplayScale(
+    cmds.jntDisplayScale(
         scale
     )
     return scale
 
 
-class Joint(object):
-    u"""单个 Maya Joint 节点的专属操作对象。"""
+class jnt(object):
+    u"""单个 Maya jnt 节点的专属操作对象。"""
 
-    def __init__(self, joint):
+    def __init__(self, jnt):
         u"""
         初始化当前对象，并准备运行时需要的状态和成员。
 
         Args:
-            joint (str):
-                需要处理的 Maya Joint 节点名称。
+            jnt (str):
+                需要处理的 Maya jnt 节点名称。
 
         Raises:
             RuntimeError:
@@ -117,42 +117,42 @@ class Joint(object):
         # -------------------------------------------------------------------------
         # Step 01：检查当前条件与边界情况，并进入对应处理分支
         # -------------------------------------------------------------------------
-        if joint is None:
+        if jnt is None:
             raise RuntimeError(
-                u"Joint 节点不能为空。"
+                u"jnt 节点不能为空。"
             )
 
         # -------------------------------------------------------------------------
         # Step 02：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
-        joint = str(joint).strip()
+        jnt = str(jnt).strip()
 
-        if not joint:
+        if not jnt:
             raise RuntimeError(
-                u"Joint 节点不能为空。"
+                u"jnt 节点不能为空。"
             )
 
         # -------------------------------------------------------------------------
         # Step 03：检查当前条件与边界情况，并进入对应处理分支
         # -------------------------------------------------------------------------
-        if not cmds.objExists(joint):
+        if not cmds.objExists(jnt):
             raise RuntimeError(
-                u"Joint 节点不存在：{}".format(
-                    joint
+                u"jnt 节点不存在：{}".format(
+                    jnt
                 )
             )
 
         node_type = cmds.nodeType(
-            joint
+            jnt
         )
 
         # -------------------------------------------------------------------------
         # Step 04：检查当前条件与边界情况，并进入对应处理分支
         # -------------------------------------------------------------------------
-        if node_type != "joint":
+        if node_type != "jnt":
             raise RuntimeError(
-                u"节点不是 Joint：{} | type={}".format(
-                    joint,
+                u"节点不是 jnt：{} | type={}".format(
+                    jnt,
                     node_type
                 )
             )
@@ -160,7 +160,7 @@ class Joint(object):
         # -------------------------------------------------------------------------
         # Step 05：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
-        self.joint = joint
+        self.jnt = jnt
 
     # =========================================================================
     # Create
@@ -175,18 +175,18 @@ class Joint(object):
             radius=None
     ):
         u"""
-        创建一个 Joint。
+        创建一个 jnt。
 
         position / rotation 都表示 World Space。
-        rotation 表示普通 World Rotation，不表示 jointOrient。
+        rotation 表示普通 World Rotation，不表示 jntOrient。
 
         Args:
             name (str):
                 创建或查询时使用的节点名称。
             position (list[float] | tuple[float, float, float]):
-                Joint / Transform 使用的 XYZ Position。
+                jnt / Transform 使用的 XYZ Position。
             rotation (list[float] | tuple[float, float, float]):
-                Joint / Transform 使用的 XYZ Rotation。
+                jnt / Transform 使用的 XYZ Rotation。
             parent (str):
                 父级 Maya 节点名称。
             radius (float):
@@ -205,7 +205,7 @@ class Joint(object):
         # -------------------------------------------------------------------------
         if name is None:
             raise RuntimeError(
-                u"Joint 名称不能为空。"
+                u"jnt 名称不能为空。"
             )
 
         name = str(name).strip()
@@ -215,7 +215,7 @@ class Joint(object):
         # -------------------------------------------------------------------------
         if not name:
             raise RuntimeError(
-                u"Joint 名称不能为空。"
+                u"jnt 名称不能为空。"
             )
 
         if cmds.objExists(name):
@@ -233,20 +233,20 @@ class Joint(object):
         # -------------------------------------------------------------------------
         # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
         # -------------------------------------------------------------------------
-        joint = cmds.createNode(
-            "joint",
+        jnt = cmds.createNode(
+            "jnt",
             name=name
         )
 
         if parent is not None:
-            joint = hierarchy_utils.parent(
-                joint,
+            jnt = hierarchy_utils.parent(
+                jnt,
                 parent
             )
 
         if position is not None:
             transform_utils.set_world_translation(
-                joint,
+                jnt,
                 position
             )
 
@@ -255,22 +255,22 @@ class Joint(object):
         # -------------------------------------------------------------------------
         if rotation is not None:
             transform_utils.set_world_rotation(
-                joint,
+                jnt,
                 rotation
             )
 
         if radius is not None:
-            joint_object = Joint(
-                joint
+            jnt_object = jnt(
+                jnt
             )
-            joint_object.set_radius(
+            jnt_object.set_radius(
                 radius
             )
 
         # -------------------------------------------------------------------------
         # Step 05：整理并返回当前函数的最终结果
         # -------------------------------------------------------------------------
-        return joint
+        return jnt
 
     @staticmethod
     def create_at_object(
@@ -281,7 +281,7 @@ class Joint(object):
             radius=None
     ):
         u"""
-        在指定 Transform / Joint 的世界位置创建 Joint。
+        在指定 Transform / jnt 的世界位置创建 jnt。
 
         Args:
             obj (str):
@@ -291,7 +291,7 @@ class Joint(object):
             parent (str):
                 父级 Maya 节点名称。
             match_rotation (bool):
-                根据目标 Transform 创建 Joint 时是否同时匹配目标 Rotation。
+                根据目标 Transform 创建 jnt 时是否同时匹配目标 Rotation。
             radius (float):
                 创建节点或控制器使用的半径值。
 
@@ -328,7 +328,7 @@ class Joint(object):
         # -------------------------------------------------------------------------
         # Step 05：整理并返回当前函数的最终结果
         # -------------------------------------------------------------------------
-        return Joint.create(
+        return jnt.create(
             name=name,
             position=position,
             rotation=rotation,
@@ -337,44 +337,44 @@ class Joint(object):
         )
 
     # =========================================================================
-    # Joint Orient
+    # jnt Orient
     # =========================================================================
 
-    def get_joint_orient(self):
+    def get_jnt_orient(self):
         u"""
-        返回 [jointOrientX, jointOrientY, jointOrientZ]。
+        返回 [jntOrientX, jntOrientY, jntOrientZ]。
 
         Returns:
             object:
             当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         attributes = [
-            "jointOrientX",
-            "jointOrientY",
-            "jointOrientZ",
+            "jntOrientX",
+            "jntOrientY",
+            "jntOrientZ",
         ]
-        joint_orient = []
+        jnt_orient = []
 
         for attribute in attributes:
             value = cmds.getAttr(
                 "{}.{}".format(
-                    self.joint,
+                    self.jnt,
                     attribute
                 )
             )
-            joint_orient.append(
+            jnt_orient.append(
                 value
             )
 
-        return joint_orient
+        return jnt_orient
 
-    def set_joint_orient(self, joint_orient):
+    def set_jnt_orient(self, jnt_orient):
         u"""
-        设置 jointOrientXYZ。
+        设置 jntOrientXYZ。
 
         Args:
-            joint_orient (object):
-                当前方法执行 Maya / Rig 操作时使用的 `joint_orient` 数据。
+            jnt_orient (object):
+                当前方法执行 Maya / Rig 操作时使用的 `jnt_orient` 数据。
 
         Returns:
             object:
@@ -387,9 +387,9 @@ class Joint(object):
         # -------------------------------------------------------------------------
         # Step 01：检查当前条件与边界情况，并进入对应处理分支
         # -------------------------------------------------------------------------
-        if joint_orient is None:
+        if jnt_orient is None:
             raise ValueError(
-                u"joint_orient 必须包含 3 个数值。"
+                u"jnt_orient 必须包含 3 个数值。"
             )
 
         # -------------------------------------------------------------------------
@@ -397,25 +397,25 @@ class Joint(object):
         # -------------------------------------------------------------------------
         try:
             value_count = len(
-                joint_orient
+                jnt_orient
             )
         except TypeError:
             raise ValueError(
-                u"joint_orient 必须包含 3 个数值。"
+                u"jnt_orient 必须包含 3 个数值。"
             )
 
         if value_count != 3:
             raise ValueError(
-                u"joint_orient 必须包含 3 个数值。"
+                u"jnt_orient 必须包含 3 个数值。"
             )
 
         # -------------------------------------------------------------------------
         # Step 03：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
         attributes = [
-            "jointOrientX",
-            "jointOrientY",
-            "jointOrientZ",
+            "jntOrientX",
+            "jntOrientY",
+            "jntOrientZ",
         ]
 
         index = 0
@@ -426,27 +426,27 @@ class Joint(object):
         while index < len(attributes):
             cmds.setAttr(
                 "{}.{}".format(
-                    self.joint,
+                    self.jnt,
                     attributes[index]
                 ),
-                joint_orient[index]
+                jnt_orient[index]
             )
             index += 1
 
         # -------------------------------------------------------------------------
         # Step 05：整理并返回当前函数的最终结果
         # -------------------------------------------------------------------------
-        return self.joint
+        return self.jnt
 
-    def clear_joint_orient(self):
+    def clear_jnt_orient(self):
         u"""
-        把当前 Joint 的 jointOrientXYZ 清零。
+        把当前 jnt 的 jntOrientXYZ 清零。
 
         Returns:
             object:
             当前 API 完成处理后返回的结果。
         """
-        return self.set_joint_orient(
+        return self.set_jnt_orient(
             (0.0, 0.0, 0.0)
         )
 
@@ -456,19 +456,19 @@ class Joint(object):
 
     def get_radius(self):
         u"""
-        返回当前 Joint 的 radius。
+        返回当前 jnt 的 radius。
 
         Returns:
             object:
             当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         return cmds.getAttr(
-            self.joint + ".radius"
+            self.jnt + ".radius"
         )
 
     def set_radius(self, radius):
         u"""
-        设置当前 Joint 的 radius。
+        设置当前 jnt 的 radius。
 
         Args:
             radius (float):
@@ -488,24 +488,24 @@ class Joint(object):
             )
         except (TypeError, ValueError):
             raise ValueError(
-                u"Joint radius 必须是数值。"
+                u"jnt radius 必须是数值。"
             )
 
         if radius < 0.0:
             raise ValueError(
-                u"Joint radius 不能小于 0。"
+                u"jnt radius 不能小于 0。"
             )
 
         cmds.setAttr(
-            self.joint + ".radius",
+            self.jnt + ".radius",
             radius
         )
 
-        return self.joint
+        return self.jnt
 
     def is_axis_visible(self):
         u"""
-        返回当前 Joint 的 Local Rotation Axis 是否显示。
+        返回当前 jnt 的 Local Rotation Axis 是否显示。
 
         Returns:
             object:
@@ -513,47 +513,47 @@ class Joint(object):
         """
         return bool(
             cmds.getAttr(
-                self.joint + ".displayLocalAxis"
+                self.jnt + ".displayLocalAxis"
             )
         )
 
     def show_axis(self):
         u"""
-        显示当前 Joint 的 Local Rotation Axis。
+        显示当前 jnt 的 Local Rotation Axis。
 
         Returns:
             object:
             当前 API 完成处理后返回的结果。
         """
         cmds.setAttr(
-            self.joint + ".displayLocalAxis",
+            self.jnt + ".displayLocalAxis",
             1
         )
 
-        return self.joint
+        return self.jnt
 
     def hide_axis(self):
         u"""
-        隐藏当前 Joint 的 Local Rotation Axis。
+        隐藏当前 jnt 的 Local Rotation Axis。
 
         Returns:
             object:
             当前 API 完成处理后返回的结果。
         """
         cmds.setAttr(
-            self.joint + ".displayLocalAxis",
+            self.jnt + ".displayLocalAxis",
             0
         )
 
-        return self.joint
+        return self.jnt
 
     # =========================================================================
-    # Joint Property
+    # jnt Property
     # =========================================================================
 
     def get_scale_compensate(self):
         u"""
-        返回当前 Joint 的 segmentScaleCompensate 状态。
+        返回当前 jnt 的 segmentScaleCompensate 状态。
 
         Returns:
             object:
@@ -561,13 +561,13 @@ class Joint(object):
         """
         return bool(
             cmds.getAttr(
-                self.joint + ".segmentScaleCompensate"
+                self.jnt + ".segmentScaleCompensate"
             )
         )
 
     def set_scale_compensate(self, enabled=True):
         u"""
-        设置当前 Joint 的 segmentScaleCompensate。
+        设置当前 jnt 的 segmentScaleCompensate。
 
         Args:
             enabled (bool):
@@ -578,11 +578,11 @@ class Joint(object):
             完成设置或应用后的目标对象 / 状态结果。
         """
         cmds.setAttr(
-            self.joint + ".segmentScaleCompensate",
+            self.jnt + ".segmentScaleCompensate",
             bool(enabled)
         )
 
-        return self.joint
+        return self.jnt
 
     # =========================================================================
     # Orient
@@ -594,7 +594,7 @@ class Joint(object):
             secondary_axis="xup"
     ):
         u"""
-        根据直接 Child Joint 整理当前 Joint Orient。
+        根据直接 Child jnt 整理当前 jnt Orient。
 
         Args:
             primary_axis (str):
@@ -607,28 +607,28 @@ class Joint(object):
             当前 API 完成处理后返回的结果。
         """
         children = hierarchy_utils.get_children(
-            self.joint,
-            node_type="joint",
+            self.jnt,
+            node_type="jnt",
             full_path=True
         )
 
         if not children:
-            cmds.joint(
-                self.joint,
+            cmds.jnt(
+                self.jnt,
                 edit=True,
-                orientJoint="none"
+                orientjnt="none"
             )
-            return self.joint
+            return self.jnt
 
-        cmds.joint(
-            self.joint,
+        cmds.jnt(
+            self.jnt,
             edit=True,
             zeroScaleOrient=True,
-            orientJoint=primary_axis,
+            orientjnt=primary_axis,
             secondaryAxisOrient=secondary_axis
         )
 
-        return self.joint
+        return self.jnt
 
     # =========================================================================
     # Label
@@ -641,7 +641,7 @@ class Joint(object):
             other_type=""
     ):
         u"""
-        设置 Maya Joint Label。
+        设置 Maya jnt Label。
 
         Args:
             side (int):
@@ -674,7 +674,7 @@ class Joint(object):
         # -------------------------------------------------------------------------
         if side not in [0, 1, 2]:
             raise ValueError(
-                u"Joint Label side 只能是 0 / 1 / 2。"
+                u"jnt Label side 只能是 0 / 1 / 2。"
             )
 
         if other_type is None:
@@ -688,18 +688,18 @@ class Joint(object):
         )
 
         cmds.setAttr(
-            self.joint + ".side",
+            self.jnt + ".side",
             side
         )
         # -------------------------------------------------------------------------
         # Step 04：应用并更新当前阶段需要的属性或状态
         # -------------------------------------------------------------------------
         cmds.setAttr(
-            self.joint + ".type",
+            self.jnt + ".type",
             label_type
         )
         cmds.setAttr(
-            self.joint + ".otherType",
+            self.jnt + ".otherType",
             other_type,
             type="string"
         )
@@ -708,7 +708,7 @@ class Joint(object):
         # Step 05：整理并返回当前函数的最终结果
         # -------------------------------------------------------------------------
         return {
-            "joint": self.joint,
+            "jnt": self.jnt,
             "side": side,
             "type": label_type,
             "otherType": other_type,
@@ -716,7 +716,7 @@ class Joint(object):
 
     def tag(self):
         u"""
-        根据项目标准 Joint 名称生成 Maya Joint Label。
+        根据项目标准 jnt 名称生成 Maya jnt Label。
 
         Returns:
             object:
@@ -730,7 +730,7 @@ class Joint(object):
         # Step 01：查询并整理当前阶段需要的 Maya 场景数据
         # -------------------------------------------------------------------------
         short_name = rename_utils.get_short_name(
-            self.joint
+            self.jnt
         )
         name_parts = short_name.split(
             "_"
@@ -741,7 +741,7 @@ class Joint(object):
         # -------------------------------------------------------------------------
         if len(name_parts) < 3:
             raise RuntimeError(
-                u"Joint 名称格式不正确：{}".format(
+                u"jnt 名称格式不正确：{}".format(
                     short_name
                 )
             )
@@ -799,5 +799,5 @@ class Joint(object):
 __all__ = [
     "get_display_scale",
     "set_display_scale",
-    "Joint",
+    "jnt",
 ]

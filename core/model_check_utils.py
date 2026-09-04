@@ -209,11 +209,11 @@ def get_mesh_shapes(nodes=None):
 
         if node_type not in [
             "transform",
-            "joint",
+            "jnt",
         ]:
             continue
 
-        # 步骤 2：Transform / Joint 输入转为可见 Mesh Shape。
+        # 步骤 2：Transform / jnt 输入转为可见 Mesh Shape。
         shapes = cmds.listRelatives(
             node,
             shapes=True,

@@ -11,7 +11,7 @@ Ear Module
 
 from __future__ import print_function
 
-from ....core import joint_utils
+from ....core import jnt_utils
 from ....core import matrix_utils
 from ....core import scene_utils
 from ... import ctrl_base
