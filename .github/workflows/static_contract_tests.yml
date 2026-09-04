@@ -67,6 +67,9 @@ jobs:
       - name: Test Face Controller Appearance contract
         run: python tests/face_controller_appearance_contract_test.py
 
+      - name: Test Face Workflow Lifecycle contract
+        run: python tests/face_workflow_lifecycle_contract_test.py
+
       - name: Test Face Finalize Step contract
         run: python tests/face_finalize_step_contract_test.py
 
