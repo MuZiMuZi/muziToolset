@@ -47,7 +47,6 @@ RETIRED_CONCRETE_METHODS = {
     "prepare_data",
     "process_data",
     "finalize_step",
-    "create_jnt",
     "create_controller",
     "create_connection",
     "setup",
