@@ -12,23 +12,28 @@ ctrl_utils：Maya Controller 基础工具。
         创建一个基础圆形控制器。
         适合程序化创建 FK、Face、Eye 等基础绑定控制器。
 
-    Ctrl.get_ctrl_shape
-        获取当前控制器下面的 Curve Shape 节点。
-        适合后续修改控制器颜色、大小和 Curve CV。
+    Ctrl.get_ctrl_shapes
+        获取当前控制器下面的全部 Shape 节点。
+        适合统一修改多 Shape 控制器的颜色、大小和 Curve CV。
 
     Ctrl.set_ctrl_color
-        设置当前控制器 Curve Shape 的显示颜色。
+        设置当前控制器全部 Shape 的显示颜色。
         适合按照左右侧或不同控制器功能统一设置显示颜色。
 
     Ctrl.set_ctrl_size
-        通过缩放 Curve CV 修改控制器的显示大小。
-        适合调整控制器视觉尺寸，同时保持 Transform Scale 为默认值。
+        通过缩放全部 NurbsCurve Shape 的 CV 修改控制器显示大小。
+        适合调整多 Shape 控制器视觉尺寸，同时保持 Transform Scale 为默认值。
+
+    Ctrl.set_ctrl_shape
+        从 Controller Shape Library 读取 JSON 数据并替换当前控制器 Shape。
+        适合创建或切换 circle、cube、ball 等控制器形状。
 """
 
 import os
 import json
 
 import pymel.core as pm
+
 
 class Ctrl(object):
 
@@ -56,8 +61,8 @@ class Ctrl(object):
         # 保存当前控制器的 Transform PyNode。
         self.ctrl = None
 
-        # 保存当前控制器的 Curve Shape PyNode。
-        self.ctrl_shape = None
+        # 保存当前控制器下面的全部 Shape PyNode。
+        self.ctrl_shapes = []
 
         # 如果传入已经存在的控制器，则直接转换成 PyNode 保存。
         if ctrl:
@@ -89,35 +94,37 @@ class Ctrl(object):
 
         return self.ctrl
 
-    def get_ctrl_shape(self):
+    def get_ctrl_shapes(self):
         u"""
-        获取当前控制器下面的 Curve Shape 节点。
+        获取当前控制器下面的全部 Shape 节点。
 
-        当前基础控制器只处理一个 Curve Shape，因此使用 getShape() 获取第一个 Shape。
+        一个 Controller Transform 可以同时拥有一个或多个 NurbsCurve Shape。
+        统一返回 Shape 列表后，颜色、大小等操作可以同时作用于整个控制器。
 
         Returns:
-            PyNode: 当前控制器下面的 Curve Shape 节点。
+            list: 当前控制器下面的全部 Shape PyNode。
 
         Maya 使用示例：
 
         from muziToolset.core.rigging import ctrl_utils
 
         ctrl_object = ctrl_utils.Ctrl(ctrl="ctrl_lf_eye_main_001")
-        ctrl_shape = ctrl_object.get_ctrl_shape()
+        ctrl_shapes = ctrl_object.get_ctrl_shapes()
 
-        print(ctrl_shape)
+        print(ctrl_shapes)
         """
 
-        # 获取控制器 Transform 下面的第一个 Shape 节点。
-        self.ctrl_shape = self.ctrl.getShape()
+        # 获取控制器 Transform 下面的全部非 Intermediate Shape 节点。
+        self.ctrl_shapes = self.ctrl.getShapes(noIntermediate=True)
 
-        return self.ctrl_shape
+        return self.ctrl_shapes
 
     def set_ctrl_color(self, ctrl_color):
         u"""
-        设置当前控制器 Curve Shape 的显示颜色。
+        设置当前控制器全部 Shape 的显示颜色。
 
         该方法使用 Maya Drawing Overrides 的索引颜色设置控制器颜色。
+        如果一个控制器包含多个 Shape，会依次修改每一个 Shape。
 
         ctrl_color(int): Maya Override Color 的颜色索引值。
 
@@ -132,21 +139,21 @@ class Ctrl(object):
         ctrl_object.set_ctrl_color(6)
         """
 
-        # 获取控制器的 Curve Shape。
-        self.ctrl_shape = self.get_ctrl_shape()
+        # 获取控制器下面的全部 Shape。
+        self.ctrl_shapes = self.get_ctrl_shapes()
 
-        # 开启 Shape 的 Drawing Overrides。
-        self.ctrl_shape.overrideEnabled.set(True)
-
-        # 设置 Shape 的 Override Color 索引值。
-        self.ctrl_shape.overrideColor.set(ctrl_color)
+        # 逐个设置 Shape 的 Drawing Overrides 和颜色。
+        for ctrl_shape in self.ctrl_shapes:
+            ctrl_shape.overrideEnabled.set(True)
+            ctrl_shape.overrideColor.set(ctrl_color)
 
     def set_ctrl_size(self, ctrl_size):
         u"""
-        设置当前控制器 Curve Shape 的显示大小。
+        设置当前控制器全部 NurbsCurve Shape 的显示大小。
 
         该方法直接缩放 Curve Shape 的所有 CV，不修改控制器 Transform 的 Scale。
         因此控制器的 scaleX、scaleY、scaleZ 可以继续保持为 1。
+        如果一个控制器包含多个 NurbsCurve Shape，会依次缩放每一个 Shape。
 
         ctrl_size(float): 控制器 Shape 的相对缩放倍率。
                           例如 2.0 表示在当前大小基础上放大 2 倍，
@@ -163,25 +170,26 @@ class Ctrl(object):
         ctrl_object.set_ctrl_size(2.0)
         """
 
-        # 获取控制器的 Curve Shape。
-        self.ctrl_shape = self.get_ctrl_shape()
+        # 获取控制器下面的全部 Shape。
+        self.ctrl_shapes = self.get_ctrl_shapes()
 
-        # 当前基础 Controller 只处理 NurbsCurve Shape。
-        if isinstance(self.ctrl_shape, pm.nodetypes.NurbsCurve):
+        # 逐个检查 Shape，只对 NurbsCurve 的 CV 进行缩放。
+        for ctrl_shape in self.ctrl_shapes:
+            if isinstance(ctrl_shape, pm.nodetypes.NurbsCurve):
+                pm.scale(ctrl_shape.cv[:], ctrl_size, ctrl_size, ctrl_size, relative=True, objectSpace=True)
 
-            # 获取 Curve 的全部 CV，并在对象自身空间中进行相对缩放。
-            # 这里只修改 Shape CV，因此不会改变控制器 Transform 的 Scale 数值。
-            pm.scale(self.ctrl_shape.cv[:], ctrl_size, ctrl_size, ctrl_size, relative=True, objectSpace=True)
-
-
-    def set_ctrl_shape (self , shape_name) :
+    def set_ctrl_shape(self, shape_name):
         u"""
         根据 Shape Library 中的 JSON 文件替换当前控制器的 Curve Shape。
+
+        一个 JSON 文件可以保存一个或多个 NurbsCurve Shape。
+        方法会先读取 JSON 数据并创建临时 Curve，然后删除当前控制器旧 Shape，
+        最后把新 Curve Shape 移到当前控制器 Transform 下面。
 
         shape_name(str): Controller Shape 名称，例如 "circle"、"cube"、"ball"。
 
         Returns:
-            list: 新创建的 NurbsCurve Shape 节点列表。
+            list: 新创建并挂到当前控制器下面的 NurbsCurve Shape 节点列表。
 
         Maya 使用示例：
 
@@ -190,94 +198,78 @@ class Ctrl(object):
         ctrl_object = ctrl_utils.Ctrl(name="ctrl_lf_eye_main_001")
         ctrl_object.create_ctrl()
 
-        ctrl_object.set_ctrl_shape("cube")
+        ctrl_shapes = ctrl_object.set_ctrl_shape("cube")
+
+        print(ctrl_shapes)
         """
 
         # 获取 muziToolset 项目根目录。
-        rigging_path = os.path.dirname (__file__)
-        core_path = os.path.dirname (rigging_path)
-        project_path = os.path.dirname (core_path)
+        rigging_path = os.path.dirname(__file__)
+        core_path = os.path.dirname(rigging_path)
+        project_path = os.path.dirname(core_path)
 
         # 拼接 Controller Shape JSON 文件路径。
-        shape_file = os.path.join (
-            project_path ,
-            "resources" ,
-            "controller_shapes" ,
-            shape_name + ".json"
-        )
+        shape_file = os.path.join(project_path, "resources", "controller_shapes", shape_name + ".json")
 
-        # 检查 Shape 文件是否存在。
-        if not os.path.exists (shape_file) :
-            pm.warning (u"找不到 Controller Shape 文件：{}".format (shape_file))
+        # Shape 文件不存在时停止执行，避免删除当前控制器已有 Shape。
+        if not os.path.exists(shape_file):
+            pm.warning(u"找不到 Controller Shape 文件：{}".format(shape_file))
             return []
 
-        # 读取 JSON 数据。
-        with open (shape_file , "r") as file :
-            shape_data = json.load (file)
+        # 读取 JSON 中保存的 Controller Shape 数据。
+        with open(shape_file, "r") as file:
+            shape_data = json.load(file)
 
-        # 临时保存通过 JSON 创建出来的 Curve Transform。
+        # 临时保存根据 JSON 创建出来的 Curve Transform。
         curve_transforms = []
 
-        # 一个 JSON 文件可能包含多个 Curve Shape。
-        for shape_info in shape_data :
+        # 一个 JSON 文件可能包含多个 Curve Shape，所以逐个创建临时 Curve。
+        for shape_info in shape_data:
+            point_values = shape_info["points"]
+            degree = shape_info["degree"]
+            periodic = shape_info["periodic"]
+            knot = shape_info["knot"]
 
-            point_values = shape_info ["points"]
-            degree = shape_info ["degree"]
-            periodic = shape_info ["periodic"]
-            knot = shape_info ["knot"]
-
-            # 将一维 points 数据恢复成 Maya Curve 使用的 XYZ 点。
+            # JSON 中 points 使用一维数组保存 XYZ，需要每三个数重新组合成一个点。
             points = []
 
-            for index in range (0 , len (point_values) , 3) :
+            for index in range(0, len(point_values), 3):
                 point = (
-                    point_values [index] ,
-                    point_values [index + 1] ,
-                    point_values [index + 2]
+                    point_values[index],
+                    point_values[index + 1],
+                    point_values[index + 2]
                 )
+                points.append(point)
 
-                points.append (point)
+            # Periodic Curve 需要在点列表末尾重复最前面的 degree 个点。
+            if periodic:
+                for index in range(degree):
+                    points.append(points[index])
 
-            # Periodic Curve 需要重复前 degree 个点。
-            if periodic :
+            # 根据 JSON 保存的 CV、Degree、Knot 和 Periodic 状态创建临时 Curve。
+            curve_transform = pm.curve(point=points, degree=degree, knot=knot, periodic=periodic)
+            curve_transforms.append(curve_transform)
 
-                for index in range (degree) :
-                    points.append (points [index])
+        # 获取当前控制器原来的全部 Shape。
+        old_shapes = self.get_ctrl_shapes()
 
-            # 根据 JSON 数据创建临时 Curve。
-            curve_transform = pm.curve (
-                point = points ,
-                degree = degree ,
-                knot = knot ,
-                periodic = periodic
-            )
+        # 删除旧 Shape，只保留当前 Controller Transform。
+        for old_shape in old_shapes:
+            pm.delete(old_shape)
 
-            curve_transforms.append (curve_transform)
-
-        # 获取 Controller 原来的 Shape。
-        old_shapes = self.ctrl.getShapes (noIntermediate = True)
-
-        # 删除旧 Shape。
-        for old_shape in old_shapes :
-            pm.delete (old_shape)
-
-        # 保存最终的新 Shape。
+        # 保存最终挂到 Controller Transform 下面的新 Shape。
         new_shapes = []
 
-        # 将临时 Curve 的 Shape 移到 Controller Transform 下面。
-        for curve_transform in curve_transforms :
-            curve_shape = curve_transform.getShape ()
+        # 将每一个临时 Curve Shape 移到当前 Controller Transform 下面。
+        for curve_transform in curve_transforms:
+            curve_shape = curve_transform.getShape()
+            pm.parent(curve_shape, self.ctrl, shape=True, relative=True)
+            new_shapes.append(curve_shape)
 
-            pm.parent (curve_shape , self.ctrl , shape = True , relative = True)
+            # Shape 已经移动完成，删除空的临时 Curve Transform。
+            pm.delete(curve_transform)
 
-            new_shapes.append (curve_shape)
+        # 更新当前实例保存的 Shape 列表。
+        self.ctrl_shapes = new_shapes
 
-            # Shape 已经移动到 Controller 下面，
-            # 所以原来的临时 Transform 可以删除。
-            pm.delete (curve_transform)
-
-        # 保持当前类原来的 self.ctrl_shape 设计。
-        if new_shapes :
-            self.ctrl_shape = new_shapes [0]
-
-        return new_shapes
+        return self.ctrl_shapes
