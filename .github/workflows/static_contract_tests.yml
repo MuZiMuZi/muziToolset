@@ -32,10 +32,13 @@ jobs:
         run: python -m compileall -q app core systems tools ui tests __init__.py config.py
 
       # -----------------------------------------------------------------------
-      # Step 02：Core 分层与公开 API 契约
+      # Step 02：Core 分层、Jnt Naming 与公开 API 契约
       # -----------------------------------------------------------------------
       - name: Test Core import style
         run: python tests/core_import_style_test.py
+
+      - name: Test Jnt naming contract
+        run: python tests/jnt_naming_contract_test.py
 
       - name: Test Core public API gate
         run: python tests/core_public_api_gate_test.py
