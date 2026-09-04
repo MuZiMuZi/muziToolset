@@ -11,26 +11,43 @@ hierarchy_utils：Maya 层级关系基础工具。
     chain_parent
         按照列表顺序创建链条式父子层级关系。
         适合 Joint Chain、FK Chain 等连续层级结构。
+
+    add_extra_group
+        在指定对象上方创建一个额外的空组，并保持对象原来的层级和位置关系。
+        适合创建 Zero、Offset、Connect、Space 等控制器层级组。
+
+    get_child_object
+        获取指定对象下面某种类型的所有子物体，并包含对象本身。
+        适合获取 Joint Chain、Transform 层级等连续对象列表。
+
+    select_sub_objects
+        快速选择当前所选物体下面指定类型的所有子对象，并包含当前选择对象本身。
+        适合快速选择完整 Joint Chain 或 Transform 层级。
 """
 
 import maya.cmds as cmds
 import pymel.core as pm
 
+
 def parent(child_node, parent_node):
     u"""
-    先查找子物体和父物体之间是否有父子层级关系，没有的话制作父子层级关系。
+    先检查子物体和父物体之间是否已经存在父子关系。
+    如果不存在，则创建新的父子层级关系。
 
-    :param child_node: 子物体节点名称。
-    :param parent_node: 父物体节点名称。
+    child_node(str): 需要设置父级的子物体节点名称。
+    parent_node(str): 需要作为父级的节点名称。
+
+    Returns:
+        None
 
     Maya 使用示例：
 
-        from muziToolset.core.common import hierarchy_utils
+    from muziToolset.core.common import hierarchy_utils
 
-        hierarchy_utils.parent(
-            "ctrl_lf_eye_main_001",
-            "grp_md_face_ctrl_001"
-        )
+    child_node = "ctrl_lf_eye_main_001"
+    parent_node = "grp_md_face_ctrl_001"
+
+    hierarchy_utils.parent(child_node, parent_node)
     """
 
     if parent_node:
@@ -61,20 +78,22 @@ def chain_parent(child_nodes, parent_node):
     u"""
     将链条式的列表按照顺序整理层级结构。
 
-     child_nodes(list): 需要整理层级结构的物体列表。
-     parent_node(str): 第一个物体的父物体。
+    child_nodes(list): 需要整理层级结构的物体列表。
+    parent_node(str): 第一个物体的父物体。
+
+    Returns:
+        None
 
     Maya 使用示例：
 
     from muziToolset.core.common import hierarchy_utils
+
     child_nodes = ["jnt_lf_arm_bind_001",
-            "jnt_lf_arm_bind_002",
-            "jnt_lf_arm_bind_003"]
+                   "jnt_lf_arm_bind_002",
+                   "jnt_lf_arm_bind_003"]
     parent_node = "grp_md_skeleton_001"
 
-
     hierarchy_utils.chain_parent(child_nodes, parent_node)
-
 
     # 最终层级：
     # grp_md_skeleton_001
@@ -90,54 +109,65 @@ def chain_parent(child_nodes, parent_node):
         )
         parent_node = child_node
 
+
 def add_extra_group(object, grp_name, world_orient=False):
     u"""
-    在对象上方添加一个额外的组。
+    在对象上方创建一个额外的空组，并保持对象原来的层级关系。
+    新创建的组默认匹配对象的位置、旋转和缩放。
+    当 world_orient=True 时，新组保持世界旋转方向，只匹配对象的位置和缩放。
 
-    object(str): 要添加额外组的 Maya 对象。
+    object(str): 需要添加额外组的 Maya 对象。
     grp_name(str): 新创建的组名称。
-    world_orient(bool): 是否让新组保持世界旋转方向。
+    world_orient(bool): 是否让新组保持世界旋转方向，默认 False。
 
     Returns:
         str: 新创建的组名称。
 
     Maya 使用示例：
 
-    import pymel.core as pm
     from muziToolset.core.common import hierarchy_utils
 
     object = "ctrl_lf_eye_main_001"
     grp_name = "offset_lf_eye_main_001"
+    world_orient = False
 
-    new_group = hierarchy_utils.add_extra_group(object, grp_name, world_orient=False)
+    new_group = hierarchy_utils.add_extra_group(object, grp_name, world_orient)
 
     print(new_group)
     """
-    #利用PyNode实例化object
+
+    # 使用 PyNode 获取对象及其层级信息。
     object = pm.PyNode(object)
-    #获取object的父物体
+
+    # 保存对象原来的父物体。
     object_parent = object.getParent()
-    #根据新的组名称创建新租
+
+    # 创建新的空组。
     object_grp = pm.group(empty=True, name=grp_name)
-    #判断如果需要保持世界旋转方向
+
+    # 根据 world_orient 设置新组的对齐方式。
     if world_orient:
         pm.matchTransform(object_grp, object, position=True, scale=True)
     else:
         pm.matchTransform(object_grp, object, position=True, rotation=True, scale=True)
-    #整理层级结构
+
+    # 将新组放回对象原来的父级下面。
     if object_parent:
         parent(child_node = object_grp, parent_node = object_parent)
 
+    # 将原对象放到新组下面。
     parent (child_node = object , parent_node = object_grp)
 
     return object_grp.name()
 
+
 def get_child_object(object, type="joint"):
     u"""
     获取对象下面指定类型的所有子物体，并包含对象本身。
+    返回的列表按照从父级到子级的顺序排列。
 
     object(str): 需要获取子物体的对象。
-    type(str): 需要获取的节点类型，默认 joint。
+    type(str): 需要获取的节点类型，默认 "joint"。
 
     Returns:
         list: 对象本身和所有指定类型子物体的名称列表。
@@ -154,21 +184,27 @@ def get_child_object(object, type="joint"):
     print(object_list)
     """
 
+    # 获取指定类型的所有后代节点。
     object_list = cmds.listRelatives(object, type=type, allDescendents=True) or []
 
+    # 将对象本身加入列表。
     object_list.append(object)
+
+    # 调整顺序，使父级节点排列在子级节点之前。
     object_list.reverse()
 
     return object_list
 
+
 def select_sub_objects(obj_type="transform"):
     u"""
     快速选择当前所选物体下面指定类型的所有子对象，并包含当前选择的物体本身。
+    支持同时选择多个父物体，并自动避免重复添加相同的子对象。
 
-    obj_type(str): 需要选择的子对象类型，例如 "transform"、"joint"。
+    obj_type(str): 需要选择的子对象类型，例如 "transform"、"joint"，默认 "transform"。
 
     Returns:
-        list: 最终选择的所有对象名称。
+        list: 最终选择的所有对象名称列表。
 
     Maya 使用示例：
 
@@ -181,17 +217,20 @@ def select_sub_objects(obj_type="transform"):
     print(selection)
     """
 
+    # 获取当前选择的所有对象。
     selection = cmds.ls(sl=True) or []
     object_list = []
-    #对选择的物体做循环
+
+    # 获取每个选择对象下面指定类型的所有子对象。
     for obj in selection:
         child_objects = get_child_object(obj, obj_type)
 
+        # 避免相同节点被重复加入列表。
         for child_object in child_objects:
             if child_object not in object_list:
                 object_list.append(child_object)
 
+    # 将最终得到的对象列表设置为 Maya 当前选择。
     cmds.select(object_list, replace=True)
 
     return object_list
-
