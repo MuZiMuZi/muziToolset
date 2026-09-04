@@ -1,0 +1,42 @@
+name: One Time Jnt Naming Migration
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  migrate-jnt-naming:
+    if: github.event.head_commit.message == 'Run controlled Joint to Jnt migration'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository with history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run controlled naming migration
+        run: python scripts/_one_time_jnt_migration_runner.py
+
+      - name: Remove one-time migration scripts
+        run: |
+          rm -f scripts/_one_time_jnt_migration.py
+          rm -f scripts/_one_time_jnt_migration_runner.py
+
+      - name: Commit migrated repository
+        run: |
+          git config user.name "MuZiMuZi"
+          git config user.email "114722174+MuZiMuZi@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Complete controlled Joint to Jnt naming migration"
+          git push origin HEAD:main
