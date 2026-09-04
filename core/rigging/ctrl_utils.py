@@ -39,6 +39,10 @@ ctrl_utils：Maya Controller 基础工具。
     Ctrl.set_ctrl_shape
         从 Controller Shape Library 读取 JSON 数据并替换当前控制器 Shape。
         适合创建或切换 circle、cube、ball 等控制器形状。
+
+    Ctrl.save_ctrl_shape
+        将当前控制器的全部 NurbsCurve Shape 保存到 Shape Library。
+        适合把 Maya 中编辑完成的控制器图形保存为可重复使用的 JSON 资源。
 """
 
 import os
@@ -396,109 +400,120 @@ class Ctrl(object):
 
         return self.ctrl_shapes
 
-
-    def save_ctrl_shape (self , shape_name) :
+    def save_ctrl_shape(self, shape_name):
         u"""
         将当前控制器的全部 NurbsCurve Shape 保存到 Controller Shape Library。
 
-        该方法会读取每一个 NurbsCurve Shape 的 CV、Degree、Periodic 和 Knot 数据，
-        并保存为 resources/controller_shapes 目录中的 JSON 文件。
+        该方法会读取当前控制器下面每一个 NurbsCurve Shape 的 CV 坐标、
+        Degree、Curve Form 和 Knot Vector，并整理成当前 Shape Library 使用的
+        JSON 数据结构保存到 resources/controller_shapes 目录。
 
-        shape_name(str): 保存到 Shape Library 中使用的 Shape 名称。
+        对于 Periodic Curve，Maya 内部会保留重复的 degree 个 CV。
+        保存时会去掉末尾重复 CV，使保存的数据能够和 set_ctrl_shape() 的
+        Periodic Curve 重建逻辑保持对应关系。
+
+        shape_name(str): 保存到 Shape Library 中使用的 Shape 名称，不需要包含 .json 扩展名。
 
         Returns:
             str: 保存完成后的 JSON 文件路径。
+            None: 当前控制器没有可保存的 NurbsCurve Shape 时返回 None。
 
         Maya 使用示例：
 
         from muziToolset.core.rigging import ctrl_utils
 
         ctrl_object = ctrl_utils.Ctrl(ctrl="ctrl_md_test_main_001")
-
         shape_file = ctrl_object.save_ctrl_shape("my_ctrl_shape")
 
         print(shape_file)
         """
 
         # 获取当前控制器下面的全部 Shape。
-        self.ctrl_shapes = self.get_ctrl_shapes ()
+        self.ctrl_shapes = self.get_ctrl_shapes()
 
-        # 保存最终需要写入 JSON 的全部 Shape 数据。
+        # 外层列表保存整个 Controller 的全部 NurbsCurve Shape 数据。
+        # 一个 Controller 可以由一个或多个 Curve Shape 组合而成。
         shape_data = []
 
-        # 逐个读取 NurbsCurve Shape。
-        for ctrl_shape in self.ctrl_shapes :
+        # 逐个读取当前 Controller 下面的 Shape。
+        for ctrl_shape in self.ctrl_shapes:
 
-            # 只保存 NurbsCurve Shape。
-            if not isinstance (ctrl_shape , pm.nodetypes.NurbsCurve) :
+            # Shape Library 当前只保存 NurbsCurve。
+            # 如果 Transform 下面存在其他类型 Shape，则直接跳过。
+            if not isinstance(ctrl_shape, pm.nodetypes.NurbsCurve):
                 continue
 
-            # 获取 Curve Degree。
-            degree = ctrl_shape.getAttr ("degree")
+            # 获取当前 Curve 的 Degree。
+            # 常见值为 1（Linear）或 3（Cubic）。
+            degree = ctrl_shape.getAttr("degree")
 
-            # 获取 Curve Form。
-            # Maya 中：
-            # 0 = Open
-            # 1 = Closed
-            # 2 = Periodic
-            curve_form = ctrl_shape.getAttr ("form")
+            # 获取当前 Curve Form。
+            # Maya 中：0 = Open，1 = Closed，2 = Periodic。
+            curve_form = ctrl_shape.getAttr("form")
 
-            # 判断当前 Curve 是否为 Periodic Curve。
+            # Shape Library 使用 bool 保存 Periodic 状态，
+            # 所以这里只判断 Curve Form 是否为 2。
             periodic = curve_form == 2
 
-            # 获取 Curve 在自身对象空间中的全部 CV。
-            curve_points = ctrl_shape.getCVs (space = "object")
+            # 获取 Curve 自身对象空间中的全部 CV 坐标。
+            # 使用 object space 可以避免 Controller Transform 的世界位置影响 Shape 数据。
+            curve_points = ctrl_shape.getCVs(space="object")
 
             # Periodic Curve 在 Maya 内部会包含重复的 degree 个 CV。
-            # 我们旧 Shape Library 保存时不保存这些重复点，
-            # 因此需要从末尾删除。
-            if periodic :
-                curve_points = curve_points [:-degree]
+            # set_ctrl_shape() 加载时会重新补回这些重复点，
+            # 因此保存时只保留基础 CV，避免数据重复。
+            if periodic:
+                curve_points = curve_points[:-degree]
 
-            # 将 Point 列表转换成旧 Shape Library 使用的一维 XYZ 数组。
+            # 旧 Shape Library 的 points 使用一维数组保存：
+            # [x0, y0, z0, x1, y1, z1, ...]
+            # 因此需要把 Maya Point 列表逐个拆成 XYZ 数值。
             point_values = []
 
-            for point in curve_points :
-                point_values.append (point [0])
-                point_values.append (point [1])
-                point_values.append (point [2])
+            for point in curve_points:
+                point_values.append(point[0])
+                point_values.append(point[1])
+                point_values.append(point[2])
 
-            # 获取 Curve Knot Vector。
+            # 获取当前 Curve 原始 Knot Vector。
+            # 保存原始 Knot 可以让 set_ctrl_shape() 重建时保持曲线结构一致。
             knot_values = []
+            knots = ctrl_shape.getKnots()
 
-            knots = ctrl_shape.getKnots ()
+            for knot in knots:
+                knot_values.append(knot)
 
-            for knot in knots :
-                knot_values.append (knot)
-
-            # 保存当前 Shape 数据。
+            # 整理当前一个 NurbsCurve Shape 的完整 JSON 数据。
             shape_info = {
-                "points" : point_values ,
-                "degree" : degree ,
-                "periodic" : periodic ,
-                "knot" : knot_values
+                "points": point_values,
+                "degree": degree,
+                "periodic": periodic,
+                "knot": knot_values
             }
 
-            shape_data.append (shape_info)
+            # 添加到整个 Controller 的 Shape 数据列表中。
+            shape_data.append(shape_info)
 
-        # 如果没有找到 NurbsCurve Shape，则停止保存。
-        if not shape_data :
-            pm.warning (u"当前控制器没有可以保存的 NurbsCurve Shape。")
+        # 如果没有找到任何 NurbsCurve Shape，则停止保存。
+        if not shape_data:
+            pm.warning(u"当前控制器没有可以保存的 NurbsCurve Shape。")
             return None
 
         # 获取 muziToolset 项目根目录。
-        rigging_path = os.path.dirname (__file__)
-        core_path = os.path.dirname (rigging_path)
-        project_path = os.path.dirname (core_path)
+        rigging_path = os.path.dirname(__file__)
+        core_path = os.path.dirname(rigging_path)
+        project_path = os.path.dirname(core_path)
 
-        # 获取 Controller Shape Library 路径。
-        shape_library_path = os.path.join (project_path , "resources" , "controller_shapes")
+        # 获取统一的 Controller Shape Library 路径。
+        shape_library_path = os.path.join(project_path, "resources", "controller_shapes")
 
-        # 拼接最终 JSON 文件路径。
-        shape_file = os.path.join (shape_library_path , shape_name + ".json")
+        # 根据传入名称拼接最终 JSON 文件路径。
+        shape_file = os.path.join(shape_library_path, shape_name + ".json")
 
-        # 将 Shape 数据写入 JSON 文件。
-        with open (shape_file , "w") as file :
-            json.dump (shape_data , file , indent = 4)
+        # 将全部 Shape 数据写入 JSON。
+        # indent=4 让文件保持可读，方便以后直接检查和维护 Shape 数据。
+        with open(shape_file, "w") as file:
+            json.dump(shape_data, file, indent=4)
 
+        # 返回保存路径，方便 UI 或其他工具继续使用。
         return shape_file
