@@ -10,48 +10,23 @@ name_utils：Maya Rig 基础命名工具。
     ctrl_lf_eye_main_001
     jnt_rt_brow_bind_003
 
-当前只负责三件事情：
-    1. 拆分名称
-    2. 组合名称
-    3. 翻转左右方向
+方法介绍与使用场景：
 
-Maya 使用示例：
+    Name.__init__
+        创建一个名称对象。
+        可以直接传入完整名称，也可以分别传入 type / side / part / function / index。
 
-    from muziToolset.core.common import name_utils
+    Name.decompose_name
+        将完整标准名称拆分成 type / side / part / function / index。
+        适合读取已有 Maya 节点名称中的命名信息。
 
-    # ------------------------------------------------------------
-    # 1. 组合名称
-    # ------------------------------------------------------------
-    name_object = name_utils.Name(
-        type="ctrl",
-        side="lf",
-        part="eye",
-        function="main",
-        index=1
-    )
+    Name.compose_name
+        根据 type / side / part / function / index 组合标准名称。
+        适合创建 Joint、Controller、Group 等节点名称。
 
-    print(name_object.compose_name())
-    # ctrl_lf_eye_main_001
-
-    # ------------------------------------------------------------
-    # 2. 拆分名称
-    # ------------------------------------------------------------
-    name_object = name_utils.Name(
-        name="jnt_rt_brow_bind_003"
-    )
-
-    print(name_object.type)
-    print(name_object.side)
-    print(name_object.part)
-    print(name_object.function)
-    print(name_object.index)
-
-    # ------------------------------------------------------------
-    # 3. 翻转左右方向
-    # ------------------------------------------------------------
-    name_object.flip()
-    print(name_object.side)
-    # lf
+    Name.flip
+        翻转左右方向 lf / rt。
+        适合镜像 Rig、Joint、Controller 等左右结构时使用。
 """
 
 
@@ -66,7 +41,21 @@ class Name(object):
         function=None,
         index=None
     ):
-        u"""初始化名称数据。"""
+        u"""
+        初始化名称数据。
+
+        Maya 使用示例：
+
+            from muziToolset.core.common import name_utils
+
+            name_object = name_utils.Name(
+                type="ctrl",
+                side="lf",
+                part="eye",
+                function="main",
+                index=1
+            )
+        """
 
         self.name = name
         self.type = type
@@ -79,7 +68,23 @@ class Name(object):
             self.decompose_name()
 
     def decompose_name(self):
-        u"""将标准名称拆分到当前对象的数据中。"""
+        u"""
+        将标准名称拆分到当前对象的数据中。
+
+        Maya 使用示例：
+
+            from muziToolset.core.common import name_utils
+
+            name_object = name_utils.Name(
+                name="jnt_rt_brow_bind_003"
+            )
+
+            print(name_object.type)
+            print(name_object.side)
+            print(name_object.part)
+            print(name_object.function)
+            print(name_object.index)
+        """
 
         name_parts = self.name.split("_")
 
@@ -92,7 +97,24 @@ class Name(object):
         return name_parts
 
     def compose_name(self):
-        u"""根据当前数据组合标准名称。"""
+        u"""
+        根据当前数据组合标准名称。
+
+        Maya 使用示例：
+
+            from muziToolset.core.common import name_utils
+
+            name_object = name_utils.Name(
+                type="ctrl",
+                side="lf",
+                part="eye",
+                function="main",
+                index=1
+            )
+
+            print(name_object.compose_name())
+            # ctrl_lf_eye_main_001
+        """
 
         if self.index is None:
             self.index = 1
@@ -110,7 +132,25 @@ class Name(object):
         return self.name
 
     def flip(self):
-        u"""翻转左右方向：lf <-> rt。"""
+        u"""
+        翻转左右方向：lf <-> rt。
+
+        Maya 使用示例：
+
+            from muziToolset.core.common import name_utils
+
+            name_object = name_utils.Name(
+                type="ctrl",
+                side="lf",
+                part="eye",
+                function="main",
+                index=1
+            )
+
+            name_object.flip()
+            print(name_object.side)
+            # rt
+        """
 
         if self.side == "lf":
             self.side = "rt"
