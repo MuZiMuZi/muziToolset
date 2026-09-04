@@ -160,3 +160,38 @@ def get_child_object(object, type="joint"):
     object_list.reverse()
 
     return object_list
+
+def select_sub_objects(obj_type="transform"):
+    u"""
+    快速选择当前所选物体下面指定类型的所有子对象，并包含当前选择的物体本身。
+
+    obj_type(str): 需要选择的子对象类型，例如 "transform"、"joint"。
+
+    Returns:
+        list: 最终选择的所有对象名称。
+
+    Maya 使用示例：
+
+    from muziToolset.core.common import hierarchy_utils
+
+    obj_type = "joint"
+
+    selection = hierarchy_utils.select_sub_objects(obj_type)
+
+    print(selection)
+    """
+
+    selection = cmds.ls(sl=True) or []
+    object_list = []
+    #对选择的物体做循环
+    for obj in selection:
+        child_objects = get_child_object(obj, obj_type)
+
+        for child_object in child_objects:
+            if child_object not in object_list:
+                object_list.append(child_object)
+
+    cmds.select(object_list, replace=True)
+
+    return object_list
+
