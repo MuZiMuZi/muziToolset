@@ -80,5 +80,10 @@ contract_source = contract_source.replace(
     1
 )
 
-namespace["JNT_CONTRACT_SOURCE"] = contract_source
-namespace["main"]()
+# runpy.run_path() 返回的是结果字典；函数真正使用的是自己的 __globals__。
+# 必须写入函数绑定的全局空间，write_contract_test() 才会输出修正后的契约。
+main_function = namespace["main"]
+main_globals = main_function.__globals__
+main_globals["JNT_CONTRACT_SOURCE"] = contract_source
+
+main_function()
