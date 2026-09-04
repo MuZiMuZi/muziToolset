@@ -1,58 +1,91 @@
+# coding=utf-8
+u"""
+hierarchy_utilsï¼šMaya å±‚çº§å…³ç³»åŸºç¡€å·¥å…·ã€‚
 
-def parent (child_node , parent_node) :
+å½“å‰åŠŸèƒ½ï¼š
+    1. parent
+       åˆ›å»ºçˆ¶å­å±‚çº§å…³ç³»ã€‚
+
+    2. chain_parent
+       æŒ‰ç…§åˆ—è¡¨é¡ºåºåˆ›å»ºé“¾æ¡å¼å±‚çº§å…³ç³»ã€‚
+
+Maya ä½¿ç”¨ç¤ºä¾‹ï¼š
+
+    from muziToolset.core.common import hierarchy_utils
+
+    # ------------------------------------------------------------
+    # 1. åˆ›å»ºæ™®é€šçˆ¶å­å…³ç³»
+    # ------------------------------------------------------------
+    hierarchy_utils.parent(
+        "ctrl_lf_eye_main_001",
+        "grp_md_face_ctrl_001"
+    )
+
+    # ------------------------------------------------------------
+    # 2. åˆ›å»ºé“¾æ¡å¼å±‚çº§
+    # ------------------------------------------------------------
+    hierarchy_utils.chain_parent(
+        [
+            "jnt_lf_arm_bind_001",
+            "jnt_lf_arm_bind_002",
+            "jnt_lf_arm_bind_003"
+        ],
+        "grp_md_skeleton_001"
+    )
+
+    # æœ€ç»ˆå±‚çº§ï¼š
+    # grp_md_skeleton_001
+    #     jnt_lf_arm_bind_001
+    #         jnt_lf_arm_bind_002
+    #             jnt_lf_arm_bind_003
+"""
+
+import maya.cmds as cmds
+
+
+def parent(child_node, parent_node):
     u"""
-    ÏÈ²éÕÒ×ÓÎïÌåºÍ¸¸ÎïÌåÖ®¼äÊÇ·ñÓĞ¸¸×Ó²ã¼¶¹ØÏµ£¬Ã»ÓĞµÄ»°ÖÆ×÷¸¸×Ó²ã¼¶¹ØÏµ
-    :param child_node£¨str£©:×ÓÎïÌåµÄ½ÚµãÃû³Æ
-    :param parent_nodestr£©:¸¸ÎïÌåµÄ½ÚµãÃû³Æ
-    :return:
+    å…ˆæŸ¥æ‰¾å­ç‰©ä½“å’Œçˆ¶ç‰©ä½“ä¹‹é—´æ˜¯å¦æœ‰çˆ¶å­å±‚çº§å…³ç³»ï¼Œæ²¡æœ‰çš„è¯åˆ¶ä½œçˆ¶å­å±‚çº§å…³ç³»ã€‚
+
+    :param child_node: å­ç‰©ä½“èŠ‚ç‚¹åç§°ã€‚
+    :param parent_node: çˆ¶ç‰©ä½“èŠ‚ç‚¹åç§°ã€‚
     """
-    if parent_node :
-        parent_original = cmds.listRelatives (child_node , parent = True)
-        if not parent_original or parent_original [0] != parent_node :
-            cmds.parent (child_node , parent_node)
-        else :
-            cmds.warning (u'{} ÒÑÎª {}µÄ×ÓÎïÌå'.format (child_node , parent_node))
-    else :
-        cmds.warning (u'Ã»ÓĞ¸ø¶¨¸¸ÎïÌå½Úµã')
 
-def chain_parent (child_nodes , parent_node) :
+    if parent_node:
+        parent_original = cmds.listRelatives(
+            child_node,
+            parent=True
+        )
+
+        if not parent_original or parent_original[0] != parent_node:
+            cmds.parent(
+                child_node,
+                parent_node
+            )
+        else:
+            cmds.warning(
+                u"{} å·²ä¸º {} çš„å­ç‰©ä½“".format(
+                    child_node,
+                    parent_node
+                )
+            )
+    else:
+        cmds.warning(
+            u"æ²¡æœ‰ç»™å®šçˆ¶ç‰©ä½“èŠ‚ç‚¹"
+        )
+
+
+def chain_parent(child_nodes, parent_node):
+    u"""
+    å°†é“¾æ¡å¼çš„åˆ—è¡¨æŒ‰ç…§é¡ºåºæ•´ç†å±‚çº§ç»“æ„ã€‚
+
+    :param child_nodes: éœ€è¦æ•´ç†å±‚çº§ç»“æ„çš„ç‰©ä½“åˆ—è¡¨ã€‚
+    :param parent_node: ç¬¬ä¸€ä¸ªç‰©ä½“çš„çˆ¶ç‰©ä½“ã€‚
     """
-    ½«Á´ÌõÊ½µÄÁĞ±í°´ÕÕË³ĞòÕûÀí²ã¼¶½á¹¹
-    child_nodes£ºĞèÒªÕûÀí²ã¼¶½á¹¹µÄÎïÌåÁĞ±í
-    parent_node£ºµÚÒ»¸öÎïÌåµÄ¸¸ÎïÌå
-    """
-    for child_node in child_nodes :
-       parent(child_node , parent_node)
-       parent_node = child_node
 
-def add_extra_group (obj , grp_name , world_orient = False) :
-    u"""ÔÚ¶ÔÏóÉÏ·½Ìí¼ÓÒ»¸ö¶îÍâµÄ×é.
-
-    Args:
-        obj (str):ÒªÌí¼Ó¶îÍâ×éµÄMaya¶ÔÏó.
-        grp_name (str): ¶îÍâµÄ×éÃû
-        world_orient (bool): ÉèÖÃĞÂ×éµÄÊÀ½çÎ»ÖÃÊÇ·ñ¸Ä±ä¡£
-
-    Returns:
-        str: ĞÂÌí¼ÓµÄ×é.
-
-    """
-    #´´½¨Ò»¸ö×é
-    obj_grp = cmds.group (name = grp_name , empty = True)
-    t_pos = cmds.xform (obj , query = True , worldSpace = True , translation = True)
-    r_pos = cmds.xform (obj , query = True , worldSpace = True , rotation = True)
-    if world_orient :
-        r_pos = [0 , 0 , 0]
-    s_pos = cmds.xform (obj , q = True , worldSpace = True , s = True)
-    cmds.xform (obj_grp , s = s_pos)
-    cmds.xform (obj_grp , ws = True , t = t_pos)
-    cmds.xform (obj_grp , ws = True , ro = r_pos)
-
-    obj_parent = cmds.listRelatives (obj , parent = True)
-    if obj_parent :
-        cmds.parent (obj_grp , obj_parent [0] , absolute = True)
-        cmds.parent (obj , obj_grp , absolute = True)
-    else :
-        cmds.parent (obj , obj_grp , absolute = True)
-
-    return obj_grp
+    for child_node in child_nodes:
+        parent(
+            child_node,
+            parent_node
+        )
+        parent_node = child_node
