@@ -25,11 +25,12 @@ jobs:
           python-version: "3.11"
 
       - name: Run controlled naming migration
-        run: python scripts/_one_time_jnt_migration.py
+        run: python scripts/_one_time_jnt_migration_runner.py
 
       - name: Remove one-time migration files
         run: |
           rm -f scripts/_one_time_jnt_migration.py
+          rm -f scripts/_one_time_jnt_migration_runner.py
           rm -f .github/workflows/one_time_jnt_migration.yml
 
       - name: Commit migrated repository
