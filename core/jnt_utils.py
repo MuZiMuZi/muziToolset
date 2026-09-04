@@ -799,5 +799,5 @@ class Jnt(object):
 __all__ = [
     "get_display_scale",
     "set_display_scale",
-    "Joint",
+    "Jnt",
 ]
