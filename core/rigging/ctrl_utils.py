@@ -16,6 +16,10 @@ ctrl_utils：Maya Controller 基础工具。
         获取当前控制器下面的全部 Shape 节点。
         适合统一修改多 Shape 控制器的颜色、大小和 Curve CV。
 
+    Ctrl.get_ctrl_shape_list
+        获取 Controller Shape Library 中所有可用的 Shape 名称。
+        适合给 UI 下拉菜单、Shape Picker 等功能提供资源列表。
+
     Ctrl.set_ctrl_color
         设置当前控制器全部 Shape 的显示颜色。
         适合按照左右侧或不同控制器功能统一设置显示颜色。
@@ -23,6 +27,14 @@ ctrl_utils：Maya Controller 基础工具。
     Ctrl.set_ctrl_size
         通过缩放全部 NurbsCurve Shape 的 CV 修改控制器显示大小。
         适合调整多 Shape 控制器视觉尺寸，同时保持 Transform Scale 为默认值。
+
+    Ctrl.set_ctrl_rotate
+        通过旋转全部 NurbsCurve Shape 的 CV 修改控制器显示朝向。
+        适合调整控制器图形方向，同时保持 Transform Rotate 为默认值。
+
+    Ctrl.set_ctrl_offset
+        通过移动全部 NurbsCurve Shape 的 CV 修改控制器显示位置。
+        适合偏移控制器图形，同时保持 Transform Translate 为默认值。
 
     Ctrl.set_ctrl_shape
         从 Controller Shape Library 读取 JSON 数据并替换当前控制器 Shape。
@@ -99,7 +111,7 @@ class Ctrl(object):
         获取当前控制器下面的全部 Shape 节点。
 
         一个 Controller Transform 可以同时拥有一个或多个 NurbsCurve Shape。
-        统一返回 Shape 列表后，颜色、大小等操作可以同时作用于整个控制器。
+        统一返回 Shape 列表后，颜色、大小、旋转和偏移等操作可以同时作用于整个控制器。
 
         Returns:
             list: 当前控制器下面的全部 Shape PyNode。
@@ -118,6 +130,56 @@ class Ctrl(object):
         self.ctrl_shapes = self.ctrl.getShapes(noIntermediate=True)
 
         return self.ctrl_shapes
+
+    def get_ctrl_shape_list(self):
+        u"""
+        获取 Controller Shape Library 中所有可用的 Shape 名称。
+
+        该方法扫描 resources/controller_shapes 目录中的 JSON 文件，
+        并去掉 .json 扩展名后返回 Shape 名称列表。
+
+        Returns:
+            list: Controller Shape Library 中所有可用的 Shape 名称。
+
+        Maya 使用示例：
+
+        from muziToolset.core.rigging import ctrl_utils
+
+        ctrl_object = ctrl_utils.Ctrl()
+        shape_list = ctrl_object.get_ctrl_shape_list()
+
+        print(shape_list)
+        """
+
+        # 获取 muziToolset 项目根目录。
+        rigging_path = os.path.dirname(__file__)
+        core_path = os.path.dirname(rigging_path)
+        project_path = os.path.dirname(core_path)
+
+        # 拼接 Controller Shape Library 路径。
+        shape_library_path = os.path.join(project_path, "resources", "controller_shapes")
+
+        # 保存找到的 Shape 名称。
+        shape_list = []
+
+        # Shape Library 不存在时返回空列表。
+        if not os.path.exists(shape_library_path):
+            pm.warning(u"找不到 Controller Shape Library：{}".format(shape_library_path))
+            return shape_list
+
+        # 获取资源目录中的全部文件。
+        file_names = os.listdir(shape_library_path)
+
+        # 只读取 JSON 文件，并去掉文件扩展名。
+        for file_name in file_names:
+            if file_name.lower().endswith(".json"):
+                shape_name = os.path.splitext(file_name)[0]
+                shape_list.append(shape_name)
+
+        # 按名称排序，方便 UI 或 Shape Picker 显示。
+        shape_list.sort()
+
+        return shape_list
 
     def set_ctrl_color(self, ctrl_color):
         u"""
@@ -177,6 +239,66 @@ class Ctrl(object):
         for ctrl_shape in self.ctrl_shapes:
             if isinstance(ctrl_shape, pm.nodetypes.NurbsCurve):
                 pm.scale(ctrl_shape.cv[:], ctrl_size, ctrl_size, ctrl_size, relative=True, objectSpace=True)
+
+    def set_ctrl_rotate(self, rotate_x=0.0, rotate_y=0.0, rotate_z=0.0):
+        u"""
+        旋转当前控制器全部 NurbsCurve Shape 的 CV。
+
+        该方法只修改 Curve Shape 的 CV，不修改 Controller Transform 的 Rotate。
+        因此控制器的 rotateX、rotateY、rotateZ 可以继续保持为 0。
+
+        rotate_x(float): X 轴相对旋转角度，默认 0.0。
+        rotate_y(float): Y 轴相对旋转角度，默认 0.0。
+        rotate_z(float): Z 轴相对旋转角度，默认 0.0。
+
+        Returns:
+            None
+
+        Maya 使用示例：
+
+        from muziToolset.core.rigging import ctrl_utils
+
+        ctrl_object = ctrl_utils.Ctrl(ctrl="ctrl_lf_eye_main_001")
+        ctrl_object.set_ctrl_rotate(rotate_x=90.0, rotate_y=0.0, rotate_z=0.0)
+        """
+
+        # 获取控制器下面的全部 Shape。
+        self.ctrl_shapes = self.get_ctrl_shapes()
+
+        # 逐个检查 Shape，只旋转 NurbsCurve 的 CV。
+        for ctrl_shape in self.ctrl_shapes:
+            if isinstance(ctrl_shape, pm.nodetypes.NurbsCurve):
+                pm.rotate(ctrl_shape.cv[:], rotate_x, rotate_y, rotate_z, relative=True, objectSpace=True)
+
+    def set_ctrl_offset(self, offset_x=0.0, offset_y=0.0, offset_z=0.0):
+        u"""
+        偏移当前控制器全部 NurbsCurve Shape 的 CV。
+
+        该方法只移动 Curve Shape 的 CV，不修改 Controller Transform 的 Translate。
+        因此控制器的 translateX、translateY、translateZ 可以继续保持为 0。
+
+        offset_x(float): X 轴相对偏移距离，默认 0.0。
+        offset_y(float): Y 轴相对偏移距离，默认 0.0。
+        offset_z(float): Z 轴相对偏移距离，默认 0.0。
+
+        Returns:
+            None
+
+        Maya 使用示例：
+
+        from muziToolset.core.rigging import ctrl_utils
+
+        ctrl_object = ctrl_utils.Ctrl(ctrl="ctrl_lf_eye_main_001")
+        ctrl_object.set_ctrl_offset(offset_x=0.0, offset_y=2.0, offset_z=0.0)
+        """
+
+        # 获取控制器下面的全部 Shape。
+        self.ctrl_shapes = self.get_ctrl_shapes()
+
+        # 逐个检查 Shape，只移动 NurbsCurve 的 CV。
+        for ctrl_shape in self.ctrl_shapes:
+            if isinstance(ctrl_shape, pm.nodetypes.NurbsCurve):
+                pm.move(ctrl_shape.cv[:], offset_x, offset_y, offset_z, relative=True, objectSpace=True)
 
     def set_ctrl_shape(self, shape_name):
         u"""
