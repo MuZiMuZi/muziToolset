@@ -30,22 +30,43 @@ from . import face_build_smoke_test
 
 
 def create_namespace():
-    u"""创建独立 Maya 2023 Smoke Namespace。"""
+    u"""创建独立 Maya 2023 Smoke Namespace，并返回绝对 Namespace 路径。"""
     token = uuid.uuid4().hex[:8]
     namespace = "muziMaya2023Smoke_{}".format(
         token
+    )
+    absolute_namespace = ":{}".format(
+        namespace
+    )
+
+    # Maya 的 Namespace 名默认会按当前 Namespace 相对解析。
+    # Smoke Test 必须始终从 Root 创建，避免嵌套成 parent:muziMaya2023Smoke_xxx。
+    cmds.namespace(
+        set=":"
     )
     cmds.namespace(
         add=namespace
     )
     cmds.namespace(
-        set=namespace
+        set=absolute_namespace
     )
-    return namespace
+    return absolute_namespace
 
 
 def remove_namespace(namespace):
-    u"""删除 Smoke Namespace。"""
+    u"""使用绝对 Namespace 路径删除 Smoke Namespace。"""
+    absolute_namespace = str(
+        namespace
+    ).strip()
+
+    if not absolute_namespace:
+        return
+
+    if not absolute_namespace.startswith(":"):
+        absolute_namespace = ":{}".format(
+            absolute_namespace
+        )
+
     try:
         cmds.namespace(
             set=":"
@@ -54,19 +75,19 @@ def remove_namespace(namespace):
         pass
 
     if not cmds.namespace(
-            exists=namespace
+            exists=absolute_namespace
     ):
         return
 
     try:
         cmds.namespace(
-            removeNamespace=namespace,
+            removeNamespace=absolute_namespace,
             deleteNamespaceContent=True
         )
     except Exception as error:
         cmds.warning(
             u"无法删除 Maya 2023 Smoke Namespace {}：{}".format(
-                namespace,
+                absolute_namespace,
                 error
             )
         )
