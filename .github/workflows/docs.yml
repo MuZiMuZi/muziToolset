@@ -47,6 +47,9 @@ jobs:
       - name: Check Core import style
         run: python tests/core_import_style_test.py
 
+      - name: Check Jnt naming contract
+        run: python tests/jnt_naming_contract_test.py
+
       # -----------------------------------------------------------------------
       # 步骤 2：禁止 0.4 已退休 Rig 架构重新出现。
       # -----------------------------------------------------------------------
