@@ -395,3 +395,110 @@ class Ctrl(object):
         self.ctrl_shapes = new_shapes
 
         return self.ctrl_shapes
+
+
+    def save_ctrl_shape (self , shape_name) :
+        u"""
+        将当前控制器的全部 NurbsCurve Shape 保存到 Controller Shape Library。
+
+        该方法会读取每一个 NurbsCurve Shape 的 CV、Degree、Periodic 和 Knot 数据，
+        并保存为 resources/controller_shapes 目录中的 JSON 文件。
+
+        shape_name(str): 保存到 Shape Library 中使用的 Shape 名称。
+
+        Returns:
+            str: 保存完成后的 JSON 文件路径。
+
+        Maya 使用示例：
+
+        from muziToolset.core.rigging import ctrl_utils
+
+        ctrl_object = ctrl_utils.Ctrl(ctrl="ctrl_md_test_main_001")
+
+        shape_file = ctrl_object.save_ctrl_shape("my_ctrl_shape")
+
+        print(shape_file)
+        """
+
+        # 获取当前控制器下面的全部 Shape。
+        self.ctrl_shapes = self.get_ctrl_shapes ()
+
+        # 保存最终需要写入 JSON 的全部 Shape 数据。
+        shape_data = []
+
+        # 逐个读取 NurbsCurve Shape。
+        for ctrl_shape in self.ctrl_shapes :
+
+            # 只保存 NurbsCurve Shape。
+            if not isinstance (ctrl_shape , pm.nodetypes.NurbsCurve) :
+                continue
+
+            # 获取 Curve Degree。
+            degree = ctrl_shape.getAttr ("degree")
+
+            # 获取 Curve Form。
+            # Maya 中：
+            # 0 = Open
+            # 1 = Closed
+            # 2 = Periodic
+            curve_form = ctrl_shape.getAttr ("form")
+
+            # 判断当前 Curve 是否为 Periodic Curve。
+            periodic = curve_form == 2
+
+            # 获取 Curve 在自身对象空间中的全部 CV。
+            curve_points = ctrl_shape.getCVs (space = "object")
+
+            # Periodic Curve 在 Maya 内部会包含重复的 degree 个 CV。
+            # 我们旧 Shape Library 保存时不保存这些重复点，
+            # 因此需要从末尾删除。
+            if periodic :
+                curve_points = curve_points [:-degree]
+
+            # 将 Point 列表转换成旧 Shape Library 使用的一维 XYZ 数组。
+            point_values = []
+
+            for point in curve_points :
+                point_values.append (point [0])
+                point_values.append (point [1])
+                point_values.append (point [2])
+
+            # 获取 Curve Knot Vector。
+            knot_values = []
+
+            knots = ctrl_shape.getKnots ()
+
+            for knot in knots :
+                knot_values.append (knot)
+
+            # 保存当前 Shape 数据。
+            shape_info = {
+                "points" : point_values ,
+                "degree" : degree ,
+                "periodic" : periodic ,
+                "knot" : knot_values
+            }
+
+            shape_data.append (shape_info)
+
+        # 如果没有找到 NurbsCurve Shape，则停止保存。
+        if not shape_data :
+            pm.warning (u"当前控制器没有可以保存的 NurbsCurve Shape。")
+            return None
+
+        # 获取 muziToolset 项目根目录。
+        rigging_path = os.path.dirname (__file__)
+        core_path = os.path.dirname (rigging_path)
+        project_path = os.path.dirname (core_path)
+
+        # 获取 Controller Shape Library 路径。
+        shape_library_path = os.path.join (project_path , "resources" , "controller_shapes")
+
+        # 拼接最终 JSON 文件路径。
+        shape_file = os.path.join (shape_library_path , shape_name + ".json")
+
+        # 将 Shape 数据写入 JSON 文件。
+        with open (shape_file , "w") as file :
+            json.dump (shape_data , file , indent = 4)
+
+        return shape_file
