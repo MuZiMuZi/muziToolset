@@ -51,7 +51,6 @@ contract_source = contract_source.replace(
     1
 )
 
-# Maya API 检查同样排除一次性迁移脚本和契约本身。
 old_api_block = '''    for file_path in iter_python_files():
         source = read_source(file_path)
 
@@ -81,18 +80,28 @@ contract_source = contract_source.replace(
     1
 )
 
-# runpy.run_path() 返回的是结果字典；函数真正使用的是自己的 __globals__。
-# 必须修改函数绑定的全局空间，main() 内部才会真正使用修正规则。
 main_function = namespace["main"]
 main_globals = main_function.__globals__
 main_globals["JNT_CONTRACT_SOURCE"] = contract_source
 
-# 原始规则在普通引号前使用了 \b：
-#     type="joint"
-#     cmds.createNode("joint")
-# 这类字符串的引号前不是 Word Boundary，因此没有被保护。
-# 修正后：所有精确的 "joint" / 'joint' 字符串都会先保护；
-# 后续只有 Muzi Naming 的 create_name(type="joint") 会被明确改成 jnt。
+# GitHub Actions 的 GITHUB_TOKEN 不能修改 Workflow 文件。
+# 一次性 Runner 只迁移 Runtime / Tests / Docs；Workflow 由外部 GitHub 连接随后单独维护。
+active_roots = []
+for root_name in main_globals["ACTIVE_ROOTS"]:
+    if root_name == ".github":
+        continue
+    active_roots.append(root_name)
+main_globals["ACTIVE_ROOTS"] = active_roots
+
+
+def skip_workflow_registration():
+    u"""迁移提交阶段不修改 .github；CI 注册由后续 GitHub 写操作完成。"""
+    return None
+
+
+main_globals["register_contract_test"] = skip_workflow_registration
+
+# 普通 type="joint" / cmds.createNode("joint") 也必须被识别为 Maya Node Type。
 main_globals["EXACT_JOINT_STRING_PATTERN"] = re.compile(
     r"(?P<prefix>(?:\b(?:u|r|ur|ru|b|br|rb|f|fr|rf))?)(?P<quote>['\"])joint(?P=quote)",
     re.IGNORECASE
