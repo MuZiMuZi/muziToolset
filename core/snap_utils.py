@@ -122,7 +122,7 @@ def get_item_world_position(item):
             ]
         elif node_type in [
                 "transform",
-                __MUZI_MAYA_JNT_PROTECTED_00000__,
+                "joint",
         ]:
             locator_shapes = cmds.listRelatives(
                 item,
@@ -206,7 +206,7 @@ def get_item_world_rotation(item):
     # -------------------------------------------------------------------------
     if node_type not in [
         "transform",
-        __MUZI_MAYA_JNT_PROTECTED_00001__,
+        "joint",
     ]:
         try:
             item = hierarchy_utils.get_parent(

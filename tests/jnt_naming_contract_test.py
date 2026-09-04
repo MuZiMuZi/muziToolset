@@ -148,7 +148,7 @@ def assert_project_imports_use_jnt():
         file_name = os.path.basename(file_path)
         if file_name == "jnt_naming_contract_test.py":
             continue
-        if file_name.startswith("_one_time_jnt_migration"):
+        if file_name.startswith("_redo_jnt_migration"):
             continue
 
         source = read_source(file_path)
@@ -180,7 +180,7 @@ def assert_maya_api_is_not_renamed():
         file_name = os.path.basename(file_path)
         if file_name == "jnt_naming_contract_test.py":
             continue
-        if file_name.startswith("_one_time_jnt_migration"):
+        if file_name.startswith("_redo_jnt_migration"):
             continue
 
         source = read_source(file_path)

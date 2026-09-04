@@ -129,7 +129,7 @@ category_descriptions = {
 
 category_short_names = {
     u"基础工具": "BASIC",
-    u"骨骼工具": __MUZI_MAYA_JNT_PROTECTED_00000__,
+    u"骨骼工具": "JOINT",
     u"控制器工具": "CONTROL",
     u"绑定工具": "RIG",
     u"面部工具": "FACE",

@@ -412,7 +412,7 @@ class JntTool(QWidget):
             当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         jnts = scene_utils.get_selected_nodes(
-            node_type=__MUZI_MAYA_JNT_PROTECTED_00004__,
+            node_type="joint",
             long=True,
             flatten=True
         )
@@ -437,7 +437,7 @@ class JntTool(QWidget):
                 需要读取、写入或参与计算的数值。
         """
         jnts = scene_utils.get_nodes_by_type(
-            __MUZI_MAYA_JNT_PROTECTED_00005__,
+            "joint",
             long=True
         )
 
@@ -513,7 +513,7 @@ class JntTool(QWidget):
         # -------------------------------------------------------------------------
         if all_jnts:
             process_jnts = scene_utils.get_nodes_by_type(
-                __MUZI_MAYA_JNT_PROTECTED_00006__,
+                "joint",
                 long=True
             )
         else:
@@ -526,7 +526,7 @@ class JntTool(QWidget):
                 if hierarchy:
                     hierarchy_jnts = hierarchy_utils.get_descendants(
                         selected_jnt,
-                        node_type=__MUZI_MAYA_JNT_PROTECTED_00007__,
+                        node_type="joint",
                         include_root=True,
                         full_path=True
                     )
@@ -871,7 +871,7 @@ class JntTool(QWidget):
 
     def set_orient_visibility(self, visible):
         u"""
-        显示或隐藏选择 Jnt 的 __MUZI_MAYA_JNT_PROTECTED_00003__ Channel。
+        显示或隐藏选择 Jnt 的 jointOrient Channel。
 
         Args:
             visible (bool):
@@ -883,9 +883,9 @@ class JntTool(QWidget):
             return
 
         orient_attrs = [
-            "__MUZI_MAYA_JNT_PROTECTED_00000__",
-            "__MUZI_MAYA_JNT_PROTECTED_00001__",
-            "__MUZI_MAYA_JNT_PROTECTED_00002__",
+            "jointOrientX",
+            "jointOrientY",
+            "jointOrientZ",
         ]
 
         for jnt in jnts:

@@ -14,9 +14,9 @@
 
 - PDF：Rig Build Description - Xiong Lin
 - Bilibili：Component Based Procedure Auto Rig  
-  __MUZI_MAYA_JNT_PROTECTED_00000__
+  https://www.bilibili.com/video/BV1e4411G7Hq/
 - Bilibili：Maya绑定和动画工具展示  
-  __MUZI_MAYA_JNT_PROTECTED_00001__
+  https://www.bilibili.com/video/BV1fK4y1T7uw/
 
 这两段视频和 PDF 作为 MuziTools 程序化绑定系统的架构参考资料。
 

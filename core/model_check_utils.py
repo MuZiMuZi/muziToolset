@@ -209,7 +209,7 @@ def get_mesh_shapes(nodes=None):
 
         if node_type not in [
             "transform",
-            __MUZI_MAYA_JNT_PROTECTED_00000__,
+            "joint",
         ]:
             continue
 

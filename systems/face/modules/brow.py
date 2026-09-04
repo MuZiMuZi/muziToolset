@@ -538,7 +538,7 @@ class BrowModule(FaceModuleBase):
                     index=item_index
                 )
                 brow_deform_jnt = cmds.createNode(
-                    __MUZI_MAYA_JNT_PROTECTED_00000__,
+                    "joint",
                     name=brow_deform_jnt_name,
                     parent=follicle_dict_list[index]["transform"]
                 )

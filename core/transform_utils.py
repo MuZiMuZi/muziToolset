@@ -65,7 +65,7 @@ def validate_transform(node):
         node
     )
 
-    if node_type not in ["transform", __MUZI_MAYA_JNT_PROTECTED_00000__]:
+    if node_type not in ["transform", "joint"]:
         raise RuntimeError(
             u"节点不是 Transform / Jnt：{} | type={}".format(
                 node,

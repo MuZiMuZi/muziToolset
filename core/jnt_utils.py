@@ -56,7 +56,7 @@ def get_display_scale():
         当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     return float(
-        __MUZI_MAYA_JNT_PROTECTED_00000__(
+        cmds.jointDisplayScale(
             query=True
         )
     )
@@ -92,7 +92,7 @@ def set_display_scale(scale):
             u"Jnt Display Scale 必须大于 0。"
         )
 
-    __MUZI_MAYA_JNT_PROTECTED_00001__(
+    cmds.jointDisplayScale(
         scale
     )
     return scale
@@ -149,7 +149,7 @@ class Jnt(object):
         # -------------------------------------------------------------------------
         # Step 04：检查当前条件与边界情况，并进入对应处理分支
         # -------------------------------------------------------------------------
-        if node_type != __MUZI_MAYA_JNT_PROTECTED_00016__:
+        if node_type != "joint":
             raise RuntimeError(
                 u"节点不是 Jnt：{} | type={}".format(
                     jnt,
@@ -178,7 +178,7 @@ class Jnt(object):
         创建一个 Jnt。
 
         position / rotation 都表示 World Space。
-        rotation 表示普通 World Rotation，不表示 __MUZI_MAYA_JNT_PROTECTED_00015__。
+        rotation 表示普通 World Rotation，不表示 jointOrient。
 
         Args:
             name (str):
@@ -234,7 +234,7 @@ class Jnt(object):
         # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
         # -------------------------------------------------------------------------
         jnt = cmds.createNode(
-            __MUZI_MAYA_JNT_PROTECTED_00017__,
+            "joint",
             name=name
         )
 
@@ -342,16 +342,16 @@ class Jnt(object):
 
     def get_jnt_orient(self):
         u"""
-        返回 [__MUZI_MAYA_JNT_PROTECTED_00006__, __MUZI_MAYA_JNT_PROTECTED_00009__, __MUZI_MAYA_JNT_PROTECTED_00012__]。
+        返回 [jointOrientX, jointOrientY, jointOrientZ]。
 
         Returns:
             object:
             当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         attributes = [
-            "__MUZI_MAYA_JNT_PROTECTED_00007__",
-            "__MUZI_MAYA_JNT_PROTECTED_00010__",
-            "__MUZI_MAYA_JNT_PROTECTED_00013__",
+            "jointOrientX",
+            "jointOrientY",
+            "jointOrientZ",
         ]
         jnt_orient = []
 
@@ -413,9 +413,9 @@ class Jnt(object):
         # Step 03：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
         attributes = [
-            "__MUZI_MAYA_JNT_PROTECTED_00008__",
-            "__MUZI_MAYA_JNT_PROTECTED_00011__",
-            "__MUZI_MAYA_JNT_PROTECTED_00014__",
+            "jointOrientX",
+            "jointOrientY",
+            "jointOrientZ",
         ]
 
         index = 0
@@ -608,23 +608,23 @@ class Jnt(object):
         """
         children = hierarchy_utils.get_children(
             self.jnt,
-            node_type=__MUZI_MAYA_JNT_PROTECTED_00018__,
+            node_type="joint",
             full_path=True
         )
 
         if not children:
-            __MUZI_MAYA_JNT_PROTECTED_00002__(
+            cmds.joint(
                 self.jnt,
                 edit=True,
-                __MUZI_MAYA_JNT_PROTECTED_00004__="none"
+                orientJoint="none"
             )
             return self.jnt
 
-        __MUZI_MAYA_JNT_PROTECTED_00003__(
+        cmds.joint(
             self.jnt,
             edit=True,
             zeroScaleOrient=True,
-            __MUZI_MAYA_JNT_PROTECTED_00005__=primary_axis,
+            orientJoint=primary_axis,
             secondaryAxisOrient=secondary_axis
         )
 
@@ -708,7 +708,7 @@ class Jnt(object):
         # Step 05：整理并返回当前函数的最终结果
         # -------------------------------------------------------------------------
         return {
-            __MUZI_MAYA_JNT_PROTECTED_00019__: self.jnt,
+            "joint": self.jnt,
             "side": side,
             "type": label_type,
             "otherType": other_type,
@@ -799,5 +799,5 @@ class Jnt(object):
 __all__ = [
     "get_display_scale",
     "set_display_scale",
-    __MUZI_MAYA_JNT_PROTECTED_00020__,
+    "Joint",
 ]

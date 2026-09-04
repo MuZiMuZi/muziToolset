@@ -104,7 +104,7 @@ def insert_zip_offset_group(
     # Step 05：整理并返回当前函数的最终结果
     # -------------------------------------------------------------------------
     return {
-        __MUZI_MAYA_JNT_PROTECTED_00000__: jnt,
+        "joint": jnt,
         "zip_offset": zip_offset,
         "parent": parent,
     }
@@ -738,8 +738,8 @@ def build_zip_pair(
     # Step 05：整理并返回当前函数的最终结果
     # -------------------------------------------------------------------------
     return {
-        "upper_jnt": upper_insert[__MUZI_MAYA_JNT_PROTECTED_00001__],
-        "lower_jnt": lower_insert[__MUZI_MAYA_JNT_PROTECTED_00002__],
+        "upper_jnt": upper_insert["joint"],
+        "lower_jnt": lower_insert["joint"],
         "upper_zip_offset": upper_insert["zip_offset"],
         "lower_zip_offset": lower_insert["zip_offset"],
         "mid_blend": mid_blend,
@@ -1038,7 +1038,7 @@ def build_zip_lip(
 
             children = hierarchy_utils.get_children(
                 zip_offset,
-                node_type=__MUZI_MAYA_JNT_PROTECTED_00003__,
+                node_type="joint",
                 full_path=True
             )
             original_parent = hierarchy_utils.get_parent(

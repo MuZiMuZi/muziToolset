@@ -151,7 +151,7 @@ def get_jnt_path(start_jnt, end_jnt):
     def walk(current_jnt, current_path):
         children = hierarchy_utils.get_children(
             current_jnt,
-            node_type=__MUZI_MAYA_JNT_PROTECTED_00000__,
+            node_type="joint",
             full_path=True
         )
 

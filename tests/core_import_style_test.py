@@ -77,7 +77,7 @@ def get_retired_module_names():
     return [
         "attr" + "Utils",
         "hierarchy" + "Utils",
-        __MUZI_MAYA_JNT_PROTECTED_00000__ + "Utils",
+        "joint" + "Utils",
         "name" + "Utils",
     ]
 

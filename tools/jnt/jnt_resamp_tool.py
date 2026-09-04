@@ -90,13 +90,13 @@ class JntResamplingTool(QWidget):
         self.start_jnt_picker = MayaObjectPicker(
             label_text=u"起始 Jnt",
             placeholder=u"选择父 Jnt 后点击拾取",
-            node_types=[__MUZI_MAYA_JNT_PROTECTED_00000__]
+            node_types=["joint"]
         )
 
         self.end_jnt_picker = MayaObjectPicker(
             label_text=u"末端 Jnt",
             placeholder=u"选择直接子 Jnt 后点击拾取",
-            node_types=[__MUZI_MAYA_JNT_PROTECTED_00001__]
+            node_types=["joint"]
         )
 
         self.jnt_number_spinbox = QSpinBox()

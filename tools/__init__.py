@@ -34,7 +34,7 @@ _tools_dir = os.path.dirname(os.path.abspath(__file__))
 
 _category_names = {
     "basic": u"基础工具",
-    __MUZI_MAYA_JNT_PROTECTED_00000__: u"骨骼工具",
+    "joint": u"骨骼工具",
     "controller": u"控制器工具",
     "rig": u"绑定工具",
     "face": u"面部工具",
@@ -45,7 +45,7 @@ _category_names = {
 
 _category_order = [
     "basic",
-    __MUZI_MAYA_JNT_PROTECTED_00001__,
+    "joint",
     "controller",
     "rig",
     "face",

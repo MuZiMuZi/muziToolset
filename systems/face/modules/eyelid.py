@@ -137,7 +137,7 @@ class EyelidModule(FaceModuleBase):
             eye_jnt = self._resolve_scene_node(
                 eye_jnt_name,
                 label=u"EyeModule Eye Jnt",
-                node_type=__MUZI_MAYA_JNT_PROTECTED_00000__
+                node_type="joint"
             )
             eye_aim_ctrl = self._resolve_scene_node(
                 eye_aim_ctrl_name,

@@ -164,7 +164,7 @@ def main():
         "FaceRig()",
         "FaceBuild()",
         "build_face_step(",
-        "__MUZI_MAYA_JNT_PROTECTED_00000__(",
+        "cmds.joint(",
         "cmds.skinCluster(",
         "cmds.blendShape(",
     ]

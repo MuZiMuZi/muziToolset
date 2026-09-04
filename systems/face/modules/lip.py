@@ -511,7 +511,7 @@ class LipModule(FaceModuleBase):
                 resolved_deform_jnt = self._resolve_scene_node(
                     lip_deform_jnt,
                     label=u"Lip Deform Jnt",
-                    node_type=__MUZI_MAYA_JNT_PROTECTED_00000__
+                    node_type="joint"
                 )
                 resolved_deform_jnts.append(
                     resolved_deform_jnt

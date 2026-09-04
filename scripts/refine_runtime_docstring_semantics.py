@@ -195,7 +195,7 @@ def get_exact_semantic_rules():
         # ------------------------------------------------------------------
         # Jnt / Skeleton
         # ------------------------------------------------------------------
-        __MUZI_MAYA_JNT_PROTECTED_00000__: ("str", u"需要创建、查询、定向或驱动的 Maya Jnt 节点。"),
+        "joint": ("str", u"需要创建、查询、定向或驱动的 Maya Jnt 节点。"),
         "jnts": ("str | list[str]", u"需要批量处理的 Maya Jnt 节点或 Jnt Chain。"),
         "blueprint_jnts": ("str | list[str]", u"作为正式 Skeleton 构建来源的 Blueprint / Guide Jnt 列表。"),
         "jnt_parent": ("str | None", u"新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。"),

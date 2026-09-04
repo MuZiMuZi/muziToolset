@@ -563,12 +563,12 @@ class RigTool(QWidget):
         self.ik_start_picker = MayaObjectPicker(
             label_text=u"起始 Jnt",
             placeholder=u"IK Chain 起始 Jnt",
-            node_types=[__MUZI_MAYA_JNT_PROTECTED_00000__]
+            node_types=["joint"]
         )
         self.ik_end_picker = MayaObjectPicker(
             label_text=u"末端 Jnt",
             placeholder=u"IK Chain 末端 Jnt",
-            node_types=[__MUZI_MAYA_JNT_PROTECTED_00001__]
+            node_types=["joint"]
         )
 
         self.create_ik_button = QPushButton(u"创建 RP IK Rig")

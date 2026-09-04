@@ -222,12 +222,12 @@ class MouthModule(FaceModuleBase):
             upper_lip_jnt = self._resolve_scene_node(
                 upper_lip_jnt,
                 label=u"Upper Lip Deform Jnt",
-                node_type=__MUZI_MAYA_JNT_PROTECTED_00000__
+                node_type="joint"
             )
             lower_lip_jnt = self._resolve_scene_node(
                 lower_lip_jnt,
                 label=u"Lower Lip Deform Jnt",
-                node_type=__MUZI_MAYA_JNT_PROTECTED_00001__
+                node_type="joint"
             )
             self.upper_lip_jnts.append(upper_lip_jnt)
             self.lower_lip_jnts.append(lower_lip_jnt)
@@ -440,7 +440,7 @@ class MouthModule(FaceModuleBase):
             resolved_upper_lip_jnt = self._resolve_scene_node(
                 upper_lip_jnt,
                 label=u"Upper Lip Jnt",
-                node_type=__MUZI_MAYA_JNT_PROTECTED_00002__
+                node_type="joint"
             )
             resolved_upper_lip_jnts.append(
                 resolved_upper_lip_jnt
@@ -452,7 +452,7 @@ class MouthModule(FaceModuleBase):
             resolved_lower_lip_jnt = self._resolve_scene_node(
                 lower_lip_jnt,
                 label=u"Lower Lip Jnt",
-                node_type=__MUZI_MAYA_JNT_PROTECTED_00003__
+                node_type="joint"
             )
             resolved_lower_lip_jnts.append(
                 resolved_lower_lip_jnt

@@ -1166,7 +1166,7 @@ class ModularRigWindow(QWidget):
 
         show_axis = False
         jnt_list = scene_utils.get_nodes_by_type(
-            __MUZI_MAYA_JNT_PROTECTED_00000__,
+            "joint",
             long=True
         )
 
@@ -1260,7 +1260,7 @@ class ModularRigWindow(QWidget):
             return
 
         jnt_list = scene_utils.get_nodes_by_type(
-            __MUZI_MAYA_JNT_PROTECTED_00001__,
+            "joint",
             long=True
         )
 

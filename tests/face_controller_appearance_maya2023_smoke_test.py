@@ -469,7 +469,7 @@ def _get_face_jnt_nodes(face_jnt_grp):
     jnt_nodes = cmds.listRelatives(
         face_jnt_grp_node,
         allDescendents=True,
-        type=__MUZI_MAYA_JNT_PROTECTED_00000__,
+        type="joint",
         fullPath=True
     ) or []
     jnt_nodes.sort()

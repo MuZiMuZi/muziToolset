@@ -264,7 +264,7 @@ def build_radial_curve_jnts(
                 item_index
             )
             jnt = scene_utils.create_node(
-                __MUZI_MAYA_JNT_PROTECTED_00000__,
+                "joint",
                 jnt_name,
                 parent=aim_group
             )

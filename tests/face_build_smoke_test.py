@@ -94,7 +94,7 @@ def create_transform(name, parent=None, position=None):
 def create_jnt(name, parent=None, position=None):
     u"""创建测试 Jnt。"""
     jnt = cmds.createNode(
-        __MUZI_MAYA_JNT_PROTECTED_00000__,
+        "joint",
         name=name,
         parent=parent
     )

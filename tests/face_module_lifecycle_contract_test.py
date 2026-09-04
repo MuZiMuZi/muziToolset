@@ -52,7 +52,7 @@ RETIRED_CONCRETE_METHODS = {
     "create_connection",
     "setup",
     "guide",
-    __MUZI_MAYA_JNT_PROTECTED_00000__,
+    "joint",
     "control",
     "connect",
     "deform",
