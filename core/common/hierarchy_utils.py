@@ -34,8 +34,12 @@ def parent(child_node, parent_node):
     先检查子物体和父物体之间是否已经存在父子关系。
     如果不存在，则创建新的父子层级关系。
 
-    child_node(str): 需要设置父级的子物体节点名称。
-    parent_node(str): 需要作为父级的节点名称。
+    该方法同时支持字符串节点名称和 PyNode。
+    内部统一转换成 PyNode 后再进行层级检查和 Parent，
+    避免 maya.cmds 和 PyNode 混用时出现“对象无效”的问题。
+
+    child_node(str/PyNode): 需要设置父级的子物体节点。
+    parent_node(str/PyNode): 需要作为父级的节点。
 
     Returns:
         None
@@ -50,28 +54,27 @@ def parent(child_node, parent_node):
     hierarchy_utils.parent(child_node, parent_node)
     """
 
-    if parent_node:
-        parent_original = cmds.listRelatives(
-            child_node,
-            parent=True
-        )
+    # 没有给定父物体时停止执行。
+    if not parent_node:
+        pm.warning(u"没有给定父物体节点")
+        return
 
-        if not parent_original or parent_original[0] != parent_node:
-            cmds.parent(
-                child_node,
-                parent_node
-            )
-        else:
-            cmds.warning(
-                u"{} 已为 {} 的子物体".format(
-                    child_node,
-                    parent_node
-                )
-            )
+    # 统一将传入的字符串或 PyNode 转换成 PyNode。
+    # 这样后续层级操作全部使用 PyMEL，避免 cmds.listRelatives() 接收到 PyNode 时
+    # 在某些 Maya 环境中出现“对象无效”的问题。
+    child_node = pm.PyNode(child_node)
+    parent_node = pm.PyNode(parent_node)
+
+    # 获取子物体当前的直接父物体。
+    parent_original = child_node.getParent()
+
+    # 当前父物体不是目标父物体时，创建新的 Parent 关系。
+    if parent_original != parent_node:
+        pm.parent(child_node, parent_node)
+
+    # 已经存在正确父子关系时只给出提示，不重复 Parent。
     else:
-        cmds.warning(
-            u"没有给定父物体节点"
-        )
+        pm.warning(u"{} 已为 {} 的子物体".format(child_node, parent_node))
 
 
 def chain_parent(child_nodes, parent_node):

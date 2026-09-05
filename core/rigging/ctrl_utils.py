@@ -63,7 +63,7 @@ import json
 
 import pymel.core as pm
 
-from common import hierarchy_utils
+from ..common import hierarchy_utils,attr_utils
 
 
 class Ctrl(object):
@@ -89,8 +89,8 @@ class Ctrl(object):
         """
 
         # 保存 Controller 标准名称。
-        # self.name 始终保存字符串名称，主要用于生成层级节点名称。
-        self.name = name
+        # self.ctrl_name 始终保存字符串名称，主要用于生成层级节点名称。
+        self.ctrl_name = name
 
         # 保存主 Controller Transform PyNode。
         # _get_or_create_ctrl() 执行完成后，该属性一定会指向一个有效 Transform。
@@ -136,7 +136,7 @@ class Ctrl(object):
 
     def _get_or_create_ctrl(self):
         u"""
-        根据 self.name 获取或创建当前 Controller。
+        根据 self.ctrl_name 获取或创建当前 Controller。
 
         如果 Maya 场景中已经存在同名对象，则直接转换成 PyNode 使用。
         如果同名对象存在但不是 Transform，则抛出错误，避免把错误节点当作 Controller。
@@ -156,22 +156,22 @@ class Ctrl(object):
         """
 
         # 判断场景中是否已经存在这个名称的 Maya 节点。
-        if pm.objExists(self.name):
+        if pm.objExists(self.ctrl_name):
 
             # 已经存在时直接转换成 PyNode，后续统一使用 PyMEL 对象操作。
-            self.ctrl = pm.PyNode(self.name)
+            self.ctrl = pm.PyNode(self.ctrl_name)
 
             # Controller 必须是 Transform。
             # 这里只检查 Transform，不强制要求已经存在 NurbsCurve Shape，
             # 因为后续 set_ctrl_shape() 可以给空 Transform 创建控制器 Shape。
             if not isinstance(self.ctrl, pm.nodetypes.Transform):
-                raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(self.name))
+                raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(self.ctrl_name))
 
         else:
 
             # 场景中不存在时创建一个基础圆形 Controller。
             # pm.circle 返回列表，第一个元素为新创建的 Transform。
-            self.ctrl = pm.circle(name=self.name, radius=1.0, normal=(0, 1, 0))[0]
+            self.ctrl = pm.circle(name=self.ctrl_name, radius=1.0, normal=(0, 1, 0))[0]
 
         return self.ctrl
 
@@ -220,8 +220,9 @@ class Ctrl(object):
 
         # 根据参数决定是否创建完整控制器层级。
         if create_hierarchy:
-            self.create_ctrl_hierarchy()
-
+            self.create_ctrl_hierarchy(sub_ctrl_shape=shape_name, sub_ctrl_color=ctrl_color, sub_ctrl_size=ctrl_size*0.7)
+        else:
+            pass
         return self.ctrl
 
     def get_ctrl_shapes(self):
@@ -630,6 +631,7 @@ class Ctrl(object):
         # 返回保存路径，方便 UI 或其他工具继续使用。
         return shape_file
 
+
     def create_sub_ctrl(self, shape_name="circle", ctrl_color=17, ctrl_size=0.7):
         u"""
         创建主 Controller 下方的次级控制器 SubCtrl。
@@ -667,7 +669,7 @@ class Ctrl(object):
         # 如果 create_ctrl_hierarchy() 还没有生成名称，
         # 单独调用 create_sub_ctrl() 时也可以自行得到 SubCtrl 名称。
         if not self.sub_ctrl_name:
-            self.sub_ctrl_name = self.name.replace("ctrl_", "subctrl_", 1)
+            self.sub_ctrl_name = self.ctrl_name.replace("ctrl_", "subctrl_", 1)
 
         # 使用同一个 Ctrl 类创建或获取次级控制器。
         # Ctrl(sub_ctrl_name) 只保证 Transform 存在，不会自动创建完整层级。
@@ -687,6 +689,13 @@ class Ctrl(object):
         # hierarchy_utils.parent() 会保持当前世界 Transform，
         # 因此前面已经匹配主 Ctrl 的 SubCtrl 会得到干净的本地 Transform。
         hierarchy_utils.parent(child_node=self.sub_ctrl, parent_node=self.ctrl)
+
+        #给控制器上创建sub_ctrl_vis的属性来方便控制次级控制器是否进行显示
+        attr_object = attr_utils.Attr(self.ctrl_name)
+        attr_object.add_attr(attr_name = 'sub_ctrl_vis',attr_type = bool, default_value = 0, keyable = False )
+        #属性进行连接
+        attr_object.connect_attr (attr_name = 'sub_ctrl_vis' , target_object = self.sub_ctrl_name, target_attr_name = '.visibility')
+
 
         return self.sub_ctrl
 
@@ -743,13 +752,13 @@ class Ctrl(object):
         # subctrl_lf_eye_main_001
         # output_lf_eye_main_001
         # ---------------------------------------------------------------------
-        self.zero_name = self.name.replace("ctrl_", "zero_", 1)
-        self.driven_name = self.name.replace("ctrl_", "driven_", 1)
-        self.space_name = self.name.replace("ctrl_", "space_", 1)
-        self.connect_name = self.name.replace("ctrl_", "connect_", 1)
-        self.offset_name = self.name.replace("ctrl_", "offset_", 1)
-        self.sub_ctrl_name = self.name.replace("ctrl_", "subctrl_", 1)
-        self.output_name = self.name.replace("ctrl_", "output_", 1)
+        self.zero_name = self.ctrl_name.replace("ctrl_", "zero_", 1)
+        self.driven_name = self.ctrl_name.replace("ctrl_", "driven_", 1)
+        self.space_name = self.ctrl_name.replace("ctrl_", "space_", 1)
+        self.connect_name = self.ctrl_name.replace("ctrl_", "connect_", 1)
+        self.offset_name = self.ctrl_name.replace("ctrl_", "offset_", 1)
+        self.sub_ctrl_name = self.ctrl_name.replace("ctrl_", "subctrl_", 1)
+        self.output_name = self.ctrl_name.replace("ctrl_", "output_", 1)
 
         # ---------------------------------------------------------------------
         # 从 Ctrl 开始向外创建父层级。
@@ -759,7 +768,7 @@ class Ctrl(object):
         # ---------------------------------------------------------------------
 
         # Offset 是距离主 Controller 最近的一层父 Group。
-        self.offset_grp = hierarchy_utils.add_extra_group(self.ctrl, self.offset_name, relation="parent")
+        self.offset_grp = hierarchy_utils.add_extra_group(self.ctrl_name, self.offset_name, relation="parent")
 
         # Connect 创建在 Offset 上方。
         self.connect_grp = hierarchy_utils.add_extra_group(self.offset_grp, self.connect_name, relation="parent")
