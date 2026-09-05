@@ -548,32 +548,33 @@ class Ctrl(object):
         # 返回保存路径，方便 UI 或其他工具继续使用。
         return shape_file
 
+    def create_sub_ctrl(self):
+        self.create_ctrl()
 
-    def create_ctrl_hierarchy(self):
-        """
-        创建对应的控制器层级结构
-        """
-        #获取控制器组的名称名称
+
+    def create_ctrl_hierarchy (self) :
+
+        # 创建层级名称。
         self.zero_name = self.name.replace ("ctrl_" , "zero_" , 1)
         self.driven_name = self.name.replace ("ctrl_" , "driven_" , 1)
         self.space_name = self.name.replace ("ctrl_" , "space_" , 1)
         self.connect_name = self.name.replace ("ctrl_" , "connect_" , 1)
         self.offset_name = self.name.replace ("ctrl_" , "offset_" , 1)
         self.sub_ctrl_name = self.name.replace ("ctrl_" , "subctrl_" , 1)
-        self.ouput_name = self.name.replace ("ctrl_" , "ouput_" , 1)
+        self.output_name = self.name.replace ("ctrl_" , "output_" , 1)
 
-        #创建对应的上层控制器组
-        self.output_grp = pm.PyNode(hierarchy_utils.add_extra_group(self.ctrl,self.ouput_name,relation = 'child'))
+        # 从 Ctrl 开始向外创建父层级。
+        self.offset_grp = hierarchy_utils.add_extra_group (self.ctrl , self.offset_name , relation = "parent")
+        self.connect_grp = hierarchy_utils.add_extra_group (self.offset_grp , self.connect_name , relation = "parent")
+        self.space_grp = hierarchy_utils.add_extra_group (self.connect_grp , self.space_name , relation = "parent")
+        self.driven_grp = hierarchy_utils.add_extra_group (self.space_grp , self.driven_name , relation = "parent")
+        self.zero_grp = hierarchy_utils.add_extra_group (self.driven_grp , self.zero_name , relation = "parent")
 
-        self.offset_grp = pm.PyNode (hierarchy_utils.add_extra_group (self.ctrl , self.offset_name, relation="parent"))
+        # 创建次级控制器。
+        self.create_sub_ctrl ()
 
-        self.connect_grp = pm.PyNode (hierarchy_utils.add_extra_group (self.zero_grp , self.connect_name, relation="parent"))
-
-        self.space_grp = pm.PyNode (hierarchy_utils.add_extra_group (self.driven_grp ,  self.space_name, relation="parent"))
-
-        self.driven_grp = pm.PyNode (hierarchy_utils.add_extra_group (self.space_grp , self.driven_name, relation="parent"))
-
-        self.zero_grp = pm.PyNode (hierarchy_utils.add_extra_group (self.connect_grp ,  self.zero_name, relation="parent"))
+        # 创建最终 Output。
+        self.output_grp = hierarchy_utils.add_extra_group (self.sub_ctrl , self.output_name , relation = "child")
 
 
         #
