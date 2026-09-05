@@ -114,7 +114,7 @@ class Attr(object):
         如果当前对象已经存在同名属性，则不重复创建。
 
         attr_name(str): 需要添加的属性名称。
-        attr_type(str): 属性类型，默认 "double"。
+        attr_type(str/type): 属性类型，默认 "double"。布尔属性可以传入 "bool" 或 Python 的 bool。
         default_value(float/int/bool): 属性默认值，默认 0。
         keyable(bool): 是否允许属性设置关键帧，默认 True。
 
@@ -137,6 +137,11 @@ class Attr(object):
         # 如果属性已经存在，则不重复创建。
         if self.has_attr(attr_name):
             return
+
+        # Maya addAttr 的 attributeType 需要使用字符串类型名称。
+        # 为了兼容调用端直接传入 Python bool 的写法，这里统一转换成 Maya 的 "bool"。
+        if attr_type is bool:
+            attr_type = "bool"
 
         # 给当前节点添加新的自定义属性。
         self.object.addAttr(attr_name, attributeType=attr_type, defaultValue=default_value, keyable=keyable)
@@ -312,7 +317,7 @@ class Attr(object):
 
         attr_name(str): 当前对象作为输出端的属性名称。
         target_object(str/PyNode): 需要接收连接的目标对象。
-        target_attr_name(str): 目标对象作为输入端的属性名称。
+        target_attr_name(str): 目标对象作为输入端的属性名称。可以传入 "visibility" 或 ".visibility"。
 
         Returns:
             None
@@ -332,6 +337,12 @@ class Attr(object):
         # 将目标对象统一转换成 PyNode。
         target_object = pm.PyNode(target_object)
 
+        # PyNode.attr() 只接收属性自身的名称，例如 "visibility"。
+        # 如果调用端习惯传入 ".visibility"，这里去掉最前面的点，
+        # 避免 PyMEL 内部拼接成 "dummy..visibility" 后解析失败。
+        attr_name = attr_name.lstrip(".")
+        target_attr_name = target_attr_name.lstrip(".")
+
         # 属性连接本质是 Plug 到 Plug，因此在连接时获取两端属性 Plug。
         pm.connectAttr(self.object.attr(attr_name), target_object.attr(target_attr_name), force=True)
 
@@ -341,7 +352,7 @@ class Attr(object):
 
         attr_name(str): 当前对象作为输出端的属性名称。
         target_object(str/PyNode): 需要断开连接的目标对象。
-        target_attr_name(str): 目标对象作为输入端的属性名称。
+        target_attr_name(str): 目标对象作为输入端的属性名称。可以传入 "visibility" 或 ".visibility"。
 
         Returns:
             None
@@ -360,6 +371,10 @@ class Attr(object):
 
         # 将目标对象统一转换成 PyNode。
         target_object = pm.PyNode(target_object)
+
+        # 和 connect_attr() 保持相同规则：属性名只保留自身名称，不带前导点。
+        attr_name = attr_name.lstrip(".")
+        target_attr_name = target_attr_name.lstrip(".")
 
         # 属性断开同样需要使用连接两端的 Plug。
         pm.disconnectAttr(self.object.attr(attr_name), target_object.attr(target_attr_name))
