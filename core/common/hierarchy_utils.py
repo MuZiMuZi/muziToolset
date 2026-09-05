@@ -110,37 +110,50 @@ def chain_parent(child_nodes, parent_node):
         parent_node = child_node
 
 
-def add_extra_group(object, grp_name, world_orient=False):
+def add_extra_group(object, grp_name, world_orient=False, relation="parent"):
     u"""
-    在对象上方创建一个额外的空组，并保持对象原来的层级关系。
-    新创建的组默认匹配对象的位置、旋转和缩放。
-    当 world_orient=True 时，新组保持世界旋转方向，只匹配对象的位置和缩放。
+    在指定对象的父层级或子层级创建一个额外空组。
 
-    object(str): 需要添加额外组的 Maya 对象。
+    relation="parent" 时：
+    新组会插入到对象上方，并保持对象原来的父级关系。
+
+    relation="child" 时：
+    新组会创建到对象下方，并匹配对象当前的世界位置。
+
+    object(str/PyNode): 需要添加额外组的 Maya 对象。
     grp_name(str): 新创建的组名称。
     world_orient(bool): 是否让新组保持世界旋转方向，默认 False。
+    relation(str): 新组与对象的层级关系，可使用 "parent" 或 "child"，默认 "parent"。
 
     Returns:
-        str: 新创建的组名称。
+        PyNode: 新创建的 Group 节点。
 
     Maya 使用示例：
 
     from muziToolset.core.common import hierarchy_utils
 
-    object = "ctrl_lf_eye_main_001"
-    grp_name = "offset_lf_eye_main_001"
-    world_orient = False
+    ctrl = "ctrl_lf_eye_main_001"
 
-    new_group = hierarchy_utils.add_extra_group(object, grp_name, world_orient)
+    # 在 Controller 上方创建 Zero Group。
+    zero_grp = hierarchy_utils.add_extra_group(
+        ctrl,
+        "zero_lf_eye_main_001",
+        relation="parent"
+    )
 
-    print(new_group)
+    # 在 Controller 下方创建 Output Group。
+    output_grp = hierarchy_utils.add_extra_group(
+        ctrl,
+        "output_lf_eye_main_001",
+        relation="child"
+    )
+
+    print(zero_grp)
+    print(output_grp)
     """
 
-    # 使用 PyNode 获取对象及其层级信息。
+    # 将传入对象转换成 PyNode。
     object = pm.PyNode(object)
-
-    # 保存对象原来的父物体。
-    object_parent = object.getParent()
 
     # 创建新的空组。
     object_grp = pm.group(empty=True, name=grp_name)
@@ -151,14 +164,36 @@ def add_extra_group(object, grp_name, world_orient=False):
     else:
         pm.matchTransform(object_grp, object, position=True, rotation=True, scale=True)
 
-    # 将新组放回对象原来的父级下面。
-    if object_parent:
-        parent(child_node = object_grp, parent_node = object_parent)
+    # ============================================================
+    # Parent 模式
+    # ============================================================
+    if relation == "parent":
 
-    # 将原对象放到新组下面。
-    parent (child_node = object , parent_node = object_grp)
+        # 保存对象原来的父物体。
+        object_parent = object.getParent()
 
-    return object_grp.name()
+        # 如果对象原来有父物体，先把新组放回原父级下面。
+        if object_parent:
+            parent(child_node=object_grp, parent_node=object_parent)
+
+        # 再把原对象放到新组下面。
+        parent(child_node=object, parent_node=object_grp)
+
+    # ============================================================
+    # Child 模式
+    # ============================================================
+    elif relation == "child":
+
+        # 将新组放到原对象下面。
+        parent(child_node=object_grp, parent_node=object)
+
+    else:
+        pm.delete(object_grp)
+        raise ValueError(
+            u"relation 只能使用 'parent' 或 'child'，当前值：{}".format(relation)
+        )
+
+    return object_grp
 
 
 def get_child_object(object, type="joint"):
