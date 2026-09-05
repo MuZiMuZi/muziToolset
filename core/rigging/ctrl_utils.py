@@ -6,11 +6,16 @@ ctrl_utils：Maya Controller 基础工具。
 
     Ctrl.__init__
         创建一个 Controller 工具对象。
-        可以传入新的控制器名称，也可以传入场景中已经存在的控制器。
+        传入 Controller 名称后，如果场景中已经存在同名 Transform，则直接使用；
+        如果不存在，则自动创建一个基础圆形 Controller。
+
+    Ctrl._get_or_create_ctrl
+        根据名称获取或创建 Controller Transform。
+        作为 Ctrl 类内部统一保证 self.ctrl 有效的基础方法。
 
     Ctrl.create_ctrl
-        创建一个基础圆形控制器。
-        适合程序化创建 FK、Face、Eye 等基础绑定控制器。
+        设置当前 Controller 的 Shape、颜色、大小，并根据需要创建完整控制器层级。
+        适合程序化创建 FK、Face、Eye 等绑定控制器。
 
     Ctrl.get_ctrl_shapes
         获取当前控制器下面的全部 Shape 节点。
@@ -43,6 +48,14 @@ ctrl_utils：Maya Controller 基础工具。
     Ctrl.save_ctrl_shape
         将当前控制器的全部 NurbsCurve Shape 保存到 Shape Library。
         适合把 Maya 中编辑完成的控制器图形保存为可重复使用的 JSON 资源。
+
+    Ctrl.create_sub_ctrl
+        创建主控制器下面的次级控制器，并保持次级控制器本地 Transform 干净。
+        适合给动画师提供主控制器之后的第二层细节调整能力。
+
+    Ctrl.create_ctrl_hierarchy
+        创建完整 Controller 层级结构。
+        当前结构为 zero -> driven -> space -> connect -> offset -> ctrl -> subctrl -> output。
 """
 
 import os
@@ -50,18 +63,19 @@ import json
 
 import pymel.core as pm
 
-from bake import nameUtils
 from common import hierarchy_utils
 
 
 class Ctrl(object):
 
-    def __init__ (self , name) :
+    def __init__(self, name):
         u"""
         初始化 Controller 工具对象。
 
-        如果 Maya 场景中已经存在指定名称的对象，则直接将它作为当前 Controller。
+        如果 Maya 场景中已经存在指定名称的 Transform，则直接将它作为当前 Controller。
         如果不存在，则自动创建一个基础圆形 Controller。
+
+        这样后续所有方法都可以直接使用 self.ctrl，不需要重复判断 Controller 是否存在。
 
         name(str): Controller 名称。
 
@@ -74,70 +88,140 @@ class Ctrl(object):
         print(ctrl_object.ctrl)
         """
 
-        # 保存 Controller 名称。
+        # 保存 Controller 标准名称。
+        # self.name 始终保存字符串名称，主要用于生成层级节点名称。
         self.name = name
 
-        # 保存 Controller Transform。
+        # 保存主 Controller Transform PyNode。
+        # _get_or_create_ctrl() 执行完成后，该属性一定会指向一个有效 Transform。
         self.ctrl = None
 
-        # 保存 Controller 下面的全部 Shape。
+        # 保存当前主 Controller 下面的全部 Shape PyNode。
         self.ctrl_shapes = []
 
-        # 保存 Controller 层级节点。
+        # ---------------------------------------------------------------------
+        # 保存 Controller 层级节点名称。
+        # 名称和 Maya 节点分开保存：xxx_name 保存字符串，xxx_grp / sub_ctrl 保存 PyNode。
+        # ---------------------------------------------------------------------
+        self.zero_name = None
+        self.driven_name = None
+        self.space_name = None
+        self.connect_name = None
+        self.offset_name = None
+        self.sub_ctrl_name = None
+        self.output_name = None
 
+        # ---------------------------------------------------------------------
+        # 保存 Controller 层级 Maya 节点。
+        # 完整层级结构：
+        # zero
+        # └── driven
+        #     └── space
+        #         └── connect
+        #             └── offset
+        #                 └── ctrl
+        #                     └── subctrl
+        #                         └── output
+        # ---------------------------------------------------------------------
+        self.zero_grp = None
+        self.driven_grp = None
+        self.space_grp = None
+        self.connect_grp = None
+        self.offset_grp = None
+        self.sub_ctrl = None
+        self.output_grp = None
 
-        # 判断场景内是否已经有对应的控制器对象，如果场景中已经存在同名对象，则直接使用。没有的话则重新创建
+        # 根据名称获取或创建主 Controller。
         self._get_or_create_ctrl()
 
-
     def _get_or_create_ctrl(self):
-        #判断场景里是否已经存在这个名称的控制器，如果存在的话则直接用这个名称的控制器进行实例化
-        if pm.objExists(self.name):
-            self.ctrl = pm.PyNode(self.name)
-
-            if not isinstance(self.ctrl, pm.nodetypes.Transform):
-                raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(self.name))
-        #否则重新创建以这个名称的控制器
-        else:
-            self.ctrl = pm.circle(name=self.name, radius=1.0, normal=(0, 1, 0))[0]
-
-        return self.ctrl
-
-
-
-    def create_ctrl(self, radius,shape_name = 'circle',ctrl_color = 17,ctrl_size = 1,create_hierarchy = True):
         u"""
-        创建一个基础圆形控制器，并保存到 self.ctrl。
+        根据 self.name 获取或创建当前 Controller。
 
-        创建出的控制器默认位于世界原点，圆形平面朝向 Y 轴。
-
-        radius(float): 创建圆形控制器时使用的初始半径，默认 1.0。
+        如果 Maya 场景中已经存在同名对象，则直接转换成 PyNode 使用。
+        如果同名对象存在但不是 Transform，则抛出错误，避免把错误节点当作 Controller。
+        如果场景中不存在同名对象，则创建一个默认半径为 1 的圆形 Controller。
 
         Returns:
-            PyNode: 新创建的控制器 Transform 节点。
+            PyNode: 当前 Controller Transform 节点。
 
         Maya 使用示例：
 
         from muziToolset.core.rigging import ctrl_utils
 
-        ctrl_object = ctrl_utils.Ctrl(name="ctrl_lf_eye_main_001")
-        ctrl = ctrl_object.create_ctrl(radius=1.0)
+        ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
+        ctrl = ctrl_object._get_or_create_ctrl()
 
         print(ctrl)
         """
 
-        # pm.circle 返回一个列表，第一个元素是新创建的控制器 Transform。
+        # 判断场景中是否已经存在这个名称的 Maya 节点。
+        if pm.objExists(self.name):
 
+            # 已经存在时直接转换成 PyNode，后续统一使用 PyMEL 对象操作。
+            self.ctrl = pm.PyNode(self.name)
 
-        self.ctrl = pm.circle(name=self.name, radius=radius, normal=(0, 1, 0))[0]
-        self.ctrl.set_ctrl_color(ctrl_color)
-        self.ctrl.set_ctrl_size(ctrl_size)
-        self.ctrl.set_ctrl_shape(shape_name)
-        #判断是否需要创建控制器层级组
+            # Controller 必须是 Transform。
+            # 这里只检查 Transform，不强制要求已经存在 NurbsCurve Shape，
+            # 因为后续 set_ctrl_shape() 可以给空 Transform 创建控制器 Shape。
+            if not isinstance(self.ctrl, pm.nodetypes.Transform):
+                raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(self.name))
+
+        else:
+
+            # 场景中不存在时创建一个基础圆形 Controller。
+            # pm.circle 返回列表，第一个元素为新创建的 Transform。
+            self.ctrl = pm.circle(name=self.name, radius=1.0, normal=(0, 1, 0))[0]
+
+        return self.ctrl
+
+    def create_ctrl(self, shape_name="circle", ctrl_color=17, ctrl_size=1.0, create_hierarchy=True):
+        u"""
+        完成当前 Controller 的基础设置，并根据需要创建完整控制器层级。
+
+        Ctrl 类在实例化时已经通过 _get_or_create_ctrl() 保证 self.ctrl 存在，
+        因此该方法不再重复创建新的 Transform，而是负责设置 Controller Shape、颜色和大小。
+
+        执行顺序为：
+            1. 设置 Shape。
+            2. 设置颜色。
+            3. 设置显示大小。
+            4. 根据 create_hierarchy 决定是否创建完整 Controller 层级。
+
+        Shape 必须最先设置，因为 set_ctrl_shape() 会替换旧 Shape。
+        如果先设置颜色或大小，再替换 Shape，之前的显示设置会被新的 Shape 覆盖。
+
+        shape_name(str): Controller Shape Library 中的 Shape 名称，默认 "circle"。
+        ctrl_color(int): Maya Override Color 颜色索引，默认 17。
+        ctrl_size(float): Controller Shape 相对缩放倍率，默认 1.0。
+        create_hierarchy(bool): 是否创建完整控制器层级，默认 True。
+
+        Returns:
+            PyNode: 当前主 Controller Transform 节点。
+
+        Maya 使用示例：
+
+        from muziToolset.core.rigging import ctrl_utils
+
+        ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
+        ctrl = ctrl_object.create_ctrl(shape_name="circle", ctrl_color=6, ctrl_size=1.5, create_hierarchy=True)
+
+        print(ctrl)
+        """
+
+        # 先替换 Controller Shape。
+        self.set_ctrl_shape(shape_name)
+
+        # Shape 创建完成后再设置颜色，确保颜色作用于最终 Shape。
+        self.set_ctrl_color(ctrl_color)
+
+        # 通过缩放 Curve CV 调整显示大小，不修改 Controller Transform Scale。
+        self.set_ctrl_size(ctrl_size)
+
+        # 根据参数决定是否创建完整控制器层级。
         if create_hierarchy:
             self.create_ctrl_hierarchy()
-        else:
-            pass
+
         return self.ctrl
 
     def get_ctrl_shapes(self):
@@ -154,13 +238,13 @@ class Ctrl(object):
 
         from muziToolset.core.rigging import ctrl_utils
 
-        ctrl_object = ctrl_utils.Ctrl(ctrl="ctrl_lf_eye_main_001")
+        ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
         ctrl_shapes = ctrl_object.get_ctrl_shapes()
 
         print(ctrl_shapes)
         """
 
-        # 获取控制器 Transform 下面的全部非 Intermediate Shape 节点。
+        # 获取 Controller Transform 下面全部非 Intermediate Shape 节点。
         self.ctrl_shapes = self.ctrl.getShapes(noIntermediate=True)
 
         return self.ctrl_shapes
@@ -179,7 +263,7 @@ class Ctrl(object):
 
         from muziToolset.core.rigging import ctrl_utils
 
-        ctrl_object = ctrl_utils.Ctrl()
+        ctrl_object = ctrl_utils.Ctrl("ctrl_md_shape_list_main_001")
         shape_list = ctrl_object.get_ctrl_shape_list()
 
         print(shape_list)
@@ -231,7 +315,7 @@ class Ctrl(object):
 
         from muziToolset.core.rigging import ctrl_utils
 
-        ctrl_object = ctrl_utils.Ctrl(ctrl="ctrl_lf_eye_main_001")
+        ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
         ctrl_object.set_ctrl_color(6)
         """
 
@@ -262,7 +346,7 @@ class Ctrl(object):
 
         from muziToolset.core.rigging import ctrl_utils
 
-        ctrl_object = ctrl_utils.Ctrl(ctrl="ctrl_lf_eye_main_001")
+        ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
         ctrl_object.set_ctrl_size(2.0)
         """
 
@@ -292,7 +376,7 @@ class Ctrl(object):
 
         from muziToolset.core.rigging import ctrl_utils
 
-        ctrl_object = ctrl_utils.Ctrl(ctrl="ctrl_lf_eye_main_001")
+        ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
         ctrl_object.set_ctrl_rotate(rotate_x=90.0, rotate_y=0.0, rotate_z=0.0)
         """
 
@@ -322,7 +406,7 @@ class Ctrl(object):
 
         from muziToolset.core.rigging import ctrl_utils
 
-        ctrl_object = ctrl_utils.Ctrl(ctrl="ctrl_lf_eye_main_001")
+        ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
         ctrl_object.set_ctrl_offset(offset_x=0.0, offset_y=2.0, offset_z=0.0)
         """
 
@@ -351,9 +435,7 @@ class Ctrl(object):
 
         from muziToolset.core.rigging import ctrl_utils
 
-        ctrl_object = ctrl_utils.Ctrl(name="ctrl_lf_eye_main_001")
-        ctrl_object.create_ctrl()
-
+        ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
         ctrl_shapes = ctrl_object.set_ctrl_shape("cube")
 
         print(ctrl_shapes)
@@ -452,7 +534,7 @@ class Ctrl(object):
 
         from muziToolset.core.rigging import ctrl_utils
 
-        ctrl_object = ctrl_utils.Ctrl(ctrl="ctrl_md_test_main_001")
+        ctrl_object = ctrl_utils.Ctrl("ctrl_md_test_main_001")
         shape_file = ctrl_object.save_ctrl_shape("my_ctrl_shape")
 
         print(shape_file)
@@ -495,7 +577,7 @@ class Ctrl(object):
             if periodic:
                 curve_points = curve_points[:-degree]
 
-            # 旧 Shape Library 的 points 使用一维数组保存：
+            # Shape Library 的 points 使用一维数组保存：
             # [x0, y0, z0, x1, y1, z1, ...]
             # 因此需要把 Maya Point 列表逐个拆成 XYZ 数值。
             point_values = []
@@ -548,33 +630,160 @@ class Ctrl(object):
         # 返回保存路径，方便 UI 或其他工具继续使用。
         return shape_file
 
-    def create_sub_ctrl(self):
-        self.create_ctrl()
+    def create_sub_ctrl(self, shape_name="circle", ctrl_color=17, ctrl_size=0.7):
+        u"""
+        创建主 Controller 下方的次级控制器 SubCtrl。
 
+        次级控制器本身仍然使用 Ctrl 类创建，因此可以直接复用现有的
+        Shape、Color、Size 等 Controller 基础功能。
 
-    def create_ctrl_hierarchy (self) :
+        创建步骤：
+            1. 根据主控制器名称生成 subctrl 名称。
+            2. 创建或获取 SubCtrl。
+            3. 设置 SubCtrl 的 Shape、颜色和大小。
+            4. 将 SubCtrl 世界 Transform 匹配到主 Ctrl。
+            5. 将 SubCtrl Parent 到主 Ctrl 下方。
 
-        # 创建层级名称。
-        self.zero_name = self.name.replace ("ctrl_" , "zero_" , 1)
-        self.driven_name = self.name.replace ("ctrl_" , "driven_" , 1)
-        self.space_name = self.name.replace ("ctrl_" , "space_" , 1)
-        self.connect_name = self.name.replace ("ctrl_" , "connect_" , 1)
-        self.offset_name = self.name.replace ("ctrl_" , "offset_" , 1)
-        self.sub_ctrl_name = self.name.replace ("ctrl_" , "subctrl_" , 1)
-        self.output_name = self.name.replace ("ctrl_" , "output_" , 1)
+        在 Parent 之前先进行 matchTransform，可以让 SubCtrl Parent 完成后
+        保持本地 Translate / Rotate 接近 0，Scale 接近 1，方便动画师进行二级调整。
 
+        shape_name(str): SubCtrl 使用的 Shape 名称，默认 "circle"。
+        ctrl_color(int): SubCtrl 的 Override Color，默认 17。
+        ctrl_size(float): SubCtrl Shape 的相对大小，默认 0.7。
+
+        Returns:
+            PyNode: 创建或获取到的 SubCtrl Transform 节点。
+
+        Maya 使用示例：
+
+        from muziToolset.core.rigging import ctrl_utils
+
+        ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
+        sub_ctrl = ctrl_object.create_sub_ctrl(shape_name="circle", ctrl_color=6, ctrl_size=0.7)
+
+        print(sub_ctrl)
+        """
+
+        # 如果 create_ctrl_hierarchy() 还没有生成名称，
+        # 单独调用 create_sub_ctrl() 时也可以自行得到 SubCtrl 名称。
+        if not self.sub_ctrl_name:
+            self.sub_ctrl_name = self.name.replace("ctrl_", "subctrl_", 1)
+
+        # 使用同一个 Ctrl 类创建或获取次级控制器。
+        # Ctrl(sub_ctrl_name) 只保证 Transform 存在，不会自动创建完整层级。
+        sub_ctrl_object = Ctrl(self.sub_ctrl_name)
+
+        # 设置 SubCtrl 的最终 Shape、颜色和视觉大小。
+        # create_hierarchy=False 可以避免 SubCtrl 自己再次创建 Zero / Driven 等完整层级。
+        sub_ctrl_object.create_ctrl(shape_name=shape_name, ctrl_color=ctrl_color, ctrl_size=ctrl_size, create_hierarchy=False)
+
+        # 保存真正的 Maya SubCtrl PyNode，供后续 Output 和其他系统继续使用。
+        self.sub_ctrl = sub_ctrl_object.ctrl
+
+        # Parent 之前先让 SubCtrl 的世界位置、旋转、缩放完全匹配主 Ctrl。
+        pm.matchTransform(self.sub_ctrl, self.ctrl, position=True, rotation=True, scale=True)
+
+        # 将 SubCtrl 放到主 Ctrl 下方。
+        # hierarchy_utils.parent() 会保持当前世界 Transform，
+        # 因此前面已经匹配主 Ctrl 的 SubCtrl 会得到干净的本地 Transform。
+        hierarchy_utils.parent(child_node=self.sub_ctrl, parent_node=self.ctrl)
+
+        return self.sub_ctrl
+
+    def create_ctrl_hierarchy(self, sub_ctrl_shape="circle", sub_ctrl_color=17, sub_ctrl_size=0.7):
+        u"""
+        创建当前 Controller 的完整层级结构。
+
+        最终结构：
+
+        zero
+        └── driven
+            └── space
+                └── connect
+                    └── offset
+                        └── ctrl
+                            └── subctrl
+                                └── output
+
+        上方五个 Group 使用 hierarchy_utils.add_extra_group(..., relation="parent")
+        从最靠近 Ctrl 的 offset 开始向外逐层创建。
+
+        SubCtrl 是真正的 Controller，而不是普通 Group，
+        因此通过 create_sub_ctrl() 单独创建并放到主 Ctrl 下方。
+
+        Output 是最终输出节点，使用 relation="child" 创建在 SubCtrl 下方，
+        后续 Joint、Matrix 或 Deformer 可以统一读取 Output 的最终 Transform。
+
+        sub_ctrl_shape(str): SubCtrl 使用的 Shape 名称，默认 "circle"。
+        sub_ctrl_color(int): SubCtrl 的 Override Color，默认 17。
+        sub_ctrl_size(float): SubCtrl Shape 的相对大小，默认 0.7。
+
+        Returns:
+            PyNode: 完整 Controller 层级最外层的 Zero Group。
+
+        Maya 使用示例：
+
+        from muziToolset.core.rigging import ctrl_utils
+
+        ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
+        zero_grp = ctrl_object.create_ctrl_hierarchy(sub_ctrl_shape="circle", sub_ctrl_color=6, sub_ctrl_size=0.7)
+
+        print(zero_grp)
+        print(ctrl_object.output_grp)
+        """
+
+        # ---------------------------------------------------------------------
+        # 根据主 Controller 名称生成完整层级名称。
+        # 例如 ctrl_lf_eye_main_001 会得到：
+        # zero_lf_eye_main_001
+        # driven_lf_eye_main_001
+        # space_lf_eye_main_001
+        # connect_lf_eye_main_001
+        # offset_lf_eye_main_001
+        # subctrl_lf_eye_main_001
+        # output_lf_eye_main_001
+        # ---------------------------------------------------------------------
+        self.zero_name = self.name.replace("ctrl_", "zero_", 1)
+        self.driven_name = self.name.replace("ctrl_", "driven_", 1)
+        self.space_name = self.name.replace("ctrl_", "space_", 1)
+        self.connect_name = self.name.replace("ctrl_", "connect_", 1)
+        self.offset_name = self.name.replace("ctrl_", "offset_", 1)
+        self.sub_ctrl_name = self.name.replace("ctrl_", "subctrl_", 1)
+        self.output_name = self.name.replace("ctrl_", "output_", 1)
+
+        # ---------------------------------------------------------------------
         # 从 Ctrl 开始向外创建父层级。
-        self.offset_grp = hierarchy_utils.add_extra_group (self.ctrl , self.offset_name , relation = "parent")
-        self.connect_grp = hierarchy_utils.add_extra_group (self.offset_grp , self.connect_name , relation = "parent")
-        self.space_grp = hierarchy_utils.add_extra_group (self.connect_grp , self.space_name , relation = "parent")
-        self.driven_grp = hierarchy_utils.add_extra_group (self.space_grp , self.driven_name , relation = "parent")
-        self.zero_grp = hierarchy_utils.add_extra_group (self.driven_grp , self.zero_name , relation = "parent")
+        # add_extra_group(..., relation="parent") 会把新 Group 插入传入对象上方，
+        # 所以创建顺序必须和最终 Outliner 顺序相反：
+        # ctrl -> offset -> connect -> space -> driven -> zero
+        # ---------------------------------------------------------------------
 
-        # 创建次级控制器。
-        self.create_sub_ctrl ()
+        # Offset 是距离主 Controller 最近的一层父 Group。
+        self.offset_grp = hierarchy_utils.add_extra_group(self.ctrl, self.offset_name, relation="parent")
 
-        # 创建最终 Output。
-        self.output_grp = hierarchy_utils.add_extra_group (self.sub_ctrl , self.output_name , relation = "child")
+        # Connect 创建在 Offset 上方。
+        self.connect_grp = hierarchy_utils.add_extra_group(self.offset_grp, self.connect_name, relation="parent")
 
+        # Space 创建在 Connect 上方，后续可以作为 Space Switch 的处理层。
+        self.space_grp = hierarchy_utils.add_extra_group(self.connect_grp, self.space_name, relation="parent")
 
-        #
+        # Driven 创建在 Space 上方，后续可以用于程序驱动、SDK 或自动运动。
+        self.driven_grp = hierarchy_utils.add_extra_group(self.space_grp, self.driven_name, relation="parent")
+
+        # Zero 创建在最外层，作为整个 Controller 系统的初始归零层。
+        self.zero_grp = hierarchy_utils.add_extra_group(self.driven_grp, self.zero_name, relation="parent")
+
+        # ---------------------------------------------------------------------
+        # 创建主 Controller 下方的次级控制器。
+        # SubCtrl 用于动画师进行第二层细节调整。
+        # ---------------------------------------------------------------------
+        self.create_sub_ctrl(shape_name=sub_ctrl_shape, ctrl_color=sub_ctrl_color, ctrl_size=sub_ctrl_size)
+
+        # ---------------------------------------------------------------------
+        # 创建最终 Output Group。
+        # relation="child" 会把 Output 创建在 SubCtrl 下方。
+        # Output 只负责提供最终 Transform，不作为动画师直接操作的控制器。
+        # ---------------------------------------------------------------------
+        self.output_grp = hierarchy_utils.add_extra_group(self.sub_ctrl, self.output_name, relation="child")
+
+        return self.zero_grp
