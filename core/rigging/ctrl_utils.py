@@ -50,39 +50,56 @@ import json
 
 import pymel.core as pm
 
+from bake import nameUtils
+from common import hierarchy_utils
+
 
 class Ctrl(object):
 
-    def __init__(self, name=None, ctrl=None):
+    def __init__ (self , name) :
         u"""
         初始化 Controller 工具对象。
 
-        name(str): 需要创建的新控制器名称。
-        ctrl(str/PyNode): 场景中已经存在的控制器 Transform 节点。
+        如果 Maya 场景中已经存在指定名称的对象，则直接将它作为当前 Controller。
+        如果不存在，则自动创建一个基础圆形 Controller。
+
+        name(str): Controller 名称。
 
         Maya 使用示例：
 
         from muziToolset.core.rigging import ctrl_utils
 
-        # 准备创建一个新的控制器。
-        ctrl_object = ctrl_utils.Ctrl(name="ctrl_lf_eye_main_001")
+        ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
 
-        # 或者读取场景中已经存在的控制器。
-        ctrl_object = ctrl_utils.Ctrl(ctrl="ctrl_lf_eye_main_001")
+        print(ctrl_object.ctrl)
         """
 
-        # 保存新控制器创建时使用的名称。
+        # 保存 Controller 名称。
         self.name = name
 
-        # 保存当前控制器的 Transform PyNode。
+        # 保存 Controller Transform。
         self.ctrl = None
 
-        # 保存当前控制器下面的全部 Shape PyNode。
+        # 保存 Controller 下面的全部 Shape。
         self.ctrl_shapes = []
 
-        # 如果传入已经存在的控制器，则直接转换成 PyNode 保存。
-        if ctrl:
-            self.ctrl = pm.PyNode(ctrl)
+        # 保存 Controller 层级节点。
+        self.offset_grp = None
+        self.connect_grp = None
+        self.space_grp = None
+        self.driven_grp = None
+        self.zero_grp = None
+        self.sub_ctrl = None
+        self.output_grp = None
+
+        # 如果场景中已经存在同名对象，则直接使用。
+        if pm.objExists (self.name) :
+            self.ctrl = pm.PyNode (self.name)
+
+        # 如果不存在，则创建新的基础 Controller。
+        else :
+            self.ctrl = pm.circle (name = self.name , radius = 1.0 , normal = (0 , 1 , 0)) [0]
+
 
     def create_ctrl(self, radius=1.0):
         u"""
@@ -517,3 +534,15 @@ class Ctrl(object):
 
         # 返回保存路径，方便 UI 或其他工具继续使用。
         return shape_file
+
+
+    def create_ctrl_hierarchy(self):
+        self.zero_grp = self.ctrl.replace('ctrl_','zero_')
+        self.driven_grp = self.ctrl.replace('ctrl_','driven_')
+        self.space_grp = None
+        self.connect_grp = None
+        self.offset_grp = None
+        self.sub_ctrl_grp = None
+        self.output_grp = None
+
+        hierarchy_utils.add_extra_group(object, grp_name, world_orient=False)
