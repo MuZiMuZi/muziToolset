@@ -84,24 +84,28 @@ class Ctrl(object):
         self.ctrl_shapes = []
 
         # 保存 Controller 层级节点。
-        self.offset_grp = None
-        self.connect_grp = None
-        self.space_grp = None
-        self.driven_grp = None
-        self.zero_grp = None
-        self.sub_ctrl = None
-        self.output_grp = None
-
-        # 如果场景中已经存在同名对象，则直接使用。
-        if pm.objExists (self.name) :
-            self.ctrl = pm.PyNode (self.name)
-
-        # 如果不存在，则创建新的基础 Controller。
-        else :
-            self.ctrl = pm.circle (name = self.name , radius = 1.0 , normal = (0 , 1 , 0)) [0]
 
 
-    def create_ctrl(self, radius=1.0):
+        # 判断场景内是否已经有对应的控制器对象，如果场景中已经存在同名对象，则直接使用。没有的话则重新创建
+        self._get_or_create_ctrl()
+
+
+    def _get_or_create_ctrl(self):
+        #判断场景里是否已经存在这个名称的控制器，如果存在的话则直接用这个名称的控制器进行实例化
+        if pm.objExists(self.name):
+            self.ctrl = pm.PyNode(self.name)
+
+            if not isinstance(self.ctrl, pm.nodetypes.Transform):
+                raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(self.name))
+        #否则重新创建以这个名称的控制器
+        else:
+            self.ctrl = pm.circle(name=self.name, radius=1.0, normal=(0, 1, 0))[0]
+
+        return self.ctrl
+
+
+
+    def create_ctrl(self, radius,shape_name = 'circle',ctrl_color = 17,ctrl_size = 1,create_hierarchy = True):
         u"""
         创建一个基础圆形控制器，并保存到 self.ctrl。
 
@@ -123,8 +127,17 @@ class Ctrl(object):
         """
 
         # pm.circle 返回一个列表，第一个元素是新创建的控制器 Transform。
-        self.ctrl = pm.circle(name=self.name, radius=radius, normal=(0, 1, 0))[0]
 
+
+        self.ctrl = pm.circle(name=self.name, radius=radius, normal=(0, 1, 0))[0]
+        self.ctrl.set_ctrl_color(ctrl_color)
+        self.ctrl.set_ctrl_size(ctrl_size)
+        self.ctrl.set_ctrl_shape(shape_name)
+        #判断是否需要创建控制器层级组
+        if create_hierarchy:
+            self.create_ctrl_hierarchy()
+        else:
+            pass
         return self.ctrl
 
     def get_ctrl_shapes(self):
@@ -537,12 +550,30 @@ class Ctrl(object):
 
 
     def create_ctrl_hierarchy(self):
-        self.zero_grp = self.ctrl.replace('ctrl_','zero_')
-        self.driven_grp = self.ctrl.replace('ctrl_','driven_')
-        self.space_grp = None
-        self.connect_grp = None
-        self.offset_grp = None
-        self.sub_ctrl_grp = None
-        self.output_grp = None
+        """
+        创建对应的控制器层级结构
+        """
+        #获取控制器组的名称名称
+        self.zero_name = self.name.replace ("ctrl_" , "zero_" , 1)
+        self.driven_name = self.name.replace ("ctrl_" , "driven_" , 1)
+        self.space_name = self.name.replace ("ctrl_" , "space_" , 1)
+        self.connect_name = self.name.replace ("ctrl_" , "connect_" , 1)
+        self.offset_name = self.name.replace ("ctrl_" , "offset_" , 1)
+        self.sub_ctrl_name = self.name.replace ("ctrl_" , "subctrl_" , 1)
+        self.ouput_name = self.name.replace ("ctrl_" , "ouput_" , 1)
 
-        hierarchy_utils.add_extra_group(object, grp_name, world_orient=False)
+        #创建对应的上层控制器组
+        self.output_grp = pm.PyNode(hierarchy_utils.add_extra_group(self.ctrl,self.ouput_name,relation = 'child'))
+
+        self.offset_grp = pm.PyNode (hierarchy_utils.add_extra_group (self.ctrl , self.offset_name, relation="parent"))
+
+        self.connect_grp = pm.PyNode (hierarchy_utils.add_extra_group (self.zero_grp , self.connect_name, relation="parent"))
+
+        self.space_grp = pm.PyNode (hierarchy_utils.add_extra_group (self.driven_grp ,  self.space_name, relation="parent"))
+
+        self.driven_grp = pm.PyNode (hierarchy_utils.add_extra_group (self.space_grp , self.driven_name, relation="parent"))
+
+        self.zero_grp = pm.PyNode (hierarchy_utils.add_extra_group (self.connect_grp ,  self.zero_name, relation="parent"))
+
+
+        #
