@@ -13,8 +13,9 @@ hierarchy_utils：Maya 层级关系基础工具。
         适合 Joint Chain、FK Chain 等连续层级结构。
 
     add_extra_group
-        在指定对象上方创建一个额外的空组，并保持对象原来的层级和位置关系。
-        适合创建 Zero、Offset、Connect、Space 等控制器层级组。
+        在指定对象的父层级或子层级添加一个额外空组。
+        如果同名组已经存在则直接获取并复用，不存在时才创建。
+        适合创建 Zero、Offset、Connect、Space、Output 等控制器层级组。
 
     get_child_object
         获取指定对象下面某种类型的所有子物体，并包含对象本身。
@@ -115,21 +116,27 @@ def chain_parent(child_nodes, parent_node):
 
 def add_extra_group(object, grp_name, world_orient=False, relation="parent"):
     u"""
-    在指定对象的父层级或子层级创建一个额外空组。
+    在指定对象的父层级或子层级添加一个额外空组，并支持安全重复执行。
 
     relation="parent" 时：
-    新组会插入到对象上方，并保持对象原来的父级关系。
+    Group 会位于对象上方。
+    新建 Group 时会保持对象原来的父级关系；
+    如果同名 Group 已经存在，则直接获取并确保对象位于该 Group 下方。
 
     relation="child" 时：
-    新组会创建到对象下方，并匹配对象当前的世界位置。
+    Group 会位于对象下方。
+    如果同名 Group 已经存在，则直接获取并确保它位于对象下方。
+
+    已经存在的 Group 不会再次执行 matchTransform，避免重复调用时修改已有层级的 Transform。
+    只有真正新建 Group 时才会根据 world_orient 对齐到指定对象。
 
     object(str/PyNode): 需要添加额外组的 Maya 对象。
-    grp_name(str): 新创建的组名称。
-    world_orient(bool): 是否让新组保持世界旋转方向，默认 False。
-    relation(str): 新组与对象的层级关系，可使用 "parent" 或 "child"，默认 "parent"。
+    grp_name(str): 需要创建或获取的 Group 名称。
+    world_orient(bool): 是否让新创建的 Group 保持世界旋转方向，默认 False。
+    relation(str): Group 与对象的层级关系，可使用 "parent" 或 "child"，默认 "parent"。
 
     Returns:
-        PyNode: 新创建的 Group 节点。
+        PyNode: 创建或获取到的 Group 节点。
 
     Maya 使用示例：
 
@@ -137,64 +144,84 @@ def add_extra_group(object, grp_name, world_orient=False, relation="parent"):
 
     ctrl = "ctrl_lf_eye_main_001"
 
-    # 在 Controller 上方创建 Zero Group。
-    zero_grp = hierarchy_utils.add_extra_group(
+    # 第一次执行会创建 Offset Group。
+    offset_grp = hierarchy_utils.add_extra_group(
         ctrl,
-        "zero_lf_eye_main_001",
+        "offset_lf_eye_main_001",
         relation="parent"
     )
 
-    # 在 Controller 下方创建 Output Group。
+    # 再次执行会直接获取并复用同名 Group，不会创建 offset_lf_eye_main_0011。
+    offset_grp = hierarchy_utils.add_extra_group(
+        ctrl,
+        "offset_lf_eye_main_001",
+        relation="parent"
+    )
+
+    # 在 Controller 下方创建或获取 Output Group。
     output_grp = hierarchy_utils.add_extra_group(
         ctrl,
         "output_lf_eye_main_001",
         relation="child"
     )
 
-    print(zero_grp)
+    print(offset_grp)
     print(output_grp)
     """
 
-    # 将传入对象转换成 PyNode。
+    # relation 只接受 parent 和 child。
+    # 在创建任何 Maya 节点之前先检查参数，避免无效参数产生多余节点。
+    if relation not in ("parent", "child"):
+        raise ValueError(u"relation 只能使用 'parent' 或 'child'，当前值：{}".format(relation))
+
+    # 将传入对象转换成 PyNode，后续统一使用 PyMEL 对象操作。
     object = pm.PyNode(object)
 
-    # 创建新的空组。
-    object_grp = pm.group(empty=True, name=grp_name)
-
-    # 根据 world_orient 设置新组的对齐方式。
-    if world_orient:
-        pm.matchTransform(object_grp, object, position=True, scale=True)
-    else:
-        pm.matchTransform(object_grp, object, position=True, rotation=True, scale=True)
-
-    # ============================================================
-    # Parent 模式
-    # ============================================================
+    # Parent 模式在新建 Group 时需要保持对象原来的父级关系，
+    # 因此在修改层级之前先保存对象当前父物体。
+    object_parent = None
     if relation == "parent":
-
-        # 保存对象原来的父物体。
         object_parent = object.getParent()
 
-        # 如果对象原来有父物体，先把新组放回原父级下面。
-        if object_parent:
-            parent(child_node=object_grp, parent_node=object_parent)
+    # ------------------------------------------------------------
+    # 获取或创建 Group。
+    # ------------------------------------------------------------
+    if pm.objExists(grp_name):
+        # 同名节点已经存在时直接获取，不重复创建。
+        object_grp = pm.PyNode(grp_name)
 
-        # 再把原对象放到新组下面。
-        parent(child_node=object, parent_node=object_grp)
-
-    # ============================================================
-    # Child 模式
-    # ============================================================
-    elif relation == "child":
-
-        # 将新组放到原对象下面。
-        parent(child_node=object_grp, parent_node=object)
+        # Extra Group 必须是 Transform，避免同名 Shape 或其他 DG 节点被误用。
+        if not isinstance(object_grp, pm.nodetypes.Transform):
+            raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(grp_name))
 
     else:
-        pm.delete(object_grp)
-        raise ValueError(
-            u"relation 只能使用 'parent' 或 'child'，当前值：{}".format(relation)
-        )
+        # 同名 Group 不存在时才真正创建新的空组。
+        object_grp = pm.group(empty=True, name=grp_name)
+
+        # 只有新创建的 Group 才需要匹配对象 Transform。
+        if world_orient:
+            pm.matchTransform(object_grp, object, position=True, scale=True)
+        else:
+            pm.matchTransform(object_grp, object, position=True, rotation=True, scale=True)
+
+        # Parent 模式下，新 Group 需要插入对象原来的父级与对象之间。
+        # 先把新 Group 放回对象原来的父级下面，再把对象放到新 Group 下面。
+        if relation == "parent" and object_parent:
+            parent(child_node=object_grp, parent_node=object_parent)
+
+    # ------------------------------------------------------------
+    # Parent 模式：object_grp -> object
+    # ------------------------------------------------------------
+    if relation == "parent":
+        if object.getParent() != object_grp:
+            parent(child_node=object, parent_node=object_grp)
+
+    # ------------------------------------------------------------
+    # Child 模式：object -> object_grp
+    # ------------------------------------------------------------
+    elif relation == "child":
+        if object_grp.getParent() != object:
+            parent(child_node=object_grp, parent_node=object)
 
     return object_grp
 
