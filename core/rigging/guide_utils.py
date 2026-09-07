@@ -12,9 +12,13 @@ guide_utils：Maya Module Guide 基础工具。
         导入当前 Module 对应的 Maya Guide 模板。
         Guide Display Curve 作为模板内容一起保存和导入，不在正常运行时额外创建。
 
+    Guide.get_module_group
+        根据模块名称获取对应的 Guide Module Group。
+        适合 get_guides、Joint 构建和其他模块级 Guide 操作统一使用。
+
     Guide.get_guides
-        根据模块名称获取该模块组下面所有 Locator Guide。
-        适合后续按模块创建 Joint、Controller。
+        根据模块名称获取该模块组下面的 Locator Guide。
+        可以通过 side 只获取 lf、rt 或 md 方向的 Guide。
 
     Guide.create_guide_curve
         根据指定模块和方向创建 Guide Display Curve。
@@ -97,16 +101,24 @@ class Guide(object):
         self.guide_root = pm.PyNode(self.guide_root_name)
         return self.guide_root
 
-    def get_guides(self, module):
+    def get_module_group(self, module):
         u"""
-        获取指定模块组下面全部 Locator Guide。
+        获取指定模块对应的 Guide Module Group。
 
-        Face Guide 模板作为整体导入，但真正读取和构建时按照面部模块分别处理。
+        module 会按照统一命名规则转换成模块组名称：
 
-        module(str): 需要获取 Guide 的模块名称，例如 "ear"、"eye"、"brow"。
+            ear  -> grp_md_ear_guide_001
+            eye  -> grp_md_eye_guide_001
+            brow -> grp_md_brow_guide_001
+
+        方法会检查模块组是否存在、是否为 Transform，
+        并确认它属于当前 Guide Root。
+
+        module(str): 需要获取的 Guide 模块名称，例如 "ear"、"eye"、"brow"。
 
         Returns:
-            list: 指定模块下面全部 Locator Guide 的 PyNode 列表。
+            PyNode: 找到的 Guide Module Group。
+            None: 模块组不存在，或不属于当前 Guide Root。
 
         Maya 使用示例：
 
@@ -115,10 +127,8 @@ class Guide(object):
         guide_object = guide_utils.Guide("face")
         guide_object.import_template()
 
-        ear_guides = guide_object.get_guides("ear")
-
-        for guide in ear_guides:
-            print(guide)
+        ear_group = guide_object.get_module_group("ear")
+        print(ear_group)
         """
 
         if not self.guide_root:
@@ -126,21 +136,19 @@ class Guide(object):
                 self.guide_root = pm.PyNode(self.guide_root_name)
             else:
                 cmds.warning(u"当前场景中不存在 {} Guide：{}".format(self.module, self.guide_root_name))
-                return []
+                return None
 
         module_group_name = package_config.module_guide_root_name_format.format(module)
 
         if not cmds.objExists(module_group_name):
             cmds.warning(u"当前 Guide 中不存在模块组：{}".format(module_group_name))
-            return []
+            return None
 
         if cmds.nodeType(module_group_name) != "transform":
             raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(module_group_name))
 
-        module_parent_list = cmds.listRelatives(module_group_name, allParents=True, fullPath=False) or []
-
         if module_group_name != self.guide_root_name:
-            current_parent = module_parent_list
+            current_parent = cmds.listRelatives(module_group_name, allParents=True, fullPath=False) or []
             found_guide_root = False
 
             while current_parent:
@@ -154,19 +162,71 @@ class Guide(object):
 
             if not found_guide_root:
                 cmds.warning(u"{} 不属于当前 Guide Root：{}".format(module_group_name, self.guide_root_name))
-                return []
+                return None
 
+        return pm.PyNode(module_group_name)
+
+    def get_guides(self, module, side=None):
+        u"""
+        获取指定模块组下面的 Locator Guide。
+
+        Face Guide 模板作为整体导入，但真正读取和构建时按照面部模块分别处理。
+        side 不传时返回整个模块的 Locator；传入 side 后只返回对应方向的 Locator。
+
+        module(str): 需要获取 Guide 的模块名称，例如 "ear"、"eye"、"brow"。
+        side(str): 可选方向，只接受 "lf"、"rt"、"md" 或 None。
+
+        Returns:
+            list: 符合 module 和 side 条件的 Locator Guide PyNode 列表。
+
+        Maya 使用示例：
+
+        from muziToolset.core.rigging import guide_utils
+
+        guide_object = guide_utils.Guide("face")
+        guide_object.import_template()
+
+        ear_guides = guide_object.get_guides("ear")
+        lf_ear_guides = guide_object.get_guides("ear", "lf")
+        rt_ear_guides = guide_object.get_guides("ear", "rt")
+
+        for guide in lf_ear_guides:
+            print(guide)
+        """
+
+        if side not in (None, "lf", "rt", "md"):
+            raise ValueError(u"side 只能使用 'lf'、'rt'、'md' 或 None，当前值：{}".format(side))
+
+        module_group = self.get_module_group(module)
+
+        if not module_group:
+            self.guides = []
+            return self.guides
+
+        module_group_name = module_group.name()
         child_objects = cmds.listRelatives(module_group_name, allDescendents=True, type="transform", fullPath=False) or []
 
         self.guides = []
 
         for child_object in child_objects:
             child_shapes = cmds.listRelatives(child_object, shapes=True, noIntermediate=True, fullPath=False) or []
+            is_locator = False
 
             for child_shape in child_shapes:
                 if cmds.nodeType(child_shape) == "locator":
-                    self.guides.append(pm.PyNode(child_object))
+                    is_locator = True
                     break
+
+            if not is_locator:
+                continue
+
+            if side:
+                guide_name_parts = child_object.split("_")
+
+                if len(guide_name_parts) < 2 or guide_name_parts[1] != side:
+                    continue
+
+            self.guides.append(pm.PyNode(child_object))
 
         return self.guides
 
@@ -201,15 +261,7 @@ class Guide(object):
         if side not in ("lf", "rt", "md"):
             raise ValueError(u"side 只能使用 'lf'、'rt' 或 'md'，当前值：{}".format(side))
 
-        guide_list = self.get_guides(module)
-        side_guides = []
-
-        for guide in guide_list:
-            guide_name = guide.nodeName()
-            name_parts = guide_name.split("_")
-
-            if len(name_parts) > 1 and name_parts[1] == side:
-                side_guides.append(guide)
+        side_guides = self.get_guides(module, side)
 
         if len(side_guides) < 2:
             cmds.warning(u"{} {} Guide 少于两个 Locator，无法创建显示曲线。".format(side, module))
@@ -217,7 +269,12 @@ class Guide(object):
 
         side_guides.sort(key=str)
 
-        module_group_name = package_config.module_guide_root_name_format.format(module)
+        module_group = self.get_module_group(module)
+
+        if not module_group:
+            return None
+
+        module_group_name = module_group.name()
         curve_name = package_config.module_guide_curve_name_format.format(side, module)
 
         if cmds.objExists(curve_name):
