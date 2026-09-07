@@ -62,7 +62,7 @@ RETIRED_CONCRETE_METHODS = {
 CONCRETE_MODULE_FILES = {
     "brow.py": "BrowModule",
     "cheek.py": "CheekModule",
-    "ear.py": "EarModule",
+    "ear_module.py": "EarModule",
     "eye.py": "EyeModule",
     "eyelid.py": "EyelidModule",
     "jaw.py": "JawModule",

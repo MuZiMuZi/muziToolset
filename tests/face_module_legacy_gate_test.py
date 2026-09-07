@@ -44,7 +44,7 @@ REQUIRED_MODULE_FILES = [
     "face_rig.py",
     "brow.py",
     "cheek.py",
-    "ear.py",
+    "ear_module.py",
     "eye.py",
     "eyelid.py",
     "jaw.py",
@@ -58,7 +58,7 @@ REQUIRED_MODULE_FILES = [
 LEGACY_REFERENCE_FILES = [
     "brow.py",
     "cheek.py",
-    "ear.py",
+    "ear_module.py",
     "eye.py",
     "eyeLid.py",
     "face_rig.py",
