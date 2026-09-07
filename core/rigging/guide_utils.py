@@ -16,6 +16,10 @@ guide_utils：Maya Module Guide 基础工具。
     Guide.get_guides
         根据模块名称获取该模块组下面所有 Locator Guide。
         适合后续按模块创建 Joint、Controller 或 Guide Display Curve。
+
+    Guide.create_guide_curve
+        根据指定模块下面的 Locator 创建一条 Degree 1 Guide Display Curve。
+        Curve CV 会实时跟随 Locator，并设置为不可在视图中选择，只用于辅助显示模块定位关系。
 """
 
 import os
@@ -57,7 +61,6 @@ class Guide(object):
 
         from muziToolset.core.rigging import guide_utils
 
-        # 当前 Face Guide。
         guide_object = guide_utils.Guide()
 
         print(guide_object.module)
@@ -65,7 +68,6 @@ class Guide(object):
         print(guide_object.guide_template_file_name)
         print(guide_object.guide_template_path)
 
-        # 以后新增 arm_guide.ma 后可以直接使用同一套规则。
         arm_guide_object = guide_utils.Guide("arm")
         """
 
@@ -73,25 +75,13 @@ class Guide(object):
         # 例如 face、arm、leg。
         self.module = module
 
-        # ---------------------------------------------------------------------
         # 根据 config.py 中的统一命名规则生成 Guide 静态信息。
-        #
-        # 这里不再硬编码 face_guide.ma 或 grp_md_face_guide_001，
-        # 以后新增其他 Module Guide 时只需要遵守统一命名规则即可。
-        # ---------------------------------------------------------------------
         self.guide_template_file_name = package_config.module_guide_template_file_format.format(self.module)
         self.guide_root_name = package_config.module_guide_root_name_format.format(self.module)
         self.guide_template_path = os.path.join(package_config.module_guide_dir, self.guide_template_file_name)
 
-        # ---------------------------------------------------------------------
         # 以下属性属于当前 Maya Scene 的运行状态，不放到 config.py。
-        # ---------------------------------------------------------------------
-
-        # 保存场景中的 Guide Root PyNode。
-        # import_template() 或 get_guides() 找到 Guide Root 后会更新该属性。
         self.guide_root = None
-
-        # 保存 get_guides() 最后获取到的单个模块 Locator Guide PyNode。
         self.guides = []
 
     def import_template(self):
@@ -104,8 +94,6 @@ class Guide(object):
             2. 如果场景中已经存在 Guide Root，直接获取并复用。
             3. 如果不存在，则从 resources/module_guide 导入对应模板。
             4. 导入完成后再次检查 Guide Root，并保存为 PyNode。
-
-        这样可以避免重复点击创建 Guide 时，在场景中重复导入同一套 Guide。
 
         Returns:
             PyNode: 当前 Module Guide Root。
@@ -120,32 +108,22 @@ class Guide(object):
         print(guide_root)
         """
 
-        # 如果 Guide Root 已经存在，说明当前 Module Guide 已经在场景中。
-        # 直接获取已有节点，不再次导入模板。
         if pm.objExists(self.guide_root_name):
             self.guide_root = pm.PyNode(self.guide_root_name)
 
-            # Guide Root 必须是 Transform，避免同名其他节点被误当成 Guide 根组。
             if not isinstance(self.guide_root, pm.nodetypes.Transform):
                 raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(self.guide_root_name))
 
             return self.guide_root
 
-        # 导入前先检查模板文件是否真实存在。
-        # 路径错误或模板尚未创建时直接报出明确错误。
         if not os.path.exists(self.guide_template_path):
             raise IOError(u"找不到 {} Guide 模板：{}".format(self.module, self.guide_template_path))
 
-        # 导入当前 Module 的 Guide Maya 模板。
-        # 模板只负责 Guide 的默认 Shape、层级和初始位置。
         pm.importFile(self.guide_template_path)
 
-        # 模板导入完成后必须能够找到符合统一命名规则的 Guide Root。
-        # 如果找不到，说明模板内部 Root 名称不符合当前 Guide Core 约定。
         if not pm.objExists(self.guide_root_name):
             raise RuntimeError(u"{} Guide 模板已经导入，但找不到 Guide Root：{}".format(self.module, self.guide_root_name))
 
-        # 将 Guide Root 保存为 PyNode，后续统一使用 PyMEL 操作。
         self.guide_root = pm.PyNode(self.guide_root_name)
 
         return self.guide_root
@@ -162,7 +140,6 @@ class Guide(object):
             brow -> grp_md_brow_guide_001
 
         只扫描指定模块组下面的 Locator，不再一次获取整个 Face 的全部定位器。
-        这样后续可以直接使用返回结果创建对应模块的 Joint、Controller 或显示曲线。
 
         module(str): 需要获取 Guide 的面部模块名称，例如 "ear"、"eye"、"brow"。
 
@@ -182,7 +159,6 @@ class Guide(object):
             print(guide)
         """
 
-        # 如果当前实例还没有保存 Guide Root，则尝试从 Maya 场景中获取。
         if not self.guide_root:
             if pm.objExists(self.guide_root_name):
                 self.guide_root = pm.PyNode(self.guide_root_name)
@@ -190,10 +166,8 @@ class Guide(object):
                 pm.warning(u"当前场景中不存在 {} Guide：{}".format(self.module, self.guide_root_name))
                 return []
 
-        # 根据统一命名规则得到需要读取的模块组名称。
         module_group_name = package_config.module_guide_root_name_format.format(module)
 
-        # 模块组不存在时直接返回空列表，不扫描整个 Face Guide。
         if not pm.objExists(module_group_name):
             pm.warning(u"当前 Guide 中不存在模块组：{}".format(module_group_name))
             return []
@@ -203,7 +177,6 @@ class Guide(object):
         if not isinstance(module_group, pm.nodetypes.Transform):
             raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(module_group_name))
 
-        # 确认找到的模块组确实属于当前 Guide Root，避免读取场景中其他同名层级。
         if module_group != self.guide_root:
             module_parents = module_group.getAllParents()
 
@@ -211,14 +184,10 @@ class Guide(object):
                 pm.warning(u"{} 不属于当前 Guide Root：{}".format(module_group_name, self.guide_root_name))
                 return []
 
-        # 只获取当前模块组下面的 Transform 后代节点。
         child_objects = module_group.listRelatives(allDescendents=True, type="transform") or []
 
-        # 每次调用重新整理 Guide 列表，只保存当前请求模块的 Locator。
         self.guides = []
 
-        # 逐个检查 Transform 的 Shape。
-        # 只有真正拥有 Locator Shape 的 Transform 才会加入最终 Guide 列表。
         for child_object in child_objects:
             child_shapes = child_object.getShapes(noIntermediate=True)
 
@@ -228,3 +197,121 @@ class Guide(object):
                     break
 
         return self.guides
+
+    def create_guide_curve(self, module):
+        u"""
+        为指定 Guide 模块创建一条实时显示曲线。
+
+        Curve 只负责辅助显示 Locator 之间的定位关系，不参与 Joint、Controller 或绑定计算。
+        当前第一版统一使用 Degree 1 Curve，让曲线直接经过每一个 Locator 定位点。
+
+        Curve 创建后会：
+
+            1. 获取指定模块下面全部 Locator Guide。
+            2. 按 Locator 名称排序，保证重复执行时顺序稳定。
+            3. 创建 crv_md_<module>_guide_001。
+            4. 将 Curve 放到对应模块组下面。
+            5. 使用 multMatrix + decomposeMatrix 将 Locator 世界位置转换到模块局部空间。
+            6. 将转换后的 Translate 实时连接到对应 Curve CV。
+            7. 将 Curve Shape 设置为 Reference Display Type，使其在 Maya 视图中不可选择。
+            8. 尽量继承第一个 Locator Shape 的显示颜色，用来区分不同 Guide 模块。
+
+        module(str): 需要创建显示曲线的面部模块名称，例如 "ear"、"brow"。
+
+        Returns:
+            PyNode: 创建或已经存在的 Guide Display Curve Transform。
+
+        Maya 使用示例：
+
+        from muziToolset.core.rigging import guide_utils
+
+        guide_object = guide_utils.Guide("face")
+        guide_object.import_template()
+
+        ear_curve = guide_object.create_guide_curve("ear")
+
+        print(ear_curve)
+        """
+
+        guide_list = self.get_guides(module)
+
+        if len(guide_list) < 2:
+            pm.warning(u"{} Guide 少于两个 Locator，无法创建显示曲线。".format(module))
+            return None
+
+        # 使用节点名称排序，让同一个模块每次构建时得到稳定的 CV 顺序。
+        guide_list.sort(key=str)
+
+        module_group_name = package_config.module_guide_root_name_format.format(module)
+        module_group = pm.PyNode(module_group_name)
+
+        curve_name = package_config.module_guide_curve_name_format.format(module)
+
+        # 已经存在同名显示曲线时直接复用，避免重复创建 Curve 和驱动节点。
+        if pm.objExists(curve_name):
+            guide_curve = pm.PyNode(curve_name)
+
+            if not isinstance(guide_curve, pm.nodetypes.Transform):
+                raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(curve_name))
+
+            curve_shape = guide_curve.getShape()
+
+            if not isinstance(curve_shape, pm.nodetypes.NurbsCurve):
+                raise TypeError(u"{} 已经存在，但不是 NurbsCurve。".format(curve_name))
+
+            return guide_curve
+
+        # 先使用 Locator 的世界位置创建 Degree 1 Curve。
+        guide_positions = []
+
+        for guide in guide_list:
+            guide_position = guide.getTranslation(space="world")
+            guide_positions.append(guide_position)
+
+        guide_curve = pm.curve(
+            point=guide_positions,
+            degree=1,
+            name=curve_name
+        )
+
+        # 显示曲线属于对应模块组。
+        # Parent 后冻结自身 Transform，让 Curve CV 使用模块组局部空间坐标。
+        pm.parent(guide_curve, module_group, absolute=True)
+        pm.makeIdentity(guide_curve, apply=True, translate=True, rotate=True, scale=True)
+
+        curve_shape = guide_curve.getShape()
+
+        # 复制当前模块第一个 Locator 的显示颜色。
+        first_guide_shape = guide_list[0].getShape()
+
+        curve_shape.overrideEnabled.set(True)
+
+        if first_guide_shape and first_guide_shape.hasAttr("overrideEnabled"):
+            if first_guide_shape.overrideEnabled.get():
+                if first_guide_shape.hasAttr("overrideRGBColors") and first_guide_shape.overrideRGBColors.get():
+                    curve_shape.overrideRGBColors.set(True)
+                    curve_shape.overrideColorRGB.set(first_guide_shape.overrideColorRGB.get())
+                else:
+                    curve_shape.overrideColor.set(first_guide_shape.overrideColor.get())
+
+        # Reference Display Type：曲线可以显示，但不能在 Maya 视图中被选择。
+        curve_shape.overrideDisplayType.set(2)
+
+        # 每一个 Locator 对应一个 Curve CV。
+        # Locator World Matrix 先转换到 Module Group Local Space，
+        # 再把局部位置实时连接到 Curve Shape 的 controlPoints。
+        guide_index = 0
+
+        for guide in guide_list:
+            mult_matrix = pm.createNode("multMatrix")
+            decompose_matrix = pm.createNode("decomposeMatrix")
+
+            guide.worldMatrix[0] >> mult_matrix.matrixIn[0]
+            module_group.worldInverseMatrix[0] >> mult_matrix.matrixIn[1]
+
+            mult_matrix.matrixSum >> decompose_matrix.inputMatrix
+            decompose_matrix.outputTranslate >> curve_shape.controlPoints[guide_index]
+
+            guide_index += 1
+
+        return guide_curve
