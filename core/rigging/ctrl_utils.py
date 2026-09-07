@@ -55,7 +55,7 @@ ctrl_utils：Maya Controller 基础工具。
 
     Ctrl.create_ctrl_hierarchy
         创建完整 Controller 层级结构，并支持安全重复执行。
-        已存在的层级节点会直接获取并复用，不存在的层级节点才会新建。
+        层级 Group 的“存在则获取、不存在则创建”统一交给 hierarchy_utils.add_extra_group() 处理。
         当前结构为 zero -> driven -> space -> connect -> offset -> ctrl -> subctrl -> output。
 """
 
@@ -632,7 +632,6 @@ class Ctrl(object):
         # 返回保存路径，方便 UI 或其他工具继续使用。
         return shape_file
 
-
     def create_sub_ctrl(self, shape_name="circle", ctrl_color=17, ctrl_size=0.7):
         u"""
         创建主 Controller 下方的次级控制器 SubCtrl。
@@ -691,18 +690,18 @@ class Ctrl(object):
         # 因此前面已经匹配主 Ctrl 的 SubCtrl 会得到干净的本地 Transform。
         hierarchy_utils.parent(child_node=self.sub_ctrl, parent_node=self.ctrl)
 
-        #给控制器上创建sub_ctrl_vis的属性来方便控制次级控制器是否进行显示
+        # 给控制器上创建 sub_ctrl_vis 属性，用来控制次级控制器是否显示。
         attr_object = attr_utils.Attr(self.ctrl_name)
-        attr_object.add_attr(attr_name = 'sub_ctrl_vis',attr_type = 'bool', default_value = 0, keyable = False )
-        #属性进行连接
-        attr_object.connect_attr (attr_name = 'sub_ctrl_vis' , target_object = self.sub_ctrl_name, target_attr_name = 'visibility')
+        attr_object.add_attr(attr_name='sub_ctrl_vis', attr_type='bool', default_value=0, keyable=False)
 
+        # 将主控制器的 sub_ctrl_vis 连接到次级控制器 visibility。
+        attr_object.connect_attr(attr_name='sub_ctrl_vis', target_object=self.sub_ctrl_name, target_attr_name='visibility')
 
         return self.sub_ctrl
 
     def create_ctrl_hierarchy(self, sub_ctrl_shape="circle", sub_ctrl_color=17, sub_ctrl_size=0.7):
         u"""
-        创建当前 Controller 的完整层级结构，并支持重复执行。
+        创建当前 Controller 的完整层级结构，并支持安全重复执行。
 
         最终结构：
 
@@ -715,24 +714,17 @@ class Ctrl(object):
                             └── subctrl
                                 └── output
 
-        每一个层级节点创建前都会先检查 Maya 场景中是否已经存在同名节点：
-        如果存在，则直接获取对应 PyNode 并继续使用；
-        如果不存在，才调用 hierarchy_utils.add_extra_group() 创建新节点。
+        Group 的创建、获取和层级恢复统一交给 hierarchy_utils.add_extra_group()：
+        如果同名 Group 已经存在，则直接获取并复用；
+        如果不存在，则创建新 Group；
+        如果父子关系不正确，则恢复到当前调用要求的层级关系。
 
-        因此同一个 Controller 可以重复执行 create_ctrl_hierarchy()，
-        不会因为重复构建产生 offset1、connect1、zero1 等重复层级节点。
+        因此 create_ctrl_hierarchy() 本身只负责描述 Controller 需要什么层级，
+        不再重复编写每一个 Group 的 pm.objExists() 判断。
 
-        对于已经存在的节点，还会检查它是否处在正确的父子关系中。
-        如果层级关系被打乱，会重新 Parent 到当前 Controller 所要求的位置。
-
-        上方五个 Group 使用 hierarchy_utils.add_extra_group(..., relation="parent")
-        从最靠近 Ctrl 的 offset 开始向外逐层创建。
-
-        SubCtrl 是真正的 Controller，而不是普通 Group，
-        因此通过 create_sub_ctrl() 单独创建并放到主 Ctrl 下方。
-
-        Output 是最终输出节点，使用 relation="child" 创建在 SubCtrl 下方，
-        后续 Joint、Matrix 或 Deformer 可以统一读取 Output 的最终 Transform。
+        上方五个 Group 从最靠近 Ctrl 的 Offset 开始向外逐层处理。
+        SubCtrl 通过 create_sub_ctrl() 创建或获取。
+        Output 通过 relation="child" 创建或获取在 SubCtrl 下方。
 
         sub_ctrl_shape(str): SubCtrl 使用的 Shape 名称，默认 "circle"。
         sub_ctrl_color(int): SubCtrl 的 Override Color，默认 17。
@@ -750,24 +742,14 @@ class Ctrl(object):
         # 第一次执行：不存在的层级会被创建。
         zero_grp = ctrl_object.create_ctrl_hierarchy()
 
-        # 第二次执行：已经存在的层级会被直接获取和复用，不会重复创建。
+        # 第二次执行：已经存在的层级会被直接获取和复用。
         zero_grp = ctrl_object.create_ctrl_hierarchy()
 
         print(zero_grp)
         print(ctrl_object.output_grp)
         """
 
-        # ---------------------------------------------------------------------
         # 根据主 Controller 名称生成完整层级名称。
-        # 例如 ctrl_lf_eye_main_001 会得到：
-        # zero_lf_eye_main_001
-        # driven_lf_eye_main_001
-        # space_lf_eye_main_001
-        # connect_lf_eye_main_001
-        # offset_lf_eye_main_001
-        # subctrl_lf_eye_main_001
-        # output_lf_eye_main_001
-        # ---------------------------------------------------------------------
         self.zero_name = self.ctrl_name.replace("ctrl_", "zero_", 1)
         self.driven_name = self.ctrl_name.replace("ctrl_", "driven_", 1)
         self.space_name = self.ctrl_name.replace("ctrl_", "space_", 1)
@@ -776,108 +758,18 @@ class Ctrl(object):
         self.sub_ctrl_name = self.ctrl_name.replace("ctrl_", "subctrl_", 1)
         self.output_name = self.ctrl_name.replace("ctrl_", "output_", 1)
 
-        # ---------------------------------------------------------------------
-        # 从 Ctrl 开始向外处理父层级。
-        # 每一层都遵循同一个规则：
-        #
-        #   存在   -> 获取已有 PyNode，并确认当前父子关系正确。
-        #   不存在 -> 创建新的 Group。
-        #
-        # add_extra_group(..., relation="parent") 会把新 Group 插入传入对象上方，
-        # 所以首次创建时的顺序仍然是：
-        # ctrl -> offset -> connect -> space -> driven -> zero
-        # ---------------------------------------------------------------------
+        # 从 Ctrl 开始向外创建或获取父层级。
+        # add_extra_group() 内部已经统一处理：存在则获取，不存在则创建，层级不正确则恢复。
+        self.offset_grp = hierarchy_utils.add_extra_group(self.ctrl, self.offset_name, relation="parent")
+        self.connect_grp = hierarchy_utils.add_extra_group(self.offset_grp, self.connect_name, relation="parent")
+        self.space_grp = hierarchy_utils.add_extra_group(self.connect_grp, self.space_name, relation="parent")
+        self.driven_grp = hierarchy_utils.add_extra_group(self.space_grp, self.driven_name, relation="parent")
+        self.zero_grp = hierarchy_utils.add_extra_group(self.driven_grp, self.zero_name, relation="parent")
 
-        # ---------------------------------------------------------------------
-        # Offset
-        # Offset 是距离主 Controller 最近的一层父 Group。
-        # 最终关系：offset -> ctrl
-        # ---------------------------------------------------------------------
-        if pm.objExists(self.offset_name):
-            self.offset_grp = pm.PyNode(self.offset_name)
-
-            # 如果 Ctrl 当前不在 Offset 下面，则恢复正确父子关系。
-            if self.ctrl.getParent() != self.offset_grp:
-                hierarchy_utils.parent(child_node=self.ctrl, parent_node=self.offset_grp)
-        else:
-            self.offset_grp = hierarchy_utils.add_extra_group(self.ctrl, self.offset_name, relation="parent")
-
-        # ---------------------------------------------------------------------
-        # Connect
-        # Connect 创建在 Offset 上方。
-        # 最终关系：connect -> offset
-        # ---------------------------------------------------------------------
-        if pm.objExists(self.connect_name):
-            self.connect_grp = pm.PyNode(self.connect_name)
-
-            # 如果 Offset 当前不在 Connect 下面，则恢复正确父子关系。
-            if self.offset_grp.getParent() != self.connect_grp:
-                hierarchy_utils.parent(child_node=self.offset_grp, parent_node=self.connect_grp)
-        else:
-            self.connect_grp = hierarchy_utils.add_extra_group(self.offset_grp, self.connect_name, relation="parent")
-
-        # ---------------------------------------------------------------------
-        # Space
-        # Space 创建在 Connect 上方，后续可以作为 Space Switch 的处理层。
-        # 最终关系：space -> connect
-        # ---------------------------------------------------------------------
-        if pm.objExists(self.space_name):
-            self.space_grp = pm.PyNode(self.space_name)
-
-            # 如果 Connect 当前不在 Space 下面，则恢复正确父子关系。
-            if self.connect_grp.getParent() != self.space_grp:
-                hierarchy_utils.parent(child_node=self.connect_grp, parent_node=self.space_grp)
-        else:
-            self.space_grp = hierarchy_utils.add_extra_group(self.connect_grp, self.space_name, relation="parent")
-
-        # ---------------------------------------------------------------------
-        # Driven
-        # Driven 创建在 Space 上方，后续可以用于程序驱动、SDK 或自动运动。
-        # 最终关系：driven -> space
-        # ---------------------------------------------------------------------
-        if pm.objExists(self.driven_name):
-            self.driven_grp = pm.PyNode(self.driven_name)
-
-            # 如果 Space 当前不在 Driven 下面，则恢复正确父子关系。
-            if self.space_grp.getParent() != self.driven_grp:
-                hierarchy_utils.parent(child_node=self.space_grp, parent_node=self.driven_grp)
-        else:
-            self.driven_grp = hierarchy_utils.add_extra_group(self.space_grp, self.driven_name, relation="parent")
-
-        # ---------------------------------------------------------------------
-        # Zero
-        # Zero 是整个 Controller 层级最外层。
-        # 最终关系：zero -> driven
-        # ---------------------------------------------------------------------
-        if pm.objExists(self.zero_name):
-            self.zero_grp = pm.PyNode(self.zero_name)
-
-            # 如果 Driven 当前不在 Zero 下面，则恢复正确父子关系。
-            if self.driven_grp.getParent() != self.zero_grp:
-                hierarchy_utils.parent(child_node=self.driven_grp, parent_node=self.zero_grp)
-        else:
-            self.zero_grp = hierarchy_utils.add_extra_group(self.driven_grp, self.zero_name, relation="parent")
-
-        # ---------------------------------------------------------------------
-        # SubCtrl
-        # create_sub_ctrl() 内部本身已经使用 Ctrl(sub_ctrl_name)。
-        # Ctrl 类会自动执行“存在则获取，不存在则创建”，
-        # 所以 SubCtrl 不需要在这里再次编写重复的存在判断。
-        # ---------------------------------------------------------------------
+        # 创建或获取主 Controller 下方的次级控制器。
         self.create_sub_ctrl(shape_name=sub_ctrl_shape, ctrl_color=sub_ctrl_color, ctrl_size=sub_ctrl_size)
 
-        # ---------------------------------------------------------------------
-        # Output
-        # Output 是完整 Controller 层级的最后一个子节点。
-        # 最终关系：subctrl -> output
-        # ---------------------------------------------------------------------
-        if pm.objExists(self.output_name):
-            self.output_grp = pm.PyNode(self.output_name)
-
-            # 如果 Output 当前不在 SubCtrl 下面，则恢复正确父子关系。
-            if self.output_grp.getParent() != self.sub_ctrl:
-                hierarchy_utils.parent(child_node=self.output_grp, parent_node=self.sub_ctrl)
-        else:
-            self.output_grp = hierarchy_utils.add_extra_group(self.sub_ctrl, self.output_name, relation="child")
+        # 创建或获取最终 Output Group，并确保它位于 SubCtrl 下方。
+        self.output_grp = hierarchy_utils.add_extra_group(self.sub_ctrl, self.output_name, relation="child")
 
         return self.zero_grp
