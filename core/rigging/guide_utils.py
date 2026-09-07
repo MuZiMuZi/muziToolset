@@ -19,6 +19,7 @@ guide_utils：Maya Module Guide 基础工具。
     Guide.get_guides
         根据模块名称获取该模块组下面的 Locator Guide。
         可以通过 side 只获取 lf、rt 或 md 方向的 Guide。
+        返回结果会按照 Guide 名称排序，保证 001、002、003 等顺序稳定。
 
     Guide.create_guide_curve
         根据指定模块和方向创建 Guide Display Curve。
@@ -173,11 +174,14 @@ class Guide(object):
         Face Guide 模板作为整体导入，但真正读取和构建时按照面部模块分别处理。
         side 不传时返回整个模块的 Locator；传入 side 后只返回对应方向的 Locator。
 
+        返回结果会按照 Guide 节点名称排序。
+        当前 Guide 序号统一使用 001、002、003 形式，因此可以稳定得到创建 Joint 所需的顺序。
+
         module(str): 需要获取 Guide 的模块名称，例如 "ear"、"eye"、"brow"。
         side(str): 可选方向，只接受 "lf"、"rt"、"md" 或 None。
 
         Returns:
-            list: 符合 module 和 side 条件的 Locator Guide PyNode 列表。
+            list: 符合 module 和 side 条件，并按名称排序后的 Locator Guide PyNode 列表。
 
         Maya 使用示例：
 
@@ -228,6 +232,10 @@ class Guide(object):
 
             self.guides.append(pm.PyNode(child_object))
 
+        # listRelatives(allDescendents=True) 的返回顺序不等于 Guide 的逻辑顺序。
+        # Guide 名称使用补零序号，因此按名称排序后可以稳定得到 001、002、003...。
+        self.guides.sort(key=str)
+
         return self.guides
 
     def create_guide_curve(self, module, side):
@@ -266,8 +274,6 @@ class Guide(object):
         if len(side_guides) < 2:
             cmds.warning(u"{} {} Guide 少于两个 Locator，无法创建显示曲线。".format(side, module))
             return None
-
-        side_guides.sort(key=str)
 
         module_group = self.get_module_group(module)
 
