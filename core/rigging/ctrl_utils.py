@@ -692,7 +692,7 @@ class Ctrl(object):
 
         # 给控制器上创建 sub_ctrl_vis 属性，用来控制次级控制器是否显示。
         attr_object = attr_utils.Attr(self.ctrl_name)
-        attr_object.add_attr(attr_name='sub_ctrl_vis', attr_type='bool', default_value=0, keyable=False)
+        attr_object.add_attr(attr_name='sub_ctrl_vis', attr_type='bool', default_value=0, keyable=True)
 
         # 将主控制器的 sub_ctrl_vis 连接到次级控制器 visibility。
         attr_object.connect_attr(attr_name='sub_ctrl_vis', target_object=self.sub_ctrl_name, target_attr_name='visibility')
