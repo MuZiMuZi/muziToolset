@@ -30,6 +30,10 @@ controller_shapes_dir = os.path.join(
     resources_dir,
     "controller_shapes"
 )
+module_guide_dir = os.path.join(
+    resources_dir,
+    "module_guide"
+)
 templates_dir = os.path.join(resources_dir, "templates")
 
 # 旧工具中仍可能使用这些小写路径别名。
