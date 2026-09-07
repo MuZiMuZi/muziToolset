@@ -3,7 +3,7 @@ u"""
 Muzi Toolset 全局路径配置。
 
 仓库根目录本身就是正式 Python Package。
-这里只维护包路径和静态资源路径，不放具体工具业务配置。
+这里只维护包路径、静态资源路径和统一资源命名规则，不放具体工具业务逻辑。
 """
 
 from __future__ import print_function
@@ -35,6 +35,16 @@ module_guide_dir = os.path.join(
     "module_guide"
 )
 templates_dir = os.path.join(resources_dir, "templates")
+
+# Module Guide 统一命名规则。
+# 模板文件：<module>_guide.ma
+# Guide Root：grp_md_<module>_guide_001
+#
+# 例如：
+# face -> face_guide.ma -> grp_md_face_guide_001
+# arm  -> arm_guide.ma  -> grp_md_arm_guide_001
+module_guide_template_file_format = "{}_guide.ma"
+module_guide_root_name_format = "grp_md_{}_guide_001"
 
 # 旧工具中仍可能使用这些小写路径别名。
 # 新代码优先使用上面语义更清楚的正式变量。
