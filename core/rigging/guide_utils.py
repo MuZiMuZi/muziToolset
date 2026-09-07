@@ -18,8 +18,8 @@ guide_utils：Maya Module Guide 基础工具。
         适合后续按模块创建 Joint、Controller 或 Guide Display Curve。
 
     Guide.create_guide_curve
-        根据指定模块下面的 Locator 创建一条 Degree 1 Guide Display Curve。
-        Curve CV 会实时跟随 Locator，并设置为不可在视图中选择，只用于辅助显示模块定位关系。
+        根据指定模块和方向创建一条 Degree 1 Guide Display Curve。
+        Locator Shape 的 worldPosition 会直接连接到 Curve CV，只用于辅助显示定位关系。
 """
 
 import os
@@ -71,16 +71,12 @@ class Guide(object):
         arm_guide_object = guide_utils.Guide("arm")
         """
 
-        # 保存当前 Guide 所属模块名称。
-        # 例如 face、arm、leg。
         self.module = module
 
-        # 根据 config.py 中的统一命名规则生成 Guide 静态信息。
         self.guide_template_file_name = package_config.module_guide_template_file_format.format(self.module)
         self.guide_root_name = package_config.module_guide_root_name_format.format(self.module)
         self.guide_template_path = os.path.join(package_config.module_guide_dir, self.guide_template_file_name)
 
-        # 以下属性属于当前 Maya Scene 的运行状态，不放到 config.py。
         self.guide_root = None
         self.guides = []
 
@@ -198,25 +194,25 @@ class Guide(object):
 
         return self.guides
 
-    def create_guide_curve(self, module):
+    def create_guide_curve(self, module, side):
         u"""
-        为指定 Guide 模块创建一条实时显示曲线。
+        为指定 Guide 模块和方向创建一条实时显示曲线。
 
-        Curve 只负责辅助显示 Locator 之间的定位关系，不参与 Joint、Controller 或绑定计算。
-        当前第一版统一使用 Degree 1 Curve，让曲线直接经过每一个 Locator 定位点。
+        左右两边分别创建独立 Curve，不再把 lf / rt Locator 连接到同一条曲线上。
 
-        Curve 创建后会：
+        Curve CV 直接连接 Locator Shape 的 worldPosition：
 
-            1. 获取指定模块下面全部 Locator Guide。
-            2. 按 Locator 名称排序，保证重复执行时顺序稳定。
-            3. 创建 crv_md_<module>_guide_001。
-            4. 将 Curve 放到对应模块组下面。
-            5. 使用 multMatrix + decomposeMatrix 将 Locator 世界位置转换到模块局部空间。
-            6. 将转换后的 Translate 实时连接到对应 Curve CV。
-            7. 将 Curve Shape 设置为 Reference Display Type，使其在 Maya 视图中不可选择。
-            8. 尽量继承第一个 Locator Shape 的显示颜色，用来区分不同 Guide 模块。
+            locatorShape.worldPosition[0]
+                -> curveShape.controlPoints[index]
 
-        module(str): 需要创建显示曲线的面部模块名称，例如 "ear"、"brow"。
+        这样不需要创建 multMatrix 或 decomposeMatrix 节点，
+        并且读取的是 Locator 实际显示点的位置，而不是 Transform 的矩阵平移位置。
+
+        Curve Transform 会关闭 inheritsTransform。
+        因此 Curve 可以整理到对应模块组下面，同时 CV 仍然直接使用世界坐标。
+
+        module(str): 需要创建显示曲线的模块名称，例如 "ear"、"brow"。
+        side(str): Curve 方向，只接受 "lf"、"rt" 或 "md"。
 
         Returns:
             PyNode: 创建或已经存在的 Guide Display Curve Transform。
@@ -228,26 +224,41 @@ class Guide(object):
         guide_object = guide_utils.Guide("face")
         guide_object.import_template()
 
-        ear_curve = guide_object.create_guide_curve("ear")
+        lf_curve = guide_object.create_guide_curve("ear", "lf")
+        rt_curve = guide_object.create_guide_curve("ear", "rt")
 
-        print(ear_curve)
+        print(lf_curve)
+        print(rt_curve)
         """
+
+        if side not in ("lf", "rt", "md"):
+            raise ValueError(u"side 只能使用 'lf'、'rt' 或 'md'，当前值：{}".format(side))
 
         guide_list = self.get_guides(module)
 
-        if len(guide_list) < 2:
-            pm.warning(u"{} Guide 少于两个 Locator，无法创建显示曲线。".format(module))
+        side_guides = []
+
+        for guide in guide_list:
+            guide_name = guide.nodeName()
+            name_parts = guide_name.split("_")
+
+            if len(name_parts) > 1:
+                if name_parts[1] == side:
+                    side_guides.append(guide)
+
+        if len(side_guides) < 2:
+            pm.warning(u"{} {} Guide 少于两个 Locator，无法创建显示曲线。".format(side, module))
             return None
 
-        # 使用节点名称排序，让同一个模块每次构建时得到稳定的 CV 顺序。
-        guide_list.sort(key=str)
+        # 当前命名中的序号已经使用 001、002、003 形式。
+        # 直接按照节点名称排序即可得到稳定顺序。
+        side_guides.sort(key=str)
 
         module_group_name = package_config.module_guide_root_name_format.format(module)
         module_group = pm.PyNode(module_group_name)
 
-        curve_name = package_config.module_guide_curve_name_format.format(module)
+        curve_name = package_config.module_guide_curve_name_format.format(side, module)
 
-        # 已经存在同名显示曲线时直接复用，避免重复创建 Curve 和驱动节点。
         if pm.objExists(curve_name):
             guide_curve = pm.PyNode(curve_name)
 
@@ -261,11 +272,12 @@ class Guide(object):
 
             return guide_curve
 
-        # 先使用 Locator 的世界位置创建 Degree 1 Curve。
+        # 使用 Locator Shape 的真实 World Position 创建初始 Degree 1 Curve。
         guide_positions = []
 
-        for guide in guide_list:
-            guide_position = guide.getTranslation(space="world")
+        for guide in side_guides:
+            guide_shape = guide.getShape()
+            guide_position = guide_shape.worldPosition[0].get()
             guide_positions.append(guide_position)
 
         guide_curve = pm.curve(
@@ -274,44 +286,32 @@ class Guide(object):
             name=curve_name
         )
 
-        # 显示曲线属于对应模块组。
-        # Parent 后冻结自身 Transform，让 Curve CV 使用模块组局部空间坐标。
-        pm.parent(guide_curve, module_group, absolute=True)
-        pm.makeIdentity(guide_curve, apply=True, translate=True, rotate=True, scale=True)
+        # Curve CV 使用世界坐标，因此 Curve 自身不继承模块组 Transform。
+        # 这样既可以整理层级，又不需要额外的矩阵空间转换节点。
+        guide_curve.inheritsTransform.set(False)
+        pm.parent(guide_curve, module_group, relative=True)
 
         curve_shape = guide_curve.getShape()
-
-        # 复制当前模块第一个 Locator 的显示颜色。
-        first_guide_shape = guide_list[0].getShape()
+        first_guide_shape = side_guides[0].getShape()
 
         curve_shape.overrideEnabled.set(True)
 
-        if first_guide_shape and first_guide_shape.hasAttr("overrideEnabled"):
-            if first_guide_shape.overrideEnabled.get():
-                if first_guide_shape.hasAttr("overrideRGBColors") and first_guide_shape.overrideRGBColors.get():
-                    curve_shape.overrideRGBColors.set(True)
-                    curve_shape.overrideColorRGB.set(first_guide_shape.overrideColorRGB.get())
-                else:
-                    curve_shape.overrideColor.set(first_guide_shape.overrideColor.get())
+        if first_guide_shape.overrideEnabled.get():
+            if first_guide_shape.overrideRGBColors.get():
+                curve_shape.overrideRGBColors.set(True)
+                curve_shape.overrideColorRGB.set(first_guide_shape.overrideColorRGB.get())
+            else:
+                curve_shape.overrideColor.set(first_guide_shape.overrideColor.get())
 
-        # Reference Display Type：曲线可以显示，但不能在 Maya 视图中被选择。
+        # Reference Display Type：曲线只用于显示，不能在 Maya 视图中被选择。
         curve_shape.overrideDisplayType.set(2)
 
-        # 每一个 Locator 对应一个 Curve CV。
-        # Locator World Matrix 先转换到 Module Group Local Space，
-        # 再把局部位置实时连接到 Curve Shape 的 controlPoints。
+        # Locator Shape World Position 直接驱动 Curve CV。
         guide_index = 0
 
-        for guide in guide_list:
-            mult_matrix = pm.createNode("multMatrix")
-            decompose_matrix = pm.createNode("decomposeMatrix")
-
-            guide.worldMatrix[0] >> mult_matrix.matrixIn[0]
-            module_group.worldInverseMatrix[0] >> mult_matrix.matrixIn[1]
-
-            mult_matrix.matrixSum >> decompose_matrix.inputMatrix
-            decompose_matrix.outputTranslate >> curve_shape.controlPoints[guide_index]
-
+        for guide in side_guides:
+            guide_shape = guide.getShape()
+            guide_shape.worldPosition[0] >> curve_shape.controlPoints[guide_index]
             guide_index += 1
 
         return guide_curve
