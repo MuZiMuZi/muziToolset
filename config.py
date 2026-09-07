@@ -52,6 +52,14 @@ module_guide_template_file_format = "{}_guide.ma"
 module_guide_root_name_format = "grp_md_{}_guide_001"
 module_guide_curve_name_format = "crv_{}_{}_guide_001"
 
+
+
+#
+
+
+
+
+
 # 旧工具中仍可能使用这些小写路径别名。
 # 新代码优先使用上面语义更清楚的正式变量。
 icon_dir = icons_dir
