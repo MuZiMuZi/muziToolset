@@ -6,11 +6,12 @@ jnt_utils：Maya Joint 基础工具。
 
     Jnt.__init__
         创建一个 Joint 工具对象。
-        可以传入新的 Joint 名称，也可以传入场景中已经存在的 Joint。
+        传入 Joint 名称后，如果场景中已经存在同名 Joint，则直接使用；
+        如果不存在，则自动创建该名称的 Joint。
 
-    Jnt.create_jnt
-        根据给定名称创建一个新的 Joint。
-        适合 Guide 转 Joint、程序化创建骨骼等场景。
+    Jnt._get_or_create_jnt
+        根据名称获取或创建 Joint。
+        作为 Jnt 类内部统一保证 self.jnt 有效的基础方法。
 
     Jnt.match_transform
         将当前 Joint 对齐到指定目标的位置和旋转。
@@ -26,57 +27,83 @@ jnt_utils：Maya Joint 基础工具。
 """
 
 import pymel.core as pm
+from ..common import transform_utils
 
 
 class Jnt(object):
 
-    def __init__(self, name=None, jnt=None):
+    def __init__(self, name):
         u"""
         初始化 Joint 工具对象。
 
-        name(str): 需要创建的新 Joint 名称。
-        jnt(str/PyNode): 场景中已经存在的 Joint 节点。
+        如果 Maya 场景中已经存在指定名称的 Joint，则直接将它作为当前 Joint。
+        如果不存在，则自动创建一个新的 Joint。
+
+        这样后续所有方法都可以直接使用 self.jnt，不需要重复判断 Joint 是否存在。
+
+        name(str): Joint 名称。
 
         Maya 使用示例：
 
         from muziToolset.core.rigging import jnt_utils
 
-        jnt_object = jnt_utils.Jnt(name="jnt_lf_arm_bind_001")
+        jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
 
-        # 或者读取场景中已经存在的 Joint。
-        jnt_object = jnt_utils.Jnt(jnt="jnt_lf_arm_bind_001")
+        print(jnt_object.jnt)
         """
 
-        self.name = name
+        # 保存 Joint 标准名称。
+        self.jnt_name = name
+
+        # 保存 Joint PyNode。
+        # _get_or_create_jnt() 执行完成后，该属性一定会指向一个有效 Joint。
         self.jnt = None
 
-        # 如果传入已经存在的 Joint，则直接转换成 PyNode 保存。
-        if jnt:
-            self.jnt = pm.PyNode(jnt)
+        # 根据名称获取或创建 Joint。
+        self._get_or_create_jnt()
 
-    def create_jnt(self):
+    def _get_or_create_jnt(self):
         u"""
-        根据当前 name 创建一个新的 Joint，并保存到 self.jnt。
+        根据 self.jnt_name 获取或创建当前 Joint。
+
+        如果 Maya 场景中已经存在同名对象，则直接转换成 PyNode 使用。
+        如果同名对象存在但不是 Joint，则抛出错误，避免把错误节点当作 Joint。
+        如果场景中不存在同名对象，则创建一个新的 Joint。
 
         Returns:
-            PyNode: 新创建的 Joint 节点。
+            PyNode: 当前 Joint 节点。
 
         Maya 使用示例：
 
         from muziToolset.core.rigging import jnt_utils
 
-        jnt_object = jnt_utils.Jnt(name="jnt_lf_arm_bind_001")
-        new_jnt = jnt_object.create_jnt()
+        jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
+        jnt = jnt_object._get_or_create_jnt()
 
-        print(new_jnt)
+        print(jnt)
         """
 
-        # 创建 Joint，PyMEL 会直接返回 Joint 的 PyNode。
-        self.jnt = pm.joint(name=self.name)
+        # 判断场景中是否已经存在这个名称的 Maya 节点。
+        if pm.objExists(self.jnt_name):
+
+            # 已经存在时直接转换成 PyNode，后续统一使用 PyMEL 对象操作。
+            self.jnt = pm.PyNode(self.jnt_name)
+
+            # 同名对象必须是 Joint。
+            if not isinstance(self.jnt, pm.nodetypes.Joint):
+                raise TypeError(u"{} 已经存在，但不是 Joint 节点。".format(self.jnt_name))
+
+        else:
+
+            # 清空 Maya 当前选择，避免新 Joint 自动成为其他已选 Joint 的子节点。
+            pm.select(clear=True)
+
+            # 场景中不存在时创建新的 Joint。
+            self.jnt = pm.joint(name=self.jnt_name)
 
         return self.jnt
 
-    def match_transform(self, target):
+    def set_match_transform(self, target,position=True,rotation=True,scale=True):
         u"""
         将当前 Joint 对齐到指定目标的位置和旋转。
 
@@ -89,17 +116,13 @@ class Jnt(object):
 
         from muziToolset.core.rigging import jnt_utils
 
-        jnt_object = jnt_utils.Jnt(jnt="jnt_lf_arm_bind_001")
+        jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
         target = "guide_lf_arm_001"
 
         jnt_object.match_transform(target)
         """
-
-        # 将目标对象转换成 PyNode，方便后续统一使用 PyMEL 操作。
-        target = pm.PyNode(target)
-
-        # 匹配目标对象的位置和旋转。
-        pm.matchTransform(self.jnt, target, position=True, rotation=True)
+        jnt_object = transform_utils.Transform(self.jnt)
+        jnt_object.match_transform(target, position=position, rotation=rotation, scale=scale)
 
     def set_radius(self, radius):
         u"""
@@ -114,7 +137,7 @@ class Jnt(object):
 
         from muziToolset.core.rigging import jnt_utils
 
-        jnt_object = jnt_utils.Jnt(jnt="jnt_lf_arm_bind_001")
+        jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
         radius = 0.5
 
         jnt_object.set_radius(radius)
@@ -136,7 +159,7 @@ class Jnt(object):
 
         from muziToolset.core.rigging import jnt_utils
 
-        jnt_object = jnt_utils.Jnt(jnt="jnt_lf_arm_bind_001")
+        jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
 
         jnt_object.reset_joint_orient()
         """

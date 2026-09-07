@@ -176,7 +176,7 @@ class Ctrl(object):
 
         return self.ctrl
 
-    def create_ctrl(self, shape_name="circle", ctrl_color=17, ctrl_size=1.0, create_hierarchy=True):
+    def create_ctrl(self, shape_name="circle", ctrl_color=17, ctrl_size=1.0, create_hierarchy=True,match_transform_target = None):
         u"""
         完成当前 Controller 的基础设置，并根据需要创建完整控制器层级。
 
@@ -218,6 +218,12 @@ class Ctrl(object):
 
         # 通过缩放 Curve CV 调整显示大小，不修改 Controller Transform Scale。
         self.set_ctrl_size(ctrl_size)
+
+        #根据参数是否需要设置控制器的吸附位置
+        if match_transform_target:
+            self.set_match_transform(target = match_transform_target)
+        else:
+            pass
 
         # 根据参数决定是否创建完整控制器层级。
         if create_hierarchy:
@@ -419,6 +425,29 @@ class Ctrl(object):
         for ctrl_shape in self.ctrl_shapes:
             if isinstance(ctrl_shape, pm.nodetypes.NurbsCurve):
                 pm.move(ctrl_shape.cv[:], offset_x, offset_y, offset_z, relative=True, objectSpace=True)
+
+
+    def set_match_transform (self , target , position = True , rotation = True , scale = True) :
+        u"""
+        将当前 ctrl 对齐到指定目标的位置和旋转。
+
+        target(str/PyNode): 需要对齐的目标对象，例如 Guide、Locator 或 Transform。
+
+        Returns:
+            None
+
+        Maya 使用示例：
+
+        from muziToolset.core.rigging import jnt_utils
+
+        jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
+        target = "guide_lf_arm_001"
+
+        jnt_object.match_transform(target)
+        """
+        ctrl_object = transform_utils.Transform (self.ctrl_name)
+        ctrl_object.match_transform (target , position = position , rotation = rotation , scale = scale)
+
 
     def set_ctrl_shape(self, shape_name):
         u"""
@@ -773,3 +802,4 @@ class Ctrl(object):
         self.output_grp = hierarchy_utils.add_extra_group(self.sub_ctrl, self.output_name, relation="child")
 
         return self.zero_grp
+

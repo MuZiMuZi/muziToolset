@@ -64,8 +64,12 @@ class Name(object):
         self.function = function
         self.index = index
 
+
+
         if self.name:
             self.decompose_name()
+        else:
+            self.compose_name()
 
     def decompose_name(self):
         u"""

@@ -16,7 +16,7 @@ class RigModule(object):
     def create_joints(self):
         pass
 
-    def create_controls(self):
+    def create_ctrls(self):
         pass
 
     def connect_rig(self):
@@ -28,6 +28,6 @@ class RigModule(object):
     def build(self):
         self.get_guides()
         self.create_joints()
-        self.create_controls()
+        self.create_ctrls()
         self.connect_rig()
         self.setup_hierarchy()
