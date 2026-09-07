@@ -2,6 +2,7 @@ import maya.cmds as cmds
 
 from .. import rig_module
 from ...core.common import name_utils
+from ...core.rigging import jnt_utils
 
 
 class EarModule(rig_module.RigModule):
@@ -24,4 +25,4 @@ class EarModule(rig_module.RigModule):
             jnt_name = name_object.compose_name()
             self.jnt_names.append(jnt_name)
 
-        return self.jnt_names
+
