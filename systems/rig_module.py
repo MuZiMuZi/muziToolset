@@ -2,7 +2,7 @@ import maya.cmds as cmds
 import pymel.core as pm
 
 
-class RigBase(object):
+class RigModule(object):
     def __init__(self, module = None, side = 'md', guide=None, jnt_parent=None,ctrl_parent=None):
         self.module = module
         self.side = side
