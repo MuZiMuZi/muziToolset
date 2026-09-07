@@ -16,7 +16,7 @@ import maya.cmds as cmds
 
 from ..core import jnt_utils
 from ..core import snap_utils
-from ..systems import ctrl_base
+from legacy_reference.face_2026_09_07_before_rewrite import ctrl_base
 
 
 # =============================================================================

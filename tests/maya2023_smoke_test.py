@@ -24,7 +24,7 @@ from ..core import hierarchy_utils
 from ..core import rename_utils
 from ..core import scene_utils
 from ..core import transform_utils
-from ..systems import ctrl_base
+from legacy_reference.face_2026_09_07_before_rewrite import ctrl_base
 from ..systems import face as face_system
 from . import face_build_smoke_test
 

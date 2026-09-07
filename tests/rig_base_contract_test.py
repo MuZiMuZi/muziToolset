@@ -22,7 +22,7 @@ import sys
 
 
 if __package__:
-    from ..systems.rig_base import RigBase
+    from legacy_reference.face_2026_09_07_before_rewrite.rig_base import RigBase
 else:
     package_root = os.path.dirname(
         os.path.dirname(

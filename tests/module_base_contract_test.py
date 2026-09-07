@@ -19,8 +19,8 @@ import sys
 
 
 if __package__:
-    from ..systems.module_base import ModuleBase
-    from ..systems.module_base import RigModuleBase
+    from legacy_reference.face_2026_09_07_before_rewrite.module_base import ModuleBase
+    from legacy_reference.face_2026_09_07_before_rewrite.module_base import RigModuleBase
 else:
     package_root = os.path.dirname(
         os.path.dirname(

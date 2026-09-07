@@ -36,14 +36,14 @@ import json
 
 import maya.cmds as cmds
 
-from ..core import attr_utils
-from ..core import connection_utils
-from ..core import control_shape_utils
-from ..core import constraint_utils
-from ..core import hierarchy_utils
-from ..core import rename_utils
-from ..core import scene_utils
-from ..core import snap_utils
+from core import attr_utils
+from core import connection_utils
+from core import control_shape_utils
+from core import constraint_utils
+from core import hierarchy_utils
+from core import rename_utils
+from core import scene_utils
+from core import snap_utils
 from .rig_base import RigBase
 
 

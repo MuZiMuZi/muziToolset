@@ -32,7 +32,7 @@ from ..core import jnt_utils
 from ..core import model_check_utils
 from ..core import rename_utils
 from ..core import scene_utils
-from ..systems.rig_base import RigBase
+from legacy_reference.face_2026_09_07_before_rewrite.rig_base import RigBase
 
 
 # =============================================================================

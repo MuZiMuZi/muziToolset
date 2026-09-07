@@ -32,7 +32,7 @@ import traceback
 import maya.cmds as cmds
 
 from ..core import control_shape_utils
-from ..systems import ctrl_base
+from legacy_reference.face_2026_09_07_before_rewrite import ctrl_base
 from ..systems import face as face_system
 from ..systems.face import config
 from ..systems.face import controller_appearance
