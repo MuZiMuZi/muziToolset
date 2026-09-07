@@ -41,11 +41,13 @@ templates_dir = os.path.join(resources_dir, "templates")
 # Guide Root：grp_md_<module>_guide_001
 # Guide Display Curve：crv_<side>_<module>_guide_001
 #
+# Display Curve 属于 Guide 模板内容，正常导入模板时一起进入场景。
+# create_guide_curve() 只用于制作或更新 Guide 模板。
+#
 # 例如：
 # face -> face_guide.ma -> grp_md_face_guide_001
-# ear  -> grp_md_ear_guide_001
-# lf ear curve -> crv_lf_ear_guide_001
-# rt ear curve -> crv_rt_ear_guide_001
+# ear  -> crv_lf_ear_guide_001 / crv_rt_ear_guide_001
+# arm  -> arm_guide.ma -> grp_md_arm_guide_001
 module_guide_template_file_format = "{}_guide.ma"
 module_guide_root_name_format = "grp_md_{}_guide_001"
 module_guide_curve_name_format = "crv_{}_{}_guide_001"
