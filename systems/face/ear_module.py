@@ -6,7 +6,7 @@ from importlib import reload
 form ....core.common  import *
 reload(rig_module)
 
-class Ear(rig_module.RigModule):
+class EarModule(rig_module.RigModule):
     def __init__(self,module, side, guide, jnt_parent,ctrl_parent):
         super().__init__(module, side, guide, jnt_parent,ctrl_parent)
 
