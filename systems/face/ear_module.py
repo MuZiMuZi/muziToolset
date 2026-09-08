@@ -3,7 +3,7 @@ import maya.cmds as cmds
 from rigging import ctrl_utils
 from .. import rig_module
 from ...core.common import name_utils,hierarchy_utils
-from ...core.rigging import jnt_utils
+from ...core.rigging import jnt_utils,ctrl_utils
 
 
 class EarModule(rig_module.RigModule):
@@ -62,21 +62,21 @@ class EarModule(rig_module.RigModule):
 
     def connect_rig(self):
         for jnt,ctrl in zip(self.ear_jnt_list, self.ear_ctrl_list):
-            cmds.parentConstraint(ctrl,jnt,mo = True)
+            cmds.parentConstraint(ctrl.replace('ctrl_','output_'),jnt,mo = True)
     
     
     
 
 
 
-    def create_hierarchy(self):
+    def setup_hierarchy(self):
         #创建关节的总组层级
         self.jnt_master_grp = name_utils.Name(type="grp",side=self.side, part=self.module,function="jnt",index=1)
         #创建控制器的总组层级
         self.ctrl_master_grp = name_utils.Name (type = "grp" , side = self.side , part = self.module , function = "ctrl" ,
                                                index = 1)
-        self.jnt_master_grp = cmds.createNode(name = self.jnt_master_grp.name)
-        self.ctrl_master_grp = cmds.createNode(name = self.ctrl_master_grp.name)
+        self.jnt_master_grp = cmds.group(empty = True,name = self.jnt_master_grp.name)
+        self.ctrl_master_grp = cmds.group(empty = True,name = self.ctrl_master_grp.name)
         
         
         #整理层级结构

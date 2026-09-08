@@ -103,7 +103,7 @@ class Jnt(object):
 
         return self.jnt
 
-    def set_match_transform(self, target,position=True,rotation=True,scale=True):
+    def set_match_transform(self, target,position=True,rotation=True):
         u"""
         将当前 Joint 对齐到指定目标的位置和旋转。
 
@@ -122,7 +122,7 @@ class Jnt(object):
         jnt_object.match_transform(target)
         """
         jnt_object = transform_utils.Transform(self.jnt)
-        jnt_object.match_transform(target, position=position, rotation=rotation, scale=scale)
+        jnt_object.match_transform(target, position=position, rotation=rotation)
 
     def set_radius(self, radius):
         u"""
