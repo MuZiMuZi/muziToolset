@@ -1,85 +1,58 @@
-import maya.cmds as cmds
+# coding=utf-8
+u"""
+EarModule：耳朵 FK 绑定模块。
 
-from rigging import ctrl_utils
-from .. import rig_module
-from ...core.common import name_utils,hierarchy_utils
-from ...core.rigging import jnt_utils,ctrl_utils
+EarModule 只负责定义耳朵模块自身的配置，
+具体的 Guide、Joint、Controller、连接和 FK 层级构建统一复用 FKChain。
+"""
+
+from ..components import fk_chain
 
 
-class EarModule(rig_module.RigModule):
+class EarModule(fk_chain.FKChain):
 
-    def __init__(self, module, side, guide, jnt_parent, ctrl_parent):
-        super().__init__(module, side, guide, jnt_parent, ctrl_parent)
-    def get_guides(self):
-        self.ear_guide_list = []
+    def __init__(
+        self,
+        module="ear",
+        side="md",
+        guide=None,
+        jnt_parent=None,
+        ctrl_parent=None
+    ):
+        u"""
+        初始化耳朵 FK 模块。
 
-        for index in range (1 , 4) :
-            gudie_object = name_utils.Name (
-                type = "loc" ,
-                side = self.side ,
-                part = self.module ,
-                function = "guide" ,
-                index = index
+        module(str): 模块名称，默认 "ear"。
+        side(str): 模块方向，例如 "lf"、"rt"。
+        guide(list/str/Guide): 可选 Guide 数据来源。
+        jnt_parent(str/PyNode): Joint 总组的可选父节点。
+        ctrl_parent(str/PyNode): Controller 总组的可选父节点。
+
+        Maya 使用示例：
+
+            from muziToolset.systems.face import ear_module
+
+            ear_object = ear_module.EarModule(
+                module="ear",
+                side="lf",
+                guide=None,
+                jnt_parent=None,
+                ctrl_parent=None
             )
 
-            self.ear_guide_list.append (gudie_object.name)
+            ear_object.build()
+        """
 
-
-    def create_joints(self):
-        self.ear_jnt_list = []
-
-        for index in range(1, 4):
-            jnt_object = name_utils.Name(
-                type="jnt",
-                side=self.side,
-                part=self.module,
-                function="bind",
-                index=index
-            )
-
-            self.ear_jnt_list.append(jnt_object.name)
-            self.ear_jnt = jnt_utils.Jnt (jnt_object.name)
-            self.ear_jnt.set_match_transform(target = jnt_object.name.replace('jnt_','loc_').replace('bind','guide'))
-
-    def create_ctrls(self):
-        self.ear_ctrl_list = []
-        for index in range(1, 4):
-            ctrl_object = name_utils.Name(
-                type="ctrl",
-                side=self.side,
-                part=self.module,
-                function="fk",
-                index=index
-            )
-    
-            self.ear_ctrl_list.append(ctrl_object.name)
-            self.ear_ctrl = ctrl_utils.Ctrl (ctrl_object.name)
-            self.ear_ctrl.create_ctrl(shape_name="circle", ctrl_color=17, ctrl_size=1.0, create_hierarchy=True,
-                                      match_transform_target =ctrl_object.name.replace('ctrl_','loc_').replace('fk','guide') )
-
-
-
-
-    def connect_rig(self):
-        for jnt,ctrl in zip(self.ear_jnt_list, self.ear_ctrl_list):
-            cmds.parentConstraint(ctrl.replace('ctrl_','output_'),jnt,mo = True)
-    
-    
-    
-
-
-
-    def setup_hierarchy(self):
-        #�����ؽڵ�����㼶
-        self.jnt_master_grp = name_utils.Name(type="grp",side=self.side, part=self.module,function="jnt",index=1)
-        #����������������㼶
-        self.ctrl_master_grp = name_utils.Name (type = "grp" , side = self.side , part = self.module , function = "ctrl" ,
-                                               index = 1)
-        self.jnt_master_grp = cmds.group(empty = True,name = self.jnt_master_grp.name)
-        self.ctrl_master_grp = cmds.group(empty = True,name = self.ctrl_master_grp.name)
-        
-        
-        #�����㼶�ṹ
-        hierarchy_utils.chain_parent(self.ear_jnt_list,parent_node = self.jnt_master_grp)
-        hierarchy_utils.chain_parent (self.ear_ctrl_list , parent_node = self.ctrl_master_grp)
-
+        super(EarModule, self).__init__(
+            module=module,
+            side=side,
+            guide=guide,
+            jnt_parent=jnt_parent,
+            ctrl_parent=ctrl_parent,
+            guide_count=3,
+            jnt_function="bind",
+            ctrl_function="fk",
+            ctrl_shape="circle",
+            ctrl_color=17,
+            ctrl_size=1.0
+        )
