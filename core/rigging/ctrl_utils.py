@@ -180,7 +180,7 @@ class Ctrl(object):
 
         return self.ctrl
 
-    def create_ctrl(self, shape_name="circle", ctrl_color=17, ctrl_size=1.0, create_hierarchy=True,match_transform_target = None):
+    def create_ctrl(self, shape_name="circle", ctrl_color=17, ctrl_size=1.0, ctrl_axis = 'X+', create_hierarchy=True,match_transform_target = None):
         u"""
         完成当前 Controller 的基础设置，并根据需要创建完整控制器层级。
 
@@ -223,6 +223,9 @@ class Ctrl(object):
         # 通过缩放 Curve CV 调整显示大小，不修改 Controller Transform Scale。
         self.set_ctrl_size(ctrl_size)
 
+        #设置控制器的轴向
+        self.set_ctrl_axis(ctrl_axis)
+
         #根据参数是否需要设置控制器的吸附位置
         if match_transform_target:
             self.set_match_transform(target = match_transform_target)
@@ -231,7 +234,7 @@ class Ctrl(object):
 
         # 根据参数决定是否创建完整控制器层级。
         if create_hierarchy:
-            self.create_ctrl_hierarchy(sub_ctrl_shape=shape_name, sub_ctrl_color=ctrl_color, sub_ctrl_size=ctrl_size*0.7)
+            self.create_ctrl_hierarchy(sub_ctrl_shape=shape_name, sub_ctrl_color=ctrl_color, sub_ctrl_size=ctrl_size*0.7,ctrl_axis = ctrl_axis)
         else:
             pass
         return self.ctrl
@@ -369,6 +372,20 @@ class Ctrl(object):
         for ctrl_shape in self.ctrl_shapes:
             if isinstance(ctrl_shape, pm.nodetypes.NurbsCurve):
                 pm.scale(ctrl_shape.cv[:], ctrl_size, ctrl_size, ctrl_size, relative=True, objectSpace=True)
+
+    def set_ctrl_axis(self, ctrl_axis = 'X+'):
+        self.axis_dict = {'X+':(90,0,0),
+                          'X-':(-90,0,0),
+                          'Y+' : (0 ,90 , 0) ,
+                          'Y-':(0,-90,0),
+                          'Z+':(0,0,90),
+                          'Z-':(0,0,-90)}
+        rotate_value= self.axis_dict.get(ctrl_axis)
+        rotate_x = rotate_value[0]
+        rotate_y = rotate_value [1]
+        rotate_z = rotate_value [2]
+        self.set_ctrl_rotate(rotate_x, rotate_y, rotate_z)
+
 
     def set_ctrl_rotate(self, rotate_x=0.0, rotate_y=0.0, rotate_z=0.0):
         u"""
@@ -665,7 +682,7 @@ class Ctrl(object):
         # 返回保存路径，方便 UI 或其他工具继续使用。
         return shape_file
 
-    def create_sub_ctrl(self, shape_name="circle", ctrl_color=17, ctrl_size=0.7):
+    def create_sub_ctrl(self, shape_name="circle", ctrl_color=17, ctrl_size=0.7,ctrl_axis = 'X+'):
         u"""
         创建主 Controller 下方的次级控制器 SubCtrl。
 
@@ -714,7 +731,7 @@ class Ctrl(object):
 
         # 设置 SubCtrl 的最终 Shape、颜色和视觉大小。
         # create_hierarchy=False 可以避免 SubCtrl 自己再次创建 Zero / Driven 等完整层级。
-        sub_ctrl_object.create_ctrl(shape_name=shape_name, ctrl_color=ctrl_color, ctrl_size=ctrl_size, create_hierarchy=False)
+        sub_ctrl_object.create_ctrl(shape_name=shape_name, ctrl_color=ctrl_color, ctrl_size=ctrl_size, create_hierarchy=False,ctrl_axis = ctrl_axis)
 
         # 保存真正的 Maya SubCtrl PyNode，供后续 Output 和其他系统继续使用。
         self.sub_ctrl = sub_ctrl_object.ctrl
@@ -733,6 +750,8 @@ class Ctrl(object):
 
         # 将主控制器的 sub_ctrl_vis 连接到次级控制器 visibility。
         attr_object.connect_attr(attr_name='sub_ctrl_vis', target_object=self.sub_ctrl_name, target_attr_name='visibility')
+
+
 
         return self.sub_ctrl
 

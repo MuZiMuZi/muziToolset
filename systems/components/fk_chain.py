@@ -10,28 +10,29 @@ fk_chain：标准 FK Chain 构建组件。
         初始化 FK Chain 的模块信息、Guide 数量和控制器显示设置。
 
     FKChain.get_guides
-        获取当前 FK Chain 使用的 Guide 列表。
-        可以使用外部传入的 Guide，也可以按照项目命名规则自动查找。
+        优先复用 RigModule.get_guides() 获取外部传入的 Guide。
+        没有传入 Guide 时，再按照 FK Chain 命名规则自动查找。
 
     FKChain.create_joints
-        根据 Guide 创建 Joint，并将每个 Joint 对齐到对应 Guide。
+        根据 Guide 创建 Joint Chain。
+        单个 Joint 创建统一复用 RigModule.create_joint()。
 
     FKChain.create_ctrls
-        根据 Guide 创建 FK Controller，并创建完整 Controller 层级。
+        根据 Guide 创建 FK Controller Chain。
+        单个 Controller 创建统一复用 RigModule.create_ctrl()。
 
     FKChain.connect_rig
         使用每个 Controller 的 Output Group 驱动对应 Joint。
 
     FKChain.setup_hierarchy
-        整理 Joint Chain 和 FK Controller Chain。
-        Controller 使用“上一个 Output -> 下一个 Zero”的 FK 层级。
+        先复用 RigModule.setup_hierarchy() 创建模块总组，
+        再整理 FK 专属 Joint Chain 和“上一个 Output -> 下一个 Zero”的 Controller Chain。
 """
 
 import maya.cmds as cmds
 
 from .. import rig_module
 from ...core.common import name_utils, hierarchy_utils
-from ...core.rigging import jnt_utils, ctrl_utils
 
 
 class FKChain(rig_module.RigModule):
@@ -94,22 +95,19 @@ class FKChain(rig_module.RigModule):
         self.ctrl_color = ctrl_color
         self.ctrl_size = ctrl_size
 
-        self.guide_list = []
         self.jnt_list = []
         self.jnt_objects = []
         self.ctrl_list = []
         self.ctrl_objects = []
 
-        self.jnt_master_grp = None
-        self.ctrl_master_grp = None
-
     def get_guides(self):
         u"""
         获取当前 FK Chain 使用的 Guide 列表。
 
-        如果 self.guide 是 Guide 工具对象，则调用它的 get_guides()。
-        如果传入的是列表或单个 Maya 节点，则直接使用。
-        如果没有传入 Guide，则按照 loc_<side>_<module>_guide_<index> 自动查找。
+        优先调用 RigModule.get_guides() 处理外部明确传入的 Guide 数据。
+        如果没有传入 Guide，则 FK Chain 再按照：
+            loc_<side>_<module>_guide_<index>
+        自动查找线性 Chain 使用的 Guide。
 
         Returns:
             list: 按 FK 顺序排列的 Guide 名称列表。
@@ -118,41 +116,37 @@ class FKChain(rig_module.RigModule):
 
             from muziToolset.systems.components import fk_chain
 
-            fk_object = fk_chain.FKChain("ear", "lf", guide_count=3)
-            guide_list = fk_object.get_guides()
+            fk_object = fk_chain.FKChain(
+                module="ear",
+                side="lf",
+                guide_count=3
+            )
 
+            guide_list = fk_object.get_guides()
             print(guide_list)
         """
 
-        self.guide_list = []
-        source_guides = []
+        self.guide_list = super(FKChain, self).get_guides()
 
-        if self.guide is not None and hasattr(self.guide, "get_guides"):
-            result = self.guide.get_guides(self.module, self.side)
-            if result:
-                for guide_node in result:
-                    source_guides.append(guide_node)
+        # 外部已经明确提供 Guide 时，直接使用 RigModule 的通用读取结果。
+        if self.guide_list:
+            return self.guide_list
 
-        elif isinstance(self.guide, (list, tuple)):
-            for guide_node in self.guide:
-                source_guides.append(guide_node)
+        # 明确传入了 Guide 数据但没有找到结果时，不再猜测名称。
+        if self.guide is not None:
+            raise RuntimeError(u"{} 没有可用的 FK Guide。".format(self.module))
 
-        elif self.guide is not None:
-            source_guides.append(self.guide)
+        # 没有传入 Guide 时，才使用 FK Chain 自己的线性命名规则。
+        for index in range(1, self.guide_count + 1):
+            guide_name_object = name_utils.Name(
+                type="loc",
+                side=self.side,
+                part=self.module,
+                function="guide",
+                index=index
+            )
 
-        else:
-            for index in range(1, self.guide_count + 1):
-                guide_name_object = name_utils.Name(
-                    type="loc",
-                    side=self.side,
-                    part=self.module,
-                    function="guide",
-                    index=index
-                )
-                source_guides.append(guide_name_object.name)
-
-        for guide_node in source_guides:
-            guide_name = str(guide_node)
+            guide_name = guide_name_object.name
 
             if not cmds.objExists(guide_name):
                 raise RuntimeError(u"找不到 FK Guide：{}".format(guide_name))
@@ -166,10 +160,10 @@ class FKChain(rig_module.RigModule):
 
     def create_joints(self):
         u"""
-        根据 Guide 创建 Joint Chain 所需的 Joint。
+        根据 Guide 创建当前 FK Joint Chain 所需的 Joint。
 
-        每一个 Joint 名称由 name_utils.Name 创建，随后使用 Jnt 对象获取或创建 Joint，
-        并匹配对应 Guide 的位置和旋转。
+        FKChain 只负责决定“一条 Guide 对应一条 Joint Chain”的整体规则，
+        单个 Joint 的创建和 Guide 匹配统一交给 RigModule.create_joint()。
 
         Returns:
             list: 当前 FK Chain 的 Joint 名称列表。
@@ -192,8 +186,10 @@ class FKChain(rig_module.RigModule):
                 index=index
             )
 
-            jnt_object = jnt_utils.Jnt(jnt_name_object.name)
-            jnt_object.set_match_transform(guide_name)
+            jnt_object = self.create_joint(
+                name=jnt_name_object.name,
+                guide=guide_name
+            )
 
             self.jnt_list.append(jnt_name_object.name)
             self.jnt_objects.append(jnt_object)
@@ -202,10 +198,11 @@ class FKChain(rig_module.RigModule):
 
     def create_ctrls(self):
         u"""
-        根据 Guide 创建 FK Controller。
+        根据 Guide 创建当前 FK Controller Chain。
 
-        每个 Controller 都会创建完整的 Zero / Driven / Space / Connect / Offset / Ctrl /
-        SubCtrl / Output 层级，并匹配对应 Guide。
+        FKChain 只负责决定“一条 Guide 对应一组 FK Controller”的整体规则，
+        单个 Controller 的 Shape、颜色、大小、层级和 Guide 匹配统一交给
+        RigModule.create_ctrl()。
 
         Returns:
             list: 当前 FK Chain 的 Controller 名称列表。
@@ -228,13 +225,13 @@ class FKChain(rig_module.RigModule):
                 index=index
             )
 
-            ctrl_object = ctrl_utils.Ctrl(ctrl_name_object.name)
-            ctrl_object.create_ctrl(
+            ctrl_object = self.create_ctrl(
+                name=ctrl_name_object.name,
+                guide=guide_name,
                 shape_name=self.ctrl_shape,
                 ctrl_color=self.ctrl_color,
                 ctrl_size=self.ctrl_size,
-                create_hierarchy=True,
-                match_transform_target=guide_name
+                create_hierarchy=True
             )
 
             self.ctrl_list.append(ctrl_name_object.name)
@@ -268,12 +265,15 @@ class FKChain(rig_module.RigModule):
 
     def setup_hierarchy(self):
         u"""
-        整理 Joint Chain 和 FK Controller Chain。
+        整理当前 FK Chain 的模块总组和内部 FK 层级。
 
-        Joint 层级：
+        RigModule.setup_hierarchy() 负责：
+            jnt_parent -> jnt_master_grp
+            ctrl_parent -> ctrl_master_grp
+
+        FKChain 在此基础上继续负责：
             jnt_master_grp -> jnt_001 -> jnt_002 -> jnt_003 ...
 
-        Controller 层级：
             ctrl_master_grp -> zero_001
             output_001 -> zero_002
             output_002 -> zero_003
@@ -287,48 +287,26 @@ class FKChain(rig_module.RigModule):
             fk_object.setup_hierarchy()
         """
 
-        jnt_group_name = name_utils.Name(
-            type="grp",
-            side=self.side,
-            part=self.module,
-            function="jnt",
-            index=1
-        ).name
+        # 先建立所有 Rig Module 都共有的 Joint / Controller 根层级。
+        super(FKChain, self).setup_hierarchy()
 
-        ctrl_group_name = name_utils.Name(
-            type="grp",
-            side=self.side,
-            part=self.module,
-            function="ctrl",
-            index=1
-        ).name
-
-        self.jnt_master_grp = hierarchy_utils.get_or_create_group(
-            jnt_group_name
-        )
-        self.ctrl_master_grp = hierarchy_utils.get_or_create_group(
-            ctrl_group_name
-        )
-
-        if self.jnt_parent:
-            hierarchy_utils.parent(self.jnt_master_grp, self.jnt_parent)
-
-        if self.ctrl_parent:
-            hierarchy_utils.parent(self.ctrl_master_grp, self.ctrl_parent)
-
+        # FK Joint 按顺序组成 Joint Chain。
         if self.jnt_list:
             hierarchy_utils.chain_parent(
                 self.jnt_list,
                 parent_node=self.jnt_master_grp
             )
 
+        # 第一个 Controller 的 Zero 放到模块 Controller 总组下面。
         if self.ctrl_objects:
             first_ctrl_object = self.ctrl_objects[0]
+
             hierarchy_utils.parent(
                 first_ctrl_object.zero_grp,
                 self.ctrl_master_grp
             )
 
+            # 后续 Controller 使用“上一个 Output -> 下一个 Zero”的 FK 层级。
             for index in range(1, len(self.ctrl_objects)):
                 parent_ctrl_object = self.ctrl_objects[index - 1]
                 child_ctrl_object = self.ctrl_objects[index]
