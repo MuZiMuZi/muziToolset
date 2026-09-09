@@ -29,6 +29,7 @@ transform_utils：Maya Transform 基础工具。
         适合输入 Shape 节点时自动找到其父 Transform，也可以直接处理 Transform 节点。
 """
 
+import maya.cmds as cmds
 import pymel.core as pm
 
 
@@ -86,6 +87,17 @@ class Transform(object):
 
         # 根据给定开关匹配目标对象的位置、旋转和缩放。
         pm.matchTransform(self.object, target, position=position, rotation=rotation, scale=scale)
+
+        # Locator 的可见中心包含 Shape.localPosition，不能只使用 Transform 原点。
+        # 旋转、缩放仍沿用原来的匹配规则；非 Locator 对象保持原有行为。
+        if position:
+            locator_shapes = cmds.listRelatives(
+                str(target), shapes=True, noIntermediate=True,
+                type="locator", fullPath=True
+            ) or []
+            if locator_shapes:
+                world_position = cmds.getAttr(locator_shapes[0] + ".worldPosition[0]")[0]
+                cmds.xform(str(self.object), worldSpace=True, translation=world_position)
 
     def get_world_matrix(self):
         u"""

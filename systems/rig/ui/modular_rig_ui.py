@@ -1,1340 +1,652 @@
 # coding=utf-8
-u"""
-Modular Rig UI
-==============
+u"""Muzi 绑定库：五步导航、模块与模板目录、场景结构和可折叠属性。"""
 
-MuziTools 模块化绑定系统的主界面。
+from functools import partial
 
-设计目标：
-    1. Module Library 负责展示可以添加到当前角色的 Rig Module；
-    2. Templates 负责提供常用 Module 组合预设；
-    3. Settings Tree 负责展示当前角色已经使用的 Module；
-    4. 右侧只显示当前 Module 的参数，不把所有绑定参数一次堆在界面上；
-    5. Jnt Size / Jnt Axis 放在当前 Module 下方的高频显示设置区域；
-    6. Block / Mesh / Skeleton / Control 作为构建阶段显示入口；
-    7. Build 区域只负责触发 Module Build，不在 UI 内实现绑定算法；
-    8. Scene / Jnt Display 查询统一复用 Core，不在 UI 维护第二套 Maya 底层逻辑。
-
-当前版本先完成正式 UI Shell 和 Maya Jnt Display 联动。
-各 Module 的真正 Build / Rebuild API 会随着 Module 系统重构逐步接入。
-"""
-
-from __future__ import print_function
-
-import maya.cmds as cmds
-
-from ....core import jnt_utils
-from ....core import scene_utils
-
-try:
-    from PySide2.QtCore import Qt
-    from PySide2.QtCore import Signal
-    from PySide2.QtWidgets import QCheckBox
-    from PySide2.QtWidgets import QComboBox
-    from PySide2.QtWidgets import QDoubleSpinBox
-    from PySide2.QtWidgets import QFrame
-    from PySide2.QtWidgets import QHBoxLayout
-    from PySide2.QtWidgets import QLabel
-    from PySide2.QtWidgets import QLineEdit
-    from PySide2.QtWidgets import QListWidget
-    from PySide2.QtWidgets import QListWidgetItem
-    from PySide2.QtWidgets import QMessageBox
-    from PySide2.QtWidgets import QPushButton
-    from PySide2.QtWidgets import QSizePolicy
-    from PySide2.QtWidgets import QSlider
-    from PySide2.QtWidgets import QSplitter
-    from PySide2.QtWidgets import QToolButton
-    from PySide2.QtWidgets import QTreeWidget
-    from PySide2.QtWidgets import QTreeWidgetItem
-    from PySide2.QtWidgets import QVBoxLayout
-    from PySide2.QtWidgets import QWidget
-except ImportError:
-    from PySide6.QtCore import Qt
-    from PySide6.QtCore import Signal
-    from PySide6.QtWidgets import QCheckBox
-    from PySide6.QtWidgets import QComboBox
-    from PySide6.QtWidgets import QDoubleSpinBox
-    from PySide6.QtWidgets import QFrame
-    from PySide6.QtWidgets import QHBoxLayout
-    from PySide6.QtWidgets import QLabel
-    from PySide6.QtWidgets import QLineEdit
-    from PySide6.QtWidgets import QListWidget
-    from PySide6.QtWidgets import QListWidgetItem
-    from PySide6.QtWidgets import QMessageBox
-    from PySide6.QtWidgets import QPushButton
-    from PySide6.QtWidgets import QSizePolicy
-    from PySide6.QtWidgets import QSlider
-    from PySide6.QtWidgets import QSplitter
-    from PySide6.QtWidgets import QToolButton
-    from PySide6.QtWidgets import QTreeWidget
-    from PySide6.QtWidgets import QTreeWidgetItem
-    from PySide6.QtWidgets import QVBoxLayout
-    from PySide6.QtWidgets import QWidget
+from .library_widgets import QtCore, QtGui, QtWidgets, Qt, wrapInstance
+from .library_widgets import ArtHeader, StepButton, Section, TickBox, module_icon
+from .library_style import stylesheet
+from .. import library_catalog as catalog
+from ..library_service import RigLibraryService
 
 
-module_name_list = [
-    "aim",
-    "arm",
-    "finger",
-    "fkChain",
-    "godnode",
-    "head",
-    "jaw",
-    "leg",
-    "spineFk",
-    "spineIk",
-]
-
-template_name_list = [
-    "arm",
-    "arm_nmc",
-    "arm_three_finger",
-    "arm_three_finger_nmc",
-    "biped",
-    "biped_lightweight",
-    "brow_fk",
-    "brow_fk_lightweight",
-    "natalie",
-]
-
-default_module_data_list = [
-    {"name": "leg", "side": "L"},
-    {"name": "arm", "side": "R"},
-    {"name": "spineFk", "side": ""},
-    {
-        "name": "head",
-        "side": "",
-        "children": [
-            {"name": "jaw", "side": ""},
-            {"name": "eye_L", "side": ""},
-            {"name": "eye_R", "side": ""},
-            {"name": "brow", "side": ""},
-            {"name": "head_end", "side": ""},
-        ],
-    },
-    {"name": "finger", "side": "M"},
-]
-
-
-modular_rig_style = u"""
-QWidget#ModularRigWindow {
-    background-color: #F5F6F8;
-    color: #1D1D1F;
-    font-family: "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei";
-    font-size: 12px;
-}
-QFrame#HeaderFrame, QFrame#PanelFrame, QFrame#BuildFrame,
-QFrame#StageFrame, QFrame#QuickSettingFrame {
-    background-color: #FBFCFD;
-    border: 1px solid #DDE1E7;
-    border-radius: 9px;
-}
-QLabel { color: #35363A; background: transparent; }
-QLabel[uiRole="appTitle"] { color: #1D1D1F; font-size: 17px; font-weight: 600; }
-QLabel[uiRole="panelTitle"] { color: #34363A; font-size: 12px; font-weight: 650; }
-QLabel[uiRole="moduleTitle"] { color: #0A72E8; font-size: 14px; font-weight: 700; }
-QLabel[uiRole="sectionTitle"] { color: #303236; font-weight: 650; }
-QLabel[uiRole="muted"] { color: #8A8E95; }
-QLineEdit, QComboBox, QDoubleSpinBox {
-    min-height: 29px; padding: 0px 9px; background-color: #FFFFFF;
-    color: #2C2D31; border: 1px solid #D9DDE3; border-radius: 6px;
-}
-QLineEdit:focus, QComboBox:focus, QDoubleSpinBox:focus { border: 1px solid #0A84FF; }
-QComboBox::drop-down { border: none; width: 24px; }
-QListWidget, QTreeWidget {
-    background-color: transparent; border: none; outline: none; color: #303236;
-}
-QListWidget::item { min-height: 28px; padding: 2px 7px; border-radius: 5px; }
-QListWidget::item:selected { background-color: #DCEEFF; color: #1268C4; }
-QListWidget::item:hover { background-color: #EEF5FC; }
-QTreeWidget::item { min-height: 30px; border-bottom: 1px solid #EEF0F3; }
-QTreeWidget::item:selected { background-color: #DCEEFF; color: #176FCB; }
-QTreeWidget::item:hover { background-color: #F0F6FC; }
-QPushButton, QToolButton {
-    min-height: 30px; background-color: #FFFFFF; color: #36383D;
-    border: 1px solid #DCE0E5; border-radius: 7px; padding: 0px 10px;
-}
-QPushButton:hover, QToolButton:hover { background-color: #F2F7FD; border-color: #BFD9F4; }
-QPushButton:pressed, QToolButton:pressed { background-color: #E5F1FC; }
-QToolButton[uiRole="headerTool"] {
-    min-width: 32px; max-width: 32px; padding: 0px; border: none;
-    background: transparent; color: #45484E; font-size: 17px;
-}
-QToolButton[uiRole="headerTool"]:hover { background-color: #EEF2F6; }
-QToolButton[uiRole="miniTool"] {
-    min-width: 31px; max-width: 31px; min-height: 28px; max-height: 28px;
-    padding: 0px; font-size: 15px;
-}
-QPushButton[uiRole="buildButton"] {
-    min-height: 88px; background-color: #FFFFFF; color: #087BF1;
-    border: 1px solid #D9E0E8; border-radius: 9px; font-size: 25px; font-weight: 500;
-}
-QPushButton[uiRole="buildButton"]:hover { background-color: #F2F8FF; border-color: #A9CDF3; }
-QPushButton[uiRole="stageButton"] {
-    min-height: 34px; text-align: left; padding-left: 12px; background-color: #FFFFFF;
-}
-QPushButton[uiRole="stageButton"]:checked {
-    background-color: #DCEEFF; color: #0878EB; border-color: #A9CFF5;
-}
-QCheckBox#JntAxisSwitch { spacing: 0px; }
-QCheckBox#JntAxisSwitch::indicator {
-    width: 42px; height: 22px; border-radius: 11px;
-    background-color: #D4D7DC; border: 1px solid #C8CCD2;
-}
-QCheckBox#JntAxisSwitch::indicator:checked {
-    background-color: #0A84FF; border: 1px solid #0A84FF;
-}
-QSlider::groove:horizontal { height: 4px; background-color: #D6DADF; border-radius: 2px; }
-QSlider::sub-page:horizontal { background-color: #0A84FF; border-radius: 2px; }
-QSlider::handle:horizontal {
-    width: 16px; height: 16px; margin: -6px 0px; background-color: #FFFFFF;
-    border: 1px solid #AEB4BC; border-radius: 8px;
-}
-QSplitter::handle { background-color: transparent; }
-QScrollBar:vertical { width: 8px; background: transparent; }
-QScrollBar::handle:vertical { min-height: 28px; background-color: #C9CDD3; border-radius: 4px; }
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
-"""
-
-
-def _set_role(widget, role):
-    u"""设置当前窗口局部 QSS 使用的 UI Role。"""
-    widget.setProperty("uiRole", role)
+def label(text, role=None):
+    u"""创建具有局部主题角色的文本。"""
+    widget = QtWidgets.QLabel(text)
+    if role:
+        widget.setProperty("role", role)
     return widget
 
 
-def _make_tool_button(text_value, tool_tip=u""):
-    u"""创建 Header / Toolbar 使用的轻量按钮。"""
-    button = QToolButton()
-    button.setText(text_value)
-    button.setToolTip(tool_tip)
-    _set_role(button, "headerTool")
-    return button
+def button(text, callback, tooltip=""):
+    u"""创建带明确操作文字的按钮。"""
+    widget = QtWidgets.QPushButton(text)
+    widget.setCursor(Qt.PointingHandCursor)
+    widget.setToolTip(tooltip)
+    widget.clicked.connect(callback)
+    return widget
 
 
-def _make_panel_title(text_value):
-    u"""创建 Panel Title Label。"""
-    label = QLabel(text_value)
-    _set_role(label, "panelTitle")
-    return label
+class ModularRigWindow(QtWidgets.QWidget):
+    u"""正式绑定库窗口；注入服务时可在普通 Qt 环境检查完整布局。"""
 
+    build_requested = QtCore.Signal(str)
 
-def _make_separator():
-    u"""创建轻量水平分隔线。"""
-    line = QFrame()
-    line.setFrameShape(QFrame.HLine)
-    line.setFrameShadow(QFrame.Plain)
-    line.setStyleSheet("color: #E4E7EB; background-color: #E4E7EB; max-height: 1px;")
-    return line
-
-
-class ModularRigWindow(QWidget):
-    u"""MuziTools 模块化绑定系统主窗口。"""
-
-    build_requested = Signal(str)
-
-    def __init__(self, parent=None):
-        u"""
-        初始化 Modular Rig UI。
-
-        Args:
-            parent (str):
-                父级 Maya 节点名称。
-        """
+    def __init__(self, parent=None, service=None):
+        if parent is None and service is None:
+            import maya.OpenMayaUI as omui
+            pointer = omui.MQtUtil.mainWindow()
+            if pointer:
+                parent = wrapInstance(int(pointer), QtWidgets.QWidget)
         super(ModularRigWindow, self).__init__(parent)
-
-        self.current_module_item = None
-        self.loading_module_settings = False
-        self.loading_jnt_display = False
-
+        self.service = service if service is not None else RigLibraryService()
+        self.current_id = None
+        self.current_step = 1
+        self.loading = False
+        self.jobs = []
         self.setObjectName("ModularRigWindow")
-        self.setWindowTitle(u"Modular Rig")
-        self.setMinimumSize(1040, 680)
-        self.resize(1260, 780)
+        self.setWindowTitle(u"Muzi · 绑定库 / Rig Library")
+        self.setWindowFlags(Qt.Window | Qt.WindowMinMaxButtonsHint | Qt.WindowCloseButtonHint)
+        self.setAttribute(Qt.WA_DeleteOnClose, True)
+        self.setMinimumSize(1120, 740)
+        self.resize(1440, 980)
+        screen = QtWidgets.QApplication.primaryScreen()
+        if screen:
+            available = screen.availableGeometry()
+            self.resize(min(1440, max(1120, available.width() - 60)),
+                        min(980, max(740, available.height() - 80)))
+        self.setStyleSheet(stylesheet)
+        # 沿用窗口管理器已有的标志，保留绑定库自己的主题。
+        self.setProperty("muzi_window_theme_applied", True)
+        self.refresh_timer = QtCore.QTimer(self)
+        self.refresh_timer.setSingleShot(True)
+        self.refresh_timer.timeout.connect(self.refresh_scene)
+        self._create_layout()
+        self._populate_library()
+        self._render_tree()
+        self.set_step(1)
+        self._start_scene_jobs()
 
-        self.create_widgets()
-        self.create_layouts()
-        self.create_connections()
-        self.setStyleSheet(modular_rig_style)
-
-        self.populate_module_library()
-        self.populate_template_library()
-        self.populate_default_module_tree()
-        self.restore_jnt_display_settings()
-
-    # =========================================================================
-    # Create UI
-    # =========================================================================
-
-    def create_widgets(self):
-        u"""
-        创建主窗口全部控件。
-        """
-        # ---------------------------------------------------------------------
-        # Step 01：顶部 Header
-        # ---------------------------------------------------------------------
-        self.header_frame = QFrame()
-        self.header_frame.setObjectName("HeaderFrame")
-
-        self.brand_label = QLabel(u"M")
-        self.brand_label.setFixedWidth(28)
-        self.brand_label.setAlignment(Qt.AlignCenter)
-        self.brand_label.setStyleSheet(
-            "color: #0A84FF; font-size: 22px; font-weight: 800; background: transparent;"
-        )
-        self.app_title_label = QLabel(u"Modular Rig")
-        _set_role(self.app_title_label, "appTitle")
-
-        self.new_button = _make_tool_button(u"+", u"新建 Rig 配置")
-        self.open_button = _make_tool_button(u"▱", u"打开 Rig 配置")
-        self.save_button = _make_tool_button(u"□", u"保存 Rig 配置")
-        self.undo_button = _make_tool_button(u"↶", u"撤销")
-        self.redo_button = _make_tool_button(u"↷", u"重做")
-        self.help_button = _make_tool_button(u"?", u"帮助")
-        self.preference_button = _make_tool_button(u"⚙", u"界面 / Rig 设置")
-
-        # ---------------------------------------------------------------------
-        # Step 02：左侧 Module / Template Library
-        # ---------------------------------------------------------------------
-        self.left_panel = QFrame()
-        self.left_panel.setObjectName("PanelFrame")
-        self.left_panel.setMinimumWidth(245)
-        self.module_title_label = _make_panel_title(u"MODULES")
-        self.module_search = QLineEdit()
-        self.module_search.setPlaceholderText(u"Search modules...")
-        self.module_filter_button = QToolButton()
-        self.module_filter_button.setText(u"≡")
-        self.module_filter_button.setToolTip(u"Module Filter")
-        _set_role(self.module_filter_button, "miniTool")
-        self.module_list = QListWidget()
-
-        self.template_title_label = _make_panel_title(u"TEMPLATES")
-        self.template_search = QLineEdit()
-        self.template_search.setPlaceholderText(u"Search templates...")
-        self.template_filter_button = QToolButton()
-        self.template_filter_button.setText(u"≡")
-        self.template_filter_button.setToolTip(u"Template Filter")
-        _set_role(self.template_filter_button, "miniTool")
-        self.template_list = QListWidget()
-        self.library_count_label = QLabel()
-        _set_role(self.library_count_label, "muted")
-
-        # ---------------------------------------------------------------------
-        # Step 03：中间 Module Settings Tree
-        # ---------------------------------------------------------------------
-        self.center_panel = QFrame()
-        self.center_panel.setObjectName("PanelFrame")
-        self.center_panel.setMinimumWidth(430)
-        self.settings_title_label = _make_panel_title(u"SETTINGS")
-
-        self.add_module_button = QToolButton()
-        self.add_module_button.setText(u"+")
-        self.add_module_button.setToolTip(u"添加 Module")
-        _set_role(self.add_module_button, "miniTool")
-        self.copy_module_button = QToolButton()
-        self.copy_module_button.setText(u"□")
-        self.copy_module_button.setToolTip(u"复制当前 Module")
-        _set_role(self.copy_module_button, "miniTool")
-        self.delete_module_button = QToolButton()
-        self.delete_module_button.setText(u"×")
-        self.delete_module_button.setToolTip(u"删除当前 Module")
-        _set_role(self.delete_module_button, "miniTool")
-
-        self.module_tree = QTreeWidget()
-        self.module_tree.setColumnCount(2)
-        self.module_tree.setHeaderHidden(True)
-        self.module_tree.setIndentation(20)
-        self.module_tree.setRootIsDecorated(True)
-        self.module_tree.setAnimated(True)
-        self.module_tree.setColumnWidth(0, 330)
-
-        # ---------------------------------------------------------------------
-        # Step 04：当前 Module 高频设置
-        # ---------------------------------------------------------------------
-        self.quick_setting_frame = QFrame()
-        self.quick_setting_frame.setObjectName("QuickSettingFrame")
-        self.name_label = QLabel(u"Name")
-        self.module_name_edit = QLineEdit()
-        self.module_name_edit.setPlaceholderText(u"Main")
-
-        self.jnt_size_label = QLabel(u"Jnt Size")
-        self.jnt_size_slider = QSlider(Qt.Horizontal)
-        self.jnt_size_slider.setMinimum(10)
-        self.jnt_size_slider.setMaximum(500)
-        self.jnt_size_slider.setSingleStep(5)
-        self.jnt_size_slider.setPageStep(25)
-        self.jnt_size_slider.setValue(100)
-        self.jnt_size_spin = QDoubleSpinBox()
-        self.jnt_size_spin.setRange(0.10, 5.00)
-        self.jnt_size_spin.setSingleStep(0.05)
-        self.jnt_size_spin.setDecimals(2)
-        self.jnt_size_spin.setValue(1.00)
-        self.jnt_size_spin.setFixedWidth(82)
-
-        self.jnt_axis_label = QLabel(u"Jnt Axis")
-        self.jnt_axis_switch = QCheckBox()
-        self.jnt_axis_switch.setObjectName("JntAxisSwitch")
-        self.jnt_axis_switch.setToolTip(u"显示 / 隐藏场景 Jnt Local Axis")
-        self.jnt_axis_switch.setFixedWidth(44)
-
-        # ---------------------------------------------------------------------
-        # Step 05：Build Stage
-        # ---------------------------------------------------------------------
-        self.stage_frame = QFrame()
-        self.stage_frame.setObjectName("StageFrame")
-        self.stage_button_list = []
-        stage_data_list = [
-            (u"◇   Block", True),
-            (u"◇   Mesh", False),
-            (u"♙   Skeleton", False),
-            (u"✣   Control", False),
-        ]
-
-        for stage_text, checked in stage_data_list:
-            stage_button = QPushButton(stage_text)
-            stage_button.setCheckable(True)
-            stage_button.setChecked(checked)
-            _set_role(stage_button, "stageButton")
-            self.stage_button_list.append(stage_button)
-
-        # ---------------------------------------------------------------------
-        # Step 06：右侧 Module Property
-        # ---------------------------------------------------------------------
-        self.right_panel = QFrame()
-        self.right_panel.setObjectName("PanelFrame")
-        self.right_panel.setMinimumWidth(350)
-        self.current_module_title = QLabel(u"HEAD")
-        _set_role(self.current_module_title, "moduleTitle")
-
-        self.side_label = QLabel(u"Side")
-        self.side_combo = QComboBox()
-        self.side_combo.addItems([u"Center", u"Left", u"Right"])
-        self.naming_preset_label = QLabel(u"Naming Preset")
-        self.naming_preset_combo = QComboBox()
-        self.naming_preset_combo.addItems([u"Default"])
-        self.mirror_behavior_label = QLabel(u"Mirror Behavior")
-        self.mirror_behavior_combo = QComboBox()
-        self.mirror_behavior_combo.addItems([u"None", u"Mirror"])
-
-        self.alignment_title = QLabel(u"Alignment")
-        _set_role(self.alignment_title, "sectionTitle")
-        self.world_up_label = QLabel(u"World Up")
-        self.world_up_combo = QComboBox()
-        self.world_up_combo.addItems([u"Y", u"X", u"Z"])
-        self.aim_axis_label = QLabel(u"Aim Axis")
-        self.aim_axis_combo = QComboBox()
-        self.aim_axis_combo.addItems([u"Z", u"X", u"Y", u"-X", u"-Y", u"-Z"])
-        self.up_axis_label = QLabel(u"Up Axis")
-        self.up_axis_combo = QComboBox()
-        self.up_axis_combo.addItems([u"Y", u"X", u"Z", u"-X", u"-Y", u"-Z"])
-
-        self.jnts_section_button = QPushButton(u"›   Jnts")
-        self.controls_section_button = QPushButton(u"›   Controls")
-        self.deformation_section_button = QPushButton(u"›   Deformation")
-        self.attributes_section_button = QPushButton(u"›   Attributes")
-        property_section_button_list = [
-            self.jnts_section_button,
-            self.controls_section_button,
-            self.deformation_section_button,
-            self.attributes_section_button,
-        ]
-
-        for section_button in property_section_button_list:
-            section_button.setFlat(True)
-            section_button.setStyleSheet(
-                "QPushButton { text-align: left; border: none; background: transparent; "
-                "padding-left: 3px; min-height: 30px; }"
-                "QPushButton:hover { background-color: #F2F6FA; }"
-            )
-
-        # ---------------------------------------------------------------------
-        # Step 07：Build Action
-        # ---------------------------------------------------------------------
-        self.build_frame = QFrame()
-        self.build_frame.setObjectName("BuildFrame")
-        self.guide_action_button = QToolButton()
-        self.guide_action_button.setText(u"◇")
-        self.guide_action_button.setToolTip(u"Guide / Block")
-        self.guide_action_button.setCheckable(True)
-        self.guide_action_button.setChecked(True)
-        self.delete_action_button = QToolButton()
-        self.delete_action_button.setText(u"⌫")
-        self.delete_action_button.setToolTip(u"删除 Module Build Result")
-        self.reset_action_button = QToolButton()
-        self.reset_action_button.setText(u"⌂")
-        self.reset_action_button.setToolTip(u"恢复 Module 默认设置")
-        self.module_setting_button = QToolButton()
-        self.module_setting_button.setText(u"⚙")
-        self.module_setting_button.setToolTip(u"Module 高级设置")
-
-        action_button_list = [
-            self.guide_action_button,
-            self.delete_action_button,
-            self.reset_action_button,
-            self.module_setting_button,
-        ]
-
-        for action_button in action_button_list:
-            action_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            action_button.setMinimumHeight(38)
-
-        self.build_button = QPushButton(u"◇   Build")
-        _set_role(self.build_button, "buildButton")
-
-    def create_layouts(self):
-        u"""
-        按照三栏模块化绑定设计创建主布局。
-        """
-        # -------------------------------------------------------------------------
-        # Step 01：准备当前阶段计算和后续处理需要的数据
-        # -------------------------------------------------------------------------
-        header_layout = QHBoxLayout(self.header_frame)
-        header_layout.setContentsMargins(12, 6, 12, 6)
-        header_layout.setSpacing(6)
-        header_layout.addWidget(self.brand_label)
-        header_layout.addWidget(self.app_title_label)
-        header_layout.addSpacing(10)
-        header_layout.addWidget(self.new_button)
-        header_layout.addSpacing(8)
-        header_layout.addWidget(self.open_button)
-        header_layout.addWidget(self.save_button)
-        header_layout.addSpacing(8)
-        header_layout.addWidget(self.undo_button)
-        header_layout.addWidget(self.redo_button)
+    def _create_layout(self):
+        u"""建立可调整宽度的三栏结构；右侧属性独立滚动。"""
+        main = QtWidgets.QVBoxLayout(self)
+        main.setContentsMargins(20, 15, 20, 15)
+        main.setSpacing(10)
+        header = ArtHeader()
+        header.setObjectName("HeaderFrame")
+        header.setFixedHeight(89)
+        header_layout = QtWidgets.QHBoxLayout(header)
+        header_layout.setContentsMargins(16, 8, 16, 8)
+        brand = label("M", "title")
+        brand.setStyleSheet("font-family: Georgia; font-size: 51px; color: #42553b;")
+        brand.setFixedWidth(58)
+        header_layout.addWidget(brand)
+        titles = QtWidgets.QVBoxLayout()
+        titles.setSpacing(2)
+        titles.addWidget(label("Muzi Rig Library", "title"))
+        titles.addWidget(label(u"MODULAR SYSTEM   /   木子绑定库   /   CREATE WITH CLARITY", "subtitle"))
+        header_layout.addLayout(titles)
         header_layout.addStretch(1)
+        self.import_button = button(u"导入配置", self.import_recipe, u"追加 JSON 模块配置")
+        self.export_button = button(u"导出配置", self.export_recipe, u"保存模块参数；不包含 Maya 场景或 Guide 位置")
+        self.help_button = button("?", self.show_help, u"查看五步操作说明")
+        self.help_button.setFixedWidth(34)
+        header_layout.addWidget(self.import_button)
+        header_layout.addWidget(self.export_button)
         header_layout.addWidget(self.help_button)
-        header_layout.addWidget(self.preference_button)
+        main.addWidget(header)
 
-        left_layout = QVBoxLayout(self.left_panel)
-        left_layout.setContentsMargins(10, 10, 10, 10)
-        left_layout.setSpacing(7)
-        module_search_layout = QHBoxLayout()
-        module_search_layout.setContentsMargins(0, 0, 0, 0)
-        module_search_layout.setSpacing(5)
-        module_search_layout.addWidget(self.module_search, 1)
-        module_search_layout.addWidget(self.module_filter_button)
-        template_search_layout = QHBoxLayout()
-        template_search_layout.setContentsMargins(0, 0, 0, 0)
-        template_search_layout.setSpacing(5)
-        template_search_layout.addWidget(self.template_search, 1)
-        template_search_layout.addWidget(self.template_filter_button)
+        steps = QtWidgets.QHBoxLayout()
+        steps.setSpacing(1)
+        self.step_buttons = []
+        entries = (("Setup", u"配置与层级"), ("Guide", u"导入与定位"),
+                   ("Build", u"骨骼 + 控制器"), ("Control", u"外观与显示"), ("Deformer", u"尚未接入"))
+        for index, (title, subtitle) in enumerate(entries, 1):
+            widget = StepButton(index, title, subtitle)
+            widget.clicked.connect(partial(self.set_step, index))
+            if index == 5:
+                widget.setEnabled(False)
+                widget.setToolTip(u"当前模块尚未提供 Deformer 构建接口。")
+            self.step_buttons.append(widget)
+            steps.addWidget(widget, 1)
+        main.addLayout(steps)
 
-        left_layout.addWidget(self.module_title_label)
-        left_layout.addLayout(module_search_layout)
-        # -------------------------------------------------------------------------
-        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
-        # -------------------------------------------------------------------------
-        left_layout.addWidget(self.module_list, 1)
-        left_layout.addWidget(_make_separator())
-        left_layout.addWidget(self.template_title_label)
-        left_layout.addLayout(template_search_layout)
-        left_layout.addWidget(self.template_list, 1)
-        left_layout.addWidget(self.library_count_label)
+        self.splitter = QtWidgets.QSplitter(Qt.Horizontal)
+        self.splitter.setChildrenCollapsible(False)
+        self.splitter.setHandleWidth(7)
+        self.left_panel, left = self._panel(u"MODULES", "03")
+        self.left_panel.setMinimumWidth(225)
+        left.setSizeConstraint(QtWidgets.QLayout.SetMinAndMaxSize)
+        self.module_search = QtWidgets.QLineEdit()
+        self.module_search.setPlaceholderText(u"搜索模块 / Search modules...")
+        self.module_search.textChanged.connect(self.filter_modules)
+        left.addWidget(self.module_search)
+        self.module_list = QtWidgets.QListWidget()
+        self.module_list.setIconSize(QtCore.QSize(30, 30))
+        self.module_list.setMinimumHeight(176)
+        self.module_list.itemDoubleClicked.connect(self.add_selected_module)
+        left.addWidget(self.module_list, 1)
+        self.add_button = button(u"+  添加模块", self.add_selected_module)
+        left.addWidget(self.add_button)
+        left.addSpacing(14)
+        left.addWidget(label("TEMPLATES", "panelTitle"))
+        self.template_search = QtWidgets.QLineEdit()
+        self.template_search.setPlaceholderText(u"搜索模板 / Search templates...")
+        self.template_search.textChanged.connect(self.filter_templates)
+        left.addWidget(self.template_search)
+        self.template_list = QtWidgets.QListWidget()
+        self.template_list.setMinimumHeight(155)
+        self.template_list.itemDoubleClicked.connect(self.add_selected_template)
+        left.addWidget(self.template_list, 1)
+        left.addWidget(button(u"+  添加模板组合", self.add_selected_template))
+        note = label(u"3 个可用模块 · 3 个组合模板\n面部 Guide 沿用仓库现有模板", "muted")
+        note.setWordWrap(True)
+        left.addWidget(note)
+        self.library_scroll = QtWidgets.QScrollArea()
+        self.library_scroll.setWidgetResizable(True)
+        self.library_scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.library_scroll.setMinimumWidth(245)
+        self.library_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.library_scroll.setWidget(self.left_panel)
+        self.splitter.addWidget(self.library_scroll)
 
-        center_layout = QVBoxLayout(self.center_panel)
-        center_layout.setContentsMargins(10, 10, 10, 10)
-        center_layout.setSpacing(7)
-        settings_toolbar_layout = QHBoxLayout()
-        settings_toolbar_layout.setContentsMargins(0, 0, 0, 0)
-        settings_toolbar_layout.setSpacing(5)
-        settings_toolbar_layout.addWidget(self.add_module_button)
-        settings_toolbar_layout.addWidget(self.copy_module_button)
-        settings_toolbar_layout.addWidget(self.delete_module_button)
-        settings_toolbar_layout.addStretch(1)
+        self.center_panel, center = self._panel("RIG STRUCTURE", "SCENE")
+        self.center_panel.setMinimumWidth(315)
+        self.tree_search = QtWidgets.QLineEdit()
+        self.tree_search.setPlaceholderText(u"搜索结构 / Search hierarchy...")
+        self.tree_search.textChanged.connect(self.filter_tree)
+        center.addWidget(self.tree_search)
+        toolbar = QtWidgets.QHBoxLayout()
+        toolbar.addWidget(button(u"+ 添加", self.add_selected_module))
+        self.remove_button = button(u"移除", self.remove_current, u"仅移除尚未构建的模块配置")
+        toolbar.addWidget(self.remove_button)
+        toolbar.addStretch(1)
+        toolbar.addWidget(button(u"刷新", self.refresh_scene))
+        center.addLayout(toolbar)
+        self.module_tree = QtWidgets.QTreeWidget()
+        self.module_tree.setColumnCount(3)
+        self.module_tree.setHeaderLabels([u"模块 / 节点", u"侧", u"状态"])
+        self.module_tree.setIndentation(17)
+        self.module_tree.setUniformRowHeights(True)
+        self.module_tree.setAnimated(False)
+        self.module_tree.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        self.module_tree.header().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+        self.module_tree.header().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
+        self.module_tree.currentItemChanged.connect(self.tree_selected)
+        self.module_tree.itemDoubleClicked.connect(self.select_tree_nodes)
+        center.addWidget(self.module_tree, 1)
+        self.empty_label = label(u"从左侧添加模块，\n或选择 Face Starter 模板开始。", "muted")
+        self.empty_label.setAlignment(Qt.AlignCenter)
+        center.addWidget(self.empty_label)
+        self.structure_note = label(u"双击场景节点可在 Maya 中选中。", "muted")
+        self.structure_note.setWordWrap(True)
+        center.addWidget(self.structure_note)
+        self.splitter.addWidget(self.center_panel)
 
-        center_layout.addWidget(self.settings_title_label)
-        center_layout.addWidget(_make_separator())
-        center_layout.addLayout(settings_toolbar_layout)
-        center_layout.addWidget(self.module_tree, 1)
+        self.right_panel, right = self._panel("PROPERTIES", "MODULE")
+        self.right_panel.setMinimumWidth(410)
+        banner = QtWidgets.QFrame()
+        banner.setObjectName("ModuleBanner")
+        banner_layout = QtWidgets.QVBoxLayout(banner)
+        banner_layout.setContentsMargins(16, 12, 16, 12)
+        self.property_title = label(u"选择一个模块", "moduleTitle")
+        self.property_subtitle = label(u"在结构中选择模块以编辑参数", "muted")
+        self.property_subtitle.setWordWrap(True)
+        banner_layout.addWidget(self.property_title)
+        banner_layout.addWidget(self.property_subtitle)
+        right.addWidget(banner)
+        self.property_scroll = QtWidgets.QScrollArea()
+        self.property_scroll.setWidgetResizable(True)
+        self.property_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.property_body = QtWidgets.QWidget()
+        properties = QtWidgets.QVBoxLayout(self.property_body)
+        properties.setContentsMargins(0, 0, 3, 0)
+        properties.setSpacing(8)
+        self._create_properties(properties)
+        properties.addStretch(1)
+        self.property_scroll.setWidget(self.property_body)
+        right.addWidget(self.property_scroll, 1)
+        self.splitter.addWidget(self.right_panel)
+        self.splitter.setSizes([285, 450, 605])
+        main.addWidget(self.splitter, 1)
 
-        quick_setting_layout = QVBoxLayout(self.quick_setting_frame)
-        quick_setting_layout.setContentsMargins(10, 8, 10, 8)
-        quick_setting_layout.setSpacing(6)
-        name_layout = QHBoxLayout()
-        name_layout.setContentsMargins(0, 0, 0, 0)
-        name_layout.setSpacing(8)
-        name_layout.addWidget(self.name_label)
-        name_layout.addWidget(self.module_name_edit, 1)
-        jnt_size_layout = QHBoxLayout()
-        jnt_size_layout.setContentsMargins(0, 0, 0, 0)
-        jnt_size_layout.setSpacing(8)
-        jnt_size_layout.addWidget(self.jnt_size_label)
-        # -------------------------------------------------------------------------
-        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
-        # -------------------------------------------------------------------------
-        jnt_size_layout.addWidget(self.jnt_size_slider, 1)
-        jnt_size_layout.addWidget(self.jnt_size_spin)
-        jnt_axis_layout = QHBoxLayout()
-        jnt_axis_layout.setContentsMargins(0, 0, 0, 0)
-        jnt_axis_layout.setSpacing(8)
-        jnt_axis_layout.addWidget(self.jnt_axis_label)
-        jnt_axis_layout.addWidget(self.jnt_axis_switch)
-        jnt_axis_layout.addStretch(1)
+        footer = QtWidgets.QFrame()
+        footer.setProperty("role", "panel")
+        bottom = QtWidgets.QHBoxLayout(footer)
+        bottom.setContentsMargins(18, 12, 14, 12)
+        self.status_dot = label("●")
+        self.status_dot.setStyleSheet("color: #a6c643; font-size: 25px;")
+        bottom.addWidget(self.status_dot)
+        status_layout = QtWidgets.QVBoxLayout()
+        self.status_label = label(u"准备开始。", "status")
+        self.status_label.setWordWrap(True)
+        self.status_hint = label(u"添加模块后，创建基础层级。", "muted")
+        self.status_hint.setWordWrap(True)
+        status_layout.addWidget(self.status_label)
+        status_layout.addWidget(self.status_hint)
+        bottom.addLayout(status_layout, 1)
+        self.validate_button = button(u"检查 / Validate", self.validate_scene)
+        self.validate_button.setMinimumHeight(36)
+        bottom.addWidget(self.validate_button)
+        self.build_button = button(u"创建基础层级", self.run_step)
+        self.build_button.setProperty("role", "primary")
+        self.build_button.setMinimumWidth(250)
+        bottom.addWidget(self.build_button)
+        main.addWidget(footer)
 
-        quick_setting_layout.addLayout(name_layout)
-        quick_setting_layout.addLayout(jnt_size_layout)
-        quick_setting_layout.addLayout(jnt_axis_layout)
-        center_layout.addWidget(self.quick_setting_frame)
+    def _panel(self, title, badge):
+        u"""创建分栏面板和统一标题行。"""
+        panel = QtWidgets.QFrame()
+        panel.setProperty("role", "panel")
+        layout = QtWidgets.QVBoxLayout(panel)
+        layout.setContentsMargins(15, 15, 15, 14)
+        layout.setSpacing(11)
+        heading = QtWidgets.QHBoxLayout()
+        heading.addWidget(label(title, "panelTitle"))
+        heading.addStretch(1)
+        heading.addWidget(label(badge, "muted"))
+        layout.addLayout(heading)
+        return panel, layout
 
-        stage_layout = QVBoxLayout(self.stage_frame)
-        stage_layout.setContentsMargins(8, 7, 8, 7)
-        stage_layout.setSpacing(4)
+    def _create_properties(self, layout):
+        u"""属性只展示当前后端能够保存或生效的参数。"""
+        basic = Section("Basic / 基本设置")
+        self.enabled_check = TickBox(u"参与构建")
+        basic.form.addRow(u"Enable Module", self.enabled_check)
+        self.name_edit = QtWidgets.QLineEdit()
+        basic.form.addRow(u"Module Name", self.name_edit)
+        self.side_combo = QtWidgets.QComboBox()
+        for title, value in ((u"Left / 左", "lf"), (u"Right / 右", "rt"), (u"Center / 中", "md")):
+            self.side_combo.addItem(title, value)
+        basic.form.addRow("Side", self.side_combo)
+        self.parent_label = label(u"Rig Library / 默认根组", "muted")
+        basic.form.addRow("Parent", self.parent_label)
+        layout.addWidget(basic)
 
-        for stage_button in self.stage_button_list:
-            stage_layout.addWidget(stage_button)
+        guides = Section("Guide / 定位数据")
+        self.guide_section = guides
+        guides.button.setChecked(False)
+        self.guide_hint = label("", "muted")
+        self.guide_hint.setWordWrap(True)
+        guides.form.addRow(self.guide_hint)
+        self.guide_edit = QtWidgets.QPlainTextEdit()
+        self.guide_edit.setFixedHeight(92)
+        self.guide_edit.setPlaceholderText(u"每行一个 Guide，按 FK 链顺序排列。\n耳朵 / 舌头留空时自动读取模板。")
+        guides.form.addRow(self.guide_edit)
+        guide_actions = QtWidgets.QHBoxLayout()
+        self.pick_button = button(u"读取 Maya 选择", self.pick_guides)
+        self.save_guides_button = button(u"保存 Guide 列表", self.save_guides)
+        guide_actions.addWidget(self.pick_button)
+        guide_actions.addWidget(self.save_guides_button)
+        guides.form.addRow(guide_actions)
+        layout.addWidget(guides)
 
-        center_layout.addWidget(self.stage_frame)
+        controls = Section("Controller / 控制器外观")
+        self.axis_combo = QtWidgets.QComboBox()
+        self.axis_combo.addItems(catalog.axes)
+        controls.form.addRow(u"Shape Axis / 朝向", self.axis_combo)
+        self.size_spin = self._spin()
+        controls.form.addRow(u"Size / 大小", self.size_spin)
+        self.color_spin = QtWidgets.QSpinBox()
+        self.color_spin.setRange(0, 31)
+        self.color_spin.setKeyboardTracking(False)
+        controls.form.addRow(u"Color / 索引颜色", self.color_spin)
+        controls.form.addRow(label(u"构建后修改外观立即生效。", "muted"))
+        layout.addWidget(controls)
 
-        right_layout = QVBoxLayout(self.right_panel)
-        right_layout.setContentsMargins(12, 10, 12, 10)
-        right_layout.setSpacing(8)
-        right_layout.addWidget(self.current_module_title)
-        right_layout.addSpacing(3)
-        right_layout.addLayout(self.create_property_row(self.side_label, self.side_combo))
-        right_layout.addLayout(self.create_property_row(self.naming_preset_label, self.naming_preset_combo))
-        right_layout.addLayout(self.create_property_row(self.mirror_behavior_label, self.mirror_behavior_combo))
-        right_layout.addWidget(_make_separator())
-        right_layout.addWidget(self.alignment_title)
-        right_layout.addLayout(self.create_property_row(self.world_up_label, self.world_up_combo))
-        right_layout.addLayout(self.create_property_row(self.aim_axis_label, self.aim_axis_combo))
-        right_layout.addLayout(self.create_property_row(self.up_axis_label, self.up_axis_combo))
-        right_layout.addWidget(_make_separator())
-        # -------------------------------------------------------------------------
-        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
-        # -------------------------------------------------------------------------
-        right_layout.addWidget(self.jnts_section_button)
-        right_layout.addWidget(self.controls_section_button)
-        right_layout.addWidget(self.deformation_section_button)
-        right_layout.addWidget(self.attributes_section_button)
-        right_layout.addStretch(1)
+        joints = Section("Joint / 骨骼与显示")
+        self.radius_spin = self._spin()
+        joints.form.addRow(u"Joint Radius / 半径", self.radius_spin)
+        self.axis_check = TickBox(u"显示关节局部轴")
+        self.joint_check = TickBox(u"显示当前模块骨骼")
+        self.control_check = TickBox(u"显示当前模块控制器")
+        joints.form.addRow(self.axis_check)
+        joints.form.addRow(self.joint_check)
+        joints.form.addRow(self.control_check)
+        layout.addWidget(joints)
+        self.enabled_check.toggled.connect(lambda value: self.change_property("enabled", value))
+        self.name_edit.editingFinished.connect(lambda: self.change_property("name", self.name_edit.text().strip()))
+        self.side_combo.currentIndexChanged.connect(lambda index: self.change_property("side", self.side_combo.currentData()))
+        self.axis_combo.currentTextChanged.connect(lambda value: self.change_property("ctrl_axis", value))
+        self.size_spin.valueChanged.connect(lambda value: self.change_property("ctrl_size", value))
+        self.color_spin.valueChanged.connect(lambda value: self.change_property("ctrl_color", value))
+        self.radius_spin.valueChanged.connect(lambda value: self.change_property("jnt_radius", value))
+        self.axis_check.toggled.connect(lambda value: self.change_property("show_axis", value))
+        self.joint_check.toggled.connect(lambda value: self.change_property("show_joints", value))
+        self.control_check.toggled.connect(lambda value: self.change_property("show_controls", value))
 
-        build_layout = QVBoxLayout(self.build_frame)
-        build_layout.setContentsMargins(8, 8, 8, 8)
-        build_layout.setSpacing(7)
-        build_toolbar_layout = QHBoxLayout()
-        build_toolbar_layout.setContentsMargins(0, 0, 0, 0)
-        build_toolbar_layout.setSpacing(5)
-        build_toolbar_layout.addWidget(self.guide_action_button)
-        build_toolbar_layout.addWidget(self.delete_action_button)
-        build_toolbar_layout.addWidget(self.reset_action_button)
-        build_toolbar_layout.addWidget(self.module_setting_button)
-        build_layout.addLayout(build_toolbar_layout)
-        build_layout.addWidget(self.build_button, 1)
-        right_layout.addWidget(self.build_frame)
+    def _spin(self):
+        u"""统一浮点范围，结束输入后才更新场景。"""
+        spin = QtWidgets.QDoubleSpinBox()
+        spin.setRange(0.01, 100.0)
+        spin.setDecimals(2)
+        spin.setSingleStep(0.1)
+        spin.setKeyboardTracking(False)
+        return spin
 
-        self.main_splitter = QSplitter(Qt.Horizontal)
-        self.main_splitter.setChildrenCollapsible(False)
-        self.main_splitter.addWidget(self.left_panel)
-        self.main_splitter.addWidget(self.center_panel)
-        self.main_splitter.addWidget(self.right_panel)
-        self.main_splitter.setStretchFactor(0, 2)
-        self.main_splitter.setStretchFactor(1, 4)
-        self.main_splitter.setStretchFactor(2, 3)
-        self.main_splitter.setSizes([260, 520, 430])
-
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(6, 6, 6, 6)
-        main_layout.setSpacing(6)
-        main_layout.addWidget(self.header_frame)
-        # -------------------------------------------------------------------------
-        # Step 05：查询并整理当前阶段需要的 Maya 场景数据
-        # -------------------------------------------------------------------------
-        main_layout.addWidget(self.main_splitter, 1)
-
-    def create_property_row(self, label, widget):
-        u"""
-        创建右侧属性的一行 Label + Widget。
-
-        Args:
-            label (str):
-                UI、Rig Node 或日志中展示的简短 Label。
-            widget (QtWidgets.QWidget):
-                需要应用 MuziTools Theme / UI 状态的 Qt Widget。
-
-        Returns:
-            object:
-            创建或构建完成后的 Maya / Rig 对象或 Build Result。
-        """
-        row_layout = QHBoxLayout()
-        row_layout.setContentsMargins(0, 0, 0, 0)
-        row_layout.setSpacing(10)
-        row_layout.addWidget(label)
-        row_layout.addStretch(1)
-        widget.setMinimumWidth(150)
-        row_layout.addWidget(widget)
-        return row_layout
-
-    def create_connections(self):
-        u"""
-        连接界面 Signal。
-        """
-        # -------------------------------------------------------------------------
-        # Step 01：建立当前阶段需要的层级、连接或驱动关系
-        # -------------------------------------------------------------------------
-        self.module_search.textChanged.connect(self.filter_module_library)
-        self.template_search.textChanged.connect(self.filter_template_library)
-        self.module_list.itemDoubleClicked.connect(self.add_module_from_library)
-        self.template_list.itemDoubleClicked.connect(self.load_template)
-        # -------------------------------------------------------------------------
-        # Step 02：建立当前阶段需要的层级、连接或驱动关系
-        # -------------------------------------------------------------------------
-        self.add_module_button.clicked.connect(self.clicked_add_module)
-        self.copy_module_button.clicked.connect(self.copy_current_module)
-        self.delete_module_button.clicked.connect(self.delete_current_module)
-        self.module_tree.currentItemChanged.connect(self.current_module_changed)
-        self.module_name_edit.editingFinished.connect(self.module_name_changed)
-        # -------------------------------------------------------------------------
-        # Step 03：建立当前阶段需要的层级、连接或驱动关系
-        # -------------------------------------------------------------------------
-        self.side_combo.currentIndexChanged.connect(self.side_changed)
-        self.jnt_size_slider.valueChanged.connect(self.jnt_size_slider_changed)
-        self.jnt_size_spin.valueChanged.connect(self.jnt_size_spin_changed)
-        self.jnt_axis_switch.toggled.connect(self.jnt_axis_changed)
-        # -------------------------------------------------------------------------
-        # Step 04：建立当前阶段需要的层级、连接或驱动关系
-        # -------------------------------------------------------------------------
-        self.build_button.clicked.connect(self.clicked_build)
-        self.delete_action_button.clicked.connect(self.delete_current_module)
-        self.reset_action_button.clicked.connect(self.reset_current_module_settings)
-        self.undo_button.clicked.connect(self.undo_maya)
-        # -------------------------------------------------------------------------
-        # Step 05：建立当前阶段需要的层级、连接或驱动关系
-        # -------------------------------------------------------------------------
-        self.redo_button.clicked.connect(self.redo_maya)
-
-    # =========================================================================
-    # Library
-    # =========================================================================
-
-    def populate_module_library(self):
-        u"""
-        填充 Module Library。
-        """
-        self.module_list.clear()
-
-        for module_name in module_name_list:
-            item = QListWidgetItem(u"◈  {}".format(module_name))
-            item.setData(Qt.UserRole, module_name)
+    def _populate_library(self):
+        u"""目录完全来自已登记模块，不展示旧界面的演示数据。"""
+        for entry in catalog.modules:
+            item = QtWidgets.QListWidgetItem(module_icon(entry["color"]), entry["title"])
+            item.setData(Qt.UserRole, entry["key"])
+            item.setToolTip(entry["description"])
             self.module_list.addItem(item)
-
-        if self.module_list.count() > 0:
-            self.module_list.setCurrentRow(0)
-
-        self.update_library_count()
-
-    def populate_template_library(self):
-        u"""
-        填充 Template Library。
-        """
-        self.template_list.clear()
-
-        for template_name in template_name_list:
-            item = QListWidgetItem(u"▦  {}".format(template_name))
-            item.setData(Qt.UserRole, template_name)
+        for entry in catalog.templates:
+            item = QtWidgets.QListWidgetItem(entry["title"])
+            item.setData(Qt.UserRole, entry["key"])
+            item.setToolTip(entry["description"])
             self.template_list.addItem(item)
+        self.module_list.setCurrentRow(0)
+        self.template_list.setCurrentRow(0)
 
-        self.update_library_count()
+    def _filter_list(self, widget, text):
+        for index in range(widget.count()):
+            item = widget.item(index)
+            item.setHidden(text.lower() not in (item.text() + " " + item.toolTip()).lower())
 
-    def update_library_count(self):
-        u"""
-        更新左下 Library 数量。
-        """
-        total_count = self.module_list.count() + self.template_list.count()
-        self.library_count_label.setText(u"Library: {} items".format(total_count))
+    def filter_modules(self, text):
+        u"""按名称和说明过滤模块。"""
+        self._filter_list(self.module_list, text)
 
-    def filter_module_library(self, search_text):
-        u"""
-        按照搜索内容过滤 Module Library。
+    def filter_templates(self, text):
+        u"""按名称和组成过滤模板。"""
+        self._filter_list(self.template_list, text)
 
-        Args:
-            search_text (str):
-                名称过滤、工具搜索或 Search / Replace 使用的搜索文本。
-        """
-        search_text = search_text.strip().lower()
-        row_index = 0
+    def filter_tree(self, text):
+        u"""保留命中子节点的父模块，便于从搜索结果定位层级。"""
+        def visit(item):
+            own_match = text.lower() in item.text(0).lower()
+            child_match = False
+            for index in range(item.childCount()):
+                child_match = visit(item.child(index)) or child_match
+            item.setHidden(not (own_match or child_match))
+            if text and child_match:
+                item.setExpanded(True)
+            return own_match or child_match
+        for index in range(self.module_tree.topLevelItemCount()):
+            visit(self.module_tree.topLevelItem(index))
 
-        while row_index < self.module_list.count():
-            item = self.module_list.item(row_index)
-            module_name = item.data(Qt.UserRole)
+    def current_record(self):
+        u"""取得当前选择对应的真实配置。"""
+        for record in self.service.document["modules"]:
+            if record["id"] == self.current_id:
+                return record
+        return None
 
-            if module_name is None:
-                module_name = item.text()
-
-            visible = True
-
-            if search_text:
-                visible = search_text in str(module_name).lower()
-
-            item.setHidden(not visible)
-            row_index += 1
-
-    def filter_template_library(self, search_text):
-        u"""
-        按照搜索内容过滤 Template Library。
-
-        Args:
-            search_text (str):
-                名称过滤、工具搜索或 Search / Replace 使用的搜索文本。
-        """
-        search_text = search_text.strip().lower()
-        row_index = 0
-
-        while row_index < self.template_list.count():
-            item = self.template_list.item(row_index)
-            template_name = item.data(Qt.UserRole)
-
-            if template_name is None:
-                template_name = item.text()
-
-            visible = True
-
-            if search_text:
-                visible = search_text in str(template_name).lower()
-
-            item.setHidden(not visible)
-            row_index += 1
-
-    # =========================================================================
-    # Module Tree
-    # =========================================================================
-
-    def populate_default_module_tree(self):
-        u"""
-        创建与 UI 设计图一致的默认 Module Tree 示例。
-        """
+    def _render_tree(self):
+        u"""重建配置树，保留当前选择和已经展开的模块。"""
+        expanded = set()
+        iterator = QtWidgets.QTreeWidgetItemIterator(self.module_tree)
+        while iterator.value():
+            item = iterator.value()
+            if item.isExpanded():
+                expanded.add(item.data(0, Qt.UserRole))
+            iterator += 1
+        self.module_tree.blockSignals(True)
         self.module_tree.clear()
-
-        for module_data in default_module_data_list:
-            self.create_module_tree_item(module_data, parent_item=None)
-
-        self.module_tree.expandAll()
-        root_item = self.find_first_module_item("head")
-
-        if root_item is None:
-            root_item = self.module_tree.topLevelItem(0)
-
-        if root_item is not None:
-            self.module_tree.setCurrentItem(root_item)
-
-    def create_module_tree_item(self, module_data, parent_item=None):
-        u"""
-        根据 Module Data 创建一个 Settings Tree Item。
-
-        Args:
-            module_data (dict):
-                当前方法使用的 `module_data` 配置 / 映射数据。
-            parent_item (object):
-                当前方法执行 Maya / Rig 操作时使用的 `parent_item` 数据。
-
-        Returns:
-            object:
-            创建或构建完成后的 Maya / Rig 对象或 Build Result。
-        """
-        module_name = module_data.get("name", "module")
-        side = module_data.get("side", "")
-        item = QTreeWidgetItem()
-        item.setText(0, u"◇  {}".format(module_name))
-        item.setText(1, side)
-        item.setData(0, Qt.UserRole, module_name)
-        item.setData(1, Qt.UserRole, side)
-
-        if parent_item is None:
-            self.module_tree.addTopLevelItem(item)
+        root = QtWidgets.QTreeWidgetItem(["rig_library", "", ""])
+        root.setIcon(0, module_icon("#759539"))
+        self.module_tree.addTopLevelItem(root)
+        root.setExpanded(True)
+        selected_item = None
+        built_count = 0
+        for record in self.service.document["modules"]:
+            entry = catalog.get_module(record["kind"])
+            state = u"已构建" if record["built"] else u"待构建"
+            if not record["enabled"]:
+                state = u"已停用"
+            if record["built"]:
+                built_count += 1
+            item = QtWidgets.QTreeWidgetItem([record["name"], record["side"].upper(), state])
+            item.setIcon(0, module_icon(entry["color"]))
+            item.setData(0, Qt.UserRole, record["id"])
+            root.addChild(item)
+            node_groups = {"Guide": catalog.guide_names(record)}
+            if record["built"]:
+                outputs = catalog.output_names(record)
+                node_groups["Joint"] = outputs["joints"]
+                node_groups["Control"] = outputs["controls"]
+            for group_title, names in node_groups.items():
+                group = QtWidgets.QTreeWidgetItem([group_title, "", str(len(names))])
+                group.setData(0, Qt.UserRole, record["id"])
+                group.setData(0, Qt.UserRole + 1, names)
+                item.addChild(group)
+                for name in names:
+                    node_state = u"已存在" if self.service.node_exists(name) else u"未创建"
+                    node = QtWidgets.QTreeWidgetItem([name.rsplit("|", 1)[-1], "", node_state])
+                    node.setToolTip(0, name)
+                    node.setData(0, Qt.UserRole, record["id"])
+                    node.setData(0, Qt.UserRole + 1, [name])
+                    group.addChild(node)
+            item.setExpanded(record["id"] in expanded)
+            if selected_item is None or record["id"] == self.current_id:
+                selected_item = item
+        if selected_item:
+            self.current_id = selected_item.data(0, Qt.UserRole)
+            self.module_tree.setCurrentItem(selected_item)
         else:
-            parent_item.addChild(item)
+            self.current_id = None
+        self.module_tree.blockSignals(False)
+        count = len(self.service.document["modules"])
+        self.empty_label.setVisible(count == 0)
+        self.structure_note.setText(u"{} 个模块 · {} 个已构建\n双击节点可在 Maya 中选中。".format(count, built_count))
+        self.filter_tree(self.tree_search.text())
+        self._load_properties()
+        self._update_action()
 
-        child_data_list = module_data.get("children", [])
+    def tree_selected(self, current, previous=None):
+        u"""节点选择与所属模块的属性区保持同步。"""
+        self.current_id = current.data(0, Qt.UserRole) if current else None
+        self._load_properties()
+        self._update_action()
 
-        for child_data in child_data_list:
-            self.create_module_tree_item(child_data, parent_item=item)
-
-        return item
-
-    def find_first_module_item(self, module_name):
-        u"""
-        在 Settings Tree 中查找第一个同名 Module。
-
-        Args:
-            module_name (str):
-                `module_name` 对应的 Maya 节点或资源名称。
-
-        Returns:
-            None | object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-        """
-        top_index = 0
-
-        while top_index < self.module_tree.topLevelItemCount():
-            top_item = self.module_tree.topLevelItem(top_index)
-            result = self.find_module_item_recursive(top_item, module_name)
-
-            if result is not None:
-                return result
-
-            top_index += 1
-
-        return None
-
-    def find_module_item_recursive(self, item, module_name):
-        u"""
-        递归查找 Module Tree Item。
-
-        Args:
-            item (str | object):
-                当前查询、吸附或 UI 操作使用的 Maya Item / 数据项。
-            module_name (str):
-                `module_name` 对应的 Maya 节点或资源名称。
-
-        Returns:
-            None | object:
-            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-        """
-        if item is None:
-            return None
-
-        item_module_name = item.data(0, Qt.UserRole)
-
-        if item_module_name == module_name:
-            return item
-
-        child_index = 0
-
-        while child_index < item.childCount():
-            child_item = item.child(child_index)
-            result = self.find_module_item_recursive(child_item, module_name)
-
-            if result is not None:
-                return result
-
-            child_index += 1
-
-        return None
-
-    def clicked_add_module(self):
-        u"""
-        点击 + 时把左侧当前 Module 添加到 Settings Tree。
-        """
-        current_item = self.module_list.currentItem()
-
-        if current_item is None:
+    def _load_properties(self):
+        record = self.current_record()
+        self.property_body.setEnabled(record is not None)
+        self.remove_button.setEnabled(record is not None and not record["built"])
+        if record is None:
+            self.property_title.setText(u"选择一个模块")
+            self.property_subtitle.setText(u"从左侧添加模块，开始配置绑定。")
             return
-
-        self.add_module_from_library(current_item)
-
-    def add_module_from_library(self, item):
-        u"""
-        从 Module Library 添加一个新的 Module Instance。
-
-        Args:
-            item (str | object):
-                当前查询、吸附或 UI 操作使用的 Maya Item / 数据项。
-        """
-        if item is None:
-            return
-
-        module_name = item.data(Qt.UserRole)
-
-        if not module_name:
-            return
-
-        module_data = {"name": module_name, "side": ""}
-        new_item = self.create_module_tree_item(module_data, parent_item=None)
-        self.module_tree.setCurrentItem(new_item)
-
-    def copy_current_module(self):
-        u"""
-        复制当前 Module 的 UI 配置。
-        """
-        source_item = self.module_tree.currentItem()
-
-        if source_item is None:
-            return
-
-        module_name = source_item.data(0, Qt.UserRole)
-        side = source_item.data(1, Qt.UserRole)
-        module_data = {"name": module_name, "side": side}
-        parent_item = source_item.parent()
-        new_item = self.create_module_tree_item(module_data, parent_item=parent_item)
-        self.module_tree.setCurrentItem(new_item)
-
-    def delete_current_module(self):
-        u"""
-        从 Settings Tree 删除当前 Module UI Instance。
-        """
-        current_item = self.module_tree.currentItem()
-
-        if current_item is None:
-            return
-
-        parent_item = current_item.parent()
-
-        if parent_item is None:
-            item_index = self.module_tree.indexOfTopLevelItem(current_item)
-
-            if item_index >= 0:
-                self.module_tree.takeTopLevelItem(item_index)
-        else:
-            child_index = parent_item.indexOfChild(current_item)
-
-            if child_index >= 0:
-                parent_item.takeChild(child_index)
-
-        self.current_module_item = None
-
-    def current_module_changed(self, current_item, previous_item):
-        u"""
-        Settings Tree 当前 Module 变化后刷新右侧参数。
-
-        Args:
-            current_item (object):
-                当前方法执行 Maya / Rig 操作时使用的 `current_item` 数据。
-            previous_item (object):
-                当前方法执行 Maya / Rig 操作时使用的 `previous_item` 数据。
-        """
-        # -------------------------------------------------------------------------
-        # Step 01：检查当前条件与边界情况，并进入对应处理分支
-        # -------------------------------------------------------------------------
-        if current_item is None:
-            return
-
-        self.current_module_item = current_item
-        self.loading_module_settings = True
-        # -------------------------------------------------------------------------
-        # Step 02：准备当前阶段计算和后续处理需要的数据
-        # -------------------------------------------------------------------------
-        module_name = current_item.data(0, Qt.UserRole)
-        side = current_item.data(1, Qt.UserRole)
-
-        if module_name is None:
-            module_name = current_item.text(0)
-
-        # -------------------------------------------------------------------------
-        # Step 03：检查当前条件与边界情况，并进入对应处理分支
-        # -------------------------------------------------------------------------
-        if side is None:
-            side = ""
-
-        self.module_name_edit.setText(str(module_name))
-        self.current_module_title.setText(str(module_name).upper())
-        # -------------------------------------------------------------------------
-        # Step 04：准备当前阶段计算和后续处理需要的数据
-        # -------------------------------------------------------------------------
-        side_index = 0
-
-        if side in ["L", "LF", "Left"]:
-            side_index = 1
-        elif side in ["R", "RT", "Right"]:
-            side_index = 2
-
-        self.side_combo.setCurrentIndex(side_index)
-        # -------------------------------------------------------------------------
-        # Step 05：准备当前阶段计算和后续处理需要的数据
-        # -------------------------------------------------------------------------
-        self.loading_module_settings = False
-
-    def module_name_changed(self):
-        u"""
-        把 Name 输入框同步到当前 Module Tree Item。
-        """
-        if self.loading_module_settings:
-            return
-
-        current_item = self.module_tree.currentItem()
-
-        if current_item is None:
-            return
-
-        module_name = self.module_name_edit.text().strip()
-
-        if not module_name:
-            return
-
-        current_item.setData(0, Qt.UserRole, module_name)
-        current_item.setText(0, u"◇  {}".format(module_name))
-        self.current_module_title.setText(module_name.upper())
-
-    def side_changed(self, combo_index):
-        u"""
-        把 Side UI 同步到当前 Module Tree Item。
-
-        Args:
-            combo_index (int):
-                对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
-        """
-        if self.loading_module_settings:
-            return
-
-        current_item = self.module_tree.currentItem()
-
-        if current_item is None:
-            return
-
-        side_value = ""
-
-        if combo_index == 1:
-            side_value = "L"
-        elif combo_index == 2:
-            side_value = "R"
-
-        current_item.setData(1, Qt.UserRole, side_value)
-        current_item.setText(1, side_value)
-
-    def reset_current_module_settings(self):
-        u"""
-        恢复当前 Module UI 的基础显示参数。
-        """
-        current_item = self.module_tree.currentItem()
-
-        if current_item is None:
-            return
-
-        self.loading_module_settings = True
-        self.side_combo.setCurrentIndex(0)
-        self.naming_preset_combo.setCurrentIndex(0)
-        self.mirror_behavior_combo.setCurrentIndex(0)
-        self.world_up_combo.setCurrentText("Y")
-        self.aim_axis_combo.setCurrentText("Z")
-        self.up_axis_combo.setCurrentText("Y")
-        current_item.setData(1, Qt.UserRole, "")
-        current_item.setText(1, "")
-        self.loading_module_settings = False
-
-    # =========================================================================
-    # Template
-    # =========================================================================
-
-    def load_template(self, item):
-        u"""
-        载入 Template UI 预设；当前版本先建立可编辑 Module Tree。
-
-        Args:
-            item (str | object):
-                当前查询、吸附或 UI 操作使用的 Maya Item / 数据项。
-        """
-        if item is None:
-            return
-
-        template_name = item.data(Qt.UserRole)
-
-        if not template_name:
-            return
-
-        self.populate_default_module_tree()
-        QMessageBox.information(
-            self,
-            u"Template",
-            u"已载入 {} 的 UI 组合预览。\n真实 Template Data 会在 Module Base 完成后接入。".format(
-                template_name
-            )
-        )
-
-    # =========================================================================
-    # Jnt Display
-    # =========================================================================
-
-    def restore_jnt_display_settings(self):
-        u"""
-        从 Maya 当前场景恢复 Jnt Size / Jnt Axis 显示状态。
-        """
-        # -------------------------------------------------------------------------
-        # Step 01：准备当前阶段计算和后续处理需要的数据
-        # -------------------------------------------------------------------------
-        self.loading_jnt_display = True
-        jnt_size = 1.0
-
-        # -------------------------------------------------------------------------
-        # Step 02：执行可能失败的操作，并统一处理异常或清理状态
-        # -------------------------------------------------------------------------
+        self.loading = True
         try:
-            jnt_size = jnt_utils.get_display_scale()
-        except Exception:
-            jnt_size = 1.0
+            entry = catalog.get_module(record["kind"])
+            self.property_title.setText(entry["title"])
+            self.property_subtitle.setText(entry["description"])
+            self.enabled_check.setChecked(record["enabled"])
+            self.enabled_check.setEnabled(not record["built"])
+            self.name_edit.setText(record["name"])
+            self.name_edit.setEnabled(not record["built"] and record["kind"] == "fk_chain")
+            self.side_combo.setCurrentIndex(self.side_combo.findData(record["side"]))
+            self.side_combo.setEnabled(not record["built"] and record["kind"] != "tongue")
+            self.axis_combo.setCurrentText(record["ctrl_axis"])
+            self.size_spin.setValue(record["ctrl_size"])
+            self.color_spin.setValue(record["ctrl_color"])
+            self.radius_spin.setValue(record["jnt_radius"])
+            self.axis_check.setChecked(record["show_axis"])
+            self.joint_check.setChecked(record["show_joints"])
+            self.control_check.setChecked(record["show_controls"])
+            self.guide_edit.setPlainText("\n".join(record["guides"]))
+            self.guide_edit.setEnabled(not record["built"])
+            self.pick_button.setEnabled(not record["built"])
+            self.save_guides_button.setEnabled(not record["built"])
+            self.guide_hint.setText(u"{} 个 Guide · {}".format(len(catalog.guide_names(record)),
+                                   u"手动指定顺序" if record["guides"] else u"按模板标准名称读取"))
+        finally:
+            self.loading = False
 
-        jnt_size = max(
-            0.10,
-            min(5.00, jnt_size)
-        )
-        self.jnt_size_spin.setValue(
-            jnt_size
-        )
-        # -------------------------------------------------------------------------
-        # Step 03：应用并更新当前阶段需要的属性或状态
-        # -------------------------------------------------------------------------
-        self.jnt_size_slider.setValue(
-            int(round(jnt_size * 100.0))
-        )
-
-        show_axis = False
-        jnt_list = scene_utils.get_nodes_by_type(
-            "joint",
-            long=True
-        )
-
-        # -------------------------------------------------------------------------
-        # Step 04：遍历当前数据集合，并逐项执行核心处理
-        # -------------------------------------------------------------------------
-        for jnt_node in jnt_list:
-            try:
-                jnt_object = jnt_utils.Jnt(
-                    jnt_node
-                )
-                display_axis = jnt_object.is_axis_visible()
-            except Exception:
-                display_axis = False
-
-            if display_axis:
-                show_axis = True
-                break
-
-        self.jnt_axis_switch.setChecked(
-            show_axis
-        )
-        # -------------------------------------------------------------------------
-        # Step 05：准备当前阶段计算和后续处理需要的数据
-        # -------------------------------------------------------------------------
-        self.loading_jnt_display = False
-
-    def jnt_size_slider_changed(self, slider_value):
-        u"""
-        Slider 改变时同步数值并实时修改 Maya Jnt Display Scale。
-
-        Args:
-            slider_value (int | float):
-                UI Slider 当前值；回调用于同步对应 Rig / Setup 参数。
-        """
-        if self.loading_jnt_display:
-            return
-
-        jnt_size = float(slider_value) / 100.0
-        self.loading_jnt_display = True
-        self.jnt_size_spin.setValue(jnt_size)
-        self.loading_jnt_display = False
-        self.set_maya_jnt_size(jnt_size)
-
-    def jnt_size_spin_changed(self, jnt_size):
-        u"""
-        数值框改变时同步 Slider 并修改 Maya Jnt Display Scale。
-
-        Args:
-            jnt_size (float):
-                当前 Maya / Rig 计算使用的 `jnt_size` 数值参数。
-        """
-        if self.loading_jnt_display:
-            return
-
-        self.loading_jnt_display = True
-        self.jnt_size_slider.setValue(
-            int(round(float(jnt_size) * 100.0))
-        )
-        self.loading_jnt_display = False
-        self.set_maya_jnt_size(jnt_size)
-
-    def set_maya_jnt_size(self, jnt_size):
-        u"""
-        设置 Maya 全局 Jnt Display Scale。
-
-        Args:
-            jnt_size (float):
-                当前 Maya / Rig 计算使用的 `jnt_size` 数值参数。
-        """
+    def _run(self, operation, success):
+        u"""统一处理错误并恢复界面，不把异常吞掉或显示虚假的成功状态。"""
         try:
-            jnt_utils.set_display_scale(
-                jnt_size
-            )
+            result = operation()
         except Exception as error:
-            cmds.warning(
-                u"设置 Jnt Display Scale 失败：{}".format(
-                    error
-                )
-            )
+            self._status(str(error), error=True)
+            self._load_properties()
+            return False
+        self._render_tree()
+        self._status(success(result) if callable(success) else success)
+        return True
 
-    def jnt_axis_changed(self, checked):
-        u"""
-        显示或隐藏场景全部 Jnt 的 Local Axis。
+    def _status(self, text, error=False):
+        first = text.splitlines()[0] if text else ""
+        self.status_label.setText(first[:100])
+        self.status_label.setToolTip(text)
+        self.status_dot.setStyleSheet("color: {}; font-size: 25px;".format("#bf7056" if error else "#a6c643"))
+        if error:
+            self.status_hint.setText(u"请修正后重试；悬停状态文字可查看全部问题。")
 
-        Args:
-            checked (object):
-                当前方法执行 Maya / Rig 操作时使用的 `checked` 数据。
-        """
-        if self.loading_jnt_display:
+    def add_selected_module(self, *args):
+        u"""将当前目录项加入结构。"""
+        item = self.module_list.currentItem()
+        if item is None or item.isHidden():
             return
+        def add():
+            self.current_id = self.service.add_module(item.data(Qt.UserRole))
+        self._run(add, u"模块已加入绑定结构。")
 
-        jnt_list = scene_utils.get_nodes_by_type(
-            "joint",
-            long=True
-        )
-
-        for jnt_node in jnt_list:
-            try:
-                jnt_object = jnt_utils.Jnt(
-                    jnt_node
-                )
-
-                if checked:
-                    jnt_object.show_axis()
-                else:
-                    jnt_object.hide_axis()
-            except Exception as error:
-                cmds.warning(
-                    u"设置 Jnt Axis 失败：{} | {}".format(
-                        jnt_node,
-                        error
-                    )
-                )
-
-    # =========================================================================
-    # Build / Maya Action
-    # =========================================================================
-
-    def clicked_build(self):
-        u"""
-        发出当前 Module Build 请求。
-        """
-        current_item = self.module_tree.currentItem()
-
-        if current_item is None:
-            QMessageBox.warning(
-                self,
-                u"Build",
-                u"请先选择一个 Module。"
-            )
+    def add_selected_template(self, *args):
+        u"""添加预设组合并保留已有模块。"""
+        item = self.template_list.currentItem()
+        if item is None or item.isHidden():
             return
+        self._run(lambda: self.service.add_template(item.data(Qt.UserRole)), u"模板组合已添加，已有模块保留原设置。")
 
-        module_name = current_item.data(0, Qt.UserRole)
+    def remove_current(self):
+        u"""移除当前尚未构建的模块。"""
+        if self.current_id:
+            self._run(lambda: self.service.remove_module(self.current_id), u"待建模块已移除。")
 
-        if not module_name:
-            module_name = current_item.text(0)
+    def change_property(self, key, value):
+        u"""按当前模块状态保存参数或更新外观。"""
+        if self.loading or self.current_id is None:
+            return
+        record = self.current_record()
+        if record[key] == value:
+            return
+        self._run(lambda: self.service.update_module(self.current_id, {key: value}),
+                  u"外观已更新。" if record["built"] else u"模块参数已保存。")
 
-        self.build_requested.emit(
-            str(module_name)
-        )
-        QMessageBox.information(
-            self,
-            u"Module Build",
-            u"{} Module 的 UI 已准备完成。\nBuild API 会在对应 Module 后端迁移完成后接入。".format(
-                module_name
-            )
-        )
+    def pick_guides(self):
+        u"""读取当前选择；最终顺序由编辑区中的文本行明确决定。"""
+        names = self.service.selected_guides()
+        if not names:
+            self._status(u"请先在 Maya 中按链条顺序选择 Guide。", error=True)
+            return
+        self.guide_edit.setPlainText("\n".join(names))
+        self._status(u"已读取选择，请核对顺序并点击“保存 Guide 列表”。")
 
-    def undo_maya(self):
-        u"""
-        调用 Maya Undo。
-        """
-        try:
-            cmds.undo()
-        except Exception:
-            pass
+    def save_guides(self):
+        u"""校验并保存当前 Guide 列表。"""
+        if self.current_id is None:
+            return
+        names = []
+        for line in self.guide_edit.toPlainText().splitlines():
+            if line.strip():
+                names.append(line.strip())
+        self._run(lambda: self.service.update_module(self.current_id, {"guides": names}), u"Guide 列表已保存。")
 
-    def redo_maya(self):
-        u"""
-        调用 Maya Redo。
-        """
-        try:
-            cmds.redo()
-        except Exception:
-            pass
+    def set_step(self, number, *args):
+        u"""五段导航对应真实能力，构建由现有 Module 一次完成骨骼和控制器。"""
+        if number == 5:
+            return
+        self.current_step = number
+        self.guide_section.button.setChecked(number == 2)
+        for index, widget in enumerate(self.step_buttons, 1):
+            widget.setChecked(index == number)
+            widget.update()
+        self._update_action()
+
+    def _update_action(self):
+        if not hasattr(self, "build_button"):
+            return
+        texts = {1: u"创建基础层级", 2: u"导入 Face Guide", 3: u"构建启用模块", 4: u"选择当前控制器"}
+        hints = {1: u"添加模块与组合模板，然后创建基础层级。",
+                 2: u"耳朵与舌头使用 Face Guide；通用 FK 请指定有序 Guide。",
+                 3: u"一次创建骨骼、控制器及驱动连接；已构建模块自动跳过。",
+                 4: u"右侧大小、颜色、轴向与显示参数会立即应用到当前模块。"}
+        self.build_button.setText(texts[self.current_step])
+        self.status_hint.setText(hints[self.current_step])
+        enabled = bool(self.service.document["modules"])
+        if self.current_step == 4:
+            record = self.current_record()
+            enabled = record is not None and record["built"]
+        self.build_button.setEnabled(enabled)
+
+    def run_step(self):
+        u"""底部主按钮执行当前阶段操作。"""
+        if self.current_step == 1:
+            if self._run(self.service.setup, u"基础层级已准备好，下一步导入并调整 Guide。"):
+                self.set_step(2)
+        elif self.current_step == 2:
+            if self._run(self.service.import_guide, u"Face Guide 已就绪，请在 Maya 中检查并调整位置。"):
+                self.set_step(3)
+        elif self.current_step == 3:
+            if self._run(self.service.build, lambda count: u"构建完成：{} 个新模块。".format(count)):
+                self.build_requested.emit("all")
+                self.set_step(4)
+        elif self.current_step == 4:
+            record = self.current_record()
+            if record:
+                self.service.select_nodes(catalog.output_names(record)["controls"])
+
+    def validate_scene(self):
+        u"""显示只读预检查结果。"""
+        def check():
+            errors = self.service.validate()
+            if errors:
+                raise RuntimeError("\n".join(errors))
+        self._run(check, u"检查通过，可以构建待建模块。")
+
+    def select_tree_nodes(self, item, column=0):
+        u"""双击节点或分组，在 Maya 中选中对应对象。"""
+        names = item.data(0, Qt.UserRole + 1)
+        if names:
+            self.service.select_nodes(names)
+
+    def refresh_scene(self, *args):
+        u"""从场景恢复最新配置。"""
+        self._run(self.service.reload, u"已从当前场景刷新绑定库。")
+
+    def import_recipe(self):
+        u"""通过文件对话框追加 JSON 配置。"""
+        path, selected = QtWidgets.QFileDialog.getOpenFileName(self, u"导入绑定库配置", "", "Rig recipe (*.json)")
+        if path:
+            self._run(lambda: self.service.import_recipe(path), u"配置已添加，请检查 Guide。")
+
+    def export_recipe(self):
+        u"""导出可复用的模块参数。"""
+        path, selected = QtWidgets.QFileDialog.getSaveFileName(self, u"导出模块参数", "muzi_rig_recipe.json", "Rig recipe (*.json)")
+        if path:
+            if not path.lower().endswith(".json"):
+                path += ".json"
+            self._run(lambda: self.service.export_recipe(path), u"模块参数已导出；Maya 场景请单独保存。")
+
+    def show_help(self):
+        u"""说明真实支持范围以及各阶段操作。"""
+        QtWidgets.QMessageBox.information(self, u"绑定库使用说明", u"1. 添加 Ear、Tongue、FK Chain，或添加模板组合。\n"
+            u"2. Setup 创建根组；Guide 导入仓库现有 Face Guide。\n"
+            u"3. 在 Maya 中调整 Guide，再点击 Validate 和 Build。\n"
+            u"4. Build 一次创建骨骼和控制器；Control 调整外观。\n"
+            u"5. Deformer 尚未接入。\n\n"
+            u"配置随 Maya 场景保存；JSON 只保存模块参数，不包含绑定或 Guide 位置。\n"
+            u"通用 FK 按文本行顺序读取 Guide。已构建模块锁定身份与定位输入。\n"
+            u"当前版本支持根命名空间中的一套绑定库。")
+
+    def _start_scene_jobs(self):
+        u"""撤销、重做和切换场景后刷新；窗口销毁时清理所有回调。"""
+        commands = getattr(self.service, "cmds", None)
+        if commands is None or not hasattr(commands, "scriptJob"):
+            return
+        for event in ("Undo", "Redo", "SceneOpened", "NewSceneOpened"):
+            callback = partial(self.refresh_timer.start, 0)
+            self.jobs.append(commands.scriptJob(event=[event, callback], protected=True))
+        jobs = self.jobs
+        def cleanup(*args):
+            for job in list(jobs):
+                if commands.scriptJob(exists=job):
+                    commands.scriptJob(kill=job, force=True)
+            jobs[:] = []
+        self.destroyed.connect(cleanup)
 
 
-__all__ = [
-    "ModularRigWindow",
-]
+__all__ = ["ModularRigWindow"]

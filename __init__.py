@@ -50,6 +50,13 @@ def initialize():
     return show()
 
 
+def show_rig_library():
+    u"""打开绑定库，可直接在 Maya Python Script Editor 中运行。"""
+    from .tools.rig import modular_rig_tool
+
+    return modular_rig_tool.main()
+
+
 def smoke_test(test_window_manager=False):
     u"""
     运行 Maya 2023 非破坏性全工具 Smoke Test。
@@ -306,6 +313,7 @@ def rig_integration_test(keep_result=False):
 
 __all__ = [
     "show",
+    "show_rig_library",
     "initialize",
     "smoke_test",
     "functional_smoke_test",

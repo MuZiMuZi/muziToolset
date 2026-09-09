@@ -21,8 +21,9 @@ def create_ui():
         创建或构建完成后的 Maya / Rig 对象或 Build Result。
     """
     from . import ui
+    from ...ui import window_utils
 
-    return ui.create_window()
+    return window_utils.show_window("systems.rig.library", ui.create_window)
 
 
 __all__ = [

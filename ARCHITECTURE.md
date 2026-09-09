@@ -4,6 +4,11 @@
 
 当前架构版本：**0.4**。
 
+> 2026-09 重写进度：本文下方部分路径对应归档前架构。当前绑定库位于
+> systems/rig，使用 systems/rig_module.py、systems/components/fk_chain.py，
+> 并接入 EarModule / TongueModule。运行入口、分层与当前限制见
+> [绑定库使用手册](docs/manual/rig-library.md)。正式代码仍禁止导入 legacy_reference。
+
 ## 目录职责
 
 ```text

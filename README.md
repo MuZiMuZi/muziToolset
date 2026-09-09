@@ -12,6 +12,14 @@ import muziToolset
 
 项目显示名称使用 **MuziTools**；源码根包始终使用 `muziToolset`。
 
+2026-09 重写后的模块化绑定库已接入 Ear、Tongue、FK Chain 和三种组合模板。
+下方部分架构说明仍对应归档前版本，当前绑定库以 [绑定库使用手册](docs/manual/rig-library.md) 为准。
+
+```python
+import muziToolset
+window = muziToolset.show_rig_library()
+```
+
 ---
 
 # 快速开始
