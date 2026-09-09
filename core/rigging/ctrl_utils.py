@@ -56,7 +56,8 @@ ctrl_utils：Maya Controller 基础工具。
     Ctrl.create_ctrl_hierarchy
         创建完整 Controller 层级结构，并支持安全重复执行。
         层级 Group 的“存在则获取、不存在则创建”统一交给 hierarchy_utils.add_extra_group() 处理。
-        当前结构为 zero -> driven -> space -> connect -> offset -> ctrl -> subctrl -> output。
+        当前结构为 zero -> driven -> space -> connect -> offset -> ctrl，
+        ctrl 下方同时包含 subctrl 和 output，subctrl 通过属性连接驱动 output。
 """
 
 import os
@@ -121,8 +122,11 @@ class Ctrl(object):
         #         └── connect
         #             └── offset
         #                 └── ctrl
-        #                     └── subctrl
-        #                         └── output
+        #                     ├── subctrl
+        #                     └── output
+        #
+        # subctrl 的 TRS / rotateOrder 通过属性连接传给 output，
+        # 因此隐藏 subctrl 不会影响 output 以及 output 下方的其他层级。
         # ---------------------------------------------------------------------
         self.zero_grp = None
         self.driven_grp = None
@@ -678,6 +682,10 @@ class Ctrl(object):
         在 Parent 之前先进行 matchTransform，可以让 SubCtrl Parent 完成后
         保持本地 Translate / Rotate 接近 0，Scale 接近 1，方便动画师进行二级调整。
 
+        SubCtrl 只负责提供第二层动画调整和显示，Output 不再作为它的子节点。
+        Output 会和 SubCtrl 一样直接位于主 Ctrl 下方，并通过属性连接接收 SubCtrl 的变换。
+        因此关闭 sub_ctrl_vis 时只会隐藏 SubCtrl，不会隐藏 Output 或后续 FK 层级。
+
         shape_name(str): SubCtrl 使用的 Shape 名称，默认 "circle"。
         ctrl_color(int): SubCtrl 的 Override Color，默认 17。
         ctrl_size(float): SubCtrl Shape 的相对大小，默认 0.7。
@@ -740,8 +748,12 @@ class Ctrl(object):
                 └── connect
                     └── offset
                         └── ctrl
-                            └── subctrl
-                                └── output
+                            ├── subctrl
+                            └── output
+
+        SubCtrl 与 Output 是主 Ctrl 下方的兄弟节点，不再使用 subctrl -> output 的父子关系。
+        SubCtrl 的 translate / rotate / scale / rotateOrder 通过属性连接传递到 Output。
+        因此 SubCtrl 被隐藏时不会影响 Output，也不会继续隐藏 Output 下方的 FK 层级。
 
         Group 的创建、获取和层级恢复统一交给 hierarchy_utils.add_extra_group()：
         如果同名 Group 已经存在，则直接获取并复用；
@@ -753,7 +765,7 @@ class Ctrl(object):
 
         上方五个 Group 从最靠近 Ctrl 的 Offset 开始向外逐层处理。
         SubCtrl 通过 create_sub_ctrl() 创建或获取。
-        Output 通过 relation="child" 创建或获取在 SubCtrl 下方。
+        Output 通过 relation="child" 创建或获取在主 Ctrl 下方。
 
         sub_ctrl_shape(str): SubCtrl 使用的 Shape 名称，默认 "circle"。
         sub_ctrl_color(int): SubCtrl 的 Override Color，默认 17。
@@ -796,12 +808,18 @@ class Ctrl(object):
         self.zero_grp = hierarchy_utils.add_extra_group(self.driven_grp, self.zero_name, relation="parent")
 
         # 创建或获取主 Controller 下方的次级控制器。
-        self.create_sub_ctrl(shape_name=sub_ctrl_shape, ctrl_color=sub_ctrl_color, ctrl_size=sub_ctrl_size)
+        self.create_sub_ctrl(shape_name=sub_ctrl_shape, ctrl_color=sub_ctrl_color, sub_ctrl_size=sub_ctrl_size)
 
-        # 创建或获取最终 Output Group，并确保它位于 SubCtrl 下方。
-        self.output_grp = hierarchy_utils.add_extra_group(self.sub_ctrl, self.output_name, relation="child")
+        # 创建或获取最终 Output Group，并确保它直接位于主 Ctrl 下方。
+        # 如果旧版本的 Output 仍然位于 SubCtrl 下方，add_extra_group() 会自动恢复父子关系。
+        self.output_grp = hierarchy_utils.add_extra_group(self.ctrl, self.output_name, relation="child")
 
-
+        # SubCtrl 与 Output 保持兄弟层级，因此 Visibility 不会沿 DAG 传播到 Output。
+        # 通过属性连接将 SubCtrl 的局部变换传给 Output，使 Output 仍然包含第二层控制效果。
+        sub_ctrl_attr = attr_utils.Attr(self.sub_ctrl)
+        sub_ctrl_attr.connect_attr(attr_name="translate", target_object=self.output_grp, target_attr_name="translate")
+        sub_ctrl_attr.connect_attr(attr_name="rotate", target_object=self.output_grp, target_attr_name="rotate")
+        sub_ctrl_attr.connect_attr(attr_name="scale", target_object=self.output_grp, target_attr_name="scale")
+        sub_ctrl_attr.connect_attr(attr_name="rotateOrder", target_object=self.output_grp, target_attr_name="rotateOrder")
 
         return self.zero_grp
-
