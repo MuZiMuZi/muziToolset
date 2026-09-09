@@ -37,6 +37,10 @@ class RigLibraryQtTests(unittest.TestCase):
         self.window.module_search.setText("tongue")
         self.assertTrue(self.window.module_list.item(0).isHidden())
         self.assertFalse(self.window.module_list.item(1).isHidden())
+        self.assertEqual(self.window.library_tabs.tabText(0), "MODULES  1 / 3")
+        self.window.library_tabs.setCurrentIndex(1)
+        self.window.template_search.setText("Ear Pair")
+        self.assertEqual(self.window.library_tabs.tabText(1), "TEMPLATES  1 / 3")
         self.window.tree_search.setText("tongue")
         root = self.window.module_tree.topLevelItem(0)
         self.assertTrue(root.child(0).isHidden())
@@ -73,10 +77,16 @@ class RigLibraryQtTests(unittest.TestCase):
         application.processEvents()
         for step in self.window.step_buttons:
             self.assertEqual(step.height(), 78)
-        self.assertGreater(self.window.library_scroll.verticalScrollBar().maximum(), 0)
-        self.assertGreater(self.window.template_search.y(), self.window.module_list.geometry().bottom())
+        self.assertEqual(self.window.library_tabs.count(), 2)
+        self.assertGreater(self.window.module_list.viewport().height(), 150)
         self.assertGreater(self.window.build_button.width(), 200)
         self.assertTrue(self.window.windowFlags() & Qt.WindowMinimizeButtonHint)
+
+    def test_structure_add_button_opens_module_library(self):
+        self.window.library_tabs.setCurrentIndex(1)
+        self.window.open_module_library()
+        self.assertEqual(self.window.library_tabs.currentIndex(), 0)
+        self.assertTrue(self.window.module_search.hasFocus())
 
     def test_inline_validation_preserves_records(self):
         self.window.add_selected_module()

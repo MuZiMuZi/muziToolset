@@ -112,41 +112,52 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.splitter = QtWidgets.QSplitter(Qt.Horizontal)
         self.splitter.setChildrenCollapsible(False)
         self.splitter.setHandleWidth(7)
-        self.left_panel, left = self._panel(u"MODULES", "03")
+        self.left_panel, left = self._panel(u"MODULE LIBRARY", "03 / 03")
         self.left_panel.setMinimumWidth(225)
-        left.setSizeConstraint(QtWidgets.QLayout.SetMinAndMaxSize)
+
+        self.library_tabs = QtWidgets.QTabWidget()
+        self.library_tabs.setObjectName("LibraryTabs")
+        self.library_tabs.setDocumentMode(True)
+
+        self.module_page = QtWidgets.QWidget()
+        module_layout = QtWidgets.QVBoxLayout(self.module_page)
+        module_layout.setContentsMargins(0, 10, 0, 0)
+        module_layout.setSpacing(10)
         self.module_search = QtWidgets.QLineEdit()
         self.module_search.setPlaceholderText(u"搜索模块 / Search modules...")
         self.module_search.textChanged.connect(self.filter_modules)
-        left.addWidget(self.module_search)
+        module_layout.addWidget(self.module_search)
         self.module_list = QtWidgets.QListWidget()
-        self.module_list.setIconSize(QtCore.QSize(30, 30))
-        self.module_list.setMinimumHeight(176)
+        self.module_list.setIconSize(QtCore.QSize(32, 32))
         self.module_list.itemDoubleClicked.connect(self.add_selected_module)
-        left.addWidget(self.module_list, 1)
+        module_layout.addWidget(self.module_list, 1)
         self.add_button = button(u"+  添加模块", self.add_selected_module)
-        left.addWidget(self.add_button)
-        left.addSpacing(14)
-        left.addWidget(label("TEMPLATES", "panelTitle"))
+        module_layout.addWidget(self.add_button)
+        module_note = label(u"只显示仓库中已经具有正式构建入口的模块。", "muted")
+        module_note.setWordWrap(True)
+        module_layout.addWidget(module_note)
+
+        self.template_page = QtWidgets.QWidget()
+        template_layout = QtWidgets.QVBoxLayout(self.template_page)
+        template_layout.setContentsMargins(0, 10, 0, 0)
+        template_layout.setSpacing(10)
         self.template_search = QtWidgets.QLineEdit()
         self.template_search.setPlaceholderText(u"搜索模板 / Search templates...")
         self.template_search.textChanged.connect(self.filter_templates)
-        left.addWidget(self.template_search)
+        template_layout.addWidget(self.template_search)
         self.template_list = QtWidgets.QListWidget()
-        self.template_list.setMinimumHeight(155)
+        self.template_list.setIconSize(QtCore.QSize(32, 32))
         self.template_list.itemDoubleClicked.connect(self.add_selected_template)
-        left.addWidget(self.template_list, 1)
-        left.addWidget(button(u"+  添加模板组合", self.add_selected_template))
-        note = label(u"3 个可用模块 · 3 个组合模板\n面部 Guide 沿用仓库现有模板", "muted")
-        note.setWordWrap(True)
-        left.addWidget(note)
-        self.library_scroll = QtWidgets.QScrollArea()
-        self.library_scroll.setWidgetResizable(True)
-        self.library_scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.library_scroll.setMinimumWidth(245)
-        self.library_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.library_scroll.setWidget(self.left_panel)
-        self.splitter.addWidget(self.library_scroll)
+        template_layout.addWidget(self.template_list, 1)
+        template_layout.addWidget(button(u"+  添加模板组合", self.add_selected_template))
+        template_note = label(u"模板仅组合当前可用模块，不包含 Maya 场景数据。", "muted")
+        template_note.setWordWrap(True)
+        template_layout.addWidget(template_note)
+
+        self.library_tabs.addTab(self.module_page, u"MODULES  03")
+        self.library_tabs.addTab(self.template_page, u"TEMPLATES  03")
+        left.addWidget(self.library_tabs, 1)
+        self.splitter.addWidget(self.left_panel)
 
         self.center_panel, center = self._panel("RIG STRUCTURE", "SCENE")
         self.center_panel.setMinimumWidth(315)
@@ -155,7 +166,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.tree_search.textChanged.connect(self.filter_tree)
         center.addWidget(self.tree_search)
         toolbar = QtWidgets.QHBoxLayout()
-        toolbar.addWidget(button(u"+ 添加", self.add_selected_module))
+        toolbar.addWidget(button(u"+ 添加", self.open_module_library, u"切换到左侧模块库"))
         self.remove_button = button(u"移除", self.remove_current, u"仅移除尚未构建的模块配置")
         toolbar.addWidget(self.remove_button)
         toolbar.addStretch(1)
@@ -325,17 +336,22 @@ class ModularRigWindow(QtWidgets.QWidget):
     def _populate_library(self):
         u"""目录完全来自已登记模块，不展示旧界面的演示数据。"""
         for entry in catalog.modules:
-            item = QtWidgets.QListWidgetItem(module_icon(entry["color"]), entry["title"])
+            item_text = u"{}\n{}".format(entry["title"], entry["description"])
+            item = QtWidgets.QListWidgetItem(module_icon(entry["color"]), item_text)
+            item.setSizeHint(QtCore.QSize(0, 62))
             item.setData(Qt.UserRole, entry["key"])
             item.setToolTip(entry["description"])
             self.module_list.addItem(item)
         for entry in catalog.templates:
-            item = QtWidgets.QListWidgetItem(entry["title"])
+            item_text = u"{}\n{}".format(entry["title"], entry["description"])
+            item = QtWidgets.QListWidgetItem(module_icon("#8fac35"), item_text)
+            item.setSizeHint(QtCore.QSize(0, 62))
             item.setData(Qt.UserRole, entry["key"])
             item.setToolTip(entry["description"])
             self.template_list.addItem(item)
         self.module_list.setCurrentRow(0)
         self.template_list.setCurrentRow(0)
+        self._update_library_counts()
 
     def _filter_list(self, widget, text):
         for index in range(widget.count()):
@@ -345,10 +361,37 @@ class ModularRigWindow(QtWidgets.QWidget):
     def filter_modules(self, text):
         u"""按名称和说明过滤模块。"""
         self._filter_list(self.module_list, text)
+        self._update_library_counts()
 
     def filter_templates(self, text):
         u"""按名称和组成过滤模板。"""
         self._filter_list(self.template_list, text)
+        self._update_library_counts()
+
+    def _visible_item_count(self, widget):
+        u"""统计搜索后仍可见的目录项目。"""
+        count = 0
+        for index in range(widget.count()):
+            if not widget.item(index).isHidden():
+                count += 1
+        return count
+
+    def _update_library_counts(self):
+        u"""在 Tab 标题中显示可见数和总数。"""
+        self.library_tabs.setTabText(
+            0,
+            u"MODULES  {} / {}".format(self._visible_item_count(self.module_list), self.module_list.count())
+        )
+        self.library_tabs.setTabText(
+            1,
+            u"TEMPLATES  {} / {}".format(self._visible_item_count(self.template_list), self.template_list.count())
+        )
+
+    def open_module_library(self):
+        u"""从结构工具栏回到模块目录，准备添加新模块。"""
+        self.library_tabs.setCurrentIndex(0)
+        self.module_search.setFocus()
+        self._status(u"请从左侧选择模块，双击或点击“添加模块”。")
 
     def filter_tree(self, text):
         u"""保留命中子节点的父模块，便于从搜索结果定位层级。"""

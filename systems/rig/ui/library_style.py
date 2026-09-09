@@ -17,6 +17,15 @@ QLabel[role="status"] { font-size: 14px; }
 QFrame#HeaderFrame { background: #fafbf7; border-bottom: 1px solid #dce1d4; }
 QFrame[role="panel"] { background: #fcfdf9; border: 1px solid #dce2d7; border-radius: 4px; }
 QFrame#ModuleBanner { background: #f0f5df; border: 0; border-left: 3px solid #c6df4e; }
+QTabWidget#LibraryTabs::pane { border: none; background: transparent; top: -1px; }
+QTabBar::tab {
+    background: #f2f4ed; color: #7a8678; border: 1px solid #dfe4d8;
+    padding: 8px 10px; min-width: 82px;
+}
+QTabBar::tab:first { border-top-left-radius: 3px; border-bottom-left-radius: 3px; }
+QTabBar::tab:last { border-top-right-radius: 3px; border-bottom-right-radius: 3px; }
+QTabBar::tab:selected { background: #dff17f; color: #2d3c28; border-color: #c8df59; font-weight: bold; }
+QTabBar::tab:hover:!selected { background: #eef3df; color: #52604d; }
 QLineEdit, QComboBox, QDoubleSpinBox, QSpinBox, QPlainTextEdit {
     background: #ffffff; color: #2c3b34; border: 1px solid #d8dfd4;
     border-radius: 3px; padding: 5px 8px; min-height: 20px;
