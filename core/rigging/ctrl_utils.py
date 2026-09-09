@@ -808,7 +808,7 @@ class Ctrl(object):
         self.zero_grp = hierarchy_utils.add_extra_group(self.driven_grp, self.zero_name, relation="parent")
 
         # 创建或获取主 Controller 下方的次级控制器。
-        self.create_sub_ctrl(shape_name=sub_ctrl_shape, ctrl_color=sub_ctrl_color, sub_ctrl_size=sub_ctrl_size)
+        self.create_sub_ctrl(shape_name=sub_ctrl_shape, ctrl_color=sub_ctrl_color, ctrl_size=sub_ctrl_size)
 
         # 创建或获取最终 Output Group，并确保它直接位于主 Ctrl 下方。
         # 如果旧版本的 Output 仍然位于 SubCtrl 下方，add_extra_group() 会自动恢复父子关系。
