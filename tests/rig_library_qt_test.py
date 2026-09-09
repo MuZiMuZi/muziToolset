@@ -47,6 +47,8 @@ class RigLibraryQtTests(unittest.TestCase):
         for record in self.service.document["modules"]:
             for name in catalog.guide_names(record):
                 self.service.cmds.createNode("transform", name=name)
+        self.service.setup()
+        self.window.refresh_scene()
         self.window.set_step(3)
         self.window.run_step()
         self.assertEqual(self.window.current_step, 4)
@@ -79,19 +81,24 @@ class RigLibraryQtTests(unittest.TestCase):
     def test_inline_validation_preserves_records(self):
         self.window.add_selected_module()
         self.window.set_step(3)
+        self.assertEqual(self.window.current_step, 1)
         self.window.run_step()
         self.assertEqual(self.service.calls, [])
-        self.assertEqual(self.window.current_step, 3)
-        self.assertIn("Guide", self.window.status_label.text())
+        self.assertEqual(self.window.current_step, 2)
+        self.window.set_step(3)
+        self.assertIn(u"尚未解锁", self.window.status_label.text())
         self.assertEqual(len(self.service.document["modules"]), 1)
 
     def test_switching_steps_exposes_guide_drawer(self):
         self.window.add_selected_module()
         self.assertFalse(self.window.guide_section.button.isChecked())
         self.window.set_step(2)
+        self.assertEqual(self.window.current_step, 1)
+        self.service.setup()
+        self.window.set_step(2)
         self.assertTrue(self.window.guide_section.button.isChecked())
         self.window.set_step(4)
-        self.assertFalse(self.window.guide_section.button.isChecked())
+        self.assertEqual(self.window.current_step, 2)
 
 
 if __name__ == "__main__":

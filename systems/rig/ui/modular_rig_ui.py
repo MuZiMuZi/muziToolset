@@ -64,7 +64,6 @@ class ModularRigWindow(QtWidgets.QWidget):
         self._create_layout()
         self._populate_library()
         self._render_tree()
-        self.set_step(1)
         self._start_scene_jobs()
 
     def _create_layout(self):
@@ -105,7 +104,6 @@ class ModularRigWindow(QtWidgets.QWidget):
             widget = StepButton(index, title, subtitle)
             widget.clicked.connect(partial(self.set_step, index))
             if index == 5:
-                widget.setEnabled(False)
                 widget.setToolTip(u"当前模块尚未提供 Deformer 构建接口。")
             self.step_buttons.append(widget)
             steps.addWidget(widget, 1)
@@ -432,6 +430,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.structure_note.setText(u"{} 个模块 · {} 个已构建\n双击节点可在 Maya 中选中。".format(count, built_count))
         self.filter_tree(self.tree_search.text())
         self._load_properties()
+        self._sync_workflow_steps()
         self._update_action()
 
     def tree_selected(self, current, previous=None):
@@ -547,14 +546,30 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def set_step(self, number, *args):
         u"""五段导航对应真实能力，构建由现有 Module 一次完成骨骼和控制器。"""
-        if number == 5:
+        workflow = self.service.workflow_state()
+        if not workflow["unlocked"].get(number, False):
+            self._status(u"当前阶段尚未解锁，请先完成前一步。", error=True)
             return
         self.current_step = number
-        self.guide_section.button.setChecked(number == 2)
-        for index, widget in enumerate(self.step_buttons, 1):
-            widget.setChecked(index == number)
-            widget.update()
+        self._sync_workflow_steps()
         self._update_action()
+
+    def _sync_workflow_steps(self):
+        u"""根据场景实际进度刷新步骤的完成、当前和锁定状态。"""
+        workflow = self.service.workflow_state()
+        if not workflow["unlocked"].get(self.current_step, False):
+            self.current_step = workflow["suggested"]
+        self.guide_section.button.setChecked(self.current_step == 2)
+        for index, widget in enumerate(self.step_buttons, 1):
+            if index == self.current_step:
+                state = "current"
+            elif workflow["completed"].get(index, False):
+                state = "completed"
+            elif workflow["unlocked"].get(index, False):
+                state = "available"
+            else:
+                state = "locked"
+            widget.set_stage_state(state)
 
     def _update_action(self):
         if not hasattr(self, "build_button"):

@@ -189,6 +189,72 @@ class RigLibraryService(object):
 
         self._commit(self.document, apply, "Muzi Import Face Guide")
 
+    def workflow_state(self):
+        u"""返回五步导航需要的场景状态，不创建或修改任何 Maya 节点。"""
+        records = []
+        for record in self.document["modules"]:
+            if record["enabled"]:
+                records.append(record)
+
+        setup_complete = bool(records)
+        if setup_complete:
+            for name in (self.root, self.joint_root, self.control_root):
+                try:
+                    if not self._owned_group(name):
+                        setup_complete = False
+                        break
+                except RuntimeError:
+                    setup_complete = False
+                    break
+
+        guide_complete = setup_complete
+        if guide_complete:
+            for record in records:
+                names = catalog.guide_names(record)
+                if not names:
+                    guide_complete = False
+                    break
+                resolved = set()
+                for name in names:
+                    found = self.cmds.ls(name, long=True) or []
+                    if len(found) != 1:
+                        guide_complete = False
+                        break
+                    if found[0] in resolved:
+                        guide_complete = False
+                        break
+                    resolved.add(found[0])
+                    if self.cmds.nodeType(found[0]) not in ("transform", "joint"):
+                        guide_complete = False
+                        break
+                if not guide_complete:
+                    break
+
+        build_complete = bool(records)
+        if build_complete:
+            for record in records:
+                if not record["built"] or self._check_built(record):
+                    build_complete = False
+                    break
+
+        return {
+            "completed": {
+                1: setup_complete,
+                2: guide_complete,
+                3: build_complete,
+                4: False,
+                5: False,
+            },
+            "unlocked": {
+                1: True,
+                2: setup_complete,
+                3: guide_complete,
+                4: build_complete,
+                5: False,
+            },
+            "suggested": 4 if build_complete else 3 if guide_complete else 2 if setup_complete else 1,
+        }
+
     def _check_built(self, record):
         u"""检查已构建模块是否完整，缺失节点时不尝试重建或覆盖剩余绑定。"""
         errors = []

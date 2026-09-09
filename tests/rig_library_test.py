@@ -126,6 +126,24 @@ class RigLibraryTests(unittest.TestCase):
             self.service.add_module("eye")
         self.assertEqual(self.commands.nodes, {})
 
+    def test_workflow_state_tracks_real_scene_progress(self):
+        state = self.service.workflow_state()
+        self.assertEqual(state["suggested"], 1)
+        self.assertFalse(state["unlocked"][2])
+        self.prepare_face()
+        state = self.service.workflow_state()
+        self.assertEqual(state["suggested"], 1)
+        self.service.setup()
+        state = self.service.workflow_state()
+        self.assertTrue(state["completed"][1])
+        self.assertTrue(state["completed"][2])
+        self.assertEqual(state["suggested"], 3)
+        self.service.build()
+        state = self.service.workflow_state()
+        self.assertTrue(state["completed"][3])
+        self.assertTrue(state["unlocked"][4])
+        self.assertEqual(state["suggested"], 4)
+
     def test_duplicate_names_are_rejected_atomically(self):
         self.service.add_template("ear_pair")
         before = copy.deepcopy(self.commands.nodes)

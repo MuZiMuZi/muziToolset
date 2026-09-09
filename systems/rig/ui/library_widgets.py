@@ -67,6 +67,7 @@ class StepButton(QtWidgets.QPushButton):
         self.number = number
         self.title = title
         self.subtitle = subtitle
+        self.stage_state = "available"
         self.setObjectName("WorkflowStep")
         self.setCheckable(True)
         self.setMinimumWidth(155)
@@ -74,11 +75,20 @@ class StepButton(QtWidgets.QPushButton):
         self.setAccessibleName("{} {} {}".format(number, title, subtitle))
         self.setCursor(Qt.PointingHandCursor)
 
+    def set_stage_state(self, state):
+        u"""设置 available / current / completed / locked 视觉状态。"""
+        self.stage_state = state
+        self.setEnabled(state != "locked")
+        self.setChecked(state == "current")
+        self.update()
+
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         rect = self.rect()
-        color = "#e1f680" if self.isChecked() else "#fbfcf8"
+        color = "#e1f680" if self.stage_state == "current" else "#fbfcf8"
+        if self.stage_state == "completed":
+            color = "#f1f7d8"
         painter.fillRect(rect, QtGui.QColor(color))
         painter.setPen(QtGui.QPen(QtGui.QColor("#dce0d4"), 1))
         painter.drawLine(rect.right(), 0, rect.right() - 38, rect.bottom())
@@ -94,9 +104,20 @@ class StepButton(QtWidgets.QPushButton):
         painter.drawText(QtCore.QRect(77, 17, rect.width() - 78, 23), Qt.AlignLeft | Qt.AlignVCenter, self.title)
         painter.setFont(QtGui.QFont("Microsoft YaHei UI", 9))
         painter.drawText(QtCore.QRect(77, 42, rect.width() - 80, 18), Qt.AlignLeft | Qt.AlignVCenter, self.subtitle)
-        if self.isChecked():
+        if self.stage_state == "current":
             painter.setPen(QtGui.QPen(QtGui.QColor("#4f6034"), 1))
             painter.drawLine(78, 66, rect.width() - 31, 66)
+        elif self.stage_state == "completed":
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QtGui.QColor("#aacb37"))
+            painter.drawEllipse(rect.width() - 28, 15, 16, 16)
+            painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff"), 1.7))
+            painter.drawLine(rect.width() - 24, 23, rect.width() - 21, 26)
+            painter.drawLine(rect.width() - 21, 26, rect.width() - 16, 20)
+        elif self.stage_state == "locked":
+            painter.setPen(QtGui.QColor("#a9afa8"))
+            painter.setFont(QtGui.QFont("Segoe UI", 8))
+            painter.drawText(QtCore.QRect(rect.width() - 45, 12, 34, 18), Qt.AlignCenter, "LOCK")
         if self.hasFocus():
             painter.setPen(QtGui.QPen(QtGui.QColor("#769523"), 2))
             painter.drawRect(rect.adjusted(2, 2, -3, -3))
