@@ -116,7 +116,7 @@ class RigLibraryQtTests(unittest.TestCase):
         self.assertFalse(root.child(0).isHidden())
         self.assertNotIn(u"场景节点", self.window.structure_note.text())
 
-    def test_setup_mirror_button_updates_paired_module(self):
+    def test_structure_context_menu_mirrors_paired_module(self):
         self.window.add_selected_template()
         source = self.service.document["modules"][0]
         target = self.service.document["modules"][1]
@@ -126,13 +126,25 @@ class RigLibraryQtTests(unittest.TestCase):
             self.service.cmds.createNode("transform", name=source_guides[index])
             self.service.cmds.createNode("transform", name=target_guides[index])
             self.service.cmds.xform(source_guides[index], translation=[index + 1.0, 2.0, 3.0])
-        self.assertTrue(self.window.mirror_button.isEnabled())
-        self.assertIn(u"右侧", self.window.mirror_button.text())
+        root = self.window.module_tree.topLevelItem(0)
+        source_item = root.child(0)
+        self.window.module_tree.setCurrentItem(source_item)
+        self.assertEqual(self.window.module_tree.contextMenuPolicy(), Qt.CustomContextMenu)
+        menu = self.window.create_structure_context_menu(source_item)
+        self.assertEqual(len(menu.actions()), 1)
+        self.assertTrue(menu.actions()[0].isEnabled())
+        self.assertIn(u"右侧", menu.actions()[0].text())
 
-        self.window.mirror_current_module()
+        menu.actions()[0].trigger()
+        application.processEvents()
 
         self.assertEqual(self.service.cmds.xform(target_guides[0], query=True), [-1.0, 2.0, 3.0])
         self.assertIn("RT", self.window.status_label.text())
+        root = self.window.module_tree.topLevelItem(0)
+        center_menu = self.window.create_structure_context_menu(root.child(2))
+        self.assertFalse(center_menu.actions()[0].isEnabled())
+        self.assertIn(u"中央模块", center_menu.actions()[0].text())
+        self.assertIsNone(self.window.create_structure_context_menu(root))
 
     def test_inline_validation_preserves_records(self):
         self.window.add_selected_module()

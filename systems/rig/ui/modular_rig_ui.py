@@ -176,11 +176,13 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.module_tree.setIndentation(17)
         self.module_tree.setUniformRowHeights(True)
         self.module_tree.setAnimated(False)
+        self.module_tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.module_tree.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         self.module_tree.header().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
         self.module_tree.header().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
         self.module_tree.currentItemChanged.connect(self.tree_selected)
         self.module_tree.itemDoubleClicked.connect(self.select_tree_nodes)
+        self.module_tree.customContextMenuRequested.connect(self.show_structure_context_menu)
         center.addWidget(self.module_tree, 1)
         self.empty_label = label(u"从左侧添加模块，\n或选择 Face Starter 模板开始。", "muted")
         self.empty_label.setAlignment(Qt.AlignCenter)
@@ -269,9 +271,6 @@ class ModularRigWindow(QtWidgets.QWidget):
         basic.form.addRow("Side", self.side_combo)
         self.parent_label = label(u"Rig Library / 默认根组", "muted")
         basic.form.addRow("Parent", self.parent_label)
-        self.mirror_button = button(u"镜像到另一侧", self.mirror_current_module,
-                                    u"复制模块设置，并将 Guide 定位沿世界 X=0 镜像到配对模块")
-        basic.form.addRow(self.mirror_button)
         layout.addWidget(basic)
 
         guides = Section("Guide / 定位设置")
@@ -504,10 +503,6 @@ class ModularRigWindow(QtWidgets.QWidget):
             self.name_edit.setEnabled(not record["built"] and record["kind"] == "fk_chain")
             self.side_combo.setCurrentIndex(self.side_combo.findData(record["side"]))
             self.side_combo.setEnabled(not record["built"] and record["kind"] != "tongue")
-            mirrorable = record["side"] in ("lf", "rt") and not record["built"]
-            self.mirror_button.setEnabled(mirrorable)
-            destination = u"右侧" if record["side"] == "lf" else u"左侧"
-            self.mirror_button.setText(u"镜像设置与定位到{}".format(destination) if mirrorable else u"当前模块不可镜像")
             self.axis_combo.setCurrentText(record["ctrl_axis"])
             self.size_spin.setValue(record["ctrl_size"])
             self.color_spin.setValue(record["ctrl_color"])
@@ -602,6 +597,52 @@ class ModularRigWindow(QtWidgets.QWidget):
             lambda: self.service.mirror_module(self.current_id),
             lambda result: u"已镜像到{}：{} 个 Guide 定位。".format(
                 result["side"].upper(), result["guide_count"]))
+
+    def create_structure_context_menu(self, item):
+        u"""为模块行创建右键菜单；根节点不提供模块操作。"""
+        if item is None:
+            return None
+        identity = item.data(0, Qt.UserRole)
+        if identity is None:
+            return None
+        record = None
+        for candidate in self.service.document["modules"]:
+            if candidate["id"] == identity:
+                record = candidate
+                break
+        if record is None:
+            return None
+
+        menu = QtWidgets.QMenu(self.module_tree)
+        if record["built"]:
+            text = u"已构建模块不可镜像"
+            enabled = False
+        elif record["side"] not in ("lf", "rt"):
+            text = u"中央模块不需要镜像"
+            enabled = False
+        else:
+            destination = u"右侧" if record["side"] == "lf" else u"左侧"
+            text = u"镜像设置与定位到{}".format(destination)
+            enabled = True
+        action = menu.addAction(text)
+        action.setEnabled(enabled)
+        action.setToolTip(u"沿世界 X=0 镜像到配对模块")
+        action.triggered.connect(lambda checked=False: self.mirror_current_module())
+        return menu
+
+    def show_structure_context_menu(self, position):
+        u"""在鼠标所在模块行显示镜像操作。"""
+        item = self.module_tree.itemAt(position)
+        menu = self.create_structure_context_menu(item)
+        if menu is None:
+            return
+        self.module_tree.setCurrentItem(item)
+        global_position = self.module_tree.viewport().mapToGlobal(position)
+        execute = getattr(menu, "exec_", None)
+        if execute is None:
+            execute = menu.exec
+        execute(global_position)
+        menu.deleteLater()
 
     def set_step(self, number, *args):
         u"""四段导航对应真实能力，Ctrl 阶段一次完成骨骼和控制器。"""

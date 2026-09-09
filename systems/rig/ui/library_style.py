@@ -75,6 +75,10 @@ QScrollBar:vertical { background: #f7f9f1; width: 7px; margin: 0; }
 QScrollBar::handle:vertical { background: #c6d1b7; min-height: 25px; border-radius: 3px; }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
 QToolTip { background: #303e30; color: #f7faed; border: 0; padding: 6px; }
+QMenu { background: #fcfdf9; color: #2d3b33; border: 1px solid #cfd8c5; padding: 5px; }
+QMenu::item { padding: 7px 24px 7px 10px; border-radius: 2px; }
+QMenu::item:selected { background: #e1f286; color: #263522; }
+QMenu::item:disabled { color: #9ca598; background: transparent; }
 """
 
 stylesheet = stylesheet.replace("__ICON_DIR__", os.path.join(os.path.dirname(__file__), "icons").replace("\\", "/"))
