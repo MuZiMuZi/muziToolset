@@ -46,14 +46,79 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.jobs = []
 
         self.setup_window()
-        self.refresh_timer = QtCore.QTimer(self)
-        self.refresh_timer.setSingleShot(True)
-        self._create_layout()
+
+        self.create_widgets()
+        self.create_layouts()
         self.create_connections()
+
         self.apply_style()
+
         self.load_data()
         self.refresh_ui()
         self._start_scene_jobs()
+
+    # =========================================================
+    # UI Creation
+    # =========================================================
+
+    def create_widgets(self):
+        u"""创建窗口级、标题和步骤控件，不负责摆放。"""
+        self.refresh_timer = QtCore.QTimer(self)
+        self.refresh_timer.setSingleShot(True)
+
+        self.header = ArtHeader()
+        self.header.setObjectName("HeaderFrame")
+        self.header.setFixedHeight(89)
+        self.brand_label = label("M", "title")
+        self.brand_label.setStyleSheet("font-family: Georgia; font-size: 51px; color: #42553b;")
+        self.brand_label.setFixedWidth(58)
+        self.title_label = label("Muzi Rig Library", "title")
+        self.subtitle_label = label(
+            u"MODULAR SYSTEM   /   木子绑定库   /   CREATE WITH CLARITY",
+            "subtitle",
+        )
+        self.import_button = button(u"导入配置", u"追加 JSON 模块配置")
+        self.export_button = button(u"导出配置", u"保存模块参数；不包含 Maya 场景或 Guide 位置")
+        self.help_button = button("?", u"查看四步操作说明")
+        self.help_button.setFixedWidth(34)
+
+        self.step_buttons = []
+        step_entries = (
+            ("Setup", u"配置与层级"),
+            ("Guide", u"导入与定位"),
+            ("Ctrl", u"创建与调整"),
+            ("Final", u"检查与完成"),
+        )
+        for index, (title, subtitle) in enumerate(step_entries, 1):
+            self.step_buttons.append(StepButton(index, title, subtitle))
+
+    def create_layouts(self):
+        u"""创建窗口布局骨架；后续分栏会继续按面板逐步拆分。"""
+        self._create_layout()
+
+    def create_header_layout(self):
+        u"""摆放品牌区和窗口级操作按钮。"""
+        header_layout = QtWidgets.QHBoxLayout(self.header)
+        header_layout.setContentsMargins(16, 8, 16, 8)
+        header_layout.addWidget(self.brand_label)
+        titles = QtWidgets.QVBoxLayout()
+        titles.setSpacing(2)
+        titles.addWidget(self.title_label)
+        titles.addWidget(self.subtitle_label)
+        header_layout.addLayout(titles)
+        header_layout.addStretch(1)
+        header_layout.addWidget(self.import_button)
+        header_layout.addWidget(self.export_button)
+        header_layout.addWidget(self.help_button)
+        return self.header
+
+    def create_step_layout(self):
+        u"""摆放四步工作流导航。"""
+        steps = QtWidgets.QHBoxLayout()
+        steps.setSpacing(1)
+        for step_button in self.step_buttons:
+            steps.addWidget(step_button, 1)
+        return steps
 
     # =========================================================
     # Window
@@ -155,40 +220,8 @@ class ModularRigWindow(QtWidgets.QWidget):
         main = QtWidgets.QVBoxLayout(self)
         main.setContentsMargins(20, 15, 20, 15)
         main.setSpacing(10)
-        header = ArtHeader()
-        header.setObjectName("HeaderFrame")
-        header.setFixedHeight(89)
-        header_layout = QtWidgets.QHBoxLayout(header)
-        header_layout.setContentsMargins(16, 8, 16, 8)
-        brand = label("M", "title")
-        brand.setStyleSheet("font-family: Georgia; font-size: 51px; color: #42553b;")
-        brand.setFixedWidth(58)
-        header_layout.addWidget(brand)
-        titles = QtWidgets.QVBoxLayout()
-        titles.setSpacing(2)
-        titles.addWidget(label("Muzi Rig Library", "title"))
-        titles.addWidget(label(u"MODULAR SYSTEM   /   木子绑定库   /   CREATE WITH CLARITY", "subtitle"))
-        header_layout.addLayout(titles)
-        header_layout.addStretch(1)
-        self.import_button = button(u"导入配置", u"追加 JSON 模块配置")
-        self.export_button = button(u"导出配置", u"保存模块参数；不包含 Maya 场景或 Guide 位置")
-        self.help_button = button("?", u"查看四步操作说明")
-        self.help_button.setFixedWidth(34)
-        header_layout.addWidget(self.import_button)
-        header_layout.addWidget(self.export_button)
-        header_layout.addWidget(self.help_button)
-        main.addWidget(header)
-
-        steps = QtWidgets.QHBoxLayout()
-        steps.setSpacing(1)
-        self.step_buttons = []
-        entries = (("Setup", u"配置与层级"), ("Guide", u"导入与定位"),
-                   ("Ctrl", u"创建与调整"), ("Final", u"检查与完成"))
-        for index, (title, subtitle) in enumerate(entries, 1):
-            widget = StepButton(index, title, subtitle)
-            self.step_buttons.append(widget)
-            steps.addWidget(widget, 1)
-        main.addLayout(steps)
+        main.addWidget(self.create_header_layout())
+        main.addLayout(self.create_step_layout())
 
         self.splitter = QtWidgets.QSplitter(Qt.Horizontal)
         self.splitter.setChildrenCollapsible(False)
