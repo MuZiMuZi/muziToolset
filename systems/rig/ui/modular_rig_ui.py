@@ -117,6 +117,26 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.template_note = label(u"模板仅组合当前可用模块，不包含 Maya 场景数据。", "muted")
         self.template_note.setWordWrap(True)
 
+        self.tree_search = QtWidgets.QLineEdit()
+        self.tree_search.setPlaceholderText(u"搜索结构 / Search hierarchy...")
+        self.structure_add_button = button(u"+ 添加", u"切换到左侧模块库")
+        self.remove_button = button(u"移除", u"仅移除尚未构建的模块配置")
+        self.refresh_button = button(u"刷新")
+        self.module_tree = QtWidgets.QTreeWidget()
+        self.module_tree.setColumnCount(3)
+        self.module_tree.setHeaderLabels([u"模块", u"侧", u"状态"])
+        self.module_tree.setIndentation(17)
+        self.module_tree.setUniformRowHeights(True)
+        self.module_tree.setAnimated(False)
+        self.module_tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.module_tree.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        self.module_tree.header().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+        self.module_tree.header().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
+        self.empty_label = label(u"从左侧添加模块，\n或选择 Face Starter 模板开始。", "muted")
+        self.empty_label.setAlignment(Qt.AlignCenter)
+        self.structure_note = label(u"双击模块可在 Maya 中选中其现有节点。", "muted")
+        self.structure_note.setWordWrap(True)
+
     def create_layouts(self):
         u"""创建窗口布局骨架；后续分栏会继续按面板逐步拆分。"""
         self._create_layout()
@@ -170,6 +190,24 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.library_tabs.addTab(self.template_page, u"TEMPLATES  03")
         panel_layout.addWidget(self.library_tabs, 1)
         return self.left_panel
+
+    def create_rig_structure_panel(self):
+        u"""摆放场景模块树及其工具栏，不创建控件。"""
+        self.center_panel, panel_layout = self._panel("RIG STRUCTURE", "SCENE")
+        self.center_panel.setMinimumWidth(315)
+        panel_layout.addWidget(self.tree_search)
+
+        toolbar = QtWidgets.QHBoxLayout()
+        toolbar.addWidget(self.structure_add_button)
+        toolbar.addWidget(self.remove_button)
+        toolbar.addStretch(1)
+        toolbar.addWidget(self.refresh_button)
+        panel_layout.addLayout(toolbar)
+
+        panel_layout.addWidget(self.module_tree, 1)
+        panel_layout.addWidget(self.empty_label)
+        panel_layout.addWidget(self.structure_note)
+        return self.center_panel
 
     # =========================================================
     # Window
@@ -276,38 +314,7 @@ class ModularRigWindow(QtWidgets.QWidget):
 
         self.splitter.addWidget(self.create_module_panel())
 
-        self.center_panel, center = self._panel("RIG STRUCTURE", "SCENE")
-        self.center_panel.setMinimumWidth(315)
-        self.tree_search = QtWidgets.QLineEdit()
-        self.tree_search.setPlaceholderText(u"搜索结构 / Search hierarchy...")
-        center.addWidget(self.tree_search)
-        toolbar = QtWidgets.QHBoxLayout()
-        self.structure_add_button = button(u"+ 添加", u"切换到左侧模块库")
-        toolbar.addWidget(self.structure_add_button)
-        self.remove_button = button(u"移除", u"仅移除尚未构建的模块配置")
-        toolbar.addWidget(self.remove_button)
-        toolbar.addStretch(1)
-        self.refresh_button = button(u"刷新")
-        toolbar.addWidget(self.refresh_button)
-        center.addLayout(toolbar)
-        self.module_tree = QtWidgets.QTreeWidget()
-        self.module_tree.setColumnCount(3)
-        self.module_tree.setHeaderLabels([u"模块", u"侧", u"状态"])
-        self.module_tree.setIndentation(17)
-        self.module_tree.setUniformRowHeights(True)
-        self.module_tree.setAnimated(False)
-        self.module_tree.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.module_tree.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
-        self.module_tree.header().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
-        self.module_tree.header().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
-        center.addWidget(self.module_tree, 1)
-        self.empty_label = label(u"从左侧添加模块，\n或选择 Face Starter 模板开始。", "muted")
-        self.empty_label.setAlignment(Qt.AlignCenter)
-        center.addWidget(self.empty_label)
-        self.structure_note = label(u"双击模块可在 Maya 中选中其现有节点。", "muted")
-        self.structure_note.setWordWrap(True)
-        center.addWidget(self.structure_note)
-        self.splitter.addWidget(self.center_panel)
+        self.splitter.addWidget(self.create_rig_structure_panel())
 
         self.right_panel, right = self._panel("PROPERTIES", "MODULE")
         self.right_panel.setMinimumWidth(410)
