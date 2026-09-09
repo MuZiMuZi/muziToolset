@@ -214,7 +214,7 @@ createNode transform -n "zero_lf_ear_guide_001" -p "grp_md_ear_guide_001";
 	setAttr ".sp" -type "double3" 57.396249988682236 145.50662663491426 89.584364431345577 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.15000001 0.40000001 0.94999999 ;
-createNode transform -n "loc_lf_ear_guide_001" -p "zero_lf_ear_guide_001";
+createNode transform -n "loc_lf_ear_bind_001" -p "zero_lf_ear_guide_001";
 	rename -uid "40ED29BB-4B6A-335F-81A6-4BB525D1E635";
 	setAttr ".t" -type "double3" 45.944458946915773 -17.392176016747726 84.515780835539815 ;
 	setAttr ".r" -type "double3" 14.402794894414733 -20.517611544491459 8.4899510036892873e-16 ;
@@ -222,7 +222,7 @@ createNode transform -n "loc_lf_ear_guide_001" -p "zero_lf_ear_guide_001";
 	setAttr ".sp" -type "double3" 7.4274153709411621 161.73292541503906 -2.7666976451873788 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.15000001 0.40000001 0.94999999 ;
-createNode locator -n "loc_lf_ear_guide_001Shape" -p "loc_lf_ear_guide_001";
+createNode locator -n "loc_lf_ear_bind_001Shape" -p "loc_lf_ear_bind_001";
 	rename -uid "8A9519BB-46E2-1991-152A-57A7B65D43D2";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -231,20 +231,20 @@ createNode locator -n "loc_lf_ear_guide_001Shape" -p "loc_lf_ear_guide_001";
 	setAttr ".ovrgb" -type "float3" 0.15000001 0.40000001 0.94999999 ;
 	setAttr ".lp" -type "double3" 7.4274153709411621 161.73292541503906 -2.7666976451873788 ;
 	setAttr ".los" -type "double3" 4.8999999999999995 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_lf_ear_guide_002" -p "loc_lf_ear_guide_001";
+createNode transform -n "zero_lf_ear_guide_002" -p "loc_lf_ear_bind_001";
 	rename -uid "65CC830E-45CC-33BE-A1D9-F2BB29D5F329";
 	setAttr ".rp" -type "double3" 8.5352792739868164 162.33744812011719 -5.2081689834594727 ;
 	setAttr ".sp" -type "double3" 8.5352792739868164 162.33744812011719 -5.2081689834594727 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.15000001 0.40000001 0.94999999 ;
-createNode transform -n "loc_lf_ear_guide_002" -p "zero_lf_ear_guide_002";
+createNode transform -n "loc_lf_ear_bind_002" -p "zero_lf_ear_guide_002";
 	rename -uid "3269AFEF-4C80-14C1-4F5D-20B116EFCBDD";
 	setAttr ".t" -type "double3" 0 0 -9.3147123328639339 ;
 	setAttr ".rp" -type "double3" 8.5352792739868164 162.33744812011719 -5.2081689834594727 ;
 	setAttr ".sp" -type "double3" 8.5352792739868164 162.33744812011719 -5.2081689834594727 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.15000001 0.40000001 0.94999999 ;
-createNode locator -n "loc_lf_ear_guide_002Shape" -p "loc_lf_ear_guide_002";
+createNode locator -n "loc_lf_ear_bind_002Shape" -p "loc_lf_ear_bind_002";
 	rename -uid "A845CA58-444C-9ACD-D54B-528D5DF32F28";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -253,20 +253,20 @@ createNode locator -n "loc_lf_ear_guide_002Shape" -p "loc_lf_ear_guide_002";
 	setAttr ".ovrgb" -type "float3" 0.15000001 0.40000001 0.94999999 ;
 	setAttr ".lp" -type "double3" 8.5352792739868164 162.33744812011719 -5.2081689834594727 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_lf_ear_guide_003" -p "loc_lf_ear_guide_002";
+createNode transform -n "zero_lf_ear_guide_003" -p "loc_lf_ear_bind_002";
 	rename -uid "35825FF9-47DC-BE7C-AE3E-86AC8464C51D";
 	setAttr ".rp" -type "double3" 9.6498956680297852 163.15933227539062 -6.6362996101379395 ;
 	setAttr ".sp" -type "double3" 9.6498956680297852 163.15933227539062 -6.6362996101379395 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.15000001 0.40000001 0.94999999 ;
-createNode transform -n "loc_lf_ear_guide_003" -p "zero_lf_ear_guide_003";
+createNode transform -n "loc_lf_ear_bind_003" -p "zero_lf_ear_guide_003";
 	rename -uid "44E911AB-412D-5B40-70B1-C38BB066ACD9";
 	setAttr ".t" -type "double3" 0 0 -9.3147123328639339 ;
 	setAttr ".rp" -type "double3" 9.6498956680297852 163.15933227539062 -6.6362996101379395 ;
 	setAttr ".sp" -type "double3" 9.6498956680297852 163.15933227539062 -6.6362996101379395 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.15000001 0.40000001 0.94999999 ;
-createNode locator -n "loc_lf_ear_guide_003Shape" -p "loc_lf_ear_guide_003";
+createNode locator -n "loc_lf_ear_bind_003Shape" -p "loc_lf_ear_bind_003";
 	rename -uid "8BFC5C43-40FE-49A3-FC03-F3987E2864AE";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -284,51 +284,51 @@ createNode transform -n "zero_rt_ear_guide_001" -p "grp_md_ear_guide_001";
 	setAttr ".spt" -type "double3" 0 -2.8421709430403995e-14 -144.19990372290189 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.15000001 0.40000001 0.94999999 ;
-createNode transform -n "loc_rt_ear_guide_001" -p "zero_rt_ear_guide_001";
+createNode transform -n "loc_rt_ear_bind_001" -p "zero_rt_ear_guide_001";
 	rename -uid "891EFB9A-41D3-F9CE-B95D-46A3963473FA";
 	setAttr ".rp" -type "double3" 7.4274153709411621 161.73292541503906 -2.7666976451873788 ;
 	setAttr ".sp" -type "double3" 7.4274153709411621 161.73292541503906 -2.7666976451873788 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.15000001 0.40000001 0.94999999 ;
-createNode locator -n "loc_rt_ear_guide_001Shape" -p "loc_rt_ear_guide_001";
+createNode locator -n "loc_rt_ear_bind_001Shape" -p "loc_rt_ear_bind_001";
 	rename -uid "644F8CC8-4DC0-9920-2ABB-B38992114493";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
 	setAttr ".ovrgbf" yes;
 	setAttr ".ovc" 6;
 	setAttr ".ovrgb" -type "float3" 0.15000001 0.40000001 0.94999999 ;
-createNode transform -n "zero_rt_ear_guide_002" -p "loc_rt_ear_guide_001";
+createNode transform -n "zero_rt_ear_guide_002" -p "loc_rt_ear_bind_001";
 	rename -uid "D21BBDD3-4ABE-4798-65FF-13A329711B4F";
 	setAttr ".rp" -type "double3" 8.5352792739868164 162.33744812011719 -5.2081689834594727 ;
 	setAttr ".sp" -type "double3" 8.5352792739868164 162.33744812011719 -5.2081689834594727 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.15000001 0.40000001 0.94999999 ;
-createNode transform -n "loc_rt_ear_guide_002" -p "zero_rt_ear_guide_002";
+createNode transform -n "loc_rt_ear_bind_002" -p "zero_rt_ear_guide_002";
 	rename -uid "3369C588-49A0-3093-6956-29B8428EE243";
 	setAttr ".rp" -type "double3" 8.5352792739868164 162.33744812011719 -5.2081689834594727 ;
 	setAttr ".sp" -type "double3" 8.5352792739868164 162.33744812011719 -5.2081689834594727 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.15000001 0.40000001 0.94999999 ;
-createNode locator -n "loc_rt_ear_guide_002Shape" -p "loc_rt_ear_guide_002";
+createNode locator -n "loc_rt_ear_bind_002Shape" -p "loc_rt_ear_bind_002";
 	rename -uid "5A43E96E-4597-6486-2C6C-1B8FD37069CA";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
 	setAttr ".ovrgbf" yes;
 	setAttr ".ovc" 6;
 	setAttr ".ovrgb" -type "float3" 0.15000001 0.40000001 0.94999999 ;
-createNode transform -n "zero_rt_ear_guide_003" -p "loc_rt_ear_guide_002";
+createNode transform -n "zero_rt_ear_guide_003" -p "loc_rt_ear_bind_002";
 	rename -uid "F525A85C-4A54-0F31-3930-7CB2C8AC7EB0";
 	setAttr ".rp" -type "double3" 9.6498956680297852 163.15933227539062 -6.6362996101379395 ;
 	setAttr ".sp" -type "double3" 9.6498956680297852 163.15933227539062 -6.6362996101379395 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.15000001 0.40000001 0.94999999 ;
-createNode transform -n "loc_rt_ear_guide_003" -p "zero_rt_ear_guide_003";
+createNode transform -n "loc_rt_ear_bind_003" -p "zero_rt_ear_guide_003";
 	rename -uid "DCEDE493-4EB8-FBFA-ECE1-56A212CE36E6";
 	setAttr ".rp" -type "double3" 9.6498956680297852 163.15933227539062 -6.6362996101379395 ;
 	setAttr ".sp" -type "double3" 9.6498956680297852 163.15933227539062 -6.6362996101379395 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.15000001 0.40000001 0.94999999 ;
-createNode locator -n "loc_rt_ear_guide_003Shape" -p "loc_rt_ear_guide_003";
+createNode locator -n "loc_rt_ear_bind_003Shape" -p "loc_rt_ear_bind_003";
 	rename -uid "DE756C1F-4A20-E282-649F-A1AAF8042B02";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -395,7 +395,7 @@ createNode transform -n "zero_md_muzzle_guide_001" -p "grp_md_nose_guide_001";
 	setAttr ".sp" -type "double3" 0 161.21337924600084 133.36231185566166 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.72000003 0.72000003 0.72000003 ;
-createNode transform -n "loc_md_muzzle_guide_001" -p "zero_md_muzzle_guide_001";
+createNode transform -n "loc_md_muzzle_bind_001" -p "zero_md_muzzle_guide_001";
 	rename -uid "4D18D812-4537-7197-AD98-47B8B09E9F7B";
 	setAttr ".t" -type "double3" 0 -26.271796813103492 70.37691591786735 ;
 	setAttr -l on ".tx";
@@ -403,14 +403,14 @@ createNode transform -n "loc_md_muzzle_guide_001" -p "zero_md_muzzle_guide_001";
 	setAttr ".sp" -type "double3" 0 187.48517605910428 62.985395937794308 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.72000003 0.72000003 0.72000003 ;
-createNode locator -n "loc_md_muzzle_guide_001Shape" -p "loc_md_muzzle_guide_001";
+createNode locator -n "loc_md_muzzle_bind_001Shape" -p "loc_md_muzzle_bind_001";
 	rename -uid "CE05E7BA-4D15-E59D-0171-218550331353";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
 	setAttr ".ovc" 16;
 	setAttr ".lp" -type "double3" 0 187.48517605910433 62.985395937794308 ;
 	setAttr ".los" -type "double3" 4.8999999999999995 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_md_nose_guide_001" -p "loc_md_muzzle_guide_001";
+createNode transform -n "zero_md_nose_guide_001" -p "loc_md_muzzle_bind_001";
 	rename -uid "CF59807D-49C5-4860-48CC-97B6D7BDBD89";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -425,7 +425,7 @@ createNode transform -n "zero_md_nose_guide_001" -p "loc_md_muzzle_guide_001";
 	setAttr ".sp" -type "double3" -3.9944532589595495e-16 162.54214477539057 6.2591342926025391 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.18000001 0.88 0.31999999 ;
-createNode transform -n "loc_md_nose_guide_001" -p "zero_md_nose_guide_001";
+createNode transform -n "loc_md_nose_bind_001" -p "zero_md_nose_guide_001";
 	rename -uid "E52885D0-4EE5-CC30-BF4C-F686FEEA9DD8";
 	setAttr ".t" -type "double3" 0 17.785676901527609 61.405784484233024 ;
 	setAttr -l on ".tx";
@@ -433,7 +433,7 @@ createNode transform -n "loc_md_nose_guide_001" -p "zero_md_nose_guide_001";
 	setAttr ".sp" -type "double3" -3.9944532589595495e-16 162.54214477539057 6.2591342926025391 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.18000001 0.88 0.31999999 ;
-createNode locator -n "loc_md_nose_guide_001Shape" -p "loc_md_nose_guide_001";
+createNode locator -n "loc_md_nose_bind_001Shape" -p "loc_md_nose_bind_001";
 	rename -uid "1F5A2723-4C19-5818-5249-40B39D7ED531";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -442,7 +442,7 @@ createNode locator -n "loc_md_nose_guide_001Shape" -p "loc_md_nose_guide_001";
 	setAttr ".ovrgb" -type "float3" 0.18000001 0.88 0.31999999 ;
 	setAttr ".lp" -type "double3" -3.9944532589595495e-16 162.54214477539062 6.2591342926025391 ;
 	setAttr ".los" -type "double3" 4.8999999999999995 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_md_nose_center_guide_001" -p "loc_md_nose_guide_001";
+createNode transform -n "zero_md_nose_center_guide_001" -p "loc_md_nose_bind_001";
 	rename -uid "11CBA3F4-4F2A-E355-8D34-388B6D885361";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -457,7 +457,7 @@ createNode transform -n "zero_md_nose_center_guide_001" -p "loc_md_nose_guide_00
 	setAttr ".sp" -type "double3" 0.0031950360898326115 159.34211938672212 8.1356919210806247 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.18000001 0.88 0.31999999 ;
-createNode transform -n "loc_md_nose_center_guide_001" -p "zero_md_nose_center_guide_001";
+createNode transform -n "loc_md_nose_center_bind_001" -p "zero_md_nose_center_guide_001";
 	rename -uid "6D883B1E-495A-D067-7EB6-B7BEFB74C1D5";
 	setAttr ".t" -type "double3" 0 -12.568160097719669 1.2544033208710204 ;
 	setAttr -l on ".tx";
@@ -465,7 +465,7 @@ createNode transform -n "loc_md_nose_center_guide_001" -p "zero_md_nose_center_g
 	setAttr ".sp" -type "double3" 0.0031950360898326115 159.34211938672212 8.1356919210806247 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.18000001 0.88 0.31999999 ;
-createNode locator -n "loc_md_nose_center_guide_001Shape" -p "loc_md_nose_center_guide_001";
+createNode locator -n "loc_md_nose_center_bind_001Shape" -p "loc_md_nose_center_bind_001";
 	rename -uid "4B0368C9-4B1C-F6FB-3B1C-A3833FC5E0D3";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -474,7 +474,7 @@ createNode locator -n "loc_md_nose_center_guide_001Shape" -p "loc_md_nose_center
 	setAttr ".ovrgb" -type "float3" 0.18000001 0.88 0.31999999 ;
 	setAttr ".lp" -type "double3" 0.0031950360898326115 159.34211938672217 8.1356919210806247 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_md_nose_front_guide_001" -p "loc_md_nose_center_guide_001";
+createNode transform -n "zero_md_nose_front_guide_001" -p "loc_md_nose_center_bind_001";
 	rename -uid "2A8FC1FD-451A-54FD-6874-DEBCD92057F3";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -489,7 +489,7 @@ createNode transform -n "zero_md_nose_front_guide_001" -p "loc_md_nose_center_gu
 	setAttr ".sp" -type "double3" 0.0019079342662663412 159.5866186092249 9.3060853632271474 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.18000001 0.88 0.31999999 ;
-createNode transform -n "loc_md_nose_front_guide_001" -p "zero_md_nose_front_guide_001";
+createNode transform -n "loc_md_nose_front_bind_001" -p "zero_md_nose_front_guide_001";
 	rename -uid "C01EAB6F-4473-C167-6895-2FBBC30FEC1D";
 	setAttr ".t" -type "double3" 0 2.3078078170142362 10.126013960805906 ;
 	setAttr -l on ".tx";
@@ -497,7 +497,7 @@ createNode transform -n "loc_md_nose_front_guide_001" -p "zero_md_nose_front_gui
 	setAttr ".sp" -type "double3" 0.0019079342662671195 159.58661860922496 9.3060853632271474 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.18000001 0.88 0.31999999 ;
-createNode locator -n "loc_md_nose_front_guide_001Shape" -p "loc_md_nose_front_guide_001";
+createNode locator -n "loc_md_nose_front_bind_001Shape" -p "loc_md_nose_front_bind_001";
 	rename -uid "1EAE70B7-4251-54A9-AB32-C8B54B1D4475";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -506,7 +506,7 @@ createNode locator -n "loc_md_nose_front_guide_001Shape" -p "loc_md_nose_front_g
 	setAttr ".ovrgb" -type "float3" 0.18000001 0.88 0.31999999 ;
 	setAttr ".lp" -type "double3" 0.0019079342662663412 159.58661860922496 9.3060853632271474 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_lf_nose_side_guide_001" -p "loc_md_nose_center_guide_001";
+createNode transform -n "zero_lf_nose_side_guide_001" -p "loc_md_nose_center_bind_001";
 	rename -uid "8B695B07-4C8C-8780-85AC-09A573A2B4C7";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -521,12 +521,12 @@ createNode transform -n "zero_lf_nose_side_guide_001" -p "loc_md_nose_center_gui
 	setAttr ".sp" -type "double3" 1.45680555141727 159.19060817425753 7.6486067491517842 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.18000001 0.88 0.31999999 ;
-createNode transform -n "loc_lf_nose_side_guide_001" -p "zero_lf_nose_side_guide_001";
+createNode transform -n "loc_lf_nose_side_bind_001" -p "zero_lf_nose_side_guide_001";
 	rename -uid "6CBB9BDB-449A-FB15-EB96-B6A530A86DC8";
 	setAttr ".t" -type "double3" 9.1657981872558594 155.86830337936408 7.6563758591335755 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.18000001 0.88 0.31999999 ;
-createNode locator -n "loc_lf_nose_side_guide_001Shape" -p "loc_lf_nose_side_guide_001";
+createNode locator -n "loc_lf_nose_side_bind_001Shape" -p "loc_lf_nose_side_bind_001";
 	rename -uid "FA5914B1-485A-C5F0-4C5D-4EB985E58BE2";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -534,7 +534,7 @@ createNode locator -n "loc_lf_nose_side_guide_001Shape" -p "loc_lf_nose_side_gui
 	setAttr ".ovc" 14;
 	setAttr ".ovrgb" -type "float3" 0.18000001 0.88 0.31999999 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_md_nose_down_guide_001" -p "loc_md_nose_center_guide_001";
+createNode transform -n "zero_md_nose_down_guide_001" -p "loc_md_nose_center_bind_001";
 	rename -uid "CC922EAF-4227-3354-456E-FC86A2FFDC99";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -549,13 +549,13 @@ createNode transform -n "zero_md_nose_down_guide_001" -p "loc_md_nose_center_gui
 	setAttr ".sp" -type "double3" 0.0019079342662663412 159.5866186092249 9.3060853632271474 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.18000001 0.88 0.31999999 ;
-createNode transform -n "loc_md_nose_down_guide_001" -p "zero_md_nose_down_guide_001";
+createNode transform -n "loc_md_nose_down_bind_001" -p "zero_md_nose_down_guide_001";
 	rename -uid "4C26B402-447C-04EE-019B-C99BA7F7C0A6";
 	setAttr ".t" -type "double3" 0 151.89918716842658 9.768390629641388 ;
 	setAttr -l on ".tx";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.18000001 0.88 0.31999999 ;
-createNode locator -n "loc_md_nose_down_guide_001Shape" -p "loc_md_nose_down_guide_001";
+createNode locator -n "loc_md_nose_down_bind_001Shape" -p "loc_md_nose_down_bind_001";
 	rename -uid "6DE87144-4265-C43F-6F5B-17ABB95CF9DC";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -563,16 +563,16 @@ createNode locator -n "loc_md_nose_down_guide_001Shape" -p "loc_md_nose_down_gui
 	setAttr ".ovc" 14;
 	setAttr ".ovrgb" -type "float3" 0.18000001 0.88 0.31999999 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_rt_nose_side_guide_001" -p "loc_md_nose_center_guide_001";
+createNode transform -n "zero_rt_nose_side_guide_001" -p "loc_md_nose_center_bind_001";
 	rename -uid "14B798A8-4F12-299A-A6CE-2D9E66A0401F";
 	setAttr ".s" -type "double3" -1 1 1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.18000001 0.88 0.31999999 ;
-createNode transform -n "loc_rt_nose_side_guide_001" -p "zero_rt_nose_side_guide_001";
+createNode transform -n "loc_rt_nose_side_bind_001" -p "zero_rt_nose_side_guide_001";
 	rename -uid "CDF58CBC-4E14-72ED-E81A-C4802426B7BD";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.18000001 0.88 0.31999999 ;
-createNode locator -n "loc_rt_nose_side_guide_001Shape" -p "loc_rt_nose_side_guide_001";
+createNode locator -n "loc_rt_nose_side_bind_001Shape" -p "loc_rt_nose_side_bind_001";
 	rename -uid "EF85F99D-4F94-3FB8-9F7D-C4896B29F1CD";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -626,14 +626,14 @@ createNode transform -n "zero_lf_eye_ball_guide_001" -p "grp_md_eye_ball_guide_0
 	setAttr ".sp" -type "double3" 3.6603161618113518 163.24768972396845 2.9115569144487363 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.81999999 1 ;
-createNode transform -n "loc_lf_eye_ball_guide_001" -p "zero_lf_eye_ball_guide_001";
+createNode transform -n "loc_lf_eye_ball_001" -p "zero_lf_eye_ball_guide_001";
 	rename -uid "3BE697E1-4248-733D-861C-B0BB3D044C7D";
 	setAttr ".t" -type "double3" 21.69341666251421 -3.0030938441342983 111.2736953193286 ;
 	setAttr ".rp" -type "double3" 3.6603161618113518 163.24768972396845 2.9115569144487363 ;
 	setAttr ".sp" -type "double3" 3.6603161618113518 163.24768972396845 2.9115569144487363 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.81999999 1 ;
-createNode locator -n "loc_lf_eye_ball_guide_001Shape" -p "loc_lf_eye_ball_guide_001";
+createNode locator -n "loc_lf_eye_ball_001Shape" -p "loc_lf_eye_ball_001";
 	rename -uid "3F79A2CB-417C-E79F-3448-C4A2C1842DCF";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -642,7 +642,7 @@ createNode locator -n "loc_lf_eye_ball_guide_001Shape" -p "loc_lf_eye_ball_guide
 	setAttr ".ovrgb" -type "float3" 0 0.81999999 1 ;
 	setAttr ".lp" -type "double3" 3.6603161618113518 163.24768972396851 2.9115569144487363 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_lf_eye_iris_guide_001" -p "loc_lf_eye_ball_guide_001";
+createNode transform -n "zero_lf_eye_iris_guide_001" -p "loc_lf_eye_ball_001";
 	rename -uid "EF4692CA-4A75-6567-ADDA-93A77E0BC142";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -657,14 +657,14 @@ createNode transform -n "zero_lf_eye_iris_guide_001" -p "loc_lf_eye_ball_guide_0
 	setAttr ".sp" -type "double3" 3.6603157520294198 163.24771118164045 4.9580154418945295 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.81999999 1 ;
-createNode transform -n "loc_lf_eye_iris_guide_001" -p "zero_lf_eye_iris_guide_001";
+createNode transform -n "loc_lf_eye_iris_001" -p "zero_lf_eye_iris_guide_001";
 	rename -uid "FA3B4D53-446C-527F-7DEC-07A491CDF878";
 	setAttr ".t" -type "double3" 0.37263267487287433 -0.06343698501569861 13.780650809407236 ;
 	setAttr ".rp" -type "double3" 3.6603157520294198 163.24771118164045 4.9580154418945295 ;
 	setAttr ".sp" -type "double3" 3.6603157520294198 163.24771118164045 4.9580154418945295 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.81999999 1 ;
-createNode locator -n "loc_lf_eye_iris_guide_001Shape" -p "loc_lf_eye_iris_guide_001";
+createNode locator -n "loc_lf_eye_iris_001Shape" -p "loc_lf_eye_iris_001";
 	rename -uid "E643B8DB-4F21-6A29-DF86-38A38D44C455";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -673,14 +673,14 @@ createNode locator -n "loc_lf_eye_iris_guide_001Shape" -p "loc_lf_eye_iris_guide
 	setAttr ".ovrgb" -type "float3" 0 0.81999999 1 ;
 	setAttr ".lp" -type "double3" 3.6603157520294198 163.24771118164051 4.9580154418945295 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "loc_lf_eye_aim_guide_001" -p "zero_lf_eye_iris_guide_001";
+createNode transform -n "loc_lf_eye_aim_001" -p "zero_lf_eye_iris_guide_001";
 	rename -uid "759616F9-4F3B-28BE-43C8-7BA58DA11893";
 	setAttr ".t" -type "double3" 0.37263267487287433 -0.06343698501569861 100 ;
 	setAttr ".rp" -type "double3" 3.6603157520294198 163.24771118164045 4.9580154418945295 ;
 	setAttr ".sp" -type "double3" 3.6603157520294198 163.24771118164045 4.9580154418945295 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.81999999 1 ;
-createNode locator -n "loc_lf_eye_aim_guide_001Shape" -p "loc_lf_eye_aim_guide_001";
+createNode locator -n "loc_lf_eye_aim_001Shape" -p "loc_lf_eye_aim_001";
 	rename -uid "6B76100A-460A-EED6-7233-1D9D30899284";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -694,42 +694,42 @@ createNode transform -n "zero_rt_eye_ball_guide_001" -p "grp_md_eye_ball_guide_0
 	setAttr ".s" -type "double3" -1 1 1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.81999999 1 ;
-createNode transform -n "loc_rt_eye_ball_guide_001" -p "zero_rt_eye_ball_guide_001";
+createNode transform -n "loc_rt_eye_ball_001" -p "zero_rt_eye_ball_guide_001";
 	rename -uid "77307F82-4E05-65D9-3796-308C4DE22FC1";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.81999999 1 ;
-createNode locator -n "loc_rt_eye_ball_guide_001Shape" -p "loc_rt_eye_ball_guide_001";
+createNode locator -n "loc_rt_eye_ball_001Shape" -p "loc_rt_eye_ball_001";
 	rename -uid "31BDAAAF-442F-7AB6-84E4-D789A0D4EF50";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
 	setAttr ".ovrgbf" yes;
 	setAttr ".ovc" 18;
 	setAttr ".ovrgb" -type "float3" 0 0.81999999 1 ;
-createNode transform -n "zero_rt_eye_iris_guide_001" -p "loc_rt_eye_ball_guide_001";
+createNode transform -n "zero_rt_eye_iris_guide_001" -p "loc_rt_eye_ball_001";
 	rename -uid "AD3AE5BB-4ADC-08A5-CC42-779271EF9D35";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.81999999 1 ;
-createNode transform -n "loc_rt_eye_iris_guide_001" -p "zero_rt_eye_iris_guide_001";
+createNode transform -n "loc_rt_eye_iris_001" -p "zero_rt_eye_iris_guide_001";
 	rename -uid "2A568DC4-4669-44D3-8DA3-51B19E771E8E";
 	setAttr ".rp" -type "double3" 3.6603157520294198 163.24771118164051 4.9580154418945295 ;
 	setAttr ".sp" -type "double3" 3.6603157520294198 163.24771118164051 4.9580154418945295 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.81999999 1 ;
-createNode locator -n "loc_rt_eye_iris_guide_001Shape" -p "loc_rt_eye_iris_guide_001";
+createNode locator -n "loc_rt_eye_iris_001Shape" -p "loc_rt_eye_iris_001";
 	rename -uid "AEB24B46-47DC-F03B-4389-B1B1DE934230";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
 	setAttr ".ovrgbf" yes;
 	setAttr ".ovc" 18;
 	setAttr ".ovrgb" -type "float3" 0 0.81999999 1 ;
-createNode transform -n "loc_rt_eye_aim_guide_001" -p "zero_rt_eye_iris_guide_001";
+createNode transform -n "loc_rt_eye_aim_001" -p "zero_rt_eye_iris_guide_001";
 	rename -uid "7DBEBB2E-4913-FE44-7290-268F8ACACCE0";
 	setAttr ".t" -type "double3" 0.37263267487287433 -0.063436985015812297 100 ;
 	setAttr ".rp" -type "double3" 3.6603157520294198 163.24771118164051 4.9580154418945295 ;
 	setAttr ".sp" -type "double3" 3.6603157520294198 163.24771118164051 4.9580154418945295 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.81999999 1 ;
-createNode locator -n "loc_rt_eye_aim_guide_001Shape" -p "loc_rt_eye_aim_guide_001";
+createNode locator -n "loc_rt_eye_aim_001Shape" -p "loc_rt_eye_aim_001";
 	rename -uid "3E191FF3-4217-9309-2BDE-4D93B6816744";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -749,12 +749,12 @@ createNode transform -n "zero_lf_upper_lid_guide_001" -p "grp_lf_eye_lid_guide_0
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_lf_upper_lid_guide_001" -p "zero_lf_upper_lid_guide_001";
+createNode transform -n "loc_lf_upper_lid_bind_001" -p "zero_lf_upper_lid_guide_001";
 	rename -uid "2E60769B-4BAA-0741-3473-6C8CC2E1DC44";
 	setAttr ".t" -type "double3" 21.070215693261247 932.416259765625 63.126163482666016 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_lf_upper_lid_guide_001Shape" -p "loc_lf_upper_lid_guide_001";
+createNode locator -n "loc_lf_upper_lid_bind_001Shape" -p "loc_lf_upper_lid_bind_001";
 	rename -uid "CF22127C-46DE-F850-26FC-97811737BA6D";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -767,12 +767,12 @@ createNode transform -n "zero_lf_upper_lid_guide_002" -p "grp_lf_eye_lid_guide_0
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_lf_upper_lid_guide_002" -p "zero_lf_upper_lid_guide_002";
+createNode transform -n "loc_lf_upper_lid_bind_002" -p "zero_lf_upper_lid_guide_002";
 	rename -uid "0B9E4F24-4FDC-132D-BD83-C79CFEB284E8";
 	setAttr ".t" -type "double3" 31.373639878217148 935.31620104311492 61.769050598144531 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_lf_upper_lid_guide_002Shape" -p "loc_lf_upper_lid_guide_002";
+createNode locator -n "loc_lf_upper_lid_bind_002Shape" -p "loc_lf_upper_lid_bind_002";
 	rename -uid "E9161DFD-4A01-F6FB-1719-088C668A297B";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -785,12 +785,12 @@ createNode transform -n "zero_lf_upper_lid_guide_003" -p "grp_lf_eye_lid_guide_0
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_lf_upper_lid_guide_003" -p "zero_lf_upper_lid_guide_003";
+createNode transform -n "loc_lf_upper_lid_bind_003" -p "zero_lf_upper_lid_guide_003";
 	rename -uid "F96113D1-419A-AE32-0E7B-6B85531EE5B1";
 	setAttr ".t" -type "double3" 39.100810366552118 932.46839565548237 58.748008728027344 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_lf_upper_lid_guide_003Shape" -p "loc_lf_upper_lid_guide_003";
+createNode locator -n "loc_lf_upper_lid_bind_003Shape" -p "loc_lf_upper_lid_bind_003";
 	rename -uid "9C25CDC3-4FD2-7245-9093-20BF4E21ABE3";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -803,12 +803,12 @@ createNode transform -n "zero_lf_inner_lid_guide_001" -p "grp_lf_eye_lid_guide_0
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_lf_inner_lid_guide_001" -p "zero_lf_inner_lid_guide_001";
+createNode transform -n "loc_lf_inner_lid_bind_001" -p "zero_lf_inner_lid_guide_001";
 	rename -uid "6B4F806F-416D-06D8-9CEC-D99B275B618D";
 	setAttr ".t" -type "double3" 14.655315399169977 922.99768066406625 58.630111694336179 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_lf_inner_lid_guide_001Shape" -p "loc_lf_inner_lid_guide_001";
+createNode locator -n "loc_lf_inner_lid_bind_001Shape" -p "loc_lf_inner_lid_bind_001";
 	rename -uid "B2BAC533-4939-ED1A-465E-A49123C7BC56";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -821,12 +821,12 @@ createNode transform -n "zero_lf_outer_lid_guide_001" -p "grp_lf_eye_lid_guide_0
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_lf_outer_lid_guide_001" -p "zero_lf_outer_lid_guide_001";
+createNode transform -n "loc_lf_outer_lid_bind_001" -p "zero_lf_outer_lid_guide_001";
 	rename -uid "F135FE90-4933-8350-839F-39A4E3D7B830";
 	setAttr ".t" -type "double3" 42.03558731079108 927.76257324218875 50.447769165039126 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_lf_outer_lid_guide_001Shape" -p "loc_lf_outer_lid_guide_001";
+createNode locator -n "loc_lf_outer_lid_bind_001Shape" -p "loc_lf_outer_lid_bind_001";
 	rename -uid "DD85E025-4555-FD38-513C-C79E18B578F3";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -839,12 +839,12 @@ createNode transform -n "zero_lf_lower_lid_guide_001" -p "grp_lf_eye_lid_guide_0
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_lf_lower_lid_guide_001" -p "zero_lf_lower_lid_guide_001";
+createNode transform -n "loc_lf_lower_lid_bind_001" -p "zero_lf_lower_lid_guide_001";
 	rename -uid "438D4A6B-4558-A6FD-1F39-A7A143444236";
 	setAttr ".t" -type "double3" 21.904081850007824 919.42087542244542 61.780749368238389 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_lf_lower_lid_guide_001Shape" -p "loc_lf_lower_lid_guide_001";
+createNode locator -n "loc_lf_lower_lid_bind_001Shape" -p "loc_lf_lower_lid_bind_001";
 	rename -uid "10E35562-4DD2-1F17-2965-5D8FE37E4CA0";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -857,12 +857,12 @@ createNode transform -n "zero_lf_lower_lid_guide_002" -p "grp_lf_eye_lid_guide_0
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_lf_lower_lid_guide_002" -p "zero_lf_lower_lid_guide_002";
+createNode transform -n "loc_lf_lower_lid_bind_002" -p "zero_lf_lower_lid_guide_002";
 	rename -uid "13A5F0F1-48CB-03F3-4895-18ABEE1B9367";
 	setAttr ".t" -type "double3" 31.673681259155273 919.26068115234375 60.724639892578125 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_lf_lower_lid_guide_002Shape" -p "loc_lf_lower_lid_guide_002";
+createNode locator -n "loc_lf_lower_lid_bind_002Shape" -p "loc_lf_lower_lid_bind_002";
 	rename -uid "DBF0F2B1-44EC-9F49-3D69-E490D58FE601";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -875,12 +875,12 @@ createNode transform -n "zero_lf_lower_lid_guide_003" -p "grp_lf_eye_lid_guide_0
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_lf_lower_lid_guide_003" -p "zero_lf_lower_lid_guide_003";
+createNode transform -n "loc_lf_lower_lid_bind_003" -p "zero_lf_lower_lid_guide_003";
 	rename -uid "264A24FA-41B1-D9F7-1A4A-88A76F4B6439";
 	setAttr ".t" -type "double3" 38.504032135009766 921.49102783203125 56.063362121582031 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_lf_lower_lid_guide_003Shape" -p "loc_lf_lower_lid_guide_003";
+createNode locator -n "loc_lf_lower_lid_bind_003Shape" -p "loc_lf_lower_lid_bind_003";
 	rename -uid "39F12909-4E0C-2B99-0840-AA96706BAC16";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -935,11 +935,11 @@ createNode transform -n "zero_rt_lower_lid_guide_001" -p "grp_rt_eye_lid_guide_0
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_rt_lower_lid_guide_001" -p "zero_rt_lower_lid_guide_001";
+createNode transform -n "loc_rt_lower_lid_bind_001" -p "zero_rt_lower_lid_guide_001";
 	rename -uid "353DABC3-4A5A-5847-8B38-EAB435E87970";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_rt_lower_lid_guide_001Shape" -p "loc_rt_lower_lid_guide_001";
+createNode locator -n "loc_rt_lower_lid_bind_001Shape" -p "loc_rt_lower_lid_bind_001";
 	rename -uid "324160AC-41F5-D66E-C71E-6D9F87ABE093";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -953,11 +953,11 @@ createNode transform -n "zero_rt_lower_lid_guide_002" -p "grp_rt_eye_lid_guide_0
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_rt_lower_lid_guide_002" -p "zero_rt_lower_lid_guide_002";
+createNode transform -n "loc_rt_lower_lid_bind_002" -p "zero_rt_lower_lid_guide_002";
 	rename -uid "3AF328BA-4FF3-B838-EAA0-91930BBF2940";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_rt_lower_lid_guide_002Shape" -p "loc_rt_lower_lid_guide_002";
+createNode locator -n "loc_rt_lower_lid_bind_002Shape" -p "loc_rt_lower_lid_bind_002";
 	rename -uid "80499974-4D2B-A079-3828-42A173B950A9";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -971,11 +971,11 @@ createNode transform -n "zero_rt_lower_lid_guide_003" -p "grp_rt_eye_lid_guide_0
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_rt_lower_lid_guide_003" -p "zero_rt_lower_lid_guide_003";
+createNode transform -n "loc_rt_lower_lid_bind_003" -p "zero_rt_lower_lid_guide_003";
 	rename -uid "AF7CB703-4C07-8983-BB4D-90802B30E0A0";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_rt_lower_lid_guide_003Shape" -p "loc_rt_lower_lid_guide_003";
+createNode locator -n "loc_rt_lower_lid_bind_003Shape" -p "loc_rt_lower_lid_bind_003";
 	rename -uid "04795FF4-49EB-AB42-F6A7-18A8566D80C3";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -989,11 +989,11 @@ createNode transform -n "zero_rt_inner_lid_guide_001" -p "grp_rt_eye_lid_guide_0
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_rt_inner_lid_guide_001" -p "zero_rt_inner_lid_guide_001";
+createNode transform -n "loc_rt_inner_lid_bind_001" -p "zero_rt_inner_lid_guide_001";
 	rename -uid "4F9A5F90-4B9B-FC9F-2814-66ABDA380A97";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_rt_inner_lid_guide_001Shape" -p "loc_rt_inner_lid_guide_001";
+createNode locator -n "loc_rt_inner_lid_bind_001Shape" -p "loc_rt_inner_lid_bind_001";
 	rename -uid "33AC33E3-4459-1C2A-8B99-BF809F1AF984";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1007,11 +1007,11 @@ createNode transform -n "zero_rt_outer_lid_guide_001" -p "grp_rt_eye_lid_guide_0
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_rt_outer_lid_guide_001" -p "zero_rt_outer_lid_guide_001";
+createNode transform -n "loc_rt_outer_lid_bind_001" -p "zero_rt_outer_lid_guide_001";
 	rename -uid "03623BFE-42F4-2E80-698F-08AC62C3B15C";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_rt_outer_lid_guide_001Shape" -p "loc_rt_outer_lid_guide_001";
+createNode locator -n "loc_rt_outer_lid_bind_001Shape" -p "loc_rt_outer_lid_bind_001";
 	rename -uid "85EB2A6F-4313-E23B-5982-F48C9F1629D5";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1025,11 +1025,11 @@ createNode transform -n "zero_rt_upper_lid_guide_001" -p "grp_rt_eye_lid_guide_0
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_rt_upper_lid_guide_001" -p "zero_rt_upper_lid_guide_001";
+createNode transform -n "loc_rt_upper_lid_bind_001" -p "zero_rt_upper_lid_guide_001";
 	rename -uid "0CE466D9-403D-1985-A7A5-C9804D8F0149";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_rt_upper_lid_guide_001Shape" -p "loc_rt_upper_lid_guide_001";
+createNode locator -n "loc_rt_upper_lid_bind_001Shape" -p "loc_rt_upper_lid_bind_001";
 	rename -uid "ADE8A74D-469E-A7C0-EEAB-9B812992448F";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1043,11 +1043,11 @@ createNode transform -n "zero_rt_upper_lid_guide_002" -p "grp_rt_eye_lid_guide_0
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_rt_upper_lid_guide_002" -p "zero_rt_upper_lid_guide_002";
+createNode transform -n "loc_rt_upper_lid_bind_002" -p "zero_rt_upper_lid_guide_002";
 	rename -uid "E83B5BDC-4A06-63BC-4B18-B2A00C65A986";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_rt_upper_lid_guide_002Shape" -p "loc_rt_upper_lid_guide_002";
+createNode locator -n "loc_rt_upper_lid_bind_002Shape" -p "loc_rt_upper_lid_bind_002";
 	rename -uid "2029EF6E-4A75-EB41-7797-308DC2D47BD8";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1061,11 +1061,11 @@ createNode transform -n "zero_rt_upper_lid_guide_003" -p "grp_rt_eye_lid_guide_0
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode transform -n "loc_rt_upper_lid_guide_003" -p "zero_rt_upper_lid_guide_003";
+createNode transform -n "loc_rt_upper_lid_bind_003" -p "zero_rt_upper_lid_guide_003";
 	rename -uid "F0A30D04-4347-79B1-6C7F-30A8CE960FAE";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.38 0.28 1 ;
-createNode locator -n "loc_rt_upper_lid_guide_003Shape" -p "loc_rt_upper_lid_guide_003";
+createNode locator -n "loc_rt_upper_lid_bind_003Shape" -p "loc_rt_upper_lid_bind_003";
 	rename -uid "35CF61C8-46DF-A043-553B-0CB856B9E6C9";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1123,11 +1123,11 @@ createNode transform -n "zero_rt_upper_eye_bag_guide_001" -p "grp_rt_eye_bags_gu
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_rt_upper_eye_bag_guide_001" -p "zero_rt_upper_eye_bag_guide_001";
+createNode transform -n "loc_rt_upper_eye_bag_bind_001" -p "zero_rt_upper_eye_bag_guide_001";
 	rename -uid "875003A1-4753-8FF2-6CC2-4ABB4C6DF5B2";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_rt_upper_eye_bag_guide_001Shape" -p "loc_rt_upper_eye_bag_guide_001";
+createNode locator -n "loc_rt_upper_eye_bag_bind_001Shape" -p "loc_rt_upper_eye_bag_bind_001";
 	rename -uid "7D58B8B2-4374-C604-78D8-58AAF255651A";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1141,11 +1141,11 @@ createNode transform -n "zero_rt_upper_eye_bag_guide_002" -p "grp_rt_eye_bags_gu
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_rt_upper_eye_bag_guide_002" -p "zero_rt_upper_eye_bag_guide_002";
+createNode transform -n "loc_rt_upper_eye_bag_bind_002" -p "zero_rt_upper_eye_bag_guide_002";
 	rename -uid "CE9C9291-4ACF-D192-E294-DDB3BC6248D4";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_rt_upper_eye_bag_guide_002Shape" -p "loc_rt_upper_eye_bag_guide_002";
+createNode locator -n "loc_rt_upper_eye_bag_bind_002Shape" -p "loc_rt_upper_eye_bag_bind_002";
 	rename -uid "CAB75F7C-4D62-1FD7-1230-A295DB5F6B94";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1159,11 +1159,11 @@ createNode transform -n "zero_rt_upper_eye_bag_guide_003" -p "grp_rt_eye_bags_gu
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_rt_upper_eye_bag_guide_003" -p "zero_rt_upper_eye_bag_guide_003";
+createNode transform -n "loc_rt_upper_eye_bag_bind_003" -p "zero_rt_upper_eye_bag_guide_003";
 	rename -uid "238ABE88-4FC7-D8E1-926F-9CA1D97F8D50";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_rt_upper_eye_bag_guide_003Shape" -p "loc_rt_upper_eye_bag_guide_003";
+createNode locator -n "loc_rt_upper_eye_bag_bind_003Shape" -p "loc_rt_upper_eye_bag_bind_003";
 	rename -uid "354F4F70-4485-3B73-5FC6-E8A29FB12885";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1177,11 +1177,11 @@ createNode transform -n "zero_rt_inner_eye_bag_guide_001" -p "grp_rt_eye_bags_gu
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_rt_inner_eye_bag_guide_001" -p "zero_rt_inner_eye_bag_guide_001";
+createNode transform -n "loc_rt_inner_eye_bag_bind_001" -p "zero_rt_inner_eye_bag_guide_001";
 	rename -uid "B1D1D8FD-4D85-6735-215C-F6917443BEEB";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_rt_inner_eye_bag_guide_001Shape" -p "loc_rt_inner_eye_bag_guide_001";
+createNode locator -n "loc_rt_inner_eye_bag_bind_001Shape" -p "loc_rt_inner_eye_bag_bind_001";
 	rename -uid "76A06070-4468-B81B-249B-6E8764B48CB5";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1195,11 +1195,11 @@ createNode transform -n "zero_rt_outer_eye_bag_guide_001" -p "grp_rt_eye_bags_gu
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_rt_outer_eye_bag_guide_001" -p "zero_rt_outer_eye_bag_guide_001";
+createNode transform -n "loc_rt_outer_eye_bag_bind_001" -p "zero_rt_outer_eye_bag_guide_001";
 	rename -uid "11F35D61-428C-2B11-B464-08BDFF2E0D4A";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_rt_outer_eye_bag_guide_001Shape" -p "loc_rt_outer_eye_bag_guide_001";
+createNode locator -n "loc_rt_outer_eye_bag_bind_001Shape" -p "loc_rt_outer_eye_bag_bind_001";
 	rename -uid "9D31FB4C-460A-A7D4-9456-D08ABFFD58CF";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1213,11 +1213,11 @@ createNode transform -n "zero_rt_lower_eye_bag_guide_003" -p "grp_rt_eye_bags_gu
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_rt_lower_eye_bag_guide_003" -p "zero_rt_lower_eye_bag_guide_003";
+createNode transform -n "loc_rt_lower_eye_bag_bind_003" -p "zero_rt_lower_eye_bag_guide_003";
 	rename -uid "277D736F-424B-DB8E-8AEA-A083417D7E00";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_rt_lower_eye_bag_guide_003Shape" -p "loc_rt_lower_eye_bag_guide_003";
+createNode locator -n "loc_rt_lower_eye_bag_bind_003Shape" -p "loc_rt_lower_eye_bag_bind_003";
 	rename -uid "D5AD9A82-4F58-FD19-6335-CE8398B844F0";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1231,11 +1231,11 @@ createNode transform -n "zero_rt_lower_eye_bag_guide_002" -p "grp_rt_eye_bags_gu
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_rt_lower_eye_bag_guide_002" -p "zero_rt_lower_eye_bag_guide_002";
+createNode transform -n "loc_rt_lower_eye_bag_bind_002" -p "zero_rt_lower_eye_bag_guide_002";
 	rename -uid "02C179AD-4C79-5BA9-88DA-B397B20A9E95";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_rt_lower_eye_bag_guide_002Shape" -p "loc_rt_lower_eye_bag_guide_002";
+createNode locator -n "loc_rt_lower_eye_bag_bind_002Shape" -p "loc_rt_lower_eye_bag_bind_002";
 	rename -uid "4EC8483F-44F1-DB9B-7DD5-E99E5BD56DFA";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1249,11 +1249,11 @@ createNode transform -n "zero_rt_lower_eye_bag_guide_001" -p "grp_rt_eye_bags_gu
 	setAttr ".s" -type "double3" 1 1 -1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_rt_lower_eye_bag_guide_001" -p "zero_rt_lower_eye_bag_guide_001";
+createNode transform -n "loc_rt_lower_eye_bag_bind_001" -p "zero_rt_lower_eye_bag_guide_001";
 	rename -uid "6536338D-46FD-7301-016B-8B8DF36A94DB";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_rt_lower_eye_bag_guide_001Shape" -p "loc_rt_lower_eye_bag_guide_001";
+createNode locator -n "loc_rt_lower_eye_bag_bind_001Shape" -p "loc_rt_lower_eye_bag_bind_001";
 	rename -uid "BCB6F0F1-4594-4446-EEA4-20A5F2897EDD";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1305,12 +1305,12 @@ createNode transform -n "zero_lf_upper_eye_bag_guide_001" -p "grp_lf_eye_bags_gu
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_lf_upper_eye_bag_guide_001" -p "zero_lf_upper_eye_bag_guide_001";
+createNode transform -n "loc_lf_upper_eye_bag_bind_001" -p "zero_lf_upper_eye_bag_guide_001";
 	rename -uid "154AB478-4CE5-D737-F51A-34AC5292D050";
 	setAttr ".t" -type "double3" 17.322137832641602 935.3453369140625 62.539287567138672 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_lf_upper_eye_bag_guide_001Shape" -p "loc_lf_upper_eye_bag_guide_001";
+createNode locator -n "loc_lf_upper_eye_bag_bind_001Shape" -p "loc_lf_upper_eye_bag_bind_001";
 	rename -uid "213CBAC2-4964-7247-B043-5AB210092DEF";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1323,12 +1323,12 @@ createNode transform -n "zero_lf_upper_eye_bag_guide_002" -p "grp_lf_eye_bags_gu
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_lf_upper_eye_bag_guide_002" -p "zero_lf_upper_eye_bag_guide_002";
+createNode transform -n "loc_lf_upper_eye_bag_bind_002" -p "zero_lf_upper_eye_bag_guide_002";
 	rename -uid "759EAAFE-4208-23E1-3D60-7BB2A08EA75B";
 	setAttr ".t" -type "double3" 27.721637725830078 939.0982666015625 62.341476440429688 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_lf_upper_eye_bag_guide_002Shape" -p "loc_lf_upper_eye_bag_guide_002";
+createNode locator -n "loc_lf_upper_eye_bag_bind_002Shape" -p "loc_lf_upper_eye_bag_bind_002";
 	rename -uid "B0953088-41E1-374B-E303-D3946D7F9AD3";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1341,12 +1341,12 @@ createNode transform -n "zero_lf_upper_eye_bag_guide_003" -p "grp_lf_eye_bags_gu
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_lf_upper_eye_bag_guide_003" -p "zero_lf_upper_eye_bag_guide_003";
+createNode transform -n "loc_lf_upper_eye_bag_bind_003" -p "zero_lf_upper_eye_bag_guide_003";
 	rename -uid "DA803AC0-4628-D3CF-26B3-0DA02A57C674";
 	setAttr ".t" -type "double3" 41.111030578613281 935.79002564748384 57.854137420654297 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_lf_upper_eye_bag_guide_003Shape" -p "loc_lf_upper_eye_bag_guide_003";
+createNode locator -n "loc_lf_upper_eye_bag_bind_003Shape" -p "loc_lf_upper_eye_bag_bind_003";
 	rename -uid "B54E0CF4-4A09-21C3-3786-9581FB4B5E47";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1359,12 +1359,12 @@ createNode transform -n "zero_lf_inner_eye_bag_guide_001" -p "grp_lf_eye_bags_gu
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_lf_inner_eye_bag_guide_001" -p "zero_lf_inner_eye_bag_guide_001";
+createNode transform -n "loc_lf_inner_eye_bag_bind_001" -p "zero_lf_inner_eye_bag_guide_001";
 	rename -uid "78063FF3-4ECD-B710-15DD-7C938C4CF397";
 	setAttr ".t" -type "double3" 11.095543861389174 921.770446777345 61.916465759277429 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_lf_inner_eye_bag_guide_001Shape" -p "loc_lf_inner_eye_bag_guide_001";
+createNode locator -n "loc_lf_inner_eye_bag_bind_001Shape" -p "loc_lf_inner_eye_bag_bind_001";
 	rename -uid "2AD23780-4C11-DEA9-6BDB-35B1A140846D";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1377,12 +1377,12 @@ createNode transform -n "zero_lf_outer_eye_bag_guide_001" -p "grp_lf_eye_bags_gu
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_lf_outer_eye_bag_guide_001" -p "zero_lf_outer_eye_bag_guide_001";
+createNode transform -n "loc_lf_outer_eye_bag_bind_001" -p "zero_lf_outer_eye_bag_guide_001";
 	rename -uid "CC2CFE12-4835-4B39-86CE-768669AD6F1E";
 	setAttr ".t" -type "double3" 44.514404296875 927.34466552734375 48.438819885253906 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_lf_outer_eye_bag_guide_001Shape" -p "loc_lf_outer_eye_bag_guide_001";
+createNode locator -n "loc_lf_outer_eye_bag_bind_001Shape" -p "loc_lf_outer_eye_bag_bind_001";
 	rename -uid "160CF3CF-4928-B140-89DD-24B9795E8E73";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1395,12 +1395,12 @@ createNode transform -n "zero_lf_lower_eye_bag_guide_001" -p "grp_lf_eye_bags_gu
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_lf_lower_eye_bag_guide_001" -p "zero_lf_lower_eye_bag_guide_001";
+createNode transform -n "loc_lf_lower_eye_bag_bind_001" -p "zero_lf_lower_eye_bag_guide_001";
 	rename -uid "763C98DE-4F7C-913E-98C4-17864F879C3B";
 	setAttr ".t" -type "double3" 20.479196548461914 915.51069325865478 62.755046844482422 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_lf_lower_eye_bag_guide_001Shape" -p "loc_lf_lower_eye_bag_guide_001";
+createNode locator -n "loc_lf_lower_eye_bag_bind_001Shape" -p "loc_lf_lower_eye_bag_bind_001";
 	rename -uid "23CB2F95-4620-8317-C127-C9B167FE0D9C";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1413,12 +1413,12 @@ createNode transform -n "zero_lf_lower_eye_bag_guide_002" -p "grp_lf_eye_bags_gu
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_lf_lower_eye_bag_guide_002" -p "zero_lf_lower_eye_bag_guide_002";
+createNode transform -n "loc_lf_lower_eye_bag_bind_002" -p "zero_lf_lower_eye_bag_guide_002";
 	rename -uid "B9D3D633-4086-7130-3F9D-0E817C5FB535";
 	setAttr ".t" -type "double3" 31.809101104736328 913.813335719973 59.792583465576172 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_lf_lower_eye_bag_guide_002Shape" -p "loc_lf_lower_eye_bag_guide_002";
+createNode locator -n "loc_lf_lower_eye_bag_bind_002Shape" -p "loc_lf_lower_eye_bag_bind_002";
 	rename -uid "940096C4-4D49-1655-62B5-2D9D2C49CF5B";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1431,12 +1431,12 @@ createNode transform -n "zero_lf_lower_eye_bag_guide_003" -p "grp_lf_eye_bags_gu
 	setAttr ".t" -type "double3" 8.8817841970012523e-16 -768.81659186430647 70.219694181714345 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode transform -n "loc_lf_lower_eye_bag_guide_003" -p "zero_lf_lower_eye_bag_guide_003";
+createNode transform -n "loc_lf_lower_eye_bag_bind_003" -p "zero_lf_lower_eye_bag_guide_003";
 	rename -uid "7B8C0B48-4CD6-F744-1CDA-9E8EC8652B9F";
 	setAttr ".t" -type "double3" 41.439169523881127 918.83096443881573 53.821247100830078 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.94999999 0.2 0.72000003 ;
-createNode locator -n "loc_lf_lower_eye_bag_guide_003Shape" -p "loc_lf_lower_eye_bag_guide_003";
+createNode locator -n "loc_lf_lower_eye_bag_bind_003Shape" -p "loc_lf_lower_eye_bag_bind_003";
 	rename -uid "307A6E0A-4993-9183-D294-ACB6FD3916E9";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1504,7 +1504,7 @@ createNode transform -n "zero_md_jaw_start_guide_001" -p "grp_md_jaw_guide_001";
 	setAttr ".sp" -type "double3" -2.7179870714047889e-15 161.34430700893438 6.8931037607512913 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.41999999 0.079999998 ;
-createNode transform -n "loc_md_jaw_start_guide_001" -p "zero_md_jaw_start_guide_001";
+createNode transform -n "loc_md_jaw_start_bind_001" -p "zero_md_jaw_start_guide_001";
 	rename -uid "4158F754-4EF4-E5ED-DB3B-CFB96BDC7F05";
 	setAttr ".t" -type "double3" 0 -32.408103494802162 75.620242775090802 ;
 	setAttr -l on ".tx";
@@ -1512,7 +1512,7 @@ createNode transform -n "loc_md_jaw_start_guide_001" -p "zero_md_jaw_start_guide
 	setAttr ".sp" -type "double3" -2.7179870714047889e-15 161.34430700893438 6.8931037607512913 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.41999999 0.079999998 ;
-createNode locator -n "loc_md_jaw_start_guide_001Shape" -p "loc_md_jaw_start_guide_001";
+createNode locator -n "loc_md_jaw_start_bind_001Shape" -p "loc_md_jaw_start_bind_001";
 	rename -uid "FEDDAB4F-451E-613B-58C5-E7B85268D716";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1521,7 +1521,7 @@ createNode locator -n "loc_md_jaw_start_guide_001Shape" -p "loc_md_jaw_start_gui
 	setAttr ".ovrgb" -type "float3" 1 0.41999999 0.079999998 ;
 	setAttr ".lp" -type "double3" -2.7179870714047889e-15 161.34430700893438 6.8931037607512913 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_md_jaw_end_guide_001" -p "loc_md_jaw_start_guide_001";
+createNode transform -n "zero_md_jaw_end_guide_001" -p "loc_md_jaw_start_bind_001";
 	rename -uid "3C0079E0-44C7-5F2A-89B8-5DBBD0086E53";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -1536,13 +1536,13 @@ createNode transform -n "zero_md_jaw_end_guide_001" -p "loc_md_jaw_start_guide_0
 	setAttr ".sp" -type "double3" 2.2154738956068891e-07 123.82179118444549 59.96978168513391 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.41999999 0.079999998 ;
-createNode transform -n "loc_md_jaw_end_guide_001" -p "zero_md_jaw_end_guide_001";
+createNode transform -n "loc_md_jaw_end_bind_001" -p "zero_md_jaw_end_guide_001";
 	rename -uid "FBE49331-48AC-D0E1-6081-A1B57448E699";
 	setAttr ".t" -type "double3" 0 134.18644025680953 54.256952348413087 ;
 	setAttr -l on ".tx";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.41999999 0.079999998 ;
-createNode locator -n "loc_md_jaw_end_guide_001Shape" -p "loc_md_jaw_end_guide_001";
+createNode locator -n "loc_md_jaw_end_bind_001Shape" -p "loc_md_jaw_end_bind_001";
 	rename -uid "8DABB9AC-4CD5-A8C8-8643-D894F3DBE0CF";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1584,12 +1584,12 @@ createNode transform -n "zero_lf_brow_main_guide_001" -p "grp_md_brow_guide_001"
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "loc_lf_brow_main_guide_001" -p "zero_lf_brow_main_guide_001";
+createNode transform -n "loc_lf_brow_main_bind_001" -p "zero_lf_brow_main_guide_001";
 	rename -uid "EB2EAF2B-4EA8-A059-6BE9-8B988BC293E2";
 	setAttr ".t" -type "double3" 27.038382291793823 945.65768257164905 68.284600829618725 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode locator -n "loc_lf_brow_main_guide_001Shape" -p "loc_lf_brow_main_guide_001";
+createNode locator -n "loc_lf_brow_main_bind_001Shape" -p "loc_lf_brow_main_bind_001";
 	rename -uid "0F9A7D21-4532-8D88-636B-E6B9AD039029";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1597,7 +1597,7 @@ createNode locator -n "loc_lf_brow_main_guide_001Shape" -p "loc_lf_brow_main_gui
 	setAttr ".ovc" 17;
 	setAttr ".ovrgb" -type "float3" 1 0.72000003 0.050000001 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_lf_brow_guide_001" -p "loc_lf_brow_main_guide_001";
+createNode transform -n "zero_lf_brow_guide_001" -p "loc_lf_brow_main_bind_001";
 	rename -uid "CC5D8010-44FB-6781-579A-B68BCA2BAFCA";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -1610,12 +1610,12 @@ createNode transform -n "zero_lf_brow_guide_001" -p "loc_lf_brow_main_guide_001"
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "loc_lf_brow_guide_001" -p "zero_lf_brow_guide_001";
+createNode transform -n "loc_lf_brow_bind_001" -p "zero_lf_brow_guide_001";
 	rename -uid "00E90087-463B-CA42-641B-9FBF6DF5A0D0";
 	setAttr ".t" -type "double3" -18.947298765182495 -3.4152509310240475 2.9878448490922125 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode locator -n "loc_lf_brow_guide_001Shape" -p "loc_lf_brow_guide_001";
+createNode locator -n "loc_lf_brow_bind_001Shape" -p "loc_lf_brow_bind_001";
 	rename -uid "A8050FDA-4E1C-FA07-1109-8E9264422B1E";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1623,7 +1623,7 @@ createNode locator -n "loc_lf_brow_guide_001Shape" -p "loc_lf_brow_guide_001";
 	setAttr ".ovc" 17;
 	setAttr ".ovrgb" -type "float3" 1 0.72000003 0.050000001 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_lf_brow_guide_002" -p "loc_lf_brow_main_guide_001";
+createNode transform -n "zero_lf_brow_guide_002" -p "loc_lf_brow_main_bind_001";
 	rename -uid "0E790CA1-41C1-3C12-8886-D8A9A53FE3A1";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -1636,12 +1636,12 @@ createNode transform -n "zero_lf_brow_guide_002" -p "loc_lf_brow_main_guide_001"
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "loc_lf_brow_guide_002" -p "zero_lf_brow_guide_002";
+createNode transform -n "loc_lf_brow_bind_002" -p "zero_lf_brow_guide_002";
 	rename -uid "48046DA1-4A81-2C88-0E09-BB98B6BA68CB";
 	setAttr ".t" -type "double3" -8.570239782333374 -1.7668744661802975 1.0016807560746344 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode locator -n "loc_lf_brow_guide_002Shape" -p "loc_lf_brow_guide_002";
+createNode locator -n "loc_lf_brow_bind_002Shape" -p "loc_lf_brow_bind_002";
 	rename -uid "7FC0B416-4767-6900-B64E-A5B9AAD54758";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1649,7 +1649,7 @@ createNode locator -n "loc_lf_brow_guide_002Shape" -p "loc_lf_brow_guide_002";
 	setAttr ".ovc" 17;
 	setAttr ".ovrgb" -type "float3" 1 0.72000003 0.050000001 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_lf_brow_guide_003" -p "loc_lf_brow_main_guide_001";
+createNode transform -n "zero_lf_brow_guide_003" -p "loc_lf_brow_main_bind_001";
 	rename -uid "A1900F9B-4692-49A9-4B0F-99BE3284D254";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -1662,11 +1662,11 @@ createNode transform -n "zero_lf_brow_guide_003" -p "loc_lf_brow_main_guide_001"
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "loc_lf_brow_guide_003" -p "zero_lf_brow_guide_003";
+createNode transform -n "loc_lf_brow_bind_003" -p "zero_lf_brow_guide_003";
 	rename -uid "3B04FA6A-4BF3-4601-522D-D8916505A216";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode locator -n "loc_lf_brow_guide_003Shape" -p "loc_lf_brow_guide_003";
+createNode locator -n "loc_lf_brow_bind_003Shape" -p "loc_lf_brow_bind_003";
 	rename -uid "D20CF294-4AED-8BBA-13FD-6FAD9090A9E4";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1674,7 +1674,7 @@ createNode locator -n "loc_lf_brow_guide_003Shape" -p "loc_lf_brow_guide_003";
 	setAttr ".ovc" 17;
 	setAttr ".ovrgb" -type "float3" 1 0.72000003 0.050000001 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_lf_brow_guide_004" -p "loc_lf_brow_main_guide_001";
+createNode transform -n "zero_lf_brow_guide_004" -p "loc_lf_brow_main_bind_001";
 	rename -uid "EBFD3E14-4C57-D49A-08B1-B1B862265CB5";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -1687,12 +1687,12 @@ createNode transform -n "zero_lf_brow_guide_004" -p "loc_lf_brow_main_guide_001"
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "loc_lf_brow_guide_004" -p "zero_lf_brow_guide_004";
+createNode transform -n "loc_lf_brow_bind_004" -p "zero_lf_brow_guide_004";
 	rename -uid "5577568B-4D3E-AC5C-C31E-9E823E6BE5FC";
 	setAttr ".t" -type "double3" 9.2975475788116455 0.94894584631970247 -4.629571532743725 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode locator -n "loc_lf_brow_guide_004Shape" -p "loc_lf_brow_guide_004";
+createNode locator -n "loc_lf_brow_bind_004Shape" -p "loc_lf_brow_bind_004";
 	rename -uid "2D0B1999-4C1A-D9A5-B780-82972301672C";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1700,7 +1700,7 @@ createNode locator -n "loc_lf_brow_guide_004Shape" -p "loc_lf_brow_guide_004";
 	setAttr ".ovc" 17;
 	setAttr ".ovrgb" -type "float3" 1 0.72000003 0.050000001 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_lf_brow_guide_005" -p "loc_lf_brow_main_guide_001";
+createNode transform -n "zero_lf_brow_guide_005" -p "loc_lf_brow_main_bind_001";
 	rename -uid "E00E5864-49DC-96EC-8C22-54B8279F2756";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -1713,12 +1713,12 @@ createNode transform -n "zero_lf_brow_guide_005" -p "loc_lf_brow_main_guide_001"
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "loc_lf_brow_guide_005" -p "zero_lf_brow_guide_005";
+createNode transform -n "loc_lf_brow_bind_005" -p "zero_lf_brow_guide_005";
 	rename -uid "BA663CC3-4D4A-9CA0-0EE8-DBB20DA87B3C";
 	setAttr ".t" -type "double3" 19.132313966751099 -3.9316693880552975 -18.969853972929272 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode locator -n "loc_lf_brow_guide_005Shape" -p "loc_lf_brow_guide_005";
+createNode locator -n "loc_lf_brow_bind_005Shape" -p "loc_lf_brow_bind_005";
 	rename -uid "4184AAF3-4695-7671-84D3-8D869B633C03";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1726,7 +1726,7 @@ createNode locator -n "loc_lf_brow_guide_005Shape" -p "loc_lf_brow_guide_005";
 	setAttr ".ovc" 17;
 	setAttr ".ovrgb" -type "float3" 1 0.72000003 0.050000001 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "crv_lf_brow_guide_001" -p "loc_lf_brow_main_guide_001";
+createNode transform -n "crv_lf_brow_guide_001" -p "loc_lf_brow_main_bind_001";
 	rename -uid "3906D48C-4D79-0C20-F90F-949B9EECD510";
 	setAttr ".t" -type "double3" -27.038382291793823 -945.65768257164905 -68.284600829618725 ;
 createNode nurbsCurve -n "curveShape8" -p "crv_lf_brow_guide_001";
@@ -1750,93 +1750,93 @@ createNode transform -n "zero_rt_brow_main_guide_001" -p "grp_md_brow_guide_001"
 	setAttr ".s" -type "double3" -1 1 1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "loc_rt_brow_main_guide_001" -p "zero_rt_brow_main_guide_001";
+createNode transform -n "loc_rt_brow_main_bind_001" -p "zero_rt_brow_main_guide_001";
 	rename -uid "4AFEBA91-415B-0CEF-CCCE-64A744CE53B7";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode locator -n "loc_rt_brow_main_guide_001Shape" -p "loc_rt_brow_main_guide_001";
+createNode locator -n "loc_rt_brow_main_bind_001Shape" -p "loc_rt_brow_main_bind_001";
 	rename -uid "18F2F54E-45DB-7A25-A037-42915C0E5883";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
 	setAttr ".ovrgbf" yes;
 	setAttr ".ovc" 17;
 	setAttr ".ovrgb" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "zero_rt_brow_guide_001" -p "loc_rt_brow_main_guide_001";
+createNode transform -n "zero_rt_brow_guide_001" -p "loc_rt_brow_main_bind_001";
 	rename -uid "FE4BDE97-45A9-6A98-FE5D-8EB852EC846C";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "loc_rt_brow_guide_001" -p "zero_rt_brow_guide_001";
+createNode transform -n "loc_rt_brow_bind_001" -p "zero_rt_brow_guide_001";
 	rename -uid "8B4A654B-4506-17FE-6120-4399C765C1CC";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode locator -n "loc_rt_brow_guide_001Shape" -p "loc_rt_brow_guide_001";
+createNode locator -n "loc_rt_brow_bind_001Shape" -p "loc_rt_brow_bind_001";
 	rename -uid "61756549-433E-9521-3FFD-1D9C4E0565A5";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
 	setAttr ".ovrgbf" yes;
 	setAttr ".ovc" 17;
 	setAttr ".ovrgb" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "zero_rt_brow_guide_002" -p "loc_rt_brow_main_guide_001";
+createNode transform -n "zero_rt_brow_guide_002" -p "loc_rt_brow_main_bind_001";
 	rename -uid "C73EBC74-4216-3A9B-AA3B-A7A16E093176";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "loc_rt_brow_guide_002" -p "zero_rt_brow_guide_002";
+createNode transform -n "loc_rt_brow_bind_002" -p "zero_rt_brow_guide_002";
 	rename -uid "C7544022-453A-82DC-DB4C-DD9EE060DFA5";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode locator -n "loc_rt_brow_guide_002Shape" -p "loc_rt_brow_guide_002";
+createNode locator -n "loc_rt_brow_bind_002Shape" -p "loc_rt_brow_bind_002";
 	rename -uid "E97654BB-4260-AF24-F61D-6DB7C08FBAB5";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
 	setAttr ".ovrgbf" yes;
 	setAttr ".ovc" 17;
 	setAttr ".ovrgb" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "zero_rt_brow_guide_003" -p "loc_rt_brow_main_guide_001";
+createNode transform -n "zero_rt_brow_guide_003" -p "loc_rt_brow_main_bind_001";
 	rename -uid "E770E0FF-4FFF-566A-8808-C48802097A46";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "loc_rt_brow_guide_003" -p "zero_rt_brow_guide_003";
+createNode transform -n "loc_rt_brow_bind_003" -p "zero_rt_brow_guide_003";
 	rename -uid "3F9E28C3-40FF-8CCB-A0AA-F7ACEC92158D";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode locator -n "loc_rt_brow_guide_003Shape" -p "loc_rt_brow_guide_003";
+createNode locator -n "loc_rt_brow_bind_003Shape" -p "loc_rt_brow_bind_003";
 	rename -uid "C703478B-45C0-F5A5-6904-01A950911C57";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
 	setAttr ".ovrgbf" yes;
 	setAttr ".ovc" 17;
 	setAttr ".ovrgb" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "zero_rt_brow_guide_004" -p "loc_rt_brow_main_guide_001";
+createNode transform -n "zero_rt_brow_guide_004" -p "loc_rt_brow_main_bind_001";
 	rename -uid "971DFA0F-4BCB-86F7-E06A-66ACC21591ED";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "loc_rt_brow_guide_004" -p "zero_rt_brow_guide_004";
+createNode transform -n "loc_rt_brow_bind_004" -p "zero_rt_brow_guide_004";
 	rename -uid "7F219766-4FCA-2BAB-849F-4384B107B3E0";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode locator -n "loc_rt_brow_guide_004Shape" -p "loc_rt_brow_guide_004";
+createNode locator -n "loc_rt_brow_bind_004Shape" -p "loc_rt_brow_bind_004";
 	rename -uid "72045A55-459F-69E6-7B50-7A97615FE430";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
 	setAttr ".ovrgbf" yes;
 	setAttr ".ovc" 17;
 	setAttr ".ovrgb" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "zero_rt_brow_guide_005" -p "loc_rt_brow_main_guide_001";
+createNode transform -n "zero_rt_brow_guide_005" -p "loc_rt_brow_main_bind_001";
 	rename -uid "EC5D6DC8-4F4F-8245-63F7-0183D5F94D66";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "loc_rt_brow_guide_005" -p "zero_rt_brow_guide_005";
+createNode transform -n "loc_rt_brow_bind_005" -p "zero_rt_brow_guide_005";
 	rename -uid "E52D114A-4CE9-343B-3EE3-F6AE5B0C3686";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.72000003 0.050000001 ;
-createNode locator -n "loc_rt_brow_guide_005Shape" -p "loc_rt_brow_guide_005";
+createNode locator -n "loc_rt_brow_bind_005Shape" -p "loc_rt_brow_bind_005";
 	rename -uid "558E860E-435B-5DB4-B2FB-D39C71BECEE5";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
 	setAttr ".ovrgbf" yes;
 	setAttr ".ovc" 17;
 	setAttr ".ovrgb" -type "float3" 1 0.72000003 0.050000001 ;
-createNode transform -n "crv_rt_brow_guide_001" -p "loc_rt_brow_main_guide_001";
+createNode transform -n "crv_rt_brow_guide_001" -p "loc_rt_brow_main_bind_001";
 	rename -uid "F174A781-434A-FB70-A881-12942E15EE28";
 	setAttr ".t" -type "double3" -27.03838229179382 -945.65768257164893 -68.284600829618711 ;
 	setAttr ".r" -type "double3" 0 180 0 ;
@@ -1875,12 +1875,12 @@ createNode transform -n "zero_md_upper_teeth_guide_001" -p "grp_md_teeth_guide_0
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.92000002 0.92000002 0.77999997 ;
-createNode transform -n "loc_md_upper_teeth_guide_001" -p "zero_md_upper_teeth_guide_001";
+createNode transform -n "loc_md_upper_teeth_bind_001" -p "zero_md_upper_teeth_guide_001";
 	rename -uid "6FF44F26-471A-69D1-BF1C-C38772EA2A08";
 	setAttr ".t" -type "double3" 0.0009918212890625 893.0157470703125 53.838485717773438 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.92000002 0.92000002 0.77999997 ;
-createNode locator -n "loc_md_upper_teeth_guide_001Shape" -p "loc_md_upper_teeth_guide_001";
+createNode locator -n "loc_md_upper_teeth_bind_001Shape" -p "loc_md_upper_teeth_bind_001";
 	rename -uid "19DE0CA5-4B35-C6FD-99CB-3BA3BDA9B755";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1901,12 +1901,12 @@ createNode transform -n "zero_md_lower_teeth_guide_001" -p "grp_md_teeth_guide_0
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.92000002 0.92000002 0.77999997 ;
-createNode transform -n "loc_md_lower_teeth_guide_001" -p "zero_md_lower_teeth_guide_001";
+createNode transform -n "loc_md_lower_teeth_bind_001" -p "zero_md_lower_teeth_guide_001";
 	rename -uid "AB19906C-4B98-9C43-54A0-69945581D4A9";
 	setAttr ".t" -type "double3" 0.010724067687988281 888.985107421875 53.342178344726562 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0.92000002 0.92000002 0.77999997 ;
-createNode locator -n "loc_md_lower_teeth_guide_001Shape" -p "loc_md_lower_teeth_guide_001";
+createNode locator -n "loc_md_lower_teeth_bind_001Shape" -p "loc_md_lower_teeth_bind_001";
 	rename -uid "71148806-4CE0-8C8B-2170-E49B490E1487";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1932,12 +1932,12 @@ createNode transform -n "zero_md_upper_lip_guide_001" -p "grp_md_lip_guide_001";
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode transform -n "loc_md_upper_lip_guide_001" -p "zero_md_upper_lip_guide_001";
+createNode transform -n "loc_md_upper_lip_bind_001" -p "zero_md_upper_lip_guide_001";
 	rename -uid "6BC76C5B-4702-D85A-D2E3-2AB213488F96";
 	setAttr ".t" -type "double3" 0 892.22186279296875 74.020088195800781 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode locator -n "loc_md_upper_lip_guide_001Shape" -p "loc_md_upper_lip_guide_001";
+createNode locator -n "loc_md_upper_lip_bind_001Shape" -p "loc_md_upper_lip_bind_001";
 	rename -uid "0A772CD2-49E8-9CF3-2606-8F873938459C";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1958,12 +1958,12 @@ createNode transform -n "zero_lf_upper_lip_guide_001" -p "grp_md_lip_guide_001";
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode transform -n "loc_lf_upper_lip_guide_001" -p "zero_lf_upper_lip_guide_001";
+createNode transform -n "loc_lf_upper_lip_bind_001" -p "zero_lf_upper_lip_guide_001";
 	rename -uid "079B4D9E-421A-B13A-B671-F68EC2FC3012";
 	setAttr ".t" -type "double3" 6.5477989414050422 892.76502109125295 72.939836177230916 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode locator -n "loc_lf_upper_lip_guide_001Shape" -p "loc_lf_upper_lip_guide_001";
+createNode locator -n "loc_lf_upper_lip_bind_001Shape" -p "loc_lf_upper_lip_bind_001";
 	rename -uid "E3428600-47F2-E2BF-8042-93A3F9904544";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -1984,12 +1984,12 @@ createNode transform -n "zero_lf_upper_lip_guide_002" -p "grp_md_lip_guide_001";
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode transform -n "loc_lf_upper_lip_guide_002" -p "zero_lf_upper_lip_guide_002";
+createNode transform -n "loc_lf_upper_lip_bind_002" -p "zero_lf_upper_lip_guide_002";
 	rename -uid "9FF0A7E6-466A-DE8A-8ABA-9A80649A4C6A";
 	setAttr ".t" -type "double3" 10.205770930650683 890.63682479554507 69.150216379277666 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode locator -n "loc_lf_upper_lip_guide_002Shape" -p "loc_lf_upper_lip_guide_002";
+createNode locator -n "loc_lf_upper_lip_bind_002Shape" -p "loc_lf_upper_lip_bind_002";
 	rename -uid "5F0271CD-4A26-C426-AA5A-DE867C2410BF";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2002,11 +2002,11 @@ createNode transform -n "zero_rt_upper_lip_guide_001" -p "grp_md_lip_guide_001";
 	setAttr ".s" -type "double3" -1 1 1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode transform -n "loc_rt_upper_lip_guide_001" -p "zero_rt_upper_lip_guide_001";
+createNode transform -n "loc_rt_upper_lip_bind_001" -p "zero_rt_upper_lip_guide_001";
 	rename -uid "010761B5-4CE1-2784-CE25-FE9D98F7BBB0";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode locator -n "loc_rt_upper_lip_guide_001Shape" -p "loc_rt_upper_lip_guide_001";
+createNode locator -n "loc_rt_upper_lip_bind_001Shape" -p "loc_rt_upper_lip_bind_001";
 	rename -uid "6420AAA9-44D0-08FF-9495-6DBD92B94725";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2018,11 +2018,11 @@ createNode transform -n "zero_rt_upper_lip_guide_002" -p "grp_md_lip_guide_001";
 	setAttr ".s" -type "double3" -1 1 1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode transform -n "loc_rt_upper_lip_guide_002" -p "zero_rt_upper_lip_guide_002";
+createNode transform -n "loc_rt_upper_lip_bind_002" -p "zero_rt_upper_lip_guide_002";
 	rename -uid "ADD5B1D4-4AF4-26B7-0FE9-38AC8972FDE6";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode locator -n "loc_rt_upper_lip_guide_002Shape" -p "loc_rt_upper_lip_guide_002";
+createNode locator -n "loc_rt_upper_lip_bind_002Shape" -p "loc_rt_upper_lip_bind_002";
 	rename -uid "0BE5553C-46CA-068D-2F7E-EA8B3EAED3F7";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2042,12 +2042,12 @@ createNode transform -n "zero_lf_mouth_corner_guide_001" -p "grp_md_lip_guide_00
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode transform -n "loc_lf_mouth_corner_guide_001" -p "zero_lf_mouth_corner_guide_001";
+createNode transform -n "loc_lf_mouth_corner_bind_001" -p "zero_lf_mouth_corner_guide_001";
 	rename -uid "E7317BA8-4856-7ED2-B5B2-5493089E32F7";
 	setAttr ".t" -type "double3" 14.916315078735352 888.8077392578125 63.507129669189453 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode locator -n "loc_lf_mouth_corner_guide_001Shape" -p "loc_lf_mouth_corner_guide_001";
+createNode locator -n "loc_lf_mouth_corner_bind_001Shape" -p "loc_lf_mouth_corner_bind_001";
 	rename -uid "357AD8C9-465D-5BFF-14CC-8AA001DEC9A9";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2060,11 +2060,11 @@ createNode transform -n "zero_rt_mouth_corner_guide_001" -p "grp_md_lip_guide_00
 	setAttr ".s" -type "double3" -1 1 1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode transform -n "loc_rt_mouth_corner_guide_001" -p "zero_rt_mouth_corner_guide_001";
+createNode transform -n "loc_rt_mouth_corner_bind_001" -p "zero_rt_mouth_corner_guide_001";
 	rename -uid "40948CC8-4977-25E1-5933-55838C09E209";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode locator -n "loc_rt_mouth_corner_guide_001Shape" -p "loc_rt_mouth_corner_guide_001";
+createNode locator -n "loc_rt_mouth_corner_bind_001Shape" -p "loc_rt_mouth_corner_bind_001";
 	rename -uid "DE3D35AF-4278-4DAF-08E8-CAACAF21B8E0";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2084,12 +2084,12 @@ createNode transform -n "zero_md_lower_lip_guide_001" -p "grp_md_lip_guide_001";
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode transform -n "loc_md_lower_lip_guide_001" -p "zero_md_lower_lip_guide_001";
+createNode transform -n "loc_md_lower_lip_bind_001" -p "zero_md_lower_lip_guide_001";
 	rename -uid "BBD1DDB3-4D62-2B9E-C6BC-D68975CE0E64";
 	setAttr ".t" -type "double3" 0 882.94843394032011 74.020088195800781 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode locator -n "loc_md_lower_lip_guide_001Shape" -p "loc_md_lower_lip_guide_001";
+createNode locator -n "loc_md_lower_lip_bind_001Shape" -p "loc_md_lower_lip_bind_001";
 	rename -uid "C14B9B04-46E8-79FE-457B-8DAB8451CDA5";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2110,12 +2110,12 @@ createNode transform -n "zero_lf_lower_lip_guide_001" -p "grp_md_lip_guide_001";
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode transform -n "loc_lf_lower_lip_guide_001" -p "zero_lf_lower_lip_guide_001";
+createNode transform -n "loc_lf_lower_lip_bind_001" -p "zero_lf_lower_lip_guide_001";
 	rename -uid "B4CFB052-4A9D-B2E2-86A0-B4B7CBFAB7C6";
 	setAttr ".t" -type "double3" 6.6253784360383987 883.47470036636889 69.648095703382168 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode locator -n "loc_lf_lower_lip_guide_001Shape" -p "loc_lf_lower_lip_guide_001";
+createNode locator -n "loc_lf_lower_lip_bind_001Shape" -p "loc_lf_lower_lip_bind_001";
 	rename -uid "D5817944-4F5D-D9DE-5445-41992B716A04";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2136,12 +2136,12 @@ createNode transform -n "zero_lf_lower_lip_guide_002" -p "grp_md_lip_guide_001";
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode transform -n "loc_lf_lower_lip_guide_002" -p "zero_lf_lower_lip_guide_002";
+createNode transform -n "loc_lf_lower_lip_bind_002" -p "zero_lf_lower_lip_guide_002";
 	rename -uid "42F4F760-4185-B117-E495-A9AA69F3D18B";
 	setAttr ".t" -type "double3" 10.211730939521074 886.85846770270939 68.357601887976926 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode locator -n "loc_lf_lower_lip_guide_002Shape" -p "loc_lf_lower_lip_guide_002";
+createNode locator -n "loc_lf_lower_lip_bind_002Shape" -p "loc_lf_lower_lip_bind_002";
 	rename -uid "CB87091F-4185-8285-B5D8-428458C12796";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2154,11 +2154,11 @@ createNode transform -n "zero_rt_lower_lip_guide_001" -p "grp_md_lip_guide_001";
 	setAttr ".s" -type "double3" -1 1 1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode transform -n "loc_rt_lower_lip_guide_001" -p "zero_rt_lower_lip_guide_001";
+createNode transform -n "loc_rt_lower_lip_bind_001" -p "zero_rt_lower_lip_guide_001";
 	rename -uid "2A74388E-433C-67C7-99F4-62B3671D5CB7";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode locator -n "loc_rt_lower_lip_guide_001Shape" -p "loc_rt_lower_lip_guide_001";
+createNode locator -n "loc_rt_lower_lip_bind_001Shape" -p "loc_rt_lower_lip_bind_001";
 	rename -uid "E44D6016-47C5-E4FA-5CE5-2A9EAFBB8DF3";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2170,11 +2170,11 @@ createNode transform -n "zero_rt_lower_lip_guide_002" -p "grp_md_lip_guide_001";
 	setAttr ".s" -type "double3" -1 1 1 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode transform -n "loc_rt_lower_lip_guide_002" -p "zero_rt_lower_lip_guide_002";
+createNode transform -n "loc_rt_lower_lip_bind_002" -p "zero_rt_lower_lip_guide_002";
 	rename -uid "354B8BBF-4A50-623D-1B92-9182701A1581";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.12 0.18000001 ;
-createNode locator -n "loc_rt_lower_lip_guide_002Shape" -p "loc_rt_lower_lip_guide_002";
+createNode locator -n "loc_rt_lower_lip_bind_002Shape" -p "loc_rt_lower_lip_bind_002";
 	rename -uid "72CDB2EB-4F4F-C2FB-EE2B-45A67498DF5C";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2240,12 +2240,12 @@ createNode transform -n "zero_md_tongue_guide_001" -p "grp_md_tongue_guide_001";
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.31999999 0.51999998 ;
-createNode transform -n "loc_md_tongue_guide_001" -p "zero_md_tongue_guide_001";
+createNode transform -n "loc_md_tongue_bind_001" -p "zero_md_tongue_guide_001";
 	rename -uid "7BE4D178-4256-E75C-8BD7-1EADE527518F";
 	setAttr ".t" -type "double3" 0 884.68551007538588 21.481754293539911 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.31999999 0.51999998 ;
-createNode locator -n "loc_md_tongue_guide_001Shape" -p "loc_md_tongue_guide_001";
+createNode locator -n "loc_md_tongue_bind_001Shape" -p "loc_md_tongue_bind_001";
 	rename -uid "F2E37633-468B-6446-3682-8B948B27B192";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2253,7 +2253,7 @@ createNode locator -n "loc_md_tongue_guide_001Shape" -p "loc_md_tongue_guide_001
 	setAttr ".ovc" 20;
 	setAttr ".ovrgb" -type "float3" 1 0.31999999 0.51999998 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_md_tongue_guide_002" -p "loc_md_tongue_guide_001";
+createNode transform -n "zero_md_tongue_guide_002" -p "loc_md_tongue_bind_001";
 	rename -uid "87ADBBF5-4A80-6D21-1EBE-26B07D9ECFEB";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -2266,12 +2266,12 @@ createNode transform -n "zero_md_tongue_guide_002" -p "loc_md_tongue_guide_001";
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.31999999 0.51999998 ;
-createNode transform -n "loc_md_tongue_guide_002" -p "zero_md_tongue_guide_002";
+createNode transform -n "loc_md_tongue_bind_002" -p "zero_md_tongue_guide_002";
 	rename -uid "461C42F7-462A-37A4-8AE3-A4AD852BB271";
 	setAttr ".t" -type "double3" 0 4.0712308883461219 10.253410919902333 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.31999999 0.51999998 ;
-createNode locator -n "loc_md_tongue_guide_002Shape" -p "loc_md_tongue_guide_002";
+createNode locator -n "loc_md_tongue_bind_002Shape" -p "loc_md_tongue_bind_002";
 	rename -uid "24D04BAE-4495-3C30-9179-EA97A64BB01A";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2279,7 +2279,7 @@ createNode locator -n "loc_md_tongue_guide_002Shape" -p "loc_md_tongue_guide_002
 	setAttr ".ovc" 20;
 	setAttr ".ovrgb" -type "float3" 1 0.31999999 0.51999998 ;
 	setAttr ".los" -type "double3" 4.8999999999999995 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_md_tongue_guide_003" -p "loc_md_tongue_guide_002";
+createNode transform -n "zero_md_tongue_guide_003" -p "loc_md_tongue_bind_002";
 	rename -uid "C5906A05-457C-7BEC-406B-05B7E535773E";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -2292,12 +2292,12 @@ createNode transform -n "zero_md_tongue_guide_003" -p "loc_md_tongue_guide_002";
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.31999999 0.51999998 ;
-createNode transform -n "loc_md_tongue_guide_003" -p "zero_md_tongue_guide_003";
+createNode transform -n "loc_md_tongue_bind_003" -p "zero_md_tongue_guide_003";
 	rename -uid "202EA624-4723-37CA-66FA-C7A45A862C5B";
 	setAttr ".t" -type "double3" 0 4.0712308883461219 10.253410919902333 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.31999999 0.51999998 ;
-createNode locator -n "loc_md_tongue_guide_003Shape" -p "loc_md_tongue_guide_003";
+createNode locator -n "loc_md_tongue_bind_003Shape" -p "loc_md_tongue_bind_003";
 	rename -uid "B89B7C16-4632-B9AF-FF8E-79BCBC60BEA2";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2305,7 +2305,7 @@ createNode locator -n "loc_md_tongue_guide_003Shape" -p "loc_md_tongue_guide_003
 	setAttr ".ovc" 20;
 	setAttr ".ovrgb" -type "float3" 1 0.31999999 0.51999998 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_md_tongue_guide_004" -p "loc_md_tongue_guide_003";
+createNode transform -n "zero_md_tongue_guide_004" -p "loc_md_tongue_bind_003";
 	rename -uid "27A22EC3-4087-9455-3892-6CA3ABED967A";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -2318,12 +2318,12 @@ createNode transform -n "zero_md_tongue_guide_004" -p "loc_md_tongue_guide_003";
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.31999999 0.51999998 ;
-createNode transform -n "loc_md_tongue_guide_004" -p "zero_md_tongue_guide_004";
+createNode transform -n "loc_md_tongue_bind_004" -p "zero_md_tongue_guide_004";
 	rename -uid "0D1DB3BF-46FC-6B08-CD2D-A7AAE2C4A949";
 	setAttr ".t" -type "double3" 0 -2.65083241927789 10.253410919902333 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.31999999 0.51999998 ;
-createNode locator -n "loc_md_tongue_guide_004Shape" -p "loc_md_tongue_guide_004";
+createNode locator -n "loc_md_tongue_bind_004Shape" -p "loc_md_tongue_bind_004";
 	rename -uid "853A91E1-40C1-ED25-CB68-1084F3B00F61";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2331,7 +2331,7 @@ createNode locator -n "loc_md_tongue_guide_004Shape" -p "loc_md_tongue_guide_004
 	setAttr ".ovc" 20;
 	setAttr ".ovrgb" -type "float3" 1 0.31999999 0.51999998 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
-createNode transform -n "zero_md_tongue_guide_005" -p "loc_md_tongue_guide_004";
+createNode transform -n "zero_md_tongue_guide_005" -p "loc_md_tongue_bind_004";
 	rename -uid "FCFE12C8-40B0-A625-67FB-9C9D0D2B7E1F";
 	setAttr -l on ".tx";
 	setAttr -l on ".ty";
@@ -2344,12 +2344,12 @@ createNode transform -n "zero_md_tongue_guide_005" -p "loc_md_tongue_guide_004";
 	setAttr -l on ".sz";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.31999999 0.51999998 ;
-createNode transform -n "loc_md_tongue_guide_005" -p "zero_md_tongue_guide_005";
+createNode transform -n "loc_md_tongue_bind_005" -p "zero_md_tongue_guide_005";
 	rename -uid "768ECCF7-49F2-4297-11DE-34948F96FD78";
 	setAttr ".t" -type "double3" 0 -4.5214447098502433 10.253410919902333 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 1 0.31999999 0.51999998 ;
-createNode locator -n "loc_md_tongue_guide_005Shape" -p "loc_md_tongue_guide_005";
+createNode locator -n "loc_md_tongue_bind_005Shape" -p "loc_md_tongue_bind_005";
 	rename -uid "A5604748-4F5C-9542-AB25-46B21BB4ED4C";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2389,12 +2389,12 @@ createNode transform -n "zero_lf_zygoma_guide_001" -p "grp_lf_zygoma_guide_001";
 	rename -uid "8222C5CD-40FC-1949-F66E-FAB511CB1C72";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.94999999 0.68000001 ;
-createNode transform -n "loc_lf_zygoma_guide_001" -p "zero_lf_zygoma_guide_001";
+createNode transform -n "loc_lf_zygoma_bind_001" -p "zero_lf_zygoma_guide_001";
 	rename -uid "EA1BEB6C-4A6F-A598-700C-C29A8469F24B";
 	setAttr ".t" -type "double3" 10.599196434020996 916.290283203125 65.919540405273438 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.94999999 0.68000001 ;
-createNode locator -n "loc_lf_zygoma_guide_001Shape" -p "loc_lf_zygoma_guide_001";
+createNode locator -n "loc_lf_zygoma_bind_001Shape" -p "loc_lf_zygoma_bind_001";
 	rename -uid "73FF8B24-4424-A4A3-69AB-CDB694401760";
 	setAttr -k off ".v";
 	setAttr ".ove" yes;
@@ -2405,23 +2405,23 @@ createNode transform -n "zero_lf_zygoma_guide_002" -p "grp_lf_zygoma_guide_001";
 	rename -uid "7CE7182B-4BF5-0AFE-8E2A-9CB8D1067B66";
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.94999999 0.68000001 ;
-createNode transform -n "loc_lf_zygoma_guide_002" -p "zero_lf_zygoma_guide_002";
+createNode transform -n "loc_lf_zygoma_bind_002" -p "zero_lf_zygoma_guide_002";
 	rename -uid "5357DCF3-4ED2-EEF9-2473-F29114726EC7";
 	setAttr ".t" -type "double3" 26.95750617980957 907.423095703125 63.240692138671875 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.94999999 0.68000001 ;
-createNode locator -n "loc_lf_zygoma_guide_002Shape" -p "loc_lf_zygoma_guide_002";
+createNode locator -n "loc_lf_zygoma_bind_002Shape" -p "loc_lf_zygoma_bind_002";
 	rename -uid "C013E3E4-49D1-89B1-FBEA-A5B43746A3CD";
 	setAttr -k off ".v";
 	setAttr ".los" -type "double3" 4 4 4 ;
 createNode transform -n "zero_lf_zygoma_guide_003" -p "grp_lf_zygoma_guide_001";
 	rename -uid "FC598ED0-4711-B27F-FF40-A88ACE011A90";
-createNode transform -n "loc_lf_zygoma_guide_003" -p "zero_lf_zygoma_guide_003";
+createNode transform -n "loc_lf_zygoma_bind_003" -p "zero_lf_zygoma_guide_003";
 	rename -uid "AF274ACE-4702-ED39-59D4-438A6FF642ED";
 	setAttr ".t" -type "double3" 49.228466652018575 911.93424312423656 58.506034603746429 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.94999999 0.68000001 ;
-createNode locator -n "loc_lf_zygoma_guide_003Shape" -p "loc_lf_zygoma_guide_003";
+createNode locator -n "loc_lf_zygoma_bind_003Shape" -p "loc_lf_zygoma_bind_003";
 	rename -uid "6D2F5D22-48CF-DBAB-A331-5DA6D5BF16AD";
 	setAttr -k off ".v";
 	setAttr ".los" -type "double3" 4 4 4 ;
@@ -2446,26 +2446,26 @@ createNode transform -n "grp_rt_zygoma_guide_001" -p "grp_md_zygoma_guide_001";
 createNode transform -n "zero_rt_zygoma_guide_001" -p "grp_rt_zygoma_guide_001";
 	rename -uid "4792C670-4C3D-2FC4-A3B7-459093BBAC71";
 	setAttr ".s" -type "double3" -1 1 1 ;
-createNode transform -n "loc_rt_zygoma_guide_001" -p "zero_rt_zygoma_guide_001";
+createNode transform -n "loc_rt_zygoma_bind_001" -p "zero_rt_zygoma_guide_001";
 	rename -uid "EAD44D2D-4693-45C3-1484-9E95C0ED9AC8";
-createNode locator -n "loc_rt_zygoma_guide_001Shape" -p "loc_rt_zygoma_guide_001";
+createNode locator -n "loc_rt_zygoma_bind_001Shape" -p "loc_rt_zygoma_bind_001";
 	rename -uid "DD56998F-4551-B2D5-3238-EAA8A7BDCBC3";
 	setAttr -k off ".v";
 createNode transform -n "zero_rt_zygoma_guide_002" -p "grp_rt_zygoma_guide_001";
 	rename -uid "A5CC2C1C-4565-8327-2F88-EDBDD8DBCBC1";
 	setAttr ".s" -type "double3" -1 1 1 ;
-createNode transform -n "loc_rt_zygoma_guide_002" -p "zero_rt_zygoma_guide_002";
+createNode transform -n "loc_rt_zygoma_bind_002" -p "zero_rt_zygoma_guide_002";
 	rename -uid "B0A395B7-4D8E-6683-4F1F-468AD8789FA9";
-createNode locator -n "loc_rt_zygoma_guide_002Shape" -p "loc_rt_zygoma_guide_002";
+createNode locator -n "loc_rt_zygoma_bind_002Shape" -p "loc_rt_zygoma_bind_002";
 	rename -uid "3C7C55BF-4C6F-4E28-216D-C1A79C1581C8";
 	setAttr -k off ".v";
 createNode transform -n "zero_rt_zygoma_guide_003" -p "grp_rt_zygoma_guide_001";
 	rename -uid "7D454BF9-455C-B4FE-C9AB-91987074A720";
 	setAttr ".s" -type "double3" -1 1 1 ;
-createNode transform -n "loc_rt_zygoma_guide_003" -p "zero_rt_zygoma_guide_003";
+createNode transform -n "loc_rt_zygoma_bind_003" -p "zero_rt_zygoma_guide_003";
 	rename -uid "728BD2AA-4464-8B06-C92C-A39BA3DD22B7";
 	setAttr ".t" -type "double3" 49.228466652018575 911.93424312423656 58.506034603746429 ;
-createNode locator -n "loc_rt_zygoma_guide_003Shape" -p "loc_rt_zygoma_guide_003";
+createNode locator -n "loc_rt_zygoma_bind_003Shape" -p "loc_rt_zygoma_bind_003";
 	rename -uid "6D54D1FC-454A-AD24-F62A-CF86D6439BD3";
 	setAttr -k off ".v";
 	setAttr ".los" -type "double3" 4 4 4 ;
@@ -2635,953 +2635,953 @@ select -ne :defaultColorMgtGlobals;
 select -ne :hardwareRenderGlobals;
 	setAttr ".ctrs" 256;
 	setAttr ".btrs" 512;
-connectAttr "loc_lf_ear_guide_001.tx" "loc_rt_ear_guide_001.tx";
-connectAttr "loc_lf_ear_guide_001.ty" "loc_rt_ear_guide_001.ty";
-connectAttr "loc_lf_ear_guide_001.tz" "loc_rt_ear_guide_001.tz";
-connectAttr "loc_lf_ear_guide_001.rx" "loc_rt_ear_guide_001.rx";
-connectAttr "loc_lf_ear_guide_001.ry" "loc_rt_ear_guide_001.ry";
-connectAttr "loc_lf_ear_guide_001.rz" "loc_rt_ear_guide_001.rz";
-connectAttr "loc_lf_ear_guide_001.sx" "loc_rt_ear_guide_001.sx";
-connectAttr "loc_lf_ear_guide_001.sy" "loc_rt_ear_guide_001.sy";
-connectAttr "loc_lf_ear_guide_001.sz" "loc_rt_ear_guide_001.sz";
-connectAttr "loc_lf_ear_guide_001.ro" "loc_rt_ear_guide_001.ro";
-connectAttr "loc_lf_ear_guide_001.v" "loc_rt_ear_guide_001.v";
-connectAttr "loc_lf_ear_guide_001Shape.lpx" "loc_rt_ear_guide_001Shape.lpx";
-connectAttr "loc_lf_ear_guide_001Shape.lpy" "loc_rt_ear_guide_001Shape.lpy";
-connectAttr "loc_lf_ear_guide_001Shape.lpz" "loc_rt_ear_guide_001Shape.lpz";
-connectAttr "loc_lf_ear_guide_001Shape.lsx" "loc_rt_ear_guide_001Shape.lsx";
-connectAttr "loc_lf_ear_guide_001Shape.lsy" "loc_rt_ear_guide_001Shape.lsy";
-connectAttr "loc_lf_ear_guide_001Shape.lsz" "loc_rt_ear_guide_001Shape.lsz";
-connectAttr "loc_lf_ear_guide_002.tx" "loc_rt_ear_guide_002.tx";
-connectAttr "loc_lf_ear_guide_002.ty" "loc_rt_ear_guide_002.ty";
-connectAttr "loc_lf_ear_guide_002.tz" "loc_rt_ear_guide_002.tz";
-connectAttr "loc_lf_ear_guide_002.rx" "loc_rt_ear_guide_002.rx";
-connectAttr "loc_lf_ear_guide_002.ry" "loc_rt_ear_guide_002.ry";
-connectAttr "loc_lf_ear_guide_002.rz" "loc_rt_ear_guide_002.rz";
-connectAttr "loc_lf_ear_guide_002.sx" "loc_rt_ear_guide_002.sx";
-connectAttr "loc_lf_ear_guide_002.sy" "loc_rt_ear_guide_002.sy";
-connectAttr "loc_lf_ear_guide_002.sz" "loc_rt_ear_guide_002.sz";
-connectAttr "loc_lf_ear_guide_002.ro" "loc_rt_ear_guide_002.ro";
-connectAttr "loc_lf_ear_guide_002.v" "loc_rt_ear_guide_002.v";
-connectAttr "loc_lf_ear_guide_002Shape.lpx" "loc_rt_ear_guide_002Shape.lpx";
-connectAttr "loc_lf_ear_guide_002Shape.lpy" "loc_rt_ear_guide_002Shape.lpy";
-connectAttr "loc_lf_ear_guide_002Shape.lpz" "loc_rt_ear_guide_002Shape.lpz";
-connectAttr "loc_lf_ear_guide_002Shape.lsx" "loc_rt_ear_guide_002Shape.lsx";
-connectAttr "loc_lf_ear_guide_002Shape.lsy" "loc_rt_ear_guide_002Shape.lsy";
-connectAttr "loc_lf_ear_guide_002Shape.lsz" "loc_rt_ear_guide_002Shape.lsz";
-connectAttr "loc_lf_ear_guide_003.tx" "loc_rt_ear_guide_003.tx";
-connectAttr "loc_lf_ear_guide_003.ty" "loc_rt_ear_guide_003.ty";
-connectAttr "loc_lf_ear_guide_003.tz" "loc_rt_ear_guide_003.tz";
-connectAttr "loc_lf_ear_guide_003.rx" "loc_rt_ear_guide_003.rx";
-connectAttr "loc_lf_ear_guide_003.ry" "loc_rt_ear_guide_003.ry";
-connectAttr "loc_lf_ear_guide_003.rz" "loc_rt_ear_guide_003.rz";
-connectAttr "loc_lf_ear_guide_003.sx" "loc_rt_ear_guide_003.sx";
-connectAttr "loc_lf_ear_guide_003.sy" "loc_rt_ear_guide_003.sy";
-connectAttr "loc_lf_ear_guide_003.sz" "loc_rt_ear_guide_003.sz";
-connectAttr "loc_lf_ear_guide_003.ro" "loc_rt_ear_guide_003.ro";
-connectAttr "loc_lf_ear_guide_003.v" "loc_rt_ear_guide_003.v";
-connectAttr "loc_lf_ear_guide_003Shape.lpx" "loc_rt_ear_guide_003Shape.lpx";
-connectAttr "loc_lf_ear_guide_003Shape.lpy" "loc_rt_ear_guide_003Shape.lpy";
-connectAttr "loc_lf_ear_guide_003Shape.lpz" "loc_rt_ear_guide_003Shape.lpz";
-connectAttr "loc_lf_ear_guide_003Shape.lsx" "loc_rt_ear_guide_003Shape.lsx";
-connectAttr "loc_lf_ear_guide_003Shape.lsy" "loc_rt_ear_guide_003Shape.lsy";
-connectAttr "loc_lf_ear_guide_003Shape.lsz" "loc_rt_ear_guide_003Shape.lsz";
-connectAttr "loc_lf_ear_guide_001Shape.wp" "curveShape1.cp[0]";
-connectAttr "loc_lf_ear_guide_002Shape.wp" "curveShape1.cp[1]";
-connectAttr "loc_lf_ear_guide_003Shape.wp" "curveShape1.cp[2]";
-connectAttr "loc_rt_ear_guide_001Shape.wp" "curveShape2.cp[0]";
-connectAttr "loc_rt_ear_guide_002Shape.wp" "curveShape2.cp[1]";
-connectAttr "loc_rt_ear_guide_003Shape.wp" "curveShape2.cp[2]";
-connectAttr "loc_lf_nose_side_guide_001.tx" "loc_rt_nose_side_guide_001.tx";
-connectAttr "loc_lf_nose_side_guide_001.ty" "loc_rt_nose_side_guide_001.ty";
-connectAttr "loc_lf_nose_side_guide_001.tz" "loc_rt_nose_side_guide_001.tz";
-connectAttr "loc_lf_nose_side_guide_001.rx" "loc_rt_nose_side_guide_001.rx";
-connectAttr "loc_lf_nose_side_guide_001.ry" "loc_rt_nose_side_guide_001.ry";
-connectAttr "loc_lf_nose_side_guide_001.rz" "loc_rt_nose_side_guide_001.rz";
-connectAttr "loc_lf_nose_side_guide_001.sx" "loc_rt_nose_side_guide_001.sx";
-connectAttr "loc_lf_nose_side_guide_001.sy" "loc_rt_nose_side_guide_001.sy";
-connectAttr "loc_lf_nose_side_guide_001.sz" "loc_rt_nose_side_guide_001.sz";
-connectAttr "loc_lf_nose_side_guide_001.ro" "loc_rt_nose_side_guide_001.ro";
-connectAttr "loc_lf_nose_side_guide_001.v" "loc_rt_nose_side_guide_001.v";
-connectAttr "loc_lf_nose_side_guide_001Shape.lpx" "loc_rt_nose_side_guide_001Shape.lpx"
-		;
-connectAttr "loc_lf_nose_side_guide_001Shape.lpy" "loc_rt_nose_side_guide_001Shape.lpy"
-		;
-connectAttr "loc_lf_nose_side_guide_001Shape.lpz" "loc_rt_nose_side_guide_001Shape.lpz"
-		;
-connectAttr "loc_lf_nose_side_guide_001Shape.lsx" "loc_rt_nose_side_guide_001Shape.lsx"
-		;
-connectAttr "loc_lf_nose_side_guide_001Shape.lsy" "loc_rt_nose_side_guide_001Shape.lsy"
-		;
-connectAttr "loc_lf_nose_side_guide_001Shape.lsz" "loc_rt_nose_side_guide_001Shape.lsz"
-		;
-connectAttr "loc_md_muzzle_guide_001Shape.wp" "curveShape21.cp[0]";
-connectAttr "loc_md_nose_guide_001Shape.wp" "curveShape21.cp[1]";
-connectAttr "loc_md_nose_center_guide_001Shape.wp" "curveShape21.cp[2]";
-connectAttr "loc_md_nose_front_guide_001Shape.wp" "curveShape21.cp[3]";
-connectAttr "loc_lf_nose_side_guide_001Shape.wp" "curveShape21.cp[4]";
-connectAttr "loc_md_nose_down_guide_001Shape.wp" "curveShape21.cp[5]";
-connectAttr "loc_rt_nose_side_guide_001Shape.wp" "curveShape21.cp[6]";
-connectAttr "loc_lf_eye_iris_guide_001.tx" "loc_lf_eye_aim_guide_001.tx";
-connectAttr "loc_lf_eye_iris_guide_001.ty" "loc_lf_eye_aim_guide_001.ty";
-connectAttr "loc_lf_eye_ball_guide_001.tx" "loc_rt_eye_ball_guide_001.tx";
-connectAttr "loc_lf_eye_ball_guide_001.ty" "loc_rt_eye_ball_guide_001.ty";
-connectAttr "loc_lf_eye_ball_guide_001.tz" "loc_rt_eye_ball_guide_001.tz";
-connectAttr "loc_lf_eye_ball_guide_001.rx" "loc_rt_eye_ball_guide_001.rx";
-connectAttr "loc_lf_eye_ball_guide_001.ry" "loc_rt_eye_ball_guide_001.ry";
-connectAttr "loc_lf_eye_ball_guide_001.rz" "loc_rt_eye_ball_guide_001.rz";
-connectAttr "loc_lf_eye_ball_guide_001.sx" "loc_rt_eye_ball_guide_001.sx";
-connectAttr "loc_lf_eye_ball_guide_001.sy" "loc_rt_eye_ball_guide_001.sy";
-connectAttr "loc_lf_eye_ball_guide_001.sz" "loc_rt_eye_ball_guide_001.sz";
-connectAttr "loc_lf_eye_ball_guide_001.ro" "loc_rt_eye_ball_guide_001.ro";
-connectAttr "loc_lf_eye_ball_guide_001.v" "loc_rt_eye_ball_guide_001.v";
-connectAttr "loc_lf_eye_ball_guide_001Shape.lpx" "loc_rt_eye_ball_guide_001Shape.lpx"
-		;
-connectAttr "loc_lf_eye_ball_guide_001Shape.lpy" "loc_rt_eye_ball_guide_001Shape.lpy"
-		;
-connectAttr "loc_lf_eye_ball_guide_001Shape.lpz" "loc_rt_eye_ball_guide_001Shape.lpz"
-		;
-connectAttr "loc_lf_eye_ball_guide_001Shape.lsx" "loc_rt_eye_ball_guide_001Shape.lsx"
-		;
-connectAttr "loc_lf_eye_ball_guide_001Shape.lsy" "loc_rt_eye_ball_guide_001Shape.lsy"
-		;
-connectAttr "loc_lf_eye_ball_guide_001Shape.lsz" "loc_rt_eye_ball_guide_001Shape.lsz"
+connectAttr "loc_lf_ear_bind_001.tx" "loc_rt_ear_bind_001.tx";
+connectAttr "loc_lf_ear_bind_001.ty" "loc_rt_ear_bind_001.ty";
+connectAttr "loc_lf_ear_bind_001.tz" "loc_rt_ear_bind_001.tz";
+connectAttr "loc_lf_ear_bind_001.rx" "loc_rt_ear_bind_001.rx";
+connectAttr "loc_lf_ear_bind_001.ry" "loc_rt_ear_bind_001.ry";
+connectAttr "loc_lf_ear_bind_001.rz" "loc_rt_ear_bind_001.rz";
+connectAttr "loc_lf_ear_bind_001.sx" "loc_rt_ear_bind_001.sx";
+connectAttr "loc_lf_ear_bind_001.sy" "loc_rt_ear_bind_001.sy";
+connectAttr "loc_lf_ear_bind_001.sz" "loc_rt_ear_bind_001.sz";
+connectAttr "loc_lf_ear_bind_001.ro" "loc_rt_ear_bind_001.ro";
+connectAttr "loc_lf_ear_bind_001.v" "loc_rt_ear_bind_001.v";
+connectAttr "loc_lf_ear_bind_001Shape.lpx" "loc_rt_ear_bind_001Shape.lpx";
+connectAttr "loc_lf_ear_bind_001Shape.lpy" "loc_rt_ear_bind_001Shape.lpy";
+connectAttr "loc_lf_ear_bind_001Shape.lpz" "loc_rt_ear_bind_001Shape.lpz";
+connectAttr "loc_lf_ear_bind_001Shape.lsx" "loc_rt_ear_bind_001Shape.lsx";
+connectAttr "loc_lf_ear_bind_001Shape.lsy" "loc_rt_ear_bind_001Shape.lsy";
+connectAttr "loc_lf_ear_bind_001Shape.lsz" "loc_rt_ear_bind_001Shape.lsz";
+connectAttr "loc_lf_ear_bind_002.tx" "loc_rt_ear_bind_002.tx";
+connectAttr "loc_lf_ear_bind_002.ty" "loc_rt_ear_bind_002.ty";
+connectAttr "loc_lf_ear_bind_002.tz" "loc_rt_ear_bind_002.tz";
+connectAttr "loc_lf_ear_bind_002.rx" "loc_rt_ear_bind_002.rx";
+connectAttr "loc_lf_ear_bind_002.ry" "loc_rt_ear_bind_002.ry";
+connectAttr "loc_lf_ear_bind_002.rz" "loc_rt_ear_bind_002.rz";
+connectAttr "loc_lf_ear_bind_002.sx" "loc_rt_ear_bind_002.sx";
+connectAttr "loc_lf_ear_bind_002.sy" "loc_rt_ear_bind_002.sy";
+connectAttr "loc_lf_ear_bind_002.sz" "loc_rt_ear_bind_002.sz";
+connectAttr "loc_lf_ear_bind_002.ro" "loc_rt_ear_bind_002.ro";
+connectAttr "loc_lf_ear_bind_002.v" "loc_rt_ear_bind_002.v";
+connectAttr "loc_lf_ear_bind_002Shape.lpx" "loc_rt_ear_bind_002Shape.lpx";
+connectAttr "loc_lf_ear_bind_002Shape.lpy" "loc_rt_ear_bind_002Shape.lpy";
+connectAttr "loc_lf_ear_bind_002Shape.lpz" "loc_rt_ear_bind_002Shape.lpz";
+connectAttr "loc_lf_ear_bind_002Shape.lsx" "loc_rt_ear_bind_002Shape.lsx";
+connectAttr "loc_lf_ear_bind_002Shape.lsy" "loc_rt_ear_bind_002Shape.lsy";
+connectAttr "loc_lf_ear_bind_002Shape.lsz" "loc_rt_ear_bind_002Shape.lsz";
+connectAttr "loc_lf_ear_bind_003.tx" "loc_rt_ear_bind_003.tx";
+connectAttr "loc_lf_ear_bind_003.ty" "loc_rt_ear_bind_003.ty";
+connectAttr "loc_lf_ear_bind_003.tz" "loc_rt_ear_bind_003.tz";
+connectAttr "loc_lf_ear_bind_003.rx" "loc_rt_ear_bind_003.rx";
+connectAttr "loc_lf_ear_bind_003.ry" "loc_rt_ear_bind_003.ry";
+connectAttr "loc_lf_ear_bind_003.rz" "loc_rt_ear_bind_003.rz";
+connectAttr "loc_lf_ear_bind_003.sx" "loc_rt_ear_bind_003.sx";
+connectAttr "loc_lf_ear_bind_003.sy" "loc_rt_ear_bind_003.sy";
+connectAttr "loc_lf_ear_bind_003.sz" "loc_rt_ear_bind_003.sz";
+connectAttr "loc_lf_ear_bind_003.ro" "loc_rt_ear_bind_003.ro";
+connectAttr "loc_lf_ear_bind_003.v" "loc_rt_ear_bind_003.v";
+connectAttr "loc_lf_ear_bind_003Shape.lpx" "loc_rt_ear_bind_003Shape.lpx";
+connectAttr "loc_lf_ear_bind_003Shape.lpy" "loc_rt_ear_bind_003Shape.lpy";
+connectAttr "loc_lf_ear_bind_003Shape.lpz" "loc_rt_ear_bind_003Shape.lpz";
+connectAttr "loc_lf_ear_bind_003Shape.lsx" "loc_rt_ear_bind_003Shape.lsx";
+connectAttr "loc_lf_ear_bind_003Shape.lsy" "loc_rt_ear_bind_003Shape.lsy";
+connectAttr "loc_lf_ear_bind_003Shape.lsz" "loc_rt_ear_bind_003Shape.lsz";
+connectAttr "loc_lf_ear_bind_001Shape.wp" "curveShape1.cp[0]";
+connectAttr "loc_lf_ear_bind_002Shape.wp" "curveShape1.cp[1]";
+connectAttr "loc_lf_ear_bind_003Shape.wp" "curveShape1.cp[2]";
+connectAttr "loc_rt_ear_bind_001Shape.wp" "curveShape2.cp[0]";
+connectAttr "loc_rt_ear_bind_002Shape.wp" "curveShape2.cp[1]";
+connectAttr "loc_rt_ear_bind_003Shape.wp" "curveShape2.cp[2]";
+connectAttr "loc_lf_nose_side_bind_001.tx" "loc_rt_nose_side_bind_001.tx";
+connectAttr "loc_lf_nose_side_bind_001.ty" "loc_rt_nose_side_bind_001.ty";
+connectAttr "loc_lf_nose_side_bind_001.tz" "loc_rt_nose_side_bind_001.tz";
+connectAttr "loc_lf_nose_side_bind_001.rx" "loc_rt_nose_side_bind_001.rx";
+connectAttr "loc_lf_nose_side_bind_001.ry" "loc_rt_nose_side_bind_001.ry";
+connectAttr "loc_lf_nose_side_bind_001.rz" "loc_rt_nose_side_bind_001.rz";
+connectAttr "loc_lf_nose_side_bind_001.sx" "loc_rt_nose_side_bind_001.sx";
+connectAttr "loc_lf_nose_side_bind_001.sy" "loc_rt_nose_side_bind_001.sy";
+connectAttr "loc_lf_nose_side_bind_001.sz" "loc_rt_nose_side_bind_001.sz";
+connectAttr "loc_lf_nose_side_bind_001.ro" "loc_rt_nose_side_bind_001.ro";
+connectAttr "loc_lf_nose_side_bind_001.v" "loc_rt_nose_side_bind_001.v";
+connectAttr "loc_lf_nose_side_bind_001Shape.lpx" "loc_rt_nose_side_bind_001Shape.lpx"
+		;
+connectAttr "loc_lf_nose_side_bind_001Shape.lpy" "loc_rt_nose_side_bind_001Shape.lpy"
+		;
+connectAttr "loc_lf_nose_side_bind_001Shape.lpz" "loc_rt_nose_side_bind_001Shape.lpz"
+		;
+connectAttr "loc_lf_nose_side_bind_001Shape.lsx" "loc_rt_nose_side_bind_001Shape.lsx"
+		;
+connectAttr "loc_lf_nose_side_bind_001Shape.lsy" "loc_rt_nose_side_bind_001Shape.lsy"
+		;
+connectAttr "loc_lf_nose_side_bind_001Shape.lsz" "loc_rt_nose_side_bind_001Shape.lsz"
+		;
+connectAttr "loc_md_muzzle_bind_001Shape.wp" "curveShape21.cp[0]";
+connectAttr "loc_md_nose_bind_001Shape.wp" "curveShape21.cp[1]";
+connectAttr "loc_md_nose_center_bind_001Shape.wp" "curveShape21.cp[2]";
+connectAttr "loc_md_nose_front_bind_001Shape.wp" "curveShape21.cp[3]";
+connectAttr "loc_lf_nose_side_bind_001Shape.wp" "curveShape21.cp[4]";
+connectAttr "loc_md_nose_down_bind_001Shape.wp" "curveShape21.cp[5]";
+connectAttr "loc_rt_nose_side_bind_001Shape.wp" "curveShape21.cp[6]";
+connectAttr "loc_lf_eye_iris_001.tx" "loc_lf_eye_aim_001.tx";
+connectAttr "loc_lf_eye_iris_001.ty" "loc_lf_eye_aim_001.ty";
+connectAttr "loc_lf_eye_ball_001.tx" "loc_rt_eye_ball_001.tx";
+connectAttr "loc_lf_eye_ball_001.ty" "loc_rt_eye_ball_001.ty";
+connectAttr "loc_lf_eye_ball_001.tz" "loc_rt_eye_ball_001.tz";
+connectAttr "loc_lf_eye_ball_001.rx" "loc_rt_eye_ball_001.rx";
+connectAttr "loc_lf_eye_ball_001.ry" "loc_rt_eye_ball_001.ry";
+connectAttr "loc_lf_eye_ball_001.rz" "loc_rt_eye_ball_001.rz";
+connectAttr "loc_lf_eye_ball_001.sx" "loc_rt_eye_ball_001.sx";
+connectAttr "loc_lf_eye_ball_001.sy" "loc_rt_eye_ball_001.sy";
+connectAttr "loc_lf_eye_ball_001.sz" "loc_rt_eye_ball_001.sz";
+connectAttr "loc_lf_eye_ball_001.ro" "loc_rt_eye_ball_001.ro";
+connectAttr "loc_lf_eye_ball_001.v" "loc_rt_eye_ball_001.v";
+connectAttr "loc_lf_eye_ball_001Shape.lpx" "loc_rt_eye_ball_001Shape.lpx"
+		;
+connectAttr "loc_lf_eye_ball_001Shape.lpy" "loc_rt_eye_ball_001Shape.lpy"
+		;
+connectAttr "loc_lf_eye_ball_001Shape.lpz" "loc_rt_eye_ball_001Shape.lpz"
+		;
+connectAttr "loc_lf_eye_ball_001Shape.lsx" "loc_rt_eye_ball_001Shape.lsx"
+		;
+connectAttr "loc_lf_eye_ball_001Shape.lsy" "loc_rt_eye_ball_001Shape.lsy"
+		;
+connectAttr "loc_lf_eye_ball_001Shape.lsz" "loc_rt_eye_ball_001Shape.lsz"
 		;
-connectAttr "loc_lf_eye_iris_guide_001.tx" "loc_rt_eye_iris_guide_001.tx";
-connectAttr "loc_lf_eye_iris_guide_001.ty" "loc_rt_eye_iris_guide_001.ty";
-connectAttr "loc_lf_eye_iris_guide_001.tz" "loc_rt_eye_iris_guide_001.tz";
-connectAttr "loc_lf_eye_iris_guide_001.rx" "loc_rt_eye_iris_guide_001.rx";
-connectAttr "loc_lf_eye_iris_guide_001.ry" "loc_rt_eye_iris_guide_001.ry";
-connectAttr "loc_lf_eye_iris_guide_001.rz" "loc_rt_eye_iris_guide_001.rz";
-connectAttr "loc_lf_eye_iris_guide_001.sx" "loc_rt_eye_iris_guide_001.sx";
-connectAttr "loc_lf_eye_iris_guide_001.sy" "loc_rt_eye_iris_guide_001.sy";
-connectAttr "loc_lf_eye_iris_guide_001.sz" "loc_rt_eye_iris_guide_001.sz";
-connectAttr "loc_lf_eye_iris_guide_001.ro" "loc_rt_eye_iris_guide_001.ro";
-connectAttr "loc_lf_eye_iris_guide_001.v" "loc_rt_eye_iris_guide_001.v";
-connectAttr "loc_lf_eye_iris_guide_001Shape.lpx" "loc_rt_eye_iris_guide_001Shape.lpx"
-		;
-connectAttr "loc_lf_eye_iris_guide_001Shape.lpy" "loc_rt_eye_iris_guide_001Shape.lpy"
-		;
-connectAttr "loc_lf_eye_iris_guide_001Shape.lpz" "loc_rt_eye_iris_guide_001Shape.lpz"
-		;
-connectAttr "loc_lf_eye_iris_guide_001Shape.lsx" "loc_rt_eye_iris_guide_001Shape.lsx"
-		;
-connectAttr "loc_lf_eye_iris_guide_001Shape.lsy" "loc_rt_eye_iris_guide_001Shape.lsy"
+connectAttr "loc_lf_eye_iris_001.tx" "loc_rt_eye_iris_001.tx";
+connectAttr "loc_lf_eye_iris_001.ty" "loc_rt_eye_iris_001.ty";
+connectAttr "loc_lf_eye_iris_001.tz" "loc_rt_eye_iris_001.tz";
+connectAttr "loc_lf_eye_iris_001.rx" "loc_rt_eye_iris_001.rx";
+connectAttr "loc_lf_eye_iris_001.ry" "loc_rt_eye_iris_001.ry";
+connectAttr "loc_lf_eye_iris_001.rz" "loc_rt_eye_iris_001.rz";
+connectAttr "loc_lf_eye_iris_001.sx" "loc_rt_eye_iris_001.sx";
+connectAttr "loc_lf_eye_iris_001.sy" "loc_rt_eye_iris_001.sy";
+connectAttr "loc_lf_eye_iris_001.sz" "loc_rt_eye_iris_001.sz";
+connectAttr "loc_lf_eye_iris_001.ro" "loc_rt_eye_iris_001.ro";
+connectAttr "loc_lf_eye_iris_001.v" "loc_rt_eye_iris_001.v";
+connectAttr "loc_lf_eye_iris_001Shape.lpx" "loc_rt_eye_iris_001Shape.lpx"
+		;
+connectAttr "loc_lf_eye_iris_001Shape.lpy" "loc_rt_eye_iris_001Shape.lpy"
+		;
+connectAttr "loc_lf_eye_iris_001Shape.lpz" "loc_rt_eye_iris_001Shape.lpz"
+		;
+connectAttr "loc_lf_eye_iris_001Shape.lsx" "loc_rt_eye_iris_001Shape.lsx"
+		;
+connectAttr "loc_lf_eye_iris_001Shape.lsy" "loc_rt_eye_iris_001Shape.lsy"
 		;
-connectAttr "loc_lf_eye_iris_guide_001Shape.lsz" "loc_rt_eye_iris_guide_001Shape.lsz"
+connectAttr "loc_lf_eye_iris_001Shape.lsz" "loc_rt_eye_iris_001Shape.lsz"
 		;
-connectAttr "loc_lf_inner_lid_guide_001Shape.wp" "curveShape12.cp[0]";
-connectAttr "loc_lf_upper_lid_guide_001Shape.wp" "curveShape12.cp[1]";
-connectAttr "loc_lf_upper_lid_guide_002Shape.wp" "curveShape12.cp[2]";
-connectAttr "loc_lf_upper_lid_guide_003Shape.wp" "curveShape12.cp[3]";
-connectAttr "loc_lf_outer_lid_guide_001Shape.wp" "curveShape12.cp[4]";
-connectAttr "loc_lf_inner_lid_guide_001Shape.wp" "curveShape13.cp[0]";
-connectAttr "loc_lf_lower_lid_guide_001Shape.wp" "curveShape13.cp[1]";
-connectAttr "loc_lf_lower_lid_guide_002Shape.wp" "curveShape13.cp[2]";
-connectAttr "loc_lf_lower_lid_guide_003Shape.wp" "curveShape13.cp[3]";
-connectAttr "loc_lf_outer_lid_guide_001Shape.wp" "curveShape13.cp[4]";
-connectAttr "loc_lf_lower_lid_guide_001.tx" "loc_rt_lower_lid_guide_001.tx";
-connectAttr "loc_lf_lower_lid_guide_001.ty" "loc_rt_lower_lid_guide_001.ty";
-connectAttr "loc_lf_lower_lid_guide_001.tz" "loc_rt_lower_lid_guide_001.tz";
-connectAttr "loc_lf_lower_lid_guide_001.rx" "loc_rt_lower_lid_guide_001.rx";
-connectAttr "loc_lf_lower_lid_guide_001.ry" "loc_rt_lower_lid_guide_001.ry";
-connectAttr "loc_lf_lower_lid_guide_001.rz" "loc_rt_lower_lid_guide_001.rz";
-connectAttr "loc_lf_lower_lid_guide_001.sx" "loc_rt_lower_lid_guide_001.sx";
-connectAttr "loc_lf_lower_lid_guide_001.sy" "loc_rt_lower_lid_guide_001.sy";
-connectAttr "loc_lf_lower_lid_guide_001.sz" "loc_rt_lower_lid_guide_001.sz";
-connectAttr "loc_lf_lower_lid_guide_001.ro" "loc_rt_lower_lid_guide_001.ro";
-connectAttr "loc_lf_lower_lid_guide_001.v" "loc_rt_lower_lid_guide_001.v";
-connectAttr "loc_lf_lower_lid_guide_001Shape.lpx" "loc_rt_lower_lid_guide_001Shape.lpx"
+connectAttr "loc_lf_inner_lid_bind_001Shape.wp" "curveShape12.cp[0]";
+connectAttr "loc_lf_upper_lid_bind_001Shape.wp" "curveShape12.cp[1]";
+connectAttr "loc_lf_upper_lid_bind_002Shape.wp" "curveShape12.cp[2]";
+connectAttr "loc_lf_upper_lid_bind_003Shape.wp" "curveShape12.cp[3]";
+connectAttr "loc_lf_outer_lid_bind_001Shape.wp" "curveShape12.cp[4]";
+connectAttr "loc_lf_inner_lid_bind_001Shape.wp" "curveShape13.cp[0]";
+connectAttr "loc_lf_lower_lid_bind_001Shape.wp" "curveShape13.cp[1]";
+connectAttr "loc_lf_lower_lid_bind_002Shape.wp" "curveShape13.cp[2]";
+connectAttr "loc_lf_lower_lid_bind_003Shape.wp" "curveShape13.cp[3]";
+connectAttr "loc_lf_outer_lid_bind_001Shape.wp" "curveShape13.cp[4]";
+connectAttr "loc_lf_lower_lid_bind_001.tx" "loc_rt_lower_lid_bind_001.tx";
+connectAttr "loc_lf_lower_lid_bind_001.ty" "loc_rt_lower_lid_bind_001.ty";
+connectAttr "loc_lf_lower_lid_bind_001.tz" "loc_rt_lower_lid_bind_001.tz";
+connectAttr "loc_lf_lower_lid_bind_001.rx" "loc_rt_lower_lid_bind_001.rx";
+connectAttr "loc_lf_lower_lid_bind_001.ry" "loc_rt_lower_lid_bind_001.ry";
+connectAttr "loc_lf_lower_lid_bind_001.rz" "loc_rt_lower_lid_bind_001.rz";
+connectAttr "loc_lf_lower_lid_bind_001.sx" "loc_rt_lower_lid_bind_001.sx";
+connectAttr "loc_lf_lower_lid_bind_001.sy" "loc_rt_lower_lid_bind_001.sy";
+connectAttr "loc_lf_lower_lid_bind_001.sz" "loc_rt_lower_lid_bind_001.sz";
+connectAttr "loc_lf_lower_lid_bind_001.ro" "loc_rt_lower_lid_bind_001.ro";
+connectAttr "loc_lf_lower_lid_bind_001.v" "loc_rt_lower_lid_bind_001.v";
+connectAttr "loc_lf_lower_lid_bind_001Shape.lpx" "loc_rt_lower_lid_bind_001Shape.lpx"
 		;
-connectAttr "loc_lf_lower_lid_guide_001Shape.lpy" "loc_rt_lower_lid_guide_001Shape.lpy"
+connectAttr "loc_lf_lower_lid_bind_001Shape.lpy" "loc_rt_lower_lid_bind_001Shape.lpy"
 		;
-connectAttr "loc_lf_lower_lid_guide_001Shape.lpz" "loc_rt_lower_lid_guide_001Shape.lpz"
+connectAttr "loc_lf_lower_lid_bind_001Shape.lpz" "loc_rt_lower_lid_bind_001Shape.lpz"
 		;
-connectAttr "loc_lf_lower_lid_guide_001Shape.lsx" "loc_rt_lower_lid_guide_001Shape.lsx"
+connectAttr "loc_lf_lower_lid_bind_001Shape.lsx" "loc_rt_lower_lid_bind_001Shape.lsx"
 		;
-connectAttr "loc_lf_lower_lid_guide_001Shape.lsy" "loc_rt_lower_lid_guide_001Shape.lsy"
+connectAttr "loc_lf_lower_lid_bind_001Shape.lsy" "loc_rt_lower_lid_bind_001Shape.lsy"
 		;
-connectAttr "loc_lf_lower_lid_guide_001Shape.lsz" "loc_rt_lower_lid_guide_001Shape.lsz"
+connectAttr "loc_lf_lower_lid_bind_001Shape.lsz" "loc_rt_lower_lid_bind_001Shape.lsz"
 		;
-connectAttr "loc_lf_lower_lid_guide_002.tx" "loc_rt_lower_lid_guide_002.tx";
-connectAttr "loc_lf_lower_lid_guide_002.ty" "loc_rt_lower_lid_guide_002.ty";
-connectAttr "loc_lf_lower_lid_guide_002.tz" "loc_rt_lower_lid_guide_002.tz";
-connectAttr "loc_lf_lower_lid_guide_002.rx" "loc_rt_lower_lid_guide_002.rx";
-connectAttr "loc_lf_lower_lid_guide_002.ry" "loc_rt_lower_lid_guide_002.ry";
-connectAttr "loc_lf_lower_lid_guide_002.rz" "loc_rt_lower_lid_guide_002.rz";
-connectAttr "loc_lf_lower_lid_guide_002.sx" "loc_rt_lower_lid_guide_002.sx";
-connectAttr "loc_lf_lower_lid_guide_002.sy" "loc_rt_lower_lid_guide_002.sy";
-connectAttr "loc_lf_lower_lid_guide_002.sz" "loc_rt_lower_lid_guide_002.sz";
-connectAttr "loc_lf_lower_lid_guide_002.ro" "loc_rt_lower_lid_guide_002.ro";
-connectAttr "loc_lf_lower_lid_guide_002.v" "loc_rt_lower_lid_guide_002.v";
-connectAttr "loc_lf_lower_lid_guide_002Shape.lpx" "loc_rt_lower_lid_guide_002Shape.lpx"
+connectAttr "loc_lf_lower_lid_bind_002.tx" "loc_rt_lower_lid_bind_002.tx";
+connectAttr "loc_lf_lower_lid_bind_002.ty" "loc_rt_lower_lid_bind_002.ty";
+connectAttr "loc_lf_lower_lid_bind_002.tz" "loc_rt_lower_lid_bind_002.tz";
+connectAttr "loc_lf_lower_lid_bind_002.rx" "loc_rt_lower_lid_bind_002.rx";
+connectAttr "loc_lf_lower_lid_bind_002.ry" "loc_rt_lower_lid_bind_002.ry";
+connectAttr "loc_lf_lower_lid_bind_002.rz" "loc_rt_lower_lid_bind_002.rz";
+connectAttr "loc_lf_lower_lid_bind_002.sx" "loc_rt_lower_lid_bind_002.sx";
+connectAttr "loc_lf_lower_lid_bind_002.sy" "loc_rt_lower_lid_bind_002.sy";
+connectAttr "loc_lf_lower_lid_bind_002.sz" "loc_rt_lower_lid_bind_002.sz";
+connectAttr "loc_lf_lower_lid_bind_002.ro" "loc_rt_lower_lid_bind_002.ro";
+connectAttr "loc_lf_lower_lid_bind_002.v" "loc_rt_lower_lid_bind_002.v";
+connectAttr "loc_lf_lower_lid_bind_002Shape.lpx" "loc_rt_lower_lid_bind_002Shape.lpx"
 		;
-connectAttr "loc_lf_lower_lid_guide_002Shape.lpy" "loc_rt_lower_lid_guide_002Shape.lpy"
+connectAttr "loc_lf_lower_lid_bind_002Shape.lpy" "loc_rt_lower_lid_bind_002Shape.lpy"
 		;
-connectAttr "loc_lf_lower_lid_guide_002Shape.lpz" "loc_rt_lower_lid_guide_002Shape.lpz"
+connectAttr "loc_lf_lower_lid_bind_002Shape.lpz" "loc_rt_lower_lid_bind_002Shape.lpz"
 		;
-connectAttr "loc_lf_lower_lid_guide_002Shape.lsx" "loc_rt_lower_lid_guide_002Shape.lsx"
+connectAttr "loc_lf_lower_lid_bind_002Shape.lsx" "loc_rt_lower_lid_bind_002Shape.lsx"
 		;
-connectAttr "loc_lf_lower_lid_guide_002Shape.lsy" "loc_rt_lower_lid_guide_002Shape.lsy"
+connectAttr "loc_lf_lower_lid_bind_002Shape.lsy" "loc_rt_lower_lid_bind_002Shape.lsy"
 		;
-connectAttr "loc_lf_lower_lid_guide_002Shape.lsz" "loc_rt_lower_lid_guide_002Shape.lsz"
+connectAttr "loc_lf_lower_lid_bind_002Shape.lsz" "loc_rt_lower_lid_bind_002Shape.lsz"
 		;
-connectAttr "loc_lf_lower_lid_guide_003.tx" "loc_rt_lower_lid_guide_003.tx";
-connectAttr "loc_lf_lower_lid_guide_003.ty" "loc_rt_lower_lid_guide_003.ty";
-connectAttr "loc_lf_lower_lid_guide_003.tz" "loc_rt_lower_lid_guide_003.tz";
-connectAttr "loc_lf_lower_lid_guide_003.rx" "loc_rt_lower_lid_guide_003.rx";
-connectAttr "loc_lf_lower_lid_guide_003.ry" "loc_rt_lower_lid_guide_003.ry";
-connectAttr "loc_lf_lower_lid_guide_003.rz" "loc_rt_lower_lid_guide_003.rz";
-connectAttr "loc_lf_lower_lid_guide_003.sx" "loc_rt_lower_lid_guide_003.sx";
-connectAttr "loc_lf_lower_lid_guide_003.sy" "loc_rt_lower_lid_guide_003.sy";
-connectAttr "loc_lf_lower_lid_guide_003.sz" "loc_rt_lower_lid_guide_003.sz";
-connectAttr "loc_lf_lower_lid_guide_003.ro" "loc_rt_lower_lid_guide_003.ro";
-connectAttr "loc_lf_lower_lid_guide_003.v" "loc_rt_lower_lid_guide_003.v";
-connectAttr "loc_lf_lower_lid_guide_003Shape.lpx" "loc_rt_lower_lid_guide_003Shape.lpx"
+connectAttr "loc_lf_lower_lid_bind_003.tx" "loc_rt_lower_lid_bind_003.tx";
+connectAttr "loc_lf_lower_lid_bind_003.ty" "loc_rt_lower_lid_bind_003.ty";
+connectAttr "loc_lf_lower_lid_bind_003.tz" "loc_rt_lower_lid_bind_003.tz";
+connectAttr "loc_lf_lower_lid_bind_003.rx" "loc_rt_lower_lid_bind_003.rx";
+connectAttr "loc_lf_lower_lid_bind_003.ry" "loc_rt_lower_lid_bind_003.ry";
+connectAttr "loc_lf_lower_lid_bind_003.rz" "loc_rt_lower_lid_bind_003.rz";
+connectAttr "loc_lf_lower_lid_bind_003.sx" "loc_rt_lower_lid_bind_003.sx";
+connectAttr "loc_lf_lower_lid_bind_003.sy" "loc_rt_lower_lid_bind_003.sy";
+connectAttr "loc_lf_lower_lid_bind_003.sz" "loc_rt_lower_lid_bind_003.sz";
+connectAttr "loc_lf_lower_lid_bind_003.ro" "loc_rt_lower_lid_bind_003.ro";
+connectAttr "loc_lf_lower_lid_bind_003.v" "loc_rt_lower_lid_bind_003.v";
+connectAttr "loc_lf_lower_lid_bind_003Shape.lpx" "loc_rt_lower_lid_bind_003Shape.lpx"
 		;
-connectAttr "loc_lf_lower_lid_guide_003Shape.lpy" "loc_rt_lower_lid_guide_003Shape.lpy"
+connectAttr "loc_lf_lower_lid_bind_003Shape.lpy" "loc_rt_lower_lid_bind_003Shape.lpy"
 		;
-connectAttr "loc_lf_lower_lid_guide_003Shape.lpz" "loc_rt_lower_lid_guide_003Shape.lpz"
+connectAttr "loc_lf_lower_lid_bind_003Shape.lpz" "loc_rt_lower_lid_bind_003Shape.lpz"
 		;
-connectAttr "loc_lf_lower_lid_guide_003Shape.lsx" "loc_rt_lower_lid_guide_003Shape.lsx"
+connectAttr "loc_lf_lower_lid_bind_003Shape.lsx" "loc_rt_lower_lid_bind_003Shape.lsx"
 		;
-connectAttr "loc_lf_lower_lid_guide_003Shape.lsy" "loc_rt_lower_lid_guide_003Shape.lsy"
+connectAttr "loc_lf_lower_lid_bind_003Shape.lsy" "loc_rt_lower_lid_bind_003Shape.lsy"
 		;
-connectAttr "loc_lf_lower_lid_guide_003Shape.lsz" "loc_rt_lower_lid_guide_003Shape.lsz"
+connectAttr "loc_lf_lower_lid_bind_003Shape.lsz" "loc_rt_lower_lid_bind_003Shape.lsz"
 		;
-connectAttr "loc_lf_inner_lid_guide_001.tx" "loc_rt_inner_lid_guide_001.tx";
-connectAttr "loc_lf_inner_lid_guide_001.ty" "loc_rt_inner_lid_guide_001.ty";
-connectAttr "loc_lf_inner_lid_guide_001.tz" "loc_rt_inner_lid_guide_001.tz";
-connectAttr "loc_lf_inner_lid_guide_001.rx" "loc_rt_inner_lid_guide_001.rx";
-connectAttr "loc_lf_inner_lid_guide_001.ry" "loc_rt_inner_lid_guide_001.ry";
-connectAttr "loc_lf_inner_lid_guide_001.rz" "loc_rt_inner_lid_guide_001.rz";
-connectAttr "loc_lf_inner_lid_guide_001.sx" "loc_rt_inner_lid_guide_001.sx";
-connectAttr "loc_lf_inner_lid_guide_001.sy" "loc_rt_inner_lid_guide_001.sy";
-connectAttr "loc_lf_inner_lid_guide_001.sz" "loc_rt_inner_lid_guide_001.sz";
-connectAttr "loc_lf_inner_lid_guide_001.ro" "loc_rt_inner_lid_guide_001.ro";
-connectAttr "loc_lf_inner_lid_guide_001.v" "loc_rt_inner_lid_guide_001.v";
-connectAttr "loc_lf_inner_lid_guide_001Shape.lpx" "loc_rt_inner_lid_guide_001Shape.lpx"
+connectAttr "loc_lf_inner_lid_bind_001.tx" "loc_rt_inner_lid_bind_001.tx";
+connectAttr "loc_lf_inner_lid_bind_001.ty" "loc_rt_inner_lid_bind_001.ty";
+connectAttr "loc_lf_inner_lid_bind_001.tz" "loc_rt_inner_lid_bind_001.tz";
+connectAttr "loc_lf_inner_lid_bind_001.rx" "loc_rt_inner_lid_bind_001.rx";
+connectAttr "loc_lf_inner_lid_bind_001.ry" "loc_rt_inner_lid_bind_001.ry";
+connectAttr "loc_lf_inner_lid_bind_001.rz" "loc_rt_inner_lid_bind_001.rz";
+connectAttr "loc_lf_inner_lid_bind_001.sx" "loc_rt_inner_lid_bind_001.sx";
+connectAttr "loc_lf_inner_lid_bind_001.sy" "loc_rt_inner_lid_bind_001.sy";
+connectAttr "loc_lf_inner_lid_bind_001.sz" "loc_rt_inner_lid_bind_001.sz";
+connectAttr "loc_lf_inner_lid_bind_001.ro" "loc_rt_inner_lid_bind_001.ro";
+connectAttr "loc_lf_inner_lid_bind_001.v" "loc_rt_inner_lid_bind_001.v";
+connectAttr "loc_lf_inner_lid_bind_001Shape.lpx" "loc_rt_inner_lid_bind_001Shape.lpx"
 		;
-connectAttr "loc_lf_inner_lid_guide_001Shape.lpy" "loc_rt_inner_lid_guide_001Shape.lpy"
+connectAttr "loc_lf_inner_lid_bind_001Shape.lpy" "loc_rt_inner_lid_bind_001Shape.lpy"
 		;
-connectAttr "loc_lf_inner_lid_guide_001Shape.lpz" "loc_rt_inner_lid_guide_001Shape.lpz"
+connectAttr "loc_lf_inner_lid_bind_001Shape.lpz" "loc_rt_inner_lid_bind_001Shape.lpz"
 		;
-connectAttr "loc_lf_inner_lid_guide_001Shape.lsx" "loc_rt_inner_lid_guide_001Shape.lsx"
+connectAttr "loc_lf_inner_lid_bind_001Shape.lsx" "loc_rt_inner_lid_bind_001Shape.lsx"
 		;
-connectAttr "loc_lf_inner_lid_guide_001Shape.lsy" "loc_rt_inner_lid_guide_001Shape.lsy"
+connectAttr "loc_lf_inner_lid_bind_001Shape.lsy" "loc_rt_inner_lid_bind_001Shape.lsy"
 		;
-connectAttr "loc_lf_inner_lid_guide_001Shape.lsz" "loc_rt_inner_lid_guide_001Shape.lsz"
+connectAttr "loc_lf_inner_lid_bind_001Shape.lsz" "loc_rt_inner_lid_bind_001Shape.lsz"
 		;
-connectAttr "loc_lf_outer_lid_guide_001.tx" "loc_rt_outer_lid_guide_001.tx";
-connectAttr "loc_lf_outer_lid_guide_001.ty" "loc_rt_outer_lid_guide_001.ty";
-connectAttr "loc_lf_outer_lid_guide_001.tz" "loc_rt_outer_lid_guide_001.tz";
-connectAttr "loc_lf_outer_lid_guide_001.rx" "loc_rt_outer_lid_guide_001.rx";
-connectAttr "loc_lf_outer_lid_guide_001.ry" "loc_rt_outer_lid_guide_001.ry";
-connectAttr "loc_lf_outer_lid_guide_001.rz" "loc_rt_outer_lid_guide_001.rz";
-connectAttr "loc_lf_outer_lid_guide_001.sx" "loc_rt_outer_lid_guide_001.sx";
-connectAttr "loc_lf_outer_lid_guide_001.sy" "loc_rt_outer_lid_guide_001.sy";
-connectAttr "loc_lf_outer_lid_guide_001.sz" "loc_rt_outer_lid_guide_001.sz";
-connectAttr "loc_lf_outer_lid_guide_001.ro" "loc_rt_outer_lid_guide_001.ro";
-connectAttr "loc_lf_outer_lid_guide_001.v" "loc_rt_outer_lid_guide_001.v";
-connectAttr "loc_lf_outer_lid_guide_001Shape.lpx" "loc_rt_outer_lid_guide_001Shape.lpx"
+connectAttr "loc_lf_outer_lid_bind_001.tx" "loc_rt_outer_lid_bind_001.tx";
+connectAttr "loc_lf_outer_lid_bind_001.ty" "loc_rt_outer_lid_bind_001.ty";
+connectAttr "loc_lf_outer_lid_bind_001.tz" "loc_rt_outer_lid_bind_001.tz";
+connectAttr "loc_lf_outer_lid_bind_001.rx" "loc_rt_outer_lid_bind_001.rx";
+connectAttr "loc_lf_outer_lid_bind_001.ry" "loc_rt_outer_lid_bind_001.ry";
+connectAttr "loc_lf_outer_lid_bind_001.rz" "loc_rt_outer_lid_bind_001.rz";
+connectAttr "loc_lf_outer_lid_bind_001.sx" "loc_rt_outer_lid_bind_001.sx";
+connectAttr "loc_lf_outer_lid_bind_001.sy" "loc_rt_outer_lid_bind_001.sy";
+connectAttr "loc_lf_outer_lid_bind_001.sz" "loc_rt_outer_lid_bind_001.sz";
+connectAttr "loc_lf_outer_lid_bind_001.ro" "loc_rt_outer_lid_bind_001.ro";
+connectAttr "loc_lf_outer_lid_bind_001.v" "loc_rt_outer_lid_bind_001.v";
+connectAttr "loc_lf_outer_lid_bind_001Shape.lpx" "loc_rt_outer_lid_bind_001Shape.lpx"
 		;
-connectAttr "loc_lf_outer_lid_guide_001Shape.lpy" "loc_rt_outer_lid_guide_001Shape.lpy"
+connectAttr "loc_lf_outer_lid_bind_001Shape.lpy" "loc_rt_outer_lid_bind_001Shape.lpy"
 		;
-connectAttr "loc_lf_outer_lid_guide_001Shape.lpz" "loc_rt_outer_lid_guide_001Shape.lpz"
+connectAttr "loc_lf_outer_lid_bind_001Shape.lpz" "loc_rt_outer_lid_bind_001Shape.lpz"
 		;
-connectAttr "loc_lf_outer_lid_guide_001Shape.lsx" "loc_rt_outer_lid_guide_001Shape.lsx"
+connectAttr "loc_lf_outer_lid_bind_001Shape.lsx" "loc_rt_outer_lid_bind_001Shape.lsx"
 		;
-connectAttr "loc_lf_outer_lid_guide_001Shape.lsy" "loc_rt_outer_lid_guide_001Shape.lsy"
+connectAttr "loc_lf_outer_lid_bind_001Shape.lsy" "loc_rt_outer_lid_bind_001Shape.lsy"
 		;
-connectAttr "loc_lf_outer_lid_guide_001Shape.lsz" "loc_rt_outer_lid_guide_001Shape.lsz"
+connectAttr "loc_lf_outer_lid_bind_001Shape.lsz" "loc_rt_outer_lid_bind_001Shape.lsz"
 		;
-connectAttr "loc_lf_upper_lid_guide_001.tx" "loc_rt_upper_lid_guide_001.tx";
-connectAttr "loc_lf_upper_lid_guide_001.ty" "loc_rt_upper_lid_guide_001.ty";
-connectAttr "loc_lf_upper_lid_guide_001.tz" "loc_rt_upper_lid_guide_001.tz";
-connectAttr "loc_lf_upper_lid_guide_001.rx" "loc_rt_upper_lid_guide_001.rx";
-connectAttr "loc_lf_upper_lid_guide_001.ry" "loc_rt_upper_lid_guide_001.ry";
-connectAttr "loc_lf_upper_lid_guide_001.rz" "loc_rt_upper_lid_guide_001.rz";
-connectAttr "loc_lf_upper_lid_guide_001.sx" "loc_rt_upper_lid_guide_001.sx";
-connectAttr "loc_lf_upper_lid_guide_001.sy" "loc_rt_upper_lid_guide_001.sy";
-connectAttr "loc_lf_upper_lid_guide_001.sz" "loc_rt_upper_lid_guide_001.sz";
-connectAttr "loc_lf_upper_lid_guide_001.ro" "loc_rt_upper_lid_guide_001.ro";
-connectAttr "loc_lf_upper_lid_guide_001.v" "loc_rt_upper_lid_guide_001.v";
-connectAttr "loc_lf_upper_lid_guide_001Shape.lpx" "loc_rt_upper_lid_guide_001Shape.lpx"
+connectAttr "loc_lf_upper_lid_bind_001.tx" "loc_rt_upper_lid_bind_001.tx";
+connectAttr "loc_lf_upper_lid_bind_001.ty" "loc_rt_upper_lid_bind_001.ty";
+connectAttr "loc_lf_upper_lid_bind_001.tz" "loc_rt_upper_lid_bind_001.tz";
+connectAttr "loc_lf_upper_lid_bind_001.rx" "loc_rt_upper_lid_bind_001.rx";
+connectAttr "loc_lf_upper_lid_bind_001.ry" "loc_rt_upper_lid_bind_001.ry";
+connectAttr "loc_lf_upper_lid_bind_001.rz" "loc_rt_upper_lid_bind_001.rz";
+connectAttr "loc_lf_upper_lid_bind_001.sx" "loc_rt_upper_lid_bind_001.sx";
+connectAttr "loc_lf_upper_lid_bind_001.sy" "loc_rt_upper_lid_bind_001.sy";
+connectAttr "loc_lf_upper_lid_bind_001.sz" "loc_rt_upper_lid_bind_001.sz";
+connectAttr "loc_lf_upper_lid_bind_001.ro" "loc_rt_upper_lid_bind_001.ro";
+connectAttr "loc_lf_upper_lid_bind_001.v" "loc_rt_upper_lid_bind_001.v";
+connectAttr "loc_lf_upper_lid_bind_001Shape.lpx" "loc_rt_upper_lid_bind_001Shape.lpx"
 		;
-connectAttr "loc_lf_upper_lid_guide_001Shape.lpy" "loc_rt_upper_lid_guide_001Shape.lpy"
+connectAttr "loc_lf_upper_lid_bind_001Shape.lpy" "loc_rt_upper_lid_bind_001Shape.lpy"
 		;
-connectAttr "loc_lf_upper_lid_guide_001Shape.lpz" "loc_rt_upper_lid_guide_001Shape.lpz"
+connectAttr "loc_lf_upper_lid_bind_001Shape.lpz" "loc_rt_upper_lid_bind_001Shape.lpz"
 		;
-connectAttr "loc_lf_upper_lid_guide_001Shape.lsx" "loc_rt_upper_lid_guide_001Shape.lsx"
+connectAttr "loc_lf_upper_lid_bind_001Shape.lsx" "loc_rt_upper_lid_bind_001Shape.lsx"
 		;
-connectAttr "loc_lf_upper_lid_guide_001Shape.lsy" "loc_rt_upper_lid_guide_001Shape.lsy"
+connectAttr "loc_lf_upper_lid_bind_001Shape.lsy" "loc_rt_upper_lid_bind_001Shape.lsy"
 		;
-connectAttr "loc_lf_upper_lid_guide_001Shape.lsz" "loc_rt_upper_lid_guide_001Shape.lsz"
+connectAttr "loc_lf_upper_lid_bind_001Shape.lsz" "loc_rt_upper_lid_bind_001Shape.lsz"
 		;
-connectAttr "loc_lf_upper_lid_guide_002.tx" "loc_rt_upper_lid_guide_002.tx";
-connectAttr "loc_lf_upper_lid_guide_002.ty" "loc_rt_upper_lid_guide_002.ty";
-connectAttr "loc_lf_upper_lid_guide_002.tz" "loc_rt_upper_lid_guide_002.tz";
-connectAttr "loc_lf_upper_lid_guide_002.rx" "loc_rt_upper_lid_guide_002.rx";
-connectAttr "loc_lf_upper_lid_guide_002.ry" "loc_rt_upper_lid_guide_002.ry";
-connectAttr "loc_lf_upper_lid_guide_002.rz" "loc_rt_upper_lid_guide_002.rz";
-connectAttr "loc_lf_upper_lid_guide_002.sx" "loc_rt_upper_lid_guide_002.sx";
-connectAttr "loc_lf_upper_lid_guide_002.sy" "loc_rt_upper_lid_guide_002.sy";
-connectAttr "loc_lf_upper_lid_guide_002.sz" "loc_rt_upper_lid_guide_002.sz";
-connectAttr "loc_lf_upper_lid_guide_002.ro" "loc_rt_upper_lid_guide_002.ro";
-connectAttr "loc_lf_upper_lid_guide_002.v" "loc_rt_upper_lid_guide_002.v";
-connectAttr "loc_lf_upper_lid_guide_002Shape.lpx" "loc_rt_upper_lid_guide_002Shape.lpx"
+connectAttr "loc_lf_upper_lid_bind_002.tx" "loc_rt_upper_lid_bind_002.tx";
+connectAttr "loc_lf_upper_lid_bind_002.ty" "loc_rt_upper_lid_bind_002.ty";
+connectAttr "loc_lf_upper_lid_bind_002.tz" "loc_rt_upper_lid_bind_002.tz";
+connectAttr "loc_lf_upper_lid_bind_002.rx" "loc_rt_upper_lid_bind_002.rx";
+connectAttr "loc_lf_upper_lid_bind_002.ry" "loc_rt_upper_lid_bind_002.ry";
+connectAttr "loc_lf_upper_lid_bind_002.rz" "loc_rt_upper_lid_bind_002.rz";
+connectAttr "loc_lf_upper_lid_bind_002.sx" "loc_rt_upper_lid_bind_002.sx";
+connectAttr "loc_lf_upper_lid_bind_002.sy" "loc_rt_upper_lid_bind_002.sy";
+connectAttr "loc_lf_upper_lid_bind_002.sz" "loc_rt_upper_lid_bind_002.sz";
+connectAttr "loc_lf_upper_lid_bind_002.ro" "loc_rt_upper_lid_bind_002.ro";
+connectAttr "loc_lf_upper_lid_bind_002.v" "loc_rt_upper_lid_bind_002.v";
+connectAttr "loc_lf_upper_lid_bind_002Shape.lpx" "loc_rt_upper_lid_bind_002Shape.lpx"
 		;
-connectAttr "loc_lf_upper_lid_guide_002Shape.lpy" "loc_rt_upper_lid_guide_002Shape.lpy"
+connectAttr "loc_lf_upper_lid_bind_002Shape.lpy" "loc_rt_upper_lid_bind_002Shape.lpy"
 		;
-connectAttr "loc_lf_upper_lid_guide_002Shape.lpz" "loc_rt_upper_lid_guide_002Shape.lpz"
+connectAttr "loc_lf_upper_lid_bind_002Shape.lpz" "loc_rt_upper_lid_bind_002Shape.lpz"
 		;
-connectAttr "loc_lf_upper_lid_guide_002Shape.lsx" "loc_rt_upper_lid_guide_002Shape.lsx"
+connectAttr "loc_lf_upper_lid_bind_002Shape.lsx" "loc_rt_upper_lid_bind_002Shape.lsx"
 		;
-connectAttr "loc_lf_upper_lid_guide_002Shape.lsy" "loc_rt_upper_lid_guide_002Shape.lsy"
+connectAttr "loc_lf_upper_lid_bind_002Shape.lsy" "loc_rt_upper_lid_bind_002Shape.lsy"
 		;
-connectAttr "loc_lf_upper_lid_guide_002Shape.lsz" "loc_rt_upper_lid_guide_002Shape.lsz"
+connectAttr "loc_lf_upper_lid_bind_002Shape.lsz" "loc_rt_upper_lid_bind_002Shape.lsz"
 		;
-connectAttr "loc_lf_upper_lid_guide_003.tx" "loc_rt_upper_lid_guide_003.tx";
-connectAttr "loc_lf_upper_lid_guide_003.ty" "loc_rt_upper_lid_guide_003.ty";
-connectAttr "loc_lf_upper_lid_guide_003.tz" "loc_rt_upper_lid_guide_003.tz";
-connectAttr "loc_lf_upper_lid_guide_003.rx" "loc_rt_upper_lid_guide_003.rx";
-connectAttr "loc_lf_upper_lid_guide_003.ry" "loc_rt_upper_lid_guide_003.ry";
-connectAttr "loc_lf_upper_lid_guide_003.rz" "loc_rt_upper_lid_guide_003.rz";
-connectAttr "loc_lf_upper_lid_guide_003.sx" "loc_rt_upper_lid_guide_003.sx";
-connectAttr "loc_lf_upper_lid_guide_003.sy" "loc_rt_upper_lid_guide_003.sy";
-connectAttr "loc_lf_upper_lid_guide_003.sz" "loc_rt_upper_lid_guide_003.sz";
-connectAttr "loc_lf_upper_lid_guide_003.ro" "loc_rt_upper_lid_guide_003.ro";
-connectAttr "loc_lf_upper_lid_guide_003.v" "loc_rt_upper_lid_guide_003.v";
-connectAttr "loc_lf_upper_lid_guide_003Shape.lpx" "loc_rt_upper_lid_guide_003Shape.lpx"
+connectAttr "loc_lf_upper_lid_bind_003.tx" "loc_rt_upper_lid_bind_003.tx";
+connectAttr "loc_lf_upper_lid_bind_003.ty" "loc_rt_upper_lid_bind_003.ty";
+connectAttr "loc_lf_upper_lid_bind_003.tz" "loc_rt_upper_lid_bind_003.tz";
+connectAttr "loc_lf_upper_lid_bind_003.rx" "loc_rt_upper_lid_bind_003.rx";
+connectAttr "loc_lf_upper_lid_bind_003.ry" "loc_rt_upper_lid_bind_003.ry";
+connectAttr "loc_lf_upper_lid_bind_003.rz" "loc_rt_upper_lid_bind_003.rz";
+connectAttr "loc_lf_upper_lid_bind_003.sx" "loc_rt_upper_lid_bind_003.sx";
+connectAttr "loc_lf_upper_lid_bind_003.sy" "loc_rt_upper_lid_bind_003.sy";
+connectAttr "loc_lf_upper_lid_bind_003.sz" "loc_rt_upper_lid_bind_003.sz";
+connectAttr "loc_lf_upper_lid_bind_003.ro" "loc_rt_upper_lid_bind_003.ro";
+connectAttr "loc_lf_upper_lid_bind_003.v" "loc_rt_upper_lid_bind_003.v";
+connectAttr "loc_lf_upper_lid_bind_003Shape.lpx" "loc_rt_upper_lid_bind_003Shape.lpx"
 		;
-connectAttr "loc_lf_upper_lid_guide_003Shape.lpy" "loc_rt_upper_lid_guide_003Shape.lpy"
+connectAttr "loc_lf_upper_lid_bind_003Shape.lpy" "loc_rt_upper_lid_bind_003Shape.lpy"
 		;
-connectAttr "loc_lf_upper_lid_guide_003Shape.lpz" "loc_rt_upper_lid_guide_003Shape.lpz"
+connectAttr "loc_lf_upper_lid_bind_003Shape.lpz" "loc_rt_upper_lid_bind_003Shape.lpz"
 		;
-connectAttr "loc_lf_upper_lid_guide_003Shape.lsx" "loc_rt_upper_lid_guide_003Shape.lsx"
+connectAttr "loc_lf_upper_lid_bind_003Shape.lsx" "loc_rt_upper_lid_bind_003Shape.lsx"
 		;
-connectAttr "loc_lf_upper_lid_guide_003Shape.lsy" "loc_rt_upper_lid_guide_003Shape.lsy"
+connectAttr "loc_lf_upper_lid_bind_003Shape.lsy" "loc_rt_upper_lid_bind_003Shape.lsy"
 		;
-connectAttr "loc_lf_upper_lid_guide_003Shape.lsz" "loc_rt_upper_lid_guide_003Shape.lsz"
+connectAttr "loc_lf_upper_lid_bind_003Shape.lsz" "loc_rt_upper_lid_bind_003Shape.lsz"
 		;
-connectAttr "loc_rt_inner_lid_guide_001Shape.wp" "curveShape14.cp[0]";
-connectAttr "loc_rt_upper_lid_guide_001Shape.wp" "curveShape14.cp[1]";
-connectAttr "loc_rt_upper_lid_guide_002Shape.wp" "curveShape14.cp[2]";
-connectAttr "loc_rt_upper_lid_guide_003Shape.wp" "curveShape14.cp[3]";
-connectAttr "loc_rt_outer_lid_guide_001Shape.wp" "curveShape14.cp[4]";
-connectAttr "loc_rt_inner_lid_guide_001Shape.wp" "curveShape15.cp[0]";
-connectAttr "loc_rt_lower_lid_guide_001Shape.wp" "curveShape15.cp[1]";
-connectAttr "loc_rt_lower_lid_guide_002Shape.wp" "curveShape15.cp[2]";
-connectAttr "loc_rt_lower_lid_guide_003Shape.wp" "curveShape15.cp[3]";
-connectAttr "loc_rt_outer_lid_guide_001Shape.wp" "curveShape15.cp[4]";
-connectAttr "loc_lf_upper_eye_bag_guide_001.tx" "loc_rt_upper_eye_bag_guide_001.tx"
+connectAttr "loc_rt_inner_lid_bind_001Shape.wp" "curveShape14.cp[0]";
+connectAttr "loc_rt_upper_lid_bind_001Shape.wp" "curveShape14.cp[1]";
+connectAttr "loc_rt_upper_lid_bind_002Shape.wp" "curveShape14.cp[2]";
+connectAttr "loc_rt_upper_lid_bind_003Shape.wp" "curveShape14.cp[3]";
+connectAttr "loc_rt_outer_lid_bind_001Shape.wp" "curveShape14.cp[4]";
+connectAttr "loc_rt_inner_lid_bind_001Shape.wp" "curveShape15.cp[0]";
+connectAttr "loc_rt_lower_lid_bind_001Shape.wp" "curveShape15.cp[1]";
+connectAttr "loc_rt_lower_lid_bind_002Shape.wp" "curveShape15.cp[2]";
+connectAttr "loc_rt_lower_lid_bind_003Shape.wp" "curveShape15.cp[3]";
+connectAttr "loc_rt_outer_lid_bind_001Shape.wp" "curveShape15.cp[4]";
+connectAttr "loc_lf_upper_eye_bag_bind_001.tx" "loc_rt_upper_eye_bag_bind_001.tx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001.ty" "loc_rt_upper_eye_bag_guide_001.ty"
+connectAttr "loc_lf_upper_eye_bag_bind_001.ty" "loc_rt_upper_eye_bag_bind_001.ty"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001.tz" "loc_rt_upper_eye_bag_guide_001.tz"
+connectAttr "loc_lf_upper_eye_bag_bind_001.tz" "loc_rt_upper_eye_bag_bind_001.tz"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001.rx" "loc_rt_upper_eye_bag_guide_001.rx"
+connectAttr "loc_lf_upper_eye_bag_bind_001.rx" "loc_rt_upper_eye_bag_bind_001.rx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001.ry" "loc_rt_upper_eye_bag_guide_001.ry"
+connectAttr "loc_lf_upper_eye_bag_bind_001.ry" "loc_rt_upper_eye_bag_bind_001.ry"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001.rz" "loc_rt_upper_eye_bag_guide_001.rz"
+connectAttr "loc_lf_upper_eye_bag_bind_001.rz" "loc_rt_upper_eye_bag_bind_001.rz"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001.sx" "loc_rt_upper_eye_bag_guide_001.sx"
+connectAttr "loc_lf_upper_eye_bag_bind_001.sx" "loc_rt_upper_eye_bag_bind_001.sx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001.sy" "loc_rt_upper_eye_bag_guide_001.sy"
+connectAttr "loc_lf_upper_eye_bag_bind_001.sy" "loc_rt_upper_eye_bag_bind_001.sy"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001.sz" "loc_rt_upper_eye_bag_guide_001.sz"
+connectAttr "loc_lf_upper_eye_bag_bind_001.sz" "loc_rt_upper_eye_bag_bind_001.sz"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001.ro" "loc_rt_upper_eye_bag_guide_001.ro"
+connectAttr "loc_lf_upper_eye_bag_bind_001.ro" "loc_rt_upper_eye_bag_bind_001.ro"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001.v" "loc_rt_upper_eye_bag_guide_001.v"
+connectAttr "loc_lf_upper_eye_bag_bind_001.v" "loc_rt_upper_eye_bag_bind_001.v"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001Shape.lpx" "loc_rt_upper_eye_bag_guide_001Shape.lpx"
+connectAttr "loc_lf_upper_eye_bag_bind_001Shape.lpx" "loc_rt_upper_eye_bag_bind_001Shape.lpx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001Shape.lpy" "loc_rt_upper_eye_bag_guide_001Shape.lpy"
+connectAttr "loc_lf_upper_eye_bag_bind_001Shape.lpy" "loc_rt_upper_eye_bag_bind_001Shape.lpy"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001Shape.lpz" "loc_rt_upper_eye_bag_guide_001Shape.lpz"
+connectAttr "loc_lf_upper_eye_bag_bind_001Shape.lpz" "loc_rt_upper_eye_bag_bind_001Shape.lpz"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001Shape.lsx" "loc_rt_upper_eye_bag_guide_001Shape.lsx"
+connectAttr "loc_lf_upper_eye_bag_bind_001Shape.lsx" "loc_rt_upper_eye_bag_bind_001Shape.lsx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001Shape.lsy" "loc_rt_upper_eye_bag_guide_001Shape.lsy"
+connectAttr "loc_lf_upper_eye_bag_bind_001Shape.lsy" "loc_rt_upper_eye_bag_bind_001Shape.lsy"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_001Shape.lsz" "loc_rt_upper_eye_bag_guide_001Shape.lsz"
+connectAttr "loc_lf_upper_eye_bag_bind_001Shape.lsz" "loc_rt_upper_eye_bag_bind_001Shape.lsz"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002.tx" "loc_rt_upper_eye_bag_guide_002.tx"
+connectAttr "loc_lf_upper_eye_bag_bind_002.tx" "loc_rt_upper_eye_bag_bind_002.tx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002.ty" "loc_rt_upper_eye_bag_guide_002.ty"
+connectAttr "loc_lf_upper_eye_bag_bind_002.ty" "loc_rt_upper_eye_bag_bind_002.ty"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002.tz" "loc_rt_upper_eye_bag_guide_002.tz"
+connectAttr "loc_lf_upper_eye_bag_bind_002.tz" "loc_rt_upper_eye_bag_bind_002.tz"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002.rx" "loc_rt_upper_eye_bag_guide_002.rx"
+connectAttr "loc_lf_upper_eye_bag_bind_002.rx" "loc_rt_upper_eye_bag_bind_002.rx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002.ry" "loc_rt_upper_eye_bag_guide_002.ry"
+connectAttr "loc_lf_upper_eye_bag_bind_002.ry" "loc_rt_upper_eye_bag_bind_002.ry"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002.rz" "loc_rt_upper_eye_bag_guide_002.rz"
+connectAttr "loc_lf_upper_eye_bag_bind_002.rz" "loc_rt_upper_eye_bag_bind_002.rz"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002.sx" "loc_rt_upper_eye_bag_guide_002.sx"
+connectAttr "loc_lf_upper_eye_bag_bind_002.sx" "loc_rt_upper_eye_bag_bind_002.sx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002.sy" "loc_rt_upper_eye_bag_guide_002.sy"
+connectAttr "loc_lf_upper_eye_bag_bind_002.sy" "loc_rt_upper_eye_bag_bind_002.sy"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002.sz" "loc_rt_upper_eye_bag_guide_002.sz"
+connectAttr "loc_lf_upper_eye_bag_bind_002.sz" "loc_rt_upper_eye_bag_bind_002.sz"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002.ro" "loc_rt_upper_eye_bag_guide_002.ro"
+connectAttr "loc_lf_upper_eye_bag_bind_002.ro" "loc_rt_upper_eye_bag_bind_002.ro"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002.v" "loc_rt_upper_eye_bag_guide_002.v"
+connectAttr "loc_lf_upper_eye_bag_bind_002.v" "loc_rt_upper_eye_bag_bind_002.v"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002Shape.lpx" "loc_rt_upper_eye_bag_guide_002Shape.lpx"
+connectAttr "loc_lf_upper_eye_bag_bind_002Shape.lpx" "loc_rt_upper_eye_bag_bind_002Shape.lpx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002Shape.lpy" "loc_rt_upper_eye_bag_guide_002Shape.lpy"
+connectAttr "loc_lf_upper_eye_bag_bind_002Shape.lpy" "loc_rt_upper_eye_bag_bind_002Shape.lpy"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002Shape.lpz" "loc_rt_upper_eye_bag_guide_002Shape.lpz"
+connectAttr "loc_lf_upper_eye_bag_bind_002Shape.lpz" "loc_rt_upper_eye_bag_bind_002Shape.lpz"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002Shape.lsx" "loc_rt_upper_eye_bag_guide_002Shape.lsx"
+connectAttr "loc_lf_upper_eye_bag_bind_002Shape.lsx" "loc_rt_upper_eye_bag_bind_002Shape.lsx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002Shape.lsy" "loc_rt_upper_eye_bag_guide_002Shape.lsy"
+connectAttr "loc_lf_upper_eye_bag_bind_002Shape.lsy" "loc_rt_upper_eye_bag_bind_002Shape.lsy"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_002Shape.lsz" "loc_rt_upper_eye_bag_guide_002Shape.lsz"
+connectAttr "loc_lf_upper_eye_bag_bind_002Shape.lsz" "loc_rt_upper_eye_bag_bind_002Shape.lsz"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003.tx" "loc_rt_upper_eye_bag_guide_003.tx"
+connectAttr "loc_lf_upper_eye_bag_bind_003.tx" "loc_rt_upper_eye_bag_bind_003.tx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003.ty" "loc_rt_upper_eye_bag_guide_003.ty"
+connectAttr "loc_lf_upper_eye_bag_bind_003.ty" "loc_rt_upper_eye_bag_bind_003.ty"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003.tz" "loc_rt_upper_eye_bag_guide_003.tz"
+connectAttr "loc_lf_upper_eye_bag_bind_003.tz" "loc_rt_upper_eye_bag_bind_003.tz"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003.rx" "loc_rt_upper_eye_bag_guide_003.rx"
+connectAttr "loc_lf_upper_eye_bag_bind_003.rx" "loc_rt_upper_eye_bag_bind_003.rx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003.ry" "loc_rt_upper_eye_bag_guide_003.ry"
+connectAttr "loc_lf_upper_eye_bag_bind_003.ry" "loc_rt_upper_eye_bag_bind_003.ry"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003.rz" "loc_rt_upper_eye_bag_guide_003.rz"
+connectAttr "loc_lf_upper_eye_bag_bind_003.rz" "loc_rt_upper_eye_bag_bind_003.rz"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003.sx" "loc_rt_upper_eye_bag_guide_003.sx"
+connectAttr "loc_lf_upper_eye_bag_bind_003.sx" "loc_rt_upper_eye_bag_bind_003.sx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003.sy" "loc_rt_upper_eye_bag_guide_003.sy"
+connectAttr "loc_lf_upper_eye_bag_bind_003.sy" "loc_rt_upper_eye_bag_bind_003.sy"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003.sz" "loc_rt_upper_eye_bag_guide_003.sz"
+connectAttr "loc_lf_upper_eye_bag_bind_003.sz" "loc_rt_upper_eye_bag_bind_003.sz"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003.ro" "loc_rt_upper_eye_bag_guide_003.ro"
+connectAttr "loc_lf_upper_eye_bag_bind_003.ro" "loc_rt_upper_eye_bag_bind_003.ro"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003.v" "loc_rt_upper_eye_bag_guide_003.v"
+connectAttr "loc_lf_upper_eye_bag_bind_003.v" "loc_rt_upper_eye_bag_bind_003.v"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003Shape.lpx" "loc_rt_upper_eye_bag_guide_003Shape.lpx"
+connectAttr "loc_lf_upper_eye_bag_bind_003Shape.lpx" "loc_rt_upper_eye_bag_bind_003Shape.lpx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003Shape.lpy" "loc_rt_upper_eye_bag_guide_003Shape.lpy"
+connectAttr "loc_lf_upper_eye_bag_bind_003Shape.lpy" "loc_rt_upper_eye_bag_bind_003Shape.lpy"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003Shape.lpz" "loc_rt_upper_eye_bag_guide_003Shape.lpz"
+connectAttr "loc_lf_upper_eye_bag_bind_003Shape.lpz" "loc_rt_upper_eye_bag_bind_003Shape.lpz"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003Shape.lsx" "loc_rt_upper_eye_bag_guide_003Shape.lsx"
+connectAttr "loc_lf_upper_eye_bag_bind_003Shape.lsx" "loc_rt_upper_eye_bag_bind_003Shape.lsx"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003Shape.lsy" "loc_rt_upper_eye_bag_guide_003Shape.lsy"
+connectAttr "loc_lf_upper_eye_bag_bind_003Shape.lsy" "loc_rt_upper_eye_bag_bind_003Shape.lsy"
 		;
-connectAttr "loc_lf_upper_eye_bag_guide_003Shape.lsz" "loc_rt_upper_eye_bag_guide_003Shape.lsz"
+connectAttr "loc_lf_upper_eye_bag_bind_003Shape.lsz" "loc_rt_upper_eye_bag_bind_003Shape.lsz"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001.tx" "loc_rt_inner_eye_bag_guide_001.tx"
+connectAttr "loc_lf_inner_eye_bag_bind_001.tx" "loc_rt_inner_eye_bag_bind_001.tx"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001.ty" "loc_rt_inner_eye_bag_guide_001.ty"
+connectAttr "loc_lf_inner_eye_bag_bind_001.ty" "loc_rt_inner_eye_bag_bind_001.ty"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001.tz" "loc_rt_inner_eye_bag_guide_001.tz"
+connectAttr "loc_lf_inner_eye_bag_bind_001.tz" "loc_rt_inner_eye_bag_bind_001.tz"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001.rx" "loc_rt_inner_eye_bag_guide_001.rx"
+connectAttr "loc_lf_inner_eye_bag_bind_001.rx" "loc_rt_inner_eye_bag_bind_001.rx"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001.ry" "loc_rt_inner_eye_bag_guide_001.ry"
+connectAttr "loc_lf_inner_eye_bag_bind_001.ry" "loc_rt_inner_eye_bag_bind_001.ry"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001.rz" "loc_rt_inner_eye_bag_guide_001.rz"
+connectAttr "loc_lf_inner_eye_bag_bind_001.rz" "loc_rt_inner_eye_bag_bind_001.rz"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001.sx" "loc_rt_inner_eye_bag_guide_001.sx"
+connectAttr "loc_lf_inner_eye_bag_bind_001.sx" "loc_rt_inner_eye_bag_bind_001.sx"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001.sy" "loc_rt_inner_eye_bag_guide_001.sy"
+connectAttr "loc_lf_inner_eye_bag_bind_001.sy" "loc_rt_inner_eye_bag_bind_001.sy"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001.sz" "loc_rt_inner_eye_bag_guide_001.sz"
+connectAttr "loc_lf_inner_eye_bag_bind_001.sz" "loc_rt_inner_eye_bag_bind_001.sz"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001.ro" "loc_rt_inner_eye_bag_guide_001.ro"
+connectAttr "loc_lf_inner_eye_bag_bind_001.ro" "loc_rt_inner_eye_bag_bind_001.ro"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001.v" "loc_rt_inner_eye_bag_guide_001.v"
+connectAttr "loc_lf_inner_eye_bag_bind_001.v" "loc_rt_inner_eye_bag_bind_001.v"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001Shape.lpx" "loc_rt_inner_eye_bag_guide_001Shape.lpx"
+connectAttr "loc_lf_inner_eye_bag_bind_001Shape.lpx" "loc_rt_inner_eye_bag_bind_001Shape.lpx"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001Shape.lpy" "loc_rt_inner_eye_bag_guide_001Shape.lpy"
+connectAttr "loc_lf_inner_eye_bag_bind_001Shape.lpy" "loc_rt_inner_eye_bag_bind_001Shape.lpy"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001Shape.lpz" "loc_rt_inner_eye_bag_guide_001Shape.lpz"
+connectAttr "loc_lf_inner_eye_bag_bind_001Shape.lpz" "loc_rt_inner_eye_bag_bind_001Shape.lpz"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001Shape.lsx" "loc_rt_inner_eye_bag_guide_001Shape.lsx"
+connectAttr "loc_lf_inner_eye_bag_bind_001Shape.lsx" "loc_rt_inner_eye_bag_bind_001Shape.lsx"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001Shape.lsy" "loc_rt_inner_eye_bag_guide_001Shape.lsy"
+connectAttr "loc_lf_inner_eye_bag_bind_001Shape.lsy" "loc_rt_inner_eye_bag_bind_001Shape.lsy"
 		;
-connectAttr "loc_lf_inner_eye_bag_guide_001Shape.lsz" "loc_rt_inner_eye_bag_guide_001Shape.lsz"
+connectAttr "loc_lf_inner_eye_bag_bind_001Shape.lsz" "loc_rt_inner_eye_bag_bind_001Shape.lsz"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001.tx" "loc_rt_outer_eye_bag_guide_001.tx"
+connectAttr "loc_lf_outer_eye_bag_bind_001.tx" "loc_rt_outer_eye_bag_bind_001.tx"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001.ty" "loc_rt_outer_eye_bag_guide_001.ty"
+connectAttr "loc_lf_outer_eye_bag_bind_001.ty" "loc_rt_outer_eye_bag_bind_001.ty"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001.tz" "loc_rt_outer_eye_bag_guide_001.tz"
+connectAttr "loc_lf_outer_eye_bag_bind_001.tz" "loc_rt_outer_eye_bag_bind_001.tz"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001.rx" "loc_rt_outer_eye_bag_guide_001.rx"
+connectAttr "loc_lf_outer_eye_bag_bind_001.rx" "loc_rt_outer_eye_bag_bind_001.rx"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001.ry" "loc_rt_outer_eye_bag_guide_001.ry"
+connectAttr "loc_lf_outer_eye_bag_bind_001.ry" "loc_rt_outer_eye_bag_bind_001.ry"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001.rz" "loc_rt_outer_eye_bag_guide_001.rz"
+connectAttr "loc_lf_outer_eye_bag_bind_001.rz" "loc_rt_outer_eye_bag_bind_001.rz"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001.sx" "loc_rt_outer_eye_bag_guide_001.sx"
+connectAttr "loc_lf_outer_eye_bag_bind_001.sx" "loc_rt_outer_eye_bag_bind_001.sx"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001.sy" "loc_rt_outer_eye_bag_guide_001.sy"
+connectAttr "loc_lf_outer_eye_bag_bind_001.sy" "loc_rt_outer_eye_bag_bind_001.sy"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001.sz" "loc_rt_outer_eye_bag_guide_001.sz"
+connectAttr "loc_lf_outer_eye_bag_bind_001.sz" "loc_rt_outer_eye_bag_bind_001.sz"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001.ro" "loc_rt_outer_eye_bag_guide_001.ro"
+connectAttr "loc_lf_outer_eye_bag_bind_001.ro" "loc_rt_outer_eye_bag_bind_001.ro"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001.v" "loc_rt_outer_eye_bag_guide_001.v"
+connectAttr "loc_lf_outer_eye_bag_bind_001.v" "loc_rt_outer_eye_bag_bind_001.v"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001Shape.lpx" "loc_rt_outer_eye_bag_guide_001Shape.lpx"
+connectAttr "loc_lf_outer_eye_bag_bind_001Shape.lpx" "loc_rt_outer_eye_bag_bind_001Shape.lpx"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001Shape.lpy" "loc_rt_outer_eye_bag_guide_001Shape.lpy"
+connectAttr "loc_lf_outer_eye_bag_bind_001Shape.lpy" "loc_rt_outer_eye_bag_bind_001Shape.lpy"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001Shape.lpz" "loc_rt_outer_eye_bag_guide_001Shape.lpz"
+connectAttr "loc_lf_outer_eye_bag_bind_001Shape.lpz" "loc_rt_outer_eye_bag_bind_001Shape.lpz"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001Shape.lsx" "loc_rt_outer_eye_bag_guide_001Shape.lsx"
+connectAttr "loc_lf_outer_eye_bag_bind_001Shape.lsx" "loc_rt_outer_eye_bag_bind_001Shape.lsx"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001Shape.lsy" "loc_rt_outer_eye_bag_guide_001Shape.lsy"
+connectAttr "loc_lf_outer_eye_bag_bind_001Shape.lsy" "loc_rt_outer_eye_bag_bind_001Shape.lsy"
 		;
-connectAttr "loc_lf_outer_eye_bag_guide_001Shape.lsz" "loc_rt_outer_eye_bag_guide_001Shape.lsz"
+connectAttr "loc_lf_outer_eye_bag_bind_001Shape.lsz" "loc_rt_outer_eye_bag_bind_001Shape.lsz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003.tx" "loc_rt_lower_eye_bag_guide_003.tx"
+connectAttr "loc_lf_lower_eye_bag_bind_003.tx" "loc_rt_lower_eye_bag_bind_003.tx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003.ty" "loc_rt_lower_eye_bag_guide_003.ty"
+connectAttr "loc_lf_lower_eye_bag_bind_003.ty" "loc_rt_lower_eye_bag_bind_003.ty"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003.tz" "loc_rt_lower_eye_bag_guide_003.tz"
+connectAttr "loc_lf_lower_eye_bag_bind_003.tz" "loc_rt_lower_eye_bag_bind_003.tz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003.rx" "loc_rt_lower_eye_bag_guide_003.rx"
+connectAttr "loc_lf_lower_eye_bag_bind_003.rx" "loc_rt_lower_eye_bag_bind_003.rx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003.ry" "loc_rt_lower_eye_bag_guide_003.ry"
+connectAttr "loc_lf_lower_eye_bag_bind_003.ry" "loc_rt_lower_eye_bag_bind_003.ry"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003.rz" "loc_rt_lower_eye_bag_guide_003.rz"
+connectAttr "loc_lf_lower_eye_bag_bind_003.rz" "loc_rt_lower_eye_bag_bind_003.rz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003.sx" "loc_rt_lower_eye_bag_guide_003.sx"
+connectAttr "loc_lf_lower_eye_bag_bind_003.sx" "loc_rt_lower_eye_bag_bind_003.sx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003.sy" "loc_rt_lower_eye_bag_guide_003.sy"
+connectAttr "loc_lf_lower_eye_bag_bind_003.sy" "loc_rt_lower_eye_bag_bind_003.sy"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003.sz" "loc_rt_lower_eye_bag_guide_003.sz"
+connectAttr "loc_lf_lower_eye_bag_bind_003.sz" "loc_rt_lower_eye_bag_bind_003.sz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003.ro" "loc_rt_lower_eye_bag_guide_003.ro"
+connectAttr "loc_lf_lower_eye_bag_bind_003.ro" "loc_rt_lower_eye_bag_bind_003.ro"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003.v" "loc_rt_lower_eye_bag_guide_003.v"
+connectAttr "loc_lf_lower_eye_bag_bind_003.v" "loc_rt_lower_eye_bag_bind_003.v"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003Shape.lpx" "loc_rt_lower_eye_bag_guide_003Shape.lpx"
+connectAttr "loc_lf_lower_eye_bag_bind_003Shape.lpx" "loc_rt_lower_eye_bag_bind_003Shape.lpx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003Shape.lpy" "loc_rt_lower_eye_bag_guide_003Shape.lpy"
+connectAttr "loc_lf_lower_eye_bag_bind_003Shape.lpy" "loc_rt_lower_eye_bag_bind_003Shape.lpy"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003Shape.lpz" "loc_rt_lower_eye_bag_guide_003Shape.lpz"
+connectAttr "loc_lf_lower_eye_bag_bind_003Shape.lpz" "loc_rt_lower_eye_bag_bind_003Shape.lpz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003Shape.lsx" "loc_rt_lower_eye_bag_guide_003Shape.lsx"
+connectAttr "loc_lf_lower_eye_bag_bind_003Shape.lsx" "loc_rt_lower_eye_bag_bind_003Shape.lsx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003Shape.lsy" "loc_rt_lower_eye_bag_guide_003Shape.lsy"
+connectAttr "loc_lf_lower_eye_bag_bind_003Shape.lsy" "loc_rt_lower_eye_bag_bind_003Shape.lsy"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_003Shape.lsz" "loc_rt_lower_eye_bag_guide_003Shape.lsz"
+connectAttr "loc_lf_lower_eye_bag_bind_003Shape.lsz" "loc_rt_lower_eye_bag_bind_003Shape.lsz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002.tx" "loc_rt_lower_eye_bag_guide_002.tx"
+connectAttr "loc_lf_lower_eye_bag_bind_002.tx" "loc_rt_lower_eye_bag_bind_002.tx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002.ty" "loc_rt_lower_eye_bag_guide_002.ty"
+connectAttr "loc_lf_lower_eye_bag_bind_002.ty" "loc_rt_lower_eye_bag_bind_002.ty"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002.tz" "loc_rt_lower_eye_bag_guide_002.tz"
+connectAttr "loc_lf_lower_eye_bag_bind_002.tz" "loc_rt_lower_eye_bag_bind_002.tz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002.rx" "loc_rt_lower_eye_bag_guide_002.rx"
+connectAttr "loc_lf_lower_eye_bag_bind_002.rx" "loc_rt_lower_eye_bag_bind_002.rx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002.ry" "loc_rt_lower_eye_bag_guide_002.ry"
+connectAttr "loc_lf_lower_eye_bag_bind_002.ry" "loc_rt_lower_eye_bag_bind_002.ry"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002.rz" "loc_rt_lower_eye_bag_guide_002.rz"
+connectAttr "loc_lf_lower_eye_bag_bind_002.rz" "loc_rt_lower_eye_bag_bind_002.rz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002.sx" "loc_rt_lower_eye_bag_guide_002.sx"
+connectAttr "loc_lf_lower_eye_bag_bind_002.sx" "loc_rt_lower_eye_bag_bind_002.sx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002.sy" "loc_rt_lower_eye_bag_guide_002.sy"
+connectAttr "loc_lf_lower_eye_bag_bind_002.sy" "loc_rt_lower_eye_bag_bind_002.sy"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002.sz" "loc_rt_lower_eye_bag_guide_002.sz"
+connectAttr "loc_lf_lower_eye_bag_bind_002.sz" "loc_rt_lower_eye_bag_bind_002.sz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002.ro" "loc_rt_lower_eye_bag_guide_002.ro"
+connectAttr "loc_lf_lower_eye_bag_bind_002.ro" "loc_rt_lower_eye_bag_bind_002.ro"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002.v" "loc_rt_lower_eye_bag_guide_002.v"
+connectAttr "loc_lf_lower_eye_bag_bind_002.v" "loc_rt_lower_eye_bag_bind_002.v"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002Shape.lpx" "loc_rt_lower_eye_bag_guide_002Shape.lpx"
+connectAttr "loc_lf_lower_eye_bag_bind_002Shape.lpx" "loc_rt_lower_eye_bag_bind_002Shape.lpx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002Shape.lpy" "loc_rt_lower_eye_bag_guide_002Shape.lpy"
+connectAttr "loc_lf_lower_eye_bag_bind_002Shape.lpy" "loc_rt_lower_eye_bag_bind_002Shape.lpy"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002Shape.lpz" "loc_rt_lower_eye_bag_guide_002Shape.lpz"
+connectAttr "loc_lf_lower_eye_bag_bind_002Shape.lpz" "loc_rt_lower_eye_bag_bind_002Shape.lpz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002Shape.lsx" "loc_rt_lower_eye_bag_guide_002Shape.lsx"
+connectAttr "loc_lf_lower_eye_bag_bind_002Shape.lsx" "loc_rt_lower_eye_bag_bind_002Shape.lsx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002Shape.lsy" "loc_rt_lower_eye_bag_guide_002Shape.lsy"
+connectAttr "loc_lf_lower_eye_bag_bind_002Shape.lsy" "loc_rt_lower_eye_bag_bind_002Shape.lsy"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_002Shape.lsz" "loc_rt_lower_eye_bag_guide_002Shape.lsz"
+connectAttr "loc_lf_lower_eye_bag_bind_002Shape.lsz" "loc_rt_lower_eye_bag_bind_002Shape.lsz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001.tx" "loc_rt_lower_eye_bag_guide_001.tx"
+connectAttr "loc_lf_lower_eye_bag_bind_001.tx" "loc_rt_lower_eye_bag_bind_001.tx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001.ty" "loc_rt_lower_eye_bag_guide_001.ty"
+connectAttr "loc_lf_lower_eye_bag_bind_001.ty" "loc_rt_lower_eye_bag_bind_001.ty"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001.tz" "loc_rt_lower_eye_bag_guide_001.tz"
+connectAttr "loc_lf_lower_eye_bag_bind_001.tz" "loc_rt_lower_eye_bag_bind_001.tz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001.rx" "loc_rt_lower_eye_bag_guide_001.rx"
+connectAttr "loc_lf_lower_eye_bag_bind_001.rx" "loc_rt_lower_eye_bag_bind_001.rx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001.ry" "loc_rt_lower_eye_bag_guide_001.ry"
+connectAttr "loc_lf_lower_eye_bag_bind_001.ry" "loc_rt_lower_eye_bag_bind_001.ry"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001.rz" "loc_rt_lower_eye_bag_guide_001.rz"
+connectAttr "loc_lf_lower_eye_bag_bind_001.rz" "loc_rt_lower_eye_bag_bind_001.rz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001.sx" "loc_rt_lower_eye_bag_guide_001.sx"
+connectAttr "loc_lf_lower_eye_bag_bind_001.sx" "loc_rt_lower_eye_bag_bind_001.sx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001.sy" "loc_rt_lower_eye_bag_guide_001.sy"
+connectAttr "loc_lf_lower_eye_bag_bind_001.sy" "loc_rt_lower_eye_bag_bind_001.sy"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001.sz" "loc_rt_lower_eye_bag_guide_001.sz"
+connectAttr "loc_lf_lower_eye_bag_bind_001.sz" "loc_rt_lower_eye_bag_bind_001.sz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001.ro" "loc_rt_lower_eye_bag_guide_001.ro"
+connectAttr "loc_lf_lower_eye_bag_bind_001.ro" "loc_rt_lower_eye_bag_bind_001.ro"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001.v" "loc_rt_lower_eye_bag_guide_001.v"
+connectAttr "loc_lf_lower_eye_bag_bind_001.v" "loc_rt_lower_eye_bag_bind_001.v"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001Shape.lpx" "loc_rt_lower_eye_bag_guide_001Shape.lpx"
+connectAttr "loc_lf_lower_eye_bag_bind_001Shape.lpx" "loc_rt_lower_eye_bag_bind_001Shape.lpx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001Shape.lpy" "loc_rt_lower_eye_bag_guide_001Shape.lpy"
+connectAttr "loc_lf_lower_eye_bag_bind_001Shape.lpy" "loc_rt_lower_eye_bag_bind_001Shape.lpy"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001Shape.lpz" "loc_rt_lower_eye_bag_guide_001Shape.lpz"
+connectAttr "loc_lf_lower_eye_bag_bind_001Shape.lpz" "loc_rt_lower_eye_bag_bind_001Shape.lpz"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001Shape.lsx" "loc_rt_lower_eye_bag_guide_001Shape.lsx"
+connectAttr "loc_lf_lower_eye_bag_bind_001Shape.lsx" "loc_rt_lower_eye_bag_bind_001Shape.lsx"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001Shape.lsy" "loc_rt_lower_eye_bag_guide_001Shape.lsy"
+connectAttr "loc_lf_lower_eye_bag_bind_001Shape.lsy" "loc_rt_lower_eye_bag_bind_001Shape.lsy"
 		;
-connectAttr "loc_lf_lower_eye_bag_guide_001Shape.lsz" "loc_rt_lower_eye_bag_guide_001Shape.lsz"
+connectAttr "loc_lf_lower_eye_bag_bind_001Shape.lsz" "loc_rt_lower_eye_bag_bind_001Shape.lsz"
 		;
-connectAttr "loc_rt_inner_eye_bag_guide_001Shape.wp" "curveShape18.cp[0]";
-connectAttr "loc_rt_upper_eye_bag_guide_001Shape.wp" "curveShape18.cp[1]";
-connectAttr "loc_rt_upper_eye_bag_guide_002Shape.wp" "curveShape18.cp[2]";
-connectAttr "loc_rt_upper_eye_bag_guide_003Shape.wp" "curveShape18.cp[3]";
-connectAttr "loc_rt_outer_eye_bag_guide_001Shape.wp" "curveShape18.cp[4]";
-connectAttr "loc_rt_inner_eye_bag_guide_001Shape.wp" "curveShape19.cp[0]";
-connectAttr "loc_rt_lower_eye_bag_guide_001Shape.wp" "curveShape19.cp[1]";
-connectAttr "loc_rt_lower_eye_bag_guide_002Shape.wp" "curveShape19.cp[2]";
-connectAttr "loc_rt_lower_eye_bag_guide_003Shape.wp" "curveShape19.cp[3]";
-connectAttr "loc_rt_outer_eye_bag_guide_001Shape.wp" "curveShape19.cp[4]";
-connectAttr "loc_lf_inner_eye_bag_guide_001Shape.wp" "curveShape16.cp[0]";
-connectAttr "loc_lf_upper_eye_bag_guide_001Shape.wp" "curveShape16.cp[1]";
-connectAttr "loc_lf_upper_eye_bag_guide_002Shape.wp" "curveShape16.cp[2]";
-connectAttr "loc_lf_upper_eye_bag_guide_003Shape.wp" "curveShape16.cp[3]";
-connectAttr "loc_lf_outer_eye_bag_guide_001Shape.wp" "curveShape16.cp[4]";
-connectAttr "loc_lf_inner_eye_bag_guide_001Shape.wp" "curveShape17.cp[0]";
-connectAttr "loc_lf_lower_eye_bag_guide_001Shape.wp" "curveShape17.cp[1]";
-connectAttr "loc_lf_lower_eye_bag_guide_002Shape.wp" "curveShape17.cp[2]";
-connectAttr "loc_lf_lower_eye_bag_guide_003Shape.wp" "curveShape17.cp[3]";
-connectAttr "loc_lf_outer_eye_bag_guide_001Shape.wp" "curveShape17.cp[4]";
-connectAttr "loc_md_jaw_start_guide_001Shape.wp" "curveShape20.cp[0]";
-connectAttr "loc_md_jaw_end_guide_001Shape.wp" "curveShape20.cp[1]";
-connectAttr "loc_lf_brow_guide_001Shape.wp" "curveShape8.cp[0]";
-connectAttr "loc_lf_brow_guide_002Shape.wp" "curveShape8.cp[1]";
-connectAttr "loc_lf_brow_guide_003Shape.wp" "curveShape8.cp[2]";
-connectAttr "loc_lf_brow_guide_004Shape.wp" "curveShape8.cp[3]";
-connectAttr "loc_lf_brow_guide_005Shape.wp" "curveShape8.cp[4]";
-connectAttr "loc_lf_brow_main_guide_001.tx" "loc_rt_brow_main_guide_001.tx";
-connectAttr "loc_lf_brow_main_guide_001.ty" "loc_rt_brow_main_guide_001.ty";
-connectAttr "loc_lf_brow_main_guide_001.tz" "loc_rt_brow_main_guide_001.tz";
-connectAttr "loc_lf_brow_main_guide_001.rx" "loc_rt_brow_main_guide_001.rx";
-connectAttr "loc_lf_brow_main_guide_001.ry" "loc_rt_brow_main_guide_001.ry";
-connectAttr "loc_lf_brow_main_guide_001.rz" "loc_rt_brow_main_guide_001.rz";
-connectAttr "loc_lf_brow_main_guide_001.sx" "loc_rt_brow_main_guide_001.sx";
-connectAttr "loc_lf_brow_main_guide_001.sy" "loc_rt_brow_main_guide_001.sy";
-connectAttr "loc_lf_brow_main_guide_001.sz" "loc_rt_brow_main_guide_001.sz";
-connectAttr "loc_lf_brow_main_guide_001.ro" "loc_rt_brow_main_guide_001.ro";
-connectAttr "loc_lf_brow_main_guide_001.v" "loc_rt_brow_main_guide_001.v";
-connectAttr "loc_lf_brow_main_guide_001Shape.lpx" "loc_rt_brow_main_guide_001Shape.lpx"
+connectAttr "loc_rt_inner_eye_bag_bind_001Shape.wp" "curveShape18.cp[0]";
+connectAttr "loc_rt_upper_eye_bag_bind_001Shape.wp" "curveShape18.cp[1]";
+connectAttr "loc_rt_upper_eye_bag_bind_002Shape.wp" "curveShape18.cp[2]";
+connectAttr "loc_rt_upper_eye_bag_bind_003Shape.wp" "curveShape18.cp[3]";
+connectAttr "loc_rt_outer_eye_bag_bind_001Shape.wp" "curveShape18.cp[4]";
+connectAttr "loc_rt_inner_eye_bag_bind_001Shape.wp" "curveShape19.cp[0]";
+connectAttr "loc_rt_lower_eye_bag_bind_001Shape.wp" "curveShape19.cp[1]";
+connectAttr "loc_rt_lower_eye_bag_bind_002Shape.wp" "curveShape19.cp[2]";
+connectAttr "loc_rt_lower_eye_bag_bind_003Shape.wp" "curveShape19.cp[3]";
+connectAttr "loc_rt_outer_eye_bag_bind_001Shape.wp" "curveShape19.cp[4]";
+connectAttr "loc_lf_inner_eye_bag_bind_001Shape.wp" "curveShape16.cp[0]";
+connectAttr "loc_lf_upper_eye_bag_bind_001Shape.wp" "curveShape16.cp[1]";
+connectAttr "loc_lf_upper_eye_bag_bind_002Shape.wp" "curveShape16.cp[2]";
+connectAttr "loc_lf_upper_eye_bag_bind_003Shape.wp" "curveShape16.cp[3]";
+connectAttr "loc_lf_outer_eye_bag_bind_001Shape.wp" "curveShape16.cp[4]";
+connectAttr "loc_lf_inner_eye_bag_bind_001Shape.wp" "curveShape17.cp[0]";
+connectAttr "loc_lf_lower_eye_bag_bind_001Shape.wp" "curveShape17.cp[1]";
+connectAttr "loc_lf_lower_eye_bag_bind_002Shape.wp" "curveShape17.cp[2]";
+connectAttr "loc_lf_lower_eye_bag_bind_003Shape.wp" "curveShape17.cp[3]";
+connectAttr "loc_lf_outer_eye_bag_bind_001Shape.wp" "curveShape17.cp[4]";
+connectAttr "loc_md_jaw_start_bind_001Shape.wp" "curveShape20.cp[0]";
+connectAttr "loc_md_jaw_end_bind_001Shape.wp" "curveShape20.cp[1]";
+connectAttr "loc_lf_brow_bind_001Shape.wp" "curveShape8.cp[0]";
+connectAttr "loc_lf_brow_bind_002Shape.wp" "curveShape8.cp[1]";
+connectAttr "loc_lf_brow_bind_003Shape.wp" "curveShape8.cp[2]";
+connectAttr "loc_lf_brow_bind_004Shape.wp" "curveShape8.cp[3]";
+connectAttr "loc_lf_brow_bind_005Shape.wp" "curveShape8.cp[4]";
+connectAttr "loc_lf_brow_main_bind_001.tx" "loc_rt_brow_main_bind_001.tx";
+connectAttr "loc_lf_brow_main_bind_001.ty" "loc_rt_brow_main_bind_001.ty";
+connectAttr "loc_lf_brow_main_bind_001.tz" "loc_rt_brow_main_bind_001.tz";
+connectAttr "loc_lf_brow_main_bind_001.rx" "loc_rt_brow_main_bind_001.rx";
+connectAttr "loc_lf_brow_main_bind_001.ry" "loc_rt_brow_main_bind_001.ry";
+connectAttr "loc_lf_brow_main_bind_001.rz" "loc_rt_brow_main_bind_001.rz";
+connectAttr "loc_lf_brow_main_bind_001.sx" "loc_rt_brow_main_bind_001.sx";
+connectAttr "loc_lf_brow_main_bind_001.sy" "loc_rt_brow_main_bind_001.sy";
+connectAttr "loc_lf_brow_main_bind_001.sz" "loc_rt_brow_main_bind_001.sz";
+connectAttr "loc_lf_brow_main_bind_001.ro" "loc_rt_brow_main_bind_001.ro";
+connectAttr "loc_lf_brow_main_bind_001.v" "loc_rt_brow_main_bind_001.v";
+connectAttr "loc_lf_brow_main_bind_001Shape.lpx" "loc_rt_brow_main_bind_001Shape.lpx"
 		;
-connectAttr "loc_lf_brow_main_guide_001Shape.lpy" "loc_rt_brow_main_guide_001Shape.lpy"
+connectAttr "loc_lf_brow_main_bind_001Shape.lpy" "loc_rt_brow_main_bind_001Shape.lpy"
 		;
-connectAttr "loc_lf_brow_main_guide_001Shape.lpz" "loc_rt_brow_main_guide_001Shape.lpz"
+connectAttr "loc_lf_brow_main_bind_001Shape.lpz" "loc_rt_brow_main_bind_001Shape.lpz"
 		;
-connectAttr "loc_lf_brow_main_guide_001Shape.lsx" "loc_rt_brow_main_guide_001Shape.lsx"
+connectAttr "loc_lf_brow_main_bind_001Shape.lsx" "loc_rt_brow_main_bind_001Shape.lsx"
 		;
-connectAttr "loc_lf_brow_main_guide_001Shape.lsy" "loc_rt_brow_main_guide_001Shape.lsy"
+connectAttr "loc_lf_brow_main_bind_001Shape.lsy" "loc_rt_brow_main_bind_001Shape.lsy"
 		;
-connectAttr "loc_lf_brow_main_guide_001Shape.lsz" "loc_rt_brow_main_guide_001Shape.lsz"
+connectAttr "loc_lf_brow_main_bind_001Shape.lsz" "loc_rt_brow_main_bind_001Shape.lsz"
 		;
-connectAttr "loc_lf_brow_guide_001.tx" "loc_rt_brow_guide_001.tx";
-connectAttr "loc_lf_brow_guide_001.ty" "loc_rt_brow_guide_001.ty";
-connectAttr "loc_lf_brow_guide_001.tz" "loc_rt_brow_guide_001.tz";
-connectAttr "loc_lf_brow_guide_001.rx" "loc_rt_brow_guide_001.rx";
-connectAttr "loc_lf_brow_guide_001.ry" "loc_rt_brow_guide_001.ry";
-connectAttr "loc_lf_brow_guide_001.rz" "loc_rt_brow_guide_001.rz";
-connectAttr "loc_lf_brow_guide_001.sx" "loc_rt_brow_guide_001.sx";
-connectAttr "loc_lf_brow_guide_001.sy" "loc_rt_brow_guide_001.sy";
-connectAttr "loc_lf_brow_guide_001.sz" "loc_rt_brow_guide_001.sz";
-connectAttr "loc_lf_brow_guide_001.ro" "loc_rt_brow_guide_001.ro";
-connectAttr "loc_lf_brow_guide_001.v" "loc_rt_brow_guide_001.v";
-connectAttr "loc_lf_brow_guide_001Shape.lpx" "loc_rt_brow_guide_001Shape.lpx";
-connectAttr "loc_lf_brow_guide_001Shape.lpy" "loc_rt_brow_guide_001Shape.lpy";
-connectAttr "loc_lf_brow_guide_001Shape.lpz" "loc_rt_brow_guide_001Shape.lpz";
-connectAttr "loc_lf_brow_guide_001Shape.lsx" "loc_rt_brow_guide_001Shape.lsx";
-connectAttr "loc_lf_brow_guide_001Shape.lsy" "loc_rt_brow_guide_001Shape.lsy";
-connectAttr "loc_lf_brow_guide_001Shape.lsz" "loc_rt_brow_guide_001Shape.lsz";
-connectAttr "loc_lf_brow_guide_002.tx" "loc_rt_brow_guide_002.tx";
-connectAttr "loc_lf_brow_guide_002.ty" "loc_rt_brow_guide_002.ty";
-connectAttr "loc_lf_brow_guide_002.tz" "loc_rt_brow_guide_002.tz";
-connectAttr "loc_lf_brow_guide_002.rx" "loc_rt_brow_guide_002.rx";
-connectAttr "loc_lf_brow_guide_002.ry" "loc_rt_brow_guide_002.ry";
-connectAttr "loc_lf_brow_guide_002.rz" "loc_rt_brow_guide_002.rz";
-connectAttr "loc_lf_brow_guide_002.sx" "loc_rt_brow_guide_002.sx";
-connectAttr "loc_lf_brow_guide_002.sy" "loc_rt_brow_guide_002.sy";
-connectAttr "loc_lf_brow_guide_002.sz" "loc_rt_brow_guide_002.sz";
-connectAttr "loc_lf_brow_guide_002.ro" "loc_rt_brow_guide_002.ro";
-connectAttr "loc_lf_brow_guide_002.v" "loc_rt_brow_guide_002.v";
-connectAttr "loc_lf_brow_guide_002Shape.lpx" "loc_rt_brow_guide_002Shape.lpx";
-connectAttr "loc_lf_brow_guide_002Shape.lpy" "loc_rt_brow_guide_002Shape.lpy";
-connectAttr "loc_lf_brow_guide_002Shape.lpz" "loc_rt_brow_guide_002Shape.lpz";
-connectAttr "loc_lf_brow_guide_002Shape.lsx" "loc_rt_brow_guide_002Shape.lsx";
-connectAttr "loc_lf_brow_guide_002Shape.lsy" "loc_rt_brow_guide_002Shape.lsy";
-connectAttr "loc_lf_brow_guide_002Shape.lsz" "loc_rt_brow_guide_002Shape.lsz";
-connectAttr "loc_lf_brow_guide_003.tx" "loc_rt_brow_guide_003.tx";
-connectAttr "loc_lf_brow_guide_003.ty" "loc_rt_brow_guide_003.ty";
-connectAttr "loc_lf_brow_guide_003.tz" "loc_rt_brow_guide_003.tz";
-connectAttr "loc_lf_brow_guide_003.rx" "loc_rt_brow_guide_003.rx";
-connectAttr "loc_lf_brow_guide_003.ry" "loc_rt_brow_guide_003.ry";
-connectAttr "loc_lf_brow_guide_003.rz" "loc_rt_brow_guide_003.rz";
-connectAttr "loc_lf_brow_guide_003.sx" "loc_rt_brow_guide_003.sx";
-connectAttr "loc_lf_brow_guide_003.sy" "loc_rt_brow_guide_003.sy";
-connectAttr "loc_lf_brow_guide_003.sz" "loc_rt_brow_guide_003.sz";
-connectAttr "loc_lf_brow_guide_003.ro" "loc_rt_brow_guide_003.ro";
-connectAttr "loc_lf_brow_guide_003.v" "loc_rt_brow_guide_003.v";
-connectAttr "loc_lf_brow_guide_003Shape.lpx" "loc_rt_brow_guide_003Shape.lpx";
-connectAttr "loc_lf_brow_guide_003Shape.lpy" "loc_rt_brow_guide_003Shape.lpy";
-connectAttr "loc_lf_brow_guide_003Shape.lpz" "loc_rt_brow_guide_003Shape.lpz";
-connectAttr "loc_lf_brow_guide_003Shape.lsx" "loc_rt_brow_guide_003Shape.lsx";
-connectAttr "loc_lf_brow_guide_003Shape.lsy" "loc_rt_brow_guide_003Shape.lsy";
-connectAttr "loc_lf_brow_guide_003Shape.lsz" "loc_rt_brow_guide_003Shape.lsz";
-connectAttr "loc_lf_brow_guide_004.tx" "loc_rt_brow_guide_004.tx";
-connectAttr "loc_lf_brow_guide_004.ty" "loc_rt_brow_guide_004.ty";
-connectAttr "loc_lf_brow_guide_004.tz" "loc_rt_brow_guide_004.tz";
-connectAttr "loc_lf_brow_guide_004.rx" "loc_rt_brow_guide_004.rx";
-connectAttr "loc_lf_brow_guide_004.ry" "loc_rt_brow_guide_004.ry";
-connectAttr "loc_lf_brow_guide_004.rz" "loc_rt_brow_guide_004.rz";
-connectAttr "loc_lf_brow_guide_004.sx" "loc_rt_brow_guide_004.sx";
-connectAttr "loc_lf_brow_guide_004.sy" "loc_rt_brow_guide_004.sy";
-connectAttr "loc_lf_brow_guide_004.sz" "loc_rt_brow_guide_004.sz";
-connectAttr "loc_lf_brow_guide_004.ro" "loc_rt_brow_guide_004.ro";
-connectAttr "loc_lf_brow_guide_004.v" "loc_rt_brow_guide_004.v";
-connectAttr "loc_lf_brow_guide_004Shape.lpx" "loc_rt_brow_guide_004Shape.lpx";
-connectAttr "loc_lf_brow_guide_004Shape.lpy" "loc_rt_brow_guide_004Shape.lpy";
-connectAttr "loc_lf_brow_guide_004Shape.lpz" "loc_rt_brow_guide_004Shape.lpz";
-connectAttr "loc_lf_brow_guide_004Shape.lsx" "loc_rt_brow_guide_004Shape.lsx";
-connectAttr "loc_lf_brow_guide_004Shape.lsy" "loc_rt_brow_guide_004Shape.lsy";
-connectAttr "loc_lf_brow_guide_004Shape.lsz" "loc_rt_brow_guide_004Shape.lsz";
-connectAttr "loc_lf_brow_guide_005.tx" "loc_rt_brow_guide_005.tx";
-connectAttr "loc_lf_brow_guide_005.ty" "loc_rt_brow_guide_005.ty";
-connectAttr "loc_lf_brow_guide_005.tz" "loc_rt_brow_guide_005.tz";
-connectAttr "loc_lf_brow_guide_005.rx" "loc_rt_brow_guide_005.rx";
-connectAttr "loc_lf_brow_guide_005.ry" "loc_rt_brow_guide_005.ry";
-connectAttr "loc_lf_brow_guide_005.rz" "loc_rt_brow_guide_005.rz";
-connectAttr "loc_lf_brow_guide_005.sx" "loc_rt_brow_guide_005.sx";
-connectAttr "loc_lf_brow_guide_005.sy" "loc_rt_brow_guide_005.sy";
-connectAttr "loc_lf_brow_guide_005.sz" "loc_rt_brow_guide_005.sz";
-connectAttr "loc_lf_brow_guide_005.ro" "loc_rt_brow_guide_005.ro";
-connectAttr "loc_lf_brow_guide_005.v" "loc_rt_brow_guide_005.v";
-connectAttr "loc_lf_brow_guide_005Shape.lpx" "loc_rt_brow_guide_005Shape.lpx";
-connectAttr "loc_lf_brow_guide_005Shape.lpy" "loc_rt_brow_guide_005Shape.lpy";
-connectAttr "loc_lf_brow_guide_005Shape.lpz" "loc_rt_brow_guide_005Shape.lpz";
-connectAttr "loc_lf_brow_guide_005Shape.lsx" "loc_rt_brow_guide_005Shape.lsx";
-connectAttr "loc_lf_brow_guide_005Shape.lsy" "loc_rt_brow_guide_005Shape.lsy";
-connectAttr "loc_lf_brow_guide_005Shape.lsz" "loc_rt_brow_guide_005Shape.lsz";
-connectAttr "loc_rt_brow_guide_001Shape.wp" "curveShape9.cp[0]";
-connectAttr "loc_rt_brow_guide_002Shape.wp" "curveShape9.cp[1]";
-connectAttr "loc_rt_brow_guide_003Shape.wp" "curveShape9.cp[2]";
-connectAttr "loc_rt_brow_guide_004Shape.wp" "curveShape9.cp[3]";
-connectAttr "loc_rt_brow_guide_005Shape.wp" "curveShape9.cp[4]";
-connectAttr "loc_lf_upper_lip_guide_001.tx" "loc_rt_upper_lip_guide_001.tx";
-connectAttr "loc_lf_upper_lip_guide_001.ty" "loc_rt_upper_lip_guide_001.ty";
-connectAttr "loc_lf_upper_lip_guide_001.tz" "loc_rt_upper_lip_guide_001.tz";
-connectAttr "loc_lf_upper_lip_guide_001.rx" "loc_rt_upper_lip_guide_001.rx";
-connectAttr "loc_lf_upper_lip_guide_001.ry" "loc_rt_upper_lip_guide_001.ry";
-connectAttr "loc_lf_upper_lip_guide_001.rz" "loc_rt_upper_lip_guide_001.rz";
-connectAttr "loc_lf_upper_lip_guide_001.sx" "loc_rt_upper_lip_guide_001.sx";
-connectAttr "loc_lf_upper_lip_guide_001.sy" "loc_rt_upper_lip_guide_001.sy";
-connectAttr "loc_lf_upper_lip_guide_001.sz" "loc_rt_upper_lip_guide_001.sz";
-connectAttr "loc_lf_upper_lip_guide_001.ro" "loc_rt_upper_lip_guide_001.ro";
-connectAttr "loc_lf_upper_lip_guide_001.v" "loc_rt_upper_lip_guide_001.v";
-connectAttr "loc_lf_upper_lip_guide_001Shape.lpx" "loc_rt_upper_lip_guide_001Shape.lpx"
+connectAttr "loc_lf_brow_bind_001.tx" "loc_rt_brow_bind_001.tx";
+connectAttr "loc_lf_brow_bind_001.ty" "loc_rt_brow_bind_001.ty";
+connectAttr "loc_lf_brow_bind_001.tz" "loc_rt_brow_bind_001.tz";
+connectAttr "loc_lf_brow_bind_001.rx" "loc_rt_brow_bind_001.rx";
+connectAttr "loc_lf_brow_bind_001.ry" "loc_rt_brow_bind_001.ry";
+connectAttr "loc_lf_brow_bind_001.rz" "loc_rt_brow_bind_001.rz";
+connectAttr "loc_lf_brow_bind_001.sx" "loc_rt_brow_bind_001.sx";
+connectAttr "loc_lf_brow_bind_001.sy" "loc_rt_brow_bind_001.sy";
+connectAttr "loc_lf_brow_bind_001.sz" "loc_rt_brow_bind_001.sz";
+connectAttr "loc_lf_brow_bind_001.ro" "loc_rt_brow_bind_001.ro";
+connectAttr "loc_lf_brow_bind_001.v" "loc_rt_brow_bind_001.v";
+connectAttr "loc_lf_brow_bind_001Shape.lpx" "loc_rt_brow_bind_001Shape.lpx";
+connectAttr "loc_lf_brow_bind_001Shape.lpy" "loc_rt_brow_bind_001Shape.lpy";
+connectAttr "loc_lf_brow_bind_001Shape.lpz" "loc_rt_brow_bind_001Shape.lpz";
+connectAttr "loc_lf_brow_bind_001Shape.lsx" "loc_rt_brow_bind_001Shape.lsx";
+connectAttr "loc_lf_brow_bind_001Shape.lsy" "loc_rt_brow_bind_001Shape.lsy";
+connectAttr "loc_lf_brow_bind_001Shape.lsz" "loc_rt_brow_bind_001Shape.lsz";
+connectAttr "loc_lf_brow_bind_002.tx" "loc_rt_brow_bind_002.tx";
+connectAttr "loc_lf_brow_bind_002.ty" "loc_rt_brow_bind_002.ty";
+connectAttr "loc_lf_brow_bind_002.tz" "loc_rt_brow_bind_002.tz";
+connectAttr "loc_lf_brow_bind_002.rx" "loc_rt_brow_bind_002.rx";
+connectAttr "loc_lf_brow_bind_002.ry" "loc_rt_brow_bind_002.ry";
+connectAttr "loc_lf_brow_bind_002.rz" "loc_rt_brow_bind_002.rz";
+connectAttr "loc_lf_brow_bind_002.sx" "loc_rt_brow_bind_002.sx";
+connectAttr "loc_lf_brow_bind_002.sy" "loc_rt_brow_bind_002.sy";
+connectAttr "loc_lf_brow_bind_002.sz" "loc_rt_brow_bind_002.sz";
+connectAttr "loc_lf_brow_bind_002.ro" "loc_rt_brow_bind_002.ro";
+connectAttr "loc_lf_brow_bind_002.v" "loc_rt_brow_bind_002.v";
+connectAttr "loc_lf_brow_bind_002Shape.lpx" "loc_rt_brow_bind_002Shape.lpx";
+connectAttr "loc_lf_brow_bind_002Shape.lpy" "loc_rt_brow_bind_002Shape.lpy";
+connectAttr "loc_lf_brow_bind_002Shape.lpz" "loc_rt_brow_bind_002Shape.lpz";
+connectAttr "loc_lf_brow_bind_002Shape.lsx" "loc_rt_brow_bind_002Shape.lsx";
+connectAttr "loc_lf_brow_bind_002Shape.lsy" "loc_rt_brow_bind_002Shape.lsy";
+connectAttr "loc_lf_brow_bind_002Shape.lsz" "loc_rt_brow_bind_002Shape.lsz";
+connectAttr "loc_lf_brow_bind_003.tx" "loc_rt_brow_bind_003.tx";
+connectAttr "loc_lf_brow_bind_003.ty" "loc_rt_brow_bind_003.ty";
+connectAttr "loc_lf_brow_bind_003.tz" "loc_rt_brow_bind_003.tz";
+connectAttr "loc_lf_brow_bind_003.rx" "loc_rt_brow_bind_003.rx";
+connectAttr "loc_lf_brow_bind_003.ry" "loc_rt_brow_bind_003.ry";
+connectAttr "loc_lf_brow_bind_003.rz" "loc_rt_brow_bind_003.rz";
+connectAttr "loc_lf_brow_bind_003.sx" "loc_rt_brow_bind_003.sx";
+connectAttr "loc_lf_brow_bind_003.sy" "loc_rt_brow_bind_003.sy";
+connectAttr "loc_lf_brow_bind_003.sz" "loc_rt_brow_bind_003.sz";
+connectAttr "loc_lf_brow_bind_003.ro" "loc_rt_brow_bind_003.ro";
+connectAttr "loc_lf_brow_bind_003.v" "loc_rt_brow_bind_003.v";
+connectAttr "loc_lf_brow_bind_003Shape.lpx" "loc_rt_brow_bind_003Shape.lpx";
+connectAttr "loc_lf_brow_bind_003Shape.lpy" "loc_rt_brow_bind_003Shape.lpy";
+connectAttr "loc_lf_brow_bind_003Shape.lpz" "loc_rt_brow_bind_003Shape.lpz";
+connectAttr "loc_lf_brow_bind_003Shape.lsx" "loc_rt_brow_bind_003Shape.lsx";
+connectAttr "loc_lf_brow_bind_003Shape.lsy" "loc_rt_brow_bind_003Shape.lsy";
+connectAttr "loc_lf_brow_bind_003Shape.lsz" "loc_rt_brow_bind_003Shape.lsz";
+connectAttr "loc_lf_brow_bind_004.tx" "loc_rt_brow_bind_004.tx";
+connectAttr "loc_lf_brow_bind_004.ty" "loc_rt_brow_bind_004.ty";
+connectAttr "loc_lf_brow_bind_004.tz" "loc_rt_brow_bind_004.tz";
+connectAttr "loc_lf_brow_bind_004.rx" "loc_rt_brow_bind_004.rx";
+connectAttr "loc_lf_brow_bind_004.ry" "loc_rt_brow_bind_004.ry";
+connectAttr "loc_lf_brow_bind_004.rz" "loc_rt_brow_bind_004.rz";
+connectAttr "loc_lf_brow_bind_004.sx" "loc_rt_brow_bind_004.sx";
+connectAttr "loc_lf_brow_bind_004.sy" "loc_rt_brow_bind_004.sy";
+connectAttr "loc_lf_brow_bind_004.sz" "loc_rt_brow_bind_004.sz";
+connectAttr "loc_lf_brow_bind_004.ro" "loc_rt_brow_bind_004.ro";
+connectAttr "loc_lf_brow_bind_004.v" "loc_rt_brow_bind_004.v";
+connectAttr "loc_lf_brow_bind_004Shape.lpx" "loc_rt_brow_bind_004Shape.lpx";
+connectAttr "loc_lf_brow_bind_004Shape.lpy" "loc_rt_brow_bind_004Shape.lpy";
+connectAttr "loc_lf_brow_bind_004Shape.lpz" "loc_rt_brow_bind_004Shape.lpz";
+connectAttr "loc_lf_brow_bind_004Shape.lsx" "loc_rt_brow_bind_004Shape.lsx";
+connectAttr "loc_lf_brow_bind_004Shape.lsy" "loc_rt_brow_bind_004Shape.lsy";
+connectAttr "loc_lf_brow_bind_004Shape.lsz" "loc_rt_brow_bind_004Shape.lsz";
+connectAttr "loc_lf_brow_bind_005.tx" "loc_rt_brow_bind_005.tx";
+connectAttr "loc_lf_brow_bind_005.ty" "loc_rt_brow_bind_005.ty";
+connectAttr "loc_lf_brow_bind_005.tz" "loc_rt_brow_bind_005.tz";
+connectAttr "loc_lf_brow_bind_005.rx" "loc_rt_brow_bind_005.rx";
+connectAttr "loc_lf_brow_bind_005.ry" "loc_rt_brow_bind_005.ry";
+connectAttr "loc_lf_brow_bind_005.rz" "loc_rt_brow_bind_005.rz";
+connectAttr "loc_lf_brow_bind_005.sx" "loc_rt_brow_bind_005.sx";
+connectAttr "loc_lf_brow_bind_005.sy" "loc_rt_brow_bind_005.sy";
+connectAttr "loc_lf_brow_bind_005.sz" "loc_rt_brow_bind_005.sz";
+connectAttr "loc_lf_brow_bind_005.ro" "loc_rt_brow_bind_005.ro";
+connectAttr "loc_lf_brow_bind_005.v" "loc_rt_brow_bind_005.v";
+connectAttr "loc_lf_brow_bind_005Shape.lpx" "loc_rt_brow_bind_005Shape.lpx";
+connectAttr "loc_lf_brow_bind_005Shape.lpy" "loc_rt_brow_bind_005Shape.lpy";
+connectAttr "loc_lf_brow_bind_005Shape.lpz" "loc_rt_brow_bind_005Shape.lpz";
+connectAttr "loc_lf_brow_bind_005Shape.lsx" "loc_rt_brow_bind_005Shape.lsx";
+connectAttr "loc_lf_brow_bind_005Shape.lsy" "loc_rt_brow_bind_005Shape.lsy";
+connectAttr "loc_lf_brow_bind_005Shape.lsz" "loc_rt_brow_bind_005Shape.lsz";
+connectAttr "loc_rt_brow_bind_001Shape.wp" "curveShape9.cp[0]";
+connectAttr "loc_rt_brow_bind_002Shape.wp" "curveShape9.cp[1]";
+connectAttr "loc_rt_brow_bind_003Shape.wp" "curveShape9.cp[2]";
+connectAttr "loc_rt_brow_bind_004Shape.wp" "curveShape9.cp[3]";
+connectAttr "loc_rt_brow_bind_005Shape.wp" "curveShape9.cp[4]";
+connectAttr "loc_lf_upper_lip_bind_001.tx" "loc_rt_upper_lip_bind_001.tx";
+connectAttr "loc_lf_upper_lip_bind_001.ty" "loc_rt_upper_lip_bind_001.ty";
+connectAttr "loc_lf_upper_lip_bind_001.tz" "loc_rt_upper_lip_bind_001.tz";
+connectAttr "loc_lf_upper_lip_bind_001.rx" "loc_rt_upper_lip_bind_001.rx";
+connectAttr "loc_lf_upper_lip_bind_001.ry" "loc_rt_upper_lip_bind_001.ry";
+connectAttr "loc_lf_upper_lip_bind_001.rz" "loc_rt_upper_lip_bind_001.rz";
+connectAttr "loc_lf_upper_lip_bind_001.sx" "loc_rt_upper_lip_bind_001.sx";
+connectAttr "loc_lf_upper_lip_bind_001.sy" "loc_rt_upper_lip_bind_001.sy";
+connectAttr "loc_lf_upper_lip_bind_001.sz" "loc_rt_upper_lip_bind_001.sz";
+connectAttr "loc_lf_upper_lip_bind_001.ro" "loc_rt_upper_lip_bind_001.ro";
+connectAttr "loc_lf_upper_lip_bind_001.v" "loc_rt_upper_lip_bind_001.v";
+connectAttr "loc_lf_upper_lip_bind_001Shape.lpx" "loc_rt_upper_lip_bind_001Shape.lpx"
 		;
-connectAttr "loc_lf_upper_lip_guide_001Shape.lpy" "loc_rt_upper_lip_guide_001Shape.lpy"
+connectAttr "loc_lf_upper_lip_bind_001Shape.lpy" "loc_rt_upper_lip_bind_001Shape.lpy"
 		;
-connectAttr "loc_lf_upper_lip_guide_001Shape.lpz" "loc_rt_upper_lip_guide_001Shape.lpz"
+connectAttr "loc_lf_upper_lip_bind_001Shape.lpz" "loc_rt_upper_lip_bind_001Shape.lpz"
 		;
-connectAttr "loc_lf_upper_lip_guide_001Shape.lsx" "loc_rt_upper_lip_guide_001Shape.lsx"
+connectAttr "loc_lf_upper_lip_bind_001Shape.lsx" "loc_rt_upper_lip_bind_001Shape.lsx"
 		;
-connectAttr "loc_lf_upper_lip_guide_001Shape.lsy" "loc_rt_upper_lip_guide_001Shape.lsy"
+connectAttr "loc_lf_upper_lip_bind_001Shape.lsy" "loc_rt_upper_lip_bind_001Shape.lsy"
 		;
-connectAttr "loc_lf_upper_lip_guide_001Shape.lsz" "loc_rt_upper_lip_guide_001Shape.lsz"
+connectAttr "loc_lf_upper_lip_bind_001Shape.lsz" "loc_rt_upper_lip_bind_001Shape.lsz"
 		;
-connectAttr "loc_lf_upper_lip_guide_002.tx" "loc_rt_upper_lip_guide_002.tx";
-connectAttr "loc_lf_upper_lip_guide_002.ty" "loc_rt_upper_lip_guide_002.ty";
-connectAttr "loc_lf_upper_lip_guide_002.tz" "loc_rt_upper_lip_guide_002.tz";
-connectAttr "loc_lf_upper_lip_guide_002.rx" "loc_rt_upper_lip_guide_002.rx";
-connectAttr "loc_lf_upper_lip_guide_002.ry" "loc_rt_upper_lip_guide_002.ry";
-connectAttr "loc_lf_upper_lip_guide_002.rz" "loc_rt_upper_lip_guide_002.rz";
-connectAttr "loc_lf_upper_lip_guide_002.sx" "loc_rt_upper_lip_guide_002.sx";
-connectAttr "loc_lf_upper_lip_guide_002.sy" "loc_rt_upper_lip_guide_002.sy";
-connectAttr "loc_lf_upper_lip_guide_002.sz" "loc_rt_upper_lip_guide_002.sz";
-connectAttr "loc_lf_upper_lip_guide_002.ro" "loc_rt_upper_lip_guide_002.ro";
-connectAttr "loc_lf_upper_lip_guide_002.v" "loc_rt_upper_lip_guide_002.v";
-connectAttr "loc_lf_upper_lip_guide_002Shape.lpx" "loc_rt_upper_lip_guide_002Shape.lpx"
+connectAttr "loc_lf_upper_lip_bind_002.tx" "loc_rt_upper_lip_bind_002.tx";
+connectAttr "loc_lf_upper_lip_bind_002.ty" "loc_rt_upper_lip_bind_002.ty";
+connectAttr "loc_lf_upper_lip_bind_002.tz" "loc_rt_upper_lip_bind_002.tz";
+connectAttr "loc_lf_upper_lip_bind_002.rx" "loc_rt_upper_lip_bind_002.rx";
+connectAttr "loc_lf_upper_lip_bind_002.ry" "loc_rt_upper_lip_bind_002.ry";
+connectAttr "loc_lf_upper_lip_bind_002.rz" "loc_rt_upper_lip_bind_002.rz";
+connectAttr "loc_lf_upper_lip_bind_002.sx" "loc_rt_upper_lip_bind_002.sx";
+connectAttr "loc_lf_upper_lip_bind_002.sy" "loc_rt_upper_lip_bind_002.sy";
+connectAttr "loc_lf_upper_lip_bind_002.sz" "loc_rt_upper_lip_bind_002.sz";
+connectAttr "loc_lf_upper_lip_bind_002.ro" "loc_rt_upper_lip_bind_002.ro";
+connectAttr "loc_lf_upper_lip_bind_002.v" "loc_rt_upper_lip_bind_002.v";
+connectAttr "loc_lf_upper_lip_bind_002Shape.lpx" "loc_rt_upper_lip_bind_002Shape.lpx"
 		;
-connectAttr "loc_lf_upper_lip_guide_002Shape.lpy" "loc_rt_upper_lip_guide_002Shape.lpy"
+connectAttr "loc_lf_upper_lip_bind_002Shape.lpy" "loc_rt_upper_lip_bind_002Shape.lpy"
 		;
-connectAttr "loc_lf_upper_lip_guide_002Shape.lpz" "loc_rt_upper_lip_guide_002Shape.lpz"
+connectAttr "loc_lf_upper_lip_bind_002Shape.lpz" "loc_rt_upper_lip_bind_002Shape.lpz"
 		;
-connectAttr "loc_lf_upper_lip_guide_002Shape.lsx" "loc_rt_upper_lip_guide_002Shape.lsx"
+connectAttr "loc_lf_upper_lip_bind_002Shape.lsx" "loc_rt_upper_lip_bind_002Shape.lsx"
 		;
-connectAttr "loc_lf_upper_lip_guide_002Shape.lsy" "loc_rt_upper_lip_guide_002Shape.lsy"
+connectAttr "loc_lf_upper_lip_bind_002Shape.lsy" "loc_rt_upper_lip_bind_002Shape.lsy"
 		;
-connectAttr "loc_lf_upper_lip_guide_002Shape.lsz" "loc_rt_upper_lip_guide_002Shape.lsz"
+connectAttr "loc_lf_upper_lip_bind_002Shape.lsz" "loc_rt_upper_lip_bind_002Shape.lsz"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001.tx" "loc_rt_mouth_corner_guide_001.tx"
+connectAttr "loc_lf_mouth_corner_bind_001.tx" "loc_rt_mouth_corner_bind_001.tx"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001.ty" "loc_rt_mouth_corner_guide_001.ty"
+connectAttr "loc_lf_mouth_corner_bind_001.ty" "loc_rt_mouth_corner_bind_001.ty"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001.tz" "loc_rt_mouth_corner_guide_001.tz"
+connectAttr "loc_lf_mouth_corner_bind_001.tz" "loc_rt_mouth_corner_bind_001.tz"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001.rx" "loc_rt_mouth_corner_guide_001.rx"
+connectAttr "loc_lf_mouth_corner_bind_001.rx" "loc_rt_mouth_corner_bind_001.rx"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001.ry" "loc_rt_mouth_corner_guide_001.ry"
+connectAttr "loc_lf_mouth_corner_bind_001.ry" "loc_rt_mouth_corner_bind_001.ry"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001.rz" "loc_rt_mouth_corner_guide_001.rz"
+connectAttr "loc_lf_mouth_corner_bind_001.rz" "loc_rt_mouth_corner_bind_001.rz"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001.sx" "loc_rt_mouth_corner_guide_001.sx"
+connectAttr "loc_lf_mouth_corner_bind_001.sx" "loc_rt_mouth_corner_bind_001.sx"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001.sy" "loc_rt_mouth_corner_guide_001.sy"
+connectAttr "loc_lf_mouth_corner_bind_001.sy" "loc_rt_mouth_corner_bind_001.sy"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001.sz" "loc_rt_mouth_corner_guide_001.sz"
+connectAttr "loc_lf_mouth_corner_bind_001.sz" "loc_rt_mouth_corner_bind_001.sz"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001.ro" "loc_rt_mouth_corner_guide_001.ro"
+connectAttr "loc_lf_mouth_corner_bind_001.ro" "loc_rt_mouth_corner_bind_001.ro"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001.v" "loc_rt_mouth_corner_guide_001.v";
-connectAttr "loc_lf_mouth_corner_guide_001Shape.lpx" "loc_rt_mouth_corner_guide_001Shape.lpx"
+connectAttr "loc_lf_mouth_corner_bind_001.v" "loc_rt_mouth_corner_bind_001.v";
+connectAttr "loc_lf_mouth_corner_bind_001Shape.lpx" "loc_rt_mouth_corner_bind_001Shape.lpx"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001Shape.lpy" "loc_rt_mouth_corner_guide_001Shape.lpy"
+connectAttr "loc_lf_mouth_corner_bind_001Shape.lpy" "loc_rt_mouth_corner_bind_001Shape.lpy"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001Shape.lpz" "loc_rt_mouth_corner_guide_001Shape.lpz"
+connectAttr "loc_lf_mouth_corner_bind_001Shape.lpz" "loc_rt_mouth_corner_bind_001Shape.lpz"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001Shape.lsx" "loc_rt_mouth_corner_guide_001Shape.lsx"
+connectAttr "loc_lf_mouth_corner_bind_001Shape.lsx" "loc_rt_mouth_corner_bind_001Shape.lsx"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001Shape.lsy" "loc_rt_mouth_corner_guide_001Shape.lsy"
+connectAttr "loc_lf_mouth_corner_bind_001Shape.lsy" "loc_rt_mouth_corner_bind_001Shape.lsy"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001Shape.lsz" "loc_rt_mouth_corner_guide_001Shape.lsz"
+connectAttr "loc_lf_mouth_corner_bind_001Shape.lsz" "loc_rt_mouth_corner_bind_001Shape.lsz"
 		;
-connectAttr "loc_lf_lower_lip_guide_001.tx" "loc_rt_lower_lip_guide_001.tx";
-connectAttr "loc_lf_lower_lip_guide_001.ty" "loc_rt_lower_lip_guide_001.ty";
-connectAttr "loc_lf_lower_lip_guide_001.tz" "loc_rt_lower_lip_guide_001.tz";
-connectAttr "loc_lf_lower_lip_guide_001.rx" "loc_rt_lower_lip_guide_001.rx";
-connectAttr "loc_lf_lower_lip_guide_001.ry" "loc_rt_lower_lip_guide_001.ry";
-connectAttr "loc_lf_lower_lip_guide_001.rz" "loc_rt_lower_lip_guide_001.rz";
-connectAttr "loc_lf_lower_lip_guide_001.sx" "loc_rt_lower_lip_guide_001.sx";
-connectAttr "loc_lf_lower_lip_guide_001.sy" "loc_rt_lower_lip_guide_001.sy";
-connectAttr "loc_lf_lower_lip_guide_001.sz" "loc_rt_lower_lip_guide_001.sz";
-connectAttr "loc_lf_lower_lip_guide_001.ro" "loc_rt_lower_lip_guide_001.ro";
-connectAttr "loc_lf_lower_lip_guide_001.v" "loc_rt_lower_lip_guide_001.v";
-connectAttr "loc_lf_lower_lip_guide_001Shape.lpx" "loc_rt_lower_lip_guide_001Shape.lpx"
+connectAttr "loc_lf_lower_lip_bind_001.tx" "loc_rt_lower_lip_bind_001.tx";
+connectAttr "loc_lf_lower_lip_bind_001.ty" "loc_rt_lower_lip_bind_001.ty";
+connectAttr "loc_lf_lower_lip_bind_001.tz" "loc_rt_lower_lip_bind_001.tz";
+connectAttr "loc_lf_lower_lip_bind_001.rx" "loc_rt_lower_lip_bind_001.rx";
+connectAttr "loc_lf_lower_lip_bind_001.ry" "loc_rt_lower_lip_bind_001.ry";
+connectAttr "loc_lf_lower_lip_bind_001.rz" "loc_rt_lower_lip_bind_001.rz";
+connectAttr "loc_lf_lower_lip_bind_001.sx" "loc_rt_lower_lip_bind_001.sx";
+connectAttr "loc_lf_lower_lip_bind_001.sy" "loc_rt_lower_lip_bind_001.sy";
+connectAttr "loc_lf_lower_lip_bind_001.sz" "loc_rt_lower_lip_bind_001.sz";
+connectAttr "loc_lf_lower_lip_bind_001.ro" "loc_rt_lower_lip_bind_001.ro";
+connectAttr "loc_lf_lower_lip_bind_001.v" "loc_rt_lower_lip_bind_001.v";
+connectAttr "loc_lf_lower_lip_bind_001Shape.lpx" "loc_rt_lower_lip_bind_001Shape.lpx"
 		;
-connectAttr "loc_lf_lower_lip_guide_001Shape.lpy" "loc_rt_lower_lip_guide_001Shape.lpy"
+connectAttr "loc_lf_lower_lip_bind_001Shape.lpy" "loc_rt_lower_lip_bind_001Shape.lpy"
 		;
-connectAttr "loc_lf_lower_lip_guide_001Shape.lpz" "loc_rt_lower_lip_guide_001Shape.lpz"
+connectAttr "loc_lf_lower_lip_bind_001Shape.lpz" "loc_rt_lower_lip_bind_001Shape.lpz"
 		;
-connectAttr "loc_lf_lower_lip_guide_001Shape.lsx" "loc_rt_lower_lip_guide_001Shape.lsx"
+connectAttr "loc_lf_lower_lip_bind_001Shape.lsx" "loc_rt_lower_lip_bind_001Shape.lsx"
 		;
-connectAttr "loc_lf_lower_lip_guide_001Shape.lsy" "loc_rt_lower_lip_guide_001Shape.lsy"
+connectAttr "loc_lf_lower_lip_bind_001Shape.lsy" "loc_rt_lower_lip_bind_001Shape.lsy"
 		;
-connectAttr "loc_lf_lower_lip_guide_001Shape.lsz" "loc_rt_lower_lip_guide_001Shape.lsz"
+connectAttr "loc_lf_lower_lip_bind_001Shape.lsz" "loc_rt_lower_lip_bind_001Shape.lsz"
 		;
-connectAttr "loc_lf_lower_lip_guide_002.tx" "loc_rt_lower_lip_guide_002.tx";
-connectAttr "loc_lf_lower_lip_guide_002.ty" "loc_rt_lower_lip_guide_002.ty";
-connectAttr "loc_lf_lower_lip_guide_002.tz" "loc_rt_lower_lip_guide_002.tz";
-connectAttr "loc_lf_lower_lip_guide_002.rx" "loc_rt_lower_lip_guide_002.rx";
-connectAttr "loc_lf_lower_lip_guide_002.ry" "loc_rt_lower_lip_guide_002.ry";
-connectAttr "loc_lf_lower_lip_guide_002.rz" "loc_rt_lower_lip_guide_002.rz";
-connectAttr "loc_lf_lower_lip_guide_002.sx" "loc_rt_lower_lip_guide_002.sx";
-connectAttr "loc_lf_lower_lip_guide_002.sy" "loc_rt_lower_lip_guide_002.sy";
-connectAttr "loc_lf_lower_lip_guide_002.sz" "loc_rt_lower_lip_guide_002.sz";
-connectAttr "loc_lf_lower_lip_guide_002.ro" "loc_rt_lower_lip_guide_002.ro";
-connectAttr "loc_lf_lower_lip_guide_002.v" "loc_rt_lower_lip_guide_002.v";
-connectAttr "loc_lf_lower_lip_guide_002Shape.lpx" "loc_rt_lower_lip_guide_002Shape.lpx"
+connectAttr "loc_lf_lower_lip_bind_002.tx" "loc_rt_lower_lip_bind_002.tx";
+connectAttr "loc_lf_lower_lip_bind_002.ty" "loc_rt_lower_lip_bind_002.ty";
+connectAttr "loc_lf_lower_lip_bind_002.tz" "loc_rt_lower_lip_bind_002.tz";
+connectAttr "loc_lf_lower_lip_bind_002.rx" "loc_rt_lower_lip_bind_002.rx";
+connectAttr "loc_lf_lower_lip_bind_002.ry" "loc_rt_lower_lip_bind_002.ry";
+connectAttr "loc_lf_lower_lip_bind_002.rz" "loc_rt_lower_lip_bind_002.rz";
+connectAttr "loc_lf_lower_lip_bind_002.sx" "loc_rt_lower_lip_bind_002.sx";
+connectAttr "loc_lf_lower_lip_bind_002.sy" "loc_rt_lower_lip_bind_002.sy";
+connectAttr "loc_lf_lower_lip_bind_002.sz" "loc_rt_lower_lip_bind_002.sz";
+connectAttr "loc_lf_lower_lip_bind_002.ro" "loc_rt_lower_lip_bind_002.ro";
+connectAttr "loc_lf_lower_lip_bind_002.v" "loc_rt_lower_lip_bind_002.v";
+connectAttr "loc_lf_lower_lip_bind_002Shape.lpx" "loc_rt_lower_lip_bind_002Shape.lpx"
 		;
-connectAttr "loc_lf_lower_lip_guide_002Shape.lpy" "loc_rt_lower_lip_guide_002Shape.lpy"
+connectAttr "loc_lf_lower_lip_bind_002Shape.lpy" "loc_rt_lower_lip_bind_002Shape.lpy"
 		;
-connectAttr "loc_lf_lower_lip_guide_002Shape.lpz" "loc_rt_lower_lip_guide_002Shape.lpz"
+connectAttr "loc_lf_lower_lip_bind_002Shape.lpz" "loc_rt_lower_lip_bind_002Shape.lpz"
 		;
-connectAttr "loc_lf_lower_lip_guide_002Shape.lsx" "loc_rt_lower_lip_guide_002Shape.lsx"
+connectAttr "loc_lf_lower_lip_bind_002Shape.lsx" "loc_rt_lower_lip_bind_002Shape.lsx"
 		;
-connectAttr "loc_lf_lower_lip_guide_002Shape.lsy" "loc_rt_lower_lip_guide_002Shape.lsy"
+connectAttr "loc_lf_lower_lip_bind_002Shape.lsy" "loc_rt_lower_lip_bind_002Shape.lsy"
 		;
-connectAttr "loc_lf_lower_lip_guide_002Shape.lsz" "loc_rt_lower_lip_guide_002Shape.lsz"
+connectAttr "loc_lf_lower_lip_bind_002Shape.lsz" "loc_rt_lower_lip_bind_002Shape.lsz"
 		;
-connectAttr "loc_lf_mouth_corner_guide_001Shape.wp" "curveShape10.cp[0]";
-connectAttr "loc_lf_upper_lip_guide_002Shape.wp" "curveShape10.cp[1]";
-connectAttr "loc_lf_upper_lip_guide_001Shape.wp" "curveShape10.cp[2]";
-connectAttr "loc_md_upper_lip_guide_001Shape.wp" "curveShape10.cp[3]";
-connectAttr "loc_rt_upper_lip_guide_001Shape.wp" "curveShape10.cp[4]";
-connectAttr "loc_rt_upper_lip_guide_002Shape.wp" "curveShape10.cp[5]";
-connectAttr "loc_rt_mouth_corner_guide_001Shape.wp" "curveShape10.cp[6]";
-connectAttr "loc_lf_mouth_corner_guide_001Shape.wp" "curveShape11.cp[0]";
-connectAttr "loc_lf_lower_lip_guide_002Shape.wp" "curveShape11.cp[1]";
-connectAttr "loc_lf_lower_lip_guide_001Shape.wp" "curveShape11.cp[2]";
-connectAttr "loc_md_lower_lip_guide_001Shape.wp" "curveShape11.cp[3]";
-connectAttr "loc_rt_lower_lip_guide_001Shape.wp" "curveShape11.cp[4]";
-connectAttr "loc_rt_lower_lip_guide_002Shape.wp" "curveShape11.cp[5]";
-connectAttr "loc_rt_mouth_corner_guide_001Shape.wp" "curveShape11.cp[6]";
-connectAttr "loc_md_tongue_guide_001Shape.wp" "curveShape7.cp[0]";
-connectAttr "loc_md_tongue_guide_002Shape.wp" "curveShape7.cp[1]";
-connectAttr "loc_md_tongue_guide_003Shape.wp" "curveShape7.cp[2]";
-connectAttr "loc_md_tongue_guide_004Shape.wp" "curveShape7.cp[3]";
-connectAttr "loc_md_tongue_guide_005Shape.wp" "curveShape7.cp[4]";
-connectAttr "loc_lf_zygoma_guide_001Shape.wp" "curveShape22.cp[0]";
-connectAttr "loc_lf_zygoma_guide_002Shape.wp" "curveShape22.cp[1]";
-connectAttr "loc_lf_zygoma_guide_003Shape.wp" "curveShape22.cp[2]";
-connectAttr "loc_lf_zygoma_guide_001.tx" "loc_rt_zygoma_guide_001.tx";
-connectAttr "loc_lf_zygoma_guide_001.ty" "loc_rt_zygoma_guide_001.ty";
-connectAttr "loc_lf_zygoma_guide_001.tz" "loc_rt_zygoma_guide_001.tz";
-connectAttr "loc_lf_zygoma_guide_001.rx" "loc_rt_zygoma_guide_001.rx";
-connectAttr "loc_lf_zygoma_guide_001.ry" "loc_rt_zygoma_guide_001.ry";
-connectAttr "loc_lf_zygoma_guide_001.rz" "loc_rt_zygoma_guide_001.rz";
-connectAttr "loc_lf_zygoma_guide_001.sx" "loc_rt_zygoma_guide_001.sx";
-connectAttr "loc_lf_zygoma_guide_001.sy" "loc_rt_zygoma_guide_001.sy";
-connectAttr "loc_lf_zygoma_guide_001.sz" "loc_rt_zygoma_guide_001.sz";
-connectAttr "loc_lf_zygoma_guide_001.ro" "loc_rt_zygoma_guide_001.ro";
-connectAttr "loc_lf_zygoma_guide_001.v" "loc_rt_zygoma_guide_001.v";
-connectAttr "loc_lf_zygoma_guide_001Shape.lpx" "loc_rt_zygoma_guide_001Shape.lpx"
+connectAttr "loc_lf_mouth_corner_bind_001Shape.wp" "curveShape10.cp[0]";
+connectAttr "loc_lf_upper_lip_bind_002Shape.wp" "curveShape10.cp[1]";
+connectAttr "loc_lf_upper_lip_bind_001Shape.wp" "curveShape10.cp[2]";
+connectAttr "loc_md_upper_lip_bind_001Shape.wp" "curveShape10.cp[3]";
+connectAttr "loc_rt_upper_lip_bind_001Shape.wp" "curveShape10.cp[4]";
+connectAttr "loc_rt_upper_lip_bind_002Shape.wp" "curveShape10.cp[5]";
+connectAttr "loc_rt_mouth_corner_bind_001Shape.wp" "curveShape10.cp[6]";
+connectAttr "loc_lf_mouth_corner_bind_001Shape.wp" "curveShape11.cp[0]";
+connectAttr "loc_lf_lower_lip_bind_002Shape.wp" "curveShape11.cp[1]";
+connectAttr "loc_lf_lower_lip_bind_001Shape.wp" "curveShape11.cp[2]";
+connectAttr "loc_md_lower_lip_bind_001Shape.wp" "curveShape11.cp[3]";
+connectAttr "loc_rt_lower_lip_bind_001Shape.wp" "curveShape11.cp[4]";
+connectAttr "loc_rt_lower_lip_bind_002Shape.wp" "curveShape11.cp[5]";
+connectAttr "loc_rt_mouth_corner_bind_001Shape.wp" "curveShape11.cp[6]";
+connectAttr "loc_md_tongue_bind_001Shape.wp" "curveShape7.cp[0]";
+connectAttr "loc_md_tongue_bind_002Shape.wp" "curveShape7.cp[1]";
+connectAttr "loc_md_tongue_bind_003Shape.wp" "curveShape7.cp[2]";
+connectAttr "loc_md_tongue_bind_004Shape.wp" "curveShape7.cp[3]";
+connectAttr "loc_md_tongue_bind_005Shape.wp" "curveShape7.cp[4]";
+connectAttr "loc_lf_zygoma_bind_001Shape.wp" "curveShape22.cp[0]";
+connectAttr "loc_lf_zygoma_bind_002Shape.wp" "curveShape22.cp[1]";
+connectAttr "loc_lf_zygoma_bind_003Shape.wp" "curveShape22.cp[2]";
+connectAttr "loc_lf_zygoma_bind_001.tx" "loc_rt_zygoma_bind_001.tx";
+connectAttr "loc_lf_zygoma_bind_001.ty" "loc_rt_zygoma_bind_001.ty";
+connectAttr "loc_lf_zygoma_bind_001.tz" "loc_rt_zygoma_bind_001.tz";
+connectAttr "loc_lf_zygoma_bind_001.rx" "loc_rt_zygoma_bind_001.rx";
+connectAttr "loc_lf_zygoma_bind_001.ry" "loc_rt_zygoma_bind_001.ry";
+connectAttr "loc_lf_zygoma_bind_001.rz" "loc_rt_zygoma_bind_001.rz";
+connectAttr "loc_lf_zygoma_bind_001.sx" "loc_rt_zygoma_bind_001.sx";
+connectAttr "loc_lf_zygoma_bind_001.sy" "loc_rt_zygoma_bind_001.sy";
+connectAttr "loc_lf_zygoma_bind_001.sz" "loc_rt_zygoma_bind_001.sz";
+connectAttr "loc_lf_zygoma_bind_001.ro" "loc_rt_zygoma_bind_001.ro";
+connectAttr "loc_lf_zygoma_bind_001.v" "loc_rt_zygoma_bind_001.v";
+connectAttr "loc_lf_zygoma_bind_001Shape.lpx" "loc_rt_zygoma_bind_001Shape.lpx"
 		;
-connectAttr "loc_lf_zygoma_guide_001Shape.lpy" "loc_rt_zygoma_guide_001Shape.lpy"
+connectAttr "loc_lf_zygoma_bind_001Shape.lpy" "loc_rt_zygoma_bind_001Shape.lpy"
 		;
-connectAttr "loc_lf_zygoma_guide_001Shape.lpz" "loc_rt_zygoma_guide_001Shape.lpz"
+connectAttr "loc_lf_zygoma_bind_001Shape.lpz" "loc_rt_zygoma_bind_001Shape.lpz"
 		;
-connectAttr "loc_lf_zygoma_guide_001Shape.lsx" "loc_rt_zygoma_guide_001Shape.lsx"
+connectAttr "loc_lf_zygoma_bind_001Shape.lsx" "loc_rt_zygoma_bind_001Shape.lsx"
 		;
-connectAttr "loc_lf_zygoma_guide_001Shape.lsy" "loc_rt_zygoma_guide_001Shape.lsy"
+connectAttr "loc_lf_zygoma_bind_001Shape.lsy" "loc_rt_zygoma_bind_001Shape.lsy"
 		;
-connectAttr "loc_lf_zygoma_guide_001Shape.lsz" "loc_rt_zygoma_guide_001Shape.lsz"
+connectAttr "loc_lf_zygoma_bind_001Shape.lsz" "loc_rt_zygoma_bind_001Shape.lsz"
 		;
-connectAttr "loc_lf_zygoma_guide_002.tx" "loc_rt_zygoma_guide_002.tx";
-connectAttr "loc_lf_zygoma_guide_002.ty" "loc_rt_zygoma_guide_002.ty";
-connectAttr "loc_lf_zygoma_guide_002.tz" "loc_rt_zygoma_guide_002.tz";
-connectAttr "loc_lf_zygoma_guide_002.rx" "loc_rt_zygoma_guide_002.rx";
-connectAttr "loc_lf_zygoma_guide_002.ry" "loc_rt_zygoma_guide_002.ry";
-connectAttr "loc_lf_zygoma_guide_002.rz" "loc_rt_zygoma_guide_002.rz";
-connectAttr "loc_lf_zygoma_guide_002.sx" "loc_rt_zygoma_guide_002.sx";
-connectAttr "loc_lf_zygoma_guide_002.sy" "loc_rt_zygoma_guide_002.sy";
-connectAttr "loc_lf_zygoma_guide_002.sz" "loc_rt_zygoma_guide_002.sz";
-connectAttr "loc_lf_zygoma_guide_002.ro" "loc_rt_zygoma_guide_002.ro";
-connectAttr "loc_lf_zygoma_guide_002.v" "loc_rt_zygoma_guide_002.v";
-connectAttr "loc_lf_zygoma_guide_002Shape.lpx" "loc_rt_zygoma_guide_002Shape.lpx"
+connectAttr "loc_lf_zygoma_bind_002.tx" "loc_rt_zygoma_bind_002.tx";
+connectAttr "loc_lf_zygoma_bind_002.ty" "loc_rt_zygoma_bind_002.ty";
+connectAttr "loc_lf_zygoma_bind_002.tz" "loc_rt_zygoma_bind_002.tz";
+connectAttr "loc_lf_zygoma_bind_002.rx" "loc_rt_zygoma_bind_002.rx";
+connectAttr "loc_lf_zygoma_bind_002.ry" "loc_rt_zygoma_bind_002.ry";
+connectAttr "loc_lf_zygoma_bind_002.rz" "loc_rt_zygoma_bind_002.rz";
+connectAttr "loc_lf_zygoma_bind_002.sx" "loc_rt_zygoma_bind_002.sx";
+connectAttr "loc_lf_zygoma_bind_002.sy" "loc_rt_zygoma_bind_002.sy";
+connectAttr "loc_lf_zygoma_bind_002.sz" "loc_rt_zygoma_bind_002.sz";
+connectAttr "loc_lf_zygoma_bind_002.ro" "loc_rt_zygoma_bind_002.ro";
+connectAttr "loc_lf_zygoma_bind_002.v" "loc_rt_zygoma_bind_002.v";
+connectAttr "loc_lf_zygoma_bind_002Shape.lpx" "loc_rt_zygoma_bind_002Shape.lpx"
 		;
-connectAttr "loc_lf_zygoma_guide_002Shape.lpy" "loc_rt_zygoma_guide_002Shape.lpy"
+connectAttr "loc_lf_zygoma_bind_002Shape.lpy" "loc_rt_zygoma_bind_002Shape.lpy"
 		;
-connectAttr "loc_lf_zygoma_guide_002Shape.lpz" "loc_rt_zygoma_guide_002Shape.lpz"
+connectAttr "loc_lf_zygoma_bind_002Shape.lpz" "loc_rt_zygoma_bind_002Shape.lpz"
 		;
-connectAttr "loc_lf_zygoma_guide_002Shape.lsx" "loc_rt_zygoma_guide_002Shape.lsx"
+connectAttr "loc_lf_zygoma_bind_002Shape.lsx" "loc_rt_zygoma_bind_002Shape.lsx"
 		;
-connectAttr "loc_lf_zygoma_guide_002Shape.lsy" "loc_rt_zygoma_guide_002Shape.lsy"
+connectAttr "loc_lf_zygoma_bind_002Shape.lsy" "loc_rt_zygoma_bind_002Shape.lsy"
 		;
-connectAttr "loc_lf_zygoma_guide_002Shape.lsz" "loc_rt_zygoma_guide_002Shape.lsz"
+connectAttr "loc_lf_zygoma_bind_002Shape.lsz" "loc_rt_zygoma_bind_002Shape.lsz"
 		;
-connectAttr "loc_rt_zygoma_guide_001Shape.wp" "curveShape23.cp[0]";
-connectAttr "loc_rt_zygoma_guide_002Shape.wp" "curveShape23.cp[1]";
-connectAttr "loc_rt_zygoma_guide_003Shape.wp" "curveShape23.cp[2]";
+connectAttr "loc_rt_zygoma_bind_001Shape.wp" "curveShape23.cp[0]";
+connectAttr "loc_rt_zygoma_bind_002Shape.wp" "curveShape23.cp[1]";
+connectAttr "loc_rt_zygoma_bind_003Shape.wp" "curveShape23.cp[2]";
 relationship "link" ":lightLinker1" ":initialShadingGroup.message" ":defaultLightSet.message";
 relationship "link" ":lightLinker1" ":initialParticleSE.message" ":defaultLightSet.message";
 relationship "shadowLink" ":lightLinker1" ":initialShadingGroup.message" ":defaultLightSet.message";
@@ -3592,17 +3592,17 @@ connectAttr ":defaultArnoldDisplayDriver.msg" ":defaultArnoldRenderOptions.drive
 		 -na;
 connectAttr ":defaultArnoldFilter.msg" ":defaultArnoldRenderOptions.filt";
 connectAttr ":defaultArnoldDriver.msg" ":defaultArnoldRenderOptions.drvr";
-connectAttr "loc_lf_zygoma_guide_002Shape.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[0].dn"
+connectAttr "loc_lf_zygoma_bind_002Shape.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[0].dn"
 		;
-connectAttr "loc_rt_zygoma_guide_002Shape.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[1].dn"
+connectAttr "loc_rt_zygoma_bind_002Shape.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[1].dn"
 		;
-connectAttr "loc_rt_zygoma_guide_002.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[2].dn"
+connectAttr "loc_rt_zygoma_bind_002.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[2].dn"
 		;
-connectAttr "loc_rt_zygoma_guide_003.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[3].dn"
+connectAttr "loc_rt_zygoma_bind_003.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[3].dn"
 		;
-connectAttr "loc_lf_zygoma_guide_002.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[4].dn"
+connectAttr "loc_lf_zygoma_bind_002.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[4].dn"
 		;
-connectAttr "loc_rt_zygoma_guide_003Shape.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[5].dn"
+connectAttr "loc_rt_zygoma_bind_003Shape.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[5].dn"
 		;
 connectAttr "curveShape23.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[6].dn";
 connectAttr "crv_rt_zygoma_guide_001.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[7].dn"
