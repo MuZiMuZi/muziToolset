@@ -15,6 +15,10 @@ u"""
 脚本直接按照二进制方式处理 Maya ASCII 文件，
 只替换 ASCII 节点名称，不改变 face_guide.ma 原有 CP936 文件内容和其他场景数据。
 
+该迁移脚本故意不导入 systems / maya，保证可以在普通 Python 和 GitHub Actions
+环境中独立执行。正式运行时的 Face Guide 命名配置仍由
+systems/face/face_guide_config.py 统一维护。
+
 命令行使用：
     python scripts/normalize_face_guide_locator_names.py
 """
@@ -23,21 +27,87 @@ from __future__ import print_function
 
 import os
 import re
-import sys
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+FACE_GUIDE_TEMPLATE_FILE_NAME = "face_guide.ma"
 
-if REPO_ROOT not in sys.path:
-    sys.path.insert(0, REPO_ROOT)
-
-from systems.face import face_guide_config
-
+SPECIAL_EYE_FUNCTIONS = (
+    "ball",
+    "iris",
+    "aim",
+)
 
 LOCATOR_PATTERN = re.compile(
     rb"loc_[A-Za-z0-9_]+_guide_[0-9]{3}(?:Shape)?"
 )
+
+
+def normalize_legacy_locator_name(locator_name):
+    u"""
+    将一个旧版 Face Guide Locator 名称转换成新版标准名称。
+
+    普通 Locator 的最后功能字段统一由 guide 改为 bind；
+    Eye Ball / Iris / Aim 则移除多余的 guide 字段，让特殊功能本身成为 function。
+
+    locator_name(str): 旧版 Locator Transform 名称。
+
+    Returns:
+        str: 新版标准 Locator Transform 名称。
+
+    使用示例：
+
+        print(
+            normalize_legacy_locator_name(
+                "loc_lf_upper_lid_guide_001"
+            )
+        )
+        # loc_lf_upper_lid_bind_001
+    """
+
+    name_parts = locator_name.split("_")
+
+    if len(name_parts) < 5:
+        return locator_name
+
+    if name_parts[0] != "loc":
+        return locator_name
+
+    if name_parts[-2] != "guide":
+        return locator_name
+
+    try:
+        index = int(name_parts[-1])
+    except ValueError:
+        return locator_name
+
+    side = name_parts[1]
+    part_tokens = name_parts[2:-2]
+
+    if not part_tokens:
+        return locator_name
+
+    # Eye Ball / Iris / Aim：
+    # loc_lf_eye_ball_guide_001 -> loc_lf_eye_ball_001
+    if len(part_tokens) == 2 and part_tokens[0] == "eye":
+        eye_function = part_tokens[1]
+
+        if eye_function in SPECIAL_EYE_FUNCTIONS:
+            return "loc_{0}_eye_{1}_{2:03d}".format(
+                side,
+                eye_function,
+                index
+            )
+
+    # 其余 Locator 都把原有完整部位作为 part，统一 function="bind"。
+    part = "_".join(part_tokens)
+
+    return "loc_{0}_{1}_bind_{2:03d}".format(
+        side,
+        part,
+        index
+    )
 
 
 def normalize_template(template_path=None):
@@ -48,6 +118,11 @@ def normalize_template(template_path=None):
 
     Returns:
         int: 实际替换的旧名称 Token 数量。
+
+    使用示例：
+
+        changed_count = normalize_template()
+        print(changed_count)
     """
 
     if template_path is None:
@@ -55,7 +130,7 @@ def normalize_template(template_path=None):
             REPO_ROOT,
             "resources",
             "module_guide",
-            face_guide_config.FACE_GUIDE_TEMPLATE_FILE_NAME
+            FACE_GUIDE_TEMPLATE_FILE_NAME
         )
 
     if not os.path.exists(template_path):
@@ -77,7 +152,7 @@ def normalize_template(template_path=None):
         else:
             old_transform_name = old_token
 
-        new_transform_name = face_guide_config.normalize_legacy_locator_name(
+        new_transform_name = normalize_legacy_locator_name(
             old_transform_name
         )
 
