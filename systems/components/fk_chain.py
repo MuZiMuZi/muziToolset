@@ -7,11 +7,11 @@ fk_chain：标准 FK Chain 构建组件。
 方法介绍与使用场景：
 
     FKChain.__init__
-        初始化 FK Chain 的模块信息、Guide 数量和控制器 Shape、颜色、大小、轴向设置。
+        初始化 FK Chain 的模块信息、Guide 数量、Guide 功能字段和控制器设置。
 
     FKChain.get_guides
         优先复用 RigModule.get_guides() 获取外部传入的 Guide。
-        没有传入 Guide 时，再按照 FK Chain 命名规则自动查找。
+        没有传入 Guide 时，再按照 FK Chain 标准 Locator 命名规则自动查找。
 
     FKChain.create_joints
         根据 Guide 创建 Joint Chain。
@@ -46,6 +46,7 @@ class FKChain(rig_module.RigModule):
         jnt_parent=None,
         ctrl_parent=None,
         guide_count=1,
+        guide_function="bind",
         jnt_function="bind",
         ctrl_function="fk",
         ctrl_shape="circle",
@@ -62,6 +63,7 @@ class FKChain(rig_module.RigModule):
         jnt_parent(str/PyNode): Joint 总组的可选父节点。
         ctrl_parent(str/PyNode): Controller 总组的可选父节点。
         guide_count(int): 没有传入 Guide 时，根据命名规则查找的 Guide 数量。
+        guide_function(str): Guide Locator 名称中的功能字段，默认 "bind"。
         jnt_function(str): Joint 名称中的功能字段，默认 "bind"。
         ctrl_function(str): Controller 名称中的功能字段，默认 "fk"。
         ctrl_shape(str): Controller Shape 名称。
@@ -77,6 +79,7 @@ class FKChain(rig_module.RigModule):
                 module="ear",
                 side="lf",
                 guide_count=3,
+                guide_function="bind",
                 ctrl_axis="Z+"
             )
 
@@ -92,6 +95,7 @@ class FKChain(rig_module.RigModule):
         )
 
         self.guide_count = guide_count
+        self.guide_function = guide_function
         self.jnt_function = jnt_function
         self.ctrl_function = ctrl_function
 
@@ -111,8 +115,14 @@ class FKChain(rig_module.RigModule):
 
         优先调用 RigModule.get_guides() 处理外部明确传入的 Guide 数据。
         如果没有传入 Guide，则 FK Chain 再按照：
-            loc_<side>_<module>_guide_<index>
+            loc_<side>_<module>_<guide_function>_<index>
         自动查找线性 Chain 使用的 Guide。
+
+        新版 Face / Body Guide 的普通绑定定位器默认使用 function="bind"，
+        因此 Ear 的默认名称为：
+            loc_lf_ear_bind_001
+            loc_lf_ear_bind_002
+            loc_lf_ear_bind_003
 
         Returns:
             list: 按 FK 顺序排列的 Guide 名称列表。
@@ -124,7 +134,8 @@ class FKChain(rig_module.RigModule):
             fk_object = fk_chain.FKChain(
                 module="ear",
                 side="lf",
-                guide_count=3
+                guide_count=3,
+                guide_function="bind"
             )
 
             guide_list = fk_object.get_guides()
@@ -147,7 +158,7 @@ class FKChain(rig_module.RigModule):
                 type="loc",
                 side=self.side,
                 part=self.module,
-                function="guide",
+                function=self.guide_function,
                 index=index
             )
 
