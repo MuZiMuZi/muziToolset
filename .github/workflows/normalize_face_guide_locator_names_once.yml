@@ -1,0 +1,51 @@
+name: Normalize Face Guide Locator Names Once
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/normalize_face_guide_locator_names_once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  normalize-face-guide:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Normalize Face Guide Locator names
+        run: python scripts/normalize_face_guide_locator_names.py
+
+      - name: Verify legacy Locator names are gone
+        shell: bash
+        run: |
+          if grep -Eq 'loc_[A-Za-z0-9_]+_guide_[0-9]{3}' resources/module_guide/face_guide.ma; then
+            echo "Legacy Face Guide Locator names still exist."
+            exit 1
+          fi
+
+      - name: Commit normalized Face Guide template
+        shell: bash
+        run: |
+          if git diff --quiet -- resources/module_guide/face_guide.ma; then
+            echo "Face Guide template already uses the standard Locator naming."
+            exit 0
+          fi
+
+          git config user.name "MuZiMuZi"
+          git config user.email "114722174+MuZiMuZi@users.noreply.github.com"
+          git add resources/module_guide/face_guide.ma
+          git commit -m "统一 Face Guide Locator 模板命名"
+          git push origin HEAD:main
