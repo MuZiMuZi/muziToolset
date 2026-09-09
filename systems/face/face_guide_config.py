@@ -34,23 +34,23 @@ from ...core.common import name_utils
 # =============================================================================
 # Face Guide 全局配置
 # =============================================================================
-FACE_MODULE_NAME = "face"
-FACE_GUIDE_TEMPLATE_FILE_NAME = package_config.module_guide_template_file_format.format(
-    FACE_MODULE_NAME
+face_module_name = "face"
+face_guide_template_file_name = package_config.module_guide_template_file_format.format(
+    face_module_name
 )
-FACE_GUIDE_ROOT_NAME = package_config.module_guide_root_name_format.format(
-    FACE_MODULE_NAME
+face_guide_root_name = package_config.module_guide_root_name_format.format(
+    face_module_name
 )
 
 
 # =============================================================================
 # Locator 命名配置
 # =============================================================================
-FACE_GUIDE_DEFAULT_LOCATOR_FUNCTION = "bind"
+face_guide_default_locator_function = "bind"
 
 # 只有确实需要表达独立功能语义的 Locator 才保留专用 function。
 # 目前 Eye Ball / Iris / Aim 属于这种情况。
-FACE_GUIDE_SPECIAL_LOCATOR_FUNCTIONS = (
+face_guide_special_locator_functions = (
     "ball",
     "iris",
     "aim",
@@ -60,7 +60,7 @@ FACE_GUIDE_SPECIAL_LOCATOR_FUNCTIONS = (
 def get_locator_name(
     side,
     part,
-    function=FACE_GUIDE_DEFAULT_LOCATOR_FUNCTION,
+    function=face_guide_default_locator_function,
     index=1
 ):
     u"""
@@ -132,7 +132,7 @@ def get_bind_locator_names(side, part, count, start_index=1):
         locator_name = get_locator_name(
             side=side,
             part=part,
-            function=FACE_GUIDE_DEFAULT_LOCATOR_FUNCTION,
+            function=face_guide_default_locator_function,
             index=index
         )
         locator_names.append(locator_name)
@@ -145,7 +145,7 @@ def get_bind_locator_names(side, part, count, start_index=1):
 # =============================================================================
 # Eye 不能依赖 Locator 列表排序判断 Ball / Iris / Aim，
 # 所以这里直接固定三个语义入口。
-EYE_GUIDE_LOCATORS = {
+eye_guide_locators = {
     "lf": {
         "ball": get_locator_name("lf", "eye", "ball", 1),
         "iris": get_locator_name("lf", "eye", "iris", 1),
@@ -182,17 +182,17 @@ def get_eye_locator(side, function):
         # loc_lf_eye_aim_001
     """
 
-    if side not in EYE_GUIDE_LOCATORS:
+    if side not in eye_guide_locators:
         raise ValueError(
             u"Eye Guide side 只能使用 'lf' 或 'rt'，当前值：{}".format(side)
         )
 
-    if function not in FACE_GUIDE_SPECIAL_LOCATOR_FUNCTIONS:
+    if function not in face_guide_special_locator_functions:
         raise ValueError(
             u"Eye Guide function 只能使用 ball / iris / aim，当前值：{}".format(function)
         )
 
-    return EYE_GUIDE_LOCATORS[side][function]
+    return eye_guide_locators[side][function]
 
 
 # =============================================================================
@@ -296,19 +296,19 @@ def normalize_legacy_locator_name(locator_name):
         if legacy_part_tokens[0] == "eye":
             special_function = legacy_part_tokens[1]
 
-            if special_function in FACE_GUIDE_SPECIAL_LOCATOR_FUNCTIONS:
+            if special_function in face_guide_special_locator_functions:
                 part = "eye"
                 function = special_function
             else:
                 part = "_".join(legacy_part_tokens)
-                function = FACE_GUIDE_DEFAULT_LOCATOR_FUNCTION
+                function = face_guide_default_locator_function
         else:
             part = "_".join(legacy_part_tokens)
-            function = FACE_GUIDE_DEFAULT_LOCATOR_FUNCTION
+            function = face_guide_default_locator_function
 
     else:
         part = "_".join(legacy_part_tokens)
-        function = FACE_GUIDE_DEFAULT_LOCATOR_FUNCTION
+        function = face_guide_default_locator_function
 
     normalized_name = get_locator_name(
         side=side,
