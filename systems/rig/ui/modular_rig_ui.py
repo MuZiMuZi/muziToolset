@@ -179,6 +179,20 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.axis_check = TickBox(u"显示关节局部轴")
         self.joint_check = TickBox(u"显示当前模块骨骼")
 
+        self.footer = QtWidgets.QFrame()
+        self.footer.setProperty("role", "panel")
+        self.status_dot = label("●")
+        self.status_dot.setStyleSheet("color: #a6c643; font-size: 25px;")
+        self.status_label = label(u"准备开始。", "status")
+        self.status_label.setWordWrap(True)
+        self.status_hint = label(u"添加模块后，创建基础层级。", "muted")
+        self.status_hint.setWordWrap(True)
+        self.validate_button = button(u"检查 / Validate")
+        self.validate_button.setMinimumHeight(36)
+        self.build_button = button(u"创建基础层级")
+        self.build_button.setProperty("role", "primary")
+        self.build_button.setMinimumWidth(250)
+
     def create_layouts(self):
         u"""创建窗口布局骨架；后续分栏会继续按面板逐步拆分。"""
         self._create_layout()
@@ -295,6 +309,20 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.property_scroll.setWidget(self.property_body)
         panel_layout.addWidget(self.property_scroll, 1)
         return self.right_panel
+
+    def create_bottom_layout(self):
+        u"""摆放状态提示、检查按钮和当前步骤主操作。"""
+        bottom = QtWidgets.QHBoxLayout(self.footer)
+        bottom.setContentsMargins(18, 12, 14, 12)
+        bottom.addWidget(self.status_dot)
+
+        status_layout = QtWidgets.QVBoxLayout()
+        status_layout.addWidget(self.status_label)
+        status_layout.addWidget(self.status_hint)
+        bottom.addLayout(status_layout, 1)
+        bottom.addWidget(self.validate_button)
+        bottom.addWidget(self.build_button)
+        return self.footer
 
     # =========================================================
     # Window
@@ -416,29 +444,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.splitter.setSizes([285, 450, 605])
         main.addWidget(self.splitter, 1)
 
-        footer = QtWidgets.QFrame()
-        footer.setProperty("role", "panel")
-        bottom = QtWidgets.QHBoxLayout(footer)
-        bottom.setContentsMargins(18, 12, 14, 12)
-        self.status_dot = label("●")
-        self.status_dot.setStyleSheet("color: #a6c643; font-size: 25px;")
-        bottom.addWidget(self.status_dot)
-        status_layout = QtWidgets.QVBoxLayout()
-        self.status_label = label(u"准备开始。", "status")
-        self.status_label.setWordWrap(True)
-        self.status_hint = label(u"添加模块后，创建基础层级。", "muted")
-        self.status_hint.setWordWrap(True)
-        status_layout.addWidget(self.status_label)
-        status_layout.addWidget(self.status_hint)
-        bottom.addLayout(status_layout, 1)
-        self.validate_button = button(u"检查 / Validate")
-        self.validate_button.setMinimumHeight(36)
-        bottom.addWidget(self.validate_button)
-        self.build_button = button(u"创建基础层级")
-        self.build_button.setProperty("role", "primary")
-        self.build_button.setMinimumWidth(250)
-        bottom.addWidget(self.build_button)
-        main.addWidget(footer)
+        main.addWidget(self.create_bottom_layout())
 
     def _panel(self, title, badge):
         u"""创建分栏面板和统一标题行。"""
