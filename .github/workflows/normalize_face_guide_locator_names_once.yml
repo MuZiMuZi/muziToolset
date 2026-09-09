@@ -1,5 +1,6 @@
 name: Normalize Face Guide Locator Names Once
 
+# 一次性迁移任务：脚本已调整为纯 Python，可在 GitHub Actions 中直接执行。
 on:
   push:
     branches:
