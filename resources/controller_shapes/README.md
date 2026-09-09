@@ -2,7 +2,7 @@
 
 `resources/controller_shapes/` 是 muziToolset 的 Controller Shape 资源库。
 
-这个目录只保存控制器形状数据和可选预览图，不负责 Controller 的创建、层级、属性或 Transform 逻辑。新版 `core/rigging/ctrl_utils.py` 后续只需要从这里读取 Shape 数据并创建 NurbsCurve Shape。
+这个目录只保存控制器形状数据和可选预览图，不负责 Controller 的创建、层级、属性或 Transform 逻辑。新版 `core/rigging/ctrl_utils.py` 从这里读取 Shape 数据并创建 NurbsCurve Shape。
 
 ## 目录职责
 
@@ -27,6 +27,55 @@ resources/
 当前资源库同时保留了有意义名称的旧资源，例如 `circle`、`cube`、`ball`、`jaw`、`eyeBallCtrl` 等，以及原来的 `shape_XX` 编号资源。
 
 为了兼容旧绑定代码，现阶段不主动重命名、删除或合并这些资源。即使两个资源看起来相似，也可能已经被旧模块通过文件名引用。
+
+---
+
+# Shape 标准轴向
+
+新版 Controller System 统一把 **X+** 定义为 Shape Library 的标准面朝方向。
+
+也就是说，JSON 中保存的是 Shape 自己的标准坐标；具体模块需要面朝哪个方向，不直接写进 Shape 资源，而是在创建 Controller 时通过 `ctrl_axis` 指定：
+
+```text
+X+ → 面朝本地 +X
+X- → 面朝本地 -X
+Y+ → 面朝本地 +Y
+Y- → 面朝本地 -Y
+Z+ → 面朝本地 +Z
+Z- → 面朝本地 -Z
+```
+
+例如：
+
+```python
+from muziToolset.core.rigging import ctrl_utils
+
+ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
+ctrl_object.create_ctrl(
+    shape_name="circle",
+    ctrl_color=17,
+    ctrl_size=1.0,
+    ctrl_axis="Z+"
+)
+```
+
+这里 `ctrl_axis="Z+"` 的含义是：**Controller Shape 真正面朝本地 +Z**，而不是一个模糊的旋转预设。
+
+轴向修改只改变 NurbsCurve CV 的对象空间坐标，不修改 Controller Transform 的 Rotate，因此控制器 Transform 可以继续保持干净。
+
+`set_ctrl_axis()` 使用绝对轴向语义。比如连续执行：
+
+```python
+ctrl_object.set_ctrl_axis("Z+")
+ctrl_object.set_ctrl_axis("Y-")
+ctrl_object.set_ctrl_axis("Z+")
+```
+
+最终结果仍然是标准的 `Z+`，不会因为多次切换发生旋转累积。
+
+Controller Transform 会保存一个隐藏字符串属性 `ctrl_axis`，用于记录当前 Shape 的绝对轴向。这个属性只用于 Shape 轴向管理，不参与动画驱动。
+
+保存自定义 Shape 时，`save_ctrl_shape()` 会在数据层把当前轴向还原到标准 `X+` 后再写入 JSON，不会改变 Maya 场景里当前 Controller 的实际外观。这样 Ear、Eye、Finger、Arm 等模块可以各自选择轴向，而 Shape Library 始终保持统一标准。
 
 ---
 
@@ -218,6 +267,10 @@ pm.curve()
 将创建出的 NurbsCurve Shape parent 到 Controller Transform
     ↓
 删除临时 Transform
+    ↓
+记录当前 Shape 标准轴向为 X+
+    ↓
+根据 ctrl_axis 转换到模块需要的最终面朝方向
 ```
 
 这个流程与旧 Shape Library 的数据格式保持兼容，但新版代码应只负责 Shape 本身，不再把 Controller 层级、属性、动画集等逻辑混进 Shape Loader。
@@ -232,23 +285,28 @@ pm.curve()
 4. 不补齐缺失的 `shape_XX` 编号；编号不是资源完整性的判断标准。
 5. 新增 Shape 时，推荐使用可读名称，例如 `eye_aim.json`、`jaw_main.json`，不要继续依赖无语义编号。
 6. 新资源最好同时提供同名 `.jpg` 预览图，但 `.jpg` 不是必须文件。
-7. Controller 大小修改仍然操作 Curve CV，不修改 Controller Transform Scale。
-8. 后续 `ctrl_utils.py` 只读取这个目录，不再兼容多个历史 Shape 路径。
+7. 新版 Shape 资源统一使用 X+ 作为标准面朝方向。
+8. Controller 大小和轴向修改都操作 Curve CV，不修改 Controller Transform Scale / Rotate。
+9. 模块需要的最终轴向通过 `ctrl_axis` 配置，不直接写入 Shape JSON。
+10. `ctrl_utils.py` 只读取这个目录，不再兼容多个历史 Shape 路径。
 
 ---
 
-# 后续代码接口建议
+# 当前 Controller Shape 接口
 
-`core/rigging/ctrl_utils.py` 后续可以逐步增加：
+`core/rigging/ctrl_utils.py` 当前提供的主要 Shape 接口包括：
 
 ```text
 Ctrl
-├── get_ctrl_shape()
+├── get_ctrl_shapes()
+├── get_ctrl_shape_list()
 ├── set_ctrl_shape(shape_name)
 ├── set_ctrl_color(ctrl_color)
-└── set_ctrl_size(ctrl_size)
+├── set_ctrl_size(ctrl_size)
+├── set_ctrl_axis(ctrl_axis)
+├── set_ctrl_rotate(...)
+├── set_ctrl_offset(...)
+└── save_ctrl_shape(shape_name)
 ```
 
-其中 `set_ctrl_shape(shape_name)` 负责从本目录读取 JSON 并替换 Controller 的 Curve Shape。
-
-Shape Library 的保存、预览图生成和 UI 浏览功能可以等基础读取流程稳定后再增加，不需要一次全部迁移旧 `controlUtils.py` 的功能。
+其中 `set_ctrl_shape(shape_name)` 负责从本目录读取 JSON 并替换 Controller 的 Curve Shape，`set_ctrl_axis(ctrl_axis)` 负责把标准 X+ Shape 转换成模块需要的绝对轴向。
