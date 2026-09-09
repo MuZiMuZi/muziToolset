@@ -12,6 +12,10 @@ hierarchy_utils：Maya 层级关系基础工具。
         按照列表顺序创建链条式父子层级关系。
         适合 Joint Chain、FK Chain 等连续层级结构。
 
+    get_or_create_group
+        根据名称获取或创建一个空的 Transform Group。
+        适合各类 Rig Module 创建 Joint、Controller、Deformer 等总组层级。
+
     add_extra_group
         在指定对象的父层级或子层级添加一个额外空组。
         如果同名组已经存在则直接获取并复用，不存在时才创建。
@@ -112,6 +116,46 @@ def chain_parent(child_nodes, parent_node):
             parent_node
         )
         parent_node = child_node
+
+
+def get_or_create_group(group_name):
+    u"""
+    根据名称获取或创建一个空的 Transform Group。
+
+    如果场景中已经存在同名 Transform，则直接获取并返回。
+    如果同名节点存在但不是 Transform，则抛出错误。
+    如果场景中不存在该名称，则创建新的空 Group。
+
+    group_name(str): 需要获取或创建的 Group 名称。
+
+    Returns:
+        PyNode: 获取或创建的 Transform Group。
+
+    Maya 使用示例：
+
+    from muziToolset.core.common import hierarchy_utils
+
+    group = hierarchy_utils.get_or_create_group(
+        "grp_lf_ear_ctrl_001"
+    )
+
+    print(group)
+    """
+
+    # 场景中已经存在同名节点时直接获取。
+    if pm.objExists(group_name):
+        group = pm.PyNode(group_name)
+
+        # Rig Group 必须是 Transform，避免误用其他同名节点。
+        if not isinstance(group, pm.nodetypes.Transform):
+            raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(group_name))
+
+        return group
+
+    # 场景中不存在时创建新的空 Group。
+    group = pm.group(empty=True, name=group_name)
+
+    return group
 
 
 def add_extra_group(object, grp_name, world_orient=False, relation="parent"):
