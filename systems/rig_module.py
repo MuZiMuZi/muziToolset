@@ -33,6 +33,7 @@ rig_module：Rig Module 基础类。
 
     RigModule.build
         按统一生命周期执行完整模块构建。
+        先完成 Joint / Controller 的最终 DAG 层级，再建立驱动连接。
 """
 
 import maya.cmds as cmds
@@ -314,8 +315,11 @@ class RigModule(object):
             1. get_guides()
             2. create_joints()
             3. create_ctrls()
-            4. connect_rig()
-            5. setup_hierarchy()
+            4. setup_hierarchy()
+            5. connect_rig()
+
+        先整理最终 DAG 层级，再建立 Constraint / Matrix / Utility Node 等驱动连接，
+        避免连接建立后再修改父子层级导致偏移或重复计算。
 
         Maya 使用示例：
 
@@ -325,5 +329,5 @@ class RigModule(object):
         self.get_guides()
         self.create_joints()
         self.create_ctrls()
-        self.connect_rig()
         self.setup_hierarchy()
+        self.connect_rig()
