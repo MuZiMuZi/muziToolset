@@ -92,6 +92,31 @@ class ModularRigWindow(QtWidgets.QWidget):
         for index, (title, subtitle) in enumerate(step_entries, 1):
             self.step_buttons.append(StepButton(index, title, subtitle))
 
+        self.splitter = QtWidgets.QSplitter(Qt.Horizontal)
+        self.splitter.setChildrenCollapsible(False)
+        self.splitter.setHandleWidth(7)
+
+        self.library_tabs = QtWidgets.QTabWidget()
+        self.library_tabs.setObjectName("LibraryTabs")
+        self.library_tabs.setDocumentMode(True)
+        self.module_page = QtWidgets.QWidget()
+        self.module_search = QtWidgets.QLineEdit()
+        self.module_search.setPlaceholderText(u"搜索模块 / Search modules...")
+        self.module_list = QtWidgets.QListWidget()
+        self.module_list.setIconSize(QtCore.QSize(32, 32))
+        self.add_button = button(u"+  添加模块")
+        self.module_note = label(u"只显示仓库中已经具有正式构建入口的模块。", "muted")
+        self.module_note.setWordWrap(True)
+
+        self.template_page = QtWidgets.QWidget()
+        self.template_search = QtWidgets.QLineEdit()
+        self.template_search.setPlaceholderText(u"搜索模板 / Search templates...")
+        self.template_list = QtWidgets.QListWidget()
+        self.template_list.setIconSize(QtCore.QSize(32, 32))
+        self.add_template_button = button(u"+  添加模板组合")
+        self.template_note = label(u"模板仅组合当前可用模块，不包含 Maya 场景数据。", "muted")
+        self.template_note.setWordWrap(True)
+
     def create_layouts(self):
         u"""创建窗口布局骨架；后续分栏会继续按面板逐步拆分。"""
         self._create_layout()
@@ -119,6 +144,32 @@ class ModularRigWindow(QtWidgets.QWidget):
         for step_button in self.step_buttons:
             steps.addWidget(step_button, 1)
         return steps
+
+    def create_module_panel(self):
+        u"""摆放模块与模板目录，不创建目录控件。"""
+        self.left_panel, panel_layout = self._panel(u"MODULE LIBRARY", "03 / 03")
+        self.left_panel.setMinimumWidth(225)
+
+        module_layout = QtWidgets.QVBoxLayout(self.module_page)
+        module_layout.setContentsMargins(0, 10, 0, 0)
+        module_layout.setSpacing(10)
+        module_layout.addWidget(self.module_search)
+        module_layout.addWidget(self.module_list, 1)
+        module_layout.addWidget(self.add_button)
+        module_layout.addWidget(self.module_note)
+
+        template_layout = QtWidgets.QVBoxLayout(self.template_page)
+        template_layout.setContentsMargins(0, 10, 0, 0)
+        template_layout.setSpacing(10)
+        template_layout.addWidget(self.template_search)
+        template_layout.addWidget(self.template_list, 1)
+        template_layout.addWidget(self.add_template_button)
+        template_layout.addWidget(self.template_note)
+
+        self.library_tabs.addTab(self.module_page, u"MODULES  03")
+        self.library_tabs.addTab(self.template_page, u"TEMPLATES  03")
+        panel_layout.addWidget(self.library_tabs, 1)
+        return self.left_panel
 
     # =========================================================
     # Window
@@ -223,52 +274,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         main.addWidget(self.create_header_layout())
         main.addLayout(self.create_step_layout())
 
-        self.splitter = QtWidgets.QSplitter(Qt.Horizontal)
-        self.splitter.setChildrenCollapsible(False)
-        self.splitter.setHandleWidth(7)
-        self.left_panel, left = self._panel(u"MODULE LIBRARY", "03 / 03")
-        self.left_panel.setMinimumWidth(225)
-
-        self.library_tabs = QtWidgets.QTabWidget()
-        self.library_tabs.setObjectName("LibraryTabs")
-        self.library_tabs.setDocumentMode(True)
-
-        self.module_page = QtWidgets.QWidget()
-        module_layout = QtWidgets.QVBoxLayout(self.module_page)
-        module_layout.setContentsMargins(0, 10, 0, 0)
-        module_layout.setSpacing(10)
-        self.module_search = QtWidgets.QLineEdit()
-        self.module_search.setPlaceholderText(u"搜索模块 / Search modules...")
-        module_layout.addWidget(self.module_search)
-        self.module_list = QtWidgets.QListWidget()
-        self.module_list.setIconSize(QtCore.QSize(32, 32))
-        module_layout.addWidget(self.module_list, 1)
-        self.add_button = button(u"+  添加模块")
-        module_layout.addWidget(self.add_button)
-        module_note = label(u"只显示仓库中已经具有正式构建入口的模块。", "muted")
-        module_note.setWordWrap(True)
-        module_layout.addWidget(module_note)
-
-        self.template_page = QtWidgets.QWidget()
-        template_layout = QtWidgets.QVBoxLayout(self.template_page)
-        template_layout.setContentsMargins(0, 10, 0, 0)
-        template_layout.setSpacing(10)
-        self.template_search = QtWidgets.QLineEdit()
-        self.template_search.setPlaceholderText(u"搜索模板 / Search templates...")
-        template_layout.addWidget(self.template_search)
-        self.template_list = QtWidgets.QListWidget()
-        self.template_list.setIconSize(QtCore.QSize(32, 32))
-        template_layout.addWidget(self.template_list, 1)
-        self.add_template_button = button(u"+  添加模板组合")
-        template_layout.addWidget(self.add_template_button)
-        template_note = label(u"模板仅组合当前可用模块，不包含 Maya 场景数据。", "muted")
-        template_note.setWordWrap(True)
-        template_layout.addWidget(template_note)
-
-        self.library_tabs.addTab(self.module_page, u"MODULES  03")
-        self.library_tabs.addTab(self.template_page, u"TEMPLATES  03")
-        left.addWidget(self.library_tabs, 1)
-        self.splitter.addWidget(self.left_panel)
+        self.splitter.addWidget(self.create_module_panel())
 
         self.center_panel, center = self._panel("RIG STRUCTURE", "SCENE")
         self.center_panel.setMinimumWidth(315)
