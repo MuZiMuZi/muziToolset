@@ -7,7 +7,7 @@ fk_chain：标准 FK Chain 构建组件。
 方法介绍与使用场景：
 
     FKChain.__init__
-        初始化 FK Chain 的模块信息、Guide 数量和控制器显示设置。
+        初始化 FK Chain 的模块信息、Guide 数量和控制器 Shape、颜色、大小、轴向设置。
 
     FKChain.get_guides
         优先复用 RigModule.get_guides() 获取外部传入的 Guide。
@@ -49,7 +49,8 @@ class FKChain(rig_module.RigModule):
         ctrl_function="fk",
         ctrl_shape="circle",
         ctrl_color=17,
-        ctrl_size=1.0
+        ctrl_size=1.0,
+        ctrl_axis="X+"
     ):
         u"""
         初始化一个标准 FK Chain。
@@ -65,6 +66,7 @@ class FKChain(rig_module.RigModule):
         ctrl_shape(str): Controller Shape 名称。
         ctrl_color(int): Controller 颜色索引。
         ctrl_size(float): Controller 显示大小。
+        ctrl_axis(str): Controller Shape 面朝方向，支持 X+ / X- / Y+ / Y- / Z+ / Z-。
 
         Maya 使用示例：
 
@@ -73,7 +75,8 @@ class FKChain(rig_module.RigModule):
             fk_object = fk_chain.FKChain(
                 module="ear",
                 side="lf",
-                guide_count=3
+                guide_count=3,
+                ctrl_axis="Z+"
             )
 
             fk_object.build()
@@ -94,6 +97,7 @@ class FKChain(rig_module.RigModule):
         self.ctrl_shape = ctrl_shape
         self.ctrl_color = ctrl_color
         self.ctrl_size = ctrl_size
+        self.ctrl_axis = ctrl_axis
 
         self.jnt_list = []
         self.jnt_objects = []
@@ -201,7 +205,7 @@ class FKChain(rig_module.RigModule):
         根据 Guide 创建当前 FK Controller Chain。
 
         FKChain 只负责决定“一条 Guide 对应一组 FK Controller”的整体规则，
-        单个 Controller 的 Shape、颜色、大小、层级和 Guide 匹配统一交给
+        单个 Controller 的 Shape、颜色、大小、轴向、层级和 Guide 匹配统一交给
         RigModule.create_ctrl()。
 
         Returns:
@@ -231,6 +235,7 @@ class FKChain(rig_module.RigModule):
                 shape_name=self.ctrl_shape,
                 ctrl_color=self.ctrl_color,
                 ctrl_size=self.ctrl_size,
+                ctrl_axis=self.ctrl_axis,
                 create_hierarchy=True
             )
 
