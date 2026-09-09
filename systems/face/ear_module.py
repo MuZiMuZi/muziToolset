@@ -4,6 +4,9 @@ EarModule：耳朵 FK 绑定模块。
 
 EarModule 只负责定义耳朵模块自身的配置，
 具体的 Guide、Joint、Controller、连接和 FK 层级构建统一复用 FKChain。
+
+新版耳朵 Guide Locator 统一使用：
+    loc_<side>_ear_bind_<index>
 """
 
 from ..components import fk_chain
@@ -53,6 +56,7 @@ class EarModule(fk_chain.FKChain):
             jnt_parent=jnt_parent,
             ctrl_parent=ctrl_parent,
             guide_count=3,
+            guide_function="bind",
             jnt_function="bind",
             ctrl_function="fk",
             ctrl_shape="circle",
