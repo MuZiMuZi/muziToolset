@@ -303,8 +303,12 @@ class FKChain(rig_module.RigModule):
             index=1
         ).name
 
-        self.jnt_master_grp = self._get_or_create_group(jnt_group_name)
-        self.ctrl_master_grp = self._get_or_create_group(ctrl_group_name)
+        self.jnt_master_grp = hierarchy_utils.get_or_create_group(
+            jnt_group_name
+        )
+        self.ctrl_master_grp = hierarchy_utils.get_or_create_group(
+            ctrl_group_name
+        )
 
         if self.jnt_parent:
             hierarchy_utils.parent(self.jnt_master_grp, self.jnt_parent)
@@ -333,26 +337,3 @@ class FKChain(rig_module.RigModule):
                     child_ctrl_object.zero_grp,
                     parent_ctrl_object.output_grp
                 )
-
-    def _get_or_create_group(self, group_name):
-        u"""
-        获取或创建 FK Chain 使用的总 Group。
-
-        group_name(str): 需要获取或创建的 Transform Group 名称。
-
-        Returns:
-            str: Group 名称。
-
-        Maya 使用示例：
-
-            group = fk_object._get_or_create_group("grp_lf_ear_ctrl_001")
-            print(group)
-        """
-
-        if cmds.objExists(group_name):
-            if cmds.nodeType(group_name) != "transform":
-                raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(group_name))
-
-            return group_name
-
-        return cmds.group(empty=True, name=group_name)
