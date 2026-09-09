@@ -17,7 +17,7 @@ rig_module：Rig Module 基础类。
         创建或获取单个 Joint，并可以将它匹配到指定 Guide。
 
     RigModule.create_ctrl
-        创建或获取单个 Controller，并完成 Shape、颜色、大小、层级和 Guide 匹配。
+        创建或获取单个 Controller，并完成 Shape、颜色、大小、轴向、层级和 Guide 匹配。
 
     RigModule.create_joints
         预留给子类定义整个 Joint System 的创建规则。
@@ -161,6 +161,7 @@ class RigModule(object):
         shape_name="circle",
         ctrl_color=17,
         ctrl_size=1.0,
+        ctrl_axis="X+",
         create_hierarchy=True
     ):
         u"""
@@ -174,6 +175,7 @@ class RigModule(object):
         shape_name(str): Controller Shape 名称，默认 "circle"。
         ctrl_color(int): Controller 颜色索引，默认 17。
         ctrl_size(float): Controller 显示大小，默认 1.0。
+        ctrl_axis(str): Controller Shape 面朝方向，支持 X+ / X- / Y+ / Y- / Z+ / Z-，默认 "X+"。
         create_hierarchy(bool): 是否创建完整 Controller 层级，默认 True。
 
         Returns:
@@ -186,7 +188,8 @@ class RigModule(object):
                 guide="loc_lf_ear_guide_001",
                 shape_name="circle",
                 ctrl_color=17,
-                ctrl_size=1.0
+                ctrl_size=1.0,
+                ctrl_axis="Z+"
             )
 
             print(ctrl_object.ctrl)
@@ -197,6 +200,7 @@ class RigModule(object):
             shape_name=shape_name,
             ctrl_color=ctrl_color,
             ctrl_size=ctrl_size,
+            ctrl_axis=ctrl_axis,
             create_hierarchy=create_hierarchy,
             match_transform_target=guide
         )
