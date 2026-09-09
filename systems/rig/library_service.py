@@ -152,6 +152,60 @@ class RigLibraryService(object):
 
         self._commit(document, apply, "Muzi Module Properties")
 
+    def mirror_module(self, identity):
+        u"""复制左右模块设置，并将 Guide 世界位置沿 X=0 镜像到配对侧。"""
+        document = copy.deepcopy(self.document)
+        source = None
+        for record in document["modules"]:
+            if record["id"] == identity:
+                source = record
+                break
+        if source is None:
+            raise ValueError(u"没有找到需要镜像的模块。")
+        if source["side"] not in ("lf", "rt"):
+            raise ValueError(u"中央模块不需要左右镜像。")
+        if source["built"]:
+            raise RuntimeError(u"已构建模块不能镜像定位，请先在构建前完成镜像。")
+
+        opposite = "rt" if source["side"] == "lf" else "lf"
+        target = None
+        for record in document["modules"]:
+            same_module = record["kind"] == source["kind"] and record["name"] == source["name"]
+            if same_module and record["side"] == opposite:
+                target = record
+                break
+        if target is None:
+            raise ValueError(u"请先添加对应的{}模块。".format(u"右侧" if opposite == "rt" else u"左侧"))
+        if target["built"]:
+            raise RuntimeError(u"目标模块已经构建，不能再镜像定位。")
+
+        mirrored_keys = ("enabled", "ctrl_size", "ctrl_axis", "jnt_radius",
+                         "show_axis", "show_joints", "show_controls")
+        for key in mirrored_keys:
+            target[key] = source[key]
+
+        source_guides = catalog.guide_names(source)
+        target_guides = catalog.guide_names(target)
+        if not source_guides or len(source_guides) != len(target_guides):
+            raise ValueError(u"左右模块必须具有数量一致的 Guide 列表。")
+
+        mirrored_positions = []
+        for index in range(len(source_guides)):
+            source_matches = self.cmds.ls(source_guides[index], long=True) or []
+            target_matches = self.cmds.ls(target_guides[index], long=True) or []
+            if len(source_matches) != 1 or len(target_matches) != 1:
+                raise RuntimeError(u"请先导入左右两侧完整 Guide，再执行镜像。")
+            position = self.cmds.xform(source_matches[0], query=True, worldSpace=True, translation=True)
+            mirrored_position = [-position[0], position[1], position[2]]
+            mirrored_positions.append((target_matches[0], mirrored_position))
+
+        def apply(candidate):
+            for name, position in mirrored_positions:
+                self.cmds.xform(name, worldSpace=True, translation=position)
+
+        self._commit(document, apply, "Muzi Mirror Module")
+        return {"id": target["id"], "side": target["side"], "guide_count": len(mirrored_positions)}
+
     def _owned_group(self, name):
         u"""检查场景中的固定根组是否属于当前绑定库。"""
         if not self.cmds.objExists(name):

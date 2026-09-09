@@ -106,19 +106,33 @@ class RigLibraryQtTests(unittest.TestCase):
         self.assertEqual(self.window.library_tabs.currentIndex(), 0)
         self.assertTrue(self.window.module_search.hasFocus())
 
-    def test_structure_search_and_expand_controls(self):
+    def test_structure_only_lists_modules(self):
         self.window.add_selected_template()
         root = self.window.module_tree.topLevelItem(0)
         self.assertEqual(root.text(2), u"3 模块")
-        self.window.expand_structure()
-        self.assertTrue(root.child(0).isExpanded())
-        self.assertTrue(root.child(0).child(0).isExpanded())
-        self.window.collapse_structure()
-        self.assertTrue(root.isExpanded())
-        self.assertFalse(root.child(0).isExpanded())
+        self.assertEqual(self.window.module_tree.headerItem().text(0), u"模块")
+        self.assertEqual(root.child(0).childCount(), 0)
         self.window.tree_search.setText(u"待构建")
         self.assertFalse(root.child(0).isHidden())
-        self.assertIn(u"0/11 个场景节点", self.window.structure_note.text())
+        self.assertNotIn(u"场景节点", self.window.structure_note.text())
+
+    def test_setup_mirror_button_updates_paired_module(self):
+        self.window.add_selected_template()
+        source = self.service.document["modules"][0]
+        target = self.service.document["modules"][1]
+        source_guides = catalog.guide_names(source)
+        target_guides = catalog.guide_names(target)
+        for index in range(len(source_guides)):
+            self.service.cmds.createNode("transform", name=source_guides[index])
+            self.service.cmds.createNode("transform", name=target_guides[index])
+            self.service.cmds.xform(source_guides[index], translation=[index + 1.0, 2.0, 3.0])
+        self.assertTrue(self.window.mirror_button.isEnabled())
+        self.assertIn(u"右侧", self.window.mirror_button.text())
+
+        self.window.mirror_current_module()
+
+        self.assertEqual(self.service.cmds.xform(target_guides[0], query=True), [-1.0, 2.0, 3.0])
+        self.assertIn("RT", self.window.status_label.text())
 
     def test_inline_validation_preserves_records(self):
         self.window.add_selected_module()

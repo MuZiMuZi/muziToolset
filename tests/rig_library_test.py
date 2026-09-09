@@ -45,7 +45,7 @@ class FakeCommands:
     def createNode(self, node_type, name, **kwargs):
         if name in self.nodes:
             raise RuntimeError("duplicate node")
-        self.nodes[name] = {"type": node_type, "attrs": {}}
+        self.nodes[name] = {"type": node_type, "attrs": {}, "translation": [0.0, 0.0, 0.0]}
         return name
 
     def addAttr(self, name, longName, **kwargs):
@@ -76,6 +76,11 @@ class FakeCommands:
 
     def select(self, names, replace=True):
         self.selection = list(names)
+
+    def xform(self, name, query=False, worldSpace=False, translation=None, **kwargs):
+        if query:
+            return list(self.nodes[name]["translation"])
+        self.nodes[name]["translation"] = list(translation)
 
 
 class ServiceFixture(RigLibraryService):
@@ -166,6 +171,36 @@ class RigLibraryTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.service.update_module(identity, values)
         self.assertEqual(self.service.document["modules"][0]["ctrl_size"], 1)
+
+    def test_mirror_module_copies_settings_and_guide_positions(self):
+        self.prepare_face()
+        source = self.service.document["modules"][0]
+        target = self.service.document["modules"][1]
+        self.service.update_module(source["id"], {
+            "ctrl_size": 2.5,
+            "ctrl_axis": "Z+",
+            "jnt_radius": 0.75,
+            "show_axis": True,
+        })
+        source = self.service.document["modules"][0]
+        source_guides = catalog.guide_names(source)
+        target_guides = catalog.guide_names(target)
+        positions = ([2.0, 3.0, 4.0], [3.0, 4.0, 5.0], [4.0, 5.0, 6.0])
+        for index in range(len(source_guides)):
+            self.commands.xform(source_guides[index], translation=positions[index])
+
+        result = self.service.mirror_module(source["id"])
+
+        target = self.service.document["modules"][1]
+        self.assertEqual(result["guide_count"], 3)
+        self.assertEqual(target["ctrl_size"], 2.5)
+        self.assertEqual(target["ctrl_axis"], "Z+")
+        self.assertEqual(target["jnt_radius"], 0.75)
+        self.assertTrue(target["show_axis"])
+        self.assertEqual(target["ctrl_color"], 13)
+        for index in range(len(target_guides)):
+            expected = [-positions[index][0], positions[index][1], positions[index][2]]
+            self.assertEqual(self.commands.xform(target_guides[index], query=True), expected)
 
     def test_fk_requires_explicit_ordered_guides(self):
         self.service.add_module("fk_chain")

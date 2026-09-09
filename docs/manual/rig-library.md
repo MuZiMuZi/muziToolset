@@ -25,7 +25,7 @@ window = muziToolset.show_rig_library()
 | 顶部四步导航 | Setup / Guide / Ctrl / Final |
 | Modules 左栏 | 当前可用模块、搜索、添加 |
 | Templates 左栏 | 已实现模块的组合模板，重复添加保留已有设置 |
-| Rig Structure 中栏 | 模块配置及其 Guide、Joint、Control 节点；区分未创建与已存在 |
+| Rig Structure 中栏 | 只显示模块配置、Side 与构建状态；双击模块可选择其现有场景节点 |
 | Properties 右栏 | 跟随当前步骤，只显示 Setup、Guide、Controller 或 Joint 对应设置 |
 | Validate / Ctrl / Final 底栏 | 只读预检查、当前阶段动作、失败详情 |
 | 小窗口 | 三栏可拖动调宽，左侧目录与右侧属性独立滚动 |
@@ -57,6 +57,8 @@ Face Guide 使用仓库的 resources/module_guide/face_guide.ma。模板中其�
 5. Validate 检查 Guide、节点类型、同名输出和根组归属。
 6. Ctrl 创建所有启用的待建模块，已经构建的模块自动跳过，并可调整大小、索引颜色、形状朝向、关节半径与显示。
 7. Final 检查全部模块并选择所有已构建主控制器。
+
+Step 01 的 Setup 设置提供左右镜像。选择尚未构建的 LF 或 RT 模块后，可将控制器大小、轴向、关节半径和显示设置复制到配对侧，并把对应 Guide 的世界位置沿 `X=0` 镜像。模块名称、Side、内部 ID、Guide 路径和左右颜色不会被覆盖；左右 Guide 必须已经导入且数量一致。
 
 已构建模块锁定名称、Side、Guide 和参与构建开关。外观调整通过已有 Ctrl / Jnt 接口进行；大小使用“新值 / 旧值”比例修改 CV，不重建控制器，不修改 Transform。
 

@@ -168,13 +168,11 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.remove_button = button(u"移除", self.remove_current, u"仅移除尚未构建的模块配置")
         toolbar.addWidget(self.remove_button)
         toolbar.addStretch(1)
-        toolbar.addWidget(button(u"展开", self.expand_structure, u"展开全部模块和节点分组"))
-        toolbar.addWidget(button(u"收起", self.collapse_structure, u"仅保留绑定库根层级"))
         toolbar.addWidget(button(u"刷新", self.refresh_scene))
         center.addLayout(toolbar)
         self.module_tree = QtWidgets.QTreeWidget()
         self.module_tree.setColumnCount(3)
-        self.module_tree.setHeaderLabels([u"模块 / 节点", u"侧", u"状态"])
+        self.module_tree.setHeaderLabels([u"模块", u"侧", u"状态"])
         self.module_tree.setIndentation(17)
         self.module_tree.setUniformRowHeights(True)
         self.module_tree.setAnimated(False)
@@ -187,7 +185,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.empty_label = label(u"从左侧添加模块，\n或选择 Face Starter 模板开始。", "muted")
         self.empty_label.setAlignment(Qt.AlignCenter)
         center.addWidget(self.empty_label)
-        self.structure_note = label(u"双击场景节点可在 Maya 中选中。", "muted")
+        self.structure_note = label(u"双击模块可在 Maya 中选中其现有节点。", "muted")
         self.structure_note.setWordWrap(True)
         center.addWidget(self.structure_note)
         self.splitter.addWidget(self.center_panel)
@@ -271,6 +269,9 @@ class ModularRigWindow(QtWidgets.QWidget):
         basic.form.addRow("Side", self.side_combo)
         self.parent_label = label(u"Rig Library / 默认根组", "muted")
         basic.form.addRow("Parent", self.parent_label)
+        self.mirror_button = button(u"镜像到另一侧", self.mirror_current_module,
+                                    u"复制模块设置，并将 Guide 定位沿世界 X=0 镜像到配对模块")
+        basic.form.addRow(self.mirror_button)
         layout.addWidget(basic)
 
         guides = Section("Guide / 定位设置")
@@ -416,22 +417,6 @@ class ModularRigWindow(QtWidgets.QWidget):
         for index in range(self.module_tree.topLevelItemCount()):
             visit(self.module_tree.topLevelItem(index))
 
-    def expand_structure(self):
-        u"""展开当前过滤结果中的全部可见层级。"""
-        iterator = QtWidgets.QTreeWidgetItemIterator(self.module_tree)
-        while iterator.value():
-            item = iterator.value()
-            if not item.isHidden() and item.childCount():
-                item.setExpanded(True)
-            iterator += 1
-
-    def collapse_structure(self):
-        u"""收起模块细节，同时保留绑定库根节点可见。"""
-        self.module_tree.collapseAll()
-        root = self.module_tree.topLevelItem(0)
-        if root is not None:
-            root.setExpanded(True)
-
     def current_record(self):
         u"""取得当前选择对应的真实配置。"""
         for record in self.service.document["modules"]:
@@ -440,14 +425,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         return None
 
     def _render_tree(self):
-        u"""重建配置树，保留当前选择和已经展开的模块。"""
-        expanded = set()
-        iterator = QtWidgets.QTreeWidgetItemIterator(self.module_tree)
-        while iterator.value():
-            item = iterator.value()
-            if item.isExpanded():
-                expanded.add(item.data(0, Qt.UserRole + 2))
-            iterator += 1
+        u"""重建精简模块树；场景节点不再作为子层级显示。"""
         self.module_tree.blockSignals(True)
         self.module_tree.clear()
         records = self.service.document["modules"]
@@ -458,8 +436,6 @@ class ModularRigWindow(QtWidgets.QWidget):
         root.setExpanded(True)
         selected_item = None
         built_count = 0
-        scene_node_count = 0
-        scene_node_total = 0
         for record in records:
             entry = catalog.get_module(record["kind"])
             state = u"已构建" if record["built"] else u"待构建"
@@ -472,36 +448,20 @@ class ModularRigWindow(QtWidgets.QWidget):
             item.setData(0, Qt.UserRole, record["id"])
             item.setData(0, Qt.UserRole + 2, "module:" + record["id"])
             item.setToolTip(0, entry["description"])
+            selectable_nodes = []
+            candidate_nodes = catalog.guide_names(record)
+            if record["built"]:
+                outputs = catalog.output_names(record)
+                candidate_nodes = candidate_nodes + outputs["joints"] + outputs["controls"]
+            for name in candidate_nodes:
+                if self.service.node_exists(name):
+                    selectable_nodes.append(name)
+            item.setData(0, Qt.UserRole + 1, selectable_nodes)
             state_color = "#4f762a" if record["built"] else "#967428"
             if not record["enabled"]:
                 state_color = "#8b9488"
             item.setForeground(2, QtGui.QBrush(QtGui.QColor(state_color)))
             root.addChild(item)
-            node_groups = {"Guide": catalog.guide_names(record)}
-            if record["built"]:
-                outputs = catalog.output_names(record)
-                node_groups["Joint"] = outputs["joints"]
-                node_groups["Control"] = outputs["controls"]
-            for group_title, names in node_groups.items():
-                group = QtWidgets.QTreeWidgetItem([group_title, "", u"{} 节点".format(len(names))])
-                group.setData(0, Qt.UserRole, record["id"])
-                group.setData(0, Qt.UserRole + 1, names)
-                group.setData(0, Qt.UserRole + 2, "group:{}:{}".format(record["id"], group_title))
-                item.addChild(group)
-                for name in names:
-                    exists = self.service.node_exists(name)
-                    node_state = u"已存在" if exists else u"未创建"
-                    scene_node_total += 1
-                    if exists:
-                        scene_node_count += 1
-                    node = QtWidgets.QTreeWidgetItem([name.rsplit("|", 1)[-1], "", node_state])
-                    node.setToolTip(0, name)
-                    node.setData(0, Qt.UserRole, record["id"])
-                    node.setData(0, Qt.UserRole + 1, [name])
-                    node.setForeground(2, QtGui.QBrush(QtGui.QColor("#4f762a" if exists else "#99a095")))
-                    group.addChild(node)
-                group.setExpanded(group.data(0, Qt.UserRole + 2) in expanded)
-            item.setExpanded(item.data(0, Qt.UserRole + 2) in expanded)
             if selected_item is None or record["id"] == self.current_id:
                 selected_item = item
         if selected_item:
@@ -513,8 +473,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         count = len(records)
         self.empty_label.setVisible(count == 0)
         self.structure_note.setText(
-            u"{} 个模块 · {} 个已构建 · {}/{} 个场景节点\n双击节点或分组可在 Maya 中选中。".format(
-                count, built_count, scene_node_count, scene_node_total))
+            u"{} 个模块 · {} 个已构建\n双击模块可在 Maya 中选中其现有节点。".format(count, built_count))
         self.filter_tree(self.tree_search.text())
         self._load_properties()
         self._sync_workflow_steps()
@@ -545,6 +504,10 @@ class ModularRigWindow(QtWidgets.QWidget):
             self.name_edit.setEnabled(not record["built"] and record["kind"] == "fk_chain")
             self.side_combo.setCurrentIndex(self.side_combo.findData(record["side"]))
             self.side_combo.setEnabled(not record["built"] and record["kind"] != "tongue")
+            mirrorable = record["side"] in ("lf", "rt") and not record["built"]
+            self.mirror_button.setEnabled(mirrorable)
+            destination = u"右侧" if record["side"] == "lf" else u"左侧"
+            self.mirror_button.setText(u"镜像设置与定位到{}".format(destination) if mirrorable else u"当前模块不可镜像")
             self.axis_combo.setCurrentText(record["ctrl_axis"])
             self.size_spin.setValue(record["ctrl_size"])
             self.color_spin.setValue(record["ctrl_color"])
@@ -631,6 +594,15 @@ class ModularRigWindow(QtWidgets.QWidget):
                 names.append(line.strip())
         self._run(lambda: self.service.update_module(self.current_id, {"guides": names}), u"Guide 列表已保存。")
 
+    def mirror_current_module(self):
+        u"""将当前左右模块的参数与 Guide 定位镜像到配对侧。"""
+        if self.current_id is None:
+            return
+        self._run(
+            lambda: self.service.mirror_module(self.current_id),
+            lambda result: u"已镜像到{}：{} 个 Guide 定位。".format(
+                result["side"].upper(), result["guide_count"]))
+
     def set_step(self, number, *args):
         u"""四段导航对应真实能力，Ctrl 阶段一次完成骨骼和控制器。"""
         workflow = self.service.workflow_state()
@@ -711,7 +683,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         self._run(check, u"检查通过，可以构建待建模块。")
 
     def select_tree_nodes(self, item, column=0):
-        u"""双击节点或分组，在 Maya 中选中对应对象。"""
+        u"""双击模块，在 Maya 中选中其现有 Guide、Joint 和 Control。"""
         names = item.data(0, Qt.UserRole + 1)
         if names:
             self.service.select_nodes(names)
