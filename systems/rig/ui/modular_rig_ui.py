@@ -137,6 +137,48 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.structure_note = label(u"双击模块可在 Maya 中选中其现有节点。", "muted")
         self.structure_note.setWordWrap(True)
 
+        self.property_banner = QtWidgets.QFrame()
+        self.property_banner.setObjectName("ModuleBanner")
+        self.property_title = label(u"选择一个模块", "moduleTitle")
+        self.property_subtitle = label(u"在结构中选择模块以编辑参数", "muted")
+        self.property_subtitle.setWordWrap(True)
+        self.property_scroll = QtWidgets.QScrollArea()
+        self.property_scroll.setWidgetResizable(True)
+        self.property_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.property_body = QtWidgets.QWidget()
+
+        self.basic_section = Section("Setup / 基本设置")
+        self.enabled_check = TickBox(u"参与构建")
+        self.name_edit = QtWidgets.QLineEdit()
+        self.side_combo = QtWidgets.QComboBox()
+        self.parent_label = label(u"Rig Library / 默认根组", "muted")
+
+        self.guide_section = Section("Guide / 定位设置")
+        self.guide_section.button.setChecked(False)
+        self.guide_hint = label("", "muted")
+        self.guide_hint.setWordWrap(True)
+        self.guide_edit = QtWidgets.QPlainTextEdit()
+        self.guide_edit.setFixedHeight(92)
+        self.guide_edit.setPlaceholderText(
+            u"每行一个 Guide，按 FK 链顺序排列。\n耳朵 / 舌头留空时自动读取模板。"
+        )
+        self.pick_button = button(u"读取 Maya 选择")
+        self.save_guides_button = button(u"保存 Guide 列表")
+
+        self.control_section = Section("Controller / 控制器设置")
+        self.axis_combo = QtWidgets.QComboBox()
+        self.size_spin = self._spin()
+        self.color_spin = QtWidgets.QSpinBox()
+        self.color_spin.setRange(0, 31)
+        self.color_spin.setKeyboardTracking(False)
+        self.control_check = TickBox(u"显示当前模块控制器")
+        self.control_note = label(u"构建后修改外观立即生效。", "muted")
+
+        self.joint_section = Section("Joint / 骨骼设置")
+        self.radius_spin = self._spin()
+        self.axis_check = TickBox(u"显示关节局部轴")
+        self.joint_check = TickBox(u"显示当前模块骨骼")
+
     def create_layouts(self):
         u"""创建窗口布局骨架；后续分栏会继续按面板逐步拆分。"""
         self._create_layout()
@@ -209,6 +251,51 @@ class ModularRigWindow(QtWidgets.QWidget):
         panel_layout.addWidget(self.structure_note)
         return self.center_panel
 
+    def create_properties_panel(self):
+        u"""摆放当前步骤对应的模块属性，不创建属性控件。"""
+        self.right_panel, panel_layout = self._panel("PROPERTIES", "MODULE")
+        self.right_panel.setMinimumWidth(410)
+
+        banner_layout = QtWidgets.QVBoxLayout(self.property_banner)
+        banner_layout.setContentsMargins(16, 12, 16, 12)
+        banner_layout.addWidget(self.property_title)
+        banner_layout.addWidget(self.property_subtitle)
+        panel_layout.addWidget(self.property_banner)
+
+        self.basic_section.form.addRow(u"Enable Module", self.enabled_check)
+        self.basic_section.form.addRow(u"Module Name", self.name_edit)
+        self.basic_section.form.addRow("Side", self.side_combo)
+        self.basic_section.form.addRow("Parent", self.parent_label)
+
+        self.guide_section.form.addRow(self.guide_hint)
+        self.guide_section.form.addRow(self.guide_edit)
+        guide_actions = QtWidgets.QHBoxLayout()
+        guide_actions.addWidget(self.pick_button)
+        guide_actions.addWidget(self.save_guides_button)
+        self.guide_section.form.addRow(guide_actions)
+
+        self.control_section.form.addRow(u"Shape Axis / 朝向", self.axis_combo)
+        self.control_section.form.addRow(u"Size / 大小", self.size_spin)
+        self.control_section.form.addRow(u"Color / 索引颜色", self.color_spin)
+        self.control_section.form.addRow(self.control_check)
+        self.control_section.form.addRow(self.control_note)
+
+        self.joint_section.form.addRow(u"Joint Radius / 半径", self.radius_spin)
+        self.joint_section.form.addRow(self.axis_check)
+        self.joint_section.form.addRow(self.joint_check)
+
+        properties = QtWidgets.QVBoxLayout(self.property_body)
+        properties.setContentsMargins(0, 0, 3, 0)
+        properties.setSpacing(8)
+        properties.addWidget(self.basic_section)
+        properties.addWidget(self.guide_section)
+        properties.addWidget(self.control_section)
+        properties.addWidget(self.joint_section)
+        properties.addStretch(1)
+        self.property_scroll.setWidget(self.property_body)
+        panel_layout.addWidget(self.property_scroll, 1)
+        return self.right_panel
+
     # =========================================================
     # Window
     # =========================================================
@@ -235,6 +322,15 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def load_data(self):
         u"""将绑定目录载入 UI；实际业务数据始终由 Service 持有。"""
+        side_entries = (
+            (u"Left / 左", "lf"),
+            (u"Right / 右", "rt"),
+            (u"Center / 中", "md"),
+        )
+        for title, value in side_entries:
+            self.side_combo.addItem(title, value)
+        for axis in catalog.axes:
+            self.axis_combo.addItem(axis)
         self.refresh_module_list()
 
     def refresh_ui(self):
@@ -316,30 +412,7 @@ class ModularRigWindow(QtWidgets.QWidget):
 
         self.splitter.addWidget(self.create_rig_structure_panel())
 
-        self.right_panel, right = self._panel("PROPERTIES", "MODULE")
-        self.right_panel.setMinimumWidth(410)
-        banner = QtWidgets.QFrame()
-        banner.setObjectName("ModuleBanner")
-        banner_layout = QtWidgets.QVBoxLayout(banner)
-        banner_layout.setContentsMargins(16, 12, 16, 12)
-        self.property_title = label(u"选择一个模块", "moduleTitle")
-        self.property_subtitle = label(u"在结构中选择模块以编辑参数", "muted")
-        self.property_subtitle.setWordWrap(True)
-        banner_layout.addWidget(self.property_title)
-        banner_layout.addWidget(self.property_subtitle)
-        right.addWidget(banner)
-        self.property_scroll = QtWidgets.QScrollArea()
-        self.property_scroll.setWidgetResizable(True)
-        self.property_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.property_body = QtWidgets.QWidget()
-        properties = QtWidgets.QVBoxLayout(self.property_body)
-        properties.setContentsMargins(0, 0, 3, 0)
-        properties.setSpacing(8)
-        self._create_properties(properties)
-        properties.addStretch(1)
-        self.property_scroll.setWidget(self.property_body)
-        right.addWidget(self.property_scroll, 1)
-        self.splitter.addWidget(self.right_panel)
+        self.splitter.addWidget(self.create_properties_panel())
         self.splitter.setSizes([285, 450, 605])
         main.addWidget(self.splitter, 1)
 
@@ -380,66 +453,6 @@ class ModularRigWindow(QtWidgets.QWidget):
         heading.addWidget(label(badge, "muted"))
         layout.addLayout(heading)
         return panel, layout
-
-    def _create_properties(self, layout):
-        u"""属性只展示当前后端能够保存或生效的参数。"""
-        basic = Section("Setup / 基本设置")
-        self.basic_section = basic
-        self.enabled_check = TickBox(u"参与构建")
-        basic.form.addRow(u"Enable Module", self.enabled_check)
-        self.name_edit = QtWidgets.QLineEdit()
-        basic.form.addRow(u"Module Name", self.name_edit)
-        self.side_combo = QtWidgets.QComboBox()
-        for title, value in ((u"Left / 左", "lf"), (u"Right / 右", "rt"), (u"Center / 中", "md")):
-            self.side_combo.addItem(title, value)
-        basic.form.addRow("Side", self.side_combo)
-        self.parent_label = label(u"Rig Library / 默认根组", "muted")
-        basic.form.addRow("Parent", self.parent_label)
-        layout.addWidget(basic)
-
-        guides = Section("Guide / 定位设置")
-        self.guide_section = guides
-        guides.button.setChecked(False)
-        self.guide_hint = label("", "muted")
-        self.guide_hint.setWordWrap(True)
-        guides.form.addRow(self.guide_hint)
-        self.guide_edit = QtWidgets.QPlainTextEdit()
-        self.guide_edit.setFixedHeight(92)
-        self.guide_edit.setPlaceholderText(u"每行一个 Guide，按 FK 链顺序排列。\n耳朵 / 舌头留空时自动读取模板。")
-        guides.form.addRow(self.guide_edit)
-        guide_actions = QtWidgets.QHBoxLayout()
-        self.pick_button = button(u"读取 Maya 选择")
-        self.save_guides_button = button(u"保存 Guide 列表")
-        guide_actions.addWidget(self.pick_button)
-        guide_actions.addWidget(self.save_guides_button)
-        guides.form.addRow(guide_actions)
-        layout.addWidget(guides)
-
-        controls = Section("Controller / 控制器设置")
-        self.control_section = controls
-        self.axis_combo = QtWidgets.QComboBox()
-        self.axis_combo.addItems(catalog.axes)
-        controls.form.addRow(u"Shape Axis / 朝向", self.axis_combo)
-        self.size_spin = self._spin()
-        controls.form.addRow(u"Size / 大小", self.size_spin)
-        self.color_spin = QtWidgets.QSpinBox()
-        self.color_spin.setRange(0, 31)
-        self.color_spin.setKeyboardTracking(False)
-        controls.form.addRow(u"Color / 索引颜色", self.color_spin)
-        self.control_check = TickBox(u"显示当前模块控制器")
-        controls.form.addRow(self.control_check)
-        controls.form.addRow(label(u"构建后修改外观立即生效。", "muted"))
-        layout.addWidget(controls)
-
-        joints = Section("Joint / 骨骼设置")
-        self.joint_section = joints
-        self.radius_spin = self._spin()
-        joints.form.addRow(u"Joint Radius / 半径", self.radius_spin)
-        self.axis_check = TickBox(u"显示关节局部轴")
-        self.joint_check = TickBox(u"显示当前模块骨骼")
-        joints.form.addRow(self.axis_check)
-        joints.form.addRow(self.joint_check)
-        layout.addWidget(joints)
 
     def _spin(self):
         u"""统一浮点范围，结束输入后才更新场景。"""
