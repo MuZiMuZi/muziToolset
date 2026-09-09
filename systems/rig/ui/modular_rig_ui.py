@@ -18,12 +18,11 @@ def label(text, role=None):
     return widget
 
 
-def button(text, callback, tooltip=""):
+def button(text, tooltip=""):
     u"""创建带明确操作文字的按钮。"""
     widget = QtWidgets.QPushButton(text)
     widget.setCursor(Qt.PointingHandCursor)
     widget.setToolTip(tooltip)
-    widget.clicked.connect(callback)
     return widget
 
 
@@ -47,7 +46,10 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.jobs = []
 
         self.setup_window()
+        self.refresh_timer = QtCore.QTimer(self)
+        self.refresh_timer.setSingleShot(True)
         self._create_layout()
+        self.create_connections()
         self.apply_style()
         self.load_data()
         self.refresh_ui()
@@ -105,6 +107,49 @@ class ModularRigWindow(QtWidgets.QWidget):
         u"""刷新当前步骤提示和主操作按钮。"""
         self._update_action()
 
+    def create_connections(self):
+        u"""集中管理窗口中所有固定控件的信号连接。"""
+        for index, step_button in enumerate(self.step_buttons, 1):
+            step_button.clicked.connect(partial(self.set_current_step, index))
+        button_connections = (
+            (self.import_button, self.import_recipe),
+            (self.export_button, self.export_recipe),
+            (self.help_button, self.show_help),
+            (self.add_button, self.add_selected_module),
+            (self.add_template_button, self.add_selected_template),
+            (self.structure_add_button, self.open_module_library),
+            (self.remove_button, self.remove_current),
+            (self.refresh_button, self.refresh_scene),
+            (self.pick_button, self.pick_guides),
+            (self.save_guides_button, self.save_guides),
+            (self.validate_button, self.validate_current_step),
+            (self.build_button, self.build_current_step),
+        )
+        for widget, callback in button_connections:
+            widget.clicked.connect(callback)
+        self.module_search.textChanged.connect(self.filter_modules)
+        self.template_search.textChanged.connect(self.filter_templates)
+        self.module_list.itemDoubleClicked.connect(self.add_selected_module)
+        self.template_list.itemDoubleClicked.connect(self.add_selected_template)
+        self.tree_search.textChanged.connect(self.filter_tree)
+        self.module_tree.currentItemChanged.connect(self.tree_selected)
+        self.module_tree.itemDoubleClicked.connect(self.select_tree_nodes)
+        self.module_tree.customContextMenuRequested.connect(self.show_structure_context_menu)
+        self.enabled_check.toggled.connect(lambda value: self.change_property("enabled", value))
+        self.name_edit.editingFinished.connect(
+            lambda: self.change_property("name", self.name_edit.text().strip()))
+        self.side_combo.currentIndexChanged.connect(
+            lambda index: self.change_property("side", self.side_combo.currentData()))
+        self.axis_combo.currentTextChanged.connect(
+            lambda value: self.change_property("ctrl_axis", value))
+        self.size_spin.valueChanged.connect(lambda value: self.change_property("ctrl_size", value))
+        self.color_spin.valueChanged.connect(lambda value: self.change_property("ctrl_color", value))
+        self.radius_spin.valueChanged.connect(lambda value: self.change_property("jnt_radius", value))
+        self.axis_check.toggled.connect(lambda value: self.change_property("show_axis", value))
+        self.joint_check.toggled.connect(lambda value: self.change_property("show_joints", value))
+        self.control_check.toggled.connect(lambda value: self.change_property("show_controls", value))
+        self.refresh_timer.timeout.connect(self.refresh_scene)
+
     def _create_layout(self):
         u"""建立可调整宽度的三栏结构；右侧属性独立滚动。"""
         main = QtWidgets.QVBoxLayout(self)
@@ -125,9 +170,9 @@ class ModularRigWindow(QtWidgets.QWidget):
         titles.addWidget(label(u"MODULAR SYSTEM   /   木子绑定库   /   CREATE WITH CLARITY", "subtitle"))
         header_layout.addLayout(titles)
         header_layout.addStretch(1)
-        self.import_button = button(u"导入配置", self.import_recipe, u"追加 JSON 模块配置")
-        self.export_button = button(u"导出配置", self.export_recipe, u"保存模块参数；不包含 Maya 场景或 Guide 位置")
-        self.help_button = button("?", self.show_help, u"查看四步操作说明")
+        self.import_button = button(u"导入配置", u"追加 JSON 模块配置")
+        self.export_button = button(u"导出配置", u"保存模块参数；不包含 Maya 场景或 Guide 位置")
+        self.help_button = button("?", u"查看四步操作说明")
         self.help_button.setFixedWidth(34)
         header_layout.addWidget(self.import_button)
         header_layout.addWidget(self.export_button)
@@ -141,7 +186,6 @@ class ModularRigWindow(QtWidgets.QWidget):
                    ("Ctrl", u"创建与调整"), ("Final", u"检查与完成"))
         for index, (title, subtitle) in enumerate(entries, 1):
             widget = StepButton(index, title, subtitle)
-            widget.clicked.connect(partial(self.set_current_step, index))
             self.step_buttons.append(widget)
             steps.addWidget(widget, 1)
         main.addLayout(steps)
@@ -162,13 +206,11 @@ class ModularRigWindow(QtWidgets.QWidget):
         module_layout.setSpacing(10)
         self.module_search = QtWidgets.QLineEdit()
         self.module_search.setPlaceholderText(u"搜索模块 / Search modules...")
-        self.module_search.textChanged.connect(self.filter_modules)
         module_layout.addWidget(self.module_search)
         self.module_list = QtWidgets.QListWidget()
         self.module_list.setIconSize(QtCore.QSize(32, 32))
-        self.module_list.itemDoubleClicked.connect(self.add_selected_module)
         module_layout.addWidget(self.module_list, 1)
-        self.add_button = button(u"+  添加模块", self.add_selected_module)
+        self.add_button = button(u"+  添加模块")
         module_layout.addWidget(self.add_button)
         module_note = label(u"只显示仓库中已经具有正式构建入口的模块。", "muted")
         module_note.setWordWrap(True)
@@ -180,13 +222,12 @@ class ModularRigWindow(QtWidgets.QWidget):
         template_layout.setSpacing(10)
         self.template_search = QtWidgets.QLineEdit()
         self.template_search.setPlaceholderText(u"搜索模板 / Search templates...")
-        self.template_search.textChanged.connect(self.filter_templates)
         template_layout.addWidget(self.template_search)
         self.template_list = QtWidgets.QListWidget()
         self.template_list.setIconSize(QtCore.QSize(32, 32))
-        self.template_list.itemDoubleClicked.connect(self.add_selected_template)
         template_layout.addWidget(self.template_list, 1)
-        template_layout.addWidget(button(u"+  添加模板组合", self.add_selected_template))
+        self.add_template_button = button(u"+  添加模板组合")
+        template_layout.addWidget(self.add_template_button)
         template_note = label(u"模板仅组合当前可用模块，不包含 Maya 场景数据。", "muted")
         template_note.setWordWrap(True)
         template_layout.addWidget(template_note)
@@ -200,14 +241,15 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.center_panel.setMinimumWidth(315)
         self.tree_search = QtWidgets.QLineEdit()
         self.tree_search.setPlaceholderText(u"搜索结构 / Search hierarchy...")
-        self.tree_search.textChanged.connect(self.filter_tree)
         center.addWidget(self.tree_search)
         toolbar = QtWidgets.QHBoxLayout()
-        toolbar.addWidget(button(u"+ 添加", self.open_module_library, u"切换到左侧模块库"))
-        self.remove_button = button(u"移除", self.remove_current, u"仅移除尚未构建的模块配置")
+        self.structure_add_button = button(u"+ 添加", u"切换到左侧模块库")
+        toolbar.addWidget(self.structure_add_button)
+        self.remove_button = button(u"移除", u"仅移除尚未构建的模块配置")
         toolbar.addWidget(self.remove_button)
         toolbar.addStretch(1)
-        toolbar.addWidget(button(u"刷新", self.refresh_scene))
+        self.refresh_button = button(u"刷新")
+        toolbar.addWidget(self.refresh_button)
         center.addLayout(toolbar)
         self.module_tree = QtWidgets.QTreeWidget()
         self.module_tree.setColumnCount(3)
@@ -219,9 +261,6 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.module_tree.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         self.module_tree.header().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
         self.module_tree.header().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
-        self.module_tree.currentItemChanged.connect(self.tree_selected)
-        self.module_tree.itemDoubleClicked.connect(self.select_tree_nodes)
-        self.module_tree.customContextMenuRequested.connect(self.show_structure_context_menu)
         center.addWidget(self.module_tree, 1)
         self.empty_label = label(u"从左侧添加模块，\n或选择 Face Starter 模板开始。", "muted")
         self.empty_label.setAlignment(Qt.AlignCenter)
@@ -273,10 +312,10 @@ class ModularRigWindow(QtWidgets.QWidget):
         status_layout.addWidget(self.status_label)
         status_layout.addWidget(self.status_hint)
         bottom.addLayout(status_layout, 1)
-        self.validate_button = button(u"检查 / Validate", self.validate_current_step)
+        self.validate_button = button(u"检查 / Validate")
         self.validate_button.setMinimumHeight(36)
         bottom.addWidget(self.validate_button)
-        self.build_button = button(u"创建基础层级", self.build_current_step)
+        self.build_button = button(u"创建基础层级")
         self.build_button.setProperty("role", "primary")
         self.build_button.setMinimumWidth(250)
         bottom.addWidget(self.build_button)
@@ -323,8 +362,8 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.guide_edit.setPlaceholderText(u"每行一个 Guide，按 FK 链顺序排列。\n耳朵 / 舌头留空时自动读取模板。")
         guides.form.addRow(self.guide_edit)
         guide_actions = QtWidgets.QHBoxLayout()
-        self.pick_button = button(u"读取 Maya 选择", self.pick_guides)
-        self.save_guides_button = button(u"保存 Guide 列表", self.save_guides)
+        self.pick_button = button(u"读取 Maya 选择")
+        self.save_guides_button = button(u"保存 Guide 列表")
         guide_actions.addWidget(self.pick_button)
         guide_actions.addWidget(self.save_guides_button)
         guides.form.addRow(guide_actions)
@@ -355,16 +394,6 @@ class ModularRigWindow(QtWidgets.QWidget):
         joints.form.addRow(self.axis_check)
         joints.form.addRow(self.joint_check)
         layout.addWidget(joints)
-        self.enabled_check.toggled.connect(lambda value: self.change_property("enabled", value))
-        self.name_edit.editingFinished.connect(lambda: self.change_property("name", self.name_edit.text().strip()))
-        self.side_combo.currentIndexChanged.connect(lambda index: self.change_property("side", self.side_combo.currentData()))
-        self.axis_combo.currentTextChanged.connect(lambda value: self.change_property("ctrl_axis", value))
-        self.size_spin.valueChanged.connect(lambda value: self.change_property("ctrl_size", value))
-        self.color_spin.valueChanged.connect(lambda value: self.change_property("ctrl_color", value))
-        self.radius_spin.valueChanged.connect(lambda value: self.change_property("jnt_radius", value))
-        self.axis_check.toggled.connect(lambda value: self.change_property("show_axis", value))
-        self.joint_check.toggled.connect(lambda value: self.change_property("show_joints", value))
-        self.control_check.toggled.connect(lambda value: self.change_property("show_controls", value))
 
     def _spin(self):
         u"""统一浮点范围，结束输入后才更新场景。"""
