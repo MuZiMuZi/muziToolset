@@ -259,7 +259,8 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def _create_properties(self, layout):
         u"""属性只展示当前后端能够保存或生效的参数。"""
-        basic = Section("Basic / 基本设置")
+        basic = Section("Setup / 基本设置")
+        self.basic_section = basic
         self.enabled_check = TickBox(u"参与构建")
         basic.form.addRow(u"Enable Module", self.enabled_check)
         self.name_edit = QtWidgets.QLineEdit()
@@ -272,7 +273,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         basic.form.addRow("Parent", self.parent_label)
         layout.addWidget(basic)
 
-        guides = Section("Guide / 定位数据")
+        guides = Section("Guide / 定位设置")
         self.guide_section = guides
         guides.button.setChecked(False)
         self.guide_hint = label("", "muted")
@@ -290,7 +291,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         guides.form.addRow(guide_actions)
         layout.addWidget(guides)
 
-        controls = Section("Controller / 控制器外观")
+        controls = Section("Controller / 控制器设置")
         self.control_section = controls
         self.axis_combo = QtWidgets.QComboBox()
         self.axis_combo.addItems(catalog.axes)
@@ -301,18 +302,19 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.color_spin.setRange(0, 31)
         self.color_spin.setKeyboardTracking(False)
         controls.form.addRow(u"Color / 索引颜色", self.color_spin)
+        self.control_check = TickBox(u"显示当前模块控制器")
+        controls.form.addRow(self.control_check)
         controls.form.addRow(label(u"构建后修改外观立即生效。", "muted"))
         layout.addWidget(controls)
 
-        joints = Section("Joint / 骨骼与显示")
+        joints = Section("Joint / 骨骼设置")
+        self.joint_section = joints
         self.radius_spin = self._spin()
         joints.form.addRow(u"Joint Radius / 半径", self.radius_spin)
         self.axis_check = TickBox(u"显示关节局部轴")
         self.joint_check = TickBox(u"显示当前模块骨骼")
-        self.control_check = TickBox(u"显示当前模块控制器")
         joints.form.addRow(self.axis_check)
         joints.form.addRow(self.joint_check)
-        joints.form.addRow(self.control_check)
         layout.addWidget(joints)
         self.enabled_check.toggled.connect(lambda value: self.change_property("enabled", value))
         self.name_edit.editingFinished.connect(lambda: self.change_property("name", self.name_edit.text().strip()))
@@ -644,8 +646,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         workflow = self.service.workflow_state()
         if not workflow["unlocked"].get(self.current_step, False):
             self.current_step = workflow["suggested"]
-        self.guide_section.button.setChecked(self.current_step == 2)
-        self.control_section.button.setChecked(self.current_step == 3)
+        self._sync_property_sections()
         for index, widget in enumerate(self.step_buttons, 1):
             if index == self.current_step:
                 state = "current"
@@ -656,6 +657,20 @@ class ModularRigWindow(QtWidgets.QWidget):
             else:
                 state = "locked"
             widget.set_stage_state(state)
+
+    def _sync_property_sections(self):
+        u"""右侧属性区只显示当前步骤对应的设置，并保持该区域展开。"""
+        sections = {
+            1: self.basic_section,
+            2: self.guide_section,
+            3: self.control_section,
+            4: self.joint_section,
+        }
+        for step, section in sections.items():
+            active = step == self.current_step
+            section.setVisible(active)
+            if active:
+                section.button.setChecked(True)
 
     def _update_action(self):
         if not hasattr(self, "build_button"):

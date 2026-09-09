@@ -26,7 +26,7 @@ window = muziToolset.show_rig_library()
 | Modules 左栏 | 当前可用模块、搜索、添加 |
 | Templates 左栏 | 已实现模块的组合模板，重复添加保留已有设置 |
 | Rig Structure 中栏 | 模块配置及其 Guide、Joint、Control 节点；区分未创建与已存在 |
-| Properties 右栏 | 基础设置、Guide 列表、控制器外观、骨骼与显示抽屉 |
+| Properties 右栏 | 跟随当前步骤，只显示 Setup、Guide、Controller 或 Joint 对应设置 |
 | Validate / Ctrl / Final 底栏 | 只读预检查、当前阶段动作、失败详情 |
 | 小窗口 | 三栏可拖动调宽，左侧目录与右侧属性独立滚动 |
 
