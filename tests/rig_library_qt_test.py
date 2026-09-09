@@ -88,6 +88,20 @@ class RigLibraryQtTests(unittest.TestCase):
         self.assertEqual(self.window.library_tabs.currentIndex(), 0)
         self.assertTrue(self.window.module_search.hasFocus())
 
+    def test_structure_search_and_expand_controls(self):
+        self.window.add_selected_template()
+        root = self.window.module_tree.topLevelItem(0)
+        self.assertEqual(root.text(2), u"3 模块")
+        self.window.expand_structure()
+        self.assertTrue(root.child(0).isExpanded())
+        self.assertTrue(root.child(0).child(0).isExpanded())
+        self.window.collapse_structure()
+        self.assertTrue(root.isExpanded())
+        self.assertFalse(root.child(0).isExpanded())
+        self.window.tree_search.setText(u"待构建")
+        self.assertFalse(root.child(0).isHidden())
+        self.assertIn(u"0/11 个场景节点", self.window.structure_note.text())
+
     def test_inline_validation_preserves_records(self):
         self.window.add_selected_module()
         self.window.set_step(3)

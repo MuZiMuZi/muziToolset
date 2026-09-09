@@ -170,6 +170,8 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.remove_button = button(u"移除", self.remove_current, u"仅移除尚未构建的模块配置")
         toolbar.addWidget(self.remove_button)
         toolbar.addStretch(1)
+        toolbar.addWidget(button(u"展开", self.expand_structure, u"展开全部模块和节点分组"))
+        toolbar.addWidget(button(u"收起", self.collapse_structure, u"仅保留绑定库根层级"))
         toolbar.addWidget(button(u"刷新", self.refresh_scene))
         center.addLayout(toolbar)
         self.module_tree = QtWidgets.QTreeWidget()
@@ -394,18 +396,40 @@ class ModularRigWindow(QtWidgets.QWidget):
         self._status(u"请从左侧选择模块，双击或点击“添加模块”。")
 
     def filter_tree(self, text):
-        u"""保留命中子节点的父模块，便于从搜索结果定位层级。"""
+        u"""搜索名称、侧别和状态，并保留命中子节点的完整父路径。"""
+        query = text.strip().lower()
+
         def visit(item):
-            own_match = text.lower() in item.text(0).lower()
+            values = []
+            for column in range(self.module_tree.columnCount()):
+                values.append(item.text(column))
+            values.append(item.toolTip(0))
+            own_match = query in u" ".join(values).lower()
             child_match = False
             for index in range(item.childCount()):
                 child_match = visit(item.child(index)) or child_match
             item.setHidden(not (own_match or child_match))
-            if text and child_match:
+            if query and child_match:
                 item.setExpanded(True)
             return own_match or child_match
         for index in range(self.module_tree.topLevelItemCount()):
             visit(self.module_tree.topLevelItem(index))
+
+    def expand_structure(self):
+        u"""展开当前过滤结果中的全部可见层级。"""
+        iterator = QtWidgets.QTreeWidgetItemIterator(self.module_tree)
+        while iterator.value():
+            item = iterator.value()
+            if not item.isHidden() and item.childCount():
+                item.setExpanded(True)
+            iterator += 1
+
+    def collapse_structure(self):
+        u"""收起模块细节，同时保留绑定库根节点可见。"""
+        self.module_tree.collapseAll()
+        root = self.module_tree.topLevelItem(0)
+        if root is not None:
+            root.setExpanded(True)
 
     def current_record(self):
         u"""取得当前选择对应的真实配置。"""
@@ -421,17 +445,21 @@ class ModularRigWindow(QtWidgets.QWidget):
         while iterator.value():
             item = iterator.value()
             if item.isExpanded():
-                expanded.add(item.data(0, Qt.UserRole))
+                expanded.add(item.data(0, Qt.UserRole + 2))
             iterator += 1
         self.module_tree.blockSignals(True)
         self.module_tree.clear()
-        root = QtWidgets.QTreeWidgetItem(["rig_library", "", ""])
+        records = self.service.document["modules"]
+        root = QtWidgets.QTreeWidgetItem(["rig_library", "", u"{} 模块".format(len(records))])
         root.setIcon(0, module_icon("#759539"))
+        root.setData(0, Qt.UserRole + 2, "root")
         self.module_tree.addTopLevelItem(root)
         root.setExpanded(True)
         selected_item = None
         built_count = 0
-        for record in self.service.document["modules"]:
+        scene_node_count = 0
+        scene_node_total = 0
+        for record in records:
             entry = catalog.get_module(record["kind"])
             state = u"已构建" if record["built"] else u"待构建"
             if not record["enabled"]:
@@ -441,6 +469,12 @@ class ModularRigWindow(QtWidgets.QWidget):
             item = QtWidgets.QTreeWidgetItem([record["name"], record["side"].upper(), state])
             item.setIcon(0, module_icon(entry["color"]))
             item.setData(0, Qt.UserRole, record["id"])
+            item.setData(0, Qt.UserRole + 2, "module:" + record["id"])
+            item.setToolTip(0, entry["description"])
+            state_color = "#4f762a" if record["built"] else "#967428"
+            if not record["enabled"]:
+                state_color = "#8b9488"
+            item.setForeground(2, QtGui.QBrush(QtGui.QColor(state_color)))
             root.addChild(item)
             node_groups = {"Guide": catalog.guide_names(record)}
             if record["built"]:
@@ -448,18 +482,25 @@ class ModularRigWindow(QtWidgets.QWidget):
                 node_groups["Joint"] = outputs["joints"]
                 node_groups["Control"] = outputs["controls"]
             for group_title, names in node_groups.items():
-                group = QtWidgets.QTreeWidgetItem([group_title, "", str(len(names))])
+                group = QtWidgets.QTreeWidgetItem([group_title, "", u"{} 节点".format(len(names))])
                 group.setData(0, Qt.UserRole, record["id"])
                 group.setData(0, Qt.UserRole + 1, names)
+                group.setData(0, Qt.UserRole + 2, "group:{}:{}".format(record["id"], group_title))
                 item.addChild(group)
                 for name in names:
-                    node_state = u"已存在" if self.service.node_exists(name) else u"未创建"
+                    exists = self.service.node_exists(name)
+                    node_state = u"已存在" if exists else u"未创建"
+                    scene_node_total += 1
+                    if exists:
+                        scene_node_count += 1
                     node = QtWidgets.QTreeWidgetItem([name.rsplit("|", 1)[-1], "", node_state])
                     node.setToolTip(0, name)
                     node.setData(0, Qt.UserRole, record["id"])
                     node.setData(0, Qt.UserRole + 1, [name])
+                    node.setForeground(2, QtGui.QBrush(QtGui.QColor("#4f762a" if exists else "#99a095")))
                     group.addChild(node)
-            item.setExpanded(record["id"] in expanded)
+                group.setExpanded(group.data(0, Qt.UserRole + 2) in expanded)
+            item.setExpanded(item.data(0, Qt.UserRole + 2) in expanded)
             if selected_item is None or record["id"] == self.current_id:
                 selected_item = item
         if selected_item:
@@ -468,9 +509,11 @@ class ModularRigWindow(QtWidgets.QWidget):
         else:
             self.current_id = None
         self.module_tree.blockSignals(False)
-        count = len(self.service.document["modules"])
+        count = len(records)
         self.empty_label.setVisible(count == 0)
-        self.structure_note.setText(u"{} 个模块 · {} 个已构建\n双击节点可在 Maya 中选中。".format(count, built_count))
+        self.structure_note.setText(
+            u"{} 个模块 · {} 个已构建 · {}/{} 个场景节点\n双击节点或分组可在 Maya 中选中。".format(
+                count, built_count, scene_node_count, scene_node_total))
         self.filter_tree(self.tree_search.text())
         self._load_properties()
         self._sync_workflow_steps()
