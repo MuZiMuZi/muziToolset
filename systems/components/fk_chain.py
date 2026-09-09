@@ -23,6 +23,7 @@ fk_chain：标准 FK Chain 构建组件。
 
     FKChain.connect_rig
         使用每个 Controller 的 Output Group 驱动对应 Joint。
+        重复构建时会复用已经存在且 Driver 正确的 parentConstraint。
 
     FKChain.setup_hierarchy
         先复用 RigModule.setup_hierarchy() 创建模块总组，
@@ -250,11 +251,18 @@ class FKChain(rig_module.RigModule):
 
         Output 是 Controller 层级的最终输出节点，因此主 Ctrl 和 SubCtrl 的变化都会传递到 Joint。
 
+        重复执行时会先检查 Joint 当前连接的 parentConstraint：
+            1. 已经存在由当前 Output 驱动的 parentConstraint，则直接复用，不重复创建。
+            2. Joint 已经存在其他 parentConstraint，但没有当前 Output Driver，则抛出错误，
+               避免新的 Constraint 覆盖或污染已有绑定关系。
+            3. 没有 parentConstraint 时才创建新的 Constraint。
+
         Returns:
             None
 
         Maya 使用示例：
 
+            fk_object.connect_rig()
             fk_object.connect_rig()
         """
 
@@ -262,9 +270,79 @@ class FKChain(rig_module.RigModule):
             jnt_object = self.jnt_objects[index]
             ctrl_object = self.ctrl_objects[index]
 
+            driver = str(ctrl_object.output_grp)
+            driven = str(jnt_object.jnt)
+
+            # 获取当前 Joint 已经存在的 Parent Constraint。
+            constraint_nodes = cmds.listConnections(
+                driven,
+                source=True,
+                destination=False,
+                type="parentConstraint"
+            )
+
+            if constraint_nodes is None:
+                constraint_nodes = []
+
+            # 统一获取 Driver 的 Long Name，避免短名称和完整 DAG 路径比较不一致。
+            driver_long_names = cmds.ls(
+                driver,
+                long=True
+            )
+
+            if driver_long_names:
+                driver_long_name = driver_long_names[0]
+            else:
+                driver_long_name = driver
+
+            matched_constraint = None
+
+            # 检查已有 Constraint 是否已经包含当前 Output Driver。
+            for constraint_node in constraint_nodes:
+                target_list = cmds.parentConstraint(
+                    constraint_node,
+                    query=True,
+                    targetList=True
+                )
+
+                if target_list is None:
+                    target_list = []
+
+                for target in target_list:
+                    target_long_names = cmds.ls(
+                        target,
+                        long=True
+                    )
+
+                    if target_long_names:
+                        target_long_name = target_long_names[0]
+                    else:
+                        target_long_name = target
+
+                    if target_long_name == driver_long_name:
+                        matched_constraint = constraint_node
+                        break
+
+                if matched_constraint:
+                    break
+
+            # 已经存在正确 Driver 的 Constraint 时直接复用。
+            if matched_constraint:
+                continue
+
+            # Joint 上已经有其他 Parent Constraint 时，不静默覆盖已有绑定关系。
+            if constraint_nodes:
+                raise RuntimeError(
+                    u"{} 已经存在 Parent Constraint，但 Driver 不是 {}。".format(
+                        driven,
+                        driver
+                    )
+                )
+
+            # 没有 Parent Constraint 时才真正创建驱动关系。
             cmds.parentConstraint(
-                str(ctrl_object.output_grp),
-                str(jnt_object.jnt),
+                driver,
+                driven,
                 maintainOffset=True
             )
 

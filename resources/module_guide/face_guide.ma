@@ -1,6 +1,6 @@
 //Maya ASCII 2023 scene
 //Name: face_guide.ma
-//Last modified: Mon, Sep 07, 2026 04:16:33 PM
+//Last modified: Wed, Sep 09, 2026 03:23:53 PM
 //Codeset: 936
 requires maya "2023";
 requires "stereoCamera" "10.0";
@@ -12,21 +12,21 @@ fileInfo "product" "Maya 2023";
 fileInfo "version" "2023";
 fileInfo "cutIdentifier" "202211021031-847a9f9623";
 fileInfo "osv" "Windows 11 Pro v2009 (Build: 26200)";
-fileInfo "UUID" "DCD34A70-46AF-8BA7-96BE-8D93284C0FB6";
+fileInfo "UUID" "ABF1CCD3-4854-90E2-7DAB-5D9A032274B8";
 createNode transform -s -n "persp";
 	rename -uid "98B40841-481F-949E-E53E-1CA9088A7CA2";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" -191.62207688044407 930.73869147183404 235.51902864914624 ;
-	setAttr ".r" -type "double3" -9.9383527295907772 -41.000000000010473 -1.0535690697490551e-15 ;
+	setAttr ".t" -type "double3" 177.16092533278666 945.32492927282567 130.72980464159102 ;
+	setAttr ".r" -type "double3" -8.7383527295913712 82.600000000000406 0 ;
 createNode camera -s -n "perspShape" -p "persp";
 	rename -uid "CE6CC8EC-4379-CC42-7849-42B5E94EEDD2";
 	setAttr -k off ".v" no;
 	setAttr ".fl" 34.999999999999993;
-	setAttr ".coi" 258.87616795286812;
+	setAttr ".coi" 164.2256631324924;
 	setAttr ".imn" -type "string" "persp";
 	setAttr ".den" -type "string" "persp_depth";
 	setAttr ".man" -type "string" "persp_mask";
-	setAttr ".tp" -type "double3" 26.95750617980957 907.423095703125 63.240692138671875 ;
+	setAttr ".tp" -type "double3" 25.726365089416504 928.99777221679699 59.792667388916016 ;
 	setAttr ".hc" -type "string" "viewSet -p %camera";
 createNode transform -s -n "top";
 	rename -uid "CBDB9127-4C25-E47F-F3BF-AAA10B5A0987";
@@ -673,6 +673,22 @@ createNode locator -n "loc_lf_eye_iris_guide_001Shape" -p "loc_lf_eye_iris_guide
 	setAttr ".ovrgb" -type "float3" 0 0.81999999 1 ;
 	setAttr ".lp" -type "double3" 3.6603157520294198 163.24771118164051 4.9580154418945295 ;
 	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
+createNode transform -n "loc_lf_eye_aim_guide_001" -p "zero_lf_eye_iris_guide_001";
+	rename -uid "759616F9-4F3B-28BE-43C8-7BA58DA11893";
+	setAttr ".t" -type "double3" 0.37263267487287433 -0.06343698501569861 100 ;
+	setAttr ".rp" -type "double3" 3.6603157520294198 163.24771118164045 4.9580154418945295 ;
+	setAttr ".sp" -type "double3" 3.6603157520294198 163.24771118164045 4.9580154418945295 ;
+	setAttr ".uocol" yes;
+	setAttr ".oclr" -type "float3" 0 0.81999999 1 ;
+createNode locator -n "loc_lf_eye_aim_guide_001Shape" -p "loc_lf_eye_aim_guide_001";
+	rename -uid "6B76100A-460A-EED6-7233-1D9D30899284";
+	setAttr -k off ".v";
+	setAttr ".ove" yes;
+	setAttr ".ovrgbf" yes;
+	setAttr ".ovc" 18;
+	setAttr ".ovrgb" -type "float3" 0 0.81999999 1 ;
+	setAttr ".lp" -type "double3" 3.6603157520294198 163.24771118164051 4.9580154418945295 ;
+	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
 createNode transform -n "zero_rt_eye_ball_guide_001" -p "grp_md_eye_ball_guide_001";
 	rename -uid "C4593F0C-47CD-077E-FD30-218E5FAE531C";
 	setAttr ".s" -type "double3" -1 1 1 ;
@@ -695,6 +711,8 @@ createNode transform -n "zero_rt_eye_iris_guide_001" -p "loc_rt_eye_ball_guide_0
 	setAttr ".oclr" -type "float3" 0 0.81999999 1 ;
 createNode transform -n "loc_rt_eye_iris_guide_001" -p "zero_rt_eye_iris_guide_001";
 	rename -uid "2A568DC4-4669-44D3-8DA3-51B19E771E8E";
+	setAttr ".rp" -type "double3" 3.6603157520294198 163.24771118164051 4.9580154418945295 ;
+	setAttr ".sp" -type "double3" 3.6603157520294198 163.24771118164051 4.9580154418945295 ;
 	setAttr ".uocol" yes;
 	setAttr ".oclr" -type "float3" 0 0.81999999 1 ;
 createNode locator -n "loc_rt_eye_iris_guide_001Shape" -p "loc_rt_eye_iris_guide_001";
@@ -704,6 +722,22 @@ createNode locator -n "loc_rt_eye_iris_guide_001Shape" -p "loc_rt_eye_iris_guide
 	setAttr ".ovrgbf" yes;
 	setAttr ".ovc" 18;
 	setAttr ".ovrgb" -type "float3" 0 0.81999999 1 ;
+createNode transform -n "loc_rt_eye_aim_guide_001" -p "zero_rt_eye_iris_guide_001";
+	rename -uid "7DBEBB2E-4913-FE44-7290-268F8ACACCE0";
+	setAttr ".t" -type "double3" 0.37263267487287433 -0.063436985015812297 100 ;
+	setAttr ".rp" -type "double3" 3.6603157520294198 163.24771118164051 4.9580154418945295 ;
+	setAttr ".sp" -type "double3" 3.6603157520294198 163.24771118164051 4.9580154418945295 ;
+	setAttr ".uocol" yes;
+	setAttr ".oclr" -type "float3" 0 0.81999999 1 ;
+createNode locator -n "loc_rt_eye_aim_guide_001Shape" -p "loc_rt_eye_aim_guide_001";
+	rename -uid "3E191FF3-4217-9309-2BDE-4D93B6816744";
+	setAttr -k off ".v";
+	setAttr ".ove" yes;
+	setAttr ".ovrgbf" yes;
+	setAttr ".ovc" 18;
+	setAttr ".ovrgb" -type "float3" 0 0.81999999 1 ;
+	setAttr ".lp" -type "double3" 3.6603157520294198 163.24771118164051 4.9580154418945295 ;
+	setAttr ".los" -type "double3" 4 4.8999999999999995 4.8999999999999995 ;
 createNode transform -n "grp_md_eye_lid_guide_001" -p "grp_md_eye_guide_001";
 	rename -uid "35FD0AA4-4A69-2B8A-B025-AD9B50569F37";
 	setAttr ".uocol" yes;
@@ -2452,20 +2486,20 @@ createNode nurbsCurve -n "curveShape23" -p "crv_rt_zygoma_guide_001";
 		-49.228466652018575 911.93424312423656 58.506034603746429
 		;
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "98462339-454B-1FD2-4301-368967A24F02";
+	rename -uid "CE33E1E8-47E8-A33D-0BEB-E88B93216E8A";
 	setAttr -s 2 ".lnk";
 	setAttr -s 2 ".slnk";
 createNode shapeEditorManager -n "shapeEditorManager";
-	rename -uid "23344D6D-46A2-5C41-E3D4-52AD670A9573";
+	rename -uid "21BF0F81-4A66-F69B-CA65-219BE187F1D1";
 createNode poseInterpolatorManager -n "poseInterpolatorManager";
-	rename -uid "7D1EA260-4914-D0C6-17EA-659676334407";
+	rename -uid "AA473E14-45F6-EA84-36A6-DBAA17027158";
 createNode displayLayerManager -n "layerManager";
-	rename -uid "16ED7C9C-4CFC-AC2A-DCFC-FC836575531D";
+	rename -uid "7FAE2AFC-484C-BAD1-50FC-4998C66200BF";
 createNode displayLayer -n "defaultLayer";
 	rename -uid "237A14AC-4611-603B-E460-35A799EB2443";
 	setAttr ".ufem" -type "stringArray" 0  ;
 createNode renderLayerManager -n "renderLayerManager";
-	rename -uid "8DEA9F6D-4461-13DF-2C99-F6908F4D0391";
+	rename -uid "5081B234-4062-B0BA-7DE8-71974D11B3B0";
 createNode renderLayer -n "defaultRenderLayer";
 	rename -uid "A7515B81-4B70-4F69-4840-68BAEAE50BBF";
 	setAttr ".g" yes;
@@ -2520,7 +2554,7 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "\tif (\"\" != $panelName) {\n\t\t$label = `panel -q -label $panelName`;\n\t\tscriptedPanel -edit -l (localizedPanelLabel(\"Render View\")) -mbv $menusOkayInPanels  $panelName;\n\t\tif (!$useSceneConfig) {\n\t\t\tpanel -e -l $label $panelName;\n\t\t}\n\t}\n\n\n\t$panelName = `sceneUIReplacement -getNextPanel \"shapePanel\" (localizedPanelLabel(\"Shape Editor\")) `;\n\tif (\"\" != $panelName) {\n\t\t$label = `panel -q -label $panelName`;\n\t\tshapePanel -edit -l (localizedPanelLabel(\"Shape Editor\")) -mbv $menusOkayInPanels  $panelName;\n\t\tif (!$useSceneConfig) {\n\t\t\tpanel -e -l $label $panelName;\n\t\t}\n\t}\n\n\n\t$panelName = `sceneUIReplacement -getNextPanel \"posePanel\" (localizedPanelLabel(\"Pose Editor\")) `;\n\tif (\"\" != $panelName) {\n\t\t$label = `panel -q -label $panelName`;\n\t\tposePanel -edit -l (localizedPanelLabel(\"Pose Editor\")) -mbv $menusOkayInPanels  $panelName;\n\t\tif (!$useSceneConfig) {\n\t\t\tpanel -e -l $label $panelName;\n\t\t}\n\t}\n\n\n\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"dynRelEdPanel\" (localizedPanelLabel(\"Dynamic Relationships\")) `;\n\tif (\"\" != $panelName) {\n"
 		+ "\t\t$label = `panel -q -label $panelName`;\n\t\tscriptedPanel -edit -l (localizedPanelLabel(\"Dynamic Relationships\")) -mbv $menusOkayInPanels  $panelName;\n\t\tif (!$useSceneConfig) {\n\t\t\tpanel -e -l $label $panelName;\n\t\t}\n\t}\n\n\n\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"relationshipPanel\" (localizedPanelLabel(\"Relationship Editor\")) `;\n\tif (\"\" != $panelName) {\n\t\t$label = `panel -q -label $panelName`;\n\t\tscriptedPanel -edit -l (localizedPanelLabel(\"Relationship Editor\")) -mbv $menusOkayInPanels  $panelName;\n\t\tif (!$useSceneConfig) {\n\t\t\tpanel -e -l $label $panelName;\n\t\t}\n\t}\n\n\n\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"referenceEditorPanel\" (localizedPanelLabel(\"Reference Editor\")) `;\n\tif (\"\" != $panelName) {\n\t\t$label = `panel -q -label $panelName`;\n\t\tscriptedPanel -edit -l (localizedPanelLabel(\"Reference Editor\")) -mbv $menusOkayInPanels  $panelName;\n\t\tif (!$useSceneConfig) {\n\t\t\tpanel -e -l $label $panelName;\n\t\t}\n\t}\n\n\n\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"dynPaintScriptedPanelType\" (localizedPanelLabel(\"Paint Effects\")) `;\n"
 		+ "\tif (\"\" != $panelName) {\n\t\t$label = `panel -q -label $panelName`;\n\t\tscriptedPanel -edit -l (localizedPanelLabel(\"Paint Effects\")) -mbv $menusOkayInPanels  $panelName;\n\t\tif (!$useSceneConfig) {\n\t\t\tpanel -e -l $label $panelName;\n\t\t}\n\t}\n\n\n\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"scriptEditorPanel\" (localizedPanelLabel(\"Script Editor\")) `;\n\tif (\"\" != $panelName) {\n\t\t$label = `panel -q -label $panelName`;\n\t\tscriptedPanel -edit -l (localizedPanelLabel(\"Script Editor\")) -mbv $menusOkayInPanels  $panelName;\n\t\tif (!$useSceneConfig) {\n\t\t\tpanel -e -l $label $panelName;\n\t\t}\n\t}\n\n\n\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"profilerPanel\" (localizedPanelLabel(\"Profiler Tool\")) `;\n\tif (\"\" != $panelName) {\n\t\t$label = `panel -q -label $panelName`;\n\t\tscriptedPanel -edit -l (localizedPanelLabel(\"Profiler Tool\")) -mbv $menusOkayInPanels  $panelName;\n\t\tif (!$useSceneConfig) {\n\t\t\tpanel -e -l $label $panelName;\n\t\t}\n\t}\n\n\n\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"contentBrowserPanel\" (localizedPanelLabel(\"Content Browser\")) `;\n"
-		+ "\tif (\"\" != $panelName) {\n\t\t$label = `panel -q -label $panelName`;\n\t\tscriptedPanel -edit -l (localizedPanelLabel(\"Content Browser\")) -mbv $menusOkayInPanels  $panelName;\n\t\tif (!$useSceneConfig) {\n\t\t\tpanel -e -l $label $panelName;\n\t\t}\n\t}\n\n\n\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"Stereo\" (localizedPanelLabel(\"Stereo\")) `;\n\tif (\"\" != $panelName) {\n\t\t$label = `panel -q -label $panelName`;\n\t\tscriptedPanel -edit -l (localizedPanelLabel(\"Stereo\")) -mbv $menusOkayInPanels  $panelName;\n{ string $editorName = ($panelName+\"Editor\");\n            stereoCameraView -e \n                -camera \"|:persp\" \n                -useInteractiveMode 0\n                -displayLights \"default\" \n                -displayAppearance \"wireframe\" \n                -activeOnly 0\n                -ignorePanZoom 0\n                -wireframeOnShaded 0\n                -headsUpDisplay 1\n                -holdOuts 1\n                -selectionHiliteDisplay 1\n                -useDefaultMaterial 0\n                -bufferMode \"double\" \n                -twoSidedLighting 1\n"
+		+ "\tif (\"\" != $panelName) {\n\t\t$label = `panel -q -label $panelName`;\n\t\tscriptedPanel -edit -l (localizedPanelLabel(\"Content Browser\")) -mbv $menusOkayInPanels  $panelName;\n\t\tif (!$useSceneConfig) {\n\t\t\tpanel -e -l $label $panelName;\n\t\t}\n\t}\n\n\n\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"Stereo\" (localizedPanelLabel(\"Stereo\")) `;\n\tif (\"\" != $panelName) {\n\t\t$label = `panel -q -label $panelName`;\n\t\tscriptedPanel -edit -l (localizedPanelLabel(\"Stereo\")) -mbv $menusOkayInPanels  $panelName;\n{ string $editorName = ($panelName+\"Editor\");\n            stereoCameraView -e \n                -camera \"|persp\" \n                -useInteractiveMode 0\n                -displayLights \"default\" \n                -displayAppearance \"wireframe\" \n                -activeOnly 0\n                -ignorePanZoom 0\n                -wireframeOnShaded 0\n                -headsUpDisplay 1\n                -holdOuts 1\n                -selectionHiliteDisplay 1\n                -useDefaultMaterial 0\n                -bufferMode \"double\" \n                -twoSidedLighting 1\n"
 		+ "                -backfaceCulling 0\n                -xray 0\n                -jointXray 0\n                -activeComponentsXray 0\n                -displayTextures 0\n                -smoothWireframe 0\n                -lineWidth 1\n                -textureAnisotropic 0\n                -textureHilight 1\n                -textureSampling 2\n                -textureDisplay \"modulate\" \n                -textureMaxSize 32768\n                -fogging 0\n                -fogSource \"fragment\" \n                -fogMode \"linear\" \n                -fogStart 0\n                -fogEnd 100\n                -fogDensity 0.1\n                -fogColor 0.5 0.5 0.5 1 \n                -depthOfFieldPreview 1\n                -maxConstantTransparency 1\n                -objectFilterShowInHUD 1\n                -isFiltered 0\n                -colorResolution 4 4 \n                -bumpResolution 4 4 \n                -textureCompression 0\n                -transparencyAlgorithm \"frontAndBackCull\" \n                -transpInShadows 0\n                -cullingOverride \"none\" \n"
 		+ "                -lowQualityLighting 0\n                -maximumNumHardwareLights 0\n                -occlusionCulling 0\n                -shadingModel 0\n                -useBaseRenderer 0\n                -useReducedRenderer 0\n                -smallObjectCulling 0\n                -smallObjectThreshold -1 \n                -interactiveDisableShadows 0\n                -interactiveBackFaceCull 0\n                -sortTransparent 1\n                -controllers 1\n                -nurbsCurves 1\n                -nurbsSurfaces 1\n                -polymeshes 1\n                -subdivSurfaces 1\n                -planes 1\n                -lights 1\n                -cameras 1\n                -controlVertices 1\n                -hulls 1\n                -grid 1\n                -imagePlane 1\n                -joints 1\n                -ikHandles 1\n                -deformers 1\n                -dynamics 1\n                -particleInstancers 1\n                -fluids 1\n                -hairSystems 1\n                -follicles 1\n                -nCloths 1\n"
 		+ "                -nParticles 1\n                -nRigids 1\n                -dynamicConstraints 1\n                -locators 1\n                -manipulators 1\n                -pluginShapes 1\n                -dimensions 1\n                -handles 1\n                -pivots 1\n                -textures 1\n                -strokes 1\n                -motionTrails 1\n                -clipGhosts 1\n                -bluePencil 1\n                -greasePencils 0\n                -shadows 0\n                -captureSequenceNumber -1\n                -width 0\n                -height 0\n                -sceneRenderFilter 0\n                -displayMode \"centerEye\" \n                -viewColor 0 0 0 1 \n                -useCustomBackground 1\n                $editorName;\n            stereoCameraView -e -viewSelected 0 $editorName;\n            stereoCameraView -e \n                -pluginObjects \"gpuCacheDisplayFilter\" 1 \n                $editorName; };\n\t\tif (!$useSceneConfig) {\n\t\t\tpanel -e -l $label $panelName;\n\t\t}\n\t}\n\n\n\tif ($useSceneConfig) {\n"
@@ -2688,6 +2722,8 @@ connectAttr "loc_md_nose_front_guide_001Shape.wp" "curveShape21.cp[3]";
 connectAttr "loc_lf_nose_side_guide_001Shape.wp" "curveShape21.cp[4]";
 connectAttr "loc_md_nose_down_guide_001Shape.wp" "curveShape21.cp[5]";
 connectAttr "loc_rt_nose_side_guide_001Shape.wp" "curveShape21.cp[6]";
+connectAttr "loc_lf_eye_iris_guide_001.tx" "loc_lf_eye_aim_guide_001.tx";
+connectAttr "loc_lf_eye_iris_guide_001.ty" "loc_lf_eye_aim_guide_001.ty";
 connectAttr "loc_lf_eye_ball_guide_001.tx" "loc_rt_eye_ball_guide_001.tx";
 connectAttr "loc_lf_eye_ball_guide_001.ty" "loc_rt_eye_ball_guide_001.ty";
 connectAttr "loc_lf_eye_ball_guide_001.tz" "loc_rt_eye_ball_guide_001.tz";
