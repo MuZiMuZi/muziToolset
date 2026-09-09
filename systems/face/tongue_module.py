@@ -1,3 +1,16 @@
+# coding=utf-8
+u"""
+TongueModuleï¼šèˆŒå¤´ FK ç»‘å®šæ¨¡å—ã€‚
+
+TongueModule å¤ç”¨æ ‡å‡† FKChainã€‚
+å½“å‰ Face Guide æ¨¡æ¿åŒ…å« 5 ä¸ª Tongue Bind Locatorï¼š
+    loc_md_tongue_bind_001
+    loc_md_tongue_bind_002
+    loc_md_tongue_bind_003
+    loc_md_tongue_bind_004
+    loc_md_tongue_bind_005
+"""
+
 from ..components import fk_chain
 
 
@@ -13,29 +26,29 @@ class TongueModule(fk_chain.FKChain):
         ctrl_axis="X+"
     ):
         u"""
-        ³õÊ¼»¯¶ú¶ä FK Ä£¿é¡£
+        åˆå§‹åŒ–èˆŒå¤´ FK æ¨¡å—ã€‚
 
-        module(str): Ä£¿éÃû³Æ£¬Ä¬ÈÏ "ear"¡£
-        side(str): Ä£¿é·½Ïò£¬ÀıÈç "lf"¡¢"rt"¡£
-        guide(list/str/Guide): ¿ÉÑ¡ Guide Êı¾İÀ´Ô´¡£
-        jnt_parent(str/PyNode): Joint ×Ü×éµÄ¿ÉÑ¡¸¸½Úµã¡£
-        ctrl_parent(str/PyNode): Controller ×Ü×éµÄ¿ÉÑ¡¸¸½Úµã¡£
-        ctrl_axis(str): ¶ú¶ä Controller Shape Ãæ³¯·½Ïò£¬Ö§³Ö X+ / X- / Y+ / Y- / Z+ / Z-¡£
+        module(str): æ¨¡å—åç§°ï¼Œé»˜è®¤ "tongue"ã€‚
+        side(str): æ¨¡å—æ–¹å‘ï¼ŒèˆŒå¤´é»˜è®¤ä½¿ç”¨ "md"ã€‚
+        guide(list/str/Guide): å¯é€‰ Guide æ•°æ®æ¥æºã€‚
+        jnt_parent(str/PyNode): Joint æ€»ç»„çš„å¯é€‰çˆ¶èŠ‚ç‚¹ã€‚
+        ctrl_parent(str/PyNode): Controller æ€»ç»„çš„å¯é€‰çˆ¶èŠ‚ç‚¹ã€‚
+        ctrl_axis(str): èˆŒå¤´ Controller Shape é¢æœæ–¹å‘ï¼Œæ”¯æŒ X+ / X- / Y+ / Y- / Z+ / Z-ã€‚
 
-        Maya Ê¹ÓÃÊ¾Àı£º
+        Maya ä½¿ç”¨ç¤ºä¾‹ï¼š
 
-            from muziToolset.systems.face import ear_module
+            from muziToolset.systems.face import tongue_module
 
-            ear_object = ear_module.EarModule(
-                module="ear",
-                side="lf",
+            tongue_object = tongue_module.TongueModule(
+                module="tongue",
+                side="md",
                 guide=None,
                 jnt_parent=None,
                 ctrl_parent=None,
                 ctrl_axis="Z+"
             )
 
-            ear_object.build()
+            tongue_object.build()
         """
 
         super(TongueModule, self).__init__(
@@ -44,7 +57,8 @@ class TongueModule(fk_chain.FKChain):
             guide=guide,
             jnt_parent=jnt_parent,
             ctrl_parent=ctrl_parent,
-            guide_count=3,
+            guide_count=5,
+            guide_function="bind",
             jnt_function="bind",
             ctrl_function="fk",
             ctrl_shape="circle",
