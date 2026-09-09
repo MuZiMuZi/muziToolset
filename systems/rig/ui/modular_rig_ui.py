@@ -41,9 +41,24 @@ class ModularRigWindow(QtWidgets.QWidget):
         super(ModularRigWindow, self).__init__(parent)
         self.service = service if service is not None else RigLibraryService()
         self.current_id = None
+        self.current_module = None
         self.current_step = 1
         self.loading = False
         self.jobs = []
+
+        self.setup_window()
+        self._create_layout()
+        self.apply_style()
+        self.load_data()
+        self.refresh_ui()
+        self._start_scene_jobs()
+
+    # =========================================================
+    # Window
+    # =========================================================
+
+    def setup_window(self):
+        u"""设置窗口自身属性，不创建内部控件。"""
         self.setObjectName("ModularRigWindow")
         self.setWindowTitle(u"Muzi · 绑定库 / Rig Library")
         self.setWindowFlags(Qt.Window | Qt.WindowMinMaxButtonsHint | Qt.WindowCloseButtonHint)
@@ -55,16 +70,40 @@ class ModularRigWindow(QtWidgets.QWidget):
             available = screen.availableGeometry()
             self.resize(min(1440, max(1120, available.width() - 60)),
                         min(980, max(740, available.height() - 80)))
-        self.setStyleSheet(stylesheet)
         # 沿用窗口管理器已有的标志，保留绑定库自己的主题。
         self.setProperty("muzi_window_theme_applied", True)
-        self.refresh_timer = QtCore.QTimer(self)
-        self.refresh_timer.setSingleShot(True)
-        self.refresh_timer.timeout.connect(self.refresh_scene)
-        self._create_layout()
+
+    def apply_style(self):
+        u"""从独立主题模块应用绑定库样式。"""
+        self.setStyleSheet(stylesheet)
+
+    def load_data(self):
+        u"""将绑定目录载入 UI；实际业务数据始终由 Service 持有。"""
+        self.refresh_module_list()
+
+    def refresh_ui(self):
+        u"""数据发生变化后的统一 UI 刷新入口。"""
+        self.refresh_rig_structure()
+
+    def refresh_step_ui(self):
+        u"""刷新顶部步骤和当前属性区域。"""
+        self._sync_workflow_steps()
+
+    def refresh_module_list(self):
+        u"""刷新模块与模板目录。"""
         self._populate_library()
+
+    def refresh_rig_structure(self):
+        u"""刷新中间模块结构及其关联区域。"""
         self._render_tree()
-        self._start_scene_jobs()
+
+    def refresh_properties(self):
+        u"""刷新当前模块属性。"""
+        self._load_properties()
+
+    def refresh_status(self):
+        u"""刷新当前步骤提示和主操作按钮。"""
+        self._update_action()
 
     def _create_layout(self):
         u"""建立可调整宽度的三栏结构；右侧属性独立滚动。"""
@@ -102,7 +141,7 @@ class ModularRigWindow(QtWidgets.QWidget):
                    ("Ctrl", u"创建与调整"), ("Final", u"检查与完成"))
         for index, (title, subtitle) in enumerate(entries, 1):
             widget = StepButton(index, title, subtitle)
-            widget.clicked.connect(partial(self.set_step, index))
+            widget.clicked.connect(partial(self.set_current_step, index))
             self.step_buttons.append(widget)
             steps.addWidget(widget, 1)
         main.addLayout(steps)
@@ -234,10 +273,10 @@ class ModularRigWindow(QtWidgets.QWidget):
         status_layout.addWidget(self.status_label)
         status_layout.addWidget(self.status_hint)
         bottom.addLayout(status_layout, 1)
-        self.validate_button = button(u"检查 / Validate", self.validate_scene)
+        self.validate_button = button(u"检查 / Validate", self.validate_current_step)
         self.validate_button.setMinimumHeight(36)
         bottom.addWidget(self.validate_button)
-        self.build_button = button(u"创建基础层级", self.run_step)
+        self.build_button = button(u"创建基础层级", self.build_current_step)
         self.build_button.setProperty("role", "primary")
         self.build_button.setMinimumWidth(250)
         bottom.addWidget(self.build_button)
@@ -465,9 +504,11 @@ class ModularRigWindow(QtWidgets.QWidget):
                 selected_item = item
         if selected_item:
             self.current_id = selected_item.data(0, Qt.UserRole)
+            self.current_module = self.current_id
             self.module_tree.setCurrentItem(selected_item)
         else:
             self.current_id = None
+            self.current_module = None
         self.module_tree.blockSignals(False)
         count = len(records)
         self.empty_label.setVisible(count == 0)
@@ -480,9 +521,15 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def tree_selected(self, current, previous=None):
         u"""节点选择与所属模块的属性区保持同步。"""
-        self.current_id = current.data(0, Qt.UserRole) if current else None
-        self._load_properties()
-        self._update_action()
+        identity = current.data(0, Qt.UserRole) if current else None
+        self.set_current_module(identity)
+
+    def set_current_module(self, module_identity):
+        u"""设置当前模块，再刷新与模块相关的区域。"""
+        self.current_module = module_identity
+        self.current_id = module_identity
+        self.refresh_properties()
+        self.refresh_status()
 
     def _load_properties(self):
         record = self.current_record()
@@ -527,7 +574,7 @@ class ModularRigWindow(QtWidgets.QWidget):
             self._status(str(error), error=True)
             self._load_properties()
             return False
-        self._render_tree()
+        self.refresh_ui()
         self._status(success(result) if callable(success) else success)
         return True
 
@@ -654,6 +701,10 @@ class ModularRigWindow(QtWidgets.QWidget):
         self._sync_workflow_steps()
         self._update_action()
 
+    def set_current_step(self, step, *args):
+        u"""公开的步骤状态入口。"""
+        return self.set_step(step)
+
     def _sync_workflow_steps(self):
         u"""根据场景实际进度刷新步骤的完成、当前和锁定状态。"""
         workflow = self.service.workflow_state()
@@ -715,6 +766,10 @@ class ModularRigWindow(QtWidgets.QWidget):
             self._run(self.service.finalize,
                       lambda count: u"Final 完成：已检查并选择 {} 个主控制器。".format(count))
 
+    def build_current_step(self):
+        u"""公开的当前步骤构建入口。"""
+        return self.run_step()
+
     def validate_scene(self):
         u"""显示只读预检查结果。"""
         def check():
@@ -722,6 +777,10 @@ class ModularRigWindow(QtWidgets.QWidget):
             if errors:
                 raise RuntimeError("\n".join(errors))
         self._run(check, u"检查通过，可以构建待建模块。")
+
+    def validate_current_step(self):
+        u"""公开的当前步骤检查入口。"""
+        return self.validate_scene()
 
     def select_tree_nodes(self, item, column=0):
         u"""双击模块，在 Maya 中选中其现有 Guide、Joint 和 Control。"""

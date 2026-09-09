@@ -30,12 +30,21 @@ class RigLibraryQtTests(unittest.TestCase):
         application.processEvents()
 
     def test_empty_window_template_and_search(self):
+        lifecycle_methods = (
+            "setup_window", "apply_style", "load_data", "refresh_ui",
+            "refresh_step_ui", "refresh_module_list", "refresh_rig_structure",
+            "refresh_properties", "refresh_status", "set_current_step",
+            "set_current_module", "validate_current_step", "build_current_step",
+        )
+        for method_name in lifecycle_methods:
+            self.assertTrue(callable(getattr(self.window, method_name)))
         self.assertFalse(self.window.build_button.isEnabled())
         self.assertTrue(self.window.basic_section.isVisible())
         self.assertFalse(self.window.guide_section.isVisible())
         self.assertFalse(self.window.control_section.isVisible())
         self.assertFalse(self.window.joint_section.isVisible())
         self.window.add_selected_template()
+        self.assertEqual(self.window.current_module, self.window.current_id)
         self.assertEqual(len(self.service.document["modules"]), 3)
         self.assertTrue(self.window.build_button.isEnabled())
         self.window.module_search.setText("tongue")
