@@ -17,7 +17,8 @@ class EarModule(fk_chain.FKChain):
         side="md",
         guide=None,
         jnt_parent=None,
-        ctrl_parent=None
+        ctrl_parent=None,
+        ctrl_axis="X+"
     ):
         u"""
         初始化耳朵 FK 模块。
@@ -27,6 +28,7 @@ class EarModule(fk_chain.FKChain):
         guide(list/str/Guide): 可选 Guide 数据来源。
         jnt_parent(str/PyNode): Joint 总组的可选父节点。
         ctrl_parent(str/PyNode): Controller 总组的可选父节点。
+        ctrl_axis(str): 耳朵 Controller Shape 面朝方向，支持 X+ / X- / Y+ / Y- / Z+ / Z-。
 
         Maya 使用示例：
 
@@ -37,7 +39,8 @@ class EarModule(fk_chain.FKChain):
                 side="lf",
                 guide=None,
                 jnt_parent=None,
-                ctrl_parent=None
+                ctrl_parent=None,
+                ctrl_axis="Z+"
             )
 
             ear_object.build()
@@ -54,5 +57,6 @@ class EarModule(fk_chain.FKChain):
             ctrl_function="fk",
             ctrl_shape="circle",
             ctrl_color=17,
-            ctrl_size=1.0
+            ctrl_size=1.0,
+            ctrl_axis=ctrl_axis
         )
