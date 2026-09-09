@@ -60,7 +60,7 @@ class ArtHeader(QtWidgets.QFrame):
 
 
 class StepButton(QtWidgets.QPushButton):
-    u"""顶部五步导航，以清晰数字和切角高亮呈现当前操作阶段。"""
+    u"""顶部四步导航，以清晰数字和切角高亮呈现当前操作阶段。"""
 
     def __init__(self, number, title, subtitle, parent=None):
         super(StepButton, self).__init__(parent)

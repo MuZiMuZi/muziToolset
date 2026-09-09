@@ -1,5 +1,5 @@
 # coding=utf-8
-u"""Muzi 绑定库：五步导航、模块与模板目录、场景结构和可折叠属性。"""
+u"""Muzi 绑定库：四步导航、模块与模板目录、场景结构和可折叠属性。"""
 
 from functools import partial
 
@@ -88,7 +88,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         header_layout.addStretch(1)
         self.import_button = button(u"导入配置", self.import_recipe, u"追加 JSON 模块配置")
         self.export_button = button(u"导出配置", self.export_recipe, u"保存模块参数；不包含 Maya 场景或 Guide 位置")
-        self.help_button = button("?", self.show_help, u"查看五步操作说明")
+        self.help_button = button("?", self.show_help, u"查看四步操作说明")
         self.help_button.setFixedWidth(34)
         header_layout.addWidget(self.import_button)
         header_layout.addWidget(self.export_button)
@@ -99,12 +99,10 @@ class ModularRigWindow(QtWidgets.QWidget):
         steps.setSpacing(1)
         self.step_buttons = []
         entries = (("Setup", u"配置与层级"), ("Guide", u"导入与定位"),
-                   ("Build", u"骨骼 + 控制器"), ("Control", u"外观与显示"), ("Deformer", u"尚未接入"))
+                   ("Ctrl", u"创建与调整"), ("Final", u"检查与完成"))
         for index, (title, subtitle) in enumerate(entries, 1):
             widget = StepButton(index, title, subtitle)
             widget.clicked.connect(partial(self.set_step, index))
-            if index == 5:
-                widget.setToolTip(u"当前模块尚未提供 Deformer 构建接口。")
             self.step_buttons.append(widget)
             steps.addWidget(widget, 1)
         main.addLayout(steps)
@@ -293,6 +291,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         layout.addWidget(guides)
 
         controls = Section("Controller / 控制器外观")
+        self.control_section = controls
         self.axis_combo = QtWidgets.QComboBox()
         self.axis_combo.addItems(catalog.axes)
         controls.form.addRow(u"Shape Axis / 朝向", self.axis_combo)
@@ -631,7 +630,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         self._run(lambda: self.service.update_module(self.current_id, {"guides": names}), u"Guide 列表已保存。")
 
     def set_step(self, number, *args):
-        u"""五段导航对应真实能力，构建由现有 Module 一次完成骨骼和控制器。"""
+        u"""四段导航对应真实能力，Ctrl 阶段一次完成骨骼和控制器。"""
         workflow = self.service.workflow_state()
         if not workflow["unlocked"].get(number, False):
             self._status(u"当前阶段尚未解锁，请先完成前一步。", error=True)
@@ -646,6 +645,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         if not workflow["unlocked"].get(self.current_step, False):
             self.current_step = workflow["suggested"]
         self.guide_section.button.setChecked(self.current_step == 2)
+        self.control_section.button.setChecked(self.current_step == 3)
         for index, widget in enumerate(self.step_buttons, 1):
             if index == self.current_step:
                 state = "current"
@@ -660,17 +660,15 @@ class ModularRigWindow(QtWidgets.QWidget):
     def _update_action(self):
         if not hasattr(self, "build_button"):
             return
-        texts = {1: u"创建基础层级", 2: u"导入 Face Guide", 3: u"构建启用模块", 4: u"选择当前控制器"}
+        texts = {1: u"创建基础层级", 2: u"导入 Face Guide", 3: u"创建控制系统", 4: u"完成并选择控制器"}
         hints = {1: u"添加模块与组合模板，然后创建基础层级。",
                  2: u"耳朵与舌头使用 Face Guide；通用 FK 请指定有序 Guide。",
-                 3: u"一次创建骨骼、控制器及驱动连接；已构建模块自动跳过。",
-                 4: u"右侧大小、颜色、轴向与显示参数会立即应用到当前模块。"}
+                 3: u"创建骨骼、控制器与驱动连接；右侧参数可实时调整外观。",
+                 4: u"最终检查全部已构建模块，并选择所有主控制器。"}
         self.build_button.setText(texts[self.current_step])
         self.status_hint.setText(hints[self.current_step])
-        enabled = bool(self.service.document["modules"])
-        if self.current_step == 4:
-            record = self.current_record()
-            enabled = record is not None and record["built"]
+        workflow = self.service.workflow_state()
+        enabled = bool(self.service.document["modules"]) and workflow["unlocked"].get(self.current_step, False)
         self.build_button.setEnabled(enabled)
 
     def run_step(self):
@@ -682,13 +680,12 @@ class ModularRigWindow(QtWidgets.QWidget):
             if self._run(self.service.import_guide, u"Face Guide 已就绪，请在 Maya 中检查并调整位置。"):
                 self.set_step(3)
         elif self.current_step == 3:
-            if self._run(self.service.build, lambda count: u"构建完成：{} 个新模块。".format(count)):
+            if self._run(self.service.build, lambda count: u"Ctrl 完成：{} 个新模块。".format(count)):
                 self.build_requested.emit("all")
                 self.set_step(4)
         elif self.current_step == 4:
-            record = self.current_record()
-            if record:
-                self.service.select_nodes(catalog.output_names(record)["controls"])
+            self._run(self.service.finalize,
+                      lambda count: u"Final 完成：已检查并选择 {} 个主控制器。".format(count))
 
     def validate_scene(self):
         u"""显示只读预检查结果。"""
@@ -726,9 +723,8 @@ class ModularRigWindow(QtWidgets.QWidget):
         u"""说明真实支持范围以及各阶段操作。"""
         QtWidgets.QMessageBox.information(self, u"绑定库使用说明", u"1. 添加 Ear、Tongue、FK Chain，或添加模板组合。\n"
             u"2. Setup 创建根组；Guide 导入仓库现有 Face Guide。\n"
-            u"3. 在 Maya 中调整 Guide，再点击 Validate 和 Build。\n"
-            u"4. Build 一次创建骨骼和控制器；Control 调整外观。\n"
-            u"5. Deformer 尚未接入。\n\n"
+            u"3. 在 Maya 中调整 Guide，再点击 Validate；Ctrl 创建骨骼和控制器并调整外观。\n"
+            u"4. Final 检查全部模块并选择主控制器。\n\n"
             u"配置随 Maya 场景保存；JSON 只保存模块参数，不包含绑定或 Guide 位置。\n"
             u"通用 FK 按文本行顺序读取 Guide。已构建模块锁定身份与定位输入。\n"
             u"当前版本支持根命名空间中的一套绑定库。")

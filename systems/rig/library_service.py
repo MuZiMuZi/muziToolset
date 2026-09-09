@@ -190,7 +190,7 @@ class RigLibraryService(object):
         self._commit(self.document, apply, "Muzi Import Face Guide")
 
     def workflow_state(self):
-        u"""返回五步导航需要的场景状态，不创建或修改任何 Maya 节点。"""
+        u"""返回四步导航需要的场景状态，不创建或修改任何 Maya 节点。"""
         records = []
         for record in self.document["modules"]:
             if record["enabled"]:
@@ -243,14 +243,12 @@ class RigLibraryService(object):
                 2: guide_complete,
                 3: build_complete,
                 4: False,
-                5: False,
             },
             "unlocked": {
                 1: True,
                 2: setup_complete,
                 3: guide_complete,
                 4: build_complete,
-                5: False,
             },
             "suggested": 4 if build_complete else 3 if guide_complete else 2 if setup_complete else 1,
         }
@@ -324,7 +322,7 @@ class RigLibraryService(object):
         return builder
 
     def build(self):
-        u"""Step 03：一次构建所有启用的待建模块；已有绑定不会再次运行 build。"""
+        u"""Step 03 Ctrl：构建所有启用的待建模块；已有绑定不会再次运行。"""
         errors = self.validate()
         if errors:
             raise RuntimeError("\n".join(errors))
@@ -354,6 +352,21 @@ class RigLibraryService(object):
 
         self._commit(self.document, apply, "Muzi Build Modules")
         return len(pending)
+
+    def finalize(self):
+        u"""Step 04 Final：检查完整性并选择全部已构建主控制器。"""
+        errors = self.validate()
+        if errors:
+            raise RuntimeError("\n".join(errors))
+        controls = []
+        for record in self.document["modules"]:
+            if not record["enabled"] or not record["built"]:
+                continue
+            output = catalog.output_names(record)
+            for name in output["controls"]:
+                controls.append(name)
+        self.select_nodes(controls)
+        return len(controls)
 
     def _apply_display(self, record, previous=None):
         u"""只修改本模块的显示属性和 Curve CV，保留控制器位置与连接。"""

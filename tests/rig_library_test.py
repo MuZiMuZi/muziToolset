@@ -27,6 +27,7 @@ class FakeCommands:
         self.undo_enabled = True
         self.namespace = ":"
         self.undo_count = 0
+        self.selection = []
 
     def objExists(self, name):
         return name in self.nodes
@@ -72,6 +73,9 @@ class FakeCommands:
 
     def ls(self, name, **kwargs):
         return [name] if name in self.nodes else []
+
+    def select(self, names, replace=True):
+        self.selection = list(names)
 
 
 class ServiceFixture(RigLibraryService):
@@ -143,6 +147,9 @@ class RigLibraryTests(unittest.TestCase):
         self.assertTrue(state["completed"][3])
         self.assertTrue(state["unlocked"][4])
         self.assertEqual(state["suggested"], 4)
+        self.assertEqual(set(state["unlocked"]), {1, 2, 3, 4})
+        self.assertEqual(self.service.finalize(), 11)
+        self.assertEqual(len(self.commands.selection), 11)
 
     def test_duplicate_names_are_rejected_atomically(self):
         self.service.add_template("ear_pair")

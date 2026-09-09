@@ -22,15 +22,15 @@ window = muziToolset.show_rig_library()
 | 参考图区域 | 当前实现 |
 | --- | --- |
 | 明亮暖白底、酸橙色强调、工业线条 | 局部 QSS、矢量页眉装饰和数字切角导航；不依赖位图背景 |
-| 顶部五步导航 | Setup / Guide / Build / Control / Deformer |
+| 顶部四步导航 | Setup / Guide / Ctrl / Final |
 | Modules 左栏 | 当前可用模块、搜索、添加 |
 | Templates 左栏 | 已实现模块的组合模板，重复添加保留已有设置 |
 | Rig Structure 中栏 | 模块配置及其 Guide、Joint、Control 节点；区分未创建与已存在 |
 | Properties 右栏 | 基础设置、Guide 列表、控制器外观、骨骼与显示抽屉 |
-| Validate / Build 底栏 | 只读预检查、当前阶段动作、失败详情 |
+| Validate / Ctrl / Final 底栏 | 只读预检查、当前阶段动作、失败详情 |
 | 小窗口 | 三栏可拖动调宽，左侧目录与右侧属性独立滚动 |
 
-原图的 Joint / Control 两次创建被映射为 **Step 03 Build 一次构建骨骼和控制器**、**Step 04 Control 编辑显示外观**，沿用现有 FKChain.build 的完整生命周期。Deformer 未有对应后端，入口禁用。
+工作流收敛为四步：**Step 03 Ctrl** 一次构建骨骼和控制器，并在右侧实时调整外观；**Step 04 Final** 检查已构建模块并选择全部主控制器。底层继续沿用现有 FKChain.build 完整生命周期。
 
 ## 已接入内容
 
@@ -55,8 +55,8 @@ Face Guide 使用仓库的 resources/module_guide/face_guide.ma。模板中其�
 3. Guide → 导入 Face Guide，在 Maya 中调整定位。
 4. 通用 FK 在右侧 Guide 抽屉内填写每行一个节点，或读取当前选择，然后核对顺序并保存。耳朵、舌头留空时按标准名称查找 Guide。
 5. Validate 检查 Guide、节点类型、同名输出和根组归属。
-6. Build 创建所有启用的待建模块，已经构建的模块自动跳过。
-7. Control 中调整大小、索引颜色、形状朝向、关节半径与显示。
+6. Ctrl 创建所有启用的待建模块，已经构建的模块自动跳过，并可调整大小、索引颜色、形状朝向、关节半径与显示。
+7. Final 检查全部模块并选择所有已构建主控制器。
 
 已构建模块锁定名称、Side、Guide 和参与构建开关。外观调整通过已有 Ctrl / Jnt 接口进行；大小使用“新值 / 旧值”比例修改 CV，不重建控制器，不修改 Transform。
 

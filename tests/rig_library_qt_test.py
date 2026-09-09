@@ -56,12 +56,17 @@ class RigLibraryQtTests(unittest.TestCase):
         self.window.set_step(3)
         self.window.run_step()
         self.assertEqual(self.window.current_step, 4)
+        self.assertEqual(len(self.window.step_buttons), 4)
+        self.assertEqual([step.title for step in self.window.step_buttons],
+                         ["Setup", "Guide", "Ctrl", "Final"])
         self.assertFalse(self.window.remove_button.isEnabled())
         self.assertFalse(self.window.side_combo.isEnabled())
-        self.assertFalse(self.window.step_buttons[4].isEnabled())
         self.window.size_spin.setValue(2.3)
         self.assertEqual(self.service.document["modules"][0]["ctrl_size"], 2.3)
         self.assertEqual(len(self.service.calls), 3)
+        self.window.run_step()
+        self.assertEqual(len(self.service.cmds.selection), 11)
+        self.assertIn("Final", self.window.status_label.text())
 
     def test_undo_refresh_reloads_config(self):
         self.window.add_selected_template()
@@ -121,6 +126,7 @@ class RigLibraryQtTests(unittest.TestCase):
         self.service.setup()
         self.window.set_step(2)
         self.assertTrue(self.window.guide_section.button.isChecked())
+        self.assertFalse(self.window.control_section.button.isChecked())
         self.window.set_step(4)
         self.assertEqual(self.window.current_step, 2)
 
