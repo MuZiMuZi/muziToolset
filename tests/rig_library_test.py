@@ -154,7 +154,21 @@ class RigLibraryTests(unittest.TestCase):
         self.assertEqual(state["suggested"], 4)
         self.assertEqual(set(state["unlocked"]), {1, 2, 3, 4})
         self.assertEqual(self.service.finalize(), 11)
+        state = self.service.workflow_state()
+        self.assertTrue(state["completed"][4])
         self.assertEqual(len(self.commands.selection), 11)
+
+    def test_legacy_build_state_migrates_to_connected(self):
+        document = catalog.new_document()
+        record = catalog.new_module("ear")
+        record["built"] = True
+        del record["connected"]
+        document["modules"].append(record)
+
+        migrated = catalog.validate_document(document)
+
+        self.assertTrue(migrated["modules"][0]["built"])
+        self.assertTrue(migrated["modules"][0]["connected"])
 
     def test_duplicate_names_are_rejected_atomically(self):
         self.service.add_template("ear_pair")

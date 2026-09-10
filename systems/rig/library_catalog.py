@@ -55,7 +55,7 @@ def new_module(key, side=None, name=None):
         "side": side, "enabled": True, "guides": [],
         "ctrl_size": 1.0, "ctrl_color": side_colors[side], "ctrl_axis": "X+",
         "jnt_radius": 1.0, "show_axis": False, "show_joints": True,
-        "show_controls": True, "built": False,
+        "show_controls": True, "built": False, "connected": False,
     }
 
 
@@ -92,6 +92,7 @@ def validate_document(document):
     u"""严格校验配置后返回独立副本，防止部分参数写入或覆盖同名模块。"""
     if not isinstance(document, dict) or document.get("version") != 1:
         raise ValueError(u"无法识别绑定库配置版本。")
+    document = copy.deepcopy(document)
     records = document.get("modules")
     if not isinstance(records, list) or len(records) > 100:
         raise ValueError(u"配置必须包含模块列表，最多 100 个模块。")
@@ -101,6 +102,10 @@ def validate_document(document):
         if not isinstance(record, dict):
             raise ValueError(u"模块配置必须为字典。")
         required = set(new_module("ear"))
+        legacy_required = required - {"connected"}
+        if set(record) == legacy_required:
+            # 旧版 built 代表完整构建，迁移后应同时视为已经建立连接。
+            record["connected"] = record["built"]
         if set(record) != required:
             raise ValueError(u"模块配置字段缺失或包含不支持的字段。")
         get_module(record["kind"])
@@ -126,9 +131,11 @@ def validate_document(document):
         if identity_id in ids:
             raise ValueError(u"模块标识重复。")
         ids.add(identity_id)
-        for key in ("enabled", "built", "show_axis", "show_joints", "show_controls"):
+        for key in ("enabled", "built", "connected", "show_axis", "show_joints", "show_controls"):
             if type(record[key]) is not bool:
                 raise ValueError(u"{} 必须为布尔值。".format(key))
+        if record["connected"] and not record["built"]:
+            raise ValueError(u"模块尚未生成，不能标记为已经连接。")
         for key in ("ctrl_size", "jnt_radius"):
             value = record[key]
             if type(value) not in (int, float) or not math.isfinite(value) or not 0.01 <= value <= 100.0:
@@ -150,7 +157,7 @@ def validate_document(document):
                 raise ValueError(u"{} 的 Guide 数量不符合模块要求。".format(name))
         if record["built"] and not guide_names(record):
             raise ValueError(u"已构建模块必须具有 Guide 数据。")
-    return copy.deepcopy(document)
+    return document
 
 
 def add_template(document, key):

@@ -291,12 +291,19 @@ class RigLibraryService(object):
                     build_complete = False
                     break
 
+        connection_complete = build_complete
+        if connection_complete:
+            for record in records:
+                if not record["connected"]:
+                    connection_complete = False
+                    break
+
         return {
             "completed": {
                 1: setup_complete,
                 2: guide_complete,
                 3: build_complete,
-                4: False,
+                4: connection_complete,
             },
             "unlocked": {
                 1: True,
@@ -419,6 +426,11 @@ class RigLibraryService(object):
             output = catalog.output_names(record)
             for name in output["controls"]:
                 controls.append(name)
+        document = copy.deepcopy(self.document)
+        for record in document["modules"]:
+            if record["enabled"] and record["built"]:
+                record["connected"] = True
+        self._commit(document, label="Muzi Finalize Modules")
         self.select_nodes(controls)
         return len(controls)
 
@@ -466,6 +478,7 @@ class RigLibraryService(object):
         document = copy.deepcopy(self.document)
         for record in document["modules"]:
             record["built"] = False
+            record["connected"] = False
         with open(path, "w", encoding="utf-8") as stream:
             json.dump(document, stream, ensure_ascii=False, indent=2)
 
@@ -478,5 +491,6 @@ class RigLibraryService(object):
         document = copy.deepcopy(self.document)
         for record in incoming["modules"]:
             record["built"] = False
+            record["connected"] = False
             document["modules"].append(record)
         self._commit(document)
