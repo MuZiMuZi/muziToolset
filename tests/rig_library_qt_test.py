@@ -31,13 +31,19 @@ class RigLibraryQtTests(unittest.TestCase):
 
     def test_empty_window_template_and_search(self):
         lifecycle_methods = (
-            "setup_window", "apply_style", "load_data", "refresh_ui",
+            "setup_window", "create_widgets", "create_layouts",
+            "create_header_layout", "create_step_layout", "create_module_panel",
+            "create_rig_structure_panel", "create_properties_panel",
+            "create_bottom_layout", "create_connections", "apply_style",
+            "load_data", "refresh_ui",
             "refresh_step_ui", "refresh_module_list", "refresh_rig_structure",
             "refresh_properties", "refresh_status", "set_current_step",
             "set_current_module", "validate_current_step", "build_current_step",
         )
         for method_name in lifecycle_methods:
             self.assertTrue(callable(getattr(self.window, method_name)))
+        self.assertFalse(hasattr(self.window, "_create_layout"))
+        self.assertFalse(hasattr(self.window, "_create_properties"))
         self.assertFalse(self.window.build_button.isEnabled())
         self.assertTrue(self.window.basic_section.isVisible())
         self.assertFalse(self.window.guide_section.isVisible())
@@ -58,6 +64,15 @@ class RigLibraryQtTests(unittest.TestCase):
         root = self.window.module_tree.topLevelItem(0)
         self.assertTrue(root.child(0).isHidden())
         self.assertFalse(root.child(2).isHidden())
+
+    def test_loading_catalog_data_is_idempotent(self):
+        self.window.load_data()
+        self.window.load_data()
+
+        self.assertEqual(self.window.module_list.count(), len(catalog.modules))
+        self.assertEqual(self.window.template_list.count(), len(catalog.templates))
+        self.assertEqual(self.window.side_combo.count(), 3)
+        self.assertEqual(self.window.axis_combo.count(), len(catalog.axes))
 
     def test_stage_actions_and_built_parameter_edit(self):
         self.window.add_selected_template()
