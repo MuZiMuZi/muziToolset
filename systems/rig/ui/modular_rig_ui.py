@@ -58,6 +58,26 @@ class ModularRigWindow(QtWidgets.QWidget):
         self._start_scene_jobs()
 
     # =========================================================
+    # Window
+    # =========================================================
+
+    def setup_window(self):
+        u"""设置窗口自身属性，不创建内部控件。"""
+        self.setObjectName("ModularRigWindow")
+        self.setWindowTitle(u"Muzi · 绑定库 / Rig Library")
+        self.setWindowFlags(Qt.Window | Qt.WindowMinMaxButtonsHint | Qt.WindowCloseButtonHint)
+        self.setAttribute(Qt.WA_DeleteOnClose, True)
+        self.setMinimumSize(1120, 740)
+        self.resize(1440, 980)
+        screen = QtWidgets.QApplication.primaryScreen()
+        if screen:
+            available = screen.availableGeometry()
+            self.resize(min(1440, max(1120, available.width() - 60)),
+                        min(980, max(740, available.height() - 80)))
+        # 沿用窗口管理器已有的标志，保留绑定库自己的主题。
+        self.setProperty("muzi_window_theme_applied", True)
+
+    # =========================================================
     # UI Creation
     # =========================================================
 
@@ -337,74 +357,8 @@ class ModularRigWindow(QtWidgets.QWidget):
         return self.footer
 
     # =========================================================
-    # Window
+    # Connections
     # =========================================================
-
-    def setup_window(self):
-        u"""设置窗口自身属性，不创建内部控件。"""
-        self.setObjectName("ModularRigWindow")
-        self.setWindowTitle(u"Muzi · 绑定库 / Rig Library")
-        self.setWindowFlags(Qt.Window | Qt.WindowMinMaxButtonsHint | Qt.WindowCloseButtonHint)
-        self.setAttribute(Qt.WA_DeleteOnClose, True)
-        self.setMinimumSize(1120, 740)
-        self.resize(1440, 980)
-        screen = QtWidgets.QApplication.primaryScreen()
-        if screen:
-            available = screen.availableGeometry()
-            self.resize(min(1440, max(1120, available.width() - 60)),
-                        min(980, max(740, available.height() - 80)))
-        # 沿用窗口管理器已有的标志，保留绑定库自己的主题。
-        self.setProperty("muzi_window_theme_applied", True)
-
-    def apply_style(self):
-        u"""从独立主题模块应用绑定库样式。"""
-        self.setStyleSheet(stylesheet)
-
-    def load_data(self):
-        u"""将绑定目录载入 UI；实际业务数据始终由 Service 持有。"""
-        side_entries = (
-            (u"Left / 左", "lf"),
-            (u"Right / 右", "rt"),
-            (u"Center / 中", "md"),
-        )
-        self.loading = True
-        try:
-            self.side_combo.clear()
-            for title, value in side_entries:
-                self.side_combo.addItem(title, value)
-            self.axis_combo.clear()
-            for axis in catalog.axes:
-                self.axis_combo.addItem(axis)
-        finally:
-            self.loading = False
-        self.refresh_module_list()
-
-    def refresh_ui(self):
-        u"""数据发生变化后的统一 UI 刷新入口。"""
-        self.refresh_rig_structure()
-        self.refresh_properties()
-        self.refresh_step_ui()
-        self.refresh_status()
-
-    def refresh_step_ui(self):
-        u"""刷新顶部步骤和当前属性区域。"""
-        self._sync_workflow_steps()
-
-    def refresh_module_list(self):
-        u"""刷新模块与模板目录。"""
-        self._populate_library()
-
-    def refresh_rig_structure(self):
-        u"""刷新中间模块结构及其关联区域。"""
-        self._render_tree()
-
-    def refresh_properties(self):
-        u"""刷新当前模块属性。"""
-        self._load_properties()
-
-    def refresh_status(self):
-        u"""刷新当前步骤提示和主操作按钮。"""
-        self._update_action()
 
     def create_connections(self):
         u"""集中管理窗口中所有固定控件的信号连接。"""
@@ -448,6 +402,87 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.joint_check.toggled.connect(lambda value: self.change_property("show_joints", value))
         self.control_check.toggled.connect(lambda value: self.change_property("show_controls", value))
         self.refresh_timer.timeout.connect(self.refresh_scene)
+
+    # =========================================================
+    # Style
+    # =========================================================
+
+    def apply_style(self):
+        u"""从独立主题模块应用绑定库样式。"""
+        self.setStyleSheet(stylesheet)
+
+    # =========================================================
+    # Data
+    # =========================================================
+
+    def load_data(self):
+        u"""将绑定目录载入 UI；实际业务数据始终由 Service 持有。"""
+        side_entries = (
+            (u"Left / 左", "lf"),
+            (u"Right / 右", "rt"),
+            (u"Center / 中", "md"),
+        )
+        self.loading = True
+        try:
+            self.side_combo.clear()
+            for title, value in side_entries:
+                self.side_combo.addItem(title, value)
+            self.axis_combo.clear()
+            for axis in catalog.axes:
+                self.axis_combo.addItem(axis)
+        finally:
+            self.loading = False
+        self.refresh_module_list()
+
+    # =========================================================
+    # State
+    # =========================================================
+
+    def set_current_step(self, step, *args):
+        u"""公开的步骤状态入口。"""
+        return self.set_step(step)
+
+    def set_current_module(self, module_identity):
+        u"""设置当前模块，再刷新与模块相关的区域。"""
+        self.current_module = module_identity
+        self.current_id = module_identity
+        self.refresh_properties()
+        self.refresh_status()
+
+    # =========================================================
+    # Refresh
+    # =========================================================
+
+    def refresh_ui(self):
+        u"""数据发生变化后的统一 UI 刷新入口。"""
+        self.refresh_rig_structure()
+        self.refresh_properties()
+        self.refresh_step_ui()
+        self.refresh_status()
+
+    def refresh_step_ui(self):
+        u"""刷新顶部步骤和当前属性区域。"""
+        self._sync_workflow_steps()
+
+    def refresh_module_list(self):
+        u"""刷新模块与模板目录。"""
+        self._populate_library()
+
+    def refresh_rig_structure(self):
+        u"""刷新中间模块结构及其关联区域。"""
+        self._render_tree()
+
+    def refresh_properties(self):
+        u"""刷新当前模块属性。"""
+        self._load_properties()
+
+    def refresh_status(self):
+        u"""刷新当前步骤提示和主操作按钮。"""
+        self._update_action()
+
+    # =========================================================
+    # Internal UI Helpers
+    # =========================================================
 
     def _panel(self, title, badge):
         u"""创建分栏面板和统一标题行。"""
@@ -620,13 +655,6 @@ class ModularRigWindow(QtWidgets.QWidget):
         identity = current.data(0, Qt.UserRole) if current else None
         self.set_current_module(identity)
 
-    def set_current_module(self, module_identity):
-        u"""设置当前模块，再刷新与模块相关的区域。"""
-        self.current_module = module_identity
-        self.current_id = module_identity
-        self.refresh_properties()
-        self.refresh_status()
-
     def _load_properties(self):
         record = self.current_record()
         self.property_body.setEnabled(record is not None)
@@ -797,10 +825,6 @@ class ModularRigWindow(QtWidgets.QWidget):
         self._sync_workflow_steps()
         self._update_action()
 
-    def set_current_step(self, step, *args):
-        u"""公开的步骤状态入口。"""
-        return self.set_step(step)
-
     def _sync_workflow_steps(self):
         u"""根据场景实际进度刷新步骤的完成、当前和锁定状态。"""
         workflow = self.service.workflow_state()
@@ -845,6 +869,10 @@ class ModularRigWindow(QtWidgets.QWidget):
         workflow = self.service.workflow_state()
         enabled = bool(self.service.document["modules"]) and workflow["unlocked"].get(self.current_step, False)
         self.build_button.setEnabled(enabled)
+
+    # =========================================================
+    # Build
+    # =========================================================
 
     def run_step(self):
         u"""底部主按钮执行当前阶段操作。"""
