@@ -357,6 +357,43 @@ class FKChain(rig_module.RigModule):
                 maintainOffset=True
             )
 
+    def load_outputs(self):
+        u"""读取 Step 03 已生成的 FK Joint 和 Controller Output。"""
+        self.get_guides()
+        self.jnt_list = []
+        self.jnt_objects = []
+        self.ctrl_list = []
+        self.ctrl_objects = []
+
+        class ExistingJoint(object):
+            def __init__(self, name):
+                self.jnt = name
+
+        class ExistingController(object):
+            def __init__(self, name, output_name):
+                self.ctrl = name
+                self.output_grp = output_name
+
+        for index in range(1, len(self.guide_list) + 1):
+            joint_name = name_utils.Name(
+                type="jnt", side=self.side, part=self.module,
+                function=self.jnt_function, index=index
+            ).name
+            control_name = name_utils.Name(
+                type="ctrl", side=self.side, part=self.module,
+                function=self.ctrl_function, index=index
+            ).name
+            output_name = control_name.replace("ctrl_", "output_", 1)
+            for node_name in (joint_name, control_name, output_name):
+                if not cmds.objExists(node_name):
+                    raise RuntimeError(u"找不到已经生成的模块输出：{}".format(node_name))
+            self.jnt_list.append(joint_name)
+            self.jnt_objects.append(ExistingJoint(joint_name))
+            self.ctrl_list.append(control_name)
+            self.ctrl_objects.append(ExistingController(control_name, output_name))
+
+        return self.jnt_list, self.ctrl_list
+
     def setup_hierarchy(self):
         u"""
         整理当前 FK Chain 的模块总组和内部 FK 层级。

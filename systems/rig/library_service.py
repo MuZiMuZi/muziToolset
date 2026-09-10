@@ -383,7 +383,7 @@ class RigLibraryService(object):
         return builder
 
     def build(self):
-        u"""Step 03 Ctrl：构建所有启用的待建模块；已有绑定不会再次运行。"""
+        u"""生成所有启用模块的 Joint、Controller 和层级，不建立驱动连接。"""
         errors = self.validate()
         if errors:
             raise RuntimeError("\n".join(errors))
@@ -400,7 +400,7 @@ class RigLibraryService(object):
                 if not record["enabled"] or record["built"]:
                     continue
                 builder = self._make_builder(record)
-                builder.build()
+                builder.build_outputs()
                 errors = self._check_built(record)
                 if errors:
                     raise RuntimeError("\n".join(errors))
@@ -410,12 +410,13 @@ class RigLibraryService(object):
                         self.cmds.setAttr(name + "." + self.module_attr, record["id"], type="string")
                 self._apply_display(record)
                 record["built"] = True
+                record["connected"] = False
 
         self._commit(self.document, apply, "Muzi Build Modules")
         return len(pending)
 
     def finalize(self):
-        u"""Step 04 Final：检查完整性并选择全部已构建主控制器。"""
+        u"""Step 04 Final：为已生成模块建立连接并选择全部主控制器。"""
         errors = self.validate()
         if errors:
             raise RuntimeError("\n".join(errors))
@@ -427,10 +428,16 @@ class RigLibraryService(object):
             for name in output["controls"]:
                 controls.append(name)
         document = copy.deepcopy(self.document)
-        for record in document["modules"]:
-            if record["enabled"] and record["built"]:
+
+        def apply(candidate):
+            for record in candidate["modules"]:
+                if not record["enabled"] or not record["built"] or record["connected"]:
+                    continue
+                builder = self._make_builder(record)
+                builder.connect_outputs()
                 record["connected"] = True
-        self._commit(document, label="Muzi Finalize Modules")
+
+        self._commit(document, apply, "Muzi Connect Modules")
         self.select_nodes(controls)
         return len(controls)
 

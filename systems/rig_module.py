@@ -307,6 +307,22 @@ class RigModule(object):
 
         return self.jnt_master_grp, self.ctrl_master_grp
 
+    def build_outputs(self):
+        u"""创建关节、控制器与最终层级，但不建立绑定驱动连接。"""
+        self.get_guides()
+        self.create_joints()
+        self.create_ctrls()
+        self.setup_hierarchy()
+
+    def load_outputs(self):
+        u"""读取已经生成的模块输出；具体节点规则由子类实现。"""
+        pass
+
+    def connect_outputs(self):
+        u"""读取现有输出并建立绑定驱动连接。"""
+        self.load_outputs()
+        self.connect_rig()
+
     def build(self):
         u"""
         按照统一生命周期构建当前 Rig Module。
@@ -326,8 +342,5 @@ class RigModule(object):
             module_object.build()
         """
 
-        self.get_guides()
-        self.create_joints()
-        self.create_ctrls()
-        self.setup_hierarchy()
-        self.connect_rig()
+        self.build_outputs()
+        self.connect_outputs()

@@ -95,13 +95,16 @@ class ServiceFixture(RigLibraryService):
     def _make_builder(self, record):
         owner = self
         class Builder:
-            def build(self):
+            def build_outputs(self):
                 owner.calls.append(record["kind"])
                 for group, names in catalog.output_names(record).items():
                     for name in names:
                         owner.cmds.createNode("joint" if group == "joints" else "transform", name=name)
                 if owner.fail_kind == record["kind"]:
                     raise RuntimeError("injected build failure")
+
+            def connect_outputs(self):
+                owner.calls.append("connect:" + record["kind"])
         return Builder()
 
     def _apply_display(self, record, previous=None):
@@ -154,6 +157,7 @@ class RigLibraryTests(unittest.TestCase):
         self.assertEqual(state["suggested"], 4)
         self.assertEqual(set(state["unlocked"]), {1, 2, 3, 4})
         self.assertEqual(self.service.finalize(), 11)
+        self.assertEqual(self.service.calls[-3:], ["connect:ear", "connect:ear", "connect:tongue"])
         state = self.service.workflow_state()
         self.assertTrue(state["completed"][4])
         self.assertEqual(len(self.commands.selection), 11)
