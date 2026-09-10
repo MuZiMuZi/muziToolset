@@ -843,15 +843,21 @@ class ModularRigWindow(QtWidgets.QWidget):
             widget.set_stage_state(state)
 
     def _sync_property_sections(self):
-        u"""右侧属性区只显示当前步骤对应的设置，并保持该区域展开。"""
-        sections = {
-            1: self.basic_section,
-            2: self.guide_section,
-            3: self.control_section,
-            4: self.joint_section,
+        u"""Step 03 同时显示控制器与关节设置，Final 不再提供外观设置。"""
+        sections = (
+            self.basic_section,
+            self.guide_section,
+            self.control_section,
+            self.joint_section,
+        )
+        active_sections = {
+            1: (self.basic_section,),
+            2: (self.guide_section,),
+            3: (self.control_section, self.joint_section),
+            4: (),
         }
-        for step, section in sections.items():
-            active = step == self.current_step
+        for section in sections:
+            active = section in active_sections[self.current_step]
             section.setVisible(active)
             if active:
                 section.button.setChecked(True)
