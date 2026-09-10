@@ -194,8 +194,20 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.build_button.setMinimumWidth(250)
 
     def create_layouts(self):
-        u"""创建窗口布局骨架；后续分栏会继续按面板逐步拆分。"""
-        self._create_layout()
+        u"""建立窗口骨架，并组合各个职责单一的区域布局。"""
+        main = QtWidgets.QVBoxLayout(self)
+        main.setContentsMargins(20, 15, 20, 15)
+        main.setSpacing(10)
+        main.addWidget(self.create_header_layout())
+        main.addLayout(self.create_step_layout())
+
+        self.splitter.addWidget(self.create_module_panel())
+        self.splitter.addWidget(self.create_rig_structure_panel())
+        self.splitter.addWidget(self.create_properties_panel())
+        self.splitter.setSizes([285, 450, 605])
+        main.addWidget(self.splitter, 1)
+
+        main.addWidget(self.create_bottom_layout())
 
     def create_header_layout(self):
         u"""摆放品牌区和窗口级操作按钮。"""
@@ -427,24 +439,6 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.joint_check.toggled.connect(lambda value: self.change_property("show_joints", value))
         self.control_check.toggled.connect(lambda value: self.change_property("show_controls", value))
         self.refresh_timer.timeout.connect(self.refresh_scene)
-
-    def _create_layout(self):
-        u"""建立可调整宽度的三栏结构；右侧属性独立滚动。"""
-        main = QtWidgets.QVBoxLayout(self)
-        main.setContentsMargins(20, 15, 20, 15)
-        main.setSpacing(10)
-        main.addWidget(self.create_header_layout())
-        main.addLayout(self.create_step_layout())
-
-        self.splitter.addWidget(self.create_module_panel())
-
-        self.splitter.addWidget(self.create_rig_structure_panel())
-
-        self.splitter.addWidget(self.create_properties_panel())
-        self.splitter.setSizes([285, 450, 605])
-        main.addWidget(self.splitter, 1)
-
-        main.addWidget(self.create_bottom_layout())
 
     def _panel(self, title, badge):
         u"""创建分栏面板和统一标题行。"""
