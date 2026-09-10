@@ -107,6 +107,14 @@ class RigLibraryQtTests(unittest.TestCase):
         self.assertEqual(len(self.service.cmds.selection), 11)
         self.assertIn("Final", self.window.status_label.text())
 
+        self.window.set_step(2)
+        self.assertEqual(self.window.build_button.text(), u"重新生成当前模块")
+        self.window.run_step()
+        self.assertEqual(self.window.current_step, 3)
+        current = self.window.current_record()
+        self.assertTrue(current["built"])
+        self.assertFalse(current["connected"])
+
     def test_undo_refresh_reloads_config(self):
         self.window.add_selected_template()
         self.assertEqual(len(self.service.document["modules"]), 3)

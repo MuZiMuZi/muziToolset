@@ -860,7 +860,13 @@ class ModularRigWindow(QtWidgets.QWidget):
         if not hasattr(self, "build_button"):
             return
         workflow = self.service.workflow_state()
-        guide_action = u"生成关节与控制器" if workflow["completed"][2] else u"导入 Face Guide"
+        current_record = self.current_record()
+        if current_record is not None and current_record["built"]:
+            guide_action = u"重新生成当前模块"
+        elif workflow["completed"][2]:
+            guide_action = u"生成关节与控制器"
+        else:
+            guide_action = u"导入 Face Guide"
         texts = {1: u"创建基础层级", 2: guide_action, 3: u"确认控制器与关节", 4: u"创建连接并完成"}
         hints = {1: u"添加模块与组合模板，然后创建基础层级。",
                  2: u"调整并镜像 Guide；确认定位后生成关节和控制器。",
@@ -883,7 +889,14 @@ class ModularRigWindow(QtWidgets.QWidget):
         elif self.current_step == 2:
             workflow = self.service.workflow_state()
             if workflow["completed"][2]:
-                if self._run(self.service.build, lambda count: u"已生成 {} 个模块的关节和控制器。".format(count)):
+                record = self.current_record()
+                if record is not None and record["built"]:
+                    operation = lambda: self.service.rebuild_module(record["id"])
+                    success = u"当前模块已按最新 Guide 重新生成。"
+                else:
+                    operation = self.service.build
+                    success = lambda count: u"已生成 {} 个模块的关节和控制器。".format(count)
+                if self._run(operation, success):
                     self.set_step(3)
             else:
                 self._run(self.service.import_guide, u"Face Guide 已就绪，请调整定位后再次点击生成。")
