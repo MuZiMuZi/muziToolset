@@ -367,15 +367,24 @@ class ModularRigWindow(QtWidgets.QWidget):
             (u"Right / 右", "rt"),
             (u"Center / 中", "md"),
         )
-        for title, value in side_entries:
-            self.side_combo.addItem(title, value)
-        for axis in catalog.axes:
-            self.axis_combo.addItem(axis)
+        self.loading = True
+        try:
+            self.side_combo.clear()
+            for title, value in side_entries:
+                self.side_combo.addItem(title, value)
+            self.axis_combo.clear()
+            for axis in catalog.axes:
+                self.axis_combo.addItem(axis)
+        finally:
+            self.loading = False
         self.refresh_module_list()
 
     def refresh_ui(self):
         u"""数据发生变化后的统一 UI 刷新入口。"""
         self.refresh_rig_structure()
+        self.refresh_properties()
+        self.refresh_step_ui()
+        self.refresh_status()
 
     def refresh_step_ui(self):
         u"""刷新顶部步骤和当前属性区域。"""
@@ -465,6 +474,8 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def _populate_library(self):
         u"""目录完全来自已登记模块，不展示旧界面的演示数据。"""
+        self.module_list.clear()
+        self.template_list.clear()
         for entry in catalog.modules:
             item_text = u"{}\n{}".format(entry["title"], entry["description"])
             item = QtWidgets.QListWidgetItem(module_icon(entry["color"]), item_text)
@@ -603,9 +614,6 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.structure_note.setText(
             u"{} 个模块 · {} 个已构建\n双击模块可在 Maya 中选中其现有节点。".format(count, built_count))
         self.filter_tree(self.tree_search.text())
-        self._load_properties()
-        self._sync_workflow_steps()
-        self._update_action()
 
     def tree_selected(self, current, previous=None):
         u"""节点选择与所属模块的属性区保持同步。"""
