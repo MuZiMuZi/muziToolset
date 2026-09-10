@@ -328,6 +328,67 @@ class RigLibraryService(object):
                         errors.append(u"节点不属于当前模块：{}".format(name))
         return errors
 
+    def _tag_module_outputs(self, record):
+        u"""为模块输出写入归属标记，供安全重建和冲突检查使用。"""
+        for nodes in catalog.output_names(record).values():
+            for name in nodes:
+                if not self.cmds.attributeQuery(self.module_attr, node=name, exists=True):
+                    self.cmds.addAttr(name, longName=self.module_attr, dataType="string")
+                self.cmds.setAttr(name + "." + self.module_attr, record["id"], type="string")
+
+    def _delete_module_outputs(self, record):
+        u"""只删除具有当前模块归属标记的输出及其约束。"""
+        errors = self._check_built(record)
+        if errors:
+            raise RuntimeError("\n".join(errors))
+        constraints = []
+        outputs = catalog.output_names(record)
+        for joint_name in outputs["joints"]:
+            nodes = self.cmds.listConnections(
+                joint_name, source=True, destination=False, type="parentConstraint"
+            ) or []
+            for node in nodes:
+                if node not in constraints:
+                    constraints.append(node)
+        if constraints:
+            self.cmds.delete(constraints)
+        existing = []
+        for nodes in outputs.values():
+            for name in nodes:
+                if self.cmds.objExists(name) and name not in existing:
+                    existing.append(name)
+        if existing:
+            self.cmds.delete(existing)
+
+    def rebuild_module(self, identity):
+        u"""根据最新 Guide 重建一个模块，并把连接状态退回待 Final。"""
+        record = None
+        for candidate in self.document["modules"]:
+            if candidate["id"] == identity:
+                record = candidate
+                break
+        if record is None:
+            raise ValueError(u"没有找到需要重建的模块。")
+        if not record["built"]:
+            raise RuntimeError(u"当前模块尚未生成，不需要重建。")
+
+        def apply(document):
+            target = None
+            for candidate in document["modules"]:
+                if candidate["id"] == identity:
+                    target = candidate
+                    break
+            self._delete_module_outputs(target)
+            builder = self._make_builder(target)
+            builder.build_outputs()
+            self._tag_module_outputs(target)
+            self._apply_display(target)
+            target["built"] = True
+            target["connected"] = False
+
+        self._commit(self.document, apply, "Muzi Rebuild Module")
+        return identity
+
     def validate(self):
         u"""只读预检查：验证 Guide 数量、节点类型、重复路径和输出名称冲突。"""
         catalog.validate_document(self.document)
@@ -404,10 +465,7 @@ class RigLibraryService(object):
                 errors = self._check_built(record)
                 if errors:
                     raise RuntimeError("\n".join(errors))
-                for nodes in catalog.output_names(record).values():
-                    for name in nodes:
-                        self.cmds.addAttr(name, longName=self.module_attr, dataType="string")
-                        self.cmds.setAttr(name + "." + self.module_attr, record["id"], type="string")
+                self._tag_module_outputs(record)
                 self._apply_display(record)
                 record["built"] = True
                 record["connected"] = False

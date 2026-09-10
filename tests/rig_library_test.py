@@ -77,6 +77,15 @@ class FakeCommands:
     def select(self, names, replace=True):
         self.selection = list(names)
 
+    def listConnections(self, name, **kwargs):
+        return []
+
+    def delete(self, names):
+        if not isinstance(names, (list, tuple)):
+            names = [names]
+        for name in names:
+            self.nodes.pop(name, None)
+
     def xform(self, name, query=False, worldSpace=False, translation=None, **kwargs):
         if query:
             return list(self.nodes[name]["translation"])
@@ -262,6 +271,23 @@ class RigLibraryTests(unittest.TestCase):
         for record in reopened.document["modules"]:
             self.assertTrue(record["built"])
         self.assertEqual(reopened.validate(), [])
+
+    def test_rebuild_module_replaces_outputs_and_clears_connection_state(self):
+        self.prepare_face()
+        self.service.build()
+        self.service.finalize()
+        record = self.service.document["modules"][0]
+        calls_before = len(self.service.calls)
+
+        result = self.service.rebuild_module(record["id"])
+
+        rebuilt = self.service.document["modules"][0]
+        self.assertEqual(result, record["id"])
+        self.assertTrue(rebuilt["built"])
+        self.assertFalse(rebuilt["connected"])
+        self.assertEqual(len(self.service.calls), calls_before + 1)
+        self.assertEqual(self.service.calls[-1], "ear")
+        self.assertEqual(self.service.validate(), [])
 
     def test_partial_failure_rolls_back_whole_transaction(self):
         self.prepare_face()
