@@ -875,19 +875,12 @@ class ModularRigWindow(QtWidgets.QWidget):
         if not hasattr(self, "build_button"):
             return
         workflow = self.service.workflow_state()
-        current_record = self.current_record()
-        if current_record is not None and current_record["built"]:
-            guide_action = u"重新生成当前模块"
-        elif workflow["completed"][2]:
-            guide_action = u"生成关节与控制器"
-        else:
-            guide_action = u"导入 Face Guide"
-        texts = {1: u"创建基础层级", 2: guide_action, 3: u"确认控制器与关节", 4: u"创建连接并完成"}
         hints = {1: u"添加模块与组合模板，然后创建基础层级。",
                  2: u"调整并镜像 Guide；确认定位后生成关节和控制器。",
                  3: u"实时调整控制器大小、颜色、朝向和关节显示大小。",
                  4: u"为已确认的控制器与关节创建驱动连接。"}
-        self.build_button.setText(texts[self.current_step])
+        self.build_button.setText(u"下一步")
+        self.build_button.setToolTip(hints[self.current_step])
         self.status_hint.setText(hints[self.current_step])
         enabled = bool(self.service.document["modules"]) and workflow["unlocked"].get(self.current_step, False)
         self.build_button.setEnabled(enabled)

@@ -45,6 +45,7 @@ class RigLibraryQtTests(unittest.TestCase):
         self.assertFalse(hasattr(self.window, "_create_layout"))
         self.assertFalse(hasattr(self.window, "_create_properties"))
         self.assertFalse(self.window.build_button.isEnabled())
+        self.assertEqual(self.window.build_button.text(), u"下一步")
         self.assertTrue(self.window.basic_section.isVisible())
         self.assertFalse(self.window.guide_section.isVisible())
         self.assertFalse(self.window.control_section.isVisible())
@@ -108,7 +109,7 @@ class RigLibraryQtTests(unittest.TestCase):
         self.assertIn("Final", self.window.status_label.text())
 
         self.window.set_step(2)
-        self.assertEqual(self.window.build_button.text(), u"重新生成当前模块")
+        self.assertEqual(self.window.build_button.text(), u"下一步")
         self.window.run_step()
         self.assertEqual(self.window.current_step, 3)
         current = self.window.current_record()
