@@ -859,14 +859,15 @@ class ModularRigWindow(QtWidgets.QWidget):
     def _update_action(self):
         if not hasattr(self, "build_button"):
             return
-        texts = {1: u"创建基础层级", 2: u"导入 Face Guide", 3: u"创建控制系统", 4: u"完成并选择控制器"}
+        workflow = self.service.workflow_state()
+        guide_action = u"生成关节与控制器" if workflow["completed"][2] else u"导入 Face Guide"
+        texts = {1: u"创建基础层级", 2: guide_action, 3: u"确认控制器与关节", 4: u"创建连接并完成"}
         hints = {1: u"添加模块与组合模板，然后创建基础层级。",
-                 2: u"耳朵与舌头使用 Face Guide；通用 FK 请指定有序 Guide。",
-                 3: u"创建骨骼、控制器与驱动连接；右侧参数可实时调整外观。",
-                 4: u"最终检查全部已构建模块，并选择所有主控制器。"}
+                 2: u"调整并镜像 Guide；确认定位后生成关节和控制器。",
+                 3: u"实时调整控制器大小、颜色、朝向和关节显示大小。",
+                 4: u"为已确认的控制器与关节创建驱动连接。"}
         self.build_button.setText(texts[self.current_step])
         self.status_hint.setText(hints[self.current_step])
-        workflow = self.service.workflow_state()
         enabled = bool(self.service.document["modules"]) and workflow["unlocked"].get(self.current_step, False)
         self.build_button.setEnabled(enabled)
 
@@ -880,15 +881,20 @@ class ModularRigWindow(QtWidgets.QWidget):
             if self._run(self.service.setup, u"基础层级已准备好，下一步导入并调整 Guide。"):
                 self.set_step(2)
         elif self.current_step == 2:
-            if self._run(self.service.import_guide, u"Face Guide 已就绪，请在 Maya 中检查并调整位置。"):
-                self.set_step(3)
+            workflow = self.service.workflow_state()
+            if workflow["completed"][2]:
+                if self._run(self.service.build, lambda count: u"已生成 {} 个模块的关节和控制器。".format(count)):
+                    self.set_step(3)
+            else:
+                self._run(self.service.import_guide, u"Face Guide 已就绪，请调整定位后再次点击生成。")
         elif self.current_step == 3:
-            if self._run(self.service.build, lambda count: u"Ctrl 完成：{} 个新模块。".format(count)):
-                self.build_requested.emit("all")
+            if self.service.workflow_state()["completed"][3]:
                 self.set_step(4)
+            else:
+                self._status(u"请返回 Guide 步骤生成关节和控制器。", error=True)
         elif self.current_step == 4:
             self._run(self.service.finalize,
-                      lambda count: u"Final 完成：已检查并选择 {} 个主控制器。".format(count))
+                      lambda count: u"Final 完成：已连接并选择 {} 个主控制器。".format(count))
 
     def build_current_step(self):
         u"""公开的当前步骤构建入口。"""
