@@ -164,8 +164,6 @@ class RigLibraryService(object):
             raise ValueError(u"没有找到需要镜像的模块。")
         if source["side"] not in ("lf", "rt"):
             raise ValueError(u"中央模块不需要左右镜像。")
-        if source["built"]:
-            raise RuntimeError(u"已构建模块不能镜像定位，请先在构建前完成镜像。")
 
         opposite = "rt" if source["side"] == "lf" else "lf"
         target = None
@@ -176,8 +174,7 @@ class RigLibraryService(object):
                 break
         if target is None:
             raise ValueError(u"请先添加对应的{}模块。".format(u"右侧" if opposite == "rt" else u"左侧"))
-        if target["built"]:
-            raise RuntimeError(u"目标模块已经构建，不能再镜像定位。")
+        rebuild_target = target["built"]
 
         mirrored_keys = ("enabled", "ctrl_size", "ctrl_axis", "jnt_radius",
                          "show_axis", "show_joints", "show_controls")
@@ -202,9 +199,23 @@ class RigLibraryService(object):
         def apply(candidate):
             for name, position in mirrored_positions:
                 self.cmds.xform(name, worldSpace=True, translation=position)
+            if rebuild_target:
+                candidate_target = None
+                for record in candidate["modules"]:
+                    if record["id"] == target["id"]:
+                        candidate_target = record
+                        break
+                self._delete_module_outputs(candidate_target)
+                builder = self._make_builder(candidate_target)
+                builder.build_outputs()
+                self._tag_module_outputs(candidate_target)
+                self._apply_display(candidate_target)
+                candidate_target["built"] = True
+                candidate_target["connected"] = False
 
         self._commit(document, apply, "Muzi Mirror Module")
-        return {"id": target["id"], "side": target["side"], "guide_count": len(mirrored_positions)}
+        return {"id": target["id"], "side": target["side"],
+                "guide_count": len(mirrored_positions), "rebuilt": rebuild_target}
 
     def _owned_group(self, name):
         u"""检查场景中的固定根组是否属于当前绑定库。"""

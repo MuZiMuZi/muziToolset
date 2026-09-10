@@ -785,15 +785,15 @@ class ModularRigWindow(QtWidgets.QWidget):
             return None
 
         menu = QtWidgets.QMenu(self.module_tree)
-        if record["built"]:
-            text = u"已构建模块不可镜像"
+        if self.current_step == 4:
+            text = u"请返回前三步后再镜像"
             enabled = False
         elif record["side"] not in ("lf", "rt"):
             text = u"中央模块不需要镜像"
             enabled = False
         else:
             destination = u"右侧" if record["side"] == "lf" else u"左侧"
-            text = u"镜像设置与定位到{}".format(destination)
+            text = u"镜像设置、Guide 与关节到{}".format(destination)
             enabled = True
         action = menu.addAction(text)
         action.setEnabled(enabled)

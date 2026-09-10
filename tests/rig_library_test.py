@@ -229,6 +229,22 @@ class RigLibraryTests(unittest.TestCase):
             expected = [-positions[index][0], positions[index][1], positions[index][2]]
             self.assertEqual(self.commands.xform(target_guides[index], query=True), expected)
 
+    def test_mirror_rebuilds_generated_target_and_requires_final_again(self):
+        self.prepare_face()
+        self.service.build()
+        self.service.finalize()
+        source = self.service.document["modules"][0]
+        target = self.service.document["modules"][1]
+
+        result = self.service.mirror_module(source["id"])
+
+        updated_target = self.service.document["modules"][1]
+        self.assertTrue(result["rebuilt"])
+        self.assertTrue(updated_target["built"])
+        self.assertFalse(updated_target["connected"])
+        self.assertFalse(self.service.workflow_state()["completed"][4])
+        self.assertEqual(self.service.calls[-1], "ear")
+
     def test_fk_requires_explicit_ordered_guides(self):
         self.service.add_module("fk_chain")
         self.assertTrue(self.service.validate())
