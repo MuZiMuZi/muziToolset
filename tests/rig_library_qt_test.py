@@ -79,9 +79,9 @@ class RigLibraryQtTests(unittest.TestCase):
         for record in self.service.document["modules"]:
             for name in catalog.guide_names(record):
                 self.service.cmds.createNode("transform", name=name)
-        self.service.setup()
-        self.window.refresh_scene()
-        self.window.set_step(2)
+        self.window.run_step()
+        self.assertEqual(self.window.current_step, 2)
+        self.assertFalse(self.window.step_buttons[2].isEnabled())
         self.window.run_step()
         self.assertEqual(self.window.current_step, 3)
         self.assertFalse(self.window.basic_section.isVisible())
@@ -188,7 +188,7 @@ class RigLibraryQtTests(unittest.TestCase):
         self.assertEqual(self.service.calls, [])
         self.assertEqual(self.window.current_step, 2)
         self.window.set_step(3)
-        self.assertIn(u"尚未解锁", self.window.status_label.text())
+        self.assertIn(u"下一步", self.window.status_label.text())
         self.assertEqual(len(self.service.document["modules"]), 1)
 
     def test_switching_steps_exposes_guide_drawer(self):
@@ -198,6 +198,8 @@ class RigLibraryQtTests(unittest.TestCase):
         self.assertEqual(self.window.current_step, 1)
         self.service.setup()
         self.window.set_step(2)
+        self.assertEqual(self.window.current_step, 1)
+        self.window.run_step()
         self.assertTrue(self.window.guide_section.isVisible())
         self.assertTrue(self.window.guide_section.button.isChecked())
         self.assertFalse(self.window.basic_section.isVisible())

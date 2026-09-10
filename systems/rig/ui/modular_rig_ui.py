@@ -816,7 +816,14 @@ class ModularRigWindow(QtWidgets.QWidget):
         menu.deleteLater()
 
     def set_step(self, number, *args):
-        u"""四段导航对应真实能力，Ctrl 阶段一次完成骨骼和控制器。"""
+        u"""顶部步骤导航只允许回退；前进统一使用底部下一步按钮。"""
+        if number > self.current_step:
+            self._status(u"请使用底部“下一步”完成当前阶段后继续。", error=True)
+            return
+        self._change_step(number)
+
+    def _change_step(self, number):
+        u"""校验工作流后切换步骤，供回退和内部前进共同使用。"""
         workflow = self.service.workflow_state()
         if not workflow["unlocked"].get(number, False):
             self._status(u"当前阶段尚未解锁，请先完成前一步。", error=True)
@@ -834,6 +841,8 @@ class ModularRigWindow(QtWidgets.QWidget):
         for index, widget in enumerate(self.step_buttons, 1):
             if index == self.current_step:
                 state = "current"
+            elif index > self.current_step:
+                state = "locked"
             elif workflow["completed"].get(index, False):
                 state = "completed"
             elif workflow["unlocked"].get(index, False):
@@ -891,7 +900,7 @@ class ModularRigWindow(QtWidgets.QWidget):
         u"""底部主按钮执行当前阶段操作。"""
         if self.current_step == 1:
             if self._run(self.service.setup, u"基础层级已准备好，下一步导入并调整 Guide。"):
-                self.set_step(2)
+                self._change_step(2)
         elif self.current_step == 2:
             workflow = self.service.workflow_state()
             if workflow["completed"][2]:
@@ -903,12 +912,12 @@ class ModularRigWindow(QtWidgets.QWidget):
                     operation = self.service.build
                     success = lambda count: u"已生成 {} 个模块的关节和控制器。".format(count)
                 if self._run(operation, success):
-                    self.set_step(3)
+                    self._change_step(3)
             else:
                 self._run(self.service.import_guide, u"Face Guide 已就绪，请调整定位后再次点击生成。")
         elif self.current_step == 3:
             if self.service.workflow_state()["completed"][3]:
-                self.set_step(4)
+                self._change_step(4)
             else:
                 self._status(u"请返回 Guide 步骤生成关节和控制器。", error=True)
         elif self.current_step == 4:
