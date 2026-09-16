@@ -26,6 +26,8 @@ import os
 
 
 manual_navigation_lines = [
+    "    * [Core 使用手册](manual/core.md)",
+    "    * [绑定库](manual/rig-library.md)",
     "    * [基础工具](manual/basic-tools.md)",
     "    * [Controller](manual/controller.md)",
     "    * [Jnt](manual/jnt.md)",
@@ -33,6 +35,21 @@ manual_navigation_lines = [
     "    * [BlendShape](manual/blendshape.md)",
     "    * [场景清理与模型检查](manual/cleanup.md)",
 ]
+
+additional_navigation_lines = {
+    "* 架构": [
+        "    * [Face System](architecture/face-system.md)",
+        "    * [Face Workflow State](architecture/face-workflow-state.md)",
+        "    * [程序化自动绑定](architecture/xiong-lin-procedure-auto-rig.md)",
+    ],
+    "* 开发指南": [
+        "    * [UI 设计](development/ui-design.md)",
+        "    * [Runtime Step 注释审计](development/runtime-step-comment-audit.md)",
+    ],
+    "* 迁移记录": [
+        "    * [Rig Architecture 0.4](migration/rig-architecture-0.4.md)",
+    ],
+}
 
 anchor_line = "    * [常用工具工作流](manual/tools.md)"
 
@@ -77,7 +94,11 @@ def remove_existing_manual_lines(lines):
     result = []
 
     for line in lines:
-        if line in manual_navigation_lines:
+        additional_lines = []
+        for navigation_lines in additional_navigation_lines.values():
+            additional_lines.extend(navigation_lines)
+
+        if line in manual_navigation_lines or line in additional_lines:
             continue
 
         result.append(
@@ -101,6 +122,10 @@ def extend_summary_content(content):
         result.append(
             line
         )
+
+        if line in additional_navigation_lines:
+            for navigation_line in additional_navigation_lines[line]:
+                result.append(navigation_line)
 
         if line != anchor_line:
             continue

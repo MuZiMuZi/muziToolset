@@ -10,7 +10,7 @@
 
     生成标准层级、Shape、颜色和 Output。
 
-    [:octicons-code-24: CtrlBase API](../reference/systems/ctrl_base.md)
+    [:octicons-code-24: Controller API](../reference/core/rigging/ctrl_utils.md)
 
 -   :material-axis-arrow:{ .lg .middle } **创建 FK Controller**
 
@@ -34,7 +34,7 @@
 
     Follow、Space Switch 和 Space Blend 都由 CtrlBase 统一提供。
 
-    [:octicons-code-24: CtrlBase API](../reference/systems/ctrl_base.md)
+    [:octicons-code-24: Controller API](../reference/core/rigging/ctrl_utils.md)
 
 </div>
 
@@ -119,10 +119,10 @@ systems/controller/
 
 ## 相关 API
 
-- [CtrlBase](../reference/systems/ctrl_base.md)
+- [ctrl_utils.py](../reference/core/rigging/ctrl_utils.md)
 - [create_ctrl_tool.py](../reference/tools/controller/create_ctrl_tool.md)
 - [create_fk_ctrl_tool.py](../reference/tools/controller/create_fk_ctrl_tool.md)
-- [control_shape_utils.py](../reference/core/control_shape_utils.md)
+- [controlUtils.py](../reference/core/bake/controlUtils.md)
 
 [返回常用工具](tools.md){ .md-button }
-[打开 CtrlBase API](../reference/systems/ctrl_base.md){ .md-button .md-button--primary }
+[打开 Controller API](../reference/core/rigging/ctrl_utils.md){ .md-button .md-button--primary }

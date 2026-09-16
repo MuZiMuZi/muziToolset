@@ -18,7 +18,7 @@
 
     为关节姿势、脸部表情或变形问题制作修型。
 
-    [:octicons-code-24: BlendShape Utils API](../reference/core/blendshape_utils.md)
+    [:octicons-code-24: BlendShape Utils API](../reference/core/bake/blendShapeUtils.md)
 
 -   :material-swap-horizontal:{ .lg .middle } **Invert Shape**
 
@@ -65,7 +65,7 @@ Corrective Check
 
 - [add_blendshape_tool.py](../reference/tools/blendshape/add_blendshape_tool.md)
 - [invert_shape_tool.py](../reference/tools/blendshape/invert_shape_tool.md)
-- [blendshape_utils.py](../reference/core/blendshape_utils.md)
+- [blendShapeUtils.py](../reference/core/bake/blendShapeUtils.md)
 
 [返回常用工具](tools.md){ .md-button }
-[打开 BlendShape Utils API](../reference/core/blendshape_utils.md){ .md-button .md-button--primary }
+[打开 BlendShape Utils API](../reference/core/bake/blendShapeUtils.md){ .md-button .md-button--primary }

@@ -18,7 +18,7 @@
 
     查询、添加和整理 SkinCluster Influence。
 
-    [:octicons-code-24: Skin Utils API](../reference/core/skin_utils.md)
+    [:octicons-code-24: Skin Utils API](../reference/core/bake/weightsUtils.md)
 
 -   :material-database-arrow-left-outline:{ .lg .middle } **权重数据**
 
@@ -26,7 +26,7 @@
 
     查询、导入、导出和恢复权重。
 
-    [:octicons-code-24: Skin Utils API](../reference/core/skin_utils.md)
+    [:octicons-code-24: Skin Utils API](../reference/core/bake/weightsUtils.md)
 
 </div>
 
@@ -64,9 +64,9 @@ Deformation Check
 ## 相关 API
 
 - [skin_tool.py](../reference/tools/skin/skin_tool.md)
-- [skin_utils.py](../reference/core/skin_utils.md)
-- [jnt_utils.py](../reference/core/jnt_utils.md)
-- [mesh_utils.py](../reference/core/mesh_utils.md)
+- [weightsUtils.py](../reference/core/bake/weightsUtils.md)
+- [jnt_utils.py](../reference/core/rigging/jnt_utils.md)
+- [meshUtils.py](../reference/core/bake/meshUtils.md)
 
 [返回常用工具](tools.md){ .md-button }
-[打开 Skin Utils API](../reference/core/skin_utils.md){ .md-button .md-button--primary }
+[打开 Skin Utils API](../reference/core/bake/weightsUtils.md){ .md-button .md-button--primary }

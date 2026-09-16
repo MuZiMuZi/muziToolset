@@ -8,26 +8,26 @@
 
 | 我想做什么 | Core 模块 |
 | --- | --- |
-| 动画查询、清理、Reset | [animation_utils.py](../reference/core/animation_utils.md) |
-| Attribute / Message / Limits | [attr_utils.py](../reference/core/attr_utils.md) |
-| BlendShape / Corrective | [blendshape_utils.py](../reference/core/blendshape_utils.md) |
-| Plug 连接 | [connection_utils.py](../reference/core/connection_utils.md) |
-| Constraint | [constraint_utils.py](../reference/core/constraint_utils.md) |
-| Controller Shape | [control_shape_utils.py](../reference/core/control_shape_utils.md) |
-| Curve | [curve_utils.py](../reference/core/curve_utils.md) |
-| JSON / 路径 / 文件 | [file_utils.py](../reference/core/file_utils.md) |
-| DAG 层级 | [hierarchy_utils.py](../reference/core/hierarchy_utils.md) |
-| Jnt | [jnt_utils.py](../reference/core/jnt_utils.md) |
-| Matrix / OPM | [matrix_utils.py](../reference/core/matrix_utils.md) |
-| Mesh | [mesh_utils.py](../reference/core/mesh_utils.md) |
-| 模型检查 | [model_check_utils.py](../reference/core/model_check_utils.md) |
-| Rig 命名 / 批量 Rename | [rename_utils.py](../reference/core/rename_utils.md) |
-| Scene / Selection / Set | [scene_utils.py](../reference/core/scene_utils.md) |
-| 场景清理 | [scene_utils.py](../reference/core/scene_utils.md) |
-| Skin / Weight | [skin_utils.py](../reference/core/skin_utils.md) |
-| Snap | [snap_utils.py](../reference/core/snap_utils.md) |
-| Surface / Follicle | [surface_utils.py](../reference/core/surface_utils.md) |
-| Transform / Matrix / Distance | [transform_utils.py](../reference/core/transform_utils.md) |
+| 动画查询、清理、Reset | [pipelineUtils.py](../reference/core/bake/pipelineUtils.md) |
+| Attribute / Message / Limits | [attr_utils.py](../reference/core/common/attr_utils.md) |
+| BlendShape / Corrective | [blendShapeUtils.py](../reference/core/bake/blendShapeUtils.md) |
+| Plug 连接 | [connectionUtils.py](../reference/core/bake/connectionUtils.md) |
+| Constraint | [advUtils.py](../reference/core/bake/advUtils.md) |
+| Controller Shape | [controlUtils.py](../reference/core/bake/controlUtils.md) |
+| Curve | [guide_utils.py](../reference/core/rigging/guide_utils.md) |
+| JSON / 路径 / 文件 | [fileUtils.py](../reference/core/bake/fileUtils.md) |
+| DAG 层级 | [hierarchy_utils.py](../reference/core/common/hierarchy_utils.md) |
+| Jnt | [jnt_utils.py](../reference/core/rigging/jnt_utils.md) |
+| Matrix / OPM | [transform_utils.py](../reference/core/common/transform_utils.md) |
+| Mesh | [meshUtils.py](../reference/core/bake/meshUtils.md) |
+| 模型检查 | [model_checker.py](../reference/tools/clean/model_checker.md) |
+| Rig 命名 / 批量 Rename | [name_utils.py](../reference/core/common/name_utils.md) |
+| Scene / Selection / Set | [pipelineUtils.py](../reference/core/bake/pipelineUtils.md) |
+| 场景清理 | [hierarchy_cleaner.py](../reference/tools/clean/hierarchy_cleaner.md) |
+| Skin / Weight | [weightsUtils.py](../reference/core/bake/weightsUtils.md) |
+| Snap | [snapUtils.py](../reference/core/bake/snapUtils.md) |
+| Surface / Follicle | [guide_utils.py](../reference/core/rigging/guide_utils.md) |
+| Transform / Matrix / Distance | [transform_utils.py](../reference/core/common/transform_utils.md) |
 
 ## Import
 

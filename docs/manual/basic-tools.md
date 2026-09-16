@@ -70,11 +70,11 @@ window = rename_tool.main()
 
 | 操作 | Core |
 | --- | --- |
-| 命名规则 | [rename_utils.py](../reference/core/rename_utils.md) |
-| Attribute | [attr_utils.py](../reference/core/attr_utils.md) |
-| Plug Connection | [connection_utils.py](../reference/core/connection_utils.md) |
-| Constraint | [constraint_utils.py](../reference/core/constraint_utils.md) |
-| Snap / Match | [snap_utils.py](../reference/core/snap_utils.md) / [transform_utils.py](../reference/core/transform_utils.md) |
+| 命名规则 | [name_utils.py](../reference/core/common/name_utils.md) |
+| Attribute | [attr_utils.py](../reference/core/common/attr_utils.md) |
+| Plug Connection | [connectionUtils.py](../reference/core/bake/connectionUtils.md) |
+| Constraint | [advUtils.py](../reference/core/bake/advUtils.md) |
+| Snap / Match | [snapUtils.py](../reference/core/bake/snapUtils.md) / [transform_utils.py](../reference/core/common/transform_utils.md) |
 
 ## 常见问题
 

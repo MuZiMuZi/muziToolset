@@ -26,7 +26,7 @@
 
     安全删除明确无用的 Scene Node。
 
-    [:octicons-code-24: Scene Clean API](../reference/core/scene_utils.md)
+    [:octicons-code-24: Scene Clean API](../reference/tools/clean/hierarchy_cleaner.md)
 
 </div>
 
@@ -62,9 +62,9 @@ Rig / Animation
 
 - [model_checker.py](../reference/tools/clean/model_checker.md)
 - [hierarchy_cleaner.py](../reference/tools/clean/hierarchy_cleaner.md)
-- [model_check_utils.py](../reference/core/model_check_utils.md)
-- [scene_utils.py](../reference/core/scene_utils.md)
-- [scene_utils.py](../reference/core/scene_utils.md)
+- [model_checker.py](../reference/tools/clean/model_checker.md)
+- [hierarchy_cleaner.py](../reference/tools/clean/hierarchy_cleaner.md)
+- [pipelineUtils.py](../reference/core/bake/pipelineUtils.md)
 
 [返回常用工具](tools.md){ .md-button }
-[打开 Scene Clean API](../reference/core/scene_utils.md){ .md-button .md-button--primary }
+[打开 Scene Clean API](../reference/tools/clean/hierarchy_cleaner.md){ .md-button .md-button--primary }

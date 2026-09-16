@@ -26,7 +26,7 @@
 
     根据 Curve / Position 数据创建稳定 Jnt Chain。
 
-    [:octicons-code-24: Jnt Utils API](../reference/core/jnt_utils.md)
+    [:octicons-code-24: Jnt Utils API](../reference/core/rigging/jnt_utils.md)
 
 </div>
 
@@ -71,9 +71,9 @@ Controller / Skin
 
 - [jnt_tool.py](../reference/tools/jnt/jnt_tool.md)
 - [jnt_resamp_tool.py](../reference/tools/jnt/jnt_resamp_tool.md)
-- [jnt_utils.py](../reference/core/jnt_utils.md)
-- [transform_utils.py](../reference/core/transform_utils.md)
-- [curve_utils.py](../reference/core/curve_utils.md)
+- [jnt_utils.py](../reference/core/rigging/jnt_utils.md)
+- [transform_utils.py](../reference/core/common/transform_utils.md)
+- [guide_utils.py](../reference/core/rigging/guide_utils.md)
 
 [返回常用工具](tools.md){ .md-button }
-[打开 Jnt Utils API](../reference/core/jnt_utils.md){ .md-button .md-button--primary }
+[打开 Jnt Utils API](../reference/core/rigging/jnt_utils.md){ .md-button .md-button--primary }
