@@ -62,6 +62,36 @@ class Control (object) :
                   pos = None , parent = None,lock_attrs = None,animation_set = None) :
         #初始化参数
         #控制器的形状属性
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+                Args:
+                    name (str):
+                        创建或查询时使用的节点名称。
+                    shape (str):
+                        Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
+                    radius (int):
+                        创建节点或控制器使用的半径值。
+                    ctrl_color (int):
+                        当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。
+                    axis (str):
+                        操作使用的轴向标记。
+                    unset_sub_ctrl (bool):
+                        当前 Rig 操作或驱动使用的动画 Controller Transform。
+                    unset_add_extra_group (bool):
+                        当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
+                    pos (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `pos` 数据。
+                    parent (str):
+                        父级 Maya 节点名称。
+                    lock_attrs (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `lock_attrs` 数据。
+                    animation_set (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `animation_set` 数据。
+
+        """
+
         self.cv = None
         # Control 新建时必须先有真实的 transform 节点，后续 set_shape/getShapes 才能正常工作
         # 如果传入的名称已经存在，则直接包装现有 transform；否则创建一个空 transform。
@@ -98,7 +128,15 @@ class Control (object) :
 
     # 设置控制器属性
     def set (self , *args , **kwargs) :
-        """快速设置控制器的各种属性。"""
+        u"""
+        快速设置控制器的各种属性。
+
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
+        """
         # 先创建/设置 Shape，再命名；Shape 创建依赖真实 transform 节点。
         self.set_shape(*args, **kwargs)
         self.set_name(*args, **kwargs)
@@ -120,8 +158,13 @@ class Control (object) :
     # 设置控制器的transform节点
     def set_transform (self , *args , **kwargs) :
         u"""
-        设置控制器的transform节点
-        -t -transform string/node/Control 控制器节点
+        设置控制器的transform节点 -t -transform string/node/Control 控制器节点
+
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
         t = kwargs.get ("t" , kwargs.get ("transform" , self.get_arg (args)))
         # 如果没有给定t（transform）的值，或者选择的物体没有transform节点，则创建一个transform节点
@@ -158,6 +201,16 @@ class Control (object) :
         例如控制器刚创建时路径可能是 ``|ctrl_xxx``，创建 zero/driven/space 等
         上层组后，它会变成 ``|zero_xxx|...|ctrl_xxx``，旧路径就失效了。
         因此在真正 parent 前重新解析一次当前节点路径。
+
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
         parent = kwargs.get("p", kwargs.get("parent", self.get_arg(args)))
         if not parent:
@@ -189,8 +242,13 @@ class Control (object) :
     # 设置控制器的形状
     def set_shape (self , *args , **kwargs) :
         u"""
-        设置控制器的形状
-        -s -shape data/name 形态
+        设置控制器的形状 -s -shape data/name 形态
+
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
         shape = kwargs.get ("s" , kwargs.get ("shape" , self.get_arg (args)))
         color = self.get_color ()
@@ -228,6 +286,12 @@ class Control (object) :
     def set_name (self , *args , **kwargs) :
         u"""
         设置控制器的名称
+
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
         self.name = kwargs.get ("n" , kwargs.get ("name" , self.get_arg (args)))
         if self.name is None :
@@ -242,8 +306,13 @@ class Control (object) :
     # 设置控制器的颜色
     def set_color (self , *args , **kwargs) :
         u"""
-        设置控制器的颜色
-        -c -color int 颜色
+        设置控制器的颜色 -c -color int 颜色
+
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
         color = kwargs.get ("c" , kwargs.get ("color" , self.get_arg (args)))
         if color is None :
@@ -259,8 +328,13 @@ class Control (object) :
     # 设置控制器的半径大小
     def set_radius (self , *args , **kwargs) :
         u"""
-        设置控制器的半径
-        -r -radius (float) :半径
+        设置控制器的半径 -r -radius (float) :半径
+
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
         radius = kwargs.get ('r' , kwargs.get ('radius' , self.get_arg (args)))
         if radius is None :
@@ -278,7 +352,15 @@ class Control (object) :
 
 
     def set_rotate(self, *args , **kwargs):
-        """设置控制器 Shape 的朝向和额外旋转。"""
+        u"""
+        设置控制器 Shape 的朝向和额外旋转。
+
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
+        """
         rotateZ = kwargs.get('rz', kwargs.get('rotateZ', 0))
         rotateX = kwargs.get('rx', kwargs.get('rotateX', 0))
         rotateY = kwargs.get('ry', kwargs.get('rotateY', 0))
@@ -301,8 +383,13 @@ class Control (object) :
     # 设置控制器的偏移
     def set_offset (self , *args , **kwargs) :
         u"""
-        设置偏移
-        kwargs – -o -offset [float, float,float] 偏移
+        设置偏移 kwargs – -o -offset [float, float,float] 偏移
+
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
         offset = kwargs.get ("o" , kwargs.get ("offset" , self.get_arg (args)))
         if offset is None :
@@ -317,6 +404,18 @@ class Control (object) :
     # 设置控制器的锁定
     def set_locked (self , *args , **kwargs) :
         #如果有需要锁定并隐藏的属性则进行锁定隐藏，没有的话则不需要操作
+        u"""
+
+                设置当前 locked。
+
+                Args:
+                    args (tuple):
+                        当前方法按顺序处理的 `args` 数据集合。
+                    kwargs (dict):
+                        继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
+
+        """
+
         if self.lock_attrs:
             set_attr = attrUtils.Attr(self.get_transform())
             set_attr.lock_and_hide_attrs(attrs_list=self.lock_attrs, lock=False, hide=False)
@@ -325,6 +424,18 @@ class Control (object) :
 
     #设置控制器的位置信息
     def set_pos(self, *args , **kwargs):
+        u"""
+
+                设置当前 pos。
+
+                Args:
+                    args (tuple):
+                        当前方法按顺序处理的 `args` 数据集合。
+                    kwargs (dict):
+                        继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
+
+        """
+
         if self.pos is None :
             cmds.xform(str(self.transform), worldSpace=True, translation=(0, 0, 0))
         else:
@@ -334,6 +445,22 @@ class Control (object) :
     def set_animation_set(self, *args, **kwargs):
         # 将控制器添加到选择集里方便进行选择。
         # animation_set 为 None / False / 空字符串时表示不添加选择集。
+        u"""
+
+                设置当前 animation set。
+
+                Args:
+                    args (tuple):
+                        当前方法按顺序处理的 `args` 数据集合。
+                    kwargs (dict):
+                        继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
+
+                Returns:
+                    object | None:
+                        完成设置或应用后的目标对象 / 状态结果。
+
+        """
+
         animation_set = kwargs.get('animation_set', self.animation_set)
         if animation_set in (None, False, ''):
             return None
@@ -356,6 +483,18 @@ class Control (object) :
 
     def set_add_extra_group(self,*args , **kwargs):
         # 判断是否需要创建额外的层级结构
+        u"""
+
+                设置当前 add extra group。
+
+                Args:
+                    args (tuple):
+                        当前方法按顺序处理的 `args` 数据集合。
+                    kwargs (dict):
+                        继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
+
+        """
+
         if self.unset_add_extra_group is False:
             self.ctrl_transform = self.get_transform().name() if hasattr(self.get_transform(), 'name') else str(self.get_transform())
             self.zero_grp = None
@@ -402,6 +541,18 @@ class Control (object) :
         self.set_sub_ctrl()
 
     def set_sub_ctrl(self,*args , **kwargs):
+        u"""
+
+                设置当前 sub ctrl。
+
+                Args:
+                    args (tuple):
+                        当前方法按顺序处理的 `args` 数据集合。
+                    kwargs (dict):
+                        继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
+
+        """
+
         if self.unset_sub_ctrl is not True:
             return
         if not getattr(self, 'output_grp', None):
@@ -449,7 +600,15 @@ class Control (object) :
 
     @staticmethod
     def get_shape_data_dir():
-        """返回控制器 Shape JSON/JPG 目录，兼容当前项目常见目录结构。"""
+        u"""
+
+                返回控制器 Shape JSON/JPG 目录，兼容当前项目常见目录结构。
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+        """
         core_dir = os.path.dirname(os.path.abspath(__file__))
         project_dir = os.path.dirname(core_dir)
         candidates = [
@@ -532,9 +691,11 @@ class Control (object) :
     # 镜像控制器，将指定控制器的形状信息镜像到当前控制器上。
     def mirror (self , other) :
         u"""
-        镜像控制器，将指定控制器的形状信息镜像到当前控制器上。
-        :param other: 镜像控制器的目标
-        :return:
+        镜像控制器，将指定控制器的形状信息镜像到当前控制器上。 :param other: 镜像控制器的目标 :return:
+
+        Args:
+            other (object):
+                当前方法执行 Maya / Rig 操作时使用的 `other` 数据。
         """
         self.set_shape (s = other.get_shape ())
         for src_shape , dst_shape in zip (self.get_transform ().getShapes () , other.get_transform ().getShapes ()) :
@@ -548,8 +709,12 @@ class Control (object) :
     def get_shape (self) :
         u"""
 
-        :return: data
-        控制器形状的数据
+                :return: data 控制器形状的数据
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
         return [dict (points = self.get_curve_shape_points (shape) ,
                       degree = shape.degree () ,
@@ -561,19 +726,27 @@ class Control (object) :
     # 获取控制器的transform节点
     def get_transform (self) :
         u"""
-         -t -transform string/node/Control 控制器
-        :return: transform node
-        返回控制器的transform节点
+
+                -t -transform string/node/Control 控制器 :return: transform node 返回控制器的transform节点
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
         return self.transform
 
 
     # 获取控制器的颜色
     def get_color (self) :
-        """
-        获得控制器的颜色
-        -c - color int : 控制器颜色
-        :return:
+        u"""
+
+                获得控制器的颜色 -c - color int : 控制器颜色 :return:
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
         c = 0
         for shape in self.get_transform ().getShapes () :
@@ -583,10 +756,14 @@ class Control (object) :
 
     # 获取控制器的半径大小
     def get_radius (self) :
-        """
-        获得控制器的大小
-        -r - radius int : 控制器大小
-        :return:
+        u"""
+
+                获得控制器的大小 -r - radius int : 控制器大小 :return:
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
         if len (self.get_transform ().getShapes ()) == 0 :
             return self.get_soft_radius ()
@@ -597,7 +774,13 @@ class Control (object) :
         return radius
 
     def set_control_orientation(self, axis):
-        """兼容旧版朝向接口。"""
+        u"""
+        兼容旧版朝向接口。
+
+        Args:
+            axis (str):
+                操作使用的轴向标记。
+        """
         self.axis = axis
         self.set_rotate(axis=axis)
 
@@ -609,26 +792,38 @@ class Control (object) :
                      pos = None , parent = None,lock_attrs = None,animation_set = None ,
                      unset_sub_ctrl = True,
                      unset_add_extra_group = True) :
-        u"""基于给定的控制器名称创建控制器
+        u"""
+        基于给定的控制器名称创建控制器
 
         Args:
-            name(str/None): 控制器的名称.
-            shape (str): 控制器的形状.
-            radius(float):控制器形状的大小.
-            pos(str) : 被吸附物体的位置,为None的话则生成在坐标原地，或者指定要吸附位置的物体
-            axis (str): 控制器的朝向. 'X+'/'X-'/'Y+'/'Y-'/'Z+'/'Z-'
-            lock_attrs (list): 要锁定的控制器属性.
-            parent (str/None): 控制器的父层级.
-            animation_set (str/None): 动画控制器集.
-
-
-
-        Raises:
-            ValueError: 如果控制器名称已存在.
+            name (str/None):
+                控制器的名称.
+            shape (str):
+                控制器的形状.
+            radius (float):
+                控制器形状的大小.
+            ctrl_color (int):
+                当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。
+            axis (str):
+                控制器的朝向. 'X+'/'X-'/'Y+'/'Y-'/'Z+'/'Z-'
+            pos (str):
+                被吸附物体的位置,为None的话则生成在坐标原地，或者指定要吸附位置的物体
+            parent (str/None):
+                控制器的父层级.
+            lock_attrs (list):
+                要锁定的控制器属性.
+            animation_set (str/None):
+                动画控制器集.
+            unset_sub_ctrl (bool):
+                当前 Rig 操作或驱动使用的动画 Controller Transform。
+            unset_add_extra_group (bool):
+                当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
 
         Returns:
             str: 控制器的名称
 
+        Raises:
+            ValueError: 如果控制器名称已存在.
         """
 
 
@@ -648,6 +843,16 @@ class Control (object) :
     @staticmethod
     @pipelineUtils.Pipeline.make_undo
     def create_fk_ctrl (objects) :
+        u"""
+
+                创建当前 fk ctrl。
+
+                Args:
+                    objects (str | list[str]):
+                        需要批量处理的 Maya 场景对象名称或对象列表。
+
+        """
+
         parent = None
         for object in objects :
             ctrl_name = 'ctrl_{}'.format (object)
@@ -669,6 +874,16 @@ class Control (object) :
     @staticmethod
     @pipelineUtils.Pipeline.make_undo
     def delete_fk_ctrl (objects) :
+        u"""
+
+                删除当前 fk ctrl。
+
+                Args:
+                    objects (str | list[str]):
+                        需要批量处理的 Maya 场景对象名称或对象列表。
+
+        """
+
         for object in objects :
             zero_name = 'zero_{}'.format (object)
             try :
@@ -685,13 +900,12 @@ class Control (object) :
     def create_ikspine_ctrl (startIK_jnt , endIK_jnt) :
         u"""
         创建IKspine链的控制器绑定
+
         Args:
-            startjnt(str):ik关节链条的起始关节
-            endIK_jnt(bool):ik关节链条的结束关节
-            ctrl_number(int):控制器的数量
-
-        Returns: ik_ctrl_grp ：IK控制器的最顶层
-
+            startIK_jnt (str):
+                当前 Rig 计算或构建使用的 Maya Jnt 节点。
+            endIK_jnt (bool):
+                ik关节链条的结束关节
         """
         # 获取startjnt底下所有的子物体关节作为列表
         startjnt_child_list = hierarchyUtils.Hierarchy.get_child_object (startIK_jnt , type = 'joint')
@@ -817,6 +1031,16 @@ class Control (object) :
     @staticmethod
     @pipelineUtils.Pipeline.make_undo
     def delete_ik_ctrl (objects) :
+        u"""
+
+                删除当前 ik ctrl。
+
+                Args:
+                    objects (str | list[str]):
+                        需要批量处理的 Maya 场景对象名称或对象列表。
+
+        """
+
         for object in objects :
             grp_name = 'grpIKspine_{}'.format (object)
             try :
@@ -830,6 +1054,20 @@ class Control (object) :
     # 获取参数值
     @staticmethod
     def get_arg (args) :
+        u"""
+
+                查询并返回当前 arg。
+
+                Args:
+                    args (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `args` 数据。
+
+                Returns:
+                    None | object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+        """
+
         if len (args) > 0 :
             return args [0]
         return None
@@ -838,6 +1076,20 @@ class Control (object) :
     # 获取控制器形状节点的曲线点位置信息
     @staticmethod
     def get_curve_shape_points (shape) :
+        u"""
+
+                查询并返回当前 curve shape points。
+
+                Args:
+                    shape (str):
+                        Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+        """
+
         return pm.xform (shape.cv , q = 1 , t = 1)
 
 
@@ -845,8 +1097,13 @@ class Control (object) :
     @staticmethod
     def get_soft_radius () :
         u"""
-        ssd (float): 衰减半径
-        return:返回软选择的范围
+
+                ssd (float): 衰减半径 return:返回软选择的范围
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
         return pm.softSelect (query = 1 , ssd = 1)
 
@@ -855,12 +1112,19 @@ class Control (object) :
     @staticmethod
     def get_length (point1 , point2) :
         u"""
-        point1[float,float,float]: 点1的坐标(x,y,z)
-        point2[float,float,float]: 点2的坐标(x,y,z)
-        return: 两点之间的距离
-        原理：两点之间的距离等于两点之间x，y，z相减的和的平方再开方
-        ((x1-x2)**2 +(y1-y2)**2 + (z1-z2)**2)**0.5
-        ** 表示平方，**0.5表示开方
+
+                point1[float,float,float]: 点1的坐标(x,y,z) point2[float,float,float]: 点2的坐标(x,y,z) return: 两点之间的距离 原理：两点之间的距离等于两点之间x，y，z...
+
+                Args:
+                    point1 (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `point1` 数据。
+                    point2 (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `point2` 数据。
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
         distance = sum ([(point1 [i] - point2 [i]) ** 2 for i in range (3)]) ** 0.5
         return distance
@@ -870,8 +1134,13 @@ class Control (object) :
     @classmethod
     def selected (cls) :
         u"""
-         [Control(), ]
-        选择的控制器
+
+                [Control(), ] 选择的控制器
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
         """
         return [cls(name=t.name(), shape=None, unset_sub_ctrl=False, unset_add_extra_group=False) for t in pm.selected(type="transform")]
 
@@ -880,8 +1149,11 @@ class Control (object) :
     @classmethod
     def set_selected (cls , **kwargs) :
         u"""
-        :param kwargs: 修改控制器的参数
-        批量修改选择的控制器
+        :param kwargs: 修改控制器的参数 批量修改选择的控制器
+
+        Args:
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
         selected = cls.selected ()
         for control in selected :
@@ -893,8 +1165,7 @@ class Control (object) :
     @classmethod
     def mirror_selected (cls) :
         u"""
-        镜像两个选择的控制器
-        :return:
+        镜像两个选择的控制器 :return:
         """
         selected = cls.selected ()
         if not len (selected) == 2 :
@@ -906,9 +1177,14 @@ class Control (object) :
     # 删除形状
     @classmethod
     def delete_shape (cls , *args , **kwargs) :
-        """
-        删除形状
-        :return:
+        u"""
+        删除形状 :return:
+
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
         s = kwargs.get ("s" , kwargs.get ("shape" , cls.get_arg (args)))
         if s is None :
@@ -924,9 +1200,12 @@ class Control (object) :
     # 批量删除形状
     @classmethod
     def delete_shapes (cls , *args) :
-        """
-        批量删除形状
-        :return:
+        u"""
+        批量删除形状 :return:
+
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
         """
         for s in args :
             cls.delete_shape (s)
@@ -935,17 +1214,21 @@ class Control (object) :
     # 创建ribbon控制器
     @staticmethod
     def create_ribbon (name , control_parent , jnt_number = 5) :
-        """
-        创建ribbon控制器，给动画师更细致的动画效果
-        思路：通过给定关节的名称来创建ribbon控制，通过曲线来生成曲面制作ribbon绑定，然后让生成的关节绑定在曲面上
-        采用的变形器有twist，sine和wire变形器，通过这些变形器影响曲面，从而带动曲面上的关节
+        u"""
 
-        Args:
-            ribbon.side (str): ribbon's ribbon.side
-            ribbon.description (str): ribbon's ribbon.description
-            ribbon.index (int): ribbon's ribbon.index
-            jnt_number (int): how many joints need to be attached to the ribbon, default is 9
-            control_parent:
+                创建ribbon控制器，给动画师更细致的动画效果 思路：通过给定关节的名称来创建ribbon控制，通过曲线来生成曲面制作ribbon绑定，然后让生成的关节绑定在曲面上 采用的变形器有twist，sine和wire变形器，通过这些变形器...
+
+                Args:
+                    name (str):
+                        创建或查询时使用的节点名称。
+                    control_parent (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `control_parent` 数据。
+                    jnt_number (int):
+                        how many joints need to be attached to the ribbon, default is 9
+
+                Returns:
+                    tuple:
+                        按当前 API 约定组织的结果元组。
 
         """
         # 从名称中获取ribbon控制器的边，描述，和编号
@@ -1171,17 +1454,18 @@ class Control (object) :
     @staticmethod
     @pipelineUtils.Pipeline.make_undo
     def create_ik_crv_ctrl_rig(crv_name,part = 'test',unrebuild_crv_value = False,jnt_number = 10):
-        """
-        给定曲线后，根据曲线上的点数量来创建关节点和控制器(也可自定义重建曲线点的数量)
-        整体的控制为ik型
-        最底下的main控制器是总组，上面有数值可以修改驱动的控制器比例多少
-        crv_name(str):给定的曲线名称
-        part(str):最后生成的绑定组名称描述
-        unrebuild_crv_value(bool):是否需要重建曲线
-        jnt_number(int):生成的关节点数量和控制器数量
+        u"""
+        给定曲线后，根据曲线上的点数量来创建关节点和控制器(也可自定义重建曲线点的数量) 整体的控制为ik型 最底下的main控制器是总组，上面有数值可以修改驱动的控制器比例多少 crv_name(str):给定的曲线名称 part(str)...
 
-
-
+        Args:
+            crv_name (str):
+                `crv_name` 对应的 Maya 节点或资源名称。
+            part (str):
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+            unrebuild_crv_value (bool):
+                控制当前方法中的 `unrebuild_crv_value` 选项是否启用。
+            jnt_number (int):
+                当前构建、采样或查询过程使用的元素数量。
         """
         #检查给定的曲线是否存在于场景里，没有的话则报错
         if not cmds.objExists (crv_name) :

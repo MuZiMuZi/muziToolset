@@ -36,27 +36,31 @@ import pymel.core as pm
 
 def parent(child_node, parent_node):
     u"""
-    先检查子物体和父物体之间是否已经存在父子关系。
-    如果不存在，则创建新的父子层级关系。
+    先检查子物体和父物体之间是否已经存在父子关系。 如果不存在，则创建新的父子层级关系。
 
     该方法同时支持字符串节点名称和 PyNode。
     内部统一转换成 PyNode 后再进行层级检查和 Parent，
     避免 maya.cmds 和 PyNode 混用时出现“对象无效”的问题。
-
     child_node(str/PyNode): 需要设置父级的子物体节点。
     parent_node(str/PyNode): 需要作为父级的节点。
+
+    Args:
+        child_node (str):
+            需要重新挂接父级的 Child DAG 节点名称。
+        parent_node (str):
+            Child 最终需要挂接到的 Parent DAG 节点名称。
 
     Returns:
         None
 
-    Maya 使用示例：
+        Maya 使用示例：
 
-    from muziToolset.core.common import hierarchy_utils
+        from muziToolset.core.common import hierarchy_utils
 
-    child_node = "ctrl_lf_eye_main_001"
-    parent_node = "grp_md_face_ctrl_001"
+        child_node = "ctrl_lf_eye_main_001"
+        parent_node = "grp_md_face_ctrl_001"
 
-    hierarchy_utils.parent(child_node, parent_node)
+        hierarchy_utils.parent(child_node, parent_node)
     """
 
     # 没有给定父物体时停止执行。
@@ -89,25 +93,31 @@ def chain_parent(child_nodes, parent_node):
     child_nodes(list): 需要整理层级结构的物体列表。
     parent_node(str): 第一个物体的父物体。
 
+    Args:
+        child_nodes (object):
+            当前方法执行 Maya / Rig 操作时使用的 `child_nodes` 数据。
+        parent_node (str):
+            Child 最终需要挂接到的 Parent DAG 节点名称。
+
     Returns:
         None
 
-    Maya 使用示例：
+        Maya 使用示例：
 
-    from muziToolset.core.common import hierarchy_utils
+        from muziToolset.core.common import hierarchy_utils
 
-    child_nodes = ["jnt_lf_arm_bind_001",
-                   "jnt_lf_arm_bind_002",
-                   "jnt_lf_arm_bind_003"]
-    parent_node = "grp_md_skeleton_001"
+        child_nodes = ["jnt_lf_arm_bind_001",
+        "jnt_lf_arm_bind_002",
+        "jnt_lf_arm_bind_003"]
+        parent_node = "grp_md_skeleton_001"
 
-    hierarchy_utils.chain_parent(child_nodes, parent_node)
+        hierarchy_utils.chain_parent(child_nodes, parent_node)
 
-    # 最终层级：
-    # grp_md_skeleton_001
-    #     jnt_lf_arm_bind_001
-    #         jnt_lf_arm_bind_002
-    #             jnt_lf_arm_bind_003
+        # 最终层级：
+        # grp_md_skeleton_001
+        #     jnt_lf_arm_bind_001
+        #         jnt_lf_arm_bind_002
+        #             jnt_lf_arm_bind_003
     """
 
     for child_node in child_nodes:
@@ -125,21 +135,28 @@ def get_or_create_group(group_name):
     如果场景中已经存在同名 Transform，则直接获取并返回。
     如果同名节点存在但不是 Transform，则抛出错误。
     如果场景中不存在该名称，则创建新的空 Group。
-
     group_name(str): 需要获取或创建的 Group 名称。
+
+    Args:
+        group_name (str):
+            `group_name` 对应的 Maya 节点或资源名称。
 
     Returns:
         PyNode: 获取或创建的 Transform Group。
 
-    Maya 使用示例：
+        Maya 使用示例：
 
-    from muziToolset.core.common import hierarchy_utils
+        from muziToolset.core.common import hierarchy_utils
 
-    group = hierarchy_utils.get_or_create_group(
+        group = hierarchy_utils.get_or_create_group(
         "grp_lf_ear_ctrl_001"
-    )
+        )
 
-    print(group)
+        print(group)
+
+    Raises:
+        TypeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
 
     # 场景中已经存在同名节点时直接获取。
@@ -166,51 +183,64 @@ def add_extra_group(object, grp_name, world_orient=False, relation="parent"):
     Group 会位于对象上方。
     新建 Group 时会保持对象原来的父级关系；
     如果同名 Group 已经存在，则直接获取并确保对象位于该 Group 下方。
-
     relation="child" 时：
     Group 会位于对象下方。
     如果同名 Group 已经存在，则直接获取并确保它位于对象下方。
-
     已经存在的 Group 不会再次执行 matchTransform，避免重复调用时修改已有层级的 Transform。
     只有真正新建 Group 时才会根据 world_orient 对齐到指定对象。
-
     object(str/PyNode): 需要添加额外组的 Maya 对象。
     grp_name(str): 需要创建或获取的 Group 名称。
     world_orient(bool): 是否让新创建的 Group 保持世界旋转方向，默认 False。
     relation(str): Group 与对象的层级关系，可使用 "parent" 或 "child"，默认 "parent"。
 
+    Args:
+        object (str):
+            需要处理的 Maya 场景对象名称。
+        grp_name (str):
+            `grp_name` 对应的 Maya 节点或资源名称。
+        world_orient (bool):
+            创建 Extra Group 时是否使用 World Orientation，而不是继承目标对象旋转。
+        relation (str):
+            当前 Maya / Rig 操作使用的 `relation` 名称或标记。
+
     Returns:
         PyNode: 创建或获取到的 Group 节点。
 
-    Maya 使用示例：
+        Maya 使用示例：
 
-    from muziToolset.core.common import hierarchy_utils
+        from muziToolset.core.common import hierarchy_utils
 
-    ctrl = "ctrl_lf_eye_main_001"
+        ctrl = "ctrl_lf_eye_main_001"
 
-    # 第一次执行会创建 Offset Group。
-    offset_grp = hierarchy_utils.add_extra_group(
+        # 第一次执行会创建 Offset Group。
+        offset_grp = hierarchy_utils.add_extra_group(
         ctrl,
         "offset_lf_eye_main_001",
         relation="parent"
-    )
+        )
 
-    # 再次执行会直接获取并复用同名 Group，不会创建 offset_lf_eye_main_0011。
-    offset_grp = hierarchy_utils.add_extra_group(
+        # 再次执行会直接获取并复用同名 Group，不会创建 offset_lf_eye_main_0011。
+        offset_grp = hierarchy_utils.add_extra_group(
         ctrl,
         "offset_lf_eye_main_001",
         relation="parent"
-    )
+        )
 
-    # 在 Controller 下方创建或获取 Output Group。
-    output_grp = hierarchy_utils.add_extra_group(
+        # 在 Controller 下方创建或获取 Output Group。
+        output_grp = hierarchy_utils.add_extra_group(
         ctrl,
         "output_lf_eye_main_001",
         relation="child"
-    )
+        )
 
-    print(offset_grp)
-    print(output_grp)
+        print(offset_grp)
+        print(output_grp)
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+        TypeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
 
     # relation 只接受 parent 和 child。
@@ -272,25 +302,30 @@ def add_extra_group(object, grp_name, world_orient=False, relation="parent"):
 
 def get_child_object(object, type="joint"):
     u"""
-    获取对象下面指定类型的所有子物体，并包含对象本身。
-    返回的列表按照从父级到子级的顺序排列。
+    获取对象下面指定类型的所有子物体，并包含对象本身。 返回的列表按照从父级到子级的顺序排列。
 
     object(str): 需要获取子物体的对象。
     type(str): 需要获取的节点类型，默认 "joint"。
 
+    Args:
+        object (str):
+            需要处理的 Maya 场景对象名称。
+        type (str):
+            当前 Maya / Rig 操作使用的 `type` 名称或标记。
+
     Returns:
         list: 对象本身和所有指定类型子物体的名称列表。
 
-    Maya 使用示例：
+        Maya 使用示例：
 
-    from muziToolset.core.common import hierarchy_utils
+        from muziToolset.core.common import hierarchy_utils
 
-    object = "jnt_lf_arm_bind_001"
-    type = "joint"
+        object = "jnt_lf_arm_bind_001"
+        type = "joint"
 
-    object_list = hierarchy_utils.get_child_object(object, type)
+        object_list = hierarchy_utils.get_child_object(object, type)
 
-    print(object_list)
+        print(object_list)
     """
 
     # 获取指定类型的所有后代节点。
@@ -307,23 +342,26 @@ def get_child_object(object, type="joint"):
 
 def select_sub_objects(obj_type="transform"):
     u"""
-    快速选择当前所选物体下面指定类型的所有子对象，并包含当前选择的物体本身。
-    支持同时选择多个父物体，并自动避免重复添加相同的子对象。
+    快速选择当前所选物体下面指定类型的所有子对象，并包含当前选择的物体本身。 支持同时选择多个父物体，并自动避免重复添加相同的子对象。
 
     obj_type(str): 需要选择的子对象类型，例如 "transform"、"joint"，默认 "transform"。
+
+    Args:
+        obj_type (str):
+            当前 Maya / Rig 操作使用的 `obj_type` 名称或标记。
 
     Returns:
         list: 最终选择的所有对象名称列表。
 
-    Maya 使用示例：
+        Maya 使用示例：
 
-    from muziToolset.core.common import hierarchy_utils
+        from muziToolset.core.common import hierarchy_utils
 
-    obj_type = "joint"
+        obj_type = "joint"
 
-    selection = hierarchy_utils.select_sub_objects(obj_type)
+        selection = hierarchy_utils.select_sub_objects(obj_type)
 
-    print(selection)
+        print(selection)
     """
 
     # 获取当前选择的所有对象。

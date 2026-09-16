@@ -13,7 +13,21 @@ Qt = QtCore.Qt
 
 
 def module_icon(color, code=""):
-    u"""绘制统一的线框模块图标，替代依赖系统字体的特殊字符图标。"""
+    u"""
+
+        绘制统一的线框模块图标，替代依赖系统字体的特殊字符图标。
+
+        Args:
+            color (int | tuple[float, float, float]):
+                Viewport Override 使用的 Index Color 或 RGB Color。
+            code (str):
+                当前 Maya / Rig 操作使用的 `code` 名称或标记。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
+    """
     pixmap = QtGui.QPixmap(40, 40)
     pixmap.fill(Qt.transparent)
     painter = QtGui.QPainter(pixmap)
@@ -36,6 +50,16 @@ class ArtHeader(QtWidgets.QFrame):
     u"""页眉中的工业线条与酸橙色装饰，文字由普通 Qt 控件负责。"""
 
     def paintEvent(self, event):
+        u"""
+
+                执行当前 API 的主要处理流程。
+
+                Args:
+                    event (QtCore.QEvent | object):
+                        Qt Event 回调传入的事件对象。
+
+        """
+
         super(ArtHeader, self).paintEvent(event)
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
@@ -63,6 +87,22 @@ class StepButton(QtWidgets.QPushButton):
     u"""顶部四步导航，以清晰数字和切角高亮呈现当前操作阶段。"""
 
     def __init__(self, number, title, subtitle, parent=None):
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+                Args:
+                    number (int):
+                        自动编号或字母编号转换使用的序号。
+                    title (str):
+                        窗口、Section、Dialog 或报告使用的标题文本。
+                    subtitle (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `subtitle` 数据。
+                    parent (str):
+                        父级 Maya 节点名称。
+
+        """
+
         super(StepButton, self).__init__(parent)
         self.number = number
         self.title = title
@@ -76,13 +116,29 @@ class StepButton(QtWidgets.QPushButton):
         self.setCursor(Qt.PointingHandCursor)
 
     def set_stage_state(self, state):
-        u"""设置 available / current / completed / locked 视觉状态。"""
+        u"""
+        设置 available / current / completed / locked 视觉状态。
+
+        Args:
+            state (object):
+                当前方法执行 Maya / Rig 操作时使用的 `state` 数据。
+        """
         self.stage_state = state
         self.setEnabled(state != "locked")
         self.setChecked(state == "current")
         self.update()
 
     def paintEvent(self, event):
+        u"""
+
+                执行当前 API 的主要处理流程。
+
+                Args:
+                    event (QtCore.QEvent | object):
+                        Qt Event 回调传入的事件对象。
+
+        """
+
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         rect = self.rect()
@@ -128,6 +184,16 @@ class TickBox(QtWidgets.QCheckBox):
     u"""为酸橙色选中框补充明确勾号，同时保留 Qt 的键盘和辅助功能。"""
 
     def paintEvent(self, event):
+        u"""
+
+                执行当前 API 的主要处理流程。
+
+                Args:
+                    event (QtCore.QEvent | object):
+                        Qt Event 回调传入的事件对象。
+
+        """
+
         super(TickBox, self).paintEvent(event)
         if not self.isChecked():
             return
@@ -145,6 +211,18 @@ class Section(QtWidgets.QWidget):
     u"""可折叠属性抽屉，折叠时释放空间。"""
 
     def __init__(self, title, parent=None):
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+                Args:
+                    title (str):
+                        窗口、Section、Dialog 或报告使用的标题文本。
+                    parent (str):
+                        父级 Maya 节点名称。
+
+        """
+
         super(Section, self).__init__(parent)
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -167,6 +245,12 @@ class Section(QtWidgets.QWidget):
         self.button.toggled.connect(self.set_expanded)
 
     def set_expanded(self, expanded):
-        u"""同步标题箭头和属性区可见性。"""
+        u"""
+        同步标题箭头和属性区可见性。
+
+        Args:
+            expanded (object):
+                当前方法执行 Maya / Rig 操作时使用的 `expanded` 数据。
+        """
         self.body.setVisible(expanded)
         self.button.setArrowType(Qt.DownArrow if expanded else Qt.RightArrow)

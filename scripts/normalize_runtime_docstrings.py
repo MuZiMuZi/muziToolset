@@ -1142,6 +1142,21 @@ def build_indented_docstring(docstring, indent):
     return lines
 
 
+def get_source_indent(source_lines, line_number):
+    u"""返回源码指定行实际使用的前导空白。
+
+    ``ast`` 的 ``col_offset`` 按展开后的列宽计算，无法还原旧脚本实际使用的
+    Tab 缩进。直接读取原始源码行可以让新增 Docstring 延续所在文件的缩进
+    风格，避免在 Maya 历史模块中产生 ``IndentationError``。
+    """
+    source_line = source_lines[line_number - 1]
+    indent_match = re.match(
+        r"^[\t ]*",
+        source_line
+    )
+    return indent_match.group(0)
+
+
 def normalize_source_text(source_text, source_path):
     u"""返回补齐公开 API Docstring 后的源码。"""
     module_tree = ast.parse(
@@ -1164,7 +1179,10 @@ def normalize_source_text(source_text, source_path):
             continue
 
         first_body_statement = function_node.body[0]
-        indent = " " * first_body_statement.col_offset
+        indent = get_source_indent(
+            source_lines,
+            first_body_statement.lineno
+        )
         replacement_lines = build_indented_docstring(
             standard_docstring,
             indent

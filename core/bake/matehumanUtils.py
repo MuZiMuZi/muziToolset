@@ -22,24 +22,44 @@ reload(pipelineUtils)
 
 
 class MateHuman() :
-	
-	
-	
+
+
+
 	def __init__(self , name) :
+		u"""
+
+		        初始化当前对象，并准备运行时需要的状态和成员。
+
+		        Args:
+		            name (str):
+		                创建或查询时使用的节点名称。
+
+		"""
+
 		self.name = name
 		self.side = None
 		self.description = None
 		self.index = None
-		
+
 		self.mateHuman_decompose()
-	
-	
-	
+
+
+
 	@staticmethod
 	def get_mateHuman_drv_jnt(description) :
-		u'''
-		定义matehuman的骨架结构,查询到对应的模块后返回对应的关节
-		'''
+		u"""
+
+		        定义matehuman的骨架结构,查询到对应的模块后返回对应的关节
+
+		        Args:
+		            description (str):
+		                UI Step / Section 中展示的功能说明文本。
+
+		        Returns:
+		            object:
+		                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+		"""
 		mateHuman_joint_trunk_dict = {
 				'root' : 'root_drv' ,
 				'pelvis' : 'pelvis_drv' ,
@@ -48,7 +68,7 @@ class MateHuman() :
 				'neck' : ['neck_01_drv' , 'neck_02_drv' , 'head_drv'] ,
 				'head ' : 'head_drv'
 				}
-		
+
 		mateHuman_joint_arm_dict = {
 				'clavicle_l' : 'clavicle_l_drv' ,
 				'arm_l' : ['upperarm_l_drv' , 'lowerarm_l_drv' , 'hand_l_drv'] ,
@@ -63,7 +83,7 @@ class MateHuman() :
 				'pinky_finger_l' : ['pinky_metacarpal_l_drv' , 'pinky_01_l_drv' , 'pinky_02_l_drv' ,
 				                    'pinky_03_l_drv'] ,
 				'thumb_finger_l' : ['thumb_01_l_drv' , 'thumb_02_l_drv' , 'thumb_03_l_drv'] ,
-				
+
 				'clavicle_r' : 'clavicle_r_drv' ,
 				'upperarm_r' : 'upperarm_r_drv' ,
 				'lowerarm_r' : 'lowerarm_r_drv' ,
@@ -80,45 +100,45 @@ class MateHuman() :
 				                    'pinky_02_r_drv' , 'pinky_03_r_drv'] ,
 				'thumb_finger_r' : ['thumb_01_r_drv' , 'thumb_02_r_drv' , 'thumb_03_r_drv']
 				}
-		
+
 		mateHuman_joint_leg_dict = {
 				'leg_l' : ['thigh_l_drv' , 'calf_l_drv' , 'foot_l_drv'] ,
 				'thigh_l' : 'thigh_l_drv' ,
 				'calf_l' : 'calf_l_drv' ,
 				'foot_l' : 'foot_l_drv' ,
 				'ball_l' : 'ball_l_drv' ,
-				
+
 				'bigtoe_l' : ['bigtoe_01_l_drv' , 'bigtoe_02_l_drv'] ,
 				'indextoe_l' : ['indextoe_01_l_drv' , 'indextoe_02_l_drv'] ,
 				'middletoe_l' : ['middletoe_01_l_drv' , 'middletoe_02_l_drv'] ,
 				'littletoe_l' : ['littletoe_01_l_drv' , 'littletoe_02_l_drv'] ,
 				'ringtoe_l' : ['ringtoe_01_l_drv' , 'ringtoe_02_l_drv'] ,
-				
+
 				'leg_r' : ['thigh_r_drv' , 'calf_r_drv' , 'foot_r_drv'] ,
 				'thigh_r' : 'thigh_r_drv' ,
 				'calf_r' : 'calf_r_drv' ,
 				'foot_r' : 'foot_r_drv' ,
 				'ball_r' : 'ball_r_drv' ,
-				
+
 				'bigtoe_r' : ['bigtoe_01_r_drv' , 'bigtoe_02_r_drv'] ,
 				'indextoe_r' : ['indextoe_01_r_drv' , 'indextoe_02_r_drv'] ,
 				'middletoe_r' : ['middletoe_01_r_drv' , 'middletoe_02_r_drv'] ,
 				'littletoe_r' : ['littletoe_01_r_drv' , 'littletoe_02_r_drv'] ,
 				'ringtoe_r' : ['ringtoe_01_r_drv' , 'ringtoe_02_r_drv']
 				}
-		
+
 		for mateHuman_dict in [mateHuman_joint_trunk_dict , mateHuman_joint_arm_dict , mateHuman_joint_leg_dict] :
 			if description in mateHuman_dict :
 				return mateHuman_dict[description]
 			else :
 				pass
-	
-	
-	
+
+
+
 	def mateHuman_decompose(self) :
-		u'''
+		u"""
 		拆分mateHuman的关节名称
-		'''
+		"""
 		name_parts = self.name.split('_')
 		self.description = name_parts[0]
 		# 当len(name_parts) == 3 的时候，关节为spine_01_drv或者是clavicle_l_drv类型的关节
@@ -144,33 +164,31 @@ class MateHuman() :
 			self.function = name_parts[1]
 			self.index = name_parts[2]
 			self.side = name_parts[3]
-	
-	
-	
+
+
+
 	@staticmethod
 	def export_face_animation() :
-		u'''
-		导出面部的动画在文件的路径下
-		:return:
-		'''
+		u"""
+		导出面部的动画在文件的路径下 :return:
+		"""
 		# 获取maya文件的路径
 		scene_path = fileUtils.File.get_current_scene_path() + '_face_animation'
-		
+
 		# 选择matehuman的动画数据
 		cmds.select('FacialControls')
 		pipelineUtils.Pipeline.fbxExport(scene_path)
-	
-	
-	
+
+
+
 	@staticmethod
 	def export_body_animation() :
-		u'''
-		导出身体的动画在文件的路径下
-		:return:
-		'''
+		u"""
+		导出身体的动画在文件的路径下 :return:
+		"""
 		# 获取maya文件的路径
 		scene_path = fileUtils.File.get_current_scene_path () + '_body_animation'
-		
+
 		# 选择matehuman的动画数据
 		cmds.select('Body_joints')
 		body_jnt = cmds.ls(sl = True)
@@ -179,20 +197,18 @@ class MateHuman() :
 		start_frame = int(cmds.playbackOptions(query = True , minTime = True))
 		# 查询当前文件的结束帧
 		end_frame = int(cmds.playbackOptions(query = True , maxTime = True))
-		
+
 		# 根据当前文件的起始帧和结束帧烘培动画
 		cmds.bakeResults(body_jnt , time = (start_frame , end_frame) , simulation = True)
 		pipelineUtils.Pipeline.fbxExport(scene_path)
-	
-	
-	
+
+
+
 	@staticmethod
 	def reset_mateHuman_control() :
-		u"""重置控制器上所有的数值.
-
-
-
-		 """
+		u"""
+		重置控制器上所有的数值.
+		"""
 		# 重置ikfk控制器
 		ctrls = cmds.ls('*ctrl_*' , type = 'transform')
 		attrs = ['translateX' , 'translateY' , 'translateZ' , 'rotateX' , 'rotateY' , 'rotateZ']
@@ -214,7 +230,7 @@ class MateHuman() :
 		ctrl_ikfkblends = cmds.ls('ikfkctrl_*' , type = 'transform')
 		for ctrl_ikfkblend in ctrl_ikfkblends :
 			cmds.setAttr(ctrl_ikfkblend + '.IkFkBend' , 1)
-		
+
 		# 重置手指pose控制器
 		ctrl_poses = cmds.ls('fkposectrl_*' , type = 'transform')
 		for ctrl_pose in ctrl_poses :

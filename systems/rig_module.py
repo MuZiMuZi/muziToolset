@@ -53,15 +53,24 @@ class RigModule(object):
         guide(list/str/Guide): 当前模块使用的 Guide 数据来源。
         jnt_parent(str/PyNode): 当前模块 Joint 总组需要挂载的父节点。
         ctrl_parent(str/PyNode): 当前模块 Controller 总组需要挂载的父节点。
-
         Maya 使用示例：
-
             from muziToolset.systems import rig_module
-
             module_object = rig_module.RigModule(
                 module="ear",
                 side="lf"
             )
+
+        Args:
+            module (object):
+                当前方法执行 Maya / Rig 操作时使用的 `module` 数据。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            guide (str):
+                需要查询或处理的 Guide Transform 名称。
+            jnt_parent (str | None):
+                新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。
+            ctrl_parent (object):
+                当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。
         """
 
         self.module = module
@@ -82,17 +91,20 @@ class RigModule(object):
             1. Guide 工具对象：调用 get_guides(module, side)。
             2. list / tuple：直接按照传入顺序使用。
             3. 单个 Maya 节点：作为只有一个 Guide 的列表使用。
-
         如果没有传入 Guide，则返回空列表。
         具体 Component 如果拥有额外的 Guide 查找规则，可以在子类中继续扩展。
 
         Returns:
             list: 当前模块使用的 Guide 名称列表。
 
-        Maya 使用示例：
+            Maya 使用示例：
 
             guide_list = module_object.get_guides()
             print(guide_list)
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
         self.guide_list = []
@@ -131,18 +143,23 @@ class RigModule(object):
 
         该方法只负责一个 Joint 的基础创建，不决定整个模块的 Joint 数量和拓扑结构。
         Joint Chain、分叉 Joint、Driver Joint 等整体结构由具体子类的 create_joints() 决定。
-
         name(str): Joint 名称。
         guide(str/PyNode): 可选匹配目标。
+
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
+            guide (str):
+                需要查询或处理的 Guide Transform 名称。
 
         Returns:
             Jnt: 创建或获取到的 Jnt 工具对象。
 
-        Maya 使用示例：
+            Maya 使用示例：
 
             jnt_object = module_object.create_joint(
-                "jnt_lf_ear_bind_001",
-                guide="loc_lf_ear_guide_001"
+            "jnt_lf_ear_bind_001",
+            guide="loc_lf_ear_guide_001"
             )
 
             print(jnt_object.jnt)
@@ -170,7 +187,6 @@ class RigModule(object):
 
         该方法只负责一个 Controller 的创建。
         FK、Aim、IK、Face 等整个控制器系统的数量和连接方式由具体子类决定。
-
         name(str): Controller 名称。
         guide(str/PyNode): 可选匹配目标。
         shape_name(str): Controller Shape 名称，默认 "circle"。
@@ -179,18 +195,34 @@ class RigModule(object):
         ctrl_axis(str): Controller Shape 面朝方向，支持 X+ / X- / Y+ / Y- / Z+ / Z-，默认 "X+"。
         create_hierarchy(bool): 是否创建完整 Controller 层级，默认 True。
 
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
+            guide (str):
+                需要查询或处理的 Guide Transform 名称。
+            shape_name (str):
+                `shape_name` 对应的 Maya 节点或资源名称。
+            ctrl_color (int):
+                当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。
+            ctrl_size (float):
+                当前 Maya / Rig 计算使用的 `ctrl_size` 数值参数。
+            ctrl_axis (str):
+                当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。
+            create_hierarchy (bool):
+                控制当前方法中的 `create_hierarchy` 选项是否启用。
+
         Returns:
             Ctrl: 创建或获取到的 Ctrl 工具对象。
 
-        Maya 使用示例：
+            Maya 使用示例：
 
             ctrl_object = module_object.create_ctrl(
-                "ctrl_lf_ear_fk_001",
-                guide="loc_lf_ear_guide_001",
-                shape_name="circle",
-                ctrl_color=17,
-                ctrl_size=1.0,
-                ctrl_axis="Z+"
+            "ctrl_lf_ear_fk_001",
+            guide="loc_lf_ear_guide_001",
+            shape_name="circle",
+            ctrl_color=17,
+            ctrl_size=1.0,
+            ctrl_axis="Z+"
             )
 
             print(ctrl_object.ctrl)
@@ -213,9 +245,7 @@ class RigModule(object):
         创建当前模块完整 Joint System。
 
         具体 Joint 数量和拓扑结构由子类实现。
-
         Maya 使用示例：
-
             module_object.create_joints()
         """
 
@@ -226,9 +256,7 @@ class RigModule(object):
         创建当前模块完整 Controller System。
 
         具体 Controller 数量和结构由子类实现。
-
         Maya 使用示例：
-
             module_object.create_ctrls()
         """
 
@@ -240,9 +268,7 @@ class RigModule(object):
 
         不同模块可能使用 Constraint、Matrix、Utility Node 或 Deformer，
         因此具体连接方式由子类实现。
-
         Maya 使用示例：
-
             module_object.connect_rig()
         """
 
@@ -255,14 +281,13 @@ class RigModule(object):
         每个模块统一拥有：
             grp_<side>_<module>_jnt_001
             grp_<side>_<module>_ctrl_001
-
         如果传入 jnt_parent / ctrl_parent，则分别将两个总组挂到对应父节点。
         该方法只负责模块根层级，不决定 Joint Chain 或 Controller Chain 的内部拓扑。
 
         Returns:
             tuple: (jnt_master_grp, ctrl_master_grp)
 
-        Maya 使用示例：
+            Maya 使用示例：
 
             jnt_grp, ctrl_grp = module_object.setup_hierarchy()
 
@@ -308,18 +333,24 @@ class RigModule(object):
         return self.jnt_master_grp, self.ctrl_master_grp
 
     def build_outputs(self):
-        u"""创建关节、控制器与最终层级，但不建立绑定驱动连接。"""
+        u"""
+        创建关节、控制器与最终层级，但不建立绑定驱动连接。
+        """
         self.get_guides()
         self.create_joints()
         self.create_ctrls()
         self.setup_hierarchy()
 
     def load_outputs(self):
-        u"""读取已经生成的模块输出；具体节点规则由子类实现。"""
+        u"""
+        读取已经生成的模块输出；具体节点规则由子类实现。
+        """
         pass
 
     def connect_outputs(self):
-        u"""读取现有输出并建立绑定驱动连接。"""
+        u"""
+        读取现有输出并建立绑定驱动连接。
+        """
         self.load_outputs()
         self.connect_rig()
 
@@ -333,12 +364,9 @@ class RigModule(object):
             3. create_ctrls()
             4. setup_hierarchy()
             5. connect_rig()
-
         先整理最终 DAG 层级，再建立 Constraint / Matrix / Utility Node 等驱动连接，
         避免连接建立后再修改父子层级导致偏移或重复计算。
-
         Maya 使用示例：
-
             module_object.build()
         """
 

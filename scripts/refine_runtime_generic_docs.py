@@ -566,7 +566,15 @@ def refine_source_text(source_text, source_path):
         if not changed:
             continue
 
-        indent = " " * docstring_statement.col_offset
+        # AST col_offset 会把 Tab 按列宽展开，不能还原旧版 Maya 脚本的
+        # 实际缩进字符。直接复用 Docstring 起始行的前导空白，避免把
+        # Tab 文件重写成混合缩进。
+        source_line = source_lines[docstring_statement.lineno - 1]
+        indent_match = re.match(
+            r"^[\t ]*",
+            source_line
+        )
+        indent = indent_match.group(0)
         replacement_records.append({
             "start_index": docstring_statement.lineno - 1,
             "end_index": docstring_statement.end_lineno,

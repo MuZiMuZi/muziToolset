@@ -33,7 +33,23 @@ side_colors = {"lf": 6, "rt": 13, "md": 17}
 
 
 def get_module(key):
-    u"""取得可用模块的登记信息；未实现模块不会隐式退回通用 FK。"""
+    u"""
+
+        取得可用模块的登记信息；未实现模块不会隐式退回通用 FK。
+
+        Args:
+            key (object):
+                当前方法执行 Maya / Rig 操作时使用的 `key` 数据。
+
+        Returns:
+            object:
+                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+
+    """
     for entry in modules:
         if entry["key"] == key:
             return entry
@@ -41,12 +57,36 @@ def get_module(key):
 
 
 def new_document():
-    u"""创建空配置；打开窗口本身不会添加示例场景数据。"""
+    u"""
+
+        创建空配置；打开窗口本身不会添加示例场景数据。
+
+        Returns:
+            dict:
+                包含本次构建、查询或处理结果的结构化字典。
+
+    """
     return {"version": 1, "modules": []}
 
 
 def new_module(key, side=None, name=None):
-    u"""根据正式模块默认值创建可序列化配置。"""
+    u"""
+
+        根据正式模块默认值创建可序列化配置。
+
+        Args:
+            key (object):
+                当前方法执行 Maya / Rig 操作时使用的 `key` 数据。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            name (str):
+                创建或查询时使用的节点名称。
+
+        Returns:
+            dict:
+                包含本次构建、查询或处理结果的结构化字典。
+
+    """
     entry = get_module(key)
     side = side or entry["side"]
     return {
@@ -60,7 +100,19 @@ def new_module(key, side=None, name=None):
 
 
 def guide_names(record):
-    u"""优先使用明确指定的有序 Guide；耳朵和舌头可按模板名称读取。"""
+    u"""
+
+        优先使用明确指定的有序 Guide；耳朵和舌头可按模板名称读取。
+
+        Args:
+            record (object):
+                当前方法执行 Maya / Rig 操作时使用的 `record` 数据。
+
+        Returns:
+            object | list:
+                按当前 API 约定顺序返回的结果列表。
+
+    """
     if record["guides"]:
         return list(record["guides"])
     if record["kind"] == "fk_chain":
@@ -73,7 +125,19 @@ def guide_names(record):
 
 
 def output_names(record):
-    u"""返回后端实际使用的名称，用于构建前冲突检查与场景树查询。"""
+    u"""
+
+        返回后端实际使用的名称，用于构建前冲突检查与场景树查询。
+
+        Args:
+            record (object):
+                当前方法执行 Maya / Rig 操作时使用的 `record` 数据。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
+    """
     result = {"joints": [], "controls": [], "subcontrols": [], "groups": [], "outputs": []}
     for function in ("jnt", "ctrl"):
         result["groups"].append("grp_{}_{}_{}_001".format(record["side"], record["name"], function))
@@ -89,7 +153,23 @@ def output_names(record):
 
 
 def validate_document(document):
-    u"""严格校验配置后返回独立副本，防止部分参数写入或覆盖同名模块。"""
+    u"""
+
+        严格校验配置后返回独立副本，防止部分参数写入或覆盖同名模块。
+
+        Args:
+            document (object):
+                当前方法执行 Maya / Rig 操作时使用的 `document` 数据。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+
+    """
     if not isinstance(document, dict) or document.get("version") != 1:
         raise ValueError(u"无法识别绑定库配置版本。")
     document = copy.deepcopy(document)
@@ -161,7 +241,25 @@ def validate_document(document):
 
 
 def add_template(document, key):
-    u"""以原子方式添加模板；重复模块保留用户已经调整的设置。"""
+    u"""
+
+        以原子方式添加模板；重复模块保留用户已经调整的设置。
+
+        Args:
+            document (object):
+                当前方法执行 Maya / Rig 操作时使用的 `document` 数据。
+            key (object):
+                当前方法执行 Maya / Rig 操作时使用的 `key` 数据。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+
+    """
     result = validate_document(document)
     template = None
     for entry in templates:

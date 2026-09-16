@@ -63,16 +63,15 @@ class Attr(object):
         初始化 Attribute 工具对象。
 
         object(str/PyNode): 需要进行属性操作的 Maya 节点。
-
         Maya 使用示例：
-
         from muziToolset.core.common import attr_utils
-
         object = "ctrl_lf_eye_main_001"
-
         attr_object = attr_utils.Attr(object)
-
         print(attr_object.object)
+
+        Args:
+            object (str):
+                需要处理的 Maya 场景对象名称。
         """
 
         self.object = None
@@ -87,19 +86,23 @@ class Attr(object):
 
         attr_name(str): 需要检查的属性名称。
 
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+
         Returns:
             bool: 属性存在返回 True，不存在返回 False。
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import attr_utils
+            from muziToolset.core.common import attr_utils
 
-        attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
-        attr_name = "follow"
+            attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
+            attr_name = "follow"
 
-        result = attr_object.has_attr(attr_name)
+            result = attr_object.has_attr(attr_name)
 
-        print(result)
+            print(result)
         """
 
         # 检查当前节点是否拥有指定属性。
@@ -112,26 +115,35 @@ class Attr(object):
         给当前对象添加一个新的自定义属性。
 
         如果当前对象已经存在同名属性，则不重复创建。
-
         attr_name(str): 需要添加的属性名称。
         attr_type(str): 属性类型，默认 "double"。
         default_value(float/int/bool): 属性默认值，默认 0。
         keyable(bool): 是否允许属性设置关键帧，默认 True。
 
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+            attr_type (str):
+                创建 Maya Attribute 使用的数据类型，例如 double、long、bool、string 或 message。
+            default_value (int):
+                新建 Attribute、UI 控件或 Rig 参数使用的默认值。
+            keyable (bool):
+                对应 Maya Attribute 是否允许 Animator Keyframe。
+
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import attr_utils
+            from muziToolset.core.common import attr_utils
 
-        attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
-        attr_name = "follow"
-        attr_type = "double"
-        default_value = 0
-        keyable = True
+            attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
+            attr_name = "follow"
+            attr_type = "double"
+            default_value = 0
+            keyable = True
 
-        attr_object.add_attr(attr_name, attr_type, default_value, keyable)
+            attr_object.add_attr(attr_name, attr_type, default_value, keyable)
         """
 
         # 如果属性已经存在，则不重复创建。
@@ -148,18 +160,24 @@ class Attr(object):
         attr_name(str): 需要设置数值的属性名称。
         value(object): 需要设置给属性的数值。
 
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+            value (float):
+                需要读取、写入或参与计算的数值。
+
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import attr_utils
+            from muziToolset.core.common import attr_utils
 
-        attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
-        attr_name = "follow"
-        value = 1
+            attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
+            attr_name = "follow"
+            value = 1
 
-        attr_object.set_value(attr_name, value)
+            attr_object.set_value(attr_name, value)
         """
 
         # 直接通过当前 PyNode 设置指定属性的数值。
@@ -171,19 +189,23 @@ class Attr(object):
 
         attr_name(str): 需要获取数值的属性名称。
 
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+
         Returns:
             object: 当前属性的数值。
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import attr_utils
+            from muziToolset.core.common import attr_utils
 
-        attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
-        attr_name = "follow"
+            attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
+            attr_name = "follow"
 
-        value = attr_object.get_value(attr_name)
+            value = attr_object.get_value(attr_name)
 
-        print(value)
+            print(value)
         """
 
         # 获取当前节点指定属性的数值。
@@ -197,17 +219,21 @@ class Attr(object):
 
         attr_name(str): 需要锁定的属性名称。
 
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import attr_utils
+            from muziToolset.core.common import attr_utils
 
-        attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
-        attr_name = "scaleX"
+            attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
+            attr_name = "scaleX"
 
-        attr_object.lock_attr(attr_name)
+            attr_object.lock_attr(attr_name)
         """
 
         # 将指定属性设置为锁定状态。
@@ -219,17 +245,21 @@ class Attr(object):
 
         attr_name(str): 需要解锁的属性名称。
 
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import attr_utils
+            from muziToolset.core.common import attr_utils
 
-        attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
-        attr_name = "scaleX"
+            attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
+            attr_name = "scaleX"
 
-        attr_object.unlock_attr(attr_name)
+            attr_object.unlock_attr(attr_name)
         """
 
         # 将指定属性设置为解锁状态。
@@ -240,20 +270,23 @@ class Attr(object):
         将当前对象指定属性从 Channel Box 中隐藏。
 
         隐藏时同时关闭属性的 keyable 和 channelBox 显示状态。
-
         attr_name(str): 需要隐藏的属性名称。
+
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
 
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import attr_utils
+            from muziToolset.core.common import attr_utils
 
-        attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
-        attr_name = "visibility"
+            attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
+            attr_name = "visibility"
 
-        attr_object.hide_attr(attr_name)
+            attr_object.hide_attr(attr_name)
         """
 
         # 关闭属性的 Keyable 和 Channel Box 显示。
@@ -265,17 +298,21 @@ class Attr(object):
 
         attr_name(str): 需要重新显示的属性名称。
 
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import attr_utils
+            from muziToolset.core.common import attr_utils
 
-        attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
-        attr_name = "visibility"
+            attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
+            attr_name = "visibility"
 
-        attr_object.show_attr(attr_name)
+            attr_object.show_attr(attr_name)
         """
 
         # 设置为 Keyable 后，属性会重新显示在 Channel Box 中。
@@ -287,17 +324,21 @@ class Attr(object):
 
         attr_name(str): 需要锁定并隐藏的属性名称。
 
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import attr_utils
+            from muziToolset.core.common import attr_utils
 
-        attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
-        attr_name = "scaleX"
+            attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
+            attr_name = "scaleX"
 
-        attr_object.lock_hide_attr(attr_name)
+            attr_object.lock_hide_attr(attr_name)
         """
 
         # 复用已有方法，先锁定属性。
@@ -314,19 +355,27 @@ class Attr(object):
         target_object(str/PyNode): 需要接收连接的目标对象。
         target_attr_name(str): 目标对象作为输入端的属性名称。
 
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+            target_object (object):
+                当前方法执行 Maya / Rig 操作时使用的 `target_object` 数据。
+            target_attr_name (str):
+                `target_attr_name` 对应的 Maya 节点或资源名称。
+
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import attr_utils
+            from muziToolset.core.common import attr_utils
 
-        attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
-        attr_name = "follow"
-        target_object = "jnt_lf_eye_bind_001"
-        target_attr_name = "rotateX"
+            attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
+            attr_name = "follow"
+            target_object = "jnt_lf_eye_bind_001"
+            target_attr_name = "rotateX"
 
-        attr_object.connect_attr(attr_name, target_object, target_attr_name)
+            attr_object.connect_attr(attr_name, target_object, target_attr_name)
         """
 
         # 将目标对象统一转换成 PyNode。
@@ -343,19 +392,27 @@ class Attr(object):
         target_object(str/PyNode): 需要断开连接的目标对象。
         target_attr_name(str): 目标对象作为输入端的属性名称。
 
+        Args:
+            attr_name (str):
+                `attr_name` 对应的 Maya 节点或资源名称。
+            target_object (object):
+                当前方法执行 Maya / Rig 操作时使用的 `target_object` 数据。
+            target_attr_name (str):
+                `target_attr_name` 对应的 Maya 节点或资源名称。
+
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import attr_utils
+            from muziToolset.core.common import attr_utils
 
-        attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
-        attr_name = "follow"
-        target_object = "jnt_lf_eye_bind_001"
-        target_attr_name = "rotateX"
+            attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
+            attr_name = "follow"
+            target_object = "jnt_lf_eye_bind_001"
+            target_attr_name = "rotateX"
 
-        attr_object.disconnect_attr(attr_name, target_object, target_attr_name)
+            attr_object.disconnect_attr(attr_name, target_object, target_attr_name)
         """
 
         # 将目标对象统一转换成 PyNode。

@@ -22,10 +22,18 @@ class Snap (object) :
 
 
     def __init__ (self , obj , objs_list , combo) :
-        """
-        Args:
-            obj(object):Objects requiring adsorption position
-            objs_list(list):List of objects used as positioning reference to adsorb positions
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+                Args:
+                    obj (object):
+                        Objects requiring adsorption position
+                    objs_list (list):
+                        List of objects used as positioning reference to adsorb positions
+                    combo (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `combo` 数据。
+
         """
         self.obj = obj
         self.objs_list = objs_list
@@ -33,14 +41,11 @@ class Snap (object) :
 
 
     def find_centerPos_pivot (self) :
-        """返回对象列表的中心位置.
-
-        Args:
-            objs_list (list/None): 要查询中心位置的对象列表.
+        u"""
+        返回对象列表的中心位置.
 
         Returns:
             objs_list: 对象列表的中心位置, [center_pos_x, center_pos_y, center_pos_z].
-
         """
 
         num_of_obj = len (self.objs_list)
@@ -64,14 +69,11 @@ class Snap (object) :
 
 
     def find_centerRet_pivot (self) :
-        """返回对象列表的选择中心位置.
-
-        Args:
-            objs_list (list/None):要查询中心旋转的对象列表.
+        u"""
+        返回对象列表的选择中心位置.
 
         Returns:
             objs_list: 对象列表的中心旋转, [center_Ret_x, center_Ret_y, center_Ret_z].
-
         """
 
         num_of_obj = len (self.objs_list)
@@ -95,12 +97,8 @@ class Snap (object) :
 
 
     def snap_to_PosCenter (self) :
-        """将要吸附中心位置的对象捕捉到对象列表的中心位置。
-
-        Args:
-            objs_list (list): 要查询中心位置的对象列表.
-            obj (str): 要吸附中心位置的对象.
-
+        u"""
+        将要吸附中心位置的对象捕捉到对象列表的中心位置。
         """
 
         self.objs_list = [obj_node for obj_node in self.objs_list if cmds.objExists (obj_node)]
@@ -110,12 +108,8 @@ class Snap (object) :
 
 
     def snap_to_RetCenter (self) :
-        """将要吸附中心旋转的对象捕捉到对象列表的中心旋转.
-
-        Args:
-            objs_list (list): 要查询中心旋转的对象列表.
-            obj (str):要吸附中心旋转的对象.
-
+        u"""
+        将要吸附中心旋转的对象捕捉到对象列表的中心旋转.
         """
 
         self.objs_list = [obj_node for obj_node in self.objs_list if cmds.objExists (obj_node)]
@@ -125,9 +119,8 @@ class Snap (object) :
 
 
     def snap (self) :
-        """
-        根据选择的吸附模式，进行对应的吸附功能
-        :return:
+        u"""
+        根据选择的吸附模式，进行对应的吸附功能 :return:
         """
         if self.combo == 'Position + Rotation' :
             self.snap_to_PosCenter ()
@@ -143,6 +136,12 @@ class Snap (object) :
     @staticmethod
     def push_snip () :
         #快速吸附物体，选择的物体吸附到前面物体的中心
+        u"""
+
+                执行当前 API 的主要处理流程。
+
+        """
+
         sel_list = cmds.ls (selection = True , flatten = True)
         if len (sel_list) >= 1 :
             objs_list = sel_list [:-1]

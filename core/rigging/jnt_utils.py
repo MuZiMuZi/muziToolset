@@ -38,18 +38,16 @@ class Jnt(object):
 
         如果 Maya 场景中已经存在指定名称的 Joint，则直接将它作为当前 Joint。
         如果不存在，则自动创建一个新的 Joint。
-
         这样后续所有方法都可以直接使用 self.jnt，不需要重复判断 Joint 是否存在。
-
         name(str): Joint 名称。
-
         Maya 使用示例：
-
         from muziToolset.core.rigging import jnt_utils
-
         jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
-
         print(jnt_object.jnt)
+
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
         """
 
         # 保存 Joint 标准名称。
@@ -109,17 +107,25 @@ class Jnt(object):
 
         target(str/PyNode): 需要对齐的目标对象，例如 Guide、Locator 或 Transform。
 
+        Args:
+            target (str):
+                接收结果或被处理的目标 Maya 节点名称。
+            position (bool):
+                Jnt / Transform 使用的 XYZ Position。
+            rotation (bool):
+                Jnt / Transform 使用的 XYZ Rotation。
+
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.rigging import jnt_utils
+            from muziToolset.core.rigging import jnt_utils
 
-        jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
-        target = "guide_lf_arm_001"
+            jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
+            target = "guide_lf_arm_001"
 
-        jnt_object.match_transform(target)
+            jnt_object.match_transform(target)
         """
         jnt_object = transform_utils.Transform(self.jnt)
         jnt_object.match_transform(target, position=position, rotation=rotation)
@@ -130,17 +136,21 @@ class Jnt(object):
 
         radius(float): Joint 的显示半径数值。
 
+        Args:
+            radius (float):
+                创建节点或控制器使用的半径值。
+
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.rigging import jnt_utils
+            from muziToolset.core.rigging import jnt_utils
 
-        jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
-        radius = 0.5
+            jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
+            radius = 0.5
 
-        jnt_object.set_radius(radius)
+            jnt_object.set_radius(radius)
         """
 
         # radius 是 Joint 自身属性，可以直接通过 PyNode 设置。
@@ -155,13 +165,13 @@ class Jnt(object):
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.rigging import jnt_utils
+            from muziToolset.core.rigging import jnt_utils
 
-        jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
+            jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
 
-        jnt_object.reset_joint_orient()
+            jnt_object.reset_joint_orient()
         """
 
         # jointOrient 是一个三维复合属性，可以一次性设置 XYZ 三个轴。

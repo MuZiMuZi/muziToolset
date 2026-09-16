@@ -5,13 +5,24 @@ import maya.mel as mel
 """
 
 def get_type_file (data_path , file_type = ['ma' , 'mb'] , data_file_list = None , with_path = False) :
-    """
-    根据给定的文件类型。获取目录及子目录下所有文件名或者文件路径
-    :param data_path: 给定的文件目录
-    :param file_type: 文件类型,可以为列表或者字符串
-    :param data_file_list: 返回的文件名或路径
-    :param with_path: 是否返回路径
-    :return: 文件名或文件路径
+    u"""
+
+        根据给定的文件类型。获取目录及子目录下所有文件名或者文件路径 :param data_path: 给定的文件目录 :param file_type: 文件类型,可以为列表或者字符串 :param data_file_list: 返回的...
+
+        Args:
+            data_path (str):
+                `data_path` 对应的文件或目录路径。
+            file_type (list):
+                当前方法按顺序处理的 `file_type` 数据集合。
+            data_file_list (list):
+                当前方法需要保持顺序批量处理的数据列表。
+            with_path (bool):
+                `with_path` 对应的文件或目录路径。
+
+        Returns:
+            object:
+                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
     """
     if data_file_list is None :
         data_file_list = []

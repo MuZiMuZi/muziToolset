@@ -51,7 +51,15 @@ def initialize():
 
 
 def show_rig_library():
-    u"""打开绑定库，可直接在 Maya Python Script Editor 中运行。"""
+    u"""
+
+        打开绑定库，可直接在 Maya Python Script Editor 中运行。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
+    """
     from .tools.rig import modular_rig_tool
 
     return modular_rig_tool.main()

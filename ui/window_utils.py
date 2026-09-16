@@ -215,10 +215,10 @@ def show_window(window_key, window_factory):
 
     Example:
         def main():
-                                                                            return window_utils.show_window(
-                                                                                "tools.basic.rename_tool",
-                                                                                RenameTool
-                                                                            )
+                                                                                return window_utils.show_window(
+                                                                                    "tools.basic.rename_tool",
+                                                                                    RenameTool
+                                                                                )
     """
     # -------------------------------------------------------------------------
     # Step 01：检查当前条件与边界情况，并进入对应处理分支

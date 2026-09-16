@@ -42,17 +42,21 @@ class Guide(object):
 
         module(str): Guide 模块名称，默认 "face"。
 
+        Args:
+            module (str):
+                当前 Maya / Rig 操作使用的 `module` 名称或标记。
+
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.rigging import guide_utils
+            from muziToolset.core.rigging import guide_utils
 
-        guide_object = guide_utils.Guide("face")
+            guide_object = guide_utils.Guide("face")
 
-        print(guide_object.guide_root_name)
-        print(guide_object.guide_template_path)
+            print(guide_object.guide_root_name)
+            print(guide_object.guide_template_path)
         """
 
         self.module = module
@@ -74,14 +78,22 @@ class Guide(object):
         Returns:
             PyNode: 当前 Module Guide Root。
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.rigging import guide_utils
+            from muziToolset.core.rigging import guide_utils
 
-        guide_object = guide_utils.Guide("face")
-        guide_root = guide_object.import_template()
+            guide_object = guide_utils.Guide("face")
+            guide_root = guide_object.import_template()
 
-        print(guide_root)
+            print(guide_root)
+
+        Raises:
+            IOError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
         if cmds.objExists(self.guide_root_name):
@@ -107,29 +119,34 @@ class Guide(object):
         获取指定模块对应的 Guide Module Group。
 
         module 会按照统一命名规则转换成模块组名称：
-
             ear  -> grp_md_ear_guide_001
             eye  -> grp_md_eye_guide_001
             brow -> grp_md_brow_guide_001
-
         方法会检查模块组是否存在、是否为 Transform，
         并确认它属于当前 Guide Root。
-
         module(str): 需要获取的 Guide 模块名称，例如 "ear"、"eye"、"brow"。
+
+        Args:
+            module (object):
+                当前方法执行 Maya / Rig 操作时使用的 `module` 数据。
 
         Returns:
             PyNode: 找到的 Guide Module Group。
             None: 模块组不存在，或不属于当前 Guide Root。
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.rigging import guide_utils
+            from muziToolset.core.rigging import guide_utils
 
-        guide_object = guide_utils.Guide("face")
-        guide_object.import_template()
+            guide_object = guide_utils.Guide("face")
+            guide_object.import_template()
 
-        ear_group = guide_object.get_module_group("ear")
-        print(ear_group)
+            ear_group = guide_object.get_module_group("ear")
+            print(ear_group)
+
+        Raises:
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
         if not self.guide_root:
@@ -173,29 +190,37 @@ class Guide(object):
 
         Face Guide 模板作为整体导入，但真正读取和构建时按照面部模块分别处理。
         side 不传时返回整个模块的 Locator；传入 side 后只返回对应方向的 Locator。
-
         返回结果会按照 Guide 节点名称排序。
         当前 Guide 序号统一使用 001、002、003 形式，因此可以稳定得到创建 Joint 所需的顺序。
-
         module(str): 需要获取 Guide 的模块名称，例如 "ear"、"eye"、"brow"。
         side(str): 可选方向，只接受 "lf"、"rt"、"md" 或 None。
+
+        Args:
+            module (object):
+                当前方法执行 Maya / Rig 操作时使用的 `module` 数据。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
 
         Returns:
             list: 符合 module 和 side 条件，并按名称排序后的 Locator Guide PyNode 列表。
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.rigging import guide_utils
+            from muziToolset.core.rigging import guide_utils
 
-        guide_object = guide_utils.Guide("face")
-        guide_object.import_template()
+            guide_object = guide_utils.Guide("face")
+            guide_object.import_template()
 
-        ear_guides = guide_object.get_guides("ear")
-        lf_ear_guides = guide_object.get_guides("ear", "lf")
-        rt_ear_guides = guide_object.get_guides("ear", "rt")
+            ear_guides = guide_object.get_guides("ear")
+            lf_ear_guides = guide_object.get_guides("ear", "lf")
+            rt_ear_guides = guide_object.get_guides("ear", "rt")
 
-        for guide in lf_ear_guides:
+            for guide in lf_ear_guides:
             print(guide)
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
         if side not in (None, "lf", "rt", "md"):
@@ -245,25 +270,35 @@ class Guide(object):
         这个方法主要用于制作或更新 Guide 模板。
         正常绑定流程中，Display Curve 应该已经保存到 <module>_guide.ma 模板里，
         import_template() 导入模板时会一起进入场景，不需要再次创建。
-
         Locator Shape 的 worldPosition 直接连接 Curve Shape 的 controlPoints，
         不额外创建 multMatrix 或 decomposeMatrix 节点。
-
         module(str): 需要创建显示曲线的模块名称，例如 "ear"、"brow"。
         side(str): Curve 方向，只接受 "lf"、"rt" 或 "md"。
+
+        Args:
+            module (object):
+                当前方法执行 Maya / Rig 操作时使用的 `module` 数据。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
 
         Returns:
             PyNode: 创建或已经存在的 Guide Display Curve Transform。
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.rigging import guide_utils
+            from muziToolset.core.rigging import guide_utils
 
-        guide_object = guide_utils.Guide("face")
-        guide_object.import_template()
+            guide_object = guide_utils.Guide("face")
+            guide_object.import_template()
 
-        lf_curve = guide_object.create_guide_curve("ear", "lf")
-        rt_curve = guide_object.create_guide_curve("ear", "rt")
+            lf_curve = guide_object.create_guide_curve("ear", "lf")
+            rt_curve = guide_object.create_guide_curve("ear", "rt")
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            TypeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
         if side not in ("lf", "rt", "md"):

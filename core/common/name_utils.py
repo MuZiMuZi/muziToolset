@@ -57,11 +57,8 @@ class Name(object):
         part(str): 节点部位，允许包含下划线，例如 "upper_lid"。
         function(str): 节点功能，例如 "bind"、"main"、"aim"。
         index(int): 节点序号。
-
         Maya 使用示例：
-
             from muziToolset.core.common import name_utils
-
             name_object = name_utils.Name(
                 type="ctrl",
                 side="lf",
@@ -69,6 +66,20 @@ class Name(object):
                 function="main",
                 index=1
             )
+
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
+            type (object):
+                当前方法执行 Maya / Rig 操作时使用的 `type` 数据。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            part (str):
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+            function (str | callable):
+                当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
+            index (int):
+                目标元素或节点的序号。
         """
 
         self.name = name
@@ -93,7 +104,6 @@ class Name(object):
             中间所有段    -> part
             倒数第 2 段   -> function
             最后 1 段     -> index
-
         因此 part 可以安全包含下划线：
             loc_lf_upper_lid_bind_001
                 type     = loc
@@ -105,12 +115,12 @@ class Name(object):
         Returns:
             list: 原始名称按照下划线拆分后的字符串列表。
 
-        Maya 使用示例：
+            Maya 使用示例：
 
             from muziToolset.core.common import name_utils
 
             name_object = name_utils.Name(
-                name="loc_lf_upper_lid_bind_001"
+            name="loc_lf_upper_lid_bind_001"
             )
 
             print(name_object.type)
@@ -118,6 +128,10 @@ class Name(object):
             print(name_object.part)
             print(name_object.function)
             print(name_object.index)
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
         name_parts = self.name.split("_")
@@ -155,16 +169,16 @@ class Name(object):
         Returns:
             str: 组合后的标准名称。
 
-        Maya 使用示例：
+            Maya 使用示例：
 
             from muziToolset.core.common import name_utils
 
             name_object = name_utils.Name(
-                type="loc",
-                side="lf",
-                part="upper_lid",
-                function="bind",
-                index=1
+            type="loc",
+            side="lf",
+            part="upper_lid",
+            function="bind",
+            index=1
             )
 
             print(name_object.compose_name())
@@ -193,16 +207,16 @@ class Name(object):
         Returns:
             str: 翻转后的 side。
 
-        Maya 使用示例：
+            Maya 使用示例：
 
             from muziToolset.core.common import name_utils
 
             name_object = name_utils.Name(
-                type="ctrl",
-                side="lf",
-                part="eye",
-                function="main",
-                index=1
+            type="ctrl",
+            side="lf",
+            part="eye",
+            function="main",
+            index=1
             )
 
             name_object.flip()

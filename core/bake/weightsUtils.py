@@ -23,8 +23,12 @@ from core.bake import pipelineUtils
 class Weights (object) :
 
     def __init__ (self , geo) :
-        """
+        u"""
         geo(str) : 需要进行蒙皮操作的物体
+
+        Args:
+            geo (object):
+                当前方法执行 Maya / Rig 操作时使用的 `geo` 数据。
         """
         self.geo = geo
 
@@ -84,10 +88,9 @@ class Weights (object) :
 
     # 选择物体，导出保存的权重文件
     def save_skinWeights (self) :
-        u'''
-       将蒙皮几何体对象的权重保存到给定权重文件夹，权重将保存在对象短名称下，并附加存储其蒙皮影响的文件
-        :return:
-        '''
+        u"""
+        将蒙皮几何体对象的权重保存到给定权重文件夹，权重将保存在对象短名称下，并附加存储其蒙皮影响的文件 :return:
+        """
         # 查询物体是否有蒙皮节点，没有的话报错
         self.skin_node = self.get_skin_node ()
 
@@ -107,10 +110,9 @@ class Weights (object) :
 
     # 选择物体，读取保存的权重文件
     def load_skinWeights (self) :
-        u'''
-       从给定权重文件夹加载蒙皮几何体对象的权重将从与对象短名称匹配的文件名加载权重，并添加其他文件以获取其影响
-        :return:
-        '''
+        u"""
+        从给定权重文件夹加载蒙皮几何体对象的权重将从与对象短名称匹配的文件名加载权重，并添加其他文件以获取其影响 :return:
+        """
         # 查询物体是否有蒙皮节点
         self.skin_node = self.get_skin_node ()
 
@@ -145,11 +147,9 @@ class Weights (object) :
     # 复制权重，先选择需要复制的蒙皮权重物体，再加选需要复制权重的物体
     @staticmethod
     def copy_weight () :
-        u'''
-
+        u"""
         Returns:复制权重，先选择需要复制的蒙皮权重物体，再加选需要复制权重的物体
-
-        '''
+        """
         # 获取选择
         sel = cmds.ls (selection = True)
 
@@ -185,9 +185,9 @@ class Weights (object) :
     # 批量重命名对象的蒙皮和混合变形节点
     @staticmethod
     def rename_bs_sc () :
-        u'''
+        u"""
         批量重命名对象的蒙皮和混合变形节点
-        '''
+        """
         geos = cmds.ls (sl = True)
         for geo in geos :
             geo_shape = cmds.listRelatives (geo , shapes = True)
@@ -200,8 +200,14 @@ class Weights (object) :
 
     # 获取物体的蒙皮节点信息
     def get_skin_node (self) :
-        """
-        获取物体的蒙皮节点信息，返回蒙皮节点
+        u"""
+
+                获取物体的蒙皮节点信息，返回蒙皮节点
+
+                Returns:
+                    object | None:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
 
         # 查询物体是否有蒙皮节点，没有的话报错
@@ -218,6 +224,16 @@ class Weights (object) :
 
     # 获取物体的蒙皮节点的关节信息
     def get_skin_node_jnt (self) :
+        u"""
+
+                查询并返回当前 skin node jnt。
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+        """
+
         self.skin_node_nt = pm.PyNode (self.skin_node)
         self.all_weight_joints = pm.skinCluster (self.skin_node_nt , q = True , wi = True)
 
@@ -226,6 +242,12 @@ class Weights (object) :
 
     # 重命名物体的蒙皮节点名称
     def rename_skin_node (self) :
+        u"""
+
+                执行当前 API 的主要处理流程。
+
+        """
+
         self.skin_node = self.get_skin_node ()
         if self.skin_node :
             self.skin_node = cmds.rename (self.skin_node , 'sc_{}'.format (self.geo))
@@ -234,16 +256,12 @@ class Weights (object) :
     # 使用线变形的方式来生成链式关节的蒙皮信息
     @pipelineUtils.Pipeline.make_undo
     def set_deformer_skin (self , jnt_list) :
-        """
-        使用线变形的方式来生成链式关节的蒙皮信息，适用于有规律的条状物体，布料状物体等，可以刷手臂的链式关节权重。
-        jnt_list(list):需要绘制权重的关节列表
-        思路：
-        1.根据需要绘制权重的关节列表创建一根吸附的曲线
-        2.将需要绘制权重的模型所选择的点或边制作一个简模出来，作为用以线变形的模型
-        3.曲线对简模进行线变形
-        4.模拟模型上的点的位置信息位移，模拟成为权重值
-        5.将权重值设置到对应的关节上
+        u"""
+        使用线变形的方式来生成链式关节的蒙皮信息，适用于有规律的条状物体，布料状物体等，可以刷手臂的链式关节权重。 jnt_list(list):需要绘制权重的关节列表 思路： 1.根据需要绘制权重的关节列表创建一根吸附的曲线 2.将需要绘制...
 
+        Args:
+            jnt_list (list):
+                当前方法需要保持顺序批量处理的数据列表。
         """
         # 1.根据需要绘制权重的关节列表创建一根吸附的曲线
         self.skin_curve_name = 'skinCurve_' + self.geo

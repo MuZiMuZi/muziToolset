@@ -71,18 +71,28 @@ def get_locator_name(
     function(str): Locator 功能，普通定位器默认使用 "bind"。
     index(int): Locator 序号，默认 1。
 
+    Args:
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        part (str):
+            Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+        function (str | callable):
+            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
+        index (int):
+            目标元素或节点的序号。
+
     Returns:
         str: 标准 Locator 名称。
 
-    Maya 使用示例：
+        Maya 使用示例：
 
         from muziToolset.systems.face import face_guide_config
 
         locator_name = face_guide_config.get_locator_name(
-            side="lf",
-            part="upper_lid",
-            function="bind",
-            index=1
+        side="lf",
+        part="upper_lid",
+        function="bind",
+        index=1
         )
 
         print(locator_name)
@@ -109,21 +119,31 @@ def get_bind_locator_names(side, part, count, start_index=1):
     count(int): 需要生成的 Locator 数量。
     start_index(int): 起始序号，默认 1。
 
+    Args:
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        part (str):
+            Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+        count (int):
+            需要创建、采样或处理的数量。
+        start_index (int):
+            对应 Maya Array Attribute、Target、Guide 或构建元素的逻辑索引。
+
     Returns:
         list: 按序号排列的标准 Locator 名称列表。
 
-    Maya 使用示例：
+        Maya 使用示例：
 
         from muziToolset.systems.face import face_guide_config
 
         locator_names = face_guide_config.get_bind_locator_names(
-            side="lf",
-            part="ear",
-            count=3
+        side="lf",
+        part="ear",
+        count=3
         )
 
         for locator_name in locator_names:
-            print(locator_name)
+        print(locator_name)
     """
 
     locator_names = []
@@ -166,20 +186,30 @@ def get_eye_locator(side, function):
     side(str): 只接受 "lf" 或 "rt"。
     function(str): 只接受 "ball"、"iris" 或 "aim"。
 
+    Args:
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+        function (str | callable):
+            当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
+
     Returns:
         str: 对应 Eye Guide Locator 名称。
 
-    Maya 使用示例：
+        Maya 使用示例：
 
         from muziToolset.systems.face import face_guide_config
 
         aim_guide = face_guide_config.get_eye_locator(
-            "lf",
-            "aim"
+        "lf",
+        "aim"
         )
 
         print(aim_guide)
         # loc_lf_eye_aim_001
+
+    Raises:
+        ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
 
     if side not in eye_guide_locators:
@@ -205,36 +235,33 @@ def normalize_legacy_locator_name(locator_name):
     普通 Locator：
         loc_lf_ear_guide_001
             -> loc_lf_ear_bind_001
-
         loc_lf_upper_lid_guide_001
             -> loc_lf_upper_lid_bind_001
-
         loc_md_nose_center_guide_001
             -> loc_md_nose_center_bind_001
-
     Eye 特殊 Locator：
         loc_lf_eye_ball_guide_001
             -> loc_lf_eye_ball_001
-
         loc_lf_eye_iris_guide_001
             -> loc_lf_eye_iris_001
-
         loc_lf_eye_aim_guide_001
             -> loc_lf_eye_aim_001
-
     已经符合新版规则的名称会原样返回。
-
     locator_name(str): 需要检查的 Locator Transform 名称。
+
+    Args:
+        locator_name (str):
+            `locator_name` 对应的 Maya 节点或资源名称。
 
     Returns:
         str: 新版标准 Locator 名称。
 
-    Maya 使用示例：
+        Maya 使用示例：
 
         from muziToolset.systems.face import face_guide_config
 
         new_name = face_guide_config.normalize_legacy_locator_name(
-            "loc_lf_upper_lid_guide_001"
+        "loc_lf_upper_lid_guide_001"
         )
 
         print(new_name)
@@ -326,21 +353,24 @@ def rename_scene_locators():
 
     该方法只修改真正带 Locator Shape 的 Transform，
     不会修改 zero_*_guide_*、grp_*_guide_*、crv_*_guide_* 等 Guide 基础层级名称。
-
     在真正改名之前会先检查所有目标名称是否已经被其他节点占用，
     避免迁移过程中出现名称冲突。
 
     Returns:
         dict: {旧名称: 新名称} 的实际重命名结果。
 
-    Maya 使用示例：
+        Maya 使用示例：
 
         from muziToolset.systems.face import face_guide_config
 
         rename_result = face_guide_config.rename_scene_locators()
 
         for old_name in sorted(rename_result):
-            print(old_name, "->", rename_result[old_name])
+        print(old_name, "->", rename_result[old_name])
+
+    Raises:
+        RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
     """
 
     # Lazy Import：让这个配置文件在普通 Python / CI 环境中也可以被导入。

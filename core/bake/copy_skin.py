@@ -1,9 +1,7 @@
 def copy_weight () :
-    u'''
-
+    u"""
     Returns:复制权重，先选择需要复制的蒙皮权重物体，再加选需要复制权重的物体
-
-    '''
+    """
     # 获取选择
     sel = cmds.ls (selection = True)
 

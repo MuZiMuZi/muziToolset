@@ -14,13 +14,9 @@ class AdvUtils (object) :
     # adv嘴唇中间添加新的次级控制器，应用于动画制作抿嘴的情况，注意需要吸附枢纽
     @staticmethod
     def add_lip_ctrl () :
-        '''
-        adv嘴唇中间添加新的次级控制器，应用于动画制作抿嘴的情况，注意需要吸附枢纽
-        思路：
-        adv的嘴唇绑定是通过面片上的关节来驱动的，因此只需要找到对应中间的关节添加上新的控制器，并且制作约束即可
-        次级控制器约束关节，嘴唇大环控制器约束次级控制器
-        注意约束不要添加缩放约束
-        '''
+        u"""
+        adv嘴唇中间添加新的次级控制器，应用于动画制作抿嘴的情况，注意需要吸附枢纽 思路： adv的嘴唇绑定是通过面片上的关节来驱动的，因此只需要找到对应中间的关节添加上新的控制器，并且制作约束即可 次级控制器约束关节，嘴唇大环控制器约束次...
+        """
 
         # 分成上下嘴唇两种情况制作次级控制器
         for type in ['upperLip' , 'lowerLip'] :
@@ -53,13 +49,9 @@ class AdvUtils (object) :
     # 眼皮中间添加新的次级控制器，应用于动画制作的情况
     @staticmethod
     def add_lid_ctrl () :
-        '''
-        眼皮中间添加新的次级控制器，应用于动画制作的情况
-        思路：
-        对应中间的关节upperLidJoint_L 添加上新的控制器，并且制作约束即可
-        次级控制器约束关节，嘴唇大环控制器约束次级控制器
-        注意约束不要添加缩放约束
-        '''
+        u"""
+        眼皮中间添加新的次级控制器，应用于动画制作的情况 思路： 对应中间的关节upperLidJoint_L 添加上新的控制器，并且制作约束即可 次级控制器约束关节，嘴唇大环控制器约束次级控制器 注意约束不要添加缩放约束
+        """
 
         # 分成上下嘴唇两种情况制作次级控制器
         for type in ['upperLid' , 'lowerLid' , 'lowerLidOuter' , 'upperLidOuter'] :
@@ -94,10 +86,8 @@ class AdvUtils (object) :
     # adv脸部在生成的时候会自动连接CheekRaiser控制器的translateY轴，需要在控制器上层创建一个新的组来重新连接
     @staticmethod
     def connect_CheekRaiser_ctrl () :
-        """
-        adv脸部在生成的时候会自动连接CheekRaiser控制器的translateY轴，需要在控制器上层创建一个新的组来重新连接
-        CheekRaiser_ctrl:CheekRaiser控制器
-        bw_node:连接CheekRaiser控制器的translateY的节点
+        u"""
+        adv脸部在生成的时候会自动连接CheekRaiser控制器的translateY轴，需要在控制器上层创建一个新的组来重新连接 CheekRaiser_ctrl:CheekRaiser控制器 bw_node:连接CheekRaiser...
         """
         # 分成左右两边两种情况在控制器上层创建一个新的组来重新连接
         for side in ['L' , 'R'] :
@@ -116,10 +106,8 @@ class AdvUtils (object) :
     # adv自带的脸颊控制器不够丰富，无法满足动画的需要，需要添加两个控制器，
     @staticmethod
     def add_cheek_ctrl () :
-        """
-        adv自带的脸颊控制器不够丰富，无法满足动画的需要，需要添加两个控制器，
-        一个是眼皮下方用来控制鼻子外侧与颧骨这一带的控制器，
-        第二个是颧骨到耳朵处用来模拟腮帮子咬合的效果
+        u"""
+        adv自带的脸颊控制器不够丰富，无法满足动画的需要，需要添加两个控制器， 一个是眼皮下方用来控制鼻子外侧与颧骨这一带的控制器， 第二个是颧骨到耳朵处用来模拟腮帮子咬合的效果
         """
         for type in ['cheekAdj' , 'cheekOcclus'] :
             for side in ['L' , 'R'] :
@@ -148,10 +136,8 @@ class AdvUtils (object) :
     # adv自带的下巴控制器不够丰富，无法满足动画的需要，需要添加两个控制器用来凹进去夸张表情，
     @staticmethod
     def add_jaw_ctrl () :
-        """
-        adv自带的下巴控制器不够丰富，无法满足动画的需要，需要添加两个控制器用来凹进去夸张表情，
-        一个下嘴唇底部用来凹口轮扎肌的动态，jaw_adj ,这是两个关节组成的关节链条
-        第二个是下巴底下用来突出下巴的动态
+        u"""
+        adv自带的下巴控制器不够丰富，无法满足动画的需要，需要添加两个控制器用来凹进去夸张表情， 一个下嘴唇底部用来凹口轮扎肌的动态，jaw_adj ,这是两个关节组成的关节链条 第二个是下巴底下用来突出下巴的动态
         """
 
         # 创建新的次级控制器并且吸附到lid关节上
@@ -167,10 +153,9 @@ class AdvUtils (object) :
     # adv重新生成后手指的驱动可能会消失，于是可以依靠这个代码重新连接,选择所有需要驱动的手指控制器加选Finger控制器创建连接
     @staticmethod
     def finger_Connect () :
-        '''
-        adv重新生成后手指的驱动可能会消失，于是可以依靠这个代码重新连接
-        选择所有需要驱动的手指控制器加选Finger控制器创建连接
-        '''
+        u"""
+        adv重新生成后手指的驱动可能会消失，于是可以依靠这个代码重新连接 选择所有需要驱动的手指控制器加选Finger控制器创建连接
+        """
 
 
         # 选择所有需要驱动的手指控制器加选Finger控制器创建连接
@@ -240,7 +225,7 @@ class AdvUtils (object) :
     # 添加adv修型关节的控制器控制
     @staticmethod
     def add_Slider_ctrl () :
-        """
+        u"""
         添加adv修型关节的控制器控制
         """
         #获取adv上所具有的修型关节

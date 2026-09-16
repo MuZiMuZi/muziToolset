@@ -34,11 +34,8 @@ class TongueModule(fk_chain.FKChain):
         jnt_parent(str/PyNode): Joint 总组的可选父节点。
         ctrl_parent(str/PyNode): Controller 总组的可选父节点。
         ctrl_axis(str): 舌头 Controller Shape 面朝方向，支持 X+ / X- / Y+ / Y- / Z+ / Z-。
-
         Maya 使用示例：
-
             from muziToolset.systems.face import tongue_module
-
             tongue_object = tongue_module.TongueModule(
                 module="tongue",
                 side="md",
@@ -47,8 +44,21 @@ class TongueModule(fk_chain.FKChain):
                 ctrl_parent=None,
                 ctrl_axis="Z+"
             )
-
             tongue_object.build()
+
+        Args:
+            module (str):
+                当前 Maya / Rig 操作使用的 `module` 名称或标记。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            guide (str):
+                需要查询或处理的 Guide Transform 名称。
+            jnt_parent (str | None):
+                新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。
+            ctrl_parent (object):
+                当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。
+            ctrl_axis (str):
+                当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。
         """
 
         super(TongueModule, self).__init__(

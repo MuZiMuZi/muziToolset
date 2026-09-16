@@ -21,7 +21,13 @@ class RigLibraryService(object):
     control_root = "grp_md_rig_ctrl_001"
 
     def __init__(self, commands=None):
-        u"""可注入命令对象用于检查调度行为；正常运行直接使用 maya.cmds。"""
+        u"""
+        可注入命令对象用于检查调度行为；正常运行直接使用 maya.cmds。
+
+        Args:
+            commands (object):
+                当前方法执行 Maya / Rig 操作时使用的 `commands` 数据。
+        """
         if commands is None:
             import maya.cmds as commands
         self.cmds = commands
@@ -39,7 +45,15 @@ class RigLibraryService(object):
         return True
 
     def reload(self):
-        u"""从场景恢复配置；不在打开窗口时创建或更改场景节点。"""
+        u"""
+
+                从场景恢复配置；不在打开窗口时创建或更改场景节点。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         document = catalog.new_document()
         if self._config_exists():
             raw = self.cmds.getAttr(self.config_node + "." + self.config_attr)
@@ -84,7 +98,19 @@ class RigLibraryService(object):
         return candidate
 
     def add_module(self, kind):
-        u"""添加模块配置；耳朵自动选择空闲侧，通用 FK 自动分配可读名称。"""
+        u"""
+
+                添加模块配置；耳朵自动选择空闲侧，通用 FK 自动分配可读名称。
+
+                Args:
+                    kind (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `kind` 数据。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         document = copy.deepcopy(self.document)
         record = catalog.new_module(kind)
         used = set()
@@ -102,13 +128,29 @@ class RigLibraryService(object):
         return record["id"]
 
     def add_template(self, key):
-        u"""添加已实现模块的组合，不重复插入相同模块。"""
+        u"""
+        添加已实现模块的组合，不重复插入相同模块。
+
+        Args:
+            key (object):
+                当前方法执行 Maya / Rig 操作时使用的 `key` 数据。
+        """
         candidate = catalog.add_template(self.document, key)
         if candidate != self.document:
             self._commit(candidate)
 
     def remove_module(self, identity):
-        u"""移除尚未构建的配置；已构建绑定不会通过列表删除。"""
+        u"""
+        移除尚未构建的配置；已构建绑定不会通过列表删除。
+
+        Args:
+            identity (object):
+                当前方法执行 Maya / Rig 操作时使用的 `identity` 数据。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         document = copy.deepcopy(self.document)
         for record in document["modules"]:
             if record["id"] == identity:
@@ -119,7 +161,21 @@ class RigLibraryService(object):
         self._commit(document)
 
     def update_module(self, identity, values):
-        u"""更新参数；已构建模块仅允许显示与控制器外观调整。"""
+        u"""
+        更新参数；已构建模块仅允许显示与控制器外观调整。
+
+        Args:
+            identity (object):
+                当前方法执行 Maya / Rig 操作时使用的 `identity` 数据。
+            values (object):
+                当前方法执行 Maya / Rig 操作时使用的 `values` 数据。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         document = copy.deepcopy(self.document)
         previous = None
         updated = None
@@ -153,7 +209,25 @@ class RigLibraryService(object):
         self._commit(document, apply, "Muzi Module Properties")
 
     def mirror_module(self, identity):
-        u"""复制左右模块设置，并将 Guide 世界位置沿 X=0 镜像到配对侧。"""
+        u"""
+
+                复制左右模块设置，并将 Guide 世界位置沿 X=0 镜像到配对侧。
+
+                Args:
+                    identity (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `identity` 数据。
+
+                Returns:
+                    dict:
+                        包含本次构建、查询或处理结果的结构化字典。
+
+                Raises:
+                    ValueError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
         document = copy.deepcopy(self.document)
         source = None
         for record in document["modules"]:
@@ -242,11 +316,15 @@ class RigLibraryService(object):
             self.cmds.setAttr(name + "." + self.owner_attr, self.config_node, type="string")
 
     def setup(self):
-        u"""Step 01：保存配置并准备独立的 Rig / Joint / Controller 根组。"""
+        u"""
+        Step 01：保存配置并准备独立的 Rig / Joint / Controller 根组。
+        """
         self._commit(self.document, lambda document: self._prepare_roots(), "Muzi Rig Setup")
 
     def import_guide(self):
-        u"""Step 02：复用仓库现有 Face Guide 模板导入入口。"""
+        u"""
+        Step 02：复用仓库现有 Face Guide 模板导入入口。
+        """
         from ...core.rigging.guide_utils import Guide
 
         def apply(document):
@@ -255,7 +333,15 @@ class RigLibraryService(object):
         self._commit(self.document, apply, "Muzi Import Face Guide")
 
     def workflow_state(self):
-        u"""返回四步导航需要的场景状态，不创建或修改任何 Maya 节点。"""
+        u"""
+
+                返回四步导航需要的场景状态，不创建或修改任何 Maya 节点。
+
+                Returns:
+                    dict:
+                        包含本次构建、查询或处理结果的结构化字典。
+
+        """
         records = []
         for record in self.document["modules"]:
             if record["enabled"]:
@@ -372,7 +458,25 @@ class RigLibraryService(object):
             self.cmds.delete(existing)
 
     def rebuild_module(self, identity):
-        u"""根据最新 Guide 重建一个模块，并把连接状态退回待 Final。"""
+        u"""
+
+                根据最新 Guide 重建一个模块，并把连接状态退回待 Final。
+
+                Args:
+                    identity (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `identity` 数据。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+                Raises:
+                    ValueError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
         record = None
         for candidate in self.document["modules"]:
             if candidate["id"] == identity:
@@ -401,7 +505,15 @@ class RigLibraryService(object):
         return identity
 
     def validate(self):
-        u"""只读预检查：验证 Guide 数量、节点类型、重复路径和输出名称冲突。"""
+        u"""
+
+                只读预检查：验证 Guide 数量、节点类型、重复路径和输出名称冲突。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         catalog.validate_document(self.document)
         errors = []
         active = 0
@@ -455,7 +567,19 @@ class RigLibraryService(object):
         return builder
 
     def build(self):
-        u"""生成所有启用模块的 Joint、Controller 和层级，不建立驱动连接。"""
+        u"""
+
+                生成所有启用模块的 Joint、Controller 和层级，不建立驱动连接。
+
+                Returns:
+                    object | int:
+                        本次操作得到的整数结果或成功处理数量。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
         errors = self.validate()
         if errors:
             raise RuntimeError("\n".join(errors))
@@ -485,7 +609,19 @@ class RigLibraryService(object):
         return len(pending)
 
     def finalize(self):
-        u"""Step 04 Final：为已生成模块建立连接并选择全部主控制器。"""
+        u"""
+
+                Step 04 Final：为已生成模块建立连接并选择全部主控制器。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
         errors = self.validate()
         if errors:
             raise RuntimeError("\n".join(errors))
@@ -533,15 +669,41 @@ class RigLibraryService(object):
         self.cmds.setAttr(outputs["groups"][1] + ".visibility", record["show_controls"])
 
     def selected_guides(self):
-        u"""读取 Maya 当前选择顺序；UI 允许按行修正最终链条顺序。"""
+        u"""
+
+                读取 Maya 当前选择顺序；UI 允许按行修正最终链条顺序。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         return self.cmds.ls(orderedSelection=True, long=True, transforms=True) or []
 
     def node_exists(self, name):
-        u"""查询结构项是否已存在于场景，不创建占位节点。"""
+        u"""
+
+                查询结构项是否已存在于场景，不创建占位节点。
+
+                Args:
+                    name (str):
+                        创建或查询时使用的节点名称。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         return self.cmds.objExists(name)
 
     def select_nodes(self, names):
-        u"""从结构树选择对应场景节点，不清空用户选择来表示不存在的节点。"""
+        u"""
+        从结构树选择对应场景节点，不清空用户选择来表示不存在的节点。
+
+        Args:
+            names (object):
+                当前方法执行 Maya / Rig 操作时使用的 `names` 数据。
+        """
         existing = []
         for name in names:
             if self.cmds.objExists(name):
@@ -550,7 +712,13 @@ class RigLibraryService(object):
             self.cmds.select(existing, replace=True)
 
     def export_recipe(self, path):
-        u"""导出可复用配置；剥离构建状态，不伪装成包含场景绑定的备份。"""
+        u"""
+        导出可复用配置；剥离构建状态，不伪装成包含场景绑定的备份。
+
+        Args:
+            path (object):
+                当前方法执行 Maya / Rig 操作时使用的 `path` 数据。
+        """
         document = copy.deepcopy(self.document)
         for record in document["modules"]:
             record["built"] = False
@@ -559,7 +727,17 @@ class RigLibraryService(object):
             json.dump(document, stream, ensure_ascii=False, indent=2)
 
     def import_recipe(self, path):
-        u"""完整校验 JSON 后追加配置，冲突时整次导入不生效。"""
+        u"""
+        完整校验 JSON 后追加配置，冲突时整次导入不生效。
+
+        Args:
+            path (object):
+                当前方法执行 Maya / Rig 操作时使用的 `path` 数据。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
         if os.path.getsize(path) > 2 * 1024 * 1024:
             raise ValueError(u"配置文件过大。")
         with open(path, "r", encoding="utf-8") as stream:

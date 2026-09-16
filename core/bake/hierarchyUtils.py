@@ -20,10 +20,13 @@ class Hierarchy (object) :
     @staticmethod
     def parent (child_node , parent_node) :
         u"""
-        先查找子物体和父物体之间是否有父子层级关系，没有的话制作父子层级关系
-        :param child_node（str）:子物体的节点名称
-        :param parent_nodestr）:父物体的节点名称
-        :return:
+        先查找子物体和父物体之间是否有父子层级关系，没有的话制作父子层级关系 :param child_node（str）:子物体的节点名称 :param parent_nodestr）:父物体的节点名称 :return:
+
+        Args:
+            child_node (str):
+                需要重新挂接父级的 Child DAG 节点名称。
+            parent_node (str):
+                Child 最终需要挂接到的 Parent DAG 节点名称。
         """
         if parent_node :
             parent_original = cmds.listRelatives (child_node , parent = True)
@@ -37,16 +40,19 @@ class Hierarchy (object) :
     #在对象上方添加一个额外的组.
     @staticmethod
     def add_extra_group (obj , grp_name , world_orient = False) :
-        u"""在对象上方添加一个额外的组.
+        u"""
+        在对象上方添加一个额外的组.
 
         Args:
-            obj (str):要添加额外组的Maya对象.
-            grp_name (str): 额外的组名
-            world_orient (bool): 设置新组的世界位置是否改变。
+            obj (str):
+                要添加额外组的Maya对象.
+            grp_name (str):
+                额外的组名
+            world_orient (bool):
+                设置新组的世界位置是否改变。
 
         Returns:
             str: 新添加的组.
-
         """
 
         obj_grp = cmds.group (name = grp_name , empty = True)
@@ -71,12 +77,12 @@ class Hierarchy (object) :
     #自定义的预设控制器打组
     @staticmethod
     def control_hierarchy () :
-        """Add an upper level group to the controller.
+        u"""
+        Add an upper level group to the controller.
 
-            The naming convention is
-            Type_Side_describe_index
-
-            """
+        The naming convention is
+        Type_Side_describe_index
+        """
         CTRL_COLORS = {
             'm' : 17 ,
             'l' : 6 ,
@@ -156,12 +162,21 @@ class Hierarchy (object) :
     # 获取对象的所有子物体包括对象本身,可以指定需要获取的对象类型
     @staticmethod
     def get_child_object (object,type = 'joint') :
-        u'''
-        获取对象的所有子物体包括对象本身
-        :param object: 需要获取所有子物体的对象
-        type（str）:需要获取对象的类型
-        return: 所有子物体的名称列表
-        '''
+        u"""
+
+                获取对象的所有子物体包括对象本身 :param object: 需要获取所有子物体的对象 type（str）:需要获取对象的类型 return: 所有子物体的名称列表
+
+                Args:
+                    object (str):
+                        需要处理的 Maya 场景对象名称。
+                    type (str):
+                        当前 Maya / Rig 操作使用的 `type` 名称或标记。
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+        """
         object_list = cmds.listRelatives (object , type = type,children = True , allDescendents = True)
         object_list.append (object)
         object_list.reverse ()
@@ -171,10 +186,19 @@ class Hierarchy (object) :
     # 快速选择所选择物体的所有子对象的类型,将所有选择的对象名称返回出去方便其他函数调用
     @staticmethod
     def select_sub_objects (obj_type = 'transform') :
-        u'''
-        快速选择所选择物体的所有子对象,将所有选择的对象名称返回出去方便其他函数调用
-        obj_type（type）:需要选择的物体的子对象的类型，比如'transform','joint'
-        '''
+        u"""
+
+                快速选择所选择物体的所有子对象,将所有选择的对象名称返回出去方便其他函数调用 obj_type（type）:需要选择的物体的子对象的类型，比如'transform','joint'
+
+                Args:
+                    obj_type (str):
+                        当前 Maya / Rig 操作使用的 `obj_type` 名称或标记。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         selection = cmds.ls (sl = True)  # 获取选择的所有对象
         for obj in selection :
             cmds.select (obj , add = True)
@@ -186,8 +210,14 @@ class Hierarchy (object) :
     # 创建绑定的默认层级组
     @staticmethod
     def create_rig_grp () :
-        """
-        创建绑定的默认层级组
+        u"""
+
+                创建绑定的默认层级组
+
+                Returns:
+                    tuple:
+                        按当前 API 约定组织的结果元组。
+
         """
         top_main_group = 'grp_m_group_001'
         top_bpjnt_grp = 'grp_m_bpjnt_001'
@@ -208,9 +238,15 @@ class Hierarchy (object) :
     # 添加绑定的初始层级组，并隐藏连接对应的属性
     @staticmethod
     def create_default_grp () :
-        u'''
-        添加绑定的初始层级组，并隐藏连接对应的属性
-        '''
+        u"""
+
+                添加绑定的初始层级组，并隐藏连接对应的属性
+
+                Returns:
+                    dict:
+                        包含本次构建、查询或处理结果的结构化字典。
+
+        """
         # 创建顶层的Group组
         Group = cmds.createNode ('transform' , name = 'Group')
 
@@ -328,8 +364,14 @@ class Hierarchy (object) :
 
     @staticmethod
     def create_grp(grp,parent=None):
-        """
+        u"""
         给定组的名称，查询给定的名称是否已经在场景里存在，没有的话则创建对应的组
+
+        Args:
+            grp (object):
+                当前方法执行 Maya / Rig 操作时使用的 `grp` 数据。
+            parent (str):
+                父级 Maya 节点名称。
         """
         #判断给定的名称是否已经在场景里存在了，如果存在的话则跳过，不存在的话则创建
         if  cmds.objExists (grp) :

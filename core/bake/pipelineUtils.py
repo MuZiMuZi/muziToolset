@@ -47,6 +47,12 @@ reload (jointUtils)
 class Pipeline (object) :
 
     def __init__ (self) :
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+        """
+
         pass
 
 
@@ -54,8 +60,7 @@ class Pipeline (object) :
     @staticmethod
     def clear_keys () :
         u"""
-        清除场景内所有的动画关键帧
-        :return:
+        清除场景内所有的动画关键帧 :return:
         """
         animCurves = cmds.ls (type = ['animCurveTA' , 'animCurveTL' , 'animCurveTU'])
         if animCurves :
@@ -68,8 +73,8 @@ class Pipeline (object) :
     # 将“isFace”标记添加到所选物体的属性上
     @staticmethod
     def add_face_tag () :
-        u"""将“isFace”标记添加到所选物体的属性上.
-
+        u"""
+        将“isFace”标记添加到所选物体的属性上.
         """
 
         sel_to_tag_list = cmds.ls (sl = True)
@@ -83,8 +88,8 @@ class Pipeline (object) :
     # 移除没有带face标志的物体.
     @staticmethod
     def remove_non_face_objs () :
-        u"""“移除没有带face标志的物体.
-
+        u"""
+        “移除没有带face标志的物体.
         """
 
         assemblies = cmds.ls (assemblies = True)
@@ -101,13 +106,24 @@ class Pipeline (object) :
     # 获取两个对象之间的距离.
     @staticmethod
     def distence_between (node_a , node_b) :
-        u'''获取两个对象之间的距离.
-        node_a(str): 对象a.
-        node_b(str): 对象b.
+        u"""
 
-        :return
-        dist(float):两个对象之间的距离.
-        '''
+                获取两个对象之间的距离. node_a(str): 对象a. node_b(str): 对象b.
+
+                :return
+                dist(float):两个对象之间的距离.
+
+                Args:
+                    node_a (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `node_a` 数据。
+                    node_b (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `node_b` 数据。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         point_a = cmds.xform (node_a , query = True , worldSpace = True , rotatePivot = True)
         point_b = cmds.xform (node_b , query = True , worldSpace = True , rotatePivot = True)
         dist = math.sqrt (sum ([pow ((b - a) , 2) for b , a in zip (point_a , point_b)]))
@@ -117,11 +133,9 @@ class Pipeline (object) :
     # 重置绑定系统的控制器上所有的数值.
     @staticmethod
     def reset_control () :
-        u"""重置绑定系统的控制器上所有的数值.
-
-
-
-         """
+        u"""
+        重置绑定系统的控制器上所有的数值.
+        """
         ctrl_node = cmds.ls ('ctrl_?_*_???')
         attrs = ['translateX' , 'translateY' , 'translateZ' , 'rotateX' , 'rotateY' , 'rotateZ']
         scale_attrs = ['scaleX' , 'scaleY' , 'scaleZ']
@@ -146,22 +160,19 @@ class Pipeline (object) :
     # 根据传入的操作符号（|, &, -, ^）返回两个列表的并集、交集、差分或对称差分。
     @staticmethod
     def list_operation (list_a , list_b , operation = '|') :
-        u"""将两个列表的并集/差分/交集/对称_差分部分作为列表返回.
-        用于执行集合操作的 Python 函数，根据传入的操作符号（|, &, -, ^）返回两个列表的并集、交集、差分或对称差分。
+        u"""
+        将两个列表的并集/差分/交集/对称_差分部分作为列表返回. 用于执行集合操作的 Python 函数，根据传入的操作符号（|, &, -, ^）返回两个列表的并集、交集、差分或对称差分。
+
         Args:
-            list_a (list/None): 第一个列表.
-            list_b (list/None): 第二个列表.
-            operation (str): 运算符号为 '|', '&', '-', '^'.
-
-        具体而言，该函数的实现步骤如下：
-
-        1.将传入的两个列表（list_a 和 list_b）转换为集合（set_a 和 set_b）。
-        2.根据传入的操作符号执行相应的集合操作。
-        3.将结果转换回列表并返回。
+            list_a (list/None):
+                第一个列表.
+            list_b (list/None):
+                第二个列表.
+            operation (str):
+                运算符号为 '|', '&', '-', '^'. 具体而言，该函数的实现步骤如下： 1.将传入的两个列表（list_a 和 list_b）转换为集合（set_a 和 set_b）。 2.根据传入的操作符号执行相应的集合操作。 3.将结果转换回列表并返回。
 
         Returns:
             list: 作为列表的两个列表的并集/差分/交集/对称_差分部分.
-
         """
 
         # 如果无，则将无转换为[]空列表，仅用于操作
@@ -187,7 +198,8 @@ class Pipeline (object) :
     @staticmethod
     def batch_Constraints_modle () :
         u"""
-        选择物体，批量制作约束。新添加创建关节来蒙皮物体		"""
+        选择物体，批量制作约束。新添加创建关节来蒙皮物体
+        """
         sel_list = cmds.ls (sl = True)
         for sel in sel_list :
             cmds.undoInfo (openChunk = True)  # 批量撤销的开头
@@ -236,7 +248,8 @@ class Pipeline (object) :
     @staticmethod
     def batch_Constraints_joint () :
         u"""
-        选择关节，批量制作约束。不需要新添加创建关节来蒙皮物体		"""
+        选择关节，批量制作约束。不需要新添加创建关节来蒙皮物体
+        """
         sel_list = cmds.ls (sl = True)
         for sel in sel_list :
             cmds.undoInfo (openChunk = True)  # 批量撤销的开头
@@ -281,10 +294,7 @@ class Pipeline (object) :
     @staticmethod
     def create_constraints () :
         u"""
-        快速创建约束.
-        用法：先选择需要约束者，在选择被约束者
-        driver_obj：约束者
-        driven_obj：被约束者
+        快速创建约束. 用法：先选择需要约束者，在选择被约束者 driver_obj：约束者 driven_obj：被约束者
         """
         sel = cmds.ls (sl = True)
         driver_obj = sel [0 :-1]
@@ -296,9 +306,9 @@ class Pipeline (object) :
     # 快速选择物体的约束节点
     @staticmethod
     def select_constraints () :
-        u'''
+        u"""
         快速选择物体的约束节点
-        '''
+        """
         sel = cmds.ls (sl = True)
         for obj in sel :
             const = cmds.listConnections (obj , type = 'constraint')
@@ -309,9 +319,9 @@ class Pipeline (object) :
     # 快速删除选择物体的约束节点
     @staticmethod
     def delete_constraints () :
-        u'''
+        u"""
         快速删除选择物体的约束节点
-        '''
+        """
         sel = cmds.ls (sl = True)
         for obj in sel :
             const = cmds.listConnections (obj , type = 'constraint')
@@ -322,8 +332,18 @@ class Pipeline (object) :
     # 这是一个装饰器，用于将一系列操作的撤销 包裹成一个撤销操作
     @staticmethod
     def make_undo (func) :
-        """
-            这是一个装饰器，用于将一系列操作的撤销 包裹成一个撤销操作
+        u"""
+
+                这是一个装饰器，用于将一系列操作的撤销 包裹成一个撤销操作
+
+                Args:
+                    func (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `func` 数据。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
         """
 
 
@@ -343,13 +363,25 @@ class Pipeline (object) :
     # 根据给定的节点类型，在给定的位置生成新的节点。常用来创建关节
     @staticmethod
     def create_node (node_type , node_name , match = False , match_node = None) :
-        u'''
-        根据给定的节点类型，在给定的位置生成新的节点。
-        node_type；创建的新的节点类型
-        node_name:创建的新的节点名称
-        match:是否吸附对应的位置
-        match_node:吸附对应的位置
-        '''
+        u"""
+
+                根据给定的节点类型，在给定的位置生成新的节点。 node_type；创建的新的节点类型 node_name:创建的新的节点名称 match:是否吸附对应的位置 match_node:吸附对应的位置
+
+                Args:
+                    node_type (str):
+                        需要创建、查询或过滤的 Maya Node Type。
+                    node_name (str):
+                        `node_name` 对应的 Maya 节点或资源名称。
+                    match (bool):
+                        控制当前方法中的 `match` 选项是否启用。
+                    match_node (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `match_node` 数据。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
         new_node = cmds.createNode (node_type , name = node_name)
         if match :
             cmds.matchTransform (new_node , match_node , position = True , rotation = True , scale = True)
@@ -363,6 +395,22 @@ class Pipeline (object) :
         #############################################################
         # 创建回调函数在新场景打开的时候执行回调函数
         #############################################################
+        u"""
+
+                创建当前 native script job。
+
+                Args:
+                    event_name (str):
+                        `event_name` 对应的 Maya 节点或资源名称。
+                    callback (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `callback` 数据。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+        """
+
         scene_open_callback_id = om.MEventMessage.addEventCallback (
             event_name , callback)
         # 创建回调函数被销毁的机制，防止重复调用
@@ -374,8 +422,7 @@ class Pipeline (object) :
     def create_constraint (driver , driven , point_value = False , orient_value = False , parent_value = True ,
                            scale_value = False ,
                            mo_value = True) :
-        '''
-
+        u"""
         这是一个用于在 Maya 中创建约束（constraint）的函数。该函数接受以下参数：
 
         driver(str): 约束的驱动对象。
@@ -385,7 +432,23 @@ class Pipeline (object) :
         parent_value(bool): 布尔值，指示是否创建父级约束（默认为 True）。
         scale_value(bool): 布尔值，指示是否创建缩放约束（默认为 False）。
         mo_value(bool): 布尔值，指示是否使用移动轴心（默认为 True）。
-        '''
+
+        Args:
+            driver (str):
+                作为驱动端的 Maya 节点名称。
+            driven (str):
+                作为被驱动端的 Maya 节点名称。
+            point_value (bool):
+                控制当前方法中的 `point_value` 选项是否启用。
+            orient_value (bool):
+                控制当前方法中的 `orient_value` 选项是否启用。
+            parent_value (bool):
+                控制当前方法中的 `parent_value` 选项是否启用。
+            scale_value (bool):
+                Controller Shape CV 使用的统一或 XYZ Scale 值。
+            mo_value (bool):
+                控制当前方法中的 `mo_value` 选项是否启用。
+        """
         if point_value :
             cmds.pointConstraint (driver , driven , mo = mo_value)
         if orient_value :
@@ -399,11 +462,23 @@ class Pipeline (object) :
     # 位移物体到指定的位置
     @staticmethod
     def move (obj , pos) :
-        """
-        位移物体到指定的位置
+        u"""
 
-        :param obj: str. maya的对象
-        :param pos: list. 位置信息 x, y and z
+                位移物体到指定的位置
+
+                :param obj: str. maya的对象
+                :param pos: list. 位置信息 x, y and z
+
+                Args:
+                    obj (str):
+                        当前操作使用的 Maya DAG 节点或场景对象。
+                    pos (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `pos` 数据。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
         """
 
         return cmds.move (pos [0] , pos [1] , pos [2] , obj , r = 1)
@@ -412,11 +487,18 @@ class Pipeline (object) :
     # 曲线的总长度为1，给定需要平分的点数量，返回每个点的位置信息
     @staticmethod
     def get_percentages (sample_count) :
-        """
-        曲线的总长度为1，给定需要平分的点数量，返回每个点的位置信息
-        例子：get_percentages(5) == [0.0, 0.25, 0.5, 0.75, 1.0]
-        :param sample_count: int. 需要平分的点数量
-        :return: list. 返回每个点的位置信息
+        u"""
+
+                曲线的总长度为1，给定需要平分的点数量，返回每个点的位置信息 例子：get_percentages(5) == [0.0, 0.25, 0.5, 0.75, 1.0] :param sample_count: int. 需要平分的点数...
+
+                Args:
+                    sample_count (int):
+                        当前构建、采样或查询过程使用的元素数量。
+
+                Returns:
+                    object | list:
+                        按当前 API 约定顺序返回的结果列表。
+
         """
         if sample_count <= 1 :
             return []  # 返回空列表而不是 None
@@ -432,10 +514,18 @@ class Pipeline (object) :
     # 这是一个用于在 Maya 中获取指定节点的 DAG（Directed Acyclic Graph）路径的函数。函数接受一个参数 node，即 Maya 的节点对象（node name），并返回该节点的 DAG 路径（DAG path）。
     @staticmethod
     def get_dag_path (node = None) :
-        """
-        这是一个用于在 Maya 中获取指定节点的 DAG（Directed Acyclic Graph）路径的函数。函数接受一个参数 node，即 Maya 的节点对象（node name），并返回该节点的 DAG 路径（DAG path）。
-        :param node: str. maya的节点对象
-        :return: str. DAG 路径
+        u"""
+
+                这是一个用于在 Maya 中获取指定节点的 DAG（Directed Acyclic Graph）路径的函数。函数接受一个参数 node，即 Maya 的节点对象（node name），并返回该节点的 DAG 路径（DAG path）...
+
+                Args:
+                    node (str):
+                        需要查询或处理的 Maya 节点名称。
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
         """
         # 创建一个 MSelectionList 对象，用于存储要查询的节点。
         selection = om.MSelectionList ()
@@ -454,13 +544,24 @@ class Pipeline (object) :
     # 获取具有均匀距离的nurbs曲线上的点信息
     @staticmethod
     def get_point_on_curve (curve , sample_count) :
-        """
-        获取具有均匀距离的nurbs曲线上的点信息
-        https://help.autodesk.com/view/MAYAUL/2018/ENU/?guid=__cpp_ref_class_m_fn_nurbs_curve_html
+        u"""
 
-        :param curve: str. nurbs曲线的名称
-        :param sample_count: int. 采样点的数量
-        :return: tuple. om.MPoint object and om.MVector object
+                获取具有均匀距离的nurbs曲线上的点信息 https://help.autodesk.com/view/MAYAUL/2018/ENU/?guid=__cpp_ref_class_m_fn_nurbs_curve_html
+
+                :param curve: str. nurbs曲线的名称
+                :param sample_count: int. 采样点的数量
+                :return: tuple. om.MPoint object and om.MVector object
+
+                Args:
+                    curve (str):
+                        需要处理的 Maya Curve Transform 或 Shape 名称。
+                    sample_count (int):
+                        当前构建、采样或查询过程使用的元素数量。
+
+                Returns:
+                    tuple:
+                        按当前 API 约定组织的结果元组。
+
         """
         plists = Pipeline.get_percentages (sample_count)
 
@@ -482,12 +583,24 @@ class Pipeline (object) :
     # 在 Maya 中创建均匀分布在曲线上的关节点的函数。
     @staticmethod
     def create_joints_on_curve (curve , sample_count) :
-        """
-        在 Maya 中创建均匀分布在曲线上的关节点的函数。函数接受两个参数：
+        u"""
 
-        :param curve: str. 曲线的节点名称
-        :param sample_count: int. 采样点的数量
-        :return: list. 返回创建关节的列表
+                在 Maya 中创建均匀分布在曲线上的关节点的函数。函数接受两个参数：
+
+                :param curve: str. 曲线的节点名称
+                :param sample_count: int. 采样点的数量
+                :return: list. 返回创建关节的列表
+
+                Args:
+                    curve (str):
+                        需要处理的 Maya Curve Transform 或 Shape 名称。
+                    sample_count (int):
+                        当前构建、采样或查询过程使用的元素数量。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
         """
 
         jnt_list = list ()
@@ -537,12 +650,17 @@ class Pipeline (object) :
     @staticmethod
     def create_curve_on_joints (jnt_list , curve , degree = 3) :
         u"""
-       根据给定关节点的位置生成曲线的函数
-        jnt_list(list):关节的列表
-        curve（str）：创建出来的曲线的名称
-        degree(int)：新曲线的阶数。默认值为3。请注意，您需要（阶数+1）个曲线点来创建可见的曲线跨度。你必须为3度曲线放置4个点。
+        根据给定关节点的位置生成曲线的函数 jnt_list(list):关节的列表 curve（str）：创建出来的曲线的名称 degree(int)：新曲线的阶数。默认值为3。请注意，您需要（阶数+1）个曲线点来创建可见的曲线跨度。你必须...
 
-        return:
+        Args:
+            jnt_list (list):
+                当前方法需要保持顺序批量处理的数据列表。
+            curve (str):
+                需要处理的 Maya Curve Transform 或 Shape 名称。
+            degree (int):
+                创建或重建 NURBS Curve 使用的 Degree。
+
+        Returns:
             返回创建出来的曲线curve
         """
         # 创建一个列表用来存储点的位置信息
@@ -573,13 +691,19 @@ class Pipeline (object) :
     @staticmethod
     def create_surface_on_curve (curve , surface_node , spans = 4 , offset = 0.2) :
         u"""
-        根据给定的曲线放样生成出曲面
-        curve(str):给定的曲线名称
-        surface_node（str）：生成出来的曲面的名称
-        spans（int）:重建后曲线的点数
-        offset（float）：曲线偏移的距离值
+        根据给定的曲线放样生成出曲面 curve(str):给定的曲线名称 surface_node（str）：生成出来的曲面的名称 spans（int）:重建后曲线的点数 offset（float）：曲线偏移的距离值
 
-        return:
+        Args:
+            curve (str):
+                需要处理的 Maya Curve Transform 或 Shape 名称。
+            surface_node (object):
+                当前方法执行 Maya / Rig 操作时使用的 `surface_node` 数据。
+            spans (int):
+                当前 Maya / Rig 操作使用的 `spans` 整数参数。
+            offset (float):
+                当前 Rig / Shape / Surface 操作使用的 Offset 数值或偏移向量。
+
+        Returns:
             返回曲面的节点
         """
         # # 重建曲线
@@ -604,14 +728,25 @@ class Pipeline (object) :
     # 在给定的曲面上创建毛囊节点和关节节点
     @staticmethod
     def create_joint_follicle_on_surface (surf_node , side , description , jnt_number) :
-        """
-        在给定的曲面上创建毛囊节点和关节节点
-        surf_node（str）:给定的曲面，需要创建毛囊节点和关节节点的曲面
-        side（str）:边
-        description(str)：描述
-        jnt_number(int):需要创建的关节节点数量
+        u"""
 
-        return:follicle_dict:存储数据,fol_grp,jnt_grp,ctrl_grp,connect_list
+                在给定的曲面上创建毛囊节点和关节节点 surf_node（str）:给定的曲面，需要创建毛囊节点和关节节点的曲面 side（str）:边 description(str)：描述 jnt_number(int):需要创建的关节节点数量
+
+                return:follicle_dict:存储数据,fol_grp,jnt_grp,ctrl_grp,connect_list
+
+                Args:
+                    surf_node (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `surf_node` 数据。
+                    side (str):
+                        方向标记，常用值为 lf、rt 或 md。
+                    description (str):
+                        UI Step / Section 中展示的功能说明文本。
+                    jnt_number (int):
+                        当前构建、采样或查询过程使用的元素数量。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
         """
         # 获得曲面的形状节点
@@ -698,15 +833,18 @@ class Pipeline (object) :
     # 根据模型上所选择的边，模型的边到曲线生成新的曲线，判断场景里是否已经生成过对应的曲线，如果有的话则将其删除，没有的话则新创建
     @staticmethod
     def create_curve_on_polyToCurve (curve_name , degree = 3) :
-        u'''
+        u"""
         根据模型上所选择的边，模型的边到曲线生成新的曲线，判断场景里是否已经生成过对应的曲线，如果有的话则将其删除，没有的话则新创建
+
         Args:
-            curve_name(str)：所生成的曲线的名称
-            degree(int)：新曲线的阶数。默认值为3。请注意，您需要（阶数+1）个曲线点来创建可见的曲线跨度。你必须为3度曲线放置4个点。
+            curve_name (str):
+                `curve_name` 对应的 Maya 节点或资源名称。
+            degree (int):
+                创建或重建 NURBS Curve 使用的 Degree。
 
         Returns:
-                生成的曲线
-        '''
+            生成的曲线
+        """
 
         # 判断场景里是否已经生成过对应的曲线，如果有的话则将其删除，没有的话则新创建
         if cmds.objExists (curve_name) :
@@ -729,10 +867,13 @@ class Pipeline (object) :
     @staticmethod
     def get_curve_number (curve) :
         u"""
-        获取曲线的点数量的函数
-        curve(str):想要获取点数量的曲线名称
-        获得曲线的点数量:spans + degree
-        return:
+        获取曲线的点数量的函数 curve(str):想要获取点数量的曲线名称 获得曲线的点数量:spans + degree
+
+        Args:
+            curve (str):
+                需要处理的 Maya Curve Transform 或 Shape 名称。
+
+        Returns:
             cv_num：返回曲线的点数量
         """
         # 获得曲线的形状节点
@@ -751,13 +892,16 @@ class Pipeline (object) :
     # 基于cv创建眼睑关节，并使用目标约束附加到曲线
     @staticmethod
     def create_eyelid_joints_on_curve (curve , eye_joint , up_object) :
-        """
+        u"""
         基于cv创建眼睑关节，并使用目标约束附加到曲线
 
         Args:
-            curve (str): 眼睑曲线
-            eye_joint (str): 眼睛的关节
-            up_object(str):向上的目标物体
+            curve (str):
+                眼睑曲线
+            eye_joint (str):
+                眼睛的关节
+            up_object (str):
+                向上的目标物体
         """
         # 获得名称规范
         curve_obj = nameUtils.Name (curve)
@@ -837,16 +981,22 @@ class Pipeline (object) :
     # 使用pointOnCurveInfo节点在曲线上附加关节
     @staticmethod
     def attach_joints_on_curve (jnt_list , drive_curve , aim_curve , up_object , aim_type = 'object') :
-        """
+        u"""
         使用pointOnCurveInfo节点在曲线上附加关节
 
         Args:
-            jnt_list (list): 需要连接的关节列表
-            drive_curve (str): 驱动关节的曲线
-            aim_curve (str): 目标曲线
-            up_object (str): 向上的参考向量的曲线
-            aim_type (str): object/curve 物体或者是曲线
-        return:
+            jnt_list (list):
+                需要连接的关节列表
+            drive_curve (str):
+                驱动关节的曲线
+            aim_curve (str):
+                目标曲线
+            up_object (str):
+                向上的参考向量的曲线
+            aim_type (str):
+                object/curve 物体或者是曲线
+
+        Returns:
             attach_dict: 将创建出来的attach对象返回出去
         """
         # 获取名称
@@ -948,19 +1098,26 @@ class Pipeline (object) :
     # 给嘴唇添加拉链嘴的绑定
     @staticmethod
     def create_zip_lip (lip_ctrls , jaw_ctrl , upper_jnts , lower_jnts , zip_height = 0.5 , falloff = 3) :
-        '''
+        u"""
         给嘴唇添加拉链嘴的绑定
+
         Args:
-            lip_ctrls(list):嘴唇控制器列表
-            jaw_ctrl(str):下巴控制器
-            upper_jnts(list):上嘴唇的关节列表
-            lower_jnts(list):下嘴唇的关节列表
-            zip_height(float):zip的高度，默认为0.5，也就是上下嘴唇闭合到中间的高度
-            falloff:平滑值，嘴唇关节之间粘连的过渡值
+            lip_ctrls (list):
+                嘴唇控制器列表
+            jaw_ctrl (str):
+                下巴控制器
+            upper_jnts (list):
+                上嘴唇的关节列表
+            lower_jnts (list):
+                下嘴唇的关节列表
+            zip_height (float):
+                zip的高度，默认为0.5，也就是上下嘴唇闭合到中间的高度
+            falloff (int):
+                平滑值，嘴唇关节之间粘连的过渡值
 
         Returns:
-                zip_lip_dict(dict):返回出创建出来的内容
-        '''
+            zip_lip_dict(dict):返回出创建出来的内容
+        """
         # 添加属性给嘴唇和下巴的控制器
         for ctrl in lip_ctrls :
             cmds.addAttr (ctrl , longName = 'zip' , attributeType = 'float' , minValue = 0 , maxValue = 1 ,
@@ -1074,10 +1231,15 @@ class Pipeline (object) :
     @staticmethod
     def create_doble_constraint (driver , ctrl , weight = 0.5) :
         u"""
-        制作需要调整权重值的约束，驱动的物体和控制器的zero组去约束driven组，并且调整权重值
-        driver(str):驱动的物体
-        ctrl(str):被驱动的控制器
-        weight(int):约束的权重值
+        制作需要调整权重值的约束，驱动的物体和控制器的zero组去约束driven组，并且调整权重值 driver(str):驱动的物体 ctrl(str):被驱动的控制器 weight(int):约束的权重值
+
+        Args:
+            driver (str):
+                作为驱动端的 Maya 节点名称。
+            ctrl (object):
+                当前方法执行 Maya / Rig 操作时使用的 `ctrl` 数据。
+            weight (float):
+                当前计算、混合或变形使用的权重值。
         """
         zero = ctrl.replace ('ctrl' , 'zero')
         driven = ctrl.replace ('ctrl' , 'driven')
@@ -1104,10 +1266,16 @@ class Pipeline (object) :
     # 创建logging日志，用来记录各个模块的日志报错信息，方便于项目排查
     @staticmethod
     def create_logging (logger_name , file_name , formatter = '%(asctime)s -%(name)s - %(levelname)s - %(message)s') :
-        """
-        创建logging日志，用来记录各个模块的日志报错信息，方便于项目排查
-        logger_name(str):用来自定义logger模块的名称
-        formatter(str):设置保存日志的信息,例如format = '%(asctime)s -%(name)s - %(levelname)s - %(message)s'
+        u"""
+        创建logging日志，用来记录各个模块的日志报错信息，方便于项目排查 logger_name(str):用来自定义logger模块的名称 formatter(str):设置保存日志的信息,例如format = '%(asctime)...
+
+        Args:
+            logger_name (str):
+                `logger_name` 对应的 Maya 节点或资源名称。
+            file_name (str):
+                `file_name` 对应的 Maya 节点或资源名称。
+            formatter (str):
+                当前 Maya / Rig 操作使用的 `formatter` 名称或标记。
         """
         # 根据自定义logger模块的名称来创建logger
         logger = logging.getLogger (''.format (logger_name))
@@ -1149,13 +1317,16 @@ class Pipeline (object) :
     # 给指定的对象创建set选择集来方便选择
     @staticmethod
     def create_set(object, set_name, set_parent=None):
-        """
+        u"""
         给指定的对象创建 set 选择集来方便选择。
 
         Args:
-            object (str/PyNode): 需要添加到选择集的对象。
-            set_name (str): 目标选择集名称。None / False / 空字符串时不执行。
-            set_parent (str/None): 可选的父选择集名称。
+            object (str/PyNode):
+                需要添加到选择集的对象。
+            set_name (str):
+                目标选择集名称。None / False / 空字符串时不执行。
+            set_parent (str/None):
+                可选的父选择集名称。
 
         Returns:
             str/None: 成功时返回 set 名称；参数无效时返回 None。
@@ -1201,10 +1372,8 @@ class Pipeline (object) :
     # 选择需要创建动力学化的曲线。创建动力学化曲线驱动头发
     @staticmethod
     def create_dynamic_curve_driven () :
-        """
-        选择需要创建动力学化的曲线。创建动力学化曲线驱动头发
-        曲线节点的命名为 模型节点 + '_crv'
-
+        u"""
+        选择需要创建动力学化的曲线。创建动力学化曲线驱动头发 曲线节点的命名为 模型节点 + '_crv'
         """
         crv_list = cmds.ls (sl = True)
         # 判断是否有动力学化曲线的关节组，没有的话则进行创建
@@ -1295,11 +1464,19 @@ class Pipeline (object) :
     # 如果不是给定的规定类型则报错并且提示物体的类型
     @staticmethod
     def get_selected_type (type = 'transform') :
-        '''
-        # 获取当前所选择的物体，并且判断是否是已经给定的规定类型
-        # 如果是已经给定的规定类型的话则正常
-        # 如果不是给定的规定类型则报错并且提示物体的类型
-        '''
+        u"""
+
+                # 获取当前所选择的物体，并且判断是否是已经给定的规定类型 # 如果是已经给定的规定类型的话则正常 # 如果不是给定的规定类型则报错并且提示物体的类型
+
+                Args:
+                    type (str):
+                        当前 Maya / Rig 操作使用的 `type` 名称或标记。
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+        """
         # 获取当前选择的物体
         obj = cmds.ls (selection = True) [0]
 
@@ -1314,14 +1491,19 @@ class Pipeline (object) :
     # 将需要绘制权重的模型所选择的面制作一个简模出来，作为用以线变形的模型
     @staticmethod
     def copy_surface_create_geo () :
-        """
-        将需要绘制权重的模型所选择的面制作一个简模出来，作为用以线变形的模型
+        u"""
 
-        high_geo(str):需要绘制权重的模型
-        skin_geo(str):用来复制权重的低模
+                将需要绘制权重的模型所选择的面制作一个简模出来，作为用以线变形的模型
 
-        返回：
-            skin_geo(str):用来复制权重的低模
+                high_geo(str):需要绘制权重的模型
+                skin_geo(str):用来复制权重的低模
+                返回：
+                    skin_geo(str):用来复制权重的低模
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
         """
 
         # 获取需要绘制权重的模型和用来复制权重的低模
@@ -1355,11 +1537,22 @@ class Pipeline (object) :
 
     @staticmethod
     def duplicate_model (source_model ,new_name = None ,parent = None) :
-        """
-        给定复制的模型名称，复制出新的模型
-        source_model（str）:复制来源的模型
-        new_name(str):复制出来的模型名称
-        parent（str）:复制出来的模型的父层级
+        u"""
+
+                给定复制的模型名称，复制出新的模型 source_model（str）:复制来源的模型 new_name(str):复制出来的模型名称 parent（str）:复制出来的模型的父层级
+
+                Args:
+                    source_model (str):
+                        当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+                    new_name (str):
+                        `new_name` 对应的 Maya 节点或资源名称。
+                    parent (str):
+                        父级 Maya 节点名称。
+
+                Returns:
+                    object | None:
+                        当前 API 完成处理后返回的结果。
+
         """
 
         if not source_model :

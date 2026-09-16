@@ -16,6 +16,16 @@ class File (object) :
 
 
     def __init__ (self , file_path = None) :
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+                Args:
+                    file_path (str):
+                        需要读取或写入的文件路径。
+
+        """
+
         self.file_path = file_path
         # 设置文件的选择类型过滤器
         self.file_filter = "Maya(*.ma *.mb);;Maya ASCII (*.ma);;Maya Binary (*.mb);;All Files (*.*)"  # 全部的过滤项
@@ -23,9 +33,15 @@ class File (object) :
 
 
     def show_file_select_dialog (self) :
-        '''
-        打开文件资源浏览器，让用户选择文件
-        '''
+        u"""
+
+                打开文件资源浏览器，让用户选择文件
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         # 打开一个文件资源浏览器，file_path 是所选择的文件路径,selected_filter是选择过滤的文件类型
         self.file_path , self.selected_filter = QtWidgets.QFileDialog.getOpenFileName (
             qtUtils.get_maya_window () ,
@@ -37,9 +53,12 @@ class File (object) :
 
 
     def load_file (self , load_method) :
-        """
-        读取文件
-        load_method(str): 三种不同的读取方式，open, import, reference
+        u"""
+        读取文件 load_method(str): 三种不同的读取方式，open, import, reference
+
+        Args:
+            load_method (object):
+                当前方法执行 Maya / Rig 操作时使用的 `load_method` 数据。
         """
         # 检查文件路径是否存在，如果不存在则返回
         if not self.file_path :
@@ -62,6 +81,12 @@ class File (object) :
 
 
     def open_file (self) :
+        u"""
+
+                打开当前 file。
+
+        """
+
         force = False
         # 弹出一个对话框来让用户确认是否已经保存文件
         if not force and cmds.file (q = True , modified = True) :
@@ -80,17 +105,33 @@ class File (object) :
 
     def import_file (self) :
         # 导入文件
+        u"""
+
+                导入当前 file。
+
+        """
+
         cmds.file (self.file_path , i = True , ignoreVersion = True)
 
 
     def reference_file (self) :
-        """
+        u"""
         引用文件
         """
         cmds.file (self.file_path , r = True , ignoreVersion = True)
 
 
     def load_from_given_path (self) :
+        u"""
+
+                加载当前 from given path。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
+
         try :
             # 读取JSON文件
             with open (self.file_path , "r") as file :
@@ -107,9 +148,8 @@ class File (object) :
     # 导出所选控制器的动画到 JSON 文件
 
     def export_animation_json (self) :
-        """
-        导出所选控制器的动画到 JSON 文件
-        来源: 37佬
+        u"""
+        导出所选控制器的动画到 JSON 文件 来源: 37佬
         """
 
         # 获取所有选择的控制器列表
@@ -153,7 +193,7 @@ class File (object) :
 
     # 从 JSON 文件导入动画数据并应用到相应的控制器
     def import_animation_json (self) :
-        """
+        u"""
         从 JSON 文件导入动画数据并应用到相应的控制器
         """
         """
@@ -201,21 +241,33 @@ class File (object) :
     # 获取当前文件的绝对路径
     @staticmethod
     def get_current_scene_path () :
-        u'''
-        获取当前文件的绝对路径
-        :return:
-        '''
+        u"""
+
+                获取当前文件的绝对路径 :return:
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+        """
         return str (pm.sceneName ().abspath ()).replace ('\\' , '/')
 
 
     # 在maya里的当前文件创建引用,给定需要引用的文件路径和设置引用文件的名称空间
     def create_reference (self , name_space = None) :
-        u'''
-        在maya里的当前文件创建引用
-        :param self.file_path: 需要引用的文件路径
-        :param name_space: 引用文件的名称空间
-        :return:
-        '''
+        u"""
+
+                在maya里的当前文件创建引用 :param self.file_path: 需要引用的文件路径 :param name_space: 引用文件的名称空间 :return:
+
+                Args:
+                    name_space (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `name_space` 数据。
+
+                Returns:
+                    tuple:
+                        按当前 API 约定组织的结果元组。
+
+        """
         if name_space is None :
             name_space = os.path.basename (self.file_path).split ('.') [0].upper ()
         try :
@@ -238,9 +290,7 @@ class File (object) :
     # 在 Maya 中导出所选物体为 FBX 文件的脚本,接受一个目标路径self.file_path参数。该路径指定了导出的 FBX 文件的保存位置。
     def fbxExport (self) :
         u"""
-        在 Maya 中导出所选物体为 FBX 文件的脚本,接受一个目标路径self.file_path参数。该路径指定了导出的 FBX 文件的保存位置。
-        : self.file_path: 该路径指定了导出的 FBX 文件的保存位置。
-        :return:
+        在 Maya 中导出所选物体为 FBX 文件的脚本,接受一个目标路径self.file_path参数。该路径指定了导出的 FBX 文件的保存位置。 : self.file_path: 该路径指定了导出的 FBX 文件的保存位置。 :r...
         """
         # 将目标路径的反斜杠 \ 替换为正斜杠 /。
         path_string = self.file_path.replace ('\\' , '/')
@@ -259,7 +309,7 @@ class File (object) :
 
     # 从 JSON 文件导入动画数据并应用到相应的控制器，测试动画的导入
     def import_test_animation_json (self) :
-        """
+        u"""
         从 JSON 文件导入动画数据并应用到相应的控制器，进行测试动画的导入
         """
         """
@@ -272,7 +322,7 @@ class File (object) :
         self.import_animation_json()
 
 def text () :
-    """
+    u"""
     对于文件操作的例子
     """
     path = 'D:/rig/701Car_Rig/701_car_Rig_003Constraint.mb'

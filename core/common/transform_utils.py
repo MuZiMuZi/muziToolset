@@ -40,16 +40,15 @@ class Transform(object):
         初始化 Transform 工具对象。
 
         object(str/PyNode): 需要操作的 Maya 节点，可以是 Transform、Joint、Shape 等节点。
-
         Maya 使用示例：
-
         from muziToolset.core.common import transform_utils
-
         object = "ctrl_lf_eye_main_001"
-
         transform_object = transform_utils.Transform(object)
-
         print(transform_object.object)
+
+        Args:
+            object (str):
+                需要处理的 Maya 场景对象名称。
         """
 
         self.object = None
@@ -68,18 +67,28 @@ class Transform(object):
         rotation(bool): 是否匹配目标对象的旋转，默认 True。
         scale(bool): 是否匹配目标对象的缩放，默认 True。
 
+        Args:
+            target (str):
+                接收结果或被处理的目标 Maya 节点名称。
+            position (bool):
+                Jnt / Transform 使用的 XYZ Position。
+            rotation (bool):
+                Jnt / Transform 使用的 XYZ Rotation。
+            scale (bool):
+                是否处理 Scale 通道。
+
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import transform_utils
+            from muziToolset.core.common import transform_utils
 
-        object = "jnt_lf_arm_bind_001"
-        target = "guide_lf_arm_001"
+            object = "jnt_lf_arm_bind_001"
+            target = "guide_lf_arm_001"
 
-        transform_object = transform_utils.Transform(object)
-        transform_object.match_transform(target, position=True, rotation=True, scale=False)
+            transform_object = transform_utils.Transform(object)
+            transform_object.match_transform(target, position=True, rotation=True, scale=False)
         """
 
         # 将目标对象转换成 PyNode，统一使用 PyMEL 节点对象进行操作。
@@ -106,16 +115,16 @@ class Transform(object):
         Returns:
             Matrix: 当前对象的世界矩阵。
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import transform_utils
+            from muziToolset.core.common import transform_utils
 
-        object = "ctrl_lf_eye_main_001"
+            object = "ctrl_lf_eye_main_001"
 
-        transform_object = transform_utils.Transform(object)
-        world_matrix = transform_object.get_world_matrix()
+            transform_object = transform_utils.Transform(object)
+            world_matrix = transform_object.get_world_matrix()
 
-        print(world_matrix)
+            print(world_matrix)
         """
 
         # 获取对象的世界矩阵，并保存到当前实例中。
@@ -129,19 +138,23 @@ class Transform(object):
 
         matrix(Matrix): 需要设置给当前对象的世界矩阵。
 
+        Args:
+            matrix (list[float] | maya.api.OpenMaya.MMatrix):
+                用于 Transform、Constraint 或空间计算的 4x4 Matrix 数据。
+
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import transform_utils
+            from muziToolset.core.common import transform_utils
 
-        source = transform_utils.Transform("guide_lf_arm_001")
-        target = transform_utils.Transform("jnt_lf_arm_bind_001")
+            source = transform_utils.Transform("guide_lf_arm_001")
+            target = transform_utils.Transform("jnt_lf_arm_bind_001")
 
-        matrix = source.get_world_matrix()
+            matrix = source.get_world_matrix()
 
-        target.set_world_matrix(matrix)
+            target.set_world_matrix(matrix)
         """
 
         # 将给定矩阵设置到当前对象的世界空间。
@@ -158,17 +171,25 @@ class Transform(object):
         rotate(bool): 是否将 rotate 重置为 (0, 0, 0)，默认 True。
         scale(bool): 是否将 scale 重置为 (1, 1, 1)，默认 True。
 
+        Args:
+            translate (bool):
+                是否处理 Translate 通道。
+            rotate (bool):
+                是否处理 Rotate 通道。
+            scale (bool):
+                是否处理 Scale 通道。
+
         Returns:
             None
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import transform_utils
+            from muziToolset.core.common import transform_utils
 
-        object = "ctrl_lf_eye_main_001"
+            object = "ctrl_lf_eye_main_001"
 
-        transform_object = transform_utils.Transform(object)
-        transform_object.reset_transform(translate=True, rotate=True, scale=True)
+            transform_object = transform_utils.Transform(object)
+            transform_object.reset_transform(translate=True, rotate=True, scale=True)
         """
 
         # 重置位移数值。
@@ -193,17 +214,17 @@ class Transform(object):
         Returns:
             PyNode: 当前对象对应的 Transform 节点。
 
-        Maya 使用示例：
+            Maya 使用示例：
 
-        from muziToolset.core.common import transform_utils
+            from muziToolset.core.common import transform_utils
 
-        object = "ctrl_lf_eye_main_001Shape"
+            object = "ctrl_lf_eye_main_001Shape"
 
-        transform_object = transform_utils.Transform(object)
-        transform = transform_object.get_transform()
+            transform_object = transform_utils.Transform(object)
+            transform = transform_object.get_transform()
 
-        print(transform)
-        # ctrl_lf_eye_main_001
+            print(transform)
+            # ctrl_lf_eye_main_001
         """
 
         # 如果当前对象本身就是 Transform 或 Transform 的子类型，则直接返回。

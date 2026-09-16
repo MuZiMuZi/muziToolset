@@ -14,6 +14,20 @@ class Vector (object) :
 
 
     def __init__ (self , *args) :
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+                Args:
+                    args (tuple):
+                        当前方法按顺序处理的 `args` 数据集合。
+
+                Raises:
+                    TypeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
+
         self._vector = None
         # 判断给定的参数为list的情况
         if len (args) == 1 :
@@ -31,9 +45,15 @@ class Vector (object) :
 
 
     def normalize (self) :
-        u'''
-        使长度的参数规范化，如果遇到除数为0的情况则pass
-        '''
+        u"""
+
+                使长度的参数规范化，如果遇到除数为0的情况则pass
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         if self._vector :
             try :
                 return Vector (
@@ -49,34 +69,90 @@ class Vector (object) :
 
     @property
     def length (self) :
-        u'''
-        sqrt是更号的意思，求长度
-        '''
+        u"""
+
+                sqrt是更号的意思，求长度
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
         return math.sqrt (self.x ** 2 + self.y ** 2 + self.z ** 2)
 
 
     @property
     def x (self) :
+        u"""
+
+                执行当前 API 的主要处理流程。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
+
         return self._vector [0]
 
 
     @property
     def y (self) :
+        u"""
+
+                执行当前 API 的主要处理流程。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
+
         return self._vector [1]
 
 
     @property
     def z (self) :
+        u"""
+
+                执行当前 API 的主要处理流程。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
+
         return self._vector [2]
 
 
     @property
     def as_list (self) :
+        u"""
+
+                执行当前 API 的主要处理流程。
+
+                Returns:
+                    list:
+                        按当前 API 约定顺序返回的结果列表。
+
+        """
+
         return [self.x , self.y , self.z]
 
 
     @property
     def axis (self) :
+        u"""
+
+                执行当前 API 的主要处理流程。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+        """
+
         if all (v1 == v2 for v1 , v2 in zip (self._vector , [1 , 0 , 0])) :
             self._axis = 'X+'
         elif all (v1 == v2 for v1 , v2 in zip (self._vector , [-1 , 0 , 0])) :
@@ -93,6 +169,20 @@ class Vector (object) :
 
 
     def mult_interval (self , interval) :
+        u"""
+
+                执行当前 API 的主要处理流程。
+
+                Args:
+                    interval (object):
+                        当前方法执行 Maya / Rig 操作时使用的 `interval` 数据。
+
+                Returns:
+                    tuple:
+                        按当前 API 约定组织的结果元组。
+
+        """
+
         return (self.x * interval , self.y * interval , self.z * interval)
 
 
@@ -100,16 +190,12 @@ class Vector (object) :
 
 
 def get_matrix(attr):
-    """
+    u"""
     获取 Maya Matrix 属性并转换成 MMatrix。
 
     Args:
         attr (str):
-            Matrix 属性名字。
-
-            例如：
-            ctrl_l_arm.worldMatrix[0]
-            jnt_l_arm.matrix
+            Matrix 属性名字。 例如： ctrl_l_arm.worldMatrix[0] jnt_l_arm.matrix
 
     Returns:
         maya.api.OpenMaya.MMatrix
@@ -133,7 +219,7 @@ def get_matrix(attr):
 
 
 def matrix_to_list(matrix):
-    """
+    u"""
     将 MMatrix 转换成 Maya setAttr 可以使用的 16 个浮点数。
 
     Args:
@@ -142,7 +228,7 @@ def matrix_to_list(matrix):
 
     Returns:
         list:
-            包含 16 个 float 的列表。
+        包含 16 个 float 的列表。
     """
 
     matrix_list = []
@@ -160,36 +246,27 @@ def matrix_parent_constraint (
         driven ,
         maintain_offset = True
 ) :
-    """
+    u"""
     使用矩阵代替 parentConstraint。
 
     Args:
         driver (str):
             驱动对象。
-
         driven (str):
             被驱动对象。
-
         maintain_offset (bool):
             是否保持当前偏移。
 
-            True:
-                相当于 parentConstraint(mo=True)
-
-            False:
-                相当于 parentConstraint(mo=False)
-
     Returns:
         str:
-            创建出来的 multMatrix 节点。
+        创建出来的 multMatrix 节点。
 
     Example:
-
         matrix_parent_constraint(
-            'ctrl_l_arm_fk',
-            'jnt_l_arm_fk',
-            maintain_offset=True
-        )
+                'ctrl_l_arm_fk',
+                'jnt_l_arm_fk',
+                maintain_offset=True
+            )
     """
 
     # ------------------------------------------------------------
