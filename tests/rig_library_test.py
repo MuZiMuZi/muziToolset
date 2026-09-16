@@ -144,8 +144,35 @@ class RigLibraryTests(unittest.TestCase):
 
     def test_unknown_modules_never_fall_back_to_fk(self):
         with self.assertRaises(ValueError):
-            self.service.add_module("eye")
+            self.service.add_module("brow")
         self.assertEqual(self.commands.nodes, {})
+
+    def test_eye_uses_semantic_guides_and_complete_outputs(self):
+        record = catalog.new_module("eye", "lf")
+        self.assertEqual(
+            catalog.guide_names(record),
+            [
+                "loc_lf_eye_ball_001",
+                "loc_lf_eye_iris_001",
+                "loc_lf_eye_aim_001",
+            ]
+        )
+        outputs = catalog.output_names(record)
+        self.assertEqual(outputs["joints"], ["jnt_lf_eye_bind_001"])
+        self.assertEqual(
+            outputs["controls"],
+            ["ctrl_lf_eye_main_001", "ctrl_lf_eye_aim_001"]
+        )
+        self.assertIn("driven_lf_eye_main_001", outputs["groups"])
+        self.assertIn("output_lf_eye_aim_001", outputs["outputs"])
+
+    def test_eye_module_adds_left_then_right(self):
+        self.service.add_module("eye")
+        self.service.add_module("eye")
+        sides = []
+        for record in self.service.document["modules"]:
+            sides.append(record["side"])
+        self.assertEqual(sides, ["lf", "rt"])
 
     def test_workflow_state_tracks_real_scene_progress(self):
         state = self.service.workflow_state()
@@ -381,11 +408,11 @@ class RigLibraryTests(unittest.TestCase):
         controller.create_ctrl.assert_not_called()
 
     def test_factory_calls_current_public_builders(self):
-        record = catalog.new_module("ear")
-        builders = {}
         modules = {}
+        builders = {}
         for path, class_name in (
                 ("muziToolset.systems.face.ear_module", "EarModule"),
+                ("muziToolset.systems.face.eye_module", "EyeModule"),
                 ("muziToolset.systems.face.tongue_module", "TongueModule"),
                 ("muziToolset.systems.components.fk_chain", "FKChain")):
             module = types.ModuleType(path)
@@ -393,9 +420,13 @@ class RigLibraryTests(unittest.TestCase):
             setattr(module, class_name, factory)
             modules[path] = module
             builders[class_name] = factory
+
+        record = catalog.new_module("eye")
         with mock.patch.dict(sys.modules, modules):
             result = RigLibraryService._make_builder(self.service, record)
-        builders["EarModule"].assert_called_once()
+
+        builders["EyeModule"].assert_called_once()
+        builders["EarModule"].assert_not_called()
         builders["TongueModule"].assert_not_called()
         builders["FKChain"].assert_not_called()
         self.assertEqual(result.ctrl_size, 1.0)
