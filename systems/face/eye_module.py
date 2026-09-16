@@ -1,18 +1,16 @@
 # coding=utf-8
 u"""
-EyeModule：眼球 Aim 绑定模块。
+EyeModule：正式眼球 Aim 绑定模块。
 
-当前模块只负责眼球本体，不负责 Eyelid。
-
-Guide 语义：
+Guide：
     loc_<side>_eye_ball_001
         眼球真实旋转中心，同时用于创建 Eye Joint。
     loc_<side>_eye_iris_001
-        眼球前方参考点，用于放置 Eye Main Controller。
+        Eye Main Controller 的可见位置。
     loc_<side>_eye_aim_001
-        目光目标点，用于放置 Eye Aim Controller。
+        Eye Aim Controller 的位置。
 
-最终控制结构：
+正式驱动结构：
 
     ctrl_<side>_eye_aim_001
         -> output_<side>_eye_aim_001
@@ -20,17 +18,17 @@ Guide 语义：
         -> driven_<side>_eye_main_001
         -> ctrl_<side>_eye_main_001
         -> output_<side>_eye_main_001
-        -> Pose Driver
-        -> Pose Driven
+        -> driver_<side>_eye_pose_001
+        -> driven_<side>_eye_pose_001
         -> Orient Constraint
         -> jnt_<side>_eye_bind_001
 
-核心原则：
-    1. Main Controller 的可见位置保持在 Iris Guide。
-    2. Main Controller 相关旋转层的 Rotate Pivot 位于 Ball Guide。
-    3. Aim 只负责旋转，不改变 Main Controller 的初始位置。
+关键规则：
+    1. Main Ctrl Transform 保持在 Iris Guide。
+    2. Main Ctrl 相关旋转层的 Rotate Pivot 位于 Ball Guide。
+    3. Aim 只驱动旋转，不驱动位移。
     4. Eye Joint 只接收 Rotate，不接收 Translate。
-    5. Pose Driver / Pose Driven 为后续 Eyelid、RBF、Corrective 保留稳定接口。
+    5. Pose Driver / Pose Driven 作为 Eyelid、RBF、Corrective 的稳定接口。
 """
 
 import maya.cmds as cmds
@@ -59,7 +57,7 @@ class EyeModule(rig_module.RigModule):
         ctrl_axis="X+",
         aim_ctrl_axis="Z+"
     ):
-        u"""初始化眼球 Aim 绑定模块。"""
+        u"""初始化正式 Eye Rig。"""
 
         super(EyeModule, self).__init__(
             module=module,
@@ -74,8 +72,7 @@ class EyeModule(rig_module.RigModule):
                 u"Eye Module 只支持 lf / rt，当前值：{}".format(self.side)
             )
 
-        # Controller 外观参数。
-        # 默认 Shape 保留当前 EyeModule 使用的正式配置。
+        # Controller 外观设置。
         self.ctrl_shape = ctrl_shape
         self.aim_ctrl_shape = aim_ctrl_shape
         self.ctrl_color = ctrl_color
@@ -103,12 +100,12 @@ class EyeModule(rig_module.RigModule):
         self.orient_constraint_name = None
 
     # =========================================================================
-    # 基础工具
+    # 通用工具
     # =========================================================================
 
     @staticmethod
     def _node_name(node):
-        u"""统一把 PyNode / Maya Node 转换成 maya.cmds 可使用的字符串名称。"""
+        u"""把 PyNode / Maya Node 统一转换成 maya.cmds 使用的字符串名称。"""
 
         if node is None:
             return None
@@ -117,7 +114,7 @@ class EyeModule(rig_module.RigModule):
 
     @staticmethod
     def _short_name(node_name):
-        u"""返回不包含 DAG Path 和 Namespace 的短名称。"""
+        u"""返回去掉 DAG Path 和 Namespace 的短名称。"""
 
         short_name = str(node_name)
 
@@ -153,7 +150,7 @@ class EyeModule(rig_module.RigModule):
 
     @staticmethod
     def _set_world_matrix(node_name, source_name):
-        u"""把 source 的 World Matrix 完整复制给 node。"""
+        u"""把 source 的 World Matrix 复制给 node。"""
 
         node_name = str(node_name)
         source_name = str(source_name)
@@ -174,9 +171,7 @@ class EyeModule(rig_module.RigModule):
     @staticmethod
     def _set_world_pivot(node_name, pivot_position):
         u"""
-        设置 Transform 的 Rotate / Scale Pivot，同时保持当前世界位置不变化。
-
-        这个方法是 Eye Main 保持在 Iris、但绕 Ball 旋转的关键。
+        设置 Transform 的 Rotate / Scale Pivot，同时保持 Transform 当前世界位置。
         """
 
         node_name = str(node_name)
@@ -205,13 +200,37 @@ class EyeModule(rig_module.RigModule):
 
     @staticmethod
     def _same_position(position_a, position_b, tolerance=0.001):
-        u"""比较两个世界坐标是否在允许误差内一致。"""
+        u"""比较两个世界空间坐标是否一致。"""
 
         for index in range(3):
             if abs(position_a[index] - position_b[index]) > tolerance:
                 return False
 
         return True
+
+    def _ensure_module_groups(self):
+        u"""
+        确保当前 Eye Module 的 Jnt / Ctrl Master Group 已经存在。
+
+        这里直接调用 RigModule.setup_hierarchy()，只创建模块根组，
+        不调用 EyeModule.setup_hierarchy()，因此也适用于从已有场景直接进入 Step 04。
+        """
+
+        jnt_group_valid = False
+        ctrl_group_valid = False
+
+        if self.jnt_master_grp is not None:
+            jnt_group_valid = cmds.objExists(
+                self._node_name(self.jnt_master_grp)
+            )
+
+        if self.ctrl_master_grp is not None:
+            ctrl_group_valid = cmds.objExists(
+                self._node_name(self.ctrl_master_grp)
+            )
+
+        if not jnt_group_valid or not ctrl_group_valid:
+            rig_module.RigModule.setup_hierarchy(self)
 
     # =========================================================================
     # Guide
@@ -236,13 +255,7 @@ class EyeModule(rig_module.RigModule):
         }
 
     def get_guides(self):
-        u"""
-        获取 Eye Ball / Iris / Aim 三个固定语义 Guide。
-
-        Eye 不依赖列表顺序判断语义。
-        外部传入 Guide 时按照节点标准名称匹配 ball / iris / aim；
-        没有传入 Guide 时直接读取 face_guide_config 中的固定名称。
-        """
+        u"""获取 Eye Ball / Iris / Aim 三个固定语义 Guide。"""
 
         expected_guides = self._expected_guides()
         source_guides = super(EyeModule, self).get_guides()
@@ -320,11 +333,11 @@ class EyeModule(rig_module.RigModule):
         return self.guide_list
 
     # =========================================================================
-    # Step 02 / Step 03 输出创建
+    # Joint / Controller
     # =========================================================================
 
     def create_joints(self):
-        u"""在 Eye Ball Guide 位置创建眼球绑定 Joint。"""
+        u"""在 Eye Ball Guide 创建眼球绑定 Joint。"""
 
         self.eye_jnt_name = name_utils.Name(
             type="jnt",
@@ -345,12 +358,10 @@ class EyeModule(rig_module.RigModule):
 
     def create_ctrls(self):
         u"""
-        创建 Eye Main 与 Eye Aim 两个控制器。
+        创建 Eye Main / Eye Aim Controller。
 
-        Main Controller：
-            使用 Iris Guide 放置，所以 Controller 可见位置始终位于 Iris。
-        Aim Controller：
-            使用 Aim Guide 放置，动画师移动它控制视线方向。
+        Main Ctrl 使用 Iris Guide 创建，因此可见位置保持在 Iris。
+        Aim Ctrl 使用 Aim Guide 创建。
         """
 
         self.main_ctrl_name = name_utils.Name(
@@ -395,12 +406,12 @@ class EyeModule(rig_module.RigModule):
         ]
 
     def _main_pivot_nodes(self):
-        u"""返回 Eye Main 中应该使用 Ball 作为旋转轴心的层级节点。"""
+        u"""返回 Main Controller 中需要以 Ball 为轴心的节点。"""
 
         if not self.main_ctrl_name:
             return []
 
-        node_names = [
+        return [
             self.main_ctrl_name.replace("ctrl_", "driven_", 1),
             self.main_ctrl_name.replace("ctrl_", "space_", 1),
             self.main_ctrl_name.replace("ctrl_", "connect_", 1),
@@ -410,13 +421,9 @@ class EyeModule(rig_module.RigModule):
             self.main_ctrl_name.replace("ctrl_", "output_", 1),
         ]
 
-        return node_names
-
     def _set_main_rotation_pivots(self):
         u"""
-        保持 Main Controller 位于 Iris，只把相关旋转轴心设置到 Eye Ball。
-
-        Zero Group 保持原始 Iris Rest Position，不修改它的 Pivot。
+        保持 Main Controller 位于 Iris，只把相关 Rotate Pivot 设置到 Ball。
         """
 
         if not self.guide_map:
@@ -447,7 +454,7 @@ class EyeModule(rig_module.RigModule):
             )
 
     def setup_hierarchy(self):
-        u"""整理 Eye Joint、Main Ctrl 和 Aim Ctrl 的模块层级。"""
+        u"""整理 Eye Joint、Main Ctrl、Aim Ctrl 的模块层级。"""
 
         super(EyeModule, self).setup_hierarchy()
 
@@ -466,17 +473,17 @@ class EyeModule(rig_module.RigModule):
             self.ctrl_master_grp
         )
 
-        # 层级完成以后再设置世界空间 Pivot，避免 Parent 操作影响最终结果。
+        # 完成最终 Parent 后再设置 World Pivot。
         self._set_main_rotation_pivots()
 
         return self.jnt_master_grp, self.ctrl_master_grp
 
     # =========================================================================
-    # Step 04 连接
+    # Step 04 输出读取 / 连接
     # =========================================================================
 
     def load_outputs(self):
-        u"""读取前面步骤已经创建完成的 Eye Joint / Controller 输出。"""
+        u"""读取已经创建好的 Eye Joint / Controller 输出。"""
 
         self.eye_jnt_name = name_utils.Name(
             type="jnt",
@@ -519,14 +526,14 @@ class EyeModule(rig_module.RigModule):
                     )
                 )
 
-        # 从旧场景直接进入 Step 04 时也再次校正 Pivot。
         self.get_guides()
+        self._ensure_module_groups()
         self._set_main_rotation_pivots()
 
         return required_nodes
 
     def _connection_names(self):
-        u"""生成 Eye Rig 连接层使用的稳定节点名称。"""
+        u"""生成当前侧 Eye Step 04 的稳定连接节点名。"""
 
         self.world_up_name = name_utils.Name(
             type="grp",
@@ -585,14 +592,76 @@ class EyeModule(rig_module.RigModule):
             "orient_constraint": self.orient_constraint_name,
         }
 
+    @staticmethod
+    def _delete_constraints(node_name, constraint_types):
+        u"""删除指定节点上的旧约束，用于兼容旧 Eye 版本。"""
+
+        if not node_name:
+            return
+
+        if not cmds.objExists(node_name):
+            return
+
+        delete_nodes = []
+
+        for constraint_type in constraint_types:
+            constraint_nodes = cmds.listConnections(
+                node_name,
+                source=True,
+                destination=False,
+                type=constraint_type
+            ) or []
+
+            for constraint_node in constraint_nodes:
+                if constraint_node not in delete_nodes:
+                    delete_nodes.append(constraint_node)
+
+        for constraint_node in delete_nodes:
+            if cmds.objExists(constraint_node):
+                cmds.delete(constraint_node)
+
     def delete_connections(self):
         u"""
-        删除当前侧 Eye Step 04 的连接节点。
+        删除当前侧 Eye 的 Step 04 连接层。
 
-        不删除 Joint、Main Ctrl、Aim Ctrl，方便用户回到前面步骤调整后重新连接。
+        Joint / Controller 不删除，因此前面步骤调整完成以后可以安全重新连接。
+        同时清理旧 EyeModule 曾经创建的 Parent / Aim Constraint。
         """
 
         connection_names = self._connection_names()
+
+        # 先清理旧版本可能留下的匿名约束。
+        main_ctrl_name = name_utils.Name(
+            type="ctrl",
+            side=self.side,
+            part=self.module,
+            function="main",
+            index=1
+        ).name
+
+        eye_jnt_name = name_utils.Name(
+            type="jnt",
+            side=self.side,
+            part=self.module,
+            function="bind",
+            index=1
+        ).name
+
+        main_driven = main_ctrl_name.replace(
+            "ctrl_",
+            "driven_",
+            1
+        )
+
+        self._delete_constraints(
+            main_driven,
+            ("aimConstraint",)
+        )
+
+        self._delete_constraints(
+            eye_jnt_name,
+            ("parentConstraint", "orientConstraint")
+        )
 
         delete_order = [
             connection_names["orient_constraint"],
@@ -608,13 +677,12 @@ class EyeModule(rig_module.RigModule):
                 cmds.delete(node_name)
 
     def _create_world_up(self):
-        u"""创建稳定的 Eye World Up Transform。"""
+        u"""创建稳定 World Up Transform。"""
 
         if not self.guide_map:
             self.get_guides()
 
-        if self.ctrl_master_grp is None:
-            self.setup_module_groups()
+        self._ensure_module_groups()
 
         ctrl_master_grp = self._node_name(
             self.ctrl_master_grp
@@ -637,16 +705,15 @@ class EyeModule(rig_module.RigModule):
         u"""
         创建 Pose Driver / Pose Driven。
 
-        两个节点都位于 Eye Ball，且处于相同父空间。
-        Pose Driver 读取 Main Output 的最终世界旋转；
-        Pose Driven 当前先直接继承 Driver Rotate，后续可以替换成 RBF / corrective solver。
+        两个节点都位于 Eye Ball，并且处于相同父空间。
+        Pose Driver 读取 Main Output 的最终世界旋转。
+        Pose Driven 当前直接继承 Driver Rotate；以后可以在两者之间加入 RBF / Corrective。
         """
 
         if not self.guide_map:
             self.get_guides()
 
-        if self.ctrl_master_grp is None:
-            self.setup_module_groups()
+        self._ensure_module_groups()
 
         ctrl_master_grp = self._node_name(
             self.ctrl_master_grp
@@ -696,17 +763,7 @@ class EyeModule(rig_module.RigModule):
         u"""
         建立正式 Eye Rig 连接。
 
-        流程：
-            Aim Output
-                -> Aim Constraint
-                -> Main Driven
-                -> Main Ctrl / SubCtrl / Output
-                -> Pose Driver
-                -> Pose Driven
-                -> Orient Constraint
-                -> Eye Joint
-
-        重新执行时只重建 Step 04 连接层，不删除前面创建并调整过的 Controller / Joint。
+        Aim Output -> Main Driven -> Main Output -> Pose Driver -> Pose Driven -> Eye Joint。
         """
 
         if not self.eye_jnt_name or not self.main_ctrl_name or not self.aim_ctrl_name:
@@ -715,7 +772,9 @@ class EyeModule(rig_module.RigModule):
         if not self.guide_map:
             self.get_guides()
 
+        self._ensure_module_groups()
         self._set_main_rotation_pivots()
+
         self._connection_names()
         self.delete_connections()
 
@@ -724,11 +783,13 @@ class EyeModule(rig_module.RigModule):
             "driven_",
             1
         )
+
         main_output = self.main_ctrl_name.replace(
             "ctrl_",
             "output_",
             1
         )
+
         aim_output = self.aim_ctrl_name.replace(
             "ctrl_",
             "output_",
@@ -737,8 +798,8 @@ class EyeModule(rig_module.RigModule):
 
         world_up = self._create_world_up()
 
-        # Aim 使用 Main Driven 的 Ball Pivot 作为真实旋转中心。
-        # maintainOffset=True 保留当前 Guide / Controller 初始姿态，避免构建时发生跳动。
+        # Aim Driven 的 Pivot 已经位于 Ball。
+        # maintainOffset=True 保留 Guide 创建出来的初始姿态，避免绑定生成瞬间跳动。
         self.aim_constraint_name = cmds.aimConstraint(
             aim_output,
             main_driven,
@@ -754,7 +815,7 @@ class EyeModule(rig_module.RigModule):
 
         self._create_pose_nodes()
 
-        # Main Output 只把最终 Orientation 传给 Pose Driver，不传位移。
+        # Main Output 只传 Orientation 到 Pose Driver。
         self.pose_constraint_name = cmds.orientConstraint(
             main_output,
             self.pose_driver_name,
@@ -763,7 +824,7 @@ class EyeModule(rig_module.RigModule):
             name=self.pose_constraint_name
         )[0]
 
-        # Joint 最终同样只接收 Orientation。
+        # Eye Joint 最终只接收 Orientation，不接收 Translate。
         self.orient_constraint_name = cmds.orientConstraint(
             self.pose_driven_name,
             self.eye_jnt_name,
@@ -784,6 +845,18 @@ class EyeModule(rig_module.RigModule):
             "orient_constraint": self.orient_constraint_name,
         }
 
+    def build(self):
+        u"""
+        完整重建当前侧 Eye Rig。
+
+        先删除旧 Step 04 连接，再重新生成 Joint / Controller / Hierarchy / Connection，
+        避免旧约束影响 Guide Match 和 Controller 重建。
+        """
+
+        self.delete_connections()
+        super(EyeModule, self).build()
+        return self
+
 
 # =============================================================================
 # Maya 直接测试入口
@@ -801,7 +874,7 @@ def build(
     jnt_parent=None,
     ctrl_parent=None
 ):
-    u"""直接构建单侧正式 EyeModule，方便 Maya 中快速测试。"""
+    u"""完整构建单侧 Eye Rig。"""
 
     rig_object = EyeModule(
         side=side,
@@ -819,6 +892,23 @@ def build(
     return rig_object
 
 
+def connect(side="lf", jnt_parent=None, ctrl_parent=None):
+    u"""
+    只重建指定侧 Step 04 连接。
+
+    用于用户在 Step 02 / Step 03 修改 Controller、Joint 后重新生成最终驱动。
+    """
+
+    rig_object = EyeModule(
+        side=side,
+        jnt_parent=jnt_parent,
+        ctrl_parent=ctrl_parent
+    )
+
+    rig_object.connect_outputs()
+    return rig_object
+
+
 def build_both(
     ctrl_shape="shape_016",
     aim_ctrl_shape="shape_040",
@@ -829,7 +919,7 @@ def build_both(
     jnt_parent=None,
     ctrl_parent=None
 ):
-    u"""依次构建左右两侧正式 EyeModule。"""
+    u"""完整构建左右两侧 Eye Rig。"""
 
     result = {}
 
@@ -850,25 +940,17 @@ def build_both(
 
 
 def delete_connections(side="lf"):
-    u"""删除指定侧 Eye Step 04 连接层，保留 Joint / Controller。"""
+    u"""删除指定侧 Step 04 连接，保留 Joint / Controller。"""
 
     rig_object = EyeModule(
         side=side
     )
+
     rig_object.delete_connections()
 
 
 def validate(side="lf"):
-    u"""
-    检查 EyeModule 的关键结构。
-
-    重点验证：
-        Main Ctrl 是否位于 Iris。
-        Main Ctrl / Main Driven Pivot 是否位于 Ball。
-        Eye Joint 是否位于 Ball。
-        Joint Translate 是否没有输入连接。
-        Aim / Pose / Orient 三段连接是否存在。
-    """
+    u"""检查 Eye Rig 的位置、Pivot 和主要连接。"""
 
     if side not in SUPPORTED_SIDES:
         raise ValueError(
@@ -879,6 +961,7 @@ def validate(side="lf"):
         side,
         "ball"
     )
+
     iris_guide = face_guide_config.get_eye_locator(
         side,
         "iris"
@@ -909,6 +992,7 @@ def validate(side="lf"):
     connection_object = EyeModule(
         side=side
     )
+
     connection_names = connection_object._connection_names()
 
     required_nodes = [
@@ -928,18 +1012,23 @@ def validate(side="lf"):
     ball_position = EyeModule._world_position(
         ball_guide
     )
+
     iris_position = EyeModule._world_position(
         iris_guide
     )
+
     main_position = EyeModule._world_position(
         main_ctrl
     )
+
     joint_position = EyeModule._world_position(
         eye_joint
     )
+
     main_pivot = EyeModule._world_rotate_pivot(
         main_ctrl
     )
+
     driven_pivot = EyeModule._world_rotate_pivot(
         main_driven
     )
@@ -989,7 +1078,7 @@ def validate(side="lf"):
 
     print(u"\n========== EyeModule Validate : {} ==========".format(side))
 
-    for key_name in (
+    print_order = [
         "main_ctrl_at_iris",
         "main_ctrl_pivot_at_ball",
         "main_driven_pivot_at_ball",
@@ -997,8 +1086,10 @@ def validate(side="lf"):
         "aim_constraint_exists",
         "pose_constraint_exists",
         "orient_constraint_exists",
-        "joint_translate_has_input"
-    ):
+        "joint_translate_has_input",
+    ]
+
+    for key_name in print_order:
         print(u"{} : {}".format(
             key_name,
             result[key_name]
