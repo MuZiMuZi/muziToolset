@@ -100,7 +100,7 @@ class RigLibraryService(object):
     def add_module(self, kind):
         u"""
 
-                添加模块配置；耳朵自动选择空闲侧，通用 FK 自动分配可读名称。
+                添加模块配置；左右模块自动选择空闲侧，通用 FK 自动分配可读名称。
 
                 Args:
                     kind (object):
@@ -116,7 +116,7 @@ class RigLibraryService(object):
         used = set()
         for item in document["modules"]:
             used.add((item["side"], item["name"]))
-        if kind == "ear" and ("lf", "ear") in used:
+        if kind in ("ear", "eye") and ("lf", kind) in used:
             record = catalog.new_module(kind, "rt")
         if kind == "fk_chain":
             index = 1
@@ -447,6 +447,15 @@ class RigLibraryService(object):
             for node in nodes:
                 if node not in constraints:
                     constraints.append(node)
+        for group_name in outputs["groups"]:
+            if not group_name.startswith("driven_"):
+                continue
+            nodes = self.cmds.listConnections(
+                group_name, source=True, destination=False, type="aimConstraint"
+            ) or []
+            for node in nodes:
+                if node not in constraints:
+                    constraints.append(node)
         if constraints:
             self.cmds.delete(constraints)
         existing = []
@@ -552,12 +561,18 @@ class RigLibraryService(object):
         return errors
 
     def _make_builder(self, record):
-        u"""仅调度正式实现；具体 FK 绑定算法仍由原 Module 负责。"""
+        u"""仅调度正式实现；具体绑定算法由对应 Module 负责。"""
         from ..face.ear_module import EarModule
+        from ..face.eye_module import EyeModule
         from ..face.tongue_module import TongueModule
         from ..components.fk_chain import FKChain
 
-        builders = {"ear": EarModule, "tongue": TongueModule, "fk_chain": FKChain}
+        builders = {
+            "ear": EarModule,
+            "eye": EyeModule,
+            "tongue": TongueModule,
+            "fk_chain": FKChain,
+        }
         builder = builders[record["kind"]](
             module=record["name"], side=record["side"], guide=catalog.guide_names(record),
             jnt_parent=self.joint_root, ctrl_parent=self.control_root,
@@ -661,6 +676,8 @@ class RigLibraryService(object):
                 if record["ctrl_color"] != previous["ctrl_color"]:
                     ctrl.set_ctrl_color(record["ctrl_color"])
                 if record["ctrl_axis"] != previous["ctrl_axis"]:
+                    if record["kind"] == "eye" and "_eye_aim_" in name:
+                        continue
                     ctrl.set_ctrl_axis(record["ctrl_axis"])
         for name in outputs["joints"]:
             Jnt(name).set_radius(record["jnt_radius"])
