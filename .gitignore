@@ -53,3 +53,6 @@ log/
 
 # Git local backup
 .git_backup/
+
+# MkDocs local build output (GitHub Pages is built by CI)
+/site/
