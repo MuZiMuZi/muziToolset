@@ -10,6 +10,8 @@ import uuid
 modules = (
     {"key": "ear", "title": u"Ear / 耳朵", "code": "EAR", "color": "#167c89",
      "description": u"三段耳朵 FK 链，支持左右侧。", "count": 3, "side": "lf"},
+    {"key": "eye", "title": u"Eye / 眼球", "code": "EYE", "color": "#3f6fb5",
+     "description": u"眼球 Main + Aim 目光控制，支持左右侧。", "count": 3, "side": "lf"},
     {"key": "tongue", "title": u"Tongue / 舌头", "code": "TNG", "color": "#ad5077",
      "description": u"五段舌头 FK 链，沿用现有面部 Guide。", "count": 5, "side": "md"},
     {"key": "fk_chain", "title": u"FK Chain / 通用链", "code": "FK", "color": "#4677af",
@@ -26,6 +28,9 @@ templates = (
     {"key": "tongue", "title": u"Tongue / 舌头", "code": "03",
      "description": u"中央舌头 FK · 1 个模块 / 5 个关节",
      "modules": (("tongue", "md"),)},
+    {"key": "eye_pair", "title": u"Eye Pair / 左右眼球", "code": "04",
+     "description": u"左右眼球 Aim · 2 个模块 / 2 个关节",
+     "modules": (("eye", "lf"), ("eye", "rt"))},
 )
 
 axes = ("X+", "X-", "Y+", "Y-", "Z+", "Z-")
@@ -33,247 +38,454 @@ side_colors = {"lf": 6, "rt": 13, "md": 17}
 
 
 def get_module(key):
-    u"""
+    u"""取得可用模块的登记信息；未实现模块不会隐式退回通用 FK。"""
 
-        取得可用模块的登记信息；未实现模块不会隐式退回通用 FK。
-
-        Args:
-            key (object):
-                当前方法执行 Maya / Rig 操作时使用的 `key` 数据。
-
-        Returns:
-            object:
-                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
-        Raises:
-            ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
-
-    """
     for entry in modules:
         if entry["key"] == key:
             return entry
-    raise ValueError(u"绑定库尚未接入模块：{}".format(key))
+
+    raise ValueError(
+        u"绑定库尚未接入模块：{}".format(key)
+    )
 
 
 def new_document():
-    u"""
+    u"""创建空配置；打开窗口本身不会添加示例场景数据。"""
 
-        创建空配置；打开窗口本身不会添加示例场景数据。
-
-        Returns:
-            dict:
-                包含本次构建、查询或处理结果的结构化字典。
-
-    """
-    return {"version": 1, "modules": []}
+    return {
+        "version": 1,
+        "modules": []
+    }
 
 
 def new_module(key, side=None, name=None):
-    u"""
+    u"""根据正式模块默认值创建可序列化配置。"""
 
-        根据正式模块默认值创建可序列化配置。
-
-        Args:
-            key (object):
-                当前方法执行 Maya / Rig 操作时使用的 `key` 数据。
-            side (str):
-                方向标记，常用值为 lf、rt 或 md。
-            name (str):
-                创建或查询时使用的节点名称。
-
-        Returns:
-            dict:
-                包含本次构建、查询或处理结果的结构化字典。
-
-    """
     entry = get_module(key)
     side = side or entry["side"]
+
     return {
-        "id": uuid.uuid4().hex, "kind": key,
+        "id": uuid.uuid4().hex,
+        "kind": key,
         "name": name or ("chain" if key == "fk_chain" else key),
-        "side": side, "enabled": True, "guides": [],
-        "ctrl_size": 1.0, "ctrl_color": side_colors[side], "ctrl_axis": "X+",
-        "jnt_radius": 1.0, "show_axis": False, "show_joints": True,
-        "show_controls": True, "built": False, "connected": False,
+        "side": side,
+        "enabled": True,
+        "guides": [],
+        "ctrl_size": 1.0,
+        "ctrl_color": side_colors[side],
+        "ctrl_axis": "X+",
+        "jnt_radius": 1.0,
+        "show_axis": False,
+        "show_joints": True,
+        "show_controls": True,
+        "built": False,
+        "connected": False,
     }
 
 
 def guide_names(record):
     u"""
+    返回模块实际使用的 Guide 名称。
 
-        优先使用明确指定的有序 Guide；耳朵和舌头可按模板名称读取。
-
-        Args:
-            record (object):
-                当前方法执行 Maya / Rig 操作时使用的 `record` 数据。
-
-        Returns:
-            object | list:
-                按当前 API 约定顺序返回的结果列表。
-
+    Eye 使用固定语义：
+        ball / iris / aim
+    不能把它们错误地当成 bind_001 / bind_002 / bind_003。
     """
+
     if record["guides"]:
-        return list(record["guides"])
+        return list(
+            record["guides"]
+        )
+
     if record["kind"] == "fk_chain":
         return []
+
+    if record["kind"] == "eye":
+        return [
+            "loc_{}_eye_ball_001".format(
+                record["side"]
+            ),
+            "loc_{}_eye_iris_001".format(
+                record["side"]
+            ),
+            "loc_{}_eye_aim_001".format(
+                record["side"]
+            ),
+        ]
+
     result = []
-    count = get_module(record["kind"])["count"]
+    count = get_module(
+        record["kind"]
+    )["count"]
+
     for index in range(1, count + 1):
-        result.append("loc_{}_{}_bind_{:03d}".format(record["side"], record["kind"], index))
+        result.append(
+            "loc_{}_{}_bind_{:03d}".format(
+                record["side"],
+                record["kind"],
+                index
+            )
+        )
+
     return result
 
 
+def _append_ctrl_outputs(result, side, part, function, index=1):
+    u"""向 output_names() 结果追加一套标准 Controller 层级名称。"""
+
+    suffix = "{}_{}_{}_{:03d}".format(
+        side,
+        part,
+        function,
+        index
+    )
+
+    result["controls"].append(
+        "ctrl_" + suffix
+    )
+    result["subcontrols"].append(
+        "subctrl_" + suffix
+    )
+    result["outputs"].append(
+        "output_" + suffix
+    )
+
+    for prefix in (
+        "zero",
+        "driven",
+        "space",
+        "connect",
+        "offset"
+    ):
+        result["groups"].append(
+            prefix + "_" + suffix
+        )
+
+
 def output_names(record):
-    u"""
+    u"""返回后端实际使用的名称，用于构建前冲突检查与场景树查询。"""
 
-        返回后端实际使用的名称，用于构建前冲突检查与场景树查询。
+    result = {
+        "joints": [],
+        "controls": [],
+        "subcontrols": [],
+        "groups": [],
+        "outputs": []
+    }
 
-        Args:
-            record (object):
-                当前方法执行 Maya / Rig 操作时使用的 `record` 数据。
+    for function in (
+        "jnt",
+        "ctrl"
+    ):
+        result["groups"].append(
+            "grp_{}_{}_{}_001".format(
+                record["side"],
+                record["name"],
+                function
+            )
+        )
 
-        Returns:
-            object:
-                当前 API 完成处理后返回的结果。
+    if record["kind"] == "eye":
+        result["joints"].append(
+            "jnt_{}_eye_bind_001".format(
+                record["side"]
+            )
+        )
 
-    """
-    result = {"joints": [], "controls": [], "subcontrols": [], "groups": [], "outputs": []}
-    for function in ("jnt", "ctrl"):
-        result["groups"].append("grp_{}_{}_{}_001".format(record["side"], record["name"], function))
-    for index in range(1, len(guide_names(record)) + 1):
-        suffix = "{}_{}_fk_{:03d}".format(record["side"], record["name"], index)
-        result["joints"].append("jnt_{}_{}_bind_{:03d}".format(record["side"], record["name"], index))
-        result["controls"].append("ctrl_" + suffix)
-        result["subcontrols"].append("subctrl_" + suffix)
-        result["outputs"].append("output_" + suffix)
-        for prefix in ("zero", "driven", "space", "connect", "offset"):
-            result["groups"].append(prefix + "_" + suffix)
+        _append_ctrl_outputs(
+            result,
+            record["side"],
+            record["name"],
+            "main"
+        )
+        _append_ctrl_outputs(
+            result,
+            record["side"],
+            record["name"],
+            "aim"
+        )
+
+        return result
+
+    for index in range(
+        1,
+        len(guide_names(record)) + 1
+    ):
+        suffix = "{}_{}_fk_{:03d}".format(
+            record["side"],
+            record["name"],
+            index
+        )
+
+        result["joints"].append(
+            "jnt_{}_{}_bind_{:03d}".format(
+                record["side"],
+                record["name"],
+                index
+            )
+        )
+        result["controls"].append(
+            "ctrl_" + suffix
+        )
+        result["subcontrols"].append(
+            "subctrl_" + suffix
+        )
+        result["outputs"].append(
+            "output_" + suffix
+        )
+
+        for prefix in (
+            "zero",
+            "driven",
+            "space",
+            "connect",
+            "offset"
+        ):
+            result["groups"].append(
+                prefix + "_" + suffix
+            )
+
     return result
 
 
 def validate_document(document):
-    u"""
+    u"""严格校验配置后返回独立副本，防止部分参数写入或覆盖同名模块。"""
 
-        严格校验配置后返回独立副本，防止部分参数写入或覆盖同名模块。
-
-        Args:
-            document (object):
-                当前方法执行 Maya / Rig 操作时使用的 `document` 数据。
-
-        Returns:
-            object:
-                当前 API 完成处理后返回的结果。
-
-        Raises:
-            ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
-
-    """
     if not isinstance(document, dict) or document.get("version") != 1:
-        raise ValueError(u"无法识别绑定库配置版本。")
-    document = copy.deepcopy(document)
-    records = document.get("modules")
+        raise ValueError(
+            u"无法识别绑定库配置版本。"
+        )
+
+    document = copy.deepcopy(
+        document
+    )
+    records = document.get(
+        "modules"
+    )
+
     if not isinstance(records, list) or len(records) > 100:
-        raise ValueError(u"配置必须包含模块列表，最多 100 个模块。")
+        raise ValueError(
+            u"配置必须包含模块列表，最多 100 个模块。"
+        )
+
     ids = set()
     identities = set()
+
     for record in records:
         if not isinstance(record, dict):
-            raise ValueError(u"模块配置必须为字典。")
-        required = set(new_module("ear"))
-        legacy_required = required - {"connected"}
+            raise ValueError(
+                u"模块配置必须为字典。"
+            )
+
+        required = set(
+            new_module("ear")
+        )
+        legacy_required = required - {
+            "connected"
+        }
+
         if set(record) == legacy_required:
-            # 旧版 built 代表完整构建，迁移后应同时视为已经建立连接。
             record["connected"] = record["built"]
+
         if set(record) != required:
-            raise ValueError(u"模块配置字段缺失或包含不支持的字段。")
-        get_module(record["kind"])
+            raise ValueError(
+                u"模块配置字段缺失或包含不支持的字段。"
+            )
+
+        get_module(
+            record["kind"]
+        )
+
         name = record["name"]
-        if not isinstance(name, str) or not re.fullmatch(r"[a-z][a-z0-9_]{0,39}", name):
-            raise ValueError(u"模块名使用小写英文、数字和下划线，并以字母开头。")
+
+        if not isinstance(name, str) or not re.fullmatch(
+            r"[a-z][a-z0-9_]{0,39}",
+            name
+        ):
+            raise ValueError(
+                u"模块名使用小写英文、数字和下划线，并以字母开头。"
+            )
+
         if record["kind"] != "fk_chain" and name != record["kind"]:
-            raise ValueError(u"耳朵和舌头沿用后端固定名称；自定义名称请使用 FK Chain。")
+            raise ValueError(
+                u"正式模块沿用后端固定名称；自定义名称请使用 FK Chain。"
+            )
+
         side = record["side"]
+
         if side not in side_colors:
-            raise ValueError(u"Side 只支持 lf / rt / md。")
-        if record["kind"] == "ear" and side not in ("lf", "rt"):
-            raise ValueError(u"耳朵请选择左侧或右侧。")
+            raise ValueError(
+                u"Side 只支持 lf / rt / md。"
+            )
+
+        if record["kind"] in (
+            "ear",
+            "eye"
+        ):
+            if side not in (
+                "lf",
+                "rt"
+            ):
+                raise ValueError(
+                    u"{} 请选择左侧或右侧。".format(
+                        name
+                    )
+                )
+
         if record["kind"] == "tongue" and side != "md":
-            raise ValueError(u"舌头模板使用中央 md。")
-        identity = (side, name)
+            raise ValueError(
+                u"舌头模板使用中央 md。"
+            )
+
+        identity = (
+            side,
+            name
+        )
+
         if identity in identities:
-            raise ValueError(u"{} / {} 已在绑定结构中。".format(name, side))
-        identities.add(identity)
+            raise ValueError(
+                u"{} / {} 已在绑定结构中。".format(
+                    name,
+                    side
+                )
+            )
+
+        identities.add(
+            identity
+        )
+
         identity_id = record["id"]
-        if not isinstance(identity_id, str) or not re.fullmatch(r"[0-9a-f]{32}", identity_id):
-            raise ValueError(u"无效的模块标识。")
+
+        if not isinstance(identity_id, str) or not re.fullmatch(
+            r"[0-9a-f]{32}",
+            identity_id
+        ):
+            raise ValueError(
+                u"无效的模块标识。"
+            )
+
         if identity_id in ids:
-            raise ValueError(u"模块标识重复。")
-        ids.add(identity_id)
-        for key in ("enabled", "built", "connected", "show_axis", "show_joints", "show_controls"):
+            raise ValueError(
+                u"模块标识重复。"
+            )
+
+        ids.add(
+            identity_id
+        )
+
+        for key in (
+            "enabled",
+            "built",
+            "connected",
+            "show_axis",
+            "show_joints",
+            "show_controls"
+        ):
             if type(record[key]) is not bool:
-                raise ValueError(u"{} 必须为布尔值。".format(key))
+                raise ValueError(
+                    u"{} 必须为布尔值。".format(
+                        key
+                    )
+                )
+
         if record["connected"] and not record["built"]:
-            raise ValueError(u"模块尚未生成，不能标记为已经连接。")
-        for key in ("ctrl_size", "jnt_radius"):
+            raise ValueError(
+                u"模块尚未生成，不能标记为已经连接。"
+            )
+
+        for key in (
+            "ctrl_size",
+            "jnt_radius"
+        ):
             value = record[key]
+
             if type(value) not in (int, float) or not math.isfinite(value) or not 0.01 <= value <= 100.0:
-                raise ValueError(u"{} 必须在 0.01 到 100 之间。".format(key))
+                raise ValueError(
+                    u"{} 必须在 0.01 到 100 之间。".format(
+                        key
+                    )
+                )
+
         if type(record["ctrl_color"]) is not int or not 0 <= record["ctrl_color"] <= 31:
-            raise ValueError(u"颜色索引必须在 0 到 31 之间。")
+            raise ValueError(
+                u"颜色索引必须在 0 到 31 之间。"
+            )
+
         if record["ctrl_axis"] not in axes:
-            raise ValueError(u"不支持的控制器轴向。")
+            raise ValueError(
+                u"不支持的控制器轴向。"
+            )
+
         guides = record["guides"]
+
         if not isinstance(guides, list) or len(guides) > 99:
-            raise ValueError(u"Guide 列表最多支持 99 个节点。")
+            raise ValueError(
+                u"Guide 列表最多支持 99 个节点。"
+            )
+
         for guide in guides:
             if not isinstance(guide, str) or not guide or len(guide) > 1024:
-                raise ValueError(u"Guide 必须为有效的 Maya 节点路径。")
+                raise ValueError(
+                    u"Guide 必须为有效的 Maya 节点路径。"
+                )
+
         if len(set(guides)) != len(guides):
-            raise ValueError(u"Guide 列表中有重复节点。")
+            raise ValueError(
+                u"Guide 列表中有重复节点。"
+            )
+
         if guides and record["kind"] != "fk_chain":
             if len(guides) != get_module(record["kind"])["count"]:
-                raise ValueError(u"{} 的 Guide 数量不符合模块要求。".format(name))
+                raise ValueError(
+                    u"{} 的 Guide 数量不符合模块要求。".format(
+                        name
+                    )
+                )
+
         if record["built"] and not guide_names(record):
-            raise ValueError(u"已构建模块必须具有 Guide 数据。")
+            raise ValueError(
+                u"已构建模块必须具有 Guide 数据。"
+            )
+
     return document
 
 
 def add_template(document, key):
-    u"""
+    u"""以原子方式添加模板；重复模块保留用户已经调整的设置。"""
 
-        以原子方式添加模板；重复模块保留用户已经调整的设置。
-
-        Args:
-            document (object):
-                当前方法执行 Maya / Rig 操作时使用的 `document` 数据。
-            key (object):
-                当前方法执行 Maya / Rig 操作时使用的 `key` 数据。
-
-        Returns:
-            object:
-                当前 API 完成处理后返回的结果。
-
-        Raises:
-            ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
-
-    """
-    result = validate_document(document)
+    result = validate_document(
+        document
+    )
     template = None
+
     for entry in templates:
         if entry["key"] == key:
             template = entry
             break
+
     if template is None:
-        raise ValueError(u"未知模板：{}".format(key))
+        raise ValueError(
+            u"未知模板：{}".format(
+                key
+            )
+        )
+
     for kind, side in template["modules"]:
         exists = False
+
         for record in result["modules"]:
             if record["name"] == kind and record["side"] == side:
                 exists = True
                 break
+
         if not exists:
-            result["modules"].append(new_module(kind, side))
-    return validate_document(result)
+            result["modules"].append(
+                new_module(
+                    kind,
+                    side
+                )
+            )
+
+    return validate_document(
+        result
+    )
