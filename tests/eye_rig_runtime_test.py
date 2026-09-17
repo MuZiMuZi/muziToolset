@@ -18,7 +18,13 @@ Eye Rig Maya Runtime Test
     delete()
         -> 只删除指定侧 Eye Rig
 
-这样可以先把 Eye 的真实创建流程跑通，再继续测试整个 FaceModule。
+当前 Eye Joint 标准：
+    Ball Guide -> jnt_<side>_eye_ball_001
+    Iris Guide -> jnt_<side>_eye_iris_001
+
+    Joint 层级：
+        jnt_<side>_eye_ball_001
+            jnt_<side>_eye_iris_001
 """
 
 import maya.cmds as cmds
@@ -53,9 +59,12 @@ def build(side="lf"):
     u"""
     只测试指定侧 Eye Rig 的创建阶段，不建立 Constraint。
 
-    face_guide.ma 必须先导入场景。
-    测试会创建 Face 总组，然后只执行当前侧 EyeModule.build_rig()，
-    不会同时创建 Ear / Tongue 或另一侧 Eye，方便我们单独排查眼球绑定。
+    本阶段主要检查：
+        1. Ball / Iris 两根 Joint 是否创建。
+        2. Ball Joint 是否对齐 Ball Guide。
+        3. Iris Joint 是否对齐 Iris Guide。
+        4. Iris Joint 是否正确成为 Ball Joint 的子关节。
+        5. Main Controller 是否和 Ball Joint 共用同一个旋转中心。
     """
 
     face = FaceModule()
@@ -69,7 +78,8 @@ def build(side="lf"):
     eye.build_rig()
 
     expected_nodes = [
-        "jnt_{}_eye_bind_001".format(side),
+        "jnt_{}_eye_ball_001".format(side),
+        "jnt_{}_eye_iris_001".format(side),
         "ctrl_{}_eye_main_001".format(side),
         "driven_{}_eye_main_001".format(side),
         "output_{}_eye_main_001".format(side),
@@ -85,10 +95,12 @@ def build(side="lf"):
         if not cmds.objExists(node_name):
             raise RuntimeError(u"Build 后缺少节点：{}".format(node_name))
 
-    # Main Controller 和 Eye Bind Joint 必须拥有同一个眼球旋转中心。
-    # 两者都应该吸附 Ball Guide，如果这里位置不同，Aim 旋转时就会产生偏移。
-    eye_jnt_position = cmds.xform(
-        eye.eye_jnt_name,
+    # -------------------------------------------------------------------------
+    # 检查 Ball Joint 和 Main Controller 的旋转中心。
+    # 两者都来自 Ball Guide，所以世界位置必须一致。
+    # -------------------------------------------------------------------------
+    ball_jnt_position = cmds.xform(
+        eye.ball_jnt_name,
         query=True,
         worldSpace=True,
         translation=True
@@ -103,13 +115,73 @@ def build(side="lf"):
 
     for index in range(3):
         position_difference = abs(
-            eye_jnt_position[index] - main_ctrl_position[index]
+            ball_jnt_position[index] - main_ctrl_position[index]
         )
 
         if position_difference > 0.0001:
             raise RuntimeError(
-                u"Main Controller 没有和 Eye Bind Joint 对齐：{}".format(side)
+                u"Main Controller 没有和 Ball Joint 对齐：{}".format(side)
             )
+
+    # -------------------------------------------------------------------------
+    # 检查 Ball / Iris Joint 是否仍然准确位于对应 Guide。
+    # 这样可以确认建立 Joint Parent 后没有改变 Iris 的世界位置。
+    # -------------------------------------------------------------------------
+    guide_pairs = [
+        (eye.ball_jnt_name, eye.guide_list[0]),
+        (eye.iris_jnt_name, eye.guide_list[1]),
+    ]
+
+    for joint_name, guide_name in guide_pairs:
+        joint_position = cmds.xform(
+            joint_name,
+            query=True,
+            worldSpace=True,
+            translation=True
+        )
+
+        guide_position = cmds.xform(
+            guide_name,
+            query=True,
+            worldSpace=True,
+            translation=True
+        )
+
+        for index in range(3):
+            position_difference = abs(
+                joint_position[index] - guide_position[index]
+            )
+
+            if position_difference > 0.0001:
+                raise RuntimeError(
+                    u"Joint 没有和 Guide 对齐：{} -> {}".format(
+                        joint_name,
+                        guide_name
+                    )
+                )
+
+    # -------------------------------------------------------------------------
+    # Iris Joint 必须位于 Ball Joint 下方。
+    # 后续 Ball Joint 旋转时，Iris Joint 才会自然继承整个眼球的旋转。
+    # -------------------------------------------------------------------------
+    iris_parent = cmds.listRelatives(
+        eye.iris_jnt_name,
+        parent=True,
+        type="joint"
+    ) or []
+
+    if not iris_parent:
+        raise RuntimeError(
+            u"Iris Joint 没有父 Joint：{}".format(eye.iris_jnt_name)
+        )
+
+    if iris_parent[0] != eye.ball_jnt_name:
+        raise RuntimeError(
+            u"Iris Joint 父级错误：{} -> {}".format(
+                eye.iris_jnt_name,
+                iris_parent[0]
+            )
+        )
 
     print(u"[Eye Test] build_rig PASS : {}".format(side))
 
@@ -117,7 +189,12 @@ def build(side="lf"):
 
 
 def connect(side="lf"):
-    u"""测试 Aim -> Main -> Eye Joint 的绑定连接。"""
+    u"""
+    测试 Aim -> Main -> Ball Joint 的绑定连接。
+
+    Main Output 只约束 Ball Joint。
+    Iris Joint 通过 Joint Hierarchy 继承 Ball Joint 的旋转，不创建额外 Constraint。
+    """
 
     face = FaceModule()
     eye = get_eye(face, side)
