@@ -44,6 +44,7 @@ additional_navigation_lines = {
         "    * [Face Workflow State](architecture/face-workflow-state.md)",
     ],
     "* 开发指南": [
+        "    * [源码文件职责边界](development/source-file-boundaries.md)",
         "    * [UI 设计](development/ui-design.md)",
         "    * [Runtime Step 注释审计](development/runtime-step-comment-audit.md)",
     ],

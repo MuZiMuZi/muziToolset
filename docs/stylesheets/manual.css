@@ -2,31 +2,31 @@
 MuziTools Documentation
 =======================
 
-Arc-inspired documentation skin.
+iPhone / iOS-inspired documentation skin.
 
 设计目标：
     1. 保持 MkDocs Material 的可访问性和响应式行为；
-    2. 参考 Arc 的 clean / calm / sidebar-first 信息组织；
-    3. 使用柔和背景、浮层内容、低对比边界和清晰 active state；
-    4. 不复制 Arc 的品牌 Logo、图标或专有视觉资产。
+    2. 参考 iOS 的 grouped surface、translucent navigation 与 large title；
+    3. 使用系统字体、圆角卡片、低对比边界和清晰 active state；
+    4. 不复制 Apple Logo、产品图片或专有视觉资产。
 */
 
 :root {
     --muzi-content-width: 1060px;
-    --muzi-card-radius: 18px;
-    --muzi-small-radius: 10px;
-    --muzi-accent: #6d68d9;
-    --muzi-accent-soft: #eceafa;
-    --muzi-bg: #f2f1f6;
-    --muzi-surface: #fbfafd;
-    --muzi-surface-alt: #f6f5f9;
-    --muzi-border: rgba(73, 67, 83, 0.13);
-    --muzi-soft-shadow: 0 1px 2px rgba(45, 40, 52, 0.04), 0 12px 34px rgba(45, 40, 52, 0.07);
+    --muzi-card-radius: 22px;
+    --muzi-small-radius: 12px;
+    --muzi-accent: #007aff;
+    --muzi-accent-soft: #e8f2ff;
+    --muzi-bg: #f2f2f7;
+    --muzi-surface: rgba(255, 255, 255, 0.88);
+    --muzi-surface-alt: #f9f9fb;
+    --muzi-border: rgba(60, 60, 67, 0.16);
+    --muzi-soft-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 14px 38px rgba(0, 0, 0, 0.08);
 
-    --md-primary-fg-color: #6d68d9;
-    --md-primary-fg-color--light: #837ee5;
-    --md-primary-fg-color--dark: #5652b8;
-    --md-accent-fg-color: #6d68d9;
+    --md-primary-fg-color: #007aff;
+    --md-primary-fg-color--light: #409cff;
+    --md-primary-fg-color--dark: #0062cc;
+    --md-accent-fg-color: #007aff;
 }
 
 [data-md-color-scheme="default"] {
@@ -59,8 +59,9 @@ select {
 
 .md-typeset h1 {
     margin-bottom: 1.2rem;
-    font-weight: 680;
-    letter-spacing: -0.03em;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 720;
+    letter-spacing: -0.045em;
 }
 
 .md-typeset h2 {
@@ -91,19 +92,19 @@ select {
 }
 
 [data-md-color-scheme="default"] .md-header {
-    background: rgba(242, 241, 246, 0.88);
-    color: #29262f;
+    background: rgba(242, 242, 247, 0.78);
+    color: #1c1c1e;
 }
 
 [data-md-color-scheme="default"] .md-tabs {
-    background: rgba(242, 241, 246, 0.92);
-    color: #5b5662;
+    background: rgba(242, 242, 247, 0.82);
+    color: #3a3a3c;
     border-bottom: 1px solid var(--muzi-border);
 }
 
 .md-nav__link {
     line-height: 1.42;
-    border-radius: 8px;
+    border-radius: 11px;
 }
 
 .md-nav__link:hover {
@@ -134,7 +135,8 @@ select {
         padding: 2rem 2.2rem 4rem;
         background: var(--muzi-surface);
         border: 1px solid var(--muzi-border);
-        border-radius: 22px;
+        border-radius: 28px;
+        box-shadow: var(--muzi-soft-shadow);
     }
 }
 
@@ -157,7 +159,7 @@ select {
 .md-typeset .grid.cards > ul > li:hover,
 .md-typeset .grid.cards > ol > li:hover {
     transform: translateY(-2px);
-    border-color: rgba(109, 104, 217, 0.28);
+    border-color: rgba(0, 122, 255, 0.30);
     box-shadow: var(--muzi-soft-shadow);
 }
 
@@ -166,8 +168,8 @@ select {
  * -------------------------------------------------------------------------- */
 
 .md-typeset .md-button {
-    border-radius: 10px;
-    font-weight: 600;
+    border-radius: 999px;
+    font-weight: 650;
 }
 
 .md-typeset .md-button--primary {
@@ -186,12 +188,12 @@ select {
 
 .md-typeset .highlight,
 .md-typeset pre {
-    border-radius: 12px;
+    border-radius: 16px;
 }
 
 .md-typeset .admonition,
 .md-typeset details {
-    border-radius: 12px;
+    border-radius: 16px;
     box-shadow: none;
 }
 
@@ -202,8 +204,58 @@ select {
 .md-typeset table:not([class]) {
     display: table;
     width: 100%;
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+ * iOS grouped surfaces / translucent chrome
+ * -------------------------------------------------------------------------- */
+
+.md-header,
+.md-tabs {
+    -webkit-backdrop-filter: saturate(180%) blur(22px);
+    backdrop-filter: saturate(180%) blur(22px);
+}
+
+.md-search__form {
+    border-radius: 13px;
+    background: rgba(118, 118, 128, 0.12);
+}
+
+.md-search__input::placeholder {
+    color: rgba(60, 60, 67, 0.60);
+}
+
+.md-typeset hr {
+    border-bottom-color: var(--muzi-border);
+}
+
+.md-typeset blockquote {
+    padding: 0.8rem 1rem;
+    color: #3a3a3c;
+    background: var(--muzi-surface-alt);
+    border-left: 4px solid var(--muzi-accent);
+    border-radius: 0 16px 16px 0;
+}
+
+[data-md-color-scheme="slate"] {
+    --muzi-bg: #000000;
+    --muzi-surface: rgba(28, 28, 30, 0.90);
+    --muzi-surface-alt: #1c1c1e;
+    --muzi-border: rgba(84, 84, 88, 0.52);
+    --muzi-accent: #0a84ff;
+    --muzi-accent-soft: rgba(10, 132, 255, 0.18);
+    --muzi-soft-shadow: 0 16px 42px rgba(0, 0, 0, 0.34);
+}
+
+[data-md-color-scheme="slate"] .md-header,
+[data-md-color-scheme="slate"] .md-tabs {
+    background: rgba(0, 0, 0, 0.76);
+}
+
+[data-md-color-scheme="slate"] .md-typeset blockquote {
+    color: #ebebf5;
 }
 
 .md-typeset table:not([class]) th {

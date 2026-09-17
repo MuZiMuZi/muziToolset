@@ -29,6 +29,7 @@
         * [Package](reference/app/package.md)
         * [`main.py`](reference/app/main.md)
         * [`toolbox.py`](reference/app/toolbox.md)
+        * [`toolbox_catalog.py`](reference/app/toolbox_catalog.md)
         * [`window_manager.py`](reference/app/window_manager.md)
     * [Core](reference/core/index.md)
         * [Package](reference/core/package.md)
@@ -137,6 +138,7 @@
             * [`color_index_slider.py`](reference/ui/widgets/color_index_slider.md)
             * [`object_picker.py`](reference/ui/widgets/object_picker.md)
 * 开发指南
+    * [源码文件职责边界](development/source-file-boundaries.md)
     * [UI 设计](development/ui-design.md)
     * [Runtime Step 注释审计](development/runtime-step-comment-audit.md)
     * [文档维护](development/documentation.md)
