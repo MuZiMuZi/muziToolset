@@ -92,6 +92,12 @@ class EyePairModule(object):
         self.master_aim_zero_name = self.master_aim_ctrl_name.replace("ctrl_", "zero_", 1)
         self.master_aim_output_name = self.master_aim_ctrl_name.replace("ctrl_", "output_", 1)
 
+        # 左右 Aim Driven 也是稳定节点名称。
+        # EyePairModule 需要直接把中间 Aim 的位移结果送到这两个 Driven Group，
+        # 所以初始化时就确定名称，连接阶段不再通过场景反查。
+        self.lf_aim_driven_name = self.lf_eye.aim_ctrl_name.replace("ctrl_", "driven_", 1)
+        self.rt_aim_driven_name = self.rt_eye.aim_ctrl_name.replace("ctrl_", "driven_", 1)
+
         # 中间 Aim 只驱动左右 Aim Controller 的 Driven Group。
         # Point Constraint 只传递位置，避免总控旋转对左右 Aim 产生不需要的旋转影响。
         self.lf_aim_point_constraint_name = name_utils.Name(type="pointConstraint", side="lf", part="eye", function="aim", index=1).name
@@ -210,8 +216,8 @@ class EyePairModule(object):
 
         required_nodes = [
             self.master_aim_output_name,
-            self.lf_eye.aim_driven_name,
-            self.rt_eye.aim_driven_name,
+            self.lf_aim_driven_name,
+            self.rt_aim_driven_name,
         ]
 
         for node_name in required_nodes:
@@ -221,7 +227,7 @@ class EyePairModule(object):
         if not cmds.objExists(self.lf_aim_point_constraint_name):
             cmds.pointConstraint(
                 self.master_aim_output_name,
-                self.lf_eye.aim_driven_name,
+                self.lf_aim_driven_name,
                 maintainOffset=True,
                 name=self.lf_aim_point_constraint_name
             )
@@ -229,7 +235,7 @@ class EyePairModule(object):
         if not cmds.objExists(self.rt_aim_point_constraint_name):
             cmds.pointConstraint(
                 self.master_aim_output_name,
-                self.rt_eye.aim_driven_name,
+                self.rt_aim_driven_name,
                 maintainOffset=True,
                 name=self.rt_aim_point_constraint_name
             )
