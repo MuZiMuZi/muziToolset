@@ -580,7 +580,7 @@ set_animation_set(self, *args, **kwargs)
 **返回值**
 
 object | None:
-        完成设置或应用后的目标对象 / 状态结果。
+    完成设置或应用后的目标对象 / 状态结果。
 
 **异常**
 
@@ -695,7 +695,7 @@ get_shape_data_dir()
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -808,7 +808,7 @@ get_shape(self)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -845,7 +845,7 @@ get_transform(self)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -882,7 +882,7 @@ get_color(self)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -919,7 +919,7 @@ get_radius(self)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -1210,7 +1210,7 @@ get_arg(args)
 **返回值**
 
 None | object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -1251,7 +1251,7 @@ get_curve_shape_points(shape)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -1290,7 +1290,7 @@ get_soft_radius()
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -1330,7 +1330,7 @@ get_length(point1, point2)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -1370,7 +1370,7 @@ selected(cls)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -1562,7 +1562,7 @@ create_ribbon(name, control_parent, jnt_number=5)
 **返回值**
 
 tuple:
-        按当前 API 约定组织的结果元组。
+    按当前 API 约定组织的结果元组。
 
 **异常**
 

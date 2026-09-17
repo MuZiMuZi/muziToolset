@@ -116,7 +116,7 @@ input_dialog_text(title, label, size=(400, 200))
 **返回值**
 
 object | None:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -157,7 +157,7 @@ input_dialog_message(title, text='', informative=u'确认?', size=(400, 200))
 **返回值**
 
 bool:
-        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+    当前操作成功或目标状态满足要求时返回 True，否则返回 False。
 
 **异常**
 
@@ -408,7 +408,7 @@ get_maya_window()
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -443,7 +443,7 @@ load_ui(file_path)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -634,7 +634,7 @@ expandCollapseRect(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -993,7 +993,7 @@ read_qss_file(qss_file_name)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 

@@ -190,7 +190,7 @@ create_at_object(obj, name=None, parent=None, match_rotation=True, radius=None)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -231,7 +231,7 @@ create_child(obj, name=None, radius=None)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -273,7 +273,7 @@ create_from_component(component, name, parent=None, radius=None)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -315,7 +315,7 @@ create_from_selection(name_prefix='jnt_snap', parent_chain=False, radius=None)
 **返回值**
 
 object | list:
-        按当前 API 约定顺序返回的结果列表。
+    按当前 API 约定顺序返回的结果列表。
 
 **异常**
 
@@ -350,7 +350,7 @@ get_angle_z(self)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -385,7 +385,7 @@ get_parent(self)
 **返回值**
 
 object | None:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -422,7 +422,7 @@ get_children(self, all_descendents=False)
 **返回值**
 
 object | list:
-        按当前 API 约定顺序返回的结果列表。
+    按当前 API 约定顺序返回的结果列表。
 
 **异常**
 
@@ -459,7 +459,7 @@ set_axis_visibility(self, visible=True)
 **返回值**
 
 object:
-        完成设置或应用后的目标对象 / 状态结果。
+    完成设置或应用后的目标对象 / 状态结果。
 
 **异常**
 
@@ -494,7 +494,7 @@ show_axis(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -529,7 +529,7 @@ hide_axis(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -566,7 +566,7 @@ set_radius(self, radius)
 **返回值**
 
 object:
-        完成设置或应用后的目标对象 / 状态结果。
+    完成设置或应用后的目标对象 / 状态结果。
 
 **异常**
 
@@ -607,7 +607,7 @@ set_joints_axis_visibility(joints, visible=True, include_descendents=False)
 **返回值**
 
 object | list:
-        按当前 API 约定顺序返回的结果列表。
+    按当前 API 约定顺序返回的结果列表。
 
 **异常**
 
@@ -647,7 +647,7 @@ set_selected_axis_visibility(visible=True, include_descendents=False)
 **返回值**
 
 object | list:
-        按当前 API 约定顺序返回的结果列表。
+    按当前 API 约定顺序返回的结果列表。
 
 **异常**
 
@@ -684,7 +684,7 @@ set_all_axis_visibility(visible=True)
 **返回值**
 
 object:
-        完成设置或应用后的目标对象 / 状态结果。
+    完成设置或应用后的目标对象 / 状态结果。
 
 **异常**
 
@@ -721,7 +721,7 @@ set_all_radius(radius)
 **返回值**
 
 object:
-        完成设置或应用后的目标对象 / 状态结果。
+    完成设置或应用后的目标对象 / 状态结果。
 
 **异常**
 
@@ -761,7 +761,7 @@ orient(self, orient_joint='xyz', secondary_axis_orient='xup')
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -796,7 +796,7 @@ clear_orient(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -833,7 +833,7 @@ set_orient_keyable(self, keyable=True)
 **返回值**
 
 object:
-        完成设置或应用后的目标对象 / 状态结果。
+    完成设置或应用后的目标对象 / 状态结果。
 
 **异常**
 
@@ -868,7 +868,7 @@ show_orient(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -903,7 +903,7 @@ hide_orient(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -940,7 +940,7 @@ set_scale_compensate(self, enabled=True)
 **返回值**
 
 object:
-        完成设置或应用后的目标对象 / 状态结果。
+    完成设置或应用后的目标对象 / 状态结果。
 
 **异常**
 
@@ -980,7 +980,7 @@ tag(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -1021,7 +1021,7 @@ get_curve_shape(curve)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -1060,7 +1060,7 @@ get_curve_transform(curve)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -1099,7 +1099,7 @@ get_curve_cvs(curve)
 **返回值**
 
 object | list:
-        按当前 API 约定顺序返回的结果列表。
+    按当前 API 约定顺序返回的结果列表。
 
 **异常**
 
@@ -1138,7 +1138,7 @@ get_curve_cv_count(curve)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -1177,7 +1177,7 @@ get_curve_cv_positions(curve)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -1268,7 +1268,7 @@ validate_joint_list(joints)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -1307,7 +1307,7 @@ parent_joints_as_chain(joints)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -1344,7 +1344,7 @@ parent_selected_as_chain()
 **返回值**
 
 object | list:
-        按当前 API 约定顺序返回的结果列表。
+    按当前 API 约定顺序返回的结果列表。
 
 **异常**
 
@@ -1384,7 +1384,7 @@ create_chain(blueprint_joints, suffix, joint_parent=None, hide_blueprint=True)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -1426,7 +1426,7 @@ orient_chain(joints, orient_joint='xyz', secondary_axis_orient='xup')
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 

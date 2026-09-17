@@ -524,5 +524,5 @@ Side 会影响命名和输出结构，不能只改 JSON。需要在 Build 前确
 
 - [Face System Architecture](../architecture/face-system.md)
 - [Workflow State](../architecture/face-workflow-state.md)
-- [Rig Library API](../reference/systems/rig/index.md)
-- [Face API](../reference/systems/face/index.md)
+- [Rig Library API](../reference/systems/rig/package.md)
+- [Face API](../reference/systems/face/package.md)

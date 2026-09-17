@@ -181,7 +181,7 @@ resources/face/
 - [Face System Architecture](architecture/face-system.md)
 - [Face Workflow State](architecture/face-workflow-state.md)
 - [Face Guide](manual/face-guide.md)
-- [Face API](reference/systems/face/index.md)
+- [Face API](reference/systems/face/package.md)
 
 ## 常用开发入口
 

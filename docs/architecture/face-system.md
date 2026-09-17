@@ -549,5 +549,5 @@ Rig Library UI 只应该展示仓库中已经有正式构建入口的 Module。
 - [Face Workflow State](face-workflow-state.md)
 - [总体架构](index.md)
 - [Tools 与 Systems](tools-systems.md)
-- [Face API](../reference/systems/face/index.md)
-- [Rig Library API](../reference/systems/rig/index.md)
+- [Face API](../reference/systems/face/package.md)
+- [Rig Library API](../reference/systems/rig/package.md)

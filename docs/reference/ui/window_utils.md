@@ -139,10 +139,10 @@ QWidget: 当前显示中的窗口。
 
 ```python
 def main():
-                                                                            return window_utils.show_window(
-                                                                                "tools.basic.rename_tool",
-                                                                                RenameTool
-                                                                            )
+                                                                                return window_utils.show_window(
+                                                                                    "tools.basic.rename_tool",
+                                                                                    RenameTool
+                                                                                )
 ```
 
 ### `close_window()`

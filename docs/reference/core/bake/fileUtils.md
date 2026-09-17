@@ -145,7 +145,7 @@ show_file_select_dialog(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -320,7 +320,7 @@ load_from_given_path(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -423,7 +423,7 @@ get_current_scene_path()
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -460,7 +460,7 @@ create_reference(self, name_space=None)
 **返回值**
 
 tuple:
-        按当前 API 约定组织的结果元组。
+    按当前 API 约定组织的结果元组。
 
 **异常**
 

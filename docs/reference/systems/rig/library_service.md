@@ -34,7 +34,7 @@ from muziToolset.systems.rig import library_service
 | Method | 作用 |
 | --- | --- |
 | `reload(self)` | 从场景恢复配置；不在打开窗口时创建或更改场景节点。 |
-| `add_module(self, kind)` | 添加模块配置；耳朵自动选择空闲侧，通用 FK 自动分配可读名称。 |
+| `add_module(self, kind)` | 添加模块配置；左右模块自动选择空闲侧，通用 FK 自动分配可读名称。 |
 | `add_template(self, key)` | 添加已实现模块的组合，不重复插入相同模块。 |
 | `remove_module(self, identity)` | 移除尚未构建的配置；已构建绑定不会通过列表删除。 |
 | `update_module(self, identity, values)` | 更新参数；已构建模块仅允许显示与控制器外观调整。 |
@@ -111,7 +111,7 @@ reload(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -131,7 +131,7 @@ result = instance.reload()
 
 **作用**
 
-添加模块配置；耳朵自动选择空闲侧，通用 FK 自动分配可读名称。
+添加模块配置；左右模块自动选择空闲侧，通用 FK 自动分配可读名称。
 
 **Signature**
 
@@ -148,7 +148,7 @@ add_module(self, kind)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -304,7 +304,7 @@ mirror_module(self, identity)
 **返回值**
 
 dict:
-        包含本次构建、查询或处理结果的结构化字典。
+    包含本次构建、查询或处理结果的结构化字典。
 
 **异常**
 
@@ -410,7 +410,7 @@ workflow_state(self)
 **返回值**
 
 dict:
-        包含本次构建、查询或处理结果的结构化字典。
+    包含本次构建、查询或处理结果的结构化字典。
 
 **异常**
 
@@ -447,7 +447,7 @@ rebuild_module(self, identity)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -485,7 +485,7 @@ validate(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -520,7 +520,7 @@ build(self)
 **返回值**
 
 object | int:
-        本次操作得到的整数结果或成功处理数量。
+    本次操作得到的整数结果或成功处理数量。
 
 **异常**
 
@@ -555,7 +555,7 @@ finalize(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -590,7 +590,7 @@ selected_guides(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -627,7 +627,7 @@ node_exists(self, name)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 

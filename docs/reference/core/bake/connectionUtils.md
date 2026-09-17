@@ -112,7 +112,7 @@ get_input_connection(self, attr, plus=True)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -153,7 +153,7 @@ get_output_connection(self, object)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -192,7 +192,7 @@ cheek_enough_obj_connection(self)
 **返回值**
 
 tuple | bool:
-        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+    当前操作成功或目标状态满足要求时返回 True，否则返回 False。
 
 **异常**
 
@@ -234,7 +234,7 @@ cheek_obj_attrs_connection(self, driver_obj, source_attr, driven_obj, destinatio
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -534,7 +534,7 @@ break_connections(self, driver_obj, source_attr, driven_obj, destination_attr)
 **返回值**
 
 bool:
-        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+    当前操作成功或目标状态满足要求时返回 True，否则返回 False。
 
 **异常**
 

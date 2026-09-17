@@ -234,7 +234,7 @@ distence_between(node_a, node_b)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -519,7 +519,7 @@ make_undo(func)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -561,7 +561,7 @@ create_node(node_type, node_name, match=False, match_node=None)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -602,7 +602,7 @@ create_native_script_job(event_name, callback)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -699,7 +699,7 @@ move(obj, pos)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -739,7 +739,7 @@ get_percentages(sample_count)
 **返回值**
 
 object | list:
-        按当前 API 约定顺序返回的结果列表。
+    按当前 API 约定顺序返回的结果列表。
 
 **异常**
 
@@ -778,7 +778,7 @@ get_dag_path(node=None)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -820,7 +820,7 @@ get_point_on_curve(curve, sample_count)
 **返回值**
 
 tuple:
-        按当前 API 约定组织的结果元组。
+    按当前 API 约定组织的结果元组。
 
 **异常**
 
@@ -865,7 +865,7 @@ create_joints_on_curve(curve, sample_count)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -993,7 +993,7 @@ create_joint_follicle_on_surface(surf_node, side, description, jnt_number)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -1402,7 +1402,7 @@ get_selected_type(type='transform')
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -1442,7 +1442,7 @@ copy_surface_create_geo()
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -1481,7 +1481,7 @@ duplicate_model(source_model, new_name=None, parent=None)
 **返回值**
 
 object | None:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 

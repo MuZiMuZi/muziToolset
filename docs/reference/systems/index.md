@@ -16,30 +16,30 @@ Systems 是可复用的完整 Rig Builder / Workflow。
 ## components
 
 - [`systems/components/__init__.py`](components/package.md) — 可复用 Rig Component。
-- [`systems/components/fk_chain.py`](components/fk_chain.md) — fk_chain：标准 FK Chain 构建组件。
+- [`systems/components/fk_chain.py`](components/fk_chain.md) — fk_chain：MuziTools 标准线性 FK Chain Rig Component。
 
 ## face
 
 - [`systems/face/__init__.py`](face/package.md) — Muzi Toolset 新版 Face System。
-- [`systems/face/ear_module.py`](face/ear_module.md) — EarModule：耳朵 FK 绑定模块。
-- [`systems/face/eye_module.py`](face/eye_module.md) — 查看该文件的公开 API。
+- [`systems/face/ear_module.py`](face/ear_module.md) — EarModule：耳朵三段 FK 绑定模块。
+- [`systems/face/eye_module.py`](face/eye_module.md) — EyeModule：正式眼球 Aim 绑定模块。
 - [`systems/face/face_guide_config.py`](face/face_guide_config.md) — face_guide_config：Face Guide 命名与模板配置。
-- [`systems/face/tongue_module.py`](face/tongue_module.md) — TongueModule：舌头 FK 绑定模块。
+- [`systems/face/tongue_module.py`](face/tongue_module.md) — TongueModule：舌头五段 FK 绑定模块。
 
 ## rig
 
 - [`systems/rig/__init__.py`](rig/package.md) — MuziTools Rig System
-- [`systems/rig/library_catalog.py`](rig/library_catalog.md) — 绑定库目录和配置校验。只登记当前正式后端，不导入 Maya 或历史模块。
+- [`systems/rig/library_catalog.py`](rig/library_catalog.md) — Rig Library Catalog
 - [`systems/rig/library_service.py`](rig/library_service.md) — 绑定库应用服务：配置持久化、场景检查和正式 Module 构建调度。
 
 ## rig/ui
 
 - [`systems/rig/ui/__init__.py`](rig/ui/package.md) — Modular Rig UI Package。
-- [`systems/rig/ui/library_style.py`](rig/ui/library_style.md) — 绑定库局部主题：暖白底、墨色文字和酸橙高亮。
+- [`systems/rig/ui/library_style.py`](rig/ui/library_style.md) — 绑定库局部主题：暖灰白底、工业墨色文字和酸橙高亮。
 - [`systems/rig/ui/library_widgets.py`](rig/ui/library_widgets.md) — 绑定库的轻量绘制组件。矢量装饰随窗口缩放，不依赖外部图片或字体文件。
 - [`systems/rig/ui/modular_rig_ui.py`](rig/ui/modular_rig_ui.md) — Muzi 绑定库：四步导航、模块与模板目录、场景结构和可折叠属性。
 
 ## 基础模块
 
 - [`systems/__init__.py`](package.md) — Muzi Toolset Rig System 集合。
-- [`systems/rig_module.py`](rig_module.md) — rig_module：Rig Module 基础类。
+- [`systems/rig_module.py`](rig_module.md) — rig_module：MuziTools 当前通用 Rig Module 生命周期基础类。

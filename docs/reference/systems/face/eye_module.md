@@ -9,7 +9,7 @@
 
 **用途**
 
-当前模块尚未提供完整模块摘要。
+EyeModule：正式眼球 Aim 绑定模块。
 
 **模块定位**
 
@@ -28,48 +28,180 @@ from muziToolset.systems.face import eye_module
 
 ## API 一览
 
-### Class `TongueModule`
+### Functions
+
+| API | 作用 |
+| --- | --- |
+| `build(side='lf', ctrl_shape='shape_016', aim_ctrl_shape='shape_040', ctrl_color=17, ctrl_size=1.0, ctrl_axis='X+', aim_ctrl_axis='Z+', jnt_parent=None, ctrl_parent=None)` | 完整构建单侧 Eye Rig。 |
+| `connect(side='lf', jnt_parent=None, ctrl_parent=None)` | 只重建指定侧 Step 04 连接。 |
+| `build_both(ctrl_shape='shape_016', aim_ctrl_shape='shape_040', ctrl_color=17, ctrl_size=1.0, ctrl_axis='X+', aim_ctrl_axis='Z+', jnt_parent=None, ctrl_parent=None)` | 完整构建左右两侧 Eye Rig。 |
+| `delete_connections(side='lf')` | 删除指定侧 Step 04 连接，保留 Joint / Controller。 |
+| `validate(side='lf')` | 检查 Eye Rig 的位置、Pivot 和主要连接。 |
+
+### Class `EyeModule`
 
 源码暂未提供类说明。
 
 | Method | 作用 |
 | --- | --- |
-| `get_guides(self)` | 查询并返回当前 guides。 |
+| `get_guides(self)` | 获取 Eye Ball / Iris / Aim 三个固定语义 Guide。 |
+| `create_joints(self)` | 在 Eye Ball Guide 创建眼球绑定 Joint。 |
+| `create_ctrls(self)` | 创建 Eye Main / Eye Aim Controller。 |
+| `setup_hierarchy(self)` | 整理 Eye Joint、Main Ctrl、Aim Ctrl 的模块层级。 |
+| `load_outputs(self)` | 读取已经创建好的 Eye Joint / Controller 输出。 |
+| `delete_connections(self)` | 删除当前侧 Eye 的 Step 04 连接层。 |
+| `connect_rig(self)` | 建立正式 Eye Rig 连接。 |
+| `build(self)` | 完整重建当前侧 Eye Rig。 |
 
-## Classes 详细 API
+## 公共常量
 
-### `TongueModule`
+| 名称 | 值 |
+| --- | --- |
+| `SUPPORTED_SIDES` | `('lf', 'rt')` |
 
-源码暂未提供类说明。
+## Functions 详细 API
 
-#### `__init__()`
+### `build()`
 
 **作用**
 
-初始化当前对象，并准备运行时需要的状态和成员。
+完整构建单侧 Eye Rig。
 
 **Signature**
 
 ```python
-__init__(self, module, side='md', guide=None, jnt_parent=None, ctrl_parent=None, guide_count=1, jnt_function='bind', ctrl_function='fk', ctrl_shape='circle', ctrl_color=17, ctrl_size=1.0, ctrl_axis='X+')
+build(side='lf', ctrl_shape='shape_016', aim_ctrl_shape='shape_040', ctrl_color=17, ctrl_size=1.0, ctrl_axis='X+', aim_ctrl_axis='Z+', jnt_parent=None, ctrl_parent=None)
 ```
 
 **参数**
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `module` | `object` | 是 | `—` | 当前方法执行 Maya / Rig 操作时使用的 `module` 数据。 |
-| `side` | `str` | 否 | `'md'` | 方向标记，常用值为 lf、rt 或 md。 |
-| `guide` | `str` | 否 | `None` | 需要查询或处理的 Guide Transform 名称。 |
-| `jnt_parent` | `str \| None` | 否 | `None` | 新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。 |
-| `ctrl_parent` | `object` | 否 | `None` | 当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。 |
-| `guide_count` | `int` | 否 | `1` | 当前构建、采样或查询过程使用的元素数量。 |
-| `jnt_function` | `str` | 否 | `'bind'` | 当前 Maya / Rig 操作使用的 `jnt_function` 名称或标记。 |
-| `ctrl_function` | `str` | 否 | `'fk'` | 当前 Maya / Rig 操作使用的 `ctrl_function` 名称或标记。 |
-| `ctrl_shape` | `str` | 否 | `'circle'` | 当前 Maya / Rig 操作使用的 `ctrl_shape` 名称或标记。 |
+| `side` | `str` | 否 | `'lf'` | 方向标记，常用值为 lf、rt 或 md。 |
+| `ctrl_shape` | `str` | 否 | `'shape_016'` | 当前 Maya / Rig 操作使用的 `ctrl_shape` 名称或标记。 |
+| `aim_ctrl_shape` | `str` | 否 | `'shape_040'` | 当前 Maya / Rig 操作使用的 `aim_ctrl_shape` 名称或标记。 |
 | `ctrl_color` | `int` | 否 | `17` | 当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。 |
 | `ctrl_size` | `float` | 否 | `1.0` | 当前 Maya / Rig 计算使用的 `ctrl_size` 数值参数。 |
 | `ctrl_axis` | `str` | 否 | `'X+'` | 当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。 |
+| `aim_ctrl_axis` | `str` | 否 | `'Z+'` | 当前 Maya / Rig 操作使用的 `aim_ctrl_axis` 名称或标记。 |
+| `jnt_parent` | `str \| None` | 否 | `None` | 新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。 |
+| `ctrl_parent` | `object` | 否 | `None` | 当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。 |
+
+**返回值**
+
+object:
+        当前 API 完成处理后返回的结果。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.systems.face import eye_module
+
+result = eye_module.build()
+```
+
+### `connect()`
+
+**作用**
+
+只重建指定侧 Step 04 连接。
+
+用于用户在 Step 02 / Step 03 修改 Controller、Joint 后重新生成最终驱动。
+
+**Signature**
+
+```python
+connect(side='lf', jnt_parent=None, ctrl_parent=None)
+```
+
+**参数**
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | :---: | --- | --- |
+| `side` | `str` | 否 | `'lf'` | 方向标记，常用值为 lf、rt 或 md。 |
+| `jnt_parent` | `str \| None` | 否 | `None` | 新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。 |
+| `ctrl_parent` | `object` | 否 | `None` | 当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。 |
+
+**返回值**
+
+object:
+        当前 API 完成处理后返回的结果。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.systems.face import eye_module
+
+result = eye_module.connect()
+```
+
+### `build_both()`
+
+**作用**
+
+完整构建左右两侧 Eye Rig。
+
+**Signature**
+
+```python
+build_both(ctrl_shape='shape_016', aim_ctrl_shape='shape_040', ctrl_color=17, ctrl_size=1.0, ctrl_axis='X+', aim_ctrl_axis='Z+', jnt_parent=None, ctrl_parent=None)
+```
+
+**参数**
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | :---: | --- | --- |
+| `ctrl_shape` | `str` | 否 | `'shape_016'` | 当前 Maya / Rig 操作使用的 `ctrl_shape` 名称或标记。 |
+| `aim_ctrl_shape` | `str` | 否 | `'shape_040'` | 当前 Maya / Rig 操作使用的 `aim_ctrl_shape` 名称或标记。 |
+| `ctrl_color` | `int` | 否 | `17` | 当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。 |
+| `ctrl_size` | `float` | 否 | `1.0` | 当前 Maya / Rig 计算使用的 `ctrl_size` 数值参数。 |
+| `ctrl_axis` | `str` | 否 | `'X+'` | 当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。 |
+| `aim_ctrl_axis` | `str` | 否 | `'Z+'` | 当前 Maya / Rig 操作使用的 `aim_ctrl_axis` 名称或标记。 |
+| `jnt_parent` | `str \| None` | 否 | `None` | 新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。 |
+| `ctrl_parent` | `object` | 否 | `None` | 当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。 |
+
+**返回值**
+
+object:
+        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.systems.face import eye_module
+
+result = eye_module.build_both()
+```
+
+### `delete_connections()`
+
+**作用**
+
+删除指定侧 Step 04 连接，保留 Joint / Controller。
+
+**Signature**
+
+```python
+delete_connections(side='lf')
+```
+
+**参数**
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | :---: | --- | --- |
+| `side` | `str` | 否 | `'lf'` | 方向标记，常用值为 lf、rt 或 md。 |
 
 **返回值**
 
@@ -84,21 +216,286 @@ __init__(self, module, side='md', guide=None, jnt_parent=None, ctrl_parent=None,
 ```python
 from muziToolset.systems.face import eye_module
 
-instance = eye_module.TongueModule(
-    module=...,
-)
+result = eye_module.delete_connections()
+```
+
+### `validate()`
+
+**作用**
+
+检查 Eye Rig 的位置、Pivot 和主要连接。
+
+**Signature**
+
+```python
+validate(side='lf')
+```
+
+**参数**
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | :---: | --- | --- |
+| `side` | `str` | 否 | `'lf'` | 方向标记，常用值为 lf、rt 或 md。 |
+
+**返回值**
+
+object:
+        当前 API 完成处理后返回的结果。
+
+**异常**
+
+- `ValueError`：输入数据、场景状态或操作条件不满足要求时抛出。
+- `RuntimeError`：输入数据、场景状态或操作条件不满足要求时抛出。
+
+**示例**
+
+```python
+from muziToolset.systems.face import eye_module
+
+result = eye_module.validate()
+```
+
+## Classes 详细 API
+
+### `EyeModule`
+
+源码暂未提供类说明。
+
+#### `__init__()`
+
+**作用**
+
+初始化正式 Eye Rig。
+
+**Signature**
+
+```python
+__init__(self, module='eye', side='lf', guide=None, jnt_parent=None, ctrl_parent=None, ctrl_shape='shape_016', aim_ctrl_shape='shape_040', ctrl_color=17, ctrl_size=1.0, ctrl_axis='X+', aim_ctrl_axis='Z+')
+```
+
+**参数**
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | :---: | --- | --- |
+| `module` | `str` | 否 | `'eye'` | 当前 Maya / Rig 操作使用的 `module` 名称或标记。 |
+| `side` | `str` | 否 | `'lf'` | 方向标记，常用值为 lf、rt 或 md。 |
+| `guide` | `str` | 否 | `None` | 需要查询或处理的 Guide Transform 名称。 |
+| `jnt_parent` | `str \| None` | 否 | `None` | 新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。 |
+| `ctrl_parent` | `object` | 否 | `None` | 当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。 |
+| `ctrl_shape` | `str` | 否 | `'shape_016'` | 当前 Maya / Rig 操作使用的 `ctrl_shape` 名称或标记。 |
+| `aim_ctrl_shape` | `str` | 否 | `'shape_040'` | 当前 Maya / Rig 操作使用的 `aim_ctrl_shape` 名称或标记。 |
+| `ctrl_color` | `int` | 否 | `17` | 当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。 |
+| `ctrl_size` | `float` | 否 | `1.0` | 当前 Maya / Rig 计算使用的 `ctrl_size` 数值参数。 |
+| `ctrl_axis` | `str` | 否 | `'X+'` | 当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。 |
+| `aim_ctrl_axis` | `str` | 否 | `'Z+'` | 当前 Maya / Rig 操作使用的 `aim_ctrl_axis` 名称或标记。 |
+
+**返回值**
+
+源码未声明返回值说明。
+
+**异常**
+
+- `ValueError`：输入数据、场景状态或操作条件不满足要求时抛出。
+
+**示例**
+
+```python
+from muziToolset.systems.face import eye_module
+
+instance = eye_module.EyeModule()
 ```
 
 #### `get_guides()`
 
 **作用**
 
-查询并返回当前 guides。
+获取 Eye Ball / Iris / Aim 三个固定语义 Guide。
 
 **Signature**
 
 ```python
 get_guides(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+**异常**
+
+- `RuntimeError`：输入数据、场景状态或操作条件不满足要求时抛出。
+
+**示例**
+
+```python
+from muziToolset.systems.face import eye_module
+
+instance = eye_module.EyeModule()
+
+result = instance.get_guides()
+```
+
+#### `create_joints()`
+
+**作用**
+
+在 Eye Ball Guide 创建眼球绑定 Joint。
+
+**Signature**
+
+```python
+create_joints(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+list:
+        按当前 API 约定顺序返回的结果列表。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.systems.face import eye_module
+
+instance = eye_module.EyeModule()
+
+result = instance.create_joints()
+```
+
+#### `create_ctrls()`
+
+**作用**
+
+创建 Eye Main / Eye Aim Controller。
+
+Main Ctrl 使用 Iris Guide 创建，因此可见位置保持在 Iris。
+Aim Ctrl 使用 Aim Guide 创建。
+
+**Signature**
+
+```python
+create_ctrls(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+list:
+        按当前 API 约定顺序返回的结果列表。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.systems.face import eye_module
+
+instance = eye_module.EyeModule()
+
+result = instance.create_ctrls()
+```
+
+#### `setup_hierarchy()`
+
+**作用**
+
+整理 Eye Joint、Main Ctrl、Aim Ctrl 的模块层级。
+
+**Signature**
+
+```python
+setup_hierarchy(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+tuple:
+        按当前 API 约定组织的结果元组。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.systems.face import eye_module
+
+instance = eye_module.EyeModule()
+
+result = instance.setup_hierarchy()
+```
+
+#### `load_outputs()`
+
+**作用**
+
+读取已经创建好的 Eye Joint / Controller 输出。
+
+**Signature**
+
+```python
+load_outputs(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+object:
+        当前 API 完成处理后返回的结果。
+
+**异常**
+
+- `RuntimeError`：输入数据、场景状态或操作条件不满足要求时抛出。
+
+**示例**
+
+```python
+from muziToolset.systems.face import eye_module
+
+instance = eye_module.EyeModule()
+
+result = instance.load_outputs()
+```
+
+#### `delete_connections()`
+
+**作用**
+
+删除当前侧 Eye 的 Step 04 连接层。
+
+Joint / Controller 不删除，因此前面步骤调整完成以后可以安全重新连接。
+同时清理旧 EyeModule 曾经创建的 Parent / Aim Constraint。
+
+**Signature**
+
+```python
+delete_connections(self)
 ```
 
 **参数**
@@ -118,11 +515,84 @@ get_guides(self)
 ```python
 from muziToolset.systems.face import eye_module
 
-instance = eye_module.TongueModule(
-    module=...,
-)
+instance = eye_module.EyeModule()
 
-result = instance.get_guides()
+result = instance.delete_connections()
+```
+
+#### `connect_rig()`
+
+**作用**
+
+建立正式 Eye Rig 连接。
+
+Aim Output -> Main Driven -> Main Output -> Pose Driver -> Pose Driven -> Eye Joint。
+
+**Signature**
+
+```python
+connect_rig(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+dict:
+        包含本次构建、查询或处理结果的结构化字典。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.systems.face import eye_module
+
+instance = eye_module.EyeModule()
+
+result = instance.connect_rig()
+```
+
+#### `build()`
+
+**作用**
+
+完整重建当前侧 Eye Rig。
+
+先删除旧 Step 04 连接，再重新生成 Joint / Controller / Hierarchy / Connection，
+避免旧约束影响 Guide Match 和 Controller 重建。
+
+**Signature**
+
+```python
+build(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+object:
+        当前 API 完成处理后返回的结果。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.systems.face import eye_module
+
+instance = eye_module.EyeModule()
+
+result = instance.build()
 ```
 
 ## 源码位置

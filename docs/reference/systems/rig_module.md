@@ -9,7 +9,7 @@
 
 **用途**
 
-rig_module：Rig Module 基础类。
+rig_module：MuziTools 当前通用 Rig Module 生命周期基础类。
 
 **模块定位**
 
@@ -29,45 +29,44 @@ from muziToolset.systems import rig_module
 
 ### Class `RigModule`
 
-源码暂未提供类说明。
+所有正式 Rig Module 共用的基础构建类。
 
 | Method | 作用 |
 | --- | --- |
-| `get_guides(self)` | 获取当前 Rig Module 使用的 Guide。 |
-| `create_joint(self, name, guide=None)` | 创建或获取单个 Joint，并可以匹配到指定 Guide。 |
-| `create_ctrl(self, name, guide=None, shape_name='circle', ctrl_color=17, ctrl_size=1.0, ctrl_axis='X+', create_hierarchy=True)` | 创建或获取单个 Controller，并完成基础设置。 |
-| `create_joints(self)` | 创建当前模块完整 Joint System。 |
-| `create_ctrls(self)` | 创建当前模块完整 Controller System。 |
-| `connect_rig(self)` | 建立当前模块的绑定驱动连接。 |
-| `setup_hierarchy(self)` | 创建并整理当前 Rig Module 的基础总组层级。 |
-| `build_outputs(self)` | 创建关节、控制器与最终层级，但不建立绑定驱动连接。 |
-| `load_outputs(self)` | 读取已经生成的模块输出；具体节点规则由子类实现。 |
-| `connect_outputs(self)` | 读取现有输出并建立绑定驱动连接。 |
-| `build(self)` | 按照统一生命周期构建当前 Rig Module。 |
+| `get_guides(self)` | 把外部 Guide 输入规范化为有序 Maya 节点名称列表。 |
+| `create_joint(self, name, guide=None)` | 创建或读取一个 Joint，并可选匹配到指定 Guide。 |
+| `create_ctrl(self, name, guide=None, shape_name='circle', ctrl_color=17, ctrl_size=1.0, ctrl_axis='X+', create_hierarchy=True)` | 创建或读取一个标准 Controller，并应用外观、层级和 Guide Match。 |
+| `create_joints(self)` | 创建当前业务 Module 的完整 Joint System。 |
+| `create_ctrls(self)` | 创建当前业务 Module 的完整 Controller System。 |
+| `connect_rig(self)` | 建立当前业务 Module 的正式驱动连接。 |
+| `setup_hierarchy(self)` | 创建并整理当前 Module 的 Joint / Controller Master Group。 |
+| `build_outputs(self)` | 创建 Guide 驱动的 Joint、Controller 和最终 DAG Hierarchy，但不连接 Rig。 |
+| `load_outputs(self)` | 从 Maya 场景读取当前 Module 已经生成的输出节点。 |
+| `connect_outputs(self)` | 读取已生成输出，并建立当前 Module 的正式驱动连接。 |
+| `build(self)` | 一次完成当前 Rig Module 的输出创建与最终连接。 |
 
 ## Classes 详细 API
 
 ### `RigModule`
 
-源码暂未提供类说明。
+所有正式 Rig Module 共用的基础构建类。
+
+子类通常只需要实现：
+    create_joints()
+    create_ctrls()
+    load_outputs()
+    connect_rig()
+如果业务拥有固定 Guide 语义，也可以覆盖 ``get_guides()``；例如 Eye Module
+会把 Ball / Iris / Aim 映射成明确的 ``guide_map``，而不是依赖列表顺序猜测。
+``RigModule`` 支持两种调用方式：
+1. ``build()``：一次完成输出创建和正式连接；
+2. ``build_outputs()`` + ``connect_outputs()``：供 Rig Library 分阶段构建。
 
 #### `__init__()`
 
 **作用**
 
-初始化 Rig Module 基础数据。
-
-module(str): 模块名称，例如 "ear"、"eye"、"brow"。
-side(str): 模块方向，例如 "lf"、"rt"、"md"。
-guide(list/str/Guide): 当前模块使用的 Guide 数据来源。
-jnt_parent(str/PyNode): 当前模块 Joint 总组需要挂载的父节点。
-ctrl_parent(str/PyNode): 当前模块 Controller 总组需要挂载的父节点。
-Maya 使用示例：
-    from muziToolset.systems import rig_module
-    module_object = rig_module.RigModule(
-        module="ear",
-        side="lf"
-    )
+初始化 Rig Module 的公共输入和运行时状态。
 
 **Signature**
 
@@ -79,11 +78,11 @@ __init__(self, module=None, side='md', guide=None, jnt_parent=None, ctrl_parent=
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `module` | `object` | 否 | `None` | 当前方法执行 Maya / Rig 操作时使用的 `module` 数据。 |
-| `side` | `str` | 否 | `'md'` | 方向标记，常用值为 lf、rt 或 md。 |
-| `guide` | `str` | 否 | `None` | 需要查询或处理的 Guide Transform 名称。 |
-| `jnt_parent` | `str \| None` | 否 | `None` | 新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。 |
-| `ctrl_parent` | `object` | 否 | `None` | 当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。 |
+| `module` | `str \| None` | 否 | `None` | Module 业务名称，例如 ``"eye"``、``"ear"``、``"tongue"``。 该值会进入模块根组和子类输出节点的标准命名。 |
+| `side` | `str` | 否 | `'md'` | Module 方向，当前常用值为 ``lf``、``rt``、``md``。 |
+| `guide` | `str \| list[str] \| tuple[str] \| object \| None` | 否 | `None` | Guide 数据来源。可以是单节点、按顺序排列的名称列表，或提供 ``get_guides(module, side)`` 方法的 Guide 对象。 |
+| `jnt_parent` | `str \| object \| None` | 否 | `None` | Module Joint Master Group 的可选父节点；None 表示不额外挂接。 |
+| `ctrl_parent` | `str \| object \| None` | 否 | `None` | Module Controller Master Group 的可选父节点；None 表示不额外挂接。 |
 
 **返回值**
 
@@ -97,22 +96,28 @@ __init__(self, module=None, side='md', guide=None, jnt_parent=None, ctrl_parent=
 
 ```python
 from muziToolset.systems import rig_module
-
-instance = rig_module.RigModule()
+        module = rig_module.RigModule(
+            module="ear",
+            side="lf",
+            guide=[
+                "loc_lf_ear_bind_001",
+                "loc_lf_ear_bind_002",
+            ],
+        )
 ```
 
 #### `get_guides()`
 
 **作用**
 
-获取当前 Rig Module 使用的 Guide。
+把外部 Guide 输入规范化为有序 Maya 节点名称列表。
 
-默认实现只处理外部明确传入的 Guide 数据：
-    1. Guide 工具对象：调用 get_guides(module, side)。
-    2. list / tuple：直接按照传入顺序使用。
-    3. 单个 Maya 节点：作为只有一个 Guide 的列表使用。
-如果没有传入 Guide，则返回空列表。
-具体 Component 如果拥有额外的 Guide 查找规则，可以在子类中继续扩展。
+默认实现支持三种来源：
+1. Guide 工具对象：调用 ``get_guides(module, side)``；
+2. list / tuple：严格保留传入顺序；
+3. 单个 Maya 节点：包装成只有一个元素的列表。
+``guide`` 为 None 时返回空列表。默认实现不会根据 Module 名称去猜测场景
+节点；拥有固定语义规则的业务子类应覆盖本方法。
 
 **Signature**
 
@@ -126,37 +131,31 @@ get_guides(self)
 
 **返回值**
 
-list: 当前模块使用的 Guide 名称列表。
-
-    Maya 使用示例：
-
-    guide_list = module_object.get_guides()
-    print(guide_list)
+list[str]:
+    已验证存在的 Guide 名称列表，顺序与输入或 Guide Provider 一致。
 
 **异常**
 
-- `RuntimeError`：输入数据、场景状态或操作条件不满足要求时抛出。
+- `RuntimeError`：任意输入 Guide 在当前 Maya 场景中不存在时抛出。
 
 **示例**
 
 ```python
-from muziToolset.systems import rig_module
-
-instance = rig_module.RigModule()
-
-result = instance.get_guides()
+module.guide = [
+            "loc_lf_ear_bind_001",
+            "loc_lf_ear_bind_002",
+        ]
+        guides = module.get_guides()
 ```
 
 #### `create_joint()`
 
 **作用**
 
-创建或获取单个 Joint，并可以匹配到指定 Guide。
+创建或读取一个 Joint，并可选匹配到指定 Guide。
 
-该方法只负责一个 Joint 的基础创建，不决定整个模块的 Joint 数量和拓扑结构。
-Joint Chain、分叉 Joint、Driver Joint 等整体结构由具体子类的 create_joints() 决定。
-name(str): Joint 名称。
-guide(str/PyNode): 可选匹配目标。
+该方法只处理**单 Joint Primitive**。Joint 数量、链条拓扑、Driver / Bind
+语义以及父子关系仍由子类 ``create_joints()`` 决定。
 
 **Signature**
 
@@ -168,53 +167,36 @@ create_joint(self, name, guide=None)
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `name` | `str` | 是 | `—` | 创建或查询时使用的节点名称。 |
-| `guide` | `str` | 否 | `None` | 需要查询或处理的 Guide Transform 名称。 |
+| `name` | `str` | 是 | `—` | Joint 标准节点名称，例如 ``jnt_lf_ear_bind_001``。 |
+| `guide` | `str \| object \| None` | 否 | `None` | 可选匹配目标。提供时会通过 ``Jnt.set_match_transform()`` 对齐。 |
 
 **返回值**
 
-Jnt: 创建或获取到的 Jnt 工具对象。
-
-    Maya 使用示例：
-
-    jnt_object = module_object.create_joint(
-    "jnt_lf_ear_bind_001",
-    guide="loc_lf_ear_guide_001"
-    )
-
-    print(jnt_object.jnt)
+jnt_utils.Jnt:
+    当前 Joint 的工具对象；实际 Maya Joint 可通过 ``result.jnt`` 访问。
 
 **异常**
 
-源码未声明专门的异常说明。
+- `TypeError`：场景中存在同名对象但不是 Joint 时，由 ``jnt_utils.Jnt`` 抛出。
 
 **示例**
 
 ```python
-from muziToolset.systems import rig_module
-
-instance = rig_module.RigModule()
-
-result = instance.create_joint(
-    name="name",
-)
+jnt_object = module.create_joint(
+            name="jnt_lf_ear_bind_001",
+            guide="loc_lf_ear_bind_001",
+        )
+        print(jnt_object.jnt)
 ```
 
 #### `create_ctrl()`
 
 **作用**
 
-创建或获取单个 Controller，并完成基础设置。
+创建或读取一个标准 Controller，并应用外观、层级和 Guide Match。
 
-该方法只负责一个 Controller 的创建。
-FK、Aim、IK、Face 等整个控制器系统的数量和连接方式由具体子类决定。
-name(str): Controller 名称。
-guide(str/PyNode): 可选匹配目标。
-shape_name(str): Controller Shape 名称，默认 "circle"。
-ctrl_color(int): Controller 颜色索引，默认 17。
-ctrl_size(float): Controller 显示大小，默认 1.0。
-ctrl_axis(str): Controller Shape 面朝方向，支持 X+ / X- / Y+ / Y- / Z+ / Z-，默认 "X+"。
-create_hierarchy(bool): 是否创建完整 Controller 层级，默认 True。
+Controller 的 Shape / Color / Size / Axis / SubCtrl / Output 等底层行为由
+``core.rigging.ctrl_utils.Ctrl`` 负责。本方法只为 Module 提供统一调度入口。
 
 **Signature**
 
@@ -226,56 +208,45 @@ create_ctrl(self, name, guide=None, shape_name='circle', ctrl_color=17, ctrl_siz
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `name` | `str` | 是 | `—` | 创建或查询时使用的节点名称。 |
-| `guide` | `str` | 否 | `None` | 需要查询或处理的 Guide Transform 名称。 |
-| `shape_name` | `str` | 否 | `'circle'` | `shape_name` 对应的 Maya 节点或资源名称。 |
-| `ctrl_color` | `int` | 否 | `17` | 当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。 |
-| `ctrl_size` | `float` | 否 | `1.0` | 当前 Maya / Rig 计算使用的 `ctrl_size` 数值参数。 |
-| `ctrl_axis` | `str` | 否 | `'X+'` | 当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。 |
-| `create_hierarchy` | `bool` | 否 | `True` | 控制当前方法中的 `create_hierarchy` 选项是否启用。 |
+| `name` | `str` | 是 | `—` | Controller 标准节点名称，例如 ``ctrl_lf_ear_fk_001``。 |
+| `guide` | `str \| object \| None` | 否 | `None` | 可选位置与旋转匹配目标。 |
+| `shape_name` | `str` | 否 | `'circle'` | ``resources/controller_shapes`` 中的 Shape 名称。 |
+| `ctrl_color` | `int` | 否 | `17` | Maya Drawing Override Index Color。 |
+| `ctrl_size` | `float` | 否 | `1.0` | Controller Curve CV 的显示缩放倍率，不写入 Transform Scale。 |
+| `ctrl_axis` | `str` | 否 | `'X+'` | Shape 绝对轴向，支持 ``X+ / X- / Y+ / Y- / Z+ / Z-``。 |
+| `create_hierarchy` | `bool` | 否 | `True` | True 时创建标准 zero / driven / space / connect / offset / ctrl / output 层级，并按当前 Ctrl 实现创建 SubCtrl。 |
 
 **返回值**
 
-Ctrl: 创建或获取到的 Ctrl 工具对象。
-
-    Maya 使用示例：
-
-    ctrl_object = module_object.create_ctrl(
-    "ctrl_lf_ear_fk_001",
-    guide="loc_lf_ear_guide_001",
-    shape_name="circle",
-    ctrl_color=17,
-    ctrl_size=1.0,
-    ctrl_axis="Z+"
-    )
-
-    print(ctrl_object.ctrl)
+ctrl_utils.Ctrl:
+    当前 Controller 工具对象，可读取 ``ctrl``、``zero_grp``、
+    ``output_grp`` 等运行时成员。
 
 **异常**
 
-源码未声明专门的异常说明。
+- `TypeError`：场景中存在同名对象但不是可用 Transform 时，由 ``Ctrl`` 抛出。
 
 **示例**
 
 ```python
-from muziToolset.systems import rig_module
-
-instance = rig_module.RigModule()
-
-result = instance.create_ctrl(
-    name="name",
-)
+ctrl_object = module.create_ctrl(
+            name="ctrl_lf_ear_fk_001",
+            guide="loc_lf_ear_bind_001",
+            shape_name="shape_016",
+            ctrl_color=17,
+            ctrl_size=1.0,
+            ctrl_axis="X+",
+        )
 ```
 
 #### `create_joints()`
 
 **作用**
 
-创建当前模块完整 Joint System。
+创建当前业务 Module 的完整 Joint System。
 
-具体 Joint 数量和拓扑结构由子类实现。
-Maya 使用示例：
-    module_object.create_joints()
+子类覆盖此方法决定 Joint Count、Naming、Guide Mapping 和内部拓扑。
+基类不创建任何节点。
 
 **Signature**
 
@@ -289,7 +260,8 @@ create_joints(self)
 
 **返回值**
 
-源码未声明返回值说明。
+None:
+    基类只提供扩展点；具体子类可以按需要返回 Joint List。
 
 **异常**
 
@@ -309,11 +281,10 @@ result = instance.create_joints()
 
 **作用**
 
-创建当前模块完整 Controller System。
+创建当前业务 Module 的完整 Controller System。
 
-具体 Controller 数量和结构由子类实现。
-Maya 使用示例：
-    module_object.create_ctrls()
+子类覆盖此方法决定 Main / FK / Aim 等 Controller 的数量和参数。
+基类不创建任何节点。
 
 **Signature**
 
@@ -327,7 +298,8 @@ create_ctrls(self)
 
 **返回值**
 
-源码未声明返回值说明。
+None:
+    基类只提供扩展点；具体子类可以按需要返回 Controller List。
 
 **异常**
 
@@ -347,12 +319,10 @@ result = instance.create_ctrls()
 
 **作用**
 
-建立当前模块的绑定驱动连接。
+建立当前业务 Module 的正式驱动连接。
 
-不同模块可能使用 Constraint、Matrix、Utility Node 或 Deformer，
-因此具体连接方式由子类实现。
-Maya 使用示例：
-    module_object.connect_rig()
+Constraint、Matrix、Utility Node、RBF 或 Deformer 等连接方式完全由子类决定。
+基类不建立连接。
 
 **Signature**
 
@@ -366,7 +336,8 @@ connect_rig(self)
 
 **返回值**
 
-源码未声明返回值说明。
+None:
+    基类只提供扩展点；具体子类可以返回连接结果字典。
 
 **异常**
 
@@ -386,13 +357,14 @@ result = instance.connect_rig()
 
 **作用**
 
-创建并整理当前 Rig Module 的基础总组层级。
+创建并整理当前 Module 的 Joint / Controller Master Group。
 
-每个模块统一拥有：
+标准名称：
     grp_<side>_<module>_jnt_001
     grp_<side>_<module>_ctrl_001
-如果传入 jnt_parent / ctrl_parent，则分别将两个总组挂到对应父节点。
-该方法只负责模块根层级，不决定 Joint Chain 或 Controller Chain 的内部拓扑。
+如果提供 ``jnt_parent`` / ``ctrl_parent``，对应 Master Group 会挂到绑定库
+或上层 System 指定的父节点。该方法不修改子类内部 Joint Chain 或 Controller
+Hierarchy 的结构。
 
 **Signature**
 
@@ -406,14 +378,8 @@ setup_hierarchy(self)
 
 **返回值**
 
-tuple: (jnt_master_grp, ctrl_master_grp)
-
-    Maya 使用示例：
-
-    jnt_grp, ctrl_grp = module_object.setup_hierarchy()
-
-    print(jnt_grp)
-    print(ctrl_grp)
+tuple[object, object]:
+    ``(jnt_master_grp, ctrl_master_grp)``。
 
 **异常**
 
@@ -422,18 +388,22 @@ tuple: (jnt_master_grp, ctrl_master_grp)
 **示例**
 
 ```python
-from muziToolset.systems import rig_module
-
-instance = rig_module.RigModule()
-
-result = instance.setup_hierarchy()
+jnt_grp, ctrl_grp = module.setup_hierarchy()
 ```
 
 #### `build_outputs()`
 
 **作用**
 
-创建关节、控制器与最终层级，但不建立绑定驱动连接。
+创建 Guide 驱动的 Joint、Controller 和最终 DAG Hierarchy，但不连接 Rig。
+
+执行顺序固定为：
+    get_guides()
+    create_joints()
+    create_ctrls()
+    setup_hierarchy()
+这是 Rig Library Step 02 完成定位后生成可检查输出时使用的核心入口。
+输出生成后，用户可以在 Step 03 调整 Controller / Joint 显示，再进入 Final。
 
 **Signature**
 
@@ -447,7 +417,8 @@ build_outputs(self)
 
 **返回值**
 
-源码未声明返回值说明。
+None:
+    结果保存在子类运行时成员和 Maya 场景节点中。
 
 **异常**
 
@@ -467,7 +438,10 @@ result = instance.build_outputs()
 
 **作用**
 
-读取已经生成的模块输出；具体节点规则由子类实现。
+从 Maya 场景读取当前 Module 已经生成的输出节点。
+
+子类必须根据自己的 Naming Contract 验证 Joint、Controller、Output 等节点，
+并恢复 ``connect_rig()`` 所需的运行时成员。基类不猜测输出名称。
 
 **Signature**
 
@@ -481,7 +455,8 @@ load_outputs(self)
 
 **返回值**
 
-源码未声明返回值说明。
+None:
+    基类只提供扩展点。
 
 **异常**
 
@@ -501,7 +476,14 @@ result = instance.load_outputs()
 
 **作用**
 
-读取现有输出并建立绑定驱动连接。
+读取已生成输出，并建立当前 Module 的正式驱动连接。
+
+执行：
+    load_outputs()
+        ↓
+    connect_rig()
+该入口允许一个新的 Python Module 实例在不重新创建 Joint / Controller 的情况下，
+直接进入 Rig Library Final 阶段。
 
 **Signature**
 
@@ -515,7 +497,8 @@ connect_outputs(self)
 
 **返回值**
 
-源码未声明返回值说明。
+None:
+    连接结果由具体子类写入 Maya 场景并可选保存到成员。
 
 **异常**
 
@@ -535,18 +518,16 @@ result = instance.connect_outputs()
 
 **作用**
 
-按照统一生命周期构建当前 Rig Module。
+一次完成当前 Rig Module 的输出创建与最终连接。
 
-执行顺序：
-    1. get_guides()
-    2. create_joints()
-    3. create_ctrls()
-    4. setup_hierarchy()
-    5. connect_rig()
-先整理最终 DAG 层级，再建立 Constraint / Matrix / Utility Node 等驱动连接，
-避免连接建立后再修改父子层级导致偏移或重复计算。
-Maya 使用示例：
-    module_object.build()
+等价于：
+    build_outputs()
+        ↓
+    connect_outputs()
+先完成最终 DAG Hierarchy，再创建 Constraint / Matrix / Utility Node 等连接，
+可以避免连接建立后继续 Parent 导致空间偏移或重复计算。
+Rig Library 通常使用分阶段入口；独立测试或一次性 Module Build 可以直接使用
+``build()``。
 
 **Signature**
 
@@ -560,7 +541,8 @@ build(self)
 
 **返回值**
 
-源码未声明返回值说明。
+None:
+    构建结果存在于 Maya 场景和具体子类成员中。
 
 **异常**
 
@@ -569,12 +551,14 @@ build(self)
 **示例**
 
 ```python
-from muziToolset.systems import rig_module
-
-instance = rig_module.RigModule()
-
-result = instance.build()
+from muziToolset.systems.face import eye_module
+        eye = eye_module.EyeModule(side="lf")
+        eye.build()
 ```
+
+!!! note "Class Notes"
+    ``RigModule`` 本身可以实例化，但 ``create_joints``、``create_ctrls``、
+        ``load_outputs`` 和 ``connect_rig`` 的业务实现需要由子类提供。
 
 ## 源码位置
 

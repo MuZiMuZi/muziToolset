@@ -59,7 +59,7 @@ get_type_file(data_path, file_type=['ma', 'mb'], data_file_list=None, with_path=
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 

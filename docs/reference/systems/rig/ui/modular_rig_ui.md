@@ -110,7 +110,7 @@ label(text, role=None)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -148,7 +148,7 @@ button(text, tooltip='')
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -326,7 +326,7 @@ create_header_layout(self)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -361,7 +361,7 @@ create_step_layout(self)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -396,7 +396,7 @@ create_module_panel(self)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -431,7 +431,7 @@ create_rig_structure_panel(self)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -466,7 +466,7 @@ create_properties_panel(self)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -501,7 +501,7 @@ create_bottom_layout(self)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -641,7 +641,7 @@ set_current_step(self, step, *args)
 **返回值**
 
 object:
-        完成设置或应用后的目标对象 / 状态结果。
+    完成设置或应用后的目标对象 / 状态结果。
 
 **异常**
 
@@ -1032,7 +1032,7 @@ filter_tree(self, text)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -1069,7 +1069,7 @@ current_record(self)
 **返回值**
 
 None | object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -1393,7 +1393,7 @@ create_structure_context_menu(self, item)
 **返回值**
 
 object | None:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -1541,7 +1541,7 @@ build_current_step(self)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -1610,7 +1610,7 @@ validate_current_step(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 

@@ -9,7 +9,7 @@
 
 **用途**
 
-EarModule：耳朵 FK 绑定模块。
+EarModule：耳朵三段 FK 绑定模块。
 
 **模块定位**
 
@@ -30,37 +30,27 @@ from muziToolset.systems.face import ear_module
 
 ### Class `EarModule`
 
-源码暂未提供类说明。
+使用标准三段 FK Chain 实现的耳朵 Rig Module。
 
 ## Classes 详细 API
 
 ### `EarModule`
 
-源码暂未提供类说明。
+使用标准三段 FK Chain 实现的耳朵 Rig Module。
+
+这个类的主要职责是固定 Ear 的 Guide 数量、Naming Token 和默认 Controller
+设置；真正的 Guide 查询、Joint / Controller 创建、FK Hierarchy、Output → Joint
+Parent Constraint 和分阶段连接由 ``FKChain`` 负责。
+适用场景：
+    - 左 / 右耳朵三段 FK；
+    - Rig Library 中需要支持 Guide Mirror 和 Rebuild 的耳朵模块；
+    - 希望保持 Ear 与通用 FKChain 使用同一套生命周期时。
 
 #### `__init__()`
 
 **作用**
 
-初始化耳朵 FK 模块。
-
-module(str): 模块名称，默认 "ear"。
-side(str): 模块方向，例如 "lf"、"rt"。
-guide(list/str/Guide): 可选 Guide 数据来源。
-jnt_parent(str/PyNode): Joint 总组的可选父节点。
-ctrl_parent(str/PyNode): Controller 总组的可选父节点。
-ctrl_axis(str): 耳朵 Controller Shape 面朝方向，支持 X+ / X- / Y+ / Y- / Z+ / Z-。
-Maya 使用示例：
-    from muziToolset.systems.face import ear_module
-    ear_object = ear_module.EarModule(
-        module="ear",
-        side="lf",
-        guide=None,
-        jnt_parent=None,
-        ctrl_parent=None,
-        ctrl_axis="Z+"
-    )
-    ear_object.build()
+初始化耳朵 FK Module，并把 Ear 固定配置传给 ``FKChain``。
 
 **Signature**
 
@@ -72,12 +62,12 @@ __init__(self, module='ear', side='md', guide=None, jnt_parent=None, ctrl_parent
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `module` | `str` | 否 | `'ear'` | 当前 Maya / Rig 操作使用的 `module` 名称或标记。 |
-| `side` | `str` | 否 | `'md'` | 方向标记，常用值为 lf、rt 或 md。 |
-| `guide` | `str` | 否 | `None` | 需要查询或处理的 Guide Transform 名称。 |
-| `jnt_parent` | `str \| None` | 否 | `None` | 新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。 |
-| `ctrl_parent` | `object` | 否 | `None` | 当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。 |
-| `ctrl_axis` | `str` | 否 | `'X+'` | 当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。 |
+| `module` | `str` | 否 | `'ear'` | Module Part Token，默认 ``"ear"``。Rig Library 正式 Ear 模块应保持默认值。 |
+| `side` | `str` | 否 | `'md'` | 方向标记。实际角色耳朵通常使用 ``"lf"`` 或 ``"rt"``。 |
+| `guide` | `str \| list[str] \| tuple[str] \| object \| None` | 否 | `None` | 可选 Guide 来源。None 时 FKChain 会按标准 Ear Locator 名称自动查找三项。 |
+| `jnt_parent` | `str \| object \| None` | 否 | `None` | Ear Joint Master Group 的可选上层父节点；Rig Library 通常传入 ``grp_md_rig_jnt_001``。 |
+| `ctrl_parent` | `str \| object \| None` | 否 | `None` | Ear Controller Master Group 的可选上层父节点；Rig Library 通常传入 ``grp_md_rig_ctrl_001``。 |
+| `ctrl_axis` | `str` | 否 | `'X+'` | Controller Shape 绝对轴向，支持 ``X+ / X- / Y+ / Y- / Z+ / Z-``。 |
 
 **返回值**
 
@@ -91,9 +81,16 @@ __init__(self, module='ear', side='md', guide=None, jnt_parent=None, ctrl_parent
 
 ```python
 from muziToolset.systems.face import ear_module
-
-instance = ear_module.EarModule()
+        ear = ear_module.EarModule(
+            side="lf",
+            ctrl_axis="Z+",
+        )
+        ear.build()
 ```
+
+!!! note "说明"
+    Rig Library 分阶段构建时通常调用继承的 ``build_outputs()``，Final 阶段
+            再调用 ``connect_outputs()``，而不是一次执行 ``build()``。
 
 ## 源码位置
 

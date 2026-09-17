@@ -17,7 +17,6 @@
 * 架构
     * [Face System](architecture/face-system.md)
     * [Face Workflow State](architecture/face-workflow-state.md)
-    * [程序化自动绑定](architecture/xiong-lin-procedure-auto-rig.md)
     * [总体架构](architecture/index.md)
     * [Core 设计](architecture/core.md)
     * [Tools 与 Systems](architecture/tools-systems.md)

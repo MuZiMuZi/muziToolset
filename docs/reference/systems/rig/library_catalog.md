@@ -9,7 +9,7 @@
 
 **用途**
 
-绑定库目录和配置校验。 只登记当前正式后端，不导入 Maya 或历史模块。
+绑定库的**纯 Python 模块目录、Template Catalog、配置 Schema 与 Naming Projection**。
 
 **模块定位**
 
@@ -31,13 +31,13 @@ from muziToolset.systems.rig import library_catalog
 
 | API | 作用 |
 | --- | --- |
-| `get_module(key)` | 取得可用模块的登记信息；未实现模块不会隐式退回通用 FK。 |
-| `new_document()` | 创建空配置；打开窗口本身不会添加示例场景数据。 |
-| `new_module(key, side=None, name=None)` | 根据正式模块默认值创建可序列化配置。 |
-| `guide_names(record)` | 优先使用明确指定的有序 Guide；耳朵和舌头可按模板名称读取。 |
-| `output_names(record)` | 返回后端实际使用的名称，用于构建前冲突检查与场景树查询。 |
-| `validate_document(document)` | 严格校验配置后返回独立副本，防止部分参数写入或覆盖同名模块。 |
-| `add_template(document, key)` | 以原子方式添加模板；重复模块保留用户已经调整的设置。 |
+| `get_module(key)` | 返回一个已正式接入 Rig Library 的 Module Catalog Entry。 |
+| `new_document()` | 创建一个空的 Rig Library Version 1 配置文档。 |
+| `new_module(key, side=None, name=None)` | 根据 Catalog 默认值创建一条可序列化 Module Record。 |
+| `guide_names(record)` | 返回一条 Module Record 实际使用的有序 Guide 名称。 |
+| `output_names(record)` | 计算 Module Build 后应存在的全部稳定输出名称。 |
+| `validate_document(document)` | 严格校验 Rig Library 配置，并返回深拷贝后的安全 Document。 |
+| `add_template(document, key)` | 原子地把一个 Catalog Template 追加到现有配置中。 |
 
 ## Functions 详细 API
 
@@ -45,7 +45,7 @@ from muziToolset.systems.rig import library_catalog
 
 **作用**
 
-取得可用模块的登记信息；未实现模块不会隐式退回通用 FK。
+返回一个已正式接入 Rig Library 的 Module Catalog Entry。
 
 **Signature**
 
@@ -57,32 +57,33 @@ get_module(key)
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `key` | `object` | 是 | `—` | 当前方法执行 Maya / Rig 操作时使用的 `key` 数据。 |
+| `key` | `str` | 是 | `—` | Module 类型键。当前支持 ``ear``、``eye``、``tongue``、``fk_chain``。 |
 
 **返回值**
 
-object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+dict:
+    Catalog Entry，包含 ``key / title / code / color / description / count / side``。
 
 **异常**
 
-- `ValueError`：输入数据、场景状态或操作条件不满足要求时抛出。
+- `ValueError`：``key`` 没有正式后端时抛出。函数不会偷偷退回到通用 FKChain。
 
 **示例**
 
 ```python
 from muziToolset.systems.rig import library_catalog
-
-result = library_catalog.get_module(
-    key=...,
-)
+        eye = library_catalog.get_module("eye")
+        print(eye["count"])
+        3
 ```
 
 ### `new_document()`
 
 **作用**
 
-创建空配置；打开窗口本身不会添加示例场景数据。
+创建一个空的 Rig Library Version 1 配置文档。
+
+打开窗口时使用空配置，而不是自动插入示例 Module，因此仅打开 UI 不会改变用户场景。
 
 **Signature**
 
@@ -97,7 +98,7 @@ new_document()
 **返回值**
 
 dict:
-        包含本次构建、查询或处理结果的结构化字典。
+    ``{"version": 1, "modules": []}``。
 
 **异常**
 
@@ -106,16 +107,16 @@ dict:
 **示例**
 
 ```python
-from muziToolset.systems.rig import library_catalog
-
-result = library_catalog.new_document()
+document = new_document()
+        document["modules"]
+        []
 ```
 
 ### `new_module()`
 
 **作用**
 
-根据正式模块默认值创建可序列化配置。
+根据 Catalog 默认值创建一条可序列化 Module Record。
 
 **Signature**
 
@@ -127,14 +128,14 @@ new_module(key, side=None, name=None)
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `key` | `object` | 是 | `—` | 当前方法执行 Maya / Rig 操作时使用的 `key` 数据。 |
-| `side` | `str` | 否 | `None` | 方向标记，常用值为 lf、rt 或 md。 |
-| `name` | `str` | 否 | `None` | 创建或查询时使用的节点名称。 |
+| `key` | `str` | 是 | `—` | 正式 Module 类型键。 |
+| `side` | `str \| None` | 否 | `None` | 可选方向。None 时使用 Catalog 默认值；有效值为 ``lf / rt / md``。 |
+| `name` | `str \| None` | 否 | `None` | 可选 Module Part 名称。正式 Ear / Eye / Tongue 后续校验要求名称保持固定； 自定义名称主要用于 ``fk_chain``。 |
 
 **返回值**
 
 dict:
-        包含本次构建、查询或处理结果的结构化字典。
+    包含唯一 ``id``、Guide、Controller / Joint 显示参数和 Build State 的 Module Record。
 
 **异常**
 
@@ -150,11 +151,21 @@ result = library_catalog.new_module(
 )
 ```
 
+!!! note "说明"
+    新 Record 初始始终为 ``built=False``、``connected=False``。
+            ``ctrl_color`` 根据 Side 使用 ``lf=6 / rt=13 / md=17`` 默认值。
+
 ### `guide_names()`
 
 **作用**
 
-优先使用明确指定的有序 Guide；耳朵和舌头可按模板名称读取。
+返回一条 Module Record 实际使用的有序 Guide 名称。
+
+解析优先级：
+1. ``record["guides"]`` 非空时，严格使用用户保存的显式顺序；
+2. ``fk_chain`` 没有显式 Guide 时返回空列表，强制用户指定；
+3. ``eye`` 使用 Ball / Iris / Aim 固定语义名称；
+4. Ear / Tongue 等标准线性模块按 ``bind_001...`` 生成。
 
 **Signature**
 
@@ -166,12 +177,12 @@ guide_names(record)
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `record` | `object` | 是 | `—` | 当前方法执行 Maya / Rig 操作时使用的 `record` 数据。 |
+| `record` | `dict` | 是 | `—` | 已通过或准备通过 ``validate_document`` 校验的 Module Record。 |
 
 **返回值**
 
-object | list:
-        按当前 API 约定顺序返回的结果列表。
+list[str]:
+    有序 Guide 名称列表。
 
 **异常**
 
@@ -180,18 +191,28 @@ object | list:
 **示例**
 
 ```python
-from muziToolset.systems.rig import library_catalog
-
-result = library_catalog.guide_names(
-    record=...,
-)
+record = new_module("eye", "lf")
+        guide_names(record)
+        ['loc_lf_eye_ball_001', 'loc_lf_eye_iris_001', 'loc_lf_eye_aim_001']
 ```
+
+!!! note "说明"
+    Eye 不能把 Guide 简单当成 ``bind_001 / 002 / 003``，因为 Ball、Iris、Aim
+            分别代表旋转中心、Main Ctrl 可见位置和 Aim Ctrl 位置。
 
 ### `output_names()`
 
 **作用**
 
-返回后端实际使用的名称，用于构建前冲突检查与场景树查询。
+计算 Module Build 后应存在的全部稳定输出名称。
+
+这个函数不查询 Maya Scene，只根据 Record 的 Naming Contract 生成预期名称。
+``RigLibraryService`` 使用结果进行：
+- Build 前名称冲突检查；
+- Build 完整性验证；
+- Ownership Tag；
+- Rebuild 删除范围；
+- Structure / Display 查询。
 
 **Signature**
 
@@ -203,12 +224,12 @@ output_names(record)
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `record` | `object` | 是 | `—` | 当前方法执行 Maya / Rig 操作时使用的 `record` 数据。 |
+| `record` | `dict` | 是 | `—` | Module Record。 |
 
 **返回值**
 
-object:
-        当前 API 完成处理后返回的结果。
+dict:
+    包含 ``joints / controls / subcontrols / groups / outputs`` 五类名称列表。
 
 **异常**
 
@@ -220,15 +241,33 @@ object:
 from muziToolset.systems.rig import library_catalog
 
 result = library_catalog.output_names(
-    record=...,
+    record={},
 )
 ```
+
+!!! note "说明"
+    Eye 使用 Main + Aim 两套 Controller Hierarchy；FK 类模块按 Guide 数量生成
+            ``fk_001...`` Controller 与 ``bind_001...`` Joint。
 
 ### `validate_document()`
 
 **作用**
 
-严格校验配置后返回独立副本，防止部分参数写入或覆盖同名模块。
+严格校验 Rig Library 配置，并返回深拷贝后的安全 Document。
+
+校验内容包括：
+- Schema Version；
+- Module 数量上限；
+- Record 字段集合；
+- Module 是否已正式登记；
+- Name / Side / ID；
+- 重复 Module Identity；
+- bool / float / color / axis 类型和范围；
+- Guide 数量、路径类型和重复项；
+- ``connected`` 不能先于 ``built``；
+- 已 Build Module 必须能够解析 Guide。
+Version 1 的早期 Record 如果只缺 ``connected`` 字段，会把它迁移为与旧 ``built``
+状态一致，再继续完整校验。
 
 **Signature**
 
@@ -240,16 +279,16 @@ validate_document(document)
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `document` | `object` | 是 | `—` | 当前方法执行 Maya / Rig 操作时使用的 `document` 数据。 |
+| `document` | `dict` | 是 | `—` | 待校验的 JSON-compatible Rig Library Document。 |
 
 **返回值**
 
-object:
-        当前 API 完成处理后返回的结果。
+dict:
+    与输入隔离的深拷贝、安全配置。后续 Service 修改这个副本不会修改调用方对象。
 
 **异常**
 
-- `ValueError`：输入数据、场景状态或操作条件不满足要求时抛出。
+- `ValueError`：Version、字段、Module、命名、Side、数值、Guide 或 Build State 任一项不合法时抛出。
 
 **示例**
 
@@ -257,15 +296,23 @@ object:
 from muziToolset.systems.rig import library_catalog
 
 result = library_catalog.validate_document(
-    document=...,
+    document={},
 )
 ```
+
+!!! note "说明"
+    这个函数是配置写入 Scene Network、JSON Import 和 Service Commit 前的共同边界。
+            不要为了“尽量加载”而忽略未知字段，否则旧 / 损坏配置会部分进入 Maya Scene。
 
 ### `add_template()`
 
 **作用**
 
-以原子方式添加模板；重复模块保留用户已经调整的设置。
+原子地把一个 Catalog Template 追加到现有配置中。
+
+已存在的 ``(side, module name)`` 不会重复插入，因此用户已经调整的 Size、Color、
+Guide 或显示参数会被保留。新增 Record 使用 ``new_module()`` 默认值；最终结果再次
+经过 ``validate_document()``。
 
 **Signature**
 
@@ -277,27 +324,25 @@ add_template(document, key)
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `document` | `object` | 是 | `—` | 当前方法执行 Maya / Rig 操作时使用的 `document` 数据。 |
-| `key` | `object` | 是 | `—` | 当前方法执行 Maya / Rig 操作时使用的 `key` 数据。 |
+| `document` | `dict` | 是 | `—` | 当前 Rig Library Document。 |
+| `key` | `str` | 是 | `—` | Template Key，例如 ``face_starter``、``ear_pair``、``tongue``、``eye_pair``。 |
 
 **返回值**
 
-object:
-        当前 API 完成处理后返回的结果。
+dict:
+    添加完成并重新校验后的独立 Document。
 
 **异常**
 
-- `ValueError`：输入数据、场景状态或操作条件不满足要求时抛出。
+- `ValueError`：Template Key 不存在，或输入 / 最终 Document 不满足 Schema 时抛出。
 
 **示例**
 
 ```python
-from muziToolset.systems.rig import library_catalog
-
-result = library_catalog.add_template(
-    document=...,
-    key=...,
-)
+document = new_document()
+        document = add_template(document, "eye_pair")
+        len(document["modules"])
+        2
 ```
 
 ## 源码位置

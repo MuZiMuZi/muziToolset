@@ -188,7 +188,7 @@ get_child_object(object, type='joint')
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -227,7 +227,7 @@ select_sub_objects(obj_type='transform')
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -262,7 +262,7 @@ create_rig_grp()
 **返回值**
 
 tuple:
-        按当前 API 约定组织的结果元组。
+    按当前 API 约定组织的结果元组。
 
 **异常**
 
@@ -297,7 +297,7 @@ create_default_grp()
 **返回值**
 
 dict:
-        包含本次构建、查询或处理结果的结构化字典。
+    包含本次构建、查询或处理结果的结构化字典。
 
 **异常**
 

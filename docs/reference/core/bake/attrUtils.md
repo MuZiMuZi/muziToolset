@@ -125,7 +125,7 @@ object_exists(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -164,7 +164,7 @@ attr_exists(self, attr=None)
 **返回值**
 
 object | bool:
-        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+    当前操作成功或目标状态满足要求时返回 True，否则返回 False。
 
 **异常**
 
@@ -247,7 +247,7 @@ lock_and_hide_attrs(self, attrs_list, lock=True, hide=True)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -297,7 +297,7 @@ add_attr(self, attr, attr_type='string', lock=True, hide=True, default_value=Non
 **返回值**
 
 object | None:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -319,7 +319,7 @@ result = instance.add_attr(
 
 !!! note "说明"
     为了兼容旧代码，也支持：
-                add_attr("test", type="double")
+                    add_attr("test", type="double")
 
 #### `connect_attr()`
 
@@ -386,7 +386,7 @@ disconnect_attr(self, output_attr, input_attr)
 **返回值**
 
 bool:
-        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+    当前操作成功或目标状态满足要求时返回 True，否则返回 False。
 
 **异常**
 
@@ -556,7 +556,7 @@ get_attr_value(self, attr=None)
 **返回值**
 
 object | None:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -598,7 +598,7 @@ set_attr_values(self, attrs_dict, attr_types=None, lock=False, hide=False)
 **返回值**
 
 object:
-        完成设置或应用后的目标对象 / 状态结果。
+    完成设置或应用后的目标对象 / 状态结果。
 
 **异常**
 
@@ -608,14 +608,14 @@ object:
 
 ```python
 attrs_dict = {
-            "mouth_jnt_number": 12,
-            "step_value": 1,
-        }
+                "mouth_jnt_number": 12,
+                "step_value": 1,
+            }
 
-        attr_types = {
-            "mouth_jnt_number": "long",
-            "step_value": "long",
-        }
+            attr_types = {
+                "mouth_jnt_number": "long",
+                "step_value": "long",
+            }
 ```
 
 #### `add_message_attr()`
@@ -640,7 +640,7 @@ add_message_attr(self, attr, multi=False)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -724,7 +724,7 @@ connect_message(self, source_node, attr=None, force=True, clear_empty=False)
 **返回值**
 
 object | bool:
-        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+    当前操作成功或目标状态满足要求时返回 True，否则返回 False。
 
 **异常**
 
@@ -734,15 +734,15 @@ object | bool:
 
 ```python
 config_attr = Attr(
-            "network_md_face_config_001"
-        )
+                "network_md_face_config_001"
+            )
 
-        config_attr.connect_message(
-            source_node="model_md_head_base_001",
-            attr="face_head_model",
-            force=True,
-            clear_empty=True
-        )
+            config_attr.connect_message(
+                source_node="model_md_head_base_001",
+                attr="face_head_model",
+                force=True,
+                clear_empty=True
+            )
 ```
 
 #### `connect_messages()`
@@ -768,7 +768,7 @@ connect_messages(self, attrs_dict, force=True, clear_empty=False)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -778,16 +778,16 @@ object:
 
 ```python
 model_config_dict = {
-            "face_head_model": "head_geo",
-            "face_lf_eye_model": "lf_eye_geo",
-            "face_tongue_model": None
-        }
+                "face_head_model": "head_geo",
+                "face_lf_eye_model": "lf_eye_geo",
+                "face_tongue_model": None
+            }
 
-        config_attr.connect_messages(
-            model_config_dict,
-            force=True,
-            clear_empty=True
-        )
+            config_attr.connect_messages(
+                model_config_dict,
+                force=True,
+                clear_empty=True
+            )
 ```
 
 #### `get_message()`
@@ -858,7 +858,7 @@ add_string_info(self, information, attr=None, lock=True, hide=True)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -899,7 +899,7 @@ get_string_info(self, attr=None)
 **返回值**
 
 None | object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -949,7 +949,7 @@ set_attrs_limits(self, attrs_dict)
 **返回值**
 
 bool:
-        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+    当前操作成功或目标状态满足要求时返回 True，否则返回 False。
 
 **异常**
 
@@ -1032,7 +1032,7 @@ get_unwanted_attrs(self, attrs_list)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -1042,10 +1042,10 @@ object:
 
 ```python
 输入：
-            ["translateX", "rotateY"]
+                ["translateX", "rotateY"]
 
-        返回：
-            除 translateX / rotateY 之外的其它 Transform 通道。
+            返回：
+                除 translateX / rotateY 之外的其它 Transform 通道。
 ```
 
 #### `get_channelBox_attrs()`
@@ -1067,7 +1067,7 @@ get_channelBox_attrs()
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 

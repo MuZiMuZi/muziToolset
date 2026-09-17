@@ -158,10 +158,10 @@ str:
 
 ```python
 matrix_parent_constraint(
-            'ctrl_l_arm_fk',
-            'jnt_l_arm_fk',
-            maintain_offset=True
-        )
+                'ctrl_l_arm_fk',
+                'jnt_l_arm_fk',
+                maintain_offset=True
+            )
 ```
 
 ## Classes 详细 API
@@ -225,7 +225,7 @@ normalize(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -260,7 +260,7 @@ length(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -295,7 +295,7 @@ x(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -330,7 +330,7 @@ y(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -365,7 +365,7 @@ z(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -400,7 +400,7 @@ as_list(self)
 **返回值**
 
 list:
-        按当前 API 约定顺序返回的结果列表。
+    按当前 API 约定顺序返回的结果列表。
 
 **异常**
 
@@ -435,7 +435,7 @@ axis(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -472,7 +472,7 @@ mult_interval(self, interval)
 **返回值**
 
 tuple:
-        按当前 API 约定组织的结果元组。
+    按当前 API 约定组织的结果元组。
 
 **异常**
 

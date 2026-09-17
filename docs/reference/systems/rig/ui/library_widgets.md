@@ -31,40 +31,52 @@ from muziToolset.systems.rig.ui import library_widgets
 
 | API | 作用 |
 | --- | --- |
-| `module_icon(color, code='')` | 绘制统一的线框模块图标，替代依赖系统字体的特殊字符图标。 |
+| `module_icon(color, code='')` | 绘制统一的线框模块图标。 |
 
 ### Class `ArtHeader`
 
-页眉中的工业线条与酸橙色装饰，文字由普通 Qt 控件负责。
+页眉中的工业线条、斜切面与酸橙色装饰。
 
 | Method | 作用 |
 | --- | --- |
-| `paintEvent(self, event)` | 执行当前 API 的主要处理流程。 |
+| `paintEvent(self, event)` | 绘制不参与交互的轻量背景装饰。 |
 
 ### Class `StepButton`
 
-顶部四步导航，以清晰数字和切角高亮呈现当前操作阶段。
+顶部四步导航，以大数字、切角和酸橙强调显示工作流状态。
 
 | Method | 作用 |
 | --- | --- |
 | `set_stage_state(self, state)` | 设置 available / current / completed / locked 视觉状态。 |
-| `paintEvent(self, event)` | 执行当前 API 的主要处理流程。 |
+| `paintEvent(self, event)` | 绘制步骤卡片，并保持 QPushButton 的交互状态。 |
 
 ### Class `TickBox`
 
-为酸橙色选中框补充明确勾号，同时保留 Qt 的键盘和辅助功能。
+为酸橙色选中框补充明确勾号，同时保留 Qt 键盘与辅助功能。
 
 | Method | 作用 |
 | --- | --- |
-| `paintEvent(self, event)` | 执行当前 API 的主要处理流程。 |
+| `paintEvent(self, event)` | 在 Qt 默认 CheckBox 之上绘制更清晰的勾号。 |
 
 ### Class `Section`
 
-可折叠属性抽屉，折叠时释放空间。
+可折叠属性抽屉，折叠时释放垂直空间。
 
 | Method | 作用 |
 | --- | --- |
 | `set_expanded(self, expanded)` | 同步标题箭头和属性区可见性。 |
+
+## 公共常量
+
+| 名称 | 值 |
+| --- | --- |
+| `INK` | `'#232a27'` |
+| `MUTED` | `'#8a9089'` |
+| `LINE` | `'#d9ddd5'` |
+| `PAPER` | `'#fbfbf7'` |
+| `LIME` | `'#d7ef49'` |
+| `LIME_SOFT` | `'#edf6bd'` |
+| `LIME_DARK` | `'#617126'` |
 
 ## Functions 详细 API
 
@@ -72,7 +84,10 @@ from muziToolset.systems.rig.ui import library_widgets
 
 **作用**
 
-绘制统一的线框模块图标，替代依赖系统字体的特殊字符图标。
+绘制统一的线框模块图标。
+
+图标保持低饱和线框风格；模块列表的真正强调色由选中状态负责，避免
+每个模块同时使用高饱和颜色导致视觉层级混乱。
 
 **Signature**
 
@@ -84,13 +99,13 @@ module_icon(color, code='')
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `color` | `int \| tuple[float, float, float]` | 是 | `—` | Viewport Override 使用的 Index Color 或 RGB Color。 |
-| `code` | `str` | 否 | `''` | 当前 Maya / Rig 操作使用的 `code` 名称或标记。 |
+| `color` | `str` | 是 | `—` | 模块提供的基础颜色。仅作为轻微识别色使用。 |
+| `code` | `str` | 否 | `''` | 保留给后续模块类型图形区分使用。 |
 
 **返回值**
 
-object:
-        当前 API 完成处理后返回的结果。
+QIcon:
+    40 x 40 的矢量风格图标。
 
 **异常**
 
@@ -102,7 +117,7 @@ object:
 from muziToolset.systems.rig.ui import library_widgets
 
 result = library_widgets.module_icon(
-    color=1,
+    color=...,
 )
 ```
 
@@ -110,13 +125,13 @@ result = library_widgets.module_icon(
 
 ### `ArtHeader`
 
-页眉中的工业线条与酸橙色装饰，文字由普通 Qt 控件负责。
+页眉中的工业线条、斜切面与酸橙色装饰。
 
 #### `paintEvent()`
 
 **作用**
 
-执行当前 API 的主要处理流程。
+绘制不参与交互的轻量背景装饰。
 
 **Signature**
 
@@ -152,13 +167,13 @@ result = instance.paintEvent(
 
 ### `StepButton`
 
-顶部四步导航，以清晰数字和切角高亮呈现当前操作阶段。
+顶部四步导航，以大数字、切角和酸橙强调显示工作流状态。
 
 #### `__init__()`
 
 **作用**
 
-初始化当前对象，并准备运行时需要的状态和成员。
+初始化步骤按钮。
 
 **Signature**
 
@@ -241,7 +256,7 @@ result = instance.set_stage_state(
 
 **作用**
 
-执行当前 API 的主要处理流程。
+绘制步骤卡片，并保持 QPushButton 的交互状态。
 
 **Signature**
 
@@ -281,13 +296,13 @@ result = instance.paintEvent(
 
 ### `TickBox`
 
-为酸橙色选中框补充明确勾号，同时保留 Qt 的键盘和辅助功能。
+为酸橙色选中框补充明确勾号，同时保留 Qt 键盘与辅助功能。
 
 #### `paintEvent()`
 
 **作用**
 
-执行当前 API 的主要处理流程。
+在 Qt 默认 CheckBox 之上绘制更清晰的勾号。
 
 **Signature**
 
@@ -323,13 +338,13 @@ result = instance.paintEvent(
 
 ### `Section`
 
-可折叠属性抽屉，折叠时释放空间。
+可折叠属性抽屉，折叠时释放垂直空间。
 
 #### `__init__()`
 
 **作用**
 
-初始化当前对象，并准备运行时需要的状态和成员。
+初始化 Section 标题按钮与 Form Body。
 
 **Signature**
 

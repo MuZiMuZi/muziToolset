@@ -134,7 +134,7 @@ type(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -207,7 +207,7 @@ side(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -280,7 +280,7 @@ resolution(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -353,7 +353,7 @@ description(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -426,7 +426,7 @@ part(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -499,7 +499,7 @@ function(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -572,7 +572,7 @@ index(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -645,7 +645,7 @@ name(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -689,7 +689,7 @@ normalize_side(cls, side)
 **返回值**
 
 str | object:
-        当前 API 查询或处理后得到的字符串结果。
+    当前 API 查询或处理后得到的字符串结果。
 
 **异常**
 
@@ -735,7 +735,7 @@ create_name(cls, node_type, side, part, function, index=1)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -780,7 +780,7 @@ get_next_index(cls, node_type, side, part, function)
 **返回值**
 
 object:
-        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 
 **异常**
 
@@ -825,7 +825,7 @@ create_unique_name(cls, node_type, side, part, function)
 **返回值**
 
 object:
-        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+    创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
 **异常**
 
@@ -867,7 +867,7 @@ parse_name(cls, name)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -906,7 +906,7 @@ mirror_name(cls, name)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -943,7 +943,7 @@ compose(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -981,7 +981,7 @@ decompose(self)
 **返回值**
 
 bool:
-        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+    当前操作成功或目标状态满足要求时返回 True，否则返回 False。
 
 **异常**
 
@@ -1016,7 +1016,7 @@ flip(self)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -1091,7 +1091,7 @@ add_prefix(self, prefix)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -1130,7 +1130,7 @@ add_suffix(self, suffix)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -1246,7 +1246,7 @@ search_replace_name(self, search, replace)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -1286,7 +1286,7 @@ rename_to_name(self, new_name)
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
@@ -1363,7 +1363,7 @@ print_duplicate_object()
 **返回值**
 
 object:
-        当前 API 完成处理后返回的结果。
+    当前 API 完成处理后返回的结果。
 
 **异常**
 
