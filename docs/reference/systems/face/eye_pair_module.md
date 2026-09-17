@@ -62,14 +62,14 @@ __init__(self, lf_guide=None, rt_guide=None, jnt_parent=None, ctrl_parent=None, 
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `lf_guide` | `object` | 否 | `None` | `lf_guide` 对应的输入数据。 |
-| `rt_guide` | `object` | 否 | `None` | `rt_guide` 对应的输入数据。 |
-| `jnt_parent` | `object` | 否 | `None` | `jnt_parent` 对应的输入数据。 |
-| `ctrl_parent` | `object` | 否 | `None` | `ctrl_parent` 对应的输入数据。 |
-| `master_aim_ctrl_shape` | `str` | 否 | `'circle'` | `master_aim_ctrl_shape` 对应的名称、标记或字符串参数。 |
-| `master_aim_ctrl_color` | `int` | 否 | `17` | `master_aim_ctrl_color` 对应的整数参数。 |
-| `master_aim_ctrl_size` | `float` | 否 | `18.0` | `master_aim_ctrl_size` 对应的数值参数。 |
-| `master_aim_ctrl_axis` | `str` | 否 | `'Z+'` | `master_aim_ctrl_axis` 对应的名称、标记或字符串参数。 |
+| `lf_guide` | `str` | 否 | `None` | 当前 Rig 定位流程使用的 Guide / Locator Transform。 |
+| `rt_guide` | `str` | 否 | `None` | 当前 Rig 定位流程使用的 Guide / Locator Transform。 |
+| `jnt_parent` | `str \| None` | 否 | `None` | 新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。 |
+| `ctrl_parent` | `object` | 否 | `None` | 当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。 |
+| `master_aim_ctrl_shape` | `str` | 否 | `'circle'` | 当前 Maya / Rig 操作使用的 `master_aim_ctrl_shape` 名称或标记。 |
+| `master_aim_ctrl_color` | `int` | 否 | `17` | 当前 Maya / Rig 操作使用的 `master_aim_ctrl_color` 整数参数。 |
+| `master_aim_ctrl_size` | `float` | 否 | `18.0` | 当前 Maya / Rig 计算使用的 `master_aim_ctrl_size` 数值参数。 |
+| `master_aim_ctrl_axis` | `str` | 否 | `'Z+'` | 当前 Maya / Rig 操作使用的 `master_aim_ctrl_axis` 名称或标记。 |
 
 **返回值**
 

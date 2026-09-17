@@ -61,22 +61,22 @@ class EyePairModule(object):
         初始化双眼模块、稳定节点名称和中间 Aim Controller 设置。
 
         Args:
-            lf_guide (object):
-                `lf_guide` 对应的输入数据。
-            rt_guide (object):
-                `rt_guide` 对应的输入数据。
-            jnt_parent (object):
-                `jnt_parent` 对应的输入数据。
+            lf_guide (str):
+                当前 Rig 定位流程使用的 Guide / Locator Transform。
+            rt_guide (str):
+                当前 Rig 定位流程使用的 Guide / Locator Transform。
+            jnt_parent (str | None):
+                新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。
             ctrl_parent (object):
-                `ctrl_parent` 对应的输入数据。
+                当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。
             master_aim_ctrl_shape (str):
-                `master_aim_ctrl_shape` 对应的名称、标记或字符串参数。
+                当前 Maya / Rig 操作使用的 `master_aim_ctrl_shape` 名称或标记。
             master_aim_ctrl_color (int):
-                `master_aim_ctrl_color` 对应的整数参数。
+                当前 Maya / Rig 操作使用的 `master_aim_ctrl_color` 整数参数。
             master_aim_ctrl_size (float):
-                `master_aim_ctrl_size` 对应的数值参数。
+                当前 Maya / Rig 计算使用的 `master_aim_ctrl_size` 数值参数。
             master_aim_ctrl_axis (str):
-                `master_aim_ctrl_axis` 对应的名称、标记或字符串参数。
+                当前 Maya / Rig 操作使用的 `master_aim_ctrl_axis` 名称或标记。
         """
 
         # FaceModule 会把左右两套 Eye Guide 分别传进来。

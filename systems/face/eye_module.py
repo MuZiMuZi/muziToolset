@@ -59,27 +59,27 @@ class EyeModule(rig_module.RigModule):
 
         Args:
             module (str):
-                `module` 对应的名称、标记或字符串参数。
+                当前 Maya / Rig 操作使用的 `module` 名称或标记。
             side (str):
                 方向标记，常用值为 lf、rt 或 md。
             guide (str):
                 需要查询或处理的 Guide Transform 名称。
-            jnt_parent (object):
-                `jnt_parent` 对应的输入数据。
+            jnt_parent (str | None):
+                新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。
             ctrl_parent (object):
-                `ctrl_parent` 对应的输入数据。
+                当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。
             ctrl_shape (str):
-                `ctrl_shape` 对应的名称、标记或字符串参数。
+                当前 Maya / Rig 操作使用的 `ctrl_shape` 名称或标记。
             aim_ctrl_shape (str):
-                `aim_ctrl_shape` 对应的名称、标记或字符串参数。
+                当前 Maya / Rig 操作使用的 `aim_ctrl_shape` 名称或标记。
             ctrl_color (int):
-                `ctrl_color` 对应的整数参数。
+                当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。
             ctrl_size (int):
-                `ctrl_size` 对应的整数参数。
+                当前 Maya / Rig 操作使用的 `ctrl_size` 整数参数。
             ctrl_axis (str):
-                `ctrl_axis` 对应的名称、标记或字符串参数。
+                当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。
             aim_ctrl_axis (str):
-                `aim_ctrl_axis` 对应的名称、标记或字符串参数。
+                当前 Maya / Rig 操作使用的 `aim_ctrl_axis` 名称或标记。
 
         Raises:
             ValueError:

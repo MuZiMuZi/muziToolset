@@ -65,11 +65,11 @@ __init__(self, module=None, side='md', guide=None, jnt_parent=None, ctrl_parent=
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `module` | `object` | 否 | `None` | `module` 对应的输入数据。 |
+| `module` | `object` | 否 | `None` | 当前方法执行 Maya / Rig 操作时使用的 `module` 数据。 |
 | `side` | `str` | 否 | `'md'` | 方向标记，常用值为 lf、rt 或 md。 |
 | `guide` | `str` | 否 | `None` | 需要查询或处理的 Guide Transform 名称。 |
-| `jnt_parent` | `object` | 否 | `None` | `jnt_parent` 对应的输入数据。 |
-| `ctrl_parent` | `object` | 否 | `None` | `ctrl_parent` 对应的输入数据。 |
+| `jnt_parent` | `str \| None` | 否 | `None` | 新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。 |
+| `ctrl_parent` | `object` | 否 | `None` | 当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。 |
 
 **返回值**
 
@@ -204,10 +204,10 @@ create_ctrl(self, name, guide=None, shape_name='circle', ctrl_color=17, ctrl_siz
 | `name` | `str` | 是 | `—` | 创建或查询时使用的节点名称。 |
 | `guide` | `str` | 否 | `None` | 需要查询或处理的 Guide Transform 名称。 |
 | `shape_name` | `str` | 否 | `'circle'` | `shape_name` 对应的 Maya 节点或资源名称。 |
-| `ctrl_color` | `int` | 否 | `17` | `ctrl_color` 对应的整数参数。 |
-| `ctrl_size` | `float` | 否 | `1.0` | `ctrl_size` 对应的数值参数。 |
-| `ctrl_axis` | `str` | 否 | `'X+'` | `ctrl_axis` 对应的名称、标记或字符串参数。 |
-| `create_hierarchy` | `bool` | 否 | `True` | 是否启用 `create_hierarchy` 对应的处理。 |
+| `ctrl_color` | `int` | 否 | `17` | 当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。 |
+| `ctrl_size` | `float` | 否 | `1.0` | 当前 Maya / Rig 计算使用的 `ctrl_size` 数值参数。 |
+| `ctrl_axis` | `str` | 否 | `'X+'` | 当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。 |
+| `create_hierarchy` | `bool` | 否 | `True` | 控制当前方法中的 `create_hierarchy` 选项是否启用。 |
 
 **返回值**
 
