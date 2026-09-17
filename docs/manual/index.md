@@ -1,93 +1,227 @@
 # MuziTools 用户手册
 
-从你现在要完成的任务开始，不需要先记住 Python 文件名。
+这里从“**我要完成什么**”出发，而不是按源码文件顺序解释项目。
 
-<div class="grid cards" markdown>
+如果你正在 Maya 里实际做绑定，优先从这里开始；如果你已经在修改 Python 源码，则进入 [API Reference](../reference/index.md)。
 
--   :material-play-circle-outline:{ .lg .middle } **第一次使用**
+---
 
-    ---
+## 绑定库 / Modular Rig
 
-    安装、启动和 Maya Script Path。
+当前最重要的工作流入口：
 
-    [:octicons-arrow-right-24: 安装与启动](../getting-started/installation.md)
+[打开 Rig Library 使用手册](rig-library.md)
 
--   :material-hammer-wrench:{ .lg .middle } **常用工具**
+当前四步：
 
-    ---
+```text
+01 Setup
+02 Guide
+03 Ctrl
+04 Final
+```
 
-    基础操作、Controller、Jnt、Skin、BlendShape 和清理。
+适合：
 
-    [:octicons-arrow-right-24: 选择一个任务](tools.md)
+- 添加 Eye / Ear / Tongue / FK Chain；
+- 导入并调整 Guide；
+- 生成 Joint / Controller；
+- 调整 Controller 和 Joint 显示；
+- Mirror；
+- Rebuild；
+- Final Connect。
 
--   :material-source-branch:{ .lg .middle } **完整绑定流程**
+---
 
-    ---
+## Face Rig
 
-    从模型检查到 Skeleton、Controller、Skin 和 Face Rig。
+### Face Guide
 
-    [:octicons-arrow-right-24: 绑定工作流](rigging.md)
+[Face Guide 使用手册](face-guide.md)
 
--   :material-face-recognition:{ .lg .middle } **Face Rig**
+用于理解 Face Locator、标准命名、左右镜像和 Module Guide Contract。
 
-    ---
+### Face System
 
-    Face Setup、Guide、验证和后续 Builder。
+如果你需要理解 Eye / Ear / Tongue Module 的实现结构，进入：
 
-    [:octicons-arrow-right-24: Face Guide](face-guide.md)
+[Face System Architecture](../architecture/face-system.md)
 
--   :material-library-outline:{ .lg .middle } **Core 能力**
+---
 
-    ---
+## Controller
 
-    想知道某个 Maya 底层操作应该调用哪个 Core 模块。
+[Controller 使用手册](controller.md)
 
-    [:octicons-arrow-right-24: Core 能力选择](core.md)
+包括：
 
--   :material-code-braces:{ .lg .middle } **API Reference**
+```text
+创建 Controller
+Shape Library
+颜色
+大小
+Axis
+Offset / Rotate
+SubCtrl
+标准 Hierarchy
+```
 
-    ---
+当前底层正式入口：
 
-    查询具体 `.py` 文件、类、方法、参数、返回值和示例。
+```text
+core/rigging/ctrl_utils.py
+```
 
-    [:octicons-arrow-right-24: 打开 API Reference](../reference/index.md)
+---
 
-</div>
+## Joint
 
-## 三种使用方式
+[Jnt 使用手册](jnt.md)
 
-=== "我是绑定师"
+包括：
 
-    ```text
-    用户手册
-        ↓
-    选择任务
-        ↓
-    按步骤执行
-    ```
+```text
+创建 Joint
+Guide 对齐
+Radius
+Local Axis Display
+Module Joint Output
+```
 
-=== "我要查代码"
+当前底层正式入口：
 
-    ```text
-    API Reference
-        ↓
-    找到 .py 文件
-        ↓
-    查看方法参数和示例
-    ```
+```text
+core/rigging/jnt_utils.py
+```
 
-=== "我要改架构"
+---
 
-    ```text
-    架构文档
-        ↓
-    Core / Tool / System 边界
-        ↓
-    API Reference
-    ```
+## Core
 
-!!! tip "搜索建议"
-    搜“创建控制器、Face Guide、刷权重”这类任务时优先看用户手册；搜 `FaceGuide`、`Attr.connect_message` 这类真实代码名时直接进入 API Reference。
+[Core 使用手册](core.md)
 
-[查看总体架构](../architecture/index.md){ .md-button }
-[打开 API Reference](../reference/index.md){ .md-button .md-button--primary }
+适合需要直接调用底层 API 的开发者。
+
+当前正式 Core：
+
+```text
+core/common/
+core/rigging/
+```
+
+架构说明见 [Core 架构](../architecture/core.md)。
+
+---
+
+## 日常基础工具
+
+[基础工具](basic-tools.md)
+
+包含：
+
+```text
+Rename
+Attribute
+Connection
+Constraint
+Snap
+```
+
+工具目录：
+
+```text
+tools/basic/
+```
+
+---
+
+## Skin
+
+[Skin 使用手册](skin.md)
+
+用于日常 Skin 相关工具入口和工作流说明。
+
+---
+
+## BlendShape
+
+[BlendShape 使用手册](blendshape.md)
+
+用于 BlendShape Target、Shape 操作等工具入口。
+
+---
+
+## 场景清理
+
+[Cleanup / Model Check](cleanup.md)
+
+用于：
+
+```text
+Hierarchy Clean
+Model Check
+提交绑定前检查
+```
+
+---
+
+## 绑定工作流
+
+[绑定工作流](rigging.md)
+
+用于理解普通绑定任务和 Modular Rig 在项目中的关系。
+
+---
+
+## 工具总览
+
+[Tools 总览](tools.md)
+
+按目录查看当前：
+
+```text
+basic
+blendshape
+clean
+controller
+face
+jnt
+rig
+skin
+```
+
+---
+
+# 我应该看哪一份文档？
+
+| 需求 | 推荐 |
+| --- | --- |
+| 我想直接使用 Rig Library | [Rig Library](rig-library.md) |
+| 我要调整 Face Guide | [Face Guide](face-guide.md) |
+| 我要创建/调整 Controller | [Controller](controller.md) |
+| 我要处理 Joint | [Jnt](jnt.md) |
+| 我要理解项目分层 | [总体架构](../architecture/index.md) |
+| 我要理解 Face Module | [Face System](../architecture/face-system.md) |
+| 我要查函数参数 | [API Reference](../reference/index.md) |
+| 我要维护文档 | [文档维护](../development/documentation.md) |
+
+---
+
+# 文档搜索建议
+
+如果你知道真实名称，直接使用顶部搜索：
+
+```text
+EyeModule
+RigLibraryService
+Ctrl
+Jnt
+Name
+connect_rig
+rebuild_module
+mirror_module
+create_ctrl
+get_guides
+```
+
+用户手册负责“怎么做”，API Reference 负责“怎么调用”。
