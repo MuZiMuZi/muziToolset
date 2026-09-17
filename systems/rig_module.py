@@ -46,20 +46,15 @@ class RigModule(object):
         self.ctrl_parent = ctrl_parent
 
         # ---------------------------------------------------------------------
-        # 当前 Module 的稳定名称只在初始化时生成一次。
-        # 后面的 setup_hierarchy() 和 delete_rig() 都直接复用，
-        # 避免在多个函数中重复书写同一套 Naming 规则。
+        # 当前 Module 只保留两个总组变量。
+        # 变量本身直接保存标准 Maya 节点名称，不再额外保存 *_group_name。
+        # setup_hierarchy()、子类整理层级和 delete_rig() 全部复用同一个名称。
         # ---------------------------------------------------------------------
-        self.jnt_group_name = name_utils.Name(type="grp", side=self.side, part=self.module, function="jnt", index=1).name
-        self.ctrl_group_name = name_utils.Name(type="grp", side=self.side, part=self.module, function="ctrl", index=1).name
+        self.jnt_master_grp = name_utils.Name(type="grp", side=self.side, part=self.module, function="jnt", index=1).name
+        self.ctrl_master_grp = name_utils.Name(type="grp", side=self.side, part=self.module, function="ctrl", index=1).name
 
-        # ---------------------------------------------------------------------
-        # 运行时数据。
-        # guide_list 保存整理后的 Guide 顺序；两个 master_grp 保存 Maya 中的根组。
-        # ---------------------------------------------------------------------
+        # 保存整理后的 Guide 顺序。
         self.guide_list = []
-        self.jnt_master_grp = None
-        self.ctrl_master_grp = None
 
     def get_guides(self):
         u"""
@@ -191,31 +186,30 @@ class RigModule(object):
 
     def setup_hierarchy(self):
         u"""
-        创建当前 Module 的 Joint / Controller 根组，并挂到指定父组。
+        创建当前 Module 的 Joint / Controller 总组，并挂到指定父组。
+
+        self.jnt_master_grp 和 self.ctrl_master_grp 从初始化开始就保存标准组名，
+        因此这里只负责确认 Maya 场景中对应组存在，不再创建第二套名称变量。
 
         标准结构：
             grp_<side>_<module>_jnt_001
             grp_<side>_<module>_ctrl_001
         """
 
-        # 创建或读取当前 Module 的 Joint 根组。
-        self.jnt_master_grp = hierarchy_utils.get_or_create_group(
-            self.jnt_group_name
-        )
+        # 创建或读取当前 Module 的 Joint 总组。
+        hierarchy_utils.get_or_create_group(self.jnt_master_grp)
 
-        # 创建或读取当前 Module 的 Controller 根组。
-        self.ctrl_master_grp = hierarchy_utils.get_or_create_group(
-            self.ctrl_group_name
-        )
+        # 创建或读取当前 Module 的 Controller 总组。
+        hierarchy_utils.get_or_create_group(self.ctrl_master_grp)
 
-        # 如果外部指定了 Joint 总组，就把当前 Module Joint 根组挂过去。
+        # 如果外部指定了 Joint 总组，就把当前 Module Joint 组挂过去。
         if self.jnt_parent:
             hierarchy_utils.parent(
                 self.jnt_master_grp,
                 self.jnt_parent
             )
 
-        # 如果外部指定了 Controller 总组，就把当前 Module Ctrl 根组挂过去。
+        # 如果外部指定了 Controller 总组，就把当前 Module Ctrl 组挂过去。
         if self.ctrl_parent:
             hierarchy_utils.parent(
                 self.ctrl_master_grp,
@@ -260,28 +254,29 @@ class RigModule(object):
 
     def delete_rig(self):
         u"""
-        删除当前 Module 的 Joint / Controller 根组及其全部子节点。
+        删除当前 Module 的 Joint / Controller 总组及其全部子节点。
 
         具体模块如果还有 Constraint 或额外 DG Node，应在子类 delete_rig() 中
         先删除这些连接节点，然后再调用 super(...).delete_rig() 删除 DAG 输出。
+
+        注意：
+            self.jnt_master_grp / self.ctrl_master_grp 保存的是稳定节点名称，
+            删除 Maya 节点后不会把这两个成员设为 None，这样同一个 Module 实例
+            仍然可以再次执行 build_rig() 重建。
         """
 
-        # 收集当前 Module 实际存在的两个根组。
-        # 只删除存在的节点，保证重复调用 delete_rig() 不会直接报错。
+        # 收集当前 Module 实际存在的两个总组。
+        # 只删除存在的节点，保证重复调用 delete_rig() 不会报错。
         delete_nodes = []
 
-        if cmds.objExists(self.ctrl_group_name):
-            delete_nodes.append(self.ctrl_group_name)
+        if cmds.objExists(self.ctrl_master_grp):
+            delete_nodes.append(self.ctrl_master_grp)
 
-        if cmds.objExists(self.jnt_group_name):
-            delete_nodes.append(self.jnt_group_name)
+        if cmds.objExists(self.jnt_master_grp):
+            delete_nodes.append(self.jnt_master_grp)
 
-        # Maya 删除父组时会一起删除其下面的所有子节点。
+        # Maya 删除父组时会一起删除组内所有 Joint / Controller 层级。
         if delete_nodes:
             cmds.delete(delete_nodes)
-
-        # 清空运行时引用，避免 Python 对象继续保存已经不存在的 Maya 节点。
-        self.jnt_master_grp = None
-        self.ctrl_master_grp = None
 
         return delete_nodes
