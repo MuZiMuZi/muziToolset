@@ -1,5 +1,55 @@
 # coding=utf-8
-u"""绑定库目录和配置校验。只登记当前正式后端，不导入 Maya 或历史模块。"""
+u"""
+Rig Library Catalog
+===================
+
+绑定库的**纯 Python 模块目录、Template Catalog、配置 Schema 与 Naming Projection**。
+
+这个文件刻意不 Import Maya。它负责回答：
+
+    - 当前 Rig Library 正式接入了哪些 Module；
+    - 每个 Module 默认需要多少 Guide、默认 Side 和 UI Metadata；
+    - Template 会组合哪些 Module；
+    - 一条 Module Record 的合法字段是什么；
+    - 一个 Record 应该使用哪些 Guide 名称；
+    - Build 前预期会生成哪些 Joint / Controller / Group / Output 名称；
+    - 导入 JSON 时如何严格校验，避免部分写入或配置冲突。
+
+当前正式 Module：
+    ear
+        三段 FK EarModule，支持 lf / rt。
+
+    eye
+        Main + Aim EyeModule，支持 lf / rt。
+
+    tongue
+        五段 FK TongueModule，使用 md。
+
+    fk_chain
+        通用 FKChain，需要用户明确提供有序 Guide。
+
+设计边界：
+    - 不 Import maya.cmds；
+    - 不创建 / 删除 Maya Node；
+    - 不执行 Build / Rebuild / Final；
+    - 不负责 Qt；
+    - Maya Scene 调度由 ``library_service.RigLibraryService`` 负责。
+
+配置 Record 的关键状态：
+    built
+        Joint / Controller / Hierarchy 是否已经生成并通过输出检查。
+
+    connected
+        当前输出是否已经执行 Final Connection。
+
+允许状态：
+    built=False, connected=False
+    built=True,  connected=False
+    built=True,  connected=True
+
+禁止状态：
+    built=False, connected=True
+"""
 
 import copy
 import math
@@ -38,7 +88,27 @@ side_colors = {"lf": 6, "rt": 13, "md": 17}
 
 
 def get_module(key):
-    u"""取得可用模块的登记信息；未实现模块不会隐式退回通用 FK。"""
+    u"""
+    返回一个已正式接入 Rig Library 的 Module Catalog Entry。
+
+    Args:
+        key (str):
+            Module 类型键。当前支持 ``ear``、``eye``、``tongue``、``fk_chain``。
+
+    Returns:
+        dict:
+            Catalog Entry，包含 ``key / title / code / color / description / count / side``。
+
+    Raises:
+        ValueError:
+            ``key`` 没有正式后端时抛出。函数不会偷偷退回到通用 FKChain。
+
+    Example:
+        >>> from muziToolset.systems.rig import library_catalog
+        >>> eye = library_catalog.get_module("eye")
+        >>> print(eye["count"])
+        3
+    """
 
     for entry in modules:
         if entry["key"] == key:
@@ -50,7 +120,20 @@ def get_module(key):
 
 
 def new_document():
-    u"""创建空配置；打开窗口本身不会添加示例场景数据。"""
+    u"""
+    创建一个空的 Rig Library Version 1 配置文档。
+
+    打开窗口时使用空配置，而不是自动插入示例 Module，因此仅打开 UI 不会改变用户场景。
+
+    Returns:
+        dict:
+            ``{"version": 1, "modules": []}``。
+
+    Example:
+        >>> document = new_document()
+        >>> document["modules"]
+        []
+    """
 
     return {
         "version": 1,
@@ -59,7 +142,26 @@ def new_document():
 
 
 def new_module(key, side=None, name=None):
-    u"""根据正式模块默认值创建可序列化配置。"""
+    u"""
+    根据 Catalog 默认值创建一条可序列化 Module Record。
+
+    Args:
+        key (str):
+            正式 Module 类型键。
+        side (str | None):
+            可选方向。None 时使用 Catalog 默认值；有效值为 ``lf / rt / md``。
+        name (str | None):
+            可选 Module Part 名称。正式 Ear / Eye / Tongue 后续校验要求名称保持固定；
+            自定义名称主要用于 ``fk_chain``。
+
+    Returns:
+        dict:
+            包含唯一 ``id``、Guide、Controller / Joint 显示参数和 Build State 的 Module Record。
+
+    Notes:
+        新 Record 初始始终为 ``built=False``、``connected=False``。
+        ``ctrl_color`` 根据 Side 使用 ``lf=6 / rt=13 / md=17`` 默认值。
+    """
 
     entry = get_module(key)
     side = side or entry["side"]
@@ -85,11 +187,31 @@ def new_module(key, side=None, name=None):
 
 def guide_names(record):
     u"""
-    返回模块实际使用的 Guide 名称。
+    返回一条 Module Record 实际使用的有序 Guide 名称。
 
-    Eye 使用固定语义：
-        ball / iris / aim
-    不能把它们错误地当成 bind_001 / bind_002 / bind_003。
+    解析优先级：
+
+    1. ``record["guides"]`` 非空时，严格使用用户保存的显式顺序；
+    2. ``fk_chain`` 没有显式 Guide 时返回空列表，强制用户指定；
+    3. ``eye`` 使用 Ball / Iris / Aim 固定语义名称；
+    4. Ear / Tongue 等标准线性模块按 ``bind_001...`` 生成。
+
+    Args:
+        record (dict):
+            已通过或准备通过 ``validate_document`` 校验的 Module Record。
+
+    Returns:
+        list[str]:
+            有序 Guide 名称列表。
+
+    Example:
+        >>> record = new_module("eye", "lf")
+        >>> guide_names(record)
+        ['loc_lf_eye_ball_001', 'loc_lf_eye_iris_001', 'loc_lf_eye_aim_001']
+
+    Notes:
+        Eye 不能把 Guide 简单当成 ``bind_001 / 002 / 003``，因为 Ball、Iris、Aim
+        分别代表旋转中心、Main Ctrl 可见位置和 Aim Ctrl 位置。
     """
 
     if record["guides"]:
@@ -131,7 +253,25 @@ def guide_names(record):
 
 
 def _append_ctrl_outputs(result, side, part, function, index=1):
-    u"""向 output_names() 结果追加一套标准 Controller 层级名称。"""
+    u"""
+    向 ``output_names()`` 结果追加一套标准 Controller Hierarchy 名称。
+
+    Args:
+        result (dict):
+            ``output_names`` 正在构建的结果字典。
+        side (str):
+            Controller Side Token。
+        part (str):
+            Controller Part Token。
+        function (str):
+            Controller Function Token，例如 ``main`` 或 ``aim``。
+        index (int):
+            Controller 序号。
+
+    Returns:
+        None:
+            直接修改传入 ``result``。
+    """
 
     suffix = "{}_{}_{}_{:03d}".format(
         side,
@@ -163,7 +303,30 @@ def _append_ctrl_outputs(result, side, part, function, index=1):
 
 
 def output_names(record):
-    u"""返回后端实际使用的名称，用于构建前冲突检查与场景树查询。"""
+    u"""
+    计算 Module Build 后应存在的全部稳定输出名称。
+
+    这个函数不查询 Maya Scene，只根据 Record 的 Naming Contract 生成预期名称。
+    ``RigLibraryService`` 使用结果进行：
+
+    - Build 前名称冲突检查；
+    - Build 完整性验证；
+    - Ownership Tag；
+    - Rebuild 删除范围；
+    - Structure / Display 查询。
+
+    Args:
+        record (dict):
+            Module Record。
+
+    Returns:
+        dict:
+            包含 ``joints / controls / subcontrols / groups / outputs`` 五类名称列表。
+
+    Notes:
+        Eye 使用 Main + Aim 两套 Controller Hierarchy；FK 类模块按 Guide 数量生成
+        ``fk_001...`` Controller 与 ``bind_001...`` Joint。
+    """
 
     result = {
         "joints": [],
@@ -249,7 +412,41 @@ def output_names(record):
 
 
 def validate_document(document):
-    u"""严格校验配置后返回独立副本，防止部分参数写入或覆盖同名模块。"""
+    u"""
+    严格校验 Rig Library 配置，并返回深拷贝后的安全 Document。
+
+    校验内容包括：
+
+    - Schema Version；
+    - Module 数量上限；
+    - Record 字段集合；
+    - Module 是否已正式登记；
+    - Name / Side / ID；
+    - 重复 Module Identity；
+    - bool / float / color / axis 类型和范围；
+    - Guide 数量、路径类型和重复项；
+    - ``connected`` 不能先于 ``built``；
+    - 已 Build Module 必须能够解析 Guide。
+
+    Version 1 的早期 Record 如果只缺 ``connected`` 字段，会把它迁移为与旧 ``built``
+    状态一致，再继续完整校验。
+
+    Args:
+        document (dict):
+            待校验的 JSON-compatible Rig Library Document。
+
+    Returns:
+        dict:
+            与输入隔离的深拷贝、安全配置。后续 Service 修改这个副本不会修改调用方对象。
+
+    Raises:
+        ValueError:
+            Version、字段、Module、命名、Side、数值、Guide 或 Build State 任一项不合法时抛出。
+
+    Notes:
+        这个函数是配置写入 Scene Network、JSON Import 和 Service Commit 前的共同边界。
+        不要为了“尽量加载”而忽略未知字段，否则旧 / 损坏配置会部分进入 Maya Scene。
+    """
 
     if not isinstance(document, dict) or document.get("version") != 1:
         raise ValueError(
@@ -451,7 +648,33 @@ def validate_document(document):
 
 
 def add_template(document, key):
-    u"""以原子方式添加模板；重复模块保留用户已经调整的设置。"""
+    u"""
+    原子地把一个 Catalog Template 追加到现有配置中。
+
+    已存在的 ``(side, module name)`` 不会重复插入，因此用户已经调整的 Size、Color、
+    Guide 或显示参数会被保留。新增 Record 使用 ``new_module()`` 默认值；最终结果再次
+    经过 ``validate_document()``。
+
+    Args:
+        document (dict):
+            当前 Rig Library Document。
+        key (str):
+            Template Key，例如 ``face_starter``、``ear_pair``、``tongue``、``eye_pair``。
+
+    Returns:
+        dict:
+            添加完成并重新校验后的独立 Document。
+
+    Raises:
+        ValueError:
+            Template Key 不存在，或输入 / 最终 Document 不满足 Schema 时抛出。
+
+    Example:
+        >>> document = new_document()
+        >>> document = add_template(document, "eye_pair")
+        >>> len(document["modules"])
+        2
+    """
 
     result = validate_document(
         document
