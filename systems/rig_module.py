@@ -37,6 +37,23 @@ class RigModule(object):
         self.jnt_parent = jnt_parent
         self.ctrl_parent = ctrl_parent
 
+        # 当前 Module 生命周期内不会改变的稳定名称，只生成一次。
+        self.jnt_group_name = name_utils.Name(
+            type="grp",
+            side=self.side,
+            part=self.module,
+            function="jnt",
+            index=1
+        ).name
+
+        self.ctrl_group_name = name_utils.Name(
+            type="grp",
+            side=self.side,
+            part=self.module,
+            function="ctrl",
+            index=1
+        ).name
+
         self.guide_list = []
         self.jnt_master_grp = None
         self.ctrl_master_grp = None
@@ -128,28 +145,12 @@ class RigModule(object):
     def setup_hierarchy(self):
         u"""创建当前模块的 Joint / Controller 根组。"""
 
-        jnt_group_name = name_utils.Name(
-            type="grp",
-            side=self.side,
-            part=self.module,
-            function="jnt",
-            index=1
-        ).name
-
-        ctrl_group_name = name_utils.Name(
-            type="grp",
-            side=self.side,
-            part=self.module,
-            function="ctrl",
-            index=1
-        ).name
-
         self.jnt_master_grp = hierarchy_utils.get_or_create_group(
-            jnt_group_name
+            self.jnt_group_name
         )
 
         self.ctrl_master_grp = hierarchy_utils.get_or_create_group(
-            ctrl_group_name
+            self.ctrl_group_name
         )
 
         if self.jnt_parent:
@@ -182,29 +183,13 @@ class RigModule(object):
     def delete_rig(self):
         u"""删除当前模块的 Joint / Controller 根组及其全部子节点。"""
 
-        jnt_group_name = name_utils.Name(
-            type="grp",
-            side=self.side,
-            part=self.module,
-            function="jnt",
-            index=1
-        ).name
-
-        ctrl_group_name = name_utils.Name(
-            type="grp",
-            side=self.side,
-            part=self.module,
-            function="ctrl",
-            index=1
-        ).name
-
         delete_nodes = []
 
-        if cmds.objExists(ctrl_group_name):
-            delete_nodes.append(ctrl_group_name)
+        if cmds.objExists(self.ctrl_group_name):
+            delete_nodes.append(self.ctrl_group_name)
 
-        if cmds.objExists(jnt_group_name):
-            delete_nodes.append(jnt_group_name)
+        if cmds.objExists(self.jnt_group_name):
+            delete_nodes.append(self.jnt_group_name)
 
         if delete_nodes:
             cmds.delete(delete_nodes)
