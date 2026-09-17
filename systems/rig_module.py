@@ -38,21 +38,8 @@ class RigModule(object):
         self.ctrl_parent = ctrl_parent
 
         # 当前 Module 生命周期内不会改变的稳定名称，只生成一次。
-        self.jnt_group_name = name_utils.Name(
-            type="grp",
-            side=self.side,
-            part=self.module,
-            function="jnt",
-            index=1
-        ).name
-
-        self.ctrl_group_name = name_utils.Name(
-            type="grp",
-            side=self.side,
-            part=self.module,
-            function="ctrl",
-            index=1
-        ).name
+        self.jnt_group_name = name_utils.Name(type="grp", side=self.side, part=self.module, function="jnt", index=1).name
+        self.ctrl_group_name = name_utils.Name(type="grp", side=self.side, part=self.module, function="ctrl", index=1).name
 
         self.guide_list = []
         self.jnt_master_grp = None
