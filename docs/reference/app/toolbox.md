@@ -31,10 +31,6 @@ from muziToolset.app import toolbox
 | API | 作用 |
 | --- | --- |
 | `get_maya_main_window()` | 返回 Maya 主窗口 QWidget。 |
-| `get_tool_display_name(tool_name)` | 返回工具显示名称。 |
-| `get_tool_description(tool_name)` | 返回工具说明。 |
-| `get_tool_mode(tool_function)` | 返回工具运行模式。 |
-| `get_tool_mode_display_name(tool_mode)` | 返回工具模式的中文显示名称。 |
 | `main()` | 创建或恢复主工具箱。 |
 
 ### Class `ToolCard`
@@ -90,13 +86,6 @@ from muziToolset.app import toolbox
 | `refresh_tool_registry(self)` | 重新扫描工具目录并刷新界面。 |
 | `close_all_subtools(self)` | 关闭所有由主工具箱管理的 UI 子工具。 |
 
-## 公共常量
-
-| 名称 | 值 |
-| --- | --- |
-| `TOOL_MODE_UI` | `'ui'` |
-| `TOOL_MODE_ACTION` | `'action'` |
-
 ## Functions 详细 API
 
 ### `get_maya_main_window()`
@@ -130,157 +119,6 @@ QWidget | None:
 from muziToolset.app import toolbox
 
 result = toolbox.get_maya_main_window()
-```
-
-### `get_tool_display_name()`
-
-**作用**
-
-返回工具显示名称。
-
-**Signature**
-
-```python
-get_tool_display_name(tool_name)
-```
-
-**参数**
-
-| 参数 | 类型 | 必填 | 默认值 | 说明 |
-| --- | --- | :---: | --- | --- |
-| `tool_name` | `str` | 是 | `—` | Tool Registry 中的工具模块名称。 |
-
-**返回值**
-
-str:
-    用于界面展示的工具名称。
-
-**异常**
-
-源码未声明专门的异常说明。
-
-**示例**
-
-```python
-from muziToolset.app import toolbox
-
-result = toolbox.get_tool_display_name(
-    tool_name="tool_name",
-)
-```
-
-### `get_tool_description()`
-
-**作用**
-
-返回工具说明。
-
-**Signature**
-
-```python
-get_tool_description(tool_name)
-```
-
-**参数**
-
-| 参数 | 类型 | 必填 | 默认值 | 说明 |
-| --- | --- | :---: | --- | --- |
-| `tool_name` | `str` | 是 | `—` | Tool Registry 中的工具模块名称。 |
-
-**返回值**
-
-str:
-    工具卡片使用的一行功能说明。
-
-**异常**
-
-源码未声明专门的异常说明。
-
-**示例**
-
-```python
-from muziToolset.app import toolbox
-
-result = toolbox.get_tool_description(
-    tool_name="tool_name",
-)
-```
-
-### `get_tool_mode()`
-
-**作用**
-
-返回工具运行模式。
-
-Tool Registry 会把 `tool_mode` 写到懒加载 Runner 上。
-未声明时统一按照 UI 工具处理，保证旧工具继续可用。
-
-**Signature**
-
-```python
-get_tool_mode(tool_function)
-```
-
-**参数**
-
-| 参数 | 类型 | 必填 | 默认值 | 说明 |
-| --- | --- | :---: | --- | --- |
-| `tool_function` | `callable` | 是 | `—` | Tool Registry 创建的懒加载 Runner。 |
-
-**返回值**
-
-str:
-    `ui` 或 `action`。
-
-**异常**
-
-源码未声明专门的异常说明。
-
-**示例**
-
-```python
-from muziToolset.app import toolbox
-
-result = toolbox.get_tool_mode(
-    tool_function=...,
-)
-```
-
-### `get_tool_mode_display_name()`
-
-**作用**
-
-返回工具模式的中文显示名称。
-
-**Signature**
-
-```python
-get_tool_mode_display_name(tool_mode)
-```
-
-**参数**
-
-| 参数 | 类型 | 必填 | 默认值 | 说明 |
-| --- | --- | :---: | --- | --- |
-| `tool_mode` | `str` | 是 | `—` | Tool Registry 声明的运行模式。 |
-
-**返回值**
-
-str:
-    `界面工具` 或 `直接执行`。
-
-**异常**
-
-源码未声明专门的异常说明。
-
-**示例**
-
-```python
-from muziToolset.app import toolbox
-
-result = toolbox.get_tool_mode_display_name(
-    tool_mode=...,
-)
 ```
 
 ### `main()`

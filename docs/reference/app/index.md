@@ -9,4 +9,5 @@ App 层负责 MuziTools 主程序入口、工具箱和顶层窗口生命周期�
 - [`app/__init__.py`](package.md) — Muzi Rigging 应用层。
 - [`app/main.py`](main.md) — Muzi Rigging 应用启动入口。
 - [`app/toolbox.py`](toolbox.md) — Muzi Rigging Toolbox
+- [`app/toolbox_catalog.py`](toolbox_catalog.md) — 主工具箱展示目录
 - [`app/window_manager.py`](window_manager.md) — Muzi Rigging Window Manager
