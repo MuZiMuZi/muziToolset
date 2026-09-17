@@ -1,0 +1,47 @@
+name: Normalize Controller Shapes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/normalize_controller_shapes.py"
+      - ".github/workflows/normalize_controller_shapes.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  normalize-controller-shapes:
+    if: contains(github.event.head_commit.message, '[normalize-controller-shapes]')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Normalize controller shape library
+        run: python scripts/normalize_controller_shapes.py
+
+      - name: Commit normalized controller shapes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add resources/controller_shapes core/rigging/ctrl_utils.py
+
+          if git diff --cached --quiet; then
+            echo "Controller Shape Library already normalized."
+            exit 0
+          fi
+
+          git commit -m "refactor(ctrl): normalize controller shape library"
+          git push origin HEAD:main
