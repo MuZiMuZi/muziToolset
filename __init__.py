@@ -3,21 +3,51 @@ u"""
 muziToolset
 ===========
 
-木子 Maya Rigging Toolset 根包。
+MuziTools Maya Rigging Toolset 根包与公开启动入口。
 
-正式框架：
-    app         Maya 应用入口与窗口管理
-    ui          通用 PySide UI、主题与组件
-    core        不依赖具体 Rig 业务的 Maya 底层功能
-    tools       独立的小型绑定工具
-    systems     RigBase / ModuleBase / CtrlBase 和完整绑定系统
-    resources   图标、Controller Shape 等资源
+当前正式 Runtime 分层：
+    app
+        Maya 应用入口、主工具箱和窗口生命周期。
 
-0.4 架构约定：
-    - Rig Naming -> systems.rig_base.RigBase
-    - Rig Lifecycle -> systems.module_base.ModuleBase / RigModuleBase
-    - Controller Workflow -> systems.ctrl_base
-    - 完整业务单元统一称为 Module，不再使用 Component
+    ui
+        通用 PySide Theme、Window 与可复用 Widget。
+
+    core/common
+        Attribute、Hierarchy、Naming、Transform 等通用 Maya 能力。
+
+    core/rigging
+        Controller、Guide、Joint 等 Rig Primitive。
+
+    systems
+        完整、可重复构建的 Rig Module / Workflow。
+        当前通用 Module Lifecycle 位于 systems/rig_module.py。
+
+    tools
+        绑定师直接使用的小型 UI / Action Tool；部分旧 Tool 仍处于 Core 迁移期。
+
+    resources
+        Controller Shape、Face Guide、Icon 等静态资源。
+
+主要公开入口：
+    show()
+        打开 MuziTools 主工具箱。
+
+    show_rig_library()
+        打开当前四步模块化绑定库。
+
+    initialize()
+        与 show() 等价的初始化入口。
+
+当前核心约定：
+    - Rig 标准命名由 core.common.name_utils.Name 负责；
+    - Module Lifecycle 由 systems.rig_module.RigModule 负责；
+    - Controller Primitive 由 core.rigging.ctrl_utils.Ctrl 负责；
+    - Joint Primitive 由 core.rigging.jnt_utils.Jnt 负责；
+    - core/bake 与 legacy_reference 属于历史兼容区，不定义新架构。
+
+兼容说明：
+    根包仍暴露若干历史 Smoke Test 包装入口，便于旧 Maya Shelf / 调试脚本继续调用。
+    这些函数名可能保留旧架构术语；它们不代表当前推荐 Runtime 分层。
 """
 
 from __future__ import print_function
@@ -28,11 +58,18 @@ __version__ = "0.4.0"
 
 def show():
     u"""
-    打开 Muzi Rigging 主工具箱。
+    打开 MuziTools 主工具箱。
+
+    这是普通用户进入工具集的顶层入口。函数内部延迟导入 ``app.toolbox``，
+    避免仅导入 ``muziToolset`` 时立刻创建 Maya / Qt 窗口。
 
     Returns:
         object:
-        当前工具入口创建并显示的窗口或执行结果。
+            ``app.toolbox.main()`` 创建或恢复的主工具箱窗口。
+
+    Example:
+        >>> import muziToolset
+        >>> window = muziToolset.show()
     """
     from .app import toolbox
 
@@ -41,24 +78,37 @@ def show():
 
 def initialize():
     u"""
-    初始化并打开主工具箱。
+    初始化并打开 MuziTools 主工具箱。
+
+    当前实现直接转发到 :func:`show`，保留该名称主要用于旧 Shelf、启动脚本
+    或需要显式 ``initialize`` 语义的集成入口。
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+            ``show()`` 返回的主工具箱窗口。
+
+    Example:
+        >>> import muziToolset
+        >>> window = muziToolset.initialize()
     """
     return show()
 
 
 def show_rig_library():
     u"""
+    打开当前模块化 Rig Library 窗口。
 
-        打开绑定库，可直接在 Maya Python Script Editor 中运行。
+    Rig Library 使用 Setup → Guide → Ctrl → Final 四步工作流，并通过
+    ``systems.rig.library_service.RigLibraryService`` 管理配置、Build、Rebuild、
+    Mirror 与 Final Connection。
 
-        Returns:
-            object:
-                当前 API 完成处理后返回的结果。
+    Returns:
+        object:
+            ``tools.rig.modular_rig_tool.main()`` 创建或恢复的 Rig Library 窗口。
 
+    Example:
+        >>> import muziToolset
+        >>> window = muziToolset.show_rig_library()
     """
     from .tools.rig import modular_rig_tool
 
@@ -67,15 +117,18 @@ def show_rig_library():
 
 def smoke_test(test_window_manager=False):
     u"""
-    运行 Maya 2023 非破坏性全工具 Smoke Test。
+    运行仓库保留的 Maya 非破坏性全工具 Smoke Test。
+
+    该函数是测试包装入口，不参与正常 Rig 构建。具体覆盖范围以
+    ``tests/maya_smoke_test.py`` 当前实现为准。
 
     Args:
         test_window_manager (bool):
-            包初始化阶段是否运行 Window Manager 自检。
+            是否额外执行 Window Manager 相关检查。
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+            ``maya_smoke_test.run()`` 返回的测试结果。
     """
     from .tests import maya_smoke_test
 
@@ -86,11 +139,14 @@ def smoke_test(test_window_manager=False):
 
 def functional_smoke_test():
     u"""
-    运行 Maya 2023 全工具真实功能 Smoke Test。
+    运行仓库保留的 Maya 全工具功能 Smoke Test。
+
+    该入口会执行比普通导入检查更接近真实操作的功能测试；具体场景修改范围、
+    清理方式和结果结构以 ``tests/maya_functional_smoke_test.py`` 为准。
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+            ``maya_functional_smoke_test.run()`` 返回的测试结果。
     """
     from .tests import maya_functional_smoke_test
 
@@ -99,11 +155,14 @@ def functional_smoke_test():
 
 def maya2023_smoke_test():
     u"""
-    运行当前 Rig 架构的 Maya 2023 Runtime Smoke Test。
+    运行仓库当前 Maya 2023 Runtime Smoke Test 入口。
+
+    这是测试包装函数；它不定义当前 Rig 架构。实际测试契约以
+    ``tests/maya2023_smoke_test.py`` 当前内容为准。
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+            ``maya2023_smoke_test.run()`` 返回的测试结果。
     """
     from .tests import maya2023_smoke_test
 
@@ -112,14 +171,15 @@ def maya2023_smoke_test():
 
 def face_modules_maya2023_smoke_test():
     u"""
-    逐模块运行新 Face Rig 架构的 Maya 2023 Runtime Smoke Test。
+    运行仓库保留的 Face Modules Maya 2023 Smoke Test。
 
-    测试会使用正式 FaceSetup、FaceGuide 和 face_guide.ma，然后按依赖顺序执行
-    Brow / Eye / Eyelid / Nose / Cheek / Ear / Jaw / Teeth / Tongue / Lip / Mouth。
+    该函数属于历史 / 兼容测试入口。当前正式 Face Runtime 以
+    ``systems/face``、``systems/rig/library_service.py`` 和 Rig Library 四步工作流
+    为事实来源；测试脚本内部若仍引用旧 Face 类型，应按测试迁移任务单独更新。
 
     Returns:
         dict:
-        Maya 版本、逐模块 PASS / FAIL / SKIP 结果和统计数量。
+            测试脚本返回的逐项结果与统计数据。
     """
     from .tests import face_modules_maya2023_smoke_test
 
@@ -128,14 +188,14 @@ def face_modules_maya2023_smoke_test():
 
 def face_build_step_maya2023_smoke_test():
     u"""
-    运行完整 Face Workflow Step 03 的 Maya 2023 Runtime Smoke Test。
+    运行仓库保留的旧 Face Build Step Maya 2023 Smoke Test。
 
-    测试只通过 FaceBuild.run_step() 进入 FaceRig，并验证 11 个正式 Module
-    全部构建成功、Step 03 完成以及 Current Face Step 推进到 Step 04。
+    当前 Rig Library 已采用 Setup → Guide → Ctrl → Final 流程，因此这个函数名
+    中的旧 Step 语义仅用于兼容已有测试入口，不应作为当前工作流文档依据。
 
     Returns:
         dict:
-        Maya 版本、完整 FaceBuild 通过状态、Step 状态与精简 Module 摘要。
+            ``face_build_step_maya2023_smoke_test.run()`` 返回的测试数据。
     """
     from .tests import face_build_step_maya2023_smoke_test
 
@@ -144,15 +204,14 @@ def face_build_step_maya2023_smoke_test():
 
 def face_controller_appearance_maya2023_smoke_test():
     u"""
-    运行 Step 03 Controller Appearance 的 Maya 2023 Runtime Smoke Test。
+    运行 Face Controller Appearance Maya 2023 Smoke Test。
 
-    测试会先完成完整 FaceBuild，然后实时修改 Global / Module Size 与 Side Color，
-    验证 Controller World Matrix、Transform Scale、Output 和 Jnt 都保持不变，
-    只有 Controller Shape CV 尺寸、颜色以及 Config Settings 发生预期变化。
+    该测试入口用于验证控制器外观修改不会意外改变 Rig Transform / Output。
+    当前实际外观工作流以 Rig Library Step 03 和 ``core.rigging.ctrl_utils`` 为准。
 
     Returns:
         dict:
-        Maya 版本、Controller Appearance 通过状态、不可变契约与外观更新摘要。
+            测试脚本返回的外观验证结果。
     """
     from .tests import face_controller_appearance_maya2023_smoke_test
 
@@ -161,14 +220,14 @@ def face_controller_appearance_maya2023_smoke_test():
 
 def face_finalize_step_maya2023_smoke_test():
     u"""
-    运行完整 Face Workflow Step 04 的 Maya 2023 Runtime Smoke Test。
+    运行仓库保留的 Face Finalize Maya 2023 Smoke Test。
 
-    测试先通过 FaceBuild.run_step() 完成 11 Module，然后执行 FaceFinalizer，
-    验证 Controller Set、最终 Visibility、Step04 状态以及重复 Finalize 的幂等性。
+    当前模块化绑定的正式 Final 行为由 ``RigLibraryService.finalize()`` 与各 Module
+    的 ``connect_outputs()`` 定义。本函数仅作为旧测试套件兼容入口。
 
     Returns:
         dict:
-        Maya 版本、Finalize 通过状态、Controller / Visibility 摘要和失败 Traceback。
+            测试脚本返回的 Finalize 验证结果。
     """
     from .tests import face_finalize_step_maya2023_smoke_test
 
@@ -177,11 +236,14 @@ def face_finalize_step_maya2023_smoke_test():
 
 def pipeline_smoke_test():
     u"""
-    运行基础 Core / Legacy Pipeline 拆分后的功能 Smoke Test。
+    运行仓库保留的 Pipeline / Core 迁移 Smoke Test。
+
+    该入口主要用于历史迁移验证；当前正式 Core 结构是 ``core/common`` 与
+    ``core/rigging``，而不是旧的平铺 ``core.*_utils`` 架构。
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+            ``pipeline_refactor_smoke_test.run()`` 返回的测试结果。
     """
     from .tests import pipeline_refactor_smoke_test
 
@@ -190,19 +252,14 @@ def pipeline_smoke_test():
 
 def extended_core_smoke_test():
     u"""
-    运行 Extended Core / RigBase Smoke Test。
+    运行仓库保留的 Extended Core Smoke Test。
 
-    测试范围：
-        attr_utils
-        hierarchy_utils
-        jnt_utils
-        RigBase / rename_utils
-        model_check_utils
-        scene_utils
+    这是兼容测试包装入口。测试脚本若仍包含退休 Core / RigBase 名称，表示对应
+    测试尚未完成迁移，不代表这些路径重新成为正式 Runtime 架构。
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+            ``extended_core_smoke_test.run()`` 返回的测试结果。
     """
     from .tests import extended_core_smoke_test
 
@@ -211,11 +268,11 @@ def extended_core_smoke_test():
 
 def core_import_style_test():
     u"""
-    运行旧 CamelCase Core Import Gate。
+    运行 Core Import Style 静态检查包装入口。
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+            ``core_import_style_test.run()`` 返回的检查结果。
     """
     from .tests import core_import_style_test
 
@@ -224,11 +281,14 @@ def core_import_style_test():
 
 def rig_architecture_gate_test():
     u"""
-    检查退休的 name_utils / Component / controller 包是否重新出现。
+    运行仓库 Rig Architecture Gate 静态检查包装入口。
+
+    Gate 的具体禁止项以 ``tests/rig_architecture_gate_test.py`` 当前实现为准；
+    根包不在这里复制另一份架构规则，避免测试与文档再次漂移。
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+            ``rig_architecture_gate_test.run()`` 返回的检查结果。
     """
     from .tests import rig_architecture_gate_test
 
@@ -237,11 +297,14 @@ def rig_architecture_gate_test():
 
 def rig_base_contract_test():
     u"""
-    运行 RigBase Naming Contract Test。
+    运行仓库保留的 RigBase Contract Test 包装入口。
+
+    ``RigBase`` 属于旧架构术语；保留此函数是为了兼容历史测试调用。
+    当前 Naming 事实来源是 ``core.common.name_utils.Name``。
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+            ``rig_base_contract_test.run()`` 返回的测试结果。
     """
     from .tests import rig_base_contract_test
 
@@ -250,11 +313,14 @@ def rig_base_contract_test():
 
 def module_base_contract_test():
     u"""
-    运行 ModuleBase / RigModuleBase Lifecycle Contract Test。
+    运行仓库保留的 ModuleBase Contract Test 包装入口。
+
+    当前正式 Module Lifecycle 位于 ``systems.rig_module.RigModule``；本函数名称
+    保留旧测试兼容语义，不表示 ``ModuleBase / RigModuleBase`` 仍是正式架构。
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+            ``module_base_contract_test.run()`` 返回的测试结果。
     """
     from .tests import module_base_contract_test
 
@@ -263,11 +329,11 @@ def module_base_contract_test():
 
 def tool_window_smoke_test():
     u"""
-    运行所有正式 UI Tool 的 Direct Main 窗口 Smoke Test。
+    运行正式 UI Tool 的 Direct Main 窗口 Smoke Test。
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+            ``tool_window_smoke_test.run()`` 返回的窗口测试结果。
     """
     from .tests import tool_window_smoke_test
 
@@ -276,11 +342,14 @@ def tool_window_smoke_test():
 
 def face_build_smoke_test():
     u"""
-    运行 Face Eyelid / Curve Attachment / Zip Lip Build Smoke Test。
+    运行仓库保留的旧 Face Build Smoke Test 包装入口。
+
+    该测试脚本可能覆盖历史 Eyelid / Curve Attachment / Zip Lip 实现；当前正式
+    Face Module 可用范围应以 ``systems/face`` 和 Rig Library Catalog 为准。
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+            ``face_build_smoke_test.run()`` 返回的测试结果。
     """
     from .tests import face_build_smoke_test
 
@@ -289,11 +358,14 @@ def face_build_smoke_test():
 
 def ctrl_base_smoke_test():
     u"""
-    运行 CtrlBase Controller / Follow Smoke Test。
+    运行仓库保留的 CtrlBase Smoke Test 包装入口。
+
+    ``CtrlBase`` 是历史架构名称；当前正式 Controller Primitive 位于
+    ``core.rigging.ctrl_utils.Ctrl``。保留本入口只用于兼容已有测试调用。
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+            ``ctrl_base_smoke_test.run()`` 返回的测试结果。
     """
     from .tests import ctrl_base_smoke_test
 
@@ -302,15 +374,15 @@ def ctrl_base_smoke_test():
 
 def rig_integration_test(keep_result=False):
     u"""
-    运行基础 Rig 跨模块 Integration Test。
+    运行仓库保留的 Rig 跨模块 Integration Test。
 
     Args:
         keep_result (bool):
-            控制当前方法中的 `keep_result` 选项是否启用。
+            为 True 时按测试脚本约定保留生成结果；具体清理行为以测试实现为准。
 
     Returns:
         object:
-        当前 API 完成处理后返回的结果。
+            ``rig_integration_test.run()`` 返回的集成测试结果。
     """
     from .tests import rig_integration_test
 
