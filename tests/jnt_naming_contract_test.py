@@ -5,12 +5,34 @@ Jnt Naming Contract Test
 
 纯 Python 静态门禁，不需要 Autodesk Maya。
 
+本 Gate 只约束**当前正式 Runtime**，不把 Compatibility / Migration Source 当成新架构。
+
+当前扫描范围：
+    app/
+    ui/
+    core/common/
+    core/rigging/
+    systems/
+    tools/
+
+明确不属于本 Gate：
+    core/bake/
+        历史 Compatibility Module，允许保留 jointUtils 等旧命名用于迁移参考。
+
+    legacy_reference/
+        已退休实现。
+
+    scripts/
+        迁移、审计、文档维护脚本可以提到旧名称。
+
+    tests/
+        测试配置本身可能需要描述被禁止的旧名称，不属于 Runtime Naming Contract。
+
 规则：
-    1. Muzi Toolset 自有 Joint 命名统一使用 jnt / Jnt；
+    1. 当前 MuziTools 自有 Joint 命名统一使用 jnt / Jnt；
     2. Maya 官方 API 仍必须使用 cmds.joint / jointDisplayScale；
-    3. Maya Joint Node Type 字符串仍必须是 "joint"；
-    4. 禁止重新出现 joint_utils / tools.joint 等旧项目入口；
-    5. legacy_reference 与 Maya Resource 不属于正式命名迁移范围。
+    3. Maya Joint Node Type 字符串仍必须是 ``"joint"``；
+    4. 当前 Runtime 禁止重新使用 joint_utils / tools.joint 等退休项目入口。
 """
 
 from __future__ import print_function
@@ -26,13 +48,12 @@ REPO_ROOT = os.path.dirname(
 )
 
 SCAN_ROOTS = [
-    "app",
-    "core",
-    "systems",
-    "tools",
-    "ui",
-    "tests",
-    "scripts",
+    os.path.join("app"),
+    os.path.join("ui"),
+    os.path.join("core", "common"),
+    os.path.join("core", "rigging"),
+    os.path.join("systems"),
+    os.path.join("tools"),
 ]
 
 FORBIDDEN_PROJECT_TEXT = [
@@ -62,7 +83,7 @@ MAYA_COMMANDS_WITH_NODE_TYPE = [
 
 
 def iter_python_files():
-    u"""遍历正式 Runtime / Tests 中的 Python 文件。"""
+    u"""遍历当前正式 Runtime 中的 Python 文件。"""
     for root_name in SCAN_ROOTS:
         root_path = os.path.join(
             REPO_ROOT,
@@ -96,7 +117,7 @@ def read_source(file_path):
 
 
 def assert_paths_use_jnt():
-    u"""正式路径中禁止再使用 joint 作为项目命名。"""
+    u"""当前正式 Runtime 路径中禁止重新使用 joint 作为项目命名。"""
     invalid_paths = []
 
     for root_name in SCAN_ROOTS:
@@ -134,23 +155,17 @@ def assert_paths_use_jnt():
 
     if invalid_paths:
         raise AssertionError(
-            u"正式项目路径仍包含 joint：{}".format(
+            u"当前正式 Runtime 路径仍包含 joint：{}".format(
                 ", ".join(sorted(set(invalid_paths)))
             )
         )
 
 
 def assert_project_imports_use_jnt():
-    u"""禁止旧 Joint Project Import / Tool Entry。"""
+    u"""当前 Runtime 禁止旧 Joint Project Import / Tool Entry。"""
     issues = []
 
     for file_path in iter_python_files():
-        file_name = os.path.basename(file_path)
-        if file_name == "jnt_naming_contract_test.py":
-            continue
-        if file_name.startswith("_redo_jnt_migration"):
-            continue
-
         source = read_source(file_path)
 
         for forbidden_text in FORBIDDEN_PROJECT_TEXT:
@@ -166,7 +181,7 @@ def assert_project_imports_use_jnt():
 
     if issues:
         raise AssertionError(
-            u"仍存在旧 Joint Project 命名：{}".format(
+            u"当前正式 Runtime 仍存在旧 Joint Project 命名：{}".format(
                 "; ".join(issues)
             )
         )
@@ -177,12 +192,6 @@ def assert_maya_api_is_not_renamed():
     issues = []
 
     for file_path in iter_python_files():
-        file_name = os.path.basename(file_path)
-        if file_name == "jnt_naming_contract_test.py":
-            continue
-        if file_name.startswith("_redo_jnt_migration"):
-            continue
-
         source = read_source(file_path)
 
         for forbidden_text in FORBIDDEN_MAYA_API_TEXT:
@@ -196,7 +205,6 @@ def assert_maya_api_is_not_renamed():
                 )
             )
 
-        # Maya 查询命令的 type 必须继续使用 joint。
         command_pattern = re.compile(
             r"cmds\.(?:ls|listRelatives|listConnections)\([^\)]*?type\s*=\s*['\"]jnt['\"]",
             re.DOTALL
@@ -237,13 +245,16 @@ def assert_maya_api_is_not_renamed():
 
 
 def main():
-    u"""执行 Jnt Naming 静态契约。"""
+    u"""执行当前正式 Runtime 的 Jnt Naming 静态契约。"""
     assert_paths_use_jnt()
     assert_project_imports_use_jnt()
     assert_maya_api_is_not_renamed()
 
     print(
-        u"[PASS] Project Jnt Naming / Maya Joint API Contract 正常。"
+        u"[PASS] Current Runtime Jnt Naming / Maya Joint API Contract 正常。"
+    )
+    print(
+        u"[PASS] Compatibility / Migration Source 不参与当前 Naming Gate。"
     )
 
 
