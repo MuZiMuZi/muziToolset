@@ -1,33 +1,39 @@
 # coding=utf-8
 u"""
-fk_chain：标准 FK Chain 构建组件。
+fk_chain：MuziTools 标准线性 FK Chain Rig Component。
 
-适合 Ear、Finger、Tongue、Tail 等线性 FK 结构复用。
+适合：
+    Ear、Tongue、Finger、Tail 或其他“一组有序 Guide → 一组 Joint → 一组 FK Ctrl”
+    的线性结构。
 
-方法介绍与使用场景：
+核心数据流：
 
-    FKChain.__init__
-        初始化 FK Chain 的模块信息、Guide 数量、Guide 功能字段和控制器设置。
+    Guide 001
+        ↓
+    Joint 001  ←  Output Ctrl 001
+        ↓                 ↓
+    Joint 002  ←  Output Ctrl 002
+        ↓                 ↓
+    Joint 003  ←  Output Ctrl 003
 
-    FKChain.get_guides
-        优先复用 RigModule.get_guides() 获取外部传入的 Guide。
-        没有传入 Guide 时，再按照 FK Chain 标准 Locator 命名规则自动查找。
+构建职责：
+    1. 获取显式 Guide，或按标准 Locator Naming 自动查找 Guide。
+    2. 一条 Guide 对应一个 Joint。
+    3. 一条 Guide 对应一个 FK Controller。
+    4. Joint 按 Guide 顺序组成 Joint Chain。
+    5. Controller 使用“上一个 Output → 下一个 Zero”的 FK DAG 结构。
+    6. 每个 Controller Output 使用 parentConstraint 驱动对应 Joint。
+    7. Final 阶段可以通过 load_outputs() 从已有场景恢复连接所需状态。
 
-    FKChain.create_joints
-        根据 Guide 创建 Joint Chain。
-        单个 Joint 创建统一复用 RigModule.create_joint()。
+设计边界：
+    - FKChain 不负责复杂 IK、Spline IK、Stretch 或 Twist；
+    - 不负责特殊 Eye Aim / Pose Driver 结构；
+    - 不负责 Rig Library 的 JSON、Mirror、Ownership 与 UI；
+    - 单 Joint / Controller Primitive 继续复用 RigModule。
 
-    FKChain.create_ctrls
-        根据 Guide 创建 FK Controller Chain。
-        单个 Controller 创建统一复用 RigModule.create_ctrl()。
-
-    FKChain.connect_rig
-        使用每个 Controller 的 Output Group 驱动对应 Joint。
-        重复构建时会复用已经存在且 Driver 正确的 parentConstraint。
-
-    FKChain.setup_hierarchy
-        先复用 RigModule.setup_hierarchy() 创建模块总组，
-        再整理 FK 专属 Joint Chain 和“上一个 Output -> 下一个 Zero”的 Controller Chain。
+当前直接复用 FKChain 的正式 Face Module：
+    systems.face.ear_module.EarModule
+    systems.face.tongue_module.TongueModule
 """
 
 import maya.cmds as cmds
@@ -37,6 +43,36 @@ from ...core.common import name_utils, hierarchy_utils
 
 
 class FKChain(rig_module.RigModule):
+    u"""
+    标准线性 FK Joint / Controller Chain 构建器。
+
+    ``FKChain`` 是 ``RigModule`` 的业务实现之一。它把有序 Guide 转换成同长度的
+    Joint 和 FK Controller，并建立可重复检查的 Hierarchy / Constraint Contract。
+
+    典型结构：
+
+        jnt_master_grp
+        └── jnt_001
+            └── jnt_002
+                └── jnt_003
+
+        ctrl_master_grp
+        └── zero_001
+            └── ... ctrl_001
+                └── output_001
+                    └── zero_002
+                        └── ... ctrl_002
+                            └── output_002
+
+    Final Connection：
+
+        output_001 -> parentConstraint -> jnt_001
+        output_002 -> parentConstraint -> jnt_002
+        ...
+
+    已经存在正确 Driver 的 Constraint 会被复用；存在其他 Parent Constraint 时会
+    抛出错误，而不是静默覆盖已有 Rig。
+    """
 
     def __init__(
         self,
@@ -55,59 +91,50 @@ class FKChain(rig_module.RigModule):
         ctrl_axis="X+"
     ):
         u"""
-        初始化一个标准 FK Chain。
-
-        module(str): 模块名称，例如 "ear"、"finger"、"tongue"。
-        side(str): 模块方向，例如 "lf"、"rt"、"md"。
-        guide(list/str/Guide): 可选 Guide 数据来源。
-        jnt_parent(str/PyNode): Joint 总组的可选父节点。
-        ctrl_parent(str/PyNode): Controller 总组的可选父节点。
-        guide_count(int): 没有传入 Guide 时，根据命名规则查找的 Guide 数量。
-        guide_function(str): Guide Locator 名称中的功能字段，默认 "bind"。
-        jnt_function(str): Joint 名称中的功能字段，默认 "bind"。
-        ctrl_function(str): Controller 名称中的功能字段，默认 "fk"。
-        ctrl_shape(str): Controller Shape 名称。
-        ctrl_color(int): Controller 颜色索引。
-        ctrl_size(float): Controller 显示大小。
-        ctrl_axis(str): Controller Shape 面朝方向，支持 X+ / X- / Y+ / Y- / Z+ / Z-。
-        Maya 使用示例：
-            from muziToolset.systems.components import fk_chain
-            fk_object = fk_chain.FKChain(
-                module="ear",
-                side="lf",
-                guide_count=3,
-                guide_function="bind",
-                ctrl_axis="Z+"
-            )
-            fk_object.build()
+        初始化标准 FK Chain 的 Naming、Guide Count 和 Controller 外观配置。
 
         Args:
-            module (object):
-                当前方法执行 Maya / Rig 操作时使用的 `module` 数据。
+            module (str):
+                Module Part Token，例如 ``"ear"``、``"tongue"``、``"finger"``。
             side (str):
-                方向标记，常用值为 lf、rt 或 md。
-            guide (str):
-                需要查询或处理的 Guide Transform 名称。
-            jnt_parent (str | None):
-                新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。
-            ctrl_parent (object):
-                当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。
+                方向标记，常用 ``lf``、``rt``、``md``。
+            guide (str | list[str] | tuple[str] | object | None):
+                可选 Guide 来源。None 时根据标准 Locator Naming 自动查找。
+            jnt_parent (str | object | None):
+                Module Joint Master Group 的可选上层父节点。
+            ctrl_parent (str | object | None):
+                Module Controller Master Group 的可选上层父节点。
             guide_count (int):
-                当前构建、采样或查询过程使用的元素数量。
+                自动按名称查找 Guide 时的预期数量。
             guide_function (str):
-                当前 Maya / Rig 操作使用的 `guide_function` 名称或标记。
+                Guide Locator Naming 中的 function Token，当前普通绑定 Guide 默认 ``bind``。
             jnt_function (str):
-                当前 Maya / Rig 操作使用的 `jnt_function` 名称或标记。
+                输出 Joint Naming 中的 function Token，默认 ``bind``。
             ctrl_function (str):
-                当前 Maya / Rig 操作使用的 `ctrl_function` 名称或标记。
+                输出 Controller Naming 中的 function Token，默认 ``fk``。
             ctrl_shape (str):
-                当前 Maya / Rig 操作使用的 `ctrl_shape` 名称或标记。
+                Controller Shape Library 名称。
             ctrl_color (int):
-                当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。
+                Maya Drawing Override Index Color。
             ctrl_size (float):
-                当前 Maya / Rig 计算使用的 `ctrl_size` 数值参数。
+                Controller Curve CV 显示大小倍率。
             ctrl_axis (str):
-                当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。
+                Controller Shape 绝对轴向，支持 ``X+ / X- / Y+ / Y- / Z+ / Z-``。
+
+        Example:
+            >>> from muziToolset.systems.components import fk_chain
+            >>> fk = fk_chain.FKChain(
+            ...     module="ear",
+            ...     side="lf",
+            ...     guide_count=3,
+            ...     guide_function="bind",
+            ...     ctrl_axis="Z+",
+            ... )
+            >>> fk.build()
+
+        Notes:
+            Rig Library 会在实例化后覆盖 ``ctrl_size`` / ``ctrl_color``，因此这些成员
+            也是模块外观配置的稳定运行时接口。
         """
 
         super(FKChain, self).__init__(
@@ -135,51 +162,42 @@ class FKChain(rig_module.RigModule):
 
     def get_guides(self):
         u"""
-        获取当前 FK Chain 使用的 Guide 列表。
+        返回当前 FK Chain 的有序 Guide 列表。
 
-        优先调用 RigModule.get_guides() 处理外部明确传入的 Guide 数据。
-        如果没有传入 Guide，则 FK Chain 再按照：
-            loc_<side>_<module>_<guide_function>_<index>
-        自动查找线性 Chain 使用的 Guide。
-        新版 Face / Body Guide 的普通绑定定位器默认使用 function="bind"，
-        因此 Ear 的默认名称为：
-            loc_lf_ear_bind_001
-            loc_lf_ear_bind_002
-            loc_lf_ear_bind_003
+        优先级：
+
+        1. 复用 ``RigModule.get_guides()`` 读取显式传入的数据；
+        2. 没有传入 ``guide`` 时，按
+           ``loc_<side>_<module>_<guide_function>_<index>`` 自动查找；
+        3. 显式传入了 Guide 但结果为空时直接报错，不再退回名称猜测。
 
         Returns:
-            list: 按 FK 顺序排列的 Guide 名称列表。
-
-            Maya 使用示例：
-
-            from muziToolset.systems.components import fk_chain
-
-            fk_object = fk_chain.FKChain(
-            module="ear",
-            side="lf",
-            guide_count=3,
-            guide_function="bind"
-            )
-
-            guide_list = fk_object.get_guides()
-            print(guide_list)
+            list[str]:
+                按 FK Chain 顺序排列的 Guide 名称。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+                标准名称对应的 Guide 缺失，或显式 Guide 来源没有得到有效结果时抛出。
+
+        Example:
+            >>> fk = FKChain(
+            ...     module="ear",
+            ...     side="lf",
+            ...     guide_count=3,
+            ... )
+            >>> guides = fk.get_guides()
+            >>> print(guides)
+            ['loc_lf_ear_bind_001', 'loc_lf_ear_bind_002', 'loc_lf_ear_bind_003']
         """
 
         self.guide_list = super(FKChain, self).get_guides()
 
-        # 外部已经明确提供 Guide 时，直接使用 RigModule 的通用读取结果。
         if self.guide_list:
             return self.guide_list
 
-        # 明确传入了 Guide 数据但没有找到结果时，不再猜测名称。
         if self.guide is not None:
             raise RuntimeError(u"{} 没有可用的 FK Guide。".format(self.module))
 
-        # 没有传入 Guide 时，才使用 FK Chain 自己的线性命名规则。
         for index in range(1, self.guide_count + 1):
             guide_name_object = name_utils.Name(
                 type="loc",
@@ -203,18 +221,18 @@ class FKChain(rig_module.RigModule):
 
     def create_joints(self):
         u"""
-        根据 Guide 创建当前 FK Joint Chain 所需的 Joint。
+        按 Guide 顺序创建当前 FK Chain 的 Joint 列表。
 
-        FKChain 只负责决定“一条 Guide 对应一条 Joint Chain”的整体规则，
-        单个 Joint 的创建和 Guide 匹配统一交给 RigModule.create_joint()。
+        每条 Guide 创建一个标准 ``jnt_<side>_<module>_<function>_<index>`` Joint，
+        单 Joint 创建和 Guide Match 统一调用 ``RigModule.create_joint()``。
 
         Returns:
-            list: 当前 FK Chain 的 Joint 名称列表。
+            list[str]:
+                当前 Chain 的 Joint 名称列表。
 
-            Maya 使用示例：
-
-            fk_object.create_joints()
-            print(fk_object.jnt_list)
+        Example:
+            >>> fk.get_guides()
+            >>> joints = fk.create_joints()
         """
 
         self.jnt_list = []
@@ -241,19 +259,19 @@ class FKChain(rig_module.RigModule):
 
     def create_ctrls(self):
         u"""
-        根据 Guide 创建当前 FK Controller Chain。
+        按 Guide 顺序创建当前 FK Chain 的标准 Controller 列表。
 
-        FKChain 只负责决定“一条 Guide 对应一组 FK Controller”的整体规则，
-        单个 Controller 的 Shape、颜色、大小、轴向、层级和 Guide 匹配统一交给
-        RigModule.create_ctrl()。
+        每条 Guide 创建一个 ``ctrl_<side>_<module>_<ctrl_function>_<index>``，并通过
+        ``RigModule.create_ctrl()`` 统一应用 Shape、Color、Size、Axis、Hierarchy 和
+        Guide Match。
 
         Returns:
-            list: 当前 FK Chain 的 Controller 名称列表。
+            list[str]:
+                当前 Chain 的 Controller 名称列表。
 
-            Maya 使用示例：
-
-            fk_object.create_ctrls()
-            print(fk_object.ctrl_list)
+        Example:
+            >>> fk.get_guides()
+            >>> controls = fk.create_ctrls()
         """
 
         self.ctrl_list = []
@@ -285,26 +303,25 @@ class FKChain(rig_module.RigModule):
 
     def connect_rig(self):
         u"""
-        将每个 Controller 的 Output Group 连接到对应 Joint。
+        用每个 Controller Output 的 Parent Constraint 驱动对应 Joint。
 
-        Output 是 Controller 层级的最终输出节点，因此主 Ctrl 和 SubCtrl 的变化都会传递到 Joint。
-        重复执行时会先检查 Joint 当前连接的 parentConstraint：
-            1. 已经存在由当前 Output 驱动的 parentConstraint，则直接复用，不重复创建。
-            2. Joint 已经存在其他 parentConstraint，但没有当前 Output Driver，则抛出错误，
-               避免新的 Constraint 覆盖或污染已有绑定关系。
-            3. 没有 parentConstraint 时才创建新的 Constraint。
+        重复执行规则：
+
+        - Joint 已有由当前 Output 驱动的 ``parentConstraint``：直接复用；
+        - Joint 已有其他 Parent Constraint：抛出 ``RuntimeError``，不覆盖；
+        - Joint 没有 Parent Constraint：创建新的 ``maintainOffset=True`` Constraint。
 
         Returns:
-            None
-
-            Maya 使用示例：
-
-            fk_object.connect_rig()
-            fk_object.connect_rig()
+            None:
+                Connection 直接创建在 Maya Scene 中。
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+                Joint 已存在其他 Driver 的 Parent Constraint 时抛出。
+
+        Notes:
+            Driver 使用 Controller ``output_grp``，而不是直接使用可见 Ctrl Transform，
+            因此主 Ctrl / SubCtrl 的最终动画结果可以通过稳定 Output 接口传给 Joint。
         """
 
         for index in range(len(self.jnt_objects)):
@@ -314,7 +331,6 @@ class FKChain(rig_module.RigModule):
             driver = str(ctrl_object.output_grp)
             driven = str(jnt_object.jnt)
 
-            # 获取当前 Joint 已经存在的 Parent Constraint。
             constraint_nodes = cmds.listConnections(
                 driven,
                 source=True,
@@ -325,7 +341,6 @@ class FKChain(rig_module.RigModule):
             if constraint_nodes is None:
                 constraint_nodes = []
 
-            # 统一获取 Driver 的 Long Name，避免短名称和完整 DAG 路径比较不一致。
             driver_long_names = cmds.ls(
                 driver,
                 long=True
@@ -338,7 +353,6 @@ class FKChain(rig_module.RigModule):
 
             matched_constraint = None
 
-            # 检查已有 Constraint 是否已经包含当前 Output Driver。
             for constraint_node in constraint_nodes:
                 target_list = cmds.parentConstraint(
                     constraint_node,
@@ -367,11 +381,9 @@ class FKChain(rig_module.RigModule):
                 if matched_constraint:
                     break
 
-            # 已经存在正确 Driver 的 Constraint 时直接复用。
             if matched_constraint:
                 continue
 
-            # Joint 上已经有其他 Parent Constraint 时，不静默覆盖已有绑定关系。
             if constraint_nodes:
                 raise RuntimeError(
                     u"{} 已经存在 Parent Constraint，但 Driver 不是 {}。".format(
@@ -380,7 +392,6 @@ class FKChain(rig_module.RigModule):
                     )
                 )
 
-            # 没有 Parent Constraint 时才真正创建驱动关系。
             cmds.parentConstraint(
                 driver,
                 driven,
@@ -389,17 +400,22 @@ class FKChain(rig_module.RigModule):
 
     def load_outputs(self):
         u"""
+        从场景恢复已经 Build 的 FK Joint、Controller 和 Output 列表。
 
-                读取 Step 03 已生成的 FK Joint 和 Controller Output。
+        该方法用于 Rig Library Final：新的 Python Builder 实例不重新创建输出，而是按
+        当前 Guide Count / Naming Contract 查找已有节点，并构造 ``connect_rig()`` 所需
+        的轻量对象。
 
-                Returns:
-                    tuple:
-                        按当前 API 约定组织的结果元组。
+        Returns:
+            tuple[list[str], list[str]]:
+                ``(jnt_list, ctrl_list)``。
 
-                Raises:
-                    RuntimeError:
-                        输入数据、场景状态或操作条件不满足要求时抛出。
+        Raises:
+            RuntimeError:
+                任意预期 Joint、Controller 或 Output 不存在时抛出。
 
+        Notes:
+            ``load_outputs()`` 不修改 Joint / Controller DAG，也不会建立 Constraint。
         """
         self.get_guides()
         self.jnt_list = []
@@ -438,37 +454,37 @@ class FKChain(rig_module.RigModule):
 
     def setup_hierarchy(self):
         u"""
-        整理当前 FK Chain 的模块总组和内部 FK 层级。
+        创建 Module Master Group，并整理 Joint Chain 与 Controller FK Chain。
 
-        RigModule.setup_hierarchy() 负责：
-            jnt_parent -> jnt_master_grp
-            ctrl_parent -> ctrl_master_grp
-        FKChain 在此基础上继续负责：
-            jnt_master_grp -> jnt_001 -> jnt_002 -> jnt_003 ...
-            ctrl_master_grp -> zero_001
+        Joint：
+
+            jnt_master_grp
+                ↓
+            jnt_001 -> jnt_002 -> jnt_003 ...
+
+        Controller：
+
+            ctrl_master_grp
+                ↓
+            zero_001
+                ↓
             output_001 -> zero_002
+                ↓
             output_002 -> zero_003
-            ...
 
         Returns:
-            None
-
-            Maya 使用示例：
-
-            fk_object.setup_hierarchy()
+            None:
+                Hierarchy 直接修改 Maya DAG；Master Group 保存在继承成员中。
         """
 
-        # 先建立所有 Rig Module 都共有的 Joint / Controller 根层级。
         super(FKChain, self).setup_hierarchy()
 
-        # FK Joint 按顺序组成 Joint Chain。
         if self.jnt_list:
             hierarchy_utils.chain_parent(
                 self.jnt_list,
                 parent_node=self.jnt_master_grp
             )
 
-        # 第一个 Controller 的 Zero 放到模块 Controller 总组下面。
         if self.ctrl_objects:
             first_ctrl_object = self.ctrl_objects[0]
 
@@ -477,7 +493,6 @@ class FKChain(rig_module.RigModule):
                 self.ctrl_master_grp
             )
 
-            # 后续 Controller 使用“上一个 Output -> 下一个 Zero”的 FK 层级。
             for index in range(1, len(self.ctrl_objects)):
                 parent_ctrl_object = self.ctrl_objects[index - 1]
                 child_ctrl_object = self.ctrl_objects[index]
