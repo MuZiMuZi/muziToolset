@@ -1,103 +1,528 @@
-# 模块化绑定库
+# Rig Library 使用手册
 
-绑定库按当前仓库重写后的实现接入 **EarModule、TongueModule、FKChain**。旧 Face System 已归档，新窗口不会导入 legacy_reference。Eye 目前仍是未完成文件，因此没有放进可构建目录。
+Rig Library 是 MuziTools 当前模块化绑定的主要工作界面。
 
-## 打开窗口
+它不是一个“一键自动绑定”按钮，而是把 Rig 构建拆成四个明确阶段，让你可以在最终连接之前反复调整 Guide、Controller 和 Joint。
 
-更新代码后重启 Maya，在 Python Script Editor 中运行：
+当前流程：
 
-```python
-import muziToolset
-window = muziToolset.show_rig_library()
+```text
+01 Setup
+    ↓
+02 Guide
+    ↓
+03 Ctrl
+    ↓
+04 Final
 ```
 
-工具箱的“模块化绑定库”和“面部绑定库”也会打开同一个窗口。窗口保留强引用，支持最小化、恢复和关闭后重新打开。
+---
 
-![绑定库 Qt 界面预览](../images/rig-library-ui.png)
+# 打开 Rig Library
 
-此图由真实 Qt 控件渲染，使用 Face Starter 演示配置；不是 Maya 运行验证截图。
+从 MuziTools 主工具箱进入 Rig Library / Modular Rig。
 
-## 参考图如何落地
+窗口标题：
 
-| 参考图区域 | 当前实现 |
-| --- | --- |
-| 明亮暖白底、酸橙色强调、工业线条 | 局部 QSS、矢量页眉装饰和数字切角导航；不依赖位图背景 |
-| 顶部四步导航 | Setup / Guide / Ctrl / Final |
-| Modules 左栏 | 当前可用模块、搜索、添加 |
-| Templates 左栏 | 已实现模块的组合模板，重复添加保留已有设置 |
-| Rig Structure 中栏 | 只显示模块配置、Side 与构建状态；双击模块可选择其现有场景节点 |
-| Properties 右栏 | 跟随当前步骤，只显示 Setup、Guide、Controller 或 Joint 对应设置 |
-| Validate / Ctrl / Final 底栏 | 只读预检查、当前阶段动作、失败详情 |
-| 小窗口 | 三栏可拖动调宽，左侧目录与右侧属性独立滚动 |
-
-工作流收敛为四步：**Step 03 Ctrl** 一次构建骨骼和控制器，并在右侧实时调整外观；**Step 04 Final** 检查已构建模块并选择全部主控制器。底层继续沿用现有 FKChain.build 完整生命周期。
-
-## 已接入内容
-
-| 模块 | 默认 Guide | 构建方式 |
-| --- | --- | --- |
-| Ear / 耳朵 | 左侧或右侧 3 个 bind Locator | EarModule → FKChain |
-| Tongue / 舌头 | 中央 5 个 bind Locator | TongueModule → FKChain |
-| FK Chain / 通用链 | 用户按行指定的 1–99 个 Transform 或 Joint | FKChain |
-
-| 模板 | 内容 |
-| --- | --- |
-| Face Starter / 面部起步 | 左耳、右耳、舌头，共 3 个模块、11 个关节 |
-| Ear Pair / 左右耳 | 左右耳，共 2 个模块、6 个关节 |
-| Tongue / 舌头 | 中央舌头，共 1 个模块、5 个关节 |
-
-Face Guide 使用仓库的 resources/module_guide/face_guide.ma。模板中其他部位的 Locator 仍然存在，但本轮只构建上表模块。
-
-## 使用流程
-
-1. 在左侧添加模块，或添加 Face Starter 模板。
-2. Setup → 创建基础层级。
-3. Guide → 导入 Face Guide，在 Maya 中调整定位。
-4. 通用 FK 在右侧 Guide 抽屉内填写每行一个节点，或读取当前选择，然后核对顺序并保存。耳朵、舌头留空时按标准名称查找 Guide。
-5. Validate 检查 Guide、节点类型、同名输出和根组归属。
-6. Ctrl 创建所有启用的待建模块，已经构建的模块自动跳过，并可调整大小、索引颜色、形状朝向、关节半径与显示。
-7. Final 检查全部模块并选择所有已构建主控制器。
-
-`RIG STRUCTURE` 模块行的右键菜单提供左右镜像。选择尚未构建的 LF 或 RT 模块并右键，可将控制器大小、轴向、关节半径和显示设置复制到配对侧，并把对应 Guide 的世界位置沿 `X=0` 镜像。模块名称、Side、内部 ID、Guide 路径和左右颜色不会被覆盖；左右 Guide 必须已经导入且数量一致。
-
-已构建模块锁定名称、Side、Guide 和参与构建开关。外观调整通过已有 Ctrl / Jnt 接口进行；大小使用“新值 / 旧值”比例修改 CV，不重建控制器，不修改 Transform。
-
-## 配置与场景
-
-配置保存在 network_md_rig_library_config_001 的字符串属性 muziRigLibraryJson 中，随 Maya 场景保存。打开窗口不创建场景内容。撤销、重做及切换场景后，窗口重新读取配置。
-
-JSON 导入和导出仅处理模块参数，不包含 Maya 绑定节点或 Guide 的位置。导出会清除 built 状态；导入采用追加方式，同名模块冲突时整次导入失败。
-
-本轮支持根命名空间中的一套绑定库。新增 UI 和服务使用 maya.cmds；现有 Guide、FKChain 所依赖的 Core 仍需要仓库原有的 PyMEL 环境。未在此改动中重写这些底层依赖。
-
-构建操作与配置写入属于同一个 Maya Undo Chunk；操作失败时回滚本次改动。预检查不会认领已有同名输出，也不会覆盖不属于绑定库的根组。场景中删除或替换已构建节点后，应先修复场景，再更新外观。
-
-## 开发与验证
-
-- library_catalog.py：可用模块、组合模板、配置校验、标准节点名称。
-- library_service.py：场景持久化、构建调度、预检查和外观更新。
-- ui/modular_rig_ui.py：布局和交互。
-- ui/library_widgets.py、ui/library_style.py：局部视觉组件。
-- core/common/transform_utils.py：Locator 对齐采用 Shape.worldPosition，修正非零 localPosition 引起的偏移。
-
-普通 Python 验证：
-
-```bash
-python tests/rig_library_test.py
-python -m pip install "PySide6-Essentials>=6.5,<7"
-QT_QPA_PLATFORM=offscreen python tests/rig_library_qt_test.py
+```text
+Muzi · 绑定库 / Rig Library
 ```
 
-本次验证：16 项服务与配置测试、6 项真实 Qt 交互测试通过；修改文件语法编译和 git diff --check 通过。实际窗口在 1440×980 与 1120×740 下检查布局。
+主界面分成三栏：
 
-仓库原有 Static Contract Tests 的 17 项检查，在基线 ff4a747 与本次改动上都为 3 项通过、14 项失败。失败来自旧路径、缺失的旧系统文件及现存非 UTF-8 文件；本次未扩大修复范围。新增 Rig Library Tests 工作流独立验证本轮功能。
+```text
+左侧
+    Module Library / Templates
 
-Maya 2023 真实运行尚未在开发容器中执行。请在新的空场景里运行：
+中间
+    Rig Structure
 
-```python
-from muziToolset.tests import rig_library_maya2023_smoke_test
-result = rig_library_maya2023_smoke_test.run()
-print(result)
+右侧
+    当前 Module Properties
 ```
 
-这个测试不会强制清空已有场景。它会创建 3 个模块，检查 11 个 Guide 对齐位置、11 个关节和主控制器、重复构建、外观往返调整，以及世界矩阵和连接保持不变。执行后保留结果供目视检查。
+底部：
+
+```text
+Validate
+下一步
+```
+
+---
+
+# 01 Setup — 配置与层级
+
+第一步先决定当前角色要使用哪些模块。
+
+当前正式 Builder 包括：
+
+```text
+Ear
+Eye
+Tongue
+FK Chain
+```
+
+你可以：
+
+```text
+从 Modules 添加单个模块
+或者
+从 Templates 添加模块组合
+```
+
+左右模块会自动尝试分配空闲侧。
+
+例如第一次添加 Eye：
+
+```text
+lf / eye
+```
+
+再次添加同类 Eye 时会尝试：
+
+```text
+rt / eye
+```
+
+---
+
+## Setup 阶段可以调整
+
+```text
+是否参与构建
+模块名称（部分模块）
+Side
+```
+
+已 Build 的 Module 不允许继续随意修改结构型参数。
+
+---
+
+## 点击“下一步”以后
+
+Rig Library 会准备：
+
+```text
+grp_md_rig_library_001
+├── grp_md_rig_jnt_001
+└── grp_md_rig_ctrl_001
+```
+
+并保存 Rig Library 配置。
+
+如果场景里已经有同名节点但不属于当前 Rig Library，系统会停止而不是覆盖。
+
+---
+
+# 02 Guide — 导入与定位
+
+Step 02 用来准备并调整模块定位。
+
+当前支持两种 Guide 来源：
+
+```text
+标准 Face Guide Template
+手动指定 Guide List
+```
+
+对于 Face 模块，第一次进入时可以自动导入仓库里的 Face Guide Template。
+
+---
+
+## 手动指定 Guide
+
+如果 Module 允许自定义 Guide：
+
+1. 在 Maya 中按正确顺序选择 Guide；
+2. 点击“读取 Maya 选择”；
+3. 检查文本区顺序；
+4. 点击“保存 Guide 列表”。
+
+顺序非常重要。
+
+对于链式模块，文本区中的每一行就是最终 Builder 使用的 Guide 顺序。
+
+---
+
+## Guide 检查规则
+
+每个 Guide 必须：
+
+```text
+存在
+名称能唯一解析
+不是重复节点
+Node Type 为 transform / joint
+```
+
+不符合条件时，Build 会停止并给出错误，而不是猜测正确对象。
+
+---
+
+# Guide 阶段的“下一步”很重要
+
+当前流程中，Joint / Controller 的实际生成发生在 Guide 确认之后。
+
+## 第一次 Build
+
+如果 Guide 已经有效，并且 Module 尚未 Build：
+
+```text
+点击“下一步”
+    ↓
+生成 Joint
+    ↓
+生成 Controller
+    ↓
+创建 Module Hierarchy
+    ↓
+进入 Step 03
+```
+
+此时**还没有建立最终 Driver Connection**。
+
+---
+
+## 修改 Guide 后 Rebuild
+
+如果 Module 已经生成过：
+
+1. 从 Step 03 / 04 回到 Guide；
+2. 修改 Guide；
+3. 再次点击“下一步”。
+
+当前 Module 会按最新 Guide Rebuild。
+
+Rebuild 后：
+
+```text
+built = True
+connected = False
+```
+
+所以之后需要重新 Final。
+
+---
+
+# Mirror
+
+Mirror 可以在前三步使用：
+
+```text
+Setup
+Guide
+Ctrl
+```
+
+Final 阶段会要求先返回前面步骤。
+
+操作方式：
+
+1. 在 Rig Structure 里选中模块；
+2. 右键；
+3. 选择镜像到另一侧。
+
+Guide Position 沿：
+
+```text
+World X = 0
+```
+
+进行左右镜像。
+
+如果目标侧已经 Build，系统会自动按镜像后的 Guide 重建目标模块，并把连接状态退回未连接。
+
+---
+
+# 03 Ctrl — 创建与调整
+
+Step 03 的名字是 `Ctrl`，但当前职责不仅是 Controller。
+
+这一阶段同时显示：
+
+```text
+Controller 设置
+Joint 设置
+```
+
+因为 Joint / Controller 已经在 Step 02 末尾生成完成。
+
+---
+
+## Controller 设置
+
+可以调整：
+
+```text
+Axis
+Size
+Color
+Show Controls
+```
+
+对于已经 Build 的模块，这些外观调整会立即应用到场景。
+
+### Size
+
+修改 Controller Curve CV 的显示大小，不需要把 Transform Scale 当成最终视觉大小。
+
+### Color
+
+修改 Controller Shape 显示颜色。
+
+### Axis
+
+修改 Controller Shape 的朝向。
+
+Eye Aim Controller 有自己的固定 Aim Axis 逻辑，因此不是所有 Eye Controller 都跟随同一 Axis 设置。
+
+---
+
+## Joint 设置
+
+可以调整：
+
+```text
+Joint Radius
+Show Local Axis
+Show Joints
+```
+
+Joint Radius 直接用于当前 Module 的 Joint Display。
+
+---
+
+# 为什么 Step 03 不重新 Build
+
+Step 03 只负责调整已经存在的输出。
+
+如果需要改变：
+
+```text
+Guide
+Side
+Module Structure
+```
+
+应该回退到前面阶段，通过正式 Rebuild 处理。
+
+这样 Scene 与配置不会因为随意修改结构参数而失去同步。
+
+---
+
+# 04 Final — 检查与完成
+
+Final 才建立最终驱动连接。
+
+点击“下一步”时：
+
+```text
+每个 Enabled + Built + 未连接 Module
+    ↓
+connect_outputs()
+    ↓
+connected = True
+```
+
+完成后会选择当前 Rig 的主 Controller。
+
+---
+
+# 为什么 Connection 放最后
+
+这使你在前面阶段可以安全完成：
+
+```text
+Guide 调整
+Mirror
+Controller Size
+Controller Color
+Controller Axis
+Joint Radius
+Joint Axis Display
+Module Rebuild
+```
+
+而不会被已经建立的 Constraint / Driver Network 干扰。
+
+---
+
+# 顶部步骤不能向前跳
+
+这是当前 UI 的正式规则。
+
+假如你在 Step 02：
+
+```text
+可以点击 Step 01
+不能直接点击 Step 03 / Step 04
+```
+
+顶部按钮只负责**回退**。
+
+向前只能点击底部：
+
+```text
+下一步
+```
+
+这样每一个阶段都会先实际完成 Scene 操作，再解锁后续阶段。
+
+---
+
+# Validate
+
+底部 `检查 / Validate` 是只读预检查。
+
+它会检查：
+
+```text
+是否至少有一个启用模块
+Guide 是否有效
+输出名称是否冲突
+已 Build 模块输出是否完整
+Root Ownership 是否正确
+```
+
+建议在 Build / Final 前遇到异常时先点 Validate。
+
+---
+
+# Eye Module 当前行为
+
+Eye 是当前 Rig Library 中最完整的 Face Module 示例。
+
+标准 Guide：
+
+```text
+loc_lf_eye_ball_001
+loc_lf_eye_iris_001
+loc_lf_eye_aim_001
+```
+
+右侧对应 `rt`。
+
+其中：
+
+```text
+Ball
+    真实眼球旋转中心
+
+Iris
+    Main Controller 可见位置
+
+Aim
+    Aim Controller 位置
+```
+
+最终主要结构：
+
+```text
+Aim Ctrl
+    ↓
+Main Driven
+    ↓
+Main Ctrl
+    ↓
+Main Output
+    ↓
+Pose Driver
+    ↓
+Pose Driven
+    ↓
+Eye Joint
+```
+
+Main Controller 保持在 Iris，可见旋转轴心位于 Ball。
+
+---
+
+# 配置保存在哪里
+
+当前 Rig Library 配置保存在 Maya Network：
+
+```text
+network_md_rig_library_config_001
+```
+
+JSON 属性：
+
+```text
+muziRigLibraryJson
+```
+
+窗口重新打开时会读取已有配置，但不会因为“打开窗口”就自动创建 Scene 节点。
+
+---
+
+# 导入 / 导出配置
+
+顶部支持：
+
+```text
+导入配置
+导出配置
+```
+
+导出的是 **Recipe / 参数配置**，不是 Maya Scene Rig Backup。
+
+导出时：
+
+```text
+built = False
+connected = False
+```
+
+因此导出的 JSON 可以用于重新创建 Module 配置，但不包含当前场景里已经生成的 Joint / Controller / Constraint 数据。
+
+---
+
+# Undo
+
+Rig Library 的重要 Scene 操作会放进 Maya Undo Chunk。
+
+如果 Maya Undo 被关闭，Service 会拒绝执行需要修改场景的操作。
+
+这可以避免 Build 失败时只回滚一半。
+
+---
+
+# 常见问题
+
+## 为什么下一步是灰的？
+
+检查：
+
+```text
+有没有 Module
+当前 Step 是否已经解锁
+Root / Guide / Build 状态是否完整
+```
+
+先点击 Validate 查看具体错误。
+
+## 为什么 Step 03 里不能改 Guide？
+
+因为 Guide 是结构型输入。请回到 Step 02 修改，然后 Rebuild。
+
+## 为什么 Final 后不能 Mirror？
+
+Mirror 会改变 Guide / Module Output。请先回到前三步处理镜像，然后重新 Final。
+
+## 为什么 Build 后 Side 不能改？
+
+Side 会影响命名和输出结构，不能只改 JSON。需要在 Build 前确定，或通过正式镜像 / 重建流程处理。
+
+## 为什么 JSON 导出后没有绑定节点？
+
+因为它是 Recipe，不是 Maya Scene Backup。
+
+---
+
+# 相关文档
+
+- [Face System Architecture](../architecture/face-system.md)
+- [Workflow State](../architecture/face-workflow-state.md)
+- [Rig Library API](../reference/systems/rig/index.md)
+- [Face API](../reference/systems/face/index.md)
