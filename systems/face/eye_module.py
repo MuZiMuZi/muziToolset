@@ -165,7 +165,7 @@ class EyeModule(rig_module.RigModule):
             guide=self.guide_list[2],
             shape_name=self.aim_ctrl_shape,
             ctrl_color=self.ctrl_color,
-            ctrl_size=self.ctrl_size*0.1,
+            ctrl_size=self.ctrl_size *0.5,
             ctrl_axis=self.aim_ctrl_axis,
             create_hierarchy=True
         )
