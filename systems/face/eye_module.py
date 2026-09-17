@@ -19,6 +19,10 @@ EyeModule：眼球 Aim 绑定模块。
     delete_rig()
         删除 Eye Constraint
         删除 Eye Joint / Controller Hierarchy
+
+设计原则：
+    EyeModule 自己创建的所有稳定 Maya 节点，都在 __init__() 中先确定名称。
+    build / connect / delete 全部直接复用这些名称，不在删除阶段反查场景连接。
 """
 
 import maya.cmds as cmds
@@ -43,7 +47,7 @@ class EyeModule(rig_module.RigModule):
         ctrl_axis="X+",
         aim_ctrl_axis="Z+"
     ):
-        u"""初始化 Eye Module 的配置、稳定名称和运行时对象。"""
+        u"""初始化 Eye Module 的配置、稳定节点名称和运行时对象。"""
 
         # ---------------------------------------------------------------------
         # 先初始化 RigModule 的公共数据。
@@ -75,26 +79,28 @@ class EyeModule(rig_module.RigModule):
         self.aim_ctrl_axis = aim_ctrl_axis
 
         # ---------------------------------------------------------------------
-        # 当前 Eye Module 的稳定名称只生成一次。
-        # 后面的 create / connect / delete 全部直接复用这些成员，
-        # 不再在每个函数里重新写一遍 name_utils.Name(...)。
+        # Eye Module 自己创建的稳定节点名称。
+        # 所有名称只在初始化时生成一次，后面的 create / connect / delete 全部复用。
+        # 这样不会在不同函数里重复写 Naming 规则，也不需要删除时再查询场景连接。
         # ---------------------------------------------------------------------
         self.eye_jnt_name = name_utils.Name(type="jnt", side=self.side, part=self.module, function="bind", index=1).name
         self.main_ctrl_name = name_utils.Name(type="ctrl", side=self.side, part=self.module, function="main", index=1).name
         self.aim_ctrl_name = name_utils.Name(type="ctrl", side=self.side, part=self.module, function="aim", index=1).name
 
-        # ---------------------------------------------------------------------
         # Controller 标准层级中的稳定节点名称。
-        # 这些名称由 Ctrl 的标准命名规则决定，因此直接从 ctrl 名称替换前缀即可。
-        # ---------------------------------------------------------------------
         self.main_driven_name = self.main_ctrl_name.replace("ctrl_", "driven_", 1)
         self.main_output_name = self.main_ctrl_name.replace("ctrl_", "output_", 1)
         self.aim_output_name = self.aim_ctrl_name.replace("ctrl_", "output_", 1)
 
+        # Eye Module 自己创建的两个 Constraint 也使用固定名称。
+        # connect_rig() 创建时显式指定这些名称，delete_rig() 可以直接删除。
+        self.aim_constraint_name = name_utils.Name(type="aimConstraint", side=self.side, part=self.module, function="main", index=1).name
+        self.parent_constraint_name = name_utils.Name(type="parentConstraint", side=self.side, part=self.module, function="bind", index=1).name
+
         # ---------------------------------------------------------------------
-        # 运行时对象引用。
-        # build_rig() 创建后会保存真正的 Jnt / Ctrl 工具对象。
-        # delete_rig() 完成后会重新清空这些引用。
+        # 运行时工具对象。
+        # build_rig() 创建后保存 Jnt / Ctrl 工具对象，主要用于创建阶段整理层级。
+        # 稳定 Maya 节点本身仍然以 *_name 成员作为唯一名称来源。
         # ---------------------------------------------------------------------
         self.eye_jnt_object = None
         self.main_ctrl_object = None
@@ -111,7 +117,7 @@ class EyeModule(rig_module.RigModule):
         """
 
         # Eye 必须同时拥有 Ball / Iris / Aim 三个 Guide。
-        # 数量不正确时直接停止，避免后面用错误索引创建节点。
+        # 数量不正确时直接停止，避免后面使用错误索引创建节点。
         if len(self.guide_list) != 3:
             raise RuntimeError(
                 u"Eye Module 需要 Ball / Iris / Aim 三个 Guide。"
@@ -182,10 +188,10 @@ class EyeModule(rig_module.RigModule):
                 zero_<side>_eye_aim_001
         """
 
-        # 先让 RigModule 创建当前 Eye Module 的 Joint / Ctrl 根组。
+        # 先让 RigModule 创建当前 Eye Module 的 Joint / Ctrl 总组。
         super(EyeModule, self).setup_hierarchy()
 
-        # 把 Eye Joint 放进当前模块的 Joint 根组。
+        # 把 Eye Joint 放进当前模块的 Joint 总组。
         hierarchy_utils.parent(
             self.eye_jnt_object.jnt,
             self.jnt_master_grp
@@ -217,13 +223,13 @@ class EyeModule(rig_module.RigModule):
                 -> parentConstraint
                 -> Eye Joint
 
-        connect_rig() 可以在新的 EyeModule 实例上执行，因此这里直接使用稳定名称
-        查找 Maya 场景节点，不依赖 build_rig() 时保存的 Python 对象引用。
+        所有连接节点都使用 __init__() 中已经确定好的稳定名称。
+        connect_rig() 不再通过 listConnections() 反查我们自己创建过的 Constraint。
         """
 
         # ---------------------------------------------------------------------
-        # 连接前先确认所有必要节点都已经存在。
-        # 如果 build_rig() 没有完整执行，就在这里明确报出缺失节点。
+        # 连接前先确认 build_rig() 生成的必要 DAG 节点都存在。
+        # 这里只检查输入节点，不重新查找或重新计算这些节点的名称。
         # ---------------------------------------------------------------------
         required_nodes = [
             self.eye_jnt_name,
@@ -241,107 +247,66 @@ class EyeModule(rig_module.RigModule):
                 )
 
         # ---------------------------------------------------------------------
-        # Aim Output -> Main Driven
-        # 如果已经存在 aimConstraint，就直接复用，避免重复创建约束。
+        # Aim Output -> Main Driven。
+        # Constraint 名称在 __init__() 中已经确定。
+        # 如果已经存在就直接复用；不存在时才创建，避免重复执行 connect_rig() 产生副本。
         # ---------------------------------------------------------------------
-        aim_constraints = cmds.listConnections(
-            self.main_driven_name,
-            source=True,
-            destination=False,
-            type="aimConstraint"
-        ) or []
-
-        if aim_constraints:
-            aim_constraint = aim_constraints[0]
-        else:
-            result = cmds.aimConstraint(
+        if not cmds.objExists(self.aim_constraint_name):
+            cmds.aimConstraint(
                 self.aim_output_name,
                 self.main_driven_name,
                 maintainOffset=False,
                 aimVector=(1, 0, 0),
                 upVector=(0, 1, 0),
                 worldUpType="vector",
-                worldUpVector=(0, 1, 0)
+                worldUpVector=(0, 1, 0),
+                name=self.aim_constraint_name
             )
-            aim_constraint = result[0]
 
         # ---------------------------------------------------------------------
-        # Main Output -> Eye Joint
-        # Main Ctrl 的最终动画结果通过 output 节点传给 Eye Joint。
-        # maintainOffset=True 用来保留 Joint 和 Controller 初始空间关系。
+        # Main Output -> Eye Joint。
+        # 同样直接使用固定的 Parent Constraint 名称，不再查询 Joint 的输入连接。
         # ---------------------------------------------------------------------
-        parent_constraints = cmds.listConnections(
-            self.eye_jnt_name,
-            source=True,
-            destination=False,
-            type="parentConstraint"
-        ) or []
-
-        if parent_constraints:
-            parent_constraint = parent_constraints[0]
-        else:
-            result = cmds.parentConstraint(
+        if not cmds.objExists(self.parent_constraint_name):
+            cmds.parentConstraint(
                 self.main_output_name,
                 self.eye_jnt_name,
-                maintainOffset=True
+                maintainOffset=True,
+                name=self.parent_constraint_name
             )
-            parent_constraint = result[0]
 
-        # 返回当前 Eye Rig 的主要连接节点，方便 Maya 测试时检查。
+        # 返回稳定节点名称，方便 Maya Script Editor 中直接检查连接是否创建成功。
         return {
-            "aim": aim_constraint,
-            "parent": parent_constraint,
+            "aim": self.aim_constraint_name,
+            "parent": self.parent_constraint_name,
         }
 
     def delete_rig(self):
         u"""
-        删除 Eye Module 创建的 Constraint、Joint 和 Controller Hierarchy。
+        删除 Eye Module 自己创建的 Constraint、Joint 和 Controller Hierarchy。
 
         删除顺序：
-            1. 先删除 Aim / Parent Constraint。
-            2. 再调用 RigModule.delete_rig() 删除 Joint / Ctrl 根组。
-            3. 最后清空 Python 运行时对象引用。
+            1. 直接删除固定名称的 Aim Constraint。
+            2. 直接删除固定名称的 Parent Constraint。
+            3. 调用 RigModule.delete_rig() 删除 Joint / Ctrl 总组。
+
+        因为所有节点名称都由 EyeModule 自己保存，所以删除阶段不需要 listConnections()
+        或其他反查逻辑。只删除 EyeModule 明确拥有的节点，也可以避免误删外部连接。
         """
 
-        # 保存需要单独删除的 Constraint。
-        # Constraint 属于 DG 节点，不一定会随着我们预期的 DAG 根组一起安全清理，
-        # 因此这里先明确找到并删除。
-        constraints = []
+        # 删除 Aim Controller 到 Main Driven 的 Aim Constraint。
+        if cmds.objExists(self.aim_constraint_name):
+            cmds.delete(self.aim_constraint_name)
 
-        # 查找 Main Driven 上的 aimConstraint。
-        if cmds.objExists(self.main_driven_name):
-            nodes = cmds.listConnections(
-                self.main_driven_name,
-                source=True,
-                destination=False,
-                type="aimConstraint"
-            ) or []
+        # 删除 Main Output 到 Eye Joint 的 Parent Constraint。
+        if cmds.objExists(self.parent_constraint_name):
+            cmds.delete(self.parent_constraint_name)
 
-            for node_name in nodes:
-                if node_name not in constraints:
-                    constraints.append(node_name)
-
-        # 查找 Eye Joint 上的 parentConstraint。
-        if cmds.objExists(self.eye_jnt_name):
-            nodes = cmds.listConnections(
-                self.eye_jnt_name,
-                source=True,
-                destination=False,
-                type="parentConstraint"
-            ) or []
-
-            for node_name in nodes:
-                if node_name not in constraints:
-                    constraints.append(node_name)
-
-        # 先删除当前 Eye Module 自己的连接节点。
-        if constraints:
-            cmds.delete(constraints)
-
-        # 再交给 RigModule 删除 Joint / Controller 根组及其全部子节点。
+        # 删除当前 Eye Module 的 Joint / Controller 总组及其全部子层级。
         delete_nodes = super(EyeModule, self).delete_rig()
 
-        # Maya 节点已经删除后，清空 Python 中保存的工具对象引用。
+        # 清空创建阶段使用的 Python 工具对象引用。
+        # 稳定名称成员不清空，这样同一个 EyeModule 实例仍然可以重新 build_rig()。
         self.eye_jnt_object = None
         self.main_ctrl_object = None
         self.aim_ctrl_object = None
