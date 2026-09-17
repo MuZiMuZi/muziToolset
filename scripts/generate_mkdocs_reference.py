@@ -2466,10 +2466,30 @@ def build_summary_markdown(module_infos):
     lines = []
 
     # -------------------------------------------------------------------------
-    # Apple 风格：先是任务导向 User Guide，再是 Developer API。
+    # Apple 风格 + Diátaxis：先按阅读目的分流，再进入 Developer API。
     # -------------------------------------------------------------------------
     lines.append(
         "* [首页](index.md)"
+    )
+
+    lines.append(
+        "* 教程"
+    )
+    lines.append(
+        "    * [第一次 Face Rig](tutorials/first-face-rig.md)"
+    )
+
+    lines.append(
+        "* 操作指南"
+    )
+    lines.append(
+        "    * [操作指南首页](how-to/index.md)"
+    )
+    lines.append(
+        "    * [安全重建模块](how-to/rebuild-module.md)"
+    )
+    lines.append(
+        "    * [检查与发布](how-to/check-and-publish.md)"
     )
 
     lines.append(
@@ -2492,6 +2512,16 @@ def build_summary_markdown(module_infos):
     )
     lines.append(
         "    * [Face Guide](manual/face-guide.md)"
+    )
+
+    lines.append(
+        "* 原理说明"
+    )
+    lines.append(
+        "    * [原理说明首页](explanation/index.md)"
+    )
+    lines.append(
+        "    * [节点关系](explanation/node-relationships.md)"
     )
 
     lines.append(

@@ -1,5 +1,5 @@
 site_name: MuziTools
-site_description: Maya 2023 Rigging Toolset - 用户手册、开发指南与完整 API Reference
+site_description: Maya 2023 Rigging Toolset - 教程、操作指南、原理说明与完整 API Reference
 site_author: MuziTools
 site_url: https://muzimuzi.github.io/muziToolset/
 repo_name: MuZiMuZi/muziToolset
@@ -29,6 +29,7 @@ theme:
     - navigation.instant
     - navigation.tabs
     - navigation.tabs.sticky
+    - navigation.tracking
     - navigation.sections
     - navigation.indexes
     - navigation.path
@@ -38,6 +39,7 @@ theme:
     - search.highlight
     - content.code.copy
     - content.code.annotate
+    - content.tooltips
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default

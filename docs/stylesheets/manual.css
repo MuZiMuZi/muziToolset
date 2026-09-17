@@ -81,6 +81,23 @@ select {
     line-height: 1.72;
 }
 
+.muzi-eyebrow {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    color: var(--muzi-accent);
+    font-size: 0.68rem;
+    font-weight: 720;
+    letter-spacing: 0.12em;
+}
+
+.muzi-home-grid {
+    margin-top: 2rem;
+}
+
+.muzi-home-grid > ul > li {
+    min-height: 180px;
+}
+
 /* --------------------------------------------------------------------------
  * Header / navigation
  * -------------------------------------------------------------------------- */

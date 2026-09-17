@@ -1,227 +1,32 @@
-# MuziTools 用户手册
+# 用户手册
 
-这里从“**我要完成什么**”出发，而不是按源码文件顺序解释项目。
+这部分面向正在 Maya 中操作 MuziTools 的绑定师。请选择与你当前任务最接近的入口，不需要先读完整套文档。
 
-如果你正在 Maya 里实际做绑定，优先从这里开始；如果你已经在修改 Python 源码，则进入 [API Reference](../reference/index.md)。
+## 新用户路线
 
----
+1. [安装与启动](../getting-started/installation.md)
+2. [在 Maya 中运行](../getting-started/maya-usage.md)
+3. [完成第一次 Face Rig](../tutorials/first-face-rig.md)
+4. [根据检查清单发布](../how-to/check-and-publish.md)
 
-## 绑定库 / Modular Rig
+## 常用任务
 
-当前最重要的工作流入口：
-
-[打开 Rig Library 使用手册](rig-library.md)
-
-当前四步：
-
-```text
-01 Setup
-02 Guide
-03 Ctrl
-04 Final
-```
-
-适合：
-
-- 添加 Eye / Ear / Tongue / FK Chain；
-- 导入并调整 Guide；
-- 生成 Joint / Controller；
-- 调整 Controller 和 Joint 显示；
-- Mirror；
-- Rebuild；
-- Final Connect。
-
----
-
-## Face Rig
-
-### Face Guide
-
-[Face Guide 使用手册](face-guide.md)
-
-用于理解 Face Locator、标准命名、左右镜像和 Module Guide Contract。
-
-### Face System
-
-如果你需要理解 Eye / Ear / Tongue Module 的实现结构，进入：
-
-[Face System Architecture](../architecture/face-system.md)
-
----
-
-## Controller
-
-[Controller 使用手册](controller.md)
-
-包括：
-
-```text
-创建 Controller
-Shape Library
-颜色
-大小
-Axis
-Offset / Rotate
-SubCtrl
-标准 Hierarchy
-```
-
-当前底层正式入口：
-
-```text
-core/rigging/ctrl_utils.py
-```
-
----
-
-## Joint
-
-[Jnt 使用手册](jnt.md)
-
-包括：
-
-```text
-创建 Joint
-Guide 对齐
-Radius
-Local Axis Display
-Module Joint Output
-```
-
-当前底层正式入口：
-
-```text
-core/rigging/jnt_utils.py
-```
-
----
-
-## Core
-
-[Core 使用手册](core.md)
-
-适合需要直接调用底层 API 的开发者。
-
-当前正式 Core：
-
-```text
-core/common/
-core/rigging/
-```
-
-架构说明见 [Core 架构](../architecture/core.md)。
-
----
-
-## 日常基础工具
-
-[基础工具](basic-tools.md)
-
-包含：
-
-```text
-Rename
-Attribute
-Connection
-Constraint
-Snap
-```
-
-工具目录：
-
-```text
-tools/basic/
-```
-
----
-
-## Skin
-
-[Skin 使用手册](skin.md)
-
-用于日常 Skin 相关工具入口和工作流说明。
-
----
-
-## BlendShape
-
-[BlendShape 使用手册](blendshape.md)
-
-用于 BlendShape Target、Shape 操作等工具入口。
-
----
-
-## 场景清理
-
-[Cleanup / Model Check](cleanup.md)
-
-用于：
-
-```text
-Hierarchy Clean
-Model Check
-提交绑定前检查
-```
-
----
-
-## 绑定工作流
-
-[绑定工作流](rigging.md)
-
-用于理解普通绑定任务和 Modular Rig 在项目中的关系。
-
----
-
-## 工具总览
-
-[Tools 总览](tools.md)
-
-按目录查看当前：
-
-```text
-basic
-blendshape
-clean
-controller
-face
-jnt
-rig
-skin
-```
-
----
-
-# 我应该看哪一份文档？
-
-| 需求 | 推荐 |
+| 任务 | 手册 |
 | --- | --- |
-| 我想直接使用 Rig Library | [Rig Library](rig-library.md) |
-| 我要调整 Face Guide | [Face Guide](face-guide.md) |
-| 我要创建/调整 Controller | [Controller](controller.md) |
-| 我要处理 Joint | [Jnt](jnt.md) |
-| 我要理解项目分层 | [总体架构](../architecture/index.md) |
-| 我要理解 Face Module | [Face System](../architecture/face-system.md) |
-| 我要查函数参数 | [API Reference](../reference/index.md) |
-| 我要维护文档 | [文档维护](../development/documentation.md) |
+| 添加模块、导入 Guide、构建并连接 | [Rig Library](rig-library.md) |
+| 理解 Locator、镜像与 Guide Contract | [Face Guide](face-guide.md) |
+| 创建和调整控制器 | [Controller](controller.md) |
+| 创建、对齐和显示 Joint | [Joint](jnt.md) |
+| 处理权重和变形器 | [Skin](skin.md) / [BlendShape](blendshape.md) |
+| 交付前整理场景 | [Cleanup](cleanup.md) |
 
----
+## 遇到问题时
 
-# 文档搜索建议
+| 情况 | 文档入口 |
+| --- | --- |
+| Guide 改完后结果没有更新 | [安全重建模块](../how-to/rebuild-module.md) |
+| 不清楚哪个阶段创建 Joint / Controller | [五阶段教程](../tutorials/first-face-rig.md) |
+| 控制器偏离 Guide | [节点关系与数据来源](../explanation/node-relationships.md) |
+| 想知道某个方法的参数 | [API Reference](../reference/index.md) |
+| 准备交付绑定文件 | [检查与发布](../how-to/check-and-publish.md) |
 
-如果你知道真实名称，直接使用顶部搜索：
-
-```text
-EyeModule
-RigLibraryService
-Ctrl
-Jnt
-Name
-connect_rig
-rebuild_module
-mirror_module
-create_ctrl
-get_guides
-```
-
-用户手册负责“怎么做”，API Reference 负责“怎么调用”。

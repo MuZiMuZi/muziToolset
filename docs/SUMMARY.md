@@ -1,4 +1,10 @@
 * [首页](index.md)
+* 教程
+    * [第一次 Face Rig](tutorials/first-face-rig.md)
+* 操作指南
+    * [操作指南首页](how-to/index.md)
+    * [安全重建模块](how-to/rebuild-module.md)
+    * [检查与发布](how-to/check-and-publish.md)
 * 用户手册
     * [用户手册首页](manual/index.md)
     * [安装与启动](getting-started/installation.md)
@@ -14,6 +20,9 @@
     * [场景清理与模型检查](manual/cleanup.md)
     * [绑定工作流](manual/rigging.md)
     * [Face Guide](manual/face-guide.md)
+* 原理说明
+    * [原理说明首页](explanation/index.md)
+    * [节点关系](explanation/node-relationships.md)
 * 架构
     * [Face System](architecture/face-system.md)
     * [Face Workflow State](architecture/face-workflow-state.md)
