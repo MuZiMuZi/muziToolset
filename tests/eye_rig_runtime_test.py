@@ -125,7 +125,12 @@ def build(side="lf"):
 
     # -------------------------------------------------------------------------
     # 检查 Ball / Iris Joint 是否仍然准确位于对应 Guide。
-    # 这样可以确认建立 Joint Parent 后没有改变 Iris 的世界位置。
+    #
+    # 注意：Face Guide 的 Locator Shape 允许使用 localPosition 偏移。
+    # 因此 Locator Transform 的 translate 并不一定等于视图中真正的 Locator 中心。
+    # 正式创建 Joint 时，Transform.match_transform() 对 Locator 使用的是
+    # Locator Shape.worldPosition[0]，所以测试也必须使用完全相同的位置来源。
+    # 这样检查的是“Joint 是否对齐可见 Locator 中心”，而不是 Transform 原点。
     # -------------------------------------------------------------------------
     guide_pairs = [
         (eye.ball_jnt_name, eye.guide_list[0]),
@@ -140,12 +145,27 @@ def build(side="lf"):
             translation=True
         )
 
-        guide_position = cmds.xform(
+        locator_shapes = cmds.listRelatives(
             guide_name,
-            query=True,
-            worldSpace=True,
-            translation=True
-        )
+            shapes=True,
+            noIntermediate=True,
+            type="locator",
+            fullPath=True
+        ) or []
+
+        # Eye Guide 正常情况下都应该带 Locator Shape。
+        # 如果未来传入普通 Transform，则退回使用 Transform 的世界位置。
+        if locator_shapes:
+            guide_position = cmds.getAttr(
+                locator_shapes[0] + ".worldPosition[0]"
+            )[0]
+        else:
+            guide_position = cmds.xform(
+                guide_name,
+                query=True,
+                worldSpace=True,
+                translation=True
+            )
 
         for index in range(3):
             position_difference = abs(
