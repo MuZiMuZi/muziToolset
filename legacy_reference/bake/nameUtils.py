@@ -30,7 +30,7 @@ from importlib import reload
 
 import maya.cmds as cmds
 
-from core.bake import pipelineUtils
+from legacy_reference.bake import pipelineUtils
 
 
 reload(pipelineUtils)

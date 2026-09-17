@@ -3,7 +3,7 @@ from __future__ import unicode_literals , print_function
 import maya.api.OpenMaya as om
 import maya.cmds as cmds
 
-from core.bake import attrUtils
+from legacy_reference.bake import attrUtils
 
 
 """

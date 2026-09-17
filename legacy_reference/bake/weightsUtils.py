@@ -17,7 +17,7 @@ import maya.cmds as cmds
 import maya.mel as mel
 import pymel.core as pm
 
-from core.bake import pipelineUtils
+from legacy_reference.bake import pipelineUtils
 
 
 class Weights (object) :

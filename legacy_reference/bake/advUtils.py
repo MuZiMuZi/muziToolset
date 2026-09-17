@@ -6,7 +6,8 @@ u"""
 """
 import maya.cmds as cmds
 
-from core.bake import attrUtils , controlUtils , pipelineUtils
+from legacy_reference.bake import attrUtils , pipelineUtils
+from legacy_reference.bake import controlUtils
 
 
 class AdvUtils (object) :

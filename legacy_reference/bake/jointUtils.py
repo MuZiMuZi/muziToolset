@@ -28,7 +28,7 @@ import re
 
 import maya.cmds as cmds
 
-from core.bake import nameUtils
+from legacy_reference.bake import nameUtils
 
 
 # =============================================================================

@@ -6,7 +6,7 @@ import maya.cmds as cmds
 from PySide2 import QtCore
 from PySide2 import QtWidgets
 
-from core.bake import qtUtils
+from legacy_reference.bake import qtUtils
 
 
 class File (object) :

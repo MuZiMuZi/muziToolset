@@ -34,7 +34,8 @@ from importlib import reload
 import maya.cmds as cmds
 import pymel.core as pm
 
-from core.bake import attrUtils , nameUtils , pipelineUtils , hierarchyUtils
+from legacy_reference.bake import attrUtils , nameUtils , pipelineUtils
+from legacy_reference.bake import hierarchyUtils
 
 
 reload (pipelineUtils)

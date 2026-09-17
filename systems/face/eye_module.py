@@ -41,10 +41,10 @@ class EyeModule(rig_module.RigModule):
         jnt_parent=None,
         ctrl_parent=None,
         ctrl_shape="shape_016",
-        aim_ctrl_shape="shape_040",
+        aim_ctrl_shape="circle",
         ctrl_color=17,
-        ctrl_size=1.0,
-        ctrl_axis="X+",
+        ctrl_size=18,
+        ctrl_axis="Z+",
         aim_ctrl_axis="Z+"
     ):
         u"""初始化 Eye Module 的配置、稳定节点名称和运行时对象。"""
@@ -165,7 +165,7 @@ class EyeModule(rig_module.RigModule):
             guide=self.guide_list[2],
             shape_name=self.aim_ctrl_shape,
             ctrl_color=self.ctrl_color,
-            ctrl_size=self.ctrl_size,
+            ctrl_size=self.ctrl_size*0.1,
             ctrl_axis=self.aim_ctrl_axis,
             create_hierarchy=True
         )

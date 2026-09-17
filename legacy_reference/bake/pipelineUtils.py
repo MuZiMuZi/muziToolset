@@ -38,7 +38,8 @@ import maya.cmds as cmds
 # noinspection PyUnresolvedReferences
 from maya import OpenMaya as om
 
-from core.bake import nameUtils , controlUtils , hierarchyUtils , jointUtils
+from legacy_reference.bake import nameUtils
+from legacy_reference.bake import hierarchyUtils , controlUtils , jointUtils
 
 
 reload (jointUtils)

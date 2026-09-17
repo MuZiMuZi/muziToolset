@@ -14,7 +14,7 @@ from importlib import reload
 
 import maya.cmds as cmds
 
-from core.bake import pipelineUtils , fileUtils
+from legacy_reference.bake import pipelineUtils , fileUtils
 
 
 reload(pipelineUtils)
