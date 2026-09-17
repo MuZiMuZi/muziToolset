@@ -117,45 +117,58 @@ class Name(object):
         function=None
     ):
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    name (str):
-                        已经存在的标准名称。如果给定，会自动拆分。
-                    type (str):
-                        旧接口，节点类型。
-                    side (str):
-                        方向。
-                    resolution (str):
-                        旧接口，对应新的 part。
-                    description (str):
-                        旧接口，对应新的 function。
-                    index (int):
-                        序号。
-                    part (str):
-                        新接口，部位。
-                    function (str):
-                        新接口，功能。
-
+        Args:
+            name (str):
+                已经存在的标准名称。如果给定，会自动拆分。
+            type (str):
+                旧接口，节点类型。
+            side (str):
+                方向。
+            resolution (str):
+                旧接口，对应新的 part。
+            description (str):
+                旧接口，对应新的 function。
+            index (int):
+                序号。
+            part (str):
+                新接口，部位。
+            function (str):
+                新接口，功能。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.nodes = []
 
         self._type = type
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self._side = side
         self._resolution = resolution
         self._description = description
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self._index = index
         self._name = name
 
         # 新接口优先覆盖旧接口。
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if part is not None:
             self._resolution = part
 
         if function is not None:
             self._description = function
 
+        # -------------------------------------------------------------------------
+        # Step 05：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self._name:
             self.decompose()
 
@@ -166,13 +179,11 @@ class Name(object):
     @property
     def type(self):
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         return self._type
@@ -180,13 +191,11 @@ class Name(object):
     @type.setter
     def type(self, value):
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Args:
-                    value (float):
-                        需要读取、写入或参与计算的数值。
-
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
         """
 
         self._type = value
@@ -194,13 +203,11 @@ class Name(object):
     @property
     def side(self):
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         return self._side
@@ -208,13 +215,11 @@ class Name(object):
     @side.setter
     def side(self, value):
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Args:
-                    value (float):
-                        需要读取、写入或参与计算的数值。
-
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
         """
 
         self._side = value
@@ -222,13 +227,11 @@ class Name(object):
     @property
     def resolution(self):
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         return self._resolution
@@ -236,13 +239,11 @@ class Name(object):
     @resolution.setter
     def resolution(self, value):
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Args:
-                    value (float):
-                        需要读取、写入或参与计算的数值。
-
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
         """
 
         self._resolution = value
@@ -250,13 +251,11 @@ class Name(object):
     @property
     def description(self):
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         return self._description
@@ -264,13 +263,11 @@ class Name(object):
     @description.setter
     def description(self, value):
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Args:
-                    value (float):
-                        需要读取、写入或参与计算的数值。
-
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
         """
 
         self._description = value
@@ -278,26 +275,22 @@ class Name(object):
     @property
     def part(self):
         u"""
+        部位。兼容旧版 resolution。
 
-                部位。兼容旧版 resolution。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         return self._resolution
 
     @part.setter
     def part(self, value):
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Args:
-                    value (float):
-                        需要读取、写入或参与计算的数值。
-
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
         """
 
         self._resolution = value
@@ -305,26 +298,22 @@ class Name(object):
     @property
     def function(self):
         u"""
+        功能。兼容旧版 description。
 
-                功能。兼容旧版 description。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         return self._description
 
     @function.setter
     def function(self, value):
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Args:
-                    value (float):
-                        需要读取、写入或参与计算的数值。
-
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
         """
 
         self._description = value
@@ -332,13 +321,11 @@ class Name(object):
     @property
     def index(self):
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         return self._index
@@ -346,13 +333,11 @@ class Name(object):
     @index.setter
     def index(self, value):
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Args:
-                    value (float):
-                        需要读取、写入或参与计算的数值。
-
+        Args:
+            value (float):
+                需要读取、写入或参与计算的数值。
         """
 
         self._index = value
@@ -360,13 +345,11 @@ class Name(object):
     @property
     def name(self):
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         self.compose()
@@ -402,28 +385,26 @@ class Name(object):
     @classmethod
     def normalize_side(cls, side):
         u"""
+        将方向统一成 lf / rt / md。
 
-                将方向统一成 lf / rt / md。
+        示例：
+            l       -> lf
+            left    -> lf
+            r       -> rt
+            center  -> md
+            m       -> md
 
-                示例：
-                    l       -> lf
-                    left    -> lf
-                    r       -> rt
-                    center  -> md
-                    m       -> md
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
 
-                Args:
-                    side (str):
-                        方向标记，常用值为 lf、rt 或 md。
+        Returns:
+            str | object:
+            当前 API 查询或处理后得到的字符串结果。
 
-                Returns:
-                    str | object:
-                        当前 API 查询或处理后得到的字符串结果。
-
-                Raises:
-                    ValueError:
-                        输入数据、场景状态或操作条件不满足要求时抛出。
-
+        Raises:
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
         if side is None:
@@ -448,42 +429,49 @@ class Name(object):
         index=1
     ):
         u"""
+        根据标准规则创建名称。
 
-                根据标准规则创建名称。
+        标准：
+            [类型]_[方向]_[部位]_[功能]_[序号]
 
-                标准：
-                    [类型]_[方向]_[部位]_[功能]_[序号]
+        Args:
+            node_type (str):
+                需要创建、查询或过滤的 Maya Node Type。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            part (str):
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+            function (str | callable):
+                当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
+            index (int):
+                目标元素或节点的序号。
 
-                Args:
-                    node_type (str):
-                        需要创建、查询或过滤的 Maya Node Type。
-                    side (str):
-                        方向标记，常用值为 lf、rt 或 md。
-                    part (str):
-                        Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
-                    function (str | callable):
-                        当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
-                    index (int):
-                        目标元素或节点的序号。
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
 
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
-                Raises:
-                    ValueError:
-                        输入数据、场景状态或操作条件不满足要求时抛出。
-
+        Raises:
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         node_type = cls._normalize_name_part(node_type)
         side = cls.normalize_side(side)
+        # -------------------------------------------------------------------------
+        # Step 02：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         part = cls._normalize_name_part(part)
         function = cls._normalize_name_part(function)
 
         if node_type is None:
             raise ValueError(u"node_type 不能为空。")
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if part is None:
             raise ValueError(u"part 不能为空。")
 
@@ -493,6 +481,9 @@ class Name(object):
         if index is None:
             index = 1
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         index = int(index)
 
         name = "{0}_{1}_{2}_{3}_{4:03d}".format(
@@ -503,6 +494,9 @@ class Name(object):
             index
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return name
 
     @classmethod
@@ -514,27 +508,31 @@ class Name(object):
         function
     ):
         u"""
+        获取场景中同类名称的下一个可用序号。
 
-                获取场景中同类名称的下一个可用序号。
+        Args:
+            node_type (str):
+                需要创建、查询或过滤的 Maya Node Type。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            part (str):
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+            function (str | callable):
+                当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
 
-                Args:
-                    node_type (str):
-                        需要创建、查询或过滤的 Maya Node Type。
-                    side (str):
-                        方向标记，常用值为 lf、rt 或 md。
-                    part (str):
-                        Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
-                    function (str | callable):
-                        当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         node_type = cls._normalize_name_part(node_type)
         side = cls.normalize_side(side)
+        # -------------------------------------------------------------------------
+        # Step 02：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         part = cls._normalize_name_part(part)
         function = cls._normalize_name_part(function)
 
@@ -545,6 +543,9 @@ class Name(object):
             function
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         search_name = base_name + "_*"
 
         nodes = cmds.ls(search_name)
@@ -552,6 +553,9 @@ class Name(object):
         if nodes is None:
             nodes = []
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         max_index = 0
 
         for node in nodes:
@@ -574,6 +578,9 @@ class Name(object):
             if current_index > max_index:
                 max_index = current_index
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return max_index + 1
 
     @classmethod
@@ -585,23 +592,21 @@ class Name(object):
         function
     ):
         u"""
+        创建场景中下一个可用的标准名称。
 
-                创建场景中下一个可用的标准名称。
+        Args:
+            node_type (str):
+                需要创建、查询或过滤的 Maya Node Type。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            part (str):
+                Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
+            function (str | callable):
+                当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
 
-                Args:
-                    node_type (str):
-                        需要创建、查询或过滤的 Maya Node Type。
-                    side (str):
-                        方向标记，常用值为 lf、rt 或 md。
-                    part (str):
-                        Face / Rig 命名中的部位 Token，例如 lip、brow、eye、jaw。
-                    function (str | callable):
-                        当前 API 使用的功能 Token 或执行函数；在命名 API 中表示 function 段，在工具 API 中表示 Callable。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
 
         index = cls.get_next_index(
@@ -624,17 +629,15 @@ class Name(object):
     @classmethod
     def parse_name(cls, name):
         u"""
+        将标准名称拆分并返回字典。
 
-                将标准名称拆分并返回字典。
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
 
-                Args:
-                    name (str):
-                        创建或查询时使用的节点名称。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         name_object = cls(name=name)
@@ -652,17 +655,15 @@ class Name(object):
     @classmethod
     def mirror_name(cls, name):
         u"""
+        返回名称的左右镜像名称，不修改 Maya 节点。
 
-                返回名称的左右镜像名称，不修改 Maya 节点。
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
 
-                Args:
-                    name (str):
-                        创建或查询时使用的节点名称。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         name_object = cls(name=name)
@@ -676,13 +677,11 @@ class Name(object):
 
     def compose(self):
         u"""
+        根据当前成员变量组合名称。
 
-                根据当前成员变量组合名称。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         node_type = self._normalize_name_part(self._type)
@@ -705,16 +704,14 @@ class Name(object):
 
     def decompose(self):
         u"""
+        拆分标准名称。
 
-                拆分标准名称。
+        支持功能字段包含下划线，例如：
+            grp_md_face_rig_nodes_001
 
-                支持功能字段包含下划线，例如：
-                    grp_md_face_rig_nodes_001
-
-                Returns:
-                    bool:
-                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
-
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
         """
 
         if not self._name:
@@ -747,13 +744,11 @@ class Name(object):
 
     def flip(self):
         u"""
+        翻转名称方向：lf <-> rt，同时兼容旧版 l <-> r。
 
-                翻转名称方向：lf <-> rt，同时兼容旧版 l <-> r。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         if self._side == "lf":
@@ -795,17 +790,15 @@ class Name(object):
     @pipelineUtils.Pipeline.make_undo
     def add_prefix(self, prefix):
         u"""
+        给当前节点添加前缀。
 
-                给当前节点添加前缀。
+        Args:
+            prefix (str):
+                添加到 Maya 节点名称前部的 Prefix。
 
-                Args:
-                    prefix (str):
-                        添加到 Maya 节点名称前部的 Prefix。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         self._name = cmds.rename(
@@ -818,17 +811,15 @@ class Name(object):
     @pipelineUtils.Pipeline.make_undo
     def add_suffix(self, suffix):
         u"""
+        给当前节点添加后缀。
 
-                给当前节点添加后缀。
+        Args:
+            suffix (str):
+                添加到 Maya 节点名称尾部的 Suffix。
 
-                Args:
-                    suffix (str):
-                        添加到 Maya 节点名称尾部的 Suffix。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         self._name = cmds.rename(
@@ -913,19 +904,17 @@ class Name(object):
     @pipelineUtils.Pipeline.make_undo
     def search_replace_name(self, search, replace):
         u"""
+        根据关键字搜索替换当前节点名称。
 
-                根据关键字搜索替换当前节点名称。
+        Args:
+            search (str):
+                节点名称中需要查找并替换的字符串。
+            replace (bool):
+                替换 Search 内容的新字符串。
 
-                Args:
-                    search (str):
-                        节点名称中需要查找并替换的字符串。
-                    replace (bool):
-                        替换 Search 内容的新字符串。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         object_name = self._name.split("|")[-1]
@@ -940,17 +929,15 @@ class Name(object):
 
     def rename_to_name(self, new_name):
         u"""
+        重命名为指定名称。
 
-                重命名为指定名称。
+        Args:
+            new_name (str):
+                `new_name` 对应的 Maya 节点或资源名称。
 
-                Args:
-                    new_name (str):
-                        `new_name` 对应的 Maya 节点或资源名称。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         self._name = cmds.rename(
@@ -995,23 +982,30 @@ class Name(object):
     @staticmethod
     def print_duplicate_object():
         u"""
+        检查并列出场景中所有重名节点。
 
-                检查并列出场景中所有重名节点。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         all_objects = cmds.ls(long=True)
 
         if all_objects is None:
             all_objects = []
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         duplicate_object_list = []
         short_name_dict = {}
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for object_name in all_objects:
             short_name = object_name.split("|")[-1]
 
@@ -1034,9 +1028,15 @@ class Name(object):
                     )
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if len(duplicate_object_list) == 0:
             cmds.warning(u"场景里没有重名的物体")
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return duplicate_object_list
 
     @staticmethod

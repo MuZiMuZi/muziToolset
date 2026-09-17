@@ -46,13 +46,11 @@ class RigLibraryService(object):
 
     def reload(self):
         u"""
+        从场景恢复配置；不在打开窗口时创建或更改场景节点。
 
-                从场景恢复配置；不在打开窗口时创建或更改场景节点。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         document = catalog.new_document()
         if self._config_exists():
@@ -63,13 +61,22 @@ class RigLibraryService(object):
 
     def _commit(self, document, action=None, label="Muzi Rig Library"):
         u"""配置和对应场景操作放在同一个 Undo Chunk；失败时整体回滚。"""
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         candidate = catalog.validate_document(document)
         if self.cmds.namespaceInfo(currentNamespace=True) not in (":", ""):
             raise RuntimeError(u"当前版本请在根命名空间中操作绑定库。")
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self.cmds.undoInfo(query=True, state=True):
             raise RuntimeError(u"请先开启 Maya Undo，再执行绑定库操作。")
         exists = self._config_exists()
         changed = False
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         failure = None
         self.cmds.undoInfo(openChunk=True, chunkName=label)
         try:
@@ -90,26 +97,30 @@ class RigLibraryService(object):
             failure = error
         finally:
             self.cmds.undoInfo(closeChunk=True)
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if failure is not None:
             if changed:
                 self.cmds.undo()
             raise failure
         self.document = candidate
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return candidate
 
     def add_module(self, kind):
         u"""
+        添加模块配置；左右模块自动选择空闲侧，通用 FK 自动分配可读名称。
 
-                添加模块配置；左右模块自动选择空闲侧，通用 FK 自动分配可读名称。
+        Args:
+            kind (object):
+                当前方法执行 Maya / Rig 操作时使用的 `kind` 数据。
 
-                Args:
-                    kind (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `kind` 数据。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         document = copy.deepcopy(self.document)
         record = catalog.new_module(kind)
@@ -149,7 +160,7 @@ class RigLibraryService(object):
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         document = copy.deepcopy(self.document)
         for record in document["modules"]:
@@ -172,12 +183,18 @@ class RigLibraryService(object):
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         document = copy.deepcopy(self.document)
         previous = None
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         updated = None
         for record in document["modules"]:
             if record["id"] == identity:
@@ -194,9 +211,15 @@ class RigLibraryService(object):
                 break
         if previous is None:
             raise ValueError(u"没有找到当前模块。")
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if updated == previous:
             return
         catalog.validate_document(document)
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if previous["built"]:
             errors = self._check_built(previous)
             if errors:
@@ -206,28 +229,32 @@ class RigLibraryService(object):
             if previous["built"]:
                 self._apply_display(updated, previous)
 
+        # -------------------------------------------------------------------------
+        # Step 05：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self._commit(document, apply, "Muzi Module Properties")
 
     def mirror_module(self, identity):
         u"""
+        复制左右模块设置，并将 Guide 世界位置沿 X=0 镜像到配对侧。
 
-                复制左右模块设置，并将 Guide 世界位置沿 X=0 镜像到配对侧。
+        Args:
+            identity (object):
+                当前方法执行 Maya / Rig 操作时使用的 `identity` 数据。
 
-                Args:
-                    identity (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `identity` 数据。
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
 
-                Returns:
-                    dict:
-                        包含本次构建、查询或处理结果的结构化字典。
-
-                Raises:
-                    ValueError:
-                        输入数据、场景状态或操作条件不满足要求时抛出。
-                    RuntimeError:
-                        输入数据、场景状态或操作条件不满足要求时抛出。
-
+        Raises:
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         document = copy.deepcopy(self.document)
         source = None
         for record in document["modules"]:
@@ -239,6 +266,9 @@ class RigLibraryService(object):
         if source["side"] not in ("lf", "rt"):
             raise ValueError(u"中央模块不需要左右镜像。")
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         opposite = "rt" if source["side"] == "lf" else "lf"
         target = None
         for record in document["modules"]:
@@ -250,6 +280,9 @@ class RigLibraryService(object):
             raise ValueError(u"请先添加对应的{}模块。".format(u"右侧" if opposite == "rt" else u"左侧"))
         rebuild_target = target["built"]
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         mirrored_keys = ("enabled", "ctrl_size", "ctrl_axis", "jnt_radius",
                          "show_axis", "show_joints", "show_controls")
         for key in mirrored_keys:
@@ -260,6 +293,9 @@ class RigLibraryService(object):
         if not source_guides or len(source_guides) != len(target_guides):
             raise ValueError(u"左右模块必须具有数量一致的 Guide 列表。")
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         mirrored_positions = []
         for index in range(len(source_guides)):
             source_matches = self.cmds.ls(source_guides[index], long=True) or []
@@ -288,6 +324,9 @@ class RigLibraryService(object):
                 candidate_target["connected"] = False
 
         self._commit(document, apply, "Muzi Mirror Module")
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return {"id": target["id"], "side": target["side"],
                 "guide_count": len(mirrored_positions), "rebuilt": rebuild_target}
 
@@ -334,19 +373,23 @@ class RigLibraryService(object):
 
     def workflow_state(self):
         u"""
+        返回四步导航需要的场景状态，不创建或修改任何 Maya 节点。
 
-                返回四步导航需要的场景状态，不创建或修改任何 Maya 节点。
-
-                Returns:
-                    dict:
-                        包含本次构建、查询或处理结果的结构化字典。
-
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         records = []
         for record in self.document["modules"]:
             if record["enabled"]:
                 records.append(record)
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         setup_complete = bool(records)
         if setup_complete:
             for name in (self.root, self.joint_root, self.control_root):
@@ -359,6 +402,9 @@ class RigLibraryService(object):
                     break
 
         guide_complete = setup_complete
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if guide_complete:
             for record in records:
                 names = catalog.guide_names(record)
@@ -388,6 +434,9 @@ class RigLibraryService(object):
                     build_complete = False
                     break
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         connection_complete = build_complete
         if connection_complete:
             for record in records:
@@ -395,6 +444,9 @@ class RigLibraryService(object):
                     connection_complete = False
                     break
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return {
             "completed": {
                 1: setup_complete,
@@ -413,7 +465,13 @@ class RigLibraryService(object):
 
     def _check_built(self, record):
         u"""检查已构建模块是否完整，缺失节点时不尝试重建或覆盖剩余绑定。"""
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         errors = []
+        # -------------------------------------------------------------------------
+        # Step 02：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for nodes in catalog.output_names(record).values():
             for name in nodes:
                 if not self.cmds.objExists(name):
@@ -423,6 +481,9 @@ class RigLibraryService(object):
                         errors.append(u"节点归属信息缺失：{}".format(name))
                     elif self.cmds.getAttr(name + "." + self.module_attr) != record["id"]:
                         errors.append(u"节点不属于当前模块：{}".format(name))
+        # -------------------------------------------------------------------------
+        # Step 03：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return errors
 
     def _tag_module_outputs(self, record):
@@ -435,9 +496,15 @@ class RigLibraryService(object):
 
     def _delete_module_outputs(self, record):
         u"""只删除具有当前模块归属标记的输出及其约束。"""
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         errors = self._check_built(record)
         if errors:
             raise RuntimeError("\n".join(errors))
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         constraints = []
         outputs = catalog.output_names(record)
         for joint_name in outputs["joints"]:
@@ -447,6 +514,9 @@ class RigLibraryService(object):
             for node in nodes:
                 if node not in constraints:
                     constraints.append(node)
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for group_name in outputs["groups"]:
             if not group_name.startswith("driven_"):
                 continue
@@ -458,41 +528,54 @@ class RigLibraryService(object):
                     constraints.append(node)
         if constraints:
             self.cmds.delete(constraints)
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         existing = []
         for nodes in outputs.values():
             for name in nodes:
                 if self.cmds.objExists(name) and name not in existing:
                     existing.append(name)
+        # -------------------------------------------------------------------------
+        # Step 05：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if existing:
             self.cmds.delete(existing)
 
     def rebuild_module(self, identity):
         u"""
+        根据最新 Guide 重建一个模块，并把连接状态退回待 Final。
 
-                根据最新 Guide 重建一个模块，并把连接状态退回待 Final。
+        Args:
+            identity (object):
+                当前方法执行 Maya / Rig 操作时使用的 `identity` 数据。
 
-                Args:
-                    identity (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `identity` 数据。
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
 
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
-                Raises:
-                    ValueError:
-                        输入数据、场景状态或操作条件不满足要求时抛出。
-                    RuntimeError:
-                        输入数据、场景状态或操作条件不满足要求时抛出。
-
+        Raises:
+            ValueError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         record = None
+        # -------------------------------------------------------------------------
+        # Step 02：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for candidate in self.document["modules"]:
             if candidate["id"] == identity:
                 record = candidate
                 break
         if record is None:
             raise ValueError(u"没有找到需要重建的模块。")
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not record["built"]:
             raise RuntimeError(u"当前模块尚未生成，不需要重建。")
 
@@ -510,22 +593,35 @@ class RigLibraryService(object):
             target["built"] = True
             target["connected"] = False
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self._commit(self.document, apply, "Muzi Rebuild Module")
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return identity
 
     def validate(self):
         u"""
+        只读预检查：验证 Guide 数量、节点类型、重复路径和输出名称冲突。
 
-                只读预检查：验证 Guide 数量、节点类型、重复路径和输出名称冲突。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         catalog.validate_document(self.document)
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         errors = []
         active = 0
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for record in self.document["modules"]:
             if not record["enabled"]:
                 continue
@@ -553,11 +649,17 @@ class RigLibraryService(object):
                         errors.append(u"输出名称已存在，停止构建：{}".format(name))
         if not active:
             errors.append(u"请先添加并启用至少一个模块。")
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for name in (self.root, self.joint_root, self.control_root):
             try:
                 self._owned_group(name)
             except RuntimeError as error:
                 errors.append(str(error))
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return errors
 
     def _make_builder(self, record):
@@ -583,25 +685,32 @@ class RigLibraryService(object):
 
     def build(self):
         u"""
+        生成所有启用模块的 Joint、Controller 和层级，不建立驱动连接。
 
-                生成所有启用模块的 Joint、Controller 和层级，不建立驱动连接。
+        Returns:
+            object | int:
+            本次操作得到的整数结果或成功处理数量。
 
-                Returns:
-                    object | int:
-                        本次操作得到的整数结果或成功处理数量。
-
-                Raises:
-                    RuntimeError:
-                        输入数据、场景状态或操作条件不满足要求时抛出。
-
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         errors = self.validate()
         if errors:
             raise RuntimeError("\n".join(errors))
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         pending = []
         for record in self.document["modules"]:
             if record["enabled"] and not record["built"]:
                 pending.append(record)
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not pending:
             return 0
 
@@ -620,26 +729,36 @@ class RigLibraryService(object):
                 record["built"] = True
                 record["connected"] = False
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self._commit(self.document, apply, "Muzi Build Modules")
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return len(pending)
 
     def finalize(self):
         u"""
+        Step 04 Final：为已生成模块建立连接并选择全部主控制器。
 
-                Step 04 Final：为已生成模块建立连接并选择全部主控制器。
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
 
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
-                Raises:
-                    RuntimeError:
-                        输入数据、场景状态或操作条件不满足要求时抛出。
-
+        Raises:
+            RuntimeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         errors = self.validate()
         if errors:
             raise RuntimeError("\n".join(errors))
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         controls = []
         for record in self.document["modules"]:
             if not record["enabled"] or not record["built"]:
@@ -647,6 +766,9 @@ class RigLibraryService(object):
             output = catalog.output_names(record)
             for name in output["controls"]:
                 controls.append(name)
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         document = copy.deepcopy(self.document)
 
         def apply(candidate):
@@ -657,16 +779,31 @@ class RigLibraryService(object):
                 builder.connect_outputs()
                 record["connected"] = True
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self._commit(document, apply, "Muzi Connect Modules")
         self.select_nodes(controls)
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return len(controls)
 
     def _apply_display(self, record, previous=None):
         u"""只修改本模块的显示属性和 Curve CV，保留控制器位置与连接。"""
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         from ...core.rigging.ctrl_utils import Ctrl
+        # -------------------------------------------------------------------------
+        # Step 02：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         from ...core.rigging.jnt_utils import Jnt
 
         outputs = catalog.output_names(record)
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if previous is not None:
             scale_ratio = record["ctrl_size"] / previous["ctrl_size"]
             for name in outputs["controls"] + outputs["subcontrols"]:
@@ -682,34 +819,36 @@ class RigLibraryService(object):
         for name in outputs["joints"]:
             Jnt(name).set_radius(record["jnt_radius"])
             self.cmds.setAttr(name + ".displayLocalAxis", record["show_axis"])
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.cmds.setAttr(outputs["groups"][0] + ".visibility", record["show_joints"])
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.cmds.setAttr(outputs["groups"][1] + ".visibility", record["show_controls"])
 
     def selected_guides(self):
         u"""
+        读取 Maya 当前选择顺序；UI 允许按行修正最终链条顺序。
 
-                读取 Maya 当前选择顺序；UI 允许按行修正最终链条顺序。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         return self.cmds.ls(orderedSelection=True, long=True, transforms=True) or []
 
     def node_exists(self, name):
         u"""
+        查询结构项是否已存在于场景，不创建占位节点。
 
-                查询结构项是否已存在于场景，不创建占位节点。
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
 
-                Args:
-                    name (str):
-                        创建或查询时使用的节点名称。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         return self.cmds.objExists(name)
 
@@ -753,7 +892,7 @@ class RigLibraryService(object):
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         if os.path.getsize(path) > 2 * 1024 * 1024:
             raise ValueError(u"配置文件过大。")

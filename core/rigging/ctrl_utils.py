@@ -95,6 +95,9 @@ class Ctrl(object):
 
         # 保存 Controller 标准名称。
         # self.ctrl_name 始终保存字符串名称，主要用于生成层级节点名称。
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.ctrl_name = name
 
         # 保存主 Controller Transform PyNode。
@@ -109,11 +112,17 @@ class Ctrl(object):
         # 名称和 Maya 节点分开保存：xxx_name 保存字符串，xxx_grp / sub_ctrl 保存 PyNode。
         # ---------------------------------------------------------------------
         self.zero_name = None
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.driven_name = None
         self.space_name = None
         self.connect_name = None
         self.offset_name = None
         self.sub_ctrl_name = None
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.output_name = None
 
         # ---------------------------------------------------------------------
@@ -134,12 +143,18 @@ class Ctrl(object):
         self.zero_grp = None
         self.driven_grp = None
         self.space_grp = None
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.connect_grp = None
         self.offset_grp = None
         self.sub_ctrl = None
         self.output_grp = None
 
         # 根据名称获取或创建主 Controller。
+        # -------------------------------------------------------------------------
+        # Step 05：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self._get_or_create_ctrl()
 
     def _get_or_create_ctrl(self):
@@ -164,6 +179,9 @@ class Ctrl(object):
         """
 
         # 判断场景中是否已经存在这个名称的 Maya 节点。
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if pm.objExists(self.ctrl_name):
 
             # 已经存在时直接转换成 PyNode，后续统一使用 PyMEL 对象操作。
@@ -191,6 +209,9 @@ class Ctrl(object):
             cmds.setAttr(axis_attr, "X+", type="string")
             cmds.setAttr(axis_attr, keyable=False, channelBox=False)
 
+        # -------------------------------------------------------------------------
+        # Step 02：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.ctrl
 
     def create_ctrl(
@@ -257,15 +278,24 @@ class Ctrl(object):
         """
 
         # 先替换 Controller Shape。
+        # -------------------------------------------------------------------------
+        # Step 01：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.set_ctrl_shape(shape_name)
 
         # Shape 创建完成后再设置颜色，确保颜色作用于最终 Shape。
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.set_ctrl_color(ctrl_color)
 
         # 通过缩放 Curve CV 调整显示大小，不修改 Controller Transform Scale。
         self.set_ctrl_size(ctrl_size)
 
         # 使用绝对轴向设置 Shape 面朝方向，不修改 Controller Transform Rotate。
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.set_ctrl_axis(ctrl_axis)
 
         # 根据参数决定是否需要匹配目标位置、旋转和缩放。
@@ -273,6 +303,9 @@ class Ctrl(object):
             self.set_match_transform(target=match_transform_target)
 
         # 根据参数决定是否创建完整控制器层级。
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if create_hierarchy:
             self.create_ctrl_hierarchy(
                 sub_ctrl_shape=shape_name,
@@ -281,6 +314,9 @@ class Ctrl(object):
                 ctrl_axis=ctrl_axis
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.ctrl
 
     def get_ctrl_shapes(self):
@@ -329,8 +365,14 @@ class Ctrl(object):
         """
 
         # 获取 muziToolset 项目根目录。
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         rigging_path = os.path.dirname(__file__)
         core_path = os.path.dirname(rigging_path)
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         project_path = os.path.dirname(core_path)
 
         # 拼接 Controller Shape Library 路径。
@@ -340,6 +382,9 @@ class Ctrl(object):
         shape_list = []
 
         # Shape Library 不存在时返回空列表。
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not os.path.exists(shape_library_path):
             pm.warning(u"找不到 Controller Shape Library：{}".format(shape_library_path))
             return shape_list
@@ -348,6 +393,9 @@ class Ctrl(object):
         file_names = os.listdir(shape_library_path)
 
         # 只读取 JSON 文件，并去掉文件扩展名。
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for file_name in file_names:
             if file_name.lower().endswith(".json"):
                 shape_name = os.path.splitext(file_name)[0]
@@ -356,6 +404,9 @@ class Ctrl(object):
         # 按名称排序，方便 UI 或 Shape Picker 显示。
         shape_list.sort()
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return shape_list
 
     def set_ctrl_color(self, ctrl_color):
@@ -454,9 +505,12 @@ class Ctrl(object):
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         valid_axes = ("X+", "X-", "Y+", "Y-", "Z+", "Z-")
 
         if ctrl_axis not in valid_axes:
@@ -464,12 +518,18 @@ class Ctrl(object):
                 u"ctrl_axis 只能使用 X+ / X- / Y+ / Y- / Z+ / Z-，当前值：{}".format(ctrl_axis)
             )
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         ctrl_name = self.ctrl.name()
         axis_attr = ctrl_name + ".ctrl_axis"
         current_axis = "X+"
 
         # 读取当前 Shape 已记录的绝对轴向。
         # 旧场景没有该属性时，按照新版 Shape Library 标准 X+ 处理。
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if cmds.attributeQuery("ctrl_axis", node=ctrl_name, exists=True):
             stored_axis = cmds.getAttr(axis_attr)
 
@@ -486,6 +546,9 @@ class Ctrl(object):
 
         self.ctrl_shapes = self.get_ctrl_shapes()
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for ctrl_shape in self.ctrl_shapes:
             if not isinstance(ctrl_shape, pm.nodetypes.NurbsCurve):
                 continue
@@ -571,6 +634,9 @@ class Ctrl(object):
 
         # 保存最终轴向，让下一次切换能够从正确的当前状态还原。
         cmds.setAttr(axis_attr, ctrl_axis, type="string")
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         cmds.setAttr(axis_attr, keyable=False, channelBox=False)
 
     def set_ctrl_rotate(self, rotate_x=0.0, rotate_y=0.0, rotate_z=0.0):
@@ -711,6 +777,9 @@ class Ctrl(object):
         """
 
         # 获取 muziToolset 项目根目录。
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         rigging_path = os.path.dirname(__file__)
         core_path = os.path.dirname(rigging_path)
         project_path = os.path.dirname(core_path)
@@ -719,6 +788,9 @@ class Ctrl(object):
         shape_file = os.path.join(project_path, "resources", "controller_shapes", shape_name + ".json")
 
         # Shape 文件不存在时停止执行，避免删除当前控制器已有 Shape。
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not os.path.exists(shape_file):
             pm.warning(u"找不到 Controller Shape 文件：{}".format(shape_file))
             return []
@@ -761,6 +833,9 @@ class Ctrl(object):
         old_shapes = self.get_ctrl_shapes()
 
         # 删除旧 Shape，只保留当前 Controller Transform。
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for old_shape in old_shapes:
             pm.delete(old_shape)
 
@@ -782,6 +857,9 @@ class Ctrl(object):
         # Shape Library 数据统一视为标准 X+ 轴向。
         # 替换 Shape 后必须同步重置轴向元数据，避免沿用旧 Shape 的轴向状态。
         ctrl_name = self.ctrl.name()
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         axis_attr = ctrl_name + ".ctrl_axis"
 
         if not cmds.attributeQuery("ctrl_axis", node=ctrl_name, exists=True):
@@ -790,6 +868,9 @@ class Ctrl(object):
         cmds.setAttr(axis_attr, "X+", type="string")
         cmds.setAttr(axis_attr, keyable=False, channelBox=False)
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.ctrl_shapes
 
     def save_ctrl_shape(self, shape_name):
@@ -827,6 +908,9 @@ class Ctrl(object):
         """
 
         # 获取当前控制器下面的全部 Shape。
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.ctrl_shapes = self.get_ctrl_shapes()
 
         # 获取当前 Controller 的轴向状态。
@@ -834,6 +918,9 @@ class Ctrl(object):
         valid_axes = ("X+", "X-", "Y+", "Y-", "Z+", "Z-")
         current_axis = "X+"
         ctrl_name = self.ctrl.name()
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         axis_attr = ctrl_name + ".ctrl_axis"
 
         if cmds.attributeQuery("ctrl_axis", node=ctrl_name, exists=True):
@@ -940,6 +1027,9 @@ class Ctrl(object):
             shape_data.append(shape_info)
 
         # 如果没有找到任何 NurbsCurve Shape，则停止保存。
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not shape_data:
             pm.warning(u"当前控制器没有可以保存的 NurbsCurve Shape。")
             return None
@@ -950,6 +1040,9 @@ class Ctrl(object):
         project_path = os.path.dirname(core_path)
 
         # 获取统一的 Controller Shape Library 路径。
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         shape_library_path = os.path.join(project_path, "resources", "controller_shapes")
 
         # 根据传入名称拼接最终 JSON 文件路径。
@@ -961,6 +1054,9 @@ class Ctrl(object):
             json.dump(shape_data, file, indent=4)
 
         # 返回保存路径，方便 UI 或其他工具继续使用。
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return shape_file
 
     def create_sub_ctrl(
@@ -1021,6 +1117,9 @@ class Ctrl(object):
 
         # 如果 create_ctrl_hierarchy() 还没有生成名称，
         # 单独调用 create_sub_ctrl() 时也可以自行得到 SubCtrl 名称。
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self.sub_ctrl_name:
             self.sub_ctrl_name = self.ctrl_name.replace("ctrl_", "subctrl_", 1)
 
@@ -1030,6 +1129,9 @@ class Ctrl(object):
 
         # 设置 SubCtrl 的最终 Shape、颜色、视觉大小和轴向。
         # create_hierarchy=False 可以避免 SubCtrl 自己再次创建 Zero / Driven 等完整层级。
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         sub_ctrl_object.create_ctrl(
             shape_name=shape_name,
             ctrl_color=ctrl_color,
@@ -1047,10 +1149,16 @@ class Ctrl(object):
         # 将 SubCtrl 放到主 Ctrl 下方。
         # hierarchy_utils.parent() 会保持当前世界 Transform，
         # 因此前面已经匹配主 Ctrl 的 SubCtrl 会得到干净的本地 Transform。
+        # -------------------------------------------------------------------------
+        # Step 03：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         hierarchy_utils.parent(child_node=self.sub_ctrl, parent_node=self.ctrl)
 
         # 给控制器上创建 sub_ctrl_vis 属性，用来控制次级控制器是否显示。
         attr_object = attr_utils.Attr(self.ctrl_name)
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         attr_object.add_attr(attr_name="sub_ctrl_vis", attr_type="bool", default_value=0, keyable=True)
 
         # 将主控制器的 sub_ctrl_vis 连接到次级控制器 visibility。
@@ -1060,6 +1168,9 @@ class Ctrl(object):
             target_attr_name="visibility"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.sub_ctrl
 
     def create_ctrl_hierarchy(
@@ -1128,11 +1239,17 @@ class Ctrl(object):
         """
 
         # 根据主 Controller 名称生成完整层级名称。
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.zero_name = self.ctrl_name.replace("ctrl_", "zero_", 1)
         self.driven_name = self.ctrl_name.replace("ctrl_", "driven_", 1)
         self.space_name = self.ctrl_name.replace("ctrl_", "space_", 1)
         self.connect_name = self.ctrl_name.replace("ctrl_", "connect_", 1)
         self.offset_name = self.ctrl_name.replace("ctrl_", "offset_", 1)
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.sub_ctrl_name = self.ctrl_name.replace("ctrl_", "subctrl_", 1)
         self.output_name = self.ctrl_name.replace("ctrl_", "output_", 1)
 
@@ -1141,6 +1258,9 @@ class Ctrl(object):
         self.offset_grp = hierarchy_utils.add_extra_group(self.ctrl, self.offset_name, relation="parent")
         self.connect_grp = hierarchy_utils.add_extra_group(self.offset_grp, self.connect_name, relation="parent")
         self.space_grp = hierarchy_utils.add_extra_group(self.connect_grp, self.space_name, relation="parent")
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.driven_grp = hierarchy_utils.add_extra_group(self.space_grp, self.driven_name, relation="parent")
         self.zero_grp = hierarchy_utils.add_extra_group(self.driven_grp, self.zero_name, relation="parent")
 
@@ -1159,9 +1279,15 @@ class Ctrl(object):
         # SubCtrl 与 Output 保持兄弟层级，因此 Visibility 不会沿 DAG 传播到 Output。
         # 通过属性连接将 SubCtrl 的局部变换传给 Output，使 Output 仍然包含第二层控制效果。
         sub_ctrl_attr = attr_utils.Attr(self.sub_ctrl)
+        # -------------------------------------------------------------------------
+        # Step 04：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         sub_ctrl_attr.connect_attr(attr_name="translate", target_object=self.output_grp, target_attr_name="translate")
         sub_ctrl_attr.connect_attr(attr_name="rotate", target_object=self.output_grp, target_attr_name="rotate")
         sub_ctrl_attr.connect_attr(attr_name="scale", target_object=self.output_grp, target_attr_name="scale")
         sub_ctrl_attr.connect_attr(attr_name="rotateOrder", target_object=self.output_grp, target_attr_name="rotateOrder")
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.zero_grp

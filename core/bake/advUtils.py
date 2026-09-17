@@ -159,6 +159,9 @@ class AdvUtils (object) :
 
 
         # 选择所有需要驱动的手指控制器加选Finger控制器创建连接
+        # -------------------------------------------------------------------------
+        # Step 01：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         def myDrv (sdk , ctrl , str) :
             cmds.setAttr (ctrl + str , -2)
             cmds.setAttr (sdk + '.ry' , -18)
@@ -171,8 +174,14 @@ class AdvUtils (object) :
             cmds.setDrivenKeyframe (sdk + '.ry' , cd = ctrl + str)
 
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         ctrl = cmds.ls (sl = True)
         myStr = ['.indexCurl' , '.middleCurl' , '.ringCurl' , '.pinkyCurl' , '.thumbCurl']
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for i in ctrl [0 :-1] :
             Extra = re.sub ('FK' , 'FKExtra' , i)
             Grp = cmds.listRelatives (Extra , p = True) [0]
@@ -197,6 +206,9 @@ class AdvUtils (object) :
                 cmds.setDrivenKeyframe (SDK1 + '.rx' , cd = ctrl [-1] + '.cup' , itt = 'linear')
 
 
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         def myDrv (sdk , min , max , ctrl) :
             cmds.setAttr (ctrl + '.spread' , -5)
             cmds.setAttr (sdk + '.rz' , min)
@@ -209,6 +221,9 @@ class AdvUtils (object) :
             cmds.setDrivenKeyframe (sdk + '.rz' , cd = ctrl + '.spread')
 
 
+        # -------------------------------------------------------------------------
+        # Step 05：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for i in ctrl [0 :-1] :
             Grp = cmds.listRelatives ('SDK1' + i , p = True) [0]
             SDK2 = cmds.group (em = True , p = Grp , n = 'SDK2' + i)

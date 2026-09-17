@@ -27,13 +27,11 @@ class MateHuman() :
 
 	def __init__(self , name) :
 		u"""
+		初始化当前对象，并准备运行时需要的状态和成员。
 
-		        初始化当前对象，并准备运行时需要的状态和成员。
-
-		        Args:
-		            name (str):
-		                创建或查询时使用的节点名称。
-
+		Args:
+		    name (str):
+		        创建或查询时使用的节点名称。
 		"""
 
 		self.name = name
@@ -48,18 +46,19 @@ class MateHuman() :
 	@staticmethod
 	def get_mateHuman_drv_jnt(description) :
 		u"""
+		定义matehuman的骨架结构,查询到对应的模块后返回对应的关节
 
-		        定义matehuman的骨架结构,查询到对应的模块后返回对应的关节
+		Args:
+		    description (str):
+		        UI Step / Section 中展示的功能说明文本。
 
-		        Args:
-		            description (str):
-		                UI Step / Section 中展示的功能说明文本。
-
-		        Returns:
-		            object:
-		                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+		Returns:
+		    object:
+		    当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
 		"""
+  # -------------------------------------------------------------------------
+  # Step 01：准备当前阶段计算和后续处理需要的数据
+  # -------------------------------------------------------------------------
 		mateHuman_joint_trunk_dict = {
 				'root' : 'root_drv' ,
 				'pelvis' : 'pelvis_drv' ,
@@ -69,6 +68,9 @@ class MateHuman() :
 				'head ' : 'head_drv'
 				}
 
+  # -------------------------------------------------------------------------
+  # Step 02：准备当前阶段计算和后续处理需要的数据
+  # -------------------------------------------------------------------------
 		mateHuman_joint_arm_dict = {
 				'clavicle_l' : 'clavicle_l_drv' ,
 				'arm_l' : ['upperarm_l_drv' , 'lowerarm_l_drv' , 'hand_l_drv'] ,
@@ -101,6 +103,9 @@ class MateHuman() :
 				'thumb_finger_r' : ['thumb_01_r_drv' , 'thumb_02_r_drv' , 'thumb_03_r_drv']
 				}
 
+  # -------------------------------------------------------------------------
+  # Step 03：准备当前阶段计算和后续处理需要的数据
+  # -------------------------------------------------------------------------
 		mateHuman_joint_leg_dict = {
 				'leg_l' : ['thigh_l_drv' , 'calf_l_drv' , 'foot_l_drv'] ,
 				'thigh_l' : 'thigh_l_drv' ,
@@ -127,6 +132,9 @@ class MateHuman() :
 				'ringtoe_r' : ['ringtoe_01_r_drv' , 'ringtoe_02_r_drv']
 				}
 
+  # -------------------------------------------------------------------------
+  # Step 04：遍历当前数据集合，并逐项执行核心处理
+  # -------------------------------------------------------------------------
 		for mateHuman_dict in [mateHuman_joint_trunk_dict , mateHuman_joint_arm_dict , mateHuman_joint_leg_dict] :
 			if description in mateHuman_dict :
 				return mateHuman_dict[description]
@@ -210,8 +218,14 @@ class MateHuman() :
 		重置控制器上所有的数值.
 		"""
 		# 重置ikfk控制器
+  # -------------------------------------------------------------------------
+  # Step 01：准备当前阶段计算和后续处理需要的数据
+  # -------------------------------------------------------------------------
 		ctrls = cmds.ls('*ctrl_*' , type = 'transform')
 		attrs = ['translateX' , 'translateY' , 'translateZ' , 'rotateX' , 'rotateY' , 'rotateZ']
+  # -------------------------------------------------------------------------
+  # Step 02：准备当前阶段计算和后续处理需要的数据
+  # -------------------------------------------------------------------------
 		scale_attrs = ['scaleX' , 'scaleY' , 'scaleZ']
 		for ctrl in ctrls :
 			for attr in attrs :
@@ -227,12 +241,21 @@ class MateHuman() :
 				else :
 					pass
 		# 重置ikfk切换控制器
+  # -------------------------------------------------------------------------
+  # Step 03：准备当前阶段计算和后续处理需要的数据
+  # -------------------------------------------------------------------------
 		ctrl_ikfkblends = cmds.ls('ikfkctrl_*' , type = 'transform')
 		for ctrl_ikfkblend in ctrl_ikfkblends :
 			cmds.setAttr(ctrl_ikfkblend + '.IkFkBend' , 1)
 
 		# 重置手指pose控制器
+  # -------------------------------------------------------------------------
+  # Step 04：准备当前阶段计算和后续处理需要的数据
+  # -------------------------------------------------------------------------
 		ctrl_poses = cmds.ls('fkposectrl_*' , type = 'transform')
+  # -------------------------------------------------------------------------
+  # Step 05：遍历当前数据集合，并逐项执行核心处理
+  # -------------------------------------------------------------------------
 		for ctrl_pose in ctrl_poses :
 			for finger in ['pinky' , 'thumb' , 'index' , 'middle' , 'ring'] :
 				cmds.setAttr(ctrl_pose + '.{}Curl'.format(finger) , 0)

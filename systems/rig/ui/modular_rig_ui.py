@@ -12,19 +12,17 @@ from ..library_service import RigLibraryService
 
 def label(text, role=None):
     u"""
+    创建具有局部主题角色的文本。
 
-        创建具有局部主题角色的文本。
+    Args:
+        text (object):
+            当前方法执行 Maya / Rig 操作时使用的 `text` 数据。
+        role (str):
+            当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
 
-        Args:
-            text (object):
-                当前方法执行 Maya / Rig 操作时使用的 `text` 数据。
-            role (str):
-                当前 UI / Rig 元素的语义角色，用于命名、Style 或构建分类。
-
-        Returns:
-            object:
-                当前 API 完成处理后返回的结果。
-
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
     """
     widget = QtWidgets.QLabel(text)
     if role:
@@ -34,19 +32,17 @@ def label(text, role=None):
 
 def button(text, tooltip=""):
     u"""
+    创建带明确操作文字的按钮。
 
-        创建带明确操作文字的按钮。
+    Args:
+        text (object):
+            当前方法执行 Maya / Rig 操作时使用的 `text` 数据。
+        tooltip (str):
+            当前 Maya / Rig 操作使用的 `tooltip` 名称或标记。
 
-        Args:
-            text (object):
-                当前方法执行 Maya / Rig 操作时使用的 `text` 数据。
-            tooltip (str):
-                当前 Maya / Rig 操作使用的 `tooltip` 名称或标记。
-
-        Returns:
-            object:
-                当前 API 完成处理后返回的结果。
-
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
     """
     widget = QtWidgets.QPushButton(text)
     widget.setCursor(Qt.PointingHandCursor)
@@ -61,15 +57,13 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def __init__(self, parent=None, service=None):
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    parent (str):
-                        父级 Maya 节点名称。
-                    service (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `service` 数据。
-
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
+            service (object):
+                当前方法执行 Maya / Rig 操作时使用的 `service` 数据。
         """
 
         if parent is None and service is None:
@@ -105,18 +99,33 @@ class ModularRigWindow(QtWidgets.QWidget):
         u"""
         设置窗口自身属性，不创建内部控件。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.setObjectName("ModularRigWindow")
         self.setWindowTitle(u"Muzi · 绑定库 / Rig Library")
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.setWindowFlags(Qt.Window | Qt.WindowMinMaxButtonsHint | Qt.WindowCloseButtonHint)
         self.setAttribute(Qt.WA_DeleteOnClose, True)
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.setMinimumSize(1120, 740)
         self.resize(1440, 980)
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         screen = QtWidgets.QApplication.primaryScreen()
         if screen:
             available = screen.availableGeometry()
             self.resize(min(1440, max(1120, available.width() - 60)),
                         min(980, max(740, available.height() - 80)))
         # 沿用窗口管理器已有的标志，保留绑定库自己的主题。
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.setProperty("muzi_window_theme_applied", True)
 
     # =========================================================
@@ -127,6 +136,9 @@ class ModularRigWindow(QtWidgets.QWidget):
         u"""
         创建窗口级、标题和步骤控件，不负责摆放。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.refresh_timer = QtCore.QTimer(self)
         self.refresh_timer.setSingleShot(True)
 
@@ -166,6 +178,9 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.module_page = QtWidgets.QWidget()
         self.module_search = QtWidgets.QLineEdit()
         self.module_search.setPlaceholderText(u"搜索模块 / Search modules...")
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.module_list = QtWidgets.QListWidget()
         self.module_list.setIconSize(QtCore.QSize(32, 32))
         self.add_button = button(u"+  添加模块")
@@ -195,6 +210,9 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.module_tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.module_tree.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         self.module_tree.header().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.module_tree.header().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
         self.empty_label = label(u"从左侧添加模块，\n或选择 Face Starter 模板开始。", "muted")
         self.empty_label.setAlignment(Qt.AlignCenter)
@@ -226,6 +244,9 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.guide_edit.setPlaceholderText(
             u"每行一个 Guide，按 FK 链顺序排列。\n耳朵 / 舌头留空时自动读取模板。"
         )
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.pick_button = button(u"读取 Maya 选择")
         self.save_guides_button = button(u"保存 Guide 列表")
 
@@ -255,35 +276,51 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.validate_button.setMinimumHeight(36)
         self.build_button = button(u"创建基础层级")
         self.build_button.setProperty("role", "primary")
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.build_button.setMinimumWidth(250)
 
     def create_layouts(self):
         u"""
         建立窗口骨架，并组合各个职责单一的区域布局。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main = QtWidgets.QVBoxLayout(self)
         main.setContentsMargins(20, 15, 20, 15)
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         main.setSpacing(10)
         main.addWidget(self.create_header_layout())
         main.addLayout(self.create_step_layout())
 
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.splitter.addWidget(self.create_module_panel())
         self.splitter.addWidget(self.create_rig_structure_panel())
         self.splitter.addWidget(self.create_properties_panel())
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.splitter.setSizes([285, 450, 605])
         main.addWidget(self.splitter, 1)
 
+        # -------------------------------------------------------------------------
+        # Step 05：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         main.addWidget(self.create_bottom_layout())
 
     def create_header_layout(self):
         u"""
+        摆放品牌区和窗口级操作按钮。
 
-                摆放品牌区和窗口级操作按钮。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
         header_layout = QtWidgets.QHBoxLayout(self.header)
         header_layout.setContentsMargins(16, 8, 16, 8)
@@ -301,13 +338,11 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def create_step_layout(self):
         u"""
+        摆放四步工作流导航。
 
-                摆放四步工作流导航。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
         steps = QtWidgets.QHBoxLayout()
         steps.setSpacing(1)
@@ -317,47 +352,58 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def create_module_panel(self):
         u"""
+        摆放模块与模板目录，不创建目录控件。
 
-                摆放模块与模板目录，不创建目录控件。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.left_panel, panel_layout = self._panel(u"MODULE LIBRARY", "03 / 03")
         self.left_panel.setMinimumWidth(225)
 
         module_layout = QtWidgets.QVBoxLayout(self.module_page)
         module_layout.setContentsMargins(0, 10, 0, 0)
         module_layout.setSpacing(10)
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         module_layout.addWidget(self.module_search)
         module_layout.addWidget(self.module_list, 1)
         module_layout.addWidget(self.add_button)
         module_layout.addWidget(self.module_note)
 
         template_layout = QtWidgets.QVBoxLayout(self.template_page)
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         template_layout.setContentsMargins(0, 10, 0, 0)
         template_layout.setSpacing(10)
         template_layout.addWidget(self.template_search)
         template_layout.addWidget(self.template_list, 1)
         template_layout.addWidget(self.add_template_button)
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         template_layout.addWidget(self.template_note)
 
         self.library_tabs.addTab(self.module_page, u"MODULES  03")
         self.library_tabs.addTab(self.template_page, u"TEMPLATES  03")
         panel_layout.addWidget(self.library_tabs, 1)
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.left_panel
 
     def create_rig_structure_panel(self):
         u"""
+        摆放场景模块树及其工具栏，不创建控件。
 
-                摆放场景模块树及其工具栏，不创建控件。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
         self.center_panel, panel_layout = self._panel("RIG STRUCTURE", "SCENE")
         self.center_panel.setMinimumWidth(315)
@@ -377,14 +423,15 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def create_properties_panel(self):
         u"""
+        摆放当前步骤对应的模块属性，不创建属性控件。
 
-                摆放当前步骤对应的模块属性，不创建属性控件。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.right_panel, panel_layout = self._panel("PROPERTIES", "MODULE")
         self.right_panel.setMinimumWidth(410)
 
@@ -396,6 +443,9 @@ class ModularRigWindow(QtWidgets.QWidget):
 
         self.basic_section.form.addRow(u"Enable Module", self.enabled_check)
         self.basic_section.form.addRow(u"Module Name", self.name_edit)
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.basic_section.form.addRow("Side", self.side_combo)
         self.basic_section.form.addRow("Parent", self.parent_label)
 
@@ -407,6 +457,9 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.guide_section.form.addRow(guide_actions)
 
         self.control_section.form.addRow(u"Shape Axis / 朝向", self.axis_combo)
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.control_section.form.addRow(u"Size / 大小", self.size_spin)
         self.control_section.form.addRow(u"Color / 索引颜色", self.color_spin)
         self.control_section.form.addRow(self.control_check)
@@ -418,6 +471,9 @@ class ModularRigWindow(QtWidgets.QWidget):
 
         properties = QtWidgets.QVBoxLayout(self.property_body)
         properties.setContentsMargins(0, 0, 3, 0)
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         properties.setSpacing(8)
         properties.addWidget(self.basic_section)
         properties.addWidget(self.guide_section)
@@ -426,17 +482,18 @@ class ModularRigWindow(QtWidgets.QWidget):
         properties.addStretch(1)
         self.property_scroll.setWidget(self.property_body)
         panel_layout.addWidget(self.property_scroll, 1)
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.right_panel
 
     def create_bottom_layout(self):
         u"""
+        摆放状态提示、检查按钮和当前步骤主操作。
 
-                摆放状态提示、检查按钮和当前步骤主操作。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
         bottom = QtWidgets.QHBoxLayout(self.footer)
         bottom.setContentsMargins(18, 12, 14, 12)
@@ -458,6 +515,9 @@ class ModularRigWindow(QtWidgets.QWidget):
         u"""
         集中管理窗口中所有固定控件的信号连接。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for index, step_button in enumerate(self.step_buttons, 1):
             step_button.clicked.connect(partial(self.set_current_step, index))
         button_connections = (
@@ -478,12 +538,18 @@ class ModularRigWindow(QtWidgets.QWidget):
             widget.clicked.connect(callback)
         self.module_search.textChanged.connect(self.filter_modules)
         self.template_search.textChanged.connect(self.filter_templates)
+        # -------------------------------------------------------------------------
+        # Step 02：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.module_list.itemDoubleClicked.connect(self.add_selected_module)
         self.template_list.itemDoubleClicked.connect(self.add_selected_template)
         self.tree_search.textChanged.connect(self.filter_tree)
         self.module_tree.currentItemChanged.connect(self.tree_selected)
         self.module_tree.itemDoubleClicked.connect(self.select_tree_nodes)
         self.module_tree.customContextMenuRequested.connect(self.show_structure_context_menu)
+        # -------------------------------------------------------------------------
+        # Step 03：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.enabled_check.toggled.connect(lambda value: self.change_property("enabled", value))
         self.name_edit.editingFinished.connect(
             lambda: self.change_property("name", self.name_edit.text().strip()))
@@ -492,11 +558,17 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.axis_combo.currentTextChanged.connect(
             lambda value: self.change_property("ctrl_axis", value))
         self.size_spin.valueChanged.connect(lambda value: self.change_property("ctrl_size", value))
+        # -------------------------------------------------------------------------
+        # Step 04：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.color_spin.valueChanged.connect(lambda value: self.change_property("ctrl_color", value))
         self.radius_spin.valueChanged.connect(lambda value: self.change_property("jnt_radius", value))
         self.axis_check.toggled.connect(lambda value: self.change_property("show_axis", value))
         self.joint_check.toggled.connect(lambda value: self.change_property("show_joints", value))
         self.control_check.toggled.connect(lambda value: self.change_property("show_controls", value))
+        # -------------------------------------------------------------------------
+        # Step 05：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.refresh_timer.timeout.connect(self.refresh_scene)
 
     # =========================================================
@@ -540,19 +612,17 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def set_current_step(self, step, *args):
         u"""
+        公开的步骤状态入口。
 
-                公开的步骤状态入口。
+        Args:
+            step (object):
+                当前方法执行 Maya / Rig 操作时使用的 `step` 数据。
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
 
-                Args:
-                    step (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `step` 数据。
-                    args (tuple):
-                        当前方法按顺序处理的 `args` 数据集合。
-
-                Returns:
-                    object:
-                        完成设置或应用后的目标对象 / 状态结果。
-
+        Returns:
+            object:
+            完成设置或应用后的目标对象 / 状态结果。
         """
         return self.set_step(step)
 
@@ -641,7 +711,13 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def _populate_library(self):
         u"""目录完全来自已登记模块，不展示旧界面的演示数据。"""
+        # -------------------------------------------------------------------------
+        # Step 01：清理当前阶段不再需要的数据或场景状态
+        # -------------------------------------------------------------------------
         self.module_list.clear()
+        # -------------------------------------------------------------------------
+        # Step 02：清理当前阶段不再需要的数据或场景状态
+        # -------------------------------------------------------------------------
         self.template_list.clear()
         for entry in catalog.modules:
             item_text = u"{}\n{}".format(entry["title"], entry["description"])
@@ -650,6 +726,9 @@ class ModularRigWindow(QtWidgets.QWidget):
             item.setData(Qt.UserRole, entry["key"])
             item.setToolTip(entry["description"])
             self.module_list.addItem(item)
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for entry in catalog.templates:
             item_text = u"{}\n{}".format(entry["title"], entry["description"])
             item = QtWidgets.QListWidgetItem(module_icon("#8fac35"), item_text)
@@ -658,7 +737,13 @@ class ModularRigWindow(QtWidgets.QWidget):
             item.setToolTip(entry["description"])
             self.template_list.addItem(item)
         self.module_list.setCurrentRow(0)
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.template_list.setCurrentRow(0)
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self._update_library_counts()
 
     def _filter_list(self, widget, text):
@@ -717,20 +802,24 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def filter_tree(self, text):
         u"""
+        搜索名称、侧别和状态，并保留命中子节点的完整父路径。
 
-                搜索名称、侧别和状态，并保留命中子节点的完整父路径。
+        Args:
+            text (object):
+                当前方法执行 Maya / Rig 操作时使用的 `text` 数据。
 
-                Args:
-                    text (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `text` 数据。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         query = text.strip().lower()
 
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         def visit(item):
             values = []
             for column in range(self.module_tree.columnCount()):
@@ -744,18 +833,19 @@ class ModularRigWindow(QtWidgets.QWidget):
             if query and child_match:
                 item.setExpanded(True)
             return own_match or child_match
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for index in range(self.module_tree.topLevelItemCount()):
             visit(self.module_tree.topLevelItem(index))
 
     def current_record(self):
         u"""
+        取得当前选择对应的真实配置。
 
-                取得当前选择对应的真实配置。
-
-                Returns:
-                    None | object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            None | object:
+            当前 API 完成处理后返回的结果。
         """
         for record in self.service.document["modules"]:
             if record["id"] == self.current_id:
@@ -764,14 +854,23 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def _render_tree(self):
         u"""重建精简模块树；场景节点不再作为子层级显示。"""
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self.module_tree.blockSignals(True)
         self.module_tree.clear()
         records = self.service.document["modules"]
         root = QtWidgets.QTreeWidgetItem(["rig_library", "", u"{} 模块".format(len(records))])
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         root.setIcon(0, module_icon("#759539"))
         root.setData(0, Qt.UserRole + 2, "root")
         self.module_tree.addTopLevelItem(root)
         root.setExpanded(True)
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         selected_item = None
         built_count = 0
         for record in records:
@@ -809,11 +908,17 @@ class ModularRigWindow(QtWidgets.QWidget):
         else:
             self.current_id = None
             self.current_module = None
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self.module_tree.blockSignals(False)
         count = len(records)
         self.empty_label.setVisible(count == 0)
         self.structure_note.setText(
             u"{} 个模块 · {} 个已构建\n双击模块可在 Maya 中选中其现有节点。".format(count, built_count))
+        # -------------------------------------------------------------------------
+        # Step 05：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self.filter_tree(self.tree_search.text())
 
     def tree_selected(self, current, previous=None):
@@ -830,14 +935,29 @@ class ModularRigWindow(QtWidgets.QWidget):
         self.set_current_module(identity)
 
     def _load_properties(self):
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         record = self.current_record()
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.property_body.setEnabled(record is not None)
         self.remove_button.setEnabled(record is not None and not record["built"])
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if record is None:
             self.property_title.setText(u"选择一个模块")
             self.property_subtitle.setText(u"从左侧添加模块，开始配置绑定。")
             return
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.loading = True
+        # -------------------------------------------------------------------------
+        # Step 05：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             entry = catalog.get_module(record["kind"])
             self.property_title.setText(entry["title"])
@@ -973,23 +1093,27 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def create_structure_context_menu(self, item):
         u"""
+        为模块行创建右键菜单；根节点不提供模块操作。
 
-                为模块行创建右键菜单；根节点不提供模块操作。
+        Args:
+            item (str | object):
+                当前查询、吸附或 UI 操作使用的 Maya Item / 数据项。
 
-                Args:
-                    item (str | object):
-                        当前查询、吸附或 UI 操作使用的 Maya Item / 数据项。
-
-                Returns:
-                    object | None:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object | None:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if item is None:
             return None
         identity = item.data(0, Qt.UserRole)
         if identity is None:
             return None
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         record = None
         for candidate in self.service.document["modules"]:
             if candidate["id"] == identity:
@@ -998,6 +1122,9 @@ class ModularRigWindow(QtWidgets.QWidget):
         if record is None:
             return None
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         menu = QtWidgets.QMenu(self.module_tree)
         if self.current_step == 4:
             text = u"请返回前三步后再镜像"
@@ -1010,9 +1137,15 @@ class ModularRigWindow(QtWidgets.QWidget):
             text = u"镜像设置、Guide 与关节到{}".format(destination)
             enabled = True
         action = menu.addAction(text)
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         action.setEnabled(enabled)
         action.setToolTip(u"沿世界 X=0 镜像到配对模块")
         action.triggered.connect(lambda checked=False: self.mirror_current_module())
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return menu
 
     def show_structure_context_menu(self, position):
@@ -1062,10 +1195,22 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def _sync_workflow_steps(self):
         u"""根据场景实际进度刷新步骤的完成、当前和锁定状态。"""
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         workflow = self.service.workflow_state()
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not workflow["unlocked"].get(self.current_step, False):
             self.current_step = workflow["suggested"]
+        # -------------------------------------------------------------------------
+        # Step 03：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         self._sync_property_sections()
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for index, widget in enumerate(self.step_buttons, 1):
             if index == self.current_step:
                 state = "current"
@@ -1121,6 +1266,9 @@ class ModularRigWindow(QtWidgets.QWidget):
         u"""
         底部主按钮执行当前阶段操作。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.current_step == 1:
             if self._run(self.service.setup, u"基础层级已准备好，下一步导入并调整 Guide。"):
                 self._change_step(2)
@@ -1149,13 +1297,11 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def build_current_step(self):
         u"""
+        公开的当前步骤构建入口。
 
-                公开的当前步骤构建入口。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
         return self.run_step()
 
@@ -1165,7 +1311,7 @@ class ModularRigWindow(QtWidgets.QWidget):
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
         def check():
             errors = self.service.validate()
@@ -1175,13 +1321,11 @@ class ModularRigWindow(QtWidgets.QWidget):
 
     def validate_current_step(self):
         u"""
+        公开的当前步骤检查入口。
 
-                公开的当前步骤检查入口。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         return self.validate_scene()
 

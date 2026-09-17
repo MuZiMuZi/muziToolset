@@ -6,32 +6,42 @@ import maya.mel as mel
 
 def get_type_file (data_path , file_type = ['ma' , 'mb'] , data_file_list = None , with_path = False) :
     u"""
+    根据给定的文件类型。获取目录及子目录下所有文件名或者文件路径 :param data_path: 给定的文件目录 :param file_type: 文件类型,可以为列表或者字符串 :param data_file_list: 返回的...
 
-        根据给定的文件类型。获取目录及子目录下所有文件名或者文件路径 :param data_path: 给定的文件目录 :param file_type: 文件类型,可以为列表或者字符串 :param data_file_list: 返回的...
+    Args:
+        data_path (str):
+            `data_path` 对应的文件或目录路径。
+        file_type (list):
+            当前方法按顺序处理的 `file_type` 数据集合。
+        data_file_list (list):
+            当前方法需要保持顺序批量处理的数据列表。
+        with_path (bool):
+            `with_path` 对应的文件或目录路径。
 
-        Args:
-            data_path (str):
-                `data_path` 对应的文件或目录路径。
-            file_type (list):
-                当前方法按顺序处理的 `file_type` 数据集合。
-            data_file_list (list):
-                当前方法需要保持顺序批量处理的数据列表。
-            with_path (bool):
-                `with_path` 对应的文件或目录路径。
-
-        Returns:
-            object:
-                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if data_file_list is None :
         data_file_list = []
     # 当文件类型是字符穿的时候，
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if file_type is not None :
         if not isinstance (file_type , list) :
             file_type = [file_type]
     # 获取文件目录下所有的文件
+    # -------------------------------------------------------------------------
+    # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     data_files = os.listdir (data_path)
+    # -------------------------------------------------------------------------
+    # Step 04：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for data_file in data_files :
         data_file_path = os.path.join (data_path , data_file)
         if os.path.isdir (data_file_path) :
@@ -51,6 +61,9 @@ def get_type_file (data_path , file_type = ['ma' , 'mb'] , data_file_list = None
                         data_file_list.append (data_file_path)
                     else :
                         data_file_list.append (data_file)
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return data_file_list
 
 

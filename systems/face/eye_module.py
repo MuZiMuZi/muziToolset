@@ -57,8 +57,41 @@ class EyeModule(rig_module.RigModule):
         ctrl_axis="X+",
         aim_ctrl_axis="Z+"
     ):
-        u"""初始化正式 Eye Rig。"""
+        u"""
+        初始化正式 Eye Rig。
 
+        Args:
+            module (str):
+                当前 Maya / Rig 操作使用的 `module` 名称或标记。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            guide (str):
+                需要查询或处理的 Guide Transform 名称。
+            jnt_parent (str | None):
+                新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。
+            ctrl_parent (object):
+                当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。
+            ctrl_shape (str):
+                当前 Maya / Rig 操作使用的 `ctrl_shape` 名称或标记。
+            aim_ctrl_shape (str):
+                当前 Maya / Rig 操作使用的 `aim_ctrl_shape` 名称或标记。
+            ctrl_color (int):
+                当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。
+            ctrl_size (float):
+                当前 Maya / Rig 计算使用的 `ctrl_size` 数值参数。
+            ctrl_axis (str):
+                当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。
+            aim_ctrl_axis (str):
+                当前 Maya / Rig 操作使用的 `aim_ctrl_axis` 名称或标记。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
+
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         super(EyeModule, self).__init__(
             module=module,
             side=side,
@@ -76,6 +109,9 @@ class EyeModule(rig_module.RigModule):
         self.ctrl_shape = ctrl_shape
         self.aim_ctrl_shape = aim_ctrl_shape
         self.ctrl_color = ctrl_color
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.ctrl_size = ctrl_size
         self.ctrl_axis = ctrl_axis
         self.aim_ctrl_axis = aim_ctrl_axis
@@ -83,6 +119,9 @@ class EyeModule(rig_module.RigModule):
         self.guide_map = {}
 
         self.eye_jnt_name = None
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.eye_jnt_object = None
 
         self.main_ctrl_name = None
@@ -91,12 +130,18 @@ class EyeModule(rig_module.RigModule):
         self.aim_ctrl_name = None
         self.aim_ctrl_object = None
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.world_up_name = None
         self.pose_driver_name = None
         self.pose_driven_name = None
 
         self.aim_constraint_name = None
         self.pose_constraint_name = None
+        # -------------------------------------------------------------------------
+        # Step 05：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.orient_constraint_name = None
 
     # =========================================================================
@@ -255,13 +300,34 @@ class EyeModule(rig_module.RigModule):
         }
 
     def get_guides(self):
-        u"""获取 Eye Ball / Iris / Aim 三个固定语义 Guide。"""
+        u"""
 
+                获取 Eye Ball / Iris / Aim 三个固定语义 Guide。
+
+                Returns:
+                    object:
+                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
+
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         expected_guides = self._expected_guides()
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         source_guides = super(EyeModule, self).get_guides()
 
         self.guide_map = {}
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if source_guides:
             for guide_name in source_guides:
                 short_name = self._short_name(
@@ -324,12 +390,18 @@ class EyeModule(rig_module.RigModule):
                     )
                 )
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.guide_list = [
             self.guide_map["ball"],
             self.guide_map["iris"],
             self.guide_map["aim"],
         ]
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.guide_list
 
     # =========================================================================
@@ -337,7 +409,15 @@ class EyeModule(rig_module.RigModule):
     # =========================================================================
 
     def create_joints(self):
-        u"""在 Eye Ball Guide 创建眼球绑定 Joint。"""
+        u"""
+
+                在 Eye Ball Guide 创建眼球绑定 Joint。
+
+                Returns:
+                    list:
+                        按当前 API 约定顺序返回的结果列表。
+
+        """
 
         self.eye_jnt_name = name_utils.Name(
             type="jnt",
@@ -358,12 +438,21 @@ class EyeModule(rig_module.RigModule):
 
     def create_ctrls(self):
         u"""
-        创建 Eye Main / Eye Aim Controller。
 
-        Main Ctrl 使用 Iris Guide 创建，因此可见位置保持在 Iris。
-        Aim Ctrl 使用 Aim Guide 创建。
+                创建 Eye Main / Eye Aim Controller。
+
+                Main Ctrl 使用 Iris Guide 创建，因此可见位置保持在 Iris。
+                Aim Ctrl 使用 Aim Guide 创建。
+
+                Returns:
+                    list:
+                        按当前 API 约定顺序返回的结果列表。
+
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.main_ctrl_name = name_utils.Name(
             type="ctrl",
             side=self.side,
@@ -372,6 +461,9 @@ class EyeModule(rig_module.RigModule):
             index=1
         ).name
 
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.main_ctrl_object = self.create_ctrl(
             name=self.main_ctrl_name,
             guide=self.guide_map["iris"],
@@ -382,6 +474,9 @@ class EyeModule(rig_module.RigModule):
             create_hierarchy=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.aim_ctrl_name = name_utils.Name(
             type="ctrl",
             side=self.side,
@@ -390,6 +485,9 @@ class EyeModule(rig_module.RigModule):
             index=1
         ).name
 
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.aim_ctrl_object = self.create_ctrl(
             name=self.aim_ctrl_name,
             guide=self.guide_map["aim"],
@@ -400,6 +498,9 @@ class EyeModule(rig_module.RigModule):
             create_hierarchy=True
         )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return [
             self.main_ctrl_name,
             self.aim_ctrl_name,
@@ -454,7 +555,15 @@ class EyeModule(rig_module.RigModule):
             )
 
     def setup_hierarchy(self):
-        u"""整理 Eye Joint、Main Ctrl、Aim Ctrl 的模块层级。"""
+        u"""
+
+                整理 Eye Joint、Main Ctrl、Aim Ctrl 的模块层级。
+
+                Returns:
+                    tuple:
+                        按当前 API 约定组织的结果元组。
+
+        """
 
         super(EyeModule, self).setup_hierarchy()
 
@@ -483,8 +592,23 @@ class EyeModule(rig_module.RigModule):
     # =========================================================================
 
     def load_outputs(self):
-        u"""读取已经创建好的 Eye Joint / Controller 输出。"""
+        u"""
 
+                读取已经创建好的 Eye Joint / Controller 输出。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+
+        """
+
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.eye_jnt_name = name_utils.Name(
             type="jnt",
             side=self.side,
@@ -501,6 +625,9 @@ class EyeModule(rig_module.RigModule):
             index=1
         ).name
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.aim_ctrl_name = name_utils.Name(
             type="ctrl",
             side=self.side,
@@ -518,6 +645,9 @@ class EyeModule(rig_module.RigModule):
             self.aim_ctrl_name.replace("ctrl_", "output_", 1),
         ]
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for node_name in required_nodes:
             if not cmds.objExists(node_name):
                 raise RuntimeError(
@@ -527,14 +657,23 @@ class EyeModule(rig_module.RigModule):
                 )
 
         self.get_guides()
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self._ensure_module_groups()
         self._set_main_rotation_pivots()
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return required_nodes
 
     def _connection_names(self):
         u"""生成当前侧 Eye Step 04 的稳定连接节点名。"""
 
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.world_up_name = name_utils.Name(
             type="grp",
             side=self.side,
@@ -543,6 +682,9 @@ class EyeModule(rig_module.RigModule):
             index=1
         ).name
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.pose_driver_name = name_utils.Name(
             type="driver",
             side=self.side,
@@ -559,6 +701,9 @@ class EyeModule(rig_module.RigModule):
             index=1
         ).name
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.aim_constraint_name = name_utils.Name(
             type="con",
             side=self.side,
@@ -575,6 +720,9 @@ class EyeModule(rig_module.RigModule):
             index=1
         ).name
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.orient_constraint_name = name_utils.Name(
             type="con",
             side=self.side,
@@ -583,6 +731,9 @@ class EyeModule(rig_module.RigModule):
             index=1
         ).name
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return {
             "world_up": self.world_up_name,
             "pose_driver": self.pose_driver_name,
@@ -596,14 +747,26 @@ class EyeModule(rig_module.RigModule):
     def _delete_constraints(node_name, constraint_types):
         u"""删除指定节点上的旧约束，用于兼容旧 Eye 版本。"""
 
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not node_name:
             return
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not cmds.objExists(node_name):
             return
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         delete_nodes = []
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for constraint_type in constraint_types:
             constraint_nodes = cmds.listConnections(
                 node_name,
@@ -616,6 +779,9 @@ class EyeModule(rig_module.RigModule):
                 if constraint_node not in delete_nodes:
                     delete_nodes.append(constraint_node)
 
+        # -------------------------------------------------------------------------
+        # Step 05：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for constraint_node in delete_nodes:
             if cmds.objExists(constraint_node):
                 cmds.delete(constraint_node)
@@ -628,6 +794,9 @@ class EyeModule(rig_module.RigModule):
         同时清理旧 EyeModule 曾经创建的 Parent / Aim Constraint。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         connection_names = self._connection_names()
 
         # 先清理旧版本可能留下的匿名约束。
@@ -639,6 +808,9 @@ class EyeModule(rig_module.RigModule):
             index=1
         ).name
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         eye_jnt_name = name_utils.Name(
             type="jnt",
             side=self.side,
@@ -653,6 +825,9 @@ class EyeModule(rig_module.RigModule):
             1
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self._delete_constraints(
             main_driven,
             ("aimConstraint",)
@@ -663,6 +838,9 @@ class EyeModule(rig_module.RigModule):
             ("parentConstraint", "orientConstraint")
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         delete_order = [
             connection_names["orient_constraint"],
             connection_names["pose_constraint"],
@@ -672,6 +850,9 @@ class EyeModule(rig_module.RigModule):
             connection_names["world_up"],
         ]
 
+        # -------------------------------------------------------------------------
+        # Step 05：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for node_name in delete_order:
             if cmds.objExists(node_name):
                 cmds.delete(node_name)
@@ -710,11 +891,17 @@ class EyeModule(rig_module.RigModule):
         Pose Driven 当前直接继承 Driver Rotate；以后可以在两者之间加入 RBF / Corrective。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self.guide_map:
             self.get_guides()
 
         self._ensure_module_groups()
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         ctrl_master_grp = self._node_name(
             self.ctrl_master_grp
         )
@@ -731,6 +918,9 @@ class EyeModule(rig_module.RigModule):
             parent=ctrl_master_grp
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self._set_world_matrix(
             self.pose_driver_name,
             self.guide_map["ball"]
@@ -745,6 +935,9 @@ class EyeModule(rig_module.RigModule):
             self.pose_driver_name + ".rotateOrder"
         )
 
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         cmds.setAttr(
             self.pose_driven_name + ".rotateOrder",
             rotate_order
@@ -757,15 +950,27 @@ class EyeModule(rig_module.RigModule):
                 force=True
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.pose_driver_name, self.pose_driven_name
 
     def connect_rig(self):
         u"""
-        建立正式 Eye Rig 连接。
 
-        Aim Output -> Main Driven -> Main Output -> Pose Driver -> Pose Driven -> Eye Joint。
+                建立正式 Eye Rig 连接。
+
+                Aim Output -> Main Driven -> Main Output -> Pose Driver -> Pose Driven -> Eye Joint。
+
+                Returns:
+                    dict:
+                        包含本次构建、查询或处理结果的结构化字典。
+
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self.eye_jnt_name or not self.main_ctrl_name or not self.aim_ctrl_name:
             self.load_outputs()
 
@@ -773,6 +978,9 @@ class EyeModule(rig_module.RigModule):
             self.get_guides()
 
         self._ensure_module_groups()
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self._set_main_rotation_pivots()
 
         self._connection_names()
@@ -784,6 +992,9 @@ class EyeModule(rig_module.RigModule):
             1
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         main_output = self.main_ctrl_name.replace(
             "ctrl_",
             "output_",
@@ -813,6 +1024,9 @@ class EyeModule(rig_module.RigModule):
             name=self.aim_constraint_name
         )[0]
 
+        # -------------------------------------------------------------------------
+        # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self._create_pose_nodes()
 
         # Main Output 只传 Orientation 到 Pose Driver。
@@ -833,6 +1047,9 @@ class EyeModule(rig_module.RigModule):
             name=self.orient_constraint_name
         )[0]
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return {
             "joint": self.eye_jnt_name,
             "main_ctrl": self.main_ctrl_name,
@@ -847,10 +1064,16 @@ class EyeModule(rig_module.RigModule):
 
     def build(self):
         u"""
-        完整重建当前侧 Eye Rig。
 
-        先删除旧 Step 04 连接，再重新生成 Joint / Controller / Hierarchy / Connection，
-        避免旧约束影响 Guide Match 和 Controller 重建。
+                完整重建当前侧 Eye Rig。
+
+                先删除旧 Step 04 连接，再重新生成 Joint / Controller / Hierarchy / Connection，
+                避免旧约束影响 Guide Match 和 Controller 重建。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
         """
 
         self.delete_connections()
@@ -874,8 +1097,39 @@ def build(
     jnt_parent=None,
     ctrl_parent=None
 ):
-    u"""完整构建单侧 Eye Rig。"""
+    u"""
 
+        完整构建单侧 Eye Rig。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            ctrl_shape (str):
+                当前 Maya / Rig 操作使用的 `ctrl_shape` 名称或标记。
+            aim_ctrl_shape (str):
+                当前 Maya / Rig 操作使用的 `aim_ctrl_shape` 名称或标记。
+            ctrl_color (int):
+                当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。
+            ctrl_size (float):
+                当前 Maya / Rig 计算使用的 `ctrl_size` 数值参数。
+            ctrl_axis (str):
+                当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。
+            aim_ctrl_axis (str):
+                当前 Maya / Rig 操作使用的 `aim_ctrl_axis` 名称或标记。
+            jnt_parent (str | None):
+                新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。
+            ctrl_parent (object):
+                当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
+    """
+
+    # -------------------------------------------------------------------------
+    # Step 01：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     rig_object = EyeModule(
         side=side,
         jnt_parent=jnt_parent,
@@ -888,15 +1142,35 @@ def build(
         aim_ctrl_axis=aim_ctrl_axis
     )
 
+    # -------------------------------------------------------------------------
+    # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+    # -------------------------------------------------------------------------
     rig_object.build()
+    # -------------------------------------------------------------------------
+    # Step 03：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return rig_object
 
 
 def connect(side="lf", jnt_parent=None, ctrl_parent=None):
     u"""
-    只重建指定侧 Step 04 连接。
 
-    用于用户在 Step 02 / Step 03 修改 Controller、Joint 后重新生成最终驱动。
+        只重建指定侧 Step 04 连接。
+
+        用于用户在 Step 02 / Step 03 修改 Controller、Joint 后重新生成最终驱动。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            jnt_parent (str | None):
+                新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。
+            ctrl_parent (object):
+                当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
     """
 
     rig_object = EyeModule(
@@ -919,10 +1193,42 @@ def build_both(
     jnt_parent=None,
     ctrl_parent=None
 ):
-    u"""完整构建左右两侧 Eye Rig。"""
+    u"""
 
+        完整构建左右两侧 Eye Rig。
+
+        Args:
+            ctrl_shape (str):
+                当前 Maya / Rig 操作使用的 `ctrl_shape` 名称或标记。
+            aim_ctrl_shape (str):
+                当前 Maya / Rig 操作使用的 `aim_ctrl_shape` 名称或标记。
+            ctrl_color (int):
+                当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。
+            ctrl_size (float):
+                当前 Maya / Rig 计算使用的 `ctrl_size` 数值参数。
+            ctrl_axis (str):
+                当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。
+            aim_ctrl_axis (str):
+                当前 Maya / Rig 操作使用的 `aim_ctrl_axis` 名称或标记。
+            jnt_parent (str | None):
+                新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。
+            ctrl_parent (object):
+                当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。
+
+        Returns:
+            object:
+                创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+    """
+
+    # -------------------------------------------------------------------------
+    # Step 01：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     result = {}
 
+    # -------------------------------------------------------------------------
+    # Step 02：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for side in SUPPORTED_SIDES:
         result[side] = build(
             side=side,
@@ -936,11 +1242,20 @@ def build_both(
             ctrl_parent=ctrl_parent
         )
 
+    # -------------------------------------------------------------------------
+    # Step 03：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return result
 
 
 def delete_connections(side="lf"):
-    u"""删除指定侧 Step 04 连接，保留 Joint / Controller。"""
+    u"""
+    删除指定侧 Step 04 连接，保留 Joint / Controller。
+
+    Args:
+        side (str):
+            方向标记，常用值为 lf、rt 或 md。
+    """
 
     rig_object = EyeModule(
         side=side
@@ -950,8 +1265,29 @@ def delete_connections(side="lf"):
 
 
 def validate(side="lf"):
-    u"""检查 Eye Rig 的位置、Pivot 和主要连接。"""
+    u"""
 
+        检查 Eye Rig 的位置、Pivot 和主要连接。
+
+        Args:
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+
+        Returns:
+            object:
+                当前 API 完成处理后返回的结果。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+
+    """
+
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if side not in SUPPORTED_SIDES:
         raise ValueError(
             u"Eye Module 只支持 lf / rt，当前值：{}".format(side)
@@ -989,6 +1325,9 @@ def validate(side="lf"):
         index=1
     ).name
 
+    # -------------------------------------------------------------------------
+    # Step 02：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     connection_object = EyeModule(
         side=side
     )
@@ -1017,6 +1356,9 @@ def validate(side="lf"):
         iris_guide
     )
 
+    # -------------------------------------------------------------------------
+    # Step 03：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     main_position = EyeModule._world_position(
         main_ctrl
     )
@@ -1047,6 +1389,9 @@ def validate(side="lf"):
             joint_translate_has_input = True
             break
 
+    # -------------------------------------------------------------------------
+    # Step 04：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     result = {
         "main_ctrl_at_iris": EyeModule._same_position(
             main_position,
@@ -1097,4 +1442,7 @@ def validate(side="lf"):
 
     print(u"=============================================\n")
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return result

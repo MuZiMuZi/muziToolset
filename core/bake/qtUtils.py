@@ -25,21 +25,19 @@ path_joiner = lambda *args : os.path.join (*args).replace ('\\' , '/')
 
 def input_dialog_text (title , label , size = (400 , 200)) :
     u"""
+    创建一个输入的弹窗 :param title:弹窗的标题 :param label:弹窗的提示 :param size:弹窗的大小 :return:
 
-        创建一个输入的弹窗 :param title:弹窗的标题 :param label:弹窗的提示 :param size:弹窗的大小 :return:
+    Args:
+        title (str):
+            窗口、Section、Dialog 或报告使用的标题文本。
+        label (str):
+            UI、Rig Node 或日志中展示的简短 Label。
+        size (tuple):
+            创建或显示对象使用的尺寸值。
 
-        Args:
-            title (str):
-                窗口、Section、Dialog 或报告使用的标题文本。
-            label (str):
-                UI、Rig Node 或日志中展示的简短 Label。
-            size (tuple):
-                创建或显示对象使用的尺寸值。
-
-        Returns:
-            object | None:
-                当前 API 完成处理后返回的结果。
-
+    Returns:
+        object | None:
+        当前 API 完成处理后返回的结果。
     """
     input_text = QInputDialog ()
     # *size 是为了解包元组
@@ -56,23 +54,21 @@ def input_dialog_text (title , label , size = (400 , 200)) :
 
 def input_dialog_message (title , text = '' , informative = u'确认?' , size = (400 , 200)) :
     u"""
+    弹出询问是否执行的窗口 :param title:窗口的标题 :param text: :param informative:弹出的窗口的提示语 :param size:弹出的窗口的大小 :return:
 
-        弹出询问是否执行的窗口 :param title:窗口的标题 :param text: :param informative:弹出的窗口的提示语 :param size:弹出的窗口的大小 :return:
+    Args:
+        title (str):
+            窗口、Section、Dialog 或报告使用的标题文本。
+        text (str):
+            当前 Maya / Rig 操作使用的 `text` 名称或标记。
+        informative (str):
+            当前 Maya / Rig 操作使用的 `informative` 名称或标记。
+        size (tuple):
+            创建或显示对象使用的尺寸值。
 
-        Args:
-            title (str):
-                窗口、Section、Dialog 或报告使用的标题文本。
-            text (str):
-                当前 Maya / Rig 操作使用的 `text` 名称或标记。
-            informative (str):
-                当前 Maya / Rig 操作使用的 `informative` 名称或标记。
-            size (tuple):
-                创建或显示对象使用的尺寸值。
-
-        Returns:
-            bool:
-                当前操作成功或目标状态满足要求时返回 True，否则返回 False。
-
+    Returns:
+        bool:
+        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
     """
     msg_box = QMessageBox ()
     msg_box.setFixedSize (*size)
@@ -201,13 +197,11 @@ def show_folder_in_explorer (folder_path) :
 # 获取maya的主窗口，判断python的版本号，如果大于3的话就使用int
 def get_maya_window () :
     u"""
+    获取maya的主窗口，判断python的版本号，如果大于3的话就使用int :return:
 
-        获取maya的主窗口，判断python的版本号，如果大于3的话就使用int :return:
-
-        Returns:
-            object:
-                当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
     """
     # c++的指针概念，获取maya的窗口对象
     pointer = omui.MQtUtil.mainWindow ()
@@ -226,19 +220,17 @@ class Left_menu_button (QPushButton) :
 
     def __init__ (self , action_1 = None , action_2 = None , *args , **kwargs , ) :
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    action_1 (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `action_1` 数据。
-                    action_2 (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `action_2` 数据。
-                    args (tuple):
-                        当前方法按顺序处理的 `args` 数据集合。
-                    kwargs (dict):
-                        继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
-
+        Args:
+            action_1 (object):
+                当前方法执行 Maya / Rig 操作时使用的 `action_1` 数据。
+            action_2 (object):
+                当前方法执行 Maya / Rig 操作时使用的 `action_2` 数据。
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
 
         super (Left_menu_button , self).__init__ (*args , **kwargs)
@@ -256,13 +248,11 @@ class Left_menu_button (QPushButton) :
     def showContextMenu (self , mouseClick = Qt.RightButton) :
         # Create menu, if it doesn't exist ------------------------------
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Args:
-                    mouseClick (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `mouseClick` 数据。
-
+        Args:
+            mouseClick (object):
+                当前方法执行 Maya / Rig 操作时使用的 `mouseClick` 数据。
         """
 
         menu = self.menu (mouseClick)
@@ -281,15 +271,13 @@ class FrameWidget (QGroupBox) :
 
     def __init__ (self , title = '' , parent = None) :
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    title (str):
-                        窗口、Section、Dialog 或报告使用的标题文本。
-                    parent (str):
-                        父级 Maya 节点名称。
-
+        Args:
+            title (str):
+                窗口、Section、Dialog 或报告使用的标题文本。
+            parent (str):
+                父级 Maya 节点名称。
         """
 
         super (FrameWidget , self).__init__ (title , parent)
@@ -310,13 +298,11 @@ class FrameWidget (QGroupBox) :
 
     def setLayout (self , layout) :
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Args:
-                    layout (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `layout` 数据。
-
+        Args:
+            layout (object):
+                当前方法执行 Maya / Rig 操作时使用的 `layout` 数据。
         """
 
         self.__widget.setLayout (layout)
@@ -324,13 +310,11 @@ class FrameWidget (QGroupBox) :
 
     def expandCollapseRect (self) :
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         return QRect (0 , 0 , self.width () , 20)
@@ -338,13 +322,11 @@ class FrameWidget (QGroupBox) :
 
     def mouseReleaseEvent (self , event) :
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Args:
-                    event (QtCore.QEvent | object):
-                        Qt Event 回调传入的事件对象。
-
+        Args:
+            event (QtCore.QEvent | object):
+                Qt Event 回调传入的事件对象。
         """
 
         if self.expandCollapseRect ().contains (event.pos ()) :
@@ -356,9 +338,7 @@ class FrameWidget (QGroupBox) :
 
     def toggleCollapsed (self) :
         u"""
-
-                执行当前 API 的主要处理流程。
-
+        执行当前 API 的主要处理流程。
         """
 
         self.setCollapsed (not self.__collapsed)
@@ -366,13 +346,11 @@ class FrameWidget (QGroupBox) :
 
     def setCollapsed (self , state = True) :
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Args:
-                    state (bool):
-                        控制当前方法中的 `state` 选项是否启用。
-
+        Args:
+            state (bool):
+                控制当前方法中的 `state` 选项是否启用。
         """
 
         self.__collapsed = state
@@ -389,29 +367,39 @@ class FrameWidget (QGroupBox) :
 
     def paintEvent (self , event) :
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Args:
-                    event (QtCore.QEvent | object):
-                        Qt Event 回调传入的事件对象。
-
+        Args:
+            event (QtCore.QEvent | object):
+                Qt Event 回调传入的事件对象。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         painter = QPainter ()
         painter.begin (self)
 
         font = painter.font ()
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         font.setBold (True)
         painter.setFont (font)
 
         x = self.rect ().x ()
         y = self.rect ().y ()
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         w = self.rect ().width ()
         offset = 25
 
         painter.setRenderHint (painter.Antialiasing)
         painter.fillRect (self.expandCollapseRect () , QColor (93 , 93 , 93))
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         painter.drawText (
             x + offset , y + 3 , w , 16 ,
             Qt.AlignLeft | Qt.AlignTop ,
@@ -419,10 +407,16 @@ class FrameWidget (QGroupBox) :
         )
         self.__drawTriangle (painter , x , y)  # (1)
         painter.setRenderHint (QPainter.Antialiasing , False)
+        # -------------------------------------------------------------------------
+        # Step 05：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         painter.end ()
 
 
     def __drawTriangle (self , painter , x , y) :  # (2)
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self.__collapsed :  # (3)
             points = [QPoint (x + 10 , y + 6) ,
                       QPoint (x + 20 , y + 6) ,
@@ -436,6 +430,9 @@ class FrameWidget (QGroupBox) :
                       ]
 
         currentBrush = painter.brush ()  # (4)
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         currentPen = painter.pen ()
 
         painter.setBrush (
@@ -444,9 +441,18 @@ class FrameWidget (QGroupBox) :
                 Qt.SolidPattern
             )
         )  # (5)
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         painter.setPen (QPen (Qt.NoPen))  # (6)
         painter.drawPolygon (QPolygon (points))  # (7)
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         painter.setBrush (currentBrush)  # (8)
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         painter.setPen (currentPen)
 
 
@@ -458,13 +464,11 @@ class Dialog (QDialog) :
 
     def __init__ (self , parent = get_maya_window ()) :
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    parent (str):
-                        父级 Maya 节点名称。
-
+        Args:
+            parent (str):
+                父级 Maya 节点名称。
         """
 
         super (Dialog , self).__init__ (parent)
@@ -505,9 +509,7 @@ class QSSLoader :
 
     def __init__ (self) :
         u"""
-
-                初始化当前对象，并准备运行时需要的状态和成员。
-
+        初始化当前对象，并准备运行时需要的状态和成员。
         """
 
         pass
@@ -516,17 +518,15 @@ class QSSLoader :
     @staticmethod
     def read_qss_file (qss_file_name) :
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
+        Args:
+            qss_file_name (str):
+                `qss_file_name` 对应的 Maya 节点或资源名称。
 
-                Args:
-                    qss_file_name (str):
-                        `qss_file_name` 对应的 Maya 节点或资源名称。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         with open (qss_file_name , 'r' , encoding = 'UTF-8') as file :
@@ -555,9 +555,7 @@ class Editable_ListWidget_Item (QListWidgetItem) :
 
     def __init__ (self) :
         u"""
-
-                初始化当前对象，并准备运行时需要的状态和成员。
-
+        初始化当前对象，并准备运行时需要的状态和成员。
         """
 
         super (Editable_ListWidget_Item , self).__init__ ()
@@ -599,17 +597,15 @@ class Editable_ListWidget_Item (QListWidgetItem) :
 def load_ui (file_path) :
     # 创建一个应用程序对象
     u"""
+    加载当前 ui。
 
-        加载当前 ui。
+    Args:
+        file_path (str):
+            需要读取或写入的文件路径。
 
-        Args:
-            file_path (str):
-                需要读取或写入的文件路径。
-
-        Returns:
-            object:
-                当前 API 完成处理后返回的结果。
-
+    Returns:
+        object:
+        当前 API 完成处理后返回的结果。
     """
 
     app = QApplication ([])

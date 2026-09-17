@@ -9,13 +9,11 @@ Muzi Toolset 新版 Face System。
 
 def show():
     u"""
+    从原 Face Rig 工具入口打开当前模块化绑定库。
 
-        从原 Face Rig 工具入口打开当前模块化绑定库。
-
-        Returns:
-            object:
-                当前工具入口创建并显示的窗口或执行结果。
-
+    Returns:
+        object:
+        当前工具入口创建并显示的窗口或执行结果。
     """
     from ..rig import create_ui
 

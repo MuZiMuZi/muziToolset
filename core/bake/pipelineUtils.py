@@ -48,9 +48,7 @@ class Pipeline (object) :
 
     def __init__ (self) :
         u"""
-
-                初始化当前对象，并准备运行时需要的状态和成员。
-
+        初始化当前对象，并准备运行时需要的状态和成员。
         """
 
         pass
@@ -107,22 +105,20 @@ class Pipeline (object) :
     @staticmethod
     def distence_between (node_a , node_b) :
         u"""
+        获取两个对象之间的距离. node_a(str): 对象a. node_b(str): 对象b.
 
-                获取两个对象之间的距离. node_a(str): 对象a. node_b(str): 对象b.
+        :return
+        dist(float):两个对象之间的距离.
 
-                :return
-                dist(float):两个对象之间的距离.
+        Args:
+            node_a (object):
+                当前方法执行 Maya / Rig 操作时使用的 `node_a` 数据。
+            node_b (object):
+                当前方法执行 Maya / Rig 操作时使用的 `node_b` 数据。
 
-                Args:
-                    node_a (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `node_a` 数据。
-                    node_b (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `node_b` 数据。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         point_a = cmds.xform (node_a , query = True , worldSpace = True , rotatePivot = True)
         point_b = cmds.xform (node_b , query = True , worldSpace = True , rotatePivot = True)
@@ -136,9 +132,18 @@ class Pipeline (object) :
         u"""
         重置绑定系统的控制器上所有的数值.
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         ctrl_node = cmds.ls ('ctrl_?_*_???')
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         attrs = ['translateX' , 'translateY' , 'translateZ' , 'rotateX' , 'rotateY' , 'rotateZ']
         scale_attrs = ['scaleX' , 'scaleY' , 'scaleZ']
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for ctrl in ctrl_node :
             for attr in attrs :
                 lock_val = cmds.getAttr (ctrl + '.{}'.format (attr) , lock = True)
@@ -152,7 +157,13 @@ class Pipeline (object) :
                     cmds.setAttr (ctrl + '.{}'.format (scale_attr) , 1)
                 else :
                     pass
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         ctrl_IKFKblend = cmds.ls ('ctrl_?_*IKFKBend_???')
+        # -------------------------------------------------------------------------
+        # Step 05：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for IKFKblend in ctrl_IKFKblend :
             cmds.setAttr (IKFKblend + '.IkFkBend' , 1)
 
@@ -176,14 +187,29 @@ class Pipeline (object) :
         """
 
         # 如果无，则将无转换为[]空列表，仅用于操作
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not list_a :
             list_a = []
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not list_b :
             list_b = []
 
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         set_a = set (list_a)
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         set_b = set (list_b)
 
+        # -------------------------------------------------------------------------
+        # Step 05：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if operation == '|' :
             return list (set_a.union (set_b))
         elif operation == '&' :
@@ -200,7 +226,13 @@ class Pipeline (object) :
         u"""
         选择物体，批量制作约束。新添加创建关节来蒙皮物体
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         sel_list = cmds.ls (sl = True)
+        # -------------------------------------------------------------------------
+        # Step 02：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for sel in sel_list :
             cmds.undoInfo (openChunk = True)  # 批量撤销的开头
             # 创建对应的关节来蒙皮物体
@@ -250,7 +282,13 @@ class Pipeline (object) :
         u"""
         选择关节，批量制作约束。不需要新添加创建关节来蒙皮物体
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         sel_list = cmds.ls (sl = True)
+        # -------------------------------------------------------------------------
+        # Step 02：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for sel in sel_list :
             cmds.undoInfo (openChunk = True)  # 批量撤销的开头
             # 创建对应的控制器组
@@ -333,17 +371,15 @@ class Pipeline (object) :
     @staticmethod
     def make_undo (func) :
         u"""
+        这是一个装饰器，用于将一系列操作的撤销 包裹成一个撤销操作
 
-                这是一个装饰器，用于将一系列操作的撤销 包裹成一个撤销操作
+        Args:
+            func (object):
+                当前方法执行 Maya / Rig 操作时使用的 `func` 数据。
 
-                Args:
-                    func (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `func` 数据。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
 
@@ -364,23 +400,21 @@ class Pipeline (object) :
     @staticmethod
     def create_node (node_type , node_name , match = False , match_node = None) :
         u"""
+        根据给定的节点类型，在给定的位置生成新的节点。 node_type；创建的新的节点类型 node_name:创建的新的节点名称 match:是否吸附对应的位置 match_node:吸附对应的位置
 
-                根据给定的节点类型，在给定的位置生成新的节点。 node_type；创建的新的节点类型 node_name:创建的新的节点名称 match:是否吸附对应的位置 match_node:吸附对应的位置
+        Args:
+            node_type (str):
+                需要创建、查询或过滤的 Maya Node Type。
+            node_name (str):
+                `node_name` 对应的 Maya 节点或资源名称。
+            match (bool):
+                控制当前方法中的 `match` 选项是否启用。
+            match_node (object):
+                当前方法执行 Maya / Rig 操作时使用的 `match_node` 数据。
 
-                Args:
-                    node_type (str):
-                        需要创建、查询或过滤的 Maya Node Type。
-                    node_name (str):
-                        `node_name` 对应的 Maya 节点或资源名称。
-                    match (bool):
-                        控制当前方法中的 `match` 选项是否启用。
-                    match_node (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `match_node` 数据。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
         new_node = cmds.createNode (node_type , name = node_name)
         if match :
@@ -396,19 +430,17 @@ class Pipeline (object) :
         # 创建回调函数在新场景打开的时候执行回调函数
         #############################################################
         u"""
+        创建当前 native script job。
 
-                创建当前 native script job。
+        Args:
+            event_name (str):
+                `event_name` 对应的 Maya 节点或资源名称。
+            callback (object):
+                当前方法执行 Maya / Rig 操作时使用的 `callback` 数据。
 
-                Args:
-                    event_name (str):
-                        `event_name` 对应的 Maya 节点或资源名称。
-                    callback (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `callback` 数据。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
 
         scene_open_callback_id = om.MEventMessage.addEventCallback (
@@ -463,22 +495,20 @@ class Pipeline (object) :
     @staticmethod
     def move (obj , pos) :
         u"""
+        位移物体到指定的位置
 
-                位移物体到指定的位置
+        :param obj: str. maya的对象
+        :param pos: list. 位置信息 x, y and z
 
-                :param obj: str. maya的对象
-                :param pos: list. 位置信息 x, y and z
+        Args:
+            obj (str):
+                当前操作使用的 Maya DAG 节点或场景对象。
+            pos (object):
+                当前方法执行 Maya / Rig 操作时使用的 `pos` 数据。
 
-                Args:
-                    obj (str):
-                        当前操作使用的 Maya DAG 节点或场景对象。
-                    pos (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `pos` 数据。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         return cmds.move (pos [0] , pos [1] , pos [2] , obj , r = 1)
@@ -488,17 +518,15 @@ class Pipeline (object) :
     @staticmethod
     def get_percentages (sample_count) :
         u"""
+        曲线的总长度为1，给定需要平分的点数量，返回每个点的位置信息 例子：get_percentages(5) == [0.0, 0.25, 0.5, 0.75, 1.0] :param sample_count: int. 需要平分的点数...
 
-                曲线的总长度为1，给定需要平分的点数量，返回每个点的位置信息 例子：get_percentages(5) == [0.0, 0.25, 0.5, 0.75, 1.0] :param sample_count: int. 需要平分的点数...
+        Args:
+            sample_count (int):
+                当前构建、采样或查询过程使用的元素数量。
 
-                Args:
-                    sample_count (int):
-                        当前构建、采样或查询过程使用的元素数量。
-
-                Returns:
-                    object | list:
-                        按当前 API 约定顺序返回的结果列表。
-
+        Returns:
+            object | list:
+            按当前 API 约定顺序返回的结果列表。
         """
         if sample_count <= 1 :
             return []  # 返回空列表而不是 None
@@ -515,17 +543,15 @@ class Pipeline (object) :
     @staticmethod
     def get_dag_path (node = None) :
         u"""
+        这是一个用于在 Maya 中获取指定节点的 DAG（Directed Acyclic Graph）路径的函数。函数接受一个参数 node，即 Maya 的节点对象（node name），并返回该节点的 DAG 路径（DAG path）...
 
-                这是一个用于在 Maya 中获取指定节点的 DAG（Directed Acyclic Graph）路径的函数。函数接受一个参数 node，即 Maya 的节点对象（node name），并返回该节点的 DAG 路径（DAG path）...
+        Args:
+            node (str):
+                需要查询或处理的 Maya 节点名称。
 
-                Args:
-                    node (str):
-                        需要查询或处理的 Maya 节点名称。
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         # 创建一个 MSelectionList 对象，用于存储要查询的节点。
         selection = om.MSelectionList ()
@@ -545,23 +571,21 @@ class Pipeline (object) :
     @staticmethod
     def get_point_on_curve (curve , sample_count) :
         u"""
+        获取具有均匀距离的nurbs曲线上的点信息 https://help.autodesk.com/view/MAYAUL/2018/ENU/?guid=__cpp_ref_class_m_fn_nurbs_curve_html
 
-                获取具有均匀距离的nurbs曲线上的点信息 https://help.autodesk.com/view/MAYAUL/2018/ENU/?guid=__cpp_ref_class_m_fn_nurbs_curve_html
+        :param curve: str. nurbs曲线的名称
+        :param sample_count: int. 采样点的数量
+        :return: tuple. om.MPoint object and om.MVector object
 
-                :param curve: str. nurbs曲线的名称
-                :param sample_count: int. 采样点的数量
-                :return: tuple. om.MPoint object and om.MVector object
+        Args:
+            curve (str):
+                需要处理的 Maya Curve Transform 或 Shape 名称。
+            sample_count (int):
+                当前构建、采样或查询过程使用的元素数量。
 
-                Args:
-                    curve (str):
-                        需要处理的 Maya Curve Transform 或 Shape 名称。
-                    sample_count (int):
-                        当前构建、采样或查询过程使用的元素数量。
-
-                Returns:
-                    tuple:
-                        按当前 API 约定组织的结果元组。
-
+        Returns:
+            tuple:
+            按当前 API 约定组织的结果元组。
         """
         plists = Pipeline.get_percentages (sample_count)
 
@@ -584,30 +608,37 @@ class Pipeline (object) :
     @staticmethod
     def create_joints_on_curve (curve , sample_count) :
         u"""
+        在 Maya 中创建均匀分布在曲线上的关节点的函数。函数接受两个参数：
 
-                在 Maya 中创建均匀分布在曲线上的关节点的函数。函数接受两个参数：
+        :param curve: str. 曲线的节点名称
+        :param sample_count: int. 采样点的数量
+        :return: list. 返回创建关节的列表
 
-                :param curve: str. 曲线的节点名称
-                :param sample_count: int. 采样点的数量
-                :return: list. 返回创建关节的列表
+        Args:
+            curve (str):
+                需要处理的 Maya Curve Transform 或 Shape 名称。
+            sample_count (int):
+                当前构建、采样或查询过程使用的元素数量。
 
-                Args:
-                    curve (str):
-                        需要处理的 Maya Curve Transform 或 Shape 名称。
-                    sample_count (int):
-                        当前构建、采样或查询过程使用的元素数量。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         jnt_list = list ()
         # 获取具有均匀距离的 nurbs 曲线上的点信息和切线信息。
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         points , tangents = Pipeline.get_point_on_curve (curve , sample_count)
 
         # 遍历每个点，为每个点创建一个关节，并在对应的点上创建一个 transform 组来做目标约束吸附旋转。
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for index in range (len (points)) :
             point = points [index]
             tangent = tangents [index]
@@ -632,6 +663,9 @@ class Pipeline (object) :
             cmds.delete ([temp_node , constraint])
 
         # 返回创建的关节列表。
+        # -------------------------------------------------------------------------
+        # Step 04：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return jnt_list
 
         ###简单的示例
@@ -729,33 +763,37 @@ class Pipeline (object) :
     @staticmethod
     def create_joint_follicle_on_surface (surf_node , side , description , jnt_number) :
         u"""
+        在给定的曲面上创建毛囊节点和关节节点 surf_node（str）:给定的曲面，需要创建毛囊节点和关节节点的曲面 side（str）:边 description(str)：描述 jnt_number(int):需要创建的关节节点数量
 
-                在给定的曲面上创建毛囊节点和关节节点 surf_node（str）:给定的曲面，需要创建毛囊节点和关节节点的曲面 side（str）:边 description(str)：描述 jnt_number(int):需要创建的关节节点数量
+        return:follicle_dict:存储数据,fol_grp,jnt_grp,ctrl_grp,connect_list
 
-                return:follicle_dict:存储数据,fol_grp,jnt_grp,ctrl_grp,connect_list
+        Args:
+            surf_node (object):
+                当前方法执行 Maya / Rig 操作时使用的 `surf_node` 数据。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            description (str):
+                UI Step / Section 中展示的功能说明文本。
+            jnt_number (int):
+                当前构建、采样或查询过程使用的元素数量。
 
-                Args:
-                    surf_node (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `surf_node` 数据。
-                    side (str):
-                        方向标记，常用值为 lf、rt 或 md。
-                    description (str):
-                        UI Step / Section 中展示的功能说明文本。
-                    jnt_number (int):
-                        当前构建、采样或查询过程使用的元素数量。
-
-                Returns:
-                    object:
-                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
-
+        Returns:
+            object:
+            创建或构建完成后的 Maya / Rig 对象或 Build Result。
         """
         # 获得曲面的形状节点
 
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         surf_shape = cmds.listRelatives (surf_node , shapes = True) [0]
         # 创建所有deform的层级组
         deform_grp = cmds.createNode ('transform' ,
                                       name = 'grp_{}_{}Deforms_001'.format (side , description))
         cmds.parent (surf_node , deform_grp)
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         cmds.setAttr (surf_node + '.v' , 0)
         # 创建follicle整体层级组的名称
         fol_grp = cmds.createNode ('transform' ,
@@ -767,11 +805,17 @@ class Pipeline (object) :
         # 创建ctrl整体层级组的名称
         ctrl_grp = cmds.createNode ('transform' ,
                                     name = 'grp_{}_{}Ctrls_001'.format (side , description) , parent = deform_grp)
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         connect_list = []
 
         # 创建skin关节的集合
         skin_jnt_set = 'set_skinJnt'
         make_skin_jnt_set = 'set_' + side + '_' + description + 'Jnt'
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         make_skin_jnt_set = cmds.sets (name = make_skin_jnt_set , empty = True)
         if not cmds.objExists (skin_jnt_set) or cmds.nodeType (skin_jnt_set) != 'objectSet' :
             skin_jnt_set = cmds.sets (name = skin_jnt_set , empty = True)
@@ -827,6 +871,9 @@ class Pipeline (object) :
                 'connect_list' : connect_list ,
                 'deform_grp' : deform_grp
             }
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return follicle_dict
 
 
@@ -904,6 +951,9 @@ class Pipeline (object) :
                 向上的目标物体
         """
         # 获得名称规范
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         curve_obj = nameUtils.Name (curve)
 
         # 创建层级组结构
@@ -912,6 +962,9 @@ class Pipeline (object) :
                                     name = 'grp_{}_{}RigNodes_{:03d}'.format (curve_obj.side , curve_obj.description ,
                                                                               curve_obj.index))
 
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         drive_attach_grp = cmds.createNode ('transform' ,
                                             name = 'grp_{}_{}Attaches_{:03d}'.format (curve_obj.side ,
                                                                                       curve_obj.description ,
@@ -923,15 +976,24 @@ class Pipeline (object) :
                                                                          curve_obj.index) , parent = node_grp)
 
         # 整理层级结构
+        # -------------------------------------------------------------------------
+        # Step 03：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         cmds.parent (curve , node_grp)
 
         # 获取曲线的点数量
         cv_num = Pipeline.get_curve_number (curve)
 
         # 获得曲线的形状节点
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         curve_shape = cmds.listRelatives (curve , shapes = True) [0]
 
         # 创建关节并附着到曲线
+        # -------------------------------------------------------------------------
+        # Step 05：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for i in range (cv_num) :
             jnt = cmds.createNode ('joint' ,
                                    name = 'jnt_{}_{}_{:03d}'.format (curve_obj.side , curve_obj.description , i + 1))
@@ -1000,6 +1062,9 @@ class Pipeline (object) :
             attach_dict: 将创建出来的attach对象返回出去
         """
         # 获取名称
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         name_parts = nameUtils.Name (name = drive_curve)
 
         # 判断aim_type的类型后，选择是否添加进curves曲线列表里
@@ -1013,6 +1078,9 @@ class Pipeline (object) :
                                     name = 'grp_{}_{}AttachJnts_{:03d}'.format (name_parts.side ,
                                                                                 name_parts.description ,
                                                                                 name_parts.index))
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         nodes_grp = 'grp_{}_{}RigNodes_{:03d}'.format (name_parts.side , name_parts.description ,
                                                        name_parts.index)
         if not cmds.objExists (nodes_grp) :
@@ -1020,6 +1088,9 @@ class Pipeline (object) :
                                          name = nodes_grp)
 
         attaches_grp = []
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for crv , part_name in zip (curves , ['Drive' , 'Aim' , 'Up']) :
             attach_grp = cmds.createNode ('transform' ,
                                           name = 'grp_{}_{}{}Attaches_{:03d}'.format (name_parts.side ,
@@ -1036,6 +1107,9 @@ class Pipeline (object) :
             crv_shapes.append (crv_shape)
 
         # 将关节附着到曲线
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for jnt in jnt_list :
             # 获得关节的命名规范
             jnt_name_parts = nameUtils.Name (name = jnt)
@@ -1092,6 +1166,9 @@ class Pipeline (object) :
             'attach_nodes' : attach_nodes ,
 
         }
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return attach_dict
 
 
@@ -1119,6 +1196,9 @@ class Pipeline (object) :
             zip_lip_dict(dict):返回出创建出来的内容
         """
         # 添加属性给嘴唇和下巴的控制器
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for ctrl in lip_ctrls :
             cmds.addAttr (ctrl , longName = 'zip' , attributeType = 'float' , minValue = 0 , maxValue = 1 ,
                           keyable = True)
@@ -1129,6 +1209,9 @@ class Pipeline (object) :
         cmds.addAttr (jaw_ctrl , longName = 'zipHeight' , attributeType = 'float' , minValue = 0 , maxValue = 1 ,
                       defaultValue = zip_height , keyable = True)
 
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         height_rvs = cmds.createNode ('reverse' , name = 'rvs_m_lipZipHeight_001')
         cmds.connectAttr (jaw_ctrl + '.zipHeight' , height_rvs + '.inputX')
 
@@ -1136,6 +1219,9 @@ class Pipeline (object) :
         node_grp = cmds.createNode ('transform' , name = 'grp_m_lipZipNodes_001')
 
         # 获取关节的数量，因为上下嘴唇的关节一致
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         jnts_num = len (upper_jnts)
 
         # 获取zip_weight的值
@@ -1143,6 +1229,9 @@ class Pipeline (object) :
 
         # 给每个嘴唇关节循环添加zip设置
         i = 1
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for upper_jnt , lower_jnt in zip (upper_jnts , lower_jnts) :
             # 获取名称规范
             name_parts = nameUtils.Name (name = upper_jnt)
@@ -1224,6 +1313,9 @@ class Pipeline (object) :
         zip_lip_dict = {
             'node_grp' : node_grp
         }
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return zip_lip_dict
 
 
@@ -1241,25 +1333,40 @@ class Pipeline (object) :
             weight (float):
                 当前计算、混合或变形使用的权重值。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         zero = ctrl.replace ('ctrl' , 'zero')
         driven = ctrl.replace ('ctrl' , 'driven')
         # 给控制器添加约束的权重值的属性设置
         cmds.addAttr (ctrl , ln = 'con_weight' , at = 'double' , min = 0 , max = 1 , dv = weight ,
                       keyable = True)
         # 创建约束节点
+        # -------------------------------------------------------------------------
+        # Step 02：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         con = cmds.parentConstraint (driver , zero , driven , mo = True) [0]
         # 连接约束的权重值
         cmds.connectAttr (ctrl + '.con_weight' , con + '.{}W0'.format (driver))
 
         # 创建相乘节点计算另外一个物体的权重值；1-weight
         mult_node = cmds.createNode ('multDoubleLinear' , name = ctrl.replace ('ctrl' , 'mult_weight'))
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         cmds.setAttr (mult_node + '.input1' , -1)
         cmds.connectAttr (ctrl + '.con_weight' , mult_node + '.input2')
 
         add_node = cmds.createNode ('addDoubleLinear' , name = ctrl.replace ('ctrl' , 'add_weight'))
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         cmds.setAttr (add_node + '.input1' , 1)
         cmds.connectAttr (mult_node + '.output' , add_node + '.input2')
 
+        # -------------------------------------------------------------------------
+        # Step 05：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         cmds.connectAttr (add_node + '.output' , con + '.{}W1'.format (zero))
 
 
@@ -1333,14 +1440,23 @@ class Pipeline (object) :
         """
         # 空参数保护：避免 cmds.objExists(None) 触发
         # RuntimeError: 给定的参数太少。
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if object is None or set_name in (None, False, ''):
             return None
 
         object_name = str(object)
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         set_name = str(set_name)
         set_parent = None if set_parent in (None, False, '') else str(set_parent)
 
         # 对象本身不存在时不创建无意义的空 set。
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not cmds.objExists(object_name):
             cmds.warning(u'对象不存在，无法添加到选择集: {}'.format(object_name))
             return None
@@ -1353,6 +1469,9 @@ class Pipeline (object) :
         else:
             cmds.sets(name=set_name, empty=True)
 
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         cmds.sets(object_name, edit=True, forceElement=set_name)
 
         # 如指定父 set，则创建/复用父 objectSet，再把子 set 加进去。
@@ -1366,6 +1485,9 @@ class Pipeline (object) :
 
             cmds.sets(set_name, edit=True, forceElement=set_parent)
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return set_name
 
 
@@ -1375,8 +1497,14 @@ class Pipeline (object) :
         u"""
         选择需要创建动力学化的曲线。创建动力学化曲线驱动头发 曲线节点的命名为 模型节点 + '_crv'
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         crv_list = cmds.ls (sl = True)
         # 判断是否有动力学化曲线的关节组，没有的话则进行创建
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not cmds.objExists ('nhair_jnt_grp') :
             nhair_jnt_grp = cmds.createNode ('transform' , name = 'nhair_jnt_grp')
         else :
@@ -1388,6 +1516,9 @@ class Pipeline (object) :
         else :
             nhair_rigNode_grp = 'nhair_rigNode_grp'
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for dynamic_curve_node in crv_list :
             cmds.DeleteHistory (dynamic_curve_node)
 
@@ -1454,7 +1585,13 @@ class Pipeline (object) :
             cmds.parent (rigNode_grp , nhair_rigNode_grp)
 
         # 将输出曲线整理到对应的节点组
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         outputCurves_grp = cmds.ls ('hairSystem*OutputCurves' , type = 'transform')
+        # -------------------------------------------------------------------------
+        # Step 05：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for outputCurve_grp in outputCurves_grp :
             hierarchyUtils.Hierarchy.parent (outputCurve_grp , nhair_rigNode_grp)
 
@@ -1465,17 +1602,15 @@ class Pipeline (object) :
     @staticmethod
     def get_selected_type (type = 'transform') :
         u"""
+        # 获取当前所选择的物体，并且判断是否是已经给定的规定类型 # 如果是已经给定的规定类型的话则正常 # 如果不是给定的规定类型则报错并且提示物体的类型
 
-                # 获取当前所选择的物体，并且判断是否是已经给定的规定类型 # 如果是已经给定的规定类型的话则正常 # 如果不是给定的规定类型则报错并且提示物体的类型
+        Args:
+            type (str):
+                当前 Maya / Rig 操作使用的 `type` 名称或标记。
 
-                Args:
-                    type (str):
-                        当前 Maya / Rig 操作使用的 `type` 名称或标记。
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         # 获取当前选择的物体
         obj = cmds.ls (selection = True) [0]
@@ -1492,18 +1627,16 @@ class Pipeline (object) :
     @staticmethod
     def copy_surface_create_geo () :
         u"""
+        将需要绘制权重的模型所选择的面制作一个简模出来，作为用以线变形的模型
 
-                将需要绘制权重的模型所选择的面制作一个简模出来，作为用以线变形的模型
+        high_geo(str):需要绘制权重的模型
+        skin_geo(str):用来复制权重的低模
+        返回：
+            skin_geo(str):用来复制权重的低模
 
-                high_geo(str):需要绘制权重的模型
-                skin_geo(str):用来复制权重的低模
-                返回：
-                    skin_geo(str):用来复制权重的低模
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         # 获取需要绘制权重的模型和用来复制权重的低模
@@ -1538,23 +1671,24 @@ class Pipeline (object) :
     @staticmethod
     def duplicate_model (source_model ,new_name = None ,parent = None) :
         u"""
+        给定复制的模型名称，复制出新的模型 source_model（str）:复制来源的模型 new_name(str):复制出来的模型名称 parent（str）:复制出来的模型的父层级
 
-                给定复制的模型名称，复制出新的模型 source_model（str）:复制来源的模型 new_name(str):复制出来的模型名称 parent（str）:复制出来的模型的父层级
+        Args:
+            source_model (str):
+                当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
+            new_name (str):
+                `new_name` 对应的 Maya 节点或资源名称。
+            parent (str):
+                父级 Maya 节点名称。
 
-                Args:
-                    source_model (str):
-                        当前检查、绑定、复制或变形使用的模型 / Mesh 节点。
-                    new_name (str):
-                        `new_name` 对应的 Maya 节点或资源名称。
-                    parent (str):
-                        父级 Maya 节点名称。
-
-                Returns:
-                    object | None:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object | None:
+            当前 API 完成处理后返回的结果。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not source_model :
             cmds.warning (u"没有指定需要复制的模型。")
             return None
@@ -1565,6 +1699,9 @@ class Pipeline (object) :
             )
             return None
 
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         duplicate_result = cmds.duplicate (
             source_model ,
             renameChildren = True
@@ -1573,6 +1710,9 @@ class Pipeline (object) :
         if not duplicate_result :
             return None
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         duplicate_model_name = duplicate_result [0]
 
         if new_name :
@@ -1581,6 +1721,9 @@ class Pipeline (object) :
                 new_name
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if parent :
 
             if cmds.objExists (parent) :
@@ -1589,4 +1732,7 @@ class Pipeline (object) :
                     parent
                 ) [0]
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return duplicate_model_name

@@ -39,8 +39,11 @@ def module_icon(color, code=""):
 
     Returns:
         QIcon:
-            40 x 40 的矢量风格图标。
+        40 x 40 的矢量风格图标。
     """
+    # -------------------------------------------------------------------------
+    # Step 01：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     pixmap = QtGui.QPixmap(40, 40)
     pixmap.fill(Qt.transparent)
 
@@ -48,6 +51,9 @@ def module_icon(color, code=""):
     painter.setRenderHint(QtGui.QPainter.Antialiasing)
 
     base_color = QtGui.QColor(color)
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not base_color.isValid():
         base_color = QtGui.QColor("#7d897b")
 
@@ -60,6 +66,9 @@ def module_icon(color, code=""):
     painter.setPen(QtGui.QPen(muted_color, 1.55))
     painter.setBrush(QtGui.QColor("#f7f8f3"))
 
+    # -------------------------------------------------------------------------
+    # Step 03：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     polygon = QtGui.QPolygonF()
     points = (
         (20, 4),
@@ -76,6 +85,9 @@ def module_icon(color, code=""):
     painter.drawPolygon(polygon)
     painter.drawLine(7, 12, 20, 20)
     painter.drawLine(33, 12, 20, 20)
+    # -------------------------------------------------------------------------
+    # Step 04：执行当前阶段的核心处理
+    # -------------------------------------------------------------------------
     painter.drawLine(20, 20, 20, 36)
 
     # 极小的酸橙色识别点用于统一整个模块库的视觉语言。
@@ -84,6 +96,9 @@ def module_icon(color, code=""):
     painter.drawEllipse(QtCore.QPointF(20, 20), 2.6, 2.6)
 
     painter.end()
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return QtGui.QIcon(pixmap)
 
 
@@ -91,7 +106,16 @@ class ArtHeader(QtWidgets.QFrame):
     u"""页眉中的工业线条、斜切面与酸橙色装饰。"""
 
     def paintEvent(self, event):
-        u"""绘制不参与交互的轻量背景装饰。"""
+        u"""
+        绘制不参与交互的轻量背景装饰。
+
+        Args:
+            event (QtCore.QEvent | object):
+                Qt Event 回调传入的事件对象。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         super(ArtHeader, self).paintEvent(event)
 
         painter = QtGui.QPainter(self)
@@ -103,6 +127,9 @@ class ArtHeader(QtWidgets.QFrame):
         # ------------------------------------------------------------------
         # 右侧低对比工业线条
         # ------------------------------------------------------------------
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         painter.setPen(QtGui.QPen(QtGui.QColor("#dde0da"), 1))
         for index in range(10):
             x = width - 475 + index * 43
@@ -114,6 +141,9 @@ class ArtHeader(QtWidgets.QFrame):
         painter.setPen(Qt.NoPen)
         painter.setBrush(QtGui.QColor("#e3f58a"))
         lime_shape = QtGui.QPolygonF()
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         lime_points = (
             (width - 350, height),
             (width - 255, 0),
@@ -129,6 +159,9 @@ class ArtHeader(QtWidgets.QFrame):
         # ------------------------------------------------------------------
         painter.setBrush(QtGui.QColor("#39413b"))
         dark_shape = QtGui.QPolygonF()
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         dark_points = (
             (width - 235, height),
             (width - 192, 0),
@@ -148,6 +181,9 @@ class ArtHeader(QtWidgets.QFrame):
             painter.drawLine(x - 5, 18, x + 5, 18)
             painter.drawLine(x, 13, x, 23)
 
+        # -------------------------------------------------------------------------
+        # Step 05：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         painter.end()
 
 
@@ -155,7 +191,19 @@ class StepButton(QtWidgets.QPushButton):
     u"""顶部四步导航，以大数字、切角和酸橙强调显示工作流状态。"""
 
     def __init__(self, number, title, subtitle, parent=None):
-        u"""初始化步骤按钮。"""
+        u"""
+        初始化步骤按钮。
+
+        Args:
+            number (int):
+                自动编号或字母编号转换使用的序号。
+            title (str):
+                窗口、Section、Dialog 或报告使用的标题文本。
+            subtitle (object):
+                当前方法执行 Maya / Rig 操作时使用的 `subtitle` 数据。
+            parent (str):
+                父级 Maya 节点名称。
+        """
         super(StepButton, self).__init__(parent)
 
         self.number = number
@@ -171,14 +219,29 @@ class StepButton(QtWidgets.QPushButton):
         self.setCursor(Qt.PointingHandCursor)
 
     def set_stage_state(self, state):
-        u"""设置 available / current / completed / locked 视觉状态。"""
+        u"""
+        设置 available / current / completed / locked 视觉状态。
+
+        Args:
+            state (object):
+                当前方法执行 Maya / Rig 操作时使用的 `state` 数据。
+        """
         self.stage_state = state
         self.setEnabled(state != "locked")
         self.setChecked(state == "current")
         self.update()
 
     def paintEvent(self, event):
-        u"""绘制步骤卡片，并保持 QPushButton 的交互状态。"""
+        u"""
+        绘制步骤卡片，并保持 QPushButton 的交互状态。
+
+        Args:
+            event (QtCore.QEvent | object):
+                Qt Event 回调传入的事件对象。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
 
@@ -213,6 +276,9 @@ class StepButton(QtWidgets.QPushButton):
             painter.drawPolygon(accent)
 
         # 卡片右侧斜切分隔线。
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         painter.setPen(QtGui.QPen(QtGui.QColor(LINE), 1))
         painter.drawLine(rect.right(), 0, rect.right() - 34, rect.bottom())
 
@@ -226,6 +292,9 @@ class StepButton(QtWidgets.QPushButton):
 
         painter.setPen(QtGui.QColor(number_color))
         number_font = QtGui.QFont("Georgia", 28)
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         number_font.setItalic(True)
         painter.setFont(number_font)
         painter.drawText(
@@ -241,6 +310,9 @@ class StepButton(QtWidgets.QPushButton):
         title_font = QtGui.QFont("Georgia", 12)
         title_font.setBold(True)
         painter.setFont(title_font)
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         painter.drawText(
             QtCore.QRect(74, 16, rect.width() - 82, 23),
             Qt.AlignLeft | Qt.AlignVCenter,
@@ -284,6 +356,9 @@ class StepButton(QtWidgets.QPushButton):
             painter.setPen(QtGui.QPen(QtGui.QColor("#7f952c"), 1.5))
             painter.drawRect(rect.adjusted(2, 2, -3, -3))
 
+        # -------------------------------------------------------------------------
+        # Step 05：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         painter.end()
 
 
@@ -291,7 +366,13 @@ class TickBox(QtWidgets.QCheckBox):
     u"""为酸橙色选中框补充明确勾号，同时保留 Qt 键盘与辅助功能。"""
 
     def paintEvent(self, event):
-        u"""在 Qt 默认 CheckBox 之上绘制更清晰的勾号。"""
+        u"""
+        在 Qt 默认 CheckBox 之上绘制更清晰的勾号。
+
+        Args:
+            event (QtCore.QEvent | object):
+                Qt Event 回调传入的事件对象。
+        """
         super(TickBox, self).paintEvent(event)
 
         if not self.isChecked():
@@ -313,7 +394,18 @@ class Section(QtWidgets.QWidget):
     u"""可折叠属性抽屉，折叠时释放垂直空间。"""
 
     def __init__(self, title, parent=None):
-        u"""初始化 Section 标题按钮与 Form Body。"""
+        u"""
+        初始化 Section 标题按钮与 Form Body。
+
+        Args:
+            title (str):
+                窗口、Section、Dialog 或报告使用的标题文本。
+            parent (str):
+                父级 Maya 节点名称。
+        """
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         super(Section, self).__init__(parent)
 
         layout = QtWidgets.QVBoxLayout(self)
@@ -321,11 +413,17 @@ class Section(QtWidgets.QWidget):
         layout.setSpacing(0)
 
         self.button = QtWidgets.QToolButton()
+        # -------------------------------------------------------------------------
+        # Step 02：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.button.setText(title)
         self.button.setProperty("role", "section")
         self.button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.button.setArrowType(Qt.DownArrow)
         self.button.setCheckable(True)
+        # -------------------------------------------------------------------------
+        # Step 03：验证并规范化当前阶段需要的输入数据
+        # -------------------------------------------------------------------------
         self.button.setChecked(True)
         self.button.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding,
@@ -335,6 +433,9 @@ class Section(QtWidgets.QWidget):
         self.body = QtWidgets.QWidget()
         self.form = QtWidgets.QFormLayout(self.body)
         self.form.setContentsMargins(12, 12, 12, 14)
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.form.setSpacing(9)
         self.form.setFieldGrowthPolicy(
             QtWidgets.QFormLayout.AllNonFixedFieldsGrow
@@ -344,10 +445,19 @@ class Section(QtWidgets.QWidget):
         layout.addWidget(self.button)
         layout.addWidget(self.body)
 
+        # -------------------------------------------------------------------------
+        # Step 05：建立当前阶段需要的层级、连接或驱动关系
+        # -------------------------------------------------------------------------
         self.button.toggled.connect(self.set_expanded)
 
     def set_expanded(self, expanded):
-        u"""同步标题箭头和属性区可见性。"""
+        u"""
+        同步标题箭头和属性区可见性。
+
+        Args:
+            expanded (object):
+                当前方法执行 Maya / Rig 操作时使用的 `expanded` 数据。
+        """
         self.body.setVisible(expanded)
         self.button.setArrowType(
             Qt.DownArrow if expanded else Qt.RightArrow

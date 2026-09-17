@@ -86,13 +86,11 @@ class RigModule(object):
 
         Args:
             module (str | None):
-                Module 业务名称，例如 ``"eye"``、``"ear"``、``"tongue"``。
-                该值会进入模块根组和子类输出节点的标准命名。
+                Module 业务名称，例如 ``"eye"``、``"ear"``、``"tongue"``。 该值会进入模块根组和子类输出节点的标准命名。
             side (str):
                 Module 方向，当前常用值为 ``lf``、``rt``、``md``。
             guide (str | list[str] | tuple[str] | object | None):
-                Guide 数据来源。可以是单节点、按顺序排列的名称列表，或提供
-                ``get_guides(module, side)`` 方法的 Guide 对象。
+                Guide 数据来源。可以是单节点、按顺序排列的名称列表，或提供 ``get_guides(module, side)`` 方法的 Guide 对象。
             jnt_parent (str | object | None):
                 Module Joint Master Group 的可选父节点；None 表示不额外挂接。
             ctrl_parent (str | object | None):
@@ -100,14 +98,14 @@ class RigModule(object):
 
         Example:
             >>> from muziToolset.systems import rig_module
-            >>> module = rig_module.RigModule(
-            ...     module="ear",
-            ...     side="lf",
-            ...     guide=[
-            ...         "loc_lf_ear_bind_001",
-            ...         "loc_lf_ear_bind_002",
-            ...     ],
-            ... )
+                >>> module = rig_module.RigModule(
+                ...     module="ear",
+                ...     side="lf",
+                ...     guide=[
+                ...         "loc_lf_ear_bind_001",
+                ...         "loc_lf_ear_bind_002",
+                ...     ],
+                ... )
         """
 
         self.module = module
@@ -125,36 +123,43 @@ class RigModule(object):
         把外部 Guide 输入规范化为有序 Maya 节点名称列表。
 
         默认实现支持三种来源：
-
         1. Guide 工具对象：调用 ``get_guides(module, side)``；
         2. list / tuple：严格保留传入顺序；
         3. 单个 Maya 节点：包装成只有一个元素的列表。
-
         ``guide`` 为 None 时返回空列表。默认实现不会根据 Module 名称去猜测场景
         节点；拥有固定语义规则的业务子类应覆盖本方法。
 
         Returns:
             list[str]:
-                已验证存在的 Guide 名称列表，顺序与输入或 Guide Provider 一致。
+            已验证存在的 Guide 名称列表，顺序与输入或 Guide Provider 一致。
 
         Raises:
             RuntimeError:
-                任意输入 Guide 在当前 Maya 场景中不存在时抛出。
+            任意输入 Guide 在当前 Maya 场景中不存在时抛出。
 
         Example:
             >>> module.guide = [
-            ...     "loc_lf_ear_bind_001",
-            ...     "loc_lf_ear_bind_002",
-            ... ]
-            >>> guides = module.get_guides()
+                ...     "loc_lf_ear_bind_001",
+                ...     "loc_lf_ear_bind_002",
+                ... ]
+                >>> guides = module.get_guides()
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.guide_list = []
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         source_guides = []
 
         if self.guide is None:
             return self.guide_list
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if hasattr(self.guide, "get_guides"):
             result = self.guide.get_guides(self.module, self.side)
 
@@ -169,6 +174,9 @@ class RigModule(object):
         else:
             source_guides.append(self.guide)
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for guide_node in source_guides:
             guide_name = str(guide_node)
 
@@ -177,6 +185,9 @@ class RigModule(object):
 
             self.guide_list.append(guide_name)
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.guide_list
 
     def create_joint(self, name, guide=None):
@@ -194,18 +205,18 @@ class RigModule(object):
 
         Returns:
             jnt_utils.Jnt:
-                当前 Joint 的工具对象；实际 Maya Joint 可通过 ``result.jnt`` 访问。
+            当前 Joint 的工具对象；实际 Maya Joint 可通过 ``result.jnt`` 访问。
 
         Raises:
             TypeError:
-                场景中存在同名对象但不是 Joint 时，由 ``jnt_utils.Jnt`` 抛出。
+            场景中存在同名对象但不是 Joint 时，由 ``jnt_utils.Jnt`` 抛出。
 
         Example:
             >>> jnt_object = module.create_joint(
-            ...     name="jnt_lf_ear_bind_001",
-            ...     guide="loc_lf_ear_bind_001",
-            ... )
-            >>> print(jnt_object.jnt)
+                ...     name="jnt_lf_ear_bind_001",
+                ...     guide="loc_lf_ear_bind_001",
+                ... )
+                >>> print(jnt_object.jnt)
         """
 
         jnt_object = jnt_utils.Jnt(name)
@@ -245,30 +256,35 @@ class RigModule(object):
             ctrl_axis (str):
                 Shape 绝对轴向，支持 ``X+ / X- / Y+ / Y- / Z+ / Z-``。
             create_hierarchy (bool):
-                True 时创建标准 zero / driven / space / connect / offset / ctrl / output
-                层级，并按当前 Ctrl 实现创建 SubCtrl。
+                True 时创建标准 zero / driven / space / connect / offset / ctrl / output 层级，并按当前 Ctrl 实现创建 SubCtrl。
 
         Returns:
             ctrl_utils.Ctrl:
-                当前 Controller 工具对象，可读取 ``ctrl``、``zero_grp``、
-                ``output_grp`` 等运行时成员。
+            当前 Controller 工具对象，可读取 ``ctrl``、``zero_grp``、
+            ``output_grp`` 等运行时成员。
 
         Raises:
             TypeError:
-                场景中存在同名对象但不是可用 Transform 时，由 ``Ctrl`` 抛出。
+            场景中存在同名对象但不是可用 Transform 时，由 ``Ctrl`` 抛出。
 
         Example:
             >>> ctrl_object = module.create_ctrl(
-            ...     name="ctrl_lf_ear_fk_001",
-            ...     guide="loc_lf_ear_bind_001",
-            ...     shape_name="shape_016",
-            ...     ctrl_color=17,
-            ...     ctrl_size=1.0,
-            ...     ctrl_axis="X+",
-            ... )
+                ...     name="ctrl_lf_ear_fk_001",
+                ...     guide="loc_lf_ear_bind_001",
+                ...     shape_name="shape_016",
+                ...     ctrl_color=17,
+                ...     ctrl_size=1.0,
+                ...     ctrl_axis="X+",
+                ... )
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         ctrl_object = ctrl_utils.Ctrl(name)
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         ctrl_object.create_ctrl(
             shape_name=shape_name,
             ctrl_color=ctrl_color,
@@ -278,6 +294,9 @@ class RigModule(object):
             match_transform_target=guide
         )
 
+        # -------------------------------------------------------------------------
+        # Step 03：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return ctrl_object
 
     def create_joints(self):
@@ -289,7 +308,7 @@ class RigModule(object):
 
         Returns:
             None:
-                基类只提供扩展点；具体子类可以按需要返回 Joint List。
+            基类只提供扩展点；具体子类可以按需要返回 Joint List。
         """
 
         pass
@@ -303,7 +322,7 @@ class RigModule(object):
 
         Returns:
             None:
-                基类只提供扩展点；具体子类可以按需要返回 Controller List。
+            基类只提供扩展点；具体子类可以按需要返回 Controller List。
         """
 
         pass
@@ -317,7 +336,7 @@ class RigModule(object):
 
         Returns:
             None:
-                基类只提供扩展点；具体子类可以返回连接结果字典。
+            基类只提供扩展点；具体子类可以返回连接结果字典。
         """
 
         pass
@@ -327,22 +346,23 @@ class RigModule(object):
         创建并整理当前 Module 的 Joint / Controller Master Group。
 
         标准名称：
-
             grp_<side>_<module>_jnt_001
             grp_<side>_<module>_ctrl_001
-
         如果提供 ``jnt_parent`` / ``ctrl_parent``，对应 Master Group 会挂到绑定库
         或上层 System 指定的父节点。该方法不修改子类内部 Joint Chain 或 Controller
         Hierarchy 的结构。
 
         Returns:
             tuple[object, object]:
-                ``(jnt_master_grp, ctrl_master_grp)``。
+            ``(jnt_master_grp, ctrl_master_grp)``。
 
         Example:
             >>> jnt_grp, ctrl_grp = module.setup_hierarchy()
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         jnt_group_name = name_utils.Name(
             type="grp",
             side=self.side,
@@ -351,6 +371,9 @@ class RigModule(object):
             index=1
         ).name
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         ctrl_group_name = name_utils.Name(
             type="grp",
             side=self.side,
@@ -362,6 +385,9 @@ class RigModule(object):
         self.jnt_master_grp = hierarchy_utils.get_or_create_group(
             jnt_group_name
         )
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.ctrl_master_grp = hierarchy_utils.get_or_create_group(
             ctrl_group_name
         )
@@ -372,12 +398,18 @@ class RigModule(object):
                 self.jnt_parent
             )
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.ctrl_parent:
             hierarchy_utils.parent(
                 self.ctrl_master_grp,
                 self.ctrl_parent
             )
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.jnt_master_grp, self.ctrl_master_grp
 
     def build_outputs(self):
@@ -385,18 +417,16 @@ class RigModule(object):
         创建 Guide 驱动的 Joint、Controller 和最终 DAG Hierarchy，但不连接 Rig。
 
         执行顺序固定为：
-
             get_guides()
             create_joints()
             create_ctrls()
             setup_hierarchy()
-
         这是 Rig Library Step 02 完成定位后生成可检查输出时使用的核心入口。
         输出生成后，用户可以在 Step 03 调整 Controller / Joint 显示，再进入 Final。
 
         Returns:
             None:
-                结果保存在子类运行时成员和 Maya 场景节点中。
+            结果保存在子类运行时成员和 Maya 场景节点中。
         """
         self.get_guides()
         self.create_joints()
@@ -412,7 +442,7 @@ class RigModule(object):
 
         Returns:
             None:
-                基类只提供扩展点。
+            基类只提供扩展点。
         """
         pass
 
@@ -421,17 +451,15 @@ class RigModule(object):
         读取已生成输出，并建立当前 Module 的正式驱动连接。
 
         执行：
-
             load_outputs()
                 ↓
             connect_rig()
-
         该入口允许一个新的 Python Module 实例在不重新创建 Joint / Controller 的情况下，
         直接进入 Rig Library Final 阶段。
 
         Returns:
             None:
-                连接结果由具体子类写入 Maya 场景并可选保存到成员。
+            连接结果由具体子类写入 Maya 场景并可选保存到成员。
         """
         self.load_outputs()
         self.connect_rig()
@@ -441,25 +469,22 @@ class RigModule(object):
         一次完成当前 Rig Module 的输出创建与最终连接。
 
         等价于：
-
             build_outputs()
                 ↓
             connect_outputs()
-
         先完成最终 DAG Hierarchy，再创建 Constraint / Matrix / Utility Node 等连接，
         可以避免连接建立后继续 Parent 导致空间偏移或重复计算。
-
         Rig Library 通常使用分阶段入口；独立测试或一次性 Module Build 可以直接使用
         ``build()``。
 
         Returns:
             None:
-                构建结果存在于 Maya 场景和具体子类成员中。
+            构建结果存在于 Maya 场景和具体子类成员中。
 
         Example:
             >>> from muziToolset.systems.face import eye_module
-            >>> eye = eye_module.EyeModule(side="lf")
-            >>> eye.build()
+                >>> eye = eye_module.EyeModule(side="lf")
+                >>> eye.build()
         """
 
         self.build_outputs()

@@ -63,27 +63,28 @@ class TongueModule(fk_chain.FKChain):
             guide (str | list[str] | tuple[str] | object | None):
                 可选 Guide 来源。None 时 FKChain 会按标准 Tongue Locator 名称自动查找五项。
             jnt_parent (str | object | None):
-                Tongue Joint Master Group 的可选上层父节点；Rig Library 通常传入
-                ``grp_md_rig_jnt_001``。
+                Tongue Joint Master Group 的可选上层父节点；Rig Library 通常传入 ``grp_md_rig_jnt_001``。
             ctrl_parent (str | object | None):
-                Tongue Controller Master Group 的可选上层父节点；Rig Library 通常传入
-                ``grp_md_rig_ctrl_001``。
+                Tongue Controller Master Group 的可选上层父节点；Rig Library 通常传入 ``grp_md_rig_ctrl_001``。
             ctrl_axis (str):
                 Controller Shape 绝对轴向，支持 ``X+ / X- / Y+ / Y- / Z+ / Z-``。
 
         Example:
             >>> from muziToolset.systems.face import tongue_module
-            >>> tongue = tongue_module.TongueModule(
-            ...     side="md",
-            ...     ctrl_axis="Z+",
-            ... )
-            >>> tongue.build()
+                >>> tongue = tongue_module.TongueModule(
+                ...     side="md",
+                ...     ctrl_axis="Z+",
+                ... )
+                >>> tongue.build()
 
         Notes:
             Tongue 是中央模块。Rig Library 的左右 Mirror 只对 ``lf / rt`` Module 开放，
-            因此中央 Tongue 不需要创建配对侧。
+                因此中央 Tongue 不需要创建配对侧。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         super(TongueModule, self).__init__(
             module=module,
             side=side,

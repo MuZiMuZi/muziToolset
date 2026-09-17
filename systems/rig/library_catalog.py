@@ -97,17 +97,17 @@ def get_module(key):
 
     Returns:
         dict:
-            Catalog Entry，包含 ``key / title / code / color / description / count / side``。
+        Catalog Entry，包含 ``key / title / code / color / description / count / side``。
 
     Raises:
         ValueError:
-            ``key`` 没有正式后端时抛出。函数不会偷偷退回到通用 FKChain。
+        ``key`` 没有正式后端时抛出。函数不会偷偷退回到通用 FKChain。
 
     Example:
         >>> from muziToolset.systems.rig import library_catalog
-        >>> eye = library_catalog.get_module("eye")
-        >>> print(eye["count"])
-        3
+            >>> eye = library_catalog.get_module("eye")
+            >>> print(eye["count"])
+            3
     """
 
     for entry in modules:
@@ -127,12 +127,12 @@ def new_document():
 
     Returns:
         dict:
-            ``{"version": 1, "modules": []}``。
+        ``{"version": 1, "modules": []}``。
 
     Example:
         >>> document = new_document()
-        >>> document["modules"]
-        []
+            >>> document["modules"]
+            []
     """
 
     return {
@@ -151,16 +151,15 @@ def new_module(key, side=None, name=None):
         side (str | None):
             可选方向。None 时使用 Catalog 默认值；有效值为 ``lf / rt / md``。
         name (str | None):
-            可选 Module Part 名称。正式 Ear / Eye / Tongue 后续校验要求名称保持固定；
-            自定义名称主要用于 ``fk_chain``。
+            可选 Module Part 名称。正式 Ear / Eye / Tongue 后续校验要求名称保持固定； 自定义名称主要用于 ``fk_chain``。
 
     Returns:
         dict:
-            包含唯一 ``id``、Guide、Controller / Joint 显示参数和 Build State 的 Module Record。
+        包含唯一 ``id``、Guide、Controller / Joint 显示参数和 Build State 的 Module Record。
 
     Notes:
         新 Record 初始始终为 ``built=False``、``connected=False``。
-        ``ctrl_color`` 根据 Side 使用 ``lf=6 / rt=13 / md=17`` 默认值。
+            ``ctrl_color`` 根据 Side 使用 ``lf=6 / rt=13 / md=17`` 默认值。
     """
 
     entry = get_module(key)
@@ -190,7 +189,6 @@ def guide_names(record):
     返回一条 Module Record 实际使用的有序 Guide 名称。
 
     解析优先级：
-
     1. ``record["guides"]`` 非空时，严格使用用户保存的显式顺序；
     2. ``fk_chain`` 没有显式 Guide 时返回空列表，强制用户指定；
     3. ``eye`` 使用 Ball / Iris / Aim 固定语义名称；
@@ -202,23 +200,29 @@ def guide_names(record):
 
     Returns:
         list[str]:
-            有序 Guide 名称列表。
+        有序 Guide 名称列表。
 
     Example:
         >>> record = new_module("eye", "lf")
-        >>> guide_names(record)
-        ['loc_lf_eye_ball_001', 'loc_lf_eye_iris_001', 'loc_lf_eye_aim_001']
+            >>> guide_names(record)
+            ['loc_lf_eye_ball_001', 'loc_lf_eye_iris_001', 'loc_lf_eye_aim_001']
 
     Notes:
         Eye 不能把 Guide 简单当成 ``bind_001 / 002 / 003``，因为 Ball、Iris、Aim
-        分别代表旋转中心、Main Ctrl 可见位置和 Aim Ctrl 位置。
+            分别代表旋转中心、Main Ctrl 可见位置和 Aim Ctrl 位置。
     """
 
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if record["guides"]:
         return list(
             record["guides"]
         )
 
+    # -------------------------------------------------------------------------
+    # Step 02：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if record["kind"] == "fk_chain":
         return []
 
@@ -235,11 +239,17 @@ def guide_names(record):
             ),
         ]
 
+    # -------------------------------------------------------------------------
+    # Step 03：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     result = []
     count = get_module(
         record["kind"]
     )["count"]
 
+    # -------------------------------------------------------------------------
+    # Step 04：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for index in range(1, count + 1):
         result.append(
             "loc_{}_{}_bind_{:03d}".format(
@@ -249,6 +259,9 @@ def guide_names(record):
             )
         )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return result
 
 
@@ -273,6 +286,9 @@ def _append_ctrl_outputs(result, side, part, function, index=1):
             直接修改传入 ``result``。
     """
 
+    # -------------------------------------------------------------------------
+    # Step 01：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     suffix = "{}_{}_{}_{:03d}".format(
         side,
         part,
@@ -280,16 +296,28 @@ def _append_ctrl_outputs(result, side, part, function, index=1):
         index
     )
 
+    # -------------------------------------------------------------------------
+    # Step 02：执行当前阶段的核心处理
+    # -------------------------------------------------------------------------
     result["controls"].append(
         "ctrl_" + suffix
     )
+    # -------------------------------------------------------------------------
+    # Step 03：执行当前阶段的核心处理
+    # -------------------------------------------------------------------------
     result["subcontrols"].append(
         "subctrl_" + suffix
     )
+    # -------------------------------------------------------------------------
+    # Step 04：执行当前阶段的核心处理
+    # -------------------------------------------------------------------------
     result["outputs"].append(
         "output_" + suffix
     )
 
+    # -------------------------------------------------------------------------
+    # Step 05：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for prefix in (
         "zero",
         "driven",
@@ -308,7 +336,6 @@ def output_names(record):
 
     这个函数不查询 Maya Scene，只根据 Record 的 Naming Contract 生成预期名称。
     ``RigLibraryService`` 使用结果进行：
-
     - Build 前名称冲突检查；
     - Build 完整性验证；
     - Ownership Tag；
@@ -321,13 +348,16 @@ def output_names(record):
 
     Returns:
         dict:
-            包含 ``joints / controls / subcontrols / groups / outputs`` 五类名称列表。
+        包含 ``joints / controls / subcontrols / groups / outputs`` 五类名称列表。
 
     Notes:
         Eye 使用 Main + Aim 两套 Controller Hierarchy；FK 类模块按 Guide 数量生成
-        ``fk_001...`` Controller 与 ``bind_001...`` Joint。
+            ``fk_001...`` Controller 与 ``bind_001...`` Joint。
     """
 
+    # -------------------------------------------------------------------------
+    # Step 01：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     result = {
         "joints": [],
         "controls": [],
@@ -336,6 +366,9 @@ def output_names(record):
         "outputs": []
     }
 
+    # -------------------------------------------------------------------------
+    # Step 02：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for function in (
         "jnt",
         "ctrl"
@@ -348,6 +381,9 @@ def output_names(record):
             )
         )
 
+    # -------------------------------------------------------------------------
+    # Step 03：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if record["kind"] == "eye":
         result["joints"].append(
             "jnt_{}_eye_bind_001".format(
@@ -370,6 +406,9 @@ def output_names(record):
 
         return result
 
+    # -------------------------------------------------------------------------
+    # Step 04：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for index in range(
         1,
         len(guide_names(record)) + 1
@@ -408,6 +447,9 @@ def output_names(record):
                 prefix + "_" + suffix
             )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return result
 
 
@@ -416,7 +458,6 @@ def validate_document(document):
     严格校验 Rig Library 配置，并返回深拷贝后的安全 Document。
 
     校验内容包括：
-
     - Schema Version；
     - Module 数量上限；
     - Record 字段集合；
@@ -427,7 +468,6 @@ def validate_document(document):
     - Guide 数量、路径类型和重复项；
     - ``connected`` 不能先于 ``built``；
     - 已 Build Module 必须能够解析 Guide。
-
     Version 1 的早期 Record 如果只缺 ``connected`` 字段，会把它迁移为与旧 ``built``
     状态一致，再继续完整校验。
 
@@ -437,17 +477,20 @@ def validate_document(document):
 
     Returns:
         dict:
-            与输入隔离的深拷贝、安全配置。后续 Service 修改这个副本不会修改调用方对象。
+        与输入隔离的深拷贝、安全配置。后续 Service 修改这个副本不会修改调用方对象。
 
     Raises:
         ValueError:
-            Version、字段、Module、命名、Side、数值、Guide 或 Build State 任一项不合法时抛出。
+        Version、字段、Module、命名、Side、数值、Guide 或 Build State 任一项不合法时抛出。
 
     Notes:
         这个函数是配置写入 Scene Network、JSON Import 和 Service Commit 前的共同边界。
-        不要为了“尽量加载”而忽略未知字段，否则旧 / 损坏配置会部分进入 Maya Scene。
+            不要为了“尽量加载”而忽略未知字段，否则旧 / 损坏配置会部分进入 Maya Scene。
     """
 
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not isinstance(document, dict) or document.get("version") != 1:
         raise ValueError(
             u"无法识别绑定库配置版本。"
@@ -456,6 +499,9 @@ def validate_document(document):
     document = copy.deepcopy(
         document
     )
+    # -------------------------------------------------------------------------
+    # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     records = document.get(
         "modules"
     )
@@ -465,9 +511,15 @@ def validate_document(document):
             u"配置必须包含模块列表，最多 100 个模块。"
         )
 
+    # -------------------------------------------------------------------------
+    # Step 03：应用并更新当前阶段需要的属性或状态
+    # -------------------------------------------------------------------------
     ids = set()
     identities = set()
 
+    # -------------------------------------------------------------------------
+    # Step 04：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for record in records:
         if not isinstance(record, dict):
             raise ValueError(
@@ -644,6 +696,9 @@ def validate_document(document):
                 u"已构建模块必须具有 Guide 数据。"
             )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return document
 
 
@@ -663,22 +718,28 @@ def add_template(document, key):
 
     Returns:
         dict:
-            添加完成并重新校验后的独立 Document。
+        添加完成并重新校验后的独立 Document。
 
     Raises:
         ValueError:
-            Template Key 不存在，或输入 / 最终 Document 不满足 Schema 时抛出。
+        Template Key 不存在，或输入 / 最终 Document 不满足 Schema 时抛出。
 
     Example:
         >>> document = new_document()
-        >>> document = add_template(document, "eye_pair")
-        >>> len(document["modules"])
-        2
+            >>> document = add_template(document, "eye_pair")
+            >>> len(document["modules"])
+            2
     """
 
+    # -------------------------------------------------------------------------
+    # Step 01：验证并规范化当前阶段需要的输入数据
+    # -------------------------------------------------------------------------
     result = validate_document(
         document
     )
+    # -------------------------------------------------------------------------
+    # Step 02：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     template = None
 
     for entry in templates:
@@ -686,6 +747,9 @@ def add_template(document, key):
             template = entry
             break
 
+    # -------------------------------------------------------------------------
+    # Step 03：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if template is None:
         raise ValueError(
             u"未知模板：{}".format(
@@ -693,6 +757,9 @@ def add_template(document, key):
             )
         )
 
+    # -------------------------------------------------------------------------
+    # Step 04：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for kind, side in template["modules"]:
         exists = False
 
@@ -709,6 +776,9 @@ def add_template(document, key):
                 )
             )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return validate_document(
         result
     )

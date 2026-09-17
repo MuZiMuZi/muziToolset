@@ -83,12 +83,18 @@ class Hierarchy (object) :
         The naming convention is
         Type_Side_describe_index
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         CTRL_COLORS = {
             'm' : 17 ,
             'l' : 6 ,
             'r' : 13
         }
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         SUB_COLORS = {
             'm' : 25 ,
             'l' : 15 ,
@@ -96,9 +102,15 @@ class Hierarchy (object) :
         }
 
         # get selected nurbs curve as controller
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         ctrls = cmds.ls (selection = True)
 
         # loop in each ctrl and create hierarchy
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for ctrl in ctrls :
             # get name parts
             name_parts = ctrl.split ('_')
@@ -163,19 +175,17 @@ class Hierarchy (object) :
     @staticmethod
     def get_child_object (object,type = 'joint') :
         u"""
+        获取对象的所有子物体包括对象本身 :param object: 需要获取所有子物体的对象 type（str）:需要获取对象的类型 return: 所有子物体的名称列表
 
-                获取对象的所有子物体包括对象本身 :param object: 需要获取所有子物体的对象 type（str）:需要获取对象的类型 return: 所有子物体的名称列表
+        Args:
+            object (str):
+                需要处理的 Maya 场景对象名称。
+            type (str):
+                当前 Maya / Rig 操作使用的 `type` 名称或标记。
 
-                Args:
-                    object (str):
-                        需要处理的 Maya 场景对象名称。
-                    type (str):
-                        当前 Maya / Rig 操作使用的 `type` 名称或标记。
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         object_list = cmds.listRelatives (object , type = type,children = True , allDescendents = True)
         object_list.append (object)
@@ -187,17 +197,15 @@ class Hierarchy (object) :
     @staticmethod
     def select_sub_objects (obj_type = 'transform') :
         u"""
+        快速选择所选择物体的所有子对象,将所有选择的对象名称返回出去方便其他函数调用 obj_type（type）:需要选择的物体的子对象的类型，比如'transform','joint'
 
-                快速选择所选择物体的所有子对象,将所有选择的对象名称返回出去方便其他函数调用 obj_type（type）:需要选择的物体的子对象的类型，比如'transform','joint'
+        Args:
+            obj_type (str):
+                当前 Maya / Rig 操作使用的 `obj_type` 名称或标记。
 
-                Args:
-                    obj_type (str):
-                        当前 Maya / Rig 操作使用的 `obj_type` 名称或标记。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         selection = cmds.ls (sl = True)  # 获取选择的所有对象
         for obj in selection :
@@ -211,13 +219,11 @@ class Hierarchy (object) :
     @staticmethod
     def create_rig_grp () :
         u"""
+        创建绑定的默认层级组
 
-                创建绑定的默认层级组
-
-                Returns:
-                    tuple:
-                        按当前 API 约定组织的结果元组。
-
+        Returns:
+            tuple:
+            按当前 API 约定组织的结果元组。
         """
         top_main_group = 'grp_m_group_001'
         top_bpjnt_grp = 'grp_m_bpjnt_001'
@@ -239,15 +245,16 @@ class Hierarchy (object) :
     @staticmethod
     def create_default_grp () :
         u"""
+        添加绑定的初始层级组，并隐藏连接对应的属性
 
-                添加绑定的初始层级组，并隐藏连接对应的属性
-
-                Returns:
-                    dict:
-                        包含本次构建、查询或处理结果的结构化字典。
-
+        Returns:
+            dict:
+            包含本次构建、查询或处理结果的结构化字典。
         """
         # 创建顶层的Group组
+        # -------------------------------------------------------------------------
+        # Step 01：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         Group = cmds.createNode ('transform' , name = 'Group')
 
         # 创建Group层级下的子层级组，并做层级关系
@@ -261,6 +268,9 @@ class Hierarchy (object) :
         Joints = cmds.createNode ('transform' , name = 'Joints')
         RigNodes_Local = cmds.createNode ('transform' , name = 'RigNodesLocal')
         RigNodes_World = cmds.createNode ('transform' , name = 'RigNodesWorld')
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         nCloth_geo_grp = cmds.createNode ('transform' , name = 'nCloth_geo_grp')
         cmds.parent (RigNodes_Local , RigNodes_World , RigNodes)
         cmds.parent (RigNodes , Joints , nCloth_geo_grp , Custom)
@@ -277,6 +287,9 @@ class Hierarchy (object) :
                       '.scaleY' ,
                       '.scaleZ' , '.visibility' , '.rotateOrder' , '.subCtrlVis']
         rig_top_grp = 'Group'
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not cmds.objExists (rig_top_grp) :
             selections = cmds.ls (sl = True)
             if selections :
@@ -314,6 +327,9 @@ class Hierarchy (object) :
                 cmds.addAttr (lock_ctrl , ln = attr , at = 'bool' , dv = 1 , keyable = True)
 
         # 添加精度切换的属性
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not cmds.objExists ('{}.Resolution'.format (lock_ctrl)) :
             cmds.addAttr (lock_ctrl , ln = 'Resolution' , at = 'enum' , en = 'low:mid:high' , keyable = True)
             for idx , res in {0 : 'low' , 1 : 'mid' , 2 : 'high'}.items () :
@@ -352,6 +368,9 @@ class Hierarchy (object) :
         for attr in attrs_list :
             cmds.setAttr (lock_ctrl + attr , l = True , k = False , cb = False)
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return {
             'Geometry' : Geometry ,
             'Control' : Control ,

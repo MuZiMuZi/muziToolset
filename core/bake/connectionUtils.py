@@ -15,13 +15,11 @@ class Connection () :
 
     def __init__ (self,object ) :
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    object (str):
-                        需要处理的 Maya 场景对象名称。
-
+        Args:
+            object (str):
+                需要处理的 Maya 场景对象名称。
         """
 
         self.object = object
@@ -34,19 +32,17 @@ class Connection () :
     """
     def get_input_connection(self,attr,plus = True ) :
         u"""
+        获取物体上的对应属性的输入连接 attr(str):获取输入需要查询连接的属性 return: input_connections 返回所有的输入连接
 
-                获取物体上的对应属性的输入连接 attr(str):获取输入需要查询连接的属性 return: input_connections 返回所有的输入连接
+        Args:
+            attr (str):
+                Maya Attribute 名称。
+            plus (bool):
+                控制当前方法中的 `plus` 选项是否启用。
 
-                Args:
-                    attr (str):
-                        Maya Attribute 名称。
-                    plus (bool):
-                        控制当前方法中的 `plus` 选项是否启用。
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         # 检查属性是否有输入连接
         try :
@@ -63,17 +59,15 @@ class Connection () :
     # 获取物体上的输出连接
     def get_output_connection (self , object) :
         u"""
+        获取物体上的输出连接 self.object(str):获取输出连接的物体 return: self.input_connections 返回所有的输出连接
 
-                获取物体上的输出连接 self.object(str):获取输出连接的物体 return: self.input_connections 返回所有的输出连接
+        Args:
+            object (str):
+                需要处理的 Maya 场景对象名称。
 
-                Args:
-                    object (str):
-                        需要处理的 Maya 场景对象名称。
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         ouput_connections = list ()
         # 列出物体上的所有属性
@@ -104,13 +98,11 @@ class Connection () :
     # 检查是否有足够的对象可以进行连接
     def cheek_enough_obj_connection (self) :
         u"""
+        判断选择的对象是否数量足够可以进行连接 return： 返回驱动者和被驱动者:driver_obj,driven_obj_list
 
-                判断选择的对象是否数量足够可以进行连接 return： 返回驱动者和被驱动者:driver_obj,driven_obj_list
-
-                Returns:
-                    tuple | bool:
-                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
-
+        Returns:
+            tuple | bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
         """
         # 获取所有选择的物体对象作为一个列表
         sel_objs = cmds.ls (selection = True , long = True)
@@ -130,29 +122,33 @@ class Connection () :
     # 检查对象的属性是否可以进行连接
     def cheek_obj_attrs_connection (self , driver_obj , source_attr , driven_obj , destination_attr) :
         u"""
+        检查：驱动者的属性是否能够成功连接上被驱动者的属性 检查项：1.是否存在对应的属性 2.属性之间的类型是否匹配 3.目标属性是否可以连接 driver_obj(str):作为驱动者的物体 source_attr(str):作为驱动者的...
 
-                检查：驱动者的属性是否能够成功连接上被驱动者的属性 检查项：1.是否存在对应的属性 2.属性之间的类型是否匹配 3.目标属性是否可以连接 driver_obj(str):作为驱动者的物体 source_attr(str):作为驱动者的...
+        Args:
+            driver_obj (object):
+                当前方法执行 Maya / Rig 操作时使用的 `driver_obj` 数据。
+            source_attr (str):
+                驱动端完整 Maya Plug，例如 `ctrl.translateX`。
+            driven_obj (object):
+                当前方法执行 Maya / Rig 操作时使用的 `driven_obj` 数据。
+            destination_attr (str):
+                接收连接的完整 Maya Plug，例如 `jnt.rotateY`。
 
-                Args:
-                    driver_obj (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `driver_obj` 数据。
-                    source_attr (str):
-                        驱动端完整 Maya Plug，例如 `ctrl.translateX`。
-                    driven_obj (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `driven_obj` 数据。
-                    destination_attr (str):
-                        接收连接的完整 Maya Plug，例如 `jnt.rotateY`。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         cheek_value = True
         driver_attr = driver_obj + '.' + source_attr
         driven_attr = driven_obj + '.' + destination_attr
 
         # 检查1.判断是否存在对应的属性
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         source_exists = cmds.attributeQuery (source_attr , node = driver_obj , exists = True)
         destination_exists = cmds.attributeQuery (destination_attr , node = driven_obj , exists = True)
         if not source_exists or not destination_exists :
@@ -161,6 +157,9 @@ class Connection () :
             return cheek_value
         # 检查2.属性之间的类型是否匹配
         source_type = cmds.attributeQuery (source_attr , node = driver_obj , attributeType = True)
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         destination_type = cmds.attributeQuery (destination_attr , node = driven_obj , attributeType = True)
         if source_type != destination_type :
             if destination_attr or source_attr == '.matrix' :
@@ -172,6 +171,9 @@ class Connection () :
         # 检查3.目标属性是否可以连接
         # 检查目标属性是否是可以连接类型的属性
         destination_connect_able = cmds.attributeQuery (destination_attr , node = driven_obj , connectable = True)
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not destination_connect_able :
             if destination_attr or source_attr == '.matrix' :
                 pass
@@ -188,6 +190,9 @@ class Connection () :
             cheek_value = False
             return cheek_value
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return cheek_value
 
 
@@ -345,23 +350,21 @@ class Connection () :
     # 断开驱动者的属性和被驱动者的属性连接
     def break_connections (self , driver_obj , source_attr , driven_obj , destination_attr) :
         u"""
+        驱动者的属性连接上被驱动者的属性 driver_obj(str):作为驱动者的物体 source_attr(str):作为驱动者的物体上驱动的属性 driven_obj(str):作为被驱动者的物体 destination_attr(...
 
-                驱动者的属性连接上被驱动者的属性 driver_obj(str):作为驱动者的物体 source_attr(str):作为驱动者的物体上驱动的属性 driven_obj(str):作为被驱动者的物体 destination_attr(...
+        Args:
+            driver_obj (object):
+                当前方法执行 Maya / Rig 操作时使用的 `driver_obj` 数据。
+            source_attr (str):
+                驱动端完整 Maya Plug，例如 `ctrl.translateX`。
+            driven_obj (object):
+                当前方法执行 Maya / Rig 操作时使用的 `driven_obj` 数据。
+            destination_attr (str):
+                接收连接的完整 Maya Plug，例如 `jnt.rotateY`。
 
-                Args:
-                    driver_obj (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `driver_obj` 数据。
-                    source_attr (str):
-                        驱动端完整 Maya Plug，例如 `ctrl.translateX`。
-                    driven_obj (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `driven_obj` 数据。
-                    destination_attr (str):
-                        接收连接的完整 Maya Plug，例如 `jnt.rotateY`。
-
-                Returns:
-                    bool:
-                        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
-
+        Returns:
+            bool:
+            当前操作成功或目标状态满足要求时返回 True，否则返回 False。
         """
         driver_attr = driver_obj + '.' + source_attr
         driven_attr = driven_obj + '.' + destination_attr

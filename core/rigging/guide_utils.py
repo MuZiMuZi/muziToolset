@@ -89,13 +89,16 @@ class Guide(object):
 
         Raises:
             IOError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
             TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if cmds.objExists(self.guide_root_name):
             if cmds.nodeType(self.guide_root_name) != "transform":
                 raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(self.guide_root_name))
@@ -103,15 +106,27 @@ class Guide(object):
             self.guide_root = pm.PyNode(self.guide_root_name)
             return self.guide_root
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not os.path.exists(self.guide_template_path):
             raise IOError(u"找不到 {} Guide 模板：{}".format(self.module, self.guide_template_path))
 
         cmds.file(self.guide_template_path, i=True, type="mayaAscii", ignoreVersion=True, mergeNamespacesOnClash=False, namespace=":", options="v=0;")
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not cmds.objExists(self.guide_root_name):
             raise RuntimeError(u"{} Guide 模板已经导入，但找不到 Guide Root：{}".format(self.module, self.guide_root_name))
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.guide_root = pm.PyNode(self.guide_root_name)
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.guide_root
 
     def get_module_group(self, module):
@@ -146,9 +161,12 @@ class Guide(object):
 
         Raises:
             TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self.guide_root:
             if cmds.objExists(self.guide_root_name):
                 self.guide_root = pm.PyNode(self.guide_root_name)
@@ -156,15 +174,24 @@ class Guide(object):
                 cmds.warning(u"当前场景中不存在 {} Guide：{}".format(self.module, self.guide_root_name))
                 return None
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         module_group_name = package_config.module_guide_root_name_format.format(module)
 
         if not cmds.objExists(module_group_name):
             cmds.warning(u"当前 Guide 中不存在模块组：{}".format(module_group_name))
             return None
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if cmds.nodeType(module_group_name) != "transform":
             raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(module_group_name))
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if module_group_name != self.guide_root_name:
             current_parent = cmds.listRelatives(module_group_name, allParents=True, fullPath=False) or []
             found_guide_root = False
@@ -182,6 +209,9 @@ class Guide(object):
                 cmds.warning(u"{} 不属于当前 Guide Root：{}".format(module_group_name, self.guide_root_name))
                 return None
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return pm.PyNode(module_group_name)
 
     def get_guides(self, module, side=None):
@@ -220,23 +250,35 @@ class Guide(object):
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if side not in (None, "lf", "rt", "md"):
             raise ValueError(u"side 只能使用 'lf'、'rt'、'md' 或 None，当前值：{}".format(side))
 
         module_group = self.get_module_group(module)
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not module_group:
             self.guides = []
             return self.guides
 
         module_group_name = module_group.name()
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         child_objects = cmds.listRelatives(module_group_name, allDescendents=True, type="transform", fullPath=False) or []
 
         self.guides = []
 
+        # -------------------------------------------------------------------------
+        # Step 04：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for child_object in child_objects:
             child_shapes = cmds.listRelatives(child_object, shapes=True, noIntermediate=True, fullPath=False) or []
             is_locator = False
@@ -261,6 +303,9 @@ class Guide(object):
         # Guide 名称使用补零序号，因此按名称排序后可以稳定得到 001、002、003...。
         self.guides.sort(key=str)
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.guides
 
     def create_guide_curve(self, module, side):
@@ -296,11 +341,14 @@ class Guide(object):
 
         Raises:
             ValueError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
             TypeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if side not in ("lf", "rt", "md"):
             raise ValueError(u"side 只能使用 'lf'、'rt' 或 'md'，当前值：{}".format(side))
 
@@ -315,6 +363,9 @@ class Guide(object):
         if not module_group:
             return None
 
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         module_group_name = module_group.name()
         curve_name = package_config.module_guide_curve_name_format.format(side, module)
 
@@ -336,6 +387,9 @@ class Guide(object):
             guide_position = cmds.getAttr(guide_shape.name() + ".worldPosition[0]")[0]
             guide_positions.append(guide_position)
 
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         guide_curve = cmds.curve(point=guide_positions, degree=1, name=curve_name)
         cmds.setAttr(guide_curve + ".inheritsTransform", 0)
         cmds.parent(guide_curve, module_group_name, relative=True)
@@ -343,6 +397,9 @@ class Guide(object):
         curve_shape = cmds.listRelatives(guide_curve, shapes=True, noIntermediate=True, fullPath=False)[0]
         first_guide_shape = side_guides[0].getShape().name()
 
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         cmds.setAttr(curve_shape + ".overrideEnabled", 1)
 
         if cmds.getAttr(first_guide_shape + ".overrideEnabled"):
@@ -365,4 +422,7 @@ class Guide(object):
             cmds.connectAttr(source_attr, target_attr, force=True)
             guide_index += 1
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return pm.PyNode(guide_curve)

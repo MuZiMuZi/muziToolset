@@ -63,35 +63,36 @@ class Control (object) :
         #初始化参数
         #控制器的形状属性
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    name (str):
-                        创建或查询时使用的节点名称。
-                    shape (str):
-                        Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
-                    radius (int):
-                        创建节点或控制器使用的半径值。
-                    ctrl_color (int):
-                        当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。
-                    axis (str):
-                        操作使用的轴向标记。
-                    unset_sub_ctrl (bool):
-                        当前 Rig 操作或驱动使用的动画 Controller Transform。
-                    unset_add_extra_group (bool):
-                        当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
-                    pos (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `pos` 数据。
-                    parent (str):
-                        父级 Maya 节点名称。
-                    lock_attrs (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `lock_attrs` 数据。
-                    animation_set (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `animation_set` 数据。
-
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
+            shape (str):
+                Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
+            radius (int):
+                创建节点或控制器使用的半径值。
+            ctrl_color (int):
+                当前 Maya / Rig 操作使用的 `ctrl_color` 整数参数。
+            axis (str):
+                操作使用的轴向标记。
+            unset_sub_ctrl (bool):
+                当前 Rig 操作或驱动使用的动画 Controller Transform。
+            unset_add_extra_group (bool):
+                当前 Rig / Guide / Controller 层级中的 Maya Group Transform。
+            pos (object):
+                当前方法执行 Maya / Rig 操作时使用的 `pos` 数据。
+            parent (str):
+                父级 Maya 节点名称。
+            lock_attrs (object):
+                当前方法执行 Maya / Rig 操作时使用的 `lock_attrs` 数据。
+            animation_set (object):
+                当前方法执行 Maya / Rig 操作时使用的 `animation_set` 数据。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.cv = None
         # Control 新建时必须先有真实的 transform 节点，后续 set_shape/getShapes 才能正常工作
         # 如果传入的名称已经存在，则直接包装现有 transform；否则创建一个空 transform。
@@ -101,19 +102,31 @@ class Control (object) :
         else:
             self.transform = pm.group(em=True)
         self.shape = shape
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.radius = radius
         self.ctrl_color = ctrl_color
         self.axis = axis
 
         #控制器的额外设置
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.unset_sub_ctrl =unset_sub_ctrl
         self.pos = pos
         self.parent = parent
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.unset_add_extra_group = unset_add_extra_group
         self.lock_attrs = lock_attrs
         self.animation_set = animation_set
 
         # 初始化设置控制器的属性
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.set(
             name=name, shape=shape, radius=radius, color=ctrl_color, axis=axis,
             pos=pos, parent=parent, lock_attrs=lock_attrs, animation_set=animation_set,
@@ -166,8 +179,14 @@ class Control (object) :
             kwargs (dict):
                 继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         t = kwargs.get ("t" , kwargs.get ("transform" , self.get_arg (args)))
         # 如果没有给定t（transform）的值，或者选择的物体没有transform节点，则创建一个transform节点
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if t is None :
             self.transform = pm.group (em = 1)
         # 如果给定了t(transfrom) 的值
@@ -210,9 +229,15 @@ class Control (object) :
 
         Raises:
             RuntimeError:
-                输入数据、场景状态或操作条件不满足要求时抛出。
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         parent = kwargs.get("p", kwargs.get("parent", self.get_arg(args)))
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not parent:
             return
 
@@ -220,6 +245,9 @@ class Control (object) :
 
         # 传入的可能是重父级前留下来的旧绝对路径，例如 |ctrl_zzz。
         # 如果旧路径已经不存在，则取最后一段短名称重新查询当前 DAG 路径。
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not cmds.objExists(parent_name):
             short_name = parent_name.split("|")[-1]
             matches = cmds.ls(short_name, long=True) or []
@@ -230,7 +258,13 @@ class Control (object) :
             else:
                 raise RuntimeError(u"父节点不存在: {}".format(parent_name))
 
+        # -------------------------------------------------------------------------
+        # Step 04：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.get_transform().setParent(parent_name)
+        # -------------------------------------------------------------------------
+        # Step 05：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             self.get_transform().t.set(0, 0, 0)
             self.get_transform().r.set(0, 0, 0)
@@ -250,11 +284,26 @@ class Control (object) :
             kwargs (dict):
                 继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         shape = kwargs.get ("s" , kwargs.get ("shape" , self.get_arg (args)))
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         color = self.get_color ()
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         radius = self.get_radius ()
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if shape is None :
             return
+        # -------------------------------------------------------------------------
+        # Step 05：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if isinstance (shape , list) :
             shapes = self.get_transform ().getShapes ()
             if shapes :
@@ -336,16 +385,31 @@ class Control (object) :
             kwargs (dict):
                 继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         radius = kwargs.get ('r' , kwargs.get ('radius' , self.get_arg (args)))
         if radius is None :
             return
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         points = [self.get_curve_shape_points (shape) for shape in self.get_transform ().getShapes ()]
         points = [[[ps [i + j] for j in range (3)] for i in range (0 , len (ps) , 3)] for ps in points]
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         lengths = [self.get_length (p , [0 , 0 , 0]) for ps in points for p in ps]
         origin_radius = max(lengths) if lengths else 0.0
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if origin_radius == 0:
             return
         scale = float(radius) / origin_radius
+        # -------------------------------------------------------------------------
+        # Step 05：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for shape , ps in zip (self.get_transform ().getShapes () , points) :
             for p , cv in zip (ps , shape.cv) :
                 pm.xform (cv , t = [xyz * scale for xyz in p])
@@ -391,11 +455,26 @@ class Control (object) :
             kwargs (dict):
                 继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         offset = kwargs.get ("o" , kwargs.get ("offset" , self.get_arg (args)))
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if offset is None :
             return
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         points = [self.get_curve_shape_points (shape) for shape in self.get_transform ().getShapes ()]
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         points = [[[ps [i + j] for j in range (3)] for i in range (0 , len (ps) , 3)] for ps in points]
+        # -------------------------------------------------------------------------
+        # Step 05：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for shape , ps in zip (self.get_transform ().getShapes () , points) :
             for p , cv in zip (ps , shape.cv) :
                 pm.xform (cv , t = [p_xyz + o_xyz for p_xyz , o_xyz in zip (p , offset)])
@@ -405,15 +484,13 @@ class Control (object) :
     def set_locked (self , *args , **kwargs) :
         #如果有需要锁定并隐藏的属性则进行锁定隐藏，没有的话则不需要操作
         u"""
+        设置当前 locked。
 
-                设置当前 locked。
-
-                Args:
-                    args (tuple):
-                        当前方法按顺序处理的 `args` 数据集合。
-                    kwargs (dict):
-                        继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
-
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
 
         if self.lock_attrs:
@@ -425,15 +502,13 @@ class Control (object) :
     #设置控制器的位置信息
     def set_pos(self, *args , **kwargs):
         u"""
+        设置当前 pos。
 
-                设置当前 pos。
-
-                Args:
-                    args (tuple):
-                        当前方法按顺序处理的 `args` 数据集合。
-                    kwargs (dict):
-                        继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
-
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
 
         if self.pos is None :
@@ -446,19 +521,17 @@ class Control (object) :
         # 将控制器添加到选择集里方便进行选择。
         # animation_set 为 None / False / 空字符串时表示不添加选择集。
         u"""
+        设置当前 animation set。
 
-                设置当前 animation set。
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
 
-                Args:
-                    args (tuple):
-                        当前方法按顺序处理的 `args` 数据集合。
-                    kwargs (dict):
-                        继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
-
-                Returns:
-                    object | None:
-                        完成设置或应用后的目标对象 / 状态结果。
-
+        Returns:
+            object | None:
+            完成设置或应用后的目标对象 / 状态结果。
         """
 
         animation_set = kwargs.get('animation_set', self.animation_set)
@@ -484,17 +557,18 @@ class Control (object) :
     def set_add_extra_group(self,*args , **kwargs):
         # 判断是否需要创建额外的层级结构
         u"""
+        设置当前 add extra group。
 
-                设置当前 add extra group。
-
-                Args:
-                    args (tuple):
-                        当前方法按顺序处理的 `args` 数据集合。
-                    kwargs (dict):
-                        继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
-
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.unset_add_extra_group is False:
             self.ctrl_transform = self.get_transform().name() if hasattr(self.get_transform(), 'name') else str(self.get_transform())
             self.zero_grp = None
@@ -508,6 +582,9 @@ class Control (object) :
         else:
             self.ctrl_transform = str(transform_obj).split('|')[-1]
 
+        # -------------------------------------------------------------------------
+        # Step 02：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.offset_grp = hierarchyUtils.Hierarchy.add_extra_group(
             obj=self.ctrl_transform, grp_name=self.ctrl_transform.replace('ctrl_', 'offset_'), world_orient=False)
         self.connect_grp = hierarchyUtils.Hierarchy.add_extra_group(
@@ -516,6 +593,9 @@ class Control (object) :
             obj=self.connect_grp, grp_name=self.connect_grp.replace('connect_', 'space_'), world_orient=False)
         self.driven_grp = hierarchyUtils.Hierarchy.add_extra_group(
             obj=self.space_grp, grp_name=self.space_grp.replace('space_', 'driven_'), world_orient=False)
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.zero_grp = hierarchyUtils.Hierarchy.add_extra_group(
             obj=self.driven_grp, grp_name=self.driven_grp.replace('driven_', 'zero_'), world_orient=False)
 
@@ -527,6 +607,9 @@ class Control (object) :
             self.ctrl_transform = str(transform_obj).split('|')[-1]
 
         # 创建 output 层级组
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         output_name = self.ctrl_transform.replace('ctrl_', 'output_')
         if cmds.objExists(output_name):
             self.output_grp = output_name
@@ -538,21 +621,25 @@ class Control (object) :
             hierarchyUtils.Hierarchy.parent(child_node=self.zero_grp , parent_node=self.parent)
 
         # 次级控制器在完整层级创建完成后再创建
+        # -------------------------------------------------------------------------
+        # Step 05：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         self.set_sub_ctrl()
 
     def set_sub_ctrl(self,*args , **kwargs):
         u"""
+        设置当前 sub ctrl。
 
-                设置当前 sub ctrl。
-
-                Args:
-                    args (tuple):
-                        当前方法按顺序处理的 `args` 数据集合。
-                    kwargs (dict):
-                        继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
-
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
+            kwargs (dict):
+                继续传递给底层 maya.cmds、Qt 或 Builder API 的关键字参数。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.unset_sub_ctrl is not True:
             return
         if not getattr(self, 'output_grp', None):
@@ -560,6 +647,9 @@ class Control (object) :
 
         # 每次都从 PyNode 重新取得当前短名称，避免使用重父级之前的旧绝对 DAG 路径。
         transform_obj = self.get_transform()
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if hasattr(transform_obj, 'nodeName'):
             self.ctrl_transform = transform_obj.nodeName()
         else:
@@ -570,6 +660,9 @@ class Control (object) :
             self.sub_ctrl = self.sub_ctrl_name
             return
 
+        # -------------------------------------------------------------------------
+        # Step 03：创建并配置当前阶段需要的 Maya / Rig 对象
+        # -------------------------------------------------------------------------
         self.sub_ctrl = Control.create_ctrl(
             name=self.sub_ctrl_name, shape=self.shape, radius=self.radius * 0.5,
             ctrl_color=self.ctrl_color, axis=self.axis, pos=None, parent=self.ctrl_transform,
@@ -590,8 +683,14 @@ class Control (object) :
                 except RuntimeError:
                     pass
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         vis_src = self.ctrl_transform + '.subCtrlVis'
         vis_dst = self.sub_ctrl + '.visibility'
+        # -------------------------------------------------------------------------
+        # Step 05：执行可能失败的操作，并统一处理异常或清理状态
+        # -------------------------------------------------------------------------
         try:
             if not cmds.isConnected(vis_src, vis_dst):
                 cmds.connectAttr(vis_src, vis_dst, force=True)
@@ -601,13 +700,11 @@ class Control (object) :
     @staticmethod
     def get_shape_data_dir():
         u"""
+        返回控制器 Shape JSON/JPG 目录，兼容当前项目常见目录结构。
 
-                返回控制器 Shape JSON/JPG 目录，兼容当前项目常见目录结构。
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         core_dir = os.path.dirname(os.path.abspath(__file__))
         project_dir = os.path.dirname(core_dir)
@@ -627,6 +724,9 @@ class Control (object) :
         u"""
         上传控制器形状的信息到指定路径，并截取控制器形状的图像。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         data_path = self.get_shape_data_dir()
         if not os.path.isdir(data_path):
             os.makedirs(data_path)
@@ -645,6 +745,9 @@ class Control (object) :
             pm.headsUpDisplay (hud , edit = 1 , vis = False)
 
         # 创建一个撕下副本的面板用于截图控制器形状，如果创建的撕下副本的面板存在则关闭后重新开启
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         panel = 'control_model_panel'
         if not pm.modelPanel (panel , exists = True) :
             pm.modelPanel (panel , tearOff = True , tearOffCopy = 1)
@@ -657,6 +760,9 @@ class Control (object) :
 
         # 复制一个临时的用于截图的控制器，控制器的位置在原点中心
         temp = Control(name='ctrl_tempUpload', shape='circle', radius=1, unset_sub_ctrl=False, unset_add_extra_group=False)
+        # -------------------------------------------------------------------------
+        # Step 03：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         temp.set_shape (s = self.get_shape ())
         pm.select (temp.get_transform ())
 
@@ -666,6 +772,9 @@ class Control (object) :
 
         # 撕下副本面板开启隔离选择模式，将刚刚选择的需要截图的控制器添加到要显示的对象集中
         pm.isolateSelect (panel , state = 1)
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         pm.isolateSelect (panel , addSelected = True)
 
         # 设定拍屏截图的文件名称和文件路径和拍屏的参数设置
@@ -685,6 +794,9 @@ class Control (object) :
             pm.deleteUI (panel , panel = True)
 
         # 删除用来截图的控制器
+        # -------------------------------------------------------------------------
+        # Step 05：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         pm.delete (temp.get_transform ())
 
 
@@ -708,13 +820,11 @@ class Control (object) :
     # 获取控制器形状的数据
     def get_shape (self) :
         u"""
+        :return: data 控制器形状的数据
 
-                :return: data 控制器形状的数据
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         return [dict (points = self.get_curve_shape_points (shape) ,
                       degree = shape.degree () ,
@@ -726,13 +836,11 @@ class Control (object) :
     # 获取控制器的transform节点
     def get_transform (self) :
         u"""
+        -t -transform string/node/Control 控制器 :return: transform node 返回控制器的transform节点
 
-                -t -transform string/node/Control 控制器 :return: transform node 返回控制器的transform节点
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         return self.transform
 
@@ -740,13 +848,11 @@ class Control (object) :
     # 获取控制器的颜色
     def get_color (self) :
         u"""
+        获得控制器的颜色 -c - color int : 控制器颜色 :return:
 
-                获得控制器的颜色 -c - color int : 控制器颜色 :return:
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         c = 0
         for shape in self.get_transform ().getShapes () :
@@ -757,13 +863,11 @@ class Control (object) :
     # 获取控制器的半径大小
     def get_radius (self) :
         u"""
+        获得控制器的大小 -r - radius int : 控制器大小 :return:
 
-                获得控制器的大小 -r - radius int : 控制器大小 :return:
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         if len (self.get_transform ().getShapes ()) == 0 :
             return self.get_soft_radius ()
@@ -827,7 +931,13 @@ class Control (object) :
         """
 
 
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         final_name = name if 'ctrl_' in name else 'ctrl_' + name
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if cmds.objExists(final_name):
             raise ValueError(u'{} 在场景中已存在'.format(final_name))
         else :
@@ -836,6 +946,9 @@ class Control (object) :
                      unset_sub_ctrl = unset_sub_ctrl,
                      unset_add_extra_group = unset_add_extra_group)
 
+        # -------------------------------------------------------------------------
+        # Step 03：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return ctrl.transform.name() if hasattr(ctrl.transform, 'name') else str(ctrl.transform)
 
 
@@ -844,13 +957,11 @@ class Control (object) :
     @pipelineUtils.Pipeline.make_undo
     def create_fk_ctrl (objects) :
         u"""
+        创建当前 fk ctrl。
 
-                创建当前 fk ctrl。
-
-                Args:
-                    objects (str | list[str]):
-                        需要批量处理的 Maya 场景对象名称或对象列表。
-
+        Args:
+            objects (str | list[str]):
+                需要批量处理的 Maya 场景对象名称或对象列表。
         """
 
         parent = None
@@ -875,13 +986,11 @@ class Control (object) :
     @pipelineUtils.Pipeline.make_undo
     def delete_fk_ctrl (objects) :
         u"""
+        删除当前 fk ctrl。
 
-                删除当前 fk ctrl。
-
-                Args:
-                    objects (str | list[str]):
-                        需要批量处理的 Maya 场景对象名称或对象列表。
-
+        Args:
+            objects (str | list[str]):
+                需要批量处理的 Maya 场景对象名称或对象列表。
         """
 
         for object in objects :
@@ -908,6 +1017,9 @@ class Control (object) :
                 ik关节链条的结束关节
         """
         # 获取startjnt底下所有的子物体关节作为列表
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         startjnt_child_list = hierarchyUtils.Hierarchy.get_child_object (startIK_jnt , type = 'joint')
         # 获取endIK_jnt在这个关节列表里的索引值
         enjnt_index = startjnt_child_list.index (endIK_jnt)
@@ -937,6 +1049,9 @@ class Control (object) :
 
         # 创建尾端的ik控制器
         endIK_crv_jnt = cmds.createNode ('joint' , name = 'crvjnt_' + endIK_jnt)
+        # -------------------------------------------------------------------------
+        # Step 02：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         cmds.matchTransform (endIK_crv_jnt , endIK_jnt , position = True , rotation = True , scale = True)
         endIK_ctrl = 'ctrl_' + endIK_jnt
         endIK_ctrl_obj = Control.create_ctrl (endIK_ctrl , shape = 'Cube' , radius = 4 , axis = 'Y+' ,
@@ -956,6 +1071,9 @@ class Control (object) :
                                                       pos = midIK_jnt , parent = None)
         midIK_ctrl_output = midIK_ctrl.replace ('ctrl_' , 'output_')
         cmds.parent (midIK_crv_jnt , midIK_ctrl_output)
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         cmds.setAttr (midIK_crv_jnt + '.visibility' , 0)
         midIK_zero = midIK_ctrl.replace ('ctrl_' , 'zero_')
 
@@ -982,6 +1100,9 @@ class Control (object) :
         cmds.setAttr (spine_ikhandle_node + '.dWorldUpType' , 4)
         cmds.connectAttr (startIK_loc + '.worldMatrix[0]' , spine_ikhandle_node + '.dWorldUpMatrix')
         cmds.connectAttr (endIK_loc + '.worldMatrix[0]' , spine_ikhandle_node + '.dWorldUpMatrixEnd')
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         cmds.setAttr (spine_ikhandle_node + '.visibility' , 0)
 
         # 整理层级结构
@@ -1012,6 +1133,9 @@ class Control (object) :
                       niceName = u'拉伸' , minValue = 0 , maxValue = 1 , defaultValue = 0 , keyable = 1)
 
         # 根据对应的关节创建对应的相加节点，将变换后的数值连接到对应的关节上
+        # -------------------------------------------------------------------------
+        # Step 05：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for jnt in ik_chain [1 :-1] :
             add_node = cmds.createNode ('addDoubleLinear' , name = 'add_' + jnt)
             cmds.connectAttr (mult_curveInfo_node + '.output' , add_node + '.input1')
@@ -1032,13 +1156,11 @@ class Control (object) :
     @pipelineUtils.Pipeline.make_undo
     def delete_ik_ctrl (objects) :
         u"""
+        删除当前 ik ctrl。
 
-                删除当前 ik ctrl。
-
-                Args:
-                    objects (str | list[str]):
-                        需要批量处理的 Maya 场景对象名称或对象列表。
-
+        Args:
+            objects (str | list[str]):
+                需要批量处理的 Maya 场景对象名称或对象列表。
         """
 
         for object in objects :
@@ -1055,17 +1177,15 @@ class Control (object) :
     @staticmethod
     def get_arg (args) :
         u"""
+        查询并返回当前 arg。
 
-                查询并返回当前 arg。
+        Args:
+            args (object):
+                当前方法执行 Maya / Rig 操作时使用的 `args` 数据。
 
-                Args:
-                    args (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `args` 数据。
-
-                Returns:
-                    None | object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            None | object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
 
         if len (args) > 0 :
@@ -1077,17 +1197,15 @@ class Control (object) :
     @staticmethod
     def get_curve_shape_points (shape) :
         u"""
+        查询并返回当前 curve shape points。
 
-                查询并返回当前 curve shape points。
+        Args:
+            shape (str):
+                Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
 
-                Args:
-                    shape (str):
-                        Controller、Curve 或 Geometry 的 Shape 节点 / Shape 名称。
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
 
         return pm.xform (shape.cv , q = 1 , t = 1)
@@ -1097,13 +1215,11 @@ class Control (object) :
     @staticmethod
     def get_soft_radius () :
         u"""
+        ssd (float): 衰减半径 return:返回软选择的范围
 
-                ssd (float): 衰减半径 return:返回软选择的范围
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         return pm.softSelect (query = 1 , ssd = 1)
 
@@ -1112,19 +1228,17 @@ class Control (object) :
     @staticmethod
     def get_length (point1 , point2) :
         u"""
+        point1[float,float,float]: 点1的坐标(x,y,z) point2[float,float,float]: 点2的坐标(x,y,z) return: 两点之间的距离 原理：两点之间的距离等于两点之间x，y，z...
 
-                point1[float,float,float]: 点1的坐标(x,y,z) point2[float,float,float]: 点2的坐标(x,y,z) return: 两点之间的距离 原理：两点之间的距离等于两点之间x，y，z...
+        Args:
+            point1 (object):
+                当前方法执行 Maya / Rig 操作时使用的 `point1` 数据。
+            point2 (object):
+                当前方法执行 Maya / Rig 操作时使用的 `point2` 数据。
 
-                Args:
-                    point1 (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `point1` 数据。
-                    point2 (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `point2` 数据。
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
         distance = sum ([(point1 [i] - point2 [i]) ** 2 for i in range (3)]) ** 0.5
         return distance
@@ -1134,13 +1248,11 @@ class Control (object) :
     @classmethod
     def selected (cls) :
         u"""
+        [Control(), ] 选择的控制器
 
-                [Control(), ] 选择的控制器
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         return [cls(name=t.name(), shape=None, unset_sub_ctrl=False, unset_add_extra_group=False) for t in pm.selected(type="transform")]
 
@@ -1215,23 +1327,24 @@ class Control (object) :
     @staticmethod
     def create_ribbon (name , control_parent , jnt_number = 5) :
         u"""
+        创建ribbon控制器，给动画师更细致的动画效果 思路：通过给定关节的名称来创建ribbon控制，通过曲线来生成曲面制作ribbon绑定，然后让生成的关节绑定在曲面上 采用的变形器有twist，sine和wire变形器，通过这些变形器...
 
-                创建ribbon控制器，给动画师更细致的动画效果 思路：通过给定关节的名称来创建ribbon控制，通过曲线来生成曲面制作ribbon绑定，然后让生成的关节绑定在曲面上 采用的变形器有twist，sine和wire变形器，通过这些变形器...
+        Args:
+            name (str):
+                创建或查询时使用的节点名称。
+            control_parent (object):
+                当前方法执行 Maya / Rig 操作时使用的 `control_parent` 数据。
+            jnt_number (int):
+                how many joints need to be attached to the ribbon, default is 9
 
-                Args:
-                    name (str):
-                        创建或查询时使用的节点名称。
-                    control_parent (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `control_parent` 数据。
-                    jnt_number (int):
-                        how many joints need to be attached to the ribbon, default is 9
-
-                Returns:
-                    tuple:
-                        按当前 API 约定组织的结果元组。
-
+        Returns:
+            tuple:
+            按当前 API 约定组织的结果元组。
         """
         # 从名称中获取ribbon控制器的边，描述，和编号
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         ribbon = nameUtils.Name (name = name)
 
         # 从ribbon控制器中的边获取偏移值
@@ -1291,6 +1404,9 @@ class Control (object) :
         cmds.parent (surf , nodes_local_grp)
 
         # 获得曲面的形状节点
+        # -------------------------------------------------------------------------
+        # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         surf_shape = cmds.listRelatives (surf , shapes = True) [0]
 
         # 删除用来放样曲面的曲线
@@ -1375,6 +1491,9 @@ class Control (object) :
         # 创建twist变形器
         twist_node , twist_hnd = cmds.nonLinear (surf , type = 'twist' , name = surf.replace ('surf_' , 'twist_'))
         cmds.parent (twist_hnd , nodes_local_grp)
+        # -------------------------------------------------------------------------
+        # Step 03：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         cmds.setAttr (twist_hnd + '.rotate' , 0 , 0 , 90)
         scale_val = cmds.getAttr (twist_hnd + '.scaleX')
         cmds.setAttr (twist_hnd + '.scale' , scale_val * offset_val , scale_val * offset_val , scale_val * offset_val)
@@ -1404,6 +1523,9 @@ class Control (object) :
         cmds.setAttr (sine_hnd + '.rotate' , 0 , 0 , 90)
         scale_val = cmds.getAttr (sine_hnd + '.scaleX')
         cmds.setAttr (sine_hnd + '.scale' , scale_val * offset_val , scale_val * offset_val , scale_val * offset_val)
+        # -------------------------------------------------------------------------
+        # Step 04：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         cmds.setAttr (sine_node + '.dropoff' , 1)
         # 连接sine变形器的属性到控制器上
         sine_hnd_shape = cmds.listRelatives (sine_hnd , shapes = True) [0]
@@ -1446,6 +1568,9 @@ class Control (object) :
         # cmds.parent(nodes_world_grp, rigNode_World)
         # cmds.delete(ribbon_grp)
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return ribbon_grp , ribbon_ctrl_grp , ribbon_jnt_grp , nodes_local_grp , nodes_world_grp
 
 

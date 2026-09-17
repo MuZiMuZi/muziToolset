@@ -23,17 +23,15 @@ class Snap (object) :
 
     def __init__ (self , obj , objs_list , combo) :
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
-
-                Args:
-                    obj (object):
-                        Objects requiring adsorption position
-                    objs_list (list):
-                        List of objects used as positioning reference to adsorb positions
-                    combo (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `combo` 数据。
-
+        Args:
+            obj (object):
+                Objects requiring adsorption position
+            objs_list (list):
+                List of objects used as positioning reference to adsorb positions
+            combo (object):
+                当前方法执行 Maya / Rig 操作时使用的 `combo` 数据。
         """
         self.obj = obj
         self.objs_list = objs_list
@@ -137,9 +135,7 @@ class Snap (object) :
     def push_snip () :
         #快速吸附物体，选择的物体吸附到前面物体的中心
         u"""
-
-                执行当前 API 的主要处理流程。
-
+        执行当前 API 的主要处理流程。
         """
 
         sel_list = cmds.ls (selection = True , flatten = True)

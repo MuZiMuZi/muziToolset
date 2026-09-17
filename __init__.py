@@ -65,11 +65,11 @@ def show():
 
     Returns:
         object:
-            ``app.toolbox.main()`` 创建或恢复的主工具箱窗口。
+        ``app.toolbox.main()`` 创建或恢复的主工具箱窗口。
 
     Example:
         >>> import muziToolset
-        >>> window = muziToolset.show()
+            >>> window = muziToolset.show()
     """
     from .app import toolbox
 
@@ -85,11 +85,11 @@ def initialize():
 
     Returns:
         object:
-            ``show()`` 返回的主工具箱窗口。
+        ``show()`` 返回的主工具箱窗口。
 
     Example:
         >>> import muziToolset
-        >>> window = muziToolset.initialize()
+            >>> window = muziToolset.initialize()
     """
     return show()
 
@@ -104,11 +104,11 @@ def show_rig_library():
 
     Returns:
         object:
-            ``tools.rig.modular_rig_tool.main()`` 创建或恢复的 Rig Library 窗口。
+        ``tools.rig.modular_rig_tool.main()`` 创建或恢复的 Rig Library 窗口。
 
     Example:
         >>> import muziToolset
-        >>> window = muziToolset.show_rig_library()
+            >>> window = muziToolset.show_rig_library()
     """
     from .tools.rig import modular_rig_tool
 
@@ -128,7 +128,7 @@ def smoke_test(test_window_manager=False):
 
     Returns:
         object:
-            ``maya_smoke_test.run()`` 返回的测试结果。
+        ``maya_smoke_test.run()`` 返回的测试结果。
     """
     from .tests import maya_smoke_test
 
@@ -146,7 +146,7 @@ def functional_smoke_test():
 
     Returns:
         object:
-            ``maya_functional_smoke_test.run()`` 返回的测试结果。
+        ``maya_functional_smoke_test.run()`` 返回的测试结果。
     """
     from .tests import maya_functional_smoke_test
 
@@ -162,7 +162,7 @@ def maya2023_smoke_test():
 
     Returns:
         object:
-            ``maya2023_smoke_test.run()`` 返回的测试结果。
+        ``maya2023_smoke_test.run()`` 返回的测试结果。
     """
     from .tests import maya2023_smoke_test
 
@@ -179,7 +179,7 @@ def face_modules_maya2023_smoke_test():
 
     Returns:
         dict:
-            测试脚本返回的逐项结果与统计数据。
+        测试脚本返回的逐项结果与统计数据。
     """
     from .tests import face_modules_maya2023_smoke_test
 
@@ -195,7 +195,7 @@ def face_build_step_maya2023_smoke_test():
 
     Returns:
         dict:
-            ``face_build_step_maya2023_smoke_test.run()`` 返回的测试数据。
+        ``face_build_step_maya2023_smoke_test.run()`` 返回的测试数据。
     """
     from .tests import face_build_step_maya2023_smoke_test
 
@@ -211,7 +211,7 @@ def face_controller_appearance_maya2023_smoke_test():
 
     Returns:
         dict:
-            测试脚本返回的外观验证结果。
+        测试脚本返回的外观验证结果。
     """
     from .tests import face_controller_appearance_maya2023_smoke_test
 
@@ -227,7 +227,7 @@ def face_finalize_step_maya2023_smoke_test():
 
     Returns:
         dict:
-            测试脚本返回的 Finalize 验证结果。
+        测试脚本返回的 Finalize 验证结果。
     """
     from .tests import face_finalize_step_maya2023_smoke_test
 
@@ -243,7 +243,7 @@ def pipeline_smoke_test():
 
     Returns:
         object:
-            ``pipeline_refactor_smoke_test.run()`` 返回的测试结果。
+        ``pipeline_refactor_smoke_test.run()`` 返回的测试结果。
     """
     from .tests import pipeline_refactor_smoke_test
 
@@ -259,7 +259,7 @@ def extended_core_smoke_test():
 
     Returns:
         object:
-            ``extended_core_smoke_test.run()`` 返回的测试结果。
+        ``extended_core_smoke_test.run()`` 返回的测试结果。
     """
     from .tests import extended_core_smoke_test
 
@@ -272,7 +272,7 @@ def core_import_style_test():
 
     Returns:
         object:
-            ``core_import_style_test.run()`` 返回的检查结果。
+        ``core_import_style_test.run()`` 返回的检查结果。
     """
     from .tests import core_import_style_test
 
@@ -288,7 +288,7 @@ def rig_architecture_gate_test():
 
     Returns:
         object:
-            ``rig_architecture_gate_test.run()`` 返回的检查结果。
+        ``rig_architecture_gate_test.run()`` 返回的检查结果。
     """
     from .tests import rig_architecture_gate_test
 
@@ -304,7 +304,7 @@ def rig_base_contract_test():
 
     Returns:
         object:
-            ``rig_base_contract_test.run()`` 返回的测试结果。
+        ``rig_base_contract_test.run()`` 返回的测试结果。
     """
     from .tests import rig_base_contract_test
 
@@ -320,7 +320,7 @@ def module_base_contract_test():
 
     Returns:
         object:
-            ``module_base_contract_test.run()`` 返回的测试结果。
+        ``module_base_contract_test.run()`` 返回的测试结果。
     """
     from .tests import module_base_contract_test
 
@@ -333,7 +333,7 @@ def tool_window_smoke_test():
 
     Returns:
         object:
-            ``tool_window_smoke_test.run()`` 返回的窗口测试结果。
+        ``tool_window_smoke_test.run()`` 返回的窗口测试结果。
     """
     from .tests import tool_window_smoke_test
 
@@ -349,7 +349,7 @@ def face_build_smoke_test():
 
     Returns:
         object:
-            ``face_build_smoke_test.run()`` 返回的测试结果。
+        ``face_build_smoke_test.run()`` 返回的测试结果。
     """
     from .tests import face_build_smoke_test
 
@@ -365,7 +365,7 @@ def ctrl_base_smoke_test():
 
     Returns:
         object:
-            ``ctrl_base_smoke_test.run()`` 返回的测试结果。
+        ``ctrl_base_smoke_test.run()`` 返回的测试结果。
     """
     from .tests import ctrl_base_smoke_test
 
@@ -382,7 +382,7 @@ def rig_integration_test(keep_result=False):
 
     Returns:
         object:
-            ``rig_integration_test.run()`` 返回的集成测试结果。
+        ``rig_integration_test.run()`` 返回的集成测试结果。
     """
     from .tests import rig_integration_test
 

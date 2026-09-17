@@ -123,20 +123,23 @@ class FKChain(rig_module.RigModule):
 
         Example:
             >>> from muziToolset.systems.components import fk_chain
-            >>> fk = fk_chain.FKChain(
-            ...     module="ear",
-            ...     side="lf",
-            ...     guide_count=3,
-            ...     guide_function="bind",
-            ...     ctrl_axis="Z+",
-            ... )
-            >>> fk.build()
+                >>> fk = fk_chain.FKChain(
+                ...     module="ear",
+                ...     side="lf",
+                ...     guide_count=3,
+                ...     guide_function="bind",
+                ...     ctrl_axis="Z+",
+                ... )
+                >>> fk.build()
 
         Notes:
             Rig Library 会在实例化后覆盖 ``ctrl_size`` / ``ctrl_color``，因此这些成员
-            也是模块外观配置的稳定运行时接口。
+                也是模块外观配置的稳定运行时接口。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         super(FKChain, self).__init__(
             module=module,
             side=side,
@@ -147,17 +150,29 @@ class FKChain(rig_module.RigModule):
 
         self.guide_count = guide_count
         self.guide_function = guide_function
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.jnt_function = jnt_function
         self.ctrl_function = ctrl_function
 
         self.ctrl_shape = ctrl_shape
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.ctrl_color = ctrl_color
         self.ctrl_size = ctrl_size
         self.ctrl_axis = ctrl_axis
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.jnt_list = []
         self.jnt_objects = []
         self.ctrl_list = []
+        # -------------------------------------------------------------------------
+        # Step 05：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.ctrl_objects = []
 
     def get_guides(self):
@@ -165,7 +180,6 @@ class FKChain(rig_module.RigModule):
         返回当前 FK Chain 的有序 Guide 列表。
 
         优先级：
-
         1. 复用 ``RigModule.get_guides()`` 读取显式传入的数据；
         2. 没有传入 ``guide`` 时，按
            ``loc_<side>_<module>_<guide_function>_<index>`` 自动查找；
@@ -173,31 +187,40 @@ class FKChain(rig_module.RigModule):
 
         Returns:
             list[str]:
-                按 FK Chain 顺序排列的 Guide 名称。
+            按 FK Chain 顺序排列的 Guide 名称。
 
         Raises:
             RuntimeError:
-                标准名称对应的 Guide 缺失，或显式 Guide 来源没有得到有效结果时抛出。
+            标准名称对应的 Guide 缺失，或显式 Guide 来源没有得到有效结果时抛出。
 
         Example:
             >>> fk = FKChain(
-            ...     module="ear",
-            ...     side="lf",
-            ...     guide_count=3,
-            ... )
-            >>> guides = fk.get_guides()
-            >>> print(guides)
-            ['loc_lf_ear_bind_001', 'loc_lf_ear_bind_002', 'loc_lf_ear_bind_003']
+                ...     module="ear",
+                ...     side="lf",
+                ...     guide_count=3,
+                ... )
+                >>> guides = fk.get_guides()
+                >>> print(guides)
+                ['loc_lf_ear_bind_001', 'loc_lf_ear_bind_002', 'loc_lf_ear_bind_003']
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.guide_list = super(FKChain, self).get_guides()
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.guide_list:
             return self.guide_list
 
         if self.guide is not None:
             raise RuntimeError(u"{} 没有可用的 FK Guide。".format(self.module))
 
+        # -------------------------------------------------------------------------
+        # Step 03：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for index in range(1, self.guide_count + 1):
             guide_name_object = name_utils.Name(
                 type="loc",
@@ -214,9 +237,15 @@ class FKChain(rig_module.RigModule):
 
             self.guide_list.append(guide_name)
 
+        # -------------------------------------------------------------------------
+        # Step 04：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self.guide_list:
             raise RuntimeError(u"{} 没有可用的 FK Guide。".format(self.module))
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.guide_list
 
     def create_joints(self):
@@ -228,11 +257,11 @@ class FKChain(rig_module.RigModule):
 
         Returns:
             list[str]:
-                当前 Chain 的 Joint 名称列表。
+            当前 Chain 的 Joint 名称列表。
 
         Example:
             >>> fk.get_guides()
-            >>> joints = fk.create_joints()
+                >>> joints = fk.create_joints()
         """
 
         self.jnt_list = []
@@ -267,11 +296,11 @@ class FKChain(rig_module.RigModule):
 
         Returns:
             list[str]:
-                当前 Chain 的 Controller 名称列表。
+            当前 Chain 的 Controller 名称列表。
 
         Example:
             >>> fk.get_guides()
-            >>> controls = fk.create_ctrls()
+                >>> controls = fk.create_ctrls()
         """
 
         self.ctrl_list = []
@@ -306,24 +335,26 @@ class FKChain(rig_module.RigModule):
         用每个 Controller Output 的 Parent Constraint 驱动对应 Joint。
 
         重复执行规则：
-
         - Joint 已有由当前 Output 驱动的 ``parentConstraint``：直接复用；
         - Joint 已有其他 Parent Constraint：抛出 ``RuntimeError``，不覆盖；
         - Joint 没有 Parent Constraint：创建新的 ``maintainOffset=True`` Constraint。
 
         Returns:
             None:
-                Connection 直接创建在 Maya Scene 中。
+            Connection 直接创建在 Maya Scene 中。
 
         Raises:
             RuntimeError:
-                Joint 已存在其他 Driver 的 Parent Constraint 时抛出。
+            Joint 已存在其他 Driver 的 Parent Constraint 时抛出。
 
         Notes:
             Driver 使用 Controller ``output_grp``，而不是直接使用可见 Ctrl Transform，
-            因此主 Ctrl / SubCtrl 的最终动画结果可以通过稳定 Output 接口传给 Joint。
+                因此主 Ctrl / SubCtrl 的最终动画结果可以通过稳定 Output 接口传给 Joint。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：遍历当前数据集合，并逐项执行核心处理
+        # -------------------------------------------------------------------------
         for index in range(len(self.jnt_objects)):
             jnt_object = self.jnt_objects[index]
             ctrl_object = self.ctrl_objects[index]
@@ -408,25 +439,37 @@ class FKChain(rig_module.RigModule):
 
         Returns:
             tuple[list[str], list[str]]:
-                ``(jnt_list, ctrl_list)``。
+            ``(jnt_list, ctrl_list)``。
 
         Raises:
             RuntimeError:
-                任意预期 Joint、Controller 或 Output 不存在时抛出。
+            任意预期 Joint、Controller 或 Output 不存在时抛出。
 
         Notes:
             ``load_outputs()`` 不修改 Joint / Controller DAG，也不会建立 Constraint。
         """
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.get_guides()
         self.jnt_list = []
+        # -------------------------------------------------------------------------
+        # Step 02：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.jnt_objects = []
         self.ctrl_list = []
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self.ctrl_objects = []
 
         class ExistingJoint(object):
             def __init__(self, name):
                 self.jnt = name
 
+        # -------------------------------------------------------------------------
+        # Step 04：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         class ExistingController(object):
             def __init__(self, name, output_name):
                 self.ctrl = name
@@ -450,6 +493,9 @@ class FKChain(rig_module.RigModule):
             self.ctrl_list.append(control_name)
             self.ctrl_objects.append(ExistingController(control_name, output_name))
 
+        # -------------------------------------------------------------------------
+        # Step 05：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self.jnt_list, self.ctrl_list
 
     def setup_hierarchy(self):
@@ -457,13 +503,10 @@ class FKChain(rig_module.RigModule):
         创建 Module Master Group，并整理 Joint Chain 与 Controller FK Chain。
 
         Joint：
-
             jnt_master_grp
                 ↓
             jnt_001 -> jnt_002 -> jnt_003 ...
-
         Controller：
-
             ctrl_master_grp
                 ↓
             zero_001
@@ -474,17 +517,26 @@ class FKChain(rig_module.RigModule):
 
         Returns:
             None:
-                Hierarchy 直接修改 Maya DAG；Master Group 保存在继承成员中。
+            Hierarchy 直接修改 Maya DAG；Master Group 保存在继承成员中。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：应用并更新当前阶段需要的属性或状态
+        # -------------------------------------------------------------------------
         super(FKChain, self).setup_hierarchy()
 
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.jnt_list:
             hierarchy_utils.chain_parent(
                 self.jnt_list,
                 parent_node=self.jnt_master_grp
             )
 
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if self.ctrl_objects:
             first_ctrl_object = self.ctrl_objects[0]
 

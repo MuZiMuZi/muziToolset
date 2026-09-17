@@ -99,6 +99,9 @@ def get_locator_name(
         # loc_lf_upper_lid_bind_001
     """
 
+    # -------------------------------------------------------------------------
+    # Step 01：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     name_object = name_utils.Name(
         type="loc",
         side=side,
@@ -107,6 +110,9 @@ def get_locator_name(
         index=index
     )
 
+    # -------------------------------------------------------------------------
+    # Step 02：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return name_object.name
 
 
@@ -146,8 +152,14 @@ def get_bind_locator_names(side, part, count, start_index=1):
         print(locator_name)
     """
 
+    # -------------------------------------------------------------------------
+    # Step 01：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     locator_names = []
 
+    # -------------------------------------------------------------------------
+    # Step 02：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for index in range(start_index, start_index + count):
         locator_name = get_locator_name(
             side=side,
@@ -157,6 +169,9 @@ def get_bind_locator_names(side, part, count, start_index=1):
         )
         locator_names.append(locator_name)
 
+    # -------------------------------------------------------------------------
+    # Step 03：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return locator_names
 
 
@@ -209,7 +224,7 @@ def get_eye_locator(side, function):
 
     Raises:
         ValueError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
 
     if side not in eye_guide_locators:
@@ -268,6 +283,9 @@ def normalize_legacy_locator_name(locator_name):
         # loc_lf_upper_lid_bind_001
     """
 
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not locator_name:
         return locator_name
 
@@ -284,6 +302,9 @@ def normalize_legacy_locator_name(locator_name):
         if dag_prefix:
             dag_prefix = dag_prefix + "|"
 
+    # -------------------------------------------------------------------------
+    # Step 02：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     namespace_prefix = ""
 
     if ":" in short_name:
@@ -301,6 +322,9 @@ def normalize_legacy_locator_name(locator_name):
         return locator_name
 
     # 只迁移旧版 function="guide" 的 Locator。
+    # -------------------------------------------------------------------------
+    # Step 03：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if name_parts[-2] != "guide":
         return locator_name
 
@@ -312,6 +336,9 @@ def normalize_legacy_locator_name(locator_name):
         return locator_name
 
     side = name_parts[1]
+    # -------------------------------------------------------------------------
+    # Step 04：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     legacy_part_tokens = name_parts[2:-2]
 
     if not legacy_part_tokens:
@@ -344,6 +371,9 @@ def normalize_legacy_locator_name(locator_name):
         index=index
     )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return dag_prefix + namespace_prefix + normalized_name
 
 
@@ -370,13 +400,19 @@ def rename_scene_locators():
 
     Raises:
         RuntimeError:
-            输入数据、场景状态或操作条件不满足要求时抛出。
+        输入数据、场景状态或操作条件不满足要求时抛出。
     """
 
     # Lazy Import：让这个配置文件在普通 Python / CI 环境中也可以被导入。
+    # -------------------------------------------------------------------------
+    # Step 01：执行当前阶段的核心处理
+    # -------------------------------------------------------------------------
     import maya.cmds as cmds
 
     locator_shapes = cmds.ls(type="locator", long=False) or []
+    # -------------------------------------------------------------------------
+    # Step 02：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     locator_transforms = []
 
     for locator_shape in locator_shapes:
@@ -396,6 +432,9 @@ def rename_scene_locators():
 
     rename_map = {}
 
+    # -------------------------------------------------------------------------
+    # Step 03：遍历当前数据集合，并逐项执行核心处理
+    # -------------------------------------------------------------------------
     for locator_transform in locator_transforms:
         normalized_name = normalize_legacy_locator_name(
             locator_transform
@@ -418,6 +457,9 @@ def rename_scene_locators():
                 )
             )
 
+    # -------------------------------------------------------------------------
+    # Step 04：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     rename_result = {}
 
     for old_name in sorted(rename_map):
@@ -451,4 +493,7 @@ def rename_scene_locators():
 
         rename_result[old_name] = renamed_transform
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return rename_result

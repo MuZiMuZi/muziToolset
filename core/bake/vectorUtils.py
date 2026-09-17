@@ -15,21 +15,25 @@ class Vector (object) :
 
     def __init__ (self , *args) :
         u"""
+        初始化当前对象，并准备运行时需要的状态和成员。
 
-                初始化当前对象，并准备运行时需要的状态和成员。
+        Args:
+            args (tuple):
+                当前方法按顺序处理的 `args` 数据集合。
 
-                Args:
-                    args (tuple):
-                        当前方法按顺序处理的 `args` 数据集合。
-
-                Raises:
-                    TypeError:
-                        输入数据、场景状态或操作条件不满足要求时抛出。
-
+        Raises:
+            TypeError:
+            输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self._vector = None
         # 判断给定的参数为list的情况
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if len (args) == 1 :
             if isinstance (args [0] , (tuple , list)) :
                 if len (args [0]) == 3 :
@@ -38,21 +42,25 @@ class Vector (object) :
         # 判断给定的参数为三个独立的数值的情况
         elif len (args) == 3 :
             self._vector = args
+        # -------------------------------------------------------------------------
+        # Step 03：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not self._vector :
             raise TypeError (u'初始化失败，检查输入类型')
 
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         self._axis = None
 
 
     def normalize (self) :
         u"""
+        使长度的参数规范化，如果遇到除数为0的情况则pass
 
-                使长度的参数规范化，如果遇到除数为0的情况则pass
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         if self._vector :
             try :
@@ -70,13 +78,11 @@ class Vector (object) :
     @property
     def length (self) :
         u"""
+        sqrt是更号的意思，求长度
 
-                sqrt是更号的意思，求长度
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
         return math.sqrt (self.x ** 2 + self.y ** 2 + self.z ** 2)
 
@@ -84,13 +90,11 @@ class Vector (object) :
     @property
     def x (self) :
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         return self._vector [0]
@@ -99,13 +103,11 @@ class Vector (object) :
     @property
     def y (self) :
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         return self._vector [1]
@@ -114,13 +116,11 @@ class Vector (object) :
     @property
     def z (self) :
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
         return self._vector [2]
@@ -129,13 +129,11 @@ class Vector (object) :
     @property
     def as_list (self) :
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Returns:
-                    list:
-                        按当前 API 约定顺序返回的结果列表。
-
+        Returns:
+            list:
+            按当前 API 约定顺序返回的结果列表。
         """
 
         return [self.x , self.y , self.z]
@@ -144,15 +142,16 @@ class Vector (object) :
     @property
     def axis (self) :
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
-
-                Returns:
-                    object:
-                        当前 API 完成处理后返回的结果。
-
+        Returns:
+            object:
+            当前 API 完成处理后返回的结果。
         """
 
+        # -------------------------------------------------------------------------
+        # Step 01：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if all (v1 == v2 for v1 , v2 in zip (self._vector , [1 , 0 , 0])) :
             self._axis = 'X+'
         elif all (v1 == v2 for v1 , v2 in zip (self._vector , [-1 , 0 , 0])) :
@@ -165,22 +164,23 @@ class Vector (object) :
             self._axis = 'Z+'
         elif all (v1 == v2 for v1 , v2 in zip (self._vector , [0 , 0 , -1])) :
             self._axis = 'Z-'
+        # -------------------------------------------------------------------------
+        # Step 02：整理并返回当前函数的最终结果
+        # -------------------------------------------------------------------------
         return self._axis
 
 
     def mult_interval (self , interval) :
         u"""
+        执行当前 API 的主要处理流程。
 
-                执行当前 API 的主要处理流程。
+        Args:
+            interval (object):
+                当前方法执行 Maya / Rig 操作时使用的 `interval` 数据。
 
-                Args:
-                    interval (object):
-                        当前方法执行 Maya / Rig 操作时使用的 `interval` 数据。
-
-                Returns:
-                    tuple:
-                        按当前 API 约定组织的结果元组。
-
+        Returns:
+            tuple:
+            按当前 API 约定组织的结果元组。
         """
 
         return (self.x * interval , self.y * interval , self.z * interval)
@@ -263,16 +263,19 @@ def matrix_parent_constraint (
 
     Example:
         matrix_parent_constraint(
-                'ctrl_l_arm_fk',
-                'jnt_l_arm_fk',
-                maintain_offset=True
-            )
+                    'ctrl_l_arm_fk',
+                    'jnt_l_arm_fk',
+                    maintain_offset=True
+                )
     """
 
     # ------------------------------------------------------------
     # 检查对象是否存在
     # ------------------------------------------------------------
 
+    # -------------------------------------------------------------------------
+    # Step 01：检查当前条件与边界情况，并进入对应处理分支
+    # -------------------------------------------------------------------------
     if not cmds.objExists (driver) :
         cmds.error (
             'Driver 不存在: {0}'.format (driver)
@@ -335,6 +338,9 @@ def matrix_parent_constraint (
     #
     # ------------------------------------------------------------
 
+    # -------------------------------------------------------------------------
+    # Step 02：查询并整理当前阶段需要的 Maya 场景数据
+    # -------------------------------------------------------------------------
     driven_local_matrix = get_matrix (
         driven + '.matrix'
     )
@@ -398,6 +404,9 @@ def matrix_parent_constraint (
         '_'
     )
 
+    # -------------------------------------------------------------------------
+    # Step 03：准备当前阶段计算和后续处理需要的数据
+    # -------------------------------------------------------------------------
     mult_matrix_name = (
             driven_short_name
             +
@@ -442,6 +451,9 @@ def matrix_parent_constraint (
         offset_matrix
     )
 
+    # -------------------------------------------------------------------------
+    # Step 04：应用并更新当前阶段需要的属性或状态
+    # -------------------------------------------------------------------------
     cmds.setAttr (
         mult_matrix + '.matrixIn[1]' ,
         *offset_matrix_list ,
@@ -485,4 +497,7 @@ def matrix_parent_constraint (
         force = True
     )
 
+    # -------------------------------------------------------------------------
+    # Step 05：整理并返回当前函数的最终结果
+    # -------------------------------------------------------------------------
     return mult_matrix

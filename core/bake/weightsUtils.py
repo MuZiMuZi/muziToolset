@@ -114,6 +114,9 @@ class Weights (object) :
         从给定权重文件夹加载蒙皮几何体对象的权重将从与对象短名称匹配的文件名加载权重，并添加其他文件以获取其影响 :return:
         """
         # 查询物体是否有蒙皮节点
+        # -------------------------------------------------------------------------
+        # Step 01：查询并整理当前阶段需要的 Maya 场景数据
+        # -------------------------------------------------------------------------
         self.skin_node = self.get_skin_node ()
 
         # 如果物体本身就具有蒙皮节点的话则先删除原本的蒙皮节点
@@ -121,6 +124,9 @@ class Weights (object) :
             cmds.delete (self.skin_node)
 
         # 判断物体导出权重的的文件路径是否存在，如果不存在的话则报错
+        # -------------------------------------------------------------------------
+        # Step 02：检查当前条件与边界情况，并进入对应处理分支
+        # -------------------------------------------------------------------------
         if not os.path.exists (self.skinWeights_Path) :
             cmds.warning (u'{}这个物体没有导出权重的文件'.format (self.geo))
             return
@@ -131,16 +137,25 @@ class Weights (object) :
 
         # 获得关节影响
         influences_file = open (self.influences_Path , mode = 'rb')
+        # -------------------------------------------------------------------------
+        # Step 03：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         influences_Str = influences_file.read ()
         influences = json.loads (influences_Str)
         influences_file.close ()
 
         # 创建关节蒙皮
+        # -------------------------------------------------------------------------
+        # Step 04：准备当前阶段计算和后续处理需要的数据
+        # -------------------------------------------------------------------------
         skin_node = cmds.skinCluster (self.geo , influences , tsb = True) [0]
 
         # 获取蒙皮权重
         cmds.deformerWeights (self.skinWeights_FileName , path = self.skinWeights_Path , im = True ,
                               deformer = skin_node)
+        # -------------------------------------------------------------------------
+        # Step 05：执行当前阶段的核心处理
+        # -------------------------------------------------------------------------
         cmds.warning (u'{}这个物体导入权重成功'.format (self.geo))
 
 
@@ -201,13 +216,11 @@ class Weights (object) :
     # 获取物体的蒙皮节点信息
     def get_skin_node (self) :
         u"""
+        获取物体的蒙皮节点信息，返回蒙皮节点
 
-                获取物体的蒙皮节点信息，返回蒙皮节点
-
-                Returns:
-                    object | None:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object | None:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
 
         # 查询物体是否有蒙皮节点，没有的话报错
@@ -225,13 +238,11 @@ class Weights (object) :
     # 获取物体的蒙皮节点的关节信息
     def get_skin_node_jnt (self) :
         u"""
+        查询并返回当前 skin node jnt。
 
-                查询并返回当前 skin node jnt。
-
-                Returns:
-                    object:
-                        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
-
+        Returns:
+            object:
+            当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
         """
 
         self.skin_node_nt = pm.PyNode (self.skin_node)
@@ -243,9 +254,7 @@ class Weights (object) :
     # 重命名物体的蒙皮节点名称
     def rename_skin_node (self) :
         u"""
-
-                执行当前 API 的主要处理流程。
-
+        执行当前 API 的主要处理流程。
         """
 
         self.skin_node = self.get_skin_node ()
