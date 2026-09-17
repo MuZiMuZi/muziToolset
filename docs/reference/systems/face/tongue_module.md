@@ -30,27 +30,22 @@ from muziToolset.systems.face import tongue_module
 
 ### Class `TongueModule`
 
-使用标准五段 FK Chain 实现的舌头 Rig Module。
+使用标准五段 FKChain 实现的舌头绑定模块。
 
 ## Classes 详细 API
 
 ### `TongueModule`
 
-使用标准五段 FK Chain 实现的舌头 Rig Module。
-
-``TongueModule`` 负责把 Tongue 的固定 Guide 数量和默认命名传给 FKChain；
-Guide 查询、Joint / Controller 创建、FK 父子层级和最终 Output → Joint 连接都
-复用通用 FKChain，因此它与 Ear / 通用 FK 模块拥有一致的 Build Contract。
-适用场景：
-    - Face Rig 中的中线五段舌头 FK；
-    - Rig Library 中需要 Build / Rebuild / Final 的 Tongue Module；
-    - 希望后续通过统一 FKChain 改善所有线性 FK 模块时。
+使用标准五段 FKChain 实现的舌头绑定模块。
 
 #### `__init__()`
 
 **作用**
 
-初始化舌头 FK Module，并把 Tongue 固定配置传给 ``FKChain``。
+初始化 TongueModule。
+
+TongueModule 只保存舌头自己的固定业务配置，真正的 Joint、Controller、
+Constraint 创建和删除全部由 FKChain 统一处理。
 
 **Signature**
 
@@ -62,12 +57,12 @@ __init__(self, module='tongue', side='md', guide=None, jnt_parent=None, ctrl_par
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `module` | `str` | 否 | `'tongue'` | Module Part Token，默认 ``"tongue"``。 |
-| `side` | `str` | 否 | `'md'` | 方向标记。正式 Tongue Module 默认并推荐使用 ``"md"``。 |
-| `guide` | `str \| list[str] \| tuple[str] \| object \| None` | 否 | `None` | 可选 Guide 来源。None 时 FKChain 会按标准 Tongue Locator 名称自动查找五项。 |
-| `jnt_parent` | `str \| object \| None` | 否 | `None` | Tongue Joint Master Group 的可选上层父节点；Rig Library 通常传入 ``grp_md_rig_jnt_001``。 |
-| `ctrl_parent` | `str \| object \| None` | 否 | `None` | Tongue Controller Master Group 的可选上层父节点；Rig Library 通常传入 ``grp_md_rig_ctrl_001``。 |
-| `ctrl_axis` | `str` | 否 | `'X+'` | Controller Shape 绝对轴向，支持 ``X+ / X- / Y+ / Y- / Z+ / Z-``。 |
+| `module` | `str` | 否 | `'tongue'` | 模块名称，正式舌头模块默认使用 "tongue"。 |
+| `side` | `str` | 否 | `'md'` | 舌头通常位于中线，默认使用 "md"。 |
+| `guide` | `list[str] \| tuple[str] \| None` | 否 | `None` | Guide Template 导入完成后提供的五个 Tongue Locator，顺序必须和 FK 链一致。 |
+| `jnt_parent` | `str \| None` | 否 | `None` | Tongue Joint 总组需要挂接的上层节点。 |
+| `ctrl_parent` | `str \| None` | 否 | `None` | Tongue Controller 总组需要挂接的上层节点。 |
+| `ctrl_axis` | `str` | 否 | `'X+'` | Controller Shape 轴向。 |
 
 **返回值**
 
@@ -81,16 +76,9 @@ __init__(self, module='tongue', side='md', guide=None, jnt_parent=None, ctrl_par
 
 ```python
 from muziToolset.systems.face import tongue_module
-        tongue = tongue_module.TongueModule(
-            side="md",
-            ctrl_axis="Z+",
-        )
-        tongue.build()
-```
 
-!!! note "说明"
-    Tongue 是中央模块。Rig Library 的左右 Mirror 只对 ``lf / rt`` Module 开放，
-            因此中央 Tongue 不需要创建配对侧。
+instance = tongue_module.TongueModule()
+```
 
 ## 源码位置
 

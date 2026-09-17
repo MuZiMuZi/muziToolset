@@ -85,7 +85,7 @@ object:
 
 ```python
 import muziToolset
-        window = muziToolset.show()
+            window = muziToolset.show()
 ```
 
 ### `initialize()`
@@ -120,7 +120,7 @@ object:
 
 ```python
 import muziToolset
-        window = muziToolset.initialize()
+            window = muziToolset.initialize()
 ```
 
 ### `show_rig_library()`
@@ -156,7 +156,7 @@ object:
 
 ```python
 import muziToolset
-        window = muziToolset.show_rig_library()
+            window = muziToolset.show_rig_library()
 ```
 
 ### `smoke_test()`

@@ -16,14 +16,16 @@ Systems 是可复用的完整 Rig Builder / Workflow。
 ## components
 
 - [`systems/components/__init__.py`](components/package.md) — 可复用 Rig Component。
-- [`systems/components/fk_chain.py`](components/fk_chain.md) — fk_chain：MuziTools 标准线性 FK Chain Rig Component。
+- [`systems/components/fk_chain.py`](components/fk_chain.md) — FKChain：通用线性 FK 绑定模块。
 
 ## face
 
 - [`systems/face/__init__.py`](face/package.md) — Muzi Toolset 新版 Face System。
 - [`systems/face/ear_module.py`](face/ear_module.md) — EarModule：耳朵三段 FK 绑定模块。
-- [`systems/face/eye_module.py`](face/eye_module.md) — EyeModule：正式眼球 Aim 绑定模块。
+- [`systems/face/eye_module.py`](face/eye_module.md) — EyeModule：眼球 Aim 绑定模块。
+- [`systems/face/eye_pair_module.py`](face/eye_pair_module.md) — EyePairModule：双眼系统总模块。
 - [`systems/face/face_guide_config.py`](face/face_guide_config.md) — face_guide_config：Face Guide 命名与模板配置。
+- [`systems/face/face_module.py`](face/face_module.md) — FaceModule：整个面部绑定系统的总调度模块。
 - [`systems/face/tongue_module.py`](face/tongue_module.md) — TongueModule：舌头五段 FK 绑定模块。
 
 ## rig
@@ -42,4 +44,4 @@ Systems 是可复用的完整 Rig Builder / Workflow。
 ## 基础模块
 
 - [`systems/__init__.py`](package.md) — Muzi Toolset Rig System 集合。
-- [`systems/rig_module.py`](rig_module.md) — rig_module：MuziTools 当前通用 Rig Module 生命周期基础类。
+- [`systems/rig_module.py`](rig_module.md) — RigModule：通用绑定模块基础类。

@@ -33,9 +33,9 @@ from muziToolset.core.rigging import jnt_utils
 
 | Method | 作用 |
 | --- | --- |
-| `set_match_transform(self, target, position=True, rotation=True)` | 将当前 Joint 对齐到指定目标的位置和旋转。 |
+| `set_match_transform(self, target, position=True, rotation=True)` | 将当前 Joint 直接吸附到指定 Guide / Locator。 |
 | `set_radius(self, radius)` | 设置当前 Joint 的显示半径。 |
-| `reset_joint_orient(self)` | 清除当前 Joint 的关节定向数值。 |
+| `reset_joint_orient(self)` | 将当前 Joint 的 jointOrient XYZ 清零。 |
 
 ## Classes 详细 API
 
@@ -49,14 +49,8 @@ from muziToolset.core.rigging import jnt_utils
 
 初始化 Joint 工具对象。
 
-如果 Maya 场景中已经存在指定名称的 Joint，则直接将它作为当前 Joint。
-如果不存在，则自动创建一个新的 Joint。
-这样后续所有方法都可以直接使用 self.jnt，不需要重复判断 Joint 是否存在。
-name(str): Joint 名称。
-Maya 使用示例：
-from muziToolset.core.rigging import jnt_utils
-jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
-print(jnt_object.jnt)
+如果 Maya 场景中已经存在指定名称的 Joint，则直接使用；
+不存在时创建新的 Joint。
 
 **Signature**
 
@@ -68,7 +62,7 @@ __init__(self, name)
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `name` | `str` | 是 | `—` | 创建或查询时使用的节点名称。 |
+| `name` | `str` | 是 | `—` | Joint 名称。 |
 
 **返回值**
 
@@ -92,9 +86,15 @@ instance = jnt_utils.Jnt(
 
 **作用**
 
-将当前 Joint 对齐到指定目标的位置和旋转。
+将当前 Joint 直接吸附到指定 Guide / Locator。
 
-target(str/PyNode): 需要对齐的目标对象，例如 Guide、Locator 或 Transform。
+Guide 系统统一使用 Locator Transform 保存真正的定位数据。
+因此这里直接执行 matchTransform：
+    Locator Transform
+            ↓
+         Joint
+不读取 Locator Shape.localPosition，也不额外计算 worldPosition。
+这样 Joint 的创建规则始终保持简单、明确。
 
 **Signature**
 
@@ -106,22 +106,13 @@ set_match_transform(self, target, position=True, rotation=True)
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `target` | `str` | 是 | `—` | 接收结果或被处理的目标 Maya 节点名称。 |
-| `position` | `bool` | 否 | `True` | Jnt / Transform 使用的 XYZ Position。 |
-| `rotation` | `bool` | 否 | `True` | Jnt / Transform 使用的 XYZ Rotation。 |
+| `target` | `str/PyNode` | 是 | `—` | 需要吸附的 Guide / Locator。 |
+| `position` | `bool` | 否 | `True` | 是否匹配位置，默认 True。 |
+| `rotation` | `bool` | 否 | `True` | 是否匹配旋转，默认 True。 |
 
 **返回值**
 
 None
-
-    Maya 使用示例：
-
-    from muziToolset.core.rigging import jnt_utils
-
-    jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
-    target = "guide_lf_arm_001"
-
-    jnt_object.match_transform(target)
 
 **异常**
 
@@ -147,8 +138,6 @@ result = instance.set_match_transform(
 
 设置当前 Joint 的显示半径。
 
-radius(float): Joint 的显示半径数值。
-
 **Signature**
 
 ```python
@@ -159,20 +148,11 @@ set_radius(self, radius)
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `radius` | `float` | 是 | `—` | 创建节点或控制器使用的半径值。 |
+| `radius` | `float` | 是 | `—` | Joint 显示半径。 |
 
 **返回值**
 
 None
-
-    Maya 使用示例：
-
-    from muziToolset.core.rigging import jnt_utils
-
-    jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
-    radius = 0.5
-
-    jnt_object.set_radius(radius)
 
 **异常**
 
@@ -196,9 +176,7 @@ result = instance.set_radius(
 
 **作用**
 
-清除当前 Joint 的关节定向数值。
-
-将 jointOrientX、jointOrientY、jointOrientZ 一次性设置为 0。
+将当前 Joint 的 jointOrient XYZ 清零。
 
 **Signature**
 
@@ -213,14 +191,6 @@ reset_joint_orient(self)
 **返回值**
 
 None
-
-    Maya 使用示例：
-
-    from muziToolset.core.rigging import jnt_utils
-
-    jnt_object = jnt_utils.Jnt("jnt_lf_arm_bind_001")
-
-    jnt_object.reset_joint_orient()
 
 **异常**
 

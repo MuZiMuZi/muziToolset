@@ -33,7 +33,7 @@ from muziToolset.core.common import transform_utils
 
 | Method | 作用 |
 | --- | --- |
-| `match_transform(self, target, position=True, rotation=True, scale=True)` | 将当前对象对齐到指定目标对象。 |
+| `match_transform(self, target, position=True, rotation=True, scale=True)` | 将当前对象直接对齐到指定目标对象的 Transform。 |
 | `get_world_matrix(self)` | 获取当前对象的世界矩阵。 |
 | `set_world_matrix(self, matrix)` | 将给定的世界矩阵设置到当前对象。 |
 | `reset_transform(self, translate=True, rotate=True, scale=True)` | 将当前对象的 Transform 数值恢复到默认状态。 |
@@ -51,13 +51,6 @@ from muziToolset.core.common import transform_utils
 
 初始化 Transform 工具对象。
 
-object(str/PyNode): 需要操作的 Maya 节点，可以是 Transform、Joint、Shape 等节点。
-Maya 使用示例：
-from muziToolset.core.common import transform_utils
-object = "ctrl_lf_eye_main_001"
-transform_object = transform_utils.Transform(object)
-print(transform_object.object)
-
 **Signature**
 
 ```python
@@ -68,7 +61,7 @@ __init__(self, object=None)
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `object` | `str` | 否 | `None` | 需要处理的 Maya 场景对象名称。 |
+| `object` | `str/PyNode` | 否 | `None` | 需要操作的 Maya 节点，可以是 Transform、Joint、Shape 等节点。 |
 
 **返回值**
 
@@ -90,12 +83,14 @@ instance = transform_utils.Transform()
 
 **作用**
 
-将当前对象对齐到指定目标对象。
+将当前对象直接对齐到指定目标对象的 Transform。
 
-target(str/PyNode): 需要匹配的目标对象。
-position(bool): 是否匹配目标对象的位置，默认 True。
-rotation(bool): 是否匹配目标对象的旋转，默认 True。
-scale(bool): 是否匹配目标对象的缩放，默认 True。
+Guide 系统统一把 Locator Transform 作为真正的定位数据：
+    Locator Translate / Rotate / Scale
+                ↓
+          Target Transform
+不读取 Locator Shape.localPosition，也不额外计算 Shape.worldPosition。
+这样 Joint、Controller 和其他绑定节点都使用同一套简单明确的对齐规则。
 
 **Signature**
 
@@ -107,24 +102,14 @@ match_transform(self, target, position=True, rotation=True, scale=True)
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `target` | `str` | 是 | `—` | 接收结果或被处理的目标 Maya 节点名称。 |
-| `position` | `bool` | 否 | `True` | Jnt / Transform 使用的 XYZ Position。 |
-| `rotation` | `bool` | 否 | `True` | Jnt / Transform 使用的 XYZ Rotation。 |
-| `scale` | `bool` | 否 | `True` | 是否处理 Scale 通道。 |
+| `target` | `str/PyNode` | 是 | `—` | 需要匹配的目标对象。 |
+| `position` | `bool` | 否 | `True` | 是否匹配目标位置，默认 True。 |
+| `rotation` | `bool` | 否 | `True` | 是否匹配目标旋转，默认 True。 |
+| `scale` | `bool` | 否 | `True` | 是否匹配目标缩放，默认 True。 |
 
 **返回值**
 
 None
-
-    Maya 使用示例：
-
-    from muziToolset.core.common import transform_utils
-
-    object = "jnt_lf_arm_bind_001"
-    target = "guide_lf_arm_001"
-
-    transform_object = transform_utils.Transform(object)
-    transform_object.match_transform(target, position=True, rotation=True, scale=False)
 
 **异常**
 
@@ -162,17 +147,6 @@ get_world_matrix(self)
 
 Matrix: 当前对象的世界矩阵。
 
-    Maya 使用示例：
-
-    from muziToolset.core.common import transform_utils
-
-    object = "ctrl_lf_eye_main_001"
-
-    transform_object = transform_utils.Transform(object)
-    world_matrix = transform_object.get_world_matrix()
-
-    print(world_matrix)
-
 **异常**
 
 源码未声明专门的异常说明。
@@ -193,8 +167,6 @@ result = instance.get_world_matrix()
 
 将给定的世界矩阵设置到当前对象。
 
-matrix(Matrix): 需要设置给当前对象的世界矩阵。
-
 **Signature**
 
 ```python
@@ -210,17 +182,6 @@ set_world_matrix(self, matrix)
 **返回值**
 
 None
-
-    Maya 使用示例：
-
-    from muziToolset.core.common import transform_utils
-
-    source = transform_utils.Transform("guide_lf_arm_001")
-    target = transform_utils.Transform("jnt_lf_arm_bind_001")
-
-    matrix = source.get_world_matrix()
-
-    target.set_world_matrix(matrix)
 
 **异常**
 
@@ -244,10 +205,6 @@ result = instance.set_world_matrix(
 
 将当前对象的 Transform 数值恢复到默认状态。
 
-translate(bool): 是否将 translate 重置为 (0, 0, 0)，默认 True。
-rotate(bool): 是否将 rotate 重置为 (0, 0, 0)，默认 True。
-scale(bool): 是否将 scale 重置为 (1, 1, 1)，默认 True。
-
 **Signature**
 
 ```python
@@ -258,22 +215,13 @@ reset_transform(self, translate=True, rotate=True, scale=True)
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | :---: | --- | --- |
-| `translate` | `bool` | 否 | `True` | 是否处理 Translate 通道。 |
-| `rotate` | `bool` | 否 | `True` | 是否处理 Rotate 通道。 |
-| `scale` | `bool` | 否 | `True` | 是否处理 Scale 通道。 |
+| `translate` | `bool` | 否 | `True` | 是否将 Translate 重置为 0。 |
+| `rotate` | `bool` | 否 | `True` | 是否将 Rotate 重置为 0。 |
+| `scale` | `bool` | 否 | `True` | 是否将 Scale 重置为 1。 |
 
 **返回值**
 
 None
-
-    Maya 使用示例：
-
-    from muziToolset.core.common import transform_utils
-
-    object = "ctrl_lf_eye_main_001"
-
-    transform_object = transform_utils.Transform(object)
-    transform_object.reset_transform(translate=True, rotate=True, scale=True)
 
 **异常**
 
@@ -295,7 +243,7 @@ result = instance.reset_transform()
 
 获取当前对象对应的 Transform 节点。
 
-如果当前对象本身就是 Transform，则直接返回当前对象。
+如果当前对象本身就是 Transform，则直接返回当前对象；
 如果当前对象是 Shape，则返回它的父 Transform。
 
 **Signature**
@@ -311,18 +259,6 @@ get_transform(self)
 **返回值**
 
 PyNode: 当前对象对应的 Transform 节点。
-
-    Maya 使用示例：
-
-    from muziToolset.core.common import transform_utils
-
-    object = "ctrl_lf_eye_main_001Shape"
-
-    transform_object = transform_utils.Transform(object)
-    transform = transform_object.get_transform()
-
-    print(transform)
-    # ctrl_lf_eye_main_001
 
 **异常**
 

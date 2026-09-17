@@ -4,29 +4,6 @@
 
 Core 是 Maya 通用底层能力层，不包含完整 Rig Workflow。
 
-## bake
-
-- [`core/bake/__init__.py`](bake/package.md) — 查看该文件的公开 API。
-- [`core/bake/advUtils.py`](bake/advUtils.md) — 这是一个用来编写adv插件的流程工具的类
-- [`core/bake/attrUtils.py`](bake/attrUtils.md) — attrUtils
-- [`core/bake/blendShapeUtils.py`](bake/blendShapeUtils.md) — 这是一个blendshape的模块。用来对混合变形进行一系列修改的操作。
-- [`core/bake/connectionUtils.py`](bake/connectionUtils.md) — 查看该文件的公开 API。
-- [`core/bake/controlUtils.py`](bake/controlUtils.md) — controlUtils：这是一个控制器模块。用来对控制器进行一系列修改的操作。
-- [`core/bake/copy_skin.py`](bake/copy_skin.md) — 查看该文件的公开 API。
-- [`core/bake/fileUtils.py`](bake/fileUtils.md) — 查看该文件的公开 API。
-- [`core/bake/hierarchyUtils.py`](bake/hierarchyUtils.md) — 查看该文件的公开 API。
-- [`core/bake/jointUtils.py`](bake/jointUtils.md) — jointUtils
-- [`core/bake/matehumanUtils.py`](bake/matehumanUtils.md) — matehumanUtils：这是一个用来对matehuman的基础功能定义的模块
-- [`core/bake/meshUtils.py`](bake/meshUtils.md) — 查看该文件的公开 API。
-- [`core/bake/nameUtils.py`](bake/nameUtils.md) — nameUtils：Maya Rig 命名工具。
-- [`core/bake/pipelineUtils.py`](bake/pipelineUtils.md) — 这是一个用来编写流程工具的类
-- [`core/bake/qtUtils.py`](bake/qtUtils.md) — 已有： 创建一个输入的弹窗:input_dialog_text 弹出询问是否执行的窗口:input_dialog_message 删除指定的文件夹：remove_folder 删除指定的文件：remove_file 弹出创建新文件名的窗口：new_folder 重命名给定的文件或者是文件夹的名称：rename_file_or_folder 选择文件点击按钮后可以在系统文件资源管理器里打开这个文件：show_file_in_explorer 选择文件夹点击按钮后可以在系统文件资源管理器里打开这个文件夹:show_folder_in_explorer
-- [`core/bake/quick_render.py`](bake/quick_render.md) — 查看该文件的公开 API。
-- [`core/bake/snapUtils.py`](bake/snapUtils.md) — 这是一个吸附的。用来吸附对应的位置。
-- [`core/bake/test.py`](bake/test.md) — 查看该文件的公开 API。
-- [`core/bake/vectorUtils.py`](bake/vectorUtils.md) — 查看该文件的公开 API。
-- [`core/bake/weightsUtils.py`](bake/weightsUtils.md) — 这是一个用来编写权重工具的基本类
-
 ## common
 
 - [`core/common/__init__.py`](common/package.md) — 查看该文件的公开 API。

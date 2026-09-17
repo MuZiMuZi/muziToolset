@@ -72,9 +72,9 @@ dict:
 
 ```python
 from muziToolset.systems.rig import library_catalog
-        eye = library_catalog.get_module("eye")
-        print(eye["count"])
-        3
+            eye = library_catalog.get_module("eye")
+            print(eye["count"])
+            3
 ```
 
 ### `new_document()`
@@ -108,8 +108,8 @@ dict:
 
 ```python
 document = new_document()
-        document["modules"]
-        []
+            document["modules"]
+            []
 ```
 
 ### `new_module()`
@@ -153,7 +153,7 @@ result = library_catalog.new_module(
 
 !!! note "说明"
     新 Record 初始始终为 ``built=False``、``connected=False``。
-            ``ctrl_color`` 根据 Side 使用 ``lf=6 / rt=13 / md=17`` 默认值。
+                ``ctrl_color`` 根据 Side 使用 ``lf=6 / rt=13 / md=17`` 默认值。
 
 ### `guide_names()`
 
@@ -192,13 +192,13 @@ list[str]:
 
 ```python
 record = new_module("eye", "lf")
-        guide_names(record)
-        ['loc_lf_eye_ball_001', 'loc_lf_eye_iris_001', 'loc_lf_eye_aim_001']
+            guide_names(record)
+            ['loc_lf_eye_ball_001', 'loc_lf_eye_iris_001', 'loc_lf_eye_aim_001']
 ```
 
 !!! note "说明"
     Eye 不能把 Guide 简单当成 ``bind_001 / 002 / 003``，因为 Ball、Iris、Aim
-            分别代表旋转中心、Main Ctrl 可见位置和 Aim Ctrl 位置。
+                分别代表旋转中心、Main Ctrl 可见位置和 Aim Ctrl 位置。
 
 ### `output_names()`
 
@@ -247,7 +247,7 @@ result = library_catalog.output_names(
 
 !!! note "说明"
     Eye 使用 Main + Aim 两套 Controller Hierarchy；FK 类模块按 Guide 数量生成
-            ``fk_001...`` Controller 与 ``bind_001...`` Joint。
+                ``fk_001...`` Controller 与 ``bind_001...`` Joint。
 
 ### `validate_document()`
 
@@ -302,7 +302,7 @@ result = library_catalog.validate_document(
 
 !!! note "说明"
     这个函数是配置写入 Scene Network、JSON Import 和 Service Commit 前的共同边界。
-            不要为了“尽量加载”而忽略未知字段，否则旧 / 损坏配置会部分进入 Maya Scene。
+                不要为了“尽量加载”而忽略未知字段，否则旧 / 损坏配置会部分进入 Maya Scene。
 
 ### `add_template()`
 
@@ -340,9 +340,9 @@ dict:
 
 ```python
 document = new_document()
-        document = add_template(document, "eye_pair")
-        len(document["modules"])
-        2
+            document = add_template(document, "eye_pair")
+            len(document["modules"])
+            2
 ```
 
 ## 源码位置
