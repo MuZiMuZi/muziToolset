@@ -7,7 +7,6 @@ MuziTools 的 BlendShape 工具目前也处于**新 Core 收敛前的迁移阶�
 ```text
 tools/blendshape/add_blendshape_tool.py
 tools/blendshape/invert_shape_tool.py
-core/bake/blendShapeUtils.py
 ```
 
 两个新 UI 都按“统一调用 `core.blendshape_utils`”的思路编写，但当前正式 `core/` 目录中还没有完成这个新模块，因此它们属于**新 UI 已成形、底层新 Core 待迁移**的状态。
@@ -29,14 +28,6 @@ core/bake/blendShapeUtils.py
     把蒙皮后姿势中的修型反算成可用于 BlendShape 的 Corrective Shape。
 
     [:octicons-code-24: Invert Shape API](../reference/tools/blendshape/invert_shape_tool.md)
-
--   :material-history:{ .lg .middle } **历史 BlendShape Helper**
-
-    ---
-
-    `core/bake/blendShapeUtils.py` 保留旧查询实现。
-
-    [:octicons-code-24: Historical API](../reference/core/bake/blendShapeUtils.md)
 
 </div>
 
@@ -227,11 +218,11 @@ from ...core import scene_utils
     待正式落地 / 迁移
 
 历史 BlendShape Helper
-    core/bake/blendShapeUtils.py
+    已从正式 Runtime 与 API Reference 退休
 ```
 
-!!! warning "不要把旧 Bake 当成新 Core"
-    `core/bake/blendShapeUtils.py` 目前主要提供旧版 BlendShape Node / Weight 查询；它不等于 Target Tool 所期望的新 `blendshape_utils` 完整 API。后续迁移时应该新建正式实现，再让 Tool 接入，而不是继续往 Bake 里堆新业务。
+!!! warning "不要继续依赖旧 Bake"
+    旧 BlendShape Helper 已从正式 Runtime 与 API Reference 退休。后续迁移应建立正式 `blendshape_utils`，不要从历史目录复制或继续扩展旧实现。
 
 ## 历史 `BlendShape` 类
 
@@ -383,7 +374,6 @@ Error Handling
 
 - [add_blendshape_tool.py](../reference/tools/blendshape/add_blendshape_tool.md)
 - [invert_shape_tool.py](../reference/tools/blendshape/invert_shape_tool.md)
-- [blendShapeUtils.py](../reference/core/bake/blendShapeUtils.md)
 - [Eye Rig](../reference/systems/face/eye_module.md)
 
 [返回常用工具](tools.md){ .md-button }

@@ -7,9 +7,6 @@ MuziTools 的 Skin 相关代码目前处于**新架构迁移中**。
 ```text
 tools/skin/skin_tool.py
     新 UI / 新交互设计
-
-core/bake/weightsUtils.py
-    历史权重实现与兼容逻辑
 ```
 
 但当前正式 `core/common/`、`core/rigging/` 中还没有完成新的 Skin Core。因此网站会如实区分“当前 UI 意图”和“历史可用实现”，不会把旧 `weightsUtils.py` 写成新架构标准。
@@ -23,14 +20,6 @@ core/bake/weightsUtils.py
     Smooth Bind、Detach、Paint、Mirror、Copy、Influence、Normalize、Import / Export。
 
     [:octicons-code-24: Skin Tool API](../reference/tools/skin/skin_tool.md)
-
--   :material-database-export-outline:{ .lg .middle } **历史权重实现**
-
-    ---
-
-    `core/bake/weightsUtils.py` 提供保存、加载、复制权重等旧实现。
-
-    [:octicons-code-24: Weights API](../reference/core/bake/weightsUtils.md)
 
 -   :material-bone:{ .lg .middle } **Joint**
 
@@ -152,7 +141,7 @@ core/rigging/
 
 ## 历史 `Weights` 实现
 
-兼容代码：
+旧兼容代码已经从正式 Runtime 与 API Reference 退休，不应继续作为新功能依赖：
 
 ```text
 core/bake/weightsUtils.py
@@ -178,7 +167,7 @@ weights = weightsUtils.Weights(
 - `rename_skin_node()`；
 - 一些旧的自动权重 / Deformer 辅助逻辑。
 
-这些 API 仍然会出现在网站 Reference 中，但应视为：
+这些名称只用于理解旧场景或迁移记录，不再出现在正式 API Reference 中：
 
 ```text
 Compatibility / Historical Implementation
@@ -390,7 +379,6 @@ remove_influence
 ## 相关 API
 
 - [skin_tool.py](../reference/tools/skin/skin_tool.md)
-- [weightsUtils.py](../reference/core/bake/weightsUtils.md)
 - [jnt_utils.py](../reference/core/rigging/jnt_utils.md)
 - [Rig Library](rig-library.md)
 
