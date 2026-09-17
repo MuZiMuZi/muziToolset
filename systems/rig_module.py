@@ -6,16 +6,18 @@ RigModule：通用绑定模块基础类。
 
 主要职责：
     1. 保存 Module 的基础参数。
-    2. 读取并验证 Guide。
+    2. 接收已经确定好的 Guide 名称。
     3. 创建单个 Joint。
     4. 创建单个 Controller。
-    5. 创建当前 Module 的 Joint / Controller 根组。
+    5. 创建当前 Module 的 Joint / Controller 总组。
     6. 提供 build_rig() / connect_rig() / delete_rig() 三个统一生命周期入口。
 
 设计原则：
-    - Eye / Ear / Tongue 等模块需要多少 Joint，由子类自己决定。
-    - Constraint / Matrix / Deformer 等连接方式，由子类自己决定。
-    - RigModule 只保留真正能够复用的底层流程。
+    - Guide 的创建、模板导入、镜像和默认位置以后统一由 Guide Template 系统负责。
+    - RigModule 不负责在场景里搜索、猜测或生成 Guide，只使用外部已经准备好的 Guide。
+    - Eye / Ear / Tongue 等模块需要多少 Joint，由具体子类自己决定。
+    - Constraint / Matrix / Deformer 等连接方式，由具体子类自己决定。
+    - RigModule 只保留真正能够复用的底层流程，避免把模板、UI、业务逻辑混在一起。
 """
 
 import maya.cmds as cmds
@@ -53,65 +55,85 @@ class RigModule(object):
         self.jnt_master_grp = name_utils.Name(type="grp", side=self.side, part=self.module, function="jnt", index=1).name
         self.ctrl_master_grp = name_utils.Name(type="grp", side=self.side, part=self.module, function="ctrl", index=1).name
 
-        # 保存整理后的 Guide 顺序。
+        # ---------------------------------------------------------------------
+        # 保存当前 Module 真正使用的 Guide 顺序。
+        # Guide Template 导入完成后，会把已经确定好的 Locator 名称传进来。
+        # 这里不负责寻找 Locator，只保存最终使用结果。
+        # ---------------------------------------------------------------------
         self.guide_list = []
 
     def get_guides(self):
         u"""
-        把外部传入的 Guide 整理成有序列表，并确认 Maya 场景中节点真实存在。
+        读取当前 Module 已经确定好的 Guide 名称。
 
-        支持三种输入方式：
-            1. Guide 对象：对象本身提供 get_guides(module, side)。
-            2. list / tuple：直接按照传入顺序使用。
-            3. 单个节点：自动包装成只有一个元素的列表。
+        以后 Guide 的来源会统一改成 Maya Guide Template，例如：
+            eye_guide.ma
+            brow_guide.ma
+            mouth_guide.ma
+
+        Template 系统负责：
+            1. 导入对应的 Maya 模板文件。
+            2. 创建或恢复模板里的 Locator。
+            3. 处理 Locator 的默认位置、镜像和模板结构。
+            4. 把当前 Module 需要使用的 Locator 名称传给 Rig Module。
+
+        因此 RigModule 不再需要：
+            - 根据 module / side 自动搜索 Guide；
+            - 调用额外的 Guide Provider 对象；
+            - 猜测当前场景中哪些 Locator 属于这个 Module。
+
+        这个方法现在只做两件事情：
+            1. 把传进来的 Guide 名称整理成统一的列表格式。
+            2. 在真正开始 Build 前检查这些 Maya 节点是否存在。
+
+        Args:
+            self.guide:
+                可以是一个 Guide 名称，也可以是已经按照绑定顺序排列好的
+                list / tuple。
 
         Returns:
             list[str]:
-                已经验证存在的 Guide 名称列表。
+                当前 Module 按绑定顺序使用的 Guide 名称列表。
         """
 
-        # 每次读取 Guide 前先清空旧结果，避免重复 build 时残留上一次的数据。
+        # ---------------------------------------------------------------------
+        # 每次执行 build_rig() 时都会重新调用 get_guides()。
+        # 所以先清空上一次保存的结果，避免重复 Build 时出现旧数据残留。
+        # ---------------------------------------------------------------------
         self.guide_list = []
 
-        # 没有传 Guide 时直接返回空列表。
-        # 某些子类可以自己覆盖 get_guides()，使用自己的查找规则。
+        # ---------------------------------------------------------------------
+        # 如果当前没有传入 Guide，就直接返回空列表。
+        # 是否允许没有 Guide，由具体业务模块自己决定。
+        # 例如 EyeModule 会在 create_joints() 中明确检查是否有 3 个 Guide。
+        # ---------------------------------------------------------------------
         if self.guide is None:
             return self.guide_list
 
-        # 先把不同输入类型统一整理到 source_guides 中。
-        source_guides = []
-
-        # Guide Provider 对象：让对象自己返回当前 module / side 对应的 Guide。
-        if hasattr(self.guide, "get_guides"):
-            result = self.guide.get_guides(
-                self.module,
-                self.side
-            )
-
-            if result:
-                for guide_node in result:
-                    source_guides.append(guide_node)
-
-        # list / tuple：严格保留用户传入的顺序。
-        elif isinstance(self.guide, (list, tuple)):
-            for guide_node in self.guide:
-                source_guides.append(guide_node)
-
-        # 单个 Guide：包装成一个元素。
+        # ---------------------------------------------------------------------
+        # Guide Template 通常会直接传入一个已经排好顺序的 list / tuple。
+        # 这里严格保留这个顺序，因为 Joint / Controller 的创建顺序会直接依赖它。
+        #
+        # 例如 Eye：
+        #     [0] Ball
+        #     [1] Iris
+        #     [2] Aim
+        # ---------------------------------------------------------------------
+        if isinstance(self.guide, (list, tuple)):
+            for guide_name in self.guide:
+                self.guide_list.append(str(guide_name))
         else:
-            source_guides.append(self.guide)
+            # 只有一个 Guide 的模块也允许直接传入单个 Locator 名称。
+            self.guide_list.append(str(self.guide))
 
-        # 把所有 Guide 转换为 maya.cmds 可以直接使用的字符串名称，
-        # 同时确认场景中确实存在对应节点。
-        for guide_node in source_guides:
-            guide_name = str(guide_node)
-
+        # ---------------------------------------------------------------------
+        # RigModule 不负责“寻找”Guide，但仍然需要做最基础的安全检查。
+        # 如果模板传进来的 Locator 名称不存在，就立即停止 Build。
+        # 这样错误会发生在最前面，而不是等到创建 Joint / Controller 时才报错。
+        # ---------------------------------------------------------------------
+        for guide_name in self.guide_list:
             if not cmds.objExists(guide_name):
-                raise RuntimeError(
-                    u"找不到 Guide：{}".format(guide_name)
-                )
-
-            self.guide_list.append(guide_name)
+                raise RuntimeError(u"找不到 Guide：{}".format(guide_name))
 
         return self.guide_list
 
@@ -231,7 +253,7 @@ class RigModule(object):
         connect_rig() 单独执行，这样创建和连接可以分别测试。
         """
 
-        # 先取得并验证所有 Guide。
+        # 先取得并验证外部已经准备好的 Guide。
         self.get_guides()
 
         # 根据 Guide 创建当前模块需要的 Joint。
