@@ -60,21 +60,14 @@ def build(side="lf"):
 
     face = FaceModule()
 
-    # 如果 Guide 还没有导入，就直接使用正式模板导入流程。
     if not cmds.objExists(face.guide_root):
         face.import_guide()
 
-    # Eye Module 的模块组会挂到 Face Joint / Controller 总组，
-    # 因此测试单个 Eye 前先确保这两个 Face 总组存在。
     face.setup_hierarchy()
 
     eye = get_eye(face, side)
     eye.build_rig()
 
-    # -------------------------------------------------------------------------
-    # 检查 Eye build_rig() 应该创建的关键 DAG 节点。
-    # 这里只验证创建阶段，不检查 Constraint，因为连接属于 connect() 阶段。
-    # -------------------------------------------------------------------------
     expected_nodes = [
         "jnt_{}_eye_bind_001".format(side),
         "ctrl_{}_eye_main_001".format(side),
@@ -98,11 +91,34 @@ def build(side="lf"):
 
 
 def connect(side="lf"):
-    u"""只测试已经 Build 完成的指定侧 Eye Rig 连接阶段。"""
+    u"""测试 Aim -> Main -> Eye Joint 的绑定连接。"""
 
     face = FaceModule()
     eye = get_eye(face, side)
     result = eye.connect_rig()
+
+    aim_constraint = result["aim"]
+    orient_constraint = result["orient"]
+
+    if not cmds.objExists(aim_constraint):
+        raise RuntimeError(
+            u"缺少 Eye Aim Constraint：{}".format(aim_constraint)
+        )
+
+    if cmds.nodeType(aim_constraint) != "aimConstraint":
+        raise RuntimeError(
+            u"Eye Aim 节点类型错误：{}".format(aim_constraint)
+        )
+
+    if not cmds.objExists(orient_constraint):
+        raise RuntimeError(
+            u"缺少 Eye Orient Constraint：{}".format(orient_constraint)
+        )
+
+    if cmds.nodeType(orient_constraint) != "orientConstraint":
+        raise RuntimeError(
+            u"Eye Orient 节点类型错误：{}".format(orient_constraint)
+        )
 
     print(u"[Eye Test] connect_rig PASS : {}".format(side))
     print(result)
