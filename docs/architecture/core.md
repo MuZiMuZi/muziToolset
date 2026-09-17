@@ -1,191 +1,68 @@
-# Core 设计
+# Core 架构
 
-`core/` 是 MuziTools 当前 Runtime 中最底层的**可复用 Maya 能力层**。
+`core/` 是 MuziTools 当前 Runtime 中最底层的 Maya / Rigging 基础能力层。
 
-这一页已经按照当前仓库重新整理，不再保留旧版本中已经不存在的 `animation_utils.py`、`matrix_utils.py`、`constraint_utils.py`、`rename_utils.py`、`skin_utils.py` 等模块清单。
+这一页已经按照当前仓库结构重新编写。旧版本中以大量平铺 `*_utils.py` 作为正式 Core 的说明不再适用；现在正式结构以 **`common/` + `rigging/`** 为主，`bake/` 作为历史兼容区保留。
 
-当前真实结构只有三部分：
+---
+
+## 当前目录结构
 
 ```text
 core/
+├── __init__.py
 ├── common/
+│   ├── __init__.py
 │   ├── attr_utils.py
 │   ├── hierarchy_utils.py
 │   ├── name_utils.py
 │   └── transform_utils.py
-│
 ├── rigging/
+│   ├── __init__.py
 │   ├── ctrl_utils.py
 │   ├── guide_utils.py
 │   └── jnt_utils.py
-│
 └── bake/
-    └── 历史工具与兼容代码
+    └── ... legacy / compatibility modules
 ```
 
-## 一句话原则
-
-> Core 只提供可以被多个 Rig Module / Tool 重复使用的基础能力，不决定一个完整绑定模块应该怎样构建。
-
-当前主要调用方向：
-
-```text
-App / Tool / Rig System
-          ↓
-      RigModule
-          ↓
-core.common + core.rigging
-          ↓
-      Maya Scene
-```
+Core 当前只承担**可被多个 Tool / System 重复使用的基础能力**，不负责完整业务 Workflow。
 
 ---
 
-# 当前 Core 的三个区域
+# 一句话原则
 
-## `core/common/`
+> **Common 处理通用 Maya 数据与节点操作，Rigging 处理可复用的绑定基础对象，完整 Rig Workflow 放到 Systems。**
 
-负责最基础的 Maya Transform / DAG / Attribute / Naming 能力。
-
-这些模块不应该理解 Eye、Ear、Brow、Lip、Teeth 等具体 Rig 业务。
-
-```text
-attr_utils.py
-    Attribute、Lock / Hide、Message、连接相关基础操作
-
-hierarchy_utils.py
-    Parent、Group、额外层级、DAG 组织
-
-name_utils.py
-    MuziTools 当前标准 Rig 名称的组合、解析和左右翻转
-
-transform_utils.py
-    Transform 匹配、位置 / 旋转 / Scale 等通用变换操作
-```
-
-推荐 Import：
-
-```python
-from muziToolset.core.common import attr_utils
-from muziToolset.core.common import hierarchy_utils
-from muziToolset.core.common import name_utils
-from muziToolset.core.common import transform_utils
-```
-
----
-
-## `core/rigging/`
-
-负责比 `common` 更靠近绑定业务、但仍然可以被多个 Module 复用的基础对象。
-
-```text
-ctrl_utils.py
-    单个 Controller 的创建、Shape、颜色、大小、轴向和 Controller Hierarchy
-
-guide_utils.py
-    Guide 的创建、读取和基础 Guide 操作
-
-jnt_utils.py
-    单个 Joint / Joint 基础结构的创建与匹配
-```
-
-推荐 Import：
-
-```python
-from muziToolset.core.rigging import ctrl_utils
-from muziToolset.core.rigging import guide_utils
-from muziToolset.core.rigging import jnt_utils
-```
-
-这些模块负责的是“一个基础对象怎么创建”，而不是“一个完整 Eye Rig 应该有哪些 Joint 和 Controller”。
+这条边界非常重要。
 
 例如：
 
 ```text
-Ctrl.create_ctrl()
-    -> Core Rigging
+生成一个标准名称
+    -> core/common/name_utils.py
 
-EyeModule.create_ctrls()
-    -> Face Rig System
+创建一个 Controller 和 Controller Hierarchy
+    -> core/rigging/ctrl_utils.py
+
+创建一整套 Eye Rig
+    -> systems/face/eye_module.py
+
+组织模块库和 Step Workflow
+    -> systems/rig/
 ```
 
 ---
 
-## `core/bake/`
+# `core/common/`
 
-`core/bake/` 是当前仓库中保留的**历史能力 / 旧工具兼容区**。
+`common/` 负责不绑定某个特定 Rig Module 的基础操作。
 
-目录里仍包含旧版 CamelCase 工具，例如：
+## `name_utils.py`
 
-```text
-attrUtils.py
-controlUtils.py
-jointUtils.py
-hierarchyUtils.py
-pipelineUtils.py
-weightsUtils.py
-...
-```
+负责 MuziTools 的标准命名数据。
 
-它们仍然存在于仓库中，因此不能仅因为“文件旧”就直接删除。
-
-但是新系统的架构文档、示例和新代码不应该继续把 `core/bake/` 当作默认入口。
-
-推荐原则：
-
-```text
-新代码
-    ↓
-优先 core/common 或 core/rigging
-
-旧代码仍有依赖
-    ↓
-保留 core/bake 兼容
-
-确认无 Runtime / Tool / Test 依赖
-    ↓
-再单独做迁移或删除
-```
-
-因此 `bake` 在网站中仍会有 API 页面，但它属于**兼容参考**，不是当前推荐架构。
-
----
-
-# 当前命名系统
-
-旧文档中曾写过：
-
-```text
-core/name_utils.py 已删除
-RigBase 负责全部 Naming
-```
-
-这已经不符合当前源码。
-
-当前标准命名实现位于：
-
-```text
-core/common/name_utils.py
-```
-
-核心类：
-
-```python
-from muziToolset.core.common import name_utils
-
-name_object = name_utils.Name(
-    type="ctrl",
-    side="lf",
-    part="eye",
-    function="main",
-    index=1
-)
-
-print(name_object.name)
-# ctrl_lf_eye_main_001
-```
-
-当前名称格式：
+当前命名规则：
 
 ```text
 [type]_[side]_[part]_[function]_[index]
@@ -194,87 +71,162 @@ print(name_object.name)
 示例：
 
 ```text
-grp_md_face_master_001
 ctrl_lf_eye_main_001
-ctrl_rt_eye_aim_001
-jnt_lf_eye_bind_001
-loc_rt_upper_lid_bind_001
-```
-
-`part` 可以包含下划线，因此：
-
-```text
+jnt_rt_brow_bind_003
+grp_md_face_master_001
 loc_lf_upper_lid_bind_001
 ```
 
-可以正确解析为：
+`part` 允许包含下划线，因此：
 
 ```text
-type      = loc
-side      = lf
-part      = upper_lid
-function  = bind
-index     = 1
+upper_lid
+nose_center
+mouth_corner
 ```
 
-左右镜像命名可以使用：
+都可以作为一个完整 Part 处理。
 
-```python
-name_object.flip()
+主要职责：
+
+```text
+Name
+├── compose_name()
+├── decompose_name()
+└── flip()
 ```
+
+适用场景：
+
+- Joint / Controller / Group / Locator 创建前统一命名；
+- 从已有节点名拆出 side / part / function；
+- 左右镜像时翻转 `lf / rt`；
+- Rig Module 创建稳定、可预测的节点名称。
+
+API：[`core/common/name_utils.py`](../reference/core/common/name_utils.md)
 
 ---
 
-# Attribute：`attr_utils.py`
+## `attr_utils.py`
 
-`core/common/attr_utils.py` 负责可以被多个系统重复使用的 Attribute 能力。
+负责 Maya Attribute 的基础操作。
 
-典型职责：
+当前核心对象：
 
 ```text
-创建 Attribute
-读取 / 设置 Value
+Attr
+```
+
+主要能力包括：
+
+```text
+检查属性
+添加属性
+读取 / 设置属性
 Lock / Unlock
 Hide / Show
-Message Attribute
-Attribute Connection
+Lock + Hide
+连接属性
+断开属性
 ```
 
-它不应该决定：
+常见使用场景：
 
-```text
-某个 Eye Controller 应该有哪些自定义属性
-某个 Face Module 的属性如何组织
-某个 UI 应该显示哪些参数
-```
+- Controller 增加 `follow`、`ikFk`、`visibility` 等自定义属性；
+- 锁定不希望动画师修改的通道；
+- 构建 Controller → Joint / Utility Node 的属性连接；
+- 重建 Rig 前清理已有连接。
 
-这些属于上层 Tool / System。
+!!! note "当前实现"
+    当前 `attr_utils.py` 仍包含 PyMEL 实现。它属于当前仓库真实 Runtime 状态，因此文档按现状记录；未来如果统一迁移到 `maya.cmds`，应在源码迁移完成后同步更新这里，而不是提前写成不存在的架构。
+
+API：[`core/common/attr_utils.py`](../reference/core/common/attr_utils.md)
 
 ---
 
-# Hierarchy：`hierarchy_utils.py`
+## `hierarchy_utils.py`
 
-`core/common/hierarchy_utils.py` 负责通用 DAG 层级操作。
+负责 DAG Parent、额外 Group 和层级相关的通用操作。
 
-典型职责：
-
-```text
-Parent
-Group
-创建额外 Group
-查询 Parent / Child
-整理通用 DAG 层级
-```
-
-Controller 的标准层级虽然最终会调用这里的基础能力，但完整 Controller Hierarchy 由：
+它解决的问题不是“某个 Eye Rig 的层级是什么”，而是：
 
 ```text
-core/rigging/ctrl_utils.py
+如何安全 Parent
+如何获取 / 创建额外层级
+如何在重复 Build 时复用已有 Group
+如何保持 Transform / Hierarchy 操作一致
 ```
 
-统一管理。
+Controller 和 Rig Module 可以在此基础上搭建自己的业务层级。
 
-当前 Controller Hierarchy：
+例如 Controller Hierarchy 的创建会由 `ctrl_utils.py` 调用这里的基础层级能力，而不是每个 System 自己复制一套 Parent Helper。
+
+API：[`core/common/hierarchy_utils.py`](../reference/core/common/hierarchy_utils.md)
+
+---
+
+## `transform_utils.py`
+
+负责通用 Transform 数据操作。
+
+典型职责包括：
+
+```text
+位置 / 旋转 / 缩放
+Transform Match
+世界空间数据
+矩阵或 Transform 对齐辅助
+```
+
+边界：
+
+- 可以处理任意 Maya Transform；
+- 不应该知道 Eye / Brow / Lip 等业务语义；
+- 不应该创建完整 Rig Module。
+
+API：[`core/common/transform_utils.py`](../reference/core/common/transform_utils.md)
+
+---
+
+# `core/rigging/`
+
+`rigging/` 比 `common/` 更接近绑定业务，但仍然只提供**基础绑定对象能力**。
+
+当前正式模块：
+
+```text
+ctrl_utils.py
+guide_utils.py
+jnt_utils.py
+```
+
+---
+
+## `ctrl_utils.py`
+
+Controller 基础能力中心。
+
+当前核心对象：
+
+```text
+Ctrl
+```
+
+主要职责：
+
+```text
+Controller Transform 创建 / 获取
+Controller Shape Library
+颜色
+大小
+轴向
+Shape CV Rotate / Offset
+SubCtrl
+Controller Hierarchy
+Shape 保存与读取
+```
+
+当前标准 Controller Hierarchy：
 
 ```text
 zero
@@ -287,282 +239,261 @@ zero
                     └── output
 ```
 
-这个结构是当前 Eye、Ear 等 Module 可以复用的基础 Controller Contract。
+其中：
+
+- `zero`：模块对齐后的干净入口；
+- `driven`：系统驱动层，例如 Aim / Space 等；
+- `space`：空间切换预留层；
+- `connect`：模块连接预留层；
+- `offset`：额外偏移；
+- `ctrl`：动画师操作 Transform；
+- `subctrl`：次级控制；
+- `output`：稳定输出接口。
+
+Shape 修改尽量发生在 Curve CV 层，而不是污染 Controller Transform。
+
+例如：
+
+```text
+set_ctrl_size()
+set_ctrl_axis()
+set_ctrl_rotate()
+set_ctrl_offset()
+```
+
+都用于保持动画 Transform 尽可能干净。
+
+API：[`core/rigging/ctrl_utils.py`](../reference/core/rigging/ctrl_utils.md)
 
 ---
 
-# Transform：`transform_utils.py`
+## `guide_utils.py`
 
-`core/common/transform_utils.py` 负责 Transform 层面的通用操作。
+负责可复用 Guide 基础能力。
 
-适合放在这里的能力：
+Guide 是 Rig 构建之前的定位数据，不等于最终 Joint / Controller。
 
-```text
-Match Transform
-读取 / 设置世界空间位置
-读取 / 设置旋转
-读取 / 设置 Scale
-基础 Transform 对齐
-```
-
-不适合放在这里的能力：
+该层应该负责：
 
 ```text
-Eye Main Ctrl 的 Pivot 必须位于 Ball Guide
-Lip Joint 必须沿 Curve 分布
-Brow Controller 必须跟随 Surface
+Guide Transform
+Guide 查询
+Guide 数据读取
+Guide 通用操作
 ```
 
-这些都带有明确 Rig 业务语义，应该留在具体 `systems/` Module 中。
-
----
-
-# Controller：`ctrl_utils.py`
-
-`core/rigging/ctrl_utils.py` 是当前 Controller 基础实现。
-
-主要职责包括：
-
-```text
-创建 / 获取 Controller Transform
-加载 Shape Library
-修改 Shape
-设置颜色
-设置大小
-设置轴向
-额外 Shape Rotate
-Shape Offset
-创建 SubCtrl
-创建标准 Controller Hierarchy
-```
-
-当前 Shape 修改原则：
-
-```text
-颜色 / 大小 / 轴向 / Offset
-        ↓
-修改 NurbsCurve Shape / CV
-        ↓
-尽量保持 Controller Transform 干净
-```
-
-这也是 Step 03 调整 Controller 外观时使用的基础能力。
-
-!!! note "当前迁移状态"
-    当前 `ctrl_utils.py` 仍然同时使用 `maya.cmds` 与 PyMEL。它属于当前真实 Runtime 状态，因此文档不会假装它已经完全 cmds 化。后续如果继续执行“移除 PyMEL”的重构，应作为独立 Runtime 重构提交处理，而不是在文档中提前写成已经完成。
-
----
-
-# Guide：`guide_utils.py`
-
-`core/rigging/guide_utils.py` 提供可复用 Guide 基础能力。
-
-Core Guide 只理解“Guide 是一个可以被创建、定位、查询的绑定辅助对象”。
-
-具体模块的语义，例如：
-
-```text
-Eye Ball Guide
-Eye Iris Guide
-Eye Aim Guide
-Upper Lid Guide
-Mouth Corner Guide
-```
-
-不应该硬编码进 Core。
-
-这些业务语义应该由：
+而具体“Eye 需要 Ball / Iris / Aim 三个 Locator”这种语义应该放在：
 
 ```text
 systems/face/face_guide_config.py
-具体 Face Module
+systems/face/eye_module.py
 ```
 
-负责。
+因此：
+
+```text
+Guide 基础操作 -> core/rigging/guide_utils.py
+Face Guide 业务规则 -> systems/face/
+```
+
+API：[`core/rigging/guide_utils.py`](../reference/core/rigging/guide_utils.md)
 
 ---
 
-# Joint：`jnt_utils.py`
+## `jnt_utils.py`
 
-`core/rigging/jnt_utils.py` 负责 Joint 的基础创建和匹配能力。
+负责 Joint 基础创建和通用 Joint 操作。
 
-例如完整 Eye Module 的职责分工是：
-
-```text
-EyeModule
-    ↓
-决定需要 1 个 Eye Bind Joint
-决定 Joint 使用 Ball Guide
-决定 Joint 名称
-    ↓
-RigModule.create_joint()
-    ↓
-core.rigging.jnt_utils.Jnt
-    ↓
-创建 / 匹配具体 Maya Joint
-```
-
-因此 Core 不应该自行决定：
+它提供的是：
 
 ```text
-一个 Ear 要创建几个 Joint
-一个 Lip 要创建多少 Joint
-一个 Eye Joint 应该由哪个 Controller 驱动
+如何创建 Joint
+如何根据 Guide 对齐 Joint
+如何处理 Joint 基础属性
 ```
+
+而不是：
+
+```text
+Eye Joint 应该有几个
+Brow Joint 应该如何排列
+Lip Joint 应该如何连接
+```
+
+这些数量、语义和驱动关系属于 `systems/`。
+
+API：[`core/rigging/jnt_utils.py`](../reference/core/rigging/jnt_utils.md)
 
 ---
 
-# Core 与 `RigModule` 的边界
+# `core/bake/`
 
-当前通用 Rig Module 基类位于：
+`core/bake/` 是仓库中的历史兼容区域。
+
+这里仍保存较早版本的完整 Utility 实现，例如历史 Controller、Joint、Attribute、File、Skin 等工具。
+
+它存在的原因主要是：
 
 ```text
-systems/rig_module.py
+兼容旧代码
+保留迁移参考
+避免一次性删除导致未知 Runtime 依赖断裂
 ```
 
-`RigModule` 负责把 Core 的单个基础对象组合进统一 Module Lifecycle。
+但新架构开发时，不应该因为 `bake/` 中存在某个 Helper，就默认它仍是当前推荐入口。
 
-当前主要公共能力：
-
-```text
-get_guides()
-create_joint()
-create_ctrl()
-create_joints()
-create_ctrls()
-setup_hierarchy()
-connect_rig()
-build()
-```
-
-典型关系：
+当前推荐优先级：
 
 ```text
-EyeModule
+core/common/
+    +
+core/rigging/
     ↓
-RigModule.create_ctrl()
+如果当前正式层确实没有对应能力
     ↓
-ctrl_utils.Ctrl
+再检查 bake / legacy 依赖与迁移状态
 ```
 
-以及：
-
-```text
-EyeModule
-    ↓
-RigModule.create_joint()
-    ↓
-jnt_utils.Jnt
-```
-
-所以：
-
-```text
-Core
-    负责基础对象能力
-
-RigModule
-    负责 Module 级通用 Lifecycle
-
-EyeModule / EarModule / TongueModule
-    负责具体 Rig 业务
-```
+!!! warning "不要直接批量删除 bake"
+    `bake/` 是否可以删除必须通过真实 Import、测试和 Runtime 使用情况确认。文档可以把它从“推荐架构”中移除，但源码删除应该单独作为 Runtime 重构处理。
 
 ---
 
 # Core 不应该做什么
 
-当前 Core 不应该负责：
+下面这些内容不应该塞进 Core：
 
-- PySide 工具窗口；
-- Rig Library UI；
-- Step 01 / 02 / 03 / 04 Workflow 状态；
-- Eye / Ear / Brow / Lip / Teeth 等完整业务模块；
-- 自动决定某个 Face Module 应该创建哪些节点；
-- 保存整个 Module 的 Build 状态；
-- 把具体业务规则写进通用 Helper。
+## 1. 完整 Face Rig Module
+
+错误方向：
+
+```text
+core/eye_rig.py
+core/lip_rig.py
+```
+
+正确方向：
+
+```text
+systems/face/eye_module.py
+systems/face/...
+```
+
+---
+
+## 2. 具体 Step Workflow
 
 例如：
 
 ```text
-创建单个 Controller
-    -> core/rigging/ctrl_utils.py
-
-创建 Eye Main + Eye Aim Controller
-    -> systems/face/eye_module.py
-
-把 Eye Module 注册到 Rig Library
-    -> systems/rig/library_catalog.py
+Step 01 Setup
+Step 02 Guide
+Step 03 Build
+Step 04 Connect
 ```
+
+这是业务 Workflow，不属于 Core。
 
 ---
 
-# 新代码应该放哪里
+## 3. Tool UI
 
-判断顺序：
+按钮、Selection、用户输入和工具窗口应该在：
 
 ```text
-这是最基础的 Maya 通用操作吗？
-    ↓ 是
-core/common/
-
-这是多个 Rig Module 都会复用的 Controller / Guide / Joint 能力吗？
-    ↓ 是
-core/rigging/
-
-这是完整 Rig 模块或 Workflow 吗？
-    ↓ 是
-systems/
-
-这是绑定师直接点击使用的小工具吗？
-    ↓ 是
 tools/
-
-这是公共 PySide 组件吗？
-    ↓ 是
 ui/
+app/
 ```
 
-如果一个函数名字已经带有：
+---
+
+## 4. 重复 System Helper
+
+如果一个 System 需要：
 
 ```text
-eye
-brow
-lip
-ear
-teeth
-jaw
+创建 Controller
+创建 Joint
+标准命名
+安全 Parent
 ```
 
-通常说明它已经具有明确业务语义，不应该继续下沉到 Core，除非它确实只是非常通用的数据查询。
+应该调用 Core，而不是在 System 中重新复制一份通用实现。
 
 ---
 
-# 当前 Core 开发规则
+# Core 与 Systems 的关系
 
-新 Core 代码遵守：
+一个典型 Eye Rig 的调用关系可以理解成：
 
-1. 优先明确参数，不依赖当前 Selection；
-2. 先验证节点和输入；
-3. 返回明确的 Node / List / Dict / Value；
-4. 不创建 Tool UI；
-5. 不决定完整 Rig Workflow；
-6. 通用能力只实现一份，上层直接复用；
-7. 中文注释重点解释 Maya / DG / DAG 特有原因；
-8. 保持函数粒度清楚；
-9. 优先显式 `for` 循环，避免为了缩短代码使用复杂推导式；
-10. 新模块优先使用当前 snake_case 目录和文件命名；
-11. `core/bake/` 只用于兼容，不作为新功能默认落点；
-12. Runtime 重构和文档清理分开提交。
+```text
+systems/face/eye_module.py
+    │
+    ├── name_utils.Name
+    │       -> 生成稳定节点名
+    │
+    ├── RigModule.create_joint()
+    │       -> 底层 Joint 能力
+    │
+    ├── RigModule.create_ctrl()
+    │       -> ctrl_utils.Ctrl
+    │
+    ├── hierarchy_utils.parent()
+    │       -> DAG 层级
+    │
+    └── maya.cmds constraint / connection
+            -> Eye Module 专属业务连接
+```
+
+Core 提供“积木”，System 决定“积木怎么组合成一个完整绑定模块”。
 
 ---
 
-# 查看完整 Core API
+# 新增能力时放在哪里
 
-当前 `core/` 的每个正式 Python 文件都会自动生成独立 API 页面。
+可以用下面的判断顺序：
 
-进入：
+```text
+这个能力是否与具体 Rig 部位无关？
+    │
+    ├── 是
+    │   ↓
+    │   是否属于基础 Maya 数据 / DAG / Attr / Naming / Transform？
+    │       ├── 是 -> core/common/
+    │       └── 否
+    │           ↓
+    │           是否属于通用 Controller / Guide / Joint？
+    │               ├── 是 -> core/rigging/
+    │               └── 否 -> 再判断是否应该是 System
+    │
+    └── 否
+        ↓
+        systems/
+```
 
-[Core API Reference](../reference/core/index.md)
+例如：
 
-如果网站内容和源码发生冲突，以**当前源码 + Docstring** 为事实来源，生成文档应该随后被重新同步。
+| 新功能 | 应放位置 |
+| --- | --- |
+| 标准名称解析 | `core/common/name_utils.py` |
+| 安全 Parent | `core/common/hierarchy_utils.py` |
+| Controller Shape 大小 | `core/rigging/ctrl_utils.py` |
+| 通用 Joint 创建 | `core/rigging/jnt_utils.py` |
+| Eye Aim 驱动 | `systems/face/eye_module.py` |
+| Rig Library Catalog | `systems/rig/` |
+| UI Object Picker | `ui/widgets/` |
+
+---
+
+# 推荐阅读
+
+如果你准备修改 Core，建议按顺序阅读：
+
+1. [总体架构](index.md)
+2. 当前页面
+3. [Tools 与 Systems](tools-systems.md)
+4. [Core API](../reference/core/index.md)
+5. [文档维护规范](../development/documentation.md)
+
+查具体方法时不要继续在架构文档里找，直接进入自动生成的 [Core API Reference](../reference/core/index.md)。
