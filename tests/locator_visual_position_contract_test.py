@@ -1,5 +1,35 @@
 # coding=utf-8
-u"""Locator 可视世界位置修复的非 Maya 静态契约检查。"""
+u"""
+Locator Visual Position Contract Test
+====================================
+
+验证当前正式 Runtime 仍然正确处理 Maya Locator 的**可见世界位置**。
+
+为什么需要这个契约：
+    Locator Transform 的 translate 并不一定等于用户在 Viewport 中看到的定位点。
+    Locator Shape 可以通过 ``localPosition`` 产生局部偏移，因此 Guide → Joint / Ctrl
+    对齐必须读取 Shape 的 ``worldPosition[0]``，不能只复制 Transform 原点。
+
+当前正式数据路径：
+
+    resources/face/face_guide.ma
+        Locator Shape.localPosition
+            ↓
+    core/common/transform_utils.py
+        Transform.match_transform()
+        Locator Shape.worldPosition[0]
+            ↓
+    core/rigging/jnt_utils.py
+        Jnt.set_match_transform()
+            ↓
+    systems/rig_module.py
+        create_joint() / create_ctrl()
+            ↓
+    systems/face/* / systems/components/*
+
+本测试只检查当前 Runtime Contract，不再引用已经退休的 ``core/snap_utils.py``、
+``systems/face/modules/*`` 或旧 Face Build Step 测试。
+"""
 
 from __future__ import print_function
 
@@ -17,7 +47,7 @@ def get_package_root():
 
 
 def read_source(relative_path):
-    u"""读取 Package 内的 UTF-8 源文件。"""
+    u"""读取 Package 内 UTF-8 文本。"""
     file_path = os.path.join(
         get_package_root(),
         relative_path
@@ -32,81 +62,75 @@ def read_source(relative_path):
 
 
 def require_text(relative_path, required_texts):
-    u"""确认源文件包含本修复不能移除的契约文本。"""
+    u"""确认当前实现包含不能被回退的 Locator Position 契约文本。"""
     source_text = read_source(
         relative_path
     )
 
     for required_text in required_texts:
-        if required_text not in source_text:
-            raise RuntimeError(
-                u"{} 缺少 Locator Alignment 契约：{}".format(
-                    relative_path,
-                    required_text
-                )
+        if required_text in source_text:
+            continue
+
+        raise RuntimeError(
+            u"{} 缺少 Locator Visual Position 契约：{}".format(
+                relative_path,
+                required_text
             )
+        )
 
     return True
 
 
 def run():
-    u"""验证 Locator Shape、Jnt、Face 计算和 Maya 回归覆盖。"""
+    u"""验证 Guide Resource → Transform → Jnt / RigModule 的当前定位链。"""
+    # Face Guide 资源允许 Locator Shape 使用 localPosition 保存可视定位偏移。
     require_text(
         "resources/face/face_guide.ma",
         [
             'setAttr ".lp" -type "double3"',
         ]
     )
+
+    # 当前 Transform Core 必须识别 Locator，并读取 Shape.worldPosition。
     require_text(
-        "core/snap_utils.py",
+        "core/common/transform_utils.py",
         [
             'type="locator"',
             '".worldPosition[0]"',
-        ]
-    )
-    require_text(
-        "core/jnt_utils.py",
-        [
-            "snap_utils.get_item_world_position(",
+            "cmds.xform(str(self.object), worldSpace=True, translation=world_position)",
         ]
     )
 
-    guide_position_consumers = [
-        "systems/face/guide/face_guide.py",
-        "systems/face/modules/eye.py",
-        "systems/face/modules/mouth.py",
-    ]
-
-    for relative_path in guide_position_consumers:
-        require_text(
-            relative_path,
-            [
-                "snap_utils.get_item_world_position(",
-            ]
-        )
-
+    # Jnt Primitive 必须继续通过 Transform.match_transform 读取 Guide 位置。
     require_text(
-        "tests/ctrl_base_smoke_test.py",
+        "core/rigging/jnt_utils.py",
         [
-            "test_locator_visual_position",
-            'guide_shape + ".localPosition"',
-            "jnt_utils.Jnt.create_at_object(",
+            "transform_utils.Transform(self.jnt)",
+            "jnt_object.match_transform(target",
         ]
     )
+
+    # RigModule 的 Joint / Controller 创建入口必须继续把 Guide 传给 Core Primitive。
     require_text(
-        "tests/face_build_step_maya2023_smoke_test.py",
+        "systems/rig_module.py",
         [
-            "validate_guide_ctrl_alignment",
-            '"ctrl_lf_eye_main_001"',
-            '"ctrl_md_nose_center_bind_001"',
-            '"ctrl_rt_ear_fk_003"',
-            '"ctrl_md_jaw_bind_001"',
-            '"ctrl_rt_cheekbone_bind_002"',
+            "jnt_object.set_match_transform(guide)",
+            "match_transform_target=guide",
+        ]
+    )
+
+    # 当前 Face Eye Module 仍必须明确从语义 Guide 创建 Ball Joint 与 Iris / Aim Ctrl。
+    require_text(
+        "systems/face/eye_module.py",
+        [
+            'guide=self.guide_map["ball"]',
+            'guide=self.guide_map["iris"]',
+            'guide=self.guide_map["aim"]',
         ]
     )
 
     print(
-        "[PASS] Locator Shape worldPosition 与 Face Guide/Ctrl Runtime 契约完整。"
+        "[PASS] Current Locator Shape worldPosition -> Transform/Jnt/RigModule contract 完整。"
     )
     return True
 
