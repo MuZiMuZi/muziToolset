@@ -1,35 +1,48 @@
 # coding=utf-8
 u"""
-Rig Architecture Migration Gate
-===============================
+Current Rig Architecture Gate
+=============================
 
-阻止已经完成的 Rig 架构迁移再次回退。
+阻止 MuziTools 当前 Rig 架构重新退回已经退休的中间版本。
 
-禁止重新出现：
+当前正式基础结构：
+    core/common/name_utils.py
+        Rig Naming Contract。
+
+    core/rigging/ctrl_utils.py
+        Controller Primitive。
+
+    core/rigging/jnt_utils.py
+        Joint Primitive。
+
+    systems/rig_module.py
+        当前通用 Rig Module Lifecycle。
+
+明确退休的正式架构入口：
     core/name_utils.py
+    systems/rig_base.py
+    systems/module_base.py
+    systems/ctrl_base.py
     systems/component_base.py
     systems/controller/
     systems/face/build/teeth_component.py
     systems/face/build/teeth_builder.py
 
-禁止正式源码重新 Import：
-    name_utils
-    component_base
-    systems.controller
-
-禁止类名：
+明确退休的正式 Runtime 类：
+    RigBase
+    ModuleBase
+    RigModuleBase
+    CtrlBase
     ComponentBase
     RigComponentBase
     TeethComponent
 
-RigBase Contract：
-    - Rig Naming 字段统一为 type / side / part / function / index；
-    - RigBase 支持 RigBase(name=...) 自动拆分名称；
-    - create_name / mirror_name / create_unique_name 等必须通过实例调用；
-    - parse_name 可以作为 Class Method 使用；
-    - 不恢复 identity / set_identity 等属性包装；
-    - 不恢复 normalize_* / validate_name / validate_index 等重复 Naming 校验层；
-    - Rig Naming API 不再使用 node_type= Keyword。
+兼容说明：
+    ``legacy_reference`` 与 ``core/bake`` 可以保留历史实现用于迁移参考；它们不属于
+    当前正式架构，因此本 Gate 不扫描这些兼容区，也不会因为 Tool 显式引用
+    ``legacy_reference`` 就把历史 API 重新认定为正式架构。
+
+本测试使用 AST，只检查正式 Runtime 路径，不 Import Maya。
 """
 
 from __future__ import print_function
@@ -38,8 +51,18 @@ import ast
 import os
 
 
+REQUIRED_PATHS = [
+    "core/common/name_utils.py",
+    "core/rigging/ctrl_utils.py",
+    "core/rigging/jnt_utils.py",
+    "systems/rig_module.py",
+]
+
 FORBIDDEN_PATHS = [
     "core/name_utils.py",
+    "systems/rig_base.py",
+    "systems/module_base.py",
+    "systems/ctrl_base.py",
     "systems/component_base.py",
     "systems/controller",
     "systems/face/build/teeth_component.py",
@@ -47,53 +70,36 @@ FORBIDDEN_PATHS = [
 ]
 
 FORBIDDEN_CLASS_NAMES = {
+    "RigBase",
+    "ModuleBase",
+    "RigModuleBase",
+    "CtrlBase",
     "ComponentBase",
     "RigComponentBase",
     "TeethComponent",
 }
 
-FORBIDDEN_IMPORT_TOKENS = {
-    "name_utils",
-    "component_base",
+FORBIDDEN_DIRECT_IMPORTS = {
+    "systems.rig_base",
+    "systems.module_base",
+    "systems.ctrl_base",
+    "systems.component_base",
+    "systems.controller",
+    "core.name_utils",
 }
 
-RIG_BASE_INSTANCE_METHODS = {
-    "create_name",
-    "mirror_name",
-    "get_next_index",
-    "create_unique_name",
-    "get_opposite_side",
-    "compose",
-    "decompose",
-}
-
-RIG_NAMING_METHODS = {
-    "create_name",
-    "get_next_index",
-    "create_unique_name",
-    "compose",
-}
-
-RETIRED_RIG_BASE_MEMBERS = {
-    "identity",
-    "set_identity",
-    "resolve_identity",
-    "flip_side",
-    "is_left",
-    "is_right",
-    "is_center",
-    "_normalize_token",
-    "normalize_side",
-    "normalize_part",
-    "normalize_node_type",
-    "normalize_function",
-    "validate_index",
-    "validate_name",
-}
+FORMAL_ROOTS = [
+    "app",
+    "ui",
+    os.path.join("core", "common"),
+    os.path.join("core", "rigging"),
+    "systems",
+    "tools",
+]
 
 
 # =============================================================================
-# Path
+# Path Helpers
 # =============================================================================
 
 def get_package_root():
@@ -104,52 +110,6 @@ def get_package_root():
     return os.path.dirname(
         tests_directory
     )
-
-
-def iter_python_files():
-    u"""遍历正式源码和测试文件。"""
-    package_root = get_package_root()
-    root_names = [
-        "app",
-        "core",
-        "systems",
-        "tools",
-        "ui",
-        "tests",
-    ]
-
-    for root_name in root_names:
-        root_path = os.path.join(
-            package_root,
-            root_name
-        )
-
-        if not os.path.isdir(root_path):
-            continue
-
-        for directory, directory_names, file_names in os.walk(
-                root_path
-        ):
-            filtered_directories = []
-
-            for directory_name in directory_names:
-                if directory_name == "__pycache__":
-                    continue
-
-                filtered_directories.append(
-                    directory_name
-                )
-
-            directory_names[:] = filtered_directories
-
-            for file_name in file_names:
-                if not file_name.endswith(".py"):
-                    continue
-
-                yield os.path.join(
-                    directory,
-                    file_name
-                )
 
 
 def get_relative_path(file_path):
@@ -164,265 +124,72 @@ def get_relative_path(file_path):
     )
 
 
-# =============================================================================
-# Import
-# =============================================================================
+def iter_python_files():
+    u"""遍历当前正式 Runtime Python 文件。"""
+    package_root = get_package_root()
 
-def get_import_names(node):
-    u"""从 Import AST 节点提取完整模块和导入名称。"""
-    names = []
-
-    if isinstance(node, ast.Import):
-        for alias in node.names:
-            names.append(
-                alias.name
-            )
-        return names
-
-    if isinstance(node, ast.ImportFrom):
-        module_name = node.module or ""
-
-        if module_name:
-            names.append(
-                module_name
-            )
-
-        for alias in node.names:
-            if module_name:
-                names.append(
-                    "{}.{}".format(
-                        module_name,
-                        alias.name
-                    )
-                )
-            else:
-                names.append(
-                    alias.name
-                )
-
-    return names
-
-
-def import_is_forbidden(import_name):
-    u"""检查 Import 是否指向退休架构。"""
-    name_parts = import_name.split(".")
-
-    for token in FORBIDDEN_IMPORT_TOKENS:
-        if token in name_parts:
-            return True
-
-    if "systems.controller" in import_name:
-        return True
-
-    return False
-
-
-# =============================================================================
-# RigBase AST Contract
-# =============================================================================
-
-def get_keyword_names(call_node):
-    u"""返回一个 AST Call 的 Keyword 名称。"""
-    keyword_names = []
-
-    for keyword in call_node.keywords:
-        if keyword.arg is None:
-            continue
-
-        keyword_names.append(
-            keyword.arg
+    for root_name in FORMAL_ROOTS:
+        root_path = os.path.join(
+            package_root,
+            root_name
         )
 
-    return keyword_names
-
-
-def is_rig_base_class_method_call(call_node):
-    u"""判断是否为 RigBase.some_method(...) 形式。"""
-    function_node = call_node.func
-
-    if not isinstance(function_node, ast.Attribute):
-        return False
-
-    value_node = function_node.value
-
-    if not isinstance(value_node, ast.Name):
-        return False
-
-    return value_node.id == "RigBase"
-
-
-def check_retired_node_type_keyword(call_node, relative_path):
-    u"""禁止 Rig Naming API 继续使用 node_type=。"""
-    issues = []
-    keyword_names = get_keyword_names(
-        call_node
-    )
-
-    if "node_type" not in keyword_names:
-        return issues
-
-    function_node = call_node.func
-
-    if isinstance(function_node, ast.Name):
-        if function_node.id != "RigBase":
-            return issues
-
-    elif isinstance(function_node, ast.Attribute):
-        if function_node.attr not in RIG_NAMING_METHODS:
-            return issues
-
-    else:
-        return issues
-
-    issues.append({
-        "file": relative_path,
-        "line": call_node.lineno,
-        "detail": "Rig Naming 已统一使用 type=，请删除 node_type=",
-    })
-    return issues
-
-
-def check_rig_base_definition(class_node, relative_path):
-    u"""禁止 RigBase 重新加入已经删除的包装和重复校验方法。"""
-    issues = []
-
-    if class_node.name != "RigBase":
-        return issues
-
-    for child_node in class_node.body:
-        if not isinstance(
-                child_node,
-                (ast.FunctionDef, ast.AsyncFunctionDef)
-        ):
+        if not os.path.isdir(root_path):
             continue
 
-        if child_node.name not in RETIRED_RIG_BASE_MEMBERS:
+        for directory, directory_names, file_names in os.walk(root_path):
+            filtered_directories = []
+
+            for directory_name in directory_names:
+                if directory_name == "__pycache__":
+                    continue
+
+                if directory_name == "legacy_reference":
+                    continue
+
+                filtered_directories.append(directory_name)
+
+            directory_names[:] = filtered_directories
+
+            for file_name in file_names:
+                if not file_name.endswith(".py"):
+                    continue
+
+                yield os.path.join(
+                    directory,
+                    file_name
+                )
+
+
+# =============================================================================
+# Architecture Paths
+# =============================================================================
+
+def scan_required_paths():
+    u"""确认当前架构的四个基础入口仍然存在。"""
+    package_root = get_package_root()
+    issues = []
+
+    for relative_path in REQUIRED_PATHS:
+        absolute_path = os.path.join(
+            package_root,
+            *relative_path.split("/")
+        )
+
+        if os.path.isfile(absolute_path):
             continue
 
         issues.append({
             "file": relative_path,
-            "line": child_node.lineno,
-            "detail": "RigBase 已精简成员重新出现：{}".format(
-                child_node.name
-            ),
+            "line": None,
+            "detail": "当前正式架构入口缺失",
         })
 
     return issues
 
 
-def check_rig_base_call(call_node, relative_path):
-    u"""检查 RigBase Instance API 和正式 Naming Keyword。"""
-    issues = []
-
-    keyword_issues = check_retired_node_type_keyword(
-        call_node,
-        relative_path
-    )
-
-    for issue in keyword_issues:
-        issues.append(
-            issue
-        )
-
-    if not is_rig_base_class_method_call(call_node):
-        return issues
-
-    method_name = call_node.func.attr
-
-    if method_name not in RIG_BASE_INSTANCE_METHODS:
-        return issues
-
-    issues.append({
-        "file": relative_path,
-        "line": call_node.lineno,
-        "detail": "RigBase.{}() 必须通过 RigBase 实例调用".format(
-            method_name
-        ),
-    })
-    return issues
-
-
-# =============================================================================
-# Scan
-# =============================================================================
-
-def scan_file(file_path):
-    u"""扫描一个 Python 文件中的退休 Import / Class / RigBase 调用。"""
-    with open(
-            file_path,
-            "r",
-            encoding="utf-8"
-    ) as source_file:
-        source_text = source_file.read()
-
-    syntax_tree = ast.parse(
-        source_text,
-        filename=file_path
-    )
-    relative_path = get_relative_path(
-        file_path
-    )
-    issues = []
-
-    for node in ast.walk(syntax_tree):
-        if isinstance(node, ast.ClassDef):
-            if node.name in FORBIDDEN_CLASS_NAMES:
-                issues.append({
-                    "file": relative_path,
-                    "line": node.lineno,
-                    "detail": "退休类名 {}".format(node.name),
-                })
-
-            rig_base_definition_issues = check_rig_base_definition(
-                node,
-                relative_path
-            )
-
-            for issue in rig_base_definition_issues:
-                issues.append(
-                    issue
-                )
-
-            continue
-
-        if isinstance(node, ast.Call):
-            rig_base_issues = check_rig_base_call(
-                node,
-                relative_path
-            )
-
-            for issue in rig_base_issues:
-                issues.append(
-                    issue
-                )
-
-            continue
-
-        if not isinstance(
-                node,
-                (ast.Import, ast.ImportFrom)
-        ):
-            continue
-
-        import_names = get_import_names(
-            node
-        )
-
-        for import_name in import_names:
-            if import_is_forbidden(
-                    import_name
-            ):
-                issues.append({
-                    "file": relative_path,
-                    "line": node.lineno,
-                    "detail": "退休 Import {}".format(import_name),
-                })
-
-    return issues
-
-
 def scan_forbidden_paths():
-    u"""检查已经退休的文件 / 目录是否重新出现。"""
+    u"""检查已经退休的正式文件 / 目录是否重新出现。"""
     package_root = get_package_root()
     issues = []
 
@@ -438,8 +205,107 @@ def scan_forbidden_paths():
         issues.append({
             "file": relative_path,
             "line": None,
-            "detail": "退休路径重新出现",
+            "detail": "退休正式架构路径重新出现",
         })
+
+    return issues
+
+
+# =============================================================================
+# AST Import / Class Check
+# =============================================================================
+
+def get_import_names(node):
+    u"""从 Import AST 节点提取完整模块和导入名称。"""
+    names = []
+
+    if isinstance(node, ast.Import):
+        for alias in node.names:
+            names.append(alias.name)
+        return names
+
+    if isinstance(node, ast.ImportFrom):
+        module_name = node.module or ""
+
+        if module_name:
+            names.append(module_name)
+
+        for alias in node.names:
+            if module_name:
+                names.append(
+                    "{}.{}".format(
+                        module_name,
+                        alias.name
+                    )
+                )
+            else:
+                names.append(alias.name)
+
+    return names
+
+
+def import_is_forbidden(import_name):
+    u"""判断 Import 是否重新依赖退休的正式架构入口。"""
+    # 显式 Compatibility Import 允许保留，不能把它误判成正式架构回退。
+    if "legacy_reference" in import_name:
+        return False
+
+    if ".bake" in import_name or import_name.startswith("core.bake"):
+        return False
+
+    normalized_name = import_name.lstrip(".")
+
+    for forbidden_name in FORBIDDEN_DIRECT_IMPORTS:
+        if normalized_name == forbidden_name:
+            return True
+
+        if normalized_name.endswith("." + forbidden_name):
+            return True
+
+        if normalized_name.startswith(forbidden_name + "."):
+            return True
+
+    return False
+
+
+def scan_file(file_path):
+    u"""扫描一个正式 Runtime 文件中的退休 Class / Import。"""
+    with open(
+            file_path,
+            "r",
+            encoding="utf-8"
+    ) as source_file:
+        source_text = source_file.read()
+
+    syntax_tree = ast.parse(
+        source_text,
+        filename=file_path
+    )
+    relative_path = get_relative_path(file_path)
+    issues = []
+
+    for node in ast.walk(syntax_tree):
+        if isinstance(node, ast.ClassDef):
+            if node.name in FORBIDDEN_CLASS_NAMES:
+                issues.append({
+                    "file": relative_path,
+                    "line": node.lineno,
+                    "detail": "退休正式类名重新出现：{}".format(node.name),
+                })
+            continue
+
+        if not isinstance(node, (ast.Import, ast.ImportFrom)):
+            continue
+
+        for import_name in get_import_names(node):
+            if not import_is_forbidden(import_name):
+                continue
+
+            issues.append({
+                "file": relative_path,
+                "line": node.lineno,
+                "detail": "退休正式 Import 重新出现：{}".format(import_name),
+            })
 
     return issues
 
@@ -449,31 +315,26 @@ def scan_forbidden_paths():
 # =============================================================================
 
 def run():
-    u"""运行 Rig Architecture Migration Gate。"""
+    u"""运行当前 RigModule / Core Primitive 架构门禁。"""
     print("=" * 78)
-    print("Muzi Toolset - Rig Architecture Migration Gate")
+    print("Muzi Toolset - Current Rig Architecture Gate")
     print("=" * 78)
 
-    issues = scan_forbidden_paths()
+    issues = []
+
+    for issue in scan_required_paths():
+        issues.append(issue)
+
+    for issue in scan_forbidden_paths():
+        issues.append(issue)
+
     file_count = 0
 
     for file_path in iter_python_files():
-        relative_path = get_relative_path(
-            file_path
-        )
-
-        if relative_path == "tests/rig_architecture_gate_test.py":
-            continue
-
         file_count += 1
-        file_issues = scan_file(
-            file_path
-        )
 
-        for issue in file_issues:
-            issues.append(
-                issue
-            )
+        for issue in scan_file(file_path):
+            issues.append(issue)
 
     if issues:
         for issue in issues:
@@ -488,9 +349,12 @@ def run():
         return False
 
     print(
-        u"[PASS] {} 个 Python 文件符合 RigBase Naming / ModuleBase / CtrlBase 架构。".format(
+        u"[PASS] {} 个正式 Runtime 文件符合当前 RigModule / Core Primitive 架构。".format(
             file_count
         )
+    )
+    print(
+        u"[PASS] core/bake 与 legacy_reference 保持 Compatibility 边界。"
     )
     return True
 
