@@ -1,20 +1,47 @@
 # coding=utf-8
 u"""
-TongueModule：舌头 FK 绑定模块。
+TongueModule：舌头五段 FK 绑定模块。
 
-TongueModule 复用标准 FKChain。
-当前 Face Guide 模板包含 5 个 Tongue Bind Locator：
+TongueModule 复用 ``systems.components.fk_chain.FKChain``，只固定舌头自己的业务配置：
+
+    Guide Count     = 5
+    Guide Function  = bind
+    Joint Function  = bind
+    Ctrl Function   = fk
+    Ctrl Shape      = circle
+
+当前 Face Guide 模板标准 Locator：
     loc_md_tongue_bind_001
     loc_md_tongue_bind_002
     loc_md_tongue_bind_003
     loc_md_tongue_bind_004
     loc_md_tongue_bind_005
+
+标准输出：
+    jnt_md_tongue_bind_001 ... 005
+    ctrl_md_tongue_fk_001 ... 005
+    grp_md_tongue_jnt_001
+    grp_md_tongue_ctrl_001
+
+舌头默认是中线模块，因此正式 Rig Library 配置通常使用 side="md"，不参与左右镜像。
 """
 
 from ..components import fk_chain
 
 
 class TongueModule(fk_chain.FKChain):
+    u"""
+    使用标准五段 FK Chain 实现的舌头 Rig Module。
+
+    ``TongueModule`` 负责把 Tongue 的固定 Guide 数量和默认命名传给 FKChain；
+    Guide 查询、Joint / Controller 创建、FK 父子层级和最终 Output → Joint 连接都
+    复用通用 FKChain，因此它与 Ear / 通用 FK 模块拥有一致的 Build Contract。
+
+    适用场景：
+        - Face Rig 中的中线五段舌头 FK；
+        - Rig Library 中需要 Build / Rebuild / Final 的 Tongue Module；
+        - 希望后续通过统一 FKChain 改善所有线性 FK 模块时。
+    """
 
     def __init__(
         self,
@@ -26,39 +53,35 @@ class TongueModule(fk_chain.FKChain):
         ctrl_axis="X+"
     ):
         u"""
-        初始化舌头 FK 模块。
-
-        module(str): 模块名称，默认 "tongue"。
-        side(str): 模块方向，舌头默认使用 "md"。
-        guide(list/str/Guide): 可选 Guide 数据来源。
-        jnt_parent(str/PyNode): Joint 总组的可选父节点。
-        ctrl_parent(str/PyNode): Controller 总组的可选父节点。
-        ctrl_axis(str): 舌头 Controller Shape 面朝方向，支持 X+ / X- / Y+ / Y- / Z+ / Z-。
-        Maya 使用示例：
-            from muziToolset.systems.face import tongue_module
-            tongue_object = tongue_module.TongueModule(
-                module="tongue",
-                side="md",
-                guide=None,
-                jnt_parent=None,
-                ctrl_parent=None,
-                ctrl_axis="Z+"
-            )
-            tongue_object.build()
+        初始化舌头 FK Module，并把 Tongue 固定配置传给 ``FKChain``。
 
         Args:
             module (str):
-                当前 Maya / Rig 操作使用的 `module` 名称或标记。
+                Module Part Token，默认 ``"tongue"``。
             side (str):
-                方向标记，常用值为 lf、rt 或 md。
-            guide (str):
-                需要查询或处理的 Guide Transform 名称。
-            jnt_parent (str | None):
-                新建 Jnt Chain 的父 Jnt / Parent Transform；None 表示保持在世界层级。
-            ctrl_parent (object):
-                当前方法执行 Maya / Rig 操作时使用的 `ctrl_parent` 数据。
+                方向标记。正式 Tongue Module 默认并推荐使用 ``"md"``。
+            guide (str | list[str] | tuple[str] | object | None):
+                可选 Guide 来源。None 时 FKChain 会按标准 Tongue Locator 名称自动查找五项。
+            jnt_parent (str | object | None):
+                Tongue Joint Master Group 的可选上层父节点；Rig Library 通常传入
+                ``grp_md_rig_jnt_001``。
+            ctrl_parent (str | object | None):
+                Tongue Controller Master Group 的可选上层父节点；Rig Library 通常传入
+                ``grp_md_rig_ctrl_001``。
             ctrl_axis (str):
-                当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。
+                Controller Shape 绝对轴向，支持 ``X+ / X- / Y+ / Y- / Z+ / Z-``。
+
+        Example:
+            >>> from muziToolset.systems.face import tongue_module
+            >>> tongue = tongue_module.TongueModule(
+            ...     side="md",
+            ...     ctrl_axis="Z+",
+            ... )
+            >>> tongue.build()
+
+        Notes:
+            Tongue 是中央模块。Rig Library 的左右 Mirror 只对 ``lf / rt`` Module 开放，
+            因此中央 Tongue 不需要创建配对侧。
         """
 
         super(TongueModule, self).__init__(
