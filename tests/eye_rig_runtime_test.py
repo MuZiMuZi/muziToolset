@@ -25,6 +25,10 @@ Eye Rig Maya Runtime Test
     Joint 层级：
         jnt_<side>_eye_ball_001
             jnt_<side>_eye_iris_001
+
+Guide 规则：
+    Locator Transform 就是绑定定位数据。
+    Joint 创建时直接吸附 Locator Transform，不读取 Locator Shape 的额外位置偏移。
 """
 
 import maya.cmds as cmds
@@ -61,22 +65,25 @@ def build(side="lf"):
 
     本阶段主要检查：
         1. Ball / Iris 两根 Joint 是否创建。
-        2. Ball Joint 是否对齐 Ball Guide。
-        3. Iris Joint 是否对齐 Iris Guide。
+        2. Ball Joint 是否直接吸附 Ball Locator。
+        3. Iris Joint 是否直接吸附 Iris Locator。
         4. Iris Joint 是否正确成为 Ball Joint 的子关节。
         5. Main Controller 是否和 Ball Joint 共用同一个旋转中心。
     """
 
     face = FaceModule()
 
+    # Guide Template 没有导入时，使用正式 FaceModule 流程导入。
     if not cmds.objExists(face.guide_root):
         face.import_guide()
 
+    # 单独测试 Eye 时也需要先创建 Face Joint / Controller 总组。
     face.setup_hierarchy()
 
     eye = get_eye(face, side)
     eye.build_rig()
 
+    # Build 完成后应该存在的关键节点。
     expected_nodes = [
         "jnt_{}_eye_ball_001".format(side),
         "jnt_{}_eye_iris_001".format(side),
@@ -96,8 +103,8 @@ def build(side="lf"):
             raise RuntimeError(u"Build 后缺少节点：{}".format(node_name))
 
     # -------------------------------------------------------------------------
-    # 检查 Ball Joint 和 Main Controller 的旋转中心。
-    # 两者都来自 Ball Guide，所以世界位置必须一致。
+    # Ball Joint 和 Main Controller 都从 Ball Locator 创建。
+    # 因此它们的世界位置必须一致，保证眼球旋转中心完全相同。
     # -------------------------------------------------------------------------
     ball_jnt_position = cmds.xform(
         eye.ball_jnt_name,
@@ -124,13 +131,13 @@ def build(side="lf"):
             )
 
     # -------------------------------------------------------------------------
-    # 检查 Ball / Iris Joint 是否仍然准确位于对应 Guide。
+    # Joint 创建规则保持最简单的对应关系：
     #
-    # 注意：Face Guide 的 Locator Shape 允许使用 localPosition 偏移。
-    # 因此 Locator Transform 的 translate 并不一定等于视图中真正的 Locator 中心。
-    # 正式创建 Joint 时，Transform.match_transform() 对 Locator 使用的是
-    # Locator Shape.worldPosition[0]，所以测试也必须使用完全相同的位置来源。
-    # 这样检查的是“Joint 是否对齐可见 Locator 中心”，而不是 Transform 原点。
+    #     Ball Joint -> Ball Locator Transform
+    #     Iris Joint -> Iris Locator Transform
+    #
+    # Locator 的 Transform 本身就是 Guide 数据，所以直接比较两者世界位置。
+    # 不读取 Locator Shape.localPosition，也不做额外位置换算。
     # -------------------------------------------------------------------------
     guide_pairs = [
         (eye.ball_jnt_name, eye.guide_list[0]),
@@ -145,27 +152,12 @@ def build(side="lf"):
             translation=True
         )
 
-        locator_shapes = cmds.listRelatives(
+        guide_position = cmds.xform(
             guide_name,
-            shapes=True,
-            noIntermediate=True,
-            type="locator",
-            fullPath=True
-        ) or []
-
-        # Eye Guide 正常情况下都应该带 Locator Shape。
-        # 如果未来传入普通 Transform，则退回使用 Transform 的世界位置。
-        if locator_shapes:
-            guide_position = cmds.getAttr(
-                locator_shapes[0] + ".worldPosition[0]"
-            )[0]
-        else:
-            guide_position = cmds.xform(
-                guide_name,
-                query=True,
-                worldSpace=True,
-                translation=True
-            )
+            query=True,
+            worldSpace=True,
+            translation=True
+        )
 
         for index in range(3):
             position_difference = abs(
@@ -174,7 +166,7 @@ def build(side="lf"):
 
             if position_difference > 0.0001:
                 raise RuntimeError(
-                    u"Joint 没有和 Guide 对齐：{} -> {}".format(
+                    u"Joint 没有和 Locator 对齐：{} -> {}".format(
                         joint_name,
                         guide_name
                     )
@@ -182,7 +174,7 @@ def build(side="lf"):
 
     # -------------------------------------------------------------------------
     # Iris Joint 必须位于 Ball Joint 下方。
-    # 后续 Ball Joint 旋转时，Iris Joint 才会自然继承整个眼球的旋转。
+    # Ball Joint 旋转时，Iris Joint 会通过 Joint Hierarchy 自然继承旋转。
     # -------------------------------------------------------------------------
     iris_parent = cmds.listRelatives(
         eye.iris_jnt_name,
@@ -253,7 +245,7 @@ def delete(side="lf"):
     u"""
     删除指定侧 Eye Rig，并验证 Eye 模块组已经消失。
 
-    Face 总组和 face_guide.ma 会继续保留，方便马上重新调整 Guide 并再次 Build。
+    Face 总组和 face_guide.ma 会继续保留，方便调整 Guide 后立即重新 Build。
     """
 
     face = FaceModule()
