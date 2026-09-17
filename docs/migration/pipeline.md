@@ -1,95 +1,107 @@
-# Pipeline 重构
+# Pipeline / Core Migration — 已退休历史记录
 
-早期 MuziTools 使用 `pipelineUtils.py` 作为综合工具类。
+这份页面过去记录过一版“把大型 `pipelineUtils.py` 拆成大量平铺 `core/*_utils.py`”的迁移方案。
 
-它曾同时承担：
-
-```text
-Animation
-Scene
-Constraint
-Curve
-Surface
-Skin
-Controller
-Face
-Hair
-File IO
-```
-
-这种结构的问题是：
-
-- 一个文件修改容易影响多个领域；
-- Tool / System 不知道应该依赖哪一层；
-- 相同逻辑容易在 UI 里再次复制；
-- 大型 Rig Workflow 和通用 Core 混在一起；
-- Smoke Test 很难只验证某一类能力。
-
-## 当前正式方向
-
-通用能力已经按 Maya 领域进入：
+其中曾经出现过：
 
 ```text
 core/animation_utils.py
 core/scene_utils.py
+core/file_utils.py
 core/transform_utils.py
+core/matrix_utils.py
 core/connection_utils.py
 core/constraint_utils.py
-core/matrix_utils.py
 core/curve_utils.py
 core/surface_utils.py
 core/skin_utils.py
 ...
 ```
 
-完整 Rig Workflow 进入：
+这些平铺路径**已经不是当前正式 Core 结构**。
+
+为了避免旧 README / 外部链接直接 404，本页保留路径，但旧迁移正文已经删除。
+
+## 当前 Core
+
+当前推荐入口：
 
 ```text
-systems/controller/
-systems/face/
-systems/body/
+core/common/
+    attr_utils.py
+    hierarchy_utils.py
+    name_utils.py
+    transform_utils.py
+
+core/rigging/
+    ctrl_utils.py
+    guide_utils.py
+    jnt_utils.py
 ```
 
-## 第二轮颗粒度优化
-
-第一轮为了拆清职责，曾出现：
+历史代码与尚未迁移实现：
 
 ```text
-animation_utils.py
-animation_io_utils.py
-
-scene_utils.py
-scene_io_utils.py
+core/bake/
+legacy_reference/
 ```
 
-职责已经稳定后，第二轮重新按“一个 Maya 领域一个模块”收口：
+新功能不要默认继续添加到 `core/bake/`。
+
+## 当前原则
 
 ```text
-animation_io_utils.py
-        ↓
-animation_utils.py
+明确的通用底层能力
+    ↓
+进入 current Core
 
-scene_io_utils.py
-        ↓
-scene_utils.py
+完整 Rig Workflow
+    ↓
+进入 systems/
+
+用户交互 / Selection / Qt
+    ↓
+进入 tools/ 或 ui/
+
+历史兼容实现
+    ↓
+留在 bake / legacy，等待迁移或删除
 ```
 
-但不会把 Matrix、Constraint、Connection 再合并成一个文件，因为它们已经是明确且会独立增长的领域。
+## 为什么网站仍会看到旧 Tool import
 
-## 验证原则
+部分 `tools/*` 仍然引用早期平铺入口，例如：
 
-每次迁移遵循：
+```python
+from ...core import scene_utils
+from ...core import skin_utils
+from ...core import constraint_utils
+```
+
+这表示：
 
 ```text
-提取新 API
-    ↓
-正式 Tool / System 改用新 API
-    ↓
-Maya Smoke Test
-    ↓
-确认 0 正式旧引用
-    ↓
-删除 Legacy
+Tool 仍待迁移
 ```
 
-旧 `pipelineUtils.py` 已在真机测试通过后删除，不再作为正式运行依赖。
+而不是：
+
+```text
+旧 Core 仍然是正式架构
+```
+
+用户手册会明确标注这些迁移状态。
+
+## 当前入口
+
+请继续查看：
+
+- [总体架构](../architecture/index.md)
+- [Core 设计](../architecture/core.md)
+- [Core 使用手册](../manual/core.md)
+- [Tools 总览](../manual/tools.md)
+- [文档维护](../development/documentation.md)
+- [API Reference](../reference/index.md)
+
+!!! note "保留这个页面的唯一原因"
+    旧链接仍然可能存在于 Commit、Issue 或本地笔记中。保留这个文件可以把读者导向当前架构，同时避免继续传播已经退休的旧 Core 目录说明。
