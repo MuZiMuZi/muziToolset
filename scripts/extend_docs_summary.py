@@ -5,18 +5,20 @@ Extend MkDocs Summary
 
 扩展 API Generator 生成的 ``docs/SUMMARY.md``。
 
-API Generator 负责动态生成源码树导航；本脚本只负责把人工维护的用户手册任务页
-插入“用户手册”区域，避免为了增加一个手册页面去修改大型 AST Generator。
+API Generator 负责动态生成源码树导航；本脚本只负责把人工维护的用户手册、
+当前架构页和开发页插入导航，避免为了增加一个手写页面去修改大型 AST Generator。
 
 职责：
     1. 读取 docs/SUMMARY.md；
     2. 找到“常用工具工作流”入口；
-    3. 插入基础工具 / Controller / Jnt / Skin / BlendShape / Cleanup；
-    4. 重复执行时不产生重复导航项。
+    3. 插入当前人工维护的任务页；
+    4. 补充当前 Face Architecture / UI Development 页面；
+    5. 重复执行时不产生重复导航项。
 
 说明：
     - 不修改 API Reference 源码树；
     - 不 import Maya；
+    - 不再插入已退休的外部架构研究页；
     - 可以在 GitHub Actions Linux Runner 中运行。
 """
 
@@ -40,7 +42,6 @@ additional_navigation_lines = {
     "* 架构": [
         "    * [Face System](architecture/face-system.md)",
         "    * [Face Workflow State](architecture/face-workflow-state.md)",
-        "    * [程序化自动绑定](architecture/xiong-lin-procedure-auto-rig.md)",
     ],
     "* 开发指南": [
         "    * [UI 设计](development/ui-design.md)",
@@ -93,12 +94,25 @@ def remove_existing_manual_lines(lines):
     """删除旧任务页导航，保证脚本可以重复执行。"""
     result = []
 
-    for line in lines:
-        additional_lines = []
-        for navigation_lines in additional_navigation_lines.values():
-            additional_lines.extend(navigation_lines)
+    additional_lines = []
 
-        if line in manual_navigation_lines or line in additional_lines:
+    for navigation_lines in additional_navigation_lines.values():
+        additional_lines.extend(navigation_lines)
+
+    # 旧版本曾经自动插入这份外部研究页。
+    # 即使历史 SUMMARY 中还残留，也在这里主动清掉。
+    retired_navigation_lines = [
+        "    * [程序化自动绑定](architecture/xiong-lin-procedure-auto-rig.md)",
+    ]
+
+    for line in lines:
+        if line in manual_navigation_lines:
+            continue
+
+        if line in additional_lines:
+            continue
+
+        if line in retired_navigation_lines:
             continue
 
         result.append(
