@@ -1034,6 +1034,51 @@ class Ctrl(object):
             pm.warning(u"当前控制器没有可以保存的 NurbsCurve Shape。")
             return None
 
+        # ---------------------------------------------------------------------
+        # Shape Library 保存前统一归一化到标准半径 1.0。
+        #
+        # 不同 Controller Shape 在 Maya 中制作时可能使用完全不同的尺寸。
+        # 如果把这些原始 CV 数值直接保存进 Shape Library，后续相同的 ctrl_size
+        # 会得到不同的视觉尺寸。这里统一计算所有 Shape 中距离原点最远的 CV，
+        # 再使用同一个缩放比例处理全部 CV，让最远 CV 的距离固定为 1.0。
+        #
+        # 一个 Controller 可能由多个 NurbsCurve Shape 组成，所以必须先遍历
+        # 全部 Shape 找到共同的最大半径，再整体等比缩放，不能逐个 Shape 单独归一化。
+        # ---------------------------------------------------------------------
+        max_radius = 0.0
+
+        for shape_info in shape_data:
+            point_values = shape_info["points"]
+
+            for index in range(0, len(point_values), 3):
+                point_x = point_values[index]
+                point_y = point_values[index + 1]
+                point_z = point_values[index + 2]
+
+                radius = (
+                    point_x * point_x +
+                    point_y * point_y +
+                    point_z * point_z
+                ) ** 0.5
+
+                if radius > max_radius:
+                    max_radius = radius
+
+        # 没有有效半径时不写入 Shape Library，避免除以 0。
+        if max_radius <= 0.0:
+            pm.warning(u"当前控制器 Shape 没有有效尺寸，无法保存。")
+            return None
+
+        normalize_scale = 1.0 / max_radius
+
+        # 所有 Curve Shape 使用同一个比例进行缩放。
+        # 这里只修改即将写入 JSON 的 point_values，不修改 Maya 场景中的控制器。
+        for shape_info in shape_data:
+            point_values = shape_info["points"]
+
+            for index in range(len(point_values)):
+                point_values[index] = point_values[index] * normalize_scale
+
         # 获取 muziToolset 项目根目录。
         rigging_path = os.path.dirname(__file__)
         core_path = os.path.dirname(rigging_path)
