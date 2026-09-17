@@ -1,419 +1,553 @@
 # Face System Architecture
 
-Face Rig 使用 **Workflow Step + Module + Build Algorithm** 三层结构。
+MuziTools 当前 Face Rig 不再采用“一个大脚本一次性创建全部面部绑定”的思路，而是拆成**独立 Module + Rig Library Workflow**。
 
-## 正式目录
+当前目标：
+
+```text
+Guide 负责定位
+Module 负责生成 Joint / Controller
+Step 03 负责外观与 Joint 调整
+Final 负责最终驱动连接
+```
+
+用户可以在 Final 前回退修改前面阶段，再重新生成对应模块。
+
+---
+
+# 当前 Face Runtime 结构
 
 ```text
 systems/face/
 ├── __init__.py
-├── config.py
-├── face_base.py
-│
-├── setup/
-│   ├── __init__.py
-│   └── face_setup.py
-│
-├── guide/
-│   ├── __init__.py
-│   └── face_guide.py
-│
-├── modules/
-│   ├── __init__.py
-│   └── teeth.py
-│
-├── build/
-│   ├── __init__.py
-│   ├── curve_attachment.py
-│   ├── eyelid/
-│   └── lip/
-│
-├── finalize/
-├── data/
-└── ui/
-    ├── __init__.py
-    ├── face_rig_ui.py
-    ├── workflow_controller.py
-    └── build_controller.py
+├── face_guide_config.py
+├── eye_module.py
+├── ear_module.py
+└── tongue_module.py
 ```
 
-## 四步 Workflow
+配套 Modular Rig 位于：
+
+```text
+systems/rig/
+├── library_catalog.py
+├── library_service.py
+└── ui/
+    ├── library_style.py
+    ├── library_widgets.py
+    └── modular_rig_ui.py
+```
+
+Face Tool 用户入口位于：
+
+```text
+tools/face/
+tools/rig/
+```
+
+---
+
+# 四步工作流
+
+当前 UI 顶部四步为：
 
 ```text
 01 Setup
-    ↓
 02 Guide
+03 Ctrl
+04 Final
+```
+
+副标题分别是：
+
+```text
+Setup  -> 配置与层级
+Guide  -> 导入与定位
+Ctrl   -> 创建与调整
+Final  -> 检查与完成
+```
+
+具体行为不是简单切换页面，而是与 Scene State 绑定。
+
+---
+
+## Step 01 — Setup
+
+职责：
+
+```text
+添加模块 / 模板
+保存模块配置
+创建 Rig Library Root
+创建 Joint Root
+创建 Controller Root
+```
+
+当前根组：
+
+```text
+grp_md_rig_library_001
+├── grp_md_rig_jnt_001
+└── grp_md_rig_ctrl_001
+```
+
+这些根组带 Owner 标记，不会自动认领场景里碰巧同名但不属于绑定库的节点。
+
+Step 01 完成条件：
+
+```text
+至少存在一个 Enabled Module
++ 三个根组存在
++ 根组归属当前 Rig Library
+```
+
+---
+
+## Step 02 — Guide
+
+职责：
+
+```text
+导入 Face Guide
+读取 / 保存 Module Guide 列表
+调整 Guide
+左右镜像 Guide
+根据最新 Guide 生成或重建 Joint / Controller
+```
+
+这是当前流程里非常关键的一步：
+
+> **Joint / Controller 的实际生成发生在 Guide 阶段确认之后。**
+
+第一次进入 Step 02，如果标准 Face Guide 还没有准备好，会通过：
+
+```text
+core/rigging/guide_utils.py
+```
+
+导入 Face Guide Template。
+
+Guide 完成条件：
+
+- 每个启用模块都有 Guide；
+- Guide 名称可以唯一解析；
+- 同一模块不会重复使用同一个 Guide；
+- Guide 节点必须是 Transform 或 Joint。
+
+当 Guide 已经有效时，点击底部“下一步”会：
+
+```text
+未 Build 模块
+    -> 生成 Joint / Controller
+
+已 Build 当前模块
+    -> 删除当前模块正式输出
+    -> 按最新 Guide Rebuild
+    -> Connection 状态退回未连接
+```
+
+因此用户可以回到 Guide 修改位置，再重新生成模块。
+
+---
+
+## Step 03 — Ctrl
+
+Step 03 当前不是“第一次创建 Controller”的阶段。
+
+它的定位是：
+
+> **Joint / Controller 已经生成后，对显示和外观进行实时调整。**
+
+当前 UI 同时显示：
+
+```text
+Controller 设置
+Joint 设置
+```
+
+Controller 可调：
+
+```text
+ctrl_size
+ctrl_color
+ctrl_axis
+show_controls
+```
+
+Joint 可调：
+
+```text
+jnt_radius
+show_axis
+show_joints
+```
+
+这些修改由 `RigLibraryService.update_module()` 处理。
+
+对于已经 Build 的 Module，只允许修改显示与 Controller 外观相关字段，不允许直接改：
+
+```text
+module name
+side
+guide list
+enabled
+```
+
+这可以避免生成以后因为结构型参数被随意修改，导致 Scene 与配置失去一致性。
+
+---
+
+## Step 04 — Final
+
+Final 才建立最终驱动连接。
+
+当前 Service 行为：
+
+```text
+for each enabled + built + not connected module:
+    builder.connect_outputs()
+    record["connected"] = True
+```
+
+因此：
+
+```text
+Step 02/03
+    主要得到 Joint / Controller / Hierarchy
+
+Step 04
+    才生成最终 Driver Connection
+```
+
+这样做的好处是，在最终连接前用户可以自由调整 Controller 大小、颜色、轴向、Joint 显示和 Guide 定位，不需要每次都拆完整驱动网络。
+
+Final 完成后会选择主 Controller，方便继续动画或检查。
+
+---
+
+# 顶部导航规则
+
+当前 UI 明确禁止通过顶部 Step Button 跳到未来步骤。
+
+规则：
+
+```text
+顶部 Step Button
+    只能回退
+
+底部“下一步”
+    唯一正式前进入口
+```
+
+例如当前在 Step 02：
+
+```text
+可以点击 Step 01
+不能直接点击 Step 03 / 04
+```
+
+前进必须让当前阶段操作成功，避免 UI 状态与 Scene State 脱节。
+
+---
+
+# Mirror 规则
+
+Mirror 在前三步都可以使用，但 Final 阶段禁止直接镜像。
+
+当前逻辑：
+
+```text
+Step 01 / 02 / 03
+    可以 Mirror
+
+Step 04
+    提示返回前三步后再镜像
+```
+
+Mirror 会复制左右模块设置，并把 Guide 世界位置沿：
+
+```text
+X = 0
+```
+
+镜像到另一侧。
+
+如果目标模块已经 Build：
+
+```text
+镜像 Guide
     ↓
-03 Build
+删除目标模块旧输出
     ↓
-04 Finalize
+重新 Build Joint / Controller
+    ↓
+connected = False
 ```
 
-Workflow Module 使用统一生命周期：
-
-```text
-collect_inputs()
-      ↓
-prepare_data()
-      ↓
-process_data()
-      ↓
-finalize_step()
-```
-
-统一入口：
-
-```python
-run_step()
-```
+也就是说，Mirror 不是单纯复制 UI 参数，而是正式 Workflow 能力。
 
 ---
 
-# Step / Module / Builder / Core
+# Module Lifecycle
+
+一个 Face Module 推荐统一遵循：
 
 ```text
-Step
-    Setup / Guide / Build / Finalize 用户工作流阶段
-
-Module
-    Teeth / Tongue / Jaw / Lip / Eye / Eyelid / Brow 等完整绑定业务单元
-
-Builder
-    Curve Attachment / Zip Lip / Radial Jnt 等可组合构建算法
-
-Core
-    Matrix / Curve / Jnt / DAG / Attribute 等通用 Maya 能力
+get_guides()
+    ↓
+create_joints()
+    ↓
+create_ctrls()
+    ↓
+setup_hierarchy()
+    ↓
+build_outputs()
+    ↓
+用户调整
+    ↓
+connect_outputs()
 ```
 
-完整业务单元不再称为 Component。
+如果需要修改：
+
+```text
+Guide Change
+    ↓
+Rebuild Module Outputs
+    ↓
+connected = False
+    ↓
+Final Reconnect
+```
+
+这样所有模块都能接入同一个 Rig Library Service。
 
 ---
 
-# FaceBase
+# Eye Module
 
-`face_base.py` 是所有 Face Workflow / Rig Module 的公共业务底座。
+当前 Eye 是最完整的 Face Module 示例。
 
-负责：
-
-- 继承 `RigModuleBase`；
-- 继承 `RigBase` 的 Rig Object Identity / Naming；
-- Face Hierarchy；
-- Face Config；
-- Setup 公共数据；
-- Step 完成状态；
-- Current Face Step；
-- Config Step 分区；
-- 公共 Config 语义 API。
-
-继承关系：
+Guide Contract：
 
 ```text
-RigBase
-   ↓
-ModuleBase
-   ↓
-RigModuleBase
-   ↓
-FaceBase
+loc_<side>_eye_ball_001
+loc_<side>_eye_iris_001
+loc_<side>_eye_aim_001
 ```
 
-`FaceBase` 默认 Rig Identity：
+语义：
 
 ```text
-md / face / 001
+Ball
+    真实眼球旋转中心
+    Eye Joint 创建位置
+
+Iris
+    Eye Main Controller 可见位置
+
+Aim
+    Eye Aim Controller 位置
 ```
 
-具体 Guide / Teeth / Jaw 等业务不塞回 `FaceBase`。
-
-具体 Rig Module 应在初始化时设置自己的 Identity，例如：
+关键设计：
 
 ```text
-TeethModule
-    md / teeth / 001
+Main Ctrl Transform 保持在 Iris
+Main Ctrl Rotate Pivot 位于 Ball
+Aim 只驱动旋转
+Eye Joint 只接收旋转
+Pose Driver / Pose Driven 作为后续 Eyelid / RBF / Corrective 接口
 ```
+
+正式驱动链：
+
+```text
+ctrl_<side>_eye_aim_001
+    ↓
+output_<side>_eye_aim_001
+    ↓
+Aim Constraint
+    ↓
+driven_<side>_eye_main_001
+    ↓
+ctrl_<side>_eye_main_001
+    ↓
+output_<side>_eye_main_001
+    ↓
+driver_<side>_eye_pose_001
+    ↓
+driven_<side>_eye_pose_001
+    ↓
+Orient Constraint
+    ↓
+jnt_<side>_eye_bind_001
+```
+
+这套 Pose Driver / Driven 层是未来接入：
+
+```text
+Eyelid Follow
+RBF Pose Reader
+Corrective BlendShape
+```
+
+的重要扩展点。
+
+API：[Eye Module](../reference/systems/face/eye_module.md)
 
 ---
 
-# Face Config
+# Ear / Tongue Module
 
-`systems/face/config.py` 是 Face 静态配置入口。
-
-负责：
-
-- Face Group / Set / Config Node 名称；
-- Guide Template 路径、Move Ctrl、Version；
-- Controller 默认 Size / Color；
-- Controller Module 顺序；
-- Step Visibility Rule；
-- Step Model Display Rule。
-
-静态配置如果需要标准 Rig Name，会创建明确的 `RigBase` 实例：
-
-```python
-from muziToolset.systems.rig_base import RigBase
-
-face_rig = RigBase(
-    side="md",
-    part="face",
-    index=1
-)
-
-face_master_grp = face_rig.create_name(
-    node_type="grp",
-    function="master"
-)
-```
-
-Face Module 内部通常直接使用继承来的实例方法：
-
-```python
-self.create_name(...)
-self.mirror_name(...)
-```
-
-正式 Naming Keyword 使用 `node_type=`；旧 `type=` 已退休。
-
-`core/name_utils.py` 已删除。
-
----
-
-# Step 01 - Setup
-
-`setup/face_setup.py` 负责：
-
-- Head / Eye / Teeth / Tongue / Gum 输入；
-- 输入模型验证；
-- Face Hierarchy；
-- Tweak / Stretch / Deform Work Model；
-- Mouth Jnt Number；
-- Step 01 Config；
-- Step 01 完成后推进到 Step 02。
-
-`FaceSetup` 属于特殊 Workflow Module，因此覆盖自己的 `process_data()`。
-
----
-
-# Step 02 - Guide
-
-`FaceGuide` 负责：
-
-- Template Import；
-- Reimport / Repair；
-- Guide Query；
-- LF ↔ RT Mirror；
-- Mirror Undo Snapshot；
-- Locator 完整性检查；
-- Controller Settings Config；
-- Step 02 Lifecycle。
-
-简单查询：
-
-```python
-guide.get_part_guides(
-    part="tongue"
-)
-```
-
-查询明确 Guide：
-
-```python
-guide_name = guide.create_name(
-    node_type="loc",
-    side="md",
-    part="upper_teeth",
-    function="guide",
-    index=1
-)
-
-guide_node = guide.get_guide_node(
-    guide_name,
-    required=True
-)
-```
-
-左右 Mirror 名称直接使用实例能力：
-
-```python
-mirror_name = guide.mirror_name(
-    source_name
-)
-```
-
----
-
-# Guide Template Contract
-
-`resources/face/face_guide.ma` 是标准 Locator 完整性的最终来源。
-
-Step 02 提交时：
+当前正式 Module 还包括：
 
 ```text
-Template 全部 Locator
-        ↓
-当前 Scene Guide
-        ↓
-逐个检查
-        ↓
-任意缺失 → 阻止进入 Step 03
-```
-
-Reimport：
-
-```text
-记录现有 Locator 世界位置
-        ↓
-重新导入完整模板
-        ↓
-恢复现有 Locator
-        ↓
-误删 Locator 使用模板默认位置补回
-```
-
----
-
-# Step 03 - Modules
-
-完整业务 Module 统一放：
-
-```text
-systems/face/modules/
-```
-
-当前：
-
-```text
-teeth.py
-    TeethModule
-```
-
-后续计划：
-
-```text
-JawModule
+EarModule
 TongueModule
-LipModule
-EyeModule
-EyelidModule
-BrowModule
-NoseModule
-CheekModule
 ```
 
-真正 Rig Module 统一使用：
+它们已经进入 Rig Library Builder Dispatch。
+
+后续继续扩展时，应统一向 Eye Module 的 Lifecycle 靠拢：
 
 ```text
-collect_inputs()
-      ↓
-prepare_data()
-      ↓
-create_jnt()
-      ↓
-create_controller()
-      ↓
-create_connection()
-      ↓
-finalize_step()
+稳定 Guide Contract
+稳定 Output Naming
+Build Outputs
+Connect Outputs
+Safe Rebuild
+Validate
 ```
 
-Module 构建完成不等于整个 Step 03 Completed。只有 Step 03 要求的 Module 全部完成后才推进 Workflow。
+而不是为每个部位写独立 UI Callback 构建流程。
 
 ---
 
-# Face Build Algorithms
+# Guide Contract
 
-可复用算法统一放：
-
-```text
-systems/face/build/
-```
-
-当前包括：
+Face Guide 的稳定命名与兼容逻辑集中在：
 
 ```text
-curve_attachment.py
-    Curve Attachment
-
-eyelid/
-    Radial Curve Jnt
-
-lip/
-    Matrix Zip Lip
+systems/face/face_guide_config.py
 ```
 
-这些文件是 Builder / Algorithm，不是完整业务 Module。
+Module 不应该把大量 Locator 字符串散落在各处。
 
-例如未来 `EyelidModule` 可以组合 Eyelid Builder，`LipModule` 可以组合 Zip Lip Builder。
+推荐：
 
-Builder 自身不是 Module；如果需要标准 Naming，应创建短生命周期 `RigBase` Identity 实例。
+```text
+Guide Config
+    定义标准语义与名字
+        ↓
+Module
+    按语义获取 Guide
+        ↓
+Builder
+    创建输出
+```
+
+如果需要兼容旧 Guide 名称，应在 Guide Config 中集中处理 Normalize，而不是每个模块各写一份兼容表。
 
 ---
 
-# Controller
+# Rig Library 与 Face Module 的关系
 
-所有 Face Module 创建 Controller 时统一调用：
+Rig Library 不负责具体算法。
 
-```python
-from muziToolset.systems import ctrl_base
-
-ctrl_base.create_ctrl(...)
-```
-
-旧：
+它负责：
 
 ```text
-systems/controller/
+Catalog
+Config
+Workflow State
+Validation
+Build Dispatch
+Mirror
+Rebuild
+Finalize
+Scene Ownership
 ```
 
-已经删除。
+真正的 Eye / Ear / Tongue 构建算法仍由 Module 自己负责。
 
----
-
-# Workflow Visibility
-
-静态规则：
+调用关系：
 
 ```text
-systems/face/config.py
-```
-
-执行：
-
-```text
-systems/face/ui/workflow_controller.py
-```
-
-Step 01 / 02 显示 Setup 原始输入模型；Step 03 / 04 当前模型内部规则保持 `preserve`，后续按正式需求扩展。
-
----
-
-# UI 入口
-
-```text
-systems.face.show()
+ModularRigWindow
     ↓
-systems.face.ui.show()
+RigLibraryService
     ↓
-ui/build_controller.py
+_make_builder(record)
     ↓
-ui/workflow_controller.py
+EyeModule / EarModule / TongueModule / FKChain
     ↓
-ui/face_rig_ui.py
+Core
 ```
-
-`build_controller.py` 在稳定 Workflow UI 上扩展 Step 03 Module Build 页面。
 
 ---
 
-# Public API
+# Scene Ownership
 
-```python
-from muziToolset.systems import face
+Rig Library 会给正式输出写入模块归属信息：
 
-face.FaceSetup
-face.FaceGuide
-face.TeethModule
-face.build_teeth()
-face.show()
+```text
+muziRigLibraryModule
 ```
 
-上层 Tool 应优先依赖这些稳定入口，不直接依赖内部 Builder 文件。
+Root 使用：
+
+```text
+muziRigLibraryOwner
+```
+
+这使 Rebuild 可以做到：
+
+```text
+只删除属于当前 Module 的输出
+不误删场景里其他同名或相邻节点
+```
+
+如果归属信息缺失或不一致，Service 会停止自动重建，而不是猜测节点归属。
+
+---
+
+# 当前支持的正式 Builder
+
+`RigLibraryService._make_builder()` 当前调度：
+
+```text
+ear      -> EarModule
+eye      -> EyeModule
+tongue   -> TongueModule
+fk_chain -> FKChain
+```
+
+Rig Library UI 只应该展示仓库中已经有正式构建入口的 Module。
+
+---
+
+# 后续 Face Module 推荐方向
+
+眉毛、眼睑、嘴唇等后续模块建议继续遵循：
+
+```text
+1. 先定义 Guide Contract
+2. 再实现 Joint / Controller Output
+3. Build 和 Connect 分离
+4. 支持 Safe Rebuild
+5. 支持 Mirror
+6. 用稳定 Driver Output 给 RBF / BlendShape / Corrective 使用
+```
+
+特别是 Eyelid / Brow / Lip，不建议只用 UI 脚本直接生成节点，而应做成正式 `systems/face/` Module。
+
+---
+
+# 对应文档
+
+- [Face Workflow State](face-workflow-state.md)
+- [总体架构](index.md)
+- [Tools 与 Systems](tools-systems.md)
+- [Face API](../reference/systems/face/index.md)
+- [Rig Library API](../reference/systems/rig/index.md)
