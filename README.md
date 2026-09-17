@@ -1,24 +1,20 @@
 # muziToolset
 
-面向 **Autodesk Maya 2023** 的 Rigging Toolset 与可扩展绑定框架。
+面向 **Autodesk Maya 2023** 的 Rigging Toolset、模块化绑定库与可扩展 Rig Framework。
 
-当前架构版本：**0.4.0**。
-
-正式 Python Package：
+当前 Python Package：
 
 ```python
 import muziToolset
 ```
 
-项目显示名称使用 **MuziTools**；源码根包始终使用 `muziToolset`。
+当前包版本：
 
-2026-09 重写后的模块化绑定库已接入 Ear、Tongue、FK Chain 和三种组合模板。
-下方部分架构说明仍对应归档前版本，当前绑定库以 [绑定库使用手册](docs/manual/rig-library.md) 为准。
-
-```python
-import muziToolset
-window = muziToolset.show_rig_library()
+```text
+0.4.0
 ```
+
+> 版本号仍为 0.4.0，但 2026-09 之后仓库结构已经继续演进。当前架构请以本 README、`docs/architecture/` 与自动 API Reference 为准，不再使用旧 `RigBase / ModuleBase / CtrlBase` 文档作为当前实现说明。
 
 ---
 
@@ -28,230 +24,458 @@ window = muziToolset.show_rig_library()
 
 ```python
 import muziToolset
+
 window = muziToolset.show()
+```
+
+打开当前模块化绑定库：
+
+```python
+import muziToolset
+
+window = muziToolset.show_rig_library()
 ```
 
 第一次使用：
 
 - [安装与启动](docs/getting-started/installation.md)
 - [在 Maya 中运行](docs/getting-started/maya-usage.md)
+- [MuziTools 用户手册](docs/manual/index.md)
+- [绑定库](docs/manual/rig-library.md)
 
 ---
 
 # 当前架构
 
-```text
-core     Maya 通用底层能力
-tools    用户直接操作的小工具 / UI
-systems  RigBase / ModuleBase / CtrlBase / 完整 Rig System
-ui       通用 PySide Theme / Widget
-app      主程序和窗口生命周期
-```
-
-0.4 三个基础入口：
+当前正式 Runtime 代码按职责分成：
 
 ```text
-systems/rig_base.py
-    Rig Object Attributes + Rig Naming
+app/
+    Maya 应用入口、工具箱和窗口管理
 
-systems/module_base.py
-    Module Lifecycle
+ui/
+    通用 PySide Theme、Window、Widget
 
-systems/ctrl_base.py
-    Controller Workflow
+core/
+    Maya / Rig 底层可复用能力
+
+systems/
+    完整、可重复构建的 Rig Module / Workflow
+
+tools/
+    绑定师直接使用的小型 UI / Action Tool
 ```
 
-正式业务单元统一使用 **Module** 术语，不再使用 Component。
+辅助目录：
 
-Rig Object 基础属性和 Rig Naming 由 `RigBase` 提供；旧 `core/name_utils.py` 已删除。
+```text
+resources/
+    Controller Shape、Face Guide、图标等资源
 
-Controller 的唯一正式实现是 `systems/ctrl_base.py`；旧 `systems/controller/` 已删除。
+scripts/
+    文档生成、迁移、审计和维护脚本
+
+tests/
+    静态架构门禁、文档检查和 Runtime Contract
+
+docs/
+    MkDocs 网站源码
+```
+
+推荐依赖方向：
+
+```text
+app
+ ↓
+tools / systems
+ ↓
+core
+
+ui 为 app / tools / systems 提供公共界面能力
+```
+
+详细说明见 [总体架构](docs/architecture/index.md)。
+
+---
+
+# 当前 Core
+
+正式 Core 已收敛到：
+
+```text
+core/common/
+├── attr_utils.py
+├── hierarchy_utils.py
+├── name_utils.py
+└── transform_utils.py
+
+core/rigging/
+├── ctrl_utils.py
+├── guide_utils.py
+└── jnt_utils.py
+```
+
+其中：
+
+```text
+common
+    Attribute / Hierarchy / Naming / Transform
+
+rigging
+    Controller / Guide / Joint 基础能力
+```
+
+历史实现仍保留在：
+
+```text
+core/bake/
+legacy_reference/
+```
+
+这些目录不再定义新架构；新功能不应默认继续扩展到兼容区。
+
+详见：
+
+- [Core 设计](docs/architecture/core.md)
+- [Core 使用手册](docs/manual/core.md)
+
+---
+
+# Rig Module
+
+当前通用模块基类：
+
+```text
+systems/rig_module.py
+```
+
+统一生命周期：
+
+```text
+get_guides()
+    ↓
+create_joints()
+    ↓
+create_ctrls()
+    ↓
+setup_hierarchy()
+    ↓
+connect_rig()
+```
+
+为了支持绑定库分阶段修改，又拆成：
+
+```text
+build_outputs()
+    Joint + Controller + Hierarchy
+
+connect_outputs()
+    Final Connection
+```
+
+这样 Guide 修改后可以只 Rebuild 输出，最后再重新建立正式连接。
+
+---
+
+# Rig Library
+
+当前模块化绑定主入口：
+
+```python
+import muziToolset
+
+window = muziToolset.show_rig_library()
+```
+
+四步 UI：
+
+```text
+01 Setup
+02 Guide
+03 Ctrl
+04 Final
+```
+
+实际数据阶段：
+
+```text
+Setup
+    ↓
+Guide
+    ↓
+Build Joint + Controller
+    ↓
+Adjust Controller + Joint
+    ↓
+Final Connection
+```
+
+当前 `RigLibraryService` 正式调度模块：
+
+```text
+EarModule
+EyeModule
+TongueModule
+FKChain
+```
+
+支持：
+
+```text
+Module Catalog
+Template
+Guide Import
+Mirror
+Build
+Rebuild
+Controller Appearance
+Joint Display
+Final Connect
+Scene Config Persistence
+Ownership Tag
+Maya Undo Chunk
+```
+
+详见 [绑定库使用手册](docs/manual/rig-library.md)。
 
 ---
 
 # Face Rig
 
-当前工作流：
-
-```text
-01 Setup
-    ↓
-02 Guide
-    ↓
-03 Build Modules
-    ↓
-04 Finalize
-```
-
-正式结构：
+当前正式 Face Runtime：
 
 ```text
 systems/face/
-├── setup/       # Step 01
-├── guide/       # Step 02
-├── modules/     # Step 03 完整 Rig Module
-├── build/       # 可复用 Build Algorithm
-├── finalize/    # Step 04
-├── data/
-├── ui/
-├── face_base.py
-└── config.py
+├── face_guide_config.py
+├── eye_module.py
+├── ear_module.py
+└── tongue_module.py
 ```
 
-当前已经接入的 Step 03 Module：
+Face Guide 使用统一 Locator 命名：
 
 ```text
-TeethModule
+loc_<side>_<part>_<function>_<index>
 ```
 
-Teeth Rig：
+Eye 使用固定语义：
 
 ```text
-Teeth Guide
+loc_<side>_eye_ball_001
+loc_<side>_eye_iris_001
+loc_<side>_eye_aim_001
+```
+
+Eye Rig 的正式驱动结构：
+
+```text
+Aim Ctrl Output
     ↓
-Controller
-    ↓ Matrix
-Bind Jnt
-    ↓ Rigid Skin
-Teeth Model
+Aim Constraint
+    ↓
+Main Driven
+    ↓
+Main Ctrl Output
+    ↓
+Pose Driver
+    ↓
+Pose Driven
+    ↓
+Orient Constraint
+    ↓
+Eye Joint
 ```
 
-Gum 不属于 Teeth 刚体绑定，后续由 Jaw / Mouth Deformation 处理。
+详见：
 
----
-
-# RigBase / Rig Naming
-
-`RigBase` 是可实例化的 Rig Object 基类。
-
-每个实例直接保存：
-
-```text
-side
-part
-index
-```
-
-正式 Maya Rig 节点格式：
-
-```text
-[node_type]_[side]_[part]_[function]_[index]
-```
-
-方向：
-
-```text
-lf / rt / md
-```
-
-正式用法：
-
-```python
-from muziToolset.systems.rig_base import RigBase
-
-rig = RigBase(
-    side="lf",
-    part="brow",
-    index=1
-)
-
-print(rig.side)
-print(rig.part)
-print(rig.index)
-
-jnt_name = rig.create_name(
-    node_type="jnt",
-    function="bind"
-)
-
-# jnt_lf_brow_bind_001
-```
-
-简单状态不再通过额外包装方法读取；直接使用：
-
-```python
-if rig.side == "lf":
-    pass
-```
-
-`node_type` 和 `function` 描述具体 Maya 节点，不属于 Rig Object 实例属性。
-
-纯解析 / 校验可以直接调用：
-
-```python
-fields = RigBase.parse_name(
-    "jnt_lf_brow_bind_001"
-)
-
-valid = RigBase.validate_name(
-    "jnt_lf_brow_bind_001"
-)
-```
-
-RigBase Naming 正式参数使用 `node_type=`；旧 `type=` 已退休。
-
-Maya 普通 Rename / Short Name：
-
-```python
-from muziToolset.core import rename_utils
-```
+- [Face Guide](docs/manual/face-guide.md)
+- [Face System Architecture](docs/architecture/face-system.md)
+- [Face Workflow State](docs/architecture/face-workflow-state.md)
 
 ---
 
 # Controller
 
-正式 Controller System：
+当前正式 Controller 基础实现：
 
-```python
-from muziToolset.systems import ctrl_base
+```text
+core/rigging/ctrl_utils.py
 ```
 
-标准层级：
+标准 Hierarchy：
 
 ```text
 zero
-  ↓
-driven
-  ↓
-space
-  ↓
-connect
-  ↓
-offset
-  ↓
-ctrl
-  ↓
-output
+└── driven
+    └── space
+        └── connect
+            └── offset
+                └── ctrl
+                    ├── subctrl
+                    └── output
 ```
 
-Control Creator、FK Creator、Face Module、Body Skirt 都应直接调用 `ctrl_base`。
+Controller Shape 数据来自：
+
+```text
+resources/controller_shapes/
+```
+
+支持：
+
+```text
+Shape
+Color
+Size
+Axis
+Shape Rotate
+Shape Offset
+SubCtrl
+Hierarchy
+Output
+```
+
+详见 [Controller 使用手册](docs/manual/controller.md)。
 
 ---
 
-# 测试
+# Joint
 
-静态架构门禁：
+当前正式 Joint 基础实现：
 
 ```text
-core_import_style_test.py
-rig_architecture_gate_test.py
-rig_base_contract_test.py
-module_base_contract_test.py
+core/rigging/jnt_utils.py
 ```
 
-Maya Runtime：
+`RigModule.create_joint()` 负责单个 Joint 创建 / Guide Match；具体 Joint 数量和拓扑由 Module 的 `create_joints()` 决定。
 
-```python
-import muziToolset
+Rig Library Step 03 允许调整：
 
-muziToolset.smoke_test()
-muziToolset.pipeline_smoke_test()
-muziToolset.extended_core_smoke_test()
-muziToolset.ctrl_base_smoke_test()
-muziToolset.face_build_smoke_test()
-muziToolset.rig_integration_test()
-muziToolset.maya2023_smoke_test()
-muziToolset.functional_smoke_test()
+```text
+Joint Radius
+Local Axis
+Joint Visibility
+```
+
+详见 [Jnt 使用手册](docs/manual/jnt.md)。
+
+---
+
+# Tools 当前状态
+
+`tools/` 仍包含大量绑定师直接使用的 UI：
+
+```text
+basic
+blendshape
+clean
+controller
+face
+jnt
+rig
+skin
+```
+
+其中部分 Tool 仍引用旧的平铺 Core 名称，例如：
+
+```text
+core.scene_utils
+core.skin_utils
+core.constraint_utils
+core.blendshape_utils
+```
+
+而这些入口当前已经不属于正式 Core 结构。
+
+因此当前原则是：
+
+```text
+Tool 的 UI / Workflow 可以继续维护
+    ↓
+底层依赖逐步迁移到当前 Core
+```
+
+不要为了兼容旧 Tool，把已退休的 Core 平铺架构恢复回来。
+
+详见 [常用工具工作流](docs/manual/tools.md)。
+
+---
+
+# API Reference
+
+项目网站通过 Python AST 自动扫描：
+
+```text
+__init__.py
+config.py
+app/**/*.py
+core/**/*.py
+systems/**/*.py
+tools/**/*.py
+ui/**/*.py
+```
+
+每个正式 Runtime Python 文件都会生成独立 API 页面，并展开：
+
+```text
+Module Summary
+Functions
+Classes
+Constructors
+Methods
+Signatures
+Parameters
+Returns
+Raises
+Examples
+Notes
+Source Path
+```
+
+源码 Docstring 是 API 文档第一事实来源。
+
+入口：
+
+- [API Reference](docs/reference/index.md)
+- [文档维护](docs/development/documentation.md)
+
+---
+
+# 测试与文档门禁
+
+GitHub Actions 当前会执行多类静态检查，包括：
+
+```text
+Core Import Style
+Jnt Naming Contract
+Rig Architecture Gate
+Core Public API
+System -> Core Reuse
+Runtime Docstring Standard
+Rigging Terminology Quality
+API Generator Test
+Runtime API Coverage
+Generated Layout
+README / Navigation Consistency
+MkDocs Strict Build
+```
+
+文档站构建流程：
+
+```text
+源码
+    ↓
+Docstring Check
+    ↓
+AST API Generator
+    ↓
+Reference Layout Refine
+    ↓
+SUMMARY Navigation
+    ↓
+mkdocs build --strict
+    ↓
+GitHub Pages
 ```
 
 ---
@@ -261,7 +485,9 @@ muziToolset.functional_smoke_test()
 ## 1. 用户手册
 
 - [MuziTools 用户手册](docs/manual/index.md)
+- [绑定库](docs/manual/rig-library.md)
 - [常用工具工作流](docs/manual/tools.md)
+- [Core 使用手册](docs/manual/core.md)
 - [基础工具](docs/manual/basic-tools.md)
 - [Controller](docs/manual/controller.md)
 - [Jnt](docs/manual/jnt.md)
@@ -278,13 +504,10 @@ muziToolset.functional_smoke_test()
 - [Tools 与 Systems](docs/architecture/tools-systems.md)
 - [Face System Architecture](docs/architecture/face-system.md)
 - [Face Workflow State](docs/architecture/face-workflow-state.md)
-- [Procedural Rig 架构参考](docs/architecture/xiong-lin-procedure-auto-rig.md)
 
 ## 3. API Reference
 
 - [API Reference](docs/reference/index.md)
-
-API 页面由源码 Docstring 通过 AST Generator 自动生成。
 
 ## 4. 开发指南
 
@@ -295,18 +518,28 @@ API 页面由源码 Docstring 通过 AST Generator 自动生成。
 
 ## 5. 迁移记录
 
-- [Pipeline / Core Migration](docs/migration/pipeline.md)
-- [Rig Architecture 0.4 Migration](docs/migration/rig-architecture-0.4.md)
+旧迁移页仅用于把历史链接导向当前架构，不再作为当前设计说明：
+
+- [Pipeline / Core Migration（已退休）](docs/migration/pipeline.md)
+- [Rig Architecture 0.4 Migration（已退休）](docs/migration/rig-architecture-0.4.md)
 
 ---
 
-# 代码规范
+# 代码与文档规范
 
 ```text
 模块 / 文件 / 函数 / 变量    snake_case
 Class                       PascalCase
 Side                        lf / rt / md
-Maya Rig Node               [node_type]_[side]_[part]_[function]_[index]
+Maya Rig Node               [type]_[side]_[part]_[function]_[index]
 ```
 
-流程代码优先显式 `for` 循环和清晰中文注释；Maya 场景代码优先 `maya.cmds`，正式新代码不新增 PyMel。
+项目代码继续优先：
+
+- 清晰中文注释；
+- 显式 `for` 循环；
+- Tool / System 不重复 Core；
+- 公开 API 写完整 Docstring；
+- 文档与源码一起提交；
+- 小步骤、小 Commit；
+- Maya Runtime 逻辑最终必须回到 Maya 2023 验证。
