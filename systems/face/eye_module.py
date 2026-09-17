@@ -64,13 +64,51 @@ class EyeModule(rig_module.RigModule):
         self.ctrl_axis = ctrl_axis
         self.aim_ctrl_axis = aim_ctrl_axis
 
-        self.eye_jnt_name = None
+        # Eye Module 生命周期内不会改变的稳定名称，只生成一次。
+        self.eye_jnt_name = name_utils.Name(
+            type="jnt",
+            side=self.side,
+            part=self.module,
+            function="bind",
+            index=1
+        ).name
+
+        self.main_ctrl_name = name_utils.Name(
+            type="ctrl",
+            side=self.side,
+            part=self.module,
+            function="main",
+            index=1
+        ).name
+
+        self.aim_ctrl_name = name_utils.Name(
+            type="ctrl",
+            side=self.side,
+            part=self.module,
+            function="aim",
+            index=1
+        ).name
+
+        self.main_driven_name = self.main_ctrl_name.replace(
+            "ctrl_",
+            "driven_",
+            1
+        )
+
+        self.main_output_name = self.main_ctrl_name.replace(
+            "ctrl_",
+            "output_",
+            1
+        )
+
+        self.aim_output_name = self.aim_ctrl_name.replace(
+            "ctrl_",
+            "output_",
+            1
+        )
+
         self.eye_jnt_object = None
-
-        self.main_ctrl_name = None
         self.main_ctrl_object = None
-
-        self.aim_ctrl_name = None
         self.aim_ctrl_object = None
 
     def create_joints(self):
@@ -80,14 +118,6 @@ class EyeModule(rig_module.RigModule):
             raise RuntimeError(
                 u"Eye Module 需要 Ball / Iris / Aim 三个 Guide。"
             )
-
-        self.eye_jnt_name = name_utils.Name(
-            type="jnt",
-            side=self.side,
-            part=self.module,
-            function="bind",
-            index=1
-        ).name
 
         self.eye_jnt_object = self.create_joint(
             name=self.eye_jnt_name,
@@ -99,14 +129,6 @@ class EyeModule(rig_module.RigModule):
     def create_ctrls(self):
         u"""在 Iris / Aim Guide 创建 Main 和 Aim Controller。"""
 
-        self.main_ctrl_name = name_utils.Name(
-            type="ctrl",
-            side=self.side,
-            part=self.module,
-            function="main",
-            index=1
-        ).name
-
         self.main_ctrl_object = self.create_ctrl(
             name=self.main_ctrl_name,
             guide=self.guide_list[1],
@@ -116,14 +138,6 @@ class EyeModule(rig_module.RigModule):
             ctrl_axis=self.ctrl_axis,
             create_hierarchy=True
         )
-
-        self.aim_ctrl_name = name_utils.Name(
-            type="ctrl",
-            side=self.side,
-            part=self.module,
-            function="aim",
-            index=1
-        ).name
 
         self.aim_ctrl_object = self.create_ctrl(
             name=self.aim_ctrl_name,
@@ -165,55 +179,13 @@ class EyeModule(rig_module.RigModule):
     def connect_rig(self):
         u"""建立 Aim Controller -> Main Controller -> Eye Joint 驱动。"""
 
-        self.eye_jnt_name = name_utils.Name(
-            type="jnt",
-            side=self.side,
-            part=self.module,
-            function="bind",
-            index=1
-        ).name
-
-        self.main_ctrl_name = name_utils.Name(
-            type="ctrl",
-            side=self.side,
-            part=self.module,
-            function="main",
-            index=1
-        ).name
-
-        self.aim_ctrl_name = name_utils.Name(
-            type="ctrl",
-            side=self.side,
-            part=self.module,
-            function="aim",
-            index=1
-        ).name
-
-        main_driven = self.main_ctrl_name.replace(
-            "ctrl_",
-            "driven_",
-            1
-        )
-
-        main_output = self.main_ctrl_name.replace(
-            "ctrl_",
-            "output_",
-            1
-        )
-
-        aim_output = self.aim_ctrl_name.replace(
-            "ctrl_",
-            "output_",
-            1
-        )
-
         required_nodes = [
             self.eye_jnt_name,
             self.main_ctrl_name,
-            main_driven,
-            main_output,
+            self.main_driven_name,
+            self.main_output_name,
             self.aim_ctrl_name,
-            aim_output,
+            self.aim_output_name,
         ]
 
         for node_name in required_nodes:
@@ -223,7 +195,7 @@ class EyeModule(rig_module.RigModule):
                 )
 
         aim_constraints = cmds.listConnections(
-            main_driven,
+            self.main_driven_name,
             source=True,
             destination=False,
             type="aimConstraint"
@@ -233,8 +205,8 @@ class EyeModule(rig_module.RigModule):
             aim_constraint = aim_constraints[0]
         else:
             result = cmds.aimConstraint(
-                aim_output,
-                main_driven,
+                self.aim_output_name,
+                self.main_driven_name,
                 maintainOffset=False,
                 aimVector=(1, 0, 0),
                 upVector=(0, 1, 0),
@@ -254,7 +226,7 @@ class EyeModule(rig_module.RigModule):
             parent_constraint = parent_constraints[0]
         else:
             result = cmds.parentConstraint(
-                main_output,
+                self.main_output_name,
                 self.eye_jnt_name,
                 maintainOffset=True
             )
@@ -268,33 +240,11 @@ class EyeModule(rig_module.RigModule):
     def delete_rig(self):
         u"""删除 Eye Constraint 和当前 Eye Module 的全部输出。"""
 
-        eye_jnt_name = name_utils.Name(
-            type="jnt",
-            side=self.side,
-            part=self.module,
-            function="bind",
-            index=1
-        ).name
-
-        main_ctrl_name = name_utils.Name(
-            type="ctrl",
-            side=self.side,
-            part=self.module,
-            function="main",
-            index=1
-        ).name
-
-        main_driven = main_ctrl_name.replace(
-            "ctrl_",
-            "driven_",
-            1
-        )
-
         constraints = []
 
-        if cmds.objExists(main_driven):
+        if cmds.objExists(self.main_driven_name):
             nodes = cmds.listConnections(
-                main_driven,
+                self.main_driven_name,
                 source=True,
                 destination=False,
                 type="aimConstraint"
@@ -304,9 +254,9 @@ class EyeModule(rig_module.RigModule):
                 if node_name not in constraints:
                     constraints.append(node_name)
 
-        if cmds.objExists(eye_jnt_name):
+        if cmds.objExists(self.eye_jnt_name):
             nodes = cmds.listConnections(
-                eye_jnt_name,
+                self.eye_jnt_name,
                 source=True,
                 destination=False,
                 type="parentConstraint"
@@ -319,4 +269,10 @@ class EyeModule(rig_module.RigModule):
         if constraints:
             cmds.delete(constraints)
 
-        return super(EyeModule, self).delete_rig()
+        delete_nodes = super(EyeModule, self).delete_rig()
+
+        self.eye_jnt_object = None
+        self.main_ctrl_object = None
+        self.aim_ctrl_object = None
+
+        return delete_nodes
