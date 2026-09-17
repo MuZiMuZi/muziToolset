@@ -2,14 +2,13 @@
 u"""
 EarModule：耳朵三段 FK 绑定模块。
 
-EarModule 本身不重复实现 FK 算法，而是把耳朵的稳定业务配置交给
-``systems.components.fk_chain.FKChain``：
+EarModule 本身不重复实现 FK 算法，只负责把耳朵的固定配置传给 FKChain。
 
-    Guide Count     = 3
-    Guide Function  = bind
-    Joint Function  = bind
-    Ctrl Function   = fk
-    Ctrl Shape      = circle
+标准配置：
+    Guide Count    = 3
+    Joint Function = bind
+    Ctrl Function  = fk
+    Ctrl Shape     = circle
 
 标准 Guide：
     loc_<side>_ear_bind_001
@@ -22,26 +21,20 @@ EarModule 本身不重复实现 FK 算法，而是把耳朵的稳定业务配置
     grp_<side>_ear_jnt_001
     grp_<side>_ear_ctrl_001
 
-构建与连接生命周期全部继承 FKChain，因此 EarModule 可以直接参与 Rig Library 的
-Build / Rebuild / Final 流程。
+生命周期：
+    build_rig()   -> 创建 Joint / Controller / FK Hierarchy
+    connect_rig() -> 创建 Controller Output 到 Joint 的 Parent Constraint
+    delete_rig()  -> 删除 Ear 自己创建的 Constraint 和 DAG 输出
+
+Guide 的创建和导入以后由 Guide Template 系统负责。
+EarModule 只接收已经确定好的三个 Locator 名称。
 """
 
 from ..components import fk_chain
 
 
 class EarModule(fk_chain.FKChain):
-    u"""
-    使用标准三段 FK Chain 实现的耳朵 Rig Module。
-
-    这个类的主要职责是固定 Ear 的 Guide 数量、Naming Token 和默认 Controller
-    设置；真正的 Guide 查询、Joint / Controller 创建、FK Hierarchy、Output → Joint
-    Parent Constraint 和分阶段连接由 ``FKChain`` 负责。
-
-    适用场景：
-        - 左 / 右耳朵三段 FK；
-        - Rig Library 中需要支持 Guide Mirror 和 Rebuild 的耳朵模块；
-        - 希望保持 Ear 与通用 FKChain 使用同一套生命周期时。
-    """
+    u"""使用标准三段 FKChain 实现的耳朵绑定模块。"""
 
     def __init__(
         self,
@@ -53,38 +46,30 @@ class EarModule(fk_chain.FKChain):
         ctrl_axis="X+"
     ):
         u"""
-        初始化耳朵 FK Module，并把 Ear 固定配置传给 ``FKChain``。
+        初始化 EarModule。
+
+        EarModule 只保存耳朵自己的固定业务配置，真正的 Joint、Controller、
+        Constraint 创建和删除全部由 FKChain 统一处理。
 
         Args:
             module (str):
-                Module Part Token，默认 ``"ear"``。Rig Library 正式 Ear 模块应保持默认值。
+                模块名称，正式耳朵模块默认使用 "ear"。
             side (str):
-                方向标记。实际角色耳朵通常使用 ``"lf"`` 或 ``"rt"``。
-            guide (str | list[str] | tuple[str] | object | None):
-                可选 Guide 来源。None 时 FKChain 会按标准 Ear Locator 名称自动查找三项。
-            jnt_parent (str | object | None):
-                Ear Joint Master Group 的可选上层父节点；Rig Library 通常传入 ``grp_md_rig_jnt_001``。
-            ctrl_parent (str | object | None):
-                Ear Controller Master Group 的可选上层父节点；Rig Library 通常传入 ``grp_md_rig_ctrl_001``。
+                左右方向，正式角色通常使用 "lf" 或 "rt"。
+            guide (list[str] | tuple[str] | None):
+                Guide Template 导入完成后提供的三个 Ear Locator，顺序必须和 FK 链一致。
+            jnt_parent (str | None):
+                Ear Joint 总组需要挂接的上层节点。
+            ctrl_parent (str | None):
+                Ear Controller 总组需要挂接的上层节点。
             ctrl_axis (str):
-                Controller Shape 绝对轴向，支持 ``X+ / X- / Y+ / Y- / Z+ / Z-``。
-
-        Example:
-            >>> from muziToolset.systems.face import ear_module
-                >>> ear = ear_module.EarModule(
-                ...     side="lf",
-                ...     ctrl_axis="Z+",
-                ... )
-                >>> ear.build()
-
-        Notes:
-            Rig Library 分阶段构建时通常调用继承的 ``build_outputs()``，Final 阶段
-                再调用 ``connect_outputs()``，而不是一次执行 ``build()``。
+                Controller Shape 轴向。
         """
 
-        # -------------------------------------------------------------------------
-        # Step 01：执行当前阶段的核心处理
-        # -------------------------------------------------------------------------
+        # ---------------------------------------------------------------------
+        # Ear 是固定三段 FK，因此这里只需要把固定参数交给 FKChain。
+        # 后续 build_rig() / connect_rig() / delete_rig() 全部直接继承。
+        # ---------------------------------------------------------------------
         super(EarModule, self).__init__(
             module=module,
             side=side,
