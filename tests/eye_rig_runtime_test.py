@@ -85,6 +85,32 @@ def build(side="lf"):
         if not cmds.objExists(node_name):
             raise RuntimeError(u"Build 后缺少节点：{}".format(node_name))
 
+    # Main Controller 和 Eye Bind Joint 必须拥有同一个眼球旋转中心。
+    # 两者都应该吸附 Ball Guide，如果这里位置不同，Aim 旋转时就会产生偏移。
+    eye_jnt_position = cmds.xform(
+        eye.eye_jnt_name,
+        query=True,
+        worldSpace=True,
+        translation=True
+    )
+
+    main_ctrl_position = cmds.xform(
+        eye.main_ctrl_name,
+        query=True,
+        worldSpace=True,
+        translation=True
+    )
+
+    for index in range(3):
+        position_difference = abs(
+            eye_jnt_position[index] - main_ctrl_position[index]
+        )
+
+        if position_difference > 0.0001:
+            raise RuntimeError(
+                u"Main Controller 没有和 Eye Bind Joint 对齐：{}".format(side)
+            )
+
     print(u"[Eye Test] build_rig PASS : {}".format(side))
 
     return expected_nodes
