@@ -2513,6 +2513,9 @@ def build_summary_markdown(module_infos):
     lines.append(
         "    * [Face Guide](manual/face-guide.md)"
     )
+    lines.append(
+        "    * [界面图解](manual/visual-guide.md)"
+    )
 
     lines.append(
         "* 原理说明"

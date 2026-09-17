@@ -21,6 +21,8 @@ Final 负责最终驱动连接
 systems/face/
 ├── __init__.py
 ├── face_guide_config.py
+├── face_module.py
+├── eye_pair_module.py
 ├── eye_module.py
 ├── ear_module.py
 └── tongue_module.py
@@ -37,6 +39,9 @@ systems/rig/
     ├── library_widgets.py
     └── modular_rig_ui.py
 ```
+
+`FaceModule` 统一调度整个 Face Rig 生命周期；`EyePairModule` 组合左右
+`EyeModule` 与中间 Aim 总控制器。具体部位模块只负责自己的构建算法。
 
 Face Tool 用户入口位于：
 

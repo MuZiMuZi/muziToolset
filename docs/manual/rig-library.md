@@ -2,6 +2,8 @@
 
 Rig Library 是 MuziTools 当前模块化绑定的主要工作界面。
 
+界面区域和实际截图见 [界面图解](visual-guide.md)。
+
 它不是一个“一键自动绑定”按钮，而是把 Rig 构建拆成四个明确阶段，让你可以在最终连接之前反复调整 Guide、Controller 和 Joint。
 
 当前流程：

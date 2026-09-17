@@ -20,6 +20,7 @@
     * [场景清理与模型检查](manual/cleanup.md)
     * [绑定工作流](manual/rigging.md)
     * [Face Guide](manual/face-guide.md)
+    * [界面图解](manual/visual-guide.md)
 * 原理说明
     * [原理说明首页](explanation/index.md)
     * [节点关系](explanation/node-relationships.md)
