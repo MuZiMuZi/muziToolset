@@ -2,19 +2,22 @@
 u"""
 EyeModule：眼球 Aim 绑定模块。
 
-职责保持简单：
-    1. Ball Guide 创建 Eye Joint。
-    2. Iris Guide 创建 Main Controller。
-    3. Aim Guide 创建 Aim Controller。
-    4. Final 阶段使用 Aim Constraint 控制目光方向。
-    5. Main Output 使用 Parent Constraint 驱动 Eye Joint。
+创建流程：
+    build_rig()
+        Ball Guide -> Eye Joint
+        Iris Guide -> Main Controller
+        Aim Guide  -> Aim Controller
 
-Guide 顺序由 Rig Library 统一提供：
-    0 = Ball
-    1 = Iris
-    2 = Aim
+连接流程：
+    connect_rig()
+        Aim Output -> Aim Constraint -> Main Driven
+        Main Output -> Parent Constraint -> Eye Joint
 
-Eyelid、Blink、RBF、Corrective 等功能不放在 EyeModule 中。
+删除流程：
+    delete_rig()
+        删除 Eye Constraint、Joint 和 Controller Hierarchy。
+
+Eyelid、Blink、RBF、Corrective 不属于 EyeModule。
 """
 
 import maya.cmds as cmds
@@ -71,7 +74,7 @@ class EyeModule(rig_module.RigModule):
         self.aim_ctrl_object = None
 
     def create_joints(self):
-        u"""在 Ball Guide 位置创建眼球 Joint。"""
+        u"""在 Ball Guide 位置创建 Eye Joint。"""
 
         if len(self.guide_list) != 3:
             raise RuntimeError(
@@ -94,7 +97,7 @@ class EyeModule(rig_module.RigModule):
         return [self.eye_jnt_name]
 
     def create_ctrls(self):
-        u"""创建 Main Controller 和 Aim Controller。"""
+        u"""在 Iris / Aim Guide 创建 Main 和 Aim Controller。"""
 
         self.main_ctrl_name = name_utils.Name(
             type="ctrl",
@@ -138,7 +141,7 @@ class EyeModule(rig_module.RigModule):
         ]
 
     def setup_hierarchy(self):
-        u"""把 Eye Joint 和两个 Controller 放入模块组。"""
+        u"""把 Eye Joint 和两个 Controller 放入模块根组。"""
 
         super(EyeModule, self).setup_hierarchy()
 
@@ -159,8 +162,8 @@ class EyeModule(rig_module.RigModule):
 
         return self.jnt_master_grp, self.ctrl_master_grp
 
-    def load_outputs(self):
-        u"""读取 Step 03 已经创建好的 Eye 输出。"""
+    def connect_rig(self):
+        u"""建立 Aim Controller -> Main Controller -> Eye Joint 驱动。"""
 
         self.eye_jnt_name = name_utils.Name(
             type="jnt",
@@ -186,26 +189,6 @@ class EyeModule(rig_module.RigModule):
             index=1
         ).name
 
-        required_nodes = [
-            self.eye_jnt_name,
-            self.main_ctrl_name,
-            self.main_ctrl_name.replace("ctrl_", "driven_", 1),
-            self.main_ctrl_name.replace("ctrl_", "output_", 1),
-            self.aim_ctrl_name,
-            self.aim_ctrl_name.replace("ctrl_", "output_", 1),
-        ]
-
-        for node_name in required_nodes:
-            if not cmds.objExists(node_name):
-                raise RuntimeError(
-                    u"找不到已经生成的 Eye 输出：{}".format(node_name)
-                )
-
-        return required_nodes
-
-    def connect_rig(self):
-        u"""创建 Aim Controller → Main Controller → Eye Joint 的最终连接。"""
-
         main_driven = self.main_ctrl_name.replace(
             "ctrl_",
             "driven_",
@@ -224,6 +207,21 @@ class EyeModule(rig_module.RigModule):
             1
         )
 
+        required_nodes = [
+            self.eye_jnt_name,
+            self.main_ctrl_name,
+            main_driven,
+            main_output,
+            self.aim_ctrl_name,
+            aim_output,
+        ]
+
+        for node_name in required_nodes:
+            if not cmds.objExists(node_name):
+                raise RuntimeError(
+                    u"Eye Rig 节点不存在：{}".format(node_name)
+                )
+
         aim_constraints = cmds.listConnections(
             main_driven,
             source=True,
@@ -231,8 +229,10 @@ class EyeModule(rig_module.RigModule):
             type="aimConstraint"
         ) or []
 
-        if not aim_constraints:
-            cmds.aimConstraint(
+        if aim_constraints:
+            aim_constraint = aim_constraints[0]
+        else:
+            result = cmds.aimConstraint(
                 aim_output,
                 main_driven,
                 maintainOffset=False,
@@ -241,6 +241,7 @@ class EyeModule(rig_module.RigModule):
                 worldUpType="vector",
                 worldUpVector=(0, 1, 0)
             )
+            aim_constraint = result[0]
 
         parent_constraints = cmds.listConnections(
             self.eye_jnt_name,
@@ -249,14 +250,73 @@ class EyeModule(rig_module.RigModule):
             type="parentConstraint"
         ) or []
 
-        if not parent_constraints:
-            cmds.parentConstraint(
+        if parent_constraints:
+            parent_constraint = parent_constraints[0]
+        else:
+            result = cmds.parentConstraint(
                 main_output,
                 self.eye_jnt_name,
                 maintainOffset=True
             )
+            parent_constraint = result[0]
 
         return {
-            "aim": aim_constraints,
-            "parent": parent_constraints,
+            "aim": aim_constraint,
+            "parent": parent_constraint,
         }
+
+    def delete_rig(self):
+        u"""删除 Eye Constraint 和当前 Eye Module 的全部输出。"""
+
+        eye_jnt_name = name_utils.Name(
+            type="jnt",
+            side=self.side,
+            part=self.module,
+            function="bind",
+            index=1
+        ).name
+
+        main_ctrl_name = name_utils.Name(
+            type="ctrl",
+            side=self.side,
+            part=self.module,
+            function="main",
+            index=1
+        ).name
+
+        main_driven = main_ctrl_name.replace(
+            "ctrl_",
+            "driven_",
+            1
+        )
+
+        constraints = []
+
+        if cmds.objExists(main_driven):
+            nodes = cmds.listConnections(
+                main_driven,
+                source=True,
+                destination=False,
+                type="aimConstraint"
+            ) or []
+
+            for node_name in nodes:
+                if node_name not in constraints:
+                    constraints.append(node_name)
+
+        if cmds.objExists(eye_jnt_name):
+            nodes = cmds.listConnections(
+                eye_jnt_name,
+                source=True,
+                destination=False,
+                type="parentConstraint"
+            ) or []
+
+            for node_name in nodes:
+                if node_name not in constraints:
+                    constraints.append(node_name)
+
+        if constraints:
+            cmds.delete(constraints)
+
+        return super(EyeModule, self).delete_rig()
