@@ -21,12 +21,20 @@ FaceModule 不负责实现 Eye、Ear、Tongue 等具体部位的绑定算法，
         -> 删除 Face Joint / Controller 两个总组
         -> 保留 face_guide.ma，方便继续调整 Guide 后重新 Build
 
+Eye 当前结构：
+    FaceModule
+        -> EyePairModule
+            -> 左 EyeModule
+            -> 右 EyeModule
+            -> 中间 Aim 总控制器
+
 设计原则：
     1. face_guide.ma 是整个面部绑定唯一的 Guide Template。
     2. FaceModule 负责整个 Face Rig 的生命周期和模块调度。
-    3. EyeModule / EarModule / TongueModule 只负责自己的具体绑定算法。
-    4. 子模块需要使用哪些 Locator，由 FaceModule 根据 face_guide_config 统一传入。
-    5. UI 不参与这里的逻辑，后续 UI 只需要调用 FaceModule 的公开阶段方法。
+    3. EyePairModule 负责把左右 EyeModule 和中间 Aim 总控组合成完整双眼系统。
+    4. EyeModule / EarModule / TongueModule 只负责自己的具体绑定算法。
+    5. 子模块需要使用哪些 Locator，由 FaceModule 根据 face_guide_config 统一传入。
+    6. UI 不参与这里的逻辑，后续 UI 只需要调用 FaceModule 的公开阶段方法。
 """
 
 import os
@@ -36,7 +44,7 @@ import maya.cmds as cmds
 from ... import config as package_config
 from ...core.common import name_utils, hierarchy_utils
 from . import face_guide_config
-from .eye_module import EyeModule
+from .eye_pair_module import EyePairModule
 from .ear_module import EarModule
 from .tongue_module import TongueModule
 
@@ -87,23 +95,33 @@ class FaceModule(object):
         tongue_guides = face_guide_config.get_bind_locator_names("md", "tongue", 5)
 
         # ---------------------------------------------------------------------
-        # 当前已经实现的面部子模块统一在 FaceModule 中创建一次。
-        # 子模块只拿自己需要的 Guide，并统一把模块 Joint / Ctrl 组挂到 Face 总组。
+        # Eye 不再由 FaceModule 分别管理两个独立 EyeModule。
+        # EyePairModule 内部统一持有左右 EyeModule，并额外负责中间 Aim 总控。
         # ---------------------------------------------------------------------
-        self.lf_eye = EyeModule(side="lf", guide=lf_eye_guides, jnt_parent=self.jnt_master_grp, ctrl_parent=self.ctrl_master_grp)
-        self.rt_eye = EyeModule(side="rt", guide=rt_eye_guides, jnt_parent=self.jnt_master_grp, ctrl_parent=self.ctrl_master_grp)
+        self.eye = EyePairModule(
+            lf_guide=lf_eye_guides,
+            rt_guide=rt_eye_guides,
+            jnt_parent=self.jnt_master_grp,
+            ctrl_parent=self.ctrl_master_grp
+        )
+
+        # 保留 lf_eye / rt_eye 两个直接入口。
+        # 这样已有测试代码或后续需要单独访问某一只眼睛时，不需要改调用方式。
+        self.lf_eye = self.eye.lf_eye
+        self.rt_eye = self.eye.rt_eye
+
+        # 其他已经存在的 Face 子模块继续保持原来的独立结构。
         self.lf_ear = EarModule(side="lf", guide=lf_ear_guides, jnt_parent=self.jnt_master_grp, ctrl_parent=self.ctrl_master_grp)
         self.rt_ear = EarModule(side="rt", guide=rt_ear_guides, jnt_parent=self.jnt_master_grp, ctrl_parent=self.ctrl_master_grp)
         self.tongue = TongueModule(side="md", guide=tongue_guides, jnt_parent=self.jnt_master_grp, ctrl_parent=self.ctrl_master_grp)
 
         # ---------------------------------------------------------------------
         # modules 保存整个 Face Rig 当前真正参与构建的模块顺序。
-        # 后续增加 Brow / Eyelid / Mouth 时，只需要在这里增加实例并加入列表，
-        # build / connect / delete 的总流程不需要重新改写。
+        # Eye 这里只加入 EyePairModule 一次，不能再把 lf_eye / rt_eye 单独加入，
+        # 否则 FaceModule.build_rig() 会重复创建两只眼睛。
         # ---------------------------------------------------------------------
         self.modules = [
-            self.lf_eye,
-            self.rt_eye,
+            self.eye,
             self.lf_ear,
             self.rt_ear,
             self.tongue,
@@ -129,10 +147,7 @@ class FaceModule(object):
         if not os.path.isfile(self.guide_template_path):
             raise RuntimeError(u"找不到 Face Guide Template：{}".format(self.guide_template_path))
 
-        # ---------------------------------------------------------------------
         # 直接把完整 face_guide.ma 导入当前 Maya 场景。
-        # Eye / Ear / Tongue 等模块后续只读取模板中已经存在的 Locator。
-        # ---------------------------------------------------------------------
         cmds.file(
             self.guide_template_path,
             i=True,
@@ -152,16 +167,51 @@ class FaceModule(object):
 
         子模块不会自己创建第二套 Face 总组，它们只保留自己的模块组，
         然后把模块组挂到这里创建的 Face 总组下面。
-
-        Returns:
-            tuple[str, str]:
-                Face Joint 总组和 Controller 总组名称。
         """
 
         hierarchy_utils.get_or_create_group(self.jnt_master_grp)
         hierarchy_utils.get_or_create_group(self.ctrl_master_grp)
 
         return self.jnt_master_grp, self.ctrl_master_grp
+
+    def build_eyes(self):
+        u"""
+        只创建完整双眼系统，方便当前阶段在 Maya 中单独测试 Eye。
+
+        创建内容：
+            1. 左眼 Ball / Iris Joint 和 Main / Aim Controller。
+            2. 右眼 Ball / Iris Joint 和 Main / Aim Controller。
+            3. 左右 Aim 中间的 ctrl_md_eye_aim_001 总控制器。
+
+        这个方法不会创建 Ear / Tongue 等其他 Face Module。
+        """
+
+        if not cmds.objExists(self.guide_root):
+            raise RuntimeError(u"找不到 Face Guide，请先执行 FaceModule.import_guide()。")
+
+        self.setup_hierarchy()
+
+        return self.eye.build_rig()
+
+    def connect_eyes(self):
+        u"""
+        只建立双眼系统的正式连接。
+
+        左右 EyeModule 分别建立自己的 Aim / Orient Constraint，
+        中间 Aim 总控再通过 Point Constraint 驱动左右 Aim Driven Group。
+        """
+
+        return self.eye.connect_rig()
+
+    def delete_eyes(self):
+        u"""
+        只删除双眼系统，保留 Face Guide 和 Face 总组。
+
+        适合当前 Eye 开发阶段反复执行：
+            调整 Guide -> build_eyes() -> connect_eyes() -> delete_eyes()
+        """
+
+        return self.eye.delete_rig()
 
     def build_rig(self):
         u"""
@@ -173,31 +223,20 @@ class FaceModule(object):
             3. 按 modules 顺序调用每个子模块的 build_rig()。
 
         这里只负责创建，不建立最终 Constraint / Matrix / Deformer 连接。
-        connect_rig() 保持为独立阶段，方便在 Maya 中逐阶段测试。
         """
 
-        # Build 前必须先有正式 Face Guide Template。
-        # Guide 调整属于独立阶段，因此这里不会偷偷重新导入或覆盖模板。
         if not cmds.objExists(self.guide_root):
             raise RuntimeError(u"找不到 Face Guide，请先执行 FaceModule.import_guide()。")
 
-        # 子模块 setup_hierarchy() 会把自己的模块组挂到这两个 Face 总组下面，
-        # 所以必须先创建 Face 总组。
         self.setup_hierarchy()
 
-        # 统一执行当前所有面部子模块的创建阶段。
         for module in self.modules:
             module.build_rig()
 
         return self.modules
 
     def connect_rig(self):
-        u"""
-        建立整个 Face Rig 当前已经实现模块的最终驱动连接。
-
-        FaceModule 不知道具体模块使用 Aim Constraint、Parent Constraint、Matrix
-        还是其他连接方式，只负责调用每个子模块自己的 connect_rig()。
-        """
+        u"""建立整个 Face Rig 当前已经实现模块的最终驱动连接。"""
 
         for module in self.modules:
             module.connect_rig()
@@ -212,17 +251,11 @@ class FaceModule(object):
             1. 每个子模块先删除自己创建的 Constraint 和模块 DAG 输出。
             2. 删除 Face Joint / Controller 两个总组。
             3. Guide Template 保留在场景中，可以继续调整后重新 build_rig()。
-
-        Returns:
-            list[str]:
-                实际删除的 Face 总组名称。
         """
 
-        # 子模块知道自己创建了哪些节点，所以由各自 delete_rig() 完成精确清理。
         for module in self.modules:
             module.delete_rig()
 
-        # 子模块输出清理完成后，再删除已经为空的 Face 总组。
         delete_nodes = []
 
         if cmds.objExists(self.ctrl_master_grp):
