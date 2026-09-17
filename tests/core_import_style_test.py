@@ -3,15 +3,22 @@ u"""
 Core Import Style Test
 ======================
 
-静态检查正式代码是否重新引入已经退休的 CamelCase Core 模块。
+静态检查**当前正式 Runtime** 是否重新引入已经退休的 CamelCase Core 模块。
 
-正式模块：
+当前正式 Core：
+    core/common/
+    core/rigging/
+
+历史兼容区：
+    core/bake/
+
+正式模块示例：
     attr_utils
     hierarchy_utils
     jnt_utils
     name_utils
 
-已退休模块：
+已退休的新架构入口：
     attrUtils
     hierarchyUtils
     jntUtils
@@ -19,8 +26,15 @@ Core Import Style Test
 
 检查内容
 --------
-1. ``core/`` 下不允许重新出现对应的 CamelCase Python 文件；
-2. ``app / ui / core / tools / systems / tests`` 不允许重新 Import 这些旧模块名。
+1. ``core/`` 根目录不允许重新出现对应的 CamelCase Python 文件；
+2. ``app / ui / core/common / core/rigging / tools / systems / tests`` 不允许重新
+   Import 这些旧模块名；
+3. ``core/bake`` 是明确的 Compatibility / Historical 区，不参与当前 Import Gate。
+
+为什么排除 ``core/bake``：
+    Bake 目录保留旧版工具和 CamelCase Compatibility Module 的目的，就是让历史代码
+    在迁移期间仍然可以被查阅或有限复用。把它再次纳入“正式新 Core”扫描，会让 Gate
+    与仓库当前架构定义互相矛盾。
 
 本测试使用 Python AST，只检查源码结构，不会因为普通注释或文档文字提到历史名称而误报。
 它不 Import Maya，也不会修改场景，因此可以同时在 Maya 和 GitHub Actions 中运行。
@@ -47,25 +61,17 @@ def get_package_root():
 def get_formal_roots():
     """返回需要执行正式 Import Gate 的源码目录。"""
     package_root = get_package_root()
-    root_names = [
-        "app",
-        "ui",
-        "core",
-        "tools",
-        "systems",
-        "tests",
+    root_paths = [
+        os.path.join(package_root, "app"),
+        os.path.join(package_root, "ui"),
+        os.path.join(package_root, "core", "common"),
+        os.path.join(package_root, "core", "rigging"),
+        os.path.join(package_root, "tools"),
+        os.path.join(package_root, "systems"),
+        os.path.join(package_root, "tests"),
     ]
-    roots = []
 
-    for root_name in root_names:
-        roots.append(
-            os.path.join(
-                package_root,
-                root_name
-            )
-        )
-
-    return roots
+    return root_paths
 
 
 def get_retired_module_names():
@@ -83,7 +89,7 @@ def get_retired_module_names():
 
 
 def get_retired_file_paths():
-    """返回四个已经删除、禁止重新出现的历史 Core 文件路径。"""
+    """返回禁止重新出现在 ``core/`` 根目录的历史 Core 文件路径。"""
     package_root = get_package_root()
     core_directory = os.path.join(
         package_root,
@@ -109,7 +115,7 @@ def get_retired_file_paths():
 # =============================================================================
 
 def iter_python_files():
-    """遍历正式代码目录中的全部 Python 文件。"""
+    """遍历当前正式源码目录中的全部 Python 文件。"""
     for formal_root in get_formal_roots():
         if not os.path.isdir(formal_root):
             continue
@@ -221,12 +227,11 @@ def scan_file(file_path):
 # =============================================================================
 
 def scan_retired_files():
-    """
-    检查已经删除的 CamelCase Core 文件是否被重新加入仓库。
+    u"""
+    检查已经删除的 CamelCase Core 文件是否被重新加入 ``core/`` 根目录。
 
-    为什么单独检查文件存在：
-        即使某个重新加入的兼容文件内部只 Import snake_case 实现，单纯 AST Import 扫描也未必能发现问题。
-        因此这里把“历史文件重新出现”本身就视为架构回退。
+    ``core/bake`` 中的同名历史兼容文件不属于本检查范围；它们是显式 Compatibility
+    内容，而不是新架构入口。
     """
     issues = []
 
@@ -245,21 +250,15 @@ def scan_retired_files():
 
 
 def scan_repository():
-    """扫描退休文件和全部正式 Python Import。"""
+    """扫描退休根文件和全部当前正式 Python Import。"""
     issues = []
     file_count = 0
 
-    # -------------------------------------------------------------------------
-    # 步骤 1：退休 CamelCase 文件本身不允许重新出现。
-    # -------------------------------------------------------------------------
     retired_file_issues = scan_retired_files()
 
     for issue in retired_file_issues:
         issues.append(issue)
 
-    # -------------------------------------------------------------------------
-    # 步骤 2：扫描正式源码中的 Import 语义。
-    # -------------------------------------------------------------------------
     for file_path in iter_python_files():
         file_count += 1
 
@@ -279,7 +278,7 @@ def scan_repository():
 # =============================================================================
 
 def run():
-    """运行 snake_case Core 架构 Gate。"""
+    """运行当前正式 Core 的 snake_case Import Gate。"""
     print("=" * 78)
     print("Muzi Toolset - Core Import Style Test")
     print("=" * 78)
@@ -296,7 +295,7 @@ def run():
 
             if issue["issue_type"] == "retired_file":
                 print(
-                    u"[FAIL] {} | 已退休的 CamelCase Core 文件重新出现".format(
+                    u"[FAIL] {} | 已退休的 CamelCase Core 根文件重新出现".format(
                         relative_path
                     )
                 )
@@ -311,12 +310,15 @@ def run():
             )
     else:
         print(
-            u"[PASS] {} 个正式 Python 文件全部使用当前 Core 模块命名。".format(
+            u"[PASS] {} 个当前正式 Python 文件全部使用当前 Core 模块命名。".format(
                 result["file_count"]
             )
         )
         print(
-            u"[PASS] 已退休 CamelCase Core 文件保持删除状态。"
+            u"[PASS] core/ 根目录的退休 CamelCase 入口保持删除状态。"
+        )
+        print(
+            u"[PASS] core/bake 作为 Compatibility 区不参与正式 Import Gate。"
         )
 
     print("-" * 78)
