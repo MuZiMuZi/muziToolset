@@ -179,6 +179,7 @@ class EyeModule(rig_module.RigModule):
 
         Aim Output：
             通过 aimConstraint 驱动 Main Driven，使 Main Controller 层级朝向 Aim。
+            创建约束时保持偏移，保留 Guide 阶段已经确定好的初始眼球朝向。
 
         Main Output：
             只通过 orientConstraint 驱动 Eye Joint 的旋转。
@@ -201,12 +202,14 @@ class EyeModule(rig_module.RigModule):
                 raise RuntimeError(u"Eye Rig 节点不存在：{}".format(node_name))
 
         # Aim Output -> Main Driven。
+        # maintainOffset=True 保留当前 Main Driven 的初始朝向，
+        # 避免创建 Aim Constraint 的瞬间把控制器重新对齐到零偏移朝向。
         # Constraint 已经存在时直接复用，避免重复 connect 产生新的节点。
         if not cmds.objExists(self.aim_constraint_name):
             cmds.aimConstraint(
                 self.aim_output_name,
                 self.main_driven_name,
-                maintainOffset=False,
+                maintainOffset=True,
                 aimVector=(1, 0, 0),
                 upVector=(0, 1, 0),
                 worldUpType="vector",
