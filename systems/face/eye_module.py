@@ -54,7 +54,37 @@ class EyeModule(rig_module.RigModule):
         ctrl_axis="Z+",
         aim_ctrl_axis="Z+"
     ):
-        u"""初始化 Eye Module 的配置、稳定节点名称和运行时对象。"""
+        u"""
+        初始化 Eye Module 的配置、稳定节点名称和运行时对象。
+
+        Args:
+            module (str):
+                `module` 对应的名称、标记或字符串参数。
+            side (str):
+                方向标记，常用值为 lf、rt 或 md。
+            guide (str):
+                需要查询或处理的 Guide Transform 名称。
+            jnt_parent (object):
+                `jnt_parent` 对应的输入数据。
+            ctrl_parent (object):
+                `ctrl_parent` 对应的输入数据。
+            ctrl_shape (str):
+                `ctrl_shape` 对应的名称、标记或字符串参数。
+            aim_ctrl_shape (str):
+                `aim_ctrl_shape` 对应的名称、标记或字符串参数。
+            ctrl_color (int):
+                `ctrl_color` 对应的整数参数。
+            ctrl_size (int):
+                `ctrl_size` 对应的整数参数。
+            ctrl_axis (str):
+                `ctrl_axis` 对应的名称、标记或字符串参数。
+            aim_ctrl_axis (str):
+                `aim_ctrl_axis` 对应的名称、标记或字符串参数。
+
+        Raises:
+            ValueError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
+        """
 
         # RigModule 统一保存 module、side、Guide 和父层级设置。
         super(EyeModule, self).__init__(
@@ -108,18 +138,26 @@ class EyeModule(rig_module.RigModule):
 
     def create_joints(self):
         u"""
-        根据 Ball / Iris Guide 创建两根 Eye Joint。
 
-        Guide 顺序：
-            guide_list[0] = Ball
-            guide_list[1] = Iris
-            guide_list[2] = Aim
+                根据 Ball / Iris Guide 创建两根 Eye Joint。
 
-        创建结果：
-            Ball Guide -> jnt_<side>_eye_ball_001
-            Iris Guide -> jnt_<side>_eye_iris_001
+                Guide 顺序：
+                    guide_list[0] = Ball
+                    guide_list[1] = Iris
+                    guide_list[2] = Aim
+                创建结果：
+                    Ball Guide -> jnt_<side>_eye_ball_001
+                    Iris Guide -> jnt_<side>_eye_iris_001
+                Joint 的父子层级会在 setup_hierarchy() 中统一整理。
 
-        Joint 的父子层级会在 setup_hierarchy() 中统一整理。
+                Returns:
+                    list:
+                        按当前 API 约定顺序返回的结果列表。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                
         """
 
         # Eye Template 必须同时包含 Ball / Iris / Aim 三个 Guide。
@@ -147,15 +185,20 @@ class EyeModule(rig_module.RigModule):
 
     def create_ctrls(self):
         u"""
-        创建 Eye Main Controller 和 Aim Controller。
 
-        Main Controller：
-            和 Ball Joint 使用同一个 Ball Guide。
-            Main Ctrl 的旋转中心必须与眼球 Ball Joint 完全一致，
-            这样后续 Aim 旋转时不会产生额外的眼球偏移。
+                创建 Eye Main Controller 和 Aim Controller。
 
-        Aim Controller：
-            吸附 Aim Guide，作为动画师控制眼球朝向的目标。
+                Main Controller：
+                    和 Ball Joint 使用同一个 Ball Guide。
+                    Main Ctrl 的旋转中心必须与眼球 Ball Joint 完全一致，
+                    这样后续 Aim 旋转时不会产生额外的眼球偏移。
+                Aim Controller：
+                    吸附 Aim Guide，作为动画师控制眼球朝向的目标。
+
+                Returns:
+                    list:
+                        按当前 API 约定顺序返回的结果列表。
+                
         """
 
         # Main Controller 与 Ball Joint 共用 Ball Guide。
@@ -187,17 +230,22 @@ class EyeModule(rig_module.RigModule):
 
     def setup_hierarchy(self):
         u"""
-        整理 Eye Joint 和 Controller 的正式模块层级。
 
-        Joint：
-            grp_<side>_eye_jnt_001
-                jnt_<side>_eye_ball_001
-                    jnt_<side>_eye_iris_001
+                整理 Eye Joint 和 Controller 的正式模块层级。
 
-        Controller：
-            grp_<side>_eye_ctrl_001
-                zero_<side>_eye_main_001
-                zero_<side>_eye_aim_001
+                Joint：
+                    grp_<side>_eye_jnt_001
+                        jnt_<side>_eye_ball_001
+                            jnt_<side>_eye_iris_001
+                Controller：
+                    grp_<side>_eye_ctrl_001
+                        zero_<side>_eye_main_001
+                        zero_<side>_eye_aim_001
+
+                Returns:
+                    tuple:
+                        按当前 API 约定组织的结果元组。
+                
         """
 
         # 先创建当前 Eye Module 的 Joint / Controller 总组。
@@ -231,19 +279,27 @@ class EyeModule(rig_module.RigModule):
 
     def connect_rig(self):
         u"""
-        建立 Aim Controller -> Main Controller -> Eye Ball Joint 的基础眼球绑定。
 
-        Aim Output：
-            通过 aimConstraint 驱动 Main Driven，使 Main Controller 层级朝向 Aim。
-            maintainOffset=True 保留 Guide 阶段已经确定好的初始眼球朝向。
+                建立 Aim Controller -> Main Controller -> Eye Ball Joint 的基础眼球绑定。
 
-        Main Output：
-            通过 orientConstraint 驱动 Ball Joint 的旋转。
-            Ball Joint 不接受 Main Controller 的位移，因此眼球中心始终固定。
+                Aim Output：
+                    通过 aimConstraint 驱动 Main Driven，使 Main Controller 层级朝向 Aim。
+                    maintainOffset=True 保留 Guide 阶段已经确定好的初始眼球朝向。
+                Main Output：
+                    通过 orientConstraint 驱动 Ball Joint 的旋转。
+                    Ball Joint 不接受 Main Controller 的位移，因此眼球中心始终固定。
+                Iris Joint：
+                    不需要额外 Constraint。
+                    它作为 Ball Joint 的子关节，直接继承 Ball Joint 的眼球旋转结果。
 
-        Iris Joint：
-            不需要额外 Constraint。
-            它作为 Ball Joint 的子关节，直接继承 Ball Joint 的眼球旋转结果。
+                Returns:
+                    dict:
+                        包含本次构建、查询或处理结果的结构化字典。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                
         """
 
         # connect_rig() 只负责连接已经创建好的稳定节点。
@@ -291,7 +347,15 @@ class EyeModule(rig_module.RigModule):
         }
 
     def delete_rig(self):
-        u"""删除 Eye Constraint、两根 Eye Joint 和 Eye Controller Hierarchy。"""
+        u"""
+
+                删除 Eye Constraint、两根 Eye Joint 和 Eye Controller Hierarchy。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+                
+        """
 
         # Constraint 都是 EyeModule 自己创建的稳定节点，直接按名称删除。
         if cmds.objExists(self.aim_constraint_name):

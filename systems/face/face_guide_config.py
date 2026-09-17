@@ -83,18 +83,18 @@ def get_locator_name(
 
     Returns:
         str: 标准 Locator 名称。
-
+        
         Maya 使用示例：
-
+        
         from muziToolset.systems.face import face_guide_config
-
+        
         locator_name = face_guide_config.get_locator_name(
         side="lf",
         part="upper_lid",
         function="bind",
         index=1
         )
-
+        
         print(locator_name)
         # loc_lf_upper_lid_bind_001
     """
@@ -137,17 +137,17 @@ def get_bind_locator_names(side, part, count, start_index=1):
 
     Returns:
         list: 按序号排列的标准 Locator 名称列表。
-
+        
         Maya 使用示例：
-
+        
         from muziToolset.systems.face import face_guide_config
-
+        
         locator_names = face_guide_config.get_bind_locator_names(
         side="lf",
         part="ear",
         count=3
         )
-
+        
         for locator_name in locator_names:
         print(locator_name)
     """
@@ -209,16 +209,16 @@ def get_eye_locator(side, function):
 
     Returns:
         str: 对应 Eye Guide Locator 名称。
-
+        
         Maya 使用示例：
-
+        
         from muziToolset.systems.face import face_guide_config
-
+        
         aim_guide = face_guide_config.get_eye_locator(
         "lf",
         "aim"
         )
-
+        
         print(aim_guide)
         # loc_lf_eye_aim_001
 
@@ -270,15 +270,15 @@ def normalize_legacy_locator_name(locator_name):
 
     Returns:
         str: 新版标准 Locator 名称。
-
+        
         Maya 使用示例：
-
+        
         from muziToolset.systems.face import face_guide_config
-
+        
         new_name = face_guide_config.normalize_legacy_locator_name(
         "loc_lf_upper_lid_guide_001"
         )
-
+        
         print(new_name)
         # loc_lf_upper_lid_bind_001
     """
@@ -388,13 +388,13 @@ def rename_scene_locators():
 
     Returns:
         dict: {旧名称: 新名称} 的实际重命名结果。
-
+        
         Maya 使用示例：
-
+        
         from muziToolset.systems.face import face_guide_config
-
+        
         rename_result = face_guide_config.rename_scene_locators()
-
+        
         for old_name in sorted(rename_result):
         print(old_name, "->", rename_result[old_name])
 

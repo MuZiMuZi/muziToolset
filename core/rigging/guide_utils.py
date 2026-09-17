@@ -48,13 +48,13 @@ class Guide(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import guide_utils
-
+            
             guide_object = guide_utils.Guide("face")
-
+            
             print(guide_object.guide_root_name)
             print(guide_object.guide_template_path)
         """
@@ -77,14 +77,14 @@ class Guide(object):
 
         Returns:
             PyNode: 当前 Module Guide Root。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import guide_utils
-
+            
             guide_object = guide_utils.Guide("face")
             guide_root = guide_object.import_template()
-
+            
             print(guide_root)
 
         Raises:
@@ -148,14 +148,14 @@ class Guide(object):
         Returns:
             PyNode: 找到的 Guide Module Group。
             None: 模块组不存在，或不属于当前 Guide Root。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import guide_utils
-
+            
             guide_object = guide_utils.Guide("face")
             guide_object.import_template()
-
+            
             ear_group = guide_object.get_module_group("ear")
             print(ear_group)
 
@@ -233,18 +233,18 @@ class Guide(object):
 
         Returns:
             list: 符合 module 和 side 条件，并按名称排序后的 Locator Guide PyNode 列表。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import guide_utils
-
+            
             guide_object = guide_utils.Guide("face")
             guide_object.import_template()
-
+            
             ear_guides = guide_object.get_guides("ear")
             lf_ear_guides = guide_object.get_guides("ear", "lf")
             rt_ear_guides = guide_object.get_guides("ear", "rt")
-
+            
             for guide in lf_ear_guides:
             print(guide)
 
@@ -328,14 +328,14 @@ class Guide(object):
 
         Returns:
             PyNode: 创建或已经存在的 Guide Display Curve Transform。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import guide_utils
-
+            
             guide_object = guide_utils.Guide("face")
             guide_object.import_template()
-
+            
             lf_curve = guide_object.create_guide_curve("ear", "lf")
             rt_curve = guide_object.create_guide_curve("ear", "rt")
 

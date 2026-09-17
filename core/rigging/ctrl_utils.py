@@ -260,11 +260,11 @@ class Ctrl(object):
 
         Returns:
             PyNode: 当前主 Controller Transform 节点。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import ctrl_utils
-
+            
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl = ctrl_object.create_ctrl(
             shape_name="circle",
@@ -273,7 +273,7 @@ class Ctrl(object):
             ctrl_axis="Z+",
             create_hierarchy=True
             )
-
+            
             print(ctrl)
         """
 
@@ -328,14 +328,14 @@ class Ctrl(object):
 
         Returns:
             list: 当前控制器下面的全部 Shape PyNode。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import ctrl_utils
-
+            
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_shapes = ctrl_object.get_ctrl_shapes()
-
+            
             print(ctrl_shapes)
         """
 
@@ -353,14 +353,14 @@ class Ctrl(object):
 
         Returns:
             list: Controller Shape Library 中所有可用的 Shape 名称。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import ctrl_utils
-
+            
             ctrl_object = ctrl_utils.Ctrl("ctrl_md_shape_list_main_001")
             shape_list = ctrl_object.get_ctrl_shape_list()
-
+            
             print(shape_list)
         """
 
@@ -423,11 +423,11 @@ class Ctrl(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import ctrl_utils
-
+            
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_object.set_ctrl_color(6)
         """
@@ -457,11 +457,11 @@ class Ctrl(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import ctrl_utils
-
+            
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_object.set_ctrl_size(2.0)
         """
@@ -492,11 +492,11 @@ class Ctrl(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import ctrl_utils
-
+            
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_object.set_ctrl_shape("circle")
             ctrl_object.set_ctrl_axis("Z+")
@@ -660,11 +660,11 @@ class Ctrl(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import ctrl_utils
-
+            
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_object.set_ctrl_rotate(rotate_x=90.0, rotate_y=0.0, rotate_z=0.0)
         """
@@ -697,11 +697,11 @@ class Ctrl(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import ctrl_utils
-
+            
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_object.set_ctrl_offset(offset_x=0.0, offset_y=2.0, offset_z=0.0)
         """
@@ -735,11 +735,11 @@ class Ctrl(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import ctrl_utils
-
+            
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_object.set_match_transform("loc_lf_eye_guide_001")
         """
@@ -765,14 +765,14 @@ class Ctrl(object):
 
         Returns:
             list: 新创建并挂到当前控制器下面的 NurbsCurve Shape 节点列表。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import ctrl_utils
-
+            
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_shapes = ctrl_object.set_ctrl_shape("cube")
-
+            
             print(ctrl_shapes)
         """
 
@@ -895,15 +895,15 @@ class Ctrl(object):
         Returns:
             str: 保存完成后的 JSON 文件路径。
             None: 当前控制器没有可保存的 NurbsCurve Shape 时返回 None。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import ctrl_utils
-
+            
             ctrl_object = ctrl_utils.Ctrl("ctrl_md_test_main_001")
             ctrl_object.set_ctrl_axis("Z+")
             shape_file = ctrl_object.save_ctrl_shape("my_ctrl_shape")
-
+            
             print(shape_file)
         """
 
@@ -1144,11 +1144,11 @@ class Ctrl(object):
 
         Returns:
             PyNode: 创建或获取到的 SubCtrl Transform 节点。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import ctrl_utils
-
+            
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             sub_ctrl = ctrl_object.create_sub_ctrl(
             shape_name="circle",
@@ -1156,7 +1156,7 @@ class Ctrl(object):
             ctrl_size=0.7,
             ctrl_axis="Z+"
             )
-
+            
             print(sub_ctrl)
         """
 
@@ -1266,19 +1266,19 @@ class Ctrl(object):
 
         Returns:
             PyNode: 完整 Controller 层级最外层的 Zero Group。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.rigging import ctrl_utils
-
+            
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
-
+            
             # 第一次执行：不存在的层级会被创建。
             zero_grp = ctrl_object.create_ctrl_hierarchy(ctrl_axis="Z+")
-
+            
             # 第二次执行：已经存在的层级会被直接获取和复用。
             zero_grp = ctrl_object.create_ctrl_hierarchy(ctrl_axis="Z+")
-
+            
             print(zero_grp)
             print(ctrl_object.output_grp)
         """

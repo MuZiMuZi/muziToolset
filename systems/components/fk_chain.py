@@ -146,7 +146,11 @@ class FKChain(rig_module.RigModule):
 
         Returns:
             list[str]:
-                按 FK 顺序排列的 Guide 名称。
+            按 FK 顺序排列的 Guide 名称。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
         # RigModule 只负责把传入的 Guide 整理成字符串列表并检查节点是否存在。
@@ -167,12 +171,18 @@ class FKChain(rig_module.RigModule):
 
     def create_joints(self):
         u"""
-        根据 Guide 顺序创建 FK Joint。
 
-        一条 Guide 对应一个已经预先确定名称的 Joint：
-            guide[0] -> jnt_names[0]
-            guide[1] -> jnt_names[1]
-            ...
+                根据 Guide 顺序创建 FK Joint。
+
+                一条 Guide 对应一个已经预先确定名称的 Joint：
+                    guide[0] -> jnt_names[0]
+                    guide[1] -> jnt_names[1]
+                    ...
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+                
         """
 
         # 重复 build 前先清空旧的 Python 工具对象引用。
@@ -191,10 +201,16 @@ class FKChain(rig_module.RigModule):
 
     def create_ctrls(self):
         u"""
-        根据 Guide 顺序创建 FK Controller。
 
-        一条 Guide 对应一个已经预先确定名称的 Controller。
-        Controller 的 Shape / Color / Size / Axis 统一使用当前 FKChain 配置。
+                根据 Guide 顺序创建 FK Controller。
+
+                一条 Guide 对应一个已经预先确定名称的 Controller。
+                Controller 的 Shape / Color / Size / Axis 统一使用当前 FKChain 配置。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+                
         """
 
         # 重复 build 前先清空旧的 Python 工具对象引用。
@@ -218,22 +234,27 @@ class FKChain(rig_module.RigModule):
 
     def setup_hierarchy(self):
         u"""
-        整理 FK Joint Chain 和 Controller Chain。
 
-        Joint：
-            jnt_master_grp
-                └─ jnt_001
-                    └─ jnt_002
-                        └─ jnt_003
+                整理 FK Joint Chain 和 Controller Chain。
 
-        Controller：
-            ctrl_master_grp
-                └─ zero_001
-                    ...
-                    output_001
-                        └─ zero_002
+                Joint：
+                    jnt_master_grp
+                        └─ jnt_001
+                            └─ jnt_002
+                                └─ jnt_003
+                Controller：
+                    ctrl_master_grp
+                        └─ zero_001
                             ...
-                            output_002
+                            output_001
+                                └─ zero_002
+                                    ...
+                                    output_002
+
+                Returns:
+                    tuple:
+                        按当前 API 约定组织的结果元组。
+                
         """
 
         # 先创建当前模块的 Joint / Controller 总组。
@@ -270,14 +291,23 @@ class FKChain(rig_module.RigModule):
 
     def connect_rig(self):
         u"""
-        使用每个 Controller Output 的 Parent Constraint 驱动对应 Joint。
 
-        所有 Driver、Driven 和 Constraint 名称都已经在 __init__() 中确定。
-        因此这里不再使用 listConnections()、cmds.ls() 等方法反查自己创建的节点。
+                使用每个 Controller Output 的 Parent Constraint 驱动对应 Joint。
 
-        重复执行 connect_rig() 时：
-            - 固定名称 Constraint 已存在：直接跳过。
-            - 固定名称 Constraint 不存在：创建。
+                所有 Driver、Driven 和 Constraint 名称都已经在 __init__() 中确定。
+                因此这里不再使用 listConnections()、cmds.ls() 等方法反查自己创建的节点。
+                重复执行 connect_rig() 时：
+                    - 固定名称 Constraint 已存在：直接跳过。
+                    - 固定名称 Constraint 不存在：创建。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                
         """
 
         for index in range(self.guide_count):
@@ -308,14 +338,19 @@ class FKChain(rig_module.RigModule):
 
     def delete_rig(self):
         u"""
-        删除当前 FK Chain 自己创建的 Constraint 和 DAG 输出。
 
-        删除逻辑只使用初始化时保存的稳定名称：
-            1. 直接删除 parent_constraint_names 中存在的 Constraint。
-            2. 调用 RigModule.delete_rig() 删除 Joint / Controller 总组。
-            3. 清空当前 Python 工具对象引用。
+                删除当前 FK Chain 自己创建的 Constraint 和 DAG 输出。
 
-        不使用 listConnections() 去猜测哪些 Constraint 属于当前模块。
+                删除逻辑只使用初始化时保存的稳定名称：
+                    1. 直接删除 parent_constraint_names 中存在的 Constraint。
+                    2. 调用 RigModule.delete_rig() 删除 Joint / Controller 总组。
+                    3. 清空当前 Python 工具对象引用。
+                不使用 listConnections() 去猜测哪些 Constraint 属于当前模块。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+                
         """
 
         # Constraint 是当前 FK Chain 明确拥有的节点，因此直接按稳定名称删除。

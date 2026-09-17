@@ -69,7 +69,7 @@ def show():
 
     Example:
         >>> import muziToolset
-            >>> window = muziToolset.show()
+                >>> window = muziToolset.show()
     """
     from .app import toolbox
 
@@ -89,7 +89,7 @@ def initialize():
 
     Example:
         >>> import muziToolset
-            >>> window = muziToolset.initialize()
+                >>> window = muziToolset.initialize()
     """
     return show()
 
@@ -108,7 +108,7 @@ def show_rig_library():
 
     Example:
         >>> import muziToolset
-            >>> window = muziToolset.show_rig_library()
+                >>> window = muziToolset.show_rig_library()
     """
     from .tools.rig import modular_rig_tool
 

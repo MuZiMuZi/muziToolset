@@ -103,7 +103,7 @@ def get_tool_display_name(tool_name):
 
     Returns:
         str:
-            中文显示名称；未登记时返回由模块名转换出的标题。
+        中文显示名称；未登记时返回由模块名转换出的标题。
     """
     if tool_name in tool_display_names:
         return tool_display_names[tool_name]
@@ -127,7 +127,7 @@ def get_tool_description(tool_name):
 
     Returns:
         str:
-            工具用途简介；未登记时返回通用运行说明。
+        工具用途简介；未登记时返回通用运行说明。
     """
     if tool_name in tool_descriptions:
         return tool_descriptions[tool_name]
@@ -145,7 +145,7 @@ def get_tool_mode(tool_function):
 
     Returns:
         str:
-            ``ui`` 或 ``action``；未声明时保持旧工具的 ``ui`` 行为。
+        ``ui`` 或 ``action``；未声明时保持旧工具的 ``ui`` 行为。
     """
     tool_mode = getattr(tool_function, "tool_mode", TOOL_MODE_UI)
 
@@ -165,7 +165,7 @@ def get_tool_mode_display_name(tool_mode):
 
     Returns:
         str:
-            ``界面工具`` 或 ``直接执行``。
+        ``界面工具`` 或 ``直接执行``。
     """
     if tool_mode == TOOL_MODE_ACTION:
         return u"直接执行"

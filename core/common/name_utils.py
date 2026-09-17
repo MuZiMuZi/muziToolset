@@ -129,15 +129,15 @@ class Name(object):
 
         Returns:
             list: 原始名称按照下划线拆分后的字符串列表。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.common import name_utils
-
+            
             name_object = name_utils.Name(
             name="loc_lf_upper_lid_bind_001"
             )
-
+            
             print(name_object.type)
             print(name_object.side)
             print(name_object.part)
@@ -198,11 +198,11 @@ class Name(object):
 
         Returns:
             str: 组合后的标准名称。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.common import name_utils
-
+            
             name_object = name_utils.Name(
             type="loc",
             side="lf",
@@ -210,7 +210,7 @@ class Name(object):
             function="bind",
             index=1
             )
-
+            
             print(name_object.compose_name())
             # loc_lf_upper_lid_bind_001
         """
@@ -236,11 +236,11 @@ class Name(object):
 
         Returns:
             str: 翻转后的 side。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.common import name_utils
-
+            
             name_object = name_utils.Name(
             type="ctrl",
             side="lf",
@@ -248,7 +248,7 @@ class Name(object):
             function="main",
             index=1
             )
-
+            
             name_object.flip()
             print(name_object.side)
             # rt

@@ -37,7 +37,8 @@ class Jnt(object):
         不存在时创建新的 Joint。
 
         Args:
-            name(str): Joint 名称。
+            name (str):
+                Joint 名称。
         """
 
         # 保存 Joint 的稳定名称。
@@ -81,18 +82,19 @@ class Jnt(object):
 
         Guide 系统统一使用 Locator Transform 保存真正的定位数据。
         因此这里直接执行 matchTransform：
-
             Locator Transform
                     ↓
                  Joint
-
         不读取 Locator Shape.localPosition，也不额外计算 worldPosition。
         这样 Joint 的创建规则始终保持简单、明确。
 
         Args:
-            target(str/PyNode): 需要吸附的 Guide / Locator。
-            position(bool): 是否匹配位置，默认 True。
-            rotation(bool): 是否匹配旋转，默认 True。
+            target (str/PyNode):
+                需要吸附的 Guide / Locator。
+            position (bool):
+                是否匹配位置，默认 True。
+            rotation (bool):
+                是否匹配旋转，默认 True。
 
         Returns:
             None
@@ -111,7 +113,8 @@ class Jnt(object):
         设置当前 Joint 的显示半径。
 
         Args:
-            radius(float): Joint 显示半径。
+            radius (float):
+                Joint 显示半径。
 
         Returns:
             None

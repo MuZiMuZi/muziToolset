@@ -39,7 +39,8 @@ class Transform(object):
         初始化 Transform 工具对象。
 
         Args:
-            object(str/PyNode): 需要操作的 Maya 节点，可以是 Transform、Joint、Shape 等节点。
+            object (str/PyNode):
+                需要操作的 Maya 节点，可以是 Transform、Joint、Shape 等节点。
         """
 
         self.object = None
@@ -54,19 +55,21 @@ class Transform(object):
         将当前对象直接对齐到指定目标对象的 Transform。
 
         Guide 系统统一把 Locator Transform 作为真正的定位数据：
-
             Locator Translate / Rotate / Scale
                         ↓
                   Target Transform
-
         不读取 Locator Shape.localPosition，也不额外计算 Shape.worldPosition。
         这样 Joint、Controller 和其他绑定节点都使用同一套简单明确的对齐规则。
 
         Args:
-            target(str/PyNode): 需要匹配的目标对象。
-            position(bool): 是否匹配目标位置，默认 True。
-            rotation(bool): 是否匹配目标旋转，默认 True。
-            scale(bool): 是否匹配目标缩放，默认 True。
+            target (str/PyNode):
+                需要匹配的目标对象。
+            position (bool):
+                是否匹配目标位置，默认 True。
+            rotation (bool):
+                是否匹配目标旋转，默认 True。
+            scale (bool):
+                是否匹配目标缩放，默认 True。
 
         Returns:
             None
@@ -99,7 +102,7 @@ class Transform(object):
         将给定的世界矩阵设置到当前对象。
 
         Args:
-            matrix(list[float] | maya.api.OpenMaya.MMatrix):
+            matrix (list[float] | maya.api.OpenMaya.MMatrix):
                 用于 Transform、Constraint 或空间计算的 4x4 Matrix 数据。
 
         Returns:
@@ -114,9 +117,12 @@ class Transform(object):
         将当前对象的 Transform 数值恢复到默认状态。
 
         Args:
-            translate(bool): 是否将 Translate 重置为 0。
-            rotate(bool): 是否将 Rotate 重置为 0。
-            scale(bool): 是否将 Scale 重置为 1。
+            translate (bool):
+                是否将 Translate 重置为 0。
+            rotate (bool):
+                是否将 Rotate 重置为 0。
+            scale (bool):
+                是否将 Scale 重置为 1。
 
         Returns:
             None

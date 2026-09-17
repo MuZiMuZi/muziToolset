@@ -41,6 +41,24 @@ class RigModule(object):
         # 保存当前 Module 最基础的数据。
         # 这些参数会贯穿 build / connect / delete 整个生命周期。
         # ---------------------------------------------------------------------
+        u"""
+
+                初始化当前对象，并准备运行时需要的状态和成员。
+
+                Args:
+                    module (object):
+                        `module` 对应的输入数据。
+                    side (str):
+                        方向标记，常用值为 lf、rt 或 md。
+                    guide (str):
+                        需要查询或处理的 Guide Transform 名称。
+                    jnt_parent (object):
+                        `jnt_parent` 对应的输入数据。
+                    ctrl_parent (object):
+                        `ctrl_parent` 对应的输入数据。
+                
+        """
+
         self.module = module
         self.side = side
         self.guide = guide
@@ -70,30 +88,26 @@ class RigModule(object):
             eye_guide.ma
             brow_guide.ma
             mouth_guide.ma
-
         Template 系统负责：
             1. 导入对应的 Maya 模板文件。
             2. 创建或恢复模板里的 Locator。
             3. 处理 Locator 的默认位置、镜像和模板结构。
             4. 把当前 Module 需要使用的 Locator 名称传给 Rig Module。
-
         因此 RigModule 不再需要：
             - 根据 module / side 自动搜索 Guide；
             - 调用额外的 Guide Provider 对象；
             - 猜测当前场景中哪些 Locator 属于这个 Module。
-
         这个方法现在只做两件事情：
             1. 把传进来的 Guide 名称整理成统一的列表格式。
             2. 在真正开始 Build 前检查这些 Maya 节点是否存在。
 
-        Args:
-            self.guide:
-                可以是一个 Guide 名称，也可以是已经按照绑定顺序排列好的
-                list / tuple。
-
         Returns:
             list[str]:
-                当前 Module 按绑定顺序使用的 Guide 名称列表。
+            当前 Module 按绑定顺序使用的 Guide 名称列表。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
         # ---------------------------------------------------------------------
@@ -139,10 +153,22 @@ class RigModule(object):
 
     def create_joint(self, name, guide=None):
         u"""
-        创建一个 Joint，并根据需要匹配到指定 Guide。
 
-        这里只负责单个 Joint 的创建。
-        Joint 数量、父子关系和业务命名仍由具体子类控制。
+                创建一个 Joint，并根据需要匹配到指定 Guide。
+
+                这里只负责单个 Joint 的创建。
+                Joint 数量、父子关系和业务命名仍由具体子类控制。
+
+                Args:
+                    name (str):
+                        创建或查询时使用的节点名称。
+                    guide (str):
+                        需要查询或处理的 Guide Transform 名称。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+                
         """
 
         # Jnt 工具负责真正创建或读取 Maya Joint。
@@ -165,10 +191,32 @@ class RigModule(object):
         create_hierarchy=True
     ):
         u"""
-        创建一个标准 Controller，并根据需要匹配到指定 Guide。
 
-        Controller Shape、颜色、大小、轴向和标准层级全部交给 Ctrl 工具处理。
-        RigModule 这里只提供统一入口。
+                创建一个标准 Controller，并根据需要匹配到指定 Guide。
+
+                Controller Shape、颜色、大小、轴向和标准层级全部交给 Ctrl 工具处理。
+                RigModule 这里只提供统一入口。
+
+                Args:
+                    name (str):
+                        创建或查询时使用的节点名称。
+                    guide (str):
+                        需要查询或处理的 Guide Transform 名称。
+                    shape_name (str):
+                        `shape_name` 对应的 Maya 节点或资源名称。
+                    ctrl_color (int):
+                        `ctrl_color` 对应的整数参数。
+                    ctrl_size (float):
+                        `ctrl_size` 对应的数值参数。
+                    ctrl_axis (str):
+                        `ctrl_axis` 对应的名称、标记或字符串参数。
+                    create_hierarchy (bool):
+                        是否启用 `create_hierarchy` 对应的处理。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+                
         """
 
         # 创建当前 Controller 工具对象。
@@ -208,14 +256,19 @@ class RigModule(object):
 
     def setup_hierarchy(self):
         u"""
-        创建当前 Module 的 Joint / Controller 总组，并挂到指定父组。
 
-        self.jnt_master_grp 和 self.ctrl_master_grp 从初始化开始就保存标准组名，
-        因此这里只负责确认 Maya 场景中对应组存在，不再创建第二套名称变量。
+                创建当前 Module 的 Joint / Controller 总组，并挂到指定父组。
 
-        标准结构：
-            grp_<side>_<module>_jnt_001
-            grp_<side>_<module>_ctrl_001
+                self.jnt_master_grp 和 self.ctrl_master_grp 从初始化开始就保存标准组名，
+                因此这里只负责确认 Maya 场景中对应组存在，不再创建第二套名称变量。
+                标准结构：
+                    grp_<side>_<module>_jnt_001
+                    grp_<side>_<module>_ctrl_001
+
+                Returns:
+                    tuple:
+                        按当前 API 约定组织的结果元组。
+                
         """
 
         # 创建或读取当前 Module 的 Joint 总组。
@@ -249,7 +302,6 @@ class RigModule(object):
             2. 创建 Joint。
             3. 创建 Controller。
             4. 整理 Module Hierarchy。
-
         connect_rig() 单独执行，这样创建和连接可以分别测试。
         """
 
@@ -276,15 +328,20 @@ class RigModule(object):
 
     def delete_rig(self):
         u"""
-        删除当前 Module 的 Joint / Controller 总组及其全部子节点。
 
-        具体模块如果还有 Constraint 或额外 DG Node，应在子类 delete_rig() 中
-        先删除这些连接节点，然后再调用 super(...).delete_rig() 删除 DAG 输出。
+                删除当前 Module 的 Joint / Controller 总组及其全部子节点。
 
-        注意：
-            self.jnt_master_grp / self.ctrl_master_grp 保存的是稳定节点名称，
-            删除 Maya 节点后不会把这两个成员设为 None，这样同一个 Module 实例
-            仍然可以再次执行 build_rig() 重建。
+                具体模块如果还有 Constraint 或额外 DG Node，应在子类 delete_rig() 中
+                先删除这些连接节点，然后再调用 super(...).delete_rig() 删除 DAG 输出。
+                注意：
+                    self.jnt_master_grp / self.ctrl_master_grp 保存的是稳定节点名称，
+                    删除 Maya 节点后不会把这两个成员设为 None，这样同一个 Module 实例
+                    仍然可以再次执行 build_rig() 重建。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+                
         """
 
         # 收集当前 Module 实际存在的两个总组。

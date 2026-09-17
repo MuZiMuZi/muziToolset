@@ -53,7 +53,9 @@ class FaceModule(object):
     u"""统一管理整个 Face Rig 的 Guide、构建、连接和删除阶段。"""
 
     def __init__(self):
-        u"""初始化 Face Rig 的稳定名称、Guide 配置和当前已有的面部子模块。"""
+        u"""
+        初始化 Face Rig 的稳定名称、Guide 配置和当前已有的面部子模块。
+        """
 
         # ---------------------------------------------------------------------
         # face_guide.ma 是整个面部唯一的 Guide Template。
@@ -136,7 +138,11 @@ class FaceModule(object):
 
         Returns:
             str:
-                Face Guide Root 名称。
+            Face Guide Root 名称。
+
+        Raises:
+            RuntimeError:
+                输入数据、场景状态或操作条件不满足要求时抛出。
         """
 
         # Guide Root 已经存在时直接复用当前场景中的模板。
@@ -163,10 +169,16 @@ class FaceModule(object):
 
     def setup_hierarchy(self):
         u"""
-        创建整个 Face Rig 共用的 Joint / Controller 两个总组。
 
-        子模块不会自己创建第二套 Face 总组，它们只保留自己的模块组，
-        然后把模块组挂到这里创建的 Face 总组下面。
+                创建整个 Face Rig 共用的 Joint / Controller 两个总组。
+
+                子模块不会自己创建第二套 Face 总组，它们只保留自己的模块组，
+                然后把模块组挂到这里创建的 Face 总组下面。
+
+                Returns:
+                    tuple:
+                        按当前 API 约定组织的结果元组。
+                
         """
 
         hierarchy_utils.get_or_create_group(self.jnt_master_grp)
@@ -176,14 +188,23 @@ class FaceModule(object):
 
     def build_eyes(self):
         u"""
-        只创建完整双眼系统，方便当前阶段在 Maya 中单独测试 Eye。
 
-        创建内容：
-            1. 左眼 Ball / Iris Joint 和 Main / Aim Controller。
-            2. 右眼 Ball / Iris Joint 和 Main / Aim Controller。
-            3. 左右 Aim 中间的 ctrl_md_eye_aim_001 总控制器。
+                只创建完整双眼系统，方便当前阶段在 Maya 中单独测试 Eye。
 
-        这个方法不会创建 Ear / Tongue 等其他 Face Module。
+                创建内容：
+                    1. 左眼 Ball / Iris Joint 和 Main / Aim Controller。
+                    2. 右眼 Ball / Iris Joint 和 Main / Aim Controller。
+                    3. 左右 Aim 中间的 ctrl_md_eye_aim_001 总控制器。
+                这个方法不会创建 Ear / Tongue 等其他 Face Module。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                
         """
 
         if not cmds.objExists(self.guide_root):
@@ -195,34 +216,55 @@ class FaceModule(object):
 
     def connect_eyes(self):
         u"""
-        只建立双眼系统的正式连接。
 
-        左右 EyeModule 分别建立自己的 Aim / Orient Constraint，
-        中间 Aim 总控再通过 Point Constraint 驱动左右 Aim Driven Group。
+                只建立双眼系统的正式连接。
+
+                左右 EyeModule 分别建立自己的 Aim / Orient Constraint，
+                中间 Aim 总控再通过 Point Constraint 驱动左右 Aim Driven Group。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+                
         """
 
         return self.eye.connect_rig()
 
     def delete_eyes(self):
         u"""
-        只删除双眼系统，保留 Face Guide 和 Face 总组。
 
-        适合当前 Eye 开发阶段反复执行：
-            调整 Guide -> build_eyes() -> connect_eyes() -> delete_eyes()
+                只删除双眼系统，保留 Face Guide 和 Face 总组。
+
+                适合当前 Eye 开发阶段反复执行：
+                    调整 Guide -> build_eyes() -> connect_eyes() -> delete_eyes()
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+                
         """
 
         return self.eye.delete_rig()
 
     def build_rig(self):
         u"""
-        创建整个 Face Rig 当前已经实现的 Joint / Controller 输出。
 
-        执行顺序：
-            1. 确认 face_guide.ma 已经导入。
-            2. 创建 Face Joint / Controller 两个总组。
-            3. 按 modules 顺序调用每个子模块的 build_rig()。
+                创建整个 Face Rig 当前已经实现的 Joint / Controller 输出。
 
-        这里只负责创建，不建立最终 Constraint / Matrix / Deformer 连接。
+                执行顺序：
+                    1. 确认 face_guide.ma 已经导入。
+                    2. 创建 Face Joint / Controller 两个总组。
+                    3. 按 modules 顺序调用每个子模块的 build_rig()。
+                这里只负责创建，不建立最终 Constraint / Matrix / Deformer 连接。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                
         """
 
         if not cmds.objExists(self.guide_root):
@@ -236,7 +278,15 @@ class FaceModule(object):
         return self.modules
 
     def connect_rig(self):
-        u"""建立整个 Face Rig 当前已经实现模块的最终驱动连接。"""
+        u"""
+
+                建立整个 Face Rig 当前已经实现模块的最终驱动连接。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+                
+        """
 
         for module in self.modules:
             module.connect_rig()
@@ -245,12 +295,18 @@ class FaceModule(object):
 
     def delete_rig(self):
         u"""
-        删除整个 Face Rig 的绑定输出，但保留 face_guide.ma。
 
-        删除顺序：
-            1. 每个子模块先删除自己创建的 Constraint 和模块 DAG 输出。
-            2. 删除 Face Joint / Controller 两个总组。
-            3. Guide Template 保留在场景中，可以继续调整后重新 build_rig()。
+                删除整个 Face Rig 的绑定输出，但保留 face_guide.ma。
+
+                删除顺序：
+                    1. 每个子模块先删除自己创建的 Constraint 和模块 DAG 输出。
+                    2. 删除 Face Joint / Controller 两个总组。
+                    3. Guide Template 保留在场景中，可以继续调整后重新 build_rig()。
+
+                Returns:
+                    object:
+                        当前 API 完成处理后返回的结果。
+                
         """
 
         for module in self.modules:

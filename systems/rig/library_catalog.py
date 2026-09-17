@@ -105,9 +105,9 @@ def get_module(key):
 
     Example:
         >>> from muziToolset.systems.rig import library_catalog
-            >>> eye = library_catalog.get_module("eye")
-            >>> print(eye["count"])
-            3
+                >>> eye = library_catalog.get_module("eye")
+                >>> print(eye["count"])
+                3
     """
 
     for entry in modules:
@@ -131,8 +131,8 @@ def new_document():
 
     Example:
         >>> document = new_document()
-            >>> document["modules"]
-            []
+                >>> document["modules"]
+                []
     """
 
     return {
@@ -159,7 +159,7 @@ def new_module(key, side=None, name=None):
 
     Notes:
         新 Record 初始始终为 ``built=False``、``connected=False``。
-            ``ctrl_color`` 根据 Side 使用 ``lf=6 / rt=13 / md=17`` 默认值。
+                ``ctrl_color`` 根据 Side 使用 ``lf=6 / rt=13 / md=17`` 默认值。
     """
 
     entry = get_module(key)
@@ -204,12 +204,12 @@ def guide_names(record):
 
     Example:
         >>> record = new_module("eye", "lf")
-            >>> guide_names(record)
-            ['loc_lf_eye_ball_001', 'loc_lf_eye_iris_001', 'loc_lf_eye_aim_001']
+                >>> guide_names(record)
+                ['loc_lf_eye_ball_001', 'loc_lf_eye_iris_001', 'loc_lf_eye_aim_001']
 
     Notes:
         Eye 不能把 Guide 简单当成 ``bind_001 / 002 / 003``，因为 Ball、Iris、Aim
-            分别代表旋转中心、Main Ctrl 可见位置和 Aim Ctrl 位置。
+                分别代表旋转中心、Main Ctrl 可见位置和 Aim Ctrl 位置。
     """
 
     # -------------------------------------------------------------------------
@@ -352,7 +352,7 @@ def output_names(record):
 
     Notes:
         Eye 使用 Main + Aim 两套 Controller Hierarchy；FK 类模块按 Guide 数量生成
-            ``fk_001...`` Controller 与 ``bind_001...`` Joint。
+                ``fk_001...`` Controller 与 ``bind_001...`` Joint。
     """
 
     # -------------------------------------------------------------------------
@@ -485,7 +485,7 @@ def validate_document(document):
 
     Notes:
         这个函数是配置写入 Scene Network、JSON Import 和 Service Commit 前的共同边界。
-            不要为了“尽量加载”而忽略未知字段，否则旧 / 损坏配置会部分进入 Maya Scene。
+                不要为了“尽量加载”而忽略未知字段，否则旧 / 损坏配置会部分进入 Maya Scene。
     """
 
     # -------------------------------------------------------------------------
@@ -726,9 +726,9 @@ def add_template(document, key):
 
     Example:
         >>> document = new_document()
-            >>> document = add_template(document, "eye_pair")
-            >>> len(document["modules"])
-            2
+                >>> document = add_template(document, "eye_pair")
+                >>> len(document["modules"])
+                2
     """
 
     # -------------------------------------------------------------------------

@@ -57,7 +57,27 @@ class EyePairModule(object):
         master_aim_ctrl_size=18.0,
         master_aim_ctrl_axis="Z+"
     ):
-        u"""初始化双眼模块、稳定节点名称和中间 Aim Controller 设置。"""
+        u"""
+        初始化双眼模块、稳定节点名称和中间 Aim Controller 设置。
+
+        Args:
+            lf_guide (object):
+                `lf_guide` 对应的输入数据。
+            rt_guide (object):
+                `rt_guide` 对应的输入数据。
+            jnt_parent (object):
+                `jnt_parent` 对应的输入数据。
+            ctrl_parent (object):
+                `ctrl_parent` 对应的输入数据。
+            master_aim_ctrl_shape (str):
+                `master_aim_ctrl_shape` 对应的名称、标记或字符串参数。
+            master_aim_ctrl_color (int):
+                `master_aim_ctrl_color` 对应的整数参数。
+            master_aim_ctrl_size (float):
+                `master_aim_ctrl_size` 对应的数值参数。
+            master_aim_ctrl_axis (str):
+                `master_aim_ctrl_axis` 对应的名称、标记或字符串参数。
+        """
 
         # FaceModule 会把左右两套 Eye Guide 分别传进来。
         self.lf_guide = lf_guide
@@ -109,10 +129,20 @@ class EyePairModule(object):
 
     def get_master_aim_position(self):
         u"""
-        计算左右 Aim Guide 的中间位置。
 
-        Locator Transform 本身就是 Guide 定位数据，因此这里直接读取左右 Aim Locator
-        的世界空间 Transform，不读取 Locator Shape 的 localPosition / worldPosition。
+                计算左右 Aim Guide 的中间位置。
+
+                Locator Transform 本身就是 Guide 定位数据，因此这里直接读取左右 Aim Locator
+                的世界空间 Transform，不读取 Locator Shape 的 localPosition / worldPosition。
+
+                Returns:
+                    tuple:
+                        按当前 API 约定组织的结果元组。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                
         """
 
         if not self.lf_guide or len(self.lf_guide) != 3:
@@ -151,7 +181,15 @@ class EyePairModule(object):
         return middle_x, middle_y, middle_z
 
     def create_master_aim_ctrl(self):
-        u"""在左右 Aim Guide 中间创建双眼 Aim 总控制器。"""
+        u"""
+
+                在左右 Aim Guide 中间创建双眼 Aim 总控制器。
+
+                Returns:
+                    object:
+                        创建或构建完成后的 Maya / Rig 对象或 Build Result。
+                
+        """
 
         self.master_aim_ctrl_object = ctrl_utils.Ctrl(self.master_aim_ctrl_name)
 
@@ -184,12 +222,18 @@ class EyePairModule(object):
 
     def build_rig(self):
         u"""
-        创建完整双眼系统，但暂时不建立 Constraint。
 
-        顺序：
-            1. 创建左眼。
-            2. 创建右眼。
-            3. 创建中间 Aim 总控制器。
+                创建完整双眼系统，但暂时不建立 Constraint。
+
+                顺序：
+                    1. 创建左眼。
+                    2. 创建右眼。
+                    3. 创建中间 Aim 总控制器。
+
+                Returns:
+                    dict:
+                        包含本次构建、查询或处理结果的结构化字典。
+                
         """
 
         self.lf_eye.build_rig()
@@ -204,11 +248,21 @@ class EyePairModule(object):
 
     def connect_rig(self):
         u"""
-        建立左右眼自己的连接，并让中间 Aim 总控驱动左右 Aim Driven Group。
 
-        Point Constraint 使用 maintainOffset=True。
-        创建连接时左右 Aim Controller 不会跳到中间位置，而是保留当前左右间距；
-        后续移动中间 Aim Controller 时，两边 Aim Target 会一起移动相同距离。
+                建立左右眼自己的连接，并让中间 Aim 总控驱动左右 Aim Driven Group。
+
+                Point Constraint 使用 maintainOffset=True。
+                创建连接时左右 Aim Controller 不会跳到中间位置，而是保留当前左右间距；
+                后续移动中间 Aim Controller 时，两边 Aim Target 会一起移动相同距离。
+
+                Returns:
+                    dict:
+                        包含本次构建、查询或处理结果的结构化字典。
+
+                Raises:
+                    RuntimeError:
+                        输入数据、场景状态或操作条件不满足要求时抛出。
+                
         """
 
         lf_result = self.lf_eye.connect_rig()
@@ -248,7 +302,15 @@ class EyePairModule(object):
         }
 
     def delete_rig(self):
-        u"""删除双眼连接、左右 EyeModule 和中间 Aim 总控制器。"""
+        u"""
+
+                删除双眼连接、左右 EyeModule 和中间 Aim 总控制器。
+
+                Returns:
+                    list:
+                        按当前 API 约定顺序返回的结果列表。
+                
+        """
 
         # 先删除总控到左右 Aim Driven 的两个 Point Constraint。
         if cmds.objExists(self.lf_aim_point_constraint_name):

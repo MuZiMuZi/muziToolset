@@ -92,16 +92,16 @@ class Attr(object):
 
         Returns:
             bool: 属性存在返回 True，不存在返回 False。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.common import attr_utils
-
+            
             attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
             attr_name = "follow"
-
+            
             result = attr_object.has_attr(attr_name)
-
+            
             print(result)
         """
 
@@ -132,17 +132,17 @@ class Attr(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.common import attr_utils
-
+            
             attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
             attr_name = "follow"
             attr_type = "double"
             default_value = 0
             keyable = True
-
+            
             attr_object.add_attr(attr_name, attr_type, default_value, keyable)
         """
 
@@ -168,15 +168,15 @@ class Attr(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.common import attr_utils
-
+            
             attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
             attr_name = "follow"
             value = 1
-
+            
             attr_object.set_value(attr_name, value)
         """
 
@@ -195,16 +195,16 @@ class Attr(object):
 
         Returns:
             object: 当前属性的数值。
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.common import attr_utils
-
+            
             attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
             attr_name = "follow"
-
+            
             value = attr_object.get_value(attr_name)
-
+            
             print(value)
         """
 
@@ -225,14 +225,14 @@ class Attr(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.common import attr_utils
-
+            
             attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
             attr_name = "scaleX"
-
+            
             attr_object.lock_attr(attr_name)
         """
 
@@ -251,14 +251,14 @@ class Attr(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.common import attr_utils
-
+            
             attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
             attr_name = "scaleX"
-
+            
             attr_object.unlock_attr(attr_name)
         """
 
@@ -278,14 +278,14 @@ class Attr(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.common import attr_utils
-
+            
             attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
             attr_name = "visibility"
-
+            
             attr_object.hide_attr(attr_name)
         """
 
@@ -304,14 +304,14 @@ class Attr(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.common import attr_utils
-
+            
             attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
             attr_name = "visibility"
-
+            
             attr_object.show_attr(attr_name)
         """
 
@@ -330,14 +330,14 @@ class Attr(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.common import attr_utils
-
+            
             attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
             attr_name = "scaleX"
-
+            
             attr_object.lock_hide_attr(attr_name)
         """
 
@@ -365,16 +365,16 @@ class Attr(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.common import attr_utils
-
+            
             attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
             attr_name = "follow"
             target_object = "jnt_lf_eye_bind_001"
             target_attr_name = "rotateX"
-
+            
             attr_object.connect_attr(attr_name, target_object, target_attr_name)
         """
 
@@ -402,16 +402,16 @@ class Attr(object):
 
         Returns:
             None
-
+            
             Maya 使用示例：
-
+            
             from muziToolset.core.common import attr_utils
-
+            
             attr_object = attr_utils.Attr("ctrl_lf_eye_main_001")
             attr_name = "follow"
             target_object = "jnt_lf_eye_bind_001"
             target_attr_name = "rotateX"
-
+            
             attr_object.disconnect_attr(attr_name, target_object, target_attr_name)
         """
 
