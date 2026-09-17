@@ -1,6 +1,6 @@
-# Rig Architecture 0.4 Migration
+# Rig Architecture 0.4 — 已退休历史记录
 
-0.4 将 MuziTools 的 Rig 基础架构统一到三个正式入口：
+这份页面过去记录过一版已经退出当前仓库的 Rig 架构，例如：
 
 ```text
 systems/rig_base.py
@@ -8,324 +8,88 @@ systems/module_base.py
 systems/ctrl_base.py
 ```
 
-这次迁移的目标不是增加兼容层，而是删除重复职责，让后续 Face / Body / Rig Tool 都依赖同一套基础 API。
-
----
-
-# 1. Name Utility -> RigBase Identity
-
-旧架构：
-
-```text
-core/name_utils.py
-name_utils.Name.create_name()
-name_utils.Name.mirror_name()
-```
-
-0.4 最终架构：
-
-```text
-systems/rig_base.py
-RigBase
-```
-
-`RigBase` 不再是 Name Utility，也不是代表某一个 Maya Node 名称的数据对象。
-
-它是所有 Rig Object / Module 共用的**可实例化 Rig Identity 基类**。
-
-一个 Rig Object 的 Identity 只包含：
-
-```text
-side
-part
-index
-```
-
-正式使用：
-
-```python
-from muziToolset.systems.rig_base import RigBase
-
-rig = RigBase(
-    side="lf",
-    part="brow",
-    index=1
-)
-
-jnt_name = rig.create_name(
-    node_type="jnt",
-    function="bind"
-)
-
-# jnt_lf_brow_bind_001
-```
-
-标准节点格式：
-
-```text
-[node_type]_[side]_[part]_[function]_[index]
-```
-
-其中：
-
-```text
-side / part / index
-    属于 Rig Object Identity
-
-node_type / function
-    描述本次具体 Maya Node
-```
-
-实例能力：
-
-```text
-identity
-set_identity()
-create_name()
-mirror_name()
-get_next_index()
-create_unique_name()
-get_opposite_side()
-flip_side()
-is_left()
-is_right()
-is_center()
-```
-
-纯解析 / 校验能力仍可以直接通过类调用：
-
-```text
-RigBase.parse_name()
-RigBase.validate_name()
-RigBase.normalize_side()
-```
-
-0.4 最终收口时同时退休：
-
-```text
-RigBase(name=...)
-RigBase.create_name(...)
-RigBase.mirror_name(...)
-name
-compose()
-decompose()
-flip()
-type=     # RigBase Naming Keyword
-```
-
-正式 Naming Keyword：
-
-```text
-node_type=
-```
-
-`parse_name()` 只解析输入名称，不会修改 RigBase 实例 Identity。
-
-`core/rename_utils.py` 保留，但职责只包括 Maya Short Name、Rename 和批量 Rename 行为。
-
----
-
-# 2. Component -> Module
-
-旧：
-
-```text
-systems/component_base.py
-ComponentBase
-RigComponentBase
-TeethComponent
-```
-
-新：
-
-```text
-systems/module_base.py
-ModuleBase
-RigModuleBase
-TeethModule
-```
-
-Module 生命周期：
-
-```text
-collect_inputs()
-prepare_data()
-process_data()
-finalize_step()
-```
-
-RigModuleBase 的 `process_data()` 统一调用：
-
-```text
-create_jnt()
-create_controller()
-create_connection()
-```
-
-继承关系：
+以及：
 
 ```text
 RigBase
-   ↓
 ModuleBase
-   ↓
 RigModuleBase
-```
-
-因此每个 Module 都拥有自己的 Rig Identity 和 Naming 能力。
-
-完整 Rig 业务单元统一使用 **Module** 术语。
-
----
-
-# 3. Controller -> CtrlBase
-
-旧：
-
-```text
-systems/controller/
-    builder.py
-    space_blend.py
-```
-
-新：
-
-```text
-systems/ctrl_base.py
-```
-
-正式 Controller API 包括：
-
-```text
-create_ctrl()
-create_fk_ctrl()
-create_follow()
-create_space_switch()
-create_space_blend()
-```
-
-Controller Tool、Rig Tool、Body Skirt 和 Face Module 均直接调用 `ctrl_base`。
-
----
-
-# 4. Face Step 03
-
-完整 Face 业务 Module 从 `build/` 中分离：
-
-```text
+CtrlBase
 systems/face/modules/
-    teeth.py
+systems/face/build/
 ```
 
-`systems/face/build/` 只保存可以被 Module 组合的构建算法，例如：
+这些路径和类型**已经不是当前 MuziTools 正式架构**。
+
+为了避免旧链接直接 404，本页保留文件名，但旧迁移正文已经删除。
+
+## 当前架构入口
+
+请以这些页面为准：
+
+- [总体架构](../architecture/index.md)
+- [Core 设计](../architecture/core.md)
+- [Tools 与 Systems](../architecture/tools-systems.md)
+- [Face System](../architecture/face-system.md)
+- [Face Workflow State](../architecture/face-workflow-state.md)
+- [Rig Library](../manual/rig-library.md)
+- [API Reference](../reference/index.md)
+
+## 当前正式核心结构
 
 ```text
-curve_attachment.py
-eyelid/
-lip/
+core/common/
+    attr_utils.py
+    hierarchy_utils.py
+    name_utils.py
+    transform_utils.py
+
+core/rigging/
+    ctrl_utils.py
+    guide_utils.py
+    jnt_utils.py
+
+systems/
+    rig_module.py
+    face/
+    components/
+    rig/
 ```
 
-术语：
+当前完整业务 Module 使用：
 
 ```text
-Step
-    Setup / Guide / Build / Finalize
-
-Module
-    Teeth / Jaw / Tongue / Lip / Eye / Brow ...
-
-Builder
-    Curve Attachment / Zip Lip / Radial Jnt ...
+systems/rig_module.py
 ```
 
-`FaceBase` 默认 Rig Identity：
+Controller 基础能力使用：
 
 ```text
-md / face / 001
+core/rigging/ctrl_utils.py
 ```
 
-当前 `TeethModule` 的 Rig Identity：
+Joint 基础能力使用：
 
 ```text
-md / teeth / 001
+core/rigging/jnt_utils.py
 ```
 
-后续 Jaw / Tongue / Lip / Eye 等 Module 应遵循同一模式。
-
----
-
-# 5. 已删除入口
-
-0.4 不保留以下 Compatibility Wrapper：
+Rig 标准命名使用：
 
 ```text
-core/name_utils.py
-systems/component_base.py
-systems/controller/
-systems/face/build/teeth_component.py
-systems/face/build/teeth_builder.py
+core/common/name_utils.py
 ```
 
-旧测试入口也已经替换为：
+## 当前 Rig Library Workflow
 
 ```text
-rig_base_contract_test.py
-module_base_contract_test.py
-ctrl_base_smoke_test.py
-face_build_smoke_test.py
-rig_architecture_gate_test.py
+01 Setup
+02 Guide
+03 Ctrl
+04 Final
 ```
 
----
+详细行为以 [Rig Library](../manual/rig-library.md) 和 [Face Workflow State](../architecture/face-workflow-state.md) 为准。
 
-# 6. 架构门禁
-
-`tests/rig_architecture_gate_test.py` 用于阻止退休架构重新进入正式代码。
-
-禁止重新出现：
-
-```text
-name_utils
-component_base
-systems.controller
-ComponentBase
-RigComponentBase
-TeethComponent
-RigBase.create_name(...)
-RigBase(name=...)
-create_name(type=...)
-```
-
-`tests/rig_base_contract_test.py` 进一步验证：
-
-```text
-Rig Identity
-Naming Override 不修改 Identity
-Parse 不修改 Identity
-Side Semantic
-001 ~ 999 Index Contract
-退休 type= Keyword 不再可用
-退休 Name Object API 不再存在
-```
-
-历史说明文档可以提及退休名称，但正式 Runtime 不能重新依赖它们。
-
----
-
-# 7. Maya 2023 验证
-
-迁移后的推荐验证顺序：
-
-```python
-import muziToolset
-
-muziToolset.smoke_test()
-muziToolset.extended_core_smoke_test()
-muziToolset.ctrl_base_smoke_test()
-muziToolset.rig_integration_test()
-muziToolset.face_build_smoke_test()
-muziToolset.maya2023_smoke_test()
-muziToolset.functional_smoke_test()
-```
-
-静态架构迁移完成并不等于 Maya Runtime 已验证；最终仍需要在 Maya 2023 中运行上述 Smoke Test。
+!!! warning "不要继续引用旧 0.4 API"
+    新代码和新文档不应再引用 `RigBase / ModuleBase / CtrlBase` 那套已退休架构。保留本页只为了让历史链接明确告诉读者“旧版本已经退出”，而不是继续维护旧实现说明。
