@@ -148,6 +148,27 @@ class RbfModel(object):
             self.poses.pop()
             raise
 
+    def update_pose(self, name, values):
+        """按名称替换样本值；验证失败保留原数据，名称和输出连接不变。"""
+        candidate = RbfModel.from_dict(self.to_dict())
+        for pose in candidate.poses:
+            if pose['name'] == name:
+                pose['values'] = list(values)
+                candidate.validate()
+                self.poses = candidate.poses
+                return
+        raise ValueError('找不到姿态：' + name)
+
+    def remove_pose(self, name):
+        """删除非中立样本；有场景连接时还需通过 Driver 重建检查。"""
+        for index, pose in enumerate(self.poses):
+            if pose['name'] == name:
+                if pose['neutral']:
+                    raise ValueError('不能删除中立姿态')
+                self.poses.pop(index)
+                return
+        raise ValueError('找不到姿态：' + name)
+
     def get_output_names(self):
         """输出顺序与样本顺序保持一致。
 

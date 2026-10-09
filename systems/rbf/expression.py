@@ -32,8 +32,7 @@ def compile_expression(solver, node):
         str: 可直接传给 cmds.expression 的 MEL 数值表达式。
     """
     model = solver.model
-    if solver.coefficients is None:
-        raise RuntimeError('请先训练')
+    solver.require_trained()
     lines = []
     for index in range(len(model.inputs)):
         lines.append('float $x{} = {}.input{};'.format(index, node, index))

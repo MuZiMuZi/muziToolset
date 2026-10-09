@@ -84,6 +84,7 @@ class RbfSolver(object):
         """
         self.model = model
         self.coefficients = None
+        self.trained_data = None
 
     def kernel(self, first, second):
         """Gaussian 核，半径作用于已按输入尺度归一化的距离。
@@ -106,6 +107,8 @@ class RbfSolver(object):
         Returns:
             list[list[float]]: 已训练的系数矩阵。
         """
+        self.coefficients = None
+        self.trained_data = None
         self.model.validate()
         if len(self.model.poses) < 2:
             raise ValueError('至少采集中立和一个修型姿态')
@@ -130,7 +133,15 @@ class RbfSolver(object):
                 target.append(float(not pose['neutral'] and pose['name'] == name))
             targets.append(target)
         self.coefficients = solve_linear(matrix, targets)
+        self.trained_data = self.model.to_dict()
         return self.coefficients
+
+    def require_trained(self):
+        """禁止样本、尺度或核设置变化后继续使用旧系数。"""
+        if self.coefficients is None:
+            raise RuntimeError('请先训练 RBF')
+        if self.trained_data != self.model.to_dict():
+            raise RuntimeError('配置已变化，请重新训练 RBF')
 
     def evaluate(self, values):
         """输出可选择夹到 0~1，再将大于 1 的总量归一化。
@@ -143,8 +154,7 @@ class RbfSolver(object):
             list[float]: 与 get_output_names 顺序一致的输出权重。
         """
         self.model.validate_values(values)
-        if self.coefficients is None:
-            raise RuntimeError('请先训练 RBF')
+        self.require_trained()
         weights = [0.0] * len(self.model.get_output_names())
         for index, pose in enumerate(self.model.poses):
             basis = self.kernel(values, pose['values'])

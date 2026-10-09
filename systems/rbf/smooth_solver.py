@@ -22,6 +22,7 @@ class SmoothSolver(object):
         """
         self.model = model
         self.trained = False
+        self.trained_data = None
 
     def train(self):
         """验证固定十方向数据；轴索引是关节输入顺序，并非控制器轴。
@@ -29,8 +30,14 @@ class SmoothSolver(object):
         Returns:
             None: 固定方向配置检查通过。
         """
+        self.trained = False
+        self.trained_data = None
         self.model.validate()
         settings = self.model.smooth
+        if set(settings) != {'axes', 'signs', 'angles'}:
+            raise ValueError('Smoothstep 设置需要 axes、signs、angles')
+        if len(settings['axes']) != 3 or len(settings['signs']) != 2 or len(settings['angles']) != 3:
+            raise ValueError('Smoothstep 轴、符号、阈值数量错误')
         for axis in settings['axes']:
             if not isinstance(axis, int) or isinstance(axis, bool):
                 raise ValueError('Smoothstep 轴索引必须为整数')
@@ -46,9 +53,18 @@ class SmoothSolver(object):
                 raise ValueError('Smoothstep 阈值必须为有限正数')
         if tuple(self.model.get_output_names()) != OUTPUTS:
             raise ValueError('Smoothstep 模式需要自动采样生成的固定十方向名称与顺序')
-        if any(self.model.periods):
-            raise ValueError('Smoothstep 模式保留原 V6 连续角度语义，周期必须为 0')
+        for period in self.model.periods:
+            if period:
+                raise ValueError('Smoothstep 模式保留原 V6 连续角度语义，周期必须为 0')
         self.trained = True
+        self.trained_data = self.model.to_dict()
+
+    def require_trained(self):
+        """设置修改后必须重新验证，防止 Python 与场景表达式使用不同设置。"""
+        if not self.trained:
+            raise RuntimeError('请先验证配置')
+        if self.trained_data != self.model.to_dict():
+            raise RuntimeError('配置已变化，请重新验证配置')
 
     def evaluate(self, values):
         """中立为零、方向隔离、超限保持端点，扭转独立。
@@ -60,8 +76,7 @@ class SmoothSolver(object):
         Returns:
             list[float]: 与 get_output_names 顺序一致的输出权重。
         """
-        if not self.trained:
-            raise RuntimeError('请先验证配置')
+        self.require_trained()
         self.model.validate_values(values)
         settings = self.model.smooth
         deltas = []
@@ -93,8 +108,7 @@ class SmoothSolver(object):
         Returns:
             str: Smoothstep 模式的 MEL 数值表达式。
         """
-        if not self.trained:
-            raise RuntimeError('请先验证配置')
+        self.require_trained()
         settings = self.model.smooth
         definitions = ((0, 1), (0, -1), (1, 1), (1, -1), (2, 1), (2, -1))
         lines = []
