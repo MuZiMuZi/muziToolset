@@ -161,6 +161,7 @@ class RbfDriver(object):
             cmds.setAttr(self.output + '.muziRbfData', json.dumps(self.model.to_dict(), ensure_ascii=False), type='string')
             cmds.setAttr(self.output + '.muziRbfData', lock=True)
             cmds.addAttr(self.output, longName='ownedNodes', attributeType='message', multi=True)
+            cmds.addAttr(self.output, longName='outputMappings', attributeType='message', multi=True)
             for index, plug in enumerate(self.model.inputs):
                 attribute = 'input{}'.format(index)
                 cmds.addAttr(self.output, longName=attribute, attributeType='double')
@@ -182,6 +183,8 @@ class RbfDriver(object):
             expression = cmds.expression(name=expression_name, string=source,
                                          alwaysEvaluate=False, unitConversion='none')
             self.nodes.append(expression)
+            from .pose_locator import create_pose_locators
+            create_pose_locators(self)
             owner_index = 0
             for node in self.nodes:
                 if node != self.output:
@@ -234,7 +237,8 @@ class RbfDriver(object):
         Returns:
             None: 输出连接成功；不覆盖已有其他连接。
         """
-        connection_utils.connect_plugs(self.get_output_plug(name), destination, force=False)
+        if not connection_utils.connect_plugs(self.get_output_plug(name), destination, force=False):
+            raise RuntimeError('目标已有其他驱动：' + destination)
 
     @scene_utils.undo_chunk
     def disconnect_output(self, name, destination):
@@ -278,7 +282,7 @@ class RbfDriver(object):
         old_nodes = cmds.listConnections(self.output + '.ownedNodes', source=True, destination=False) or []
         old_nodes.append(self.output)
         for node in candidate.nodes:
-            canonical = node.replace('_rbfStage_', '_rbf_').replace('_rbfInputStage_', '_rbfInput_')
+            canonical = node.replace('Stage_', '_')
             if cmds.objExists(canonical) and canonical not in old_nodes:
                 candidate.delete()
                 raise RuntimeError('重建节点名称与场景冲突：' + canonical)
@@ -290,7 +294,8 @@ class RbfDriver(object):
                     new_source = candidate.get_output_plug(name)
                     connection_utils.disconnect_plugs(old_source, target)
                     moved.append((old_source, new_source, target))
-                    connection_utils.connect_plugs(new_source, target)
+                    if not connection_utils.connect_plugs(new_source, target):
+                        raise RuntimeError('迁移输出连接失败：' + target)
         except Exception:
             for old_source, new_source, target in reversed(moved):
                 if cmds.isConnected(new_source, target):
@@ -298,11 +303,36 @@ class RbfDriver(object):
                 connection_utils.connect_plugs(old_source, target)
             candidate.delete()
             raise
+        # 映射曲线不重新创建，只迁移所有权；其输入已随同名权重迁移。
+        from .output_driver import get_output_mappings
+        mappings = get_output_mappings(self.output)
+        ownership_moves = []
+        try:
+            for index, curve in enumerate(mappings):
+                source = curve + '.message'
+                targets = cmds.listConnections(source, source=False, destination=True, plugs=True) or []
+                for target in targets:
+                    if target.startswith(self.output + '.outputMappings['):
+                        new_target = '{}.outputMappings[{}]'.format(candidate.output, index)
+                        connection_utils.disconnect_plugs(source, target)
+                        ownership_moves.append((source, target, new_target))
+                        if not connection_utils.connect_plugs(source, new_target):
+                            raise RuntimeError('输出映射所有权迁移失败')
+        except Exception:
+            for source, target, new_target in reversed(ownership_moves):
+                if cmds.isConnected(source, new_target):
+                    connection_utils.disconnect_plugs(source, new_target)
+                connection_utils.connect_plugs(source, target)
+            for old_source, new_source, target in reversed(moved):
+                connection_utils.disconnect_plugs(new_source, target)
+                connection_utils.connect_plugs(old_source, target)
+            candidate.delete()
+            raise
         self.delete()
         # 让后续重复重建仍能使用相同暂存名称；统一回到正式命名。
         for node in candidate.nodes:
             if cmds.objExists(node):
-                cmds.rename(node, node.replace('_rbfStage_', '_rbf_').replace('_rbfInputStage_', '_rbfInput_'))
+                cmds.rename(node, node.replace('Stage_', '_'))
         candidate.output = candidate.get_name('network', 'rbf').replace('_rbfStage_', '_rbf_')
         candidate.staging = False
         self.model = candidate.model
@@ -342,6 +372,8 @@ class RbfDriver(object):
         if not self.output or not cmds.objExists(self.output):
             return
         nodes = cmds.listConnections(self.output + '.ownedNodes', source=True, destination=False) or []
+        from .output_driver import get_output_mappings
+        nodes.extend(get_output_mappings(self.output))
         for node in nodes:
             if cmds.objExists(node):
                 cmds.delete(node)

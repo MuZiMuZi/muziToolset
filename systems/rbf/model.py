@@ -99,7 +99,7 @@ class RbfModel(object):
             if not re.fullmatch(r'[A-Za-z][A-Za-z0-9_]*', name) or name in names:
                 raise ValueError('姿态名称不合法或重复：' + name)
             names.add(name)
-            if not pose['neutral'] and (re.fullmatch(r'(input|weight)\d+', name) or name in ('message', 'muziRbfData', 'ownedNodes')):
+            if not pose['neutral'] and (re.fullmatch(r'(input|weight)\d+', name) or name in ('message', 'muziRbfData', 'ownedNodes', 'outputMappings')):
                 raise ValueError('姿态名称占用了网络保留属性：' + name)
             self.validate_values(pose['values'])
             if not isinstance(pose['neutral'], bool):

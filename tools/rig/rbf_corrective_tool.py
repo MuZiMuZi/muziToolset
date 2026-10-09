@@ -10,7 +10,10 @@ from ...core.common import scene_utils
 from ...systems.rbf import RbfModel
 from ...systems.rbf.solver_factory import create_solver
 from ...systems.rbf.driver import RbfDriver, capture_pose, save_model, load_model, list_drivers
-from ...systems.rbf.presets import create_adv_model
+from ...systems.rbf.presets import create_adv_model, create_joint_model
+from ...systems.rbf.driver import read_inputs
+from ...systems.rbf.pose_locator import get_pose_locators, read_pose_locators, write_pose_locator
+from ...systems.rbf.output_driver import connect_mapped_output, disconnect_mapped_output
 from ...systems.rbf.sampling import get_adv_controller, create_pose_offsets, sample_controller
 from ...ui import window_utils, theme
 
@@ -33,7 +36,7 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         super(RbfCorrectiveTool, self).__init__(parent)
         self.model = None
         self.driver = None
-        self.setWindowTitle('ADV 通用 RBF 修型驱动')
+        self.setWindowTitle('通用 Pose Driver / RBF')
         self.resize(560, 800)
         self.create_widgets()
         self.apply_preset()
@@ -80,7 +83,7 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
             None: 界面状态已同步；场景操作委托给业务接口。
         """
         layout = QtWidgets.QVBoxLayout(self)
-        layout.addWidget(QtWidgets.QLabel('自动旋转 ADV 控制器 → 采样最终关节 → RBF 修型权重'))
+        layout.addWidget(QtWidgets.QLabel('Pose Driver · Shoulder / Hip / Wrist / 自定义关节'))
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
         content = QtWidgets.QWidget()
@@ -115,7 +118,7 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         self.clamp.setChecked(True)
         self.normalize = QtWidgets.QCheckBox('输出总量超过 1 时归一化')
         rows = [
-            ('ADV 部位', self.part), ('求解器（rbf=真正 RBF）', self.solver_type), ('侧别', self.side), ('实例序号', self.index),
+            ('部位（可输入自定义名称）', self.part), ('求解器（rbf=真正 RBF）', self.solver_type), ('侧别', self.side), ('实例序号', self.index),
             ('自动采样控制器', self.controller), ('关节输入（逗号分隔）', self.inputs),
             ('输入尺度（度）', self.scales), ('输入周期（0=不绕回）', self.periods),
             ('采样轴：摆动1,摆动2,扭转', self.axes), ('摆动方向符号', self.signs),
@@ -143,11 +146,19 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         self.add_button(manual_row, '补充当前姿态', self.capture_current)
         self.add_button(manual_row, '删除选中样本', self.remove_pose)
         body.addLayout(manual_row)
+        locator_group = QtWidgets.QGroupBox('Pose Locator 编辑')
+        locator_layout = QtWidgets.QVBoxLayout(locator_group)
+        self.add_button(locator_layout, '选择样本 Locator（Channel Box 编辑 poseValue）', self.select_pose_locator)
+        self.add_button(locator_layout, '用当前姿态覆盖选中样本', self.replace_current_pose)
+        self.add_button(locator_layout, '读取 Locator 编辑为草稿', self.read_locators)
+        locator_layout.addWidget(QtWidgets.QLabel('修改草稿后点击重建。Smoothstep 使用中立值和阈值；RBF 使用全部样本。'))
+        body.addWidget(locator_group)
         build_row = QtWidgets.QHBoxLayout()
         self.add_button(build_row, '训练并构建', self.build)
         self.add_button(build_row, '重建并保留连接', self.rebuild)
         self.add_button(build_row, '刷新权重', self.refresh_weights)
         body.addLayout(build_row)
+        self.add_button(body, '选择输出网络（Channel Box 实时权重）', self.select_output)
         self.outputs = QtWidgets.QComboBox()
         self.destination = QtWidgets.QLineEdit()
         self.destination.setPlaceholderText('例如 blendShape1.armUp 或 blendShape1.weight[0]')
@@ -157,6 +168,22 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         self.add_button(connect_row, '连接输出', self.connect_output)
         self.add_button(connect_row, '断开输出', self.disconnect_output)
         body.addLayout(connect_row)
+        mapping_group = QtWidgets.QGroupBox('辅助骨 / 标量端点映射')
+        mapping_layout = QtWidgets.QFormLayout(mapping_group)
+        self.mapping_neutral = QtWidgets.QDoubleSpinBox()
+        self.mapping_full = QtWidgets.QDoubleSpinBox()
+        for widget in (self.mapping_neutral, self.mapping_full):
+            widget.setRange(-100000, 100000)
+            widget.setDecimals(4)
+        self.mapping_full.setValue(30)
+        self.use_current_neutral = QtWidgets.QCheckBox('权重 0 使用目标当前值')
+        self.use_current_neutral.setChecked(True)
+        mapping_layout.addRow(self.use_current_neutral)
+        mapping_layout.addRow('权重 0 的目标值', self.mapping_neutral)
+        mapping_layout.addRow('权重 1 的目标值', self.mapping_full)
+        self.add_button(mapping_layout, '将所选输出映射到上述目标属性', self.connect_mapping)
+        self.add_button(mapping_layout, '删除上述目标的当前映射', self.disconnect_mapping)
+        body.addWidget(mapping_group)
         scene_row = QtWidgets.QHBoxLayout()
         self.scene_drivers = QtWidgets.QComboBox()
         scene_row.addWidget(self.scene_drivers)
@@ -173,7 +200,7 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         self.status = QtWidgets.QLabel('准备就绪')
         self.status.setWordWrap(True)
         layout.addWidget(self.status)
-        theme.style_window(self, title='ADV 通用 RBF 修型驱动', minimum_width=560)
+        theme.style_window(self, title='通用 Pose Driver / RBF', minimum_width=560)
 
     @staticmethod
     def tokens(text):
@@ -246,9 +273,19 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         Returns:
             None: 界面状态已同步；场景操作委托给业务接口。
         """
-        self.model = create_adv_model(self.part.currentText(), self.side.currentText(), index=self.index.value())
+        part = self.part.currentText().strip()
+        solver_type = self.solver_type.currentText()
+        if part in ('arm', 'thigh', 'wrist'):
+            self.model = create_adv_model(part, self.side.currentText(), index=self.index.value())
+            self.controller.setText(get_adv_controller(self.model.part, self.model.side))
+        else:
+            inputs = self.tokens(self.inputs.text())
+            if not inputs:
+                raise ValueError('自定义部位请先拾取输入关节')
+            self.model = create_joint_model(inputs[0].split('.', 1)[0], part=part,
+                                            side=self.side.currentText(), index=self.index.value())
+        self.model.solver_type = solver_type
         self.driver = None
-        self.controller.setText(get_adv_controller(self.model.part, self.model.side))
         self.angles.setText('45,45,22.5,22.5,45' if self.model.part == 'wrist' else '90,90,45,45,90')
         self.show_model()
         self.status.setText('已建立 ADV 模板；当前控制器姿态将作为采样中立')
@@ -317,8 +354,70 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         index = self.poses.currentRow()
         if index <= 0:
             raise ValueError('请选择非中立样本')
-        self.model.poses.pop(index)
+        self.model.remove_pose(self.model.poses[index]['name'])
         self.show_poses()
+
+    def selected_pose_name(self):
+        """取得所选样本，包括中立；避免用当前输出选择替代样本选择。"""
+        index = self.poses.currentRow()
+        if index < 0 or index >= len(self.model.poses):
+            raise ValueError('请先选择一个姿态样本')
+        return self.model.poses[index]['name']
+
+    def select_pose_locator(self):
+        """选择当前网络的样本 Locator，在 Channel Box 编辑 poseValue 数值。"""
+        self.require_driver()
+        name = self.selected_pose_name()
+        locators = get_pose_locators(self.driver)
+        if name not in locators:
+            raise ValueError('样本尚未构建为 Locator，请先构建或重建')
+        cmds.select(locators[name], replace=True)
+
+    def replace_current_pose(self):
+        """覆盖选中样本；已构建的 Locator 同步记录，实时输出仍需重建。"""
+        name = self.selected_pose_name()
+        candidate = self.read_settings()
+        values = read_inputs(candidate)
+        candidate.update_pose(name, values)
+        if self.driver and name in get_pose_locators(self.driver):
+            if candidate.inputs != self.driver.model.inputs:
+                raise ValueError('输入已改变，请重新采样')
+            write_pose_locator(self.driver, name, values)
+        self.model = candidate
+        self.show_poses()
+        self.status.setText('已记录姿态到草稿；点击重建应用到实时输出')
+
+    def read_locators(self):
+        """只读取 Locator 数据；保留当前 UI 的核设置和方向阈值。"""
+        self.require_driver()
+        draft = self.read_settings()
+        if draft.inputs != self.driver.model.inputs:
+            raise ValueError('输入已改变，请重新采样')
+        candidate = read_pose_locators(self.driver)
+        draft.poses = candidate.poses
+        create_solver(draft).train()
+        self.model = draft
+        self.show_poses()
+        self.status.setText('Locator 编辑已读取；点击重建应用到实时输出')
+
+    def select_output(self):
+        """选择输出网络；DG 实时更新 Channel Box，无需 UI 定时回调。"""
+        self.require_driver()
+        cmds.select(self.driver.output, replace=True)
+
+    def connect_mapping(self):
+        """辅助骨以当前 Maya 单位设置端点，使用所属 Driven 曲线。"""
+        self.require_driver()
+        neutral = None if self.use_current_neutral.isChecked() else self.mapping_neutral.value()
+        curve = connect_mapped_output(self.driver, self.outputs.currentText(),
+                                      self.destination.text().strip(), self.mapping_full.value(), neutral)
+        self.status.setText('输出映射完成：' + curve)
+
+    def disconnect_mapping(self):
+        """删除当前网络的目标映射，保留目标骨骼。"""
+        self.require_driver()
+        disconnect_mapped_output(self.driver, self.destination.text().strip())
+        self.status.setText('输出映射已删除')
 
     def show_poses(self):
         """显示样本值，输出选择器依据已构建网络保持稳定。
