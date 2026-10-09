@@ -10,14 +10,42 @@ ADV_CONTROLLERS = {'arm': 'FKShoulder', 'thigh': 'FKHip', 'wrist': 'FKWrist'}
 
 
 def get_adv_controller(part, side):
-    """默认 ADV FK 控制器名称；不同 ADV 版本可由 UI 覆盖。"""
+    """默认 ADV FK 控制器名称；不同 ADV 版本可由 UI 覆盖。
+
+    Args:
+        part (str):
+            命名中的部位 token；ADV 模板支持 arm、thigh、wrist。
+        side (str):
+            生成节点的侧别：lf、rt、md。
+
+    Returns:
+        str: 当前部位与侧别的默认 ADV FK 控制器名。
+    """
     return '{}_{}'.format(ADV_CONTROLLERS[part], 'R' if side == 'rt' else 'L')
 
 
 def create_pose_offsets(swing_axes=('Y', 'Z'), twist_axis='X',
                         swing_signs=(-1, 1), swing_angles=(90.0, 90.0),
                         diagonal_angles=(45.0, 45.0), twist_angle=90.0):
-    """生成 XYZ 控制器偏移；控制器轴与采样关节轴可以不同。"""
+    """生成 XYZ 控制器偏移；控制器轴与采样关节轴可以不同。
+
+    Args:
+        swing_axes (tuple[str,str]):
+            采样控制器的两个摆动旋转轴。
+        twist_axis (str):
+            采样控制器的扭转轴，必须与两个摆动轴不同。
+        swing_signs (tuple[int,int]):
+            上与前分别对应的旋转符号，只能取 -1 或 1。
+        swing_angles (tuple[float,float]):
+            两个单轴方向的采样幅度，单位度。
+        diagonal_angles (tuple[float,float]):
+            对角样本在两个摆动轴上的偏移幅度，单位度。
+        twist_angle (float):
+            正负扭转样本的偏移幅度，单位度。
+
+    Returns:
+        list[tuple]: 中立加十个修型方向的控制器偏移。
+    """
     if len(swing_axes) != 2 or set(tuple(swing_axes) + (twist_axis,)) != set('XYZ'):
         raise ValueError('摆动与扭转必须分别使用 X、Y、Z')
     if len(swing_signs) != 2 or len(swing_angles) != 2 or len(diagonal_angles) != 2:
@@ -54,6 +82,17 @@ def sample_controller(model, controller, offsets=None):
 
     如果通道有关键帧、约束或其他输入连接，拒绝自动采样，避免修改已有动画。
     getAttr 会请求最终关节求值，无需依赖窗口刷新或改时间。
+
+    Args:
+        model (RbfModel):
+            已通过数据验证的姿态配置；场景接口构建前检查输入连接。
+        controller (str):
+            采样控制器名称或完整 DAG 路径；必须允许写入 XYZ 旋转。
+        offsets (list[tuple] | None):
+            (姿态名, XYZ 度数偏移) 序列；首项必须 neutral 零偏移。
+
+    Returns:
+        RbfModel: 自动采样得到的新模型；原模型不修改。
     """
     controller = scene_utils.get_long_name(controller)
     read_inputs(model)

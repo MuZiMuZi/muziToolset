@@ -13,7 +13,15 @@ SCALAR_TYPES = ('double', 'float', 'long', 'short', 'byte', 'bool', 'doubleAngle
 
 
 def read_inputs(model):
-    """只读采样；角度统一保存为度，支持 ADV 被连接的最终关节。"""
+    """只读采样；角度统一保存为度，支持 ADV 被连接的最终关节。
+
+    Args:
+        model (RbfModel):
+            已通过数据验证的姿态配置；场景接口构建前检查输入连接。
+
+    Returns:
+        list[float]: 当前输入数值；所有 doubleAngle 均统一为度。
+    """
     result = []
     for plug in model.inputs:
         node, attribute = plug.split('.', 1)
@@ -32,19 +40,49 @@ def read_inputs(model):
 
 
 def capture_pose(model, name, neutral=False):
-    """记录当前关节或控制器状态，不修改原绑定。"""
+    """记录当前关节或控制器状态，不修改原绑定。
+
+    Args:
+        model (RbfModel):
+            已通过数据验证的姿态配置；场景接口构建前检查输入连接。
+        name (str):
+            姿态名称或现有输出名称，使用字母开头的属性 token。
+        neutral (bool):
+            是否把新增样本标记为唯一中立姿态。
+
+    Returns:
+        dict: 刚采集的样本记录。
+    """
     model.add_pose(name, read_inputs(model), neutral=neutral)
     return model.poses[-1]
 
 
 def save_model(model, path):
-    """保存可移植训练数据，不保存场景运行时节点。"""
+    """保存可移植训练数据，不保存场景运行时节点。
+
+    Args:
+        model (RbfModel):
+            已通过数据验证的姿态配置；场景接口构建前检查输入连接。
+        path (str):
+            UTF-8 JSON 配置文件路径。
+
+    Returns:
+        None: 文件已写入；写入失败时抛出异常。
+    """
     model.validate()
     file_utils.write_json(path, model.to_dict())
 
 
 def load_model(path):
-    """导入后可修改 inputs 重映射到另一角色，再构建。"""
+    """导入后可修改 inputs 重映射到另一角色，再构建。
+
+    Args:
+        path (str):
+            UTF-8 JSON 配置文件路径。
+
+    Returns:
+        RbfModel: 从 JSON 读取并验证的配置。
+    """
     return RbfModel.from_dict(file_utils.read_json(path))
 
 
@@ -52,27 +90,64 @@ class RbfDriver(object):
     """一个部位对应一个 output network 和一个表达式求解节点。"""
 
     def __init__(self, model):
+        """初始化当前对象并保存配置；不会隐式修改场景。
+
+        Args:
+            model (RbfModel):
+                已通过数据验证的姿态配置；场景接口构建前检查输入连接。
+
+        Returns:
+            None: 初始化完成。
+        """
         self.model = RbfModel.from_dict(model.to_dict())
         self.output = None
         self.nodes = []
         self.staging = False
 
     def get_name(self, type, function, index=None):
-        """统一走仓库 Name 命名，不建立第二套 Rig 命名规则。"""
+        """统一走仓库 Name 命名，不建立第二套 Rig 命名规则。
+
+        Args:
+            type (str):
+                Name 的节点类型 token，同时作为 createNode 的节点类型。
+            function (str):
+                Name 的用途 token，例如 rbf、rbfInput。
+            index (int | None):
+                实例或节点序号；可选 None 时使用模型实例序号。
+
+        Returns:
+            str: 由公共 Name 接口生成的标准名称。
+        """
         if self.staging:
             function += 'Stage'
         return Name(type=type, side=self.model.side, part=self.model.part,
                     function=function, index=self.model.index if index is None else index).name
 
     def create_node(self, type, function, index=None):
-        """记录本次创建节点，用于异常回滚。"""
+        """记录本次创建节点，用于异常回滚。
+
+        Args:
+            type (str):
+                Name 的节点类型 token，同时作为 createNode 的节点类型。
+            function (str):
+                Name 的用途 token，例如 rbf、rbfInput。
+            index (int | None):
+                实例或节点序号；可选 None 时使用模型实例序号。
+
+        Returns:
+            str: 本次创建并登记归属的实际节点名称。
+        """
         node = scene_utils.create_node(type, self.get_name(type, function, index))
         self.nodes.append(node)
         return node
 
     @scene_utils.undo_chunk
     def build(self):
-        """先训练再修改场景；所有运行时输入采用固定角度单位转换。"""
+        """先训练再修改场景；所有运行时输入采用固定角度单位转换。
+
+        Returns:
+            str: 已构建的输出 network 节点名称。
+        """
         if self.output and cmds.objExists(self.output):
             raise RuntimeError('该实例已构建，请恢复实例或删除后重新构建')
         self.model.validate()
@@ -121,14 +196,26 @@ class RbfDriver(object):
             raise
 
     def get_output_plug(self, name):
-        """使用样本名称取权重，内部属性序号保持稳定。"""
+        """使用样本名称取权重，内部属性序号保持稳定。
+
+        Args:
+            name (str):
+                姿态名称或现有输出名称，使用字母开头的属性 token。
+
+        Returns:
+            str: 对应输出的稳定 weight 属性路径。
+        """
         if not self.output or not cmds.objExists(self.output):
             raise RuntimeError('请先构建网络')
         index = self.model.get_output_names().index(name)
         return '{}.weight{}'.format(self.output, index)
 
     def read(self):
-        """查询场景实际权重，不调用 Python 求解器代替 DG。"""
+        """查询场景实际权重，不调用 Python 求解器代替 DG。
+
+        Returns:
+            dict[str,float]: 场景中所有输出的实际 DG 权重。
+        """
         result = {}
         for name in self.model.get_output_names():
             result[name] = cmds.getAttr(self.get_output_plug(name))
@@ -136,17 +223,45 @@ class RbfDriver(object):
 
     @scene_utils.undo_chunk
     def connect_output(self, name, destination):
-        """连接 BlendShape 权重或修型标量属性；不覆盖已有驱动。"""
+        """连接 BlendShape 权重或修型标量属性；不覆盖已有驱动。
+
+        Args:
+            name (str):
+                姿态名称或现有输出名称，使用字母开头的属性 token。
+            destination (str):
+                已有目标标量属性路径，如 blendShape1.weight[0]。
+
+        Returns:
+            None: 输出连接成功；不覆盖已有其他连接。
+        """
         connection_utils.connect_plugs(self.get_output_plug(name), destination, force=False)
 
     @scene_utils.undo_chunk
     def disconnect_output(self, name, destination):
-        """只断开指定的当前输出连接。"""
+        """只断开指定的当前输出连接。
+
+        Args:
+            name (str):
+                姿态名称或现有输出名称，使用字母开头的属性 token。
+            destination (str):
+                已有目标标量属性路径，如 blendShape1.weight[0]。
+
+        Returns:
+            None: 指定连接已断开。
+        """
         connection_utils.disconnect_plugs(self.get_output_plug(name), destination)
 
     @scene_utils.undo_chunk
     def rebuild(self, model):
-        """先构建候选网络，再迁移同名输出；失败保留原网络与连接。"""
+        """先构建候选网络，再迁移同名输出；失败保留原网络与连接。
+
+        Args:
+            model (RbfModel):
+                已通过数据验证的姿态配置；场景接口构建前检查输入连接。
+
+        Returns:
+            str: 重建后的正式输出节点名。
+        """
         if not self.output or not cmds.objExists(self.output):
             raise RuntimeError('没有可重建的网络')
         if (model.side, model.part, model.index) != (self.model.side, self.model.part, self.model.index):
@@ -197,7 +312,15 @@ class RbfDriver(object):
 
     @classmethod
     def from_scene(cls, output):
-        """恢复场景中的训练数据，并从实际连接修正已重命名的输入。"""
+        """恢复场景中的训练数据，并从实际连接修正已重命名的输入。
+
+        Args:
+            output (str):
+                带 muziRbfData 的现有网络节点名称。
+
+        Returns:
+            RbfDriver: 已恢复实际场景输入连接的实例。
+        """
         data = json.loads(cmds.getAttr(output + '.muziRbfData'))
         for index in range(len(data['inputs'])):
             sources = cmds.listConnections('{}.input{}'.format(output, index), source=True,
@@ -211,7 +334,11 @@ class RbfDriver(object):
 
     @scene_utils.undo_chunk
     def delete(self):
-        """仅删除 message 标记的所属节点；绑定和 BlendShape 目标保留。"""
+        """仅删除 message 标记的所属节点；绑定和 BlendShape 目标保留。
+
+        Returns:
+            None: 本网络及所属求解节点已清理。
+        """
         if not self.output or not cmds.objExists(self.output):
             return
         nodes = cmds.listConnections(self.output + '.ownedNodes', source=True, destination=False) or []
@@ -223,7 +350,11 @@ class RbfDriver(object):
 
 
 def list_drivers():
-    """查找场景中可恢复的 RBF 网络。"""
+    """查找场景中可恢复的 RBF 网络。
+
+    Returns:
+        list[str]: 场景中带 muziRbfData 的网络。
+    """
     result = []
     for node in scene_utils.get_nodes_by_type('network'):
         if cmds.attributeQuery('muziRbfData', node=node, exists=True):

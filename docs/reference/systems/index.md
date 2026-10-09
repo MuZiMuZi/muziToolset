@@ -16,6 +16,7 @@ Systems 是可复用的完整 Rig Builder / Workflow。
 ## components
 
 - [`systems/components/__init__.py`](components/package.md) — 可复用 Rig Component。
+- [`systems/components/controller_builder.py`](components/controller_builder.md) — 控制器工具的构建编排，统一复用当前 Ctrl 基础实现。
 - [`systems/components/fk_chain.py`](components/fk_chain.md) — FKChain：通用线性 FK 绑定模块。
 
 ## face
@@ -27,6 +28,18 @@ Systems 是可复用的完整 Rig Builder / Workflow。
 - [`systems/face/face_guide_config.py`](face/face_guide_config.md) — face_guide_config：Face Guide 命名与模板配置。
 - [`systems/face/face_module.py`](face/face_module.md) — FaceModule：整个面部绑定系统的总调度模块。
 - [`systems/face/tongue_module.py`](face/tongue_module.md) — TongueModule：舌头五段 FK 绑定模块。
+
+## rbf
+
+- [`systems/rbf/__init__.py`](rbf/package.md) — 通用 RBF 系统；数据和数学模块可在 Maya 外独立使用。
+- [`systems/rbf/driver.py`](rbf/driver.md) — Maya 通用修型驱动：采样、构建、恢复、连接和清理；命名复用 Name。
+- [`systems/rbf/expression.py`](rbf/expression.md) — 将训练系数编译为 MEL 纯数值表达式；不执行 Python 回调。
+- [`systems/rbf/model.py`](rbf/model.md) — RBF 数据模型：输入尺度、周期、姿态及输出；不操作场景。
+- [`systems/rbf/presets.py`](rbf/presets.md) — ADV 最终关节模板；模板名称可覆盖，不根据名字猜测解剖方向。
+- [`systems/rbf/sampling.py`](rbf/sampling.md) — ADV 控制器自动摆姿采样：修改控制器，读取最终关节，始终恢复。
+- [`systems/rbf/smooth_solver.py`](rbf/smooth_solver.md) — 原 V6 Smoothstep 十通道模式；明确区分于 Gaussian RBF。
+- [`systems/rbf/solver.py`](rbf/solver.md) — Gaussian RBF 插值训练与求值；不依赖 Maya、NumPy 或第三方插件。
+- [`systems/rbf/solver_factory.py`](rbf/solver_factory.md) — 按配置选择真正 RBF 或旧版 Smoothstep，调用方不重复判断。
 
 ## rig
 

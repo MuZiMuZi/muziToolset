@@ -11,6 +11,41 @@ class RbfModel(object):
     def __init__(self, inputs, scales=None, periods=None, side='lf', part='arm',
                  index=1, radius=1.0, regularization=0.0, clamp=True,
                  normalize=False, poses=None, sampling=None, solver_type='rbf', smooth=None):
+        """初始化当前对象并保存配置；不会隐式修改场景。
+
+        Args:
+            inputs (list[str]):
+                要读取的 Maya 标量属性路径，顺序与 scales、periods、姿态值一致。
+            scales (list[float] | None):
+                各输入的正数尺度；省略时每个输入取 90。
+            periods (list[float] | None):
+                各输入的周期，0 为连续值，角度可用 360；默认全部为 0。
+            side (str):
+                生成节点的侧别：lf、rt、md。
+            part (str):
+                命名中的部位 token；ADV 模板支持 arm、thigh、wrist。
+            index (int):
+                实例序号，必须为正整数。
+            radius (float):
+                归一化输入空间中的 Gaussian 核宽度，必须大于 0。
+            regularization (float):
+                加在训练矩阵对角线上的非负正则项；0 表示精确插值。
+            clamp (bool):
+                是否将 RBF 输出限制到 0~1。
+            normalize (bool):
+                是否在输出总和大于 1 时按总量缩放。
+            poses (list[dict] | None):
+                包含 name、values、neutral 的样本序列；首项必须中立。
+            sampling (dict | None):
+                控制器名称和自动采样轴、方向、角度设置，用于保存与恢复。
+            solver_type (str):
+                rbf 使用 Gaussian 插值；smoothstep 使用原 V6 方向门。
+            smooth (dict | None):
+                Smoothstep 输入索引 axes、方向 signs 和阈值 angles。
+
+        Returns:
+            None: 初始化完成。
+        """
         self.inputs = list(inputs)
         self.scales = list(scales) if scales is not None else [90.0] * len(inputs)
         self.periods = list(periods) if periods is not None else [0.0] * len(inputs)
@@ -28,7 +63,11 @@ class RbfModel(object):
         self.validate()
 
     def validate(self):
-        """验证导入数据；重复姿态由求解器按实际距离检查。"""
+        """验证导入数据；重复姿态由求解器按实际距离检查。
+
+        Returns:
+            None: 配置有效时正常返回，否则抛出 ValueError。
+        """
         if self.solver_type not in ('rbf', 'smoothstep'):
             raise ValueError('未知求解模式')
         if not self.inputs or len(set(self.inputs)) != len(self.inputs):
@@ -72,7 +111,15 @@ class RbfModel(object):
                 raise ValueError('只能有一个中立姿态')
 
     def validate_values(self, values):
-        """采样值必须与全部输入一一对应。"""
+        """采样值必须与全部输入一一对应。
+
+        Args:
+            values (list[float]):
+                按输入顺序排列的姿态值；角度输入统一为度。
+
+        Returns:
+            None: 输入数量及有限数检查通过，否则抛出 ValueError。
+        """
         if len(values) != len(self.inputs):
             raise ValueError('姿态输入数量不一致')
         for value in values:
@@ -80,7 +127,19 @@ class RbfModel(object):
                 raise ValueError('姿态值必须为有限数值')
 
     def add_pose(self, name, values, neutral=False):
-        """新增样本；中立不产生输出，其他姿态各产生一个同名输出。"""
+        """新增样本；中立不产生输出，其他姿态各产生一个同名输出。
+
+        Args:
+            name (str):
+                姿态名称或现有输出名称，使用字母开头的属性 token。
+            values (list[float]):
+                按输入顺序排列的姿态值；角度输入统一为度。
+            neutral (bool):
+                是否把新增样本标记为唯一中立姿态。
+
+        Returns:
+            None: 样本已添加；失败时撤销该次数据添加。
+        """
         candidate = {'name': name, 'values': list(values), 'neutral': bool(neutral)}
         self.poses.append(candidate)
         try:
@@ -90,7 +149,11 @@ class RbfModel(object):
             raise
 
     def get_output_names(self):
-        """输出顺序与样本顺序保持一致。"""
+        """输出顺序与样本顺序保持一致。
+
+        Returns:
+            list[str]: 按采样顺序排列的非中立输出名称。
+        """
         result = []
         for pose in self.poses:
             if not pose['neutral']:
@@ -98,7 +161,11 @@ class RbfModel(object):
         return result
 
     def to_dict(self):
-        """序列化配置，不序列化可由样本重算的系数。"""
+        """序列化配置，不序列化可由样本重算的系数。
+
+        Returns:
+            dict: 独立配置副本，包含版本和采样设置。
+        """
         result = {'version': 1}
         for key in ('inputs', 'scales', 'periods', 'side', 'part', 'index',
                     'radius', 'regularization', 'clamp', 'normalize', 'poses', 'sampling', 'solver_type', 'smooth'):
@@ -107,7 +174,15 @@ class RbfModel(object):
 
     @classmethod
     def from_dict(cls, data):
-        """读取版本化配置并重新验证。"""
+        """读取版本化配置并重新验证。
+
+        Args:
+            data (dict):
+                包含 version 字段的配置数据。
+
+        Returns:
+            RbfModel: 已重新验证的配置对象。
+        """
         values = copy.deepcopy(data)
         if values.pop('version') != 1:
             raise ValueError('不支持的 RBF 配置版本')

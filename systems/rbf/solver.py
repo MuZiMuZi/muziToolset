@@ -4,7 +4,21 @@ import math
 
 
 def squared_distance(first, second, scales, periods):
-    """普通输入用欧氏距离；周期输入用圆上弦长，平滑跨越绕回点。"""
+    """普通输入用欧氏距离；周期输入用圆上弦长，平滑跨越绕回点。
+
+    Args:
+        first (list[float]):
+            第一个姿态输入向量。
+        second (list[float]):
+            第二个姿态输入向量。
+        scales (list[float] | None):
+            各输入的正数尺度；省略时每个输入取 90。
+        periods (list[float] | None):
+            各输入的周期，0 为连续值，角度可用 360；默认全部为 0。
+
+    Returns:
+        float: 按尺度与周期归一化的平方距离。
+    """
     result = 0.0
     for index, scale in enumerate(scales):
         delta = first[index] - second[index]
@@ -16,7 +30,17 @@ def squared_distance(first, second, scales, periods):
 
 
 def solve_linear(matrix, targets):
-    """部分主元 Gauss-Jordan；同时求解多个输出，病态矩阵明确报错。"""
+    """部分主元 Gauss-Jordan；同时求解多个输出，病态矩阵明确报错。
+
+    Args:
+        matrix (list[list[float]]):
+            Gaussian 核构成的方阵。
+        targets (list[list[float]]):
+            每个样本对应的输出目标矩阵。
+
+    Returns:
+        list[list[float]]: 每行对应一个样本、每列对应一个输出的系数。
+    """
     size = len(matrix)
     columns = len(targets[0])
     rows = []
@@ -49,16 +73,39 @@ class RbfSolver(object):
     """中立样本目标为零；每个修型样本目标为对应输出的 one-hot。"""
 
     def __init__(self, model):
+        """初始化当前对象并保存配置；不会隐式修改场景。
+
+        Args:
+            model (RbfModel):
+                已通过数据验证的姿态配置；场景接口构建前检查输入连接。
+
+        Returns:
+            None: 初始化完成。
+        """
         self.model = model
         self.coefficients = None
 
     def kernel(self, first, second):
-        """Gaussian 核，半径作用于已按输入尺度归一化的距离。"""
+        """Gaussian 核，半径作用于已按输入尺度归一化的距离。
+
+        Args:
+            first (list[float]):
+                第一个姿态输入向量。
+            second (list[float]):
+                第二个姿态输入向量。
+
+        Returns:
+            float: Gaussian 核值，范围 0~1。
+        """
         distance = squared_distance(first, second, self.model.scales, self.model.periods)
         return math.exp(-0.5 * distance / self.model.radius ** 2)
 
     def train(self):
-        """训练全部输出；正则项非零时样本点不再严格 one-hot。"""
+        """训练全部输出；正则项非零时样本点不再严格 one-hot。
+
+        Returns:
+            list[list[float]]: 已训练的系数矩阵。
+        """
         self.model.validate()
         if len(self.model.poses) < 2:
             raise ValueError('至少采集中立和一个修型姿态')
@@ -86,7 +133,15 @@ class RbfSolver(object):
         return self.coefficients
 
     def evaluate(self, values):
-        """输出可选择夹到 0~1，再将大于 1 的总量归一化。"""
+        """输出可选择夹到 0~1，再将大于 1 的总量归一化。
+
+        Args:
+            values (list[float]):
+                按输入顺序排列的姿态值；角度输入统一为度。
+
+        Returns:
+            list[float]: 与 get_output_names 顺序一致的输出权重。
+        """
         self.model.validate_values(values)
         if self.coefficients is None:
             raise RuntimeError('请先训练 RBF')

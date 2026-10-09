@@ -21,6 +21,15 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
     """界面负责流程，采样和求解统一由 systems.rbf 负责。"""
 
     def __init__(self, parent=None):
+        """初始化当前对象并保存配置；不会隐式修改场景。
+
+        Args:
+            parent (QWidget | None):
+                Maya 或工具箱传入的窗口父对象。
+
+        Returns:
+            None: 初始化完成。
+        """
         super(RbfCorrectiveTool, self).__init__(parent)
         self.model = None
         self.driver = None
@@ -30,14 +39,34 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         self.apply_preset()
 
     def add_button(self, layout, text, callback):
-        """统一处理按钮异常，让错误出现在状态栏及 Maya 脚本编辑器。"""
+        """统一处理按钮异常，让错误出现在状态栏及 Maya 脚本编辑器。
+
+        Args:
+            layout (QLayout):
+                用于放置按钮的 Qt 布局。
+            text (str):
+                逗号分隔文本，允许中文逗号。
+            callback (callable):
+                点击时执行的无参数操作，异常会显示在状态栏。
+
+        Returns:
+            QPushButton: 已绑定操作处理的按钮。
+        """
         button = QtWidgets.QPushButton(text)
         button.clicked.connect(lambda checked=False: self.run_action(callback))
         layout.addWidget(button)
         return button
 
     def run_action(self, callback):
-        """保持窗口可用；场景回滚由业务接口负责。"""
+        """保持窗口可用；场景回滚由业务接口负责。
+
+        Args:
+            callback (callable):
+                点击时执行的无参数操作，异常会显示在状态栏。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         try:
             callback()
         except Exception as error:
@@ -45,7 +74,11 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
             cmds.warning(str(error))
 
     def create_widgets(self):
-        """可滚动设置区、样本列表和连接区。"""
+        """可滚动设置区、样本列表和连接区。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(QtWidgets.QLabel('自动旋转 ADV 控制器 → 采样最终关节 → RBF 修型权重'))
         scroll = QtWidgets.QScrollArea()
@@ -55,6 +88,7 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         form = QtWidgets.QFormLayout()
         self.part = QtWidgets.QComboBox()
         self.part.addItems(['arm', 'thigh', 'wrist'])
+        self.part.setEditable(True)
         self.solver_type = QtWidgets.QComboBox()
         self.solver_type.addItems(['rbf', 'smoothstep'])
         self.side = QtWidgets.QComboBox()
@@ -143,7 +177,15 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
 
     @staticmethod
     def tokens(text):
-        """读取逗号分隔设置，支持中文逗号。"""
+        """读取逗号分隔设置，支持中文逗号。
+
+        Args:
+            text (str):
+                逗号分隔文本，允许中文逗号。
+
+        Returns:
+            list[str]: 去除空白和空项的文本 token。
+        """
         result = []
         for value in text.replace('，', ',').split(','):
             if value.strip():
@@ -151,14 +193,26 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         return result
 
     def numbers(self, widget):
-        """角度和尺度保留浮点精度。"""
+        """角度和尺度保留浮点精度。
+
+        Args:
+            widget (QLineEdit):
+                包含逗号分隔数值的输入框。
+
+        Returns:
+            list[float]: 输入框中解析得到的数值。
+        """
         result = []
         for value in self.tokens(widget.text()):
             result.append(float(value))
         return result
 
     def read_settings(self):
-        """构建配置副本，防止失败时改变现有模型。"""
+        """构建配置副本，防止失败时改变现有模型。
+
+        Returns:
+            RbfModel: 当前界面设置生成的独立数据草稿。
+        """
         inputs = self.tokens(self.inputs.text())
         poses = [] if self.model is None else self.model.poses
         if self.model and inputs != self.model.inputs and poses:
@@ -187,7 +241,11 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
                         smooth={'axes': smooth_axes, 'signs': self.numbers(self.smooth_signs), 'angles': self.numbers(self.smooth_angles)})
 
     def apply_preset(self):
-        """创建数据草稿；已有场景网络不会被删除。"""
+        """创建数据草稿；已有场景网络不会被删除。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         self.model = create_adv_model(self.part.currentText(), self.side.currentText(), index=self.index.value())
         self.driver = None
         self.controller.setText(get_adv_controller(self.model.part, self.model.side))
@@ -196,14 +254,22 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         self.status.setText('已建立 ADV 模板；当前控制器姿态将作为采样中立')
 
     def pick_controller(self):
-        """拾取选中控制器，不直接旋转。"""
+        """拾取选中控制器，不直接旋转。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         nodes = scene_utils.get_selected_nodes(long=True)
         if len(nodes) != 1:
             raise ValueError('请只选择一个采样控制器')
         self.controller.setText(nodes[0])
 
     def pick_joint(self):
-        """更换关节意味着原采样不再有效，清空数据草稿。"""
+        """更换关节意味着原采样不再有效，清空数据草稿。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         nodes = scene_utils.get_selected_nodes(long=True)
         if len(nodes) != 1:
             raise ValueError('请只选择一个输入关节')
@@ -216,7 +282,11 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         self.show_poses()
 
     def auto_sample(self):
-        """每次自动采样重新生成完整样本集；训练失败保留原草稿。"""
+        """每次自动采样重新生成完整样本集；训练失败保留原草稿。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         model = self.read_settings()
         settings = dict(model.sampling)
         controller = settings.pop('controller')
@@ -228,14 +298,22 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         self.status.setText('自动采样完成：{} 个姿态；控制器与自动关键帧已恢复'.format(len(candidate.poses)))
 
     def capture_current(self):
-        """可选补充组合姿态；默认流程使用自动采样。"""
+        """可选补充组合姿态；默认流程使用自动采样。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         model = self.read_settings()
         capture_pose(model, self.pose_name.text().strip(), neutral=not model.poses)
         self.model = model
         self.show_poses()
 
     def remove_pose(self):
-        """保留中立样本，避免数据缺少基准。"""
+        """保留中立样本，避免数据缺少基准。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         index = self.poses.currentRow()
         if index <= 0:
             raise ValueError('请选择非中立样本')
@@ -243,7 +321,11 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         self.show_poses()
 
     def show_poses(self):
-        """显示样本值，输出选择器依据已构建网络保持稳定。"""
+        """显示样本值，输出选择器依据已构建网络保持稳定。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         self.poses.clear()
         for pose in self.model.poses:
             self.poses.addItem('{} : {}'.format(pose['name'], pose['values']))
@@ -252,7 +334,11 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         self.outputs.addItems(names)
 
     def show_model(self):
-        """加载草稿或恢复场景后同步设置区。"""
+        """加载草稿或恢复场景后同步设置区。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         self.inputs.setText(','.join(self.model.inputs))
         self.scales.setText(','.join(map(str, self.model.scales)))
         self.periods.setText(','.join(map(str, self.model.periods)))
@@ -277,7 +363,11 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         self.show_poses()
 
     def build(self):
-        """先构建成功，再将运行时实例交给界面。"""
+        """先构建成功，再将运行时实例交给界面。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         if self.driver and self.driver.output and cmds.objExists(self.driver.output):
             raise RuntimeError('已有当前网络，请使用重建按钮')
         candidate = RbfDriver(self.read_settings())
@@ -288,12 +378,20 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         self.status.setText('已构建：' + self.driver.output)
 
     def require_driver(self):
-        """把操作限制在当前已构建或已恢复网络。"""
+        """把操作限制在当前已构建或已恢复网络。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         if not self.driver or not self.driver.output or not cmds.objExists(self.driver.output):
             raise RuntimeError('请先构建或恢复场景网络')
 
     def rebuild(self):
-        """迁移同名修型输出到新训练结果。"""
+        """迁移同名修型输出到新训练结果。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         self.require_driver()
         self.driver.rebuild(self.read_settings())
         self.model = RbfModel.from_dict(self.driver.model.to_dict())
@@ -301,45 +399,73 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         self.status.setText('已重建并保留同名输出连接：' + self.driver.output)
 
     def refresh_weights(self):
-        """读取场景 DG 权重。"""
+        """读取场景 DG 权重。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         self.require_driver()
         values = self.driver.read()
         self.status.setText(str(values))
         print(values)
 
     def connect_output(self):
-        """拒绝覆盖其他工具已有连接。"""
+        """拒绝覆盖其他工具已有连接。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         self.require_driver()
         self.driver.connect_output(self.outputs.currentText(), self.destination.text().strip())
         self.status.setText('输出连接完成')
 
     def disconnect_output(self):
-        """断开指定输出。"""
+        """断开指定输出。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         self.require_driver()
         self.driver.disconnect_output(self.outputs.currentText(), self.destination.text().strip())
         self.status.setText('输出连接已断开')
 
     def refresh_scene(self):
-        """枚举场景网络，不重建。"""
+        """枚举场景网络，不重建。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         self.scene_drivers.clear()
         self.scene_drivers.addItems(list_drivers())
 
     def restore_scene(self):
-        """关闭窗口或重开场景后恢复接口。"""
+        """关闭窗口或重开场景后恢复接口。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         self.driver = RbfDriver.from_scene(self.scene_drivers.currentText())
         self.model = RbfModel.from_dict(self.driver.model.to_dict())
         self.show_model()
         self.status.setText('已恢复：' + self.driver.output)
 
     def save(self):
-        """保存当前草稿和自动采样配置。"""
+        """保存当前草稿和自动采样配置。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         path, _ = QtWidgets.QFileDialog.getSaveFileName(self, '保存 RBF 配置', '', 'JSON (*.json)')
         if path:
             save_model(self.read_settings(), path)
             self.status.setText('配置已保存')
 
     def load(self):
-        """载入为新草稿，不删除已有场景网络。"""
+        """载入为新草稿，不删除已有场景网络。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         path, _ = QtWidgets.QFileDialog.getOpenFileName(self, '加载 RBF 配置', '', 'JSON (*.json)')
         if path:
             self.model = load_model(path)
@@ -348,7 +474,11 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
             self.status.setText('配置已加载；必要时修改关节映射并重新采样')
 
     def delete_network(self):
-        """显式点击删除当前网络，操作可撤销。"""
+        """显式点击删除当前网络，操作可撤销。
+
+        Returns:
+            None: 界面状态已同步；场景操作委托给业务接口。
+        """
         self.require_driver()
         self.driver.delete()
         self.driver = None
@@ -356,7 +486,11 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
 
 
 def main():
-    """主工具箱与脚本编辑器使用同一单实例入口。"""
+    """主工具箱与脚本编辑器使用同一单实例入口。
+
+    Returns:
+        QWidget: 已显示且持有强引用的单实例工具窗口。
+    """
     return window_utils.show_window('tools.rig.rbf_corrective_tool', RbfCorrectiveTool)
 
 

@@ -1,0 +1,35 @@
+name: RBF Corrective Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rbf:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.9', '3.11']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Compile RBF modules
+        run: python -m compileall -q systems/rbf tools/rig/rbf_corrective_tool.py
+      - name: Gaussian interpolation
+        run: python tests/rbf_solver_test.py
+      - name: Compiled expression parity
+        run: python tests/rbf_expression_test.py
+      - name: Controller sampling restoration
+        run: python tests/rbf_sampling_test.py
+      - name: V6 Smoothstep regression
+        run: python tests/rbf_smooth_test.py
+      - name: UI registry and imports
+        run: python tests/tool_ui_connection_test.py

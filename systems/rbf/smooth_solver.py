@@ -11,11 +11,24 @@ class SmoothSolver(object):
     """按三个输入通道与中立差值计算，不做 RBF 训练。"""
 
     def __init__(self, model):
+        """初始化当前对象并保存配置；不会隐式修改场景。
+
+        Args:
+            model (RbfModel):
+                已通过数据验证的姿态配置；场景接口构建前检查输入连接。
+
+        Returns:
+            None: 初始化完成。
+        """
         self.model = model
         self.trained = False
 
     def train(self):
-        """验证固定十方向数据；轴索引是关节输入顺序，并非控制器轴。"""
+        """验证固定十方向数据；轴索引是关节输入顺序，并非控制器轴。
+
+        Returns:
+            None: 固定方向配置检查通过。
+        """
         self.model.validate()
         settings = self.model.smooth
         for axis in settings['axes']:
@@ -38,7 +51,15 @@ class SmoothSolver(object):
         self.trained = True
 
     def evaluate(self, values):
-        """中立为零、方向隔离、超限保持端点，扭转独立。"""
+        """中立为零、方向隔离、超限保持端点，扭转独立。
+
+        Args:
+            values (list[float]):
+                按输入顺序排列的姿态值；角度输入统一为度。
+
+        Returns:
+            list[float]: 与 get_output_names 顺序一致的输出权重。
+        """
         if not self.trained:
             raise RuntimeError('请先验证配置')
         self.model.validate_values(values)
@@ -63,7 +84,15 @@ class SmoothSolver(object):
                 front * up, front * down, back * up, back * down, positive, negative]
 
     def compile(self, node):
-        """编译相同 Smoothstep 运算，保留独立扭转，不应用总量归一化。"""
+        """编译相同 Smoothstep 运算，保留独立扭转，不应用总量归一化。
+
+        Args:
+            node (str):
+                输出 network 节点名称，由 Name 创建，供表达式绑定属性。
+
+        Returns:
+            str: Smoothstep 模式的 MEL 数值表达式。
+        """
         if not self.trained:
             raise RuntimeError('请先验证配置')
         settings = self.model.smooth

@@ -1499,6 +1499,8 @@ def append_callable_markdown(
     if not summary:
         summary = "源码暂未提供详细功能摘要。"
 
+    lines.append("**作用**")
+    lines.append("")
     lines.append(
         summary
     )
@@ -1686,16 +1688,16 @@ def build_module_markdown(module_info):
     if not summary:
         summary = "当前模块尚未提供完整模块摘要。"
 
+    lines.append("**用途**")
+    lines.append("")
     lines.append(
         summary
     )
     lines.append("")
-
-    if module_info["body"]:
-        lines.append(
-            module_info["body"]
-        )
-        lines.append("")
+    lines.append("**模块定位**")
+    lines.append("")
+    lines.append("`{}`；具体操作参数与边界见下方 API。".format(module_info["module_name"]))
+    lines.append("")
 
     # -------------------------------------------------------------------------
     # 常用任务
@@ -1719,6 +1721,11 @@ def build_module_markdown(module_info):
     # -------------------------------------------------------------------------
     # Import
     # -------------------------------------------------------------------------
+    if module_info["body"]:
+        lines.append("## 模块说明")
+        lines.append("")
+        lines.append(module_info["body"])
+        lines.append("")
     lines.append(
         "## Import"
     )

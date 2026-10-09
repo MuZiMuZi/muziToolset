@@ -4,7 +4,15 @@ import math
 
 
 def number(value):
-    """生成带小数点的有限 MEL 常量，避免整数除法。"""
+    """生成带小数点的有限 MEL 常量，避免整数除法。
+
+    Args:
+        value (float):
+            要写入 MEL 表达式的有限数值。
+
+    Returns:
+        str: 用于表达式的浮点数常量。
+    """
     text = '{:.17g}'.format(float(value))
     if '.' not in text and 'e' not in text:
         text += '.0'
@@ -12,7 +20,17 @@ def number(value):
 
 
 def compile_expression(solver, node):
-    """输入为已转换单位的 double 属性，输出不绑定具体 BlendShape。"""
+    """输入为已转换单位的 double 属性，输出不绑定具体 BlendShape。
+
+    Args:
+        solver (RbfSolver):
+            已经 train 得到系数的 RBF 求解器。
+        node (str):
+            输出 network 节点名称，由 Name 创建，供表达式绑定属性。
+
+    Returns:
+        str: 可直接传给 cmds.expression 的 MEL 数值表达式。
+    """
     model = solver.model
     if solver.coefficients is None:
         raise RuntimeError('请先训练')
