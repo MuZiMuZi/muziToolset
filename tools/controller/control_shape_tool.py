@@ -89,10 +89,10 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
-from ...core import control_shape_utils
+from ...core.rigging import control_shape_utils
 from ...ui import theme
 from ...ui import window_utils
-from ...core import scene_utils
+from ...core.common import scene_utils
 
 
 index_rgb_map = [

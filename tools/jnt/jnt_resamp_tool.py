@@ -43,12 +43,12 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
-from ...core import hierarchy_utils
-from ...core import jnt_utils
-from ...core import math_utils
-from ...core import rename_utils
-from ...core import scene_utils
-from ...core import transform_utils
+from ...core.common import hierarchy_utils
+from ...core.rigging import jnt_utils
+from ...core.common import math_utils
+from ...core.common import rename_utils
+from ...core.common import scene_utils
+from ...core.common import transform_utils
 from ...ui import theme
 from ...ui import window_utils
 from ...ui.widgets import MayaObjectPicker

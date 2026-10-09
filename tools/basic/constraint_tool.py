@@ -72,8 +72,8 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
-from ...core import constraint_utils
-from ...core import scene_utils
+from ...core.rigging import constraint_utils
+from ...core.common import scene_utils
 from ...ui import theme as ui_theme
 from ...ui import window_utils
 

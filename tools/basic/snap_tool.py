@@ -19,8 +19,8 @@ from __future__ import print_function
 
 import maya.cmds as cmds
 
-from ...core import scene_utils
-from ...core import snap_utils
+from ...core.common import scene_utils
+from ...core.rigging import snap_utils
 
 
 TOOL_MODE = "action"

@@ -28,7 +28,7 @@ except ImportError:
     from PySide6.QtWidgets import QPushButton
     from PySide6.QtWidgets import QVBoxLayout
 
-from ...core import blendshape_utils
+from ...core.deformation import blendshape_utils
 from ...ui import theme
 from ...ui import window_utils
 from ...ui.widgets import MayaObjectPicker

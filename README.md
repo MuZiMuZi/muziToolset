@@ -376,26 +376,16 @@ rig
 skin
 ```
 
-其中部分 Tool 仍引用旧的平铺 Core 名称，例如：
+主工具箱已接入 20 个入口，并将旧工具依赖迁移到按职责组织的 Core：
 
 ```text
-core.scene_utils
-core.skin_utils
-core.constraint_utils
-core.blendshape_utils
+core/common       属性、命名、层级、连接、场景与文件
+core/rigging      控制器、骨骼、约束与吸附
+core/geometry     曲线操作
+core/deformation  蒙皮、BlendShape 与模型检查
 ```
 
-而这些入口当前已经不属于正式 Core 结构。
-
-因此当前原则是：
-
-```text
-Tool 的 UI / Workflow 可以继续维护
-    ↓
-底层依赖逐步迁移到当前 Core
-```
-
-不要为了兼容旧 Tool，把已退休的 Core 平铺架构恢复回来。
+控制器工具统一由 `systems/components/controller_builder.py` 调用当前 `Ctrl` 实现；工具运行时不再导入归档模块，也不需要 PyMEL。
 
 详见 [常用工具工作流](docs/manual/tools.md)。
 

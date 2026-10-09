@@ -63,7 +63,7 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
-from ...core import rename_utils
+from ...core.common import rename_utils
 from ...ui import theme
 from ...ui import window_utils
 

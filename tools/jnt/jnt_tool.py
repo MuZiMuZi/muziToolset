@@ -54,16 +54,16 @@ except ImportError:
     from PySide6.QtWidgets import QWidget
 
 from ...app import window_manager
-from ...core import attr_utils
-from ...core import constraint_utils
-from ...core import curve_utils
-from ...core import hierarchy_utils
-from ...core import jnt_chain_utils
-from ...core import jnt_utils
-from ...core import rename_utils
-from ...core import scene_utils
-from ...core import skin_utils
-from ...core import transform_utils
+from ...core.common import attr_utils
+from ...core.rigging import constraint_utils
+from ...core.geometry import curve_utils
+from ...core.common import hierarchy_utils
+from ...core.rigging import jnt_chain_utils
+from ...core.rigging import jnt_utils
+from ...core.common import rename_utils
+from ...core.common import scene_utils
+from ...core.deformation import skin_utils
+from ...core.common import transform_utils
 from ...ui import theme
 from ...ui import window_utils
 from . import jnt_resamp_tool

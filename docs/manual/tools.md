@@ -2,18 +2,20 @@
 
 这页从“**我要完成什么**”出发，同时标明当前工具在新架构中的状态。
 
-MuziTools 目前同时存在两类入口：
+主工具箱已接入 20 个工具入口，按基础、骨骼、控制器、绑定、面部、蒙皮、BlendShape、检查与清理八个分类显示。
 
-```text
-正式新架构入口
-    Rig Library / RigModule / core/common / core/rigging
+在 Maya Python Script Editor 中运行：
 
-独立 Tool UI
-    tools/*
-    其中部分仍在迁移旧 Core 平铺依赖
+```python
+import muziToolset
+window = muziToolset.show()
 ```
 
-因此看到一个 Tool 文件存在，并不代表它已经完全迁移到当前正式 Core。
+点击工具卡片的“打开”显示独立窗口；快速吸附和创建 FK 控制器是“执行”按钮，会按当前选择直接操作场景。再次打开会恢复已有窗口。
+
+工具底层操作按职责放在 `core/common`、`core/rigging`、`core/geometry` 和 `core/deformation`，运行时不导入历史归档。控制器创建由 `systems/components/controller_builder.py` 调用当前 `Ctrl` 实现。
+
+验证范围：普通 Qt 环境检查所有窗口的创建、显示与复用；真实 Maya 的场景操作需运行 `tests/tool_window_smoke_test.py` 等 Maya 测试，并使用实际模型验证。
 
 <div class="grid cards" markdown>
 
@@ -150,48 +152,20 @@ Tool 不应该负责：
 
 ## 当前正式 Core 路径
 
-新架构已经收敛到：
+| 分组 | 负责的操作 |
+|---|---|
+| `core/common` | 属性、层级、命名、变换、选择、连接、文件、数学和动画 |
+| `core/rigging` | 控制器、Guide、骨骼、骨骼链、约束和吸附 |
+| `core/geometry` | 曲线创建、Shape 查询和曲线采样 |
+| `core/deformation` | 蒙皮、BlendShape 和模型检查 |
 
-```text
-core/common/
-    attr_utils.py
-    hierarchy_utils.py
-    name_utils.py
-    transform_utils.py
-
-core/rigging/
-    ctrl_utils.py
-    guide_utils.py
-    jnt_utils.py
-```
-
-这些是当前网站和新 Module 文档应优先引用的 Core。
-
-## 为什么有些 Tool 还写着旧 `core.xxx_utils`
-
-仓库中部分独立 UI 是在 Core 收敛前编写的，例如源码仍可能看到：
+工具使用分组路径导入，例如：
 
 ```python
-from ...core import scene_utils
-from ...core import rename_utils
-from ...core import skin_utils
-from ...core import constraint_utils
+from muziToolset.core.common import scene_utils
+from muziToolset.core.deformation import skin_utils
+from muziToolset.core.rigging import constraint_utils
 ```
-
-但当前 `core/` 根目录已经不再以这些平铺模块作为正式结构。
-
-这类文件应理解为：
-
-```text
-UI / 功能意图仍有价值
-    ↓
-底层依赖待迁移
-```
-
-而不是反过来把正式 Core 架构重新定义成旧结构。
-
-!!! warning "文档原则"
-    网站会如实展示这些源码文件和 API，但用户手册会明确区分“当前正式实现”和“待迁移独立 Tool”。这样可以避免旧 Tool 的 import 关系再次污染新架构说明。
 
 ## 当前最稳定的开发入口
 
@@ -264,63 +238,10 @@ systems/face/face_guide_config.py
 
 真正的 Module Build 由 System 完成。
 
-## 当前 Controller Tool 状态
+## Controller 与骨骼工具接入
 
-`tools/controller/create_ctrl_tool.py` 仍保留 `legacy_reference` 兼容调用。
+创建控制器、创建 FK 控制器、Rig IK 控制器和裙子控制器使用同一个 `controller_builder`。它负责收集 Shape、大小、轴向、目标和 SubCtrl 开关，实际图形与标准层级由当前 `Ctrl` 创建。FK 链将后一个 Zero 挂到前一个 Output，约束也使用 Output。
 
-因此：
+Jnt 工具和关节链重采样已归入“骨骼工具”，使用 `core/rigging/jnt_utils.py` 和 `jnt_chain_utils.py`；不再依赖已删除的平铺路径。
 
-```text
-Rig Library / Face Module
-    -> core/rigging/ctrl_utils.py
-
-独立 Create Ctrl Tool
-    -> 仍有兼容层，待迁移
-```
-
-详细见 [Controller 手册](controller.md)。
-
-## 当前 Jnt Tool 状态
-
-`tools/jnt/jnt_tool.py` 的 UI 功能很多，但底层仍引用若干旧 Core 平铺模块。
-
-正式 Module Joint 路径：
-
-```text
-systems/rig_module.py
-    ↓
-core/rigging/jnt_utils.py
-```
-
-详细见 [Jnt 手册](jnt.md)。
-
-## 我应该从哪里开始？
-
-| 需求 | 推荐入口 |
-| --- | --- |
-| 做模块化角色绑定 | [Rig Library](rig-library.md) |
-| 调 Face 定位 | [Face Guide](face-guide.md) |
-| 改 Controller Core | [Controller](controller.md) |
-| 改 Joint Core | [Jnt](jnt.md) |
-| 做局部小操作 | 本页对应 Tool |
-| 查源码参数 | [API Reference](../reference/index.md) |
-| 判断代码应该放哪 | [总体架构](../architecture/index.md) |
-
-## 文档阅读建议
-
-```text
-任务
-    ↓
-用户手册
-    ↓
-确定正式模块 / Tool
-    ↓
-API Reference
-    ↓
-源码
-```
-
-不要只根据文件名猜当前推荐实现。
-
-[用户手册](index.md){ .md-button }
-[API Reference](../reference/index.md){ .md-button .md-button--primary }
+详细见 [Controller 手册](controller.md) 与 [Jnt 手册](jnt.md)。

@@ -35,8 +35,8 @@ except ImportError:
     from PySide6.QtWidgets import QPushButton
     from PySide6.QtWidgets import QWidget
 
-from ...core import rename_utils
-from ...core import scene_utils
+from ...core.common import rename_utils
+from ...core.common import scene_utils
 from .. import theme
 
 

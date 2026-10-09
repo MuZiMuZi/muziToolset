@@ -41,10 +41,10 @@ except ImportError:
     from PySide6.QtWidgets import QPushButton
     from PySide6.QtWidgets import QVBoxLayout
 
-from ...core import attr_utils
-from ...core import hierarchy_utils
-from ...core import rename_utils
-from ...core import scene_utils
+from ...core.common import attr_utils
+from ...core.common import hierarchy_utils
+from ...core.common import rename_utils
+from ...core.common import scene_utils
 from ...ui import theme
 from ...ui import window_utils
 

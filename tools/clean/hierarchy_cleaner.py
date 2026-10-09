@@ -32,7 +32,7 @@ except ImportError:
     from PySide6.QtWidgets import QPushButton
     from PySide6.QtWidgets import QVBoxLayout
 
-from ...core import scene_utils
+from ...core.common import scene_utils
 from ...ui import theme
 from ...ui import window_utils
 

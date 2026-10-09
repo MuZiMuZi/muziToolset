@@ -5,8 +5,8 @@ FK Control Creator
 
 根据 Maya 当前选择顺序创建 FK Controller Chain。
 
-实际控制器创建统一使用 systems.ctrl_base；
-Rig Name 统一使用 systems.rig_base.RigBase；
+实际控制器创建统一使用 systems.components.controller_builder；
+Rig Name 统一使用 core.common.name_utils.Name；
 外部 Maya Name Token 和 Selection 查询统一复用 Core。
 """
 
@@ -14,10 +14,10 @@ from __future__ import print_function
 
 import maya.cmds as cmds
 
-from ...core import rename_utils
-from ...core import scene_utils
-from legacy_reference.face_2026_09_07_before_rewrite import ctrl_base
-from legacy_reference.face_2026_09_07_before_rewrite.rig_base import RigBase
+from ...core.common import rename_utils
+from ...core.common import scene_utils
+from ...systems.components import controller_builder
+from ...core.common.name_utils import Name
 
 
 TOOL_MODE = "action"
@@ -42,16 +42,15 @@ def get_fk_ctrl_name(target, fallback_index):
     )
 
     try:
-        target_name = RigBase(
+        target_name = Name(
             name=short_name
         )
-        return target_name.create_name(
-            type="ctrl"
-        )
+        target_name.type = "ctrl"
+        return target_name.compose_name()
     except (IndexError, ValueError):
         pass
 
-    rig_name = RigBase(
+    rig_name = Name(
         type="ctrl",
         side="md",
         part=rename_utils.get_name_token(
@@ -73,7 +72,7 @@ def create_fk_controls(
         constrain=True
 ):
     u"""
-    使用 CtrlBase 创建标准 FK Controller Chain。
+    使用 Ctrl 创建标准 FK Controller Chain。
 
     Args:
         targets (str | list[str]):
@@ -122,7 +121,7 @@ def create_fk_controls(
     # -------------------------------------------------------------------------
     # Step 05：整理并返回当前函数的最终结果
     # -------------------------------------------------------------------------
-    return ctrl_base.create_fk_ctrl(
+    return controller_builder.create_fk_ctrl(
         target_list=targets,
         ctrl_name_list=ctrl_name_list,
         shape=shape,

@@ -431,26 +431,22 @@ class RigLibraryTests(unittest.TestCase):
         builders["FKChain"].assert_not_called()
         self.assertEqual(result.ctrl_size, 1.0)
 
-    def test_locator_alignment_uses_shape_world_position(self):
+    def test_locator_alignment_uses_transform_without_pymel(self):
+        """对齐使用 Locator Transform，并尊重位置开关。"""
         maya = types.ModuleType("maya")
         commands = types.ModuleType("maya.cmds")
-        pymel = types.ModuleType("pymel")
-        pm = types.ModuleType("pymel.core")
-        commands.listRelatives = mock.Mock(return_value=["guideShape"])
-        commands.getAttr = mock.Mock(return_value=[(7.0, 162.0, -3.0)])
-        commands.xform = mock.Mock()
-        pm.PyNode = lambda value: value
-        pm.matchTransform = mock.Mock()
-        with mock.patch.dict(sys.modules, {"maya": maya, "maya.cmds": commands, "pymel": pymel, "pymel.core": pm}):
+        commands.matchTransform = mock.Mock()
+        with mock.patch.dict(sys.modules, {"maya": maya, "maya.cmds": commands}):
             name = "muziToolset.core.common.transform_utils"
             sys.modules.pop(name, None)
             module = importlib.import_module(name)
             module.Transform("target").match_transform("guide")
-            commands.getAttr.assert_called_once_with("guideShape.worldPosition[0]")
-            commands.xform.assert_called_once_with("target", worldSpace=True, translation=(7.0, 162.0, -3.0))
-            commands.xform.reset_mock()
+            commands.matchTransform.assert_called_once_with(
+                "target", "guide", position=True, rotation=True, scale=True)
+            commands.matchTransform.reset_mock()
             module.Transform("target").match_transform("guide", position=False)
-            commands.xform.assert_not_called()
+            commands.matchTransform.assert_called_once_with(
+                "target", "guide", position=False, rotation=True, scale=True)
             sys.modules.pop(name, None)
 
 

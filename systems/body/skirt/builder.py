@@ -10,7 +10,7 @@ Skirt Rig Builder
     2. 通过 pointOnCurveInfo 驱动 Blueprint Jnt；
     3. 调整定位曲线贴合裙子；
     4. 根据横向和纵向数量创建 Bind Jnt Chain；
-    5. 统一调用 systems.ctrl_base 创建 FK Controller。
+    5. 统一调用 systems.components.controller_builder 创建 FK Controller。
 
 重要边界：
     - 外部名称 Token 统一复用 core.rename_utils；
@@ -22,7 +22,7 @@ Skirt Rig Builder
     - Attribute 创建统一复用 core.attr_utils；
     - DG Plug 连接统一复用 core.connection_utils；
     - Constraint 创建统一复用 core.constraint_utils；
-    - Controller 创建统一复用 systems.ctrl_base；
+    - Controller 创建统一复用 systems.components.controller_builder；
     - Undo Chunk 统一复用 core.scene_utils；
     - 本模块只保留 Skirt Rig Workflow。
 
@@ -33,17 +33,17 @@ from __future__ import print_function
 
 import maya.cmds as cmds
 
-from ....core import attr_utils
-from ....core import connection_utils
-from ....core import constraint_utils
-from ....core import curve_utils
-from ....core import hierarchy_utils
-from ....core import jnt_utils
-from ....core import math_utils
-from ....core import rename_utils
-from ....core import scene_utils
-from ....core import transform_utils
-from legacy_reference.face_2026_09_07_before_rewrite import ctrl_base
+from ....core.common import attr_utils
+from ....core.common import connection_utils
+from ....core.rigging import constraint_utils
+from ....core.geometry import curve_utils
+from ....core.common import hierarchy_utils
+from ....core.rigging import jnt_utils
+from ....core.common import math_utils
+from ....core.common import rename_utils
+from ....core.common import scene_utils
+from ....core.common import transform_utils
+from ...components import controller_builder
 
 
 class SkirtRigBuilder(object):
@@ -589,7 +589,7 @@ class SkirtRigBuilder(object):
                 if previous_control is not None:
                     parent_control = previous_control
 
-                control_result = ctrl_base.create_ctrl(
+                control_result = controller_builder.create_ctrl(
                     name=control_name,
                     shape="circle",
                     radius=0.6,

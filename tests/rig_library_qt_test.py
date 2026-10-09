@@ -56,11 +56,17 @@ class RigLibraryQtTests(unittest.TestCase):
         self.assertTrue(self.window.build_button.isEnabled())
         self.window.module_search.setText("tongue")
         self.assertTrue(self.window.module_list.item(0).isHidden())
-        self.assertFalse(self.window.module_list.item(1).isHidden())
-        self.assertEqual(self.window.library_tabs.tabText(0), "MODULES  1 / 3")
+        visible_titles = []
+        for index in range(self.window.module_list.count()):
+            item = self.window.module_list.item(index)
+            if not item.isHidden():
+                visible_titles.append(item.text().lower())
+        self.assertEqual(len(visible_titles), 1)
+        self.assertIn("tongue", visible_titles[0])
+        self.assertEqual(self.window.library_tabs.tabText(0), "MODULES  1 / {}".format(len(catalog.modules)))
         self.window.library_tabs.setCurrentIndex(1)
         self.window.template_search.setText("Ear Pair")
-        self.assertEqual(self.window.library_tabs.tabText(1), "TEMPLATES  1 / 3")
+        self.assertEqual(self.window.library_tabs.tabText(1), "TEMPLATES  1 / {}".format(len(catalog.templates)))
         self.window.tree_search.setText("tongue")
         root = self.window.module_tree.topLevelItem(0)
         self.assertTrue(root.child(0).isHidden())

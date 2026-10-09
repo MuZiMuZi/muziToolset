@@ -47,8 +47,8 @@ except ImportError:
     from PySide6.QtWidgets import QWidget
 
 from ...config import icons_dir as icon_dir
-from ...core import attr_utils
-from ...core import scene_utils
+from ...core.common import attr_utils
+from ...core.common import scene_utils
 from ...ui import theme as ui_theme
 from ...ui import window_utils
 

@@ -42,7 +42,7 @@ except ImportError:
     from PySide6.QtWidgets import QTableWidgetItem
     from PySide6.QtWidgets import QVBoxLayout
 
-from ...core import model_check_utils
+from ...core.deformation import model_check_utils
 from ...ui import theme
 from ...ui import window_utils
 

@@ -7,8 +7,8 @@ Control Creator
 
 边界：
     - Controller Shape 数据来自 resources/controller_shapes；
-    - Rig Name 统一使用 systems.rig_base.RigBase；
-    - Controller Hierarchy 统一使用 systems.ctrl_base.create_ctrl；
+    - Rig Name 统一使用 core.common.name_utils.Name；
+    - Controller Hierarchy 统一使用 systems.controller_builder.create_ctrl；
     - 外部 Maya Name Token、Selection 和 DAG 查询统一复用 Core；
     - 标准 zero / driven / space / connect / offset / ctrl / output 层级固定创建；
     - UI 不重复实现 Controller 构建算法。
@@ -62,11 +62,11 @@ except ImportError:
     from PySide6.QtWidgets import QVBoxLayout
 
 from ...config import controller_shapes_dir
-from ...core import hierarchy_utils
-from ...core import rename_utils
-from ...core import scene_utils
-from legacy_reference.face_2026_09_07_before_rewrite import ctrl_base
-from legacy_reference.face_2026_09_07_before_rewrite.rig_base import RigBase
+from ...core.common import hierarchy_utils
+from ...core.common import rename_utils
+from ...core.common import scene_utils
+from ...systems.components import controller_builder
+from ...core.common.name_utils import Name
 from ...ui import theme
 from ...ui import window_utils
 
@@ -161,7 +161,7 @@ class ControlCreatorDialog(QDialog):
             u"创建控制器"
         )
         self.subtitle_label = theme.make_subtitle(
-            u"统一使用 RigBase Naming 和 CtrlBase 标准控制器层级。"
+            u"统一使用 Name Naming 和 Ctrl 标准控制器层级。"
         )
 
         self.shape_search_line = QLineEdit()
@@ -371,7 +371,7 @@ class ControlCreatorDialog(QDialog):
         hierarchy_layout.addWidget(self.name_line)
 
         standard_hint = QLabel(
-            u"CtrlBase 固定创建 zero → driven → space → connect → offset → ctrl → output。"
+            u"Ctrl 固定创建 zero → driven → space → connect → offset → ctrl → output。"
         )
         standard_hint.setWordWrap(
             True
@@ -674,7 +674,7 @@ class ControlCreatorDialog(QDialog):
             index
     ):
         u"""创建 Controller 标准名称。"""
-        rig_name = RigBase(
+        rig_name = Name(
             type="ctrl",
             side=side,
             part=part,
@@ -709,7 +709,7 @@ class ControlCreatorDialog(QDialog):
         # -------------------------------------------------------------------------
         if custom_name:
             try:
-                custom_rig_name = RigBase(
+                custom_rig_name = Name(
                     name=custom_name
                 )
                 index = custom_rig_name.index
@@ -756,7 +756,7 @@ class ControlCreatorDialog(QDialog):
         # Step 05：执行可能失败的操作，并统一处理异常或清理状态
         # -------------------------------------------------------------------------
         try:
-            target_rig_name = RigBase(
+            target_rig_name = Name(
                 name=target_name
             )
             return self._create_control_name(
@@ -782,7 +782,7 @@ class ControlCreatorDialog(QDialog):
 
     def create_controls(self):
         u"""
-        根据 UI 参数调用 ctrl_base.create_ctrl()。
+        根据 UI 参数调用 controller_builder.create_ctrl()。
         """
         # -------------------------------------------------------------------------
         # Step 01：查询并整理当前阶段需要的 Maya 场景数据
@@ -833,7 +833,7 @@ class ControlCreatorDialog(QDialog):
                     target_count
                 )
 
-                result = ctrl_base.create_ctrl(
+                result = controller_builder.create_ctrl(
                     name=ctrl_name,
                     shape=shape_name,
                     radius=radius,

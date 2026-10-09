@@ -21,8 +21,8 @@ Rig Tool
     - DAG Short / Long Name 统一调用 core.rename_utils / scene_utils；
     - Selection / Node 创建 / Undo 统一调用 core.scene_utils；
     - World Position 统一调用 core.transform_utils；
-    - Rig Naming 统一调用 systems.rig_base.RigBase；
-    - Controller 创建统一调用 systems.ctrl_base；
+    - Rig Naming 统一调用 core.common.name_utils.Name；
+    - Controller 创建统一调用 systems.components.controller_builder；
     - Snap 算法统一调用 core.snap_utils；
     - 子窗口统一交给 app.window_manager；
     - 本文件只保留 Rig Tool UI、RP IK / Pole Vector 业务和工作流组装。
@@ -48,19 +48,19 @@ except ImportError:
     from PySide6.QtWidgets import QWidget
 
 from ...app import window_manager
-from ...core import animation_utils
-from ...core import attr_utils
-from ...core import constraint_utils
-from ...core import hierarchy_utils
-from ...core import jnt_chain_utils
-from ...core import jnt_utils
-from ...core import math_utils
-from ...core import rename_utils
-from ...core import scene_utils
-from ...core import snap_utils
-from ...core import transform_utils
-from legacy_reference.face_2026_09_07_before_rewrite import ctrl_base
-from legacy_reference.face_2026_09_07_before_rewrite.rig_base import RigBase
+from ...core.common import animation_utils
+from ...core.common import attr_utils
+from ...core.rigging import constraint_utils
+from ...core.common import hierarchy_utils
+from ...core.rigging import jnt_chain_utils
+from ...core.rigging import jnt_utils
+from ...core.common import math_utils
+from ...core.common import rename_utils
+from ...core.common import scene_utils
+from ...core.rigging import snap_utils
+from ...core.common import transform_utils
+from ...systems.components import controller_builder
+from ...core.common.name_utils import Name
 from ...ui import theme
 from ...ui import window_utils
 from ...ui.widgets import MayaObjectPicker
@@ -245,7 +245,7 @@ def create_ik_rig(start_jnt, end_jnt):
     rig_part_source = start_jnt_short_name
 
     try:
-        start_jnt_name = RigBase(
+        start_jnt_name = Name(
             name=start_jnt_short_name
         )
 
@@ -261,28 +261,10 @@ def create_ik_rig(start_jnt, end_jnt):
         fallback="ik"
     )
 
-    rig_identity = RigBase(
-        side=rig_side,
-        part=rig_part,
-        index=1
-    )
-
-    rig_group_name = rig_identity.create_name(
-        type="grp",
-        function="ik"
-    )
-    ik_handle_name = rig_identity.create_name(
-        type="ikh",
-        function="ik"
-    )
-    end_control_name = rig_identity.create_name(
-        type="ctrl",
-        function="ik"
-    )
-    pole_control_name = rig_identity.create_name(
-        type="ctrl",
-        function="pv"
-    )
+    rig_group_name = Name(type="grp", side=rig_side, part=rig_part, function="ik", index=1).name
+    ik_handle_name = Name(type="ikh", side=rig_side, part=rig_part, function="ik", index=1).name
+    end_control_name = Name(type="ctrl", side=rig_side, part=rig_part, function="ik", index=1).name
+    pole_control_name = Name(type="ctrl", side=rig_side, part=rig_part, function="pv", index=1).name
 
     scene_utils.ensure_nodes_available(
         [
@@ -344,7 +326,7 @@ def create_ik_rig(start_jnt, end_jnt):
         0.5
     )
 
-    end_control_result = ctrl_base.create_ctrl(
+    end_control_result = controller_builder.create_ctrl(
         name=end_control_name,
         shape="circle",
         radius=control_radius,
@@ -384,7 +366,7 @@ def create_ik_rig(start_jnt, end_jnt):
             end_jnt
         )
 
-        pole_result = ctrl_base.create_ctrl(
+        pole_result = controller_builder.create_ctrl(
             name=pole_control_name,
             shape="circle",
             radius=max(
@@ -1116,14 +1098,13 @@ class RigTool(QWidget):
             zero_name = None
 
             try:
-                rig_name = RigBase(
+                rig_name = Name(
                     name=short_name
                 )
 
                 if rig_name.name:
-                    zero_name = rig_name.create_name(
-                        type="zero"
-                    )
+                    rig_name.type = "zero"
+                    zero_name = rig_name.compose_name()
             except (IndexError, TypeError, ValueError):
                 pass
 
