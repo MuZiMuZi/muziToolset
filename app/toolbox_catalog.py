@@ -62,7 +62,7 @@ tool_descriptions = {
     "skirt_ctrl_tool": u"裙子定位曲线、Blueprint、Bind Jnt 与 FK 创建。",
     "face_select_key_tool": u"快速建立面部 Driven Key 驱动关系。",
     "skin_tool": u"SkinCluster、复制权重、权重文件与影响骨骼管理。",
-    "add_blendshape_tool": u"BlendShape Target 查询、复制与管理。",
+    "add_blendshape_tool": u"添加、反算修型、左右复制改名与 Target 管理。",
     "invert_shape_tool": u"基于 Maya invertShape 的修型反算工具。",
     "hierarchy_cleaner": u"安全清理层级、空组与可清理历史。",
     "model_checker": u"模型拓扑、命名、Transform 与历史检查。",

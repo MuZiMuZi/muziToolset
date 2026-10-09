@@ -6,7 +6,7 @@ BlendShape Target Tool
 BlendShape Target 管理 UI。
 
 实际 BlendShape 操作统一维护在：
-    muziToolset.core.blendshape_utils
+    muziToolset.core.deformation
 
 窗口生命周期：
     用户直接调用 main() 时，由 ui.window_utils 负责保存强引用并显示窗口；
@@ -23,6 +23,7 @@ try:
     from PySide2.QtWidgets import QLineEdit
     from PySide2.QtWidgets import QListWidget
     from PySide2.QtWidgets import QPushButton
+    from PySide2.QtWidgets import QScrollArea
     from PySide2.QtWidgets import QVBoxLayout
     from PySide2.QtWidgets import QWidget
 except ImportError:
@@ -31,13 +32,17 @@ except ImportError:
     from PySide6.QtWidgets import QLineEdit
     from PySide6.QtWidgets import QListWidget
     from PySide6.QtWidgets import QPushButton
+    from PySide6.QtWidgets import QScrollArea
     from PySide6.QtWidgets import QVBoxLayout
     from PySide6.QtWidgets import QWidget
 
 from ...core.deformation import blendshape_utils
+from ...core.deformation import corrective_target
+from ...core.deformation import target_alias_utils
 from ...ui import theme
 from ...ui import window_utils
 from ...core.common import scene_utils
+from ...ui.widgets import MayaObjectPicker
 
 
 class BlendShapeTargetTool(QWidget):
@@ -63,7 +68,7 @@ class BlendShapeTargetTool(QWidget):
             title=u"BlendShape Target",
             minimum_width=560
         )
-        self.resize(590, 570)
+        self.resize(660, 760)
 
     def create_widgets(self):
         u"""
@@ -109,6 +114,23 @@ class BlendShapeTargetTool(QWidget):
         theme.style_primary(self.add_target_button)
 
         self.duplicate_targets_button = QPushButton(u"复制所有 Target Mesh")
+        self.rename_mirrored_button = QPushButton(u"重命名 lf_*_Copy → rt_*")
+
+        self.controller_picker = MayaObjectPicker(
+            label_text=u"控制器",
+            placeholder=u"载入驱动基础模型的控制器",
+            node_types=["transform", "joint"]
+        )
+        self.inverted_target_name = QLineEdit()
+        self.inverted_target_name.setPlaceholderText(u"反算 Target 名称（留空自动命名）")
+        self.inverted_selection_label = QLabel(
+            u"保持修型姿势，先选择修型 Mesh，再选择基础 Mesh。\n"
+            u"TR 通道须未锁定且无输入连接；添加后恢复姿态，新 Target 权重为 0。"
+        )
+        self.inverted_selection_label.setWordWrap(True)
+        theme.set_role(self.inverted_selection_label, "muted")
+        self.add_inverted_button = QPushButton(u"添加反算 Target")
+        theme.style_primary(self.add_inverted_button)
 
         self.status_label = QLabel(u"准备就绪")
         # -------------------------------------------------------------------------
@@ -170,9 +192,27 @@ class BlendShapeTargetTool(QWidget):
         action_row.addStretch(1)
         action_row.addWidget(self.add_target_button)
         target_layout.addLayout(action_row)
+        target_layout.addWidget(self.rename_mirrored_button)
 
-        main_layout.addWidget(node_card)
-        main_layout.addWidget(target_card, 1)
+        corrective_card, corrective_layout = theme.make_card(self)
+        corrective_layout.addWidget(theme.make_section_title(u"反算修型 → 添加 BS Target"))
+        corrective_layout.addWidget(self.controller_picker)
+        corrective_layout.addWidget(self.inverted_target_name)
+        corrective_layout.addWidget(self.inverted_selection_label)
+        corrective_layout.addWidget(self.add_inverted_button)
+
+        content = QWidget()
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(12)
+        content_layout.addWidget(node_card)
+        content_layout.addWidget(target_card)
+        content_layout.addWidget(corrective_card)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QScrollArea.NoFrame)
+        scroll.setWidget(content)
+        main_layout.addWidget(scroll, 1)
         # -------------------------------------------------------------------------
         # Step 05：查询并整理当前阶段需要的 Maya 场景数据
         # -------------------------------------------------------------------------
@@ -197,6 +237,43 @@ class BlendShapeTargetTool(QWidget):
         self.blendshape_line.editingFinished.connect(
             self.refresh_targets
         )
+        self.add_inverted_button.clicked.connect(self.add_inverted_target)
+        self.rename_mirrored_button.clicked.connect(self.rename_mirrored_targets)
+
+    def add_inverted_target(self):
+        u"""按修型、基础模型的选择顺序添加一个反算 Target。"""
+        selections = cmds.ls(selection=True, long=True) or []
+        if len(selections) != 2:
+            cmds.warning(u"请先选择修型 Mesh，再选择基础 Mesh，共两个模型。")
+            return
+        try:
+            result = corrective_target.add_inverted_target(
+                controller=self.controller_picker.get_value(),
+                blendshape_node=self.get_blendshape_node(),
+                corrective_mesh=selections[0],
+                base_mesh=selections[1],
+                target_name=self.inverted_target_name.text().strip()
+            )
+        except Exception as error:
+            cmds.warning(str(error))
+            self.status_label.setText(u"添加反算 Target 失败：{}".format(error))
+            return
+        self.refresh_targets()
+        self.status_label.setText(u"已添加 [{:03d}] {}，权重为 0".format(
+            result["index"], result["alias"]))
+
+    def rename_mirrored_targets(self):
+        u"""按真实 Weight Index 把左右复制 Target 改名并刷新列表。"""
+        try:
+            results = target_alias_utils.rename_mirrored_targets(
+                self.get_blendshape_node())
+        except Exception as error:
+            cmds.warning(str(error))
+            self.status_label.setText(u"Target 改名失败：{}".format(error))
+            return
+        self.refresh_targets()
+        self.status_label.setText(u"已重命名 {} 个 Target（只改名，不镜像几何）".format(
+            len(results)))
 
     def get_blendshape_node(self):
         u"""
