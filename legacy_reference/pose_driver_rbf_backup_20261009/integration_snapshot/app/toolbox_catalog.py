@@ -22,6 +22,7 @@ TOOL_MODE_ACTION = "action"
 
 
 tool_display_names = {
+    "rbf_corrective_tool": u"通用 Pose Driver / RBF",
     "rename_tool": u"重命名工具",
     "attr_tool": u"属性工具",
     "connections_tool": u"连接工具",
@@ -46,6 +47,7 @@ tool_display_names = {
 
 
 tool_descriptions = {
+    "rbf_corrective_tool": u"通用姿态采样、Locator 编辑、V6 平滑与 Gaussian RBF，支持 BlendShape 和辅助骨。",
     "rename_tool": u"批量命名、替换、前后缀与层级重命名。",
     "attr_tool": u"属性编辑、Channel Box 排序、锁定与隐藏。",
     "connections_tool": u"Transform、自定义属性与已有连接管理。",

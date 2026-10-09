@@ -12,6 +12,7 @@
     * [常用工具工作流](manual/tools.md)
     * [Core 使用手册](manual/core.md)
     * [绑定库](manual/rig-library.md)
+    * [Pose Driver / RBF](manual/rbf-corrective.md)
     * [基础工具](manual/basic-tools.md)
     * [Controller](manual/controller.md)
     * [Jnt](manual/jnt.md)
@@ -88,6 +89,7 @@
             * [Package](reference/tools/rig/package.md)
             * [`modular_rig_tool.py`](reference/tools/rig/modular_rig_tool.md)
             * [`rig_tool.py`](reference/tools/rig/rig_tool.md)
+            * [`rbf_corrective_tool.py`](reference/tools/rig/rbf_corrective_tool.md)
             * [`skirt_ctrl_tool.py`](reference/tools/rig/skirt_ctrl_tool.md)
         * Skin
             * [Package](reference/tools/skin/package.md)
@@ -95,6 +97,18 @@
     * [Systems](reference/systems/index.md)
         * [Package](reference/systems/package.md)
         * [`rig_module.py`](reference/systems/rig_module.md)
+        * RBF
+            * [Package](reference/systems/rbf/package.md)
+            * [`model.py`](reference/systems/rbf/model.md)
+            * [`solver.py`](reference/systems/rbf/solver.md)
+            * [`expression.py`](reference/systems/rbf/expression.md)
+            * [`driver.py`](reference/systems/rbf/driver.md)
+            * [`presets.py`](reference/systems/rbf/presets.md)
+            * [`pose_locator.py`](reference/systems/rbf/pose_locator.md)
+            * [`output_driver.py`](reference/systems/rbf/output_driver.md)
+            * [`sampling.py`](reference/systems/rbf/sampling.md)
+            * [`smooth_solver.py`](reference/systems/rbf/smooth_solver.md)
+            * [`solver_factory.py`](reference/systems/rbf/solver_factory.md)
         * Body
             * [Package](reference/systems/body/package.md)
             * Skirt

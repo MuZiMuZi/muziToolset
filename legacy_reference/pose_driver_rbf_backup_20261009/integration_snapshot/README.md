@@ -42,6 +42,7 @@ window = muziToolset.show_rig_library()
 - [在 Maya 中运行](docs/getting-started/maya-usage.md)
 - [MuziTools 用户手册](docs/manual/index.md)
 - [绑定库](docs/manual/rig-library.md)
+- [通用 Pose Driver / RBF](docs/manual/rbf-corrective.md)：自动旋转控制器采样，读取最终关节，支持大臂、大腿与手腕。
 
 ---
 

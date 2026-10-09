@@ -48,6 +48,7 @@ Tools 是绑定师可以直接打开使用的小工具和操作面板。
 
 - [`tools/rig/__init__.py`](rig/package.md) — Muzi Toolset Rig 工具包。
 - [`tools/rig/modular_rig_tool.py`](rig/modular_rig_tool.md) — Modular Rig Tool
+- [`tools/rig/rbf_corrective_tool.py`](rig/rbf_corrective_tool.md) — ADV 通用修型驱动界面：自动旋转控制器采样、训练与连接。
 - [`tools/rig/rig_tool.py`](rig/rig_tool.md) — Rig Tool
 - [`tools/rig/skirt_ctrl_tool.py`](rig/skirt_ctrl_tool.md) — Skirt Rig Tool
 

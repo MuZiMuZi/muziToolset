@@ -1,0 +1,211 @@
+{
+  "source_commit": "cd940a262b9cc5ab93bc6d295ef14be4578d70a8",
+  "files": [
+    {
+      "original_path": ".github/workflows/rbf_tests.yml",
+      "backup_path": ".github/workflows/rbf_tests.yml",
+      "sha256": "344fae55cef4db63124d5732b56204c065682942bf9d8777763b4d19c2984ba3"
+    },
+    {
+      "original_path": "docs/manual/rbf-corrective.md",
+      "backup_path": "docs/manual/rbf-corrective.md",
+      "sha256": "e29bb1b9a7831904ddbf1ee1dabd509d998114b6accd973057b47826264d5c27"
+    },
+    {
+      "original_path": "docs/reference/systems/rbf/driver.md",
+      "backup_path": "docs/reference/systems/rbf/driver.md",
+      "sha256": "36b26f57255746afab3aef469dc50fcc04ce71a2309fe8ff282b2be893d4b85b"
+    },
+    {
+      "original_path": "docs/reference/systems/rbf/expression.md",
+      "backup_path": "docs/reference/systems/rbf/expression.md",
+      "sha256": "fbd29d5914a2401ed574cbeac5a65c21efc52aa2a29431386581fcc3cdcec847"
+    },
+    {
+      "original_path": "docs/reference/systems/rbf/model.md",
+      "backup_path": "docs/reference/systems/rbf/model.md",
+      "sha256": "9d18800a50d5f108c4d55e3c5b0fbe10f1170a171c8efcb73bd332eb325633a1"
+    },
+    {
+      "original_path": "docs/reference/systems/rbf/output_driver.md",
+      "backup_path": "docs/reference/systems/rbf/output_driver.md",
+      "sha256": "87a26c19651043402c02cf85bc88330b9e3f3a50f9419cdb93370bac1e58763d"
+    },
+    {
+      "original_path": "docs/reference/systems/rbf/package.md",
+      "backup_path": "docs/reference/systems/rbf/package.md",
+      "sha256": "edf8111d584b5ebb06f7a7a5017b3da87258d270954a311e2df4e092f03d6b03"
+    },
+    {
+      "original_path": "docs/reference/systems/rbf/pose_locator.md",
+      "backup_path": "docs/reference/systems/rbf/pose_locator.md",
+      "sha256": "15948d1540d7458dd5571435143d74a34ca20c52dc1ad43391e0d39c75c877d9"
+    },
+    {
+      "original_path": "docs/reference/systems/rbf/presets.md",
+      "backup_path": "docs/reference/systems/rbf/presets.md",
+      "sha256": "889888375edbd198b25201bdb0b99e5f39cf472849aba10c3595e6d79bd25519"
+    },
+    {
+      "original_path": "docs/reference/systems/rbf/sampling.md",
+      "backup_path": "docs/reference/systems/rbf/sampling.md",
+      "sha256": "ea307bb94327a96b981461532b9b8306dc0633b4096b33560f047ff880f02e20"
+    },
+    {
+      "original_path": "docs/reference/systems/rbf/smooth_solver.md",
+      "backup_path": "docs/reference/systems/rbf/smooth_solver.md",
+      "sha256": "c7b603552ca46861e6d509fbcb67087fca6d2ea9eead17d0f0e60dad32da0be1"
+    },
+    {
+      "original_path": "docs/reference/systems/rbf/solver.md",
+      "backup_path": "docs/reference/systems/rbf/solver.md",
+      "sha256": "41dd22c6c7da8eaf82952a492d2f4d936d587ed53c21233e0710bd99598a9dcc"
+    },
+    {
+      "original_path": "docs/reference/systems/rbf/solver_factory.md",
+      "backup_path": "docs/reference/systems/rbf/solver_factory.md",
+      "sha256": "28e879a36d29ee321ba33e5f2a92ab37f60821c3883c20ffd15a3664f38caed7"
+    },
+    {
+      "original_path": "docs/reference/tools/rig/rbf_corrective_tool.md",
+      "backup_path": "docs/reference/tools/rig/rbf_corrective_tool.md",
+      "sha256": "535097498d8fa2cb3055de62937958e01156c31ac6e4b1404ce49b5616fd1ee2"
+    },
+    {
+      "original_path": "systems/rbf/__init__.py",
+      "backup_path": "systems/rbf/__init__.py",
+      "sha256": "e18877f328456c52ec9e62b498c60d81d1de52713de3f57c8c2f833fed2c28b6"
+    },
+    {
+      "original_path": "systems/rbf/driver.py",
+      "backup_path": "systems/rbf/driver.py",
+      "sha256": "8a1dab0fdec75098639d21af3fc9d72d5667dfe4e5ccaabd9098400506e23ab3"
+    },
+    {
+      "original_path": "systems/rbf/expression.py",
+      "backup_path": "systems/rbf/expression.py",
+      "sha256": "d2040169e64c1269dec23b96333470d7d42a1e4e3149b62a976320f2a8b675c8"
+    },
+    {
+      "original_path": "systems/rbf/model.py",
+      "backup_path": "systems/rbf/model.py",
+      "sha256": "57066de92c2acba49ba97e09bd01e00edbf70720bf3b1c62d330b7910defb0a7"
+    },
+    {
+      "original_path": "systems/rbf/output_driver.py",
+      "backup_path": "systems/rbf/output_driver.py",
+      "sha256": "90b06f6afeae1251c372bb159ce7ddd8ec8dea81974663ebe404c3d146686406"
+    },
+    {
+      "original_path": "systems/rbf/pose_locator.py",
+      "backup_path": "systems/rbf/pose_locator.py",
+      "sha256": "f2dca570a863642ec14a8bcf340675bc4d7e04016bc5b4c97f0f20aac710c953"
+    },
+    {
+      "original_path": "systems/rbf/presets.py",
+      "backup_path": "systems/rbf/presets.py",
+      "sha256": "e54dae44d5a056295ebaa637355cecde7240e1651b6eb44e58b21b16cd9ce2b9"
+    },
+    {
+      "original_path": "systems/rbf/sampling.py",
+      "backup_path": "systems/rbf/sampling.py",
+      "sha256": "e2d0e18a8eb06ab0b767e96985c6cff06b9d8e916b59e09ae9563f7da9ca63f6"
+    },
+    {
+      "original_path": "systems/rbf/smooth_solver.py",
+      "backup_path": "systems/rbf/smooth_solver.py",
+      "sha256": "bc9144860ccfe5ff7612d583cc9dd308ffc297af274ddc8788a79b49723869b3"
+    },
+    {
+      "original_path": "systems/rbf/solver.py",
+      "backup_path": "systems/rbf/solver.py",
+      "sha256": "71824f7bd88c0d31a38e2effd17cf5ab4747b92d554b6b8e4463721cc3c35e9f"
+    },
+    {
+      "original_path": "systems/rbf/solver_factory.py",
+      "backup_path": "systems/rbf/solver_factory.py",
+      "sha256": "f353343c8266d28e122b550491e0153aa91dd1394f23f2b0c4034407a3596a38"
+    },
+    {
+      "original_path": "tests/rbf_core_lifecycle_test.py",
+      "backup_path": "tests/rbf_core_lifecycle_test.py",
+      "sha256": "38d9b9ab5a7280238346f43805dfa4c16ae85b7cab0b92c7559c4e5cc6656147"
+    },
+    {
+      "original_path": "tests/rbf_expression_test.py",
+      "backup_path": "tests/rbf_expression_test.py",
+      "sha256": "e6732cbaea5c5c23361ae632c85db0146d8a52d3e49fab0b226a2ae39d0e6ffb"
+    },
+    {
+      "original_path": "tests/rbf_maya_smoke_test.py",
+      "backup_path": "tests/rbf_maya_smoke_test.py",
+      "sha256": "ed81da065ee604f93f87c1a2c60b20a397c6e8e8678dd2aaadfc58bc3d058419"
+    },
+    {
+      "original_path": "tests/rbf_sampling_test.py",
+      "backup_path": "tests/rbf_sampling_test.py",
+      "sha256": "ab3a66c15d9ff1010b5fc641f8735f77158f1141371efbc6e000ec0717f9c11f"
+    },
+    {
+      "original_path": "tests/rbf_scene_contract_test.py",
+      "backup_path": "tests/rbf_scene_contract_test.py",
+      "sha256": "455e197e3e300379d89877564b5bb4d66f58ebcbd6588a64f3e5bd8b66810a44"
+    },
+    {
+      "original_path": "tests/rbf_smooth_test.py",
+      "backup_path": "tests/rbf_smooth_test.py",
+      "sha256": "d3b431626ee5cb80a50d1578ce9aba88624896f3e3d5513df30bdbbc1e7fdd28"
+    },
+    {
+      "original_path": "tests/rbf_solver_test.py",
+      "backup_path": "tests/rbf_solver_test.py",
+      "sha256": "e0e62ad08c3722d32d7e409418a6d086fbd7ae2037e8b7cf754731bdc59aa03b"
+    },
+    {
+      "original_path": "tests/rbf_ui_qt_test.py",
+      "backup_path": "tests/rbf_ui_qt_test.py",
+      "sha256": "e417d747b4ecec23ab9109f3696f187f5fd80a21e25e7ac65a3c118419fc84e9"
+    },
+    {
+      "original_path": "tools/rig/rbf_corrective_tool.py",
+      "backup_path": "tools/rig/rbf_corrective_tool.py",
+      "sha256": "1a6c35d3586f0a0e2afbecaeb6fdf71e591bf43112c85d350978747fb0f8cbdd"
+    },
+    {
+      "original_path": "README.md",
+      "backup_path": "integration_snapshot/README.md",
+      "sha256": "1699381f1eb4f1fe7d411f578f09cec148a05edee5dad0c3e7f629d8a0ef82c6",
+      "role": "integration_snapshot"
+    },
+    {
+      "original_path": "app/toolbox_catalog.py",
+      "backup_path": "integration_snapshot/app/toolbox_catalog.py",
+      "sha256": "6e77cc4113dabcd73534877e54065b72e506481e17b7434e03b091cff2ed4a37",
+      "role": "integration_snapshot"
+    },
+    {
+      "original_path": "docs/SUMMARY.md",
+      "backup_path": "integration_snapshot/docs/SUMMARY.md",
+      "sha256": "2cf526f8ff36ab7857467d0cd5a7396a2a0df6ca80ee18bf6c17236081556968",
+      "role": "integration_snapshot"
+    },
+    {
+      "original_path": "docs/reference/systems/index.md",
+      "backup_path": "integration_snapshot/docs/reference/systems/index.md",
+      "sha256": "7e18f7bbe4a23f3c9d870f44fbeefc0e52bc9c6b611262a3a7bec8bc739e8b44",
+      "role": "integration_snapshot"
+    },
+    {
+      "original_path": "docs/reference/tools/index.md",
+      "backup_path": "integration_snapshot/docs/reference/tools/index.md",
+      "sha256": "c16bd5e6cfde9987684d180ea051502114d9f7c358ec11e352d05f252d31251a",
+      "role": "integration_snapshot"
+    },
+    {
+      "original_path": "tests/tool_ui_connection_test.py",
+      "backup_path": "integration_snapshot/tests/tool_ui_connection_test.py",
+      "sha256": "6eed629597ec98e0899d71c6d4e6385a07ac7551796cd82f9d99f368d02e1c26",
+      "role": "integration_snapshot"
+    }
+  ]
+}

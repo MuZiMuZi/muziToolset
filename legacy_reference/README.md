@@ -139,3 +139,7 @@ muziToolset/
 ├─ systems/
 └─ resources/
 ```
+
+## Pose Driver / RBF 停用备份（2026-10-09）
+
+[查看完整备份](pose_driver_rbf_backup_20261009/README.md)。此版本已从正式工具、测试和文档入口移除，暂不重写。
