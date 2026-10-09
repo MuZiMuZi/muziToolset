@@ -599,7 +599,7 @@ selected_pose_name(self)
 
 **返回值**
 
-源码未声明返回值说明。
+str: 当前样本列表中选中的姿态名称；没有选择则抛出 ValueError。
 
 **异常**
 

@@ -358,7 +358,11 @@ class RbfCorrectiveTool(QtWidgets.QWidget):
         self.show_poses()
 
     def selected_pose_name(self):
-        """取得所选样本，包括中立；避免用当前输出选择替代样本选择。"""
+        """取得所选样本，包括中立；避免用当前输出选择替代样本选择。
+
+        Returns:
+            str: 当前样本列表中选中的姿态名称；没有选择则抛出 ValueError。
+        """
         index = self.poses.currentRow()
         if index < 0 or index >= len(self.model.poses):
             raise ValueError('请先选择一个姿态样本')
