@@ -64,4 +64,6 @@ class RbfUiTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    if QtWidgets is None:
+        raise SystemExit('Qt 专项测试需要可加载的 PySide6 和 Linux 图形依赖')
     unittest.main()

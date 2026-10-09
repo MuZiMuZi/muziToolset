@@ -1,6 +1,7 @@
 # coding=utf-8
 """场景边界命令替身测试：所有权、编辑、映射和重建回滚；不替代 Maya DG。"""
 import importlib
+import importlib.util
 import sys
 import unittest
 from unittest.mock import patch
