@@ -10,7 +10,7 @@ class RbfModel(object):
 
     def __init__(self, inputs, scales=None, periods=None, side='lf', part='arm',
                  index=1, radius=1.0, regularization=0.0, clamp=True,
-                 normalize=False, poses=None):
+                 normalize=False, poses=None, sampling=None, solver_type='rbf', smooth=None):
         self.inputs = list(inputs)
         self.scales = list(scales) if scales is not None else [90.0] * len(inputs)
         self.periods = list(periods) if periods is not None else [0.0] * len(inputs)
@@ -22,10 +22,15 @@ class RbfModel(object):
         self.clamp = bool(clamp)
         self.normalize = bool(normalize)
         self.poses = copy.deepcopy(poses or [])
+        self.sampling = copy.deepcopy(sampling or {})
+        self.solver_type = solver_type
+        self.smooth = copy.deepcopy(smooth or {'axes': [1, 2, 0], 'signs': [-1, 1], 'angles': [45.0, 45.0, 90.0]})
         self.validate()
 
     def validate(self):
         """验证导入数据；重复姿态由求解器按实际距离检查。"""
+        if self.solver_type not in ('rbf', 'smoothstep'):
+            raise ValueError('未知求解模式')
         if not self.inputs or len(set(self.inputs)) != len(self.inputs):
             raise ValueError('输入属性不能为空或重复')
         for plug in self.inputs:
@@ -55,6 +60,8 @@ class RbfModel(object):
             if not re.fullmatch(r'[A-Za-z][A-Za-z0-9_]*', name) or name in names:
                 raise ValueError('姿态名称不合法或重复：' + name)
             names.add(name)
+            if not pose['neutral'] and (re.fullmatch(r'(input|weight)\d+', name) or name in ('message', 'muziRbfData', 'ownedNodes')):
+                raise ValueError('姿态名称占用了网络保留属性：' + name)
             self.validate_values(pose['values'])
             if not isinstance(pose['neutral'], bool):
                 raise ValueError('neutral 必须为布尔值')
@@ -94,7 +101,7 @@ class RbfModel(object):
         """序列化配置，不序列化可由样本重算的系数。"""
         result = {'version': 1}
         for key in ('inputs', 'scales', 'periods', 'side', 'part', 'index',
-                    'radius', 'regularization', 'clamp', 'normalize', 'poses'):
+                    'radius', 'regularization', 'clamp', 'normalize', 'poses', 'sampling', 'solver_type', 'smooth'):
             result[key] = copy.deepcopy(getattr(self, key))
         return result
 

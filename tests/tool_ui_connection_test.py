@@ -38,7 +38,8 @@ class ToolUiConnectionTest(unittest.TestCase):
                         functions.add(node.name)
                 self.assertIn('main', functions, str(path))
                 count += 1
-        self.assertEqual(count, 20)
+        self.assertEqual(count, 21)
+        self.assertIn('rbf_corrective_tool', categories['绑定工具'])
         self.assertEqual(categories['基础工具']['snap_tool'].tool_mode, 'action')
         self.assertEqual(categories['控制器工具']['create_fk_ctrl_tool'].tool_mode, 'action')
 

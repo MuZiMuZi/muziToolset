@@ -6,7 +6,7 @@ import maya.cmds as cmds
 from ...core.common import scene_utils, connection_utils, file_utils
 from ...core.common.name_utils import Name
 from .model import RbfModel
-from .solver import RbfSolver
+from .solver_factory import create_solver
 from .expression import compile_expression
 
 SCALAR_TYPES = ('double', 'float', 'long', 'short', 'byte', 'bool', 'doubleAngle')
@@ -55,9 +55,12 @@ class RbfDriver(object):
         self.model = RbfModel.from_dict(model.to_dict())
         self.output = None
         self.nodes = []
+        self.staging = False
 
     def get_name(self, type, function, index=None):
         """统一走仓库 Name 命名，不建立第二套 Rig 命名规则。"""
+        if self.staging:
+            function += 'Stage'
         return Name(type=type, side=self.model.side, part=self.model.part,
                     function=function, index=self.model.index if index is None else index).name
 
@@ -74,7 +77,7 @@ class RbfDriver(object):
             raise RuntimeError('该实例已构建，请恢复实例或删除后重新构建')
         self.model.validate()
         read_inputs(self.model)
-        solver = RbfSolver(self.model)
+        solver = create_solver(self.model)
         solver.train()
         self.nodes = []
         try:
@@ -100,7 +103,8 @@ class RbfDriver(object):
                 cmds.setAttr(self.output + '.' + attribute, channelBox=True)
             expression_name = self.get_name('expression', 'rbf')
             scene_utils.ensure_nodes_available([expression_name])
-            expression = cmds.expression(name=expression_name, string=compile_expression(solver, self.output),
+            source = solver.compile(self.output) if self.model.solver_type == 'smoothstep' else compile_expression(solver, self.output)
+            expression = cmds.expression(name=expression_name, string=source,
                                          alwaysEvaluate=False, unitConversion='none')
             self.nodes.append(expression)
             owner_index = 0
@@ -139,6 +143,57 @@ class RbfDriver(object):
     def disconnect_output(self, name, destination):
         """只断开指定的当前输出连接。"""
         connection_utils.disconnect_plugs(self.get_output_plug(name), destination)
+
+    @scene_utils.undo_chunk
+    def rebuild(self, model):
+        """先构建候选网络，再迁移同名输出；失败保留原网络与连接。"""
+        if not self.output or not cmds.objExists(self.output):
+            raise RuntimeError('没有可重建的网络')
+        if (model.side, model.part, model.index) != (self.model.side, self.model.part, self.model.index):
+            raise ValueError('重建必须保持侧别、部位和实例序号一致')
+        destinations = {}
+        for name in self.model.get_output_names():
+            plug = self.get_output_plug(name)
+            destinations[name] = cmds.listConnections(plug, source=False, destination=True, plugs=True) or []
+            if destinations[name] and name not in model.get_output_names():
+                raise ValueError('不能删除仍有连接的输出：' + name)
+        candidate = RbfDriver(model)
+        candidate.staging = True
+        candidate.build()
+        old_nodes = cmds.listConnections(self.output + '.ownedNodes', source=True, destination=False) or []
+        old_nodes.append(self.output)
+        for node in candidate.nodes:
+            canonical = node.replace('_rbfStage_', '_rbf_').replace('_rbfInputStage_', '_rbfInput_')
+            if cmds.objExists(canonical) and canonical not in old_nodes:
+                candidate.delete()
+                raise RuntimeError('重建节点名称与场景冲突：' + canonical)
+        moved = []
+        try:
+            for name, targets in destinations.items():
+                for target in targets:
+                    old_source = self.get_output_plug(name)
+                    new_source = candidate.get_output_plug(name)
+                    connection_utils.disconnect_plugs(old_source, target)
+                    moved.append((old_source, new_source, target))
+                    connection_utils.connect_plugs(new_source, target)
+        except Exception:
+            for old_source, new_source, target in reversed(moved):
+                if cmds.isConnected(new_source, target):
+                    connection_utils.disconnect_plugs(new_source, target)
+                connection_utils.connect_plugs(old_source, target)
+            candidate.delete()
+            raise
+        self.delete()
+        # 让后续重复重建仍能使用相同暂存名称；统一回到正式命名。
+        for node in candidate.nodes:
+            if cmds.objExists(node):
+                cmds.rename(node, node.replace('_rbfStage_', '_rbf_').replace('_rbfInputStage_', '_rbfInput_'))
+        candidate.output = candidate.get_name('network', 'rbf').replace('_rbfStage_', '_rbf_')
+        candidate.staging = False
+        self.model = candidate.model
+        self.output = candidate.output
+        self.nodes = []
+        return self.output
 
     @classmethod
     def from_scene(cls, output):
