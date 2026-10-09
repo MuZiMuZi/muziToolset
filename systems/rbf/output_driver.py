@@ -9,7 +9,13 @@ CURVE_TYPES = {'doubleAngle': 'animCurveUA', 'doubleLinear': 'animCurveUL',
 
 
 def get_output_mappings(output):
-    """返回所属输出映射节点；兼容未创建映射属性的旧场景。"""
+    """返回所属输出映射节点；兼容未创建映射属性的旧场景。
+
+    Args:
+        output (str): 已构建的输出 network 名称。
+    Returns:
+        list[str]: 属于该网络的映射曲线，旧场景可返回空列表。
+    """
     if not cmds.attributeQuery('outputMappings', node=output, exists=True):
         return []
     return cmds.listConnections(output + '.outputMappings', source=True, destination=False) or []
@@ -19,12 +25,14 @@ def get_output_mappings(output):
 def connect_mapped_output(driver, name, destination, full_value, neutral_value=None):
     """将权重 0~1 线性映射为辅助骨或标量属性的两个端点，拒绝覆盖连接。
 
-    driver(RbfDriver): 已构建或已恢复驱动。
-    name(str): 输出姿态名称。
-    destination(str): 辅助骨 rotate / translate / scale 或浮点属性 Plug。
-    full_value(float): 权重 1 对应数值，使用 Maya 当前角度或距离单位。
-    neutral_value(float|None): 权重 0 对应数值，默认读取目标当前值。
-    返回映射曲线；重建保留曲线，删除 Driver 同时清理曲线。
+    Args:
+        driver (RbfDriver): 已构建或已恢复驱动。
+        name (str): 输出姿态名称。
+        destination (str): 辅助骨 rotate / translate / scale 或浮点属性 Plug。
+        full_value (float): 权重 1 对应数值，使用 Maya 当前角度或距离单位。
+        neutral_value (float | None): 权重 0 对应数值，默认读取目标当前值。
+    Returns:
+        str: 所属映射曲线；重建保留曲线，删除 Driver 同时清理曲线。
     """
     source = driver.get_output_plug(name)
     if not cmds.objExists(destination):
@@ -57,7 +65,8 @@ def connect_mapped_output(driver, name, destination, full_value, neutral_value=N
             cmds.addAttr(driver.output, longName='outputMappings', attributeType='message', multi=True)
         indices = cmds.getAttr(driver.output + '.outputMappings', multiIndices=True) or []
         slot = max(indices) + 1 if indices else 0
-        connection_utils.connect_plugs(curve + '.message', '{}.outputMappings[{}]'.format(driver.output, slot))
+        if not connection_utils.connect_plugs(curve + '.message', '{}.outputMappings[{}]'.format(driver.output, slot)):
+            raise RuntimeError('输出映射所有权连接失败')
     except Exception:
         cmds.delete(curve)
         raise
@@ -66,7 +75,14 @@ def connect_mapped_output(driver, name, destination, full_value, neutral_value=N
 
 @scene_utils.undo_chunk
 def disconnect_mapped_output(driver, destination):
-    """删除当前 Driver 对目标属性的映射；不认领外部曲线。"""
+    """删除当前 Driver 对目标属性的映射；不认领外部曲线。
+
+    Args:
+        driver (RbfDriver): 已构建或已恢复驱动。
+        destination (str): 已通过当前 Driver 映射的目标 Plug。
+    Returns:
+        bool: 成功返回 True；没有所属映射则抛出 ValueError。
+    """
     driver.get_output_plug(driver.model.get_output_names()[0])
     for curve in get_output_mappings(driver.output):
         targets = cmds.listConnections(curve + '.output', source=False, destination=True, plugs=True) or []

@@ -1,5 +1,6 @@
 # coding=utf-8
 """普通 Python RBF 数值回归；不导入 Maya。"""
+import math
 import pathlib
 import sys
 import unittest
@@ -26,6 +27,19 @@ class RbfSolverTest(unittest.TestCase):
             for index, name in enumerate(model.get_output_names()):
                 expected = float(name == pose['name'])
                 self.assertAlmostEqual(values[index], expected, places=9)
+
+    def test_gaussian_against_analytic_two_sample_solution(self):
+        model = RbfModel(['joint.rotateX'], scales=[90], clamp=False)
+        model.add_pose('neutral', [0], neutral=True)
+        model.add_pose('bend', [90])
+        solver = RbfSolver(model)
+        solver.train()
+        k = math.exp(-0.5)
+        for value in (-90, 0, 15, 45, 75, 90, 180):
+            neutral_kernel = math.exp(-0.5 * (value / 90.0) ** 2)
+            bend_kernel = math.exp(-0.5 * ((value - 90) / 90.0) ** 2)
+            expected = (bend_kernel - k * neutral_kernel) / (1 - k * k)
+            self.assertAlmostEqual(solver.evaluate([value])[0], expected, places=12)
 
     def test_periodic_wrap(self):
         solver = RbfSolver(self.make_model())

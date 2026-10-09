@@ -149,7 +149,14 @@ class RbfModel(object):
             raise
 
     def update_pose(self, name, values):
-        """按名称替换样本值；验证失败保留原数据，名称和输出连接不变。"""
+        """按名称替换样本值；验证失败保留原数据，名称和输出连接不变。
+
+        Args:
+            name (str): 已记录的姿态名称，包括中立姿态。
+            values (list[float]): 按 inputs 顺序排列的新采样值，角度为度。
+        Returns:
+            None: 模型已更新，既有求解器需要重新训练。
+        """
         candidate = RbfModel.from_dict(self.to_dict())
         for pose in candidate.poses:
             if pose['name'] == name:
@@ -160,7 +167,13 @@ class RbfModel(object):
         raise ValueError('找不到姿态：' + name)
 
     def remove_pose(self, name):
-        """删除非中立样本；有场景连接时还需通过 Driver 重建检查。"""
+        """删除非中立样本；有场景连接时还需通过 Driver 重建检查。
+
+        Args:
+            name (str): 已记录的非中立姿态名称。
+        Returns:
+            None: 删除成功；输出连接由 Driver.rebuild 检查。
+        """
         for index, pose in enumerate(self.poses):
             if pose['name'] == name:
                 if pose['neutral']:

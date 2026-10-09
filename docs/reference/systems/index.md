@@ -35,6 +35,8 @@ Systems 是可复用的完整 Rig Builder / Workflow。
 - [`systems/rbf/driver.py`](rbf/driver.md) — Maya 通用修型驱动：采样、构建、恢复、连接和清理；命名复用 Name。
 - [`systems/rbf/expression.py`](rbf/expression.md) — 将训练系数编译为 MEL 纯数值表达式；不执行 Python 回调。
 - [`systems/rbf/model.py`](rbf/model.md) — RBF 数据模型：输入尺度、周期、姿态及输出；不操作场景。
+- [`systems/rbf/output_driver.py`](rbf/output_driver.md) — 输出端点映射；角度、距离和普通数值分别使用对应的 Driven 曲线。
+- [`systems/rbf/pose_locator.py`](rbf/pose_locator.md) — Pose Locator 样本容器；平移只负责显示，poseValue 属性负责训练数据。
 - [`systems/rbf/presets.py`](rbf/presets.md) — ADV 最终关节模板；模板名称可覆盖，不根据名字猜测解剖方向。
 - [`systems/rbf/sampling.py`](rbf/sampling.md) — ADV 控制器自动摆姿采样：修改控制器，读取最终关节，始终恢复。
 - [`systems/rbf/smooth_solver.py`](rbf/smooth_solver.md) — 原 V6 Smoothstep 十通道模式；明确区分于 Gaussian RBF。

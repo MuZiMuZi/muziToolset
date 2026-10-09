@@ -43,8 +43,6 @@ class SmoothSolver(object):
                 raise ValueError('Smoothstep 轴索引必须为整数')
         if len(self.model.inputs) != 3 or set(settings['axes']) != {0, 1, 2}:
             raise ValueError('Smoothstep 模式需要三个输入和互不重复的轴索引 0,1,2')
-        if len(settings['axes']) != 3 or len(settings['signs']) != 2 or len(settings['angles']) != 3:
-            raise ValueError('Smoothstep 轴、符号、阈值数量错误')
         for sign in settings['signs']:
             if sign not in (-1, 1):
                 raise ValueError('Smoothstep 方向符号只能为 -1 或 1')

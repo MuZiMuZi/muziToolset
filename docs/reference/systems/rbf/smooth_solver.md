@@ -35,6 +35,7 @@ from muziToolset.systems.rbf import smooth_solver
 | Method | 作用 |
 | --- | --- |
 | `train(self)` | 验证固定十方向数据；轴索引是关节输入顺序，并非控制器轴。 |
+| `require_trained(self)` | 设置修改后必须重新验证，防止 Python 与场景表达式使用不同设置。 |
 | `evaluate(self, values)` | 中立为零、方向隔离、超限保持端点，扭转独立。 |
 | `compile(self, node)` | 编译相同 Smoothstep 运算，保留独立扭转，不应用总量归一化。 |
 
@@ -120,6 +121,42 @@ instance = smooth_solver.SmoothSolver(
 )
 
 result = instance.train()
+```
+
+#### `require_trained()`
+
+**作用**
+
+设置修改后必须重新验证，防止 Python 与场景表达式使用不同设置。
+
+**Signature**
+
+```python
+require_trained(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+源码未声明返回值说明。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.systems.rbf import smooth_solver
+
+instance = smooth_solver.SmoothSolver(
+    model="model",
+)
+
+result = instance.require_trained()
 ```
 
 #### `evaluate()`

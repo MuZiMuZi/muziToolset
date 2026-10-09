@@ -40,10 +40,19 @@ def create_joint_model(joint, side='lf', part='arm', index=1, scales=None,
                        swing_signs=(-1, 1), smooth_angles=None):
     """任意关节 XYZ 输入模板；关节名称与解剖方向均由调用方明确指定。
 
-    joint(str): Maya 关节或控制器名称，可带命名空间。
-    swing_axes(tuple): 两个摆动轴，顺序决定 up/front 方向。
-    smooth_angles(list): 两个交叉激活阈值和 Twist 阈值，单位为度。
-    返回未采样 RbfModel，不访问或修改场景。
+    Args:
+        joint (str): Maya 关节或控制器名称，可带命名空间。
+        side (str): 命名侧别 lf、rt 或 md。
+        part (str): 命名部位，例如 arm、thigh、wrist 或自定义 token。
+        index (int): 驱动实例序号，必须为正整数。
+        scales (list[float] | None): XYZ 的 RBF 输入尺度，默认各 90 度。
+        solver_type (str): rbf 为 Gaussian 插值，smoothstep 为 V6 方向门。
+        swing_axes (tuple[str,str]): 两个摆动轴，顺序决定 up/front 方向。
+        twist_axis (str): 剩余的扭转轴 X、Y 或 Z。
+        swing_signs (tuple[int,int]): up/front 的符号，分别为 -1 或 1。
+        smooth_angles (list[float] | None): 两个交叉阈值和 Twist 阈值，单位为度。
+    Returns:
+        RbfModel: 未采样的数据模板，不访问或修改场景。
     """
     if len(swing_axes) != 2 or set(tuple(swing_axes) + (twist_axis,)) != set('XYZ'):
         raise ValueError('摆动和扭转轴必须是互不重复的 X、Y、Z')

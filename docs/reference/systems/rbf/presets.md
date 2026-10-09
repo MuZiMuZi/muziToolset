@@ -33,6 +33,7 @@ from muziToolset.systems.rbf import presets
 | API | 作用 |
 | --- | --- |
 | `create_adv_model(part='arm', side='lf', joint=None, index=1)` | 返回 XYZ 旋转输入；读取最终关节可响应 FK 和 IK 求值结果。 |
+| `create_joint_model(joint, side='lf', part='arm', index=1, scales=None, solver_type='rbf', swing_axes=('Y', 'Z'), twist_axis='X', swing_signs=(-1, 1), smooth_angles=None)` | 任意关节 XYZ 输入模板；关节名称与解剖方向均由调用方明确指定。 |
 
 ## 公共常量
 
@@ -77,6 +78,51 @@ RbfModel: 尚未采样的 ADV 最终关节配置。
 from muziToolset.systems.rbf import presets
 
 result = presets.create_adv_model()
+```
+
+### `create_joint_model()`
+
+**作用**
+
+任意关节 XYZ 输入模板；关节名称与解剖方向均由调用方明确指定。
+
+**Signature**
+
+```python
+create_joint_model(joint, side='lf', part='arm', index=1, scales=None, solver_type='rbf', swing_axes=('Y', 'Z'), twist_axis='X', swing_signs=(-1, 1), smooth_angles=None)
+```
+
+**参数**
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | :---: | --- | --- |
+| `joint` | `str` | 是 | `—` | Maya 关节或控制器名称，可带命名空间。 |
+| `side` | `str` | 否 | `'lf'` | 命名侧别 lf、rt 或 md。 |
+| `part` | `str` | 否 | `'arm'` | 命名部位，例如 arm、thigh、wrist 或自定义 token。 |
+| `index` | `int` | 否 | `1` | 驱动实例序号，必须为正整数。 |
+| `scales` | `list[float] \| None` | 否 | `None` | XYZ 的 RBF 输入尺度，默认各 90 度。 |
+| `solver_type` | `str` | 否 | `'rbf'` | rbf 为 Gaussian 插值，smoothstep 为 V6 方向门。 |
+| `swing_axes` | `tuple[str,str]` | 否 | `('Y', 'Z')` | 两个摆动轴，顺序决定 up/front 方向。 |
+| `twist_axis` | `str` | 否 | `'X'` | 剩余的扭转轴 X、Y 或 Z。 |
+| `swing_signs` | `tuple[int,int]` | 否 | `(-1, 1)` | up/front 的符号，分别为 -1 或 1。 |
+| `smooth_angles` | `list[float] \| None` | 否 | `None` | 两个交叉阈值和 Twist 阈值，单位为度。 |
+
+**返回值**
+
+RbfModel: 未采样的数据模板，不访问或修改场景。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.systems.rbf import presets
+
+result = presets.create_joint_model(
+    joint="joint",
+)
 ```
 
 ## 源码位置

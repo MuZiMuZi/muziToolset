@@ -12,7 +12,7 @@
     * [常用工具工作流](manual/tools.md)
     * [Core 使用手册](manual/core.md)
     * [绑定库](manual/rig-library.md)
-    * [ADV RBF 修型驱动](manual/rbf-corrective.md)
+    * [Pose Driver / RBF](manual/rbf-corrective.md)
     * [基础工具](manual/basic-tools.md)
     * [Controller](manual/controller.md)
     * [Jnt](manual/jnt.md)
@@ -104,6 +104,8 @@
             * [`expression.py`](reference/systems/rbf/expression.md)
             * [`driver.py`](reference/systems/rbf/driver.md)
             * [`presets.py`](reference/systems/rbf/presets.md)
+            * [`pose_locator.py`](reference/systems/rbf/pose_locator.md)
+            * [`output_driver.py`](reference/systems/rbf/output_driver.md)
             * [`sampling.py`](reference/systems/rbf/sampling.md)
             * [`smooth_solver.py`](reference/systems/rbf/smooth_solver.md)
             * [`solver_factory.py`](reference/systems/rbf/solver_factory.md)
@@ -115,6 +117,7 @@
         * Components
             * [Package](reference/systems/components/package.md)
             * [`fk_chain.py`](reference/systems/components/fk_chain.md)
+            * [`controller_builder.py`](reference/systems/components/controller_builder.md)
         * Face
             * [Package](reference/systems/face/package.md)
             * [`ear_module.py`](reference/systems/face/ear_module.md)

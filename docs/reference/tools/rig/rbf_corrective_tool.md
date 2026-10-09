@@ -52,6 +52,13 @@ from muziToolset.tools.rig import rbf_corrective_tool
 | `auto_sample(self)` | 每次自动采样重新生成完整样本集；训练失败保留原草稿。 |
 | `capture_current(self)` | 可选补充组合姿态；默认流程使用自动采样。 |
 | `remove_pose(self)` | 保留中立样本，避免数据缺少基准。 |
+| `selected_pose_name(self)` | 取得所选样本，包括中立；避免用当前输出选择替代样本选择。 |
+| `select_pose_locator(self)` | 选择当前网络的样本 Locator，在 Channel Box 编辑 poseValue 数值。 |
+| `replace_current_pose(self)` | 覆盖选中样本；已构建的 Locator 同步记录，实时输出仍需重建。 |
+| `read_locators(self)` | 只读取 Locator 数据；保留当前 UI 的核设置和方向阈值。 |
+| `select_output(self)` | 选择输出网络；DG 实时更新 Channel Box，无需 UI 定时回调。 |
+| `connect_mapping(self)` | 辅助骨以当前 Maya 单位设置端点，使用所属 Driven 曲线。 |
+| `disconnect_mapping(self)` | 删除当前网络的目标映射，保留目标骨骼。 |
 | `show_poses(self)` | 显示样本值，输出选择器依据已构建网络保持稳定。 |
 | `show_model(self)` | 加载草稿或恢复场景后同步设置区。 |
 | `build(self)` | 先构建成功，再将运行时实例交给界面。 |
@@ -572,6 +579,244 @@ from muziToolset.tools.rig import rbf_corrective_tool
 instance = rbf_corrective_tool.RbfCorrectiveTool()
 
 result = instance.remove_pose()
+```
+
+#### `selected_pose_name()`
+
+**作用**
+
+取得所选样本，包括中立；避免用当前输出选择替代样本选择。
+
+**Signature**
+
+```python
+selected_pose_name(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+源码未声明返回值说明。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.tools.rig import rbf_corrective_tool
+
+instance = rbf_corrective_tool.RbfCorrectiveTool()
+
+result = instance.selected_pose_name()
+```
+
+#### `select_pose_locator()`
+
+**作用**
+
+选择当前网络的样本 Locator，在 Channel Box 编辑 poseValue 数值。
+
+**Signature**
+
+```python
+select_pose_locator(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+源码未声明返回值说明。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.tools.rig import rbf_corrective_tool
+
+instance = rbf_corrective_tool.RbfCorrectiveTool()
+
+result = instance.select_pose_locator()
+```
+
+#### `replace_current_pose()`
+
+**作用**
+
+覆盖选中样本；已构建的 Locator 同步记录，实时输出仍需重建。
+
+**Signature**
+
+```python
+replace_current_pose(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+源码未声明返回值说明。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.tools.rig import rbf_corrective_tool
+
+instance = rbf_corrective_tool.RbfCorrectiveTool()
+
+result = instance.replace_current_pose()
+```
+
+#### `read_locators()`
+
+**作用**
+
+只读取 Locator 数据；保留当前 UI 的核设置和方向阈值。
+
+**Signature**
+
+```python
+read_locators(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+源码未声明返回值说明。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.tools.rig import rbf_corrective_tool
+
+instance = rbf_corrective_tool.RbfCorrectiveTool()
+
+result = instance.read_locators()
+```
+
+#### `select_output()`
+
+**作用**
+
+选择输出网络；DG 实时更新 Channel Box，无需 UI 定时回调。
+
+**Signature**
+
+```python
+select_output(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+源码未声明返回值说明。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.tools.rig import rbf_corrective_tool
+
+instance = rbf_corrective_tool.RbfCorrectiveTool()
+
+result = instance.select_output()
+```
+
+#### `connect_mapping()`
+
+**作用**
+
+辅助骨以当前 Maya 单位设置端点，使用所属 Driven 曲线。
+
+**Signature**
+
+```python
+connect_mapping(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+源码未声明返回值说明。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.tools.rig import rbf_corrective_tool
+
+instance = rbf_corrective_tool.RbfCorrectiveTool()
+
+result = instance.connect_mapping()
+```
+
+#### `disconnect_mapping()`
+
+**作用**
+
+删除当前网络的目标映射，保留目标骨骼。
+
+**Signature**
+
+```python
+disconnect_mapping(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+源码未声明返回值说明。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.tools.rig import rbf_corrective_tool
+
+instance = rbf_corrective_tool.RbfCorrectiveTool()
+
+result = instance.disconnect_mapping()
 ```
 
 #### `show_poses()`

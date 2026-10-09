@@ -37,6 +37,8 @@ inputs 为属性路径，scales 为对应尺度，periods 为周期或零。
 | `validate(self)` | 验证导入数据；重复姿态由求解器按实际距离检查。 |
 | `validate_values(self, values)` | 采样值必须与全部输入一一对应。 |
 | `add_pose(self, name, values, neutral=False)` | 新增样本；中立不产生输出，其他姿态各产生一个同名输出。 |
+| `update_pose(self, name, values)` | 按名称替换样本值；验证失败保留原数据，名称和输出连接不变。 |
+| `remove_pose(self, name)` | 删除非中立样本；有场景连接时还需通过 Driver 重建检查。 |
 | `get_output_names(self)` | 输出顺序与样本顺序保持一致。 |
 | `to_dict(self)` | 序列化配置，不序列化可由样本重算的系数。 |
 | `from_dict(cls, data)` | 读取版本化配置并重新验证。 |
@@ -212,6 +214,88 @@ instance = model.RbfModel(
 result = instance.add_pose(
     name="name",
     values=1.0,
+)
+```
+
+#### `update_pose()`
+
+**作用**
+
+按名称替换样本值；验证失败保留原数据，名称和输出连接不变。
+
+**Signature**
+
+```python
+update_pose(self, name, values)
+```
+
+**参数**
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | :---: | --- | --- |
+| `name` | `str` | 是 | `—` | 已记录的姿态名称，包括中立姿态。 |
+| `values` | `list[float]` | 是 | `—` | 按 inputs 顺序排列的新采样值，角度为度。 |
+
+**返回值**
+
+None: 模型已更新，既有求解器需要重新训练。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.systems.rbf import model
+
+instance = model.RbfModel(
+    inputs=[],
+)
+
+result = instance.update_pose(
+    name="name",
+    values=1.0,
+)
+```
+
+#### `remove_pose()`
+
+**作用**
+
+删除非中立样本；有场景连接时还需通过 Driver 重建检查。
+
+**Signature**
+
+```python
+remove_pose(self, name)
+```
+
+**参数**
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | :---: | --- | --- |
+| `name` | `str` | 是 | `—` | 已记录的非中立姿态名称。 |
+
+**返回值**
+
+None: 删除成功；输出连接由 Driver.rebuild 检查。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.systems.rbf import model
+
+instance = model.RbfModel(
+    inputs=[],
+)
+
+result = instance.remove_pose(
+    name="name",
 )
 ```
 

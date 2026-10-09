@@ -23,6 +23,10 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Compile RBF modules
         run: python -m compileall -q systems/rbf tools/rig/rbf_corrective_tool.py
+      - name: Core lifecycle and scene ownership contracts
+        run: |
+          python tests/rbf_core_lifecycle_test.py
+          python tests/rbf_scene_contract_test.py
       - name: Gaussian interpolation
         run: python tests/rbf_solver_test.py
       - name: Compiled expression parity
@@ -33,3 +37,19 @@ jobs:
         run: python tests/rbf_smooth_test.py
       - name: UI registry and imports
         run: python tests/tool_ui_connection_test.py
+
+  qt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: muziToolset
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Qt for interaction checks
+        run: python -m pip install 'PySide6-Essentials>=6.5,<7'
+      - name: Pose Driver preset and edit interactions
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python muziToolset/tests/rbf_ui_qt_test.py

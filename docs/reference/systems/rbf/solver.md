@@ -43,6 +43,7 @@ from muziToolset.systems.rbf import solver
 | --- | --- |
 | `kernel(self, first, second)` | Gaussian 核，半径作用于已按输入尺度归一化的距离。 |
 | `train(self)` | 训练全部输出；正则项非零时样本点不再严格 one-hot。 |
+| `require_trained(self)` | 禁止样本、尺度或核设置变化后继续使用旧系数。 |
 | `evaluate(self, values)` | 输出可选择夹到 0~1，再将大于 1 的总量归一化。 |
 
 ## Functions 详细 API
@@ -245,6 +246,42 @@ instance = solver.RbfSolver(
 )
 
 result = instance.train()
+```
+
+#### `require_trained()`
+
+**作用**
+
+禁止样本、尺度或核设置变化后继续使用旧系数。
+
+**Signature**
+
+```python
+require_trained(self)
+```
+
+**参数**
+
+无。
+
+**返回值**
+
+源码未声明返回值说明。
+
+**异常**
+
+源码未声明专门的异常说明。
+
+**示例**
+
+```python
+from muziToolset.systems.rbf import solver
+
+instance = solver.RbfSolver(
+    model="model",
+)
+
+result = instance.require_trained()
 ```
 
 #### `evaluate()`

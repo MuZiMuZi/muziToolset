@@ -1,10 +1,10 @@
-# ADV 通用 RBF 修型驱动
+# 通用 Pose Driver / RBF
 
 工具自动旋转 ADV 控制器，读取最终关节姿态，训练修型权重。大臂、大腿和手腕共用同一套计算与连接流程。此工具创建驱动，不创建或雕刻修型模型，也不改变 ADV 的 FK/IK 绑定结构。
 
 ## 打开工具
 
-更新仓库后重启 Maya，打开木子工具箱的 **绑定工具 → ADV RBF 修型驱动**。也可直接运行：
+更新仓库后重启 Maya，打开木子工具箱的 **绑定工具 → 通用 Pose Driver / RBF**。也可直接运行：
 
 ```python
 from muziToolset.tools.rig import rbf_corrective_tool
@@ -137,3 +137,82 @@ print(run())
 当前输入是局部 Euler 通道，不是四元数空间或几何 Swing/Twist 分解。周期核可以处理单个通道绕回，无法解决所有 Euler 万向节锁或等价旋转表示。jointOrient、父级约束、rotateOrder 与 ADV 切换可能影响关节 Euler 表示；复杂肩部或多轴组合应增加相关采样并实际验收。
 
 Autodesk 技术参考：[expression](https://help.autodesk.com/cloudhelp/2024/ENU/Maya-Tech-Docs/Commands/expression.html)、[unitConversion](https://help.autodesk.com/cloudhelp/2023/ENU/Maya-Tech-Docs/Nodes/unitConversion.html)、[transformLimits](https://help.autodesk.com/cloudhelp/ENU/MayaCRE-Tech-Docs/CommandsPython/transformLimits.html)。
+
+## 通用 Pose Driver 与 Locator 编辑
+
+本轮在已有实现上增加任意关节模板、可编辑样本 Locator 和辅助骨输出。默认模板中 `arm / thigh / wrist` 分别对应 Shoulder / Hip / Wrist；自定义关节可使用 `create_joint_model()`，UI 的部位字段也允许输入自定义命名 token。手腕 Smoothstep 阈值为 `22.5,22.5,45`，大臂和大腿保留 V6 的 `45,45,90`。
+
+构建网络时自动生成一个样本网格和每个姿态的 Locator，包括中立。选择列表中的姿态，再点击 **选择样本 Locator**。Channel Box 的 `poseValue0 / poseValue1 / …` 对应输入列表顺序，角度始终以度记录；`poseInput0` 等锁定文本属性注明原始输入路径。Locator 的平移只是网格显示位置，不是训练输入；旋转 Locator 也不会修改采样值。需要从真实绑定姿态更新时，摆好控制器，点击 **用当前姿态覆盖选中样本**。
+
+编辑 `poseValue` 后点击 **读取 Locator 编辑为草稿 → 重建并保留连接**，训练成功才应用到实时网络。缺失 Locator、重复姿态或非法数值会阻止读取，原驱动仍保留。读取采用全部已构建 Locator；若草稿另外增删过样本，读取会以场景 Locator 集合为准。先重建可将草稿的新增样本生成 Locator。
+
+Smoothstep 的非中立样本值只用于记录，不决定插值曲线；它依照中立值、方向符号和阈值计算。修改 Smoothstep 的方向与过渡范围，应调整输入索引、符号和阈值。Gaussian RBF 使用全部样本值参与训练。两个求解器都禁止配置改变后继续用旧训练结果，Python API 修改模型后需要重新 `train()`；场景驱动则需要 `rebuild()`。
+
+生成名称示例：
+
+```text
+transform_lf_arm_rbfPoses_001
+transform_lf_arm_rbfPose001_001
+transform_lf_arm_rbfPose002_001
+animCurveUA_lf_arm_rbfMapping_001
+```
+
+Pose Locator 与求解节点通过 `ownedNodes` 标记所有权，辅助骨映射通过 `outputMappings` 标记所有权。重建替换样本 Locator，保留已连接的映射曲线；删除网络同时清理这两类所属节点。旧场景没有 Locator 时仍可恢复网络，点击重建即可补齐。
+
+## 辅助骨端点映射
+
+选定输出，将目标填写为实际辅助骨属性，例如 `jnt_lf_arm_corrective_001.rotateX`。展开 **辅助骨 / 标量端点映射**，设置权重 0 与权重 1 对应的目标数值。默认权重 0 读取目标当前值；取消该选项可以明确指定两个端点。权重 0.5 得到两个端点的中间值；超出 0~1 时保持对应端点。需要多个修型合成到同一个骨骼通道时，应先创建独立的修型 offset 层或外部合成网络；本接口拒绝覆盖已有连接。
+
+| 目标类型 | 映射节点 | 端点单位 |
+| --- | --- | --- |
+| rotate / doubleAngle | animCurveUA | Maya 当前角度单位 |
+| translate / doubleLinear | animCurveUL | Maya 当前距离单位 |
+| scale / double / float | animCurveUU | 无单位数值 |
+
+驱动曲线使用无时间的权重输入，不生成时间轴关键帧，也不依赖 UI 回调。Maya 更改角度或距离单位时，曲线输出保留其物理单位。**删除上述目标的当前映射** 只删除当前 Driver 拥有的映射。
+
+## 新增中文 API 示例
+
+```python
+from muziToolset.systems.rbf.presets import create_joint_model
+from muziToolset.systems.rbf.driver import RbfDriver, capture_pose
+from muziToolset.systems.rbf.pose_locator import read_pose_locators
+from muziToolset.systems.rbf.output_driver import connect_mapped_output
+
+# 名称可带命名空间；任意部位使用相同核心。
+model = create_joint_model('hero:Wrist_L', part='wrist', side='lf')
+capture_pose(model, 'neutral', neutral=True)
+# 手动将控制器摆到所需姿态，再执行下一行。
+# capture_pose(model, 'bend')
+# driver = RbfDriver(model)
+# driver.build()
+# connect_mapped_output(driver, 'bend', 'helperJoint.rotateX', 30, neutral_value=5)
+
+# 修改场景 Locator 的 poseValue 属性后：
+# candidate = read_pose_locators(driver)
+# driver.rebuild(candidate)
+```
+
+| API | 输入与结果 | 使用场景 |
+| --- | --- | --- |
+| `create_joint_model(joint, …)` | 返回未采样 RbfModel；显式指定摆动、Twist 轴和部位 | 任意肩、髋、腕或自定义关节 |
+| `model.update_pose(name, values)` | 按名称更新样本；验证失败保留原数据 | 修改草稿，保留输出名称 |
+| `model.remove_pose(name)` | 删除非中立样本 | 移除不再使用的修型 |
+| `get_pose_locators(driver)` | 返回姿态名到 Locator 的映射 | 选择、查询所属样本 |
+| `write_pose_locator(driver, name, values)` | 写入采样值，支持撤销 | 当前姿态覆盖既有记录 |
+| `read_pose_locators(driver)` | 返回独立模型并检查可训练性 | 编辑后生成重建草稿 |
+| `connect_mapped_output(driver, name, destination, full_value, neutral_value=None)` | 返回所属 Driven 曲线 | 权重映射到辅助骨 |
+| `disconnect_mapped_output(driver, destination)` | 删除指定目标的所属映射 | 解除辅助骨驱动 |
+
+## 本轮验证
+
+普通 Python 回归覆盖训练失效、编辑原子性、三种轴顺序、非零中立、V6 超限与 Twist、Locator 编辑、辅助骨映射类型、连续两次重建、迁移失败回滚、已有驱动保护与所属节点清理。Qt 使用真实 PySide6 窗口和 Maya 查询替身测试；Maya 2023 的 PySide2 与真实 DG 仍需执行 Maya smoke 验收。
+
+```bash
+python -m unittest discover -s tests -p 'rbf_*_test.py' -v
+QT_QPA_PLATFORM=offscreen python tests/tool_ui_qt_smoke_test.py
+```
+
+`rbf_maya_smoke_test.run()` 已增加 Locator、辅助骨端点、重建后映射保留和 radians 单位切换检查；普通 Python 的发现过程不会导入 Maya。上述 Maya smoke 脚本是待执行的验收入口，不能将命令替身测试视为真实 DG 验证。
+
+Autodesk 参考：[animCurve 节点类型与单位](https://help.autodesk.com/cloudhelp/2018/ENU/Maya-Tech-Docs/Nodes/animCurve.html)、[无时间输入的 setKeyframe](https://help.autodesk.com/cloudhelp/2026/ENU/Maya-Tech-Docs/Commands/setKeyframe.html)。
