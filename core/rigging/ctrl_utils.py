@@ -68,7 +68,7 @@ import os
 import json
 
 import maya.cmds as cmds
-import pymel.core as pm
+import maya.api.OpenMaya as om
 
 from ..common import hierarchy_utils, attr_utils, transform_utils
 
@@ -100,16 +100,16 @@ class Ctrl(object):
         # -------------------------------------------------------------------------
         self.ctrl_name = name
 
-        # 保存主 Controller Transform PyNode。
+        # 保存主 Controller Transform 字符串节点名称。
         # _get_or_create_ctrl() 执行完成后，该属性一定会指向一个有效 Transform。
         self.ctrl = None
 
-        # 保存当前主 Controller 下面的全部 Shape PyNode。
+        # 保存当前主 Controller 下面的全部 Shape 字符串节点名称。
         self.ctrl_shapes = []
 
         # ---------------------------------------------------------------------
         # 保存 Controller 层级节点名称。
-        # 名称和 Maya 节点分开保存：xxx_name 保存字符串，xxx_grp / sub_ctrl 保存 PyNode。
+        # 名称和 Maya 节点分开保存：xxx_name 保存字符串，xxx_grp / sub_ctrl 保存 字符串节点名称。
         # ---------------------------------------------------------------------
         self.zero_name = None
         # -------------------------------------------------------------------------
@@ -161,12 +161,12 @@ class Ctrl(object):
         u"""
         根据 self.ctrl_name 获取或创建当前 Controller。
 
-        如果 Maya 场景中已经存在同名对象，则直接转换成 PyNode 使用。
+        如果 Maya 场景中已经存在同名对象，则直接转换成 字符串节点名称 使用。
         如果同名对象存在但不是 Transform，则抛出错误，避免把错误节点当作 Controller。
         如果场景中不存在同名对象，则创建一个默认半径为 1、面朝 X+ 的圆形 Controller。
 
         Returns:
-            PyNode: 当前 Controller Transform 节点。
+            字符串节点名称: 当前 Controller Transform 节点。
 
         Maya 使用示例：
 
@@ -182,25 +182,25 @@ class Ctrl(object):
         # -------------------------------------------------------------------------
         # Step 01：检查当前条件与边界情况，并进入对应处理分支
         # -------------------------------------------------------------------------
-        if pm.objExists(self.ctrl_name):
+        if cmds.objExists(self.ctrl_name):
 
-            # 已经存在时直接转换成 PyNode，后续统一使用 PyMEL 对象操作。
-            self.ctrl = pm.PyNode(self.ctrl_name)
+            # 已经存在时直接转换成 字符串节点名称，后续统一使用 maya.cmds 对象操作。
+            self.ctrl = str(self.ctrl_name)
 
             # Controller 必须是 Transform。
             # 这里只检查 Transform，不强制要求已经存在 NurbsCurve Shape，
             # 因为后续 set_ctrl_shape() 可以给空 Transform 创建控制器 Shape。
-            if not isinstance(self.ctrl, pm.nodetypes.Transform):
+            if not cmds.objectType(self.ctrl, isAType="transform"):
                 raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(self.ctrl_name))
 
         else:
 
             # 新系统统一把 X+ 作为 Controller Shape Library 的标准面朝方向。
             # 因此基础圆形 Controller 直接创建在 YZ 平面，法线约定为 X+。
-            self.ctrl = pm.circle(name=self.ctrl_name, radius=1.0, normal=(1, 0, 0))[0]
+            self.ctrl = cmds.circle(name=self.ctrl_name, radius=1.0, normal=(1, 0, 0))[0]
 
             # 新创建的基础 Shape 已经处于标准 X+ 轴向，记录轴向元数据。
-            ctrl_name = self.ctrl.name()
+            ctrl_name = str(self.ctrl)
             axis_attr = ctrl_name + ".ctrl_axis"
 
             if not cmds.attributeQuery("ctrl_axis", node=ctrl_name, exists=True):
@@ -242,7 +242,7 @@ class Ctrl(object):
         ctrl_size(float): Controller Shape 相对缩放倍率，默认 1.0。
         ctrl_axis(str): Controller Shape 面朝方向，支持 X+ / X- / Y+ / Y- / Z+ / Z-，默认 "X+"。
         create_hierarchy(bool): 是否创建完整控制器层级，默认 True。
-        match_transform_target(str/PyNode): 可选位置、旋转、缩放匹配目标。
+        match_transform_target(str/字符串节点名称): 可选位置、旋转、缩放匹配目标。
 
         Args:
             shape_name (str):
@@ -259,12 +259,12 @@ class Ctrl(object):
                 当前方法执行 Maya / Rig 操作时使用的 `match_transform_target` 数据。
 
         Returns:
-            PyNode: 当前主 Controller Transform 节点。
-            
+            字符串节点名称: 当前主 Controller Transform 节点。
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import ctrl_utils
-            
+
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl = ctrl_object.create_ctrl(
             shape_name="circle",
@@ -273,7 +273,7 @@ class Ctrl(object):
             ctrl_axis="Z+",
             create_hierarchy=True
             )
-            
+
             print(ctrl)
         """
 
@@ -327,20 +327,20 @@ class Ctrl(object):
         统一返回 Shape 列表后，颜色、大小、旋转和偏移等操作可以同时作用于整个控制器。
 
         Returns:
-            list: 当前控制器下面的全部 Shape PyNode。
-            
+            list: 当前控制器下面的全部 Shape 字符串节点名称。
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import ctrl_utils
-            
+
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_shapes = ctrl_object.get_ctrl_shapes()
-            
+
             print(ctrl_shapes)
         """
 
         # 获取 Controller Transform 下面全部非 Intermediate Shape 节点。
-        self.ctrl_shapes = self.ctrl.getShapes(noIntermediate=True)
+        self.ctrl_shapes = (cmds.listRelatives(self.ctrl, shapes=True, noIntermediate=True, fullPath=True) or [])
 
         return self.ctrl_shapes
 
@@ -353,14 +353,14 @@ class Ctrl(object):
 
         Returns:
             list: Controller Shape Library 中所有可用的 Shape 名称。
-            
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import ctrl_utils
-            
+
             ctrl_object = ctrl_utils.Ctrl("ctrl_md_shape_list_main_001")
             shape_list = ctrl_object.get_ctrl_shape_list()
-            
+
             print(shape_list)
         """
 
@@ -386,7 +386,7 @@ class Ctrl(object):
         # Step 03：检查当前条件与边界情况，并进入对应处理分支
         # -------------------------------------------------------------------------
         if not os.path.exists(shape_library_path):
-            pm.warning(u"找不到 Controller Shape Library：{}".format(shape_library_path))
+            cmds.warning(u"找不到 Controller Shape Library：{}".format(shape_library_path))
             return shape_list
 
         # 获取资源目录中的全部文件。
@@ -423,11 +423,11 @@ class Ctrl(object):
 
         Returns:
             None
-            
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import ctrl_utils
-            
+
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_object.set_ctrl_color(6)
         """
@@ -437,8 +437,8 @@ class Ctrl(object):
 
         # 逐个设置 Shape 的 Drawing Overrides 和颜色。
         for ctrl_shape in self.ctrl_shapes:
-            ctrl_shape.overrideEnabled.set(True)
-            ctrl_shape.overrideColor.set(ctrl_color)
+            cmds.setAttr(ctrl_shape + ".overrideEnabled", True)
+            cmds.setAttr(ctrl_shape + ".overrideColor", ctrl_color)
 
     def set_ctrl_size(self, ctrl_size):
         u"""
@@ -457,11 +457,11 @@ class Ctrl(object):
 
         Returns:
             None
-            
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import ctrl_utils
-            
+
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_object.set_ctrl_size(2.0)
         """
@@ -471,8 +471,8 @@ class Ctrl(object):
 
         # 逐个检查 Shape，只对 NurbsCurve 的 CV 进行缩放。
         for ctrl_shape in self.ctrl_shapes:
-            if isinstance(ctrl_shape, pm.nodetypes.NurbsCurve):
-                pm.scale(ctrl_shape.cv[:], ctrl_size, ctrl_size, ctrl_size, relative=True, objectSpace=True)
+            if cmds.nodeType(ctrl_shape) == "nurbsCurve":
+                cmds.scale(ctrl_size, ctrl_size, ctrl_size, (ctrl_shape + ".cv[*]"), relative=True, objectSpace=True)
 
     def set_ctrl_axis(self, ctrl_axis="X+"):
         u"""
@@ -492,11 +492,11 @@ class Ctrl(object):
 
         Returns:
             None
-            
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import ctrl_utils
-            
+
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_object.set_ctrl_shape("circle")
             ctrl_object.set_ctrl_axis("Z+")
@@ -521,7 +521,7 @@ class Ctrl(object):
         # -------------------------------------------------------------------------
         # Step 02：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
-        ctrl_name = self.ctrl.name()
+        ctrl_name = str(self.ctrl)
         axis_attr = ctrl_name + ".ctrl_axis"
         current_axis = "X+"
 
@@ -550,11 +550,11 @@ class Ctrl(object):
         # Step 04：遍历当前数据集合，并逐项执行核心处理
         # -------------------------------------------------------------------------
         for ctrl_shape in self.ctrl_shapes:
-            if not isinstance(ctrl_shape, pm.nodetypes.NurbsCurve):
+            if not cmds.nodeType(ctrl_shape) == "nurbsCurve":
                 continue
 
-            for cv in ctrl_shape.cv:
-                point = pm.xform(cv, query=True, translation=True, objectSpace=True)
+            for cv in cmds.ls(ctrl_shape + ".cv[*]", flatten=True) or []:
+                point = cmds.xform(cv, query=True, translation=True, objectSpace=True)
                 point_x = point[0]
                 point_y = point[1]
                 point_z = point[2]
@@ -626,7 +626,7 @@ class Ctrl(object):
                     target_y = canonical_y
                     target_z = -canonical_x
 
-                pm.xform(
+                cmds.xform(
                     cv,
                     translation=(target_x, target_y, target_z),
                     objectSpace=True
@@ -660,11 +660,11 @@ class Ctrl(object):
 
         Returns:
             None
-            
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import ctrl_utils
-            
+
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_object.set_ctrl_rotate(rotate_x=90.0, rotate_y=0.0, rotate_z=0.0)
         """
@@ -674,8 +674,8 @@ class Ctrl(object):
 
         # 逐个检查 Shape，只旋转 NurbsCurve 的 CV。
         for ctrl_shape in self.ctrl_shapes:
-            if isinstance(ctrl_shape, pm.nodetypes.NurbsCurve):
-                pm.rotate(ctrl_shape.cv[:], rotate_x, rotate_y, rotate_z, relative=True, objectSpace=True)
+            if cmds.nodeType(ctrl_shape) == "nurbsCurve":
+                cmds.rotate(rotate_x, rotate_y, rotate_z, (ctrl_shape + ".cv[*]"), relative=True, objectSpace=True)
 
     def set_ctrl_offset(self, offset_x=0.0, offset_y=0.0, offset_z=0.0):
         u"""
@@ -697,11 +697,11 @@ class Ctrl(object):
 
         Returns:
             None
-            
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import ctrl_utils
-            
+
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_object.set_ctrl_offset(offset_x=0.0, offset_y=2.0, offset_z=0.0)
         """
@@ -711,14 +711,14 @@ class Ctrl(object):
 
         # 逐个检查 Shape，只移动 NurbsCurve 的 CV。
         for ctrl_shape in self.ctrl_shapes:
-            if isinstance(ctrl_shape, pm.nodetypes.NurbsCurve):
-                pm.move(ctrl_shape.cv[:], offset_x, offset_y, offset_z, relative=True, objectSpace=True)
+            if cmds.nodeType(ctrl_shape) == "nurbsCurve":
+                cmds.move(offset_x, offset_y, offset_z, (ctrl_shape + ".cv[*]"), relative=True, objectSpace=True)
 
     def set_match_transform(self, target, position=True, rotation=True, scale=True):
         u"""
         将当前 Controller 对齐到指定目标的位置、旋转和缩放。
 
-        target(str/PyNode): 需要对齐的目标对象，例如 Guide、Locator 或 Transform。
+        target(str/字符串节点名称): 需要对齐的目标对象，例如 Guide、Locator 或 Transform。
         position(bool): 是否匹配位置，默认 True。
         rotation(bool): 是否匹配旋转，默认 True。
         scale(bool): 是否匹配缩放，默认 True。
@@ -735,11 +735,11 @@ class Ctrl(object):
 
         Returns:
             None
-            
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import ctrl_utils
-            
+
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_object.set_match_transform("loc_lf_eye_guide_001")
         """
@@ -765,14 +765,14 @@ class Ctrl(object):
 
         Returns:
             list: 新创建并挂到当前控制器下面的 NurbsCurve Shape 节点列表。
-            
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import ctrl_utils
-            
+
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             ctrl_shapes = ctrl_object.set_ctrl_shape("cube")
-            
+
             print(ctrl_shapes)
         """
 
@@ -792,7 +792,7 @@ class Ctrl(object):
         # Step 02：检查当前条件与边界情况，并进入对应处理分支
         # -------------------------------------------------------------------------
         if not os.path.exists(shape_file):
-            pm.warning(u"找不到 Controller Shape 文件：{}".format(shape_file))
+            cmds.warning(u"找不到 Controller Shape 文件：{}".format(shape_file))
             return []
 
         # 读取 JSON 中保存的 Controller Shape 数据。
@@ -826,7 +826,7 @@ class Ctrl(object):
                     points.append(points[index])
 
             # 根据 JSON 保存的 CV、Degree、Knot 和 Periodic 状态创建临时 Curve。
-            curve_transform = pm.curve(point=points, degree=degree, knot=knot, periodic=periodic)
+            curve_transform = cmds.curve(point=points, degree=degree, knot=knot, periodic=periodic)
             curve_transforms.append(curve_transform)
 
         # 获取当前控制器原来的全部 Shape。
@@ -837,26 +837,26 @@ class Ctrl(object):
         # Step 03：遍历当前数据集合，并逐项执行核心处理
         # -------------------------------------------------------------------------
         for old_shape in old_shapes:
-            pm.delete(old_shape)
+            cmds.delete(old_shape)
 
         # 保存最终挂到 Controller Transform 下面的新 Shape。
         new_shapes = []
 
         # 将每一个临时 Curve Shape 移到当前 Controller Transform 下面。
         for curve_transform in curve_transforms:
-            curve_shape = curve_transform.getShape()
-            pm.parent(curve_shape, self.ctrl, shape=True, relative=True)
+            curve_shape = cmds.listRelatives(curve_transform, shapes=True, fullPath=True)[0]
+            cmds.parent(curve_shape, self.ctrl, shape=True, relative=True)
             new_shapes.append(curve_shape)
 
             # Shape 已经移动完成，删除空的临时 Curve Transform。
-            pm.delete(curve_transform)
+            cmds.delete(curve_transform)
 
         # 更新当前实例保存的 Shape 列表。
         self.ctrl_shapes = new_shapes
 
         # Shape Library 数据统一视为标准 X+ 轴向。
         # 替换 Shape 后必须同步重置轴向元数据，避免沿用旧 Shape 的轴向状态。
-        ctrl_name = self.ctrl.name()
+        ctrl_name = str(self.ctrl)
         # -------------------------------------------------------------------------
         # Step 04：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
@@ -895,15 +895,15 @@ class Ctrl(object):
         Returns:
             str: 保存完成后的 JSON 文件路径。
             None: 当前控制器没有可保存的 NurbsCurve Shape 时返回 None。
-            
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import ctrl_utils
-            
+
             ctrl_object = ctrl_utils.Ctrl("ctrl_md_test_main_001")
             ctrl_object.set_ctrl_axis("Z+")
             shape_file = ctrl_object.save_ctrl_shape("my_ctrl_shape")
-            
+
             print(shape_file)
         """
 
@@ -917,7 +917,7 @@ class Ctrl(object):
         # 资源保存时会把这个轴向逆转换回 Shape Library 标准 X+。
         valid_axes = ("X+", "X-", "Y+", "Y-", "Z+", "Z-")
         current_axis = "X+"
-        ctrl_name = self.ctrl.name()
+        ctrl_name = str(self.ctrl)
         # -------------------------------------------------------------------------
         # Step 02：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
@@ -938,16 +938,16 @@ class Ctrl(object):
 
             # Shape Library 当前只保存 NurbsCurve。
             # 如果 Transform 下面存在其他类型 Shape，则直接跳过。
-            if not isinstance(ctrl_shape, pm.nodetypes.NurbsCurve):
+            if not cmds.nodeType(ctrl_shape) == "nurbsCurve":
                 continue
 
             # 获取当前 Curve 的 Degree。
             # 常见值为 1（Linear）或 3（Cubic）。
-            degree = ctrl_shape.getAttr("degree")
+            degree = cmds.getAttr(ctrl_shape + ".degree")
 
             # 获取当前 Curve Form。
             # Maya 中：0 = Open，1 = Closed，2 = Periodic。
-            curve_form = ctrl_shape.getAttr("form")
+            curve_form = cmds.getAttr(ctrl_shape + ".form")
 
             # Shape Library 使用 bool 保存 Periodic 状态，
             # 所以这里只判断 Curve Form 是否为 2。
@@ -955,7 +955,10 @@ class Ctrl(object):
 
             # 获取 Curve 自身对象空间中的全部 CV 坐标。
             # 使用 object space 可以避免 Controller Transform 的世界位置影响 Shape 数据。
-            curve_points = ctrl_shape.getCVs(space="object")
+            selection = om.MSelectionList()
+            selection.add(ctrl_shape)
+            curve_function = om.MFnNurbsCurve(selection.getDagPath(0))
+            curve_points = curve_function.cvPositions(om.MSpace.kObject)
 
             # Periodic Curve 在 Maya 内部会包含重复的 degree 个 CV。
             # set_ctrl_shape() 加载时会重新补回这些重复点，
@@ -1010,7 +1013,7 @@ class Ctrl(object):
             # 获取当前 Curve 原始 Knot Vector。
             # 保存原始 Knot 可以让 set_ctrl_shape() 重建时保持曲线结构一致。
             knot_values = []
-            knots = ctrl_shape.getKnots()
+            knots = curve_function.knots()
 
             for knot in knots:
                 knot_values.append(knot)
@@ -1031,7 +1034,7 @@ class Ctrl(object):
         # Step 03：检查当前条件与边界情况，并进入对应处理分支
         # -------------------------------------------------------------------------
         if not shape_data:
-            pm.warning(u"当前控制器没有可以保存的 NurbsCurve Shape。")
+            cmds.warning(u"当前控制器没有可以保存的 NurbsCurve Shape。")
             return None
 
         # ---------------------------------------------------------------------
@@ -1066,7 +1069,7 @@ class Ctrl(object):
 
         # 没有有效半径时不写入 Shape Library，避免除以 0。
         if max_radius <= 0.0:
-            pm.warning(u"当前控制器 Shape 没有有效尺寸，无法保存。")
+            cmds.warning(u"当前控制器 Shape 没有有效尺寸，无法保存。")
             return None
 
         normalize_scale = 1.0 / max_radius
@@ -1143,12 +1146,12 @@ class Ctrl(object):
                 当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。
 
         Returns:
-            PyNode: 创建或获取到的 SubCtrl Transform 节点。
-            
+            字符串节点名称: 创建或获取到的 SubCtrl Transform 节点。
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import ctrl_utils
-            
+
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
             sub_ctrl = ctrl_object.create_sub_ctrl(
             shape_name="circle",
@@ -1156,7 +1159,7 @@ class Ctrl(object):
             ctrl_size=0.7,
             ctrl_axis="Z+"
             )
-            
+
             print(sub_ctrl)
         """
 
@@ -1185,11 +1188,11 @@ class Ctrl(object):
             create_hierarchy=False
         )
 
-        # 保存真正的 Maya SubCtrl PyNode，供后续 Output 和其他系统继续使用。
+        # 保存真正的 Maya SubCtrl 字符串节点名称，供后续 Output 和其他系统继续使用。
         self.sub_ctrl = sub_ctrl_object.ctrl
 
         # Parent 之前先让 SubCtrl 的世界位置、旋转、缩放完全匹配主 Ctrl。
-        pm.matchTransform(self.sub_ctrl, self.ctrl, position=True, rotation=True, scale=True)
+        cmds.matchTransform(self.sub_ctrl, self.ctrl, position=True, rotation=True, scale=True)
 
         # 将 SubCtrl 放到主 Ctrl 下方。
         # hierarchy_utils.parent() 会保持当前世界 Transform，
@@ -1204,7 +1207,7 @@ class Ctrl(object):
         # -------------------------------------------------------------------------
         # Step 04：创建并配置当前阶段需要的 Maya / Rig 对象
         # -------------------------------------------------------------------------
-        attr_object.add_attr(attr_name="sub_ctrl_vis", attr_type="bool", default_value=0, keyable=True)
+        attr_object.add_attr("sub_ctrl_vis", attr_type="bool", default_value=0, keyable=True, lock=False, hide=False)
 
         # 将主控制器的 sub_ctrl_vis 连接到次级控制器 visibility。
         attr_object.connect_attr(
@@ -1223,7 +1226,8 @@ class Ctrl(object):
         sub_ctrl_shape="circle",
         sub_ctrl_color=17,
         sub_ctrl_size=0.7,
-        ctrl_axis="X+"
+        ctrl_axis="X+",
+        create_sub_ctrl=True
     ):
         u"""
         创建当前 Controller 的完整层级结构，并支持安全重复执行。
@@ -1245,7 +1249,7 @@ class Ctrl(object):
         如果不存在，则创建新 Group；
         如果父子关系不正确，则恢复到当前调用要求的层级关系。
         因此 create_ctrl_hierarchy() 本身只负责描述 Controller 需要什么层级，
-        不再重复编写每一个 Group 的 pm.objExists() 判断。
+        不再重复编写每一个 Group 的 cmds.objExists() 判断。
         上方五个 Group 从最靠近 Ctrl 的 Offset 开始向外逐层处理。
         SubCtrl 通过 create_sub_ctrl() 创建或获取，并继承主 Controller 的 ctrl_axis。
         Output 通过 relation="child" 创建或获取在主 Ctrl 下方。
@@ -1264,21 +1268,24 @@ class Ctrl(object):
             ctrl_axis (str):
                 当前 Maya / Rig 操作使用的 `ctrl_axis` 名称或标记。
 
+            create_sub_ctrl (bool):
+                是否创建次级控制器并将其变换连接到 Output。
+
         Returns:
-            PyNode: 完整 Controller 层级最外层的 Zero Group。
-            
+            字符串节点名称: 完整 Controller 层级最外层的 Zero Group。
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import ctrl_utils
-            
+
             ctrl_object = ctrl_utils.Ctrl("ctrl_lf_eye_main_001")
-            
+
             # 第一次执行：不存在的层级会被创建。
             zero_grp = ctrl_object.create_ctrl_hierarchy(ctrl_axis="Z+")
-            
+
             # 第二次执行：已经存在的层级会被直接获取和复用。
             zero_grp = ctrl_object.create_ctrl_hierarchy(ctrl_axis="Z+")
-            
+
             print(zero_grp)
             print(ctrl_object.output_grp)
         """
@@ -1309,13 +1316,14 @@ class Ctrl(object):
         self.driven_grp = hierarchy_utils.add_extra_group(self.space_grp, self.driven_name, relation="parent")
         self.zero_grp = hierarchy_utils.add_extra_group(self.driven_grp, self.zero_name, relation="parent")
 
-        # 创建或获取主 Controller 下方的次级控制器，并保持 Main Ctrl / SubCtrl 轴向一致。
-        self.create_sub_ctrl(
-            shape_name=sub_ctrl_shape,
-            ctrl_color=sub_ctrl_color,
-            ctrl_size=sub_ctrl_size,
-            ctrl_axis=ctrl_axis
-        )
+        if create_sub_ctrl:
+            # 创建或获取主 Controller 下方的次级控制器，并保持 Main Ctrl / SubCtrl 轴向一致。
+            self.create_sub_ctrl(
+                shape_name=sub_ctrl_shape,
+                ctrl_color=sub_ctrl_color,
+                ctrl_size=sub_ctrl_size,
+                ctrl_axis=ctrl_axis
+            )
 
         # 创建或获取最终 Output Group，并确保它直接位于主 Ctrl 下方。
         # 如果旧版本的 Output 仍然位于 SubCtrl 下方，add_extra_group() 会自动恢复父子关系。
@@ -1323,14 +1331,15 @@ class Ctrl(object):
 
         # SubCtrl 与 Output 保持兄弟层级，因此 Visibility 不会沿 DAG 传播到 Output。
         # 通过属性连接将 SubCtrl 的局部变换传给 Output，使 Output 仍然包含第二层控制效果。
-        sub_ctrl_attr = attr_utils.Attr(self.sub_ctrl)
-        # -------------------------------------------------------------------------
-        # Step 04：建立当前阶段需要的层级、连接或驱动关系
-        # -------------------------------------------------------------------------
-        sub_ctrl_attr.connect_attr(attr_name="translate", target_object=self.output_grp, target_attr_name="translate")
-        sub_ctrl_attr.connect_attr(attr_name="rotate", target_object=self.output_grp, target_attr_name="rotate")
-        sub_ctrl_attr.connect_attr(attr_name="scale", target_object=self.output_grp, target_attr_name="scale")
-        sub_ctrl_attr.connect_attr(attr_name="rotateOrder", target_object=self.output_grp, target_attr_name="rotateOrder")
+        if create_sub_ctrl:
+            sub_ctrl_attr = attr_utils.Attr(self.sub_ctrl)
+            # -------------------------------------------------------------------------
+            # Step 04：建立当前阶段需要的层级、连接或驱动关系
+            # -------------------------------------------------------------------------
+            sub_ctrl_attr.connect_attr(attr_name="translate", target_object=self.output_grp, target_attr_name="translate")
+            sub_ctrl_attr.connect_attr(attr_name="rotate", target_object=self.output_grp, target_attr_name="rotate")
+            sub_ctrl_attr.connect_attr(attr_name="scale", target_object=self.output_grp, target_attr_name="scale")
+            sub_ctrl_attr.connect_attr(attr_name="rotateOrder", target_object=self.output_grp, target_attr_name="rotateOrder")
 
         # -------------------------------------------------------------------------
         # Step 05：整理并返回当前函数的最终结果

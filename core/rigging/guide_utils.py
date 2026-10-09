@@ -29,7 +29,7 @@ guide_utils：Maya Module Guide 基础工具。
 import os
 
 import maya.cmds as cmds
-import pymel.core as pm
+
 
 from ... import config as package_config
 
@@ -48,13 +48,13 @@ class Guide(object):
 
         Returns:
             None
-            
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import guide_utils
-            
+
             guide_object = guide_utils.Guide("face")
-            
+
             print(guide_object.guide_root_name)
             print(guide_object.guide_template_path)
         """
@@ -76,15 +76,15 @@ class Guide(object):
         正常使用时只需要导入模板，不需要再额外调用 create_guide_curve()。
 
         Returns:
-            PyNode: 当前 Module Guide Root。
-            
+            字符串节点名称: 当前 Module Guide Root。
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import guide_utils
-            
+
             guide_object = guide_utils.Guide("face")
             guide_root = guide_object.import_template()
-            
+
             print(guide_root)
 
         Raises:
@@ -103,7 +103,7 @@ class Guide(object):
             if cmds.nodeType(self.guide_root_name) != "transform":
                 raise TypeError(u"{} 已经存在，但不是 Transform 节点。".format(self.guide_root_name))
 
-            self.guide_root = pm.PyNode(self.guide_root_name)
+            self.guide_root = str(self.guide_root_name)
             return self.guide_root
 
         # -------------------------------------------------------------------------
@@ -123,7 +123,7 @@ class Guide(object):
         # -------------------------------------------------------------------------
         # Step 04：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
-        self.guide_root = pm.PyNode(self.guide_root_name)
+        self.guide_root = str(self.guide_root_name)
         # -------------------------------------------------------------------------
         # Step 05：整理并返回当前函数的最终结果
         # -------------------------------------------------------------------------
@@ -146,16 +146,16 @@ class Guide(object):
                 当前方法执行 Maya / Rig 操作时使用的 `module` 数据。
 
         Returns:
-            PyNode: 找到的 Guide Module Group。
+            字符串节点名称: 找到的 Guide Module Group。
             None: 模块组不存在，或不属于当前 Guide Root。
-            
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import guide_utils
-            
+
             guide_object = guide_utils.Guide("face")
             guide_object.import_template()
-            
+
             ear_group = guide_object.get_module_group("ear")
             print(ear_group)
 
@@ -169,7 +169,7 @@ class Guide(object):
         # -------------------------------------------------------------------------
         if not self.guide_root:
             if cmds.objExists(self.guide_root_name):
-                self.guide_root = pm.PyNode(self.guide_root_name)
+                self.guide_root = str(self.guide_root_name)
             else:
                 cmds.warning(u"当前场景中不存在 {} Guide：{}".format(self.module, self.guide_root_name))
                 return None
@@ -212,7 +212,7 @@ class Guide(object):
         # -------------------------------------------------------------------------
         # Step 05：整理并返回当前函数的最终结果
         # -------------------------------------------------------------------------
-        return pm.PyNode(module_group_name)
+        return str(module_group_name)
 
     def get_guides(self, module, side=None):
         u"""
@@ -232,19 +232,19 @@ class Guide(object):
                 方向标记，常用值为 lf、rt 或 md。
 
         Returns:
-            list: 符合 module 和 side 条件，并按名称排序后的 Locator Guide PyNode 列表。
-            
+            list: 符合 module 和 side 条件，并按名称排序后的 Locator Guide 字符串节点名称 列表。
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import guide_utils
-            
+
             guide_object = guide_utils.Guide("face")
             guide_object.import_template()
-            
+
             ear_guides = guide_object.get_guides("ear")
             lf_ear_guides = guide_object.get_guides("ear", "lf")
             rt_ear_guides = guide_object.get_guides("ear", "rt")
-            
+
             for guide in lf_ear_guides:
             print(guide)
 
@@ -268,7 +268,7 @@ class Guide(object):
             self.guides = []
             return self.guides
 
-        module_group_name = module_group.name()
+        module_group_name = str(module_group)
         # -------------------------------------------------------------------------
         # Step 03：查询并整理当前阶段需要的 Maya 场景数据
         # -------------------------------------------------------------------------
@@ -297,7 +297,7 @@ class Guide(object):
                 if len(guide_name_parts) < 2 or guide_name_parts[1] != side:
                     continue
 
-            self.guides.append(pm.PyNode(child_object))
+            self.guides.append(str(child_object))
 
         # listRelatives(allDescendents=True) 的返回顺序不等于 Guide 的逻辑顺序。
         # Guide 名称使用补零序号，因此按名称排序后可以稳定得到 001、002、003...。
@@ -327,15 +327,15 @@ class Guide(object):
                 方向标记，常用值为 lf、rt 或 md。
 
         Returns:
-            PyNode: 创建或已经存在的 Guide Display Curve Transform。
-            
+            字符串节点名称: 创建或已经存在的 Guide Display Curve Transform。
+
             Maya 使用示例：
-            
+
             from muziToolset.core.rigging import guide_utils
-            
+
             guide_object = guide_utils.Guide("face")
             guide_object.import_template()
-            
+
             lf_curve = guide_object.create_guide_curve("ear", "lf")
             rt_curve = guide_object.create_guide_curve("ear", "rt")
 
@@ -366,7 +366,7 @@ class Guide(object):
         # -------------------------------------------------------------------------
         # Step 02：准备当前阶段计算和后续处理需要的数据
         # -------------------------------------------------------------------------
-        module_group_name = module_group.name()
+        module_group_name = str(module_group)
         curve_name = package_config.module_guide_curve_name_format.format(side, module)
 
         if cmds.objExists(curve_name):
@@ -378,13 +378,13 @@ class Guide(object):
             if not curve_shapes or cmds.nodeType(curve_shapes[0]) != "nurbsCurve":
                 raise TypeError(u"{} 已经存在，但不是 NurbsCurve。".format(curve_name))
 
-            return pm.PyNode(curve_name)
+            return str(curve_name)
 
         guide_positions = []
 
         for guide in side_guides:
-            guide_shape = guide.getShape()
-            guide_position = cmds.getAttr(guide_shape.name() + ".worldPosition[0]")[0]
+            guide_shape = cmds.listRelatives(guide, shapes=True, fullPath=True)[0]
+            guide_position = cmds.getAttr(str(guide_shape) + ".worldPosition[0]")[0]
             guide_positions.append(guide_position)
 
         # -------------------------------------------------------------------------
@@ -395,7 +395,7 @@ class Guide(object):
         cmds.parent(guide_curve, module_group_name, relative=True)
 
         curve_shape = cmds.listRelatives(guide_curve, shapes=True, noIntermediate=True, fullPath=False)[0]
-        first_guide_shape = side_guides[0].getShape().name()
+        first_guide_shape = cmds.listRelatives(side_guides[0], shapes=True, fullPath=True)[0]
 
         # -------------------------------------------------------------------------
         # Step 04：应用并更新当前阶段需要的属性或状态
@@ -416,7 +416,7 @@ class Guide(object):
         guide_index = 0
 
         for guide in side_guides:
-            guide_shape = guide.getShape().name()
+            guide_shape = cmds.listRelatives(guide, shapes=True, fullPath=True)[0]
             source_attr = guide_shape + ".worldPosition[0]"
             target_attr = curve_shape + ".controlPoints[{}]".format(guide_index)
             cmds.connectAttr(source_attr, target_attr, force=True)
@@ -425,4 +425,4 @@ class Guide(object):
         # -------------------------------------------------------------------------
         # Step 05：整理并返回当前函数的最终结果
         # -------------------------------------------------------------------------
-        return pm.PyNode(guide_curve)
+        return str(guide_curve)

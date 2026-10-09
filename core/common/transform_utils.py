@@ -29,7 +29,12 @@ transform_utils：Maya Transform 基础工具。
         适合输入 Shape 节点时自动找到其父 Transform，也可以直接处理 Transform 节点。
 """
 
-import pymel.core as pm
+
+
+import maya.cmds as cmds
+from ..common import math_utils
+from ..common import scene_utils
+
 
 
 class Transform(object):
@@ -39,16 +44,16 @@ class Transform(object):
         初始化 Transform 工具对象。
 
         Args:
-            object (str/PyNode):
+            object (str/字符串节点名称):
                 需要操作的 Maya 节点，可以是 Transform、Joint、Shape 等节点。
         """
 
         self.object = None
         self.world_matrix = None
 
-        # 如果传入 Maya 节点，则统一转换成 PyNode 保存。
+        # 如果传入 Maya 节点，则统一转换成 字符串节点名称 保存。
         if object:
-            self.object = pm.PyNode(object)
+            self.object = str(object)
 
     def match_transform(self, target, position=True, rotation=True, scale=True):
         u"""
@@ -62,7 +67,7 @@ class Transform(object):
         这样 Joint、Controller 和其他绑定节点都使用同一套简单明确的对齐规则。
 
         Args:
-            target (str/PyNode):
+            target (str/字符串节点名称):
                 需要匹配的目标对象。
             position (bool):
                 是否匹配目标位置，默认 True。
@@ -75,10 +80,10 @@ class Transform(object):
             None
         """
 
-        # 目标统一转换成 PyNode，然后直接使用 Maya matchTransform 对齐。
-        target = pm.PyNode(target)
+        # 目标统一转换成 字符串节点名称，然后直接使用 Maya matchTransform 对齐。
+        target = str(target)
 
-        pm.matchTransform(
+        cmds.matchTransform(
             self.object,
             target,
             position=position,
@@ -94,7 +99,7 @@ class Transform(object):
             Matrix: 当前对象的世界矩阵。
         """
 
-        self.world_matrix = self.object.getMatrix(worldSpace=True)
+        self.world_matrix = cmds.xform(self.object, query=True, matrix=True, worldSpace=True)
         return self.world_matrix
 
     def set_world_matrix(self, matrix):
@@ -109,7 +114,7 @@ class Transform(object):
             None
         """
 
-        self.object.setMatrix(matrix, worldSpace=True)
+        cmds.xform(self.object, matrix=matrix, worldSpace=True)
         self.world_matrix = matrix
 
     def reset_transform(self, translate=True, rotate=True, scale=True):
@@ -129,13 +134,13 @@ class Transform(object):
         """
 
         if translate:
-            self.object.translate.set((0, 0, 0))
+            cmds.setAttr(self.object + ".translate", 0, 0, 0)
 
         if rotate:
-            self.object.rotate.set((0, 0, 0))
+            cmds.setAttr(self.object + ".rotate", 0, 0, 0)
 
         if scale:
-            self.object.scale.set((1, 1, 1))
+            cmds.setAttr(self.object + ".scale", 1, 1, 1)
 
     def get_transform(self):
         u"""
@@ -145,11 +150,180 @@ class Transform(object):
         如果当前对象是 Shape，则返回它的父 Transform。
 
         Returns:
-            PyNode: 当前对象对应的 Transform 节点。
+            字符串节点名称: 当前对象对应的 Transform 节点。
         """
 
-        if isinstance(self.object, pm.nodetypes.Transform):
+        if cmds.objectType(self.object, isAType="transform"):
             return self.object
 
-        parent_object = self.object.getParent()
+        parent_object = (cmds.listRelatives(self.object, parent=True, fullPath=True) or [None])[0]
         return parent_object
+
+def validate_transform(node):
+    u"""
+    检查节点存在，并确认它是 Maya Transform / Jnt。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        bool:
+        当前操作成功或目标状态满足要求时返回 True，否则返回 False。
+
+    Raises:
+        RuntimeError:
+        输入数据、场景状态或操作条件不满足要求时抛出。
+    """
+    scene_utils.validate_node(
+        node
+    )
+
+    node_type = cmds.nodeType(
+        node
+    )
+
+    if node_type not in ["transform", "joint"]:
+        raise RuntimeError(
+            u"节点不是 Transform / Jnt：{} | type={}".format(
+                node,
+                node_type
+            )
+        )
+
+    return True
+
+def _validate_vector3(value, label):
+    u"""检查 Translation / Rotation / Offset 是否包含 3 个数值。"""
+    if value is None:
+        raise ValueError(
+            u"{} 必须包含 3 个数值。".format(
+                label
+            )
+        )
+
+    try:
+        value_count = len(
+            value
+        )
+    except TypeError:
+        raise ValueError(
+            u"{} 必须包含 3 个数值。".format(
+                label
+            )
+        )
+
+    if value_count != 3:
+        raise ValueError(
+            u"{} 必须包含 3 个数值。".format(
+                label
+            )
+        )
+
+    return True
+
+def get_world_translation(node):
+    u"""
+    返回 Transform / Jnt 的 World Translation。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    """
+    validate_transform(
+        node
+    )
+
+    return cmds.xform(
+        node,
+        query=True,
+        worldSpace=True,
+        translation=True
+    )
+
+def set_world_translation(node, translation):
+    u"""
+    设置 Transform / Jnt 的 World Translation。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+        translation (object):
+            当前方法执行 Maya / Rig 操作时使用的 `translation` 数据。
+
+    Returns:
+        object:
+        完成设置或应用后的目标对象 / 状态结果。
+    """
+    validate_transform(
+        node
+    )
+    _validate_vector3(
+        translation,
+        "translation"
+    )
+
+    cmds.xform(
+        node,
+        worldSpace=True,
+        translation=translation
+    )
+
+    return node
+
+def get_world_rotation(node):
+    u"""
+    返回 Transform / Jnt 的 World Rotation。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+
+    Returns:
+        object:
+        当前查询匹配到的 Maya / Rig 数据；没有结果时按 API 约定返回空值。
+    """
+    validate_transform(
+        node
+    )
+
+    return cmds.xform(
+        node,
+        query=True,
+        worldSpace=True,
+        rotation=True
+    )
+
+def set_world_rotation(node, rotation):
+    u"""
+    设置 Transform / Jnt 的 World Rotation。
+
+    Args:
+        node (str):
+            需要查询或处理的 Maya 节点名称。
+        rotation (list[float] | tuple[float, float, float]):
+            Jnt / Transform 使用的 XYZ Rotation。
+
+    Returns:
+        object:
+        完成设置或应用后的目标对象 / 状态结果。
+    """
+    validate_transform(
+        node
+    )
+    _validate_vector3(
+        rotation,
+        "rotation"
+    )
+
+    cmds.xform(
+        node,
+        worldSpace=True,
+        rotation=rotation
+    )
+
+    return node
